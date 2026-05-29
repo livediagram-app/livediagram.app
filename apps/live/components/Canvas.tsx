@@ -106,6 +106,12 @@ type CanvasProps = {
   onOpenComments: (elementId: string) => void;
   showTemplatePicker: boolean;
   templatePickerMode: 'welcome' | 'templates';
+  // Hides the floating chrome (palette, explorer, zoom + history dock,
+  // plus buttons, selection popover) while the first-run welcome modal
+  // is taking the user through identity / template / theme selection.
+  // Keeps the canvas surface visible (so the modal isn't floating on a
+  // blank page) but free of distracting controls.
+  welcomeOpen: boolean;
   selfParticipant: import('@/lib/identity').Participant;
   onChooseTemplate: (
     kind: TemplateKind,
@@ -193,6 +199,7 @@ export function Canvas(props: CanvasProps) {
     onOpenComments,
     showTemplatePicker,
     templatePickerMode,
+    welcomeOpen,
     selfParticipant,
     onChooseTemplate,
     onSkipTemplatePicker,
@@ -709,53 +716,57 @@ export function Canvas(props: CanvasProps) {
         />
       ) : null}
 
-      <Explorer
-        position={explorerPosition}
-        minimized={explorerMinimized}
-        onMoveTo={onMoveExplorer}
-        onToggleMinimized={onToggleExplorerMinimized}
-      />
-
-      <CommandPalette
-        position={palettePosition}
-        minimized={paletteMinimized}
-        selection={paletteSelection}
-        tab={tabSection}
-        onMoveTo={onMovePalette}
-        onToggleMinimized={onToggleMinimized}
-        onAddShape={onAddShape}
-        onAddText={onAddText}
-        onAddSticky={onAddSticky}
-      />
-
-      {/* Bottom dock. Order, left → right: minimised Explorer (if any),
-          minimised Palette (if any), Zoom controls, History controls. */}
-      <div className="pointer-events-none absolute bottom-4 right-4 z-10 flex items-center gap-2">
-        {explorerMinimized ? (
-          <DockButton
-            label="Open Explorer"
-            description="Expand the Explorer panel back to its full size."
-            icon={<ExplorerIcon />}
-            onClick={onToggleExplorerMinimized}
+      {welcomeOpen ? null : (
+        <>
+          <Explorer
+            position={explorerPosition}
+            minimized={explorerMinimized}
+            onMoveTo={onMoveExplorer}
+            onToggleMinimized={onToggleExplorerMinimized}
           />
-        ) : null}
-        {paletteMinimized ? (
-          <DockButton
-            label="Open palette"
-            description="Expand the palette back to its full panel."
-            icon={<PaletteIcon />}
-            onClick={onToggleMinimized}
+
+          <CommandPalette
+            position={palettePosition}
+            minimized={paletteMinimized}
+            selection={paletteSelection}
+            tab={tabSection}
+            onMoveTo={onMovePalette}
+            onToggleMinimized={onToggleMinimized}
+            onAddShape={onAddShape}
+            onAddText={onAddText}
+            onAddSticky={onAddSticky}
           />
-        ) : null}
-        <ZoomControls
-          zoom={viewportZoom}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          onReset={handleResetZoom}
-          onFitToScreen={onFitToScreen}
-        />
-        <HistoryControls canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
-      </div>
+
+          {/* Bottom dock. Order, left → right: minimised Explorer (if any),
+              minimised Palette (if any), Zoom controls, History controls. */}
+          <div className="pointer-events-none absolute bottom-4 right-4 z-10 flex items-center gap-2">
+            {explorerMinimized ? (
+              <DockButton
+                label="Open Explorer"
+                description="Expand the Explorer panel back to its full size."
+                icon={<ExplorerIcon />}
+                onClick={onToggleExplorerMinimized}
+              />
+            ) : null}
+            {paletteMinimized ? (
+              <DockButton
+                label="Open palette"
+                description="Expand the palette back to its full panel."
+                icon={<PaletteIcon />}
+                onClick={onToggleMinimized}
+              />
+            ) : null}
+            <ZoomControls
+              zoom={viewportZoom}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onReset={handleResetZoom}
+              onFitToScreen={onFitToScreen}
+            />
+            <HistoryControls canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
+          </div>
+        </>
+      )}
     </main>
   );
 }

@@ -164,6 +164,13 @@ export default function LivePage() {
   const [paletteMinimized, setPaletteMinimized] = useState(false);
   const [explorerPosition, setExplorerPosition] = useState<{ x: number; y: number } | null>(null);
   const [explorerMinimized, setExplorerMinimized] = useState(false);
+  // Picker mode lives here (rather than nearer `chooseTemplate`) so the
+  // derived `welcomeOpen` below — used to gate page-level chrome — can
+  // read it. See `openTemplatePicker` / `skipTemplatePicker` for the
+  // transition rules.
+  const [templatePickerMode, setTemplatePickerMode] = useState<'welcome' | 'templates'>(
+    'welcome',
+  );
   const [diagramName, setDiagramName] = useState('Untitled diagram');
   // Multi-selection bag for marquee box-select. Mutually exclusive with the
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
@@ -198,19 +205,18 @@ export default function LivePage() {
   useLayoutEffect(() => {
     if (hydrated) return;
     const url = new URL(window.location.href);
-    let id = url.searchParams.get('d');
-    if (!id) {
-      id = crypto.randomUUID();
-      url.searchParams.set('d', id);
-      // `replaceState` writes the id back without a navigation so the
-      // user can copy the URL and reopen the same diagram later.
-      window.history.replaceState({}, '', url.toString());
-    }
-    const stored = localStorageStore.load(id);
-    if (stored) {
-      resetTabs(stored.tabs);
-      setDiagramName(stored.name);
-      setActiveId(stored.tabs[0]?.id ?? activeId);
+    const id = url.searchParams.get('d');
+    // Only hydrate from storage when the URL already carries an id. A
+    // fresh visit (no `?d=`) deliberately holds off on minting one until
+    // the user finishes the welcome flow — see `commitDiagramId` below.
+    if (id) {
+      const stored = localStorageStore.load(id);
+      if (stored) {
+        resetTabs(stored.tabs);
+        setDiagramName(stored.name);
+        setActiveId(stored.tabs[0]?.id ?? activeId);
+      }
+      setDiagramId(id);
     }
     const storedSelf = loadSelfParticipant();
     if (storedSelf) {
@@ -226,10 +232,27 @@ export default function LivePage() {
       setSelfParticipant(fresh);
       saveSelfParticipant(fresh);
     }
-    setDiagramId(id);
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Mint a diagram id on demand (when the user completes the welcome
+  // flow), write it to the URL, and return it for the caller's
+  // immediate use. No-op if we already have one. Returning the value
+  // matters because state setters aren't synchronous — handlers that
+  // need the id this same tick (e.g. an immediate localStorage save)
+  // can't rely on `diagramId` having updated yet.
+  const commitDiagramId = (): string => {
+    if (diagramId) return diagramId;
+    const id = crypto.randomUUID();
+    const url = new URL(window.location.href);
+    url.searchParams.set('d', id);
+    // `replaceState` writes the id back without a navigation so the
+    // user can copy the URL and reopen the same diagram later.
+    window.history.replaceState({}, '', url.toString());
+    setDiagramId(id);
+    return id;
+  };
 
   // Persist on any change after hydration. localStorage is sync so we
   // don't bother debouncing; the prototype's diagrams are small and we'd
@@ -259,6 +282,14 @@ export default function LivePage() {
   }, [viewportZoom]);
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // True only while the first-run welcome modal is up. Drives the chrome
+  // hide rule (palette / explorer / dock / tab bar all suppressed so the
+  // user's focus is on the modal). The Browse-templates flow uses the
+  // same modal but isn't "welcome" — chrome stays visible there.
+  const welcomeOpen =
+    activeTab.elements.length === 0 &&
+    activeTab.templateChosen !== true &&
+    templatePickerMode === 'welcome';
 
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
@@ -598,15 +629,6 @@ export default function LivePage() {
     });
   };
 
-  // Which variant of the picker to render. 'welcome' is the first-run
-  // experience (name + theme + template). 'templates' is the lighter
-  // version opened by the empty-state card's Browse templates button —
-  // just the template grid, with the tab's current theme and the user's
-  // current name kept as-is.
-  const [templatePickerMode, setTemplatePickerMode] = useState<'welcome' | 'templates'>(
-    'welcome',
-  );
-
   const openTemplatePicker = () => {
     setTemplatePickerMode('templates');
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, templateChosen: false } : t)));
@@ -617,13 +639,18 @@ export default function LivePage() {
   // leaves the canvas empty (so the empty-state card prompts the next
   // step), and doesn't touch the participant name or the theme. Resets
   // the picker mode to 'welcome' so the next first-run session is
-  // unaffected.
+  // unaffected. Also mints the diagram id if this is the first-run
+  // session, so Skip / X still produces a shareable URL.
   const skipTemplatePicker = () => {
+    commitDiagramId();
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, templateChosen: true } : t)));
     setTemplatePickerMode('welcome');
   };
 
   const chooseTemplate = (kind: TemplateKind, name?: string, themeId?: ThemeId) => {
+    // Welcome / Browse-templates is the canonical "commit point" for a new
+    // diagram. Mint an id + put it in the URL now if we haven't already.
+    commitDiagramId();
     if (name && name !== selfParticipant.name) {
       setSelfParticipant((p) => ({ ...p, name }));
     }
@@ -1380,6 +1407,7 @@ export default function LivePage() {
         onOpenComments={openComments}
         showTemplatePicker={activeTab.elements.length === 0 && activeTab.templateChosen !== true}
         templatePickerMode={templatePickerMode}
+        welcomeOpen={welcomeOpen}
         selfParticipant={selfParticipant}
         onChooseTemplate={chooseTemplate}
         onSkipTemplatePicker={skipTemplatePicker}
@@ -1396,23 +1424,25 @@ export default function LivePage() {
         onDeleteSelected={deleteSelected}
         onCanvasDoubleClick={handleCanvasDoubleClick}
       />
-      <TabBar
-        tabs={tabs}
-        activeId={activeId}
-        onSelect={(id) => {
-          setActiveId(id);
-          setSelectedId(null);
-          setMultiSelectedIds(new Set());
-          setEditingId(null);
-          setFormatSourceId(null);
-          setGroupSourceId(null);
-        }}
-        onAdd={addTab}
-        onRename={renameTab}
-        onDuplicate={duplicateTab}
-        onDelete={deleteTab}
-        onReorder={reorderTabs}
-      />
+      {welcomeOpen ? null : (
+        <TabBar
+          tabs={tabs}
+          activeId={activeId}
+          onSelect={(id) => {
+            setActiveId(id);
+            setSelectedId(null);
+            setMultiSelectedIds(new Set());
+            setEditingId(null);
+            setFormatSourceId(null);
+            setGroupSourceId(null);
+          }}
+          onAdd={addTab}
+          onRename={renameTab}
+          onDuplicate={duplicateTab}
+          onDelete={deleteTab}
+          onReorder={reorderTabs}
+        />
+      )}
       {commentThreadOpenId !== null
         ? (() => {
             const target = activeTab.elements.find(
