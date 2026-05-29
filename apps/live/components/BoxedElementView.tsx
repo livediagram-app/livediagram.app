@@ -90,7 +90,12 @@ export function BoxedElementView({
         ? 'cursor-default'
         : 'cursor-move';
 
-  const variant = describeVariant(element, isSelected);
+  // When at least one remote participant has selected this element, the
+  // border / stroke colour is overridden with the first remote selector's
+  // colour so the realtime "X is here" signal is glanceable from anywhere
+  // on the canvas — not just from the small initial-badge.
+  const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
+  const variant = describeVariant(element, isSelected, remoteBorderColor);
 
   const commentCount = activeCommentCount(element.commentThread);
   const linked = element.link !== undefined && element.link.kind === 'tab';
@@ -115,7 +120,8 @@ export function BoxedElementView({
         <ShapeSvgOverlay
           shape={element.shape}
           fill={element.fillColor ?? defaultFillColor(element)}
-          stroke={element.strokeColor ?? defaultStrokeColor(element)}
+          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          strokeWidth={remoteBorderColor ? 3 : 2}
         />
       ) : null}
 
@@ -199,15 +205,17 @@ function ShapeSvgOverlay({
   shape,
   fill,
   stroke,
+  strokeWidth = 2,
 }: {
   shape: ShapeKind;
   fill: string;
   stroke: string;
+  strokeWidth?: number;
 }) {
   const common = {
     fill,
     stroke,
-    strokeWidth: 2,
+    strokeWidth,
     vectorEffect: 'non-scaling-stroke' as const,
     strokeLinejoin: 'round' as const,
   };
@@ -424,13 +432,22 @@ function AnchorDot({
 function describeVariant(
   element: BoxedElement,
   isSelected: boolean,
+  remoteBorderColor: string | null,
 ): { className: string; style: React.CSSProperties } {
+  // When a remote participant has this element selected, draw a thicker
+  // 3-pixel border in their colour so the realtime signal is glanceable.
+  // We apply it as a box-shadow inset on text (which has no real border)
+  // and as an actual border on shape / sticky. The local selection ring
+  // stays on top so the active user still sees their own selection.
+  const remoteBorderWidth = remoteBorderColor ? 3 : 0;
   switch (element.type) {
     case 'shape': {
       const ring = isSelected ? 'ring-2 ring-brand-200' : '';
       // SVG-rendered shapes (diamond, cylinder, parallelogram, hexagon,
       // document) draw themselves via an inner SVG overlay; the wrapper div
-      // carries no border/background, just the selection ring.
+      // carries no border/background, just the selection ring. The
+      // border colour for those propagates through ShapeSvgOverlay's
+      // `stroke` prop, not this style block.
       if (isSvgRenderedShape(element.shape)) {
         return {
           className: `text-brand-800 ${ring}`,
@@ -443,7 +460,8 @@ function describeVariant(
           borderRadius:
             element.shape === 'circle' ? '50%' : element.shape === 'stadium' ? '9999px' : '8px',
           backgroundColor: element.fillColor ?? defaultFillColor(element),
-          borderColor: element.strokeColor ?? defaultStrokeColor(element),
+          borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
+          borderWidth: remoteBorderColor ? remoteBorderWidth : undefined,
         },
       };
     }
@@ -453,7 +471,12 @@ function describeVariant(
         : 'ring-1 ring-dashed ring-slate-300';
       return {
         className: `text-slate-800 rounded-sm ${ring}`,
-        style: {},
+        // Text elements have no real border; render the remote-selector
+        // halo as an outline so it shows up regardless of the element
+        // having transparent fill.
+        style: remoteBorderColor
+          ? { outline: `${remoteBorderWidth}px solid ${remoteBorderColor}`, outlineOffset: 2 }
+          : {},
       };
     }
     case 'sticky': {
@@ -463,7 +486,8 @@ function describeVariant(
         style: {
           borderRadius: '4px',
           backgroundColor: element.fillColor ?? defaultFillColor(element),
-          borderColor: element.strokeColor ?? defaultStrokeColor(element),
+          borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
+          borderWidth: remoteBorderColor ? remoteBorderWidth : undefined,
         },
       };
     }
