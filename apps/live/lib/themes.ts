@@ -13,7 +13,13 @@ export type ThemeId =
   | 'forest'
   | 'sunset'
   | 'lavender'
-  | 'mono';
+  | 'mono'
+  | 'ocean'
+  | 'crimson'
+  | 'midnight'
+  | 'cream'
+  | 'rose'
+  | 'sand';
 
 export type ThemeDefinition = {
   id: ThemeId;
@@ -90,6 +96,66 @@ export const THEMES: ThemeDefinition[] = [
     elementFill: '#ffffff',
     elementStroke: '#0f172a',
     elementText: '#0f172a',
+  },
+  {
+    id: 'ocean',
+    label: 'Ocean',
+    backgroundColor: '#ecfeff',
+    backgroundPattern: 'grid',
+    patternColor: '#a5f3fc',
+    elementFill: '#cffafe',
+    elementStroke: '#0e7490',
+    elementText: '#164e63',
+  },
+  {
+    id: 'crimson',
+    label: 'Crimson',
+    backgroundColor: '#fef2f2',
+    backgroundPattern: 'grid',
+    patternColor: '#fecaca',
+    elementFill: '#fee2e2',
+    elementStroke: '#b91c1c',
+    elementText: '#7f1d1d',
+  },
+  {
+    id: 'midnight',
+    label: 'Midnight',
+    backgroundColor: '#0f172a',
+    backgroundPattern: 'grid',
+    patternColor: '#1e293b',
+    elementFill: '#1e293b',
+    elementStroke: '#94a3b8',
+    elementText: '#e2e8f0',
+  },
+  {
+    id: 'cream',
+    label: 'Cream',
+    backgroundColor: '#fefce8',
+    backgroundPattern: 'grid',
+    patternColor: '#fef08a',
+    elementFill: '#fef9c3',
+    elementStroke: '#a16207',
+    elementText: '#713f12',
+  },
+  {
+    id: 'rose',
+    label: 'Rose',
+    backgroundColor: '#fff1f2',
+    backgroundPattern: 'grid',
+    patternColor: '#fecdd3',
+    elementFill: '#ffe4e6',
+    elementStroke: '#be123c',
+    elementText: '#881337',
+  },
+  {
+    id: 'sand',
+    label: 'Sand',
+    backgroundColor: '#fafaf9',
+    backgroundPattern: 'grid',
+    patternColor: '#e7e5e4',
+    elementFill: '#f5f5f4',
+    elementStroke: '#78716c',
+    elementText: '#292524',
   },
 ];
 
