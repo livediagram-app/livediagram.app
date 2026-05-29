@@ -194,6 +194,19 @@ export default function LivePage() {
   // Comment mutations bypass the history hook (so typing a comment then
   // Ctrl+Z doesn't unexpectedly wipe it).
   const [commentThreadOpenId, setCommentThreadOpenId] = useState<string | null>(null);
+  // Every diagram in the local store. Used by the Explorer to render its
+  // list. Refreshed on hydration and after we save the current diagram
+  // (so the Explorer's "Your diagrams" section reflects renames + first
+  // saves in real time).
+  const [diagramList, setDiagramList] = useState<{ id: string; name: string; savedAt: number }[]>(
+    [],
+  );
+  const refreshDiagramList = () => {
+    if (typeof window === 'undefined') return;
+    setDiagramList(
+      localStorageStore.loadAll().map((d) => ({ id: d.id, name: d.name, savedAt: d.savedAt })),
+    );
+  };
   // Persistent diagram id. `null` until the post-mount hydration step
   // runs; that step reads ?d=<id> from the URL (or mints a fresh id +
   // updates the URL) and pulls any saved tabs + name from localStorage.
@@ -233,6 +246,9 @@ export default function LivePage() {
       saveSelfParticipant(fresh);
     }
     setHydrated(true);
+    setDiagramList(
+      localStorageStore.loadAll().map((d) => ({ id: d.id, name: d.name, savedAt: d.savedAt })),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -257,6 +273,8 @@ export default function LivePage() {
   // Persist on any change after hydration. localStorage is sync so we
   // don't bother debouncing; the prototype's diagrams are small and we'd
   // rather not lose work if the page closes between debounce ticks.
+  // After saving, refresh the Explorer's diagram list so the current
+  // diagram's name updates in real time as the user renames it.
   useEffect(() => {
     if (!hydrated || !diagramId) return;
     localStorageStore.save({
@@ -265,6 +283,7 @@ export default function LivePage() {
       tabs,
       savedAt: Date.now(),
     });
+    refreshDiagramList();
   }, [hydrated, diagramId, tabs, diagramName]);
 
   useEffect(() => {
@@ -496,21 +515,13 @@ export default function LivePage() {
     setTemplatePickerMode('templates');
   };
 
-  // "Delete" the whole diagram: replace every tab with a single empty
-  // Tab 1, reset the diagram name to its default, and clear viewport /
-  // selection state. The tab change is undoable via the history hook;
-  // diagramName isn't in history so undoing only restores the elements.
+  // Delete the entire diagram: remove from the local store, strip the
+  // id from the URL, and reload to a fresh welcome flow. Not undoable —
+  // the user explicitly opened the title menu and picked Delete.
   const deleteDiagram = () => {
-    commitTabs(() => [createTab('Tab 1')]);
-    setDiagramName('Untitled diagram');
-    setSelectedId(null);
-    setEditingId(null);
-    setFormatSourceId(null);
-    setGroupSourceId(null);
-    setViewportOffset({ x: 0, y: 0 });
-    setViewportZoom(1);
-    // setActiveId will be picked up on next render via the fallback chain
-    // (activeTab = tabs.find(...) ?? tabs[0]) once the new tab is in state.
+    if (typeof window === 'undefined') return;
+    if (diagramId) localStorageStore.delete(diagramId);
+    window.location.assign(`${window.location.origin}/live`);
   };
 
   // Comment mutations live outside the history hook (per the comment on
@@ -651,6 +662,17 @@ export default function LivePage() {
   const newDiagram = () => {
     if (typeof window === 'undefined') return;
     window.location.assign(`${window.location.origin}/live`);
+  };
+
+  // Open a different diagram from the Explorer list. Same reload trick
+  // as `newDiagram` — the auto-save has already persisted the current
+  // diagram so nothing is lost.
+  const openDiagram = (id: string) => {
+    if (typeof window === 'undefined') return;
+    if (id === diagramId) return;
+    const url = new URL(`${window.location.origin}/live`);
+    url.searchParams.set('d', id);
+    window.location.assign(url.toString());
   };
 
   const openTemplatePicker = () => {
@@ -1421,6 +1443,9 @@ export default function LivePage() {
         onToggleMinimized={() => setPaletteMinimized((v) => !v)}
         onMoveExplorer={(x, y) => setExplorerPosition({ x, y })}
         onToggleExplorerMinimized={() => setExplorerMinimized((v) => !v)}
+        diagramList={diagramList}
+        currentDiagramId={diagramId}
+        onOpenDiagram={openDiagram}
         onNewDiagram={newDiagram}
         onDeselect={() => {
           setSelectedId(null);

@@ -2,11 +2,23 @@
 
 import { MovablePanel } from './MovablePanel';
 
+type DiagramListItem = {
+  id: string;
+  name: string;
+  savedAt: number;
+};
+
 type ExplorerProps = {
   position: { x: number; y: number } | null;
   minimized: boolean;
+  // Every diagram known to the local store. Current diagram is marked
+  // active; clicking any other navigates to it (preserving the
+  // current's state via the auto-save).
+  diagrams: DiagramListItem[];
+  currentDiagramId: string | null;
   onMoveTo: (x: number, y: number) => void;
   onToggleMinimized: () => void;
+  onOpenDiagram: (id: string) => void;
   onNewDiagram: () => void;
 };
 
@@ -20,17 +32,22 @@ type ExplorerProps = {
 export function Explorer({
   position,
   minimized,
+  diagrams,
+  currentDiagramId,
   onMoveTo,
   onToggleMinimized,
+  onOpenDiagram,
   onNewDiagram,
 }: ExplorerProps) {
   if (minimized) return null;
+  // Most-recently-saved first so the user's last work tops the list.
+  const ordered = [...diagrams].sort((a, b) => b.savedAt - a.savedAt);
   return (
     <MovablePanel
       title="Explorer"
       position={position}
       defaultCorner="top-left"
-      width="w-60"
+      width="w-64"
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}
     >
@@ -43,6 +60,37 @@ export function Explorer({
           <PlusIcon />
           New Diagram
         </button>
+
+        {ordered.length > 0 ? (
+          <div className="flex flex-col gap-0.5">
+            <p className="px-1 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              Your diagrams
+            </p>
+            <ul className="flex max-h-60 flex-col gap-0.5 overflow-y-auto">
+              {ordered.map((d) => {
+                const active = d.id === currentDiagramId;
+                return (
+                  <li key={d.id}>
+                    <button
+                      type="button"
+                      onClick={() => onOpenDiagram(d.id)}
+                      aria-current={active ? 'true' : undefined}
+                      className={
+                        active
+                          ? 'flex w-full items-center gap-1.5 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-800'
+                          : 'flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100'
+                      }
+                    >
+                      <DiagramIcon active={active} />
+                      <span className="min-w-0 flex-1 truncate">{d.name}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
+
         <div className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-3 text-xs text-slate-600">
           <p className="font-medium text-slate-800">Sign in to save your diagrams</p>
           <p className="mt-1 leading-relaxed text-slate-500">
@@ -61,6 +109,26 @@ export function Explorer({
         </div>
       </div>
     </MovablePanel>
+  );
+}
+
+function DiagramIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={active ? 'text-brand-600' : 'text-slate-400'}
+      aria-hidden
+    >
+      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
+      <path d="M5 6h6M5 9h4" />
+    </svg>
   );
 }
 

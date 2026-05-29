@@ -20,9 +20,15 @@ export type StoredDiagram = {
 export interface DiagramStore {
   load(id: string): StoredDiagram | null;
   save(d: StoredDiagram): void;
+  // Remove a diagram from the store. No-op if the id isn't present.
+  delete(id: string): void;
   // Returns every diagram id known to this store. Used by the Explorer
   // once it lists diagrams; the localStorage impl scans key prefixes.
   listIds(): string[];
+  // Load every diagram. Convenience wrapper around listIds + load that
+  // the Explorer uses to render its diagram list. Filtering by
+  // `savedAt` / sort order is done by the caller.
+  loadAll(): StoredDiagram[];
 }
 
 // Identity persistence lives next to diagram persistence because both
@@ -76,6 +82,14 @@ export const localStorageStore: DiagramStore = {
       // place to surface persistence problems later.
     }
   },
+  delete(id: string) {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.removeItem(KEY_PREFIX + id);
+    } catch {
+      // ignore — same fail-soft policy as load/save.
+    }
+  },
   listIds() {
     if (typeof window === 'undefined') return [];
     const ids: string[] = [];
@@ -86,5 +100,10 @@ export const localStorageStore: DiagramStore = {
       }
     }
     return ids;
+  },
+  loadAll() {
+    return this.listIds()
+      .map((id) => this.load(id))
+      .filter((d): d is StoredDiagram => d !== null);
   },
 };
