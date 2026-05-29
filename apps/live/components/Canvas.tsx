@@ -716,38 +716,45 @@ export function Canvas(props: CanvasProps) {
         />
       ) : null}
 
+      {/* Explorer is the one piece of chrome that stays visible during
+          the welcome flow — the sign-up nudge is genuinely useful there
+          and lives outside the diagram's controls. */}
+      <Explorer
+        position={explorerPosition}
+        minimized={explorerMinimized}
+        onMoveTo={onMoveExplorer}
+        onToggleMinimized={onToggleExplorerMinimized}
+      />
+
       {welcomeOpen ? null : (
-        <>
-          <Explorer
-            position={explorerPosition}
-            minimized={explorerMinimized}
-            onMoveTo={onMoveExplorer}
-            onToggleMinimized={onToggleExplorerMinimized}
-          />
+        <CommandPalette
+          position={palettePosition}
+          minimized={paletteMinimized}
+          selection={paletteSelection}
+          tab={tabSection}
+          onMoveTo={onMovePalette}
+          onToggleMinimized={onToggleMinimized}
+          onAddShape={onAddShape}
+          onAddText={onAddText}
+          onAddSticky={onAddSticky}
+        />
+      )}
 
-          <CommandPalette
-            position={palettePosition}
-            minimized={paletteMinimized}
-            selection={paletteSelection}
-            tab={tabSection}
-            onMoveTo={onMovePalette}
-            onToggleMinimized={onToggleMinimized}
-            onAddShape={onAddShape}
-            onAddText={onAddText}
-            onAddSticky={onAddSticky}
+      {/* Bottom dock. Order, left → right: minimised Explorer (if any),
+          minimised Palette (if any), Zoom controls, History controls.
+          During the welcome flow only the minimised Explorer dock button
+          is rendered — Palette / Zoom / History are all suppressed. */}
+      <div className="pointer-events-none absolute bottom-4 right-4 z-10 flex items-center gap-2">
+        {explorerMinimized ? (
+          <DockButton
+            label="Open Explorer"
+            description="Expand the Explorer panel back to its full size."
+            icon={<ExplorerIcon />}
+            onClick={onToggleExplorerMinimized}
           />
-
-          {/* Bottom dock. Order, left → right: minimised Explorer (if any),
-              minimised Palette (if any), Zoom controls, History controls. */}
-          <div className="pointer-events-none absolute bottom-4 right-4 z-10 flex items-center gap-2">
-            {explorerMinimized ? (
-              <DockButton
-                label="Open Explorer"
-                description="Expand the Explorer panel back to its full size."
-                icon={<ExplorerIcon />}
-                onClick={onToggleExplorerMinimized}
-              />
-            ) : null}
+        ) : null}
+        {welcomeOpen ? null : (
+          <>
             {paletteMinimized ? (
               <DockButton
                 label="Open palette"
@@ -763,10 +770,15 @@ export function Canvas(props: CanvasProps) {
               onReset={handleResetZoom}
               onFitToScreen={onFitToScreen}
             />
-            <HistoryControls canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
-          </div>
-        </>
-      )}
+            <HistoryControls
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={onUndo}
+              onRedo={onRedo}
+            />
+          </>
+        )}
+      </div>
     </main>
   );
 }
