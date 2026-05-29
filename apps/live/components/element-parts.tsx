@@ -13,11 +13,12 @@ import type { DragMode } from '@/lib/canvas';
 
 // --- Lock badge ------------------------------------------------------------
 
-export function LockBadge() {
+export function LockBadge({ zoom = 1 }: { zoom?: number }) {
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm"
+      style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
     >
       <svg
         width="11"
@@ -49,10 +50,11 @@ const positionClasses: Record<HandlePosition, string> = {
 
 type ResizeHandlesProps = {
   elementId: string;
+  zoom: number;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
 };
 
-export function ResizeHandles({ elementId, onBeginDrag }: ResizeHandlesProps) {
+export function ResizeHandles({ elementId, zoom, onBeginDrag }: ResizeHandlesProps) {
   return (
     <>
       {(Object.keys(positionClasses) as HandlePosition[]).map((pos) => (
@@ -62,6 +64,7 @@ export function ResizeHandles({ elementId, onBeginDrag }: ResizeHandlesProps) {
             e.stopPropagation();
             onBeginDrag(elementId, `resize-${pos}`, e);
           }}
+          style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
           className={`absolute h-3 w-3 rounded-sm border border-brand-600 bg-white ${positionClasses[pos]}`}
         />
       ))}

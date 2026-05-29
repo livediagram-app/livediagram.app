@@ -15,6 +15,7 @@ export type SelectedElementControls = {
   textColor: string | null;
   fillColor: string | null;
   strokeColor: string | null;
+  opacity: number;
   onBringToFront: () => void;
   onSendToBack: () => void;
   onSetTextSize: (size: TextSize) => void;
@@ -22,22 +23,23 @@ export type SelectedElementControls = {
   onSetTextColor: (color: string) => void;
   onSetFillColor: (color: string) => void;
   onSetStrokeColor: (color: string) => void;
+  onSetOpacity: (opacity: number) => void;
 };
 
 export type TabSectionControls = {
   backgroundPattern: BackgroundPattern;
   backgroundColor: string;
   patternColor: string;
+  hasContent: boolean;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
   onSetBackgroundColor: (color: string) => void;
   onSetPatternColor: (color: string) => void;
+  onClearTabContent: () => void;
 };
 
 type CommandPaletteProps = {
   position: { x: number; y: number } | null;
   minimized: boolean;
-  canUndo: boolean;
-  canRedo: boolean;
   selection: SelectedElementControls | null;
   tab: TabSectionControls;
   onMoveTo: (x: number, y: number) => void;
@@ -45,8 +47,6 @@ type CommandPaletteProps = {
   onAddShape: (kind: ShapeKind) => void;
   onAddText: () => void;
   onAddSticky: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
 };
 
 export function CommandPalette(props: CommandPaletteProps) {
@@ -79,8 +79,6 @@ function MinimizedPalette({ onClick }: { onClick: () => void }) {
 
 function OpenPalette({
   position,
-  canUndo,
-  canRedo,
   selection,
   tab,
   onMoveTo,
@@ -88,8 +86,6 @@ function OpenPalette({
   onAddShape,
   onAddText,
   onAddSticky,
-  onUndo,
-  onRedo,
 }: CommandPaletteProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<{
@@ -184,21 +180,6 @@ function OpenPalette({
         </IconButton>
       </div>
 
-      <div className="flex items-center gap-1 border-t border-slate-200 px-2 py-2">
-        <IconButton label="Undo" description="Revert the last change (up to 3 steps)." onClick={onUndo} disabled={!canUndo}>
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M5 8h6a4 4 0 0 1 0 8H7" />
-            <path d="M5 8l3-3M5 8l3 3" />
-          </svg>
-        </IconButton>
-        <IconButton label="Redo" description="Reapply a change you just undid." onClick={onRedo} disabled={!canRedo}>
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M13 8H7a4 4 0 0 0 0 8h4" />
-            <path d="M13 8l-3-3M13 8l-3 3" />
-          </svg>
-        </IconButton>
-      </div>
-
       {selection ? (
         <SelectedElementSection selection={selection} />
       ) : (
@@ -209,11 +190,12 @@ function OpenPalette({
 }
 
 function SelectedElementSection({ selection }: { selection: SelectedElementControls }) {
-  const [open, setOpen] = useState<{ layer: boolean; text: boolean; colours: boolean }>({
-    layer: false,
-    text: false,
-    colours: false,
-  });
+  const [open, setOpen] = useState<{
+    appearance: boolean;
+    layer: boolean;
+    text: boolean;
+    colours: boolean;
+  }>({ appearance: false, layer: false, text: false, colours: false });
   const toggle = (key: keyof typeof open) => setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const showText = selection.textSize !== null || selection.textAlignX !== null || selection.textColor !== null;
@@ -224,6 +206,24 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
       <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
         Selected Element
       </p>
+
+      <Accordion title="Appearance" open={open.appearance} onToggle={() => toggle('appearance')}>
+        <p className="text-[10px] font-medium text-slate-500">Opacity</p>
+        <div className="mt-1 flex items-center gap-2">
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(selection.opacity * 100)}
+            onChange={(e) => selection.onSetOpacity(Number(e.target.value) / 100)}
+            aria-label="Opacity"
+            className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500"
+          />
+          <span className="w-10 text-right text-xs font-medium text-slate-700">
+            {Math.round(selection.opacity * 100)}%
+          </span>
+        </div>
+      </Accordion>
 
       <Accordion title="Layer" open={open.layer} onToggle={() => toggle('layer')}>
         <div className="flex items-center gap-1">
@@ -299,7 +299,10 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
 }
 
 function TabSection({ tab }: { tab: TabSectionControls }) {
-  const [open, setOpen] = useState<{ background: boolean }>({ background: false });
+  const [open, setOpen] = useState<{ background: boolean; content: boolean }>({
+    background: false,
+    content: false,
+  });
   const toggle = (key: keyof typeof open) => setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
 
   return (
@@ -337,6 +340,33 @@ function TabSection({ tab }: { tab: TabSectionControls }) {
               <BackgroundLinesIcon />
             </PatternButton>
           </Tooltip>
+          <Tooltip title="Graph" description="Square graph paper.">
+            <PatternButton
+              active={tab.backgroundPattern === 'graph'}
+              onClick={() => tab.onSetBackgroundPattern('graph')}
+              label="Graph"
+            >
+              <BackgroundGraphIcon />
+            </PatternButton>
+          </Tooltip>
+          <Tooltip title="Crosshatch" description="Diagonal crosshatch pattern.">
+            <PatternButton
+              active={tab.backgroundPattern === 'crosshatch'}
+              onClick={() => tab.onSetBackgroundPattern('crosshatch')}
+              label="Cross"
+            >
+              <BackgroundCrosshatchIcon />
+            </PatternButton>
+          </Tooltip>
+          <Tooltip title="Confetti" description="Multi-colour dots — pattern colour ignored.">
+            <PatternButton
+              active={tab.backgroundPattern === 'confetti'}
+              onClick={() => tab.onSetBackgroundPattern('confetti')}
+              label="Confetti"
+            >
+              <BackgroundConfettiIcon />
+            </PatternButton>
+          </Tooltip>
         </div>
         <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500">
           Colours
@@ -349,6 +379,27 @@ function TabSection({ tab }: { tab: TabSectionControls }) {
             <ColorSwatch label="Pattern" value={tab.patternColor} onChange={tab.onSetPatternColor} />
           </Tooltip>
         </div>
+      </Accordion>
+
+      <Accordion title="Content" open={open.content} onToggle={() => toggle('content')}>
+        <Tooltip
+          title="Remove all content"
+          description="Delete every element on this tab. This is undoable."
+        >
+          <button
+            type="button"
+            onClick={tab.onClearTabContent}
+            disabled={!tab.hasContent}
+            className="flex w-full items-center justify-center gap-2 rounded-md border border-rose-200 bg-white px-3 py-2 text-xs font-medium text-rose-700 transition enabled:hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M2.5 4h11" />
+              <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
+              <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
+            </svg>
+            Remove all content
+          </button>
+        </Tooltip>
       </Accordion>
     </div>
   );
@@ -489,6 +540,46 @@ function BackgroundLinesIcon() {
       <line x1="2" y1="6" x2="26" y2="6" stroke="currentColor" strokeWidth="0.7" />
       <line x1="2" y1="11" x2="26" y2="11" stroke="currentColor" strokeWidth="0.7" />
       <line x1="2" y1="16" x2="26" y2="16" stroke="currentColor" strokeWidth="0.7" />
+    </svg>
+  );
+}
+
+function BackgroundGraphIcon() {
+  return (
+    <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden>
+      <rect width="28" height="20" rx="2" fill="white" stroke="currentColor" strokeWidth="0.5" opacity="0.5" />
+      {[5, 10, 15].map((y) => (
+        <line key={`h${y}`} x1="0" y1={y} x2="28" y2={y} stroke="currentColor" strokeWidth="0.4" />
+      ))}
+      {[5, 10, 15, 20, 25].map((x) => (
+        <line key={`v${x}`} x1={x} y1="0" x2={x} y2="20" stroke="currentColor" strokeWidth="0.4" />
+      ))}
+    </svg>
+  );
+}
+
+function BackgroundCrosshatchIcon() {
+  return (
+    <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden>
+      <rect width="28" height="20" rx="2" fill="white" stroke="currentColor" strokeWidth="0.5" opacity="0.5" />
+      <line x1="0" y1="6" x2="22" y2="20" stroke="currentColor" strokeWidth="0.5" />
+      <line x1="6" y1="0" x2="28" y2="14" stroke="currentColor" strokeWidth="0.5" />
+      <line x1="0" y1="14" x2="14" y2="0" stroke="currentColor" strokeWidth="0.5" />
+      <line x1="14" y1="20" x2="28" y2="6" stroke="currentColor" strokeWidth="0.5" />
+    </svg>
+  );
+}
+
+function BackgroundConfettiIcon() {
+  return (
+    <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden>
+      <rect width="28" height="20" rx="2" fill="white" stroke="currentColor" strokeWidth="0.5" opacity="0.5" />
+      <circle cx="5" cy="6" r="1.3" fill="rgb(248 113 113)" />
+      <circle cx="13" cy="4" r="1" fill="rgb(96 165 250)" />
+      <circle cx="22" cy="8" r="1.3" fill="rgb(250 204 21)" />
+      <circle cx="8" cy="14" r="1.3" fill="rgb(167 139 250)" />
+      <circle cx="18" cy="13" r="1" fill="rgb(52 211 153)" />
+      <circle cx="24" cy="16" r="1.3" fill="rgb(236 72 153)" />
     </svg>
   );
 }

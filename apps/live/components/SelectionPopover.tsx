@@ -6,10 +6,12 @@ type Bounds = { x: number; y: number; width: number; height: number };
 type SelectionPopoverProps = {
   bounds: Bounds;
   canvasOffset: { x: number; y: number };
+  zoom: number;
   locked: boolean;
   aspectLocked: boolean;
   onToggleLock: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
   onCopyFormat?: () => void;
   onGroup?: () => void;
   onUngroup?: () => void;
@@ -23,10 +25,12 @@ const EDGE_MARGIN = 8;
 export function SelectionPopover({
   bounds,
   canvasOffset,
+  zoom,
   locked,
   aspectLocked,
   onToggleLock,
   onDelete,
+  onDuplicate,
   onCopyFormat,
   onGroup,
   onUngroup,
@@ -36,10 +40,12 @@ export function SelectionPopover({
   const [adjust, setAdjust] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // Initial layout-time position: above if there's room, otherwise below.
-  const placeAbove = bounds.y >= POPOVER_HEIGHT + GAP;
+  // Gap is divided by zoom so the on-screen gap stays constant.
+  const visualGap = GAP / zoom;
+  const placeAbove = bounds.y >= POPOVER_HEIGHT / zoom + visualGap;
   const baseTop = placeAbove
-    ? bounds.y - POPOVER_HEIGHT - GAP
-    : bounds.y + bounds.height + GAP;
+    ? bounds.y - visualGap
+    : bounds.y + bounds.height + visualGap;
   const baseLeft = bounds.x + bounds.width / 2;
 
   // After mount, measure the popover and nudge it so it stays inside the
@@ -65,8 +71,16 @@ export function SelectionPopover({
     <div
       ref={ref}
       onPointerDown={(e) => e.stopPropagation()}
-      className="pointer-events-auto absolute z-20 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10"
-      style={{ left: baseLeft + adjust.x, top: baseTop + adjust.y }}
+      className="pointer-events-auto absolute z-20 flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10"
+      style={{
+        left: baseLeft + adjust.x,
+        top: baseTop + adjust.y,
+        // Counter-scale so the popover renders at its natural on-screen
+        // size regardless of canvas zoom. Origin pinned to the centre edge
+        // closest to the selected element so the popover stays attached.
+        transform: `translate(-50%, ${placeAbove ? '-100%' : '0'}) scale(${1 / zoom})`,
+        transformOrigin: placeAbove ? 'center bottom' : 'center top',
+      }}
     >
       {onCopyFormat ? (
         <PopoverButton
@@ -77,6 +91,13 @@ export function SelectionPopover({
           <PaintbrushIcon />
         </PopoverButton>
       ) : null}
+      <PopoverButton
+        label="Duplicate"
+        description="Make a copy of this element next to the original. Arrows are not duplicated."
+        onClick={onDuplicate}
+      >
+        <DuplicateIcon />
+      </PopoverButton>
       {onUngroup ? (
         <PopoverButton
           label="Ungroup"
@@ -176,6 +197,15 @@ function PopoverButton({
         {children}
       </button>
     </Tooltip>
+  );
+}
+
+function DuplicateIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" aria-hidden>
+      <rect x="2.5" y="2.5" width="8" height="8" rx="1.5" />
+      <path d="M5.5 13.5h6a1.5 1.5 0 0 0 1.5-1.5v-6" />
+    </svg>
   );
 }
 

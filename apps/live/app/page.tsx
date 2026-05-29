@@ -25,6 +25,8 @@ import {
   unionBoxedBounds,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
+  deriveShapeColours,
+  deriveTextColorForBg,
   type Anchor,
   type ArrowElement,
   type BackgroundPattern,
@@ -42,6 +44,7 @@ import { EditorHeader } from '@/components/EditorHeader';
 import { TabBar } from '@/components/TabBar';
 import { useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { ALIGN_SNAP_THRESHOLD, SNAP_THRESHOLD, type ArrowEnd, type DragMode } from '@/lib/canvas';
+import { buildTemplate, type TemplateKind } from '@/lib/templates';
 
 function createTab(name: string): Tab {
   return { id: crypto.randomUUID(), name, elements: [] };
@@ -150,7 +153,14 @@ export default function LivePage() {
   const [paletteMinimized, setPaletteMinimized] = useState(false);
   const [diagramName, setDiagramName] = useState('Untitled diagram');
   const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
+  const [viewportZoom, setViewportZoom] = useState(1);
   const canvasMainRef = useRef<HTMLElement>(null);
+  // Keep latest zoom available to drag effects without re-creating them on
+  // every zoom change (which would interrupt an in-progress drag).
+  const zoomRef = useRef(viewportZoom);
+  useEffect(() => {
+    zoomRef.current = viewportZoom;
+  }, [viewportZoom]);
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
 
@@ -187,7 +197,9 @@ export default function LivePage() {
   // --- Placement helpers ---------------------------------------------------
 
   // Centre of the currently visible canvas viewport, in canvas-local coords.
-  // Accounts for pan offset so new elements appear where the user is looking.
+  // With transform `scale(z) translate(offset)` centred on the wrapper, the
+  // canvas-coord at viewport centre is just (canvasCentre - offset) — zoom
+  // doesn't enter the equation because scale is centred on the same point.
   const getViewportCenter = (): { x: number; y: number } => {
     const rect = canvasMainRef.current?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
@@ -195,6 +207,36 @@ export default function LivePage() {
       x: rect.width / 2 - viewportOffset.x,
       y: rect.height / 2 - viewportOffset.y,
     };
+  };
+
+  // Compute zoom + offset so every element on the tab fits in the viewport
+  // with padding, then centre the bounding box on the viewport centre.
+  const fitToScreen = () => {
+    const rect = canvasMainRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const boxedIds = new Set(activeTab.elements.filter(isBoxed).map((el) => el.id));
+    if (boxedIds.size === 0) {
+      setViewportOffset({ x: 0, y: 0 });
+      setViewportZoom(1);
+      return;
+    }
+    const bbox = unionBoxedBounds(activeTab.elements, boxedIds);
+    if (!bbox) return;
+    const padding = 60;
+    const zoom = Math.max(
+      0.1,
+      Math.min(
+        5,
+        (rect.width - 2 * padding) / Math.max(1, bbox.width),
+        (rect.height - 2 * padding) / Math.max(1, bbox.height),
+        1,
+      ),
+    );
+    setViewportZoom(zoom);
+    setViewportOffset({
+      x: rect.width / 2 - (bbox.x + bbox.width / 2),
+      y: rect.height / 2 - (bbox.y + bbox.height / 2),
+    });
   };
 
   // When a boxed element is selected, new elements inherit its size so a
@@ -219,15 +261,43 @@ export default function LivePage() {
       width = side;
       height = side;
     }
+    // Derive colours from the active tab when it has been recoloured, so
+    // newly added elements harmonise with the user's chosen palette instead
+    // of clashing with brand defaults. Sticky notes keep their amber palette
+    // because the yellow note is iconic.
+    const bg = activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR;
+    const patternColor = activeTab.patternColor ?? DEFAULT_PATTERN_COLOR;
+    const colours: Partial<BoxedElement> = {};
+    if (base.type === 'shape') {
+      const derived = deriveShapeColours(patternColor, bg);
+      if (derived) {
+        colours.fillColor = derived.fill;
+        colours.strokeColor = derived.stroke;
+        colours.textColor = derived.text;
+      }
+    } else if (base.type === 'text') {
+      if (bg !== DEFAULT_BACKGROUND_COLOR) {
+        colours.textColor = deriveTextColorForBg(bg);
+      }
+    }
     const centre = getViewportCenter();
     const el: T = {
       ...base,
+      ...colours,
       x: centre.x - width / 2,
       y: centre.y - height / 2,
       width,
       height,
     };
-    commit((els) => [...els, el]);
+    // Single commit that both adds the element and marks the template
+    // picker as dismissed for this tab (if it was still showing).
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId
+          ? { ...t, elements: [...t.elements, el], templateChosen: true }
+          : t,
+      ),
+    );
     setSelectedId(el.id);
   };
 
@@ -326,6 +396,24 @@ export default function LivePage() {
     });
   };
 
+  const chooseTemplate = (kind: TemplateKind) => {
+    const centre = getViewportCenter();
+    const elements = buildTemplate(kind, centre.x, centre.y);
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId ? { ...t, elements, templateChosen: true } : t,
+      ),
+    );
+    setSelectedId(null);
+    setEditingId(null);
+  };
+
+  const clearTabContent = () => {
+    commit(() => []);
+    setSelectedId(null);
+    setEditingId(null);
+  };
+
   const setBackgroundPattern = (pattern: BackgroundPattern) => {
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundPattern: pattern } : t)),
@@ -354,7 +442,13 @@ export default function LivePage() {
     const TEXT_W = 160;
     const TEXT_H = 48;
     const el = createText(x - TEXT_W / 2, y - TEXT_H / 2);
-    commit((els) => [...els, el]);
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId
+          ? { ...t, elements: [...t.elements, el], templateChosen: true }
+          : t,
+      ),
+    );
     setSelectedId(el.id);
     setEditingId(el.id);
   };
@@ -455,22 +549,110 @@ export default function LivePage() {
     );
   };
 
-  const duplicateConnectSelected = (direction: 'right' | 'below') => {
+  const setOpacitySelected = (opacity: number) => {
+    if (!selectedId) return;
+    const ids = memberIdsOf(selectedId);
+    commit((els) =>
+      els.map((el) => (ids.has(el.id) ? { ...el, opacity } : el)),
+    );
+  };
+
+  const duplicateSelected = () => {
+    if (!selectedId) return;
+    const source = activeTab.elements.find((el) => el.id === selectedId);
+    if (!source) return;
+    // Element-only duplicate: clones just this element (not arrows attached
+    // to it), offset diagonally so it's visible next to the original.
+    const offset = 24;
+    if (isBoxed(source)) {
+      const copy: BoxedElement = {
+        ...source,
+        id: crypto.randomUUID(),
+        x: source.x + offset,
+        y: source.y + offset,
+        // Drop group membership — the duplicate is independent.
+        groupId: undefined,
+      };
+      commit((els) => [...els, copy]);
+      setSelectedId(copy.id);
+      return;
+    }
+    if (source.type === 'arrow') {
+      // For arrows, shift any free endpoints; pinned endpoints stay attached
+      // to the same shape. The duplicate represents an extra arrow with the
+      // same connection pattern as the original.
+      const shift = (e: typeof source.from) =>
+        e.kind === 'free' ? { ...e, x: e.x + offset, y: e.y + offset } : e;
+      const copy: ArrowElement = {
+        ...source,
+        id: crypto.randomUUID(),
+        from: shift(source.from),
+        to: shift(source.to),
+      };
+      commit((els) => [...els, copy]);
+      setSelectedId(copy.id);
+    }
+  };
+
+  const duplicateConnectSelected = (
+    direction: 'right' | 'below' | 'left' | 'above',
+  ) => {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
     if (!source || !isBoxed(source)) return;
     const ids = memberIdsOf(selectedId);
     const groupBounds = unionBoxedBounds(activeTab.elements, ids);
     const gap = 40;
-    const dx = direction === 'right' ? (groupBounds?.width ?? source.width) + gap : 0;
-    const dy = direction === 'below' ? (groupBounds?.height ?? source.height) + gap : 0;
+    const w = (groupBounds?.width ?? source.width) + gap;
+    const h = (groupBounds?.height ?? source.height) + gap;
+    const baseBounds = groupBounds ?? {
+      x: source.x,
+      y: source.y,
+      width: source.width,
+      height: source.height,
+    };
+    const step = {
+      x: direction === 'right' ? w : direction === 'left' ? -w : 0,
+      y: direction === 'below' ? h : direction === 'above' ? -h : 0,
+    };
+    // Step further in the same direction until the duplicate's bounding box
+    // doesn't overlap any existing element. Keeps long chains of duplicates
+    // properly spaced even if the user clicks faster than the selection
+    // visually catches up.
+    let dx = step.x;
+    let dy = step.y;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const proposed = {
+        x: baseBounds.x + dx,
+        y: baseBounds.y + dy,
+        width: baseBounds.width,
+        height: baseBounds.height,
+      };
+      const overlaps = activeTab.elements.some((el) => {
+        if (!isBoxed(el) || ids.has(el.id)) return false;
+        return !(
+          proposed.x + proposed.width <= el.x ||
+          el.x + el.width <= proposed.x ||
+          proposed.y + proposed.height <= el.y ||
+          el.y + el.height <= proposed.y
+        );
+      });
+      if (!overlaps) break;
+      dx += step.x;
+      dy += step.y;
+    }
     const { newElements, idMap } = duplicateGroupedElements(activeTab.elements, ids, dx, dy);
     const sourceCopyId = idMap.get(source.id);
     if (!sourceCopyId) return;
-    const connector =
-      direction === 'right'
-        ? createPinnedArrow(source.id, 'e', sourceCopyId, 'w')
-        : createPinnedArrow(source.id, 's', sourceCopyId, 'n');
+    // Connector arrow goes between adjacent edges of source and its copy.
+    const anchors: Record<typeof direction, [Anchor, Anchor]> = {
+      right: ['e', 'w'],
+      left: ['w', 'e'],
+      below: ['s', 'n'],
+      above: ['n', 's'],
+    };
+    const [fromAnchor, toAnchor] = anchors[direction];
+    const connector = createPinnedArrow(source.id, fromAnchor, sourceCopyId, toAnchor);
     commit((els) => [...els, ...newElements, connector]);
     setSelectedId(sourceCopyId);
   };
@@ -608,8 +790,9 @@ export default function LivePage() {
   useEffect(() => {
     if (!drag) return;
     const onMove = (e: PointerEvent) => {
-      const dx = e.clientX - drag.startClientX;
-      const dy = e.clientY - drag.startClientY;
+      // Screen-pixel delta → canvas-coord delta, accounting for current zoom.
+      const dx = (e.clientX - drag.startClientX) / zoomRef.current;
+      const dy = (e.clientY - drag.startClientY) / zoomRef.current;
 
       if (drag.kind === 'boxed') {
         if (drag.mode === 'move') {
@@ -699,6 +882,9 @@ export default function LivePage() {
         tabBackgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}
         tabPatternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
         mainRef={canvasMainRef}
+        viewportZoom={viewportZoom}
+        setViewportZoom={setViewportZoom}
+        onFitToScreen={fitToScreen}
         viewportOffset={viewportOffset}
         setViewportOffset={setViewportOffset}
         elements={activeTab.elements}
@@ -742,7 +928,14 @@ export default function LivePage() {
         onSetFillColor={setFillColorSelected}
         onSetStrokeColor={setStrokeColorSelected}
         onSetTextColor={setTextColorSelected}
+        onSetOpacity={setOpacitySelected}
+        onDuplicateSelected={duplicateSelected}
+        showTemplatePicker={
+          activeTab.elements.length === 0 && activeTab.templateChosen !== true
+        }
+        onChooseTemplate={chooseTemplate}
         onSetBackgroundPattern={setBackgroundPattern}
+        onClearTabContent={clearTabContent}
         onSetBackgroundColor={setBackgroundColor}
         onSetPatternColor={setPatternColor}
         onToggleAspectLock={toggleAspectLockSelected}

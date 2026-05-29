@@ -26,6 +26,7 @@ type BoxedElementViewProps = {
   isPaintMode: boolean;
   showHandles: boolean;
   showAnchors: boolean;
+  zoom: number;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
   onBeginAnchorDrag: (id: string, anchor: Anchor, e: ReactPointerEvent) => void;
   onBeginEdit: () => void;
@@ -40,6 +41,7 @@ export function BoxedElementView({
   isPaintMode,
   showHandles,
   showAnchors,
+  zoom,
   onBeginDrag,
   onBeginAnchorDrag,
   onBeginEdit,
@@ -89,6 +91,7 @@ export function BoxedElementView({
         width: element.width,
         height: element.height,
         color: textColor,
+        opacity: element.opacity ?? 1,
         ...variant.style,
       }}
     >
@@ -112,16 +115,18 @@ export function BoxedElementView({
 
       {renderLabel(element, label, textSize, alignX, alignY, isEditing, onCommitLabel, onCancelEdit)}
 
-      {isLocked ? <LockBadge /> : null}
+      {isLocked ? <LockBadge zoom={zoom} /> : null}
 
-      {showHandles ? <ResizeHandles elementId={element.id} onBeginDrag={onBeginDrag} /> : null}
+      {showHandles ? (
+        <ResizeHandles elementId={element.id} zoom={zoom} onBeginDrag={onBeginDrag} />
+      ) : null}
 
       {showAnchors ? (
         <>
-          <AnchorDot anchor="n" elementId={element.id} onBeginAnchorDrag={onBeginAnchorDrag} />
-          <AnchorDot anchor="e" elementId={element.id} onBeginAnchorDrag={onBeginAnchorDrag} />
-          <AnchorDot anchor="s" elementId={element.id} onBeginAnchorDrag={onBeginAnchorDrag} />
-          <AnchorDot anchor="w" elementId={element.id} onBeginAnchorDrag={onBeginAnchorDrag} />
+          <AnchorDot anchor="n" elementId={element.id} zoom={zoom} onBeginAnchorDrag={onBeginAnchorDrag} />
+          <AnchorDot anchor="e" elementId={element.id} zoom={zoom} onBeginAnchorDrag={onBeginAnchorDrag} />
+          <AnchorDot anchor="s" elementId={element.id} zoom={zoom} onBeginAnchorDrag={onBeginAnchorDrag} />
+          <AnchorDot anchor="w" elementId={element.id} zoom={zoom} onBeginAnchorDrag={onBeginAnchorDrag} />
         </>
       ) : null}
     </div>
@@ -138,10 +143,12 @@ const ANCHOR_STYLE: Record<'n' | 'e' | 's' | 'w', React.CSSProperties> = {
 function AnchorDot({
   anchor,
   elementId,
+  zoom,
   onBeginAnchorDrag,
 }: {
   anchor: 'n' | 'e' | 's' | 'w';
   elementId: string;
+  zoom: number;
   onBeginAnchorDrag: (id: string, anchor: Anchor, e: ReactPointerEvent) => void;
 }) {
   return (
@@ -154,9 +161,10 @@ function AnchorDot({
       }}
       style={{
         ...ANCHOR_STYLE[anchor],
-        transform: 'translate(-50%, -50%)',
+        // Counter-scale so the dot stays the same on-screen size at any zoom.
+        transform: `translate(-50%, -50%) scale(${1 / zoom})`,
       }}
-      className="absolute h-2.5 w-2.5 cursor-crosshair rounded-full border-2 border-white bg-brand-500 shadow-sm transition hover:scale-125"
+      className="absolute h-2.5 w-2.5 cursor-crosshair rounded-full border-2 border-white bg-brand-500 shadow-sm transition"
     />
   );
 }

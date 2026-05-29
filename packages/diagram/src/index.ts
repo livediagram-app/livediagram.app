@@ -14,10 +14,78 @@ export type TextSize = 'scale' | 'sm' | 'md' | 'lg';
 export type TextAlignX = 'left' | 'center' | 'right';
 export type TextAlignY = 'top' | 'middle' | 'bottom';
 
-export type BackgroundPattern = 'grid' | 'blank' | 'lines';
+export type BackgroundPattern =
+  | 'grid'
+  | 'blank'
+  | 'lines'
+  | 'crosshatch'
+  | 'graph'
+  | 'confetti';
 
 export const DEFAULT_BACKGROUND_COLOR = '#ffffff';
 export const DEFAULT_PATTERN_COLOR = '#cbd5e1'; // slate-300
+
+// --- Colour derivation ----------------------------------------------------
+
+// Standard hex → rgb / rgb → hex / brightness math used to derive colours
+// for new elements when the tab background or pattern colour has been
+// customised. Failsafe: returns design defaults on unparseable input.
+
+type RGB = { r: number; g: number; b: number };
+
+function hexToRgb(hex: string): RGB | null {
+  const m = /^#?([a-fA-F\d]{2})([a-fA-F\d]{2})([a-fA-F\d]{2})$/.exec(hex);
+  if (!m) return null;
+  return { r: parseInt(m[1]!, 16), g: parseInt(m[2]!, 16), b: parseInt(m[3]!, 16) };
+}
+
+function rgbToHex({ r, g, b }: RGB): string {
+  const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
+  return '#' + [clamp(r), clamp(g), clamp(b)].map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
+function mixWithWhite(rgb: RGB, amount: number): RGB {
+  return {
+    r: rgb.r + (255 - rgb.r) * amount,
+    g: rgb.g + (255 - rgb.g) * amount,
+    b: rgb.b + (255 - rgb.b) * amount,
+  };
+}
+
+function darken(rgb: RGB, amount: number): RGB {
+  return { r: rgb.r * (1 - amount), g: rgb.g * (1 - amount), b: rgb.b * (1 - amount) };
+}
+
+export function isLightColor(hex: string): boolean {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return true;
+  // Perceived-brightness (NTSC weighted) — < 155 reads as dark.
+  return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000 > 155;
+}
+
+// For new shapes on a customised tab: stroke = pattern colour as the accent;
+// fill = a very light tint of that colour; text = a deep version of it.
+// On a default-coloured tab, returns null to defer to the design system.
+export function deriveShapeColours(
+  patternColor: string,
+  backgroundColor: string,
+): { fill: string; stroke: string; text: string } | null {
+  if (patternColor === DEFAULT_PATTERN_COLOR && backgroundColor === DEFAULT_BACKGROUND_COLOR) {
+    return null;
+  }
+  const rgb = hexToRgb(patternColor);
+  if (!rgb) return null;
+  return {
+    fill: rgbToHex(mixWithWhite(rgb, 0.85)),
+    stroke: rgbToHex(rgb),
+    text: rgbToHex(darken(rgb, 0.45)),
+  };
+}
+
+// For new text elements: just a label colour that contrasts with the bg.
+export function deriveTextColorForBg(backgroundColor: string): string {
+  return isLightColor(backgroundColor) ? '#1e293b' : '#f1f5f9'; // slate-800 / slate-100
+}
 
 export function defaultTextColor(element: BoxedElement): string {
   switch (element.type) {
@@ -86,6 +154,7 @@ export type ShapeElement = {
   strokeColor?: string;
   textColor?: string;
   aspectLocked?: boolean;
+  opacity?: number; // 0..1, defaults to 1
 };
 
 // --- Text ------------------------------------------------------------------
@@ -107,6 +176,7 @@ export type TextElement = {
   strokeColor?: string;
   textColor?: string;
   aspectLocked?: boolean;
+  opacity?: number; // 0..1, defaults to 1
 };
 
 // --- Sticky notes ----------------------------------------------------------
@@ -128,6 +198,7 @@ export type StickyElement = {
   strokeColor?: string;
   textColor?: string;
   aspectLocked?: boolean;
+  opacity?: number; // 0..1, defaults to 1
 };
 
 // --- Arrows ----------------------------------------------------------------
@@ -146,6 +217,7 @@ export type ArrowElement = {
   from: Endpoint;
   to: Endpoint;
   locked?: boolean;
+  opacity?: number; // 0..1, defaults to 1
 };
 
 // --- Element union ---------------------------------------------------------
@@ -160,6 +232,9 @@ export type Tab = {
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
   patternColor?: string;
+  // Set to true once the user has explicitly chosen a starting template
+  // (including "Blank"), so the template picker doesn't reappear on this tab.
+  templateChosen?: boolean;
 };
 
 export type Diagram = {

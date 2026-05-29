@@ -1,0 +1,85 @@
+import { Tooltip } from './Tooltip';
+
+type ZoomControlsProps = {
+  zoom: number;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onReset: () => void;
+  onFitToScreen: () => void;
+};
+
+// Floating zoom controls. Sits next to HistoryControls at the bottom-right.
+// Four actions: −10% / current % (click to reset) / +10% / Fit to screen.
+export function ZoomControls({
+  zoom,
+  onZoomIn,
+  onZoomOut,
+  onReset,
+  onFitToScreen,
+}: ZoomControlsProps) {
+  const percent = Math.round(zoom * 100);
+  return (
+    <div
+      onPointerDown={(e) => e.stopPropagation()}
+      className="pointer-events-auto flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5"
+    >
+      <Tooltip title="Zoom out" description="Zoom out by 10%.">
+        <IconButton onClick={onZoomOut} label="Zoom out">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+            <line x1="3" y1="7" x2="11" y2="7" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+          </svg>
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Reset zoom" description="Set zoom back to 100%.">
+        <button
+          type="button"
+          onClick={onReset}
+          aria-label="Reset zoom to 100%"
+          className="flex h-9 min-w-[3.5rem] items-center justify-center rounded-md px-2 text-center text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          {percent}%
+        </button>
+      </Tooltip>
+      <Tooltip title="Zoom in" description="Zoom in by 10%.">
+        <IconButton onClick={onZoomIn} label="Zoom in">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+            <line x1="3" y1="7" x2="11" y2="7" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+            <line x1="7" y1="3" x2="7" y2="11" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+          </svg>
+        </IconButton>
+      </Tooltip>
+      <div className="mx-0.5 h-6 w-px bg-slate-200" aria-hidden />
+      <Tooltip title="Fit to screen" description="Pan and zoom so everything on the tab fits.">
+        <button
+          type="button"
+          onClick={onFitToScreen}
+          aria-label="Fit to screen"
+          className="flex h-9 items-center rounded-md px-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          Fit
+        </button>
+      </Tooltip>
+    </div>
+  );
+}
+
+function IconButton({
+  onClick,
+  label,
+  children,
+}: {
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+    >
+      {children}
+    </button>
+  );
+}
