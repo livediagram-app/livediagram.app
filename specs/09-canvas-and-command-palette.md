@@ -106,9 +106,11 @@ Accordion groups:
 - **Text** _(boxed elements only)_
   - Text size — `Scale | Small | Medium | Large`. See [Text size](#text-size).
   - Text alignment — 3 × 3 grid. See [Text alignment](#text-alignment).
-  - Text colour — single swatch. See [Colours](#colours).
-- **Colours** _(shapes & sticky notes only)_
-  - Background and Border pickers. See [Colours](#colours).
+- **Colours** _(boxed elements only)_
+  - **Text** swatch — colours the element's label. Shown for every boxed kind (shape, text, sticky).
+  - **Background** swatch — fill colour. Shapes & sticky notes only.
+  - **Border** swatch — outline colour. Shapes & sticky notes only.
+  - See [Colours](#colours). Text elements show only the Text swatch; shapes and sticky notes show all three.
 
 Accordion headers show a chevron that rotates 180° when open. The body slides open/closed via a `grid-template-rows` 0fr↔1fr transition (~200 ms) so motion is smooth and free of layout jumps.
 

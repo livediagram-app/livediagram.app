@@ -346,8 +346,11 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
   const toggle = (key: keyof typeof open) => setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const showText =
-    selection.textSize !== null || selection.textAlignX !== null || selection.textColor !== null;
-  const showColours = selection.fillColor !== null && selection.strokeColor !== null;
+    selection.textSize !== null || selection.textAlignX !== null;
+  const showColours =
+    selection.textColor !== null ||
+    selection.fillColor !== null ||
+    selection.strokeColor !== null;
 
   return (
     <div className="flex flex-col border-t border-slate-200">
@@ -439,9 +442,13 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
               />
             </div>
           ) : null}
-          {selection.textColor !== null ? (
-            <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3">
-              <p className="text-[10px] font-medium text-slate-500">Colour</p>
+        </Accordion>
+      ) : null}
+
+      {showColours ? (
+        <Accordion title="Colours" open={open.colours} onToggle={() => toggle('colours')}>
+          <div className="flex flex-wrap items-stretch gap-1">
+            {selection.textColor !== null ? (
               <Tooltip title="Text colour" description="Set the colour of the element's label.">
                 <ColorSwatch
                   label="Text"
@@ -449,28 +456,25 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
                   onChange={selection.onSetTextColor}
                 />
               </Tooltip>
-            </div>
-          ) : null}
-        </Accordion>
-      ) : null}
-
-      {showColours ? (
-        <Accordion title="Colours" open={open.colours} onToggle={() => toggle('colours')}>
-          <div className="flex items-stretch gap-1">
-            <Tooltip title="Background" description="The element's fill colour.">
-              <ColorSwatch
-                label="Background"
-                value={selection.fillColor!}
-                onChange={selection.onSetFillColor}
-              />
-            </Tooltip>
-            <Tooltip title="Border" description="The element's outline colour.">
-              <ColorSwatch
-                label="Border"
-                value={selection.strokeColor!}
-                onChange={selection.onSetStrokeColor}
-              />
-            </Tooltip>
+            ) : null}
+            {selection.fillColor !== null ? (
+              <Tooltip title="Background" description="The element's fill colour.">
+                <ColorSwatch
+                  label="Background"
+                  value={selection.fillColor}
+                  onChange={selection.onSetFillColor}
+                />
+              </Tooltip>
+            ) : null}
+            {selection.strokeColor !== null ? (
+              <Tooltip title="Border" description="The element's outline colour.">
+                <ColorSwatch
+                  label="Border"
+                  value={selection.strokeColor}
+                  onChange={selection.onSetStrokeColor}
+                />
+              </Tooltip>
+            ) : null}
           </div>
         </Accordion>
       ) : null}
