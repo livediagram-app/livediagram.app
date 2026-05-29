@@ -129,9 +129,13 @@ Not in history: selection, edit mode entry, palette position/minimize state, for
 
 For the initial version, the palette has these buttons:
 
-- **Square** — adds an 80×80 square node to the active tab.
-- **Circle** — adds an 80×80 circle node to the active tab.
-- **Diamond** — adds an 80×80 diamond (decision-node, UML-style). Rendered as an SVG polygon overlay so the diamond outline matches the element's bounding box.
+- **Square** — adds a 120×120 square node to the active tab.
+- **Circle** — adds a 120×120 circle node to the active tab.
+- **Diamond** — adds a 120×120 diamond (decision-node, UML-style). Rendered as an SVG polygon overlay so the diamond outline matches the element's bounding box.
+- **Cylinder** — adds a 100×140 cylinder (taller than wide to match the natural shape).
+- **Parallelogram** — adds a 160×100 parallelogram (wider than tall).
+- **Hexagon** — adds a 140×120 flat-top hexagon.
+- **Document** — adds a 140×110 document shape (slightly wider than tall).
 - **Text** — adds a free-floating text element (see [Text element](#text-element)).
 - **Sticky note** — adds a sticky-note element (see [Sticky note element](#sticky-note-element)).
 
@@ -376,7 +380,7 @@ These apply to any element type (including arrows, where they re-order among arr
 A free-floating text element. The text **is** the element — there is no border or fill.
 
 - Added from the **Text** palette button.
-- Default content: `"Text"`. Default size: 160 × 48.
+- Default content: `"Text"`. Default size: 220 × 64.
 - **Drag** to move; **resize** via the same four corner handles as shapes. Text auto-scales to fit the box (same SVG-based fit-to-bounds technique as shape labels).
 - **Double-click** to edit content; **Enter** commits, **Escape** cancels.
 - A faint dashed outline appears when selected so the bounds are visible.
@@ -402,7 +406,7 @@ type TextElement = {
 A yellow sticky-note element for short notes / annotations on the canvas.
 
 - Added from the **Sticky** palette button.
-- Default content: empty (placeholder "Note"). Default size: 160 × 160.
+- Default content: empty (placeholder "Note"). Default size: 200 × 200.
 - Visual: amber-100 background, amber-200 border, soft drop shadow, slightly rounded corners.
 - **Multi-line** text (unlike shapes / text elements). Wraps naturally; long text is clipped (resize to see more).
 - **Double-click** to edit. While editing, **Enter** inserts a newline; **Escape** cancels. Commit happens on blur.

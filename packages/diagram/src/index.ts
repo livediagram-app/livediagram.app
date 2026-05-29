@@ -265,16 +265,30 @@ export function isBoxed(element: Element): element is BoxedElement {
 
 // --- Factories -------------------------------------------------------------
 
+// Default size per shape kind. Uniform 120 for square / circle / diamond,
+// natural aspect ratios for the flowchart-vocabulary shapes (cylinder
+// taller than wide, parallelogram + hexagon + document wider than tall).
+const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: number }> = {
+  square: { width: 120, height: 120 },
+  circle: { width: 120, height: 120 },
+  diamond: { width: 120, height: 120 },
+  cylinder: { width: 100, height: 140 },
+  parallelogram: { width: 160, height: 100 },
+  hexagon: { width: 140, height: 120 },
+  document: { width: 140, height: 110 },
+};
+
 // New boxed elements default to Medium text size per spec 09 ("Text size").
 export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement {
+  const { width, height } = SHAPE_DEFAULT_SIZE[kind];
   return {
     id: crypto.randomUUID(),
     type: 'shape',
     shape: kind,
     x,
     y,
-    width: 80,
-    height: 80,
+    width,
+    height,
     textSize: 'md',
   };
 }
@@ -285,8 +299,8 @@ export function createText(x: number, y: number): TextElement {
     type: 'text',
     x,
     y,
-    width: 160,
-    height: 48,
+    width: 220,
+    height: 64,
     label: 'Text',
     textSize: 'md',
   };
@@ -298,8 +312,8 @@ export function createSticky(x: number, y: number): StickyElement {
     type: 'sticky',
     x,
     y,
-    width: 160,
-    height: 160,
+    width: 200,
+    height: 200,
     textSize: 'md',
   };
 }
