@@ -490,6 +490,10 @@ export default function LivePage() {
     setEditingId(null);
     setFormatSourceId(null);
     setGroupSourceId(null);
+    // New tabs jump straight into the lighter template picker (just the
+    // template grid). The welcome flow is first-run only — the user
+    // already has an identity + theme by this point.
+    setTemplatePickerMode('templates');
   };
 
   // "Delete" the whole diagram: replace every tab with a single empty
