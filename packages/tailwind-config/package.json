@@ -1,0 +1,11 @@
+{
+  "name": "@livediagram/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./theme.css",
+  "exports": {
+    ".": "./theme.css",
+    "./theme.css": "./theme.css"
+  },
+  "files": ["theme.css"]
+}

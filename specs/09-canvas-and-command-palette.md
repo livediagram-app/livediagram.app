@@ -1,0 +1,622 @@
+# Canvas and command palette
+
+The live app's canvas is where users actually build diagrams. A floating **command palette** sits on top of the canvas with controls for adding elements.
+
+## Command palette
+
+A small floating panel **initially placed in the top-right corner of the canvas**. The panel has a **`PALETTE` header label** in block caps above the buttons, and below it a row of icon buttons — one per primitive that can be added to the canvas.
+
+### Movable
+
+- The header row is a **drag handle** — press it and drag to move the palette anywhere on the canvas. Clicking a button does not start a drag.
+- Position survives until the page reloads.
+
+### Minimizable
+
+- The header has a **minimize button** to the right of the `PALETTE` label.
+- When minimized, the panel collapses into a small **floating round button pinned to the middle-right edge of the canvas**.
+- Clicking the minimized button restores the panel to its last position (or the default top-right if it hasn't been moved).
+
+## Text alignment
+
+Each boxed element carries an optional pair of fields controlling where its label sits inside the box:
+
+- `textAlignX: 'left' | 'center' | 'right'` — horizontal alignment.
+- `textAlignY: 'top' | 'middle' | 'bottom'` — vertical alignment.
+
+Defaults:
+
+- **Shape, Text:** `center` / `middle`.
+- **Sticky note:** `left` / `top` (natural for multi-line notes).
+
+Selectable from the [Selected Element](#selected-element-section) section of the palette as a **3 × 3 grid** of small icon buttons — each cell represents one combination of horizontal and vertical alignment. The currently active cell is visibly highlighted.
+
+Behaviour per label renderer:
+
+| Renderer            | How alignment is applied                                                   |
+| ------------------- | -------------------------------------------------------------------------- |
+| Scaling (auto-fit)  | The SVG `preserveAspectRatio` is set to the matching `x{Min/Mid/Max}Y{Min/Mid/Max} meet` so the text scales into the chosen corner. |
+| Fixed-size single   | CSS `align-items` + `text-align` on a flex container.                      |
+| Sticky multi-line   | CSS `align-items` for vertical + `text-align` on the inner block.          |
+
+The label editor (input/textarea) inherits the horizontal alignment so the cursor appears where the committed text will land.
+
+## Colours
+
+Boxed elements carry three optional colour fields:
+
+- `fillColor` — background fill. **Shapes and sticky notes** only.
+- `strokeColor` — outline / border colour. **Shapes and sticky notes** only.
+- `textColor` — label colour. **All boxed elements** (shape, text, sticky).
+
+All stored as CSS-compatible colour strings (typically `#rrggbb`).
+
+Defaults follow the design system per type:
+
+| Type   | Fill        | Stroke      | Text           |
+| ------ | ----------- | ----------- | -------------- |
+| Shape  | `brand-50`  | `brand-500` | `brand-800`    |
+| Sticky | `amber-100` | `amber-200` | amber-950-ish  |
+| Text   | transparent | transparent | `slate-800`    |
+| Arrow  | n/a         | n/a         | n/a            |
+
+Setting a colour applies to every member of the current selection that supports it (group-aware).
+
+The **Text colour** picker lives inside the **Text** accordion of the Selected Element section; **Background** and **Border** live inside the **Colours** accordion (shown only for shapes/sticky).
+
+Arrows don't expose any colour pickers yet.
+
+Future iterations: stroke width, dash patterns, gradient fills, named theme colours, transparency.
+
+## Aspect ratio lock
+
+Each boxed element can have its **aspect ratio locked**. Stored as `aspectLocked?: boolean` (defaults to `false`).
+
+- Toggled from the **Lock aspect ratio** button in the selection popover.
+- When on, corner-resize keeps the width-to-height ratio of the moment the drag started:
+  - The candidate width and height are computed from the drag delta.
+  - Whichever change is larger (in relative terms) wins; the other is derived from the source ratio.
+- The opposite-corner anchor still stays put.
+- Move/resize on locked-position elements (the other `locked` flag) is still disabled regardless of aspect lock.
+- Format painter does not currently copy aspect-lock state.
+
+### Current Tab section
+
+When **nothing is selected**, the Selected Element section is replaced by a **Current Tab** section.
+
+Today it contains a single **Background** accordion (closed by default) with three pattern choices:
+
+- **Grid** (default) — subtle dot grid.
+- **Blank** — no pattern.
+- **Lines** — horizontal ruled lines.
+
+Pattern is stored per-tab as `backgroundPattern?: BackgroundPattern` on the Tab object. When the user pans, the grid/lines pattern phase tracks the pan offset on the canvas's main background so the pattern tiles indefinitely.
+
+Future iterations may add per-tab grid density, custom background colour, or link this section to a global theme.
+
+### Selected Element section
+
+When **any** element is selected, the palette grows a fourth section at the bottom titled `SELECTED ELEMENT`. It hosts per-element controls grouped into **collapsible accordions** so the palette stays compact. Each accordion is **closed by default**; clicking the header toggles it open.
+
+Accordion groups:
+
+- **Layer**
+  - Front — bring to top of the z-order.
+  - Back — send to bottom of the z-order.
+- **Text** _(boxed elements only)_
+  - Text size — `Scale | Small | Medium | Large`. See [Text size](#text-size).
+  - Text alignment — 3 × 3 grid. See [Text alignment](#text-alignment).
+  - Text colour — single swatch. See [Colours](#colours).
+- **Colours** _(shapes & sticky notes only)_
+  - Background and Border pickers. See [Colours](#colours).
+
+Accordion headers show a chevron that rotates 180° when open. The body slides open/closed via a `grid-template-rows` 0fr↔1fr transition (~200 ms) so motion is smooth and free of layout jumps.
+
+The Selected Element section vanishes when nothing is selected — replaced by the [Current Tab](#current-tab-section) section.
+
+### Undo / Redo
+
+A separate row at the bottom of the palette (separated from the add-buttons by a thin divider) holds two history controls:
+
+- **Undo** (left-curve arrow) — reverts the last change.
+- **Redo** (right-curve arrow) — reapplies an undone change.
+
+History is kept to a maximum of **3 steps** in each direction. Older states are dropped.
+
+Undo-able actions: adding/deleting any element, label commits, lock toggle, layer order (bring/send), format-paint apply, duplicate-and-connect, drag-end (move or resize, including arrow-endpoint drags). The snapshot is taken at the **start** of a drag so undo returns to the pre-drag state, not to intermediate frames.
+
+Not in history: selection, edit mode entry, palette position/minimize state, format-painter mode.
+
+For the initial version, the palette has these buttons:
+
+- **Square** — adds an 80×80 square node to the active tab.
+- **Circle** — adds an 80×80 circle node to the active tab.
+- **Diamond** — adds an 80×80 diamond (decision-node, UML-style). Rendered as an SVG polygon overlay so the diamond outline matches the element's bounding box.
+- **Text** — adds a free-floating text element (see [Text element](#text-element)).
+- **Sticky note** — adds a sticky-note element (see [Sticky note element](#sticky-note-element)).
+
+Arrows are no longer in the palette — see [Adding an arrow](#adding-an-arrow).
+
+### Placement on add
+
+Every `Add ...` button places the new element at the **centre of the visible canvas viewport**, accounting for any pan offset. The element is also auto-selected.
+
+If a boxed element is currently selected, the new element **inherits its width and height** so the user can chain together similarly-sized nodes quickly. Circles and diamonds are an exception — they're inherently 1:1, so they snap back to a square using the larger inherited dimension to avoid being squashed.
+
+Clicking a button places the new element on the active tab's canvas. For the first version, new elements are placed at a **staggered default position** (each shape offset slightly from the last) so multiple clicks don't stack on top of each other.
+
+The name "command palette" is forward-looking — it will grow into a richer set of controls (more shapes, connectors, text, search). For now, two buttons.
+
+## Arrows
+
+Arrows are a second element kind. They link two points on the canvas.
+
+### Endpoints
+
+Each arrow has a **from** and a **to** endpoint. An endpoint is either:
+
+- **Free** — an `(x, y)` position on the canvas.
+- **Pinned** — attached to an **anchor** of a shape. A pinned endpoint follows its shape as the shape moves/resizes.
+
+Anchors are eight discrete points on a shape's bounding box:
+
+- Four **corners** — NW, NE, SW, SE.
+- Four **edge midpoints** — N, S, E, W.
+
+No "center" or "anywhere on the edge" anchors — only these eight.
+
+### Adding an arrow
+
+Arrows are created by **dragging from an anchor dot on a selected element**.
+
+- When a boxed element is selected (and not locked, not editing, not in a special mode), small **anchor dots** appear on each of its **four edge midpoints** (N, E, S, W). They are filled brand-coloured circles, distinct from the corner resize handles.
+- **Press-and-drag** a dot to start creating an arrow: the `from` endpoint is immediately pinned to that anchor, and the `to` endpoint follows the cursor.
+- Release on **another element's anchor** (within snap distance, ~24 px) → that endpoint becomes pinned. Release on **empty canvas** → that endpoint stays free.
+- Releasing without any drag movement creates a tiny "stub" arrow at that anchor — delete it via the selection popover if it wasn't intended.
+
+The old palette "Add arrow" button has been removed in favour of this direct, contextual interaction.
+
+Snapping during the drag continues to consider all eight anchors of every shape on the canvas — corners and midpoints — so an arrow drag from a midpoint can still snap to and pin at a corner.
+
+### Manipulating arrows
+
+- **Click an arrow** to select it. Selection treatment: thicker brand-tinted stroke, and visible endpoint handles (small circles at each end).
+- **Drag an endpoint handle** to move that endpoint. While dragging:
+  - If the cursor is within **~24 px** of any shape's anchor, the endpoint **snaps** to that anchor (becomes pinned).
+  - Otherwise the endpoint stays free at the cursor position.
+- **Click the empty canvas** deselects.
+- The selection popover applies to arrows the same way it does to shapes (lock + delete).
+
+### Cascading delete
+
+When a boxed element is deleted, **any arrow whose endpoint is pinned to it is also deleted** in the same operation (counts as one undo step). Stale arrows pointing to a removed element would have nothing to anchor to; cascading delete keeps the canvas clean and the data model consistent.
+
+Arrows with one pinned endpoint and one free endpoint are deleted in the same way — if the pinned side's element goes, the whole arrow goes. Arrows with both endpoints free are unaffected by other deletions.
+
+### Locking arrows
+
+A locked arrow's endpoint handles are not draggable. Same semantics as a locked shape — accidents prevented, deletion still explicit.
+
+### Data model
+
+Lives in `packages/diagram`:
+
+```ts
+type Anchor = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
+
+type Endpoint =
+  | { kind: 'free'; x: number; y: number }
+  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor };
+
+type ArrowElement = {
+  id: ElementId;
+  type: 'arrow';
+  from: Endpoint;
+  to: Endpoint;
+  locked?: boolean;
+};
+
+type Element = ShapeElement | ArrowElement;
+```
+
+### Out of scope (next iterations)
+
+- Multi-point / waypoint paths (just two endpoints for now).
+- Labels on arrows.
+- Curved / bezier arrows; different arrowhead styles.
+- Anchors at element centres or anywhere on element edges.
+
+## Shape primitives (initial set)
+
+Two shape kinds, both rendered as absolutely positioned elements on the canvas:
+
+| Kind     | Rendering                                        |
+| -------- | ------------------------------------------------ |
+| `square` | Rectangle with slight rounded corners.           |
+| `circle` | Square frame with `border-radius: 50%`.          |
+
+Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop shadow. Same style for both — only the border-radius differs.
+
+## Data model
+
+Shapes are **elements** on a tab, per [05-diagram-structure.md](05-diagram-structure.md). The element type lives in `packages/diagram` and is consumed by the canvas and (later) the store and API code:
+
+```ts
+type ShapeKind = 'square' | 'circle';
+
+type Element = {
+  id: ElementId;
+  type: 'shape';       // discriminator — future: 'edge', 'group', ...
+  shape: ShapeKind;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+```
+
+## Behavior (first version)
+
+- The palette is always rendered on top of the canvas, regardless of which tab is active.
+- Each tab owns its own array of elements. Adding a shape adds it to the **active tab** only.
+- Switching tabs swaps the canvas content; each tab's shapes persist while the page is loaded.
+- Reloading the page **loses all state** for now — `localStorage` persistence is the next iteration. See [02-prototype-scope.md](02-prototype-scope.md).
+- The empty-state hint ("Click a shape in the palette to add it") disappears once the active tab has at least one shape.
+
+## Selection
+
+- **Click a shape** to select it. Selection is visible as a thicker brand-tinted outline plus four corner handles.
+- **Click the empty canvas background** (anywhere not on a shape, palette, or popover) to deselect.
+- Only one shape can be selected at a time — multi-select is out of scope for now.
+- Clicking the command palette never affects selection.
+
+### Selection popover
+
+When a shape is selected, a small **popover menu** appears next to it with action buttons (icon-only).
+
+- **Position:** above the shape if there is room between the shape and the canvas top edge; otherwise below it. Horizontally centred on the shape.
+- **Layout:** small rounded panel with the same styling language as the palette (border, shadow).
+- The popover follows the shape during drag/resize — its position is derived from the shape's current bounds.
+- Clicking inside the popover never deselects.
+
+Initial button set (left to right):
+
+- **Format painter** — copies the selected element's formatting onto the next element clicked. Paintbrush icon. See [Format painter](#format-painter). (Shown for boxed elements only — not arrows.)
+- **Group / Ungroup** — Group enters group-mode to extend the selection into a group. Ungroup breaks the current group apart. See [Groups](#groups). (Shown for boxed elements only.)
+- **Lock aspect ratio** — toggles `aspectLocked` on the selected element. Off by default. When on, corner-resize scales width and height together (whichever dimension the user pulls more wins; the other is derived from the source aspect ratio). See [Aspect ratio lock](#aspect-ratio-lock).
+- **Lock / Unlock** — toggles the element's locked state. Icon flips between an open and closed padlock.
+- **Delete** — removes the selected element from the active tab and clears selection. Trash icon.
+
+Bring to Front and Send to Back **used to live here**; they're now in the palette's [Selected Element](#selected-element-section) section.
+
+For **boxed elements** (shapes, text, sticky notes), a separate **plus button** appears just outside the element's right edge while it's selected — see [Quick add + connect](#quick-add--connect).
+
+More buttons (rename label, change colour, duplicate, link, send to back, …) will be added here over time without changing the popover's positioning rules.
+
+## Panning the canvas
+
+The canvas can be **panned** to bring off-screen content into view.
+
+- **Press-and-drag the empty canvas background** (anywhere that isn't an element, palette, or popover) to pan.
+- Drag offsets the entire canvas content (shapes, arrows, plus buttons, selection popover, dot-grid background) as a unit. The palette and mode banners stay fixed.
+- The cursor on empty canvas reads as `grab`, switching to `grabbing` while a pan is in progress.
+- A press-and-release without movement counts as a **click** and deselects, as before.
+- Double-click still drops a text element at the click position (now in the panned canvas-coordinate space).
+
+There is no pan reset / "centre on content" control yet — that's a future addition.
+
+## Quick add + connect
+
+When a **boxed element** (shape, text, sticky note) is selected and not in edit/paint mode, **two plus buttons** float around its bounding box:
+
+- One on the **right** edge, vertically centred — duplicates to the right with an arrow `e → w`.
+- One on the **bottom** edge, horizontally centred — duplicates below with an arrow `s → n`.
+
+Either click:
+
+1. **Duplicates** the element (same size, same content, same locked state — fresh id).
+2. Places the duplicate in the chosen direction with a small gap.
+3. **Connects** them with a new arrow pinned between the appropriate anchors.
+4. Selects the duplicate so the user can keep building outward.
+
+Both plus buttons are hidden while the element is being edited or while format-painter / group mode is active. Not shown for arrows.
+
+## Layer order
+
+Boxed elements paint in **array order** — earlier in the tab's `elements` array means rendered earlier (further back); later means rendered on top. Arrows always render in a single SVG layer on top of all boxed elements (this is a current rendering limitation, not a long-term design).
+
+The selection popover exposes:
+
+- **Bring to Front** — moves the selected element to the end of the elements array.
+- **Send to Back** — moves the selected element to the start.
+
+These apply to any element type (including arrows, where they re-order among arrows).
+
+## Text element
+
+A free-floating text element. The text **is** the element — there is no border or fill.
+
+- Added from the **Text** palette button.
+- Default content: `"Text"`. Default size: 160 × 48.
+- **Drag** to move; **resize** via the same four corner handles as shapes. Text auto-scales to fit the box (same SVG-based fit-to-bounds technique as shape labels).
+- **Double-click** to edit content; **Enter** commits, **Escape** cancels.
+- A faint dashed outline appears when selected so the bounds are visible.
+- All other behaviour (selection, popover, lock, format painter, layer order, plus button) matches shapes.
+
+Data:
+
+```ts
+type TextElement = {
+  id: ElementId;
+  type: 'text';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label?: string;
+  locked?: boolean;
+};
+```
+
+## Sticky note element
+
+A yellow sticky-note element for short notes / annotations on the canvas.
+
+- Added from the **Sticky** palette button.
+- Default content: empty (placeholder "Note"). Default size: 160 × 160.
+- Visual: amber-100 background, amber-200 border, soft drop shadow, slightly rounded corners.
+- **Multi-line** text (unlike shapes / text elements). Wraps naturally; long text is clipped (resize to see more).
+- **Double-click** to edit. While editing, **Enter** inserts a newline; **Escape** cancels. Commit happens on blur.
+- All other behaviour (drag, resize, lock, format painter, layer order, plus button) matches shapes.
+
+Data:
+
+```ts
+type StickyElement = {
+  id: ElementId;
+  type: 'sticky';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label?: string;
+  locked?: boolean;
+};
+```
+
+## Groups
+
+Boxed elements (shapes, text, sticky) can be **grouped** so they move, delete, lock, and reorder as a unit while remaining individually editable.
+
+### Data model
+
+Each boxed element optionally carries a `groupId: ElementId`. All elements sharing the same `groupId` are members of the same group. Arrows are not grouped.
+
+```ts
+type BoxedElement = ... & { groupId?: ElementId };
+```
+
+### Creating a group
+
+- The selection popover for a boxed element shows a **Group button** (overlapping squares icon).
+- Clicking it enters **group mode** — a status pill appears at the top of the canvas, "Click another element to add to the group", with a **Done** button.
+- Group mode is **persistent**: each click on a boxed element extends the group, and the mode stays open so the user can group several elements in one pass. The mode only exits when the user clicks **Done**, presses **Escape**, or clicks an arrow / the empty canvas.
+- Each click joins targets into the source's group:
+  - If neither is grouped yet, a fresh `groupId` is assigned to both.
+  - If the source already has a `groupId`, that id is reused for subsequent targets.
+  - If a target was in a different group, that group's members all migrate.
+- Clicking the source element itself is a no-op (it's already in the group).
+
+### Group selection
+
+Clicking any group member selects the **whole group** — all members receive the selection treatment. The selection popover's bounds are the **union** of all members' bounds.
+
+### Operations on a group
+
+| Operation             | Behaviour                                                              |
+| --------------------- | ---------------------------------------------------------------------- |
+| Move (drag)           | All members translate by the same delta.                               |
+| Resize                | **Disabled.** Corner handles are hidden — ungroup to resize.           |
+| Delete                | Removes all members + cascading arrows pinned to any of them.          |
+| Lock                  | Toggles `locked` on all members. Direction is determined by the originally selected member's current lock state. |
+| Bring to Front / Send to Back | All members move to top / bottom together, preserving relative order. |
+| Double-click to edit  | Edits only the clicked member's label.                                 |
+| Quick add + connect   | Duplicates **all group members** together (preserving their relative positions) plus any arrows internal to the group, shifted as a unit. The connector arrow goes from the originally selected member to its duplicate. The copies form a new group. |
+| Format painter        | Applies to the clicked target only (group membership ignored).         |
+
+### Ungrouping
+
+When the current selection is a group, the popover shows an **Ungroup button** in place of (or alongside) Group. Clicking it clears `groupId` on every member; selection collapses back to the originally selected element.
+
+### Out of scope (next iterations)
+
+- Nested groups.
+- Selecting a single member of a group without ungrouping first (alt-click).
+- Visible outline around the group's union bounds.
+- Group-level resize.
+
+## Format painter
+
+A way to copy an element's **formatting** (size, eventually colour and style) onto another element — same mental model as Word/Figma's format painter.
+
+### Initiating
+
+- The selection popover on a shape includes a **paintbrush icon** button.
+- Clicking it puts the editor into **format-painter mode**, with that shape as the **source**.
+- A status pill appears at the top of the canvas: "Click an element to apply formatting" with a Cancel button.
+- The cursor changes to a copy cursor over elements while the mode is active.
+
+Arrows don't expose this button for now (no formatting to copy yet).
+
+### Applying
+
+- The next **click on any shape** applies the source's formatting and exits the mode.
+- Clicking an arrow, the empty canvas, pressing **Escape**, or pressing **Cancel** exits the mode without applying.
+- Painter mode is **single-shot** — one click applies, then the mode ends. To paint another target, click the brush again.
+- Clicking the source shape itself does nothing useful (it would apply its own formatting); the mode still exits.
+
+### Properties copied
+
+Works between any two **boxed** elements (shape, text, sticky). Today:
+
+- `width`, `height` — the element's size.
+
+Will be added as the feature set grows:
+
+- Fill / stroke colour.
+- Border radius / corner style.
+- Label font weight, size, colour.
+
+Explicitly **not** copied — these are per-element, not formatting:
+
+- `x`, `y` (position).
+- `label` (content).
+- `locked` state.
+- For shapes, `shape` itself (you don't turn a circle into a square via format painter).
+
+## Text size
+
+Each boxed element carries a `textSize` setting controlling how its label renders. Four values:
+
+| Value      | Behaviour                                                               |
+| ---------- | ----------------------------------------------------------------------- |
+| `'scale'`  | **Default.** Label auto-scales to fit the box (current SVG fit-to-bounds for shapes / text; multi-line wrap at a small default font for sticky). |
+| `'sm'`     | Fixed small font.                                                       |
+| `'md'`     | Fixed medium font.                                                      |
+| `'lg'`     | Fixed large font.                                                       |
+
+Selectable from the [Selected Element](#selected-element-section) section of the palette. When set to a fixed size, content is centered (single-line) or wrapped (sticky). Resizing the element does not change the font — only `scale` reacts to box size.
+
+```ts
+type TextSize = 'scale' | 'sm' | 'md' | 'lg';
+type BoxedElement = ... & { textSize?: TextSize };  // defaults to 'scale'
+```
+
+## Quick text drop
+
+**Double-clicking the empty canvas** (anywhere not on an element, palette, or popover) drops a new **text element** at the click point and **immediately enters edit mode** on it. The text is centred on the cursor position. Press Enter to commit or Escape to cancel — Escape will leave an empty text element in place, which the user can then delete.
+
+## Auto-select on add
+
+Every palette `Add ...` button auto-selects the newly created element. The selection popover, the plus buttons, and (if applicable) the Selected Element palette section appear immediately, ready for the next action.
+
+## Editor header
+
+The editor header carries three things:
+
+- The `livediagram` brand mark (left).
+- The **diagram title** (centre). Defaults to `Untitled diagram`. Click to rename in place — the title becomes a text input with the current name pre-selected. **Enter** commits, **Escape** cancels, **blur** commits. Empty value reverts to the previous name.
+- Share / Sign in placeholder buttons (right).
+
+The diagram title is a single string at the page level (not yet persisted across reloads). Per-tab names live on each `Tab` and are edited from the tab bar (see [Tabs](#tabs)).
+
+## Tabs
+
+The tab bar sits at the bottom of the editor. Each tab represents one canvas with its own elements and background pattern.
+
+### Selecting & adding
+
+- Click a tab to switch to it. Switching clears element selection, edit mode, and any active picker/group mode.
+- The **+** button at the right of the bar adds a fresh empty tab and switches to it.
+
+### Renaming
+
+A tab can be renamed in two ways:
+
+- **Double-click the active tab's name** → inline input (Enter commits, Escape cancels, blur commits).
+- **Tab menu → Rename** (see below).
+
+### Tab menu (ellipsis)
+
+The active tab carries a **`⋯` ellipsis button** to the right of its name. Clicking opens a small floating menu with:
+
+- **Rename** — enters inline rename mode.
+- **Duplicate** — creates a copy of the tab (same elements, same pattern, name suffixed with " copy") inserted directly after the source, and switches to it.
+- **Delete** — removes the tab and falls back to a neighbouring tab. Disabled when only one tab remains.
+
+The menu renders through a **portal** to `document.body` and positions itself from the ellipsis button's bounding rect, so it isn't clipped by the tab bar's horizontal scroll.
+
+### Reordering
+
+Tabs are **draggable** via the native HTML5 drag API. Dragging a tab over another shows a ring around the drop target; releasing reorders the source to the target's position.
+
+## Tooltips
+
+Every icon button on the palette and selection popover shows a **tooltip** on hover (and focus) with:
+
+- A short **title** in bold.
+- A one-sentence **description** explaining what the action does.
+
+Tooltips render in a portal at the top level of the document so they're never clipped by parent overflow. They appear above the target (with a small gap), centered horizontally on the button.
+
+The tooltip is a shared, reusable element used wherever a control needs a richer hover than `aria-label`.
+
+```tsx
+<Tooltip title="Add square" description="Drop a new square shape on the canvas.">
+  <button>…</button>
+</Tooltip>
+```
+
+`aria-label` continues to serve screen readers; the tooltip is for sighted users wanting to know what an icon does.
+
+## Labels
+
+A shape can carry an inline **text label**.
+
+- **Double-click a shape** to enter label-edit mode. The shape's centre becomes an editable input.
+- Type to set or change the label.
+- Commit with **Enter** or by **clicking outside**. Cancel with **Escape**.
+- The label **auto-scales to fit the shape** — text is rendered inside an SVG whose `viewBox` is set to the text's measured bounds, with `preserveAspectRatio="xMidYMid meet"`. The text scales uniformly to fill the shape: bigger shapes get bigger text; longer labels shrink to fit.
+- During edit, selection handles and the popover are hidden so they don't get in the way.
+- **Locked** shapes can still be labelled — locking protects position, not content.
+- Empty labels are valid (nothing is rendered).
+- Labels are **single-line** for shapes and text; **multi-line** for sticky notes. Multi-line in other element types is out of scope.
+- Label data lives on the element: `label?: string`.
+
+### Edit vs modes
+
+- **Format painter mode blocks double-click edit** — the first click is meant to apply the format. Once it does, paint mode exits and subsequent double-clicks edit normally.
+- **Group mode does not block double-click edit** — entering edit immediately exits group mode. This stops users from getting stuck when they forget to click Done.
+
+## Locking
+
+A shape can be **locked** to prevent accidental movement or resizing.
+
+- Toggled from the **Lock button** in the selection popover.
+- A locked shape:
+  - Can still be **selected** (so the user can unlock it).
+  - **Cannot be moved** — dragging the shape body does nothing.
+  - **Cannot be resized** — corner handles **are hidden entirely** while locked, so they can't be grabbed.
+  - Can still be **deleted** from the popover — deletion is explicit, not an "accident".
+  - Can still be **labelled** (double-click) — locking protects position, not content.
+- A small **lock indicator** badge sits in the shape's top-left corner whenever it's locked, so the state is visible even when the shape is not selected.
+- Locked state lives on the element: `locked?: boolean` (defaults to `false` / `undefined`).
+
+## Move
+
+- **Press-and-drag a shape** to move it.
+- The press both selects the shape and starts the move in one gesture; on release, the shape stays at its new position.
+- The shape follows the cursor delta from where the drag began (no snapping yet).
+- Shapes can be placed anywhere on the canvas, including overlapping each other. No bounds.
+
+## Resize
+
+When a shape is selected, **four corner handles** (NW, NE, SW, SE) appear as small white squares with a brand-600 border.
+
+- **Press-and-drag a handle** to resize the shape.
+- The corner opposite the handle stays anchored; the dragged corner follows the cursor.
+- **Minimum size is 20×20** to keep shapes pickable.
+- Resize is free-form — aspect ratio is not preserved (shift-to-constrain is out of scope for now).
+- Mid-edge handles (N, S, E, W) are out of scope for now.
+
+## Out of scope (next iterations)
+
+- Multi-select (marquee box, shift-click).
+- Mid-edge resize handles, aspect-ratio constraint.
+- Rotation.
+- Connectors / edges between shapes.
+- Zoom and pan.
+- Snapping / aligning to a grid or other shapes.
+- Keyboard nudging, copy/paste, undo/redo.
+- Re-styling shapes (colour, stroke, label).
+- Saving canvas state across reloads.

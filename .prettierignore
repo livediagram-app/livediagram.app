@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+.next
+.turbo
+coverage
+pnpm-lock.yaml
+*.tsbuildinfo

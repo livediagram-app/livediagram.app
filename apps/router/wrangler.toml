@@ -1,0 +1,16 @@
+name = "livediagram-router"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+
+# Service bindings to the marketing and live apps.
+# The `service` values must match the deployed Worker names of each downstream app.
+# Production wiring is TBD — these placeholders will be revisited when the apps
+# are first deployed. See specs/08-router-app.md.
+
+[[services]]
+binding = "MARKETING"
+service = "livediagram-marketing"
+
+[[services]]
+binding = "LIVE"
+service = "livediagram-live"

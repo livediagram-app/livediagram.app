@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+@import '@livediagram/tailwind-config';
+
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+}
