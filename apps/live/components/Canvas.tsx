@@ -435,10 +435,13 @@ export function Canvas(props: CanvasProps) {
           selectionSupportsColours && isBoxed(selected)
             ? (selected.fillColor ?? defaultFillColor(selected))
             : null,
-        strokeColor:
-          selectionSupportsColours && isBoxed(selected)
+        strokeColor: selectionSupportsColours
+          ? isBoxed(selected)
             ? (selected.strokeColor ?? defaultStrokeColor(selected))
-            : null,
+            : selected.type === 'arrow'
+              ? (selected.strokeColor ?? 'rgb(51 65 85)' /* slate-700 = default arrow */)
+              : null
+          : null,
         opacity: selected.opacity ?? 1,
         onBringToFront,
         onSendToBack,

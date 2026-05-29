@@ -53,7 +53,7 @@ export function TemplatePicker({
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">
-              {isWelcome ? 'Welcome to livediagram' : 'Pick a template'}
+              {isWelcome ? 'Create a new Diagram' : 'Pick a template'}
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               {isWelcome

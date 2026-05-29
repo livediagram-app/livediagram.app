@@ -985,7 +985,8 @@ export default function LivePage() {
     const ids = memberIdsOf(selectedId);
     commit((els) =>
       els.map((el) =>
-        ids.has(el.id) && (el.type === 'shape' || el.type === 'sticky')
+        ids.has(el.id) &&
+        (el.type === 'shape' || el.type === 'sticky' || el.type === 'arrow')
           ? { ...el, strokeColor: color }
           : el,
       ),

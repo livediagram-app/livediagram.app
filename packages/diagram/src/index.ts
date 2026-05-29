@@ -123,7 +123,16 @@ export function defaultStrokeColor(element: BoxedElement): string {
 }
 
 export function supportsColours(element: Element): boolean {
-  return element.type === 'shape' || element.type === 'sticky';
+  return (
+    element.type === 'shape' || element.type === 'sticky' || element.type === 'arrow'
+  );
+}
+
+// Default arrow stroke colour when the element has no explicit one set.
+// Picked out as a helper so the Selected Element controls can show the
+// effective colour in the swatch when no override exists.
+export function defaultArrowStrokeColor(): string {
+  return 'rgb(51 65 85)'; // slate-700, same as ArrowView's fallback
 }
 
 // --- Shapes ---------------------------------------------------------------
@@ -232,6 +241,10 @@ export type ArrowElement = {
   from: Endpoint;
   to: Endpoint;
   locked?: boolean;
+  // Stroke colour for the line + arrowhead. Falls through to the
+  // default arrow slate when unset. There's no fill or text on an
+  // arrow so this is the only colour field.
+  strokeColor?: string;
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
 };

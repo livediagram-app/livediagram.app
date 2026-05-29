@@ -1,5 +1,10 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { endpointPosition, type ArrowElement, type Element } from '@livediagram/diagram';
+import {
+  defaultArrowStrokeColor,
+  endpointPosition,
+  type ArrowElement,
+  type Element,
+} from '@livediagram/diagram';
 import type { ArrowEnd } from '@/lib/canvas';
 
 type ArrowViewProps = {
@@ -10,6 +15,8 @@ type ArrowViewProps = {
   onSelect: (e: ReactPointerEvent) => void;
   onBeginEndpointDrag: (end: ArrowEnd, e: ReactPointerEvent) => void;
 };
+
+const BRAND_600 = 'rgb(2 132 199)';
 
 export function ArrowView({
   arrow,
@@ -23,22 +30,42 @@ export function ArrowView({
   const from = endpointPosition(arrow.from, elements);
   const to = endpointPosition(arrow.to, elements);
 
-  const stroke = isSelected ? 'rgb(2 132 199)' /* brand-600 */ : 'rgb(51 65 85)'; /* slate-700 */
+  // Per-arrow stroke colour overrides the default; selection ring sits
+  // on top in brand-600 regardless so the user can still tell what's
+  // selected on a coloured arrow.
+  const baseStroke = arrow.strokeColor ?? defaultArrowStrokeColor();
   const strokeWidth = isSelected ? 2.5 : 2;
-  const markerId = isSelected ? 'arrowhead-selected' : 'arrowhead-default';
   const hitCursor = isPaintMode ? 'copy' : 'pointer';
+  const opacity = arrow.opacity ?? 1;
 
+  // SVG `<marker>` defs don't inherit stroke from the referencing path,
+  // but they DO inherit `color`. Setting the group's `color` to the
+  // arrow's stroke + drawing the marker arrowhead with `fill=currentColor`
+  // means a single shared marker def picks up any colour we throw at it.
   return (
-    <g>
+    <g style={{ color: baseStroke, opacity }}>
+      {isSelected ? (
+        <line
+          x1={from.x}
+          y1={from.y}
+          x2={to.x}
+          y2={to.y}
+          stroke={BRAND_600}
+          strokeWidth={strokeWidth + 2}
+          strokeLinecap="round"
+          strokeOpacity={0.35}
+          style={{ pointerEvents: 'none' }}
+        />
+      ) : null}
       <line
         x1={from.x}
         y1={from.y}
         x2={to.x}
         y2={to.y}
-        stroke={stroke}
+        stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
-        markerEnd={`url(#${markerId})`}
+        markerEnd="url(#arrowhead)"
         style={{ pointerEvents: 'none' }}
       />
 
@@ -95,15 +122,14 @@ type EndpointHandleProps = {
 };
 
 function EndpointHandle({ cx, cy, pinned, disabled, onPointerDown }: EndpointHandleProps) {
-  const fill = pinned ? 'rgb(2 132 199)' : 'white';
-  const stroke = 'rgb(2 132 199)';
+  const fill = pinned ? BRAND_600 : 'white';
   return (
     <circle
       cx={cx}
       cy={cy}
       r={6}
       fill={fill}
-      stroke={stroke}
+      stroke={BRAND_600}
       strokeWidth={2}
       onPointerDown={onPointerDown}
       style={{
@@ -115,10 +141,13 @@ function EndpointHandle({ cx, cy, pinned, disabled, onPointerDown }: EndpointHan
 }
 
 export function ArrowDefs() {
+  // Single shared arrowhead marker. `fill="context-stroke"` would be
+  // ideal but isn't supported everywhere; `currentColor` works because
+  // ArrowView sets `color` on the group containing the line.
   return (
     <defs>
       <marker
-        id="arrowhead-default"
+        id="arrowhead"
         viewBox="0 0 10 10"
         refX="9"
         refY="5"
@@ -126,18 +155,7 @@ export function ArrowDefs() {
         markerHeight="6"
         orient="auto-start-reverse"
       >
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgb(51 65 85)" />
-      </marker>
-      <marker
-        id="arrowhead-selected"
-        viewBox="0 0 10 10"
-        refX="9"
-        refY="5"
-        markerWidth="6"
-        markerHeight="6"
-        orient="auto-start-reverse"
-      >
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgb(2 132 199)" />
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
       </marker>
     </defs>
   );
