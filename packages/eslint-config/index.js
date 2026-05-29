@@ -10,6 +10,9 @@ export default tseslint.config(
       '**/dist/**',
       '**/build/**',
       '**/.next/**',
+      // Next.js `output: 'export'` static export directory — same status as
+      // `.next/`: build output, not source.
+      '**/out/**',
       '**/.turbo/**',
       '**/node_modules/**',
       '**/coverage/**',

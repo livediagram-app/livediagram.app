@@ -8,11 +8,7 @@ type EditorHeaderProps = {
   onDeleteDiagram: () => void;
 };
 
-export function EditorHeader({
-  diagramName,
-  onRename,
-  onDeleteDiagram,
-}: EditorHeaderProps) {
+export function EditorHeader({ diagramName, onRename, onDeleteDiagram }: EditorHeaderProps) {
   const [editing, setEditing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);

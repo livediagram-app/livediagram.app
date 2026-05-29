@@ -6,6 +6,7 @@ import {
   defaultTextColor,
   type Anchor,
   type BoxedElement,
+  type ShapeKind,
   type TextSize,
 } from '@livediagram/diagram';
 import type { DragMode } from '@/lib/canvas';
@@ -97,22 +98,12 @@ export function BoxedElementView({
         ...variant.style,
       }}
     >
-      {element.type === 'shape' && element.shape === 'diamond' ? (
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden
-        >
-          <polygon
-            points="50,0 100,50 50,100 0,50"
-            fill={element.fillColor ?? defaultFillColor(element)}
-            stroke={element.strokeColor ?? defaultStrokeColor(element)}
-            strokeWidth={2}
-            vectorEffect="non-scaling-stroke"
-            strokeLinejoin="round"
-          />
-        </svg>
+      {element.type === 'shape' && isSvgRenderedShape(element.shape) ? (
+        <ShapeSvgOverlay
+          shape={element.shape}
+          fill={element.fillColor ?? defaultFillColor(element)}
+          stroke={element.strokeColor ?? defaultStrokeColor(element)}
+        />
       ) : null}
 
       {renderLabel(
@@ -165,6 +156,54 @@ export function BoxedElementView({
         </>
       ) : null}
     </div>
+  );
+}
+
+// Shapes that draw themselves via an inner SVG overlay rather than relying
+// on the wrapper's border/background. Square and circle are the only ones
+// rendered purely through CSS (border + border-radius).
+function isSvgRenderedShape(kind: ShapeKind): boolean {
+  return kind !== 'square' && kind !== 'circle';
+}
+
+function ShapeSvgOverlay({
+  shape,
+  fill,
+  stroke,
+}: {
+  shape: ShapeKind;
+  fill: string;
+  stroke: string;
+}) {
+  const common = {
+    fill,
+    stroke,
+    strokeWidth: 2,
+    vectorEffect: 'non-scaling-stroke' as const,
+    strokeLinejoin: 'round' as const,
+  };
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      aria-hidden
+    >
+      {shape === 'diamond' ? <polygon points="50,0 100,50 50,100 0,50" {...common} /> : null}
+      {shape === 'parallelogram' ? <polygon points="20,0 100,0 80,100 0,100" {...common} /> : null}
+      {shape === 'hexagon' ? (
+        <polygon points="25,0 75,0 100,50 75,100 25,100 0,50" {...common} />
+      ) : null}
+      {shape === 'document' ? (
+        <path d="M 0 0 L 100 0 L 100 78 C 80 95, 65 65, 50 80 C 35 95, 20 65, 0 80 Z" {...common} />
+      ) : null}
+      {shape === 'cylinder' ? (
+        <g>
+          <path d="M 0 15 L 100 15 L 100 85 A 50 12 0 0 1 0 85 Z" {...common} />
+          <ellipse cx={50} cy={15} rx={50} ry={12} {...common} />
+        </g>
+      ) : null}
+    </svg>
   );
 }
 
@@ -243,9 +282,10 @@ function describeVariant(
   switch (element.type) {
     case 'shape': {
       const ring = isSelected ? 'ring-2 ring-brand-200' : '';
-      // Diamond is drawn via an inner SVG overlay (see below); the wrapper
-      // div carries no border/background, just the selection ring.
-      if (element.shape === 'diamond') {
+      // SVG-rendered shapes (diamond, cylinder, parallelogram, hexagon,
+      // document) draw themselves via an inner SVG overlay; the wrapper div
+      // carries no border/background, just the selection ring.
+      if (isSvgRenderedShape(element.shape)) {
         return {
           className: `text-brand-800 ${ring}`,
           style: { borderRadius: '4px' },

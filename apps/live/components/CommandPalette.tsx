@@ -173,85 +173,162 @@ function OpenPalette({
         </Tooltip>
       </div>
 
-      <div className="flex items-center gap-1 px-2 pb-2">
-        <IconButton
-          label="Add square"
-          description="Drop a new square shape on the canvas."
-          onClick={() => onAddShape('square')}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-            <rect
-              x="3"
-              y="3"
-              width="12"
-              height="12"
-              rx="2"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-          </svg>
-        </IconButton>
-        <IconButton
-          label="Add circle"
-          description="Drop a new circle shape on the canvas."
-          onClick={() => onAddShape('circle')}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-            <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" strokeWidth="2" />
-          </svg>
-        </IconButton>
-        <IconButton
-          label="Add diamond"
-          description="Drop a diamond shape (decision node, UML-style)."
-          onClick={() => onAddShape('diamond')}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-            <polygon
-              points="9,2.5 15.5,9 9,15.5 2.5,9"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </IconButton>
-        <IconButton
-          label="Add text"
-          description="Drop a draggable text element you can edit by double-clicking."
-          onClick={onAddText}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-            <path
-              d="M3 5h12M9 5v9M6.5 14h5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </IconButton>
-        <IconButton
-          label="Add sticky note"
-          description="Drop a yellow sticky note for short multi-line annotations."
-          onClick={onAddSticky}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-            <path
-              d="M3 3h9l3 3v9H3z"
-              fill="rgb(254 243 199)"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M12 3v3h3"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </IconButton>
+      <div className="px-2 pb-2">
+        {/* Shape primitives. Wraps to a second row once the palette runs
+            out of horizontal room. Ordered by frequency / familiarity:
+            primitive geometry first, then flowchart-vocabulary shapes. */}
+        <div className="flex flex-wrap items-center gap-1">
+          <IconButton
+            label="Add square"
+            description="Drop a new square shape on the canvas."
+            onClick={() => onAddShape('square')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <rect
+                x="3"
+                y="3"
+                width="12"
+                height="12"
+                rx="2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add circle"
+            description="Drop a new circle shape on the canvas."
+            onClick={() => onAddShape('circle')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add diamond"
+            description="Drop a diamond shape (decision node, UML-style)."
+            onClick={() => onAddShape('diamond')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <polygon
+                points="9,2.5 15.5,9 9,15.5 2.5,9"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add cylinder"
+            description="Drop a cylinder (database / storage in flowcharts)."
+            onClick={() => onAddShape('cylinder')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <path
+                d="M3 5 L3 13 A6 1.8 0 0 0 15 13 L15 5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+              <ellipse
+                cx="9"
+                cy="5"
+                rx="6"
+                ry="1.8"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+              />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add parallelogram"
+            description="Drop a parallelogram (input/output in flowcharts)."
+            onClick={() => onAddShape('parallelogram')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <polygon
+                points="5,3 16,3 13,15 2,15"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add hexagon"
+            description="Drop a hexagon (preparation / labelled milestone)."
+            onClick={() => onAddShape('hexagon')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <polygon
+                points="5,3 13,3 16,9 13,15 5,15 2,9"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add document"
+            description="Drop a document shape (output document in flowcharts)."
+            onClick={() => onAddShape('document')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <path
+                d="M3 3 L15 3 L15 13 C13 15.3 11 11.8 9 13.5 C7 15.3 5 11.8 3 13.5 Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </IconButton>
+        </div>
+        <div className="my-1 h-px bg-slate-100" />
+        <div className="flex items-center gap-1">
+          <IconButton
+            label="Add text"
+            description="Drop a draggable text element you can edit by double-clicking."
+            onClick={onAddText}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <path
+                d="M3 5h12M9 5v9M6.5 14h5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add sticky note"
+            description="Drop a yellow sticky note for short multi-line annotations."
+            onClick={onAddSticky}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <path
+                d="M3 3h9l3 3v9H3z"
+                fill="rgb(254 243 199)"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M12 3v3h3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </IconButton>
+        </div>
       </div>
 
       {selection ? <SelectedElementSection selection={selection} /> : <TabSection tab={tab} />}

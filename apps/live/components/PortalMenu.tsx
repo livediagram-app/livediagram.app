@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 type Placement = 'above' | 'below';
@@ -33,12 +27,7 @@ const PLACEMENT_TRANSFORM: Record<Placement, string> = {
  * Used by the tab bar (above the ellipsis button) and the editor header
  * (below the diagram-title ellipsis button).
  */
-export function PortalMenu({
-  anchor,
-  placement = 'below',
-  onClose,
-  children,
-}: PortalMenuProps) {
+export function PortalMenu({ anchor, placement = 'below', onClose, children }: PortalMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
@@ -69,8 +58,7 @@ export function PortalMenu({
     let dx = 0;
     let dy = 0;
     if (rect.left < margin) dx = margin - rect.left;
-    else if (rect.right > window.innerWidth - margin)
-      dx = window.innerWidth - margin - rect.right;
+    else if (rect.right > window.innerWidth - margin) dx = window.innerWidth - margin - rect.right;
     if (rect.top < margin) dy = margin - rect.top;
     else if (rect.bottom > window.innerHeight - margin)
       dy = window.innerHeight - margin - rect.bottom;
@@ -81,11 +69,7 @@ export function PortalMenu({
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!ref.current) return;
-      if (
-        e.target instanceof Node &&
-        !ref.current.contains(e.target) &&
-        e.target !== anchor
-      ) {
+      if (e.target instanceof Node && !ref.current.contains(e.target) && e.target !== anchor) {
         onClose();
       }
     };
@@ -120,13 +104,7 @@ type MenuItemProps = {
   disabled?: boolean;
 };
 
-export function MenuItem({
-  icon,
-  label,
-  onClick,
-  danger,
-  disabled,
-}: MenuItemProps) {
+export function MenuItem({ icon, label, onClick, danger, disabled }: MenuItemProps) {
   const base =
     'flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition';
   const tone = disabled
@@ -135,21 +113,8 @@ export function MenuItem({
       ? 'text-rose-700 hover:bg-rose-50'
       : 'text-slate-700 hover:bg-slate-100';
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`${base} ${tone}`}
-    >
-      <span
-        className={
-          disabled
-            ? 'text-slate-300'
-            : danger
-              ? 'text-rose-600'
-              : 'text-slate-400'
-        }
-      >
+    <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${tone}`}>
+      <span className={disabled ? 'text-slate-300' : danger ? 'text-rose-600' : 'text-slate-400'}>
         {icon}
       </span>
       <span>{label}</span>

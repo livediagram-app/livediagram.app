@@ -226,23 +226,37 @@ type Element = ShapeElement | ArrowElement;
 - Curved / bezier arrows; different arrowhead styles.
 - Anchors at element centres or anywhere on element edges.
 
-## Shape primitives (initial set)
+## Shape primitives
 
-Two shape kinds, both rendered as absolutely positioned elements on the canvas:
+Seven shape kinds, all rendered as absolutely positioned elements on the canvas:
 
-| Kind     | Rendering                               |
-| -------- | --------------------------------------- |
-| `square` | Rectangle with slight rounded corners.  |
-| `circle` | Square frame with `border-radius: 50%`. |
+| Kind            | Rendering                                                                                                                        | Aspect lock |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `square`        | Rectangle with slight rounded corners (CSS border + background on the wrapper).                                                  | Free        |
+| `circle`        | Square frame with `border-radius: 50%`.                                                                                          | Forced 1:1  |
+| `diamond`       | Wrapper carries no visible style; inner `<svg viewBox="0 0 100 100" preserveAspectRatio="none">` draws a four-point polygon.     | Forced 1:1  |
+| `cylinder`      | SVG overlay drawing a rectangle body with a curved bottom (`A 50,12` arc) and a top ellipse (`rx=50 ry=12`). Database / storage. | Free        |
+| `parallelogram` | SVG overlay drawing `polygon points="20,0 100,0 80,100 0,100"`. Input / output in flowcharts.                                    | Free        |
+| `hexagon`       | SVG overlay drawing `polygon points="25,0 75,0 100,50 75,100 25,100 0,50"` (flat-top). Preparation / labelled milestone.         | Free        |
+| `document`      | SVG overlay drawing a rectangle with a wavy bottom edge (two cubic curves). Output document in flowcharts.                       | Free        |
 
-Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop shadow. Same style for both — only the border-radius differs.
+Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop shadow. Same colours for every kind — only the geometry differs. Fill / stroke colours can be overridden per element via the Selected Element palette section.
+
+Square and circle render purely via CSS (`border-radius` + `background-color` on the wrapper `div`). Every other kind renders its geometry through an **inner SVG overlay** with `viewBox="0 0 100 100"` and `preserveAspectRatio="none"`, so it stretches with the element's box. The wrapper carries no border or background for those — only the selection ring. Anchor dots and resize handles still attach to the wrapper's bounding box (`n / e / s / w` midpoints), not to the geometry, so on slanted or curved shapes the anchor sits next to the visual edge rather than on it. That's acceptable for now and matches how the diamond already behaves.
 
 ## Data model
 
 Shapes are **elements** on a tab, per [05-diagram-structure.md](05-diagram-structure.md). The element type lives in `packages/diagram` and is consumed by the canvas and (later) the store and API code:
 
 ```ts
-type ShapeKind = 'square' | 'circle';
+type ShapeKind =
+  | 'square'
+  | 'circle'
+  | 'diamond'
+  | 'cylinder'
+  | 'parallelogram'
+  | 'hexagon'
+  | 'document';
 
 type Element = {
   id: ElementId;

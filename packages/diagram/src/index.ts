@@ -128,7 +128,14 @@ export function supportsColours(element: Element): boolean {
 
 // --- Shapes ---------------------------------------------------------------
 
-export type ShapeKind = 'square' | 'circle' | 'diamond';
+export type ShapeKind =
+  | 'square'
+  | 'circle'
+  | 'diamond'
+  | 'cylinder'
+  | 'parallelogram'
+  | 'hexagon'
+  | 'document';
 
 export type ShapeElement = {
   id: ElementId;
