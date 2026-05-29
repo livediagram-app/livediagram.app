@@ -157,6 +157,22 @@ export function SelectionPopover({
           onClose={() => setLinkPickerOpen(false)}
         />
       ) : null}
+      {onOpenComments ? (
+        <PopoverButton
+          label="Comments"
+          description="Open the comment thread for this element."
+          onClick={onOpenComments}
+        >
+          <CommentIcon />
+        </PopoverButton>
+      ) : null}
+
+      <Divider />
+
+      {/* Group: constraints on movement & resize. Group / Ungroup sits at
+          the start of this cluster so it reads next to the aspect-lock
+          button — grouping is the "lock these together" sibling of "lock
+          the aspect ratio". */}
       {onUngroup ? (
         <PopoverButton
           label="Ungroup"
@@ -174,19 +190,6 @@ export function SelectionPopover({
           <GroupIcon />
         </PopoverButton>
       ) : null}
-      {onOpenComments ? (
-        <PopoverButton
-          label="Comments"
-          description="Open the comment thread for this element."
-          onClick={onOpenComments}
-        >
-          <CommentIcon />
-        </PopoverButton>
-      ) : null}
-
-      <Divider />
-
-      {/* Group: constraints on movement & resize. */}
       {onToggleAspectLock ? (
         <Tooltip
           title={aspectLocked ? 'Aspect ratio locked' : 'Lock aspect ratio'}
