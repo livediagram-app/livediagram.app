@@ -116,6 +116,16 @@ This is what the full product runs on. Most of it is **not built yet** — see "
   @import '@livediagram/tailwind-config';
   ```
 
+## Deployment
+
+See [specs/10-deployment.md](specs/10-deployment.md).
+
+All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing` and `live`). CI runs lint / format / typecheck / test / build on every PR and push. On `main`, a successful CI triggers the deploy workflow which builds, then deploys `marketing` + `live` in parallel, then `router` (service bindings depend on the other two existing).
+
+Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-router` — matching the service-binding targets in `apps/router/wrangler.toml`.
+
+Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets policy](specs/06-secrets-policy.md).
+
 ## Common commands
 
 Run from the repo root:

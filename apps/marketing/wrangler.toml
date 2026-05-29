@@ -1,0 +1,9 @@
+name = "livediagram-marketing"
+compatibility_date = "2026-05-29"
+
+# Static assets only — Cloudflare Workers serves files from `./out`
+# (Next.js static export output). No worker code needed; the router
+# worker calls into this via a service binding (see apps/router).
+[assets]
+directory = "./out"
+not_found_handling = "404-page"

@@ -1,0 +1,9 @@
+name = "livediagram-live"
+compatibility_date = "2026-05-29"
+
+# Static assets only — Cloudflare Workers serves files from `./out`
+# (Next.js static export with basePath '/live'). The router worker
+# calls into this via a service binding to handle `/live/*` paths.
+[assets]
+directory = "./out"
+not_found_handling = "404-page"

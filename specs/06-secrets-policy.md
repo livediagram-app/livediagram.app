@@ -13,8 +13,19 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 | Local development       | `.env.local` (gitignored) per app/worker               |
 | Cloudflare Workers      | `wrangler secret put` — never in `wrangler.toml`       |
 | Cloudflare Pages        | Project env vars in the Cloudflare dashboard           |
-| CI                      | Repo secrets in the CI provider                        |
+| CI / Deploy             | GitHub repo secrets — see below                        |
 | Client-side JS bundles  | **Only** values prefixed `NEXT_PUBLIC_*` that are safe to publish |
+
+### GitHub Actions secrets
+
+Required by the CI/CD pipeline (see [10-deployment.md](10-deployment.md)):
+
+| Secret           | Purpose                                                                  |
+| ---------------- | ------------------------------------------------------------------------ |
+| `CF_API_TOKEN`   | Cloudflare API token with permission to deploy Workers (Account → Workers Scripts → Edit + Account Settings → Read). Scoped to the account that owns the workers. |
+| `CF_ACCOUNT_ID`  | Cloudflare account ID (not a secret per se, but kept in the same store). |
+
+Future Pro/Cloud features will add: `CLERK_SECRET_KEY`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY` and any D1 binding tokens. All same rules: never in source, never in `wrangler.toml`.
 
 ## What is "safe to publish" client-side
 

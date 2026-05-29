@@ -1,0 +1,119 @@
+name: Deploy
+
+# Runs only after CI has passed on `main`. Builds each app, then
+# deploys them to Cloudflare Workers in dependency order:
+#   marketing + live in parallel → router (which has service bindings
+#   to both, so it must deploy last).
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build apps
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Only run when triggered by a successful CI run (or manually).
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all apps
+        run: pnpm build
+
+      - name: Upload marketing build
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketing-out
+          path: apps/marketing/out
+          retention-days: 1
+
+      - name: Upload live build
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-out
+          path: apps/live/out
+          retention-days: 1
+
+  deploy-marketing:
+    name: Deploy marketing
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: marketing-out
+          path: apps/marketing/out
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: apps/marketing
+          command: deploy
+
+  deploy-live:
+    name: Deploy live
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: live-out
+          path: apps/live/out
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: apps/live
+          command: deploy
+
+  deploy-router:
+    name: Deploy router
+    # Router has service bindings to marketing + live, so both must
+    # exist before it deploys.
+    needs: [deploy-marketing, deploy-live]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: apps/router
+          command: deploy
