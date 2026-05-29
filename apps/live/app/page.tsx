@@ -525,14 +525,35 @@ export default function LivePage() {
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, templateChosen: false } : t)));
   };
 
-  const chooseTemplate = (kind: TemplateKind, name?: string) => {
+  const chooseTemplate = (kind: TemplateKind, name?: string, themeId?: ThemeId) => {
     if (name && name !== selfParticipant.name) {
       setSelfParticipant((p) => ({ ...p, name }));
     }
     const centre = getViewportCenter();
     const elements = buildTemplate(kind, centre.x, centre.y);
+    const theme = themeId ? getTheme(themeId) : null;
     commitTabs((ts) =>
-      ts.map((t) => (t.id === activeId ? { ...t, elements, templateChosen: true } : t)),
+      ts.map((t) =>
+        t.id === activeId
+          ? {
+              ...t,
+              elements,
+              templateChosen: true,
+              // Apply the picker's theme choice at the same time as the
+              // template scaffold so the user lands on a fully themed
+              // canvas in one step instead of having to revisit the
+              // Theme accordion.
+              ...(theme && themeId
+                ? {
+                    theme: themeId,
+                    backgroundColor: theme.backgroundColor,
+                    backgroundPattern: theme.backgroundPattern,
+                    patternColor: theme.patternColor,
+                  }
+                : {}),
+            }
+          : t,
+      ),
     );
     // Auto-select when a template produces a single element (today: blank
     // diagram's seeded rectangle) so the user can immediately rename or edit

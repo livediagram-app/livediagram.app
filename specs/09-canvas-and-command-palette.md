@@ -290,13 +290,15 @@ type Element = {
 
 A first-run **welcome screen** doubles as the template picker — the "Start a new diagram" modal lets users scaffold a starter diagram and set up their identity in one step. It is also reachable from the empty-state card's **Browse templates** button.
 
+The modal is **multi-step in a single view**: identity at the top, then template selection, then theme selection, with an explicit **Create diagram** button at the bottom that commits all three at once. Users can preview their choices before committing instead of the previous one-click flow.
+
 ### Welcome / identity section
 
-At the top of the modal, an inline avatar + name input lets the user adjust their display name. The participant is initialised on page load with a **randomly generated name** (`{adjective} {animal}` from a curated list) and a **random colour** from a 10-colour accessible palette. The name input is pre-populated with the generated name; the user can override it. The colour is shown via the avatar but not editable in the prototype. Picking any template commits the (possibly edited) name onto the self-participant — the colour stays as assigned. Submitting an empty name reverts to the generated default.
+At the top of the modal, an inline avatar + name input lets the user adjust their display name. The participant is initialised on page load with a **randomly generated name** (`{adjective} {animal}` from a curated list) and a **random colour** from a 10-colour accessible palette. The name input is pre-populated with the generated name; the user can override it. The colour is shown via the avatar but not editable in the prototype. Clicking Create commits the (possibly edited) name onto the self-participant — the colour stays as assigned. Submitting an empty name reverts to the generated default.
 
 ### Templates section
 
-Below the welcome section, the picker shows four options:
+Below the welcome section, a 4-column responsive grid of template cards (2-col on narrow viewports). One card is always selected (defaults to **Blank**). The card's compact layout — small preview thumbnail + title + 2-line description — lets the grid show all four options at once without scrolling. Options:
 
 - **Blank diagram** — drops a **single 220 × 100 square** centred on the visible viewport, pre-labelled `Blank Diagram` at `md` text size, and **auto-selects it** so the user can immediately rename or edit. The user starts with one editable rectangle they can rename or grow from, rather than a fully empty canvas. (A truly empty canvas is psychologically intimidating; this gives users an anchor element to immediately interact with.) Generalised rule: a template that produces exactly one element auto-selects that element; multi-element templates leave the selection cleared.
 - **Mind map** — a central circle with four labelled branch circles connected by pinned arrows.
@@ -304,6 +306,10 @@ Below the welcome section, the picker shows four options:
 - **Retrospective** — three columns ("What went well", "What didn't go well", "Action items") each with three blank stickies.
 
 All template elements are inserted via the history hook (commit), so they're undoable in one step. The picker animates in via the global `fly-up-in` keyframe (see [Motion and animations](#motion-and-animations)).
+
+### Theme section
+
+Below the templates, a 6-column responsive grid of theme cards (3-col on narrow viewports) lets the user pick a preset theme — exactly the same `THEMES` catalogue the [palette's Theme accordion](#current-tab-section) uses. Defaults to **Brand**. Confirming with **Create diagram** applies the chosen theme to the new tab (background colour + pattern + pattern colour + theme id), which then affects the default colours of every element added afterwards.
 
 ## Comments
 

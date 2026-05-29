@@ -106,7 +106,11 @@ type CanvasProps = {
   onOpenComments: (elementId: string) => void;
   showTemplatePicker: boolean;
   selfParticipant: import('@/lib/identity').Participant;
-  onChooseTemplate: (kind: TemplateKind, name: string) => void;
+  onChooseTemplate: (
+    kind: TemplateKind,
+    name: string,
+    themeId: import('@/lib/themes').ThemeId,
+  ) => void;
   onOpenTemplatePicker: () => void;
   tabThemeId: import('@/lib/themes').ThemeId;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
