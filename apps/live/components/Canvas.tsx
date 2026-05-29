@@ -113,7 +113,7 @@ type CanvasProps = {
   onFollowLink: (tabId: string) => void;
   onOpenComments: (elementId: string) => void;
   showTemplatePicker: boolean;
-  templatePickerMode: 'welcome' | 'templates';
+  templatePickerMode: 'welcome' | 'templates' | 'identity';
   // Hides the floating chrome (palette, explorer, zoom + history dock,
   // plus buttons, selection popover) while the first-run welcome modal
   // is taking the user through identity / template / theme selection.

@@ -173,7 +173,19 @@ export default function LivePage() {
   // derived `welcomeOpen` below — used to gate page-level chrome — can
   // read it. See `openTemplatePicker` / `skipTemplatePicker` for the
   // transition rules.
-  const [templatePickerMode, setTemplatePickerMode] = useState<'welcome' | 'templates'>('welcome');
+  const [templatePickerMode, setTemplatePickerMode] = useState<
+    'welcome' | 'templates' | 'identity'
+  >('welcome');
+  // Whether the participant has explicitly confirmed their identity in a
+  // modal at least once (either Create Diagram on the welcome flow, Skip,
+  // or Join Diagram on the join flow). Persisted via localStorage so a
+  // returning visitor isn't re-prompted. Brand new visitors landing on a
+  // pre-existing diagram see the join flow until they confirm.
+  const [nameConfirmed, setNameConfirmed] = useState(false);
+  // True after hydration if we successfully loaded a saved diagram from
+  // the API (i.e. the user is joining someone else's diagram, not
+  // starting a fresh one). Drives the join-screen trigger.
+  const [loadedExistingDiagram, setLoadedExistingDiagram] = useState(false);
   const [diagramName, setDiagramName] = useState('Untitled diagram');
   // Multi-selection bag for marquee box-select. Mutually exclusive with the
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
@@ -272,9 +284,17 @@ export default function LivePage() {
           resetTabs(fetched.tabs);
           setDiagramName(fetched.name);
           setActiveId(fetched.tabs[0]?.id ?? activeId);
+          setLoadedExistingDiagram(true);
+          // If we landed on someone else's diagram and the visitor
+          // hasn't confirmed their identity yet, open the join modal
+          // to let them choose a name first.
+          if (window.localStorage.getItem('livediagram:v2:name-confirmed') !== '1') {
+            setTemplatePickerMode('identity');
+          }
         }
         setDiagramId(id);
       }
+      setNameConfirmed(window.localStorage.getItem('livediagram:v2:name-confirmed') === '1');
       refreshDiagramList(self.id);
       setHydrated(true);
     })();
@@ -450,6 +470,15 @@ export default function LivePage() {
     activeTab.elements.length === 0 &&
     activeTab.templateChosen !== true &&
     templatePickerMode === 'welcome';
+  // Join screen for visitors landing on an existing diagram who haven't
+  // confirmed their identity yet. Same chrome-hide rule as welcomeOpen
+  // — focus the user on the name input before they start editing.
+  const joinScreenOpen =
+    hydrated && loadedExistingDiagram && !nameConfirmed && templatePickerMode === 'identity';
+  const identityOnlyScreenOpen = joinScreenOpen;
+  // Combined gate for the modal + the chrome hide. Either flavour of
+  // welcome (new-diagram or join-existing) wants the same treatment.
+  const anyWelcomeOpen = welcomeOpen || identityOnlyScreenOpen;
 
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
@@ -812,26 +841,55 @@ export default function LivePage() {
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, templateChosen: false } : t)));
   };
 
-  // Dismiss the welcome / templates modal without picking anything.
-  // Marks the tab as template-chosen so the modal doesn't reappear,
-  // leaves the canvas empty (so the empty-state card prompts the next
-  // step), and doesn't touch the participant name or the theme. Resets
-  // the picker mode to 'welcome' so the next first-run session is
-  // unaffected. Also mints the diagram id if this is the first-run
-  // session, so Skip / X still produces a shareable URL.
+  // Mark the participant's name as "confirmed" — they explicitly
+  // dismissed at least one modal that prompted for it. Persisted in
+  // localStorage so a returning visitor isn't re-prompted, and clears
+  // the in-memory flag so the modal closes immediately.
+  const confirmName = () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('livediagram:v2:name-confirmed', '1');
+    }
+    setNameConfirmed(true);
+  };
+
+  // Dismiss the welcome / templates / identity modal without picking
+  // anything. For the welcome flow this marks the tab as
+  // template-chosen so the modal doesn't reappear; for the identity
+  // flow it just records the name confirmation. Always resets the
+  // picker mode to 'welcome' so future first-run sessions are
+  // unaffected, and mints the diagram id if this is the first-run
+  // session so Skip / X still produces a shareable URL.
   const skipTemplatePicker = () => {
+    if (templatePickerMode === 'identity') {
+      confirmName();
+      setTemplatePickerMode('welcome');
+      return;
+    }
     commitDiagramId();
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, templateChosen: true } : t)));
+    confirmName();
     setTemplatePickerMode('welcome');
   };
 
   const chooseTemplate = (kind: TemplateKind, name?: string, themeId?: ThemeId) => {
+    // Identity-only mode: the visitor is joining an existing diagram.
+    // No template scaffold, no theme application — just commit the name
+    // and dismiss the modal.
+    if (templatePickerMode === 'identity') {
+      if (name && name !== selfParticipant.name) {
+        setSelfParticipant((p) => ({ ...p, name }));
+      }
+      confirmName();
+      setTemplatePickerMode('welcome');
+      return;
+    }
     // Welcome / Browse-templates is the canonical "commit point" for a new
     // diagram. Mint an id + put it in the URL now if we haven't already.
     commitDiagramId();
     if (name && name !== selfParticipant.name) {
       setSelfParticipant((p) => ({ ...p, name }));
     }
+    confirmName();
     // Reset the picker mode to 'welcome' so a future first-run session
     // (new diagram, fresh URL) starts in the right variant.
     setTemplatePickerMode('welcome');
@@ -1616,10 +1674,11 @@ export default function LivePage() {
         onFollowLink={followLink}
         onOpenComments={openComments}
         showTemplatePicker={
-          hydrated && activeTab.elements.length === 0 && activeTab.templateChosen !== true
+          (hydrated && activeTab.elements.length === 0 && activeTab.templateChosen !== true) ||
+          identityOnlyScreenOpen
         }
         templatePickerMode={templatePickerMode}
-        welcomeOpen={welcomeOpen}
+        welcomeOpen={anyWelcomeOpen}
         selfParticipant={selfParticipant}
         onChooseTemplate={chooseTemplate}
         onSkipTemplatePicker={skipTemplatePicker}

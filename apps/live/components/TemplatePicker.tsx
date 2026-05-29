@@ -10,7 +10,10 @@ type TemplatePickerProps = {
   // 'templates' — opened from the empty-state card's "Browse templates"
   // button on an existing tab; just the template grid + Apply. Keeps the
   // current participant name + current tab theme untouched.
-  mode: 'welcome' | 'templates';
+  // 'identity' — a participant has joined an existing diagram and hasn't
+  // confirmed their name yet. Identity section only (no templates, no
+  // theme grid); confirm becomes "Join Diagram".
+  mode: 'welcome' | 'templates' | 'identity';
   // The user's current identity. Their name is editable inside the picker
   // in welcome mode and hidden in templates-only mode.
   participant: Participant;
@@ -38,6 +41,10 @@ export function TemplatePicker({
   onSkip,
 }: TemplatePickerProps) {
   const isWelcome = mode === 'welcome';
+  const isIdentity = mode === 'identity';
+  const showIdentity = isWelcome || isIdentity;
+  const showTemplates = !isIdentity;
+  const showThemes = isWelcome;
   const [name, setName] = useState(participant.name);
   const [templateKind, setTemplateKind] = useState<TemplateKind>('blank');
   const [themeId, setThemeId] = useState<ThemeId>(currentThemeId);
@@ -53,12 +60,18 @@ export function TemplatePicker({
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">
-              {isWelcome ? 'Create a new Diagram' : 'Pick a template'}
+              {isWelcome
+                ? 'Create a new Diagram'
+                : isIdentity
+                  ? 'Welcome to this diagram'
+                  : 'Pick a template'}
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               {isWelcome
                 ? 'Set your name, pick a template, and choose a theme to start with.'
-                : 'Scaffold this tab with a starter diagram. Your current theme stays.'}
+                : isIdentity
+                  ? 'Pick the name people will see while you collaborate on this diagram.'
+                  : 'Scaffold this tab with a starter diagram. Your current theme stays.'}
             </p>
           </div>
           <button
@@ -72,8 +85,8 @@ export function TemplatePicker({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-5">
-          {/* Identity row — only in the first-run welcome flow. */}
-          {isWelcome ? (
+          {/* Identity row — first-run welcome + join-existing-diagram flows. */}
+          {showIdentity ? (
             <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
               <div
                 role="img"
@@ -112,43 +125,47 @@ export function TemplatePicker({
 
           {/* Template grid. 4 columns at wide widths so the picker uses the
               modal width instead of stretching cards vertically. */}
-          <p
-            className={`text-[10px] font-semibold uppercase tracking-wider text-slate-500 ${isWelcome ? 'mt-5' : ''}`}
-          >
-            Pick a template
-          </p>
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {TEMPLATES.map((t) => {
-              const active = templateKind === t.kind;
-              return (
-                <button
-                  key={t.kind}
-                  type="button"
-                  onClick={() => setTemplateKind(t.kind)}
-                  aria-pressed={active}
-                  className={
-                    active
-                      ? 'flex flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left'
-                      : 'flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40'
-                  }
-                >
-                  <div className="flex h-14 w-full items-center justify-center rounded-md bg-slate-50">
-                    <TemplatePreview kind={t.kind} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold text-slate-900">{t.title}</p>
-                    <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500">
-                      {t.description}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          {showTemplates ? (
+            <>
+              <p
+                className={`text-[10px] font-semibold uppercase tracking-wider text-slate-500 ${isWelcome ? 'mt-5' : ''}`}
+              >
+                Pick a template
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {TEMPLATES.map((t) => {
+                  const active = templateKind === t.kind;
+                  return (
+                    <button
+                      key={t.kind}
+                      type="button"
+                      onClick={() => setTemplateKind(t.kind)}
+                      aria-pressed={active}
+                      className={
+                        active
+                          ? 'flex flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left'
+                          : 'flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40'
+                      }
+                    >
+                      <div className="flex h-14 w-full items-center justify-center rounded-md bg-slate-50">
+                        <TemplatePreview kind={t.kind} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold text-slate-900">{t.title}</p>
+                        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500">
+                          {t.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : null}
 
           {/* Theme grid — only in the first-run welcome flow; existing
               tabs keep whichever theme they already have. */}
-          {isWelcome ? (
+          {showThemes ? (
             <>
               <p className="mt-5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 Select a theme
@@ -193,7 +210,9 @@ export function TemplatePicker({
           <p className="mr-auto text-[11px] text-slate-500">
             {isWelcome
               ? 'You can change these later from the Palette.'
-              : 'Existing content on this tab will be replaced.'}
+              : isIdentity
+                ? 'Other participants will see this name on your cursor and comments.'
+                : 'Existing content on this tab will be replaced.'}
           </p>
           <button
             type="button"
@@ -208,7 +227,7 @@ export function TemplatePicker({
             className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
           >
             <SparkleIcon />
-            {isWelcome ? 'Create Diagram' : 'Apply Template'}
+            {isWelcome ? 'Create Diagram' : isIdentity ? 'Join Diagram' : 'Apply Template'}
           </button>
         </div>
       </div>
