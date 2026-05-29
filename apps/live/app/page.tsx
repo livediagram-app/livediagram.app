@@ -153,6 +153,11 @@ export default function LivePage() {
   const [explorerPosition, setExplorerPosition] = useState<{ x: number; y: number } | null>(null);
   const [explorerMinimized, setExplorerMinimized] = useState(false);
   const [diagramName, setDiagramName] = useState('Untitled diagram');
+  // Multi-selection bag for marquee box-select. Mutually exclusive with the
+  // single `selectedId` above: when `multiSelectedIds.size > 0`, single
+  // selection / its popover / its accordion controls are suppressed. Both
+  // are cleared together by `onDeselect` and by clicking any single element.
+  const [multiSelectedIds, setMultiSelectedIds] = useState<Set<string>>(new Set());
   // Local-session participant. Initialised once per page load with a random
   // name + colour from the curated palette. Once auth lands, this becomes
   // the signed-in user (or guest with persisted localStorage identity).
@@ -610,6 +615,43 @@ export default function LivePage() {
     setEditingId(null);
   };
 
+  // Marquee box-select committed by Canvas on pointer-up. Mutex with
+  // single-selection: 0 → clear both; 1 → single-select that element so
+  // the popover/accordion still applies; 2+ → enter true multi-select.
+  const selectMarquee = (ids: Set<string>) => {
+    if (ids.size === 0) {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+    } else if (ids.size === 1) {
+      const only = Array.from(ids)[0]!;
+      setSelectedId(only);
+      setMultiSelectedIds(new Set());
+    } else {
+      setSelectedId(null);
+      setMultiSelectedIds(ids);
+    }
+    setEditingId(null);
+    setFormatSourceId(null);
+    setGroupSourceId(null);
+  };
+
+  // Multi-select delete: removes every marquee-selected element plus any
+  // arrows that reference one of them. Falls back to single-element delete
+  // when there's no active multi-selection.
+  const deleteMultiSelected = () => {
+    if (multiSelectedIds.size === 0) return;
+    const ids = multiSelectedIds;
+    commit((els) =>
+      els.filter((el) => {
+        if (ids.has(el.id)) return false;
+        if (el.type === 'arrow' && arrowReferencesAny(el, ids)) return false;
+        return true;
+      }),
+    );
+    setMultiSelectedIds(new Set());
+    setEditingId(null);
+  };
+
   const toggleLockSelected = () => {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
@@ -876,10 +918,15 @@ export default function LivePage() {
     setSelectedId(elementId);
     if (element.locked === true) return;
 
+    // If the user is dragging a marquee-selected element, move every member
+    // of the multi-selection in lockstep. Otherwise fall back to group
+    // semantics (move every grouped sibling) or a single-element move.
     const ids =
-      mode === 'move' && element.groupId
-        ? new Set(selectionMembers(activeTab.elements, elementId))
-        : new Set<string>([elementId]);
+      mode === 'move' && multiSelectedIds.has(elementId)
+        ? multiSelectedIds
+        : mode === 'move' && element.groupId
+          ? new Set(selectionMembers(activeTab.elements, elementId))
+          : new Set<string>([elementId]);
 
     const startBounds = new Map<string, ShapeBounds>();
     for (const el of activeTab.elements) {
@@ -934,6 +981,9 @@ export default function LivePage() {
       return;
     }
     setSelectedId(id);
+    // Clicking a single element always collapses any active multi-selection
+    // down to that one element — the user's intent is unambiguous.
+    setMultiSelectedIds(new Set());
   };
 
   const beginEndpointDrag = (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => {
@@ -1039,6 +1089,35 @@ export default function LivePage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [formatSourceId, groupSourceId]);
 
+  // Global Delete / Backspace handler — wipes the current selection
+  // (multi-select first, then falls back to single). Suppressed while a
+  // label is being edited or focus is in any text input, so typing in a
+  // text element doesn't blow away the element you're editing.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+      const target = e.target as Element | null;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        (target instanceof HTMLElement && target.isContentEditable)
+      ) {
+        return;
+      }
+      if (editingId !== null) return;
+      if (multiSelectedIds.size > 0) {
+        e.preventDefault();
+        deleteMultiSelected();
+      } else if (selectedId !== null) {
+        e.preventDefault();
+        deleteSelected();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [multiSelectedIds, selectedId, editingId]);
+
   return (
     <div className="flex h-dvh flex-col">
       <EditorHeader
@@ -1060,6 +1139,8 @@ export default function LivePage() {
         setViewportOffset={setViewportOffset}
         elements={activeTab.elements}
         selectedId={selectedId}
+        multiSelectedIds={multiSelectedIds}
+        onSelectMarquee={selectMarquee}
         editingId={editingId}
         formatSourceId={formatSourceId}
         groupSourceId={groupSourceId}
@@ -1080,6 +1161,7 @@ export default function LivePage() {
         onToggleExplorerMinimized={() => setExplorerMinimized((v) => !v)}
         onDeselect={() => {
           setSelectedId(null);
+          setMultiSelectedIds(new Set());
           setEditingId(null);
           setFormatSourceId(null);
           setGroupSourceId(null);
@@ -1133,6 +1215,7 @@ export default function LivePage() {
         onSelect={(id) => {
           setActiveId(id);
           setSelectedId(null);
+          setMultiSelectedIds(new Set());
           setEditingId(null);
           setFormatSourceId(null);
           setGroupSourceId(null);

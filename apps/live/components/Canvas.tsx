@@ -53,6 +53,8 @@ type CanvasProps = {
   onFitToScreen: () => void;
   elements: Element[];
   selectedId: string | null;
+  multiSelectedIds: Set<string>;
+  onSelectMarquee: (ids: Set<string>) => void;
   editingId: string | null;
   formatSourceId: string | null;
   groupSourceId: string | null;
@@ -130,6 +132,8 @@ export function Canvas(props: CanvasProps) {
     onFitToScreen,
     elements,
     selectedId,
+    multiSelectedIds,
+    onSelectMarquee,
     editingId,
     formatSourceId,
     groupSourceId,
@@ -208,6 +212,44 @@ export function Canvas(props: CanvasProps) {
     movedRef: { current: boolean };
   } | null>(null);
 
+  // Marquee box-select state. Stored in client (screen) coords; only
+  // converted to canvas coords on release for the intersection test.
+  const [marquee, setMarquee] = useState<{
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+  } | null>(null);
+
+  // Held-Space modifier turns canvas drag into a pan instead of a marquee
+  // (same vocabulary as Figma / Excalidraw). Tracked via a ref so the
+  // pointerdown handler always sees the current value without re-binding.
+  const spaceHeldRef = useRef(false);
+  useEffect(() => {
+    const isTypingTarget = (t: EventTarget | null) =>
+      t instanceof HTMLInputElement ||
+      t instanceof HTMLTextAreaElement ||
+      (t instanceof HTMLElement && t.isContentEditable);
+    const down = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return;
+      if (isTypingTarget(e.target)) return;
+      // Stop the page from scroll-jumping while space is held over the
+      // canvas. Doesn't affect inputs because we return above for those.
+      e.preventDefault();
+      spaceHeldRef.current = true;
+    };
+    const up = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return;
+      spaceHeldRef.current = false;
+    };
+    document.addEventListener('keydown', down);
+    document.addEventListener('keyup', up);
+    return () => {
+      document.removeEventListener('keydown', down);
+      document.removeEventListener('keyup', up);
+    };
+  }, []);
+
   useEffect(() => {
     if (!pan) return;
     const onMove = (e: PointerEvent) => {
@@ -229,6 +271,57 @@ export function Canvas(props: CanvasProps) {
       window.removeEventListener('pointerup', onUp);
     };
   }, [pan, onDeselect, setViewportOffset, viewportZoom]);
+
+  // Marquee drag: track the current pointer position and, on release,
+  // convert the screen-coord rect to canvas coords and test each boxed
+  // element's bounding box for intersection. Sub-4-pixel marquees are
+  // treated as plain clicks (just deselect).
+  useEffect(() => {
+    if (!marquee) return;
+    const onMove = (e: PointerEvent) => {
+      setMarquee((m) => (m ? { ...m, currentX: e.clientX, currentY: e.clientY } : null));
+    };
+    const onUp = () => {
+      const m = marquee;
+      if (!m) return;
+      const dragWidth = Math.abs(m.currentX - m.startX);
+      const dragHeight = Math.abs(m.currentY - m.startY);
+      if (dragWidth < 4 && dragHeight < 4) {
+        onDeselect();
+        setMarquee(null);
+        return;
+      }
+      const wrapper = wrapperRef.current;
+      if (wrapper) {
+        const rect = wrapper.getBoundingClientRect();
+        // Transform is `scale(z) translate(ox, oy)`. Screen-x of canvas
+        // point cx = rect.left + (cx + ox) * z. Invert:
+        //   cx = (screen-x - rect.left) / z - ox
+        const toCanvasX = (sx: number) => (sx - rect.left) / viewportZoom - viewportOffset.x;
+        const toCanvasY = (sy: number) => (sy - rect.top) / viewportZoom - viewportOffset.y;
+        const minX = Math.min(toCanvasX(m.startX), toCanvasX(m.currentX));
+        const maxX = Math.max(toCanvasX(m.startX), toCanvasX(m.currentX));
+        const minY = Math.min(toCanvasY(m.startY), toCanvasY(m.currentY));
+        const maxY = Math.max(toCanvasY(m.startY), toCanvasY(m.currentY));
+        const hits = new Set<string>();
+        for (const el of elements) {
+          if (!isBoxed(el)) continue;
+          // Standard rect-rect intersection test (open intervals).
+          if (el.x < maxX && el.x + el.width > minX && el.y < maxY && el.y + el.height > minY) {
+            hits.add(el.id);
+          }
+        }
+        onSelectMarquee(hits);
+      }
+      setMarquee(null);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [marquee, elements, viewportZoom, viewportOffset, onSelectMarquee, onDeselect]);
 
   const zoomStep = 0.1;
   const clampZoom = (z: number) => Math.max(0.1, Math.min(5, z));
@@ -256,7 +349,14 @@ export function Canvas(props: CanvasProps) {
   const selectedLocked = selected ? selected.locked === true : false;
   const selectedAspectLocked =
     selected && isBoxed(selected) ? selected.aspectLocked === true : false;
-  const showPopover = selected && editingId !== selected.id && !isPaintMode && !isGroupMode;
+  // Single-selection popover hides when a marquee multi-selection is active
+  // (a per-element popover doesn't make sense for many elements at once).
+  const showPopover =
+    selected &&
+    editingId !== selected.id &&
+    !isPaintMode &&
+    !isGroupMode &&
+    multiSelectedIds.size === 0;
   const showPlus =
     selected && selectedIsBoxed && editingId !== selected.id && !isPaintMode && !isGroupMode;
   const showHandles = (id: string) =>
@@ -281,7 +381,9 @@ export function Canvas(props: CanvasProps) {
 
   const cursorClass = pan
     ? 'cursor-grabbing'
-    : isPaintMode
+    : marquee
+      ? 'cursor-crosshair'
+      : isPaintMode
       ? 'cursor-copy'
       : isGroupMode
         ? 'cursor-crosshair'
@@ -350,13 +452,23 @@ export function Canvas(props: CanvasProps) {
         ref={wrapperRef}
         onPointerDown={(e) => {
           if (e.target !== e.currentTarget) return;
-          setPan({
-            startClientX: e.clientX,
-            startClientY: e.clientY,
-            startOffsetX: viewportOffset.x,
-            startOffsetY: viewportOffset.y,
-            movedRef: { current: false },
-          });
+          // Held Space = pan (Figma-style); otherwise = marquee box-select.
+          if (spaceHeldRef.current) {
+            setPan({
+              startClientX: e.clientX,
+              startClientY: e.clientY,
+              startOffsetX: viewportOffset.x,
+              startOffsetY: viewportOffset.y,
+              movedRef: { current: false },
+            });
+          } else {
+            setMarquee({
+              startX: e.clientX,
+              startY: e.clientY,
+              currentX: e.clientX,
+              currentY: e.clientY,
+            });
+          }
         }}
         onDoubleClick={(e) => {
           if (e.target !== e.currentTarget) return;
@@ -379,7 +491,7 @@ export function Canvas(props: CanvasProps) {
           <BoxedElementView
             key={element.id}
             element={element}
-            isSelected={memberIds.has(element.id)}
+            isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
             isEditing={element.id === editingId}
             isPaintMode={isPaintMode || isGroupMode}
             showHandles={showHandles(element.id)}
@@ -508,6 +620,19 @@ export function Canvas(props: CanvasProps) {
 
       {showTemplatePicker ? (
         <TemplatePicker participant={selfParticipant} onPick={onChooseTemplate} />
+      ) : null}
+
+      {marquee ? (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed z-30 rounded-sm border border-brand-500 bg-brand-500/10"
+          style={{
+            left: Math.min(marquee.startX, marquee.currentX),
+            top: Math.min(marquee.startY, marquee.currentY),
+            width: Math.abs(marquee.currentX - marquee.startX),
+            height: Math.abs(marquee.currentY - marquee.startY),
+          }}
+        />
       ) : null}
 
       {isPaintMode ? (

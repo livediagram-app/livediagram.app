@@ -377,13 +377,32 @@ More buttons (rename label, change colour, duplicate, link, send to back, …) w
 
 The canvas can be **panned** to bring off-screen content into view.
 
-- **Press-and-drag the empty canvas background** (anywhere that isn't an element, palette, or popover) to pan.
+- **Hold Space and drag the empty canvas background** (anywhere that isn't an element, palette, or popover) to pan. Same vocabulary as Figma / Excalidraw; leaves the bare drag gesture free for [marquee box-select](#marquee-box-select).
 - Drag offsets the entire canvas content (shapes, arrows, plus buttons, selection popover, dot-grid background) as a unit. The palette and mode banners stay fixed.
-- The cursor on empty canvas reads as `grab`, switching to `grabbing` while a pan is in progress.
-- A press-and-release without movement counts as a **click** and deselects, as before.
+- The cursor switches to `grabbing` while a pan is in progress.
+- A press-and-release of Space+drag without movement counts as a **click** and deselects, as before.
 - Double-click still drops a text element at the click position (now in the panned canvas-coordinate space).
 
 There is no pan reset / "centre on content" control yet — that's a future addition.
+
+## Marquee box-select
+
+**Press-and-drag the empty canvas background** (without holding Space) to draw a translucent selection rectangle. On release, every boxed element whose bounding box intersects the rectangle is multi-selected. Releasing inside a sub-4-pixel area is treated as a click and deselects.
+
+A multi-selection is mutually exclusive with the single-element selection:
+
+- 0 hits → both cleared.
+- 1 hit → single-select that element (popover + accordion still apply).
+- 2 + hits → enter **multi-select** mode. The single-element popover is suppressed (a per-element toolbar doesn't make sense for many at once). Each multi-selected element still shows its selection ring via `BoxedElementView`'s `isSelected` prop.
+
+While multi-selected:
+
+- **Press-and-drag any member** moves the whole group in lockstep. The drag handler reads `multiSelectedIds` and pre-populates `startBounds` with every member.
+- **Delete / Backspace** removes every multi-selected element and any arrows that reference one of them. Single-element delete falls back to the same logic when there's no multi-selection. The keyboard handler is suppressed while a label is being edited or focus is inside any text input.
+- **Click any element** collapses the selection to that one (intuitive: explicit click on one thing == "I want only this").
+- **Click empty canvas** or **switch tabs** clears the multi-selection.
+
+Arrows are not yet included in marquee hits — only boxed elements (shape, text, sticky). Arrows still survive as connectors when their endpoints are inside the marquee, but they're not directly selected.
 
 ## Quick add + connect
 
