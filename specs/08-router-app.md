@@ -12,7 +12,9 @@ A small Cloudflare Worker that fronts the apex domain and routes URL paths to th
 | `/live`, `/live/*` | live app (`apps/live`)           |
 | everything else    | marketing app (`apps/marketing`) |
 
-The router does **not** rewrite the path. `/live/foo` is passed to the live app as `/live/foo`, which works because the live app uses `basePath: '/live'`. The marketing app sees `/`, `/pricing`, etc., as-is.
+The router **does** rewrite the path for `/live/*` requests: the `/live` prefix is stripped before forwarding so the live worker sees `/`, `/some-path` etc. This is because Next.js's `basePath` option rewrites URL references inside the HTML/JS bundles but does **not** shift the actual file layout — the static export still places `index.html`, `_next/`, and `404.html` at the root of `out/`. The router translates the public URL space (with `/live` prefix) to the live worker's internal URL space (no prefix).
+
+Marketing sees `/`, `/pricing`, etc., as-is — no rewriting.
 
 ## Implementation
 
