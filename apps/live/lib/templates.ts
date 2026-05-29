@@ -120,32 +120,69 @@ function buildMindMap(cx: number, cy: number): Element[] {
 function buildOrgChart(cx: number, cy: number): Element[] {
   const headW = 180;
   const headH = 70;
-  const reportW = 150;
-  const reportH = 54;
+  const vpW = 150;
+  const vpH = 54;
+  const subW = 120;
+  const subH = 46;
+
+  const ceoY = cy - 200;
+  const vpY = cy - 40;
+  const subY = cy + 120;
 
   const head = {
-    ...createShape('square', cx - headW / 2, cy - 120),
+    ...createShape('square', cx - headW / 2, ceoY),
     width: headW,
     height: headH,
     label: 'CEO',
     textSize: 'lg' as const,
   };
 
-  const reportLabels = ['VP Engineering', 'VP Sales', 'VP Operations'];
-  const reportXs = [cx - reportW * 1.7, cx - reportW / 2, cx + reportW * 0.7];
-  const reports = reportLabels.map((label, i) => ({
-    ...createShape('square', reportXs[i]!, cy + 40),
-    width: reportW,
-    height: reportH,
+  const vpLabels = ['VP Engineering', 'VP Sales', 'VP Operations'];
+  const vpXs = [cx - vpW * 1.7, cx - vpW / 2, cx + vpW * 0.7];
+  const vps = vpLabels.map((label, i) => ({
+    ...createShape('square', vpXs[i]!, vpY),
+    width: vpW,
+    height: vpH,
     label,
-    // Second-level boxes are narrower than the CEO box; sm sits inside
-    // the box at the default 150x54 size without overflowing.
     textSize: 'sm' as const,
   }));
 
-  const arrows = reports.map((r) => createPinnedArrow(head.id, 's', r.id, 'n'));
+  // Two direct reports under each VP. Labels are kept short on purpose
+  // so they fit the smaller third-level boxes at `sm` text.
+  const subLabels: ReadonlyArray<readonly [string, string]> = [
+    ['Eng Lead', 'Tech Lead'],
+    ['Sales Lead', 'Account Mgr'],
+    ['Ops Lead', 'Finance'],
+  ] as const;
+  const subs = vps.flatMap((vp, i) => {
+    const vpCenterX = vp.x + vpW / 2;
+    const [leftLabel, rightLabel] = subLabels[i]!;
+    const leftCenter = vpCenterX - 65;
+    const rightCenter = vpCenterX + 65;
+    return [
+      {
+        ...createShape('square', leftCenter - subW / 2, subY),
+        width: subW,
+        height: subH,
+        label: leftLabel,
+        textSize: 'sm' as const,
+      },
+      {
+        ...createShape('square', rightCenter - subW / 2, subY),
+        width: subW,
+        height: subH,
+        label: rightLabel,
+        textSize: 'sm' as const,
+      },
+    ];
+  });
 
-  return [head, ...reports, ...arrows];
+  const arrows = [
+    ...vps.map((v) => createPinnedArrow(head.id, 's', v.id, 'n')),
+    ...subs.map((s, i) => createPinnedArrow(vps[Math.floor(i / 2)]!.id, 's', s.id, 'n')),
+  ];
+
+  return [head, ...vps, ...subs, ...arrows];
 }
 
 // Vertical flowchart with a branch. Start (stadium) → Step 1 (square)
