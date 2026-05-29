@@ -286,7 +286,14 @@ export default function LivePage() {
   // hide rule (palette / explorer / dock / tab bar all suppressed so the
   // user's focus is on the modal). The Browse-templates flow uses the
   // same modal but isn't "welcome" — chrome stays visible there.
+  //
+  // Gated on `hydrated` so the modal (and chrome hide) only kick in once
+  // the post-mount useLayoutEffect has had a chance to replace the
+  // placeholder participant with the loaded / freshly minted one. Without
+  // this, TemplatePicker's `useState(participant.name)` lazy init captures
+  // the SSG placeholder "Guest" and never updates.
   const welcomeOpen =
+    hydrated &&
     activeTab.elements.length === 0 &&
     activeTab.templateChosen !== true &&
     templatePickerMode === 'welcome';
@@ -1406,7 +1413,9 @@ export default function LivePage() {
         onClearLink={clearLinkSelected}
         onFollowLink={followLink}
         onOpenComments={openComments}
-        showTemplatePicker={activeTab.elements.length === 0 && activeTab.templateChosen !== true}
+        showTemplatePicker={
+          hydrated && activeTab.elements.length === 0 && activeTab.templateChosen !== true
+        }
         templatePickerMode={templatePickerMode}
         welcomeOpen={welcomeOpen}
         selfParticipant={selfParticipant}
