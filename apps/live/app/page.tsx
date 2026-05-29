@@ -375,7 +375,22 @@ export default function LivePage() {
     if (tabs.length <= 1) return;
     const idx = tabs.findIndex((t) => t.id === id);
     if (idx < 0) return;
-    commitTabs((ts) => ts.filter((t) => t.id !== id));
+    // Drop the tab AND strip any links on remaining elements that point to
+    // it, so we don't leave dangling cross-tab references. Bundled into one
+    // commit so undo restores both.
+    commitTabs((ts) =>
+      ts
+        .filter((t) => t.id !== id)
+        .map((t) => ({
+          ...t,
+          elements: t.elements.map((el) => {
+            if (!el.link) return el;
+            if (el.link.tabId !== id) return el;
+            const { link: _drop, ...rest } = el;
+            return rest as typeof el;
+          }),
+        })),
+    );
     if (activeId === id) {
       const fallback = tabs[idx + 1] ?? tabs[idx - 1];
       if (fallback) setActiveId(fallback.id);
