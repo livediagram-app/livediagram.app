@@ -90,17 +90,11 @@ Each boxed element can have its **aspect ratio locked**. Stored as `aspectLocked
 
 ### Current Tab section
 
-When **nothing is selected**, the Selected Element section is replaced by a **Current Tab** section.
+When **nothing is selected**, the Selected Element section is replaced by a **Current Tab** section. Accordions, top to bottom:
 
-Today it contains a single **Background** accordion (closed by default) with three pattern choices:
-
-- **Grid** (default) — subtle dot grid.
-- **Blank** — no pattern.
-- **Lines** — horizontal ruled lines.
-
-Pattern is stored per-tab as `backgroundPattern?: BackgroundPattern` on the Tab object. When the user pans, the grid/lines pattern phase tracks the pan offset on the canvas's main background so the pattern tiles indefinitely.
-
-Future iterations may add per-tab grid density, custom background colour, or link this section to a global theme.
+- **Theme** — a 3-column grid of preset themes. Picking a theme writes `theme: ThemeId` onto the tab AND replaces the tab's `backgroundColor`, `backgroundPattern`, and `patternColor` with the theme's values. From that point on, newly added boxed elements inherit the theme's `elementFill / elementStroke / elementText` colours (sticky notes keep their amber identity regardless). Existing elements are **not** retroactively recoloured — the user can re-apply colours per-element via the Selected Element → Colours accordion. The theme catalogue (`apps/live/lib/themes.ts`) ships with: **Brand** (default sky-blue + white), **Slate** (cool grey), **Forest** (greens on a mint backdrop), **Sunset** (warm orange), **Lavender** (purple), **Mono** (black & white). Adding a new theme is just one entry in the catalogue.
+- **Background** — per-tab background controls. Six pattern choices (Grid, Blank, Lines, Graph, Crosshatch, Confetti) plus Canvas + Pattern colour pickers. Patterns store as `backgroundPattern?: BackgroundPattern`. When the user pans, the grid/lines/graph/crosshatch pattern phase tracks the pan offset so the pattern tiles indefinitely. Confetti renders a fixed multi-colour scatter and ignores the pattern colour.
+- **Content** — destructive operations on the tab's contents (today: a single "Remove all content" button, disabled when there's nothing to clear).
 
 ### Selected Element section
 

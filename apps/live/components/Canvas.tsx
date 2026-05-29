@@ -103,8 +103,10 @@ type CanvasProps = {
   selfParticipant: import('@/lib/identity').Participant;
   onChooseTemplate: (kind: TemplateKind, name: string) => void;
   onOpenTemplatePicker: () => void;
+  tabThemeId: import('@/lib/themes').ThemeId;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
   onSetBackgroundColor: (color: string) => void;
+  onSetTheme: (id: import('@/lib/themes').ThemeId) => void;
   onSetPatternColor: (color: string) => void;
   onClearTabContent: () => void;
   onToggleAspectLock: () => void;
@@ -178,6 +180,8 @@ export function Canvas(props: CanvasProps) {
     selfParticipant,
     onChooseTemplate,
     onOpenTemplatePicker,
+    tabThemeId,
+    onSetTheme,
     onSetBackgroundPattern,
     onSetBackgroundColor,
     onSetPatternColor,
@@ -321,10 +325,12 @@ export function Canvas(props: CanvasProps) {
     backgroundPattern: tabBackgroundPattern,
     backgroundColor: tabBackgroundColor,
     patternColor: tabPatternColor,
+    themeId: tabThemeId,
     hasContent: elements.length > 0,
     onSetBackgroundPattern,
     onSetBackgroundColor,
     onSetPatternColor,
+    onSetTheme,
     onClearTabContent,
   };
 

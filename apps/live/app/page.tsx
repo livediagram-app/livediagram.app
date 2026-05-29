@@ -43,6 +43,7 @@ import { useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { ALIGN_SNAP_THRESHOLD, SNAP_THRESHOLD, type ArrowEnd, type DragMode } from '@/lib/canvas';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { buildTemplate, type TemplateKind } from '@/lib/templates';
+import { getTheme, type ThemeId } from '@/lib/themes';
 
 function createTab(name: string): Tab {
   return { id: crypto.randomUUID(), name, elements: [] };
@@ -293,6 +294,17 @@ export default function LivePage() {
         colours.textColor = deriveTextColorForBg(bg);
       }
     }
+    // Preset theme overrides — explicit theme colours win over the
+    // automatic background-derived ones above, and only apply to shapes
+    // and text (sticky notes keep their amber identity).
+    const theme = getTheme(activeTab.theme);
+    if (base.type === 'shape') {
+      if (theme.elementFill) colours.fillColor = theme.elementFill;
+      if (theme.elementStroke) colours.strokeColor = theme.elementStroke;
+      if (theme.elementText) colours.textColor = theme.elementText;
+    } else if (base.type === 'text') {
+      if (theme.elementText) colours.textColor = theme.elementText;
+    }
     const centre = getViewportCenter();
     const el: T = {
       ...base,
@@ -533,6 +545,27 @@ export default function LivePage() {
   const setBackgroundPattern = (pattern: BackgroundPattern) => {
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundPattern: pattern } : t)),
+    );
+  };
+
+  // Applying a theme swaps backdrop colours/pattern AND records the theme
+  // id so future element-create calls (`addBoxed`) can read the theme's
+  // element-colour defaults. Existing elements aren't recoloured — only
+  // newly added ones inherit the theme.
+  const setTheme = (id: ThemeId) => {
+    const theme = getTheme(id);
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId
+          ? {
+              ...t,
+              theme: id,
+              backgroundColor: theme.backgroundColor,
+              backgroundPattern: theme.backgroundPattern,
+              patternColor: theme.patternColor,
+            }
+          : t,
+      ),
     );
   };
 
@@ -1082,6 +1115,8 @@ export default function LivePage() {
         selfParticipant={selfParticipant}
         onChooseTemplate={chooseTemplate}
         onOpenTemplatePicker={openTemplatePicker}
+        tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
+        onSetTheme={setTheme}
         onSetBackgroundPattern={setBackgroundPattern}
         onClearTabContent={clearTabContent}
         onSetBackgroundColor={setBackgroundColor}

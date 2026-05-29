@@ -6,6 +6,7 @@ import type {
   TextAlignY,
   TextSize,
 } from '@livediagram/diagram';
+import { THEMES, type ThemeId } from '@/lib/themes';
 import { MovablePanel } from './MovablePanel';
 import { Tooltip } from './Tooltip';
 
@@ -31,10 +32,12 @@ export type TabSectionControls = {
   backgroundPattern: BackgroundPattern;
   backgroundColor: string;
   patternColor: string;
+  themeId: ThemeId;
   hasContent: boolean;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
   onSetBackgroundColor: (color: string) => void;
   onSetPatternColor: (color: string) => void;
+  onSetTheme: (id: ThemeId) => void;
   onClearTabContent: () => void;
 };
 
@@ -385,7 +388,8 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
 }
 
 function TabSection({ tab }: { tab: TabSectionControls }) {
-  const [open, setOpen] = useState<{ background: boolean; content: boolean }>({
+  const [open, setOpen] = useState<{ theme: boolean; background: boolean; content: boolean }>({
+    theme: false,
     background: false,
     content: false,
   });
@@ -396,6 +400,51 @@ function TabSection({ tab }: { tab: TabSectionControls }) {
       <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
         Current Tab
       </p>
+      <Accordion title="Theme" open={open.theme} onToggle={() => toggle('theme')}>
+        <p className="text-[10px] font-medium text-slate-500">
+          Sets the canvas backdrop + the default colours for new elements. Existing elements aren&apos;t
+          recoloured.
+        </p>
+        <div className="mt-1 grid grid-cols-3 gap-1">
+          {THEMES.map((t) => {
+            const active = tab.themeId === t.id;
+            // Border / dot colours come from the theme's element-stroke (or
+            // pattern colour when the theme is the brand default).
+            const dot = t.elementStroke ?? t.patternColor;
+            const swatch = t.elementFill ?? '#ffffff';
+            return (
+              <Tooltip
+                key={t.id}
+                title={t.label}
+                description="Applies the theme's background and new-element colours."
+              >
+                <button
+                  type="button"
+                  onClick={() => tab.onSetTheme(t.id)}
+                  aria-pressed={active}
+                  className={
+                    active
+                      ? 'flex flex-col items-center gap-1 rounded-md border border-brand-400 bg-brand-50 p-1.5 text-[10px] font-medium text-brand-800'
+                      : 'flex flex-col items-center gap-1 rounded-md border border-slate-200 bg-white p-1.5 text-[10px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40'
+                  }
+                >
+                  <span
+                    aria-hidden
+                    style={{ backgroundColor: t.backgroundColor }}
+                    className="flex h-7 w-full items-center justify-center rounded-sm border border-slate-200"
+                  >
+                    <span
+                      style={{ backgroundColor: swatch, borderColor: dot }}
+                      className="h-3 w-3 rounded-sm border"
+                    />
+                  </span>
+                  <span>{t.label}</span>
+                </button>
+              </Tooltip>
+            );
+          })}
+        </div>
+      </Accordion>
       <Accordion title="Background" open={open.background} onToggle={() => toggle('background')}>
         <p className="text-[10px] font-medium text-slate-500">Pattern</p>
         <div className="mt-1 grid grid-cols-3 gap-1">

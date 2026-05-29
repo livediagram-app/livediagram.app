@@ -247,6 +247,11 @@ export type Tab = {
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
   patternColor?: string;
+  // Selected preset theme name (see apps/live/lib/themes.ts). When set,
+  // newly added elements inherit the theme's fill / stroke / text colours
+  // instead of the built-in brand defaults. Existing elements aren't
+  // retroactively recoloured. Unset = brand defaults.
+  theme?: string;
   // Set to true once the user has explicitly chosen a starting template
   // (including "Blank"), so the template picker doesn't reappear on this tab.
   templateChosen?: boolean;
