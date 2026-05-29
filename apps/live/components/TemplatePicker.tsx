@@ -147,11 +147,31 @@ export function TemplatePicker({ participant, onPick }: TemplatePickerProps) {
             onClick={() => onPick(templateKind, effectiveName, themeId)}
             className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
           >
-            Create diagram
+            <SparkleIcon />
+            Create Diagram
           </button>
         </div>
       </div>
     </div>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2.5l1.4 3.1L12.5 7l-3.1 1.4L8 11.5 6.6 8.4 3.5 7l3.1-1.4z" />
+      <path d="M12.5 11.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" />
+    </svg>
   );
 }
 

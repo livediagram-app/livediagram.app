@@ -1,6 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import {
   anchorPosition,
   bringManyToFront,
@@ -42,6 +48,11 @@ import { TabBar } from '@/components/TabBar';
 import { useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { ALIGN_SNAP_THRESHOLD, SNAP_THRESHOLD, type ArrowEnd, type DragMode } from '@/lib/canvas';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
+import {
+  loadSelfParticipant,
+  localStorageStore,
+  saveSelfParticipant,
+} from '@/lib/diagram-store';
 import { buildTemplate, type TemplateKind } from '@/lib/templates';
 import { getTheme, type ThemeId } from '@/lib/themes';
 
@@ -138,6 +149,7 @@ export default function LivePage() {
     commit: commitTabs,
     tick: tickTabs,
     markCheckpoint,
+    reset: resetTabs,
     undo: undoHistory,
     redo: redoHistory,
   } = useDiagramHistory(initialTabs);
@@ -171,6 +183,55 @@ export default function LivePage() {
   // Comment mutations bypass the history hook (so typing a comment then
   // Ctrl+Z doesn't unexpectedly wipe it).
   const [commentThreadOpenId, setCommentThreadOpenId] = useState<string | null>(null);
+  // Persistent diagram id. `null` until the post-mount hydration step
+  // runs; that step reads ?d=<id> from the URL (or mints a fresh id +
+  // updates the URL) and pulls any saved tabs + name from localStorage.
+  // Saves are gated on `hydrated` so we never overwrite stored data
+  // with the empty initial render.
+  const [diagramId, setDiagramId] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+
+  useLayoutEffect(() => {
+    if (hydrated) return;
+    const url = new URL(window.location.href);
+    let id = url.searchParams.get('d');
+    if (!id) {
+      id = crypto.randomUUID();
+      url.searchParams.set('d', id);
+      // `replaceState` writes the id back without a navigation so the
+      // user can copy the URL and reopen the same diagram later.
+      window.history.replaceState({}, '', url.toString());
+    }
+    const stored = localStorageStore.load(id);
+    if (stored) {
+      resetTabs(stored.tabs);
+      setDiagramName(stored.name);
+      setActiveId(stored.tabs[0]?.id ?? activeId);
+    }
+    const storedSelf = loadSelfParticipant();
+    if (storedSelf) setSelfParticipant({ ...storedSelf, status: 'online' });
+    setDiagramId(id);
+    setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist on any change after hydration. localStorage is sync so we
+  // don't bother debouncing; the prototype's diagrams are small and we'd
+  // rather not lose work if the page closes between debounce ticks.
+  useEffect(() => {
+    if (!hydrated || !diagramId) return;
+    localStorageStore.save({
+      id: diagramId,
+      name: diagramName,
+      tabs,
+      savedAt: Date.now(),
+    });
+  }, [hydrated, diagramId, tabs, diagramName]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    saveSelfParticipant(selfParticipant);
+  }, [hydrated, selfParticipant]);
   const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
   const [viewportZoom, setViewportZoom] = useState(1);
   const canvasMainRef = useRef<HTMLElement>(null);
@@ -530,8 +591,32 @@ export default function LivePage() {
       setSelfParticipant((p) => ({ ...p, name }));
     }
     const centre = getViewportCenter();
-    const elements = buildTemplate(kind, centre.x, centre.y);
+    const rawElements = buildTemplate(kind, centre.x, centre.y);
     const theme = themeId ? getTheme(themeId) : null;
+    // Repaint the scaffold with the chosen theme so the Mind map circles,
+    // Org chart boxes etc. land in the user's selected colours rather
+    // than the hard-coded brand defaults from `buildTemplate`. Sticky
+    // notes (Retrospective) keep their amber identity — same rule
+    // `addBoxed` applies to ad-hoc sticky creation.
+    const elements = !theme
+      ? rawElements
+      : rawElements.map((el) => {
+          if (el.type === 'shape') {
+            return {
+              ...el,
+              ...(theme.elementFill ? { fillColor: theme.elementFill } : {}),
+              ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
+              ...(theme.elementText ? { textColor: theme.elementText } : {}),
+            };
+          }
+          if (el.type === 'text') {
+            return {
+              ...el,
+              ...(theme.elementText ? { textColor: theme.elementText } : {}),
+            };
+          }
+          return el;
+        });
     commitTabs((ts) =>
       ts.map((t) =>
         t.id === activeId

@@ -28,6 +28,7 @@ export type DiagramHistory = {
   commit: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   tick: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   markCheckpoint: () => void;
+  reset: (tabs: Tab[]) => void;
   undo: () => void;
   redo: () => void;
 };
@@ -83,6 +84,13 @@ export function useDiagramHistory(initialTabs: Tab[]): DiagramHistory {
     });
   };
 
+  // Replace the present tab list with `tabs` and clear history. Used by
+  // the page when hydrating from localStorage on mount — past / future
+  // snapshots from a previous session aren't meaningful to the new run.
+  const reset = (tabs: Tab[]) => {
+    setHistory({ past: [], present: tabs, future: [] });
+  };
+
   return {
     tabs: history.present,
     canUndo: history.past.length > 0,
@@ -90,6 +98,7 @@ export function useDiagramHistory(initialTabs: Tab[]): DiagramHistory {
     commit,
     tick,
     markCheckpoint,
+    reset,
     undo,
     redo,
   };
