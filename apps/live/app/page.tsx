@@ -750,24 +750,49 @@ export default function LivePage() {
     );
   };
 
-  // Applying a theme swaps backdrop colours/pattern AND records the theme
-  // id so future element-create calls (`addBoxed`) can read the theme's
-  // element-colour defaults. Existing elements aren't recoloured — only
-  // newly added ones inherit the theme.
+  // Applying a theme swaps backdrop colours/pattern, records the theme
+  // id (so future element-create calls in `addBoxed` inherit the theme),
+  // AND retroactively recolours every shape + text element on the tab to
+  // match. Sticky notes are skipped — the amber palette is iconic. Any
+  // per-element colour overrides the user previously set are replaced;
+  // applying a theme is meant to be a one-tap "reset to this look".
   const setTheme = (id: ThemeId) => {
     const theme = getTheme(id);
     commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              theme: id,
-              backgroundColor: theme.backgroundColor,
-              backgroundPattern: theme.backgroundPattern,
-              patternColor: theme.patternColor,
-            }
-          : t,
-      ),
+      ts.map((t) => {
+        if (t.id !== activeId) return t;
+        const elements = t.elements.map((el) => {
+          if (el.type === 'shape') {
+            return {
+              ...el,
+              ...(theme.elementFill ? { fillColor: theme.elementFill } : { fillColor: undefined }),
+              ...(theme.elementStroke
+                ? { strokeColor: theme.elementStroke }
+                : { strokeColor: undefined }),
+              ...(theme.elementText
+                ? { textColor: theme.elementText }
+                : { textColor: undefined }),
+            };
+          }
+          if (el.type === 'text') {
+            return {
+              ...el,
+              ...(theme.elementText
+                ? { textColor: theme.elementText }
+                : { textColor: undefined }),
+            };
+          }
+          return el;
+        });
+        return {
+          ...t,
+          elements,
+          theme: id,
+          backgroundColor: theme.backgroundColor,
+          backgroundPattern: theme.backgroundPattern,
+          patternColor: theme.patternColor,
+        };
+      }),
     );
   };
 
