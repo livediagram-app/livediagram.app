@@ -138,7 +138,9 @@ function buildOrgChart(cx: number, cy: number): Element[] {
     width: reportW,
     height: reportH,
     label,
-    textSize: 'md' as const,
+    // Second-level boxes are narrower than the CEO box; sm sits inside
+    // the box at the default 150x54 size without overflowing.
+    textSize: 'sm' as const,
   }));
 
   const arrows = reports.map((r) => createPinnedArrow(head.id, 's', r.id, 'n'));
@@ -224,9 +226,9 @@ function buildFlowchart(cx: number, cy: number): Element[] {
 }
 
 function buildRetrospective(cx: number, cy: number): Element[] {
-  const colW = 220;
-  const colSpacing = 240;
-  const headerH = 48;
+  const colW = 260;
+  const colSpacing = 280;
+  const headerH = 56;
   const stickyH = 110;
   const stickyGap = 20;
   const columns = ['What went well', "What didn't go well", 'Action items'];
