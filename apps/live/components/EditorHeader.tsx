@@ -107,6 +107,9 @@ export function EditorHeader({
         )}
       </div>
       <div className="flex w-56 items-center justify-end gap-2">
+        {participants.map((p) => (
+          <ParticipantAvatar key={p.id} participant={p} withTooltip />
+        ))}
         {showShare ? (
           <button
             type="button"
@@ -123,9 +126,6 @@ export function EditorHeader({
             {shareable ? 'Shared' : 'Share'}
           </button>
         ) : null}
-        {participants.map((p) => (
-          <ParticipantAvatar key={p.id} participant={p} withTooltip />
-        ))}
       </div>
     </header>
   );
