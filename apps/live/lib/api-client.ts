@@ -35,11 +35,22 @@ function wsUrl(path: string): string {
   return `${proto}//${window.location.host}${API_BASE}${path}`;
 }
 
+// What the API ships when the live app loads a diagram: meta + an
+// ordered list of TabSummary objects (id + name + position). Element
+// content lives in TabDTO; fetched per-tab via apiLoadTab.
+export type TabSummary = {
+  id: string;
+  diagramId: string;
+  name: string;
+  orderIndex: number;
+  updatedAt: number;
+};
+
 export type StoredDiagram = {
   id: string;
   ownerId: string;
   name: string;
-  tabs: Tab[];
+  tabs: TabSummary[];
   shareable: boolean;
   shareCode: string | null;
   savedAt: number;
@@ -58,11 +69,19 @@ type DiagramResponse = {
     id: string;
     ownerId: string;
     name: string;
-    tabs: Tab[];
+    tabs: TabSummary[];
     shareable: boolean;
     shareCode: string | null;
     savedAt: number;
     createdAt: number;
+  };
+};
+
+type TabResponse = {
+  tab: Tab & {
+    diagramId: string;
+    orderIndex: number;
+    updatedAt: number;
   };
 };
 
@@ -311,19 +330,99 @@ export async function apiUnshareDiagram(
   return (await res.json()) as ShareResponse;
 }
 
-export async function apiSaveDiagram(
+// Persist diagram-level metadata: name (rename) and tab order. Used
+// for tab reorders + rename ops — anything that doesn't touch
+// element content. Element changes go through apiSaveTab.
+export async function apiSaveDiagramMeta(
   ownerId: string,
-  d: { id: string; name: string; tabs: Tab[] },
+  d: { id: string; name?: string; tabIds?: string[] },
+  shareCode: string | null = null,
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${d.id}`, {
     method: 'PUT',
-    headers: ownerHeaders(ownerId),
-    body: JSON.stringify({ name: d.name, tabs: d.tabs }),
+    headers: logAuthHeaders(ownerId, shareCode),
+    body: JSON.stringify({ name: d.name, tabIds: d.tabIds }),
   });
-  // PUT upserts, but the first save on a new id could 404 if the API
-  // gate were stricter — today PUT always upserts so the only error path
-  // is network. Throw so the caller can show "save failed" UI.
-  if (!res.ok) throw new Error(`save failed: ${res.status}`);
+  if (!res.ok) throw new Error(`save diagram meta failed: ${res.status}`);
+}
+
+// Create a brand-new diagram with an optional initial set of tabs.
+// Returns the meta + tab summaries the API stored. The live app uses
+// this when the welcome flow commits a fresh id so the very first
+// per-tab fetch lands on a populated row.
+export async function apiCreateDiagram(
+  ownerId: string,
+  d: { id: string; name: string; tabs?: Tab[] },
+): Promise<StoredDiagram> {
+  const res = await fetch(`${API_BASE}/diagrams`, {
+    method: 'POST',
+    headers: ownerHeaders(ownerId),
+    body: JSON.stringify({ id: d.id, name: d.name, tabs: d.tabs ?? [] }),
+  });
+  if (!res.ok) throw new Error(`create diagram failed: ${res.status}`);
+  const { diagram } = (await res.json()) as DiagramResponse;
+  return {
+    id: diagram.id,
+    ownerId: diagram.ownerId,
+    name: diagram.name,
+    tabs: diagram.tabs,
+    shareable: diagram.shareable,
+    shareCode: diagram.shareCode,
+    savedAt: diagram.savedAt,
+  };
+}
+
+// Full tab payload, including elements + per-tab metadata. Pulled
+// lazily when the user opens a tab; the diagram-summary fetch only
+// carries TabSummary rows.
+export async function apiLoadTab(
+  ownerId: string,
+  diagramId: string,
+  tabId: string,
+  shareCode: string | null = null,
+): Promise<Tab | null> {
+  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, {
+    headers: logAuthGetHeaders(ownerId, shareCode),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`load tab failed: ${res.status}`);
+  const { tab } = (await res.json()) as TabResponse;
+  // Strip the server-only fields before handing back the live-app's
+  // Tab shape.
+  const { diagramId: _did, orderIndex: _oi, updatedAt: _ua, ...clientTab } = tab;
+  void _did;
+  void _oi;
+  void _ua;
+  return clientTab;
+}
+
+// Upsert a single tab. The active edit path — autosave hits this
+// instead of shipping every tab on every keystroke.
+export async function apiSaveTab(
+  ownerId: string,
+  diagramId: string,
+  tab: Tab,
+  shareCode: string | null = null,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tab.id}`, {
+    method: 'PUT',
+    headers: logAuthHeaders(ownerId, shareCode),
+    body: JSON.stringify(tab),
+  });
+  if (!res.ok) throw new Error(`save tab failed: ${res.status}`);
+}
+
+export async function apiDeleteTab(
+  ownerId: string,
+  diagramId: string,
+  tabId: string,
+  shareCode: string | null = null,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, {
+    method: 'DELETE',
+    headers: logAuthGetHeaders(ownerId, shareCode),
+  });
+  if (!res.ok && res.status !== 404) throw new Error(`delete tab failed: ${res.status}`);
 }
 
 export async function apiDeleteDiagram(id: string): Promise<void> {
@@ -388,7 +487,19 @@ export type RoomOp =
   // Drives the per-tab avatar dots in the TabBar so collaborators
   // can see at a glance which tab each peer is working on.
   | { kind: 'tab-focus'; tabId: string }
-  | { kind: 'tabs'; tabs: Tab[]; name: string }
+  // A single tab's content changed. The post-refactor replacement
+  // for the heavyweight `tabs` op below — sender ships only the
+  // one tab they edited. Receivers merge by id.
+  | { kind: 'tab'; tabId: string; tab: Tab }
+  // Diagram-level metadata changed: rename, tab reorder, tab add /
+  // delete. Carries the new ordered list of tab summaries (id + name
+  // + order) so receivers can update the TabBar without fetching the
+  // full tab payloads.
+  | {
+      kind: 'diagram-meta';
+      name: string;
+      tabs: { id: string; name: string; orderIndex: number }[];
+    }
   | { kind: 'select'; elementId: string | null }
   // Cursor position in canvas coordinates. `null` means the cursor
   // left the canvas surface so peers can hide their indicator. The

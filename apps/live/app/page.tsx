@@ -56,7 +56,11 @@ import {
   apiAppendChangeLogEntry,
   apiDeleteChangeLogEntry,
   apiDeleteChangeLogForTab,
+  apiDeleteTab,
   apiListChangeLog,
+  apiLoadTab,
+  apiSaveDiagramMeta,
+  apiSaveTab,
   connectRoom,
   type ChangeLogEntry,
   createShareLink as apiCreateShareLink,
@@ -67,7 +71,6 @@ import {
   loadDiagram as apiLoadDiagram,
   loadSelfParticipant,
   loadSharedDiagram as apiLoadShared,
-  saveDiagram as apiSaveDiagram,
   saveSelfParticipant,
   type RoomHandlers,
   type ShareLink,
@@ -487,9 +490,25 @@ export default function LivePage() {
         const resolution = await apiLoadShared(shareCodeParam).catch(() => null);
         if (resolution) {
           const { diagram: fetched, role } = resolution;
-          resetTabs(fetched.tabs);
+          const codeForVisitor =
+            fetched.ownerId === self.id ? null : shareCodeParam;
+          // Fetch every tab's full payload in parallel. V1 keeps this
+          // eager — see spec/13. Lazy per-tab fetch on demand is a
+          // follow-up; the autosave win (one tab per save instead of
+          // all of them) already lands today.
+          const tabs = await Promise.all(
+            fetched.tabs.map((summary) =>
+              apiLoadTab(self.id, fetched.id, summary.id, codeForVisitor)
+                .catch(() => null)
+                .then(
+                  (tab) =>
+                    tab ?? { id: summary.id, name: summary.name, elements: [] },
+                ),
+            ),
+          );
+          resetTabs(tabs);
           setDiagramName(fetched.name);
-          setActiveId(fetched.tabs[0]?.id ?? activeId);
+          setActiveId(tabs[0]?.id ?? activeId);
           setLoadedExistingDiagram(true);
           setDiagramId(fetched.id);
           setDiagramShareable(fetched.shareable);
@@ -538,9 +557,20 @@ export default function LivePage() {
           return;
         }
         if (fetched) {
-          resetTabs(fetched.tabs);
+          // Same eager tab-load pattern as the share branch above.
+          const tabs = await Promise.all(
+            fetched.tabs.map((summary) =>
+              apiLoadTab(self.id, fetched.id, summary.id)
+                .catch(() => null)
+                .then(
+                  (tab) =>
+                    tab ?? { id: summary.id, name: summary.name, elements: [] },
+                ),
+            ),
+          );
+          resetTabs(tabs);
           setDiagramName(fetched.name);
-          setActiveId(fetched.tabs[0]?.id ?? activeId);
+          setActiveId(tabs[0]?.id ?? activeId);
           setLoadedExistingDiagram(true);
           setDiagramShareable(fetched.shareable);
           setDiagramShareCode(fetched.shareCode);
@@ -598,48 +628,93 @@ export default function LivePage() {
     return id;
   };
 
-  // Persist on any change after hydration. Debounced because the API
-  // is HTTP and rapid drag/keystroke edits would otherwise hammer it.
-  // 600 ms feels responsive without being chatty. The `remoteUpdateRef`
-  // gate prevents echoing remote ops back to the room.
+  // Per-tab autosave. The previous snapshot lives in a ref so we can
+  // diff: any tab whose object reference changed since last save is
+  // ours to PUT; tab order / diagram rename hit the metadata PUT.
+  // Debounced 600ms — feels responsive without hammering the API.
+  // Spec/13 has the design.
+  const lastSavedTabsRef = useRef<Tab[]>([]);
+  const lastSavedNameRef = useRef<string>('');
+
   useEffect(() => {
     if (!hydrated || !diagramId) return;
-    // View-only visitors don't get to push edits. Local UI still lets
-    // them experiment for usability, but those experiments stay
-    // ephemeral — neither the API save nor the broadcast happens.
     if (isReadOnly) return;
     if (remoteUpdateRef.current) {
       remoteUpdateRef.current = false;
       return;
     }
     const handle = window.setTimeout(() => {
-      const payload = { id: diagramId, name: diagramName, tabs, savedAt: Date.now() };
+      const prevTabs = lastSavedTabsRef.current;
+      const prevTabById = new Map(prevTabs.map((t) => [t.id, t] as const));
+      const changedTabs = tabs.filter((t) => prevTabById.get(t.id) !== t);
+      const orderChanged =
+        tabs.length !== prevTabs.length ||
+        tabs.some((t, i) => prevTabs[i]?.id !== t.id);
+      const nameChanged = diagramName !== lastSavedNameRef.current;
+      const deletedIds = prevTabs
+        .filter((t) => !tabs.some((current) => current.id === t.id))
+        .map((t) => t.id);
+
+      if (
+        changedTabs.length === 0 &&
+        !orderChanged &&
+        !nameChanged &&
+        deletedIds.length === 0
+      ) {
+        return;
+      }
+
       setSaveStatus('saving');
-      apiSaveDiagram(selfParticipant.id, payload)
+      const writes: Promise<unknown>[] = [];
+      for (const t of changedTabs) {
+        writes.push(
+          apiSaveTab(selfParticipant.id, diagramId, t, sessionShareCode).then(() => {
+            roomRef.current?.send({
+              kind: 'op',
+              op: { kind: 'tab', tabId: t.id, tab: t },
+            });
+          }),
+        );
+      }
+      for (const tabId of deletedIds) {
+        writes.push(apiDeleteTab(selfParticipant.id, diagramId, tabId, sessionShareCode));
+      }
+      if (orderChanged || nameChanged) {
+        writes.push(
+          apiSaveDiagramMeta(
+            selfParticipant.id,
+            { id: diagramId, name: diagramName, tabIds: tabs.map((t) => t.id) },
+            sessionShareCode,
+          ).then(() => {
+            roomRef.current?.send({
+              kind: 'op',
+              op: {
+                kind: 'diagram-meta',
+                name: diagramName,
+                tabs: tabs.map((t, i) => ({
+                  id: t.id,
+                  name: t.name,
+                  orderIndex: i,
+                })),
+              },
+            });
+          }),
+        );
+      }
+      Promise.all(writes)
         .then(() => {
+          lastSavedTabsRef.current = tabs;
+          lastSavedNameRef.current = diagramName;
           setSaveStatus('saved');
           setSavedAt(Date.now());
           refreshDiagramList(selfParticipant.id);
         })
         .catch(() => {
-          // Network down, API unreachable, env var wrong — anything
-          // that prevents persistence. The pill stays in the error
-          // state until the next successful save so the user can't
-          // miss it. The room broadcast still happens above so any
-          // connected peer sees the in-memory edit; we just couldn't
-          // durably persist it.
           setSaveStatus('error');
         });
-      // Broadcast the new snapshot to peers via the room so other
-      // viewers see the change in real time. The room's last-writer-
-      // wins model means the most recent broadcast becomes the truth.
-      roomRef.current?.send({
-        kind: 'op',
-        op: { kind: 'tabs', tabs, name: diagramName },
-      });
     }, 600);
     return () => window.clearTimeout(handle);
-  }, [hydrated, diagramId, tabs, diagramName, selfParticipant.id, isReadOnly]);
+  }, [hydrated, diagramId, tabs, diagramName, selfParticipant.id, isReadOnly, sessionShareCode]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -712,10 +787,35 @@ export default function LivePage() {
         });
       },
       onOp: (from, op) => {
-        if (op.kind === 'tabs') {
+        if (op.kind === 'tab') {
+          // Peer updated a single tab's contents. Merge by id; if the
+          // tab isn't local yet (new tab the peer just added), append
+          // it so the receiver picks it up without a refetch.
           remoteUpdateRef.current = true;
-          resetTabs(op.tabs);
+          resetTabs((prev) => {
+            const existing = prev.findIndex((t) => t.id === op.tabId);
+            if (existing === -1) return [...prev, op.tab];
+            const next = [...prev];
+            next[existing] = op.tab;
+            return next;
+          });
+        } else if (op.kind === 'diagram-meta') {
+          // Peer renamed the diagram or reordered tabs (incl. add /
+          // delete). Reorder locally to match; new ids land as
+          // placeholders that a follow-up `tab` op will populate.
+          remoteUpdateRef.current = true;
           setDiagramName(op.name);
+          resetTabs((prev) => {
+            const localById = new Map(prev.map((t) => [t.id, t] as const));
+            return op.tabs.map(
+              (summary) =>
+                localById.get(summary.id) ?? {
+                  id: summary.id,
+                  name: summary.name,
+                  elements: [],
+                },
+            );
+          });
         } else if (op.kind === 'select') {
           setRemoteSelections((prev) => {
             const next = new Map(prev);
@@ -1445,20 +1545,22 @@ export default function LivePage() {
     const cloned: Tab = {
       ...source,
       id: crypto.randomUUID(),
-      // Mark as template-chosen so the welcome modal doesn't reappear
-      // for the destination diagram if it was on its empty starter tab.
       templateChosen: true,
     };
-    const nextTabs = [...target.tabs, cloned];
-    await apiSaveDiagram(selfParticipant.id, {
-      id: target.id,
-      name: target.name,
-      tabs: nextTabs,
-    }).catch(() => {
-      // If the save fails the user sees the existing "Not saved" pill
-      // on their own diagram, not the destination. Best-effort here.
-    });
-    // Refresh the local list so savedAt sort and any name change land.
+    // Save the new tab row + the destination's updated tab order.
+    // Two API calls in series (tab content then meta reorder) so
+    // the meta PUT sees the new tab id by the time it persists.
+    try {
+      await apiSaveTab(selfParticipant.id, target.id, cloned);
+      const nextIds = [...target.tabs.map((t) => t.id), cloned.id];
+      await apiSaveDiagramMeta(selfParticipant.id, {
+        id: target.id,
+        tabIds: nextIds,
+      });
+    } catch {
+      // Best-effort. The user's own diagram autosave still drives
+      // the "Not saved" pill; failures here don't surface.
+    }
     refreshDiagramList(selfParticipant.id);
   };
 

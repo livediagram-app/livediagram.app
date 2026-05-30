@@ -1,3 +1,4 @@
+import type { Tab } from '@livediagram/diagram';
 import type {
   ChangeLogEntryDTO,
   ChangeLogKind,
@@ -7,24 +8,34 @@ import type {
   ParticipantDTO,
   ShareLinkDTO,
   ShareRole,
+  TabDTO,
+  TabSummaryDTO,
 } from './types';
 
-// Thin D1 wrapper. Every diagram read/write parses or stringifies the
-// `data` JSON at this boundary; the rest of the worker deals with
-// plain DiagramDTO objects.
+// Thin D1 wrapper. Diagrams + tabs each have their own table; the
+// `diagrams.data` blob is retained one release window (see spec 13)
+// but never read on this path.
 
 type DiagramRow = {
   id: string;
   owner_id: string;
   name: string;
-  data: string;
   shareable: number;
   share_code: string | null;
   saved_at: number;
   created_at: number;
 };
 
-type SummaryRow = Omit<DiagramRow, 'data'>;
+type SummaryRow = DiagramRow;
+
+type TabRow = {
+  id: string;
+  diagram_id: string;
+  name: string;
+  order_index: number;
+  data: string;
+  updated_at: number;
+};
 
 type ParticipantRow = {
   id: string;
@@ -33,12 +44,44 @@ type ParticipantRow = {
   created_at: number;
 };
 
-function rowToDiagram(row: DiagramRow): DiagramDTO {
+function rowToTab(row: TabRow): TabDTO {
+  const data = JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>;
+  return {
+    ...data,
+    id: row.id,
+    name: row.name,
+    diagramId: row.diagram_id,
+    orderIndex: row.order_index,
+    updatedAt: row.updated_at,
+  };
+}
+
+function rowToTabSummary(row: TabRow): TabSummaryDTO {
+  return {
+    id: row.id,
+    diagramId: row.diagram_id,
+    name: row.name,
+    orderIndex: row.order_index,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function listTabSummariesFor(env: Env, diagramId: string): Promise<TabSummaryDTO[]> {
+  const result = await env.DB.prepare(
+    `SELECT id, diagram_id, name, order_index, '' AS data, updated_at
+       FROM tabs WHERE diagram_id = ? ORDER BY order_index ASC`,
+  )
+    .bind(diagramId)
+    .all<TabRow>();
+  return (result.results ?? []).map(rowToTabSummary);
+}
+
+async function rowToDiagram(env: Env, row: DiagramRow): Promise<DiagramDTO> {
   return {
     id: row.id,
     ownerId: row.owner_id,
     name: row.name,
-    tabs: JSON.parse(row.data),
+    tabs: await listTabSummariesFor(env, row.id),
     shareable: row.shareable === 1,
     shareCode: row.share_code,
     savedAt: row.saved_at,
@@ -46,26 +89,14 @@ function rowToDiagram(row: DiagramRow): DiagramDTO {
   };
 }
 
-function rowToSummary(row: SummaryRow): DiagramSummary {
-  return {
-    id: row.id,
-    ownerId: row.owner_id,
-    name: row.name,
-    shareable: row.shareable === 1,
-    shareCode: row.share_code,
-    savedAt: row.saved_at,
-    createdAt: row.created_at,
-  };
-}
-
-const DIAGRAM_COLS = 'id, owner_id, name, data, shareable, share_code, saved_at, created_at';
+const DIAGRAM_COLS = 'id, owner_id, name, shareable, share_code, saved_at, created_at';
 const DIAGRAM_SUMMARY_COLS = 'id, owner_id, name, shareable, share_code, saved_at, created_at';
 
 export async function getDiagram(env: Env, id: string): Promise<DiagramDTO | null> {
   const row = await env.DB.prepare(`SELECT ${DIAGRAM_COLS} FROM diagrams WHERE id = ?`)
     .bind(id)
     .first<DiagramRow>();
-  return row ? rowToDiagram(row) : null;
+  return row ? rowToDiagram(env, row) : null;
 }
 
 export async function getDiagramByShareCode(env: Env, code: string): Promise<DiagramDTO | null> {
@@ -74,7 +105,7 @@ export async function getDiagramByShareCode(env: Env, code: string): Promise<Dia
   )
     .bind(code)
     .first<DiagramRow>();
-  return row ? rowToDiagram(row) : null;
+  return row ? rowToDiagram(env, row) : null;
 }
 
 export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<DiagramSummary[]> {
@@ -83,32 +114,119 @@ export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<Di
   )
     .bind(ownerId)
     .all<SummaryRow>();
-  return (result.results ?? []).map(rowToSummary);
+  return (result.results ?? []).map((row) => ({
+    id: row.id,
+    ownerId: row.owner_id,
+    name: row.name,
+    shareable: row.shareable === 1,
+    shareCode: row.share_code,
+    savedAt: row.saved_at,
+    createdAt: row.created_at,
+  }));
 }
 
-// Full upsert. The frontend always knows the whole diagram and sends the
-// full payload on save, so we don't track per-element deltas in the DB.
-// The room broadcasts ops separately for live updates.
-export async function upsertDiagram(env: Env, d: DiagramDTO): Promise<void> {
+// Metadata upsert only — diagram name, sharing state, owner id, and
+// timestamps. Tabs live in their own table now (see upsertTab /
+// reorderTabs / deleteTab). Used both by the new metadata-only PUT
+// /diagrams/:id and by the create endpoint.
+export async function upsertDiagramMeta(
+  env: Env,
+  d: Omit<DiagramDTO, 'tabs'>,
+): Promise<void> {
   await env.DB.prepare(
     `INSERT INTO diagrams (id, owner_id, name, data, shareable, share_code, saved_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     VALUES (?, ?, ?, '[]', ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
-       data = excluded.data,
        saved_at = excluded.saved_at`,
   )
     .bind(
       d.id,
       d.ownerId,
       d.name,
-      JSON.stringify(d.tabs),
       d.shareable ? 1 : 0,
       d.shareCode,
       d.savedAt,
       d.createdAt,
     )
+    .run();
+}
+
+// --- Tabs (one row per tab) ----------------------------------------------
+
+const TAB_COLS = 'id, diagram_id, name, order_index, data, updated_at';
+
+export async function getTab(
+  env: Env,
+  diagramId: string,
+  tabId: string,
+): Promise<TabDTO | null> {
+  const row = await env.DB.prepare(
+    `SELECT ${TAB_COLS} FROM tabs WHERE id = ? AND diagram_id = ?`,
+  )
+    .bind(tabId, diagramId)
+    .first<TabRow>();
+  return row ? rowToTab(row) : null;
+}
+
+export async function listTabSummaries(env: Env, diagramId: string): Promise<TabSummaryDTO[]> {
+  return listTabSummariesFor(env, diagramId);
+}
+
+// Full upsert for a single tab. Splits the live-app's Tab type into
+// columns + a `data` JSON blob (everything except id + name) so list
+// queries can return summaries without parsing element trees.
+export async function upsertTab(
+  env: Env,
+  diagramId: string,
+  tab: Tab,
+  orderIndex: number,
+): Promise<void> {
+  const { id, name, ...rest } = tab;
+  const data = JSON.stringify(rest);
+  const now = Date.now();
+  await env.DB.prepare(
+    `INSERT INTO tabs (id, diagram_id, name, order_index, data, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       name = excluded.name,
+       order_index = excluded.order_index,
+       data = excluded.data,
+       updated_at = excluded.updated_at`,
+  )
+    .bind(id, diagramId, name, orderIndex, data, now)
+    .run();
+  // Bump the diagram's saved_at so the Explorer's "Updated X ago"
+  // line stays accurate. Pure metadata write — no element JSON.
+  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?')
+    .bind(now, diagramId)
+    .run();
+}
+
+export async function deleteTabRow(env: Env, diagramId: string, tabId: string): Promise<void> {
+  await env.DB.prepare('DELETE FROM tabs WHERE id = ? AND diagram_id = ?')
+    .bind(tabId, diagramId)
+    .run();
+}
+
+// Update tab order. Caller passes the ids in their new positions; we
+// rewrite every order_index in one batch. Cheap given the < 20-tab
+// scale we see in practice (see spec/13 "Risk").
+export async function reorderTabs(
+  env: Env,
+  diagramId: string,
+  tabIds: string[],
+): Promise<void> {
+  const now = Date.now();
+  const batch = tabIds.map((tabId, idx) =>
+    env.DB.prepare(
+      'UPDATE tabs SET order_index = ?, updated_at = ? WHERE id = ? AND diagram_id = ?',
+    ).bind(idx, now, tabId, diagramId),
+  );
+  if (batch.length > 0) await env.DB.batch(batch);
+  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?')
+    .bind(now, diagramId)
     .run();
 }
 

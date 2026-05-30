@@ -1,21 +1,26 @@
+import type { Tab } from '@livediagram/diagram';
 import {
   createShareLink,
   deleteChangeLogEntry,
   deleteChangeLogForTab,
   deleteDiagram,
   deleteShareLink,
+  deleteTabRow,
   generateShareCode,
   getDiagram,
   getDiagramByShareCode,
   getParticipant,
   getShareLink,
+  getTab,
   insertChangeLogEntry,
   listChangeLog,
   listDiagramsByOwner,
   listShareLinks,
+  reorderTabs,
   setDiagramShare,
-  upsertDiagram,
+  upsertDiagramMeta,
   upsertParticipant,
+  upsertTab,
 } from './db';
 import { DiagramRoom } from './diagram-room';
 import type { ChangeLogEntryDTO, DiagramDTO, Env, ParticipantDTO, ShareRole } from './types';
@@ -123,24 +128,33 @@ export default {
             return json({ diagrams });
           }
           if (request.method === 'POST') {
-            const body = (await request.json()) as Partial<DiagramDTO>;
+            const body = (await request.json()) as Partial<DiagramDTO> & { tabs?: Tab[] };
             const owner = ownerOf(request);
             if (!owner) return badRequest('missing X-Owner-Id');
-            if (!body.id || !body.name || !body.tabs) {
-              return badRequest('missing id/name/tabs');
+            if (!body.id || !body.name) {
+              return badRequest('missing id/name');
             }
             const now = Date.now();
-            const diagram: DiagramDTO = {
+            // Diagram meta first so the FK in tabs can resolve.
+            await upsertDiagramMeta(env, {
               id: body.id,
               ownerId: owner,
               name: body.name,
-              tabs: body.tabs,
               shareable: body.shareable ?? false,
               shareCode: body.shareCode ?? null,
               savedAt: now,
               createdAt: body.createdAt ?? now,
-            };
-            await upsertDiagram(env, diagram);
+            });
+            // Seed tabs if the caller provided them. The live app's
+            // welcome flow uses this when it commits a fresh diagram
+            // id — it ships the templated tab inline so the very
+            // first per-tab fetch already has data.
+            if (Array.isArray(body.tabs)) {
+              for (let i = 0; i < body.tabs.length; i++) {
+                await upsertTab(env, body.id, body.tabs[i]!, i);
+              }
+            }
+            const diagram = await getDiagram(env, body.id);
             return json({ diagram }, { status: 201 });
           }
         }
@@ -160,31 +174,80 @@ export default {
             return d && d.ownerId === owner ? json({ diagram: d }) : notFound();
           }
           if (request.method === 'PUT') {
-            const body = (await request.json()) as Partial<DiagramDTO>;
+            // Metadata-only PUT now that tabs live in their own table.
+            // Body: { name?: string, tabIds?: string[] } — name renames
+            // the diagram, tabIds reorders the tabs to match. Both are
+            // optional, and at least one must be present.
+            const body = (await request.json()) as { name?: string; tabIds?: string[] };
             const owner = ownerOf(request);
+            const shareCode = shareCodeOf(request);
             if (!owner) return badRequest('missing X-Owner-Id');
-            if (!body.name || !body.tabs) return badRequest('missing name/tabs');
             const existing = await getDiagram(env, id);
             const now = Date.now();
-            const diagram: DiagramDTO = {
+            const ownerId = existing?.ownerId ?? owner;
+            // Anyone with the diagram id could previously rewrite it.
+            // We now gate on canEditDiagram so only the owner or an
+            // edit-role share visitor can touch metadata.
+            const allowed = existing
+              ? await canEditDiagram(env, id, owner, shareCode, ownerId)
+              : true; // create-on-first-write keeps the prior behaviour
+            if (!allowed) return forbidden();
+            await upsertDiagramMeta(env, {
               id,
-              ownerId: existing?.ownerId ?? owner,
-              name: body.name,
-              tabs: body.tabs,
-              // Sharing state is owned by the dedicated /share endpoint,
-              // not by PUT — saves from visitors never touch it. Preserve
-              // whatever the existing row had, or fall through to "not
-              // shared" for brand-new rows.
+              ownerId,
+              name: body.name ?? existing?.name ?? 'Untitled diagram',
               shareable: existing?.shareable ?? false,
               shareCode: existing?.shareCode ?? null,
               savedAt: now,
               createdAt: existing?.createdAt ?? now,
-            };
-            await upsertDiagram(env, diagram);
+            });
+            if (Array.isArray(body.tabIds)) {
+              await reorderTabs(env, id, body.tabIds);
+            }
+            const diagram = await getDiagram(env, id);
             return json({ diagram });
           }
           if (request.method === 'DELETE') {
             await deleteDiagram(env, id);
+            return new Response(null, { status: 204, headers: CORS_HEADERS });
+          }
+        }
+
+        // /api/diagrams/<id>/tabs/<tabId> — owner or edit-role visitor.
+        //   GET    — full tab payload (data + everything).
+        //   PUT    — upsert one tab. Body is a Tab. orderIndex falls
+        //            through the existing row, or appends when new.
+        //   DELETE — remove one tab.
+        if (segments.length === 5 && segments[3] === 'tabs') {
+          const id = segments[2]!;
+          const tabId = segments[4]!;
+          const owner = ownerOf(request);
+          const shareCode = shareCodeOf(request);
+          if (!owner) return badRequest('missing X-Owner-Id');
+          const existing = await getDiagram(env, id);
+          if (!existing) return notFound();
+          const allowed = await canEditDiagram(env, id, owner, shareCode, existing.ownerId);
+          if (!allowed) return forbidden();
+
+          if (request.method === 'GET') {
+            const tab = await getTab(env, id, tabId);
+            return tab ? json({ tab }) : notFound();
+          }
+          if (request.method === 'PUT') {
+            const body = (await request.json()) as Tab;
+            if (!body.id || !body.name || !Array.isArray(body.elements)) {
+              return badRequest('missing tab id/name/elements');
+            }
+            // Find the existing order index; append if new.
+            const existingTab = await getTab(env, id, tabId);
+            const orderIndex =
+              existingTab?.orderIndex ?? existing.tabs.length; // tabs[] is already summaries
+            await upsertTab(env, id, { ...body, id: tabId }, orderIndex);
+            const tab = await getTab(env, id, tabId);
+            return tab ? json({ tab }) : notFound();
+          }
+          if (request.method === 'DELETE') {
+            await deleteTabRow(env, id, tabId);
             return new Response(null, { status: 204, headers: CORS_HEADERS });
           }
         }

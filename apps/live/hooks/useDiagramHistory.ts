@@ -28,7 +28,7 @@ export type DiagramHistory = {
   commit: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   tick: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   markCheckpoint: () => void;
-  reset: (tabs: Tab[]) => void;
+  reset: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
   undo: () => void;
   redo: () => void;
 };
@@ -85,10 +85,14 @@ export function useDiagramHistory(initialTabs: Tab[]): DiagramHistory {
   };
 
   // Replace the present tab list with `tabs` and clear history. Used by
-  // the page when hydrating from localStorage on mount — past / future
-  // snapshots from a previous session aren't meaningful to the new run.
-  const reset = (tabs: Tab[]) => {
-    setHistory({ past: [], present: tabs, future: [] });
+  // the page when hydrating on mount AND when a remote `tab` /
+  // `diagram-meta` op needs to merge changes from a peer (the
+  // callback form gives the merger access to the current state).
+  const reset = (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
+    setHistory((h) => {
+      const next = typeof tabs === 'function' ? tabs(h.present) : tabs;
+      return { past: [], present: next, future: [] };
+    });
   };
 
   return {
