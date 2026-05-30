@@ -367,8 +367,22 @@ export function SelectedElementSection({
   open: SelectedAccordionState;
   setOpen: React.Dispatch<React.SetStateAction<SelectedAccordionState>>;
 }) {
+  // Mutually exclusive: opening an accordion closes every other one.
+  // Same key being toggled flips it shut. Keeps the panel compact
+  // even when several accordion-eligible sections apply.
   const toggle = (key: keyof SelectedAccordionState) =>
-    setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+    setOpen((prev) => {
+      const closed: SelectedAccordionState = {
+        shape: false,
+        appearance: false,
+        layer: false,
+        text: false,
+        colours: false,
+        pointer: false,
+      };
+      if (prev[key]) return closed;
+      return { ...closed, [key]: true };
+    });
 
   const showText = selection.textSize !== null || selection.textAlignX !== null;
   const showColours =
@@ -953,7 +967,13 @@ export function TabSection({ tab }: { tab: TabSectionControls }) {
     theme: false,
     background: false,
   });
-  const toggle = (key: keyof typeof open) => setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+  // Mutually exclusive (matches SelectedElementSection).
+  const toggle = (key: keyof typeof open) =>
+    setOpen((prev) => {
+      const closed = { theme: false, background: false };
+      if (prev[key]) return closed;
+      return { ...closed, [key]: true };
+    });
 
   return (
     <div className="flex flex-col border-t border-slate-200">

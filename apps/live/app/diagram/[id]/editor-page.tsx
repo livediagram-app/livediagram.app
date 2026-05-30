@@ -550,7 +550,15 @@ export default function LivePage() {
           }
           resetTabs(placeholderTabs);
           setDiagramName(fetched.name);
-          setActiveId(placeholderTabs[0]?.id ?? activeId);
+          // Prefer the tab id pinned in the URL fragment (#t=<id>) when
+          // it points at a real loaded tab — round-trips the user back
+          // to whichever tab they last had open before a refresh.
+          {
+            const hashMatch = window.location.hash.match(/t=([^&]+)/);
+            const hashedId = hashMatch ? hashMatch[1] : null;
+            const pickFromHash = hashedId && placeholderTabs.some((t) => t.id === hashedId);
+            setActiveId(pickFromHash ? hashedId! : (placeholderTabs[0]?.id ?? activeId));
+          }
           setLoadedExistingDiagram(true);
           setDiagramId(fetched.id);
           setDiagramShareable(fetched.shareable);
@@ -614,7 +622,15 @@ export default function LivePage() {
           }
           resetTabs(placeholderTabs);
           setDiagramName(fetched.name);
-          setActiveId(placeholderTabs[0]?.id ?? activeId);
+          // Prefer the tab id pinned in the URL fragment (#t=<id>) when
+          // it points at a real loaded tab — round-trips the user back
+          // to whichever tab they last had open before a refresh.
+          {
+            const hashMatch = window.location.hash.match(/t=([^&]+)/);
+            const hashedId = hashMatch ? hashMatch[1] : null;
+            const pickFromHash = hashedId && placeholderTabs.some((t) => t.id === hashedId);
+            setActiveId(pickFromHash ? hashedId! : (placeholderTabs[0]?.id ?? activeId));
+          }
           setLoadedExistingDiagram(true);
           setDiagramShareable(fetched.shareable);
           setDiagramShareCode(fetched.shareCode);
@@ -656,6 +672,17 @@ export default function LivePage() {
 
   const didInitialFitRef = useRef(false);
 
+  // Active tab → URL fragment (#t=<tabId>) so refreshes land on the
+  // same tab. replaceState so tab switches don't pollute history.
+  // Skipped pre-hydration to avoid writing a placeholder id.
+  useEffect(() => {
+    if (!hydrated || !activeId || typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (url.hash === `#t=${activeId}`) return;
+    url.hash = `t=${activeId}`;
+    window.history.replaceState({}, '', url.toString());
+  }, [hydrated, activeId]);
+
   // Per-tab autosave. The previous snapshot lives in a ref so we can
   // diff: any tab whose object reference changed since last save is
   // ours to PUT; tab order / diagram rename hit the metadata PUT.
@@ -663,6 +690,63 @@ export default function LivePage() {
   // Spec/13 has the design.
   const lastSavedTabsRef = useRef<Tab[]>([]);
   const lastSavedNameRef = useRef<string>('');
+
+  // Flush any pending autosave when the page unloads. Without this a
+  // fast user (edit → reload before the 600ms debounce fires) would
+  // lose changes. Uses `fetch` with `keepalive: true` so the browser
+  // keeps the request alive across the navigation. Reads the refs
+  // directly (rather than the stale closure) so the handler always
+  // ships the most recent state. See task #85.
+  useEffect(() => {
+    if (!hydrated || !diagramId || isReadOnly) return;
+    const handler = () => {
+      const prevTabs = lastSavedTabsRef.current;
+      const prevTabById = new Map(prevTabs.map((t) => [t.id, t] as const));
+      const changedTabs = tabs.filter((t) => prevTabById.get(t.id) !== t);
+      const orderChanged =
+        tabs.length !== prevTabs.length || tabs.some((t, i) => prevTabs[i]?.id !== t.id);
+      const nameChanged = diagramName !== lastSavedNameRef.current;
+      const deletedIds = prevTabs
+        .filter((t) => !tabs.some((current) => current.id === t.id))
+        .map((t) => t.id);
+      if (changedTabs.length === 0 && !orderChanged && !nameChanged && deletedIds.length === 0) {
+        return;
+      }
+      const apiBase = '/api';
+      const headers: Record<string, string> = {
+        'X-Owner-Id': selfParticipant.id,
+        'Content-Type': 'application/json',
+      };
+      if (sessionShareCode) headers['X-Share-Code'] = sessionShareCode;
+      for (const t of changedTabs) {
+        fetch(`${apiBase}/diagrams/${diagramId}/tabs/${t.id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(t),
+          keepalive: true,
+        }).catch(() => {});
+      }
+      for (const tabId of deletedIds) {
+        const getHeaders: Record<string, string> = { 'X-Owner-Id': selfParticipant.id };
+        if (sessionShareCode) getHeaders['X-Share-Code'] = sessionShareCode;
+        fetch(`${apiBase}/diagrams/${diagramId}/tabs/${tabId}`, {
+          method: 'DELETE',
+          headers: getHeaders,
+          keepalive: true,
+        }).catch(() => {});
+      }
+      if (orderChanged || nameChanged) {
+        fetch(`${apiBase}/diagrams/${diagramId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ name: diagramName, tabIds: tabs.map((t) => t.id) }),
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hydrated, diagramId, isReadOnly, tabs, diagramName, selfParticipant.id, sessionShareCode]);
 
   useEffect(() => {
     if (!hydrated || !diagramId) return;
