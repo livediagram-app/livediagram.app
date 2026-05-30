@@ -167,6 +167,11 @@ type CanvasProps = {
   onFollowLink: (tabId: string) => void;
   onOpenComments: (elementId: string) => void;
   showTemplatePicker: boolean;
+  // True after the page has resolved its initial identity + diagram
+  // fetch. Used to suppress the empty-state card during the brief
+  // window between "loader dropped" and "welcome modal mounted" so
+  // a fresh New Diagram doesn't flash the Empty Canvas message.
+  hydrated: boolean;
   templatePickerMode: 'welcome' | 'templates' | 'identity';
   // Hides the floating chrome (palette, explorer, zoom + history dock,
   // plus buttons, selection popover) while the first-run welcome modal
@@ -311,6 +316,7 @@ export function Canvas(props: CanvasProps) {
     onFollowLink,
     onOpenComments,
     showTemplatePicker,
+    hydrated,
     templatePickerMode,
     welcomeOpen,
     selfParticipant,
@@ -793,7 +799,7 @@ export function Canvas(props: CanvasProps) {
         ) : null}
       </div>
 
-      {elements.length === 0 && !showTemplatePicker && !welcomeOpen ? (
+      {hydrated && elements.length === 0 && !showTemplatePicker && !welcomeOpen ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="pointer-events-none flex max-w-sm animate-fly-up-in flex-col items-center rounded-xl border border-slate-200 bg-white px-6 py-5 text-center shadow-md">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-500">
