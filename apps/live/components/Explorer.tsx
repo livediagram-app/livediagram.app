@@ -25,7 +25,10 @@ type ExplorerProps = {
   onToggleMinimized: () => void;
   onReset: () => void;
   onOpenDiagram: (id: string) => void;
-  onNewDiagram: () => void;
+  // Optional so consumers that have nowhere to mint a new diagram
+  // (e.g. the welcome route, which IS the new-diagram flow) can hide
+  // the button entirely. When omitted the row isn't rendered.
+  onNewDiagram?: () => void;
 };
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
@@ -52,8 +55,14 @@ export function Explorer({
   // function returns early below before the interval is set up).
   useRelativeTimeTick();
   if (minimized) return null;
-  // Most-recently-saved first so the user's last work tops the list.
-  const ordered = [...diagrams].sort((a, b) => b.savedAt - a.savedAt);
+  // Split the open diagram into its own section so the user always
+  // sees which one is active. Most-recently-saved first for the rest.
+  const current = currentDiagramId
+    ? (diagrams.find((d) => d.id === currentDiagramId) ?? null)
+    : null;
+  const ordered = [...diagrams]
+    .filter((d) => d.id !== currentDiagramId)
+    .sort((a, b) => b.savedAt - a.savedAt);
   return (
     <MovablePanel
       title="Explorer"
@@ -65,14 +74,29 @@ export function Explorer({
       onMinimize={onToggleMinimized}
     >
       <div className="flex flex-col gap-2 px-3 pb-3 pt-1">
-        <button
-          type="button"
-          onClick={onNewDiagram}
-          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition hover:border-brand-400 hover:bg-brand-100"
-        >
-          <PlusIcon />
-          New Diagram
-        </button>
+        {onNewDiagram ? (
+          <button
+            type="button"
+            onClick={onNewDiagram}
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition hover:border-brand-400 hover:bg-brand-100"
+          >
+            <PlusIcon />
+            New Diagram
+          </button>
+        ) : null}
+
+        {current ? (
+          <div className="flex flex-col gap-0.5">
+            <p className="px-1 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              Current Diagram
+            </p>
+            <ul className="flex flex-col gap-0.5">
+              <li>
+                <DiagramRow item={current} active onOpen={() => onOpenDiagram(current.id)} />
+              </li>
+            </ul>
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="flex flex-col gap-0.5">
@@ -101,41 +125,11 @@ export function Explorer({
               Your diagrams
             </p>
             <ul className="scrollbar-slim flex max-h-60 flex-col gap-0.5 overflow-y-auto">
-              {ordered.map((d) => {
-                const active = d.id === currentDiagramId;
-                const relative = formatRelativeTime(Date.now() - d.savedAt);
-                return (
-                  <li key={d.id}>
-                    <button
-                      type="button"
-                      onClick={() => onOpenDiagram(d.id)}
-                      aria-current={active ? 'true' : undefined}
-                      className={
-                        active
-                          ? 'flex w-full items-start gap-1.5 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-800'
-                          : 'flex w-full items-start gap-1.5 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100'
-                      }
-                    >
-                      <span className="mt-0.5">
-                        <DiagramIcon active={active} />
-                      </span>
-                      <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate">{d.name}</span>
-                        <span
-                          className={
-                            active
-                              ? 'truncate text-[10px] font-normal text-brand-700/80'
-                              : 'truncate text-[10px] text-slate-400'
-                          }
-                          title={new Date(d.savedAt).toLocaleString()}
-                        >
-                          Updated {relative}
-                        </span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
+              {ordered.map((d) => (
+                <li key={d.id}>
+                  <DiagramRow item={d} active={false} onOpen={() => onOpenDiagram(d.id)} />
+                </li>
+              ))}
             </ul>
           </div>
         ) : null}
@@ -157,6 +151,47 @@ export function Explorer({
         </div>
       </div>
     </MovablePanel>
+  );
+}
+
+function DiagramRow({
+  item,
+  active,
+  onOpen,
+}: {
+  item: DiagramListItem;
+  active: boolean;
+  onOpen: () => void;
+}) {
+  const relative = formatRelativeTime(Date.now() - item.savedAt);
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-current={active ? 'true' : undefined}
+      className={
+        active
+          ? 'flex w-full items-start gap-1.5 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-800'
+          : 'flex w-full items-start gap-1.5 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100'
+      }
+    >
+      <span className="mt-0.5">
+        <DiagramIcon active={active} />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate">{item.name}</span>
+        <span
+          className={
+            active
+              ? 'truncate text-[10px] font-normal text-brand-700/80'
+              : 'truncate text-[10px] text-slate-400'
+          }
+          title={new Date(item.savedAt).toLocaleString()}
+        >
+          Updated {relative}
+        </span>
+      </span>
+    </button>
   );
 }
 

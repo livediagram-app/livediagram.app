@@ -22,6 +22,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 11  | [API app](11-api.md)                                                 | REST + WebSocket API: D1 storage + Durable Object realtime room    |
 | 12  | [Activity and audit log](12-activity-and-audit.md)                   | Per-diagram change log + Activity Panel UI + surgical revert       |
 | 13  | [Per-tab storage](13-per-tab-storage.md)                             | Split tabs into their own D1 rows so autosave scope shrinks        |
+| 14  | [New-diagram route](14-new-diagram-route.md)                         | Split the welcome / create-new flow off `/live` into `/live/new`   |
 
 ## Workflow
 

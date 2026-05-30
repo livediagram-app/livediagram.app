@@ -5,7 +5,9 @@ import {
   createText,
   type Anchor,
   type Element,
+  type Tab,
 } from '@livediagram/diagram';
+import { getTheme, type ThemeId } from './themes';
 
 export type TemplateKind =
   | 'blank'
@@ -65,6 +67,55 @@ export const TEMPLATES: TemplateDescriptor[] = [
     description: 'Horizontal line with milestone markers, above + below.',
   },
 ];
+
+// Build a fully-themed starter tab for /live/new. Centres the
+// template's scaffold on (0, 0), recolours shape / text / arrow
+// elements with the chosen theme (sticky notes keep their amber
+// palette), and attaches the theme's backdrop fields to the tab so
+// the editor lands on a fully styled canvas. Mirrors the
+// `chooseTemplate` path inside the editor route.
+export function buildTemplatedTab(
+  kind: TemplateKind,
+  themeId: ThemeId,
+  tabId: string,
+  tabName: string,
+): Tab {
+  const theme = getTheme(themeId);
+  const rawElements = buildTemplate(kind, 0, 0);
+  const elements = rawElements.map((el) => {
+    if (el.type === 'shape') {
+      return {
+        ...el,
+        ...(theme.elementFill ? { fillColor: theme.elementFill } : {}),
+        ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
+        ...(theme.elementText ? { textColor: theme.elementText } : {}),
+      };
+    }
+    if (el.type === 'text') {
+      return {
+        ...el,
+        ...(theme.elementText ? { textColor: theme.elementText } : {}),
+      };
+    }
+    if (el.type === 'arrow') {
+      return {
+        ...el,
+        ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
+      };
+    }
+    return el;
+  });
+  return {
+    id: tabId,
+    name: tabName,
+    elements,
+    theme: themeId,
+    backgroundColor: theme.backgroundColor,
+    backgroundPattern: theme.backgroundPattern,
+    patternColor: theme.patternColor,
+    templateChosen: true,
+  };
+}
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.

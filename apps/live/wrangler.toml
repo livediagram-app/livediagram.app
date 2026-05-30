@@ -1,9 +1,13 @@
 name = "livediagram-live"
+main = "src/worker.ts"
 compatibility_date = "2026-05-29"
 
-# Static assets only — Cloudflare Workers serves files from `./out`
-# (Next.js static export with basePath '/live'). The router worker
-# calls into this via a service binding to handle `/live/*` paths.
+# The worker fronts the static-export `./out` directory via an assets
+# binding so it can rewrite `/diagram/<id>` paths onto the single
+# placeholder build artefact (spec/14). Static export can't enumerate
+# user-minted diagram ids at build time, so one HTML file backs every
+# `/diagram/*` URL and the client reads the id from the pathname.
 [assets]
 directory = "./out"
+binding = "ASSETS"
 not_found_handling = "404-page"
