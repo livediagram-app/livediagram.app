@@ -76,6 +76,17 @@ function OpenPalette({
   onAddText,
   onAddSticky,
 }: CommandPaletteProps) {
+  // Accordion open state lives at the palette level so it survives the
+  // SelectedElementSection / TabSection swap that happens whenever the
+  // user deselects or switches elements. Without this lift, every
+  // selection change collapsed the accordions and the user had to
+  // re-click in.
+  const [selectedAccordionsOpen, setSelectedAccordionsOpen] = useState<{
+    appearance: boolean;
+    layer: boolean;
+    text: boolean;
+    colours: boolean;
+  }>({ appearance: false, layer: false, text: false, colours: false });
   return (
     <MovablePanel
       title="Palette"
@@ -292,19 +303,37 @@ function OpenPalette({
         </div>
       </div>
 
-      {selection ? <SelectedElementSection selection={selection} /> : <TabSection tab={tab} />}
+      {selection ? (
+        <SelectedElementSection
+          selection={selection}
+          open={selectedAccordionsOpen}
+          setOpen={setSelectedAccordionsOpen}
+        />
+      ) : (
+        <TabSection tab={tab} />
+      )}
     </MovablePanel>
   );
 }
 
-function SelectedElementSection({ selection }: { selection: SelectedElementControls }) {
-  const [open, setOpen] = useState<{
-    appearance: boolean;
-    layer: boolean;
-    text: boolean;
-    colours: boolean;
-  }>({ appearance: false, layer: false, text: false, colours: false });
-  const toggle = (key: keyof typeof open) => setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+type SelectedAccordionState = {
+  appearance: boolean;
+  layer: boolean;
+  text: boolean;
+  colours: boolean;
+};
+
+function SelectedElementSection({
+  selection,
+  open,
+  setOpen,
+}: {
+  selection: SelectedElementControls;
+  open: SelectedAccordionState;
+  setOpen: React.Dispatch<React.SetStateAction<SelectedAccordionState>>;
+}) {
+  const toggle = (key: keyof SelectedAccordionState) =>
+    setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const showText = selection.textSize !== null || selection.textAlignX !== null;
   const showColours =
