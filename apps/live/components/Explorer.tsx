@@ -336,9 +336,9 @@ export function Explorer({
         </div>
 
         <div className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-3 text-xs text-slate-600">
-          <p className="font-medium text-slate-800">Sign in to save your diagrams</p>
+          <p className="font-medium text-slate-800">Sign in to keep your diagrams</p>
           <p className="mt-1 leading-relaxed text-slate-500">
-            Create an account to keep your diagrams across sessions.
+            A free account is required to keep your diagrams across sessions.
           </p>
           <Tooltip title="Sign in" description="Coming soon.">
             <button

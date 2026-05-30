@@ -1645,6 +1645,27 @@ export default function LivePage() {
     return new Set(selectionMembers(activeTab.elements, id));
   };
 
+  // Unified "what's the user editing right now?" id set. An active
+  // marquee multi-selection wins; otherwise we fall back to the
+  // single-id member-resolver (which expands a group selection
+  // into its full membership). Every editor setter that used to
+  // operate on `memberIdsOf(selectedId)` now uses this so shared
+  // controls bulk-apply across either flavour of multi-selection.
+  const currentSelectionIds = (): Set<string> => {
+    if (multiSelectedIds.size > 0) return new Set(multiSelectedIds);
+    return memberIdsOf(selectedId);
+  };
+
+  // First element in `activeTab.elements` (DOM/z-order) that's in
+  // the current selection. Used as the "primary" for toggle setters
+  // (lock, bold, etc.) — read its current value, apply the inverse
+  // to every selected element. Returns null when nothing is selected.
+  const selectionPrimary = (): Element | null => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return null;
+    return activeTab.elements.find((el) => ids.has(el.id)) ?? null;
+  };
+
   // --- Modes ---------------------------------------------------------------
 
   const exitFormatPainter = () => setFormatSourceId(null);
@@ -2336,8 +2357,8 @@ export default function LivePage() {
   };
 
   const deleteSelected = () => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.filter((el) => {
         if (ids.has(el.id)) return false;
@@ -2471,47 +2492,47 @@ export default function LivePage() {
 
   const toggleLockSelected = () => {
     if (!selectedId) return;
-    const source = activeTab.elements.find((el) => el.id === selectedId);
+    const source = selectionPrimary();
     if (!source) return;
     const shouldLock = !(source.locked === true);
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
     commit((els) => els.map((el) => (ids.has(el.id) ? { ...el, locked: shouldLock } : el)));
   };
 
   const toggleAspectLockSelected = () => {
     if (!selectedId) return;
-    const source = activeTab.elements.find((el) => el.id === selectedId);
+    const source = selectionPrimary();
     if (!source || !isBoxed(source)) return;
     const shouldLock = !(source.aspectLocked === true);
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
     commit((els) =>
       els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, aspectLocked: shouldLock } : el)),
     );
   };
 
   const bringSelectedToFront = () => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) => bringManyToFront(els, ids));
   };
 
   const sendSelectedToBack = () => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) => sendManyToBack(els, ids));
   };
 
   const setTextSizeSelected = (size: TextSize) => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, textSize: size } : el)),
     );
   };
 
   const setTextAlignSelected = (x: TextAlignX, y: TextAlignY) => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.map((el) =>
         ids.has(el.id) && isBoxed(el) ? { ...el, textAlignX: x, textAlignY: y } : el,
@@ -2526,19 +2547,18 @@ export default function LivePage() {
   const toggleTextStyleSelected = (
     field: 'textBold' | 'textItalic' | 'textUnderline' | 'textStrikethrough',
   ) => {
-    if (!selectedId) return;
-    const primary = activeTab.elements.find((el) => el.id === selectedId);
+    const primary = selectionPrimary();
     if (!primary || !isBoxed(primary)) return;
     const next = !(primary[field] ?? false);
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
     commit((els) =>
       els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, [field]: next } : el)),
     );
   };
 
   const setFillColorSelected = (color: string) => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.map((el) =>
         ids.has(el.id) && (el.type === 'shape' || el.type === 'sticky')
@@ -2549,8 +2569,8 @@ export default function LivePage() {
   };
 
   const setStrokeColorSelected = (color: string) => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.map((el) =>
         ids.has(el.id) && (el.type === 'shape' || el.type === 'sticky' || el.type === 'arrow')
@@ -2561,24 +2581,24 @@ export default function LivePage() {
   };
 
   const setTextColorSelected = (color: string) => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, textColor: color } : el)),
     );
   };
 
   const setLinkSelected = (tabId: string) => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.map((el) => (ids.has(el.id) ? { ...el, link: { kind: 'tab' as const, tabId } } : el)),
     );
   };
 
   const clearLinkSelected = () => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.map((el) => {
         if (!ids.has(el.id)) return el;
@@ -2598,14 +2618,14 @@ export default function LivePage() {
   };
 
   const setOpacitySelected = (opacity: number) => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) => els.map((el) => (ids.has(el.id) ? { ...el, opacity } : el)));
   };
 
   const setPaddingSelected = (padding: import('@livediagram/diagram').Padding) => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) => els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, padding } : el)));
   };
 
@@ -2650,8 +2670,8 @@ export default function LivePage() {
   // to undefined; the history hook snapshots the present so this is
   // undoable as one step.
   const resetColorsSelected = () => {
-    if (!selectedId) return;
-    const ids = memberIdsOf(selectedId);
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     // "Reset to theme" applies the tab's current theme colours when
     // the tab has one set. Plain delete-the-override only works when
     // the theme is the brand default (its `elementFill / Stroke / Text`

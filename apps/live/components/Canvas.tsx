@@ -511,11 +511,24 @@ export function Canvas(props: CanvasProps) {
   const handleZoomOut = () => setViewportZoom(clampZoom(viewportZoom - zoomStep));
   const handleResetZoom = () => setViewportZoom(1);
 
-  // Group-aware selection.
+  // Group-aware selection. `selected` is the editor's primary
+  // element (single-click, group root, or first member of a marquee
+  // multi-selection). Multi-select promotes the first selected
+  // boxed element so the Editor panel can read shared properties
+  // from it; setters in the editor bulk-apply across all selected
+  // members.
   const memberIds = selectedId
     ? new Set(selectionMembers(elements, selectedId))
     : new Set<string>();
-  const selected = selectedId ? (elements.find((el) => el.id === selectedId) ?? null) : null;
+  const multiPrimaryId =
+    multiSelectedIds.size > 0
+      ? (elements.find((el) => multiSelectedIds.has(el.id))?.id ?? null)
+      : null;
+  const selected =
+    (selectedId ? (elements.find((el) => el.id === selectedId) ?? null) : null) ??
+    (multiPrimaryId ? (elements.find((el) => el.id === multiPrimaryId) ?? null) : null);
+  const selectionScope: 'single' | 'multi' | 'group' =
+    multiSelectedIds.size > 0 ? 'multi' : selectedId && memberIds.size > 1 ? 'group' : 'single';
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
   const selectedIsGrouped = selected && isBoxed(selected) && selected.groupId !== undefined;
 
@@ -1085,6 +1098,7 @@ export function Canvas(props: CanvasProps) {
           position={contextPosition}
           minimized={contextMinimized}
           selection={paletteSelection}
+          selectionScope={selectionScope}
           tab={tabSection}
           tabAccordionsOpen={tabAccordionsOpen}
           setTabAccordionsOpen={setTabAccordionsOpen}

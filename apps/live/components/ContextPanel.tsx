@@ -15,6 +15,11 @@ type ContextPanelProps = {
   position: { x: number; y: number } | null;
   minimized: boolean;
   selection: SelectedElementControls | null;
+  // 'single' / 'multi' / 'group' — drives the section heading
+  // ("Selected Element" / "Selected Elements" / "Selected Group").
+  // Defaults to single when omitted so legacy call sites stay
+  // unchanged.
+  selectionScope?: 'single' | 'multi' | 'group';
   tab: TabSectionControls;
   // Tab-section accordion state lifted to the editor so external
   // triggers (e.g. clicking a "Changed theme to X" entry in the
@@ -36,6 +41,7 @@ export function ContextPanel({
   position,
   minimized,
   selection,
+  selectionScope = 'single',
   tab,
   tabAccordionsOpen,
   setTabAccordionsOpen,
@@ -79,6 +85,7 @@ export function ContextPanel({
           selection={selection}
           open={selectedAccordionsOpen}
           setOpen={setSelectedAccordionsOpen}
+          scope={selectionScope}
         />
       ) : (
         <TabSection tab={tab} open={tabOpen} setOpen={setTabOpen} />
