@@ -759,7 +759,7 @@ export function Canvas(props: CanvasProps) {
         ) : null}
       </div>
 
-      {elements.length === 0 && !showTemplatePicker ? (
+      {elements.length === 0 && !showTemplatePicker && !welcomeOpen ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="pointer-events-none flex max-w-sm animate-fly-up-in flex-col items-center rounded-xl border border-slate-200 bg-white px-6 py-5 text-center shadow-md">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-500">
