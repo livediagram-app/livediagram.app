@@ -624,6 +624,32 @@ export function Canvas(props: CanvasProps) {
       tabIndex={-1}
       onPointerMove={handlePointerMoveCanvas}
       onPointerLeave={handlePointerLeaveCanvas}
+      onPointerDown={(e) => {
+        // Auto-fit on load can scale the wrapper below 1, which
+        // shrinks its hit region inside `main`. Without this mirror
+        // handler, clicks in the "outside the shrunken wrapper but
+        // still on the canvas" gap would never start a marquee.
+        // Restrict to direct hits on `main` so element clicks (which
+        // bubble up here) don't also trigger.
+        if (e.target !== e.currentTarget) return;
+        const wantsPan = spaceHeldRef.current || canvasTool === 'pan';
+        if (wantsPan) {
+          setPan({
+            startClientX: e.clientX,
+            startClientY: e.clientY,
+            startOffsetX: viewportOffset.x,
+            startOffsetY: viewportOffset.y,
+            movedRef: { current: false },
+          });
+        } else {
+          setMarquee({
+            startX: e.clientX,
+            startY: e.clientY,
+            currentX: e.clientX,
+            currentY: e.clientY,
+          });
+        }
+      }}
       className="relative flex-1 overflow-hidden outline-none"
       style={tabBackgroundStyle(
         tabBackgroundPattern,
