@@ -23,7 +23,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 12  | [Activity and audit log](12-activity-and-audit.md)                   | Per-diagram change log + Activity Panel UI + surgical revert       |
 | 13  | [Per-tab storage](13-per-tab-storage.md)                             | Split tabs into their own D1 rows so autosave scope shrinks        |
 | 14  | [New-diagram route](14-new-diagram-route.md)                         | Split the welcome / create-new flow off `/live` into `/live/new`   |
-| 15  | [Folders](15-folders.md)                                             | One level of folders for diagrams in the Explorer; Unsorted default |
+| 15  | [Folders](15-folders.md)                                             | Nested folders for diagrams in the Explorer; Unsorted default      |
 
 ## Workflow
 

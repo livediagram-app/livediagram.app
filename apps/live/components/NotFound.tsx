@@ -1,8 +1,10 @@
-// Full-screen 404 surfaced when the URL points at a diagram that
-// doesn't exist OR isn't owned by the current participant. The
-// API returns 404 for both cases (we don't leak existence to
-// strangers); the UI offers a single "Create new diagram" CTA that
-// navigates to `/live` without a `?d=` so the welcome flow kicks in.
+// 404 card surfaced when the URL points at a diagram that doesn't
+// exist OR isn't owned by the current participant. The API returns
+// 404 for both (we don't leak existence to strangers). The card is
+// designed to drop into the same chrome as /live/new — EditorHeader
+// above + Explorer panel overlay — so the caller composes the page
+// layout. Renders as an absolute overlay so the Explorer behind
+// stays interactive.
 
 type NotFoundProps = {
   onCreateNew: () => void;
@@ -10,8 +12,8 @@ type NotFoundProps = {
 
 export function NotFound({ onCreateNew }: NotFoundProps) {
   return (
-    <div className="flex flex-1 items-center justify-center bg-slate-50">
-      <div className="flex max-w-md flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-sm">
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+      <div className="pointer-events-auto flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
           <svg
             width="28"
@@ -31,8 +33,8 @@ export function NotFound({ onCreateNew }: NotFoundProps) {
         <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-rose-600">404</p>
         <h1 className="mt-1 text-xl font-semibold text-slate-900">Diagram not found</h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          We couldn&apos;t find a diagram at this URL. It may have been deleted, or it might belong
-          to someone else. If a teammate sent it, ask them for the share link instead.
+          This diagram doesn&apos;t exist or isn&apos;t yours. Open one from the Explorer or start
+          fresh.
         </p>
         <button
           type="button"

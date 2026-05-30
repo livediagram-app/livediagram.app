@@ -33,7 +33,7 @@ In scope:
   somewhere obvious to be).
 - A per-diagram-row "Move to folder…" menu item; the picker shows a
   flat list of every folder by breadcrumb path (`Marketing / Q3`)
-  + Unsorted.
+  - Unsorted.
 
 Out of scope (V1):
 
@@ -83,13 +83,13 @@ the `folder_id` column.
 
 All endpoints continue the existing `X-Owner-Id` convention.
 
-| Method | Path                       | Body                                      | Returns        |
-| ------ | -------------------------- | ----------------------------------------- | -------------- |
-| GET    | `/api/folders`             | —                                         | `Folder[]`     |
-| POST   | `/api/folders`             | `{ id, name, parentId? }`                 | `Folder`       |
-| PUT    | `/api/folders/:id`         | `{ name?, parentId? }` (cycle check)      | `Folder`       |
-| DELETE | `/api/folders/:id`         | —                                         | 204            |
-| PUT    | `/api/diagrams/:id/folder` | `{ folderId \| null }`                    | 204            |
+| Method | Path                       | Body                                 | Returns    |
+| ------ | -------------------------- | ------------------------------------ | ---------- |
+| GET    | `/api/folders`             | —                                    | `Folder[]` |
+| POST   | `/api/folders`             | `{ id, name, parentId? }`            | `Folder`   |
+| PUT    | `/api/folders/:id`         | `{ name?, parentId? }` (cycle check) | `Folder`   |
+| DELETE | `/api/folders/:id`         | —                                    | 204        |
+| PUT    | `/api/diagrams/:id/folder` | `{ folderId \| null }`               | 204        |
 
 `Folder` = `{ id, name, parentId, createdAt, updatedAt }`.
 

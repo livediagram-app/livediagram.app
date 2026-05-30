@@ -92,8 +92,7 @@ async function rowToDiagram(env: Env, row: DiagramRow): Promise<DiagramDTO> {
   };
 }
 
-const DIAGRAM_COLS =
-  'id, owner_id, name, shareable, share_code, folder_id, saved_at, created_at';
+const DIAGRAM_COLS = 'id, owner_id, name, shareable, share_code, folder_id, saved_at, created_at';
 const DIAGRAM_SUMMARY_COLS = DIAGRAM_COLS;
 
 export async function getDiagram(env: Env, id: string): Promise<DiagramDTO | null> {

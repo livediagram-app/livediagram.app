@@ -46,6 +46,7 @@ import {
 import { Canvas } from '@/components/Canvas';
 import { CommentThreadPopover } from '@/components/CommentThreadPopover';
 import { EditorHeader, type SaveStatus } from '@/components/EditorHeader';
+import { Explorer } from '@/components/Explorer';
 import { NotFound } from '@/components/NotFound';
 import { ShareDialog } from '@/components/ShareDialog';
 import { TabBar } from '@/components/TabBar';
@@ -2829,11 +2830,35 @@ export default function LivePage() {
   if (diagramNotFound) {
     return (
       <div className="flex h-dvh flex-col">
-        <NotFound
-          onCreateNew={() => {
-            window.location.assign(`${window.location.origin}/live/new`);
-          }}
+        <EditorHeader
+          diagramName="Diagram not found"
+          hideTitle
+          showShare={false}
+          shareable={false}
+          onOpenShare={() => {}}
+          onRename={() => {}}
         />
+        <main className="relative flex-1 bg-slate-50">
+          <NotFound
+            onCreateNew={() => {
+              window.location.assign(`${window.location.origin}/live/new`);
+            }}
+          />
+          <Explorer
+            position={explorerPosition}
+            minimized={explorerMinimized}
+            diagrams={diagramList}
+            loading={diagramListLoading}
+            currentDiagramId={null}
+            onMoveTo={(x, y) => setExplorerPosition({ x, y })}
+            onToggleMinimized={() => setExplorerMinimized((v) => !v)}
+            onReset={() => setExplorerPosition(null)}
+            onOpenDiagram={openDiagram}
+            onNewDiagram={newDiagram}
+            onDeleteDiagram={deleteDiagram}
+            onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+          />
+        </main>
       </div>
     );
   }
