@@ -98,9 +98,18 @@ view-only visitors in V1.
    - Optimistically appends it to the in-memory log so the panel
      updates immediately.
 
-2. `useDiagramHistory.undo` / `redo` do **not** emit log entries —
-   they replay client-side state and do not represent a new editorial
-   action. The audit log diverges from the local undo stack by design.
+2. `useDiagramHistory.undo` / `redo` are paired with the activity log:
+
+   - **Undo** removes the most recently emitted entry from the panel
+     and DELETEs it from D1. The popped entry is held in a redo stack
+     in memory so a subsequent Redo can reinstate it.
+   - **Redo** takes the top of the redo stack and re-POSTs the entry
+     verbatim (same id, summary, before/after). The Activity panel
+     ends up showing exactly what was visible before the undo.
+   - The pair-stacks are bounded by the same limit as
+     `useDiagramHistory` (3 steps) so they can't drift out of sync.
+     A fresh commit clears the redo stack — same semantics as the
+     state-snapshot history's `future`.
 
 3. On a `Revert` click for entry E:
    - For each `elementId` in E, apply E's `before_state` to the

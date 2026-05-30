@@ -81,6 +81,12 @@ function createTab(name: string): Tab {
   return { id: crypto.randomUUID(), name, elements: [] };
 }
 
+// Mirrors useDiagramHistory.HISTORY_LIMIT — we can't undo past what
+// the state-snapshot stack remembers, so there's no point in tracking
+// more log entries than that. Bumping HISTORY_LIMIT in useDiagramHistory
+// should bump this too.
+const LOG_HISTORY_LIMIT = 3;
+
 // Full-screen "loading your diagram…" placeholder. Stand-in for the
 // editor chrome while the post-mount fetch resolves a ?d= or ?s= URL.
 // Reassures the user that data isn't lost — previously they'd briefly
@@ -338,6 +344,15 @@ export default function LivePage() {
   // commit. See specs/12-activity-and-audit.md.
   const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
   const [changeLogLoading, setChangeLogLoading] = useState(true);
+  // Per-step Undo/Redo memory for the activity log. Each commit
+  // pushes its entry onto `past`; undo pops it (deletes from the
+  // panel) and moves it onto `future`; redo pops from `future` and
+  // re-inserts. Kept in a ref because nothing renders from it and
+  // we want a synchronous mutation alongside the matching API call.
+  const entryHistoryRef = useRef<{ past: ChangeLogEntry[]; future: ChangeLogEntry[] }>({
+    past: [],
+    future: [],
+  });
   const [activityPosition, setActivityPosition] = useState<{ x: number; y: number } | null>(null);
   // Activity defaults to minimised: most users only want to peek at
   // it occasionally. The dock button stays visible so it's one click
@@ -820,6 +835,14 @@ export default function LivePage() {
       createdAt: Date.now(),
     };
     setChangeLog((prev) => [entry, ...prev].slice(0, 200));
+    // Track this entry so Undo / Redo can pair with it. A fresh
+    // commit always clears the redo stack — same semantics as
+    // useDiagramHistory's future. Cap the past stack so a long
+    // editing session doesn't grow unbounded.
+    entryHistoryRef.current = {
+      past: [...entryHistoryRef.current.past, entry].slice(-LOG_HISTORY_LIMIT),
+      future: [],
+    };
     apiAppendChangeLogEntry(selfParticipant.id, entry).catch(() => {
       // Best-effort. The save-status pill already surfaces API
       // outages; we don't need a second indicator for the log.
@@ -886,8 +909,29 @@ export default function LivePage() {
     );
   };
 
+  // Undo / redo are paired with the activity log: undoing a step
+  // removes the matching entry from the panel (and from D1), redoing
+  // re-inserts the same entry verbatim. The `canUndo` / `canRedo`
+  // guards keep this in sync with useDiagramHistory's bounded stacks
+  // — if the history is exhausted, our entry stacks stay put.
   const undo = () => {
+    if (!canUndo) return;
     undoHistory();
+    const { past, future } = entryHistoryRef.current;
+    const popped = past[past.length - 1];
+    if (popped) {
+      entryHistoryRef.current = {
+        past: past.slice(0, -1),
+        future: [popped, ...future].slice(0, LOG_HISTORY_LIMIT),
+      };
+      setChangeLog((prev) => prev.filter((e) => e.id !== popped.id));
+      if (diagramId) {
+        apiDeleteChangeLogEntry(selfParticipant.id, diagramId, popped.id).catch(() => {
+          // Best-effort. A redo will re-POST the same id so a stale
+          // duplicate is unlikely.
+        });
+      }
+    }
     setEditingId(null);
     setSelectedId(null);
     setFormatSourceId(null);
@@ -895,7 +939,24 @@ export default function LivePage() {
   };
 
   const redo = () => {
+    if (!canRedo) return;
     redoHistory();
+    const { past, future } = entryHistoryRef.current;
+    const next = future[0];
+    if (next) {
+      entryHistoryRef.current = {
+        past: [...past, next].slice(-LOG_HISTORY_LIMIT),
+        future: future.slice(1),
+      };
+      setChangeLog((prev) => [next, ...prev].slice(0, 200));
+      if (diagramId) {
+        // Same entry id and content — D1 ends up with the same row
+        // it had before the undo. Idempotent under network retries
+        // (the API treats POST as insert; a re-insert of the same id
+        // would fail loudly but we don't double-fire).
+        apiAppendChangeLogEntry(selfParticipant.id, next).catch(() => {});
+      }
+    }
     setEditingId(null);
     setSelectedId(null);
     setFormatSourceId(null);
