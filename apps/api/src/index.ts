@@ -312,7 +312,7 @@ export default {
             // off so the live app stops opening the room.
             const links = await listShareLinks(env, id);
             for (const link of links) await deleteShareLink(env, link.code);
-            await setDiagramShare(env, id, false, null);
+            await setDiagramShare(env, id, false);
             return json({ shareable: false, shareCode: null });
           }
         }

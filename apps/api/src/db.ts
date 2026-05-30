@@ -22,10 +22,13 @@ type DiagramRow = {
   owner_id: string;
   name: string;
   shareable: number;
-  share_code: string | null;
   folder_id: string | null;
   saved_at: number;
   created_at: number;
+  // Derived via subquery in the SELECT; first (oldest) share_links
+  // row for this diagram, or NULL when no share links exist. Replaces
+  // the legacy diagrams.share_code column dropped in migration 0008.
+  share_code: string | null;
 };
 
 type SummaryRow = DiagramRow;
@@ -92,7 +95,13 @@ async function rowToDiagram(env: Env, row: DiagramRow): Promise<DiagramDTO> {
   };
 }
 
-const DIAGRAM_COLS = 'id, owner_id, name, shareable, share_code, folder_id, saved_at, created_at';
+// Derives the primary share code via a correlated subquery on
+// share_links. ORDER BY created_at ASC + LIMIT 1 keeps the result
+// stable across calls; "primary" is the oldest link the owner has
+// minted for the diagram.
+const SHARE_CODE_EXPR =
+  '(SELECT code FROM share_links WHERE share_links.diagram_id = diagrams.id ORDER BY created_at ASC LIMIT 1) AS share_code';
+const DIAGRAM_COLS = `id, owner_id, name, shareable, folder_id, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 const DIAGRAM_SUMMARY_COLS = DIAGRAM_COLS;
 
 export async function getDiagram(env: Env, id: string): Promise<DiagramDTO | null> {
@@ -103,8 +112,15 @@ export async function getDiagram(env: Env, id: string): Promise<DiagramDTO | nul
 }
 
 export async function getDiagramByShareCode(env: Env, code: string): Promise<DiagramDTO | null> {
+  // Resolve through share_links exclusively now that the legacy
+  // diagrams.share_code column is gone (migration 0008). Only
+  // diagrams that are still shareable surface — revoking the last
+  // link flips that flag off.
   const row = await env.DB.prepare(
-    `SELECT ${DIAGRAM_COLS} FROM diagrams WHERE share_code = ? AND shareable = 1`,
+    `SELECT ${DIAGRAM_COLS}
+       FROM diagrams
+       WHERE shareable = 1
+         AND id = (SELECT diagram_id FROM share_links WHERE code = ?)`,
   )
     .bind(code)
     .first<DiagramRow>();
@@ -134,24 +150,18 @@ export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<Di
 // reorderTabs / deleteTab). Used both by the new metadata-only PUT
 // /diagrams/:id and by the create endpoint.
 export async function upsertDiagramMeta(env: Env, d: Omit<DiagramDTO, 'tabs'>): Promise<void> {
+  // `shareCode` is intentionally absent from the INSERT — it now
+  // lives only in share_links. The DTO field is read-only (derived
+  // via subquery on selects).
   await env.DB.prepare(
-    `INSERT INTO diagrams (id, owner_id, name, shareable, share_code, folder_id, saved_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO diagrams (id, owner_id, name, shareable, folder_id, saved_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
        saved_at = excluded.saved_at`,
   )
-    .bind(
-      d.id,
-      d.ownerId,
-      d.name,
-      d.shareable ? 1 : 0,
-      d.shareCode,
-      d.folderId,
-      d.savedAt,
-      d.createdAt,
-    )
+    .bind(d.id, d.ownerId, d.name, d.shareable ? 1 : 0, d.folderId, d.savedAt, d.createdAt)
     .run();
 }
 
@@ -226,14 +236,13 @@ export async function reorderTabs(env: Env, diagramId: string, tabIds: string[])
   await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
 }
 
-export async function setDiagramShare(
-  env: Env,
-  id: string,
-  shareable: boolean,
-  shareCode: string | null,
-): Promise<void> {
-  await env.DB.prepare('UPDATE diagrams SET shareable = ?, share_code = ? WHERE id = ?')
-    .bind(shareable ? 1 : 0, shareCode, id)
+// Toggle the shareable flag on a diagram. The actual codes live in
+// share_links (managed by createShareLink / deleteShareLink); this
+// helper only flips the boolean that gates the realtime room + the
+// share-code resolver.
+export async function setDiagramShare(env: Env, id: string, shareable: boolean): Promise<void> {
+  await env.DB.prepare('UPDATE diagrams SET shareable = ? WHERE id = ?')
+    .bind(shareable ? 1 : 0, id)
     .run();
 }
 
@@ -326,13 +335,10 @@ export async function createShareLink(
   )
     .bind(code, diagramId, role, createdAt)
     .run();
-  // Mark the legacy single-code field too so old GETs still surface
-  // the diagram as shared.
-  await env.DB.prepare(
-    'UPDATE diagrams SET shareable = 1, share_code = COALESCE(share_code, ?) WHERE id = ?',
-  )
-    .bind(code, diagramId)
-    .run();
+  // Flip the shareable flag on so the realtime room opens + the
+  // share-code resolver picks the diagram up. The "primary" code is
+  // derived from share_links on read, so no column to update.
+  await env.DB.prepare('UPDATE diagrams SET shareable = 1 WHERE id = ?').bind(diagramId).run();
   return { code, diagramId, role, createdAt };
 }
 
@@ -341,30 +347,17 @@ export async function deleteShareLink(env: Env, code: string): Promise<void> {
   if (!existing) return;
   await env.DB.prepare('DELETE FROM share_links WHERE code = ?').bind(code).run();
   // If this was the last link for the diagram, flip shareable off so
-  // the live app stops opening the realtime room.
+  // the live app stops opening the realtime room. The primary code
+  // is derived on read; no column to repoint.
   const remaining = await env.DB.prepare(
     'SELECT COUNT(*) AS n FROM share_links WHERE diagram_id = ?',
   )
     .bind(existing.diagramId)
     .first<{ n: number }>();
   if (!remaining || remaining.n === 0) {
-    await env.DB.prepare('UPDATE diagrams SET shareable = 0, share_code = NULL WHERE id = ?')
+    await env.DB.prepare('UPDATE diagrams SET shareable = 0 WHERE id = ?')
       .bind(existing.diagramId)
       .run();
-  } else if (existing.code === (await getDiagram(env, existing.diagramId))?.shareCode) {
-    // The legacy share_code column happened to point at the link we
-    // just deleted. Promote any remaining link so the legacy field
-    // still resolves.
-    const survivor = await env.DB.prepare(
-      'SELECT code FROM share_links WHERE diagram_id = ? ORDER BY created_at ASC LIMIT 1',
-    )
-      .bind(existing.diagramId)
-      .first<{ code: string }>();
-    if (survivor) {
-      await env.DB.prepare('UPDATE diagrams SET share_code = ? WHERE id = ?')
-        .bind(survivor.code, existing.diagramId)
-        .run();
-    }
   }
 }
 
