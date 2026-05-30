@@ -42,11 +42,15 @@ export type TabSectionControls = {
   onClearTabContent: () => void;
 };
 
+export type CanvasTool = 'pan' | 'select';
+
 type CommandPaletteProps = {
   position: { x: number; y: number } | null;
   minimized: boolean;
   selection: SelectedElementControls | null;
   tab: TabSectionControls;
+  canvasTool: CanvasTool;
+  onSetCanvasTool: (tool: CanvasTool) => void;
   onMoveTo: (x: number, y: number) => void;
   onToggleMinimized: () => void;
   onAddShape: (kind: ShapeKind) => void;
@@ -64,6 +68,8 @@ function OpenPalette({
   position,
   selection,
   tab,
+  canvasTool,
+  onSetCanvasTool,
   onMoveTo,
   onToggleMinimized,
   onAddShape,
@@ -80,6 +86,37 @@ function OpenPalette({
       onMinimize={onToggleMinimized}
     >
       <div className="px-2 pb-2">
+        {/* Canvas tool toggle. Pan is the default — drag-on-empty
+            scrolls the canvas. Switching to Select makes drag-on-empty
+            draw a marquee for multi-select. Holding Space pans
+            regardless of the active tool, mirroring Figma. */}
+        <div className="flex items-center gap-1 pb-1.5">
+          <Tooltip
+            title="Pan"
+            description="Drag the empty canvas to scroll. Hold Space to pan even when Select is active."
+          >
+            <ToolButton
+              active={canvasTool === 'pan'}
+              label="Pan"
+              onClick={() => onSetCanvasTool('pan')}
+            >
+              <PanIcon />
+            </ToolButton>
+          </Tooltip>
+          <Tooltip
+            title="Select"
+            description="Drag the empty canvas to marquee-select multiple elements."
+          >
+            <ToolButton
+              active={canvasTool === 'select'}
+              label="Select"
+              onClick={() => onSetCanvasTool('select')}
+            >
+              <SelectIcon />
+            </ToolButton>
+          </Tooltip>
+        </div>
+        <div className="mb-1.5 h-px bg-slate-100" />
         {/* Shape primitives. Wraps to a second row once the palette runs
             out of horizontal room. Ordered by frequency / familiarity:
             primitive geometry first, then flowchart-vocabulary shapes. */}
@@ -650,6 +687,72 @@ function LabelButton({
       <span className="text-slate-500">{children}</span>
       {label}
     </button>
+  );
+}
+
+function ToolButton({
+  active,
+  label,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  const base =
+    'flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition';
+  const tone = active
+    ? 'bg-brand-500 text-white shadow-sm'
+    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900';
+  return (
+    <button type="button" onClick={onClick} className={`${base} ${tone}`} aria-pressed={active}>
+      {children}
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function PanIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 14V7" />
+      <path d="M5 11V5a1.25 1.25 0 0 1 2.5 0v3" />
+      <path d="M7.5 8V4a1.25 1.25 0 0 1 2.5 0v4" />
+      <path d="M10 8V5a1.25 1.25 0 0 1 2.5 0v6a3.5 3.5 0 0 1-3.5 3.5H7" />
+      <path d="M5 11l-1-1.5" />
+    </svg>
+  );
+}
+
+function SelectIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <rect x="2" y="2" width="9" height="9" strokeDasharray="2 1.5" />
+      <path d="M11 11l3 3" />
+      <path d="M11 11l-1.5 -0.5l-0.5 -1.5" />
+    </svg>
   );
 }
 

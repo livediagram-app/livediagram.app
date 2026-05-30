@@ -42,6 +42,9 @@ type BoxedElementViewProps = {
   onCancelEdit: () => void;
   onFollowLink: (tabId: string) => void;
   onOpenComments: () => void;
+  // Select the element in response to a right-click — used to drive the
+  // SelectionPopover without starting a drag.
+  onContextSelect: () => void;
   // Other participants whose realtime selection is currently on this
   // element. Rendered as a small initial-badge stack at the top-left
   // (opposite the link / comment badges).
@@ -64,6 +67,7 @@ export function BoxedElementView({
   onCancelEdit,
   onFollowLink,
   onOpenComments,
+  onContextSelect,
   remoteSelectors,
 }: BoxedElementViewProps) {
   const isLocked = element.locked === true;
@@ -86,6 +90,17 @@ export function BoxedElementView({
     // Don't gate on isPaintMode here — the page-level beginEdit decides whether
     // edit can start (it rejects during format painter, and exits group mode).
     onBeginEdit();
+  };
+
+  // Right-click selects the element + shows the SelectionPopover instead
+  // of the browser's default context menu. The popover surfaces every
+  // per-element action — Duplicate, Comments, Group, Lock, Delete — so
+  // it's a natural fit for the "secondary click" gesture.
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isEditing) return;
+    onContextSelect();
   };
 
   const cursor = isPaintMode
@@ -111,6 +126,7 @@ export function BoxedElementView({
       data-element-id={element.id}
       onPointerDown={handleShapeDown}
       onDoubleClick={handleDoubleClick}
+      onContextMenu={handleContextMenu}
       className={`absolute origin-center animate-pop-in touch-none select-none ${variant.className} ${cursor}`}
       style={{
         left: element.x,

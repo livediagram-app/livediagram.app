@@ -56,6 +56,8 @@ type CanvasProps = {
   selectedId: string | null;
   multiSelectedIds: Set<string>;
   onSelectMarquee: (ids: Set<string>) => void;
+  canvasTool: import('./CommandPalette').CanvasTool;
+  onSetCanvasTool: (tool: import('./CommandPalette').CanvasTool) => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -158,6 +160,8 @@ export function Canvas(props: CanvasProps) {
     selectedId,
     multiSelectedIds,
     onSelectMarquee,
+    canvasTool,
+    onSetCanvasTool,
     remoteSelectionsByElement,
     onDuplicateMultiSelected,
     onDeleteMultiSelected,
@@ -418,11 +422,15 @@ export function Canvas(props: CanvasProps) {
     ? 'cursor-grabbing'
     : marquee
       ? 'cursor-crosshair'
-      : isPaintMode
-        ? 'cursor-copy'
-        : isGroupMode
+      : canvasTool === 'pan' && !spaceHeldRef.current
+        ? 'cursor-grab'
+        : canvasTool === 'select'
           ? 'cursor-crosshair'
-          : 'cursor-grab';
+          : isPaintMode
+            ? 'cursor-copy'
+            : isGroupMode
+              ? 'cursor-crosshair'
+              : 'cursor-grab';
 
   const selectionSupportsColours = selected ? supportsColours(selected) : false;
   const selectedDefaultAlign = selected && isBoxed(selected) ? defaultTextAlign(selected) : null;
@@ -491,8 +499,12 @@ export function Canvas(props: CanvasProps) {
         ref={wrapperRef}
         onPointerDown={(e) => {
           if (e.target !== e.currentTarget) return;
-          // Held Space = pan (Figma-style); otherwise = marquee box-select.
-          if (spaceHeldRef.current) {
+          // Tool decides the gesture: Pan tool = drag scrolls. Select
+          // tool = drag draws a marquee. Holding Space pans regardless
+          // (Figma-style override), so power users in Select mode can
+          // still scroll without switching tools.
+          const wantsPan = spaceHeldRef.current || canvasTool === 'pan';
+          if (wantsPan) {
             setPan({
               startClientX: e.clientX,
               startClientY: e.clientY,
@@ -545,6 +557,7 @@ export function Canvas(props: CanvasProps) {
             onCancelEdit={onCancelEdit}
             onFollowLink={onFollowLink}
             onOpenComments={() => onOpenComments(element.id)}
+            onContextSelect={() => onSelect(element.id)}
           />
         ))}
 
@@ -764,6 +777,8 @@ export function Canvas(props: CanvasProps) {
           minimized={paletteMinimized}
           selection={paletteSelection}
           tab={tabSection}
+          canvasTool={canvasTool}
+          onSetCanvasTool={onSetCanvasTool}
           onMoveTo={onMovePalette}
           onToggleMinimized={onToggleMinimized}
           onAddShape={onAddShape}

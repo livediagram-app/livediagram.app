@@ -173,6 +173,11 @@ export default function LivePage() {
   const [paletteMinimized, setPaletteMinimized] = useState(false);
   const [explorerPosition, setExplorerPosition] = useState<{ x: number; y: number } | null>(null);
   const [explorerMinimized, setExplorerMinimized] = useState(false);
+  // Canvas tool — Pan (default, drag-on-empty scrolls) vs Select
+  // (drag-on-empty marquee-selects). Holding Space always pans
+  // regardless. Lives in page so other components (e.g. status bar
+  // later) can read it without prop-drilling through Canvas.
+  const [canvasTool, setCanvasTool] = useState<'pan' | 'select'>('pan');
   // Picker mode lives here (rather than nearer `chooseTemplate`) so the
   // derived `welcomeOpen` below — used to gate page-level chrome — can
   // read it. See `openTemplatePicker` / `skipTemplatePicker` for the
@@ -1314,16 +1319,53 @@ export default function LivePage() {
   const resetColorsSelected = () => {
     if (!selectedId) return;
     const ids = memberIdsOf(selectedId);
+    // "Reset to theme" applies the tab's current theme colours when
+    // the tab has one set. Plain delete-the-override only works when
+    // the theme is the brand default (its `elementFill / Stroke / Text`
+    // are all null, so falling back to the type-default produces the
+    // brand look). For any other theme we need to explicitly set the
+    // colours since `addBoxed` is what normally writes them on create.
+    const theme = getTheme(activeTab.theme);
     commit((els) =>
       els.map((el) => {
         if (!ids.has(el.id)) return el;
-        if (isBoxed(el)) {
+        if (el.type === 'shape') {
+          return {
+            ...el,
+            ...(theme.elementFill !== null
+              ? { fillColor: theme.elementFill }
+              : { fillColor: undefined }),
+            ...(theme.elementStroke !== null
+              ? { strokeColor: theme.elementStroke }
+              : { strokeColor: undefined }),
+            ...(theme.elementText !== null
+              ? { textColor: theme.elementText }
+              : { textColor: undefined }),
+          };
+        }
+        if (el.type === 'text') {
+          return {
+            ...el,
+            ...(theme.elementText !== null
+              ? { textColor: theme.elementText }
+              : { textColor: undefined }),
+            fillColor: undefined,
+            strokeColor: undefined,
+          };
+        }
+        if (el.type === 'sticky') {
+          // Sticky's amber palette is iconic — wipe any user overrides
+          // but DON'T apply theme colours.
           const { fillColor: _f, strokeColor: _s, textColor: _t, ...rest } = el;
           return rest as typeof el;
         }
         if (el.type === 'arrow') {
-          const { strokeColor: _s, ...rest } = el;
-          return rest as typeof el;
+          return {
+            ...el,
+            ...(theme.elementStroke !== null
+              ? { strokeColor: theme.elementStroke }
+              : { strokeColor: undefined }),
+          };
         }
         return el;
       }),
@@ -1743,6 +1785,8 @@ export default function LivePage() {
         multiSelectedIds={multiSelectedIds}
         remoteSelectionsByElement={remoteSelectionsByElement}
         onSelectMarquee={selectMarquee}
+        canvasTool={canvasTool}
+        onSetCanvasTool={setCanvasTool}
         onDuplicateMultiSelected={duplicateMultiSelected}
         onDeleteMultiSelected={deleteMultiSelected}
         editingId={editingId}
