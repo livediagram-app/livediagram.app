@@ -84,8 +84,6 @@ type CommandPaletteProps = {
   position: { x: number; y: number } | null;
   minimized: boolean;
   size: { width: number; height: number } | null;
-  selection: SelectedElementControls | null;
-  tab: TabSectionControls;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
   onMoveTo: (x: number, y: number) => void;
@@ -110,8 +108,6 @@ export function CommandPalette(props: CommandPaletteProps) {
 function OpenPalette({
   position,
   size,
-  selection,
-  tab,
   canvasTool,
   onSetCanvasTool,
   onMoveTo,
@@ -123,26 +119,9 @@ function OpenPalette({
   onAddSticky,
   onAddArrow,
 }: CommandPaletteProps) {
-  // Accordion open state lives at the palette level so it survives the
-  // SelectedElementSection / TabSection swap that happens whenever the
-  // user deselects or switches elements. Without this lift, every
-  // selection change collapsed the accordions and the user had to
-  // re-click in.
-  const [selectedAccordionsOpen, setSelectedAccordionsOpen] = useState<{
-    shape: boolean;
-    appearance: boolean;
-    layer: boolean;
-    text: boolean;
-    colours: boolean;
-    pointer: boolean;
-  }>({
-    shape: false,
-    appearance: false,
-    layer: false,
-    text: false,
-    colours: false,
-    pointer: false,
-  });
+  // The Selected Element / Current Tab sections moved out into the
+  // ContextPanel (bottom-right, above zoom). The palette now hosts
+  // only the canvas-tool toggle and the shape primitives.
   return (
     <MovablePanel
       title="Palette"
@@ -150,12 +129,14 @@ function OpenPalette({
       defaultCorner="top-right"
       width="w-64"
       size={size}
-      // The Pan / Select toggle plus the shape grid wrap awkwardly
-      // below 220 px wide. Height floor leaves room for the canvas-
-      // tool row + a couple of shape rows + one accordion before
-      // anything starts clipping.
-      minWidth={220}
-      minHeight={300}
+      // Now that the Selected Element / Current Tab sections moved
+      // into the Editor panel, the Palette only hosts the canvas-
+      // tool toggle and the shape primitives. Mins shrink to match
+      // (200 wide keeps the 4-column shape grid tidy; 180 high fits
+      // the tool row, both shape rows, and the text/sticky/arrow
+      // row with breathing room).
+      minWidth={200}
+      minHeight={180}
       onResize={onResize}
       onReset={onReset}
       onMoveTo={onMoveTo}
@@ -384,21 +365,11 @@ function OpenPalette({
           </IconButton>
         </div>
       </div>
-
-      {selection ? (
-        <SelectedElementSection
-          selection={selection}
-          open={selectedAccordionsOpen}
-          setOpen={setSelectedAccordionsOpen}
-        />
-      ) : (
-        <TabSection tab={tab} />
-      )}
     </MovablePanel>
   );
 }
 
-type SelectedAccordionState = {
+export type SelectedAccordionState = {
   shape: boolean;
   appearance: boolean;
   layer: boolean;
@@ -407,7 +378,7 @@ type SelectedAccordionState = {
   pointer: boolean;
 };
 
-function SelectedElementSection({
+export function SelectedElementSection({
   selection,
   open,
   setOpen,
@@ -996,7 +967,7 @@ function ArrowEndsIcon({ ends }: { ends: ArrowEnds }) {
   );
 }
 
-function TabSection({ tab }: { tab: TabSectionControls }) {
+export function TabSection({ tab }: { tab: TabSectionControls }) {
   const [open, setOpen] = useState<{ theme: boolean; background: boolean }>({
     theme: false,
     background: false,

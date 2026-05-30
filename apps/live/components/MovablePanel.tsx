@@ -19,7 +19,9 @@ type MovablePanelProps = {
   // panel hasn't been dragged yet — render at the default corner.
   position: { x: number; y: number } | null;
   // Where to render the panel when the user hasn't dragged it yet.
-  defaultCorner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  // `top-right-stacked` is for panels that should sit below another
+  // right-anchored panel (e.g. the Editor under the Palette).
+  defaultCorner: 'top-left' | 'top-right' | 'top-right-stacked' | 'bottom-left' | 'bottom-right';
   // Tailwind width utility for the panel body (e.g. `w-56`, `w-64`).
   // Ignored once the user has resized — explicit px size wins.
   width?: string;
@@ -197,11 +199,13 @@ export function MovablePanel({
     ? ''
     : defaultCorner === 'top-right'
       ? 'right-4 top-4'
-      : defaultCorner === 'bottom-left'
-        ? 'bottom-4 left-4'
-        : defaultCorner === 'bottom-right'
-          ? 'bottom-4 right-4'
-          : 'left-4 top-4';
+      : defaultCorner === 'top-right-stacked'
+        ? 'right-4 top-[22rem]'
+        : defaultCorner === 'bottom-left'
+          ? 'bottom-4 left-4'
+          : defaultCorner === 'bottom-right'
+            ? 'bottom-4 right-4'
+            : 'left-4 top-4';
   // Tailwind `width` utility is only meaningful when the user hasn't
   // resized — once they have, the inline `width` style takes over and
   // we drop the class so it doesn't fight for specificity.
@@ -243,15 +247,24 @@ export function MovablePanel({
                 className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden fill="none">
+                  {/* A diagonal arrow tucking back into a corner — a
+                      familiar "snap-back" / restore glyph used in
+                      window-manager toolbars. */}
                   <path
-                    d="M2 4.5h6a2.5 2.5 0 0 1 0 5H4.5"
+                    d="M6.5 3H9v2.5"
                     stroke="currentColor"
                     strokeWidth="1.4"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <path
-                    d="M3.75 2.5L2 4.5l1.75 2"
+                    d="M9 3L5 7"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M3 7v2h6"
                     stroke="currentColor"
                     strokeWidth="1.4"
                     strokeLinecap="round"

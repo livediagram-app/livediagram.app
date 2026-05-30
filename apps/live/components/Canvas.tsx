@@ -34,6 +34,7 @@ import { ArrowDefs, ArrowView } from './ArrowView';
 import { BoxedElementView } from './BoxedElementView';
 import { CommandPalette, type SelectedElementControls } from './CommandPalette';
 import { ActivityIcon, ActivityPanel } from './ActivityPanel';
+import { ContextIcon, ContextPanel } from './ContextPanel';
 import { Explorer, ExplorerIcon, PaletteIcon } from './Explorer';
 import { getTheme } from '@/lib/themes';
 import type { ChangeLogEntry } from '@/lib/api-client';
@@ -114,6 +115,13 @@ type CanvasProps = {
   onToggleActivityMinimized: () => void;
   onResizeActivity: (size: { width: number; height: number }) => void;
   onResetActivity: () => void;
+  contextPosition: { x: number; y: number } | null;
+  contextMinimized: boolean;
+  contextSize: { width: number; height: number } | null;
+  onMoveContext: (x: number, y: number) => void;
+  onToggleContextMinimized: () => void;
+  onResizeContext: (size: { width: number; height: number }) => void;
+  onResetContext: () => void;
   onRevertChange: (entry: ChangeLogEntry) => void;
   onClearActivity: () => void;
   saveStatus: import('./EditorHeader').SaveStatus;
@@ -251,6 +259,13 @@ export function Canvas(props: CanvasProps) {
     onToggleActivityMinimized,
     onResizeActivity,
     onResetActivity,
+    contextPosition,
+    contextMinimized,
+    contextSize,
+    onMoveContext,
+    onToggleContextMinimized,
+    onResizeContext,
+    onResetContext,
     onRevertChange,
     onClearActivity,
     saveStatus,
@@ -948,8 +963,6 @@ export function Canvas(props: CanvasProps) {
           position={palettePosition}
           minimized={paletteMinimized}
           size={paletteSize}
-          selection={paletteSelection}
-          tab={tabSection}
           canvasTool={canvasTool}
           onSetCanvasTool={onSetCanvasTool}
           onMoveTo={onMovePalette}
@@ -960,6 +973,20 @@ export function Canvas(props: CanvasProps) {
           onAddText={onAddText}
           onAddSticky={onAddSticky}
           onAddArrow={onAddArrow}
+        />
+      )}
+
+      {welcomeOpen ? null : (
+        <ContextPanel
+          position={contextPosition}
+          minimized={contextMinimized}
+          size={contextSize}
+          selection={paletteSelection}
+          tab={tabSection}
+          onMoveTo={onMoveContext}
+          onToggleMinimized={onToggleContextMinimized}
+          onResize={onResizeContext}
+          onReset={onResetContext}
         />
       )}
 
@@ -992,6 +1019,14 @@ export function Canvas(props: CanvasProps) {
                 description="Expand the Tab Activity panel: changelog, Undo, Redo."
                 icon={<ActivityIcon />}
                 onClick={onToggleActivityMinimized}
+              />
+            ) : null}
+            {contextMinimized ? (
+              <DockButton
+                label="Open Inspector"
+                description="Expand the Selected Element / Current Tab panel."
+                icon={<ContextIcon />}
+                onClick={onToggleContextMinimized}
               />
             ) : null}
             <ZoomControls

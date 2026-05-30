@@ -267,6 +267,12 @@ export default function LivePage() {
   const [explorerMinimized, setExplorerMinimized] = useState(false);
   const [explorerSize, setExplorerSize] = useState<{ width: number; height: number } | null>(null);
   const [activitySize, setActivitySize] = useState<{ width: number; height: number } | null>(null);
+  // Inspector / Context panel (Selected Element + Current Tab). Defaults
+  // to the bottom-right corner above the zoom controls. State lives
+  // alongside the other panels' position/size/minimised triplets.
+  const [contextPosition, setContextPosition] = useState<{ x: number; y: number } | null>(null);
+  const [contextMinimized, setContextMinimized] = useState(false);
+  const [contextSize, setContextSize] = useState<{ width: number; height: number } | null>(null);
   // Canvas tool — Pan (default, drag-on-empty scrolls) vs Select
   // (drag-on-empty marquee-selects). Holding Space always pans
   // regardless. Lives in page so other components (e.g. status bar
@@ -1031,11 +1037,21 @@ export default function LivePage() {
   // placeholder participant with the loaded / freshly minted one. Without
   // this, TemplatePicker's `useState(participant.name)` lazy init captures
   // the SSG placeholder "Guest" and never updates.
+  // When the user opens an empty tab on an existing diagram we want
+  // the "Pick a template" variant of the picker, not the first-run
+  // "New Diagram" welcome screen. templatePickerMode defaults to
+  // 'welcome' for first-run; coerce it to 'templates' once an
+  // existing diagram is loaded so the picker reads correctly without
+  // having to manually flip the mode on every empty-tab transition.
+  const effectiveTemplatePickerMode =
+    loadedExistingDiagram && templatePickerMode === 'welcome'
+      ? ('templates' as const)
+      : templatePickerMode;
   const welcomeOpen =
     hydrated &&
     activeTab.elements.length === 0 &&
     activeTab.templateChosen !== true &&
-    templatePickerMode === 'welcome';
+    effectiveTemplatePickerMode === 'welcome';
   // Join screen for visitors landing on an existing diagram who haven't
   // confirmed their identity yet. Same chrome-hide rule as welcomeOpen
   // — focus the user on the name input before they start editing.
@@ -2657,10 +2673,47 @@ export default function LivePage() {
 
       const cursor = { x: drag.startCanvasX + dx, y: drag.startCanvasY + dy };
       tick((els) => {
-        const snap = snapToAnchor(cursor, els, SNAP_THRESHOLD);
-        const endpoint: Endpoint = snap
-          ? { kind: 'pinned', elementId: snap.elementId, anchor: snap.anchor }
-          : { kind: 'free', x: cursor.x, y: cursor.y };
+        // Element anchor wins over angle snap: pinning to another
+        // shape is the strongest constraint and the most desirable
+        // outcome when both are plausible.
+        const anchorSnap = snapToAnchor(cursor, els, SNAP_THRESHOLD);
+        let endpoint: Endpoint;
+        if (anchorSnap) {
+          endpoint = {
+            kind: 'pinned',
+            elementId: anchorSnap.elementId,
+            anchor: anchorSnap.anchor,
+          };
+        } else {
+          // Angle snap: lock the arrow to 45° increments from its
+          // other endpoint when the cursor is within ~5° of one.
+          // Keeps right-angle connectors easy to draw without
+          // fighting the cursor at oblique angles.
+          const arrow = els.find((e) => e.id === drag.arrowId && e.type === 'arrow') as
+            | ArrowElement
+            | undefined;
+          let resolved = cursor;
+          if (arrow) {
+            const otherKey = drag.end === 'from' ? 'to' : 'from';
+            const other = endpointPosition(arrow[otherKey], els);
+            const ax = cursor.x - other.x;
+            const ay = cursor.y - other.y;
+            const len = Math.hypot(ax, ay);
+            if (len > 0) {
+              const angle = Math.atan2(ay, ax);
+              const STEP = Math.PI / 4;
+              const THRESH = (5 * Math.PI) / 180;
+              const nearest = Math.round(angle / STEP) * STEP;
+              if (Math.abs(angle - nearest) <= THRESH) {
+                resolved = {
+                  x: other.x + Math.cos(nearest) * len,
+                  y: other.y + Math.sin(nearest) * len,
+                };
+              }
+            }
+          }
+          endpoint = { kind: 'free', x: resolved.x, y: resolved.y };
+        }
         return els.map((el) =>
           el.id === drag.arrowId && el.type === 'arrow' ? { ...el, [drag.end]: endpoint } : el,
         );
@@ -2833,6 +2886,16 @@ export default function LivePage() {
           setActivityPosition(null);
           setActivitySize(null);
         }}
+        contextPosition={contextPosition}
+        contextMinimized={contextMinimized}
+        contextSize={contextSize}
+        onMoveContext={(x, y) => setContextPosition({ x, y })}
+        onToggleContextMinimized={() => setContextMinimized((v) => !v)}
+        onResizeContext={setContextSize}
+        onResetContext={() => {
+          setContextPosition(null);
+          setContextSize(null);
+        }}
         onRevertChange={revertChange}
         onClearActivity={clearActivityForActiveTab}
         saveStatus={saveStatus}
@@ -2887,7 +2950,7 @@ export default function LivePage() {
           (hydrated && activeTab.elements.length === 0 && activeTab.templateChosen !== true) ||
           identityOnlyScreenOpen
         }
-        templatePickerMode={templatePickerMode}
+        templatePickerMode={effectiveTemplatePickerMode}
         welcomeOpen={anyWelcomeOpen}
         selfParticipant={selfParticipant}
         onChooseTemplate={chooseTemplate}
