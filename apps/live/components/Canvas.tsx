@@ -1005,7 +1005,7 @@ export function Canvas(props: CanvasProps) {
             ) : null}
             {contextMinimized ? (
               <DockButton
-                label="Open Inspector"
+                label="Open Editor"
                 description="Expand the Selected Element / Current Tab panel."
                 icon={<ContextIcon />}
                 onClick={onToggleContextMinimized}
