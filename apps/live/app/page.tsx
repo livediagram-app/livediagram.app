@@ -796,12 +796,17 @@ export default function LivePage() {
   // `select` op. Self is filtered out — we don't need a "you're here"
   // badge on top of our own selection ring.
   const livePresenceById = new Map(livePresence.map((p) => [p.id, p] as const));
-  // Group remote participants by the tab they're currently focused
-  // on, so each TabBar entry can render the right avatars. Self is
-  // excluded — we already know which tab we're on. Used as the
-  // single source for the new on-tab presence dots.
+  // Group participants by the tab they're currently focused on, so
+  // each TabBar entry can render the right avatar dots. Always
+  // includes the local participant on their active tab — that way
+  // the feature is visible even for solo / unshared sessions, and
+  // remote peers see their own dot pop onto the tab they switch to
+  // before any pointer movement. Remote entries come from the
+  // tab-focus RoomOp; only those whose sender is still present
+  // (livePresence has them) survive.
   const participantsByTab = (() => {
     const map = new Map<string, Participant[]>();
+    map.set(activeId, [selfParticipant]);
     for (const [id, tabId] of remoteTabFocus) {
       if (id === selfParticipant.id) continue;
       const p = livePresenceById.get(id);
