@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type {
+  ArrowEnds,
   BackgroundPattern,
   Padding,
   ShapeKind,
@@ -30,6 +31,11 @@ export type SelectedElementControls = {
   onResetColors: () => void;
   padding: Padding | null;
   onSetPadding: (padding: Padding) => void;
+  // Non-null only when an arrow is selected. Drives the Pointer
+  // accordion that lets the user choose which end(s) of the arrow
+  // get an arrowhead.
+  arrowEnds: ArrowEnds | null;
+  onSetArrowEnds: (ends: ArrowEnds) => void;
 };
 
 export type TabSectionControls = {
@@ -91,7 +97,8 @@ function OpenPalette({
     layer: boolean;
     text: boolean;
     colours: boolean;
-  }>({ appearance: false, layer: false, text: false, colours: false });
+    pointer: boolean;
+  }>({ appearance: false, layer: false, text: false, colours: false, pointer: false });
   return (
     <MovablePanel
       title="Palette"
@@ -326,6 +333,7 @@ type SelectedAccordionState = {
   layer: boolean;
   text: boolean;
   colours: boolean;
+  pointer: boolean;
 };
 
 function SelectedElementSection({
@@ -500,7 +508,69 @@ function SelectedElementSection({
           </button>
         </Accordion>
       ) : null}
+
+      {selection.arrowEnds !== null ? (
+        <Accordion title="Pointer" open={open.pointer} onToggle={() => toggle('pointer')}>
+          <p className="text-[10px] font-medium text-slate-500">
+            Pick which end(s) of the arrow have a pointer.
+          </p>
+          <div className="mt-1 grid grid-cols-3 gap-1">
+            <Tooltip title="Start only" description="Arrowhead on the left / starting end only.">
+              <SizeButton
+                active={selection.arrowEnds === 'from'}
+                onClick={() => selection.onSetArrowEnds('from')}
+              >
+                <ArrowEndsIcon ends="from" />
+              </SizeButton>
+            </Tooltip>
+            <Tooltip
+              title="End only"
+              description="Arrowhead on the right / ending end only (the default)."
+            >
+              <SizeButton
+                active={selection.arrowEnds === 'to'}
+                onClick={() => selection.onSetArrowEnds('to')}
+              >
+                <ArrowEndsIcon ends="to" />
+              </SizeButton>
+            </Tooltip>
+            <Tooltip title="Both ends" description="Arrowheads on both ends (a two-way connector).">
+              <SizeButton
+                active={selection.arrowEnds === 'both'}
+                onClick={() => selection.onSetArrowEnds('both')}
+              >
+                <ArrowEndsIcon ends="both" />
+              </SizeButton>
+            </Tooltip>
+          </div>
+        </Accordion>
+      ) : null}
     </div>
+  );
+}
+
+function ArrowEndsIcon({ ends }: { ends: 'from' | 'to' | 'both' }) {
+  // Same shape language as the arrowhead used in ArrowView, scaled
+  // down to fit a 14×14 button. Line spans the middle; chevrons sit
+  // on the appropriate end(s).
+  const showStart = ends === 'from' || ends === 'both';
+  const showEnd = ends === 'to' || ends === 'both';
+  return (
+    <svg
+      width="16"
+      height="14"
+      viewBox="0 0 20 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <line x1={showStart ? 4 : 2} y1="6" x2={showEnd ? 16 : 18} y2="6" />
+      {showStart ? <path d="M2 6 L5 3 M2 6 L5 9" /> : null}
+      {showEnd ? <path d="M18 6 L15 3 M18 6 L15 9" /> : null}
+    </svg>
   );
 }
 

@@ -258,6 +258,12 @@ export type ElementLink =
   | { kind: 'tab'; tabId: TabId }
   | { kind: 'element'; tabId: TabId; elementId: ElementId };
 
+// Which endpoint(s) of an arrow get an arrowhead marker. 'to' (default)
+// is the conventional one-way arrow; 'from' flips it; 'both' makes a
+// two-headed connector. There's no 'none' yet — a line with no
+// direction is rare enough to defer.
+export type ArrowEnds = 'from' | 'to' | 'both';
+
 export type ArrowElement = {
   id: ElementId;
   type: 'arrow';
@@ -270,6 +276,7 @@ export type ArrowElement = {
   strokeColor?: string;
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
+  arrowEnds?: ArrowEnds;
 };
 
 // --- Element union ---------------------------------------------------------

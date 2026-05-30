@@ -757,17 +757,38 @@ export default function LivePage() {
     if (!formatSourceId) return;
     const source = activeTab.elements.find((el) => el.id === formatSourceId);
     const target = activeTab.elements.find((el) => el.id === targetId);
-    if (!source || !target || !isBoxed(source) || !isBoxed(target) || source.id === target.id) {
+    if (!source || !target || source.id === target.id) {
       setFormatSourceId(null);
       return;
     }
-    commit((els) =>
-      els.map((el) =>
-        el.id === targetId && isBoxed(el)
-          ? { ...el, width: source.width, height: source.height }
-          : el,
-      ),
-    );
+    // Format-paint behaviour depends on the element kind:
+    //   - boxed → boxed: copy width + height (the visual "shape"
+    //     of the element)
+    //   - arrow → arrow: copy strokeColor + opacity + arrowEnds
+    //   - cross-kind paint is a no-op (boxed and arrows don't share
+    //     enough formattable properties to make a sensible decision)
+    if (isBoxed(source) && isBoxed(target)) {
+      commit((els) =>
+        els.map((el) =>
+          el.id === targetId && isBoxed(el)
+            ? { ...el, width: source.width, height: source.height }
+            : el,
+        ),
+      );
+    } else if (source.type === 'arrow' && target.type === 'arrow') {
+      commit((els) =>
+        els.map((el) =>
+          el.id === targetId && el.type === 'arrow'
+            ? {
+                ...el,
+                ...(source.strokeColor ? { strokeColor: source.strokeColor } : {}),
+                ...(source.opacity !== undefined ? { opacity: source.opacity } : {}),
+                ...(source.arrowEnds ? { arrowEnds: source.arrowEnds } : {}),
+              }
+            : el,
+        ),
+      );
+    }
     setFormatSourceId(null);
   };
 
@@ -1424,6 +1445,13 @@ export default function LivePage() {
     commit((els) => els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, padding } : el)));
   };
 
+  const setArrowEndsSelected = (arrowEnds: import('@livediagram/diagram').ArrowEnds) => {
+    if (!selectedId) return;
+    commit((els) =>
+      els.map((el) => (el.id === selectedId && el.type === 'arrow' ? { ...el, arrowEnds } : el)),
+    );
+  };
+
   // Clear per-element colour overrides so the element falls back to
   // whatever the current tab theme dictates. Each colour field is set
   // to undefined; the history hook snapshots the present so this is
@@ -1708,7 +1736,11 @@ export default function LivePage() {
 
   const selectElement = (id: string) => {
     if (formatSourceId !== null) {
-      setFormatSourceId(null);
+      // Format-paint mode: apply the source's formatting to the
+      // clicked target instead of selecting it. applyFormatFromSource
+      // clears formatSourceId itself; it handles boxed→boxed and
+      // arrow→arrow, no-ops cross-kind.
+      applyFormatFromSource(id);
       return;
     }
     if (groupSourceId !== null) {
@@ -1962,6 +1994,7 @@ export default function LivePage() {
         onSetOpacity={setOpacitySelected}
         onResetColors={resetColorsSelected}
         onSetPadding={setPaddingSelected}
+        onSetArrowEnds={setArrowEndsSelected}
         onDuplicateSelected={duplicateSelected}
         tabs={tabs}
         currentTabId={activeId}

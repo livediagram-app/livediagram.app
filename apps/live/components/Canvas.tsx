@@ -118,6 +118,7 @@ type CanvasProps = {
   onSetOpacity: (opacity: number) => void;
   onResetColors: () => void;
   onSetPadding: (padding: import('@livediagram/diagram').Padding) => void;
+  onSetArrowEnds: (ends: import('@livediagram/diagram').ArrowEnds) => void;
   onDuplicateSelected: () => void;
   tabs: Tab[];
   currentTabId: string;
@@ -226,6 +227,7 @@ export function Canvas(props: CanvasProps) {
     onSetOpacity,
     onResetColors,
     onSetPadding,
+    onSetArrowEnds,
     onDuplicateSelected,
     tabs,
     currentTabId,
@@ -487,6 +489,8 @@ export function Canvas(props: CanvasProps) {
         onSetOpacity,
         onResetColors,
         onSetPadding,
+        arrowEnds: selected.type === 'arrow' ? (selected.arrowEnds ?? 'to') : null,
+        onSetArrowEnds,
       }
     : null;
 
@@ -668,7 +672,14 @@ export function Canvas(props: CanvasProps) {
             linkedTabId={
               selected && selected.link && selected.link.kind === 'tab' ? selected.link.tabId : null
             }
-            onCopyFormat={selectedIsBoxed ? onBeginFormatPainter : undefined}
+            onCopyFormat={
+              // Format painter is available for boxed elements (copies
+              // width / height) AND arrows (copies stroke / opacity /
+              // arrowEnds).
+              selected && (isBoxed(selected) || selected.type === 'arrow')
+                ? onBeginFormatPainter
+                : undefined
+            }
             onGroup={selectedIsBoxed && !selectedIsGrouped ? onBeginGroup : undefined}
             onUngroup={selectedIsGrouped ? onUngroup : undefined}
             onToggleAspectLock={selectedIsBoxed ? onToggleAspectLock : undefined}

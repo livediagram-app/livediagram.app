@@ -64,7 +64,12 @@ export function ShareDialog({
 
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
-  const needsName = !nameConfirmed && !shareable;
+  // The avatar + name card is always visible so the user can see (and
+  // edit) the identity peers will see while they collaborate. The
+  // nameConfirmed flag still drives the share button gating below —
+  // it just doesn't hide the card any more.
+  void nameConfirmed;
+  const needsName = !shareable;
 
   const share = async () => {
     setBusy(true);

@@ -38,12 +38,14 @@ export function ArrowView({
   const hitCursor = isPaintMode ? 'copy' : 'pointer';
   const opacity = arrow.opacity ?? 1;
 
-  // SVG `<marker>` defs don't inherit stroke from the referencing path,
-  // but they DO inherit `color`. Setting the group's `color` to the
-  // arrow's stroke + drawing the marker arrowhead with `fill=currentColor`
-  // means a single shared marker def picks up any colour we throw at it.
+  // The shared marker def uses `fill="context-stroke"` which resolves to
+  // the *concrete* stroke paint of the referencing element. Setting
+  // `stroke={baseStroke}` directly on the line (rather than via
+  // currentColor) means context-stroke gets the real colour rather
+  // than a chained `currentColor` keyword that ends up resolving on
+  // the marker's own colour property.
   return (
-    <g style={{ color: baseStroke, opacity }}>
+    <g style={{ opacity }}>
       {isSelected ? (
         <line
           x1={from.x}
@@ -62,10 +64,17 @@ export function ArrowView({
         y1={from.y}
         x2={to.x}
         y2={to.y}
-        stroke="currentColor"
+        stroke={baseStroke}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
-        markerEnd="url(#arrowhead)"
+        markerStart={
+          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? 'url(#arrowhead)' : undefined
+        }
+        markerEnd={
+          arrow.arrowEnds === 'to' || arrow.arrowEnds === 'both' || arrow.arrowEnds === undefined
+            ? 'url(#arrowhead)'
+            : undefined
+        }
         style={{ pointerEvents: 'none' }}
       />
 
