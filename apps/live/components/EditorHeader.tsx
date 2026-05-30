@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Brand } from '@livediagram/ui';
+import { Tooltip } from './Tooltip';
 
 // Sync state surfaced as a small pill next to the diagram title. The
 // editor is autosave-driven, so silent failures (offline, API down,
@@ -52,34 +53,39 @@ export function EditorHeader({
           />
         ) : (
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-              title="Click to rename"
-            >
-              {diagramName}
-            </button>
+            <Tooltip title="Rename diagram" description="Click to edit the name.">
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                {diagramName}
+              </button>
+            </Tooltip>
             <SharedBadge shareable={shareable} />
           </div>
         )}
       </div>
       <div className="flex w-56 items-center justify-end gap-2">
         {showShare ? (
-          <button
-            type="button"
-            onClick={onOpenShare}
-            className={
-              shareable
-                ? 'inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600'
-                : 'inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50'
-            }
-            aria-pressed={shareable}
-            title={shareable ? 'Shared — click to manage' : 'Share this diagram'}
+          <Tooltip
+            title={shareable ? 'Shared' : 'Share'}
+            description={shareable ? 'Click to manage links.' : 'Invite collaborators with a link.'}
           >
-            <ShareIcon />
-            {shareable ? 'Shared' : 'Share'}
-          </button>
+            <button
+              type="button"
+              onClick={onOpenShare}
+              className={
+                shareable
+                  ? 'inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600'
+                  : 'inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50'
+              }
+              aria-pressed={shareable}
+            >
+              <ShareIcon />
+              {shareable ? 'Shared' : 'Share'}
+            </button>
+          </Tooltip>
         ) : null}
       </div>
     </header>
@@ -93,19 +99,23 @@ export function EditorHeader({
 // apply.
 function SharedBadge({ shareable }: { shareable: boolean }) {
   return (
-    <span
-      title={shareable ? 'Anyone with a link can view' : 'Only visible to you'}
-      className={
-        shareable
-          ? 'inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200'
-          : 'inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-700 ring-1 ring-rose-200'
-      }
+    <Tooltip
+      title={shareable ? 'Shared' : 'Private'}
+      description={shareable ? 'Anyone with a link can view.' : 'Only visible to you.'}
     >
-      <span aria-hidden className={shareable ? 'text-emerald-500' : 'text-rose-500'}>
-        {shareable ? <SharedDotIcon /> : <PrivateDotIcon />}
+      <span
+        className={
+          shareable
+            ? 'inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200'
+            : 'inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-700 ring-1 ring-rose-200'
+        }
+      >
+        <span aria-hidden className={shareable ? 'text-emerald-500' : 'text-rose-500'}>
+          {shareable ? <SharedDotIcon /> : <PrivateDotIcon />}
+        </span>
+        {shareable ? 'Shared' : 'Private'}
       </span>
-      {shareable ? 'Shared' : 'Private'}
-    </span>
+    </Tooltip>
   );
 }
 
