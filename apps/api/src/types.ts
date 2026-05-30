@@ -7,6 +7,12 @@ export type DiagramDTO = {
   ownerId: string;
   name: string;
   tabs: Tab[];
+  // Sharing state. `shareable` is the on/off switch the owner toggles
+  // via POST/DELETE /api/diagrams/:id/share. `shareCode` is the short
+  // code that goes into the share URL; NULL when never shared, rotated
+  // when re-shared after a revoke.
+  shareable: boolean;
+  shareCode: string | null;
   savedAt: number;
   createdAt: number;
 };
@@ -17,6 +23,8 @@ export type DiagramSummary = {
   id: string;
   ownerId: string;
   name: string;
+  shareable: boolean;
+  shareCode: string | null;
   savedAt: number;
   createdAt: number;
 };

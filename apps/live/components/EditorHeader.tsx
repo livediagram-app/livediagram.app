@@ -11,6 +11,11 @@ type EditorHeaderProps = {
   // first-run welcome modal is up (no diagram exists yet, naming or
   // deleting it makes no sense). Brand and participant avatars stay.
   hideTitle?: boolean;
+  // Only the diagram's owner sees the Share button — visitors arriving
+  // via a share URL can't toggle sharing on their host's diagram.
+  showShare: boolean;
+  shareable: boolean;
+  onOpenShare: () => void;
   onRename: (name: string) => void;
   onDeleteDiagram: () => void;
 };
@@ -19,6 +24,9 @@ export function EditorHeader({
   diagramName,
   participants,
   hideTitle = false,
+  showShare,
+  shareable,
+  onOpenShare,
   onRename,
   onDeleteDiagram,
 }: EditorHeaderProps) {
@@ -92,12 +100,49 @@ export function EditorHeader({
           </div>
         )}
       </div>
-      <div className="flex w-48 items-center justify-end gap-2">
+      <div className="flex w-56 items-center justify-end gap-2">
+        {showShare ? (
+          <button
+            type="button"
+            onClick={onOpenShare}
+            className={
+              shareable
+                ? 'inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600'
+                : 'inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50'
+            }
+            aria-pressed={shareable}
+            title={shareable ? 'Shared — click to manage' : 'Share this diagram'}
+          >
+            <ShareIcon />
+            {shareable ? 'Shared' : 'Share'}
+          </button>
+        ) : null}
         {participants.map((p) => (
           <ParticipantAvatar key={p.id} participant={p} withTooltip />
         ))}
       </div>
     </header>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="4" cy="8" r="1.6" />
+      <circle cx="12" cy="3.5" r="1.6" />
+      <circle cx="12" cy="12.5" r="1.6" />
+      <path d="M5.4 7.2l5.2-3M5.4 8.8l5.2 3" />
+    </svg>
   );
 }
 

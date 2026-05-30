@@ -9,8 +9,11 @@ export {
   apiListDiagrams as listDiagrams,
   apiLoadDiagram as loadDiagram,
   apiLoadSelf as loadSelfParticipant,
+  apiLoadShared as loadSharedDiagram,
   apiSaveDiagram as saveDiagram,
   apiSaveSelf as saveSelfParticipant,
+  apiShareDiagram as shareDiagram,
+  apiUnshareDiagram as unshareDiagram,
   connectRoom,
 } from './api-client';
 export type {

@@ -37,14 +37,19 @@ function wsUrl(path: string): string {
 
 export type StoredDiagram = {
   id: string;
+  ownerId: string;
   name: string;
   tabs: Tab[];
+  shareable: boolean;
+  shareCode: string | null;
   savedAt: number;
 };
 
 export type DiagramSummary = {
   id: string;
   name: string;
+  shareable: boolean;
+  shareCode: string | null;
   savedAt: number;
 };
 
@@ -54,6 +59,8 @@ type DiagramResponse = {
     ownerId: string;
     name: string;
     tabs: Tab[];
+    shareable: boolean;
+    shareCode: string | null;
     savedAt: number;
     createdAt: number;
   };
@@ -63,9 +70,13 @@ type ListResponse = {
   diagrams: {
     id: string;
     name: string;
+    shareable: boolean;
+    shareCode: string | null;
     savedAt: number;
   }[];
 };
+
+type ShareResponse = { shareable: boolean; shareCode: string | null };
 
 type ParticipantResponse = {
   participant: {
@@ -85,10 +96,64 @@ export async function apiLoadDiagram(id: string): Promise<StoredDiagram | null> 
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`load failed: ${res.status}`);
   const { diagram } = (await res.json()) as DiagramResponse;
-  return { id: diagram.id, name: diagram.name, tabs: diagram.tabs, savedAt: diagram.savedAt };
+  return {
+    id: diagram.id,
+    ownerId: diagram.ownerId,
+    name: diagram.name,
+    tabs: diagram.tabs,
+    shareable: diagram.shareable,
+    shareCode: diagram.shareCode,
+    savedAt: diagram.savedAt,
+  };
 }
 
-export async function apiSaveDiagram(ownerId: string, d: StoredDiagram): Promise<void> {
+// Resolve a share code to a full diagram. Visitors landing on
+// `/live?s=<code>` use this; private diagrams' codes are null so the
+// API returns 404 once the owner has revoked sharing.
+export async function apiLoadShared(code: string): Promise<StoredDiagram | null> {
+  const res = await fetch(`${API_BASE}/share/${code}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`load shared failed: ${res.status}`);
+  const { diagram } = (await res.json()) as DiagramResponse;
+  return {
+    id: diagram.id,
+    ownerId: diagram.ownerId,
+    name: diagram.name,
+    tabs: diagram.tabs,
+    shareable: diagram.shareable,
+    shareCode: diagram.shareCode,
+    savedAt: diagram.savedAt,
+  };
+}
+
+export async function apiShareDiagram(
+  ownerId: string,
+  id: string,
+): Promise<{ shareable: boolean; shareCode: string | null }> {
+  const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
+    method: 'POST',
+    headers: ownerHeaders(ownerId),
+  });
+  if (!res.ok) throw new Error(`share failed: ${res.status}`);
+  return (await res.json()) as ShareResponse;
+}
+
+export async function apiUnshareDiagram(
+  ownerId: string,
+  id: string,
+): Promise<{ shareable: boolean; shareCode: string | null }> {
+  const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
+    method: 'DELETE',
+    headers: ownerHeaders(ownerId),
+  });
+  if (!res.ok) throw new Error(`unshare failed: ${res.status}`);
+  return (await res.json()) as ShareResponse;
+}
+
+export async function apiSaveDiagram(
+  ownerId: string,
+  d: { id: string; name: string; tabs: Tab[] },
+): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${d.id}`, {
     method: 'PUT',
     headers: ownerHeaders(ownerId),
@@ -111,7 +176,13 @@ export async function apiListDiagrams(ownerId: string): Promise<DiagramSummary[]
   });
   if (!res.ok) throw new Error(`list failed: ${res.status}`);
   const { diagrams } = (await res.json()) as ListResponse;
-  return diagrams.map((d) => ({ id: d.id, name: d.name, savedAt: d.savedAt }));
+  return diagrams.map((d) => ({
+    id: d.id,
+    name: d.name,
+    shareable: d.shareable,
+    shareCode: d.shareCode,
+    savedAt: d.savedAt,
+  }));
 }
 
 export async function apiLoadSelf(id: string): Promise<Participant | null> {

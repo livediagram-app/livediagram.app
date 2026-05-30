@@ -44,6 +44,7 @@ import {
 import { Canvas } from '@/components/Canvas';
 import { CommentThreadPopover } from '@/components/CommentThreadPopover';
 import { EditorHeader } from '@/components/EditorHeader';
+import { ShareDialog } from '@/components/ShareDialog';
 import { TabBar } from '@/components/TabBar';
 import { useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { ALIGN_SNAP_THRESHOLD, SNAP_THRESHOLD, type ArrowEnd, type DragMode } from '@/lib/canvas';
@@ -54,8 +55,11 @@ import {
   listDiagrams as apiListDiagrams,
   loadDiagram as apiLoadDiagram,
   loadSelfParticipant,
+  loadSharedDiagram as apiLoadShared,
   saveDiagram as apiSaveDiagram,
   saveSelfParticipant,
+  shareDiagram as apiShareDiagram,
+  unshareDiagram as apiUnshareDiagram,
   type RoomHandlers,
 } from '@/lib/diagram-store';
 import { buildTemplate, type TemplateKind } from '@/lib/templates';
@@ -249,6 +253,16 @@ export default function LivePage() {
   // with the empty initial render.
   const [diagramId, setDiagramId] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  // Sharing state for the current diagram. Mirrors the API row's
+  // `shareable` + `shareCode` columns; refreshed on hydration, and
+  // after share / unshare. Drives whether realtime (WS room) is
+  // active.
+  const [diagramShareable, setDiagramShareable] = useState(false);
+  const [diagramShareCode, setDiagramShareCode] = useState<string | null>(null);
+  // True for the owner of the loaded diagram; false for visitors who
+  // arrived via /live?s=<code>. Drives whether the Share button shows.
+  const [isOwner, setIsOwner] = useState(true);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   useLayoutEffect(() => {
     if (hydrated) return;
@@ -259,6 +273,7 @@ export default function LivePage() {
     void (async () => {
       const url = new URL(window.location.href);
       const id = url.searchParams.get('d');
+      const shareCodeParam = url.searchParams.get('s');
 
       // Identity comes first because every diagram fetch needs an
       // owner id. Persistent id lives in localStorage as a tiny
@@ -278,16 +293,38 @@ export default function LivePage() {
       setSelfParticipant({ ...self, status: 'online' });
       if (!storedSelf) await saveSelfParticipant(self).catch(() => {});
 
-      if (id) {
+      // Two URL flavours: `?d=<id>` is the owner's private URL,
+      // `?s=<code>` is a share URL another participant follows. Visitor
+      // arrivals get full diagram data via the share-code endpoint and
+      // are flagged `!isOwner` so the Share button hides.
+      if (shareCodeParam) {
+        const fetched = await apiLoadShared(shareCodeParam).catch(() => null);
+        if (fetched) {
+          resetTabs(fetched.tabs);
+          setDiagramName(fetched.name);
+          setActiveId(fetched.tabs[0]?.id ?? activeId);
+          setLoadedExistingDiagram(true);
+          setDiagramId(fetched.id);
+          setDiagramShareable(fetched.shareable);
+          setDiagramShareCode(fetched.shareCode);
+          setIsOwner(fetched.ownerId === self.id);
+          // Same join-flow trigger as the existing ?d= path — visitors
+          // landing fresh on a shared diagram pick a name before
+          // editing.
+          if (window.localStorage.getItem('livediagram:v2:name-confirmed') !== '1') {
+            setTemplatePickerMode('identity');
+          }
+        }
+      } else if (id) {
         const fetched = await apiLoadDiagram(id).catch(() => null);
         if (fetched) {
           resetTabs(fetched.tabs);
           setDiagramName(fetched.name);
           setActiveId(fetched.tabs[0]?.id ?? activeId);
           setLoadedExistingDiagram(true);
-          // If we landed on someone else's diagram and the visitor
-          // hasn't confirmed their identity yet, open the join modal
-          // to let them choose a name first.
+          setDiagramShareable(fetched.shareable);
+          setDiagramShareCode(fetched.shareCode);
+          setIsOwner(fetched.ownerId === self.id);
           if (window.localStorage.getItem('livediagram:v2:name-confirmed') !== '1') {
             setTemplatePickerMode('identity');
           }
@@ -352,12 +389,18 @@ export default function LivePage() {
     saveSelfParticipant(selfParticipant).catch(() => {});
   }, [hydrated, selfParticipant]);
 
-  // Realtime room: open a WebSocket per diagram. The room broadcasts
-  // presence + ops; ops from other clients overwrite our local tabs
-  // (LWW). The remote-update gate prevents the save effect from
-  // echoing the change back.
+  // Realtime room: open a WebSocket per diagram, BUT only when the
+  // diagram is actually shared. Private diagrams skip the WS — there's
+  // no one else in the room, presence is meaningless, and we don't
+  // want every save to broadcast an op into the void.
   useEffect(() => {
-    if (!hydrated || !diagramId) return;
+    if (!hydrated || !diagramId || !diagramShareable) {
+      // Make sure any state from a previous shared session is cleared
+      // when we transition back to private (revoke share).
+      setLivePresence([]);
+      setRemoteSelections(new Map());
+      return;
+    }
     const handlers: RoomHandlers = {
       onPresence: (participants) => {
         setLivePresence(
@@ -413,7 +456,7 @@ export default function LivePage() {
     // changes don't warrant a reconnect. Deliberately omitted from
     // the dep list.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId]);
+  }, [hydrated, diagramId, diagramShareable]);
 
   // Broadcast local selection changes so peers can render "Tom is
   // working on this element" indicators. Fires whenever `selectedId`
@@ -421,9 +464,9 @@ export default function LivePage() {
   // before hydration; peers learn the initial selection state via
   // their own `select` ops when they happen, not from a snapshot.
   useEffect(() => {
-    if (!hydrated || !diagramId) return;
+    if (!hydrated || !diagramId || !diagramShareable) return;
     roomRef.current?.send({ kind: 'op', op: { kind: 'select', elementId: selectedId } });
-  }, [hydrated, diagramId, selectedId]);
+  }, [hydrated, diagramId, diagramShareable, selectedId]);
   const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
   const [viewportZoom, setViewportZoom] = useState(1);
   const canvasMainRef = useRef<HTMLElement>(null);
@@ -851,6 +894,49 @@ export default function LivePage() {
     }
     setNameConfirmed(true);
   };
+
+  // Toggle sharing for the current diagram. Both routes go through the
+  // dedicated /share endpoint (NOT through a regular PUT) so visitor
+  // saves can't accidentally flip the flag. We also commit the
+  // diagram id and persist the participant's name as part of the share
+  // gesture — it's the canonical "okay, this leaves your device" point.
+  const shareCurrentDiagram = async (name: string) => {
+    const id = commitDiagramId();
+    if (name && name !== selfParticipant.name) {
+      const updated: Participant = { ...selfParticipant, name };
+      setSelfParticipant(updated);
+      await saveSelfParticipant(updated).catch(() => {});
+    }
+    confirmName();
+    try {
+      const res = await apiShareDiagram(selfParticipant.id, id);
+      setDiagramShareable(res.shareable);
+      setDiagramShareCode(res.shareCode);
+    } catch {
+      // Network glitch — leave the in-memory flag alone so the dialog
+      // doesn't lie about the state. A real app would surface this in
+      // a toast.
+    }
+  };
+
+  const stopSharingCurrentDiagram = async () => {
+    if (!diagramId) return;
+    try {
+      await apiUnshareDiagram(selfParticipant.id, diagramId);
+    } catch {
+      // ignore — the next list refresh will reconcile if it fails.
+    }
+    setDiagramShareable(false);
+    setDiagramShareCode(null);
+  };
+
+  // Absolute share URL — falls back to current origin if env doesn't
+  // override. The router stitches /live onto the app's hostname so
+  // `${origin}/live?s=<code>` always resolves to the editor.
+  const shareUrl =
+    diagramShareCode && typeof window !== 'undefined'
+      ? `${window.location.origin}/live?s=${diagramShareCode}`
+      : null;
 
   // Dismiss the welcome / templates / identity modal without picking
   // anything. For the welcome flow this marks the tab as
@@ -1590,15 +1676,34 @@ export default function LivePage() {
       <EditorHeader
         diagramName={diagramName}
         participants={
-          // Live presence is authoritative when the room is connected; it
-          // always includes us. Fall back to just self before the WS
-          // connects so the header avatar isn't briefly missing.
-          livePresence.length > 0 ? livePresence : [selfParticipant]
+          // Avatar stack: live presence is authoritative when the room
+          // is connected. For private diagrams there's no room, so we
+          // hide the stack entirely (a single "you" avatar with no
+          // peers carries no information).
+          diagramShareable ? (livePresence.length > 0 ? livePresence : [selfParticipant]) : []
         }
-        hideTitle={welcomeOpen}
+        hideTitle={anyWelcomeOpen}
+        showShare={isOwner && hydrated && !anyWelcomeOpen}
+        shareable={diagramShareable}
+        onOpenShare={() => setShareDialogOpen(true)}
         onRename={setDiagramName}
         onDeleteDiagram={deleteDiagram}
       />
+      {shareDialogOpen ? (
+        <ShareDialog
+          participant={selfParticipant}
+          shareable={diagramShareable}
+          shareUrl={shareUrl}
+          nameConfirmed={nameConfirmed}
+          onConfirm={async (name: string) => {
+            await shareCurrentDiagram(name);
+          }}
+          onUnshare={async () => {
+            await stopSharingCurrentDiagram();
+          }}
+          onClose={() => setShareDialogOpen(false)}
+        />
+      ) : null}
       <Canvas
         tabName={activeTab.name}
         tabBackgroundPattern={activeTab.backgroundPattern ?? 'grid'}

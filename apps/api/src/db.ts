@@ -9,6 +9,8 @@ type DiagramRow = {
   owner_id: string;
   name: string;
   data: string;
+  shareable: number;
+  share_code: string | null;
   saved_at: number;
   created_at: number;
 };
@@ -28,6 +30,8 @@ function rowToDiagram(row: DiagramRow): DiagramDTO {
     ownerId: row.owner_id,
     name: row.name,
     tabs: JSON.parse(row.data),
+    shareable: row.shareable === 1,
+    shareCode: row.share_code,
     savedAt: row.saved_at,
     createdAt: row.created_at,
   };
@@ -38,23 +42,35 @@ function rowToSummary(row: SummaryRow): DiagramSummary {
     id: row.id,
     ownerId: row.owner_id,
     name: row.name,
+    shareable: row.shareable === 1,
+    shareCode: row.share_code,
     savedAt: row.saved_at,
     createdAt: row.created_at,
   };
 }
 
+const DIAGRAM_COLS = 'id, owner_id, name, data, shareable, share_code, saved_at, created_at';
+const DIAGRAM_SUMMARY_COLS = 'id, owner_id, name, shareable, share_code, saved_at, created_at';
+
 export async function getDiagram(env: Env, id: string): Promise<DiagramDTO | null> {
-  const row = await env.DB.prepare(
-    'SELECT id, owner_id, name, data, saved_at, created_at FROM diagrams WHERE id = ?',
-  )
+  const row = await env.DB.prepare(`SELECT ${DIAGRAM_COLS} FROM diagrams WHERE id = ?`)
     .bind(id)
+    .first<DiagramRow>();
+  return row ? rowToDiagram(row) : null;
+}
+
+export async function getDiagramByShareCode(env: Env, code: string): Promise<DiagramDTO | null> {
+  const row = await env.DB.prepare(
+    `SELECT ${DIAGRAM_COLS} FROM diagrams WHERE share_code = ? AND shareable = 1`,
+  )
+    .bind(code)
     .first<DiagramRow>();
   return row ? rowToDiagram(row) : null;
 }
 
 export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<DiagramSummary[]> {
   const result = await env.DB.prepare(
-    'SELECT id, owner_id, name, saved_at, created_at FROM diagrams WHERE owner_id = ? ORDER BY saved_at DESC',
+    `SELECT ${DIAGRAM_SUMMARY_COLS} FROM diagrams WHERE owner_id = ? ORDER BY saved_at DESC`,
   )
     .bind(ownerId)
     .all<SummaryRow>();
@@ -66,15 +82,35 @@ export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<Di
 // The room broadcasts ops separately for live updates.
 export async function upsertDiagram(env: Env, d: DiagramDTO): Promise<void> {
   await env.DB.prepare(
-    `INSERT INTO diagrams (id, owner_id, name, data, saved_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?)
+    `INSERT INTO diagrams (id, owner_id, name, data, shareable, share_code, saved_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
        data = excluded.data,
        saved_at = excluded.saved_at`,
   )
-    .bind(d.id, d.ownerId, d.name, JSON.stringify(d.tabs), d.savedAt, d.createdAt)
+    .bind(
+      d.id,
+      d.ownerId,
+      d.name,
+      JSON.stringify(d.tabs),
+      d.shareable ? 1 : 0,
+      d.shareCode,
+      d.savedAt,
+      d.createdAt,
+    )
+    .run();
+}
+
+export async function setDiagramShare(
+  env: Env,
+  id: string,
+  shareable: boolean,
+  shareCode: string | null,
+): Promise<void> {
+  await env.DB.prepare('UPDATE diagrams SET shareable = ?, share_code = ? WHERE id = ?')
+    .bind(shareable ? 1 : 0, shareCode, id)
     .run();
 }
 
@@ -101,4 +137,18 @@ export async function upsertParticipant(env: Env, p: ParticipantDTO): Promise<vo
   )
     .bind(p.id, p.name, p.color, p.createdAt)
     .run();
+}
+
+// Short, URL-safe alphabet. Avoids visually ambiguous characters
+// (0/O/1/I/l) so the share codes are easy to read aloud or transcribe.
+const SHARE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+export function generateShareCode(length = 8): string {
+  let code = '';
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  for (const byte of bytes) {
+    code += SHARE_ALPHABET[byte % SHARE_ALPHABET.length];
+  }
+  return code;
 }

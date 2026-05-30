@@ -1,8 +1,11 @@
 import {
   deleteDiagram,
+  generateShareCode,
   getDiagram,
+  getDiagramByShareCode,
   getParticipant,
   listDiagramsByOwner,
+  setDiagramShare,
   upsertDiagram,
   upsertParticipant,
 } from './db';
@@ -37,6 +40,10 @@ function badRequest(msg: string): Response {
   return json({ error: 'bad_request', message: msg }, { status: 400 });
 }
 
+function forbidden(): Response {
+  return json({ error: 'forbidden' }, { status: 403 });
+}
+
 function ownerOf(request: Request): string | null {
   return request.headers.get('X-Owner-Id');
 }
@@ -52,10 +59,21 @@ export default {
     if (segments[0] !== 'api') return notFound();
 
     try {
+      // ---------- /api/share/<code> ----------
+      // Resolve a share code to its diagram. Used by visitors landing on
+      // /live?s=<code>. Returns 404 if the code doesn't exist OR the
+      // diagram has been unshared since (share_code = null is the
+      // canonical "no longer shared" signal).
+      if (segments[1] === 'share' && segments.length === 3) {
+        const code = segments[2]!;
+        if (request.method === 'GET') {
+          const d = await getDiagramByShareCode(env, code);
+          return d ? json({ diagram: d }) : notFound();
+        }
+      }
+
       // ---------- /api/diagrams ----------
       if (segments[1] === 'diagrams') {
-        // GET /api/diagrams                — list owner's diagrams
-        // POST /api/diagrams               — create
         if (segments.length === 2) {
           if (request.method === 'GET') {
             const owner = ownerOf(request);
@@ -76,6 +94,8 @@ export default {
               ownerId: owner,
               name: body.name,
               tabs: body.tabs,
+              shareable: body.shareable ?? false,
+              shareCode: body.shareCode ?? null,
               savedAt: now,
               createdAt: body.createdAt ?? now,
             };
@@ -103,6 +123,12 @@ export default {
               ownerId: existing?.ownerId ?? owner,
               name: body.name,
               tabs: body.tabs,
+              // Sharing state is owned by the dedicated /share endpoint,
+              // not by PUT — saves from visitors never touch it. Preserve
+              // whatever the existing row had, or fall through to "not
+              // shared" for brand-new rows.
+              shareable: existing?.shareable ?? false,
+              shareCode: existing?.shareCode ?? null,
               savedAt: now,
               createdAt: existing?.createdAt ?? now,
             };
@@ -112,6 +138,28 @@ export default {
           if (request.method === 'DELETE') {
             await deleteDiagram(env, id);
             return new Response(null, { status: 204, headers: CORS_HEADERS });
+          }
+        }
+
+        // /api/diagrams/<id>/share — owner toggles sharing.
+        if (segments.length === 4 && segments[3] === 'share') {
+          const id = segments[2]!;
+          const owner = ownerOf(request);
+          if (!owner) return badRequest('missing X-Owner-Id');
+          const existing = await getDiagram(env, id);
+          if (!existing) return notFound();
+          if (existing.ownerId !== owner) return forbidden();
+
+          if (request.method === 'POST') {
+            // Re-sharing rotates the code so the previously shared URL
+            // can't be revived without action.
+            const code = existing.shareCode ?? generateShareCode();
+            await setDiagramShare(env, id, true, code);
+            return json({ shareable: true, shareCode: code });
+          }
+          if (request.method === 'DELETE') {
+            await setDiagramShare(env, id, false, null);
+            return json({ shareable: false, shareCode: null });
           }
         }
 
