@@ -193,9 +193,9 @@ export function MovablePanel({
     : defaultCorner === 'top-right'
       ? 'right-4 top-4'
       : defaultCorner === 'bottom-left'
-        ? 'bottom-16 left-4'
+        ? 'bottom-4 left-4'
         : defaultCorner === 'bottom-right'
-          ? 'bottom-16 right-4'
+          ? 'bottom-4 right-4'
           : 'left-4 top-4';
   // Tailwind `width` utility is only meaningful when the user hasn't
   // resized — once they have, the inline `width` style takes over and
