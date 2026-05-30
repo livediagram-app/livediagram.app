@@ -47,6 +47,7 @@ import { ZoomControls } from './ZoomControls';
 
 type CanvasProps = {
   tabName: string;
+  tabLocked: boolean;
   diagramName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;
@@ -186,6 +187,7 @@ type CanvasProps = {
 export function Canvas(props: CanvasProps) {
   const {
     tabName,
+    tabLocked,
     diagramName,
     tabBackgroundPattern,
     tabBackgroundColor,
@@ -459,14 +461,22 @@ export function Canvas(props: CanvasProps) {
   const selectedLocked = selected ? selected.locked === true : false;
   // Single-selection popover hides when a marquee multi-selection is active
   // (a per-element popover doesn't make sense for many elements at once).
+  // It also hides when the tab itself is locked — no destination for any of
+  // the popover's actions.
   const showPopover =
     selected &&
     editingId !== selected.id &&
     !isPaintMode &&
     !isGroupMode &&
-    multiSelectedIds.size === 0;
+    multiSelectedIds.size === 0 &&
+    !tabLocked;
   const showPlus =
-    selected && selectedIsBoxed && editingId !== selected.id && !isPaintMode && !isGroupMode;
+    selected &&
+    selectedIsBoxed &&
+    editingId !== selected.id &&
+    !isPaintMode &&
+    !isGroupMode &&
+    !tabLocked;
   const showHandles = (id: string) =>
     selectedIsBoxed &&
     id === selectedId &&
@@ -474,7 +484,8 @@ export function Canvas(props: CanvasProps) {
     editingId !== id &&
     !isPaintMode &&
     !isGroupMode &&
-    !selectedLocked;
+    !selectedLocked &&
+    !tabLocked;
   const showAnchorsFor = (id: string) =>
     selectedIsBoxed &&
     id === selectedId &&
@@ -482,7 +493,8 @@ export function Canvas(props: CanvasProps) {
     editingId !== id &&
     !isPaintMode &&
     !isGroupMode &&
-    !selectedLocked;
+    !selectedLocked &&
+    !tabLocked;
 
   const boxed = elements.filter(isBoxed);
   const arrows = elements.filter((el) => el.type === 'arrow');
@@ -660,6 +672,7 @@ export function Canvas(props: CanvasProps) {
             showAnchors={showAnchorsFor(element.id)}
             zoom={viewportZoom}
             badgeColor={badgeColor}
+            tabLocked={tabLocked}
             onBeginDrag={onBeginDrag}
             onBeginAnchorDrag={onBeginAnchorDrag}
             onBeginEdit={() => onBeginEdit(element.id)}
@@ -905,6 +918,7 @@ export function Canvas(props: CanvasProps) {
           position={activityPosition}
           minimized={activityMinimized}
           size={activitySize}
+          tabLocked={tabLocked}
           entries={changeLog}
           loading={changeLogLoading}
           canUndo={canUndo}

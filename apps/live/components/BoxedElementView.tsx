@@ -51,6 +51,9 @@ type BoxedElementViewProps = {
   // tab's theme so the icons read as part of the diagram rather than
   // floating brand-blue dots on a coloured palette.
   badgeColor: string;
+  // True when the tab as a whole is locked. Shows the LockBadge on
+  // every element regardless of its own per-element lock state.
+  tabLocked: boolean;
   // Other participants whose realtime selection is currently on this
   // element. Rendered as a small initial-badge stack at the top-left
   // (opposite the link / comment badges).
@@ -76,8 +79,9 @@ export function BoxedElementView({
   onContextSelect,
   remoteSelectors,
   badgeColor,
+  tabLocked,
 }: BoxedElementViewProps) {
-  const isLocked = element.locked === true;
+  const isLocked = element.locked === true || tabLocked;
   const label = element.label ?? '';
   const textSize: TextSize = element.textSize ?? 'scale';
   const defaultAlign = defaultTextAlign(element);

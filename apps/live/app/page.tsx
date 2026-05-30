@@ -952,7 +952,13 @@ export default function LivePage() {
     appendLogEntry(entry);
   };
 
+  // A locked tab refuses every element mutation. Commit /
+  // tick / element-add helpers all consult this early-return guard
+  // so a single check covers drag, edit, paint, delete, etc.
+  const activeTabLocked = activeTab.locked === true;
+
   const commit = (mapElements: (els: Element[]) => Element[]) => {
+    if (activeTabLocked) return;
     const before = activeTab.elements;
     const after = mapElements(before);
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, elements: after } : t)));
@@ -1008,6 +1014,7 @@ export default function LivePage() {
   };
 
   const tick = (mapElements: (els: Element[]) => Element[]) => {
+    if (activeTabLocked) return;
     tickTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, elements: mapElements(t.elements) } : t)),
     );
@@ -1124,6 +1131,7 @@ export default function LivePage() {
   };
 
   const addBoxed = <T extends BoxedElement>(make: (x: number, y: number) => T) => {
+    if (activeTabLocked) return;
     const base = make(0, 0);
     const override = sizeFromSelection();
     let width = override?.width ?? base.width;
@@ -1351,6 +1359,27 @@ export default function LivePage() {
   };
   const unresolveThread = (elementId: string) => {
     updateThread(elementId, (thread) => (thread ? { ...thread, resolved: false } : undefined));
+  };
+
+  // Flip the active tab's locked flag. Emits a tab-meta entry so the
+  // toggle shows up in the Activity panel alongside theme / background
+  // changes.
+  const toggleActiveTabLock = () => {
+    const target = tabs.find((t) => t.id === activeId);
+    if (!target) return;
+    const next = !target.locked;
+    commitTabs((ts) =>
+      ts.map((t) => (t.id === activeId ? { ...t, locked: next } : t)),
+    );
+    emitTabMeta(activeId, next ? 'Locked tab' : 'Unlocked tab');
+    if (next) {
+      // Drop any in-progress UI state that would be useless on a
+      // newly-locked tab.
+      setSelectedId(null);
+      setEditingId(null);
+      setFormatSourceId(null);
+      setGroupSourceId(null);
+    }
   };
 
   const renameTab = (id: string, name: string) => {
@@ -1661,6 +1690,7 @@ export default function LivePage() {
   };
 
   const setBackgroundPattern = (pattern: BackgroundPattern) => {
+    if (activeTabLocked) return;
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundPattern: pattern } : t)),
     );
@@ -1674,6 +1704,7 @@ export default function LivePage() {
   // per-element colour overrides the user previously set are replaced;
   // applying a theme is meant to be a one-tap "reset to this look".
   const setTheme = (id: ThemeId) => {
+    if (activeTabLocked) return;
     const theme = getTheme(id);
     const themeLabel = (
       THEMES.find((t) => t.id === id)?.label ?? id.charAt(0).toUpperCase() + id.slice(1)
@@ -1722,11 +1753,13 @@ export default function LivePage() {
   };
 
   const setBackgroundColor = (color: string) => {
+    if (activeTabLocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, backgroundColor: color } : t)));
     emitTabMeta(activeId, `Changed background colour to ${color}`);
   };
 
   const setBackgroundOpacity = (opacity: number) => {
+    if (activeTabLocked) return;
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundOpacity: opacity } : t)),
     );
@@ -1734,6 +1767,7 @@ export default function LivePage() {
   };
 
   const setPatternColor = (color: string) => {
+    if (activeTabLocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, patternColor: color } : t)));
     emitTabMeta(activeId, `Changed pattern colour to ${color}`);
   };
@@ -1750,6 +1784,7 @@ export default function LivePage() {
   // Endpoints are free (unpinned) — drag them onto shapes after the
   // fact to pin to anchors.
   const addArrow = () => {
+    if (activeTabLocked) return;
     const centre = getViewportCenter();
     const halfLen = 80;
     const theme = getTheme(activeTab.theme);
@@ -2560,6 +2595,7 @@ export default function LivePage() {
       ) : null}
       <Canvas
         tabName={activeTab.name}
+        tabLocked={activeTabLocked}
         diagramName={diagramName}
         tabBackgroundPattern={activeTab.backgroundPattern ?? 'grid'}
         tabBackgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}
@@ -2593,8 +2629,8 @@ export default function LivePage() {
         explorerPosition={explorerPosition}
         explorerMinimized={explorerMinimized}
         explorerSize={explorerSize}
-        canUndo={canUndo}
-        canRedo={canRedo}
+        canUndo={canUndo && !activeTabLocked}
+        canRedo={canRedo && !activeTabLocked}
         onAddShape={addShape}
         onAddText={addText}
         onAddSticky={addSticky}
@@ -2709,6 +2745,7 @@ export default function LivePage() {
           onClearContent={clearTabContent}
           otherDiagrams={diagramList.filter((d) => d.id !== diagramId)}
           onCopyTabTo={copyActiveTabTo}
+          onToggleLockTab={toggleActiveTabLock}
           onReorder={reorderTabs}
           participantsByTab={participantsByTab}
         />

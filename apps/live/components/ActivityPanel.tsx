@@ -9,6 +9,11 @@ type ActivityPanelProps = {
   position: { x: number; y: number } | null;
   minimized: boolean;
   size: { width: number; height: number } | null;
+  // True when the active tab is locked. Hides Revert buttons on rows
+  // for the active tab (Undo/Redo are also disabled by the caller).
+  // Locked-tab entries still render — the audit history stays
+  // visible so the lock doesn't erase context.
+  tabLocked: boolean;
   entries: ChangeLogEntry[];
   loading: boolean;
   canUndo: boolean;
@@ -37,6 +42,7 @@ export function ActivityPanel({
   position,
   minimized,
   size,
+  tabLocked,
   entries,
   loading,
   canUndo,
@@ -117,7 +123,12 @@ export function ActivityPanel({
           ) : (
             <ul className="flex flex-col gap-0.5">
               {entries.map((entry) => (
-                <ActivityRow key={entry.id} entry={entry} onRevert={() => onRevert(entry)} />
+                <ActivityRow
+                  key={entry.id}
+                  entry={entry}
+                  canRevert={!tabLocked}
+                  onRevert={() => onRevert(entry)}
+                />
               ))}
             </ul>
           )}
@@ -227,9 +238,11 @@ function WarningIcon() {
 
 function ActivityRow({
   entry,
+  canRevert,
   onRevert,
 }: {
   entry: ChangeLogEntry;
+  canRevert: boolean;
   onRevert: () => void;
 }) {
   // Re-render every 30s so the "2 min ago" string doesn't stick.
@@ -252,7 +265,7 @@ function ActivityRow({
       {/* Floats over the row on hover so it never reserves layout
           space when idle. Icon-only; the title attribute is the
           tooltip. */}
-      {entry.elementIds.length > 0 ? (
+      {entry.elementIds.length > 0 && canRevert ? (
         <button
           type="button"
           onClick={onRevert}

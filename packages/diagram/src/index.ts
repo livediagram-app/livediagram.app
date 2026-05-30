@@ -365,6 +365,12 @@ export type Tab = {
   // Set to true once the user has explicitly chosen a starting template
   // (including "Blank"), so the template picker doesn't reappear on this tab.
   templateChosen?: boolean;
+  // True when the tab is locked: every element becomes read-only,
+  // adds via the palette are blocked, theme / background mutations
+  // are blocked, and the Activity panel hides its Revert + Undo
+  // buttons for as long as this tab is active. Toggled from the
+  // tab ellipsis menu.
+  locked?: boolean;
 };
 
 export type Diagram = {

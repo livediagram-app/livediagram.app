@@ -27,6 +27,9 @@ type TabBarProps = {
   // round-trip to the API. Returns a promise so the menu can dismiss
   // after the operation completes.
   onCopyTabTo: (targetDiagramId: string) => Promise<void> | void;
+  // Flip tab.locked. Disables every mutator until toggled back on.
+  // The lock icon appears on the tab itself + on every element.
+  onToggleLockTab: () => void;
   onReorder: (sourceId: string, targetId: string) => void;
   // Remote participants grouped by which tab they're currently
   // focused on. Each tab in the bar renders the matching avatars so
@@ -46,6 +49,7 @@ export function TabBar({
   onClearContent,
   otherDiagrams,
   onCopyTabTo,
+  onToggleLockTab,
   onReorder,
   participantsByTab,
 }: TabBarProps) {
@@ -109,8 +113,9 @@ export function TabBar({
                   type="button"
                   onClick={() => onSelect(tab.id)}
                   onDoubleClick={() => isActive && setEditingId(tab.id)}
-                  className="rounded-md py-1.5 text-sm font-medium"
+                  className="flex items-center gap-1 rounded-md py-1.5 text-sm font-medium"
                 >
+                  {tab.locked ? <TabLockIcon /> : null}
                   {tab.name}
                 </button>
               )}
@@ -121,7 +126,8 @@ export function TabBar({
                   onToggle={() => setMenuFor(menuFor === tab.id ? null : tab.id)}
                   onClose={() => setMenuFor(null)}
                   canDelete={tabs.length > 1}
-                  canClearContent={activeTabHasContent}
+                  canClearContent={activeTabHasContent && !tab.locked}
+                  locked={tab.locked === true}
                   otherDiagrams={otherDiagrams}
                   onRename={() => {
                     setEditingId(tab.id);
@@ -137,6 +143,10 @@ export function TabBar({
                   }}
                   onCopyTo={async (targetId) => {
                     await onCopyTabTo(targetId);
+                    setMenuFor(null);
+                  }}
+                  onToggleLock={() => {
+                    onToggleLockTab();
                     setMenuFor(null);
                   }}
                   onDelete={() => {
@@ -205,11 +215,13 @@ function EllipsisMenuButton({
   onClose,
   canDelete,
   canClearContent,
+  locked,
   otherDiagrams,
   onRename,
   onDuplicate,
   onClearContent,
   onCopyTo,
+  onToggleLock,
   onDelete,
 }: {
   open: boolean;
@@ -217,11 +229,13 @@ function EllipsisMenuButton({
   onClose: () => void;
   canDelete: boolean;
   canClearContent: boolean;
+  locked: boolean;
   otherDiagrams: { id: string; name: string }[];
   onRename: () => void;
   onDuplicate: () => void;
   onClearContent: () => void;
   onCopyTo: (targetDiagramId: string) => void;
+  onToggleLock: () => void;
   onDelete: () => void;
 }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -249,6 +263,8 @@ function EllipsisMenuButton({
           onDuplicate={onDuplicate}
           onClearContent={onClearContent}
           onCopyTo={onCopyTo}
+          onToggleLock={onToggleLock}
+          locked={locked}
           otherDiagrams={otherDiagrams}
           onDelete={onDelete}
           canDelete={canDelete}
@@ -266,6 +282,8 @@ function PortalMenu({
   onDuplicate,
   onClearContent,
   onCopyTo,
+  onToggleLock,
+  locked,
   otherDiagrams,
   onDelete,
   canClearContent,
@@ -277,6 +295,8 @@ function PortalMenu({
   onDuplicate: () => void;
   onClearContent: () => void;
   onCopyTo: (targetDiagramId: string) => void;
+  onToggleLock: () => void;
+  locked: boolean;
   otherDiagrams: { id: string; name: string }[];
   onDelete: () => void;
   canDelete: boolean;
@@ -356,6 +376,11 @@ function PortalMenu({
     >
       {view === 'actions' ? (
         <>
+          <MenuItem
+            icon={<TabLockIcon />}
+            label={locked ? 'Unlock tab' : 'Lock tab'}
+            onClick={onToggleLock}
+          />
           <MenuItem icon={<PencilIcon />} label="Rename" onClick={onRename} />
           <MenuItem icon={<CopyIcon />} label="Duplicate" onClick={onDuplicate} />
           <MenuItem
@@ -607,6 +632,25 @@ function leavingExtra(slots: { leaving: boolean }[], cap: number): number {
     else active++;
   }
   return extra;
+}
+
+function TabLockIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3.5" y="7.5" width="9" height="6" rx="1.25" />
+      <path d="M5.5 7.5V5a2.5 2.5 0 0 1 5 0v2.5" />
+    </svg>
+  );
 }
 
 function MoveIcon() {
