@@ -58,7 +58,7 @@ export function TabBar({
 
   return (
     <div className="flex h-12 shrink-0 items-center gap-1 border-t border-slate-200 bg-white px-2">
-      <div className="flex flex-1 items-center gap-1 overflow-x-auto">
+      <div className="scrollbar-slim flex flex-1 items-center gap-1 overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = tab.id === activeId;
           const isEditing = editingId === tab.id;
