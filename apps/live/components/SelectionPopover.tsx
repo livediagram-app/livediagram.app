@@ -27,7 +27,11 @@ type SelectionPopoverProps = {
 };
 
 const POPOVER_HEIGHT = 44;
-const GAP = 8;
+// Larger gap leaves room for the plus button (24 px tall in screen
+// space, hugging the same edge). The popover now sits roughly 36 px
+// off the element edge so the plus button is fully visible between
+// them at any zoom.
+const GAP = 36;
 const EDGE_MARGIN = 8;
 
 export function SelectionPopover({

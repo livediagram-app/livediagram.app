@@ -1307,6 +1307,29 @@ export default function LivePage() {
     commit((els) => els.map((el) => (ids.has(el.id) ? { ...el, opacity } : el)));
   };
 
+  // Clear per-element colour overrides so the element falls back to
+  // whatever the current tab theme dictates. Each colour field is set
+  // to undefined; the history hook snapshots the present so this is
+  // undoable as one step.
+  const resetColorsSelected = () => {
+    if (!selectedId) return;
+    const ids = memberIdsOf(selectedId);
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id)) return el;
+        if (isBoxed(el)) {
+          const { fillColor: _f, strokeColor: _s, textColor: _t, ...rest } = el;
+          return rest as typeof el;
+        }
+        if (el.type === 'arrow') {
+          const { strokeColor: _s, ...rest } = el;
+          return rest as typeof el;
+        }
+        return el;
+      }),
+    );
+  };
+
   const duplicateSelected = () => {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
@@ -1771,6 +1794,7 @@ export default function LivePage() {
         onSetStrokeColor={setStrokeColorSelected}
         onSetTextColor={setTextColorSelected}
         onSetOpacity={setOpacitySelected}
+        onResetColors={resetColorsSelected}
         onDuplicateSelected={duplicateSelected}
         tabs={tabs}
         currentTabId={activeId}

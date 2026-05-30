@@ -42,7 +42,11 @@ export function TemplatePicker({
 }: TemplatePickerProps) {
   const isWelcome = mode === 'welcome';
   const isIdentity = mode === 'identity';
-  const showIdentity = isWelcome || isIdentity;
+  // Identity / "your name" moved entirely into the Share flow — there's
+  // no reason to collect it before the user explicitly shares. The
+  // 'identity' mode is still used for visitors landing on a share URL
+  // who need to confirm their display name first.
+  const showIdentity = isIdentity;
   const showTemplates = !isIdentity;
   const showThemes = isWelcome;
   const [name, setName] = useState(participant.name);
@@ -61,14 +65,14 @@ export function TemplatePicker({
           <div>
             <h2 className="text-lg font-semibold text-slate-900">
               {isWelcome
-                ? 'Create a new Diagram'
+                ? 'New Diagram'
                 : isIdentity
                   ? 'Welcome to this diagram'
                   : 'Pick a template'}
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               {isWelcome
-                ? 'Set your name, pick a template, and choose a theme to start with.'
+                ? 'Pick a template and a theme to start with.'
                 : isIdentity
                   ? 'Pick the name people will see while you collaborate on this diagram.'
                   : 'Scaffold this tab with a starter diagram. Your current theme stays.'}

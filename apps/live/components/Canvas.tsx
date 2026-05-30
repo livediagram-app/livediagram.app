@@ -105,6 +105,7 @@ type CanvasProps = {
   onSetStrokeColor: (color: string) => void;
   onSetTextColor: (color: string) => void;
   onSetOpacity: (opacity: number) => void;
+  onResetColors: () => void;
   onDuplicateSelected: () => void;
   tabs: Tab[];
   currentTabId: string;
@@ -203,6 +204,7 @@ export function Canvas(props: CanvasProps) {
     onSetStrokeColor,
     onSetTextColor,
     onSetOpacity,
+    onResetColors,
     onDuplicateSelected,
     tabs,
     currentTabId,
@@ -456,6 +458,7 @@ export function Canvas(props: CanvasProps) {
         onSetFillColor,
         onSetStrokeColor,
         onSetOpacity,
+        onResetColors,
       }
     : null;
 
@@ -587,6 +590,13 @@ export function Canvas(props: CanvasProps) {
               placement="left"
               zoom={viewportZoom}
               onClick={() => onDuplicateConnect('left')}
+            />
+            <PlusButton
+              x={selectionBounds.x + selectionBounds.width / 2}
+              y={selectionBounds.y}
+              placement="above"
+              zoom={viewportZoom}
+              onClick={() => onDuplicateConnect('above')}
             />
           </>
         ) : null}

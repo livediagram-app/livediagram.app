@@ -26,6 +26,7 @@ export type SelectedElementControls = {
   onSetFillColor: (color: string) => void;
   onSetStrokeColor: (color: string) => void;
   onSetOpacity: (opacity: number) => void;
+  onResetColors: () => void;
 };
 
 export type TabSectionControls = {
@@ -396,6 +397,13 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
               </Tooltip>
             ) : null}
           </div>
+          <button
+            type="button"
+            onClick={selection.onResetColors}
+            className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50"
+          >
+            Reset to theme
+          </button>
         </Accordion>
       ) : null}
     </div>
