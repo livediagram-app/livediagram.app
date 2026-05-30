@@ -2946,6 +2946,23 @@ export default function LivePage() {
     setMultiSelectedIds(new Set());
   };
 
+  // Shift-click membership toggle. Folds a current single-selection
+  // into the multi-set so users can promote "I already had A
+  // selected, now also B and C" without first dropping to nothing.
+  // Toggling the last member out of the multi-set drops back to
+  // empty selection.
+  const toggleInMultiSelect = (id: string) => {
+    const next = new Set(multiSelectedIds);
+    if (selectedId && !next.has(selectedId)) next.add(selectedId);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedId(null);
+    setMultiSelectedIds(next);
+    setEditingId(null);
+    setFormatSourceId(null);
+    setGroupSourceId(null);
+  };
+
   const beginArrowTranslate = (arrowId: string, e: ReactPointerEvent) => {
     if (formatSourceId !== null || groupSourceId !== null) return;
     const arrow = activeTab.elements.find((el) => el.id === arrowId);
@@ -3344,6 +3361,7 @@ export default function LivePage() {
         onCancelEdit={cancelEdit}
         onBeginEndpointDrag={beginEndpointDrag}
         onBeginArrowTranslate={beginArrowTranslate}
+        onShiftSelect={toggleInMultiSelect}
         onBeginFormatPainter={beginFormatPainter}
         onCancelFormatPainter={exitFormatPainter}
         onBeginGroup={beginGroup}

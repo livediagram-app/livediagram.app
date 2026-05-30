@@ -151,6 +151,7 @@ type CanvasProps = {
   onCancelEdit: () => void;
   onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
   onBeginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
+  onShiftSelect: (id: string) => void;
   onBeginFormatPainter: () => void;
   onCancelFormatPainter: () => void;
   onBeginGroup: () => void;
@@ -304,6 +305,7 @@ export function Canvas(props: CanvasProps) {
     onCancelEdit,
     onBeginEndpointDrag,
     onBeginArrowTranslate,
+    onShiftSelect,
     onBeginFormatPainter,
     onCancelFormatPainter,
     onBeginGroup,
@@ -812,6 +814,7 @@ export function Canvas(props: CanvasProps) {
               badgeColor={badgeColor}
               tabLocked={tabLocked}
               onBeginDrag={onBeginDrag}
+              onShiftSelect={onShiftSelect}
               onBeginAnchorDrag={onBeginAnchorDrag}
               onBeginEdit={() => onBeginEdit(element.id)}
               onCommitLabel={(label) => onCommitLabel(element.id, label)}

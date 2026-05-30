@@ -38,6 +38,9 @@ type BoxedElementViewProps = {
   showAnchors: boolean;
   zoom: number;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // Shift-click on an element fires this with the element id so the
+  // page can toggle membership in the marquee multi-selection.
+  onShiftSelect?: (id: string) => void;
   onBeginAnchorDrag: (id: string, anchor: Anchor, e: ReactPointerEvent) => void;
   onBeginEdit: () => void;
   onCommitLabel: (label: string) => void;
@@ -70,6 +73,7 @@ export function BoxedElementView({
   showAnchors,
   zoom,
   onBeginDrag,
+  onShiftSelect,
   onBeginAnchorDrag,
   onBeginEdit,
   onCommitLabel,
@@ -92,6 +96,14 @@ export function BoxedElementView({
   const handleShapeDown = (e: ReactPointerEvent) => {
     if (isEditing) return;
     e.stopPropagation();
+    // Shift modifier turns the down-event into a selection toggle
+    // (add or remove this element from the marquee multi-selection)
+    // instead of starting a drag. Matches the convention every
+    // drawing tool uses.
+    if (e.shiftKey) {
+      onShiftSelect?.(element.id);
+      return;
+    }
     onBeginDrag(element.id, 'move', e);
   };
 
