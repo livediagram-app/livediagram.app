@@ -137,7 +137,7 @@ function OpenPalette({
       title="Palette"
       position={position}
       defaultCorner="top-right"
-      width="w-56"
+      width="w-64"
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}
     >

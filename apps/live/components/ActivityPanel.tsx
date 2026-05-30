@@ -40,7 +40,7 @@ export function ActivityPanel({
       title="Activity"
       position={position}
       defaultCorner="bottom-left"
-      width="w-72"
+      width="w-64"
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}
     >
