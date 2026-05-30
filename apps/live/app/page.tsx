@@ -1099,31 +1099,56 @@ export default function LivePage() {
       setFormatSourceId(null);
       return;
     }
-    // Format-paint behaviour depends on the element kind:
-    //   - boxed → boxed: copy width + height (the visual "shape"
-    //     of the element)
-    //   - arrow → arrow: copy strokeColor + opacity + arrowEnds
-    //   - cross-kind paint is a no-op (boxed and arrows don't share
-    //     enough formattable properties to make a sensible decision)
+    // Format-paint copies every formatting field on the source. Skip
+    // identity (`id`, `type`, `shape`) and content (`label`, `link`,
+    // `commentThread`, `groupId`, `locked`, position `x`/`y`) — those
+    // belong to the target. Anything else that visually styles the
+    // element gets carried over. Boxed↔arrow paints are no-ops since
+    // the two kinds share almost no formattable fields.
+    //
+    // Each new style field (text bold/italic/underline/strike, padding,
+    // arrow thickness, aspect lock, etc.) is included explicitly so
+    // future additions need a deliberate update here — easier to spot
+    // missing coverage than to debug "format painter forgot X" later.
     if (isBoxed(source) && isBoxed(target)) {
+      const copied: Partial<BoxedElement> = {
+        width: source.width,
+        height: source.height,
+        aspectLocked: source.aspectLocked,
+        opacity: source.opacity,
+        fillColor: source.fillColor,
+        strokeColor: source.strokeColor,
+        textColor: source.textColor,
+        textSize: source.textSize,
+        textAlignX: source.textAlignX,
+        textAlignY: source.textAlignY,
+        textBold: source.textBold,
+        textItalic: source.textItalic,
+        textUnderline: source.textUnderline,
+        textStrikethrough: source.textStrikethrough,
+        padding: source.padding,
+      };
+      const definedCopied = Object.fromEntries(
+        Object.entries(copied).filter(([, v]) => v !== undefined),
+      );
       commit((els) =>
         els.map((el) =>
-          el.id === targetId && isBoxed(el)
-            ? { ...el, width: source.width, height: source.height }
-            : el,
+          el.id === targetId && isBoxed(el) ? ({ ...el, ...definedCopied } as typeof el) : el,
         ),
       );
     } else if (source.type === 'arrow' && target.type === 'arrow') {
+      const copied: Partial<ArrowElement> = {
+        strokeColor: source.strokeColor,
+        strokeWidth: source.strokeWidth,
+        opacity: source.opacity,
+        arrowEnds: source.arrowEnds,
+      };
+      const definedCopied = Object.fromEntries(
+        Object.entries(copied).filter(([, v]) => v !== undefined),
+      );
       commit((els) =>
         els.map((el) =>
-          el.id === targetId && el.type === 'arrow'
-            ? {
-                ...el,
-                ...(source.strokeColor ? { strokeColor: source.strokeColor } : {}),
-                ...(source.opacity !== undefined ? { opacity: source.opacity } : {}),
-                ...(source.arrowEnds ? { arrowEnds: source.arrowEnds } : {}),
-              }
-            : el,
+          el.id === targetId && el.type === 'arrow' ? ({ ...el, ...definedCopied } as typeof el) : el,
         ),
       );
     }
