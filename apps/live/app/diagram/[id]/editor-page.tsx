@@ -2656,6 +2656,14 @@ export default function LivePage() {
     );
   };
 
+  const setArrowStyleSelected = (style: import('@livediagram/diagram').ArrowStyle) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) => (ids.has(el.id) && el.type === 'arrow' ? { ...el, arrowStyle: style } : el)),
+    );
+  };
+
   // Morph the selected shape into a different kind, preserving width /
   // height / label / colour overrides. Circle and diamond are 1:1
   // shapes — coming from a non-square box, snap to the larger side so
@@ -3414,6 +3422,7 @@ export default function LivePage() {
         onSetArrowEnds={setArrowEndsSelected}
         onSetArrowThickness={setArrowThicknessSelected}
         onSetArrowheadSize={setArrowheadSizeSelected}
+        onSetArrowStyle={setArrowStyleSelected}
         onSetShapeKind={setShapeKindSelected}
         onDuplicateSelected={duplicateSelected}
         tabs={tabs}

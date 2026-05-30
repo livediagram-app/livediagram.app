@@ -1,6 +1,7 @@
 import type {
   ArrowEnds,
   ArrowheadSize,
+  ArrowStyle,
   ArrowThickness,
   BackgroundPattern,
   Padding,
@@ -58,6 +59,11 @@ export type SelectedElementControls = {
   // users can pair a thin line with a chunky head (or vice versa).
   arrowheadSize: ArrowheadSize | null;
   onSetArrowheadSize: (size: ArrowheadSize) => void;
+  // Path geometry: straight (default), curved (bezier bow), or angled
+  // (axis-aligned right-angle elbow). Null when the selection isn't
+  // an arrow.
+  arrowStyle: ArrowStyle | null;
+  onSetArrowStyle: (style: ArrowStyle) => void;
   // Non-null only when a shape element is selected. Drives the Shape
   // accordion's morph-into-this-kind grid.
   shapeKind: ShapeKind | null;
@@ -709,6 +715,38 @@ export function SelectedElementSection({
               <div className="my-2 h-px bg-slate-100" />
             </>
           ) : null}
+          {selection.arrowStyle !== null ? (
+            <>
+              <p className="text-[10px] font-medium text-slate-500">Line style</p>
+              <div className="mt-1 grid grid-cols-3 gap-1">
+                {(
+                  [
+                    ['straight', 'Straight', 'Plain straight line — the default.'],
+                    [
+                      'curved',
+                      'Curved',
+                      'Smooth bezier curve bowing perpendicular to the endpoints.',
+                    ],
+                    [
+                      'angled',
+                      'Angled',
+                      'Axis-aligned L-connector with a single right-angle bend.',
+                    ],
+                  ] as [ArrowStyle, string, string][]
+                ).map(([id, label, desc]) => (
+                  <Tooltip key={id} title={label} description={desc}>
+                    <SizeButton
+                      active={selection.arrowStyle === id}
+                      onClick={() => selection.onSetArrowStyle(id)}
+                    >
+                      <ArrowStyleIcon style={id} />
+                    </SizeButton>
+                  </Tooltip>
+                ))}
+              </div>
+              <div className="my-2 h-px bg-slate-100" />
+            </>
+          ) : null}
           <p className="text-[10px] font-medium text-slate-500">
             Pick which end(s) of the arrow have a pointer.
           </p>
@@ -989,6 +1027,41 @@ function ArrowheadSizeIcon({ px }: { px: number }) {
     <svg width="22" height="14" viewBox="0 0 22 14" fill="none" aria-hidden>
       <line x1="3" y1="7" x2="14" y2="7" stroke="currentColor" strokeWidth="1.6" />
       <path d={`M 14 ${7 - px / 2} L ${14 + px} 7 L 14 ${7 + px / 2} z`} fill="currentColor" />
+    </svg>
+  );
+}
+
+// 22×14 thumbnail of each path style. Reuses currentColor so the icon
+// follows the SizeButton's active/inactive colour.
+function ArrowStyleIcon({ style }: { style: ArrowStyle }) {
+  if (style === 'straight') {
+    return (
+      <svg width="22" height="14" viewBox="0 0 22 14" fill="none" aria-hidden>
+        <path d="M 3 7 L 19 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (style === 'curved') {
+    return (
+      <svg width="22" height="14" viewBox="0 0 22 14" fill="none" aria-hidden>
+        <path
+          d="M 3 10 Q 11 -1 19 10"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg width="22" height="14" viewBox="0 0 22 14" fill="none" aria-hidden>
+      <path
+        d="M 3 11 L 11 11 L 11 3 L 19 3"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

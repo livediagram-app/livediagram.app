@@ -310,6 +310,12 @@ export type ArrowElement = {
   // thin line can carry a chunky arrowhead and vice versa. Snapped
   // to a named preset for the toggle UI (see `arrowheadSizeOf`).
   arrowheadSize?: ArrowheadSize;
+  // Path shape. 'straight' is the default and matches every arrow
+  // authored before the field existed. 'curved' bows the line out
+  // perpendicular to the from→to chord (smooth quadratic Bezier).
+  // 'angled' renders the connector as an axis-aligned L-shape with
+  // a single right-angle bend. See `arrowStyleOf`.
+  arrowStyle?: ArrowStyle;
 };
 
 // Named thickness presets exposed via the Palette. Storing the raw px
@@ -360,6 +366,17 @@ export const DEFAULT_ARROWHEAD_SIZE: ArrowheadSize = 'medium';
 
 export function arrowheadSizeOf(arrow: ArrowElement): ArrowheadSize {
   return arrow.arrowheadSize ?? DEFAULT_ARROWHEAD_SIZE;
+}
+
+// Path geometry preset. Straight is the existing behaviour; curved
+// adds a perpendicular bow via a quadratic Bezier; angled draws an
+// axis-aligned right-angle elbow between the two endpoints. Stored
+// as a named preset so the renderer can swap geometries without
+// touching the data model.
+export type ArrowStyle = 'straight' | 'curved' | 'angled';
+export const DEFAULT_ARROW_STYLE: ArrowStyle = 'straight';
+export function arrowStyleOf(arrow: ArrowElement): ArrowStyle {
+  return arrow.arrowStyle ?? DEFAULT_ARROW_STYLE;
 }
 
 // --- Element union ---------------------------------------------------------

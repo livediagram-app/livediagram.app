@@ -229,6 +229,13 @@ type ArrowElement = {
   // a chunky head (or vice versa).
   strokeWidth?: number;
   arrowheadSize?: 'small' | 'medium' | 'large' | 'extra-large';
+  // Path geometry. 'straight' is a single line; 'curved' renders a
+  // quadratic bezier bowing perpendicular to the chord by ¼ of its
+  // length; 'angled' draws an axis-aligned L-connector with a single
+  // right-angle bend. Pinned-endpoint anchors decide which leg of
+  // the elbow runs first so the line leaves the element along its
+  // anchor direction.
+  arrowStyle?: 'straight' | 'curved' | 'angled';
 };
 
 type Element = ShapeElement | ArrowElement;
@@ -238,7 +245,7 @@ type Element = ShapeElement | ArrowElement;
 
 - Multi-point / waypoint paths (just two endpoints for now).
 - Labels on arrows.
-- Curved / bezier arrows; different arrowhead styles.
+- Multi-point / waypoint paths on angled arrows (one bend only for now).
 - Anchors at element centres or anywhere on element edges.
 
 ## Shape primitives

@@ -8,6 +8,7 @@ import {
 import {
   arrowThicknessOf,
   arrowheadSizeOf,
+  arrowStyleOf,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
   defaultFillColor,
@@ -175,6 +176,7 @@ type CanvasProps = {
   onSetArrowEnds: (ends: import('@livediagram/diagram').ArrowEnds) => void;
   onSetArrowThickness: (thickness: import('@livediagram/diagram').ArrowThickness) => void;
   onSetArrowheadSize: (size: import('@livediagram/diagram').ArrowheadSize) => void;
+  onSetArrowStyle: (style: import('@livediagram/diagram').ArrowStyle) => void;
   onSetShapeKind: (kind: ShapeKind) => void;
   onDuplicateSelected: () => void;
   tabs: Tab[];
@@ -330,6 +332,7 @@ export function Canvas(props: CanvasProps) {
     onSetArrowEnds,
     onSetArrowThickness,
     onSetArrowheadSize,
+    onSetArrowStyle,
     onSetShapeKind,
     onDuplicateSelected,
     tabs,
@@ -653,6 +656,8 @@ export function Canvas(props: CanvasProps) {
         onSetArrowThickness,
         arrowheadSize: selected.type === 'arrow' ? arrowheadSizeOf(selected) : null,
         onSetArrowheadSize,
+        arrowStyle: selected.type === 'arrow' ? arrowStyleOf(selected) : null,
+        onSetArrowStyle,
         shapeKind: selected.type === 'shape' ? selected.shape : null,
         onSetShapeKind,
         aspectLocked: isBoxed(selected) ? (selected.aspectLocked ?? false) : null,

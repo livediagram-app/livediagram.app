@@ -142,6 +142,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # `whoami` prints which Cloudflare account the API token sees,
+      # so when migrations fail with a 7403 "account not authorized"
+      # the log shows immediately whether (a) the token doesn't have
+      # D1 Edit scope, or (b) the token belongs to a different
+      # account than CF_ACCOUNT_ID. Without this the error is too
+      # generic to act on.
+      - name: Verify Cloudflare token
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: pnpm exec wrangler whoami || true
+
       # Apply any pending D1 migrations before the worker code goes
       # live. Idempotent: wrangler tracks applied migrations in a
       # bookkeeping table and skips any it's already run. Has to
@@ -156,12 +169,16 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        # `--yes` was dropped in current wrangler; non-interactive
-        # mode auto-confirms via the "fallback value" path. The
-        # database arg `DB` matches the binding name in wrangler.toml.
+        # Database arg is the binding name (`DB`) — wrangler resolves
+        # it via wrangler.toml. If this fails with a 7403, the CF API
+        # token in repo secrets needs the D1 Edit scope on the same
+        # account that owns the database (see the Verify step above).
         run: |
-          pnpm exec wrangler d1 migrations apply DB --remote \
-            || (echo "::error::D1 migrations failed; halting deploy"; exit 1)
+          pnpm exec wrangler d1 migrations apply DB --remote --yes \
+            || {
+              echo "::error::D1 migrations failed. Most likely the CF_API_TOKEN secret lacks the 'D1: Edit' permission on account ${CLOUDFLARE_ACCOUNT_ID}. Mint a new token with Workers Scripts:Edit + D1:Edit + Workers Routes:Edit + Cloudflare Pages:Edit and update the GitHub secret CF_API_TOKEN."
+              exit 1
+            }
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/api
