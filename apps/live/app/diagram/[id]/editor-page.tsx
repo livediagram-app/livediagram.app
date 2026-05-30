@@ -562,6 +562,14 @@ export default function LivePage() {
             loadedTabIdsRef.current.add(firstSummary.id);
           }
           resetTabs(placeholderTabs);
+          // Seed the autosave's "last saved" mirror with the hydrated
+          // state so the first save-cycle treats it as unchanged.
+          // Otherwise the autosave would diff the EMPTY-elements
+          // placeholders against an empty [] baseline and PUT them
+          // back to the server, wiping every other tab's content
+          // before the lazy-load could populate it.
+          lastSavedTabsRef.current = placeholderTabs;
+          lastSavedNameRef.current = fetched.name;
           setDiagramName(fetched.name);
           // Prefer the tab id pinned in the URL fragment (#t=<id>) when
           // it points at a real loaded tab — round-trips the user back
@@ -634,6 +642,10 @@ export default function LivePage() {
             loadedTabIdsRef.current.add(firstSummary.id);
           }
           resetTabs(placeholderTabs);
+          // Seed the autosave's "last saved" mirror with the hydrated
+          // state — same rationale as the visitor branch above.
+          lastSavedTabsRef.current = placeholderTabs;
+          lastSavedNameRef.current = fetched.name;
           setDiagramName(fetched.name);
           // Prefer the tab id pinned in the URL fragment (#t=<id>) when
           // it points at a real loaded tab — round-trips the user back
