@@ -43,7 +43,7 @@ import {
 } from '@livediagram/diagram';
 import { Canvas } from '@/components/Canvas';
 import { CommentThreadPopover } from '@/components/CommentThreadPopover';
-import { EditorHeader } from '@/components/EditorHeader';
+import { EditorHeader, type SaveStatus } from '@/components/EditorHeader';
 import { NotFound } from '@/components/NotFound';
 import { ShareDialog } from '@/components/ShareDialog';
 import { TabBar } from '@/components/TabBar';
@@ -203,6 +203,11 @@ export default function LivePage() {
   // (deleted, never existed, or owned by someone else). Renders the
   // NotFound surface instead of the editor + welcome modal.
   const [diagramNotFound, setDiagramNotFound] = useState(false);
+  // Surfaced in the editor header as a Saving/Saved/Not-saved pill. The
+  // autosave used to catch and swallow errors, which made an offline
+  // API look identical to a successful save. Now every save attempt
+  // flips this and the header is honest about what's happening.
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [diagramName, setDiagramName] = useState('Untitled diagram');
   // Multi-selection bag for marquee box-select. Mutually exclusive with the
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
@@ -427,10 +432,21 @@ export default function LivePage() {
     }
     const handle = window.setTimeout(() => {
       const payload = { id: diagramId, name: diagramName, tabs, savedAt: Date.now() };
-      apiSaveDiagram(selfParticipant.id, payload).catch(() => {
-        // Surface this in a toast once we have one; for now swallow so
-        // the editor stays responsive.
-      });
+      setSaveStatus('saving');
+      apiSaveDiagram(selfParticipant.id, payload)
+        .then(() => {
+          setSaveStatus('saved');
+          refreshDiagramList(selfParticipant.id);
+        })
+        .catch(() => {
+          // Network down, API unreachable, env var wrong — anything
+          // that prevents persistence. The pill stays in the error
+          // state until the next successful save so the user can't
+          // miss it. The room broadcast still happens above so any
+          // connected peer sees the in-memory edit; we just couldn't
+          // durably persist it.
+          setSaveStatus('error');
+        });
       // Broadcast the new snapshot to peers via the room so other
       // viewers see the change in real time. The room's last-writer-
       // wins model means the most recent broadcast becomes the truth.
@@ -438,7 +454,6 @@ export default function LivePage() {
         kind: 'op',
         op: { kind: 'tabs', tabs, name: diagramName },
       });
-      refreshDiagramList(selfParticipant.id);
     }, 600);
     return () => window.clearTimeout(handle);
   }, [hydrated, diagramId, tabs, diagramName, selfParticipant.id, isReadOnly]);
@@ -2010,6 +2025,7 @@ export default function LivePage() {
         hideTitle={anyWelcomeOpen}
         showShare={isOwner && hydrated && !anyWelcomeOpen}
         shareable={diagramShareable}
+        saveStatus={saveStatus}
         onOpenShare={() => setShareDialogOpen(true)}
         onRename={setDiagramName}
         onDeleteDiagram={deleteDiagram}
@@ -2125,7 +2141,6 @@ export default function LivePage() {
         tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
         onSetTheme={setTheme}
         onSetBackgroundPattern={setBackgroundPattern}
-        onClearTabContent={clearTabContent}
         onSetBackgroundColor={setBackgroundColor}
         onSetBackgroundOpacity={setBackgroundOpacity}
         onSetPatternColor={setPatternColor}
@@ -2139,6 +2154,7 @@ export default function LivePage() {
         <TabBar
           tabs={tabs}
           activeId={activeId}
+          activeTabHasContent={activeTab.elements.length > 0}
           onSelect={(id) => {
             setActiveId(id);
             setSelectedId(null);
@@ -2151,6 +2167,7 @@ export default function LivePage() {
           onRename={renameTab}
           onDuplicate={duplicateTab}
           onDelete={deleteTab}
+          onClearContent={clearTabContent}
           onReorder={reorderTabs}
         />
       )}

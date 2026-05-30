@@ -150,7 +150,6 @@ type CanvasProps = {
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetTheme: (id: import('@/lib/themes').ThemeId) => void;
   onSetPatternColor: (color: string) => void;
-  onClearTabContent: () => void;
   onToggleAspectLock: () => void;
   onDuplicateConnect: (direction: 'right' | 'below' | 'left' | 'above') => void;
   onToggleLockSelected: () => void;
@@ -252,7 +251,6 @@ export function Canvas(props: CanvasProps) {
     onSetBackgroundColor,
     onSetBackgroundOpacity,
     onSetPatternColor,
-    onClearTabContent,
     onToggleAspectLock,
     onDuplicateConnect,
     onToggleLockSelected,
@@ -507,12 +505,10 @@ export function Canvas(props: CanvasProps) {
     patternColor: tabPatternColor,
     onSetBackgroundOpacity,
     themeId: tabThemeId,
-    hasContent: elements.length > 0,
     onSetBackgroundPattern,
     onSetBackgroundColor,
     onSetPatternColor,
     onSetTheme,
-    onClearTabContent,
   };
 
   // Broadcast the local pointer position to peers (canvas-coords).

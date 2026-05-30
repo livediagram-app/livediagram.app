@@ -47,14 +47,12 @@ export type TabSectionControls = {
   backgroundColor: string;
   patternColor: string;
   themeId: ThemeId;
-  hasContent: boolean;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
   onSetBackgroundColor: (color: string) => void;
   backgroundOpacity: number;
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetPatternColor: (color: string) => void;
   onSetTheme: (id: ThemeId) => void;
-  onClearTabContent: () => void;
 };
 
 export type CanvasTool = 'pan' | 'select';
@@ -792,10 +790,9 @@ function ArrowEndsIcon({ ends }: { ends: ArrowEnds }) {
 }
 
 function TabSection({ tab }: { tab: TabSectionControls }) {
-  const [open, setOpen] = useState<{ theme: boolean; background: boolean; content: boolean }>({
+  const [open, setOpen] = useState<{ theme: boolean; background: boolean }>({
     theme: false,
     background: false,
-    content: false,
   });
   const toggle = (key: keyof typeof open) => setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
 
@@ -944,37 +941,6 @@ function TabSection({ tab }: { tab: TabSectionControls }) {
             className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500"
           />
         </div>
-      </Accordion>
-
-      <Accordion title="Content" open={open.content} onToggle={() => toggle('content')}>
-        <Tooltip
-          title="Remove all content"
-          description="Delete every element on this tab. This is undoable."
-        >
-          <button
-            type="button"
-            onClick={tab.onClearTabContent}
-            disabled={!tab.hasContent}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-rose-200 bg-white px-3 py-2 text-xs font-medium text-rose-700 transition enabled:hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <path d="M2.5 4h11" />
-              <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
-              <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
-            </svg>
-            Remove all content
-          </button>
-        </Tooltip>
       </Accordion>
     </div>
   );

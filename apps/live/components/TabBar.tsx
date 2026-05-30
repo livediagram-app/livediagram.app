@@ -5,22 +5,32 @@ import type { Tab } from '@livediagram/diagram';
 type TabBarProps = {
   tabs: Tab[];
   activeId: string;
+  // True when the active tab has at least one element. Used to enable
+  // / disable the "Clear content" menu item — disabled on empty tabs
+  // so the option is still discoverable but doesn't no-op.
+  activeTabHasContent: boolean;
   onSelect: (id: string) => void;
   onAdd: () => void;
   onRename: (id: string, name: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
+  // Wipes every element from the active tab. Undoable. Only exposed
+  // through the active tab's ellipsis menu (used to live in the
+  // Palette's Content accordion).
+  onClearContent: () => void;
   onReorder: (sourceId: string, targetId: string) => void;
 };
 
 export function TabBar({
   tabs,
   activeId,
+  activeTabHasContent,
   onSelect,
   onAdd,
   onRename,
   onDuplicate,
   onDelete,
+  onClearContent,
   onReorder,
 }: TabBarProps) {
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -94,12 +104,17 @@ export function TabBar({
                   onToggle={() => setMenuFor(menuFor === tab.id ? null : tab.id)}
                   onClose={() => setMenuFor(null)}
                   canDelete={tabs.length > 1}
+                  canClearContent={activeTabHasContent}
                   onRename={() => {
                     setEditingId(tab.id);
                     setMenuFor(null);
                   }}
                   onDuplicate={() => {
                     onDuplicate(tab.id);
+                    setMenuFor(null);
+                  }}
+                  onClearContent={() => {
+                    onClearContent();
                     setMenuFor(null);
                   }}
                   onDelete={() => {
@@ -167,16 +182,20 @@ function EllipsisMenuButton({
   onToggle,
   onClose,
   canDelete,
+  canClearContent,
   onRename,
   onDuplicate,
+  onClearContent,
   onDelete,
 }: {
   open: boolean;
   onToggle: () => void;
   onClose: () => void;
   canDelete: boolean;
+  canClearContent: boolean;
   onRename: () => void;
   onDuplicate: () => void;
+  onClearContent: () => void;
   onDelete: () => void;
 }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -202,8 +221,10 @@ function EllipsisMenuButton({
           onClose={onClose}
           onRename={onRename}
           onDuplicate={onDuplicate}
+          onClearContent={onClearContent}
           onDelete={onDelete}
           canDelete={canDelete}
+          canClearContent={canClearContent}
         />
       ) : null}
     </div>
@@ -215,15 +236,19 @@ function PortalMenu({
   onClose,
   onRename,
   onDuplicate,
+  onClearContent,
   onDelete,
+  canClearContent,
   canDelete,
 }: {
   anchor: HTMLButtonElement | null;
   onClose: () => void;
   onRename: () => void;
   onDuplicate: () => void;
+  onClearContent: () => void;
   onDelete: () => void;
   canDelete: boolean;
+  canClearContent: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
@@ -293,6 +318,12 @@ function PortalMenu({
     >
       <MenuItem icon={<PencilIcon />} label="Rename" onClick={onRename} />
       <MenuItem icon={<CopyIcon />} label="Duplicate" onClick={onDuplicate} />
+      <MenuItem
+        icon={<ClearIcon />}
+        label="Clear content"
+        onClick={onClearContent}
+        disabled={!canClearContent}
+      />
       <MenuItem
         icon={<TrashIcon />}
         label="Delete"
@@ -388,6 +419,25 @@ function TrashIcon() {
       <path d="M2.5 4h11" />
       <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
       <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
+    </svg>
+  );
+}
+
+function ClearIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
+      <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" />
     </svg>
   );
 }

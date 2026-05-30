@@ -4,6 +4,12 @@ import type { Participant } from '@/lib/identity';
 import { MenuItem, PortalMenu } from './PortalMenu';
 import { ParticipantAvatar } from './ParticipantAvatar';
 
+// Sync state surfaced as a small pill next to the diagram title. The
+// editor is autosave-driven, so silent failures (offline, API down,
+// wrong env var pointing at unreachable host) used to look identical
+// to a successful save. Now they don't.
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
 type EditorHeaderProps = {
   diagramName: string;
   participants: Participant[];
@@ -15,6 +21,7 @@ type EditorHeaderProps = {
   // via a share URL can't toggle sharing on their host's diagram.
   showShare: boolean;
   shareable: boolean;
+  saveStatus: SaveStatus;
   onOpenShare: () => void;
   onRename: (name: string) => void;
   onDeleteDiagram: () => void;
@@ -26,6 +33,7 @@ export function EditorHeader({
   hideTitle = false,
   showShare,
   shareable,
+  saveStatus,
   onOpenShare,
   onRename,
   onDeleteDiagram,
@@ -97,6 +105,7 @@ export function EditorHeader({
                 />
               </PortalMenu>
             ) : null}
+            <SaveStatusPill status={saveStatus} />
           </div>
         )}
       </div>
@@ -122,6 +131,85 @@ export function EditorHeader({
         ))}
       </div>
     </header>
+  );
+}
+
+// Tiny pill next to the diagram title that mirrors save state. We keep
+// 'idle' invisible so the chrome stays calm when nothing is happening;
+// 'saving' and 'saved' are quiet greys; 'error' is loud so it's
+// impossible to keep editing without noticing the writes aren't
+// landing.
+function SaveStatusPill({ status }: { status: SaveStatus }) {
+  if (status === 'idle') return null;
+  if (status === 'saving') {
+    return (
+      <span className="ml-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
+        <SpinnerDot />
+        Saving…
+      </span>
+    );
+  }
+  if (status === 'saved') {
+    return (
+      <span className="ml-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
+        <CheckIcon />
+        Saved
+      </span>
+    );
+  }
+  return (
+    <span
+      role="status"
+      title="The editor couldn't save your latest changes. Check your network and the API."
+      className="ml-1 inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-rose-200"
+    >
+      <WarningIcon />
+      Not saved
+    </span>
+  );
+}
+
+function SpinnerDot() {
+  return (
+    <span aria-hidden className="inline-block h-2 w-2 animate-pulse rounded-full bg-slate-400" />
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 5.5L4 7.5L8 3" />
+    </svg>
+  );
+}
+
+function WarningIcon() {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M5 1.5l3.7 6.5H1.3z" />
+      <path d="M5 4.2v2" />
+      <circle cx="5" cy="7.3" r="0.4" fill="currentColor" stroke="none" />
+    </svg>
   );
 }
 
