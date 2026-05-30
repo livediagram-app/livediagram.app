@@ -682,6 +682,17 @@ export default function LivePage() {
             );
             return next;
           });
+        } else if (op.kind === 'log') {
+          // Remote participant just emitted an audit entry. Prepend it
+          // to the local list (de-duped by id so a sender that round-
+          // trips its own op doesn't show a duplicate). Cap at 200 to
+          // match the hydrated list size.
+          setChangeLog((prev) => {
+            if (prev.some((e) => e.id === op.entry.id)) return prev;
+            return [op.entry, ...prev].slice(0, 200);
+          });
+        } else if (op.kind === 'log-remove') {
+          setChangeLog((prev) => prev.filter((e) => e.id !== op.entryId));
         }
       },
     };
@@ -847,6 +858,12 @@ export default function LivePage() {
       // Best-effort. The save-status pill already surfaces API
       // outages; we don't need a second indicator for the log.
     });
+    // Mirror the entry into every connected client's panel so
+    // collaborators see the edit in their Activity tab without
+    // waiting for a refetch. The Durable Object rebroadcasts ops
+    // verbatim; receivers de-dupe by id so the sender's own op
+    // round-trip is harmless.
+    roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry } });
   };
 
   const commit = (mapElements: (els: Element[]) => Element[]) => {
@@ -901,6 +918,7 @@ export default function LivePage() {
         // tradeoff for the lighter UX.
       });
     }
+    roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: entry.id } });
   };
 
   const tick = (mapElements: (els: Element[]) => Element[]) => {
@@ -931,6 +949,7 @@ export default function LivePage() {
           // duplicate is unlikely.
         });
       }
+      roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: popped.id } });
     }
     setEditingId(null);
     setSelectedId(null);
@@ -956,6 +975,7 @@ export default function LivePage() {
         // would fail loudly but we don't double-fire).
         apiAppendChangeLogEntry(selfParticipant.id, next).catch(() => {});
       }
+      roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry: next } });
     }
     setEditingId(null);
     setSelectedId(null);

@@ -350,6 +350,14 @@ export async function apiSaveSelf(p: Participant): Promise<void> {
 // agnostic of these — it just rebroadcasts. New op shapes only need
 // to grow this union and matching handlers in page.tsx.
 export type RoomOp =
+  // A new audit-log entry just landed. Used to mirror activity into
+  // every connected client's panel without a round-trip through D1.
+  // The owner of the diagram is the persistent writer; everyone else
+  // updates their local list when this op arrives.
+  | { kind: 'log'; entry: ChangeLogEntry }
+  // The named log entry was removed (e.g. via Undo or Revert). Other
+  // clients drop it from their local list so the panel stays in sync.
+  | { kind: 'log-remove'; entryId: string }
   | { kind: 'tabs'; tabs: Tab[]; name: string }
   | { kind: 'select'; elementId: string | null }
   // Cursor position in canvas coordinates. `null` means the cursor
