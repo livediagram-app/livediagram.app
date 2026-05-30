@@ -99,7 +99,7 @@ export function SelectionPopover({
       {onCopyFormat ? (
         <PopoverButton
           label="Copy formatting"
-          description="Apply this element's size to the next element you click."
+          description="Apply this size to the next click."
           onClick={onCopyFormat}
         >
           <PaintbrushIcon />
@@ -107,7 +107,7 @@ export function SelectionPopover({
       ) : null}
       <PopoverButton
         label="Duplicate"
-        description="Make a copy of this element next to the original. Arrows are not duplicated."
+        description="Duplicate this element (arrows skipped)."
         onClick={onDuplicate}
       >
         <DuplicateIcon />
@@ -118,11 +118,7 @@ export function SelectionPopover({
       {/* Group: relationships (links to other tabs, grouping with other elements). */}
       <Tooltip
         title={linkedTabId ? 'Edit link' : 'Link to tab'}
-        description={
-          linkedTabId
-            ? 'Change which tab this element links to, or remove the link.'
-            : 'Pick a tab to link this element to. Click the link icon on the element to follow it.'
-        }
+        description={linkedTabId ? 'Edit or clear the link.' : 'Pick a tab to link to.'}
       >
         <button
           ref={linkButtonRef}
@@ -175,7 +171,7 @@ export function SelectionPopover({
       {onUngroup ? (
         <PopoverButton
           label="Ungroup"
-          description="Break this group apart so members move independently."
+          description="Break group; members move alone."
           onClick={onUngroup}
         >
           <UngroupIcon />
@@ -183,7 +179,7 @@ export function SelectionPopover({
       ) : onGroup ? (
         <PopoverButton
           label="Group with another"
-          description="Click other elements to add them to a group with this one."
+          description="Click elements to group with this."
           onClick={onGroup}
         >
           <GroupIcon />
@@ -214,7 +210,7 @@ export function SelectionPopover({
       <Divider />
 
       {/* Group: destructive (always last so it's not adjacent to anything benign). */}
-      <Tooltip title="Delete" description="Remove this element. Connected arrows are removed too.">
+      <Tooltip title="Delete" description="Delete this element (arrows too).">
         <button
           type="button"
           onClick={onDelete}

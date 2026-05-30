@@ -1026,7 +1026,7 @@ export function Canvas(props: CanvasProps) {
             {paletteMinimized ? (
               <DockButton
                 label="Open palette"
-                description="Expand the palette back to its full panel."
+                description="Expand the Palette."
                 icon={<PaletteIcon />}
                 onClick={onToggleMinimized}
               />
@@ -1034,7 +1034,7 @@ export function Canvas(props: CanvasProps) {
             {contextMinimized ? (
               <DockButton
                 label="Open Editor"
-                description="Expand the Selected Element / Current Tab panel."
+                description="Expand the Editor panel."
                 icon={<ContextIcon />}
                 onClick={onToggleContextMinimized}
               />

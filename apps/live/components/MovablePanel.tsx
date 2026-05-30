@@ -128,10 +128,7 @@ export function MovablePanel({
         ) : null}
         <div className="flex items-center gap-0.5">
           {onReset ? (
-            <Tooltip
-              title="Reset position"
-              description="Move this panel back to its default corner."
-            >
+            <Tooltip title="Reset position" description="Snap back to the default corner.">
               <button
                 type="button"
                 onPointerDown={(e) => e.stopPropagation()}
@@ -169,7 +166,7 @@ export function MovablePanel({
           ) : null}
           <Tooltip
             title={`Minimize ${title.toLowerCase()}`}
-            description="Collapse this panel into a button at the bottom of the canvas."
+            description="Collapse to a dock button."
           >
             <button
               type="button"

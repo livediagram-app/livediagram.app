@@ -134,10 +134,7 @@ function OpenPalette({
             draw a marquee for multi-select. Holding Space pans
             regardless of the active tool, mirroring Figma. */}
         <div className="flex items-center gap-1 pb-1.5">
-          <Tooltip
-            title="Pan"
-            description="Drag the empty canvas to scroll. Hold Space to pan even when Select is active."
-          >
+          <Tooltip title="Pan" description="Drag to scroll. Space pans in Select mode too.">
             <ToolButton
               active={canvasTool === 'pan'}
               label="Pan"
@@ -146,10 +143,7 @@ function OpenPalette({
               <PanIcon />
             </ToolButton>
           </Tooltip>
-          <Tooltip
-            title="Select"
-            description="Drag the empty canvas to marquee-select multiple elements."
-          >
+          <Tooltip title="Select" description="Drag to marquee-select multiple elements.">
             <ToolButton
               active={canvasTool === 'select'}
               label="Select"
@@ -193,7 +187,7 @@ function OpenPalette({
           </IconButton>
           <IconButton
             label="Add diamond"
-            description="Drop a diamond shape (decision node, UML-style)."
+            description="Diamond. Decision node."
             onClick={() => onAddShape('diamond')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -208,7 +202,7 @@ function OpenPalette({
           </IconButton>
           <IconButton
             label="Add cylinder"
-            description="Drop a cylinder (database / storage in flowcharts)."
+            description="Cylinder. Flowchart database / storage."
             onClick={() => onAddShape('cylinder')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -232,7 +226,7 @@ function OpenPalette({
           </IconButton>
           <IconButton
             label="Add parallelogram"
-            description="Drop a parallelogram (input/output in flowcharts)."
+            description="Parallelogram. Flowchart input / output."
             onClick={() => onAddShape('parallelogram')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -247,7 +241,7 @@ function OpenPalette({
           </IconButton>
           <IconButton
             label="Add hexagon"
-            description="Drop a hexagon (preparation / labelled milestone)."
+            description="Hexagon. Preparation / milestone."
             onClick={() => onAddShape('hexagon')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -262,7 +256,7 @@ function OpenPalette({
           </IconButton>
           <IconButton
             label="Add document"
-            description="Drop a document shape (output document in flowcharts)."
+            description="Document shape. Flowchart output."
             onClick={() => onAddShape('document')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -277,7 +271,7 @@ function OpenPalette({
           </IconButton>
           <IconButton
             label="Add stadium"
-            description="Drop a stadium / pill shape (Start / End in flowcharts)."
+            description="Stadium shape. Flowchart Start / End."
             onClick={() => onAddShape('stadium')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -298,7 +292,7 @@ function OpenPalette({
         <div className="flex items-center gap-1">
           <IconButton
             label="Add text"
-            description="Drop a draggable text element you can edit by double-clicking."
+            description="Text element. Double-click to edit."
             onClick={onAddText}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -312,7 +306,7 @@ function OpenPalette({
           </IconButton>
           <IconButton
             label="Add arrow"
-            description="Drop a plain connector at the viewport centre. Defaults to no pointers — toggle pointers from the Pointer accordion once it's selected."
+            description="Plain connector. Add pointers in the Pointer accordion."
             onClick={onAddArrow}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -329,7 +323,7 @@ function OpenPalette({
           </IconButton>
           <IconButton
             label="Add sticky note"
-            description="Drop a yellow sticky note for short multi-line annotations."
+            description="Sticky note for short annotations."
             onClick={onAddSticky}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>

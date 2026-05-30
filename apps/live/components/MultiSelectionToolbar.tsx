@@ -35,10 +35,7 @@ export function MultiSelectionToolbar({
         <span className="ml-1 font-normal text-slate-400">({count})</span>
       </span>
       <span aria-hidden className="h-5 w-px bg-slate-200" />
-      <Tooltip
-        title="Duplicate"
-        description="Make a copy of every selected element next to the originals. Arrows aren't duplicated."
-      >
+      <Tooltip title="Duplicate" description="Duplicate selected (arrows skipped).">
         <button
           type="button"
           onClick={onDuplicate}
@@ -48,10 +45,7 @@ export function MultiSelectionToolbar({
           <DuplicateIcon />
         </button>
       </Tooltip>
-      <Tooltip
-        title="Group"
-        description="Bind every selected element into one group so they move and lock together."
-      >
+      <Tooltip title="Group" description="Bind so they move and lock together.">
         <button
           type="button"
           onClick={onGroup}
@@ -63,11 +57,7 @@ export function MultiSelectionToolbar({
       </Tooltip>
       <Tooltip
         title={anyLocked ? 'Unlock' : 'Lock'}
-        description={
-          anyLocked
-            ? 'Unlock every selected element so they can be moved and resized again.'
-            : "Lock every selected element so they can't be moved or resized."
-        }
+        description={anyLocked ? 'Unlock so they move again.' : "Lock so they can't move."}
       >
         <button
           type="button"
@@ -83,10 +73,7 @@ export function MultiSelectionToolbar({
           <LockIcon closed={anyLocked} />
         </button>
       </Tooltip>
-      <Tooltip
-        title="Delete"
-        description="Remove every selected element. Connected arrows are removed too."
-      >
+      <Tooltip title="Delete" description="Delete selected (arrows too).">
         <button
           type="button"
           onClick={onDelete}
