@@ -61,17 +61,17 @@ see "Cutover" below).
 
 Owner / edit-role.
 
-- `GET    /api/diagrams/:id`           — returns diagram metadata + tab list
-                                         (id, name, order; no `data`).
+- `GET    /api/diagrams/:id` — returns diagram metadata + tab list
+  (id, name, order; no `data`).
 - `GET    /api/diagrams/:id/tabs/:tabId` — full tab payload (data + everything).
 - `PUT    /api/diagrams/:id/tabs/:tabId` — upsert a single tab (active edit path).
 - `DELETE /api/diagrams/:id/tabs/:tabId` — remove a tab.
-- `PUT    /api/diagrams/:id`           — diagram-level fields only (rename,
-                                         tab order, shareable). Body
-                                         carries `tabIds: string[]` in
-                                         the new order; the API
-                                         persists the order index
-                                         without touching tab content.
+- `PUT    /api/diagrams/:id` — diagram-level fields only (rename,
+  tab order, shareable). Body
+  carries `tabIds: string[]` in
+  the new order; the API
+  persists the order index
+  without touching tab content.
 
 The existing `GET /api/diagrams/:id` body grows a `tabs:
 TabSummary[]` field instead of `tabs: Tab[]`. The whole-diagram

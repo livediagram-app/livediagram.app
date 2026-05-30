@@ -698,7 +698,10 @@ export function snapResizeBounds(
     if (movesLeft || movesRight) {
       for (const tx of targetXs) {
         const delta = tx - activeX;
-        if (Math.abs(delta) <= threshold && (bestDx === null || Math.abs(delta) < Math.abs(bestDx))) {
+        if (
+          Math.abs(delta) <= threshold &&
+          (bestDx === null || Math.abs(delta) < Math.abs(bestDx))
+        ) {
           bestDx = delta;
         }
       }
@@ -706,7 +709,10 @@ export function snapResizeBounds(
     if (movesTop || movesBottom) {
       for (const ty of targetYs) {
         const delta = ty - activeY;
-        if (Math.abs(delta) <= threshold && (bestDy === null || Math.abs(delta) < Math.abs(bestDy))) {
+        if (
+          Math.abs(delta) <= threshold &&
+          (bestDy === null || Math.abs(delta) < Math.abs(bestDy))
+        ) {
           bestDy = delta;
         }
       }

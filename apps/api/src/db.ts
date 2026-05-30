@@ -129,10 +129,7 @@ export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<Di
 // timestamps. Tabs live in their own table now (see upsertTab /
 // reorderTabs / deleteTab). Used both by the new metadata-only PUT
 // /diagrams/:id and by the create endpoint.
-export async function upsertDiagramMeta(
-  env: Env,
-  d: Omit<DiagramDTO, 'tabs'>,
-): Promise<void> {
+export async function upsertDiagramMeta(env: Env, d: Omit<DiagramDTO, 'tabs'>): Promise<void> {
   await env.DB.prepare(
     `INSERT INTO diagrams (id, owner_id, name, data, shareable, share_code, saved_at, created_at)
      VALUES (?, ?, ?, '[]', ?, ?, ?, ?)
@@ -141,15 +138,7 @@ export async function upsertDiagramMeta(
        name = excluded.name,
        saved_at = excluded.saved_at`,
   )
-    .bind(
-      d.id,
-      d.ownerId,
-      d.name,
-      d.shareable ? 1 : 0,
-      d.shareCode,
-      d.savedAt,
-      d.createdAt,
-    )
+    .bind(d.id, d.ownerId, d.name, d.shareable ? 1 : 0, d.shareCode, d.savedAt, d.createdAt)
     .run();
 }
 
@@ -157,14 +146,8 @@ export async function upsertDiagramMeta(
 
 const TAB_COLS = 'id, diagram_id, name, order_index, data, updated_at';
 
-export async function getTab(
-  env: Env,
-  diagramId: string,
-  tabId: string,
-): Promise<TabDTO | null> {
-  const row = await env.DB.prepare(
-    `SELECT ${TAB_COLS} FROM tabs WHERE id = ? AND diagram_id = ?`,
-  )
+export async function getTab(env: Env, diagramId: string, tabId: string): Promise<TabDTO | null> {
+  const row = await env.DB.prepare(`SELECT ${TAB_COLS} FROM tabs WHERE id = ? AND diagram_id = ?`)
     .bind(tabId, diagramId)
     .first<TabRow>();
   return row ? rowToTab(row) : null;
@@ -199,9 +182,7 @@ export async function upsertTab(
     .run();
   // Bump the diagram's saved_at so the Explorer's "Updated X ago"
   // line stays accurate. Pure metadata write — no element JSON.
-  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?')
-    .bind(now, diagramId)
-    .run();
+  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
 }
 
 export async function deleteTabRow(env: Env, diagramId: string, tabId: string): Promise<void> {
@@ -213,11 +194,7 @@ export async function deleteTabRow(env: Env, diagramId: string, tabId: string): 
 // Update tab order. Caller passes the ids in their new positions; we
 // rewrite every order_index in one batch. Cheap given the < 20-tab
 // scale we see in practice (see spec/13 "Risk").
-export async function reorderTabs(
-  env: Env,
-  diagramId: string,
-  tabIds: string[],
-): Promise<void> {
+export async function reorderTabs(env: Env, diagramId: string, tabIds: string[]): Promise<void> {
   const now = Date.now();
   const batch = tabIds.map((tabId, idx) =>
     env.DB.prepare(
@@ -225,9 +202,7 @@ export async function reorderTabs(
     ).bind(idx, now, tabId, diagramId),
   );
   if (batch.length > 0) await env.DB.batch(batch);
-  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?')
-    .bind(now, diagramId)
-    .run();
+  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
 }
 
 export async function setDiagramShare(

@@ -919,15 +919,11 @@ function ToggleSwitch({
 }
 
 function BoldIcon() {
-  return (
-    <span className="text-[13px] font-bold leading-none text-slate-700">B</span>
-  );
+  return <span className="text-[13px] font-bold leading-none text-slate-700">B</span>;
 }
 
 function ItalicIcon() {
-  return (
-    <span className="text-[13px] font-semibold italic leading-none text-slate-700">I</span>
-  );
+  return <span className="text-[13px] font-semibold italic leading-none text-slate-700">I</span>;
 }
 
 function UnderlineIcon() {

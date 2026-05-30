@@ -490,8 +490,7 @@ export default function LivePage() {
         const resolution = await apiLoadShared(shareCodeParam).catch(() => null);
         if (resolution) {
           const { diagram: fetched, role } = resolution;
-          const codeForVisitor =
-            fetched.ownerId === self.id ? null : shareCodeParam;
+          const codeForVisitor = fetched.ownerId === self.id ? null : shareCodeParam;
           // Fetch every tab's full payload in parallel. V1 keeps this
           // eager — see spec/13. Lazy per-tab fetch on demand is a
           // follow-up; the autosave win (one tab per save instead of
@@ -500,10 +499,7 @@ export default function LivePage() {
             fetched.tabs.map((summary) =>
               apiLoadTab(self.id, fetched.id, summary.id, codeForVisitor)
                 .catch(() => null)
-                .then(
-                  (tab) =>
-                    tab ?? { id: summary.id, name: summary.name, elements: [] },
-                ),
+                .then((tab) => tab ?? { id: summary.id, name: summary.name, elements: [] }),
             ),
           );
           resetTabs(tabs);
@@ -562,10 +558,7 @@ export default function LivePage() {
             fetched.tabs.map((summary) =>
               apiLoadTab(self.id, fetched.id, summary.id)
                 .catch(() => null)
-                .then(
-                  (tab) =>
-                    tab ?? { id: summary.id, name: summary.name, elements: [] },
-                ),
+                .then((tab) => tab ?? { id: summary.id, name: summary.name, elements: [] }),
             ),
           );
           resetTabs(tabs);
@@ -648,19 +641,13 @@ export default function LivePage() {
       const prevTabById = new Map(prevTabs.map((t) => [t.id, t] as const));
       const changedTabs = tabs.filter((t) => prevTabById.get(t.id) !== t);
       const orderChanged =
-        tabs.length !== prevTabs.length ||
-        tabs.some((t, i) => prevTabs[i]?.id !== t.id);
+        tabs.length !== prevTabs.length || tabs.some((t, i) => prevTabs[i]?.id !== t.id);
       const nameChanged = diagramName !== lastSavedNameRef.current;
       const deletedIds = prevTabs
         .filter((t) => !tabs.some((current) => current.id === t.id))
         .map((t) => t.id);
 
-      if (
-        changedTabs.length === 0 &&
-        !orderChanged &&
-        !nameChanged &&
-        deletedIds.length === 0
-      ) {
+      if (changedTabs.length === 0 && !orderChanged && !nameChanged && deletedIds.length === 0) {
         return;
       }
 
@@ -1102,11 +1089,13 @@ export default function LivePage() {
     if (!diagramId) return;
     const targetTabId = activeId;
     setChangeLog((prev) => prev.filter((entry) => entry.tabId !== targetTabId));
-    apiDeleteChangeLogForTab(selfParticipant.id, diagramId, targetTabId, sessionShareCode).catch(() => {
-      // Best-effort. Stale rows in D1 are harmless; the next list
-      // fetch reconciles. We don't want a transient error to block
-      // the local clear that already happened.
-    });
+    apiDeleteChangeLogForTab(selfParticipant.id, diagramId, targetTabId, sessionShareCode).catch(
+      () => {
+        // Best-effort. Stale rows in D1 are harmless; the next list
+        // fetch reconciles. We don't want a transient error to block
+        // the local clear that already happened.
+      },
+    );
   };
 
   // Surgical revert: replay the entry's `before` payload onto the
@@ -1121,28 +1110,20 @@ export default function LivePage() {
     if (!entry.tabId) return;
     const target = tabs.find((t) => t.id === entry.tabId);
     if (!target) return;
-    const after = applyRevert(
-      target.elements,
-      entry.beforeState as Record<string, Element | null>,
-    );
-    commitTabs((ts) =>
-      ts.map((t) => (t.id === entry.tabId ? { ...t, elements: after } : t)),
-    );
+    const after = applyRevert(target.elements, entry.beforeState as Record<string, Element | null>);
+    commitTabs((ts) => ts.map((t) => (t.id === entry.tabId ? { ...t, elements: after } : t)));
     if (entry.tabId !== activeId) setActiveId(entry.tabId);
     // Drop the entry locally first so the panel updates immediately;
     // fire-and-forget the API delete.
     setChangeLog((prev) => prev.filter((e) => e.id !== entry.id));
     if (diagramId) {
-      apiDeleteChangeLogEntry(
-        selfParticipant.id,
-        diagramId,
-        entry.id,
-        sessionShareCode,
-      ).catch(() => {
-        // Best-effort. A stale row in D1 surfaces on the next list
-        // fetch — at which point the entry would reappear; acceptable
-        // tradeoff for the lighter UX.
-      });
+      apiDeleteChangeLogEntry(selfParticipant.id, diagramId, entry.id, sessionShareCode).catch(
+        () => {
+          // Best-effort. A stale row in D1 surfaces on the next list
+          // fetch — at which point the entry would reappear; acceptable
+          // tradeoff for the lighter UX.
+        },
+      );
     }
     roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: entry.id } });
   };
@@ -1171,15 +1152,12 @@ export default function LivePage() {
       };
       setChangeLog((prev) => prev.filter((e) => e.id !== popped.id));
       if (diagramId) {
-        apiDeleteChangeLogEntry(
-          selfParticipant.id,
-          diagramId,
-          popped.id,
-          sessionShareCode,
-        ).catch(() => {
-          // Best-effort. A redo will re-POST the same id so a stale
-          // duplicate is unlikely.
-        });
+        apiDeleteChangeLogEntry(selfParticipant.id, diagramId, popped.id, sessionShareCode).catch(
+          () => {
+            // Best-effort. A redo will re-POST the same id so a stale
+            // duplicate is unlikely.
+          },
+        );
       }
       roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: popped.id } });
     }
@@ -1401,7 +1379,9 @@ export default function LivePage() {
       );
       commit((els) =>
         els.map((el) =>
-          el.id === targetId && el.type === 'arrow' ? ({ ...el, ...definedCopied } as typeof el) : el,
+          el.id === targetId && el.type === 'arrow'
+            ? ({ ...el, ...definedCopied } as typeof el)
+            : el,
         ),
       );
     }
@@ -1507,9 +1487,7 @@ export default function LivePage() {
     const target = tabs.find((t) => t.id === activeId);
     if (!target) return;
     const next = !target.locked;
-    commitTabs((ts) =>
-      ts.map((t) => (t.id === activeId ? { ...t, locked: next } : t)),
-    );
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, locked: next } : t)));
     emitTabMeta(activeId, next ? 'Locked tab' : 'Unlocked tab');
     if (next) {
       // Drop any in-progress UI state that would be useless on a
@@ -1847,9 +1825,8 @@ export default function LivePage() {
   const setTheme = (id: ThemeId) => {
     if (activeTabLocked) return;
     const theme = getTheme(id);
-    const themeLabel = (
-      THEMES.find((t) => t.id === id)?.label ?? id.charAt(0).toUpperCase() + id.slice(1)
-    );
+    const themeLabel =
+      THEMES.find((t) => t.id === id)?.label ?? id.charAt(0).toUpperCase() + id.slice(1);
     emitTabMeta(activeId, `Changed theme to ${themeLabel}`);
     commitTabs((ts) =>
       ts.map((t) => {

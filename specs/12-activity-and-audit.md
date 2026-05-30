@@ -89,10 +89,10 @@ View-role visitors fail the auth check.
 The bulk tab-cascade DELETE stays owner-only — destructive bulk
 ops shouldn't ride a visitor's share code.
 
-- `GET    /api/diagrams/:id/log`              → `{ entries: ChangeLogEntry[] }` newest-first, capped at 200. (owner or edit visitor)
-- `POST   /api/diagrams/:id/log`              → append. Body: the new entry. (owner or edit visitor)
-- `DELETE /api/diagrams/:id/log/:entryId`     → drop one entry (revert / undo). (owner or edit visitor)
-- `DELETE /api/diagrams/:id/log/tab/:tabId`   → drop entries for one tab. (owner only)
+- `GET    /api/diagrams/:id/log` → `{ entries: ChangeLogEntry[] }` newest-first, capped at 200. (owner or edit visitor)
+- `POST   /api/diagrams/:id/log` → append. Body: the new entry. (owner or edit visitor)
+- `DELETE /api/diagrams/:id/log/:entryId` → drop one entry (revert / undo). (owner or edit visitor)
+- `DELETE /api/diagrams/:id/log/tab/:tabId` → drop entries for one tab. (owner only)
 
 ## Client behaviour
 
@@ -106,7 +106,6 @@ ops shouldn't ride a visitor's share code.
      updates immediately.
 
 2. `useDiagramHistory.undo` / `redo` are paired with the activity log:
-
    - **Undo** removes the most recently emitted entry from the panel
      and DELETEs it from D1. The popped entry is held in a redo stack
      in memory so a subsequent Redo can reinstate it.
@@ -122,12 +121,12 @@ ops shouldn't ride a visitor's share code.
    - For each `elementId` in E, apply E's `before_state` to the
      active tab: `null` ⇒ remove that element; otherwise replace it.
    - Drop E from the log (local state first, then a `DELETE
-     /api/diagrams/:id/log/:entryId` call). The revert is treated as
+/api/diagrams/:id/log/:entryId` call). The revert is treated as
      a cancellation of E, not its own event, so the panel stays
      compact instead of pairing every revert with a `reverted` twin.
 
 4. On `deleteTab(tabId)`:
-   - Call `DELETE /log/tab/:tabId` *before* the PUT that drops the tab
+   - Call `DELETE /log/tab/:tabId` _before_ the PUT that drops the tab
      from the diagram. (Ordering doesn't matter for correctness but
      reads more clearly in network logs.)
 

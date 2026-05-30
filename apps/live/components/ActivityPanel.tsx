@@ -1,7 +1,11 @@
 'use client';
 
 import type { ChangeLogEntry } from '@/lib/api-client';
-import { formatRelativeTime, formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
+import {
+  formatRelativeTime,
+  formatRelativeTimeShort,
+  useRelativeTimeTick,
+} from '@/lib/relative-time';
 import type { SaveStatus } from './EditorHeader';
 import { MovablePanel } from './MovablePanel';
 
@@ -79,18 +83,8 @@ export function ActivityPanel({
             related concept (the audit log) and the related action
             (undo) live together. */}
         <div className="flex items-center gap-1">
-          <UndoRedoButton
-            label="Undo"
-            disabled={!canUndo}
-            onClick={onUndo}
-            icon={<UndoIcon />}
-          />
-          <UndoRedoButton
-            label="Redo"
-            disabled={!canRedo}
-            onClick={onRedo}
-            icon={<RedoIcon />}
-          />
+          <UndoRedoButton label="Undo" disabled={!canUndo} onClick={onUndo} icon={<UndoIcon />} />
+          <UndoRedoButton label="Redo" disabled={!canRedo} onClick={onRedo} icon={<RedoIcon />} />
         </div>
 
         <div className="h-px bg-slate-100" />
@@ -103,11 +97,7 @@ export function ActivityPanel({
           {loading ? (
             <ul className="flex flex-col gap-1" aria-busy="true">
               {[0, 1, 2].map((i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-2 rounded-md px-2 py-1.5"
-                  aria-hidden
-                >
+                <li key={i} className="flex items-center gap-2 rounded-md px-2 py-1.5" aria-hidden>
                   <span className="h-3 w-3 shrink-0 animate-pulse rounded-full bg-slate-200" />
                   <span
                     className="h-3 animate-pulse rounded bg-slate-200"
@@ -154,13 +144,7 @@ export function ActivityPanel({
 // Save-status badge that lived in the footer; the Activity panel
 // title is its new home — same factual content, paired with the
 // history it relates to.
-function SaveStatusBadge({
-  status,
-  savedAt,
-}: {
-  status: SaveStatus;
-  savedAt: number | null;
-}) {
+function SaveStatusBadge({ status, savedAt }: { status: SaveStatus; savedAt: number | null }) {
   useRelativeTimeTick();
   if (status === 'idle' && savedAt === null) return null;
   if (status === 'saving') {

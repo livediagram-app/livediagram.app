@@ -240,8 +240,7 @@ export default {
             }
             // Find the existing order index; append if new.
             const existingTab = await getTab(env, id, tabId);
-            const orderIndex =
-              existingTab?.orderIndex ?? existing.tabs.length; // tabs[] is already summaries
+            const orderIndex = existingTab?.orderIndex ?? existing.tabs.length; // tabs[] is already summaries
             await upsertTab(env, id, { ...body, id: tabId }, orderIndex);
             const tab = await getTab(env, id, tabId);
             return tab ? json({ tab }) : notFound();
@@ -385,11 +384,7 @@ export default {
         // /api/diagrams/<id>/log/tab/<tabId> — owner-only DELETE that
         // drops every log entry for a tab. Called by the live app when
         // it deletes a tab so the per-tab audit dies with the tab.
-        if (
-          segments.length === 6 &&
-          segments[3] === 'log' &&
-          segments[4] === 'tab'
-        ) {
+        if (segments.length === 6 && segments[3] === 'log' && segments[4] === 'tab') {
           const id = segments[2]!;
           const tabId = segments[5]!;
           const owner = ownerOf(request);

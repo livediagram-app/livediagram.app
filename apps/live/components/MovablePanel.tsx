@@ -265,14 +265,26 @@ export function MovablePanel({
           aria-label={`Resize ${title.toLowerCase()}`}
           onPointerDown={beginResize}
           className={`absolute bottom-0 flex h-4 w-4 items-end p-0.5 text-slate-300 hover:text-slate-500 ${
-            resizeFrom === 'bottom-left' ? 'left-0 cursor-sw-resize justify-start' : 'right-0 cursor-se-resize justify-end'
+            resizeFrom === 'bottom-left'
+              ? 'left-0 cursor-sw-resize justify-start'
+              : 'right-0 cursor-se-resize justify-end'
           }`}
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
             {resizeFrom === 'bottom-left' ? (
-              <path d="M1 4L6 9M3 9L1 7" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+              <path
+                d="M1 4L6 9M3 9L1 7"
+                stroke="currentColor"
+                strokeWidth="1.25"
+                strokeLinecap="round"
+              />
             ) : (
-              <path d="M9 4L4 9M9 7L7 9" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+              <path
+                d="M9 4L4 9M9 7L7 9"
+                stroke="currentColor"
+                strokeWidth="1.25"
+                strokeLinecap="round"
+              />
             )}
           </svg>
         </div>
