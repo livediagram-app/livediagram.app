@@ -120,8 +120,15 @@ export default {
         if (segments.length === 3) {
           const id = segments[2]!;
           if (request.method === 'GET') {
+            // Loading a diagram by raw id is an owner-only operation —
+            // visitors should be using /api/share/:code instead. Without
+            // this gate, any visitor with a guessed UUID could pull a
+            // diagram they don't own. Mismatched owner returns 404
+            // (not 403) so we don't leak the diagram's existence.
+            const owner = ownerOf(request);
+            if (!owner) return badRequest('missing X-Owner-Id');
             const d = await getDiagram(env, id);
-            return d ? json({ diagram: d }) : notFound();
+            return d && d.ownerId === owner ? json({ diagram: d }) : notFound();
           }
           if (request.method === 'PUT') {
             const body = (await request.json()) as Partial<DiagramDTO>;

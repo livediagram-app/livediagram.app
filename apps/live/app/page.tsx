@@ -44,6 +44,7 @@ import {
 import { Canvas } from '@/components/Canvas';
 import { CommentThreadPopover } from '@/components/CommentThreadPopover';
 import { EditorHeader } from '@/components/EditorHeader';
+import { NotFound } from '@/components/NotFound';
 import { ShareDialog } from '@/components/ShareDialog';
 import { TabBar } from '@/components/TabBar';
 import { useDiagramHistory } from '@/hooks/useDiagramHistory';
@@ -198,6 +199,10 @@ export default function LivePage() {
   // the API (i.e. the user is joining someone else's diagram, not
   // starting a fresh one). Drives the join-screen trigger.
   const [loadedExistingDiagram, setLoadedExistingDiagram] = useState(false);
+  // True when the URL points at a diagram that the API didn't return
+  // (deleted, never existed, or owned by someone else). Renders the
+  // NotFound surface instead of the editor + welcome modal.
+  const [diagramNotFound, setDiagramNotFound] = useState(false);
   const [diagramName, setDiagramName] = useState('Untitled diagram');
   // Multi-selection bag for marquee box-select. Mutually exclusive with the
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
@@ -347,7 +352,18 @@ export default function LivePage() {
           }
         }
       } else if (id) {
-        const fetched = await apiLoadDiagram(id).catch(() => null);
+        const fetched = await apiLoadDiagram(self.id, id).catch(() => null);
+        if (!fetched) {
+          // URL had a ?d=<id> but the API didn't return anything for
+          // us — either the diagram doesn't exist or we don't own it.
+          // Surface a NotFound page instead of dropping the user into
+          // the new-diagram welcome flow.
+          setDiagramId(id);
+          setDiagramNotFound(true);
+          setHydrated(true);
+          setNameConfirmed(window.localStorage.getItem('livediagram:v2:name-confirmed') === '1');
+          return;
+        }
         if (fetched) {
           resetTabs(fetched.tabs);
           setDiagramName(fetched.name);
@@ -1942,6 +1958,18 @@ export default function LivePage() {
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multiSelectedIds, selectedId, editingId]);
+
+  if (diagramNotFound) {
+    return (
+      <div className="flex h-dvh flex-col">
+        <NotFound
+          onCreateNew={() => {
+            window.location.assign(`${window.location.origin}/live`);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-dvh flex-col">

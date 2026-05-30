@@ -108,8 +108,10 @@ function ownerHeaders(ownerId: string): HeadersInit {
   return { 'X-Owner-Id': ownerId, 'Content-Type': 'application/json' };
 }
 
-export async function apiLoadDiagram(id: string): Promise<StoredDiagram | null> {
-  const res = await fetch(`${API_BASE}/diagrams/${id}`);
+export async function apiLoadDiagram(ownerId: string, id: string): Promise<StoredDiagram | null> {
+  const res = await fetch(`${API_BASE}/diagrams/${id}`, {
+    headers: { 'X-Owner-Id': ownerId },
+  });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`load failed: ${res.status}`);
   const { diagram } = (await res.json()) as DiagramResponse;
