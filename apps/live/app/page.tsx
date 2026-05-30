@@ -466,11 +466,12 @@ export default function LivePage() {
     const initialUrl = new URL(window.location.href);
     const initialId = initialUrl.searchParams.get('d');
     const initialShareCode = initialUrl.searchParams.get('s');
-    // No URL params → nothing to load, drop the spinner immediately so
-    // the welcome modal can render on the first paint after hydration.
-    // Params present → leave loadingDiagram = true; the IIFE below
-    // flips it off once the API call resolves.
-    if (!initialId && !initialShareCode) setLoadingDiagram(false);
+    // Note: we keep `loadingDiagram` true for the duration of the
+    // IIFE below, even for the no-URL-params path. Dropping the
+    // spinner before `hydrated=true` was uncovering the empty-state
+    // card for the brief window between "no params, nothing to
+    // load" and "welcome modal mounted", which read as an Empty
+    // Canvas flash. The IIFE flips both at the end together.
     void (async () => {
       const id = initialId;
       const shareCodeParam = initialShareCode;

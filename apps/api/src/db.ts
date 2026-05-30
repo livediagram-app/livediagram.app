@@ -131,8 +131,8 @@ export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<Di
 // /diagrams/:id and by the create endpoint.
 export async function upsertDiagramMeta(env: Env, d: Omit<DiagramDTO, 'tabs'>): Promise<void> {
   await env.DB.prepare(
-    `INSERT INTO diagrams (id, owner_id, name, data, shareable, share_code, saved_at, created_at)
-     VALUES (?, ?, ?, '[]', ?, ?, ?, ?)
+    `INSERT INTO diagrams (id, owner_id, name, shareable, share_code, saved_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
