@@ -1030,8 +1030,23 @@ export default function LivePage() {
     apiLoadTab(selfParticipant.id, diagramId, activeId, sessionShareCode)
       .then((tab) => {
         if (cancelled || !tab) return;
-        remoteUpdateRef.current = true;
-        resetTabs((prev) => prev.map((t) => (t.id === tab.id ? tab : t)));
+        // Guard against a race that used to wipe user edits: if the
+        // local placeholder picked up content (elements added or the
+        // template-picker dismissed) while the API was in flight,
+        // the user has been editing — don't overwrite their work
+        // with a stale empty server payload. The autosave will push
+        // those edits on the next debounce.
+        let merged = false;
+        resetTabs((prev) =>
+          prev.map((t) => {
+            if (t.id !== tab.id) return t;
+            const userHasEdited = t.elements.length > 0 || t.templateChosen === true;
+            if (userHasEdited) return t;
+            merged = true;
+            return tab;
+          }),
+        );
+        if (merged) remoteUpdateRef.current = true;
       })
       .catch(() => {
         loadedTabIdsRef.current.delete(activeId);
