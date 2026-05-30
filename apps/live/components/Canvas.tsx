@@ -814,6 +814,7 @@ export function Canvas(props: CanvasProps) {
                   elements={elements}
                   isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
                   isPaintMode={isPaintMode || isGroupMode}
+                  isEditing={element.id === editingId}
                   onSelect={(e) => {
                     // Mirror the boxed-element click semantics so arrows
                     // can be included in marquee multi-selections via
@@ -826,6 +827,9 @@ export function Canvas(props: CanvasProps) {
                     onSelect(element.id);
                   }}
                   onBeginEndpointDrag={(end, e) => onBeginEndpointDrag(element.id, end, e)}
+                  onBeginEdit={() => onBeginEdit(element.id)}
+                  onCommitLabel={(label) => onCommitLabel(element.id, label)}
+                  onCancelEdit={onCancelEdit}
                   onBeginTranslate={(e) => onBeginArrowTranslate(element.id, e)}
                 />
               </svg>

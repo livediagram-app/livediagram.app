@@ -236,6 +236,12 @@ type ArrowElement = {
   // the elbow runs first so the line leaves the element along its
   // anchor direction.
   arrowStyle?: 'straight' | 'curved' | 'angled';
+  // Optional label rendered next to the arrow's geometric midpoint.
+  // Double-click on the arrow body opens an inline editor for this
+  // field. The renderer picks one of four cardinal slots (right →
+  // below → left → above of midpoint) so the label dodges nearby
+  // boxed elements; falls back to "right" if every slot collides.
+  label?: string;
 };
 
 type Element = ShapeElement | ArrowElement;
@@ -244,7 +250,6 @@ type Element = ShapeElement | ArrowElement;
 ### Out of scope (next iterations)
 
 - Multi-point / waypoint paths (just two endpoints for now).
-- Labels on arrows.
 - Multi-point / waypoint paths on angled arrows (one bend only for now).
 - Anchors at element centres or anywhere on element edges.
 

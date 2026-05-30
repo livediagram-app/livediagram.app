@@ -316,6 +316,12 @@ export type ArrowElement = {
   // 'angled' renders the connector as an axis-aligned L-shape with
   // a single right-angle bend. See `arrowStyleOf`.
   arrowStyle?: ArrowStyle;
+  // Optional label rendered next to the arrow's midpoint. Empty /
+  // missing → no label is drawn. Double-click on the arrow opens an
+  // inline editor for this field. Placement is computed at render
+  // time to dodge nearby boxed elements (right → below → left →
+  // above of midpoint).
+  label?: string;
 };
 
 // Named thickness presets exposed via the Palette. Storing the raw px

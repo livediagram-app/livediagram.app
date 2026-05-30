@@ -2869,7 +2869,24 @@ export default function LivePage() {
   };
 
   const commitLabel = (elementId: string, label: string) => {
-    commit((els) => els.map((el) => (el.id === elementId && isBoxed(el) ? { ...el, label } : el)));
+    commit((els) =>
+      els.map((el) => {
+        if (el.id !== elementId) return el;
+        // Boxed elements always carry a label; arrows treat an empty
+        // string as "no label" and drop the field so the data model
+        // round-trips cleanly through API JSON.
+        if (isBoxed(el)) return { ...el, label };
+        if (el.type === 'arrow') {
+          if (label.length === 0) {
+            const { label: _drop, ...rest } = el;
+            void _drop;
+            return rest;
+          }
+          return { ...el, label };
+        }
+        return el;
+      }),
+    );
     setEditingId(null);
     // While the diagram is still on its default name, mirror the label of
     // the very first element of the very first tab into the diagram title

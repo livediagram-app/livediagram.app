@@ -1,10 +1,11 @@
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   ARROWHEAD_SIZE_PX,
   arrowheadSizeOf,
   arrowStyleOf,
   defaultArrowStrokeColor,
   endpointPosition,
+  isBoxed,
   type ArrowElement,
   type ArrowheadSize,
   type Element,
@@ -17,8 +18,14 @@ type ArrowViewProps = {
   elements: Element[];
   isSelected: boolean;
   isPaintMode: boolean;
+  isEditing: boolean;
   onSelect: (e: ReactPointerEvent) => void;
   onBeginEndpointDrag: (end: ArrowEnd, e: ReactPointerEvent) => void;
+  // Double-click on the arrow body fires this so the page can flip
+  // the arrow into label-edit mode (mirrors boxed-element edit).
+  onBeginEdit: () => void;
+  onCommitLabel: (label: string) => void;
+  onCancelEdit: () => void;
   // Fires when the user drags the body of a fully-floating arrow
   // (both endpoints `kind === 'free'`). Pinned arrows are anchored
   // to their elements so the body isn't draggable. The handler is
@@ -33,15 +40,26 @@ export function ArrowView({
   elements,
   isSelected,
   isPaintMode,
+  isEditing,
   onSelect,
   onBeginEndpointDrag,
+  onBeginEdit,
+  onCommitLabel,
+  onCancelEdit,
   onBeginTranslate,
 }: ArrowViewProps) {
   const isLocked = arrow.locked === true;
   const from = endpointPosition(arrow.from, elements);
   const to = endpointPosition(arrow.to, elements);
   const markerUrl = `url(#${arrowheadMarkerId(arrowheadSizeOf(arrow))})`;
-  const pathD = arrowPath(arrowStyleOf(arrow), from, to, arrow.from, arrow.to);
+  const style = arrowStyleOf(arrow);
+  const pathD = arrowPath(style, from, to, arrow.from, arrow.to);
+  const midpoint = pathMidpoint(style, from, to, arrow.from, arrow.to);
+  const labelText = arrow.label ?? '';
+  const showLabel = isEditing || labelText.length > 0;
+  const labelPos = showLabel
+    ? placeLabel(midpoint, labelText, elements, arrow.id)
+    : { x: midpoint.x, y: midpoint.y };
 
   // Per-arrow stroke colour overrides the default; selection ring sits
   // on top in brand-600 regardless so the user can still tell what's
@@ -106,6 +124,11 @@ export function ArrowView({
           const bothFree = arrow.from.kind === 'free' && arrow.to.kind === 'free';
           if (bothFree && !isLocked && onBeginTranslate) onBeginTranslate(e);
         }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          if (isLocked || isPaintMode) return;
+          onBeginEdit();
+        }}
         style={{
           pointerEvents: 'stroke',
           cursor:
@@ -114,6 +137,18 @@ export function ArrowView({
               : hitCursor,
         }}
       />
+
+      {showLabel ? (
+        <ArrowLabel
+          x={labelPos.x}
+          y={labelPos.y}
+          text={labelText}
+          color={baseStroke}
+          isEditing={isEditing}
+          onCommit={onCommitLabel}
+          onCancel={onCancelEdit}
+        />
+      ) : null}
 
       {isSelected && !isPaintMode ? (
         <>
@@ -174,6 +209,186 @@ function EndpointHandle({ cx, cy, pinned, disabled, onPointerDown }: EndpointHan
 
 function arrowheadMarkerId(size: ArrowheadSize): string {
   return `arrowhead-${size}`;
+}
+
+// Geometric midpoint of the rendered path. Used as the anchor for
+// label placement. Curves and L-elbows pick a point on the actual
+// drawn geometry, not just the chord midpoint, so the label tracks
+// the visible line.
+function pathMidpoint(
+  style: ReturnType<typeof arrowStyleOf>,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  fromEp: Endpoint,
+  toEp: Endpoint,
+): { x: number; y: number } {
+  if (style === 'angled') {
+    // Elbow vertex sits on the bend, which reads as the natural
+    // anchor for "this connector's middle".
+    const horizontalFirst = chooseHorizontalFirst(from, to, fromEp, toEp);
+    return horizontalFirst ? { x: to.x, y: from.y } : { x: from.x, y: to.y };
+  }
+  if (style === 'curved') {
+    // For a quadratic Bezier the t=0.5 point is the average of the
+    // endpoints and the control point: 0.25*(P0 + 2*Pc + P2).
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.hypot(dx, dy);
+    if (len < 0.5) return { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+    const nx = -dy / len;
+    const ny = dx / len;
+    const offset = len * 0.25;
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    const cx = mx + nx * offset;
+    const cy = my + ny * offset;
+    return { x: 0.25 * from.x + 0.5 * cx + 0.25 * to.x, y: 0.25 * from.y + 0.5 * cy + 0.25 * to.y };
+  }
+  return { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+}
+
+// Approximate label dimensions for collision avoidance. The rendered
+// SVG <text> doesn't have a stable width until paint, so we estimate
+// from the text length. The numbers are conservative — slightly
+// overshooting means the placement leaves a comfortable gap rather
+// than colliding.
+const LABEL_HEIGHT_PX = 16;
+const LABEL_CHAR_WIDTH_PX = 7;
+const LABEL_GAP_PX = 8;
+
+function labelSize(text: string): { width: number; height: number } {
+  const trimmed = text || ' ';
+  return {
+    width: Math.max(24, trimmed.length * LABEL_CHAR_WIDTH_PX) + 8,
+    height: LABEL_HEIGHT_PX + 4,
+  };
+}
+
+// Choose a label position that doesn't overlap any boxed element on
+// the canvas. Tries the four cardinal slots around the arrow's
+// midpoint in priority order (right, below, left, above) and picks
+// the first that fits. If all four collide, falls back to right
+// rather than hiding the label — the user can drag the colliding
+// element out of the way.
+function placeLabel(
+  midpoint: { x: number; y: number },
+  text: string,
+  elements: Element[],
+  selfId: string,
+): { x: number; y: number } {
+  const size = labelSize(text);
+  const halfH = size.height / 2;
+  const halfW = size.width / 2;
+  const candidates: { x: number; y: number }[] = [
+    { x: midpoint.x + halfW + LABEL_GAP_PX, y: midpoint.y }, // right
+    { x: midpoint.x, y: midpoint.y + halfH + LABEL_GAP_PX }, // below
+    { x: midpoint.x - halfW - LABEL_GAP_PX, y: midpoint.y }, // left
+    { x: midpoint.x, y: midpoint.y - halfH - LABEL_GAP_PX }, // above
+  ];
+  for (const c of candidates) {
+    const rect = { x: c.x - halfW, y: c.y - halfH, width: size.width, height: size.height };
+    if (!collidesWithBoxed(rect, elements, selfId)) return c;
+  }
+  return candidates[0]!;
+}
+
+function collidesWithBoxed(
+  rect: { x: number; y: number; width: number; height: number },
+  elements: Element[],
+  selfId: string,
+): boolean {
+  for (const el of elements) {
+    if (el.id === selfId || !isBoxed(el)) continue;
+    if (
+      rect.x < el.x + el.width &&
+      rect.x + rect.width > el.x &&
+      rect.y < el.y + el.height &&
+      rect.y + rect.height > el.y
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+type ArrowLabelProps = {
+  x: number;
+  y: number;
+  text: string;
+  color: string;
+  isEditing: boolean;
+  onCommit: (label: string) => void;
+  onCancel: () => void;
+};
+
+// The label lives inside the per-arrow SVG so it stays in canvas
+// space (and therefore inherits the zoom/pan transform). When the
+// arrow is in edit mode we render an HTML input via <foreignObject>
+// — that gives us native text-selection / IME / cursor behaviour
+// instead of reinventing it in pure SVG.
+function ArrowLabel({ x, y, text, color, isEditing, onCommit, onCancel }: ArrowLabelProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+  const size = labelSize(text);
+  if (isEditing) {
+    return (
+      <foreignObject
+        x={x - size.width / 2}
+        y={y - size.height / 2}
+        width={size.width}
+        height={size.height}
+        style={{ overflow: 'visible', pointerEvents: 'auto' }}
+      >
+        <input
+          ref={inputRef}
+          defaultValue={text}
+          onPointerDown={(e) => e.stopPropagation()}
+          onBlur={(e) => onCommit(e.currentTarget.value.trim())}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              onCommit((e.target as HTMLInputElement).value.trim());
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              onCancel();
+            }
+            e.stopPropagation();
+          }}
+          className="h-full w-full rounded bg-white px-1 text-center text-xs text-slate-800 shadow-sm outline-none ring-2 ring-sky-400"
+        />
+      </foreignObject>
+    );
+  }
+  return (
+    <g>
+      <rect
+        x={x - size.width / 2}
+        y={y - size.height / 2}
+        width={size.width}
+        height={size.height}
+        rx={4}
+        fill="white"
+        fillOpacity={0.85}
+        style={{ pointerEvents: 'none' }}
+      />
+      <text
+        x={x}
+        y={y}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={12}
+        fill={color}
+        style={{ pointerEvents: 'none', userSelect: 'none' }}
+      >
+        {text}
+      </text>
+    </g>
+  );
 }
 
 // Build the SVG `d` attribute that fits the arrow's selected style.
