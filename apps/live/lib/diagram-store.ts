@@ -5,9 +5,12 @@
 // surface stays the same.
 
 export {
+  apiAppendChangeLogEntry,
   apiCreateShareLink as createShareLink,
+  apiDeleteChangeLogForTab,
   apiDeleteDiagram as deleteDiagram,
   apiDeleteShareLink as deleteShareLink,
+  apiListChangeLog,
   apiListDiagrams as listDiagrams,
   apiListShareLinks as listShareLinks,
   apiLoadDiagram as loadDiagram,
@@ -20,6 +23,8 @@ export {
   connectRoom,
 } from './api-client';
 export type {
+  ChangeLogEntry,
+  ChangeLogKind,
   DiagramSummary,
   RoomHandlers,
   RoomIncoming,

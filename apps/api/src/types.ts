@@ -45,6 +45,27 @@ export type ShareLinkDTO = {
   createdAt: number;
 };
 
+// One row of the audit log. See specs/12-activity-and-audit.md.
+// `beforeState` / `afterState` are objects keyed by element id; `null`
+// on either side means the element didn't exist on that side of the
+// change (an add has before=null, a delete has after=null).
+export type ChangeLogKind = 'add' | 'edit' | 'delete' | 'revert';
+
+export type ChangeLogEntryDTO = {
+  id: string;
+  diagramId: string;
+  tabId: string | null;
+  participantId: string;
+  participantName: string;
+  participantColor: string;
+  kind: ChangeLogKind;
+  summary: string;
+  elementIds: string[];
+  beforeState: Record<string, unknown>;
+  afterState: Record<string, unknown>;
+  createdAt: number;
+};
+
 export type Env = {
   DB: D1Database;
   DIAGRAM_ROOM: DurableObjectNamespace;

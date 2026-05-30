@@ -53,7 +53,11 @@ import { useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { ALIGN_SNAP_THRESHOLD, SNAP_THRESHOLD, type ArrowEnd, type DragMode } from '@/lib/canvas';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import {
+  apiAppendChangeLogEntry,
+  apiDeleteChangeLogForTab,
+  apiListChangeLog,
   connectRoom,
+  type ChangeLogEntry,
   createShareLink as apiCreateShareLink,
   deleteDiagram as apiDeleteDiagram,
   deleteShareLink as apiDeleteShareLink,
@@ -68,6 +72,7 @@ import {
   type ShareLink,
   type ShareRole,
 } from '@/lib/diagram-store';
+import { applyRevert, diffElements } from '@/lib/change-log';
 import { buildTemplate, type TemplateKind } from '@/lib/templates';
 import { getTheme, type ThemeId } from '@/lib/themes';
 
@@ -282,6 +287,13 @@ export default function LivePage() {
   // state. We only flip this off — subsequent refreshes don't reset it
   // because they're triggered by saves and shouldn't blank the list.
   const [diagramListLoading, setDiagramListLoading] = useState(true);
+  // Per-diagram audit log surfaced in the Activity Panel. Newest first.
+  // Hydrated from the API for existing diagrams; appended to on every
+  // commit. See specs/12-activity-and-audit.md.
+  const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
+  const [changeLogLoading, setChangeLogLoading] = useState(true);
+  const [activityPosition, setActivityPosition] = useState<{ x: number; y: number } | null>(null);
+  const [activityMinimized, setActivityMinimized] = useState(false);
   // Live presence: the participants connected to this diagram's
   // Durable Object room right now. Includes ourselves once our `hello`
   // round-trips. Rendered in the editor header avatar stack.
@@ -441,12 +453,25 @@ export default function LivePage() {
             apiListShareLinks(self.id, fetched.id)
               .then((links) => setShareLinks(links))
               .catch(() => {});
+            apiListChangeLog(self.id, fetched.id)
+              .then((entries) => {
+                setChangeLog(entries);
+                setChangeLogLoading(false);
+              })
+              .catch(() => setChangeLogLoading(false));
+          } else {
+            setChangeLogLoading(false);
           }
           if (window.localStorage.getItem('livediagram:v2:name-confirmed') !== '1') {
             setTemplatePickerMode('identity');
           }
         }
         setDiagramId(id);
+      }
+      // No URL params → no diagram yet → no log to fetch. Clear the
+      // skeleton so the panel renders the empty-state copy.
+      if (!shareCodeParam && !id) {
+        setChangeLogLoading(false);
       }
       setNameConfirmed(window.localStorage.getItem('livediagram:v2:name-confirmed') === '1');
       refreshDiagramList(self.id);
@@ -717,10 +742,67 @@ export default function LivePage() {
 
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
+  // Single emission point for activity-log entries. Every editorial
+  // change goes through here — both element commits and surgical
+  // reverts — so the audit stays honest. See
+  // specs/12-activity-and-audit.md. Optimistic: we prepend the entry
+  // to the local log immediately and fire the POST without awaiting.
+  const emitChange = (
+    tabId: string,
+    beforeElements: Element[],
+    afterElements: Element[],
+    override?: { kind: ChangeLogEntry['kind']; summary: string },
+  ) => {
+    if (!diagramId) return;
+    const diff = diffElements(beforeElements, afterElements);
+    if (!diff) return;
+    const entry: ChangeLogEntry = {
+      id: crypto.randomUUID(),
+      diagramId,
+      tabId,
+      participantId: selfParticipant.id,
+      participantName: selfParticipant.name,
+      participantColor: selfParticipant.color,
+      kind: override?.kind ?? diff.kind,
+      summary: override?.summary ?? diff.summary,
+      elementIds: diff.elementIds,
+      beforeState: diff.beforeState as Record<string, unknown>,
+      afterState: diff.afterState as Record<string, unknown>,
+      createdAt: Date.now(),
+    };
+    setChangeLog((prev) => [entry, ...prev].slice(0, 200));
+    apiAppendChangeLogEntry(selfParticipant.id, entry).catch(() => {
+      // Best-effort. The save-status pill already surfaces API
+      // outages; we don't need a second indicator for the log.
+    });
+  };
+
   const commit = (mapElements: (els: Element[]) => Element[]) => {
+    const before = activeTab.elements;
+    const after = mapElements(before);
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, elements: after } : t)));
+    emitChange(activeId, before, after);
+  };
+
+  // Surgical revert: replay the entry's `before` payload onto the
+  // target tab. Other elements (including newer edits) are untouched.
+  // If the tab was deleted in between, the revert is a no-op — the
+  // log entry has already been cascade-dropped.
+  const revertChange = (entry: ChangeLogEntry) => {
+    if (!entry.tabId) return;
+    const target = tabs.find((t) => t.id === entry.tabId);
+    if (!target) return;
+    const before = target.elements;
+    const after = applyRevert(before, entry.beforeState as Record<string, Element | null>);
     commitTabs((ts) =>
-      ts.map((t) => (t.id === activeId ? { ...t, elements: mapElements(t.elements) } : t)),
+      ts.map((t) => (t.id === entry.tabId ? { ...t, elements: after } : t)),
     );
+    // Switch focus so the user can see what just changed.
+    if (entry.tabId !== activeId) setActiveId(entry.tabId);
+    emitChange(entry.tabId, before, after, {
+      kind: 'revert',
+      summary: `Reverted: ${entry.summary}`,
+    });
   };
 
   const tick = (mapElements: (els: Element[]) => Element[]) => {
@@ -1048,6 +1130,16 @@ export default function LivePage() {
           }),
         })),
     );
+    // Cascade: drop every audit-log entry whose tab_id points at the
+    // gone tab. Local list first so the panel updates immediately,
+    // then the API (fire-and-forget).
+    setChangeLog((prev) => prev.filter((entry) => entry.tabId !== id));
+    if (diagramId) {
+      apiDeleteChangeLogForTab(selfParticipant.id, diagramId, id).catch(() => {
+        // Best-effort. Stale rows in D1 are harmless; next list fetch
+        // simply omits them because the diagram is the source of truth.
+      });
+    }
     if (activeId === id) {
       const fallback = tabs[idx + 1] ?? tabs[idx - 1];
       if (fallback) setActiveId(fallback.id);
@@ -2206,6 +2298,13 @@ export default function LivePage() {
         onToggleExplorerMinimized={() => setExplorerMinimized((v) => !v)}
         diagramList={diagramList}
         diagramListLoading={diagramListLoading}
+        changeLog={changeLog}
+        changeLogLoading={changeLogLoading}
+        activityPosition={activityPosition}
+        activityMinimized={activityMinimized}
+        onMoveActivity={(x, y) => setActivityPosition({ x, y })}
+        onToggleActivityMinimized={() => setActivityMinimized((v) => !v)}
+        onRevertChange={revertChange}
         currentDiagramId={diagramId}
         onOpenDiagram={openDiagram}
         onNewDiagram={newDiagram}

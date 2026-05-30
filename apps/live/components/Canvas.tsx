@@ -33,11 +33,12 @@ import type { TemplateKind } from '@/lib/templates';
 import { ArrowDefs, ArrowView } from './ArrowView';
 import { BoxedElementView } from './BoxedElementView';
 import { CommandPalette, type SelectedElementControls } from './CommandPalette';
+import { ActivityIcon, ActivityPanel } from './ActivityPanel';
 import { Explorer, ExplorerIcon, PaletteIcon } from './Explorer';
 import { getTheme } from '@/lib/themes';
+import type { ChangeLogEntry } from '@/lib/api-client';
 import { DockButton } from './MovablePanel';
 import { MultiSelectionToolbar } from './MultiSelectionToolbar';
-import { HistoryControls } from './HistoryControls';
 import { ModeBanner } from './ModeBanner';
 import { PlusButton } from './PlusButton';
 import { SelectionPopover } from './SelectionPopover';
@@ -96,6 +97,13 @@ type CanvasProps = {
   onToggleExplorerMinimized: () => void;
   diagramList: { id: string; name: string; savedAt: number }[];
   diagramListLoading: boolean;
+  changeLog: ChangeLogEntry[];
+  changeLogLoading: boolean;
+  activityPosition: { x: number; y: number } | null;
+  activityMinimized: boolean;
+  onMoveActivity: (x: number, y: number) => void;
+  onToggleActivityMinimized: () => void;
+  onRevertChange: (entry: ChangeLogEntry) => void;
   currentDiagramId: string | null;
   onOpenDiagram: (id: string) => void;
   onNewDiagram: () => void;
@@ -212,6 +220,13 @@ export function Canvas(props: CanvasProps) {
     onToggleExplorerMinimized,
     diagramList,
     diagramListLoading,
+    changeLog,
+    changeLogLoading,
+    activityPosition,
+    activityMinimized,
+    onMoveActivity,
+    onToggleActivityMinimized,
+    onRevertChange,
     currentDiagramId,
     onOpenDiagram,
     onNewDiagram,
@@ -861,6 +876,25 @@ export function Canvas(props: CanvasProps) {
         onNewDiagram={onNewDiagram}
       />
 
+      {/* Activity panel — per-diagram audit log + Undo/Redo. Hidden
+          during the welcome flow because there's nothing to audit
+          yet and Undo/Redo would target an empty history. */}
+      {welcomeOpen ? null : (
+        <ActivityPanel
+          position={activityPosition}
+          minimized={activityMinimized}
+          entries={changeLog}
+          loading={changeLogLoading}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={onUndo}
+          onRedo={onRedo}
+          onRevert={onRevertChange}
+          onMoveTo={onMoveActivity}
+          onToggleMinimized={onToggleActivityMinimized}
+        />
+      )}
+
       {welcomeOpen ? null : (
         <CommandPalette
           position={palettePosition}
@@ -901,6 +935,14 @@ export function Canvas(props: CanvasProps) {
                 onClick={onToggleMinimized}
               />
             ) : null}
+            {activityMinimized ? (
+              <DockButton
+                label="Open Activity"
+                description="Expand the Activity panel: changelog, Undo, Redo."
+                icon={<ActivityIcon />}
+                onClick={onToggleActivityMinimized}
+              />
+            ) : null}
             <ZoomControls
               zoom={viewportZoom}
               onZoomIn={handleZoomIn}
@@ -908,7 +950,6 @@ export function Canvas(props: CanvasProps) {
               onReset={handleResetZoom}
               onFitToScreen={onFitToScreen}
             />
-            <HistoryControls canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
           </>
         )}
       </div>

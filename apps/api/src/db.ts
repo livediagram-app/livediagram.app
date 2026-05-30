@@ -1,4 +1,6 @@
 import type {
+  ChangeLogEntryDTO,
+  ChangeLogKind,
   DiagramDTO,
   DiagramSummary,
   Env,
@@ -250,4 +252,97 @@ export async function deleteShareLink(env: Env, code: string): Promise<void> {
         .run();
     }
   }
+}
+
+// ---------------------------------------------------------------------
+// change_log — per-diagram audit log (migration 0004)
+// ---------------------------------------------------------------------
+
+type ChangeLogRow = {
+  id: string;
+  diagram_id: string;
+  tab_id: string | null;
+  participant_id: string;
+  participant_name: string;
+  participant_color: string;
+  kind: string;
+  summary: string;
+  element_ids: string;
+  before_state: string;
+  after_state: string;
+  created_at: number;
+};
+
+function rowToChangeLog(row: ChangeLogRow): ChangeLogEntryDTO {
+  return {
+    id: row.id,
+    diagramId: row.diagram_id,
+    tabId: row.tab_id,
+    participantId: row.participant_id,
+    participantName: row.participant_name,
+    participantColor: row.participant_color,
+    kind: (row.kind as ChangeLogKind) ?? 'edit',
+    summary: row.summary,
+    elementIds: JSON.parse(row.element_ids),
+    beforeState: JSON.parse(row.before_state),
+    afterState: JSON.parse(row.after_state),
+    createdAt: row.created_at,
+  };
+}
+
+// 200 entries is plenty to drive the Activity Panel's scrolling list
+// while keeping the response small. Older entries stay in D1 for
+// audit completeness; the V1 UI just doesn't surface them.
+const CHANGE_LOG_LIST_LIMIT = 200;
+
+export async function listChangeLog(env: Env, diagramId: string): Promise<ChangeLogEntryDTO[]> {
+  const result = await env.DB.prepare(
+    `SELECT id, diagram_id, tab_id, participant_id, participant_name, participant_color,
+            kind, summary, element_ids, before_state, after_state, created_at
+       FROM change_log
+      WHERE diagram_id = ?
+      ORDER BY created_at DESC
+      LIMIT ?`,
+  )
+    .bind(diagramId, CHANGE_LOG_LIST_LIMIT)
+    .all<ChangeLogRow>();
+  return (result.results ?? []).map(rowToChangeLog);
+}
+
+export async function insertChangeLogEntry(env: Env, entry: ChangeLogEntryDTO): Promise<void> {
+  await env.DB.prepare(
+    `INSERT INTO change_log (
+       id, diagram_id, tab_id, participant_id, participant_name, participant_color,
+       kind, summary, element_ids, before_state, after_state, created_at
+     )
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  )
+    .bind(
+      entry.id,
+      entry.diagramId,
+      entry.tabId,
+      entry.participantId,
+      entry.participantName,
+      entry.participantColor,
+      entry.kind,
+      entry.summary,
+      JSON.stringify(entry.elementIds),
+      JSON.stringify(entry.beforeState),
+      JSON.stringify(entry.afterState),
+      entry.createdAt,
+    )
+    .run();
+}
+
+// Bulk-drop every log entry for a tab. Used by the live app when it
+// deletes a tab — the tab no longer exists, its history is dead with
+// it. See specs/12-activity-and-audit.md.
+export async function deleteChangeLogForTab(
+  env: Env,
+  diagramId: string,
+  tabId: string,
+): Promise<void> {
+  await env.DB.prepare('DELETE FROM change_log WHERE diagram_id = ? AND tab_id = ?')
+    .bind(diagramId, tabId)
+    .run();
 }

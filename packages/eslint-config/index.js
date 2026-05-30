@@ -14,6 +14,9 @@ export default tseslint.config(
       // `.next/`: build output, not source.
       '**/out/**',
       '**/.turbo/**',
+      // Cloudflare Wrangler local state / esbuild artifacts; never
+      // source. Generated on every `wrangler dev` run.
+      '**/.wrangler/**',
       '**/node_modules/**',
       '**/coverage/**',
       // Next.js writes a triple-slash reference here on every build/dev.

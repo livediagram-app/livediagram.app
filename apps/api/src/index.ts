@@ -1,5 +1,6 @@
 import {
   createShareLink,
+  deleteChangeLogForTab,
   deleteDiagram,
   deleteShareLink,
   generateShareCode,
@@ -7,6 +8,8 @@ import {
   getDiagramByShareCode,
   getParticipant,
   getShareLink,
+  insertChangeLogEntry,
+  listChangeLog,
   listDiagramsByOwner,
   listShareLinks,
   setDiagramShare,
@@ -14,7 +17,7 @@ import {
   upsertParticipant,
 } from './db';
 import { DiagramRoom } from './diagram-room';
-import type { DiagramDTO, Env, ParticipantDTO, ShareRole } from './types';
+import type { ChangeLogEntryDTO, DiagramDTO, Env, ParticipantDTO, ShareRole } from './types';
 
 export { DiagramRoom };
 
@@ -215,6 +218,78 @@ export default {
           const id = segments[2]!;
           const stub = env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(id));
           return stub.fetch(request);
+        }
+
+        // /api/diagrams/<id>/log — owner-only.
+        //   GET  → newest-first list of audit entries (capped at 200).
+        //   POST → append a new entry. Body is a ChangeLogEntryDTO.
+        // See specs/12-activity-and-audit.md.
+        if (segments.length === 4 && segments[3] === 'log') {
+          const id = segments[2]!;
+          const owner = ownerOf(request);
+          if (!owner) return badRequest('missing X-Owner-Id');
+          const existing = await getDiagram(env, id);
+          if (!existing) return notFound();
+          if (existing.ownerId !== owner) return forbidden();
+
+          if (request.method === 'GET') {
+            const entries = await listChangeLog(env, id);
+            return json({ entries });
+          }
+          if (request.method === 'POST') {
+            const body = (await request.json()) as Partial<ChangeLogEntryDTO>;
+            if (
+              !body.id ||
+              !body.participantId ||
+              !body.participantName ||
+              !body.participantColor ||
+              !body.kind ||
+              !body.summary ||
+              !Array.isArray(body.elementIds) ||
+              typeof body.beforeState !== 'object' ||
+              typeof body.afterState !== 'object'
+            ) {
+              return badRequest('missing change_log fields');
+            }
+            const entry: ChangeLogEntryDTO = {
+              id: body.id,
+              diagramId: id,
+              tabId: body.tabId ?? null,
+              participantId: body.participantId,
+              participantName: body.participantName,
+              participantColor: body.participantColor,
+              kind: body.kind,
+              summary: body.summary,
+              elementIds: body.elementIds,
+              beforeState: (body.beforeState ?? {}) as Record<string, unknown>,
+              afterState: (body.afterState ?? {}) as Record<string, unknown>,
+              createdAt: body.createdAt ?? Date.now(),
+            };
+            await insertChangeLogEntry(env, entry);
+            return json({ entry }, { status: 201 });
+          }
+        }
+
+        // /api/diagrams/<id>/log/tab/<tabId> — owner-only DELETE that
+        // drops every log entry for a tab. Called by the live app when
+        // it deletes a tab so the per-tab audit dies with the tab.
+        if (
+          segments.length === 6 &&
+          segments[3] === 'log' &&
+          segments[4] === 'tab'
+        ) {
+          const id = segments[2]!;
+          const tabId = segments[5]!;
+          const owner = ownerOf(request);
+          if (!owner) return badRequest('missing X-Owner-Id');
+          const existing = await getDiagram(env, id);
+          if (!existing) return notFound();
+          if (existing.ownerId !== owner) return forbidden();
+
+          if (request.method === 'DELETE') {
+            await deleteChangeLogForTab(env, id, tabId);
+            return new Response(null, { status: 204, headers: CORS_HEADERS });
+          }
         }
       }
 

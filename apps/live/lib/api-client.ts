@@ -90,6 +90,29 @@ export type ShareLink = {
 type ShareLinkResponse = { link: ShareLink };
 type ShareLinksResponse = { links: ShareLink[] };
 
+// One row of the audit log — see specs/12-activity-and-audit.md.
+// `beforeState[id] === null` ⇒ element didn't exist before (an add).
+// `afterState[id]  === null` ⇒ element doesn't exist after (a delete).
+export type ChangeLogKind = 'add' | 'edit' | 'delete' | 'revert';
+
+export type ChangeLogEntry = {
+  id: string;
+  diagramId: string;
+  tabId: string | null;
+  participantId: string;
+  participantName: string;
+  participantColor: string;
+  kind: ChangeLogKind;
+  summary: string;
+  elementIds: string[];
+  beforeState: Record<string, unknown>;
+  afterState: Record<string, unknown>;
+  createdAt: number;
+};
+
+type ChangeLogListResponse = { entries: ChangeLogEntry[] };
+type ChangeLogAppendResponse = { entry: ChangeLogEntry };
+
 export type SharedDiagramResolution = {
   diagram: StoredDiagram;
   role: ShareRole;
@@ -147,6 +170,47 @@ export async function apiLoadShared(code: string): Promise<SharedDiagramResoluti
     },
     role: body.role === 'view' ? 'view' : 'edit',
   };
+}
+
+// ---------------------------------------------------------------------
+// Change log (per-diagram audit) — see specs/12-activity-and-audit.md
+// ---------------------------------------------------------------------
+
+export async function apiListChangeLog(ownerId: string, id: string): Promise<ChangeLogEntry[]> {
+  const res = await fetch(`${API_BASE}/diagrams/${id}/log`, {
+    headers: { 'X-Owner-Id': ownerId },
+  });
+  if (!res.ok) throw new Error(`list change log failed: ${res.status}`);
+  const { entries } = (await res.json()) as ChangeLogListResponse;
+  return entries;
+}
+
+export async function apiAppendChangeLogEntry(
+  ownerId: string,
+  entry: Omit<ChangeLogEntry, 'diagramId'> & { diagramId: string },
+): Promise<ChangeLogEntry> {
+  const res = await fetch(`${API_BASE}/diagrams/${entry.diagramId}/log`, {
+    method: 'POST',
+    headers: ownerHeaders(ownerId),
+    body: JSON.stringify(entry),
+  });
+  if (!res.ok) throw new Error(`append change log failed: ${res.status}`);
+  const { entry: stored } = (await res.json()) as ChangeLogAppendResponse;
+  return stored;
+}
+
+export async function apiDeleteChangeLogForTab(
+  ownerId: string,
+  diagramId: string,
+  tabId: string,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/log/tab/${tabId}`, {
+    method: 'DELETE',
+    headers: { 'X-Owner-Id': ownerId },
+  });
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`delete change log failed: ${res.status}`);
+  }
 }
 
 export async function apiListShareLinks(ownerId: string, id: string): Promise<ShareLink[]> {
