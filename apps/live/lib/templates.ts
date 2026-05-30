@@ -1,4 +1,5 @@
 import {
+  createArrow,
   createPinnedArrow,
   createShape,
   createSticky,
@@ -619,21 +620,18 @@ function buildTimeline(cx: number, cy: number): Element[] {
   const labelW = 140;
   const labelH = 36;
   const verticalOffset = 56;
-  const lineThickness = 4;
 
   const startX = cx - lineLength / 2;
   const baseY = cy;
 
   const elements: Element[] = [];
-  // Track line as a thin slate rectangle so it picks up the theme via
-  // setTheme's shape rule.
+  // Timeline spine: actual line via arrow primitive (no arrowheads)
+  // instead of a 1-px-tall rectangle that rendered awkwardly at
+  // non-1 zoom levels.
   elements.push({
-    ...createShape('square', startX, baseY - lineThickness / 2),
-    width: lineLength,
-    height: lineThickness,
-    fillColor: '#64748b',
+    ...createArrow(startX, baseY, startX + lineLength, baseY),
+    arrowEnds: 'none',
     strokeColor: '#64748b',
-    textSize: 'md',
   });
 
   const milestones = ['Kick-off', 'Phase 1', 'Phase 2', 'Phase 3', 'Launch'];
