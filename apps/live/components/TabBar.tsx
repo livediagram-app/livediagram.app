@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Tab } from '@livediagram/diagram';
+import type { SaveStatus } from './EditorHeader';
 
 type TabBarProps = {
   tabs: Tab[];
@@ -19,6 +20,12 @@ type TabBarProps = {
   // Palette's Content accordion).
   onClearContent: () => void;
   onReorder: (sourceId: string, targetId: string) => void;
+  saveStatus: SaveStatus;
+  // Epoch ms of the last successful save. Drives the "Saved N minutes
+  // ago" relative time. `null` means we've never saved (just opened,
+  // brand new diagram pre-first-edit). Refreshes every 30s while the
+  // bar is mounted so the relative time stays current.
+  savedAt: number | null;
 };
 
 export function TabBar({
@@ -32,6 +39,8 @@ export function TabBar({
   onDelete,
   onClearContent,
   onReorder,
+  saveStatus,
+  savedAt,
 }: TabBarProps) {
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -135,7 +144,116 @@ export function TabBar({
           +
         </button>
       </div>
+      <SaveStatusIndicator status={saveStatus} savedAt={savedAt} />
     </div>
+  );
+}
+
+// Footer-right save indicator. Lives at the bottom of the editor —
+// quietly tells the user the autosave is keeping up. The pill stays
+// loud (rose) when a save fails so the user can't miss it.
+function SaveStatusIndicator({
+  status,
+  savedAt,
+}: {
+  status: SaveStatus;
+  savedAt: number | null;
+}) {
+  const [, force] = useState(0);
+  useEffect(() => {
+    // Refresh the relative-time string every 30s so "just now" doesn't
+    // linger past the moment it stops being true.
+    const id = window.setInterval(() => force((n) => n + 1), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  if (status === 'idle' && savedAt === null) return null;
+  if (status === 'saving') {
+    return (
+      <span className="ml-2 inline-flex items-center gap-1.5 pr-1 text-[11px] font-medium text-slate-400">
+        <SpinnerDot />
+        Saving…
+      </span>
+    );
+  }
+  if (status === 'error') {
+    return (
+      <span
+        role="status"
+        title="The editor couldn't save your latest changes. Check your network and the API."
+        className="ml-2 inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-200"
+      >
+        <WarningIcon />
+        Not saved
+      </span>
+    );
+  }
+  const relative = savedAt !== null ? formatRelativeTime(Date.now() - savedAt) : null;
+  return (
+    <span className="ml-2 inline-flex items-center gap-1.5 pr-1 text-[11px] font-medium text-slate-500">
+      <CheckIcon />
+      {relative ? `Saved ${relative}` : 'Saved'}
+    </span>
+  );
+}
+
+// Convert a delta in ms to a short human string. Cuts off at "yesterday"
+// — by the time anything older shows up the user will have refreshed
+// and the savedAt is fresh again.
+function formatRelativeTime(deltaMs: number): string {
+  const seconds = Math.floor(deltaMs / 1000);
+  if (seconds < 5) return 'just now';
+  if (seconds < 60) return `${seconds} seconds ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes === 1) return '1 minute ago';
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours === 1) return '1 hour ago';
+  if (hours < 24) return `${hours} hours ago`;
+  return 'yesterday';
+}
+
+function SpinnerDot() {
+  return (
+    <span aria-hidden className="inline-block h-2 w-2 animate-pulse rounded-full bg-slate-400" />
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 5.5L4 7.5L8 3" />
+    </svg>
+  );
+}
+
+function WarningIcon() {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M5 1.5l3.7 6.5H1.3z" />
+      <path d="M5 4.2v2" />
+      <circle cx="5" cy="7.3" r="0.4" fill="currentColor" stroke="none" />
+    </svg>
   );
 }
 

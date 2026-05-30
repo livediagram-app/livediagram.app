@@ -232,17 +232,20 @@ export default function LivePage() {
   // (deleted, never existed, or owned by someone else). Renders the
   // NotFound surface instead of the editor + welcome modal.
   const [diagramNotFound, setDiagramNotFound] = useState(false);
-  // True between mount and hydration completing IF the URL points at
-  // an existing diagram (?d= or ?s=). Without this, the user briefly
-  // sees the empty-canvas welcome card and assumes their data has
-  // been wiped. Set synchronously at the very top of the hydration
-  // useLayoutEffect so the loading screen lands on the first paint.
-  const [loadingDiagram, setLoadingDiagram] = useState(false);
-  // Surfaced in the editor header as a Saving/Saved/Not-saved pill. The
-  // autosave used to catch and swallow errors, which made an offline
-  // API look identical to a successful save. Now every save attempt
-  // flips this and the header is honest about what's happening.
+  // Loading screen is the default — every first paint shows the
+  // spinner, including SSG output, so users hitting a `?d=` / `?s=`
+  // URL never glimpse the empty canvas and assume their data is gone.
+  // The hydration useLayoutEffect flips it to false either immediately
+  // (no URL params → straight to welcome modal) or once the API call
+  // resolves (params → load the diagram first).
+  const [loadingDiagram, setLoadingDiagram] = useState(true);
+  // Surfaced in the footer (bottom-right of the TabBar). The autosave
+  // used to swallow errors silently which made an offline API look
+  // identical to a successful save; the indicator below makes the
+  // result visible. `savedAt` is the epoch ms of the last successful
+  // write — drives the "Saved 2 minutes ago" relative-time string.
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [savedAt, setSavedAt] = useState<number | null>(null);
   const [diagramName, setDiagramName] = useState('Untitled diagram');
   // Multi-selection bag for marquee box-select. Mutually exclusive with the
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
@@ -348,10 +351,11 @@ export default function LivePage() {
     const initialUrl = new URL(window.location.href);
     const initialId = initialUrl.searchParams.get('d');
     const initialShareCode = initialUrl.searchParams.get('s');
-    // Synchronous flip so React commits the loading state before the
-    // browser paints — avoids a one-frame flash of the empty canvas
-    // for URLs that are about to load a real diagram.
-    if (initialId || initialShareCode) setLoadingDiagram(true);
+    // No URL params → nothing to load, drop the spinner immediately so
+    // the welcome modal can render on the first paint after hydration.
+    // Params present → leave loadingDiagram = true; the IIFE below
+    // flips it off once the API call resolves.
+    if (!initialId && !initialShareCode) setLoadingDiagram(false);
     void (async () => {
       const id = initialId;
       const shareCodeParam = initialShareCode;
@@ -479,6 +483,7 @@ export default function LivePage() {
       apiSaveDiagram(selfParticipant.id, payload)
         .then(() => {
           setSaveStatus('saved');
+          setSavedAt(Date.now());
           refreshDiagramList(selfParticipant.id);
         })
         .catch(() => {
@@ -2103,7 +2108,6 @@ export default function LivePage() {
         hideTitle={anyWelcomeOpen}
         showShare={isOwner && hydrated && !anyWelcomeOpen}
         shareable={diagramShareable}
-        saveStatus={saveStatus}
         onOpenShare={() => setShareDialogOpen(true)}
         onRename={setDiagramName}
         onDeleteDiagram={deleteDiagram}
@@ -2252,6 +2256,8 @@ export default function LivePage() {
           onDelete={deleteTab}
           onClearContent={clearTabContent}
           onReorder={reorderTabs}
+          saveStatus={saveStatus}
+          savedAt={savedAt}
         />
       )}
       {commentThreadOpenId !== null
