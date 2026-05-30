@@ -20,6 +20,10 @@ type TemplatePickerProps = {
   // Theme currently applied to the active tab — used as the initial /
   // only theme in templates-only mode.
   currentThemeId: ThemeId;
+  // Name of the diagram being joined. Used by the 'identity' mode to
+  // greet visitors with the actual diagram name ("Welcome to 'API
+  // sketch'") instead of the generic "Welcome to this diagram".
+  diagramName?: string;
   onPick: (kind: TemplateKind, name: string, themeId: ThemeId) => void;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
@@ -37,6 +41,7 @@ export function TemplatePicker({
   mode,
   participant,
   currentThemeId,
+  diagramName,
   onPick,
   onSkip,
 }: TemplatePickerProps) {
@@ -63,14 +68,18 @@ export function TemplatePicker({
       onPointerDown={(e) => e.stopPropagation()}
       className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center"
     >
-      <div className="pointer-events-auto flex max-h-[90vh] w-[44rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
+      <div
+        className={`pointer-events-auto flex max-h-[90vh] ${isIdentity ? 'w-[26rem]' : 'w-[44rem]'} max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10`}
+      >
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">
               {isWelcome
                 ? 'New Diagram'
                 : isIdentity
-                  ? 'Welcome to this diagram'
+                  ? diagramName && diagramName.trim()
+                    ? `Welcome to '${diagramName.trim()}'`
+                    : 'Welcome to this diagram'
                   : 'Pick a template'}
             </h2>
             <p className="mt-1 text-sm text-slate-600">

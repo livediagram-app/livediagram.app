@@ -47,6 +47,7 @@ import { ZoomControls } from './ZoomControls';
 
 type CanvasProps = {
   tabName: string;
+  diagramName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;
   tabBackgroundOpacity: number;
@@ -185,6 +186,7 @@ type CanvasProps = {
 export function Canvas(props: CanvasProps) {
   const {
     tabName,
+    diagramName,
     tabBackgroundPattern,
     tabBackgroundColor,
     tabBackgroundOpacity,
@@ -801,6 +803,7 @@ export function Canvas(props: CanvasProps) {
           mode={templatePickerMode}
           participant={selfParticipant}
           currentThemeId={tabThemeId}
+          diagramName={diagramName}
           onPick={onChooseTemplate}
           onSkip={onSkipTemplatePicker}
         />

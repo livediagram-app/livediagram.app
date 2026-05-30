@@ -2421,6 +2421,7 @@ export default function LivePage() {
       ) : null}
       <Canvas
         tabName={activeTab.name}
+        diagramName={diagramName}
         tabBackgroundPattern={activeTab.backgroundPattern ?? 'grid'}
         tabBackgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}
         tabBackgroundOpacity={activeTab.backgroundOpacity ?? 1}
