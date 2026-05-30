@@ -150,6 +150,7 @@ type CanvasProps = {
   onCommitLabel: (id: string, label: string) => void;
   onCancelEdit: () => void;
   onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
+  onBeginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginFormatPainter: () => void;
   onCancelFormatPainter: () => void;
   onBeginGroup: () => void;
@@ -302,6 +303,7 @@ export function Canvas(props: CanvasProps) {
     onCommitLabel,
     onCancelEdit,
     onBeginEndpointDrag,
+    onBeginArrowTranslate,
     onBeginFormatPainter,
     onCancelFormatPainter,
     onBeginGroup,
@@ -791,6 +793,7 @@ export function Canvas(props: CanvasProps) {
                 isPaintMode={isPaintMode || isGroupMode}
                 onSelect={() => onSelect(arrow.id)}
                 onBeginEndpointDrag={(end, e) => onBeginEndpointDrag(arrow.id, end, e)}
+                onBeginTranslate={(e) => onBeginArrowTranslate(arrow.id, e)}
               />
             ))}
           </svg>

@@ -14,6 +14,11 @@ type ArrowViewProps = {
   isPaintMode: boolean;
   onSelect: (e: ReactPointerEvent) => void;
   onBeginEndpointDrag: (end: ArrowEnd, e: ReactPointerEvent) => void;
+  // Fires when the user drags the body of a fully-floating arrow
+  // (both endpoints `kind === 'free'`). Pinned arrows are anchored
+  // to their elements so the body isn't draggable. The handler is
+  // responsible for the gesture's pointer-move + pointer-up plumbing.
+  onBeginTranslate?: (e: ReactPointerEvent) => void;
 };
 
 const BRAND_600 = 'rgb(2 132 199)';
@@ -25,6 +30,7 @@ export function ArrowView({
   isPaintMode,
   onSelect,
   onBeginEndpointDrag,
+  onBeginTranslate,
 }: ArrowViewProps) {
   const isLocked = arrow.locked === true;
   const from = endpointPosition(arrow.from, elements);
@@ -91,8 +97,19 @@ export function ArrowView({
         onPointerDown={(e) => {
           e.stopPropagation();
           onSelect(e);
+          // Translate gesture only fires when both ends are
+          // unpinned — a pinned end is anchored to its element so
+          // there's nothing meaningful to drag.
+          const bothFree = arrow.from.kind === 'free' && arrow.to.kind === 'free';
+          if (bothFree && !isLocked && onBeginTranslate) onBeginTranslate(e);
         }}
-        style={{ pointerEvents: 'stroke', cursor: hitCursor }}
+        style={{
+          pointerEvents: 'stroke',
+          cursor:
+            arrow.from.kind === 'free' && arrow.to.kind === 'free' && !isLocked
+              ? 'move'
+              : hitCursor,
+        }}
       />
 
       {isSelected && !isPaintMode ? (

@@ -189,6 +189,19 @@ type DragState =
       startClientY: number;
       startCanvasX: number;
       startCanvasY: number;
+    }
+  | {
+      // Whole-arrow translation. Only fires for arrows with both
+      // endpoints `kind: 'free'` — pinned endpoints stay anchored to
+      // their elements, so there's nothing to drag.
+      kind: 'arrow-translate';
+      arrowId: string;
+      startClientX: number;
+      startClientY: number;
+      startFromX: number;
+      startFromY: number;
+      startToX: number;
+      startToY: number;
     };
 
 function nextBounds(
@@ -2933,6 +2946,26 @@ export default function LivePage() {
     setMultiSelectedIds(new Set());
   };
 
+  const beginArrowTranslate = (arrowId: string, e: ReactPointerEvent) => {
+    if (formatSourceId !== null || groupSourceId !== null) return;
+    const arrow = activeTab.elements.find((el) => el.id === arrowId);
+    if (!arrow || arrow.type !== 'arrow') return;
+    if (arrow.locked === true) return;
+    if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
+    setSelectedId(arrowId);
+    markCheckpoint();
+    setDrag({
+      kind: 'arrow-translate',
+      arrowId,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startFromX: arrow.from.x,
+      startFromY: arrow.from.y,
+      startToX: arrow.to.x,
+      startToY: arrow.to.y,
+    });
+  };
+
   const beginEndpointDrag = (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => {
     if (formatSourceId !== null || groupSourceId !== null) return;
     const arrow = activeTab.elements.find((el) => el.id === arrowId);
@@ -3025,6 +3058,23 @@ export default function LivePage() {
             els.map((el) => (el.id === drag.primaryId && isBoxed(el) ? { ...el, ...next } : el)),
           );
         }
+        return;
+      }
+
+      if (drag.kind === 'arrow-translate') {
+        // Shift both free endpoints by the same canvas delta from
+        // their captured start positions. No anchor / angle snap —
+        // the user explicitly chose a fully-floating arrow.
+        tick((els) =>
+          els.map((el) => {
+            if (el.id !== drag.arrowId || el.type !== 'arrow') return el;
+            return {
+              ...el,
+              from: { kind: 'free', x: drag.startFromX + dx, y: drag.startFromY + dy },
+              to: { kind: 'free', x: drag.startToX + dx, y: drag.startToY + dy },
+            };
+          }),
+        );
         return;
       }
 
@@ -3293,6 +3343,7 @@ export default function LivePage() {
         onCommitLabel={commitLabel}
         onCancelEdit={cancelEdit}
         onBeginEndpointDrag={beginEndpointDrag}
+        onBeginArrowTranslate={beginArrowTranslate}
         onBeginFormatPainter={beginFormatPainter}
         onCancelFormatPainter={exitFormatPainter}
         onBeginGroup={beginGroup}
