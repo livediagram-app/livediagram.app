@@ -56,13 +56,18 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import {
   apiAppendChangeLogEntry,
   apiCreateDiagram,
+  apiCreateFolder,
   apiDeleteChangeLogEntry,
   apiDeleteChangeLogForTab,
+  apiDeleteFolder,
   apiDeleteTab,
   apiListChangeLog,
+  apiListFolders,
   apiLoadTab,
   apiSaveDiagramMeta,
   apiSaveTab,
+  apiSetDiagramFolder,
+  apiUpdateFolder,
   connectRoom,
   type ChangeLogEntry,
   createShareLink as apiCreateShareLink,
@@ -345,7 +350,12 @@ export default function LivePage() {
   // list. Refreshed on hydration and after we save the current diagram
   // (so the Explorer's "Your diagrams" section reflects renames + first
   // saves in real time).
-  const [diagramList, setDiagramList] = useState<{ id: string; name: string; savedAt: number }[]>(
+  const [diagramList, setDiagramList] = useState<
+    { id: string; name: string; folderId: string | null; savedAt: number }[]
+  >([]);
+  // Folders for the owner. Refreshed alongside the diagram list. The
+  // synthetic Unsorted bucket is rendered client-side.
+  const [folders, setFolders] = useState<{ id: string; parentId: string | null; name: string }[]>(
     [],
   );
   // True while the very first diagram-list fetch is in flight, so the
@@ -403,6 +413,9 @@ export default function LivePage() {
     // off so the UI recovers — the next successful refresh
     // replaces the empty list.
     const safety = window.setTimeout(() => setDiagramListLoading(false), 10000);
+    apiListFolders(ownerId)
+      .then((fs) => setFolders(fs))
+      .catch(() => {});
     apiListDiagrams(ownerId)
       .then((list) => {
         window.clearTimeout(safety);
@@ -1599,6 +1612,47 @@ export default function LivePage() {
       return;
     }
     refreshDiagramList(selfParticipant.id);
+  };
+
+  // Folder helpers (spec/15). Optimistic local updates so the
+  // Explorer feels responsive; refreshDiagramList re-syncs from the
+  // server right after.
+  const createFolder = async (input: { name: string; parentId: string | null }) => {
+    const id = crypto.randomUUID();
+    try {
+      const folder = await apiCreateFolder(selfParticipant.id, {
+        id,
+        name: input.name,
+        parentId: input.parentId,
+      });
+      setFolders((prev) => [...prev, folder]);
+      return folder;
+    } catch {
+      return undefined;
+    }
+  };
+
+  const renameFolder = (id: string, name: string) => {
+    setFolders((prev) => prev.map((f) => (f.id === id ? { ...f, name } : f)));
+    void apiUpdateFolder(selfParticipant.id, id, { name }).catch(() => {});
+  };
+
+  const deleteFolder = (id: string) => {
+    // Match the server: subfolders promote to root, diagrams to
+    // Unsorted. Mirror locally so the panel doesn't flash an
+    // out-of-date tree before the next list fetch.
+    setFolders((prev) =>
+      prev
+        .filter((f) => f.id !== id)
+        .map((f) => (f.parentId === id ? { ...f, parentId: null } : f)),
+    );
+    setDiagramList((prev) => prev.map((d) => (d.folderId === id ? { ...d, folderId: null } : d)));
+    void apiDeleteFolder(selfParticipant.id, id).catch(() => {});
+  };
+
+  const moveDiagramToFolder = (diagramId: string, folderId: string | null) => {
+    setDiagramList((prev) => prev.map((d) => (d.id === diagramId ? { ...d, folderId } : d)));
+    void apiSetDiagramFolder(selfParticipant.id, diagramId, folderId).catch(() => {});
   };
 
   // Duplicate a diagram into a brand-new one. Loads the source's
@@ -2932,6 +2986,7 @@ export default function LivePage() {
             position={explorerPosition}
             minimized={explorerMinimized}
             diagrams={diagramList}
+            folders={folders}
             loading={diagramListLoading}
             currentDiagramId={null}
             onMoveTo={(x, y) => setExplorerPosition({ x, y })}
@@ -2941,6 +2996,10 @@ export default function LivePage() {
             onNewDiagram={newDiagram}
             onDeleteDiagram={deleteDiagram}
             onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+            onCreateFolder={createFolder}
+            onRenameFolder={renameFolder}
+            onDeleteFolder={deleteFolder}
+            onMoveDiagramToFolder={moveDiagramToFolder}
           />
         </main>
       </div>
@@ -3027,6 +3086,7 @@ export default function LivePage() {
         onToggleExplorerMinimized={() => setExplorerMinimized((v) => !v)}
         onResetExplorer={() => setExplorerPosition(null)}
         diagramList={diagramList}
+        folders={folders}
         diagramListLoading={diagramListLoading}
         changeLog={changeLog.filter((entry) => entry.tabId === activeId)}
         changeLogLoading={changeLogLoading}
@@ -3050,6 +3110,10 @@ export default function LivePage() {
         onRenameCurrent={setDiagramName}
         onDeleteDiagram={deleteDiagram}
         onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+        onCreateFolder={createFolder}
+        onRenameFolder={renameFolder}
+        onDeleteFolder={deleteFolder}
+        onMoveDiagramToFolder={moveDiagramToFolder}
         onDeselect={() => {
           setSelectedId(null);
           setMultiSelectedIds(new Set());

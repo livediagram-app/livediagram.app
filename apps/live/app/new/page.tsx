@@ -7,8 +7,14 @@ import { TemplatePicker } from '@/components/TemplatePicker';
 import type { Tab } from '@livediagram/diagram';
 import {
   apiCreateDiagram,
+  apiCreateFolder,
+  apiDeleteFolder,
+  apiListFolders,
   apiLoadTab,
+  apiSetDiagramFolder,
+  apiUpdateFolder,
   deleteDiagram as apiDeleteDiagram,
+  type Folder,
   listDiagrams,
   loadDiagram as apiLoadDiagram,
   loadSelfParticipant,
@@ -51,9 +57,10 @@ export default function NewDiagramPage() {
   // — the welcome flow shouldn't be a dead end. List + loading are
   // sourced from the same API the editor uses, keyed by the local
   // self id once it's available.
-  const [diagramList, setDiagramList] = useState<{ id: string; name: string; savedAt: number }[]>(
-    [],
-  );
+  const [diagramList, setDiagramList] = useState<
+    { id: string; name: string; folderId: string | null; savedAt: number }[]
+  >([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [diagramListLoading, setDiagramListLoading] = useState(true);
   const [explorerPosition, setExplorerPosition] = useState<{ x: number; y: number } | null>(null);
   const [explorerMinimized, setExplorerMinimized] = useState(false);
@@ -85,9 +92,13 @@ export default function NewDiagramPage() {
       } else {
         await saveSelfParticipant(local).catch(() => {});
       }
-      const list = await listDiagrams(selfId).catch(() => null);
+      const [list, foldersList] = await Promise.all([
+        listDiagrams(selfId).catch(() => null),
+        apiListFolders(selfId).catch(() => null),
+      ]);
       window.clearTimeout(safety);
       setDiagramList(list ?? []);
+      setFolders(foldersList ?? []);
       setDiagramListLoading(false);
     })();
 
@@ -148,8 +159,47 @@ export default function NewDiagramPage() {
   };
 
   const refreshList = async (ownerId: string) => {
-    const list = await listDiagrams(ownerId).catch(() => null);
+    const [list, foldersList] = await Promise.all([
+      listDiagrams(ownerId).catch(() => null),
+      apiListFolders(ownerId).catch(() => null),
+    ]);
     setDiagramList(list ?? []);
+    setFolders(foldersList ?? []);
+  };
+
+  const createFolder = async (input: { name: string; parentId: string | null }) => {
+    const id = crypto.randomUUID();
+    try {
+      const folder = await apiCreateFolder(self.id, {
+        id,
+        name: input.name,
+        parentId: input.parentId,
+      });
+      setFolders((prev) => [...prev, folder]);
+      return folder;
+    } catch {
+      return undefined;
+    }
+  };
+
+  const renameFolder = (id: string, name: string) => {
+    setFolders((prev) => prev.map((f) => (f.id === id ? { ...f, name } : f)));
+    void apiUpdateFolder(self.id, id, { name }).catch(() => {});
+  };
+
+  const deleteFolder = (id: string) => {
+    setFolders((prev) =>
+      prev
+        .filter((f) => f.id !== id)
+        .map((f) => (f.parentId === id ? { ...f, parentId: null } : f)),
+    );
+    setDiagramList((prev) => prev.map((d) => (d.folderId === id ? { ...d, folderId: null } : d)));
+    void apiDeleteFolder(self.id, id).catch(() => {});
+  };
+
+  const moveDiagramToFolder = (diagramId: string, folderId: string | null) => {
+    setDiagramList((prev) => prev.map((d) => (d.id === diagramId ? { ...d, folderId } : d)));
+    void apiSetDiagramFolder(self.id, diagramId, folderId).catch(() => {});
   };
 
   const deleteDiagram = (id: string) => {
@@ -245,6 +295,7 @@ export default function NewDiagramPage() {
           position={explorerPosition}
           minimized={explorerMinimized}
           diagrams={diagramList}
+          folders={folders}
           loading={diagramListLoading}
           currentDiagramId={null}
           onMoveTo={(x, y) => setExplorerPosition({ x, y })}
@@ -253,6 +304,10 @@ export default function NewDiagramPage() {
           onOpenDiagram={openDiagram}
           onDeleteDiagram={deleteDiagram}
           onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+          onCreateFolder={createFolder}
+          onRenameFolder={renameFolder}
+          onDeleteFolder={deleteFolder}
+          onMoveDiagramToFolder={moveDiagramToFolder}
         />
       </main>
     </div>

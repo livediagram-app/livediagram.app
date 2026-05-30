@@ -101,7 +101,8 @@ type CanvasProps = {
   onMoveExplorer: (x: number, y: number) => void;
   onToggleExplorerMinimized: () => void;
   onResetExplorer: () => void;
-  diagramList: { id: string; name: string; savedAt: number }[];
+  diagramList: { id: string; name: string; folderId: string | null; savedAt: number }[];
+  folders: { id: string; parentId: string | null; name: string }[];
   diagramListLoading: boolean;
   changeLog: ChangeLogEntry[];
   changeLogLoading: boolean;
@@ -125,6 +126,13 @@ type CanvasProps = {
   onRenameCurrent: (name: string) => void;
   onDeleteDiagram: (id: string) => void;
   onDuplicateDiagram: (id: string) => void;
+  onCreateFolder: (input: {
+    name: string;
+    parentId: string | null;
+  }) => Promise<{ id: string; parentId: string | null; name: string } | void>;
+  onRenameFolder: (id: string, name: string) => void;
+  onDeleteFolder: (id: string) => void;
+  onMoveDiagramToFolder: (diagramId: string, folderId: string | null) => void;
   onDeselect: () => void;
   onSelect: (id: string) => void;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
@@ -246,6 +254,7 @@ export function Canvas(props: CanvasProps) {
     onToggleExplorerMinimized,
     onResetExplorer,
     diagramList,
+    folders,
     diagramListLoading,
     changeLog,
     changeLogLoading,
@@ -269,6 +278,10 @@ export function Canvas(props: CanvasProps) {
     onRenameCurrent,
     onDeleteDiagram,
     onDuplicateDiagram,
+    onCreateFolder,
+    onRenameFolder,
+    onDeleteFolder,
+    onMoveDiagramToFolder,
     onDeselect,
     onSelect,
     onBeginDrag,
@@ -944,6 +957,7 @@ export function Canvas(props: CanvasProps) {
         position={explorerPosition}
         minimized={explorerMinimized}
         diagrams={diagramList}
+        folders={folders}
         loading={diagramListLoading}
         currentDiagramId={currentDiagramId}
         onMoveTo={onMoveExplorer}
@@ -954,6 +968,10 @@ export function Canvas(props: CanvasProps) {
         onRenameCurrent={onRenameCurrent}
         onDeleteDiagram={onDeleteDiagram}
         onDuplicateDiagram={onDuplicateDiagram}
+        onCreateFolder={onCreateFolder}
+        onRenameFolder={onRenameFolder}
+        onDeleteFolder={onDeleteFolder}
+        onMoveDiagramToFolder={onMoveDiagramToFolder}
       />
 
       {/* Activity panel — per-diagram audit log + Undo/Redo. Hidden
