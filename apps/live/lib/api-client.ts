@@ -53,6 +53,7 @@ export type StoredDiagram = {
   tabs: TabSummary[];
   shareable: boolean;
   shareCode: string | null;
+  folderId: string | null;
   savedAt: number;
 };
 
@@ -61,7 +62,19 @@ export type DiagramSummary = {
   name: string;
   shareable: boolean;
   shareCode: string | null;
+  folderId: string | null;
   savedAt: number;
+};
+
+// One row of the folders table (spec/15). `parentId === null` means
+// the folder lives at the tree root; the synthetic "Unsorted" bucket
+// has no row.
+export type Folder = {
+  id: string;
+  parentId: string | null;
+  name: string;
+  createdAt: number;
+  updatedAt: number;
 };
 
 type DiagramResponse = {
@@ -72,6 +85,7 @@ type DiagramResponse = {
     tabs: TabSummary[];
     shareable: boolean;
     shareCode: string | null;
+    folderId: string | null;
     savedAt: number;
     createdAt: number;
   };
@@ -91,9 +105,13 @@ type ListResponse = {
     name: string;
     shareable: boolean;
     shareCode: string | null;
+    folderId: string | null;
     savedAt: number;
   }[];
 };
+
+type FolderResponse = { folder: Folder };
+type FoldersResponse = { folders: Folder[] };
 
 type ShareResponse = { shareable: boolean; shareCode: string | null };
 
@@ -183,6 +201,7 @@ export async function apiLoadDiagram(ownerId: string, id: string): Promise<Store
     tabs: diagram.tabs,
     shareable: diagram.shareable,
     shareCode: diagram.shareCode,
+    folderId: diagram.folderId,
     savedAt: diagram.savedAt,
   };
 }
@@ -204,6 +223,7 @@ export async function apiLoadShared(code: string): Promise<SharedDiagramResoluti
       tabs: diagram.tabs,
       shareable: diagram.shareable,
       shareCode: diagram.shareCode,
+      folderId: diagram.folderId,
       savedAt: diagram.savedAt,
     },
     role: body.role === 'view' ? 'view' : 'edit',
@@ -368,6 +388,7 @@ export async function apiCreateDiagram(
     tabs: diagram.tabs,
     shareable: diagram.shareable,
     shareCode: diagram.shareCode,
+    folderId: diagram.folderId,
     savedAt: diagram.savedAt,
   };
 }
@@ -441,8 +462,74 @@ export async function apiListDiagrams(ownerId: string): Promise<DiagramSummary[]
     name: d.name,
     shareable: d.shareable,
     shareCode: d.shareCode,
+    folderId: d.folderId,
     savedAt: d.savedAt,
   }));
+}
+
+// ---------------------------------------------------------------------
+// folders — spec/15
+// ---------------------------------------------------------------------
+
+export async function apiListFolders(ownerId: string): Promise<Folder[]> {
+  const res = await fetch(`${API_BASE}/folders`, { headers: { 'X-Owner-Id': ownerId } });
+  if (!res.ok) throw new Error(`list folders failed: ${res.status}`);
+  const { folders } = (await res.json()) as FoldersResponse;
+  return folders;
+}
+
+export async function apiCreateFolder(
+  ownerId: string,
+  input: { id: string; name: string; parentId?: string | null },
+): Promise<Folder> {
+  const res = await fetch(`${API_BASE}/folders`, {
+    method: 'POST',
+    headers: { 'X-Owner-Id': ownerId, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: input.id,
+      name: input.name,
+      parentId: input.parentId ?? null,
+    }),
+  });
+  if (!res.ok) throw new Error(`create folder failed: ${res.status}`);
+  const { folder } = (await res.json()) as FolderResponse;
+  return folder;
+}
+
+export async function apiUpdateFolder(
+  ownerId: string,
+  id: string,
+  patch: { name?: string; parentId?: string | null },
+): Promise<Folder> {
+  const res = await fetch(`${API_BASE}/folders/${id}`, {
+    method: 'PUT',
+    headers: { 'X-Owner-Id': ownerId, 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) throw new Error(`update folder failed: ${res.status}`);
+  const { folder } = (await res.json()) as FolderResponse;
+  return folder;
+}
+
+export async function apiDeleteFolder(ownerId: string, id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/folders/${id}`, {
+    method: 'DELETE',
+    headers: { 'X-Owner-Id': ownerId },
+  });
+  if (!res.ok && res.status !== 404) throw new Error(`delete folder failed: ${res.status}`);
+}
+
+export async function apiSetDiagramFolder(
+  ownerId: string,
+  diagramId: string,
+  folderId: string | null,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/folder`, {
+    method: 'PUT',
+    headers: { 'X-Owner-Id': ownerId, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ folderId }),
+  });
+  if (!res.ok) throw new Error(`set folder failed: ${res.status}`);
 }
 
 export async function apiLoadSelf(id: string): Promise<Participant | null> {

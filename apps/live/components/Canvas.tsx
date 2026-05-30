@@ -1044,6 +1044,17 @@ export function Canvas(props: CanvasProps) {
               // inline Undo / Redo so common history actions don't
               // require reopening the panel.
               <div className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5">
+                <Tooltip title="Open Tab Activity" description="Expand the Tab Activity panel.">
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={onToggleActivityMinimized}
+                    aria-label="Open Tab Activity"
+                    className="flex h-11 w-9 items-center justify-center border-r border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                  >
+                    <ActivityIcon />
+                  </button>
+                </Tooltip>
                 <Tooltip title="Undo" description="Undo last edit.">
                   <button
                     type="button"
@@ -1051,20 +1062,9 @@ export function Canvas(props: CanvasProps) {
                     onClick={onUndo}
                     disabled={!canUndo}
                     aria-label="Undo"
-                    className="flex h-11 w-9 items-center justify-center border-r border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                    className="flex h-11 w-9 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
                   >
                     <UndoIcon />
-                  </button>
-                </Tooltip>
-                <Tooltip title="Open Tab Activity" description="Expand the Tab Activity panel.">
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={onToggleActivityMinimized}
-                    aria-label="Open Tab Activity"
-                    className="flex h-11 w-9 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
-                  >
-                    <ActivityIcon />
                   </button>
                 </Tooltip>
                 <Tooltip title="Redo" description="Redo last undone edit.">
@@ -1074,7 +1074,7 @@ export function Canvas(props: CanvasProps) {
                     onClick={onRedo}
                     disabled={!canRedo}
                     aria-label="Redo"
-                    className="flex h-11 w-9 items-center justify-center border-l border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                    className="flex h-11 w-9 items-center justify-center border-l border-slate-100 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
                   >
                     <RedoIcon />
                   </button>

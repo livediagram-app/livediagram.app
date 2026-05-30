@@ -119,6 +119,9 @@ export function Explorer({
                   onOpen={() => onOpenDiagram(current.id)}
                   onRename={onRenameCurrent}
                   onDelete={onDeleteDiagram ? () => onDeleteDiagram(current.id) : undefined}
+                  onDuplicate={
+                    onDuplicateDiagram ? () => onDuplicateDiagram(current.id) : undefined
+                  }
                 />
               </li>
             </ul>
