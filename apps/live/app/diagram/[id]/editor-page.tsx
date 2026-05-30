@@ -529,6 +529,11 @@ export default function LivePage() {
       };
       setSelfParticipant({ ...self, status: 'online' });
       if (!storedSelf) await saveSelfParticipant(self).catch(() => {});
+      // Seed the persistence guard with whatever's on the server (or
+      // what we just saved for a brand-new participant) so the
+      // post-hydration effect doesn't immediately echo the same
+      // name/color back via PUT.
+      lastPersistedSelfRef.current = { name: self.name, color: self.color };
 
       // Two URL flavours: `?d=<id>` is the owner's private URL,
       // `?s=<code>` is a share URL another participant follows. Visitor
@@ -747,10 +752,14 @@ export default function LivePage() {
       };
       if (sessionShareCode) headers['X-Share-Code'] = sessionShareCode;
       for (const t of changedTabs) {
+        // Strip `templateChosen` (UI-only) before persisting,
+        // mirroring apiSaveTab.
+        const { templateChosen: _tc, ...persistable } = t;
+        void _tc;
         fetch(`${apiBase}/diagrams/${diagramId}/tabs/${t.id}`, {
           method: 'PUT',
           headers,
-          body: JSON.stringify(t),
+          body: JSON.stringify(persistable),
           keepalive: true,
         }).catch(() => {});
       }
@@ -856,8 +865,19 @@ export default function LivePage() {
     return () => window.clearTimeout(handle);
   }, [hydrated, diagramId, tabs, diagramName, selfParticipant.id, isReadOnly, sessionShareCode]);
 
+  // Persist self only when name or color actually changed. Without
+  // this guard the hydration GET → state set → effect fire chain
+  // produced a useless PUT echoing the same values back to the
+  // server. Status is in-memory only (the API doesn't store it) so
+  // it doesn't count as a change.
+  const lastPersistedSelfRef = useRef<{ name: string; color: string } | null>(null);
   useEffect(() => {
     if (!hydrated) return;
+    const prev = lastPersistedSelfRef.current;
+    if (prev && prev.name === selfParticipant.name && prev.color === selfParticipant.color) {
+      return;
+    }
+    lastPersistedSelfRef.current = { name: selfParticipant.name, color: selfParticipant.color };
     saveSelfParticipant(selfParticipant).catch(() => {});
   }, [hydrated, selfParticipant]);
 

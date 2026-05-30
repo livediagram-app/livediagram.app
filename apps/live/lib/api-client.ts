@@ -367,6 +367,20 @@ export async function apiSaveDiagramMeta(
 }
 
 // Create a brand-new diagram with an optional initial set of tabs.
+// `templateChosen` is UI-only state (have we dismissed the per-tab
+// template picker yet?). It rides on the Tab type so the editor can
+// flip it locally, but there's no reason for the server to persist
+// it — strip before every write so it stays purely a frontend
+// concern. The server-side data column simply won't carry the field
+// going forward; pre-existing rows that have it become no-ops on
+// load (we use it if present, drop it on next save).
+function stripTemplateChosen(tab: Tab): Tab {
+  if (tab.templateChosen === undefined) return tab;
+  const { templateChosen: _tc, ...rest } = tab;
+  void _tc;
+  return rest as Tab;
+}
+
 // Returns the meta + tab summaries the API stored. The live app uses
 // this when the welcome flow commits a fresh id so the very first
 // per-tab fetch lands on a populated row.
@@ -377,7 +391,11 @@ export async function apiCreateDiagram(
   const res = await fetch(`${API_BASE}/diagrams`, {
     method: 'POST',
     headers: ownerHeaders(ownerId),
-    body: JSON.stringify({ id: d.id, name: d.name, tabs: d.tabs ?? [] }),
+    body: JSON.stringify({
+      id: d.id,
+      name: d.name,
+      tabs: (d.tabs ?? []).map(stripTemplateChosen),
+    }),
   });
   if (!res.ok) throw new Error(`create diagram failed: ${res.status}`);
   const { diagram } = (await res.json()) as DiagramResponse;
@@ -428,7 +446,7 @@ export async function apiSaveTab(
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tab.id}`, {
     method: 'PUT',
     headers: logAuthHeaders(ownerId, shareCode),
-    body: JSON.stringify(tab),
+    body: JSON.stringify(stripTemplateChosen(tab)),
   });
   if (!res.ok) throw new Error(`save tab failed: ${res.status}`);
 }
