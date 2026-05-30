@@ -528,6 +528,7 @@ export function Canvas(props: CanvasProps) {
             key={element.id}
             element={element}
             isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
+            isMultiSelected={multiSelectedIds.has(element.id)}
             remoteSelectors={remoteSelectionsByElement.get(element.id) ?? []}
             isEditing={element.id === editingId}
             isPaintMode={isPaintMode || isGroupMode}

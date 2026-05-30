@@ -141,9 +141,11 @@ function EndpointHandle({ cx, cy, pinned, disabled, onPointerDown }: EndpointHan
 }
 
 export function ArrowDefs() {
-  // Single shared arrowhead marker. `fill="context-stroke"` would be
-  // ideal but isn't supported everywhere; `currentColor` works because
-  // ArrowView sets `color` on the group containing the line.
+  // Single shared arrowhead marker. `fill="context-stroke"` is the
+  // canonical SVG2 way to make a marker pick up the referencing line's
+  // stroke colour; modern Chrome / Firefox / Safari all support it.
+  // currentColor didn't reliably inherit through the marker boundary in
+  // every browser, leaving arrowheads stuck on the default slate.
   return (
     <defs>
       <marker
@@ -155,7 +157,7 @@ export function ArrowDefs() {
         markerHeight="6"
         orient="auto-start-reverse"
       >
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke" />
       </marker>
     </defs>
   );

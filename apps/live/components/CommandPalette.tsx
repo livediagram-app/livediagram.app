@@ -322,7 +322,7 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
                     active={selection.textSize === 'scale'}
                     onClick={() => selection.onSetTextSize('scale')}
                   >
-                    Scale
+                    <ScaleIcon />
                   </SizeButton>
                 </Tooltip>
                 <Tooltip title="Small" description="Fixed small font size.">
@@ -330,7 +330,7 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
                     active={selection.textSize === 'sm'}
                     onClick={() => selection.onSetTextSize('sm')}
                   >
-                    Sm
+                    <DotsIcon count={1} />
                   </SizeButton>
                 </Tooltip>
                 <Tooltip title="Medium" description="Fixed medium font size.">
@@ -338,7 +338,7 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
                     active={selection.textSize === 'md'}
                     onClick={() => selection.onSetTextSize('md')}
                   >
-                    Md
+                    <DotsIcon count={2} />
                   </SizeButton>
                 </Tooltip>
                 <Tooltip title="Large" description="Fixed large font size.">
@@ -346,7 +346,7 @@ function SelectedElementSection({ selection }: { selection: SelectedElementContr
                     active={selection.textSize === 'lg'}
                     onClick={() => selection.onSetTextSize('lg')}
                   >
-                    Lg
+                    <DotsIcon count={3} />
                   </SizeButton>
                 </Tooltip>
               </div>
@@ -642,6 +642,41 @@ function LabelButton({
       <span className="text-slate-500">{children}</span>
       {label}
     </button>
+  );
+}
+
+function ScaleIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 8h10" />
+      <path d="M3 8l2 -2M3 8l2 2" />
+      <path d="M13 8l-2 -2M13 8l-2 2" />
+    </svg>
+  );
+}
+
+function DotsIcon({ count }: { count: 1 | 2 | 3 }) {
+  // Concentric size cue: 1 small dot, 2 mid dots, 3 larger dots. Each
+  // dot's radius scales with `count` so the visual weight reads as
+  // "size" at a glance.
+  const radii = count === 1 ? [1.4] : count === 2 ? [1.8, 1.8] : [2.2, 2.2, 2.2];
+  const spacing = count === 1 ? [8] : count === 2 ? [5, 11] : [3.5, 8, 12.5];
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      {radii.map((r, i) => (
+        <circle key={i} cx={spacing[i]} cy={8} r={r} />
+      ))}
+    </svg>
   );
 }
 

@@ -25,6 +25,11 @@ import {
 type BoxedElementViewProps = {
   element: BoxedElement;
   isSelected: boolean;
+  // True when this element is part of an active marquee multi-selection.
+  // Drives a louder selection ring (brand-500 instead of brand-200) so
+  // it's obvious which elements are bundled into a multi-action like
+  // Delete or Duplicate.
+  isMultiSelected?: boolean;
   isEditing: boolean;
   isPaintMode: boolean;
   showHandles: boolean;
@@ -46,6 +51,7 @@ type BoxedElementViewProps = {
 export function BoxedElementView({
   element,
   isSelected,
+  isMultiSelected = false,
   isEditing,
   isPaintMode,
   showHandles,
@@ -95,7 +101,7 @@ export function BoxedElementView({
   // colour so the realtime "X is here" signal is glanceable from anywhere
   // on the canvas — not just from the small initial-badge.
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
-  const variant = describeVariant(element, isSelected, remoteBorderColor);
+  const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor);
 
   const commentCount = activeCommentCount(element.commentThread);
   const linked = element.link !== undefined && element.link.kind === 'tab';
@@ -432,8 +438,14 @@ function AnchorDot({
 function describeVariant(
   element: BoxedElement,
   isSelected: boolean,
+  isMultiSelected: boolean,
   remoteBorderColor: string | null,
 ): { className: string; style: React.CSSProperties } {
+  // Multi-selection uses a much louder ring (solid brand-500, offset)
+  // so a busy canvas with many selected elements reads unambiguously.
+  // Single selection keeps the subtler brand-200 / brand-300 rings.
+  const singleRing = (cls: string) => (isSelected && !isMultiSelected ? cls : '');
+  const multiRing = isMultiSelected ? 'ring-2 ring-brand-500 ring-offset-2 ring-offset-white' : '';
   // When a remote participant has this element selected, draw a thicker
   // 3-pixel border in their colour so the realtime signal is glanceable.
   // We apply it as a box-shadow inset on text (which has no real border)
@@ -442,7 +454,7 @@ function describeVariant(
   const remoteBorderWidth = remoteBorderColor ? 3 : 0;
   switch (element.type) {
     case 'shape': {
-      const ring = isSelected ? 'ring-2 ring-brand-200' : '';
+      const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       // SVG-rendered shapes (diamond, cylinder, parallelogram, hexagon,
       // document) draw themselves via an inner SVG overlay; the wrapper div
       // carries no border/background, just the selection ring. The
@@ -466,9 +478,11 @@ function describeVariant(
       };
     }
     case 'text': {
-      const ring = isSelected
-        ? 'ring-2 ring-brand-300 ring-offset-2 ring-offset-white'
-        : 'ring-1 ring-dashed ring-slate-300';
+      const ring = isMultiSelected
+        ? multiRing
+        : isSelected
+          ? 'ring-2 ring-brand-300 ring-offset-2 ring-offset-white'
+          : 'ring-1 ring-dashed ring-slate-300';
       return {
         className: `text-slate-800 rounded-sm ${ring}`,
         // Text elements have no real border; render the remote-selector
@@ -480,7 +494,7 @@ function describeVariant(
       };
     }
     case 'sticky': {
-      const ring = isSelected ? 'ring-2 ring-brand-200' : '';
+      const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
         className: `border text-amber-950 shadow-md ${ring}`,
         style: {
