@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Brand } from '@livediagram/ui';
-import { MenuItem, PortalMenu } from './PortalMenu';
 
 // Sync state surfaced as a small pill next to the diagram title. The
 // editor is autosave-driven, so silent failures (offline, API down,
@@ -10,9 +9,9 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 type EditorHeaderProps = {
   diagramName: string;
-  // Hides the centred diagram title + its ellipsis menu while the
-  // first-run welcome modal is up (no diagram exists yet, naming or
-  // deleting it makes no sense). Brand and Share button stay.
+  // Hides the centred diagram title while the first-run welcome modal
+  // is up (no diagram exists yet, naming it makes no sense). Brand and
+  // Share button stay.
   hideTitle?: boolean;
   // Only the diagram's owner sees the Share button — visitors arriving
   // via a share URL can't toggle sharing on their host's diagram.
@@ -23,7 +22,6 @@ type EditorHeaderProps = {
   brandAccent?: string;
   onOpenShare: () => void;
   onRename: (name: string) => void;
-  onDeleteDiagram: () => void;
 };
 
 export function EditorHeader({
@@ -34,11 +32,8 @@ export function EditorHeader({
   brandAccent,
   onOpenShare,
   onRename,
-  onDeleteDiagram,
 }: EditorHeaderProps) {
   const [editing, setEditing] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4">
@@ -61,48 +56,10 @@ export function EditorHeader({
               type="button"
               onClick={() => setEditing(true)}
               className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              title="Click to rename"
             >
               {diagramName}
             </button>
-            <button
-              ref={menuButtonRef}
-              type="button"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-label="Diagram menu"
-              aria-expanded={menuOpen}
-              className="flex h-6 w-6 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-                <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-                <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-                <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-              </svg>
-            </button>
-            {menuOpen ? (
-              <PortalMenu
-                anchor={menuButtonRef.current}
-                placement="below"
-                onClose={() => setMenuOpen(false)}
-              >
-                <MenuItem
-                  icon={<PencilIcon />}
-                  label="Rename"
-                  onClick={() => {
-                    setEditing(true);
-                    setMenuOpen(false);
-                  }}
-                />
-                <MenuItem
-                  icon={<TrashIcon />}
-                  label="Delete"
-                  danger
-                  onClick={() => {
-                    onDeleteDiagram();
-                    setMenuOpen(false);
-                  }}
-                />
-              </PortalMenu>
-            ) : null}
             <SharedBadge shareable={shareable} />
           </div>
         )}

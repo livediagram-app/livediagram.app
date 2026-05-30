@@ -54,6 +54,7 @@ import { ALIGN_SNAP_THRESHOLD, SNAP_THRESHOLD, type ArrowEnd, type DragMode } fr
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import {
   apiAppendChangeLogEntry,
+  apiCreateDiagram,
   apiDeleteChangeLogEntry,
   apiDeleteChangeLogForTab,
   apiDeleteTab,
@@ -1494,16 +1495,57 @@ export default function LivePage() {
     setTemplatePickerMode('templates');
   };
 
-  // Delete the entire diagram: remove from the API, strip the id from
-  // the URL, and hand off to /live/new so the user lands on a fresh
-  // welcome flow. Not undoable — the user explicitly opened the title
-  // menu and picked Delete. We don't await the delete so the redirect
-  // is instant; the row will be gone by the time the next list query
-  // runs.
-  const deleteDiagram = () => {
+  // Delete a diagram by id. When the target is the currently-open one,
+  // redirect to /live/new so the user lands on a fresh welcome flow
+  // (the editor would otherwise be staring at a row that no longer
+  // exists). Deleting any *other* diagram just hits the API + refreshes
+  // the Explorer list. Not undoable — the menu is an explicit action.
+  const deleteDiagram = (id: string) => {
     if (typeof window === 'undefined') return;
-    if (diagramId) void apiDeleteDiagram(diagramId).catch(() => {});
-    window.location.assign(`${window.location.origin}/live/new`);
+    void apiDeleteDiagram(id).catch(() => {});
+    if (id === diagramId) {
+      window.location.assign(`${window.location.origin}/live/new`);
+      return;
+    }
+    refreshDiagramList(selfParticipant.id);
+  };
+
+  // Duplicate a diagram into a brand-new one. Loads the source's
+  // metadata + every tab's content, mints new tab ids (otherwise they
+  // collide with the source when the user opens both), preserves
+  // element ids inside each tab (arrows + same-tab links keep
+  // resolving), and rewrites any tab-link references on the new tabs
+  // through the id remap so cross-tab navigation survives the copy.
+  const duplicateDiagram = async (id: string) => {
+    const src = await apiLoadDiagram(selfParticipant.id, id).catch(() => null);
+    if (!src) return;
+    const fullTabs = await Promise.all(
+      src.tabs.map((t) => apiLoadTab(selfParticipant.id, src.id, t.id).catch(() => null)),
+    );
+    const tabIdMap = new Map<string, string>();
+    for (const t of src.tabs) tabIdMap.set(t.id, crypto.randomUUID());
+    const remappedTabs: Tab[] = [];
+    for (const tab of fullTabs) {
+      if (!tab) continue;
+      const newTabId = tabIdMap.get(tab.id) ?? crypto.randomUUID();
+      const elements = tab.elements.map((el) => {
+        // ElementLink.kind === 'tab' / 'element' both carry tabId; both
+        // need to retarget at the duplicate's new tab ids.
+        if ('link' in el && el.link) {
+          const next = tabIdMap.get(el.link.tabId);
+          if (next) return { ...el, link: { ...el.link, tabId: next } };
+        }
+        return el;
+      });
+      remappedTabs.push({ ...tab, id: newTabId, elements });
+    }
+    const newId = crypto.randomUUID();
+    await apiCreateDiagram(selfParticipant.id, {
+      id: newId,
+      name: `${src.name} copy`,
+      tabs: remappedTabs,
+    }).catch(() => {});
+    refreshDiagramList(selfParticipant.id);
   };
 
   // Comment mutations live outside the history hook (per the comment on
@@ -2808,7 +2850,6 @@ export default function LivePage() {
         brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
         onOpenShare={() => setShareDialogOpen(true)}
         onRename={setDiagramName}
-        onDeleteDiagram={deleteDiagram}
       />
       {shareDialogOpen ? (
         <ShareDialog
@@ -2891,6 +2932,9 @@ export default function LivePage() {
         currentDiagramId={diagramId}
         onOpenDiagram={openDiagram}
         onNewDiagram={newDiagram}
+        onRenameCurrent={setDiagramName}
+        onDeleteDiagram={deleteDiagram}
+        onDuplicateDiagram={(id) => void duplicateDiagram(id)}
         onDeselect={() => {
           setSelectedId(null);
           setMultiSelectedIds(new Set());

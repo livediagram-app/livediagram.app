@@ -121,6 +121,9 @@ type CanvasProps = {
   currentDiagramId: string | null;
   onOpenDiagram: (id: string) => void;
   onNewDiagram: () => void;
+  onRenameCurrent: (name: string) => void;
+  onDeleteDiagram: (id: string) => void;
+  onDuplicateDiagram: (id: string) => void;
   onDeselect: () => void;
   onSelect: (id: string) => void;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
@@ -262,6 +265,9 @@ export function Canvas(props: CanvasProps) {
     currentDiagramId,
     onOpenDiagram,
     onNewDiagram,
+    onRenameCurrent,
+    onDeleteDiagram,
+    onDuplicateDiagram,
     onDeselect,
     onSelect,
     onBeginDrag,
@@ -918,6 +924,9 @@ export function Canvas(props: CanvasProps) {
         onReset={onResetExplorer}
         onOpenDiagram={onOpenDiagram}
         onNewDiagram={onNewDiagram}
+        onRenameCurrent={onRenameCurrent}
+        onDeleteDiagram={onDeleteDiagram}
+        onDuplicateDiagram={onDuplicateDiagram}
       />
 
       {/* Activity panel — per-diagram audit log + Undo/Redo. Hidden

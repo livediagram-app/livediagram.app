@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
 import { MovablePanel } from './MovablePanel';
+import { MenuItem, PortalMenu } from './PortalMenu';
 
 type DiagramListItem = {
   id: string;
@@ -30,6 +31,13 @@ type ExplorerProps = {
   // (e.g. the welcome route, which IS the new-diagram flow) can hide
   // the button entirely. When omitted the row isn't rendered.
   onNewDiagram?: () => void;
+  // Optional row-level actions. When provided, each row renders an
+  // ellipsis menu that delegates to these handlers. Omitted on
+  // surfaces where the editor's helpers aren't reachable (or shouldn't
+  // be) — read-only contexts, for example.
+  onRenameCurrent?: (name: string) => void;
+  onDeleteDiagram?: (id: string) => void;
+  onDuplicateDiagram?: (id: string) => void;
 };
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
@@ -50,6 +58,9 @@ export function Explorer({
   onReset,
   onOpenDiagram,
   onNewDiagram,
+  onRenameCurrent,
+  onDeleteDiagram,
+  onDuplicateDiagram,
 }: ExplorerProps) {
   // Re-render every 30s so the "Updated X ago" strings stay fresh
   // while the panel is open. Cheap when the panel is minimised (this
@@ -58,7 +69,7 @@ export function Explorer({
   // Default to collapsed so the panel stays compact when the user
   // has lots of diagrams. The header badge surfaces the count even
   // when the list isn't visible.
-  const [yourDiagramsOpen, setYourDiagramsOpen] = useState(false);
+  const [recentOpen, setRecentOpen] = useState(false);
   if (minimized) return null;
   // Split the open diagram into its own section so the user always
   // sees which one is active. Most-recently-saved first for the rest.
@@ -102,7 +113,13 @@ export function Explorer({
             </p>
             <ul className="flex flex-col gap-0.5">
               <li>
-                <DiagramRow item={current} active onOpen={() => onOpenDiagram(current.id)} />
+                <DiagramRow
+                  item={current}
+                  active
+                  onOpen={() => onOpenDiagram(current.id)}
+                  onRename={onRenameCurrent}
+                  onDelete={onDeleteDiagram ? () => onDeleteDiagram(current.id) : undefined}
+                />
               </li>
             </ul>
           </div>
@@ -113,10 +130,10 @@ export function Explorer({
             <AccordionHeader
               label="Recent Diagrams"
               badge={loading ? null : ordered.length}
-              open={yourDiagramsOpen}
-              onToggle={() => setYourDiagramsOpen((v) => !v)}
+              open={recentOpen}
+              onToggle={() => setRecentOpen((v) => !v)}
             />
-            {yourDiagramsOpen ? (
+            {recentOpen ? (
               loading ? (
                 <ul className="flex flex-col gap-1" aria-busy="true">
                   {[0, 1, 2].map((i) => (
@@ -137,7 +154,15 @@ export function Explorer({
                 <ul className="scrollbar-slim flex max-h-60 flex-col gap-0.5 overflow-y-auto">
                   {ordered.map((d) => (
                     <li key={d.id}>
-                      <DiagramRow item={d} active={false} onOpen={() => onOpenDiagram(d.id)} />
+                      <DiagramRow
+                        item={d}
+                        active={false}
+                        onOpen={() => onOpenDiagram(d.id)}
+                        onDelete={onDeleteDiagram ? () => onDeleteDiagram(d.id) : undefined}
+                        onDuplicate={
+                          onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined
+                        }
+                      />
                     </li>
                   ))}
                 </ul>
@@ -228,44 +253,172 @@ function ChevronIcon() {
   );
 }
 
+// Single diagram entry. Acts as both the Current Diagram row (active
+// state, optional inline rename) and a Recent Diagrams row (Open /
+// Delete / Duplicate menu). The ellipsis only renders when at least
+// one menu action callback is wired up.
 function DiagramRow({
   item,
   active,
   onOpen,
+  onRename,
+  onDelete,
+  onDuplicate,
 }: {
   item: DiagramListItem;
   active: boolean;
   onOpen: () => void;
+  onRename?: (name: string) => void;
+  onDelete?: () => void;
+  onDuplicate?: () => void;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState(item.name);
+
+  useEffect(() => {
+    if (!editing) return;
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, [editing]);
+
+  const commitRename = () => {
+    const next = draft.trim();
+    if (next && next !== item.name && onRename) onRename(next);
+    setEditing(false);
+  };
+
+  const cancelRename = () => {
+    setDraft(item.name);
+    setEditing(false);
+  };
+
+  const hasMenu = Boolean((onRename && active) || onDelete || onDuplicate);
   const relative = formatRelativeTime(Date.now() - item.savedAt);
+
+  const rowClasses = active
+    ? 'flex w-full items-start gap-1.5 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-800'
+    : 'flex w-full items-start gap-1.5 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100';
+
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-current={active ? 'true' : undefined}
-      className={
-        active
-          ? 'flex w-full items-start gap-1.5 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-800'
-          : 'flex w-full items-start gap-1.5 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100'
-      }
-    >
-      <span className="mt-0.5">
-        <DiagramIcon active={active} />
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate">{item.name}</span>
-        <span
-          className={
-            active
-              ? 'truncate text-[10px] font-normal text-brand-700/80'
-              : 'truncate text-[10px] text-slate-400'
-          }
-          title={new Date(item.savedAt).toLocaleString()}
-        >
-          Updated {relative}
+    <div className="group relative flex items-stretch">
+      <button
+        type="button"
+        onClick={editing ? undefined : onOpen}
+        aria-current={active ? 'true' : undefined}
+        className={`${rowClasses} flex-1 pr-1`}
+      >
+        <span className="mt-0.5">
+          <DiagramIcon active={active} />
         </span>
-      </span>
-    </button>
+        <span className="flex min-w-0 flex-1 flex-col">
+          {editing ? (
+            <input
+              ref={inputRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              onBlur={commitRename}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  commitRename();
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  cancelRename();
+                }
+              }}
+              className="w-full rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 outline-none focus:border-brand-500"
+            />
+          ) : (
+            <span className="truncate">{item.name}</span>
+          )}
+          <span
+            className={
+              active
+                ? 'truncate text-[10px] font-normal text-brand-700/80'
+                : 'truncate text-[10px] text-slate-400'
+            }
+            title={new Date(item.savedAt).toLocaleString()}
+          >
+            Updated {relative}
+          </span>
+        </span>
+      </button>
+      {hasMenu && !editing ? (
+        <button
+          ref={menuButtonRef}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((o) => !o);
+          }}
+          aria-label="Diagram menu"
+          aria-expanded={menuOpen}
+          className={`flex w-6 shrink-0 items-center justify-center rounded text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-slate-200/70 hover:text-slate-700 ${
+            menuOpen ? 'opacity-100' : ''
+          }`}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+            <circle cx="3" cy="7" r="1.25" fill="currentColor" />
+            <circle cx="7" cy="7" r="1.25" fill="currentColor" />
+            <circle cx="11" cy="7" r="1.25" fill="currentColor" />
+          </svg>
+        </button>
+      ) : null}
+      {menuOpen ? (
+        <PortalMenu
+          anchor={menuButtonRef.current}
+          placement="below"
+          onClose={() => setMenuOpen(false)}
+        >
+          {!active ? (
+            <MenuItem
+              icon={<OpenIcon />}
+              label="Open"
+              onClick={() => {
+                onOpen();
+                setMenuOpen(false);
+              }}
+            />
+          ) : null}
+          {active && onRename ? (
+            <MenuItem
+              icon={<PencilIcon />}
+              label="Rename"
+              onClick={() => {
+                setEditing(true);
+                setMenuOpen(false);
+              }}
+            />
+          ) : null}
+          {onDuplicate ? (
+            <MenuItem
+              icon={<DuplicateIcon />}
+              label="Duplicate"
+              onClick={() => {
+                onDuplicate();
+                setMenuOpen(false);
+              }}
+            />
+          ) : null}
+          {onDelete ? (
+            <MenuItem
+              icon={<TrashIcon />}
+              label="Delete"
+              danger
+              onClick={() => {
+                onDelete();
+                setMenuOpen(false);
+              }}
+            />
+          ) : null}
+        </PortalMenu>
+      ) : null}
+    </div>
   );
 }
 
@@ -285,6 +438,84 @@ function DiagramIcon({ active }: { active: boolean }) {
     >
       <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
       <path d="M5 6h6M5 9h4" />
+    </svg>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M11.5 2.5l2 2-8 8H3.5v-2z" />
+      <path d="M10 4l2 2" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2.5 4h11" />
+      <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
+      <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
+    </svg>
+  );
+}
+
+function DuplicateIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="5" y="5" width="8" height="8" rx="1.25" />
+      <path d="M3 11V4a1 1 0 0 1 1-1h7" />
+    </svg>
+  );
+}
+
+function OpenIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M9.5 2.5h4v4" />
+      <path d="M13 3L7.5 8.5" />
+      <path d="M12.5 9.5v3a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h3" />
     </svg>
   );
 }
