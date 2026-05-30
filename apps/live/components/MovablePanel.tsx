@@ -17,7 +17,7 @@ type MovablePanelProps = {
   // panel hasn't been dragged yet — render at the default corner.
   position: { x: number; y: number } | null;
   // Where to render the panel when the user hasn't dragged it yet.
-  defaultCorner: 'top-left' | 'top-right';
+  defaultCorner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   // Tailwind width utility for the panel body (e.g. `w-56`, `w-64`).
   width?: string;
   onMoveTo: (x: number, y: number) => void;
@@ -83,7 +83,11 @@ export function MovablePanel({
     ? ''
     : defaultCorner === 'top-right'
       ? 'right-4 top-4'
-      : 'left-4 top-4';
+      : defaultCorner === 'bottom-left'
+        ? 'bottom-16 left-4'
+        : defaultCorner === 'bottom-right'
+          ? 'bottom-16 right-4'
+          : 'left-4 top-4';
 
   return (
     <div

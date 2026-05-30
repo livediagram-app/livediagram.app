@@ -39,7 +39,7 @@ export function ActivityPanel({
     <MovablePanel
       title="Activity"
       position={position}
-      defaultCorner="top-left"
+      defaultCorner="bottom-left"
       width="w-72"
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}
@@ -67,33 +67,39 @@ export function ActivityPanel({
 
         <div className="h-px bg-slate-100" />
 
-        {loading ? (
-          <ul className="flex flex-col gap-1" aria-busy="true">
-            {[0, 1, 2].map((i) => (
-              <li
-                key={i}
-                className="flex items-center gap-2 rounded-md px-2 py-1.5"
-                aria-hidden
-              >
-                <span className="h-3 w-3 shrink-0 animate-pulse rounded-full bg-slate-200" />
-                <span
-                  className="h-3 animate-pulse rounded bg-slate-200"
-                  style={{ width: `${80 - i * 10}%` }}
-                />
-              </li>
-            ))}
-          </ul>
-        ) : entries.length === 0 ? (
-          <p className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs text-slate-500">
-            No edits yet — start drawing.
-          </p>
-        ) : (
-          <ul className="flex max-h-80 flex-col gap-0.5 overflow-y-auto">
-            {entries.map((entry) => (
-              <ActivityRow key={entry.id} entry={entry} onRevert={() => onRevert(entry)} />
-            ))}
-          </ul>
-        )}
+        {/* Fixed body height — ~8 entry rows. The panel stays a
+            consistent size whether the log is empty or thousands of
+            entries deep; overflow scrolls. Keeps the editor chrome
+            predictable. */}
+        <div className="h-[18rem] overflow-y-auto">
+          {loading ? (
+            <ul className="flex flex-col gap-1" aria-busy="true">
+              {[0, 1, 2].map((i) => (
+                <li
+                  key={i}
+                  className="flex items-center gap-2 rounded-md px-2 py-1.5"
+                  aria-hidden
+                >
+                  <span className="h-3 w-3 shrink-0 animate-pulse rounded-full bg-slate-200" />
+                  <span
+                    className="h-3 animate-pulse rounded bg-slate-200"
+                    style={{ width: `${80 - i * 10}%` }}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : entries.length === 0 ? (
+            <p className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs text-slate-500">
+              No edits yet — start drawing.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-0.5">
+              {entries.map((entry) => (
+                <ActivityRow key={entry.id} entry={entry} onRevert={() => onRevert(entry)} />
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </MovablePanel>
   );

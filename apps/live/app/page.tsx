@@ -1132,6 +1132,36 @@ export default function LivePage() {
     commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name } : t)));
   };
 
+  // Copy the active tab into another diagram. Loads the destination,
+  // appends a fresh-id clone of the active tab, and PUTs it back. The
+  // source diagram is unchanged. Element ids are preserved so internal
+  // arrow endpoints and links between elements still resolve inside
+  // the new tab.
+  const copyActiveTabTo = async (targetDiagramId: string) => {
+    const source = tabs.find((t) => t.id === activeId);
+    if (!source) return;
+    const target = await apiLoadDiagram(selfParticipant.id, targetDiagramId).catch(() => null);
+    if (!target) return;
+    const cloned: Tab = {
+      ...source,
+      id: crypto.randomUUID(),
+      // Mark as template-chosen so the welcome modal doesn't reappear
+      // for the destination diagram if it was on its empty starter tab.
+      templateChosen: true,
+    };
+    const nextTabs = [...target.tabs, cloned];
+    await apiSaveDiagram(selfParticipant.id, {
+      id: target.id,
+      name: target.name,
+      tabs: nextTabs,
+    }).catch(() => {
+      // If the save fails the user sees the existing "Not saved" pill
+      // on their own diagram, not the destination. Best-effort here.
+    });
+    // Refresh the local list so savedAt sort and any name change land.
+    refreshDiagramList(selfParticipant.id);
+  };
+
   const duplicateTab = (id: string) => {
     const src = tabs.find((t) => t.id === id);
     if (!src) return;
@@ -2433,6 +2463,8 @@ export default function LivePage() {
           onDuplicate={duplicateTab}
           onDelete={deleteTab}
           onClearContent={clearTabContent}
+          otherDiagrams={diagramList.filter((d) => d.id !== diagramId)}
+          onCopyTabTo={copyActiveTabTo}
           onReorder={reorderTabs}
           saveStatus={saveStatus}
           savedAt={savedAt}

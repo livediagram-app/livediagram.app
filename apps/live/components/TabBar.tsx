@@ -19,6 +19,13 @@ type TabBarProps = {
   // through the active tab's ellipsis menu (used to live in the
   // Palette's Content accordion).
   onClearContent: () => void;
+  // The user's other diagrams (excluding the current one). Drives the
+  // "Add to another diagram" submenu in the tab ellipsis.
+  otherDiagrams: { id: string; name: string }[];
+  // Copy the active tab into another diagram. Callee handles the
+  // round-trip to the API. Returns a promise so the menu can dismiss
+  // after the operation completes.
+  onCopyTabTo: (targetDiagramId: string) => Promise<void> | void;
   onReorder: (sourceId: string, targetId: string) => void;
   saveStatus: SaveStatus;
   // Epoch ms of the last successful save. Drives the "Saved N minutes
@@ -38,6 +45,8 @@ export function TabBar({
   onDuplicate,
   onDelete,
   onClearContent,
+  otherDiagrams,
+  onCopyTabTo,
   onReorder,
   saveStatus,
   savedAt,
@@ -114,6 +123,7 @@ export function TabBar({
                   onClose={() => setMenuFor(null)}
                   canDelete={tabs.length > 1}
                   canClearContent={activeTabHasContent}
+                  otherDiagrams={otherDiagrams}
                   onRename={() => {
                     setEditingId(tab.id);
                     setMenuFor(null);
@@ -124,6 +134,10 @@ export function TabBar({
                   }}
                   onClearContent={() => {
                     onClearContent();
+                    setMenuFor(null);
+                  }}
+                  onCopyTo={async (targetId) => {
+                    await onCopyTabTo(targetId);
                     setMenuFor(null);
                   }}
                   onDelete={() => {
@@ -301,9 +315,11 @@ function EllipsisMenuButton({
   onClose,
   canDelete,
   canClearContent,
+  otherDiagrams,
   onRename,
   onDuplicate,
   onClearContent,
+  onCopyTo,
   onDelete,
 }: {
   open: boolean;
@@ -311,9 +327,11 @@ function EllipsisMenuButton({
   onClose: () => void;
   canDelete: boolean;
   canClearContent: boolean;
+  otherDiagrams: { id: string; name: string }[];
   onRename: () => void;
   onDuplicate: () => void;
   onClearContent: () => void;
+  onCopyTo: (targetDiagramId: string) => void;
   onDelete: () => void;
 }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -340,6 +358,8 @@ function EllipsisMenuButton({
           onRename={onRename}
           onDuplicate={onDuplicate}
           onClearContent={onClearContent}
+          onCopyTo={onCopyTo}
+          otherDiagrams={otherDiagrams}
           onDelete={onDelete}
           canDelete={canDelete}
           canClearContent={canClearContent}
@@ -355,6 +375,8 @@ function PortalMenu({
   onRename,
   onDuplicate,
   onClearContent,
+  onCopyTo,
+  otherDiagrams,
   onDelete,
   canClearContent,
   canDelete,
@@ -364,10 +386,18 @@ function PortalMenu({
   onRename: () => void;
   onDuplicate: () => void;
   onClearContent: () => void;
+  onCopyTo: (targetDiagramId: string) => void;
+  otherDiagrams: { id: string; name: string }[];
   onDelete: () => void;
   canDelete: boolean;
   canClearContent: boolean;
 }) {
+  // The menu has two views — "actions" lists the verbs (Rename,
+  // Duplicate, Clear…), and "copyTo" lists the user's other diagrams
+  // so the active tab can be cloned into one of them. Stays in the
+  // same portal so the existing positioning and outside-click handler
+  // both work unchanged.
+  const [view, setView] = useState<'actions' | 'copyTo'>('actions');
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
@@ -424,7 +454,7 @@ function PortalMenu({
     <div
       ref={ref}
       role="menu"
-      className="fixed z-50 flex w-32 flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg"
+      className={`fixed z-50 flex ${view === 'copyTo' ? 'w-56' : 'w-44'} flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg`}
       style={{
         // pos pins the menu's right edge to the ellipsis button's right edge,
         // then translate shifts it left and up. adjust nudges back on-screen
@@ -434,21 +464,53 @@ function PortalMenu({
         transform: 'translate(-100%, calc(-100% - 4px))',
       }}
     >
-      <MenuItem icon={<PencilIcon />} label="Rename" onClick={onRename} />
-      <MenuItem icon={<CopyIcon />} label="Duplicate" onClick={onDuplicate} />
-      <MenuItem
-        icon={<ClearIcon />}
-        label="Clear content"
-        onClick={onClearContent}
-        disabled={!canClearContent}
-      />
-      <MenuItem
-        icon={<TrashIcon />}
-        label="Delete"
-        onClick={onDelete}
-        danger
-        disabled={!canDelete}
-      />
+      {view === 'actions' ? (
+        <>
+          <MenuItem icon={<PencilIcon />} label="Rename" onClick={onRename} />
+          <MenuItem icon={<CopyIcon />} label="Duplicate" onClick={onDuplicate} />
+          <MenuItem
+            icon={<MoveIcon />}
+            label="Add to another diagram…"
+            onClick={() => setView('copyTo')}
+            disabled={otherDiagrams.length === 0}
+          />
+          <MenuItem
+            icon={<ClearIcon />}
+            label="Clear content"
+            onClick={onClearContent}
+            disabled={!canClearContent}
+          />
+          <MenuItem
+            icon={<TrashIcon />}
+            label="Delete"
+            onClick={onDelete}
+            danger
+            disabled={!canDelete}
+          />
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            onClick={() => setView('actions')}
+            className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:text-slate-700"
+          >
+            <BackIcon />
+            Back
+          </button>
+          <p className="px-2 pb-1 text-[10px] text-slate-400">Pick a destination diagram</p>
+          <div className="max-h-56 overflow-y-auto">
+            {otherDiagrams.map((d) => (
+              <MenuItem
+                key={d.id}
+                icon={<DiagramIcon />}
+                label={d.name || 'Untitled diagram'}
+                onClick={() => onCopyTo(d.id)}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>,
     document.body,
   );
@@ -537,6 +599,63 @@ function TrashIcon() {
       <path d="M2.5 4h11" />
       <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
       <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
+    </svg>
+  );
+}
+
+function MoveIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2" y="4" width="7" height="9" rx="1.25" />
+      <path d="M9.5 8.5h4.5" />
+      <path d="M12 6.5l2 2-2 2" />
+    </svg>
+  );
+}
+
+function BackIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M7 2L3 6L7 10" />
+    </svg>
+  );
+}
+
+function DiagramIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
+      <path d="M5 6h6M5 9h4" />
     </svg>
   );
 }
