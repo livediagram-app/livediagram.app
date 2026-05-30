@@ -512,7 +512,7 @@ export function SelectedElementSection({
             <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3">
               <p className="text-[10px] font-medium text-slate-500">Style</p>
               <div className="grid grid-cols-4 gap-1">
-                <Tooltip title="Bold" description="Make the label bold.">
+                <Tooltip block title="Bold" description="Make the label bold.">
                   <SizeButton
                     active={selection.textBold === true}
                     onClick={selection.onToggleTextBold}
@@ -520,7 +520,7 @@ export function SelectedElementSection({
                     <BoldIcon />
                   </SizeButton>
                 </Tooltip>
-                <Tooltip title="Italic" description="Italicise the label.">
+                <Tooltip block title="Italic" description="Italicise the label.">
                   <SizeButton
                     active={selection.textItalic === true}
                     onClick={selection.onToggleTextItalic}
@@ -528,7 +528,7 @@ export function SelectedElementSection({
                     <ItalicIcon />
                   </SizeButton>
                 </Tooltip>
-                <Tooltip title="Underline" description="Underline the label.">
+                <Tooltip block title="Underline" description="Underline the label.">
                   <SizeButton
                     active={selection.textUnderline === true}
                     onClick={selection.onToggleTextUnderline}
@@ -536,7 +536,7 @@ export function SelectedElementSection({
                     <UnderlineIcon />
                   </SizeButton>
                 </Tooltip>
-                <Tooltip title="Strikethrough" description="Strike through the label.">
+                <Tooltip block title="Strikethrough" description="Strike through the label.">
                   <SizeButton
                     active={selection.textStrikethrough === true}
                     onClick={selection.onToggleTextStrikethrough}
@@ -564,10 +564,11 @@ export function SelectedElementSection({
                 {(['none', 'sm', 'md', 'lg'] as const).map((p) => (
                   <Tooltip
                     key={p}
+                    block
                     title={
                       p === 'none' ? 'None' : p === 'sm' ? 'Small' : p === 'md' ? 'Medium' : 'Large'
                     }
-                    description="Space between the element's border and its label."
+                    description="Padding around the label."
                   >
                     <SizeButton
                       active={selection.padding === p}
@@ -1330,7 +1331,11 @@ function SizeButton({
   onClick: () => void;
   children: React.ReactNode;
 }) {
-  const base = 'rounded-md px-1.5 py-1 text-xs font-medium transition';
+  // Stretches to fill its parent grid cell so the row reads as four
+  // equal-width controls rather than four shrink-to-fit pills floating
+  // at the start of the row.
+  const base =
+    'flex w-full items-center justify-center rounded-md px-1.5 py-1 text-xs font-medium transition';
   const styled = active
     ? 'bg-brand-100 text-brand-700'
     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900';

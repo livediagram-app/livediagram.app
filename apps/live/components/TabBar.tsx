@@ -61,9 +61,10 @@ export function TabBar({
   return (
     <div className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-white px-3">
       <span
-        className="text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+        className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400"
         aria-hidden
       >
+        <TabsLabelIcon />
         Tabs
       </span>
       <div className="scrollbar-slim flex flex-1 items-center gap-1 overflow-x-auto">
@@ -712,6 +713,28 @@ function DiagramIcon() {
     >
       <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
       <path d="M5 6h6M5 9h4" />
+    </svg>
+  );
+}
+
+// Tiny folder-tab-stack icon paired with the TABS label. Reads as
+// "tabs of paper" — disambiguates the label from the canvas's own
+// shape tooling at a glance.
+function TabsLabelIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M1.5 4.5h3l1 1.25h5v4.25h-9z" />
+      <path d="M3 4.5V3h3.25" />
     </svg>
   );
 }
