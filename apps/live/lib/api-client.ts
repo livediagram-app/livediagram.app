@@ -216,7 +216,12 @@ export async function apiSaveSelf(p: Participant): Promise<void> {
 // to grow this union and matching handlers in page.tsx.
 export type RoomOp =
   | { kind: 'tabs'; tabs: Tab[]; name: string }
-  | { kind: 'select'; elementId: string | null };
+  | { kind: 'select'; elementId: string | null }
+  // Cursor position in canvas coordinates. `null` means the cursor
+  // left the canvas surface so peers can hide their indicator. The
+  // active tab id is included so we only render cursors of
+  // participants who are looking at the same tab as us.
+  | { kind: 'cursor'; tabId: string; x: number | null; y: number | null };
 
 // Outgoing payloads sent from this client.
 export type RoomOutgoing =

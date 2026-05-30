@@ -64,6 +64,11 @@ type CanvasProps = {
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
   remoteSelectionsByElement: Map<string, { id: string; name: string; color: string }[]>;
+  // Live cursor positions for remote participants — canvas-coords +
+  // participant identity. Rendered inside the transformed wrapper so
+  // they pan and zoom with the canvas.
+  remoteCursors: { id: string; name: string; color: string; x: number; y: number }[];
+  onCanvasPointerMove: (canvasX: number | null, canvasY: number | null) => void;
   onDuplicateMultiSelected: () => void;
   onDeleteMultiSelected: () => void;
   onGroupMultiSelected: () => void;
@@ -170,6 +175,8 @@ export function Canvas(props: CanvasProps) {
     canvasTool,
     onSetCanvasTool,
     remoteSelectionsByElement,
+    remoteCursors,
+    onCanvasPointerMove,
     onDuplicateMultiSelected,
     onDeleteMultiSelected,
     onGroupMultiSelected,
@@ -498,10 +505,25 @@ export function Canvas(props: CanvasProps) {
     onClearTabContent,
   };
 
+  // Broadcast the local pointer position to peers (canvas-coords).
+  // Throttling lives in page.tsx so the Canvas stays prop-driven.
+  const handlePointerMoveCanvas = (e: React.PointerEvent) => {
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const sx = (e.clientX - rect.left) / viewportZoom;
+    const sy = (e.clientY - rect.top) / viewportZoom;
+    onCanvasPointerMove(sx, sy);
+  };
+  const handlePointerLeaveCanvas = () => {
+    onCanvasPointerMove(null, null);
+  };
+
   return (
     <main
       ref={mainRef}
       tabIndex={-1}
+      onPointerMove={handlePointerMoveCanvas}
+      onPointerLeave={handlePointerLeaveCanvas}
       className="relative flex-1 overflow-hidden outline-none"
       style={tabBackgroundStyle(
         tabBackgroundPattern,
@@ -596,6 +618,10 @@ export function Canvas(props: CanvasProps) {
             ))}
           </svg>
         ) : null}
+
+        {remoteCursors.map((c) => (
+          <RemoteCursor key={c.id} cursor={c} zoom={viewportZoom} />
+        ))}
 
         {showPlus && selectionBounds ? (
           <>
@@ -877,6 +903,49 @@ function applyAlpha(color: string, alpha: number): string {
   const g = parseInt(hex.slice(2, 4), 16);
   const b = parseInt(hex.slice(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Floating cursor for a remote participant. Position is in canvas
+// coords (so the cursor pans + zooms with the canvas), but the SVG
+// + name pill are counter-scaled so they keep their on-screen size
+// at any zoom — same trick the badges + plus buttons use.
+function RemoteCursor({
+  cursor,
+  zoom,
+}: {
+  cursor: { id: string; name: string; color: string; x: number; y: number };
+  zoom: number;
+}) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute"
+      style={{
+        left: cursor.x,
+        top: cursor.y,
+        transform: `scale(${1 / zoom})`,
+        transformOrigin: 'top left',
+        zIndex: 40,
+      }}
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill={cursor.color}
+        stroke="white"
+        strokeWidth="1"
+      >
+        <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
+      </svg>
+      <span
+        className="absolute left-3 top-3 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm"
+        style={{ backgroundColor: cursor.color }}
+      >
+        {cursor.name}
+      </span>
+    </div>
+  );
 }
 
 function tabBackgroundStyle(

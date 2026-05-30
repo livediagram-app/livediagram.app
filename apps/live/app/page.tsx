@@ -235,6 +235,14 @@ export default function LivePage() {
   // in BoxedElementView so users can see in real time what others are
   // working on.
   const [remoteSelections, setRemoteSelections] = useState<Map<string, string | null>>(new Map());
+  // Live cursor positions for every remote participant. Stored in
+  // canvas-coords (pre-transform) so they pan / zoom correctly with
+  // the canvas. `null` cursor means the participant moved off the
+  // canvas surface; we keep the entry around (vs deleting) so the
+  // last-seen position can still inform analytics later if needed.
+  const [remoteCursors, setRemoteCursors] = useState<
+    Map<string, { tabId: string; x: number; y: number } | null>
+  >(new Map());
   const refreshDiagramList = (ownerId: string) => {
     apiListDiagrams(ownerId)
       .then((list) => setDiagramList(list))
@@ -416,9 +424,9 @@ export default function LivePage() {
             status: 'online',
           })),
         );
-        // Drop selections for any participant who's no longer connected.
-        // Stops stale "User X is here" badges from sticking after a tab
-        // close or network drop.
+        // Drop selections AND cursors for any participant who's no
+        // longer connected. Stops stale presence indicators from
+        // sticking after a tab close or network drop.
         const present = new Set(participants.map((p) => p.id));
         setRemoteSelections((prev) => {
           let changed = false;
@@ -426,6 +434,18 @@ export default function LivePage() {
           for (const [id, sel] of prev) {
             if (present.has(id)) {
               next.set(id, sel);
+            } else {
+              changed = true;
+            }
+          }
+          return changed ? next : prev;
+        });
+        setRemoteCursors((prev) => {
+          let changed = false;
+          const next = new Map<string, { tabId: string; x: number; y: number } | null>();
+          for (const [id, pos] of prev) {
+            if (present.has(id)) {
+              next.set(id, pos);
             } else {
               changed = true;
             }
@@ -442,6 +462,15 @@ export default function LivePage() {
           setRemoteSelections((prev) => {
             const next = new Map(prev);
             next.set(from, op.elementId);
+            return next;
+          });
+        } else if (op.kind === 'cursor') {
+          setRemoteCursors((prev) => {
+            const next = new Map(prev);
+            next.set(
+              from,
+              op.x !== null && op.y !== null ? { tabId: op.tabId, x: op.x, y: op.y } : null,
+            );
             return next;
           });
         }
@@ -472,6 +501,28 @@ export default function LivePage() {
     if (!hydrated || !diagramId || !diagramShareable) return;
     roomRef.current?.send({ kind: 'op', op: { kind: 'select', elementId: selectedId } });
   }, [hydrated, diagramId, diagramShareable, selectedId]);
+
+  // Local cursor broadcaster. Sends the participant's pointer position
+  // in canvas-coords whenever it moves, throttled to ~30 Hz so we
+  // don't flood the room. `broadcastCursor(null)` is called when the
+  // pointer leaves the canvas — peers hide the indicator until the
+  // next position arrives.
+  const lastCursorSentRef = useRef(0);
+  const broadcastCursor = (pos: { x: number; y: number } | null) => {
+    if (!hydrated || !diagramId || !diagramShareable) return;
+    const now = performance.now();
+    if (pos && now - lastCursorSentRef.current < 33) return;
+    lastCursorSentRef.current = now;
+    roomRef.current?.send({
+      kind: 'op',
+      op: {
+        kind: 'cursor',
+        tabId: activeId,
+        x: pos?.x ?? null,
+        y: pos?.y ?? null,
+      },
+    });
+  };
   const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
   const [viewportZoom, setViewportZoom] = useState(1);
   const canvasMainRef = useRef<HTMLElement>(null);
@@ -490,6 +541,22 @@ export default function LivePage() {
   // `select` op. Self is filtered out — we don't need a "you're here"
   // badge on top of our own selection ring.
   const livePresenceById = new Map(livePresence.map((p) => [p.id, p] as const));
+  // Cursor rows joined with presence so we get a fresh colour + name on
+  // every render and don't have to denormalise them into each `cursor`
+  // op payload. Filter to the active tab so cursors of teammates
+  // looking at a different tab don't bleed onto this one.
+  const remoteCursorRows = (() => {
+    const rows: { id: string; name: string; color: string; x: number; y: number }[] = [];
+    for (const [id, pos] of remoteCursors) {
+      if (!pos) continue;
+      if (id === selfParticipant.id) continue;
+      if (pos.tabId !== activeId) continue;
+      const p = livePresenceById.get(id);
+      if (!p) continue;
+      rows.push({ id, name: p.name, color: p.color, x: pos.x, y: pos.y });
+    }
+    return rows;
+  })();
   const remoteSelectionsByElement = new Map<
     string,
     { id: string; name: string; color: string }[]
@@ -1835,6 +1902,8 @@ export default function LivePage() {
         selectedId={selectedId}
         multiSelectedIds={multiSelectedIds}
         remoteSelectionsByElement={remoteSelectionsByElement}
+        remoteCursors={remoteCursorRows}
+        onCanvasPointerMove={(x, y) => broadcastCursor(x !== null && y !== null ? { x, y } : null)}
         onSelectMarquee={selectMarquee}
         canvasTool={canvasTool}
         onSetCanvasTool={setCanvasTool}
