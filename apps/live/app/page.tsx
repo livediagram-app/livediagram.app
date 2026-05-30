@@ -74,6 +74,34 @@ function createTab(name: string): Tab {
   return { id: crypto.randomUUID(), name, elements: [] };
 }
 
+// Full-screen "loading your diagram…" placeholder. Stand-in for the
+// editor chrome while the post-mount fetch resolves a ?d= or ?s= URL.
+// Reassures the user that data isn't lost — previously they'd briefly
+// see the empty-canvas welcome card and assume it had been wiped.
+function DiagramLoading() {
+  return (
+    <div className="flex flex-1 items-center justify-center bg-slate-50">
+      <div className="flex flex-col items-center gap-3">
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          className="animate-spin text-brand-500"
+          aria-hidden
+        >
+          <circle cx="16" cy="16" r="12" strokeOpacity="0.18" />
+          <path d="M28 16a12 12 0 0 0-12-12" />
+        </svg>
+        <p className="text-sm font-medium text-slate-600">Loading your diagram…</p>
+      </div>
+    </div>
+  );
+}
+
 const MIN_SIZE = 20;
 
 type ShapeBounds = { x: number; y: number; width: number; height: number };
@@ -204,6 +232,12 @@ export default function LivePage() {
   // (deleted, never existed, or owned by someone else). Renders the
   // NotFound surface instead of the editor + welcome modal.
   const [diagramNotFound, setDiagramNotFound] = useState(false);
+  // True between mount and hydration completing IF the URL points at
+  // an existing diagram (?d= or ?s=). Without this, the user briefly
+  // sees the empty-canvas welcome card and assumes their data has
+  // been wiped. Set synchronously at the very top of the hydration
+  // useLayoutEffect so the loading screen lands on the first paint.
+  const [loadingDiagram, setLoadingDiagram] = useState(false);
   // Surfaced in the editor header as a Saving/Saved/Not-saved pill. The
   // autosave used to catch and swallow errors, which made an offline
   // API look identical to a successful save. Now every save attempt
@@ -311,10 +345,17 @@ export default function LivePage() {
     // inside an IIFE. UI stays at the placeholder during the fetch;
     // the welcome modal is gated on `hydrated` so it doesn't flash the
     // Guest placeholder name into the input.
+    const initialUrl = new URL(window.location.href);
+    const initialId = initialUrl.searchParams.get('d');
+    const initialShareCode = initialUrl.searchParams.get('s');
+    // Synchronous flip so React commits the loading state before the
+    // browser paints — avoids a one-frame flash of the empty canvas
+    // for URLs that are about to load a real diagram.
+    if (initialId || initialShareCode) setLoadingDiagram(true);
     void (async () => {
-      const url = new URL(window.location.href);
-      const id = url.searchParams.get('d');
-      const shareCodeParam = url.searchParams.get('s');
+      const url = initialUrl;
+      const id = initialId;
+      const shareCodeParam = initialShareCode;
 
       // Identity comes first because every diagram fetch needs an
       // owner id. Persistent id lives in localStorage as a tiny
@@ -367,6 +408,7 @@ export default function LivePage() {
           setDiagramId(id);
           setDiagramNotFound(true);
           setHydrated(true);
+          setLoadingDiagram(false);
           setNameConfirmed(window.localStorage.getItem('livediagram:v2:name-confirmed') === '1');
           return;
         }
@@ -395,6 +437,7 @@ export default function LivePage() {
       setNameConfirmed(window.localStorage.getItem('livediagram:v2:name-confirmed') === '1');
       refreshDiagramList(self.id);
       setHydrated(true);
+      setLoadingDiagram(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1468,6 +1511,23 @@ export default function LivePage() {
     );
   };
 
+  // Generic helper for the inline label styles. Each toggle flips the
+  // matching boolean on every member of the current selection. We
+  // derive the next value from the primary so a partially-applied
+  // group all jumps to the same state.
+  const toggleTextStyleSelected = (
+    field: 'textBold' | 'textItalic' | 'textUnderline' | 'textStrikethrough',
+  ) => {
+    if (!selectedId) return;
+    const primary = activeTab.elements.find((el) => el.id === selectedId);
+    if (!primary || !isBoxed(primary)) return;
+    const next = !(primary[field] ?? false);
+    const ids = memberIdsOf(selectedId);
+    commit((els) =>
+      els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, [field]: next } : el)),
+    );
+  };
+
   const setFillColorSelected = (color: string) => {
     if (!selectedId) return;
     const ids = memberIdsOf(selectedId);
@@ -2022,6 +2082,14 @@ export default function LivePage() {
     );
   }
 
+  if (loadingDiagram) {
+    return (
+      <div className="flex h-dvh flex-col">
+        <DiagramLoading />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-dvh flex-col">
       <EditorHeader
@@ -2124,6 +2192,10 @@ export default function LivePage() {
         onSendToBack={sendSelectedToBack}
         onSetTextSize={setTextSizeSelected}
         onSetTextAlign={setTextAlignSelected}
+        onToggleTextBold={() => toggleTextStyleSelected('textBold')}
+        onToggleTextItalic={() => toggleTextStyleSelected('textItalic')}
+        onToggleTextUnderline={() => toggleTextStyleSelected('textUnderline')}
+        onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
         onSetFillColor={setFillColorSelected}
         onSetStrokeColor={setStrokeColorSelected}
         onSetTextColor={setTextColorSelected}

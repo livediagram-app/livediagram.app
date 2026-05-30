@@ -33,6 +33,17 @@ export type SelectedElementControls = {
   onResetColors: () => void;
   padding: Padding | null;
   onSetPadding: (padding: Padding) => void;
+  // Inline label styling. `null` for elements without a label (e.g.
+  // arrows). The Text accordion renders a row of toggle buttons that
+  // flip these booleans independently — any combination works.
+  textBold: boolean | null;
+  textItalic: boolean | null;
+  textUnderline: boolean | null;
+  textStrikethrough: boolean | null;
+  onToggleTextBold: () => void;
+  onToggleTextItalic: () => void;
+  onToggleTextUnderline: () => void;
+  onToggleTextStrikethrough: () => void;
   // Non-null only when an arrow is selected. Drives the Pointer
   // accordion that lets the user choose which end(s) of the arrow
   // get an arrowhead.
@@ -505,6 +516,45 @@ function SelectedElementSection({
               </div>
             </div>
           ) : null}
+          {selection.textBold !== null ? (
+            <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3">
+              <p className="text-[10px] font-medium text-slate-500">Style</p>
+              <div className="grid grid-cols-4 gap-1">
+                <Tooltip title="Bold" description="Make the label bold.">
+                  <SizeButton
+                    active={selection.textBold === true}
+                    onClick={selection.onToggleTextBold}
+                  >
+                    <BoldIcon />
+                  </SizeButton>
+                </Tooltip>
+                <Tooltip title="Italic" description="Italicise the label.">
+                  <SizeButton
+                    active={selection.textItalic === true}
+                    onClick={selection.onToggleTextItalic}
+                  >
+                    <ItalicIcon />
+                  </SizeButton>
+                </Tooltip>
+                <Tooltip title="Underline" description="Underline the label.">
+                  <SizeButton
+                    active={selection.textUnderline === true}
+                    onClick={selection.onToggleTextUnderline}
+                  >
+                    <UnderlineIcon />
+                  </SizeButton>
+                </Tooltip>
+                <Tooltip title="Strikethrough" description="Strike through the label.">
+                  <SizeButton
+                    active={selection.textStrikethrough === true}
+                    onClick={selection.onToggleTextStrikethrough}
+                  >
+                    <StrikethroughIcon />
+                  </SizeButton>
+                </Tooltip>
+              </div>
+            </div>
+          ) : null}
           {selection.textAlignX !== null && selection.textAlignY !== null ? (
             <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3">
               <p className="text-[10px] font-medium text-slate-500">Alignment</p>
@@ -797,6 +847,40 @@ function ShapeIcon({ kind }: { kind: ShapeKind }) {
         </svg>
       );
   }
+}
+
+function BoldIcon() {
+  return (
+    <span className="text-[13px] font-bold leading-none text-slate-700">B</span>
+  );
+}
+
+function ItalicIcon() {
+  return (
+    <span className="text-[13px] font-semibold italic leading-none text-slate-700">I</span>
+  );
+}
+
+function UnderlineIcon() {
+  return (
+    <span
+      className="text-[13px] font-semibold leading-none text-slate-700"
+      style={{ textDecoration: 'underline' }}
+    >
+      U
+    </span>
+  );
+}
+
+function StrikethroughIcon() {
+  return (
+    <span
+      className="text-[13px] font-semibold leading-none text-slate-700"
+      style={{ textDecoration: 'line-through' }}
+    >
+      S
+    </span>
+  );
 }
 
 // Renders a short horizontal line at the given stroke-width inside the

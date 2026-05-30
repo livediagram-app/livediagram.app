@@ -34,6 +34,7 @@ import { ArrowDefs, ArrowView } from './ArrowView';
 import { BoxedElementView } from './BoxedElementView';
 import { CommandPalette, type SelectedElementControls } from './CommandPalette';
 import { Explorer, ExplorerIcon, PaletteIcon } from './Explorer';
+import { getTheme } from '@/lib/themes';
 import { DockButton } from './MovablePanel';
 import { MultiSelectionToolbar } from './MultiSelectionToolbar';
 import { HistoryControls } from './HistoryControls';
@@ -114,6 +115,10 @@ type CanvasProps = {
   onSendToBack: () => void;
   onSetTextSize: (size: TextSize) => void;
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
+  onToggleTextBold: () => void;
+  onToggleTextItalic: () => void;
+  onToggleTextUnderline: () => void;
+  onToggleTextStrikethrough: () => void;
   onSetFillColor: (color: string) => void;
   onSetStrokeColor: (color: string) => void;
   onSetTextColor: (color: string) => void;
@@ -225,6 +230,10 @@ export function Canvas(props: CanvasProps) {
     onSendToBack,
     onSetTextSize,
     onSetTextAlign,
+    onToggleTextBold,
+    onToggleTextItalic,
+    onToggleTextUnderline,
+    onToggleTextStrikethrough,
     onSetFillColor,
     onSetStrokeColor,
     onSetTextColor,
@@ -488,6 +497,14 @@ export function Canvas(props: CanvasProps) {
         onSendToBack,
         onSetTextSize,
         onSetTextAlign,
+        textBold: isBoxed(selected) ? (selected.textBold ?? false) : null,
+        textItalic: isBoxed(selected) ? (selected.textItalic ?? false) : null,
+        textUnderline: isBoxed(selected) ? (selected.textUnderline ?? false) : null,
+        textStrikethrough: isBoxed(selected) ? (selected.textStrikethrough ?? false) : null,
+        onToggleTextBold,
+        onToggleTextItalic,
+        onToggleTextUnderline,
+        onToggleTextStrikethrough,
         onSetTextColor,
         onSetFillColor,
         onSetStrokeColor,
@@ -515,6 +532,12 @@ export function Canvas(props: CanvasProps) {
     onSetPatternColor,
     onSetTheme,
   };
+
+  // Colour for the link / comment badges. The active theme's
+  // elementStroke is the obvious "this theme's accent" — it's what
+  // arrows and new shape outlines use. The Brand theme has no stroke
+  // override, so fall back to brand-500 (the hex behind bg-brand-500).
+  const badgeColor = getTheme(tabThemeId).elementStroke ?? '#0ea5e9';
 
   // Broadcast the local pointer position to peers (canvas-coords).
   // Throttling lives in page.tsx so the Canvas stays prop-driven.
@@ -599,6 +622,7 @@ export function Canvas(props: CanvasProps) {
             showHandles={showHandles(element.id)}
             showAnchors={showAnchorsFor(element.id)}
             zoom={viewportZoom}
+            badgeColor={badgeColor}
             onBeginDrag={onBeginDrag}
             onBeginAnchorDrag={onBeginAnchorDrag}
             onBeginEdit={() => onBeginEdit(element.id)}
@@ -977,6 +1001,12 @@ function tabBackgroundStyle(
   const base: React.CSSProperties = {
     backgroundColor: applyAlpha(backgroundColor, backgroundOpacity),
   };
+  // Apply the same alpha to the pattern colour so the lines / dots /
+  // crosshatch fade in lockstep with the backdrop. Without this the
+  // slider visually "stops working" before the pattern lines do — they
+  // remain at full opacity over a faded background, which reads as a
+  // bug. Confetti uses a precomposed inline SVG so it's unaffected.
+  const fadedPatternColor = applyAlpha(patternColor, backgroundOpacity);
   const px = offset.x;
   const py = offset.y;
   switch (pattern) {
@@ -985,23 +1015,23 @@ function tabBackgroundStyle(
     case 'lines':
       return {
         ...base,
-        backgroundImage: `repeating-linear-gradient(0deg, transparent 0 23px, ${patternColor} 23px 24px)`,
+        backgroundImage: `repeating-linear-gradient(0deg, transparent 0 23px, ${fadedPatternColor} 23px 24px)`,
         backgroundPosition: `0px ${py}px`,
       };
     case 'crosshatch':
       return {
         ...base,
         backgroundImage:
-          `repeating-linear-gradient(45deg, transparent 0 17px, ${patternColor} 17px 18px), ` +
-          `repeating-linear-gradient(-45deg, transparent 0 17px, ${patternColor} 17px 18px)`,
+          `repeating-linear-gradient(45deg, transparent 0 17px, ${fadedPatternColor} 17px 18px), ` +
+          `repeating-linear-gradient(-45deg, transparent 0 17px, ${fadedPatternColor} 17px 18px)`,
         backgroundPosition: `${px}px ${py}px, ${px}px ${py}px`,
       };
     case 'graph':
       return {
         ...base,
         backgroundImage:
-          `repeating-linear-gradient(0deg, transparent 0 23px, ${patternColor} 23px 24px), ` +
-          `repeating-linear-gradient(90deg, transparent 0 23px, ${patternColor} 23px 24px)`,
+          `repeating-linear-gradient(0deg, transparent 0 23px, ${fadedPatternColor} 23px 24px), ` +
+          `repeating-linear-gradient(90deg, transparent 0 23px, ${fadedPatternColor} 23px 24px)`,
         backgroundPosition: `0px ${py}px, ${px}px 0px`,
       };
     case 'confetti':
@@ -1015,7 +1045,7 @@ function tabBackgroundStyle(
     default:
       return {
         ...base,
-        backgroundImage: `radial-gradient(circle, ${patternColor} 1px, transparent 1px)`,
+        backgroundImage: `radial-gradient(circle, ${fadedPatternColor} 1px, transparent 1px)`,
         backgroundSize: '24px 24px',
         backgroundPosition: `${px}px ${py}px`,
       };

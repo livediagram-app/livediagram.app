@@ -47,6 +47,10 @@ type BoxedElementViewProps = {
   // Select the element in response to a right-click — used to drive the
   // SelectionPopover without starting a drag.
   onContextSelect: () => void;
+  // The colour for the link/comment badges. Comes from the active
+  // tab's theme so the icons read as part of the diagram rather than
+  // floating brand-blue dots on a coloured palette.
+  badgeColor: string;
   // Other participants whose realtime selection is currently on this
   // element. Rendered as a small initial-badge stack at the top-left
   // (opposite the link / comment badges).
@@ -71,6 +75,7 @@ export function BoxedElementView({
   onOpenComments,
   onContextSelect,
   remoteSelectors,
+  badgeColor,
 }: BoxedElementViewProps) {
   const isLocked = element.locked === true;
   const label = element.label ?? '';
@@ -172,6 +177,7 @@ export function BoxedElementView({
           zoom={zoom}
           linked={linked}
           commentCount={commentCount}
+          badgeColor={badgeColor}
           onFollowLink={() =>
             element.link && element.link.kind === 'tab' ? onFollowLink(element.link.tabId) : null
           }
@@ -323,12 +329,14 @@ function BadgeStrip({
   zoom,
   linked,
   commentCount,
+  badgeColor,
   onFollowLink,
   onOpenComments,
 }: {
   zoom: number;
   linked: boolean;
   commentCount: number;
+  badgeColor: string;
   onFollowLink: () => void;
   onOpenComments: () => void;
 }) {
@@ -339,13 +347,14 @@ function BadgeStrip({
       className="pointer-events-auto absolute -right-1 -top-1 flex items-center gap-0.5 rounded-full border border-slate-200 bg-white p-0.5 shadow-sm"
     >
       {linked ? (
-        <BadgeButton label="Follow link" onClick={onFollowLink}>
+        <BadgeButton label="Follow link" color={badgeColor} onClick={onFollowLink}>
           <LinkBadgeIcon />
         </BadgeButton>
       ) : null}
       {commentCount > 0 ? (
         <BadgeButton
           label={`Open ${commentCount} comment${commentCount === 1 ? '' : 's'}`}
+          color={badgeColor}
           onClick={onOpenComments}
           dataAttr="data-comment-trigger"
         >
@@ -361,11 +370,13 @@ function BadgeStrip({
 
 function BadgeButton({
   label,
+  color,
   onClick,
   dataAttr,
   children,
 }: {
   label: string;
+  color: string;
   onClick: () => void;
   dataAttr?: string;
   children: React.ReactNode;
@@ -379,7 +390,11 @@ function BadgeButton({
         e.stopPropagation();
         onClick();
       }}
-      className="relative flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm transition hover:bg-brand-600"
+      // Theme-driven background via inline style so any hex/rgb the
+      // theme provides works — Tailwind utility classes only cover the
+      // brand palette. Tailwind keeps the layout / shape.
+      style={{ backgroundColor: color }}
+      className="relative flex h-5 w-5 items-center justify-center rounded-full text-white shadow-sm transition hover:brightness-110"
       {...extra}
     >
       {children}
@@ -571,6 +586,13 @@ function renderLabel(
     );
   }
 
+  const textStyle = {
+    bold: element.textBold,
+    italic: element.textItalic,
+    underline: element.textUnderline,
+    strikethrough: element.textStrikethrough,
+  };
+
   if (isSticky) {
     return (
       <MultilineLabel
@@ -581,13 +603,22 @@ function renderLabel(
         alignY={alignY}
         padding={padding}
         className="text-amber-950"
+        style={textStyle}
       />
     );
   }
 
   if (textSize === 'scale') {
     if (!label) return null;
-    return <ScalingLabel text={label} alignX={alignX} alignY={alignY} padding={padding} />;
+    return (
+      <ScalingLabel
+        text={label}
+        alignX={alignX}
+        alignY={alignY}
+        padding={padding}
+        style={textStyle}
+      />
+    );
   }
 
   return (
@@ -597,6 +628,7 @@ function renderLabel(
       alignX={alignX}
       alignY={alignY}
       padding={padding}
+      style={textStyle}
     />
   );
 }

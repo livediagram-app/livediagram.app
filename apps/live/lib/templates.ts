@@ -107,10 +107,16 @@ function buildBlank(cx: number, cy: number): Element[] {
 
 function buildMindMap(cx: number, cy: number): Element[] {
   const centerSize = 140;
-  const branchW = 120;
-  const branchH = 70;
-  const radius = 220;
+  const branchW = 130;
+  const branchH = 60;
+  const leafW = 100;
+  const leafH = 44;
+  const branchRadius = 240;
+  const leafOffset = 160;
 
+  // Central node: the only circle on the map. Surrounding topics use
+  // squares so the hierarchy reads as "one nucleus, many ideas radiating"
+  // rather than a sea of equivalent circles.
   const center = {
     ...createShape('circle', cx - centerSize / 2, cy - centerSize / 2),
     width: centerSize,
@@ -119,19 +125,59 @@ function buildMindMap(cx: number, cy: number): Element[] {
     textSize: 'lg' as const,
   };
 
-  const branches: { angle: number; label: string; from: Anchor; to: Anchor }[] = [
-    { angle: 0, label: 'Topic 1', from: 'e', to: 'w' },
-    { angle: 90, label: 'Topic 2', from: 's', to: 'n' },
-    { angle: 180, label: 'Topic 3', from: 'w', to: 'e' },
-    { angle: 270, label: 'Topic 4', from: 'n', to: 's' },
+  type BranchSpec = {
+    angle: number;
+    label: string;
+    from: Anchor;
+    to: Anchor;
+    // Each branch sprouts two children (sub-topics). leafSide picks
+    // which side of the parent the leaves sit on so the layout reads
+    // outward from the centre rather than crossing back over the spine.
+    leafSide: 'right' | 'left' | 'below' | 'above';
+    leafLabels: [string, string];
+  };
+
+  const branches: BranchSpec[] = [
+    {
+      angle: 0,
+      label: 'Topic 1',
+      from: 'e',
+      to: 'w',
+      leafSide: 'right',
+      leafLabels: ['Idea 1a', 'Idea 1b'],
+    },
+    {
+      angle: 90,
+      label: 'Topic 2',
+      from: 's',
+      to: 'n',
+      leafSide: 'below',
+      leafLabels: ['Idea 2a', 'Idea 2b'],
+    },
+    {
+      angle: 180,
+      label: 'Topic 3',
+      from: 'w',
+      to: 'e',
+      leafSide: 'left',
+      leafLabels: ['Idea 3a', 'Idea 3b'],
+    },
+    {
+      angle: 270,
+      label: 'Topic 4',
+      from: 'n',
+      to: 's',
+      leafSide: 'above',
+      leafLabels: ['Idea 4a', 'Idea 4b'],
+    },
   ];
 
   const branchElements = branches.map(({ angle, label }) => {
     const rad = (angle * Math.PI) / 180;
-    const bx = cx + Math.cos(rad) * radius - branchW / 2;
-    const by = cy + Math.sin(rad) * radius - branchH / 2;
+    const bx = cx + Math.cos(rad) * branchRadius - branchW / 2;
+    const by = cy + Math.sin(rad) * branchRadius - branchH / 2;
     return {
-      ...createShape('circle', bx, by),
+      ...createShape('square', bx, by),
       width: branchW,
       height: branchH,
       label,
@@ -139,11 +185,66 @@ function buildMindMap(cx: number, cy: number): Element[] {
     };
   });
 
-  const arrows = branches.map((b, i) =>
+  const centerArrows = branches.map((b, i) =>
     createPinnedArrow(center.id, b.from, branchElements[i]!.id, b.to),
   );
 
-  return [center, ...branchElements, ...arrows];
+  // Sub-topics: two per branch, fanned 30° apart around the branch's
+  // outward axis so siblings don't overlap. Anchors come from the
+  // branch-vs-leaf relative position so the arrow head lands on the
+  // correct face.
+  const leafElements: Element[] = [];
+  const leafArrows: Element[] = [];
+  branches.forEach((branch, i) => {
+    const parent = branchElements[i]!;
+    const parentCx = parent.x + parent.width / 2;
+    const parentCy = parent.y + parent.height / 2;
+    const spread = 32;
+    branch.leafLabels.forEach((label, leafIndex) => {
+      const offsetSign = leafIndex === 0 ? -1 : 1;
+      let lx = parentCx;
+      let ly = parentCy;
+      let fromAnchor: Anchor;
+      let toAnchor: Anchor;
+      switch (branch.leafSide) {
+        case 'right':
+          lx = parentCx + leafOffset;
+          ly = parentCy + offsetSign * spread;
+          fromAnchor = 'e';
+          toAnchor = 'w';
+          break;
+        case 'left':
+          lx = parentCx - leafOffset;
+          ly = parentCy + offsetSign * spread;
+          fromAnchor = 'w';
+          toAnchor = 'e';
+          break;
+        case 'below':
+          ly = parentCy + leafOffset;
+          lx = parentCx + offsetSign * spread;
+          fromAnchor = 's';
+          toAnchor = 'n';
+          break;
+        case 'above':
+          ly = parentCy - leafOffset;
+          lx = parentCx + offsetSign * spread;
+          fromAnchor = 'n';
+          toAnchor = 's';
+          break;
+      }
+      const leaf = {
+        ...createShape('square', lx - leafW / 2, ly - leafH / 2),
+        width: leafW,
+        height: leafH,
+        label,
+        textSize: 'sm' as const,
+      };
+      leafElements.push(leaf);
+      leafArrows.push(createPinnedArrow(parent.id, fromAnchor, leaf.id, toAnchor));
+    });
+  });
+
+  return [center, ...branchElements, ...leafElements, ...centerArrows, ...leafArrows];
 }
 
 function buildOrgChart(cx: number, cy: number): Element[] {

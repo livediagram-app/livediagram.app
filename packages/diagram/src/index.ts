@@ -181,6 +181,14 @@ export type ShapeElement = {
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
+  // Inline label styling. Each is independent so you can combine
+  // bold + italic + underline + strikethrough however you like.
+  // Stored on the element (not derived from a className) so saved
+  // diagrams round-trip the formatting.
+  textBold?: boolean;
+  textItalic?: boolean;
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
@@ -206,6 +214,14 @@ export type TextElement = {
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
+  // Inline label styling. Each is independent so you can combine
+  // bold + italic + underline + strikethrough however you like.
+  // Stored on the element (not derived from a className) so saved
+  // diagrams round-trip the formatting.
+  textBold?: boolean;
+  textItalic?: boolean;
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
@@ -231,6 +247,14 @@ export type StickyElement = {
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
+  // Inline label styling. Each is independent so you can combine
+  // bold + italic + underline + strikethrough however you like.
+  // Stored on the element (not derived from a className) so saved
+  // diagrams round-trip the formatting.
+  textBold?: boolean;
+  textItalic?: boolean;
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;

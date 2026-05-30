@@ -86,6 +86,30 @@ const TEXT_ALIGN: Record<TextAlignX, 'left' | 'center' | 'right'> = {
   right: 'right',
 };
 
+// Inline label-style props applied by every label renderer (scaling,
+// fixed, multiline). Stored independently so any combination — e.g.
+// bold + italic + strikethrough — works.
+export type LabelTextStyle = {
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+};
+
+// Build the CSS payload for a LabelTextStyle. text-decoration combines
+// underline + line-through into a single value (a space-separated list
+// is the canonical multi-decoration syntax).
+function labelTextStyleCss(style: LabelTextStyle): React.CSSProperties {
+  const decorations: string[] = [];
+  if (style.underline) decorations.push('underline');
+  if (style.strikethrough) decorations.push('line-through');
+  return {
+    fontStyle: style.italic ? 'italic' : undefined,
+    fontWeight: style.bold ? 700 : undefined,
+    textDecoration: decorations.length > 0 ? decorations.join(' ') : undefined,
+  };
+}
+
 function svgPreserve(alignX: TextAlignX, alignY: TextAlignY): string {
   const ax = alignX === 'left' ? 'xMin' : alignX === 'right' ? 'xMax' : 'xMid';
   const ay = alignY === 'top' ? 'YMin' : alignY === 'bottom' ? 'YMax' : 'YMid';
@@ -99,11 +123,13 @@ export function ScalingLabel({
   alignX,
   alignY,
   padding,
+  style,
 }: {
   text: string;
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: number;
+  style?: LabelTextStyle;
 }) {
   const textRef = useRef<SVGTextElement>(null);
   const [bbox, setBBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -131,7 +157,17 @@ export function ScalingLabel({
           y="0"
           dominantBaseline="hanging"
           fontFamily="ui-sans-serif, system-ui, sans-serif"
-          fontWeight="500"
+          fontWeight={style?.bold ? 700 : 500}
+          fontStyle={style?.italic ? 'italic' : undefined}
+          textDecoration={
+            style?.underline && style?.strikethrough
+              ? 'underline line-through'
+              : style?.underline
+                ? 'underline'
+                : style?.strikethrough
+                  ? 'line-through'
+                  : undefined
+          }
           fontSize="20"
           fill="currentColor"
         >
@@ -156,12 +192,14 @@ export function FixedSizeLabel({
   alignX,
   alignY,
   padding,
+  style,
 }: {
   text: string;
   size: Exclude<TextSize, 'scale'>;
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: number;
+  style?: LabelTextStyle;
 }) {
   if (!text) return null;
   return (
@@ -173,7 +211,10 @@ export function FixedSizeLabel({
         padding,
       }}
     >
-      <div className="w-full" style={{ textAlign: TEXT_ALIGN[alignX] }}>
+      <div
+        className="w-full"
+        style={{ textAlign: TEXT_ALIGN[alignX], ...labelTextStyleCss(style ?? {}) }}
+      >
         {text}
       </div>
     </div>
@@ -293,14 +334,15 @@ export function MultilineLabel({
   alignY,
   padding,
   className = '',
-}: MultilineLabelProps & { padding: number }) {
+  style,
+}: MultilineLabelProps & { padding: number; style?: LabelTextStyle }) {
   const fontSize = `${MULTI_FONT_PX[textSize]}px`;
   const outerStyle = {
     fontSize,
     alignItems: ALIGN_ITEMS[alignY],
     padding,
   };
-  const innerStyle = { textAlign: TEXT_ALIGN[alignX] };
+  const innerStyle = { textAlign: TEXT_ALIGN[alignX], ...labelTextStyleCss(style ?? {}) };
   if (!text) {
     return (
       <div
