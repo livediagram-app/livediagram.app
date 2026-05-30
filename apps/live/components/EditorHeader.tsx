@@ -21,6 +21,9 @@ type EditorHeaderProps = {
   // via a share URL can't toggle sharing on their host's diagram.
   showShare: boolean;
   shareable: boolean;
+  // Accent colour for the brand logo's "diagram" half. Comes from the
+  // active tab's theme stroke so the header subtly echoes the canvas.
+  brandAccent?: string;
   onOpenShare: () => void;
   onRename: (name: string) => void;
   onDeleteDiagram: () => void;
@@ -32,6 +35,7 @@ export function EditorHeader({
   hideTitle = false,
   showShare,
   shareable,
+  brandAccent,
   onOpenShare,
   onRename,
   onDeleteDiagram,
@@ -43,7 +47,7 @@ export function EditorHeader({
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4">
       <div className="flex w-48 items-center">
-        <Brand href="/" size="md" />
+        <Brand href="/" size="md" accentColor={brandAccent} />
       </div>
       <div className="flex flex-1 items-center justify-center">
         {hideTitle ? null : editing ? (

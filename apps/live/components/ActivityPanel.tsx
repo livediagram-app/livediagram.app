@@ -1,7 +1,8 @@
 'use client';
 
 import type { ChangeLogEntry } from '@/lib/api-client';
-import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
+import { formatRelativeTime, formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
+import type { SaveStatus } from './EditorHeader';
 import { MovablePanel } from './MovablePanel';
 
 type ActivityPanelProps = {
@@ -19,6 +20,10 @@ type ActivityPanelProps = {
   // untouched — only the log dies. Disabled when the list is empty
   // so the button doesn't no-op.
   onClearActivity: () => void;
+  // Save state surfaced next to the panel title — moved out of the
+  // footer so it sits with the related history information.
+  saveStatus: SaveStatus;
+  savedAt: number | null;
   onMoveTo: (x: number, y: number) => void;
   onResize: (size: { width: number; height: number }) => void;
   onToggleMinimized: () => void;
@@ -40,6 +45,8 @@ export function ActivityPanel({
   onRedo,
   onRevert,
   onClearActivity,
+  saveStatus,
+  savedAt,
   onMoveTo,
   onResize,
   onToggleMinimized,
@@ -52,15 +59,12 @@ export function ActivityPanel({
       defaultCorner="bottom-left"
       width="w-64"
       size={size}
-      // Header + 18rem entries floor + footer + padding all add up to
-      // ~360 px; round up so the user can't drag the panel into a
-      // state where everything is clipped. Width floor stops the
-      // entry rows truncating into uselessness.
       minWidth={240}
       minHeight={360}
       onResize={onResize}
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}
+      headerExtra={<SaveStatusBadge status={saveStatus} savedAt={savedAt} />}
     >
       <div className="flex flex-1 flex-col gap-2 px-3 pb-3 pt-1">
         {/* Undo / Redo bar lives at the top so the most common actions
@@ -133,6 +137,91 @@ export function ActivityPanel({
         </div>
       </div>
     </MovablePanel>
+  );
+}
+
+// Save-status badge that lived in the footer; the Activity panel
+// title is its new home — same factual content, paired with the
+// history it relates to.
+function SaveStatusBadge({
+  status,
+  savedAt,
+}: {
+  status: SaveStatus;
+  savedAt: number | null;
+}) {
+  useRelativeTimeTick();
+  if (status === 'idle' && savedAt === null) return null;
+  if (status === 'saving') {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium normal-case tracking-normal text-slate-400">
+        <SpinnerDot />
+        Saving…
+      </span>
+    );
+  }
+  if (status === 'error') {
+    return (
+      <span
+        role="status"
+        title="The editor couldn't save your latest changes. Check your network and the API."
+        className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-rose-700 ring-1 ring-rose-200"
+      >
+        <WarningIcon />
+        Not saved
+      </span>
+    );
+  }
+  const relative = savedAt !== null ? formatRelativeTime(Date.now() - savedAt) : null;
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium normal-case tracking-normal text-slate-500">
+      <CheckIcon />
+      {relative ? `Saved ${relative}` : 'Saved'}
+    </span>
+  );
+}
+
+function SpinnerDot() {
+  return (
+    <span aria-hidden className="inline-block h-2 w-2 animate-pulse rounded-full bg-slate-400" />
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 5.5L4 7.5L8 3" />
+    </svg>
+  );
+}
+
+function WarningIcon() {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M5 1.5l3.7 6.5H1.3z" />
+      <path d="M5 4.2v2" />
+      <circle cx="5" cy="7.3" r="0.4" fill="currentColor" stroke="none" />
+    </svg>
   );
 }
 

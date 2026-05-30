@@ -2341,6 +2341,7 @@ export default function LivePage() {
         hideTitle={anyWelcomeOpen}
         showShare={isOwner && hydrated && !anyWelcomeOpen}
         shareable={diagramShareable}
+        brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
         onOpenShare={() => setShareDialogOpen(true)}
         onRename={setDiagramName}
         onDeleteDiagram={deleteDiagram}
@@ -2417,6 +2418,8 @@ export default function LivePage() {
         onResizeActivity={setActivitySize}
         onRevertChange={revertChange}
         onClearActivity={clearActivityForActiveTab}
+        saveStatus={saveStatus}
+        savedAt={savedAt}
         currentDiagramId={diagramId}
         onOpenDiagram={openDiagram}
         onNewDiagram={newDiagram}
@@ -2506,8 +2509,6 @@ export default function LivePage() {
           otherDiagrams={diagramList.filter((d) => d.id !== diagramId)}
           onCopyTabTo={copyActiveTabTo}
           onReorder={reorderTabs}
-          saveStatus={saveStatus}
-          savedAt={savedAt}
         />
       )}
       {commentThreadOpenId !== null

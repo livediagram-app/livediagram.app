@@ -149,10 +149,6 @@ function OpenPalette({
       // anything starts clipping.
       minWidth={220}
       minHeight={300}
-      // The Palette anchors top-right, so grip sits at the bottom-
-      // left so it doesn't fall off the right edge of the screen
-      // and so resizing grows the panel into the canvas centre.
-      resizeFrom="bottom-left"
       onResize={onResize}
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}

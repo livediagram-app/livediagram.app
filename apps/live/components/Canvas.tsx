@@ -111,6 +111,8 @@ type CanvasProps = {
   onResizeActivity: (size: { width: number; height: number }) => void;
   onRevertChange: (entry: ChangeLogEntry) => void;
   onClearActivity: () => void;
+  saveStatus: import('./EditorHeader').SaveStatus;
+  savedAt: number | null;
   currentDiagramId: string | null;
   onOpenDiagram: (id: string) => void;
   onNewDiagram: () => void;
@@ -241,6 +243,8 @@ export function Canvas(props: CanvasProps) {
     onResizeActivity,
     onRevertChange,
     onClearActivity,
+    saveStatus,
+    savedAt,
     currentDiagramId,
     onOpenDiagram,
     onNewDiagram,
@@ -779,8 +783,8 @@ export function Canvas(props: CanvasProps) {
               Empty canvas
             </p>
             <p className="mt-3 text-xs leading-relaxed text-slate-600">
-              Open the palette on the left to add shapes, double-click anywhere to drop text, or
-              connect elements by dragging from their anchor dots.
+              Click an element in the Palette to start building your diagram, double-click anywhere
+              to drop text, or connect elements by dragging from their anchor dots.
             </p>
             <button
               type="button"
@@ -908,6 +912,8 @@ export function Canvas(props: CanvasProps) {
           onRedo={onRedo}
           onRevert={onRevertChange}
           onClearActivity={onClearActivity}
+          saveStatus={saveStatus}
+          savedAt={savedAt}
           onMoveTo={onMoveActivity}
           onResize={onResizeActivity}
           onToggleMinimized={onToggleActivityMinimized}

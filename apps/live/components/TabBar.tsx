@@ -1,8 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Tab } from '@livediagram/diagram';
-import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
-import type { SaveStatus } from './EditorHeader';
 
 type TabBarProps = {
   tabs: Tab[];
@@ -28,12 +26,6 @@ type TabBarProps = {
   // after the operation completes.
   onCopyTabTo: (targetDiagramId: string) => Promise<void> | void;
   onReorder: (sourceId: string, targetId: string) => void;
-  saveStatus: SaveStatus;
-  // Epoch ms of the last successful save. Drives the "Saved N minutes
-  // ago" relative time. `null` means we've never saved (just opened,
-  // brand new diagram pre-first-edit). Refreshes every 30s while the
-  // bar is mounted so the relative time stays current.
-  savedAt: number | null;
 };
 
 export function TabBar({
@@ -49,8 +41,6 @@ export function TabBar({
   otherDiagrams,
   onCopyTabTo,
   onReorder,
-  saveStatus,
-  savedAt,
 }: TabBarProps) {
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -159,96 +149,7 @@ export function TabBar({
           +
         </button>
       </div>
-      <SaveStatusIndicator status={saveStatus} savedAt={savedAt} />
     </div>
-  );
-}
-
-// Footer-right save indicator. Lives at the bottom of the editor —
-// quietly tells the user the autosave is keeping up. The pill stays
-// loud (rose) when a save fails so the user can't miss it.
-function SaveStatusIndicator({
-  status,
-  savedAt,
-}: {
-  status: SaveStatus;
-  savedAt: number | null;
-}) {
-  // Keeps the relative-time string fresh — "just now" needs to stop
-  // saying "just now" eventually.
-  useRelativeTimeTick();
-
-  if (status === 'idle' && savedAt === null) return null;
-  if (status === 'saving') {
-    return (
-      <span className="ml-2 inline-flex items-center gap-1.5 pr-1 text-[11px] font-medium text-slate-400">
-        <SpinnerDot />
-        Saving…
-      </span>
-    );
-  }
-  if (status === 'error') {
-    return (
-      <span
-        role="status"
-        title="The editor couldn't save your latest changes. Check your network and the API."
-        className="ml-2 inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-200"
-      >
-        <WarningIcon />
-        Not saved
-      </span>
-    );
-  }
-  const relative = savedAt !== null ? formatRelativeTime(Date.now() - savedAt) : null;
-  return (
-    <span className="ml-2 inline-flex items-center gap-1.5 pr-1 text-[11px] font-medium text-slate-500">
-      <CheckIcon />
-      {relative ? `Saved ${relative}` : 'Saved'}
-    </span>
-  );
-}
-
-function SpinnerDot() {
-  return (
-    <span aria-hidden className="inline-block h-2 w-2 animate-pulse rounded-full bg-slate-400" />
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="10"
-      height="10"
-      viewBox="0 0 10 10"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2 5.5L4 7.5L8 3" />
-    </svg>
-  );
-}
-
-function WarningIcon() {
-  return (
-    <svg
-      width="10"
-      height="10"
-      viewBox="0 0 10 10"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M5 1.5l3.7 6.5H1.3z" />
-      <path d="M5 4.2v2" />
-      <circle cx="5" cy="7.3" r="0.4" fill="currentColor" stroke="none" />
-    </svg>
   );
 }
 

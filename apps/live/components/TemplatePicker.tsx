@@ -48,7 +48,10 @@ export function TemplatePicker({
   // who need to confirm their display name first.
   const showIdentity = isIdentity;
   const showTemplates = !isIdentity;
-  const showThemes = isWelcome;
+  // Themes are pickable wherever templates are — both the first-run
+  // welcome AND the standalone Browse-templates flow. Identity-only
+  // mode (visitors joining via a share link) skips them.
+  const showThemes = !isIdentity;
   const [name, setName] = useState(participant.name);
   const [templateKind, setTemplateKind] = useState<TemplateKind>('blank');
   const [themeId, setThemeId] = useState<ThemeId>(currentThemeId);
@@ -75,7 +78,7 @@ export function TemplatePicker({
                 ? 'Pick a template and a theme to start with.'
                 : isIdentity
                   ? 'Pick the name people will see while you collaborate on this diagram.'
-                  : 'Scaffold this tab with a starter diagram. Your current theme stays.'}
+                  : 'Pick a template and theme to apply to this tab.'}
             </p>
           </div>
           <button

@@ -31,13 +31,12 @@ type MovablePanelProps = {
   // them from collapsing the panel into a sliver too small to use.
   minWidth?: number;
   minHeight?: number;
-  // Which corner hosts the resize grip. Right-anchored panels
-  // (defaultCorner: 'top-right' / 'bottom-right') should use
-  // 'bottom-left' so the right edge stays put and the handle isn't
-  // hidden off-screen. Left-anchored panels (the default) keep
-  // 'bottom-right'.
-  resizeFrom?: 'bottom-right' | 'bottom-left';
   onResize?: (size: PanelSize) => void;
+  // Optional content rendered to the right of the title inside the
+  // drag-handle row. Used by panels (e.g. Activity) that want to
+  // surface a status badge in the header without inventing a new
+  // bar. Pointer events stay live so buttons inside still click.
+  headerExtra?: ReactNode;
   onMoveTo: (x: number, y: number) => void;
   onMinimize: () => void;
   children: ReactNode;
@@ -58,8 +57,8 @@ export function MovablePanel({
   size = null,
   minWidth = 200,
   minHeight = 200,
-  resizeFrom = 'bottom-right',
   onResize,
+  headerExtra,
   onMoveTo,
   onMinimize,
   children,
@@ -81,6 +80,7 @@ export function MovablePanel({
     // origin so the right edge stays anchored.
     startLeft: number;
     startTop: number;
+    grip: 'bottom-left' | 'bottom-right';
   } | null>(null);
 
   useEffect(() => {
@@ -100,19 +100,35 @@ export function MovablePanel({
     };
   }, [drag, onMoveTo]);
 
+  // Where the resize grip sits is derived per-render from where the
+  // panel actually is on screen. Panels on the right half use a
+  // bottom-left grip so the right edge stays anchored; panels on the
+  // left half use a bottom-right grip. This means dragging a panel
+  // across the screen automatically swaps the grip side.
+  const node = ref.current;
+  const panelCenterX = node
+    ? node.offsetLeft + node.offsetWidth / 2
+    : defaultCorner === 'top-right' || defaultCorner === 'bottom-right'
+      ? Number.POSITIVE_INFINITY
+      : Number.NEGATIVE_INFINITY;
+  const viewportWidth =
+    typeof window === 'undefined' ? Number.POSITIVE_INFINITY : window.innerWidth;
+  const resizeFrom: 'bottom-left' | 'bottom-right' =
+    panelCenterX > viewportWidth / 2 ? 'bottom-left' : 'bottom-right';
+
   useEffect(() => {
     if (!resize || !onResize) return;
     const onMove = (e: PointerEvent) => {
       const dx = e.clientX - resize.startClientX;
       const dy = e.clientY - resize.startClientY;
       const h = Math.max(minHeight, resize.startHeight + dy);
-      if (resizeFrom === 'bottom-left') {
-        // Width grows as the user drags left (negative dx ⇒ wider).
-        // The panel's left position shifts right by the same amount
-        // so the right edge stays anchored to where it was.
+      // The grip side is locked in at the start of the drag — we
+      // captured it into the resize state — so flipping sides mid-
+      // drag doesn't yank the panel around when the centre crosses
+      // the viewport midline.
+      if (resize.grip === 'bottom-left') {
         const targetWidth = resize.startWidth - dx;
         const w = Math.max(minWidth, targetWidth);
-        // If we clamped to the min, the left edge stops moving too.
         const clampedDx = resize.startWidth - w;
         onResize({ width: w, height: h });
         onMoveTo(resize.startLeft + clampedDx, resize.startTop);
@@ -128,7 +144,7 @@ export function MovablePanel({
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-  }, [resize, onResize, minWidth, minHeight, resizeFrom, onMoveTo]);
+  }, [resize, onResize, minWidth, minHeight, onMoveTo]);
 
   const beginDrag = (e: ReactPointerEvent) => {
     e.stopPropagation();
@@ -145,10 +161,10 @@ export function MovablePanel({
   const beginResize = (e: ReactPointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    const node = ref.current;
-    if (!node) return;
-    const startLeft = node.offsetLeft;
-    const startTop = node.offsetTop;
+    const local = ref.current;
+    if (!local) return;
+    const startLeft = local.offsetLeft;
+    const startTop = local.offsetTop;
     // Freeze the corner-positioned panel's place before the resize
     // starts so the bottom-left handler has a real left coordinate
     // to slide from. Without this, position stays null and the
@@ -157,10 +173,11 @@ export function MovablePanel({
     setResize({
       startClientX: e.clientX,
       startClientY: e.clientY,
-      startWidth: node.offsetWidth,
-      startHeight: node.offsetHeight,
+      startWidth: local.offsetWidth,
+      startHeight: local.offsetHeight,
       startLeft,
       startTop,
+      grip: resizeFrom,
     });
   };
 
@@ -199,6 +216,14 @@ export function MovablePanel({
         <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500">
           {title}
         </span>
+        {headerExtra ? (
+          <div
+            onPointerDown={(e) => e.stopPropagation()}
+            className="ml-auto mr-1 flex items-center"
+          >
+            {headerExtra}
+          </div>
+        ) : null}
         <Tooltip
           title={`Minimize ${title.toLowerCase()}`}
           description="Collapse this panel into a button at the bottom of the canvas."
