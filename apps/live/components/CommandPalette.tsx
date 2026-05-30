@@ -36,6 +36,10 @@ export type SelectedElementControls = {
   // get an arrowhead.
   arrowEnds: ArrowEnds | null;
   onSetArrowEnds: (ends: ArrowEnds) => void;
+  // Non-null only when a shape element is selected. Drives the Shape
+  // accordion's morph-into-this-kind grid.
+  shapeKind: ShapeKind | null;
+  onSetShapeKind: (kind: ShapeKind) => void;
 };
 
 export type TabSectionControls = {
@@ -93,12 +97,20 @@ function OpenPalette({
   // selection change collapsed the accordions and the user had to
   // re-click in.
   const [selectedAccordionsOpen, setSelectedAccordionsOpen] = useState<{
+    shape: boolean;
     appearance: boolean;
     layer: boolean;
     text: boolean;
     colours: boolean;
     pointer: boolean;
-  }>({ appearance: false, layer: false, text: false, colours: false, pointer: false });
+  }>({
+    shape: false,
+    appearance: false,
+    layer: false,
+    text: false,
+    colours: false,
+    pointer: false,
+  });
   return (
     <MovablePanel
       title="Palette"
@@ -329,6 +341,7 @@ function OpenPalette({
 }
 
 type SelectedAccordionState = {
+  shape: boolean;
   appearance: boolean;
   layer: boolean;
   text: boolean;
@@ -357,6 +370,39 @@ function SelectedElementSection({
       <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
         Selected Element
       </p>
+
+      {selection.shapeKind !== null ? (
+        <Accordion title="Shape" open={open.shape} onToggle={() => toggle('shape')}>
+          <p className="text-[10px] font-medium text-slate-500">Change shape</p>
+          <div className="mt-1 grid grid-cols-4 gap-1">
+            {(
+              [
+                'square',
+                'circle',
+                'diamond',
+                'cylinder',
+                'parallelogram',
+                'hexagon',
+                'document',
+                'stadium',
+              ] as const
+            ).map((kind) => (
+              <Tooltip
+                key={kind}
+                title={SHAPE_LABEL[kind]}
+                description={`Morph the selected element into a ${SHAPE_LABEL[kind].toLowerCase()}.`}
+              >
+                <SizeButton
+                  active={selection.shapeKind === kind}
+                  onClick={() => selection.onSetShapeKind(kind)}
+                >
+                  <ShapeIcon kind={kind} />
+                </SizeButton>
+              </Tooltip>
+            ))}
+          </div>
+        </Accordion>
+      ) : null}
 
       <Accordion title="Appearance" open={open.appearance} onToggle={() => toggle('appearance')}>
         <p className="text-[10px] font-medium text-slate-500">Opacity</p>
@@ -547,6 +593,143 @@ function SelectedElementSection({
       ) : null}
     </div>
   );
+}
+
+const SHAPE_LABEL: Record<ShapeKind, string> = {
+  square: 'Square',
+  circle: 'Circle',
+  diamond: 'Diamond',
+  cylinder: 'Cylinder',
+  parallelogram: 'Parallelogram',
+  hexagon: 'Hexagon',
+  document: 'Document',
+  stadium: 'Stadium',
+};
+
+function ShapeIcon({ kind }: { kind: ShapeKind }) {
+  // Mini glyphs that mirror what the palette uses for the Add buttons,
+  // scaled to fit a 14×14 tile. Pure outlines so the active-state
+  // background (from SizeButton) reads through.
+  switch (kind) {
+    case 'square':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden
+        >
+          <rect x="3" y="3" width="10" height="10" rx="1.5" />
+        </svg>
+      );
+    case 'circle':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden
+        >
+          <circle cx="8" cy="8" r="5" />
+        </svg>
+      );
+    case 'diamond':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <polygon points="8,3 13,8 8,13 3,8" />
+        </svg>
+      );
+    case 'cylinder':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M3 5 L3 12 A5 1.5 0 0 0 13 12 L13 5" />
+          <ellipse cx="8" cy="5" rx="5" ry="1.5" />
+        </svg>
+      );
+    case 'parallelogram':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <polygon points="4,3 13,3 12,13 3,13" />
+        </svg>
+      );
+    case 'hexagon':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <polygon points="5,3 11,3 14,8 11,13 5,13 2,8" />
+        </svg>
+      );
+    case 'document':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M3 3 L13 3 L13 12 C11 13.4 9.5 11.5 8 12.6 C6.5 13.7 5 11.5 3 12.6 Z" />
+        </svg>
+      );
+    case 'stadium':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden
+        >
+          <rect x="2" y="5" width="12" height="6" rx="3" />
+        </svg>
+      );
+  }
 }
 
 function ArrowEndsIcon({ ends }: { ends: 'from' | 'to' | 'both' }) {

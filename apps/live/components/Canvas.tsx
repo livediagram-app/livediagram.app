@@ -119,6 +119,7 @@ type CanvasProps = {
   onResetColors: () => void;
   onSetPadding: (padding: import('@livediagram/diagram').Padding) => void;
   onSetArrowEnds: (ends: import('@livediagram/diagram').ArrowEnds) => void;
+  onSetShapeKind: (kind: ShapeKind) => void;
   onDuplicateSelected: () => void;
   tabs: Tab[];
   currentTabId: string;
@@ -228,6 +229,7 @@ export function Canvas(props: CanvasProps) {
     onResetColors,
     onSetPadding,
     onSetArrowEnds,
+    onSetShapeKind,
     onDuplicateSelected,
     tabs,
     currentTabId,
@@ -491,6 +493,8 @@ export function Canvas(props: CanvasProps) {
         onSetPadding,
         arrowEnds: selected.type === 'arrow' ? (selected.arrowEnds ?? 'to') : null,
         onSetArrowEnds,
+        shapeKind: selected.type === 'shape' ? selected.shape : null,
+        onSetShapeKind,
       }
     : null;
 

@@ -1452,6 +1452,25 @@ export default function LivePage() {
     );
   };
 
+  // Morph the selected shape into a different kind, preserving width /
+  // height / label / colour overrides. Circle and diamond are 1:1
+  // shapes — coming from a non-square box, snap to the larger side so
+  // the result fits the original footprint.
+  const setShapeKindSelected = (kind: ShapeKind) => {
+    if (!selectedId) return;
+    commit((els) =>
+      els.map((el) => {
+        if (el.id !== selectedId || el.type !== 'shape') return el;
+        const oneToOne = kind === 'circle' || kind === 'diamond';
+        if (oneToOne) {
+          const side = Math.max(el.width, el.height);
+          return { ...el, shape: kind, width: side, height: side };
+        }
+        return { ...el, shape: kind };
+      }),
+    );
+  };
+
   // Clear per-element colour overrides so the element falls back to
   // whatever the current tab theme dictates. Each colour field is set
   // to undefined; the history hook snapshots the present so this is
@@ -1995,6 +2014,7 @@ export default function LivePage() {
         onResetColors={resetColorsSelected}
         onSetPadding={setPaddingSelected}
         onSetArrowEnds={setArrowEndsSelected}
+        onSetShapeKind={setShapeKindSelected}
         onDuplicateSelected={duplicateSelected}
         tabs={tabs}
         currentTabId={activeId}
