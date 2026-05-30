@@ -15,6 +15,7 @@ import {
   defaultTextAlign,
   defaultTextColor,
   elementBounds,
+  endpointPosition,
   isBoxed,
   selectionMembers,
   supportsColours,
@@ -466,6 +467,22 @@ export function Canvas(props: CanvasProps) {
         const maxY = Math.max(toCanvasY(m.startY), toCanvasY(m.currentY));
         const hits = new Set<string>();
         for (const el of elements) {
+          if (el.type === 'arrow') {
+            // Arrow AABB: bounds of the (from, to) segment. Good
+            // enough for marquee inclusion — connecting two selected
+            // shapes always intersects the marquee they sit inside,
+            // and lone arrows are caught when their bbox overlaps.
+            const from = endpointPosition(el.from, elements);
+            const to = endpointPosition(el.to, elements);
+            const aMinX = Math.min(from.x, to.x);
+            const aMaxX = Math.max(from.x, to.x);
+            const aMinY = Math.min(from.y, to.y);
+            const aMaxY = Math.max(from.y, to.y);
+            if (aMinX < maxX && aMaxX > minX && aMinY < maxY && aMaxY > minY) {
+              hits.add(el.id);
+            }
+            continue;
+          }
           if (!isBoxed(el)) continue;
           // Standard rect-rect intersection test (open intervals).
           if (el.x < maxX && el.x + el.width > minX && el.y < maxY && el.y + el.height > minY) {

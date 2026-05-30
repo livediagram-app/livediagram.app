@@ -2390,24 +2390,51 @@ export default function LivePage() {
     );
   };
 
-  // Multi-select duplicate: clones every multi-selected boxed element with
-  // a small diagonal offset and selects the new copies as the next
-  // multi-selection. Arrows aren't duplicated (matches single-element
-  // Duplicate semantics — connections are user-rebuilt).
+  // Multi-select duplicate: clones every multi-selected boxed element
+  // with a small diagonal offset, then clones every multi-selected
+  // arrow and rewires pinned endpoints onto the new boxed copies
+  // when the source was also duplicated. Pinned ends that referenced
+  // an element OUTSIDE the selection keep pointing at the original
+  // (user can rewire); free ends shift by the same offset so the
+  // visual layout of the duplicated cluster matches the source.
   const duplicateMultiSelected = () => {
     if (multiSelectedIds.size === 0) return;
     const offset = 24;
-    const sources = activeTab.elements.filter((el) => multiSelectedIds.has(el.id) && isBoxed(el));
-    if (sources.length === 0) return;
-    const copies: BoxedElement[] = sources.map((s) => ({
-      ...(s as BoxedElement),
+    const boxedSources = activeTab.elements.filter(
+      (el) => multiSelectedIds.has(el.id) && isBoxed(el),
+    ) as BoxedElement[];
+    const arrowSources = activeTab.elements.filter(
+      (el) => multiSelectedIds.has(el.id) && el.type === 'arrow',
+    ) as ArrowElement[];
+    if (boxedSources.length === 0 && arrowSources.length === 0) return;
+    const boxedIdMap = new Map<string, string>();
+    const boxedCopies: BoxedElement[] = boxedSources.map((s) => {
+      const newId = crypto.randomUUID();
+      boxedIdMap.set(s.id, newId);
+      return {
+        ...s,
+        id: newId,
+        x: s.x + offset,
+        y: s.y + offset,
+        // Drop group membership — duplicates are independent.
+        groupId: undefined,
+      };
+    });
+    const remapEndpoint = (e: ArrowElement['from']): ArrowElement['from'] => {
+      if (e.kind === 'pinned') {
+        const next = boxedIdMap.get(e.elementId);
+        if (next) return { ...e, elementId: next };
+        return e;
+      }
+      return { kind: 'free', x: e.x + offset, y: e.y + offset };
+    };
+    const arrowCopies: ArrowElement[] = arrowSources.map((s) => ({
+      ...s,
       id: crypto.randomUUID(),
-      x: (s as BoxedElement).x + offset,
-      y: (s as BoxedElement).y + offset,
-      // Drop group membership — duplicates are independent. Existing
-      // groupings on the multi-selection don't carry over.
-      groupId: undefined,
+      from: remapEndpoint(s.from),
+      to: remapEndpoint(s.to),
     }));
+    const copies: Element[] = [...boxedCopies, ...arrowCopies];
     commit((els) => [...els, ...copies]);
     setMultiSelectedIds(new Set(copies.map((c) => c.id)));
   };
