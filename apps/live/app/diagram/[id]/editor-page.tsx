@@ -406,16 +406,14 @@ export default function LivePage() {
   const [remoteCursors, setRemoteCursors] = useState<
     Map<string, { tabId: string; x: number; y: number } | null>
   >(new Map());
+  // Diagram-list refresh, fired after every autosave so the
+  // Explorer's "Updated X ago" timestamps stay fresh. Folders are
+  // explicitly NOT refetched here — they only change via folder
+  // mutations (create / rename / delete / move) which manage state
+  // optimistically themselves. Pulling them every save spammed
+  // /api/folders on every edit.
   const refreshDiagramList = (ownerId: string) => {
-    // Safety net: a hung fetch (e.g. dev server caches a stale
-    // bundle and the request never settles) would otherwise leave
-    // the Explorer skeleton up forever. After 10s force the flag
-    // off so the UI recovers — the next successful refresh
-    // replaces the empty list.
     const safety = window.setTimeout(() => setDiagramListLoading(false), 10000);
-    apiListFolders(ownerId)
-      .then((fs) => setFolders(fs))
-      .catch(() => {});
     apiListDiagrams(ownerId)
       .then((list) => {
         window.clearTimeout(safety);
@@ -689,6 +687,11 @@ export default function LivePage() {
       }
       setNameConfirmed(window.localStorage.getItem('livediagram:v2:name-confirmed') === '1');
       refreshDiagramList(self.id);
+      // One-shot folder fetch on hydration. Folder mutations update
+      // state optimistically; no need to refetch on every autosave.
+      apiListFolders(self.id)
+        .then((fs) => setFolders(fs))
+        .catch(() => {});
       setHydrated(true);
       setLoadingDiagram(false);
     })();
