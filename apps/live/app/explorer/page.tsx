@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Brand } from '@livediagram/ui';
 import { AuthControls } from '@/components/AuthControls';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
@@ -21,6 +21,7 @@ import { useFolders } from '@/hooks/useFolders';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
 import { MenuItem, PortalMenu } from '@/components/PortalMenu';
+import { InlineRenameInput } from '@/components/InlineRenameInput';
 
 type DiagramItem = { id: string; name: string; folderId: string | null; savedAt: number };
 
@@ -1332,86 +1333,6 @@ function SharedList({
         ))}
       </ul>
     </div>
-  );
-}
-
-// ---------- Inline rename input ----------------------------------
-
-function InlineRenameInput({
-  initial,
-  onCommit,
-  onCancel,
-  className,
-}: {
-  initial: string;
-  onCommit: (name: string) => void;
-  onCancel: () => void;
-  className?: string;
-}) {
-  const ref = useRef<HTMLInputElement>(null);
-  const [draft, setDraft] = useState(initial);
-  // draftRef holds the latest draft for the document-level click
-  // handler — that handler is attached once and can't re-close
-  // over a fresh draft on every keystroke without re-binding.
-  const draftRef = useRef(draft);
-  draftRef.current = draft;
-  // Latest onCommit, same reason as draftRef. The parent rebuilds
-  // it every render (closes over folder id / state) and we don't
-  // want to thrash document listeners chasing that identity.
-  const commitRef = useRef(onCommit);
-  commitRef.current = onCommit;
-
-  // Synchronous focus during the commit phase. useEffect +
-  // setTimeout(0) leaves a window where the input is mounted but
-  // unfocused, which is exactly the window where focus can bounce
-  // away to body during a PortalMenu unmount.
-  useLayoutEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    node.focus();
-    node.select();
-  }, []);
-
-  // Commit-on-click-outside instead of commit-on-blur. The earlier
-  // blur-based version was unfixable in practice: the rename flow
-  // runs on the same click that unmounts a PortalMenu, and the
-  // portal unmount can transiently steal focus from the freshly-
-  // mounted input. blur then fires, the rename commits with the
-  // original name, and the input unmounts before the user can
-  // type — which is exactly the "input appears for a split second"
-  // bug. mousedown-outside doesn't care about focus at all: as
-  // long as the input is in the DOM, the user can type into it,
-  // and the rename ends only when they click somewhere outside,
-  // press Enter, or press Escape.
-  useEffect(() => {
-    const handle = (e: MouseEvent) => {
-      const node = ref.current;
-      if (!node) return;
-      if (e.target instanceof Node && !node.contains(e.target)) {
-        commitRef.current(draftRef.current);
-      }
-    };
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
-  }, []);
-
-  return (
-    <input
-      ref={ref}
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      onKeyDown={(e) => {
-        e.stopPropagation();
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          onCommit(draft);
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          onCancel();
-        }
-      }}
-      className={`outline-none focus:border-brand-500 ${className ?? ''}`}
-    />
   );
 }
 

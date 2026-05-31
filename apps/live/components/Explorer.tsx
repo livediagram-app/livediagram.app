@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
 import { MovablePanel } from './MovablePanel';
 import { MenuItem, PortalMenu } from './PortalMenu';
+import { InlineRenameInput } from './InlineRenameInput';
 import { SignInPrompt } from './SignInPrompt';
 import { Tooltip } from './Tooltip';
 
@@ -556,8 +557,6 @@ function FolderNode({
   const childCount = childFolders.length + childDiagrams.length;
 
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(folder.name);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-enter rename mode for freshly-created folders.
   useEffect(() => {
@@ -567,20 +566,9 @@ function FolderNode({
     }
   }, [pendingRenameId, folder.id, onRenameFolderCommitted]);
 
-  useEffect(() => {
-    if (!editing) return;
-    inputRef.current?.focus();
-    inputRef.current?.select();
-  }, [editing]);
-
-  const commitRename = () => {
-    const next = draft.trim();
+  const commitRename = (name: string) => {
+    const next = name.trim();
     if (next && next !== folder.name && onRenameFolder) onRenameFolder(folder.id, next);
-    setEditing(false);
-  };
-
-  const cancelRename = () => {
-    setDraft(folder.name);
     setEditing(false);
   };
 
@@ -608,23 +596,11 @@ function FolderNode({
           <FolderIcon />
         </span>
         {editing ? (
-          <input
-            ref={inputRef}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-            onBlur={commitRename}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                commitRename();
-              } else if (e.key === 'Escape') {
-                e.preventDefault();
-                cancelRename();
-              }
-            }}
-            className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 outline-none focus:border-brand-500"
+          <InlineRenameInput
+            initial={folder.name}
+            onCommit={commitRename}
+            onCancel={() => setEditing(false)}
+            className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800"
           />
         ) : (
           <button
@@ -1025,23 +1001,10 @@ function DiagramRow({
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [draft, setDraft] = useState(item.name);
 
-  useEffect(() => {
-    if (!editing) return;
-    inputRef.current?.focus();
-    inputRef.current?.select();
-  }, [editing]);
-
-  const commitRename = () => {
-    const next = draft.trim();
+  const commitRename = (name: string) => {
+    const next = name.trim();
     if (next && next !== item.name && onRename) onRename(next);
-    setEditing(false);
-  };
-
-  const cancelRename = () => {
-    setDraft(item.name);
     setEditing(false);
   };
 
@@ -1052,53 +1015,58 @@ function DiagramRow({
     ? 'group flex items-stretch rounded-md bg-brand-100 text-brand-800'
     : 'group flex items-stretch rounded-md text-slate-700 transition hover:bg-slate-100';
 
+  // The row's main area is a clickable <button> when not editing
+  // (clicking the row opens the diagram). When editing it has to
+  // become a plain <div>: nesting an <input> inside a <button> is
+  // invalid HTML and browsers redirect focus to the parent button,
+  // which is the original cause of the "rename input won't take
+  // focus" bug.
+  const mainClass = `flex flex-1 items-start gap-1.5 rounded-md bg-transparent px-2 py-1.5 text-left text-xs ${active ? 'font-medium' : ''}`;
+  const mainInner = (
+    <>
+      <span className="mt-0.5">
+        <DiagramIcon active={active} />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        {editing ? (
+          <InlineRenameInput
+            initial={item.name}
+            onCommit={commitRename}
+            onCancel={() => setEditing(false)}
+            className="w-full rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800"
+          />
+        ) : (
+          <span className="truncate">{item.name}</span>
+        )}
+        <Tooltip title="Last updated" description={new Date(item.savedAt).toLocaleString()}>
+          <span
+            className={
+              active
+                ? 'truncate text-[10px] font-normal text-brand-700/80'
+                : 'truncate text-[10px] text-slate-400'
+            }
+          >
+            Updated {relative}
+          </span>
+        </Tooltip>
+      </span>
+    </>
+  );
+
   return (
     <div className={pillClasses}>
-      <button
-        type="button"
-        onClick={editing ? undefined : onOpen}
-        aria-current={active ? 'true' : undefined}
-        className={`flex flex-1 items-start gap-1.5 rounded-md bg-transparent px-2 py-1.5 text-left text-xs ${active ? 'font-medium' : ''}`}
-      >
-        <span className="mt-0.5">
-          <DiagramIcon active={active} />
-        </span>
-        <span className="flex min-w-0 flex-1 flex-col">
-          {editing ? (
-            <input
-              ref={inputRef}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              onBlur={commitRename}
-              onKeyDown={(e) => {
-                e.stopPropagation();
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  commitRename();
-                } else if (e.key === 'Escape') {
-                  e.preventDefault();
-                  cancelRename();
-                }
-              }}
-              className="w-full rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 outline-none focus:border-brand-500"
-            />
-          ) : (
-            <span className="truncate">{item.name}</span>
-          )}
-          <Tooltip title="Last updated" description={new Date(item.savedAt).toLocaleString()}>
-            <span
-              className={
-                active
-                  ? 'truncate text-[10px] font-normal text-brand-700/80'
-                  : 'truncate text-[10px] text-slate-400'
-              }
-            >
-              Updated {relative}
-            </span>
-          </Tooltip>
-        </span>
-      </button>
+      {editing ? (
+        <div className={mainClass}>{mainInner}</div>
+      ) : (
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-current={active ? 'true' : undefined}
+          className={mainClass}
+        >
+          {mainInner}
+        </button>
+      )}
       {hasMenu && !editing ? (
         <button
           ref={menuButtonRef}
