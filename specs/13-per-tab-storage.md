@@ -11,7 +11,7 @@ D1. Cost grows linearly with the diagram's tab count.
 
 ## Goals
 
-- One Pdb write per editorial commit, scoped to the changed tab.
+- One DB write per editorial commit, scoped to the changed tab.
 - Per-tab snapshot fetch (open one tab, hydrate one row) so the
   initial view of a many-tab diagram is fast.
 - Foundation for future "this tab is shared across diagrams" reuse
@@ -28,7 +28,7 @@ D1. Cost grows linearly with the diagram's tab count.
 
 ## Data model
 
-New migration `0005_tabs.sql`:
+Migration `0005_tabs.sql`:
 
 ```sql
 -- One row per tab. Tabs belong to exactly one diagram in V1; the FK
@@ -40,10 +40,12 @@ CREATE TABLE tabs (
   diagram_id   TEXT NOT NULL,
   name         TEXT NOT NULL,
   order_index  INTEGER NOT NULL,
-  -- Same JSON shape as the current Tab type minus { id, name }
-  -- (which live on the row). Holds elements + per-tab metadata
-  -- (theme, backgroundColor, backgroundPattern, backgroundOpacity,
-  -- patternColor, templateChosen, locked).
+  -- Same JSON shape as the Tab type minus { id, name } (which live
+  -- on the row). Holds elements + per-tab metadata: theme,
+  -- backgroundColor, backgroundPattern, backgroundOpacity,
+  -- patternColor, locked. `templateChosen` is intentionally ephemeral
+  -- client state (see migration 0009) — stripped before persistence,
+  -- never stored here.
   data         TEXT NOT NULL,
   updated_at   INTEGER NOT NULL,
   FOREIGN KEY (diagram_id) REFERENCES diagrams(id) ON DELETE CASCADE
@@ -52,10 +54,7 @@ CREATE TABLE tabs (
 CREATE INDEX tabs_diagram_idx ON tabs(diagram_id, order_index);
 ```
 
-`diagrams` keeps `id`, `owner_id`, `name`, `shareable`, `share_code`,
-`saved_at`, `created_at`. It loses the `data` column (or keeps it
-read-only for one migration window so older clients don't fail —
-see "Cutover" below).
+`diagrams` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
 
 ## API surface
 
@@ -93,24 +92,17 @@ so peers only get the one that changed.
    edits go through the tab-level PUT.
 4. The room op shrinks accordingly.
 
-## Cutover
+## Cutover (historical)
 
-1. Migration creates the `tabs` table.
-2. A backfill SQL step (in the same migration) splits every existing
-   `diagrams.data` JSON into N rows of `tabs`, assigning order_index
-   from the array position.
-3. The `data` column on `diagrams` is left in place for one release
-   window so a deployed-but-not-yet-shipped client doesn't 500. The
-   following deploy drops it.
-4. The live app deploys after the backfill is verified.
+How this rolled out, recorded here so future schema changes can repeat the pattern:
+
+1. Migration 0005 created the `tabs` table + a same-migration backfill SQL step that split every existing `diagrams.data` JSON into N rows of `tabs` (one per array element), assigning `order_index` from the array position.
+2. `diagrams.data` was kept in place for one release window so a deployed-but-not-yet-shipped client didn't 500.
+3. Migration 0006 dropped `diagrams.data`.
 
 ## Audit log
 
-The `change_log` table already has `tab_id` and cascades on
-`diagram_id`. The new `tabs` table has its own FK from `change_log`
-once the refactor lands; the existing cascade-on-tab-delete (via the
-`DELETE /log/tab/:tabId` endpoint) keeps the same semantics — the
-client's `deleteTab` flow doesn't change.
+The `change_log` table has `tab_id` (nullable for diagram-level entries) and cascades on `diagram_id`. There's intentionally no hard FK from `change_log.tab_id` to `tabs.id` — log entries should outlive the row they reference so historical events still read after a tab is deleted. The client's `deleteTab` flow still calls `DELETE /log/tab/:tabId` to drop the dangling entries — see [12-activity-and-audit.md](12-activity-and-audit.md).
 
 ## Risk
 
