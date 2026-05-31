@@ -43,3 +43,7 @@ lerna-debug.log*
 # Test
 coverage/
 .nyc_output/
+
+# Claude Code harness state (scheduled-task locks, worktrees,
+# session metadata). Per-user, per-checkout — never source.
+.claude/
