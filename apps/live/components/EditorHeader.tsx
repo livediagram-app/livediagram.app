@@ -29,6 +29,15 @@ type EditorHeaderProps = {
   // surfaces that don't have a tab loaded yet (welcome flow) can
   // omit it.
   onExportTab?: () => void;
+  // Opens the OS file picker to import a `.livediagram-tab.json`
+  // file as a new tab in the current diagram (item #11). Optional
+  // for visitor / welcome-flow surfaces.
+  onImportTab?: () => void;
+  // Transient error string from a failed import (schema-version
+  // mismatch, malformed JSON, etc.). Rendered as a toast below the
+  // header so the user can see what went wrong without losing
+  // their place. Null hides the toast entirely.
+  importError?: string | null;
   // Accent colour for the brand logo's "diagram" half. Comes from the
   // active tab's theme stroke so the header subtly echoes the canvas.
   brandAccent?: string;
@@ -44,6 +53,8 @@ export function EditorHeader({
   onMakeCopy,
   copying = false,
   onExportTab,
+  onImportTab,
+  importError,
   brandAccent,
   onOpenShare,
   onRename,
@@ -87,6 +98,21 @@ export function EditorHeader({
         )}
       </div>
       <div className="flex w-72 items-center justify-end gap-2">
+        {onImportTab ? (
+          <Tooltip
+            title="Import tab"
+            description="Drop a previously-exported .json tab into this diagram."
+          >
+            <button
+              type="button"
+              onClick={onImportTab}
+              aria-label="Import tab"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+            >
+              <ImportIcon />
+            </button>
+          </Tooltip>
+        ) : null}
         {onExportTab ? (
           <Tooltip
             title="Export tab"
@@ -142,6 +168,11 @@ export function EditorHeader({
         ) : null}
         <AuthControls />
       </div>
+      {importError ? (
+        <div className="absolute right-4 top-full mt-1 z-50 max-w-md rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 shadow-sm">
+          {importError}
+        </div>
+      ) : null}
     </header>
   );
 }
@@ -208,6 +239,26 @@ function PrivateDotIcon() {
     >
       <rect x="2" y="4" width="5" height="3.5" rx="0.8" />
       <path d="M3.25 4V3a1.25 1.25 0 0 1 2.5 0v1" />
+    </svg>
+  );
+}
+
+function ImportIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 13.5V5.5" />
+      <path d="M5 10.5l3 3 3-3" />
+      <path d="M2.5 3v-0.5h11V3" />
     </svg>
   );
 }

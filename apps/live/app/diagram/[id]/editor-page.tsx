@@ -47,6 +47,7 @@ import { Canvas } from '@/components/Canvas';
 import { CommentThreadPopover } from '@/components/CommentThreadPopover';
 import { EditorHeader, type SaveStatus } from '@/components/EditorHeader';
 import { ExportTabDialog } from '@/components/ExportTabDialog';
+import { parseImportedTab, pickTabFile } from '@/lib/import-tab';
 import { Explorer } from '@/components/Explorer';
 import { NotFound } from '@/components/NotFound';
 import { ShareDialog } from '@/components/ShareDialog';
@@ -494,6 +495,17 @@ export default function LivePage() {
   // Export-tab overlay (item #10). Open / closed only; the picker
   // surface lives in components/ExportTabDialog.
   const [exportOpen, setExportOpen] = useState(false);
+  // Brief error string surfaced by the Import-tab flow when the
+  // picked file is malformed or its schema is newer than this
+  // editor understands. Rendered as a transient toast under the
+  // header — auto-clears after 6 seconds so the user isn't stuck
+  // looking at it, and gets cleared on the next import attempt.
+  const [importError, setImportError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!importError) return;
+    const id = window.setTimeout(() => setImportError(null), 6000);
+    return () => window.clearTimeout(id);
+  }, [importError]);
   // Every active share link for the current diagram (owner-only). The
   // ShareDialog list renders straight off this array. shareable is
   // derived: shareLinks.length > 0 OR diagramShareable from a freshly
@@ -1985,6 +1997,55 @@ export default function LivePage() {
     // template grid). The welcome flow is first-run only — the user
     // already has an identity + theme by this point.
     setTemplatePickerMode('templates');
+  };
+
+  // Import a tab from a `.livediagram-tab.json` file the user picks.
+  // Tab id + nested element ids are re-minted client-side so the
+  // imported tab can never collide with an existing one. Schema
+  // mismatches surface via setImportError which the header button
+  // renders in-place.
+  const importTabFromFile = async () => {
+    const text = await pickTabFile();
+    if (!text) return;
+    const result = parseImportedTab(text);
+    if (!result.ok) {
+      setImportError(result.error);
+      return;
+    }
+    setImportError(null);
+    // Re-mint ids so the imported tab can't collide. Pinned arrows
+    // need their element references rewritten to the new ids — walk
+    // boxed elements first, build an old→new id map, then rewrite
+    // arrow endpoints.
+    const idMap = new Map<string, string>();
+    const newElements = result.tab.elements.map((el) => {
+      const newId = crypto.randomUUID();
+      idMap.set(el.id, newId);
+      return { ...el, id: newId };
+    });
+    for (const el of newElements) {
+      if (el.type === 'arrow') {
+        if (el.from.kind === 'pinned') {
+          const mapped = idMap.get(el.from.elementId);
+          if (mapped) el.from = { ...el.from, elementId: mapped };
+        }
+        if (el.to.kind === 'pinned') {
+          const mapped = idMap.get(el.to.elementId);
+          if (mapped) el.to = { ...el.to, elementId: mapped };
+        }
+      }
+    }
+    const newTab: Tab = {
+      ...result.tab,
+      id: crypto.randomUUID(),
+      elements: newElements,
+    };
+    commitTabs((ts) => [...ts, newTab]);
+    setActiveId(newTab.id);
+    setSelectedId(null);
+    setEditingId(null);
+    setFormatSourceId(null);
+    setGroupSourceId(null);
   };
 
   // Delete a diagram by id. When the target is the currently-open one,
@@ -3728,6 +3789,10 @@ export default function LivePage() {
         onMakeCopy={!isOwner && hydrated && !anyWelcomeOpen && diagramId ? makeCopy : undefined}
         copying={copying}
         onExportTab={hydrated && !anyWelcomeOpen ? () => setExportOpen(true) : undefined}
+        onImportTab={
+          hydrated && !anyWelcomeOpen && !isReadOnly ? () => void importTabFromFile() : undefined
+        }
+        importError={importError}
         brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
         onOpenShare={() => setShareDialogOpen(true)}
         onRename={setDiagramName}
