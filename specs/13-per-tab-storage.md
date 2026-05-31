@@ -14,13 +14,11 @@ D1. Cost grows linearly with the diagram's tab count.
 - One DB write per editorial commit, scoped to the changed tab.
 - Per-tab snapshot fetch (open one tab, hydrate one row) so the
   initial view of a many-tab diagram is fast.
-- Foundation for future "this tab is shared across diagrams" reuse
-  (out of scope here — see "Non-goals").
+- Foundation for "this tab is shared across diagrams" reuse — landed in [spec/17](17-tab-diagram-many-to-many.md) (migration 0011 / item #13). The link table sits over the same tab body rows described here.
 
 ## Non-goals (V1)
 
-- Sharing a tab across diagrams (the data model permits it; the UX
-  and bookkeeping for it are a separate spec).
+- ~~Sharing a tab across diagrams~~ — landed in [spec/17](17-tab-diagram-many-to-many.md) (migration 0011). The link table lives next to `tabs`; `tabs` itself is unchanged in this spec's terms.
 - Per-element rows / CRDT. Each tab still serialises its `elements`
   array as JSON within its row; the granularity stops at the tab.
 - Online migration. The cutover is one D1 migration; the live app
@@ -30,16 +28,22 @@ D1. Cost grows linearly with the diagram's tab count.
 
 Migration `0005_tabs.sql`:
 
+As originally shipped in `0005_tabs.sql`:
+
 ```sql
--- One row per tab. Tabs belong to exactly one diagram in V1; the FK
--- + cascade keeps cleanup automatic. `order_index` is the position
--- within the diagram so the API can return tabs in a deterministic
--- order without a separate join.
+-- One row per tab. The diagram_id column + cascade kept cleanup
+-- automatic when this migration landed; spec/17 since added the
+-- diagram_tabs link table that makes the relationship many-to-many
+-- and migrates the canonical "which diagram does this tab belong
+-- to" pointer off this row. The legacy diagram_id + order_index
+-- columns are kept in sync by writes during the dual-write phase
+-- and will be dropped in a follow-up migration once every reader
+-- has moved off them.
 CREATE TABLE tabs (
   id           TEXT PRIMARY KEY,
-  diagram_id   TEXT NOT NULL,
+  diagram_id   TEXT NOT NULL,       -- legacy, see spec/17
   name         TEXT NOT NULL,
-  order_index  INTEGER NOT NULL,
+  order_index  INTEGER NOT NULL,    -- legacy, see spec/17
   -- Same JSON shape as the Tab type minus { id, name } (which live
   -- on the row). Holds elements + per-tab metadata: theme,
   -- backgroundColor, backgroundPattern, backgroundOpacity,
@@ -53,6 +57,8 @@ CREATE TABLE tabs (
 
 CREATE INDEX tabs_diagram_idx ON tabs(diagram_id, order_index);
 ```
+
+Migration 0011 (spec/17) added `diagram_tabs (diagram_id, tab_id, order_index, added_at)`. Reads now go through the link table; writes touch both `tabs.diagram_id` / `tabs.order_index` (for compat) and `diagram_tabs` (canonical). The legacy two columns will be dropped once every reader is off them.
 
 `diagrams` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
 
@@ -102,7 +108,7 @@ How this rolled out, recorded here so future schema changes can repeat the patte
 
 ## Audit log
 
-The `change_log` table has `tab_id` (nullable for diagram-level entries) and cascades on `diagram_id`. There's intentionally no hard FK from `change_log.tab_id` to `tabs.id` — log entries should outlive the row they reference so historical events still read after a tab is deleted. The client's `deleteTab` flow still calls `DELETE /log/tab/:tabId` to drop the dangling entries — see [12-activity-and-audit.md](12-activity-and-audit.md).
+The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry in practice; the column is nullable for historical reasons) and cascades on `tab_id` via the FK to `tabs(id)`. The legacy `diagram_id` column on `change_log` was dropped in migration 0012 (item #14 — see [spec/17](17-tab-diagram-many-to-many.md)); per-diagram log reads derive the set of contributing tabs via `diagram_tabs`. The client's `deleteTab` flow still calls `DELETE /log/tab/:tabId` to drop the entries up front — see [12-activity-and-audit.md](12-activity-and-audit.md).
 
 ## Risk
 
@@ -116,5 +122,5 @@ The `change_log` table has `tab_id` (nullable for diagram-level entries) and cas
 
 - The owner-only audit log gate (still applies).
 - Realtime presence (still room-level).
-- Sharing (per-diagram share codes; no per-tab sharing yet).
+- Sharing (per-diagram share codes; no per-tab sharing yet). Tab-level reuse across diagrams is a server-side relationship under spec/17, not user-visible sharing.
 - The frontend `Tab` type shape (just where it's persisted).
