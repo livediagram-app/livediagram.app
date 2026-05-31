@@ -19,3 +19,12 @@ export const clerkEnabled =
   key.length > 0 && (key.startsWith('pk_test_') || key.startsWith('pk_live_'));
 
 export const clerkPublishableKey = clerkEnabled ? key : null;
+
+// Whether the sign-in / sign-up pages should show the "Continue with
+// Google" OAuth button. Disabled until the Google Cloud OAuth client
+// has been configured against Clerk's redirect URI
+// (`https://clerk.<domain>/v1/oauth_callback`) — without that the
+// button would surface a `redirect_uri_mismatch` error to the user.
+// The handlers stay in the code so flipping this flag re-enables
+// the button without re-implementing anything.
+export const googleOAuthEnabled = false;
