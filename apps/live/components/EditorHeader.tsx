@@ -25,6 +25,11 @@ type EditorHeaderProps = {
   // view stays unchanged.
   onMakeCopy?: () => void;
   copying?: boolean;
+  // True for a view-only ('view' share role) session. Disables the
+  // click-to-rename affordance on the diagram title — the viewer
+  // isn't allowed to rename someone else's diagram. Make-a-copy +
+  // Share gates already handle their own visibility.
+  readOnly?: boolean;
   // Accent colour for the brand logo's "diagram" half. Comes from the
   // active tab's theme stroke so the header subtly echoes the canvas.
   brandAccent?: string;
@@ -39,6 +44,7 @@ export function EditorHeader({
   shareable,
   onMakeCopy,
   copying = false,
+  readOnly = false,
   brandAccent,
   onOpenShare,
   onRename,
@@ -57,7 +63,7 @@ export function EditorHeader({
         <Brand href="/" size="md" accentColor={brandAccent} />
       </div>
       <div className="flex flex-1 items-center justify-center">
-        {hideTitle ? null : editing ? (
+        {hideTitle ? null : editing && !readOnly ? (
           <NameEditor
             initial={diagramName}
             onCommit={(v) => {
@@ -68,15 +74,19 @@ export function EditorHeader({
           />
         ) : (
           <div className="flex items-center gap-1">
-            <Tooltip title="Rename diagram" description="Click to edit the name.">
-              <button
-                type="button"
-                onClick={() => setEditing(true)}
-                className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-              >
-                {diagramName}
-              </button>
-            </Tooltip>
+            {readOnly ? (
+              <span className="truncate px-2 py-0.5 text-sm text-slate-600">{diagramName}</span>
+            ) : (
+              <Tooltip title="Rename diagram" description="Click to edit the name.">
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                >
+                  {diagramName}
+                </button>
+              </Tooltip>
+            )}
             <SharedBadge shareable={shareable} />
           </div>
         )}

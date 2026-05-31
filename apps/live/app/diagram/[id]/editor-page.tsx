@@ -3779,6 +3779,7 @@ export default function LivePage() {
         // is the owner.
         onMakeCopy={!isOwner && hydrated && !anyWelcomeOpen && diagramId ? makeCopy : undefined}
         copying={copying}
+        readOnly={isReadOnly}
         brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
         onOpenShare={() => setShareDialogOpen(true)}
         onRename={setDiagramName}
@@ -4007,6 +4008,7 @@ export default function LivePage() {
           onCopyTabTo={copyActiveTabTo}
           onToggleLockTab={toggleActiveTabLock}
           onReorder={reorderTabs}
+          readOnly={isReadOnly}
           participantsByTab={participantsByTab}
         />
       )}

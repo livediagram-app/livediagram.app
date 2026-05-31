@@ -44,6 +44,13 @@ type TabBarProps = {
   // The lock icon appears on the tab itself + on every element.
   onToggleLockTab: () => void;
   onReorder: (sourceId: string, targetId: string) => void;
+  // True for a view-only ('view' share role) session. Suppresses
+  // every mutation affordance on the bar: tab rename (double-click
+  // + the ellipsis Rename row), the "+" add button, the whole
+  // ellipsis menu (so Duplicate / Clear content / Lock / Move / Delete
+  // all vanish), and tab drag-to-reorder. Tab pills remain
+  // clickable so the viewer can still navigate between tabs.
+  readOnly?: boolean;
   // Remote participants grouped by which tab they're currently
   // focused on. Each tab in the bar renders the matching avatars so
   // collaborators can see at a glance where everyone is working.
@@ -64,6 +71,7 @@ export function TabBar({
   onCopyTabTo,
   onToggleLockTab,
   onReorder,
+  readOnly = false,
   participantsByTab,
 }: TabBarProps) {
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -88,7 +96,7 @@ export function TabBar({
           return (
             <div
               key={tab.id}
-              draggable={!isEditing}
+              draggable={!isEditing && !readOnly}
               onDragStart={(e) => {
                 e.dataTransfer.setData('text/plain', tab.id);
                 e.dataTransfer.effectAllowed = 'move';
@@ -134,7 +142,7 @@ export function TabBar({
                 <button
                   type="button"
                   onClick={() => onSelect(tab.id)}
-                  onDoubleClick={() => isActive && setEditingId(tab.id)}
+                  onDoubleClick={readOnly ? undefined : () => isActive && setEditingId(tab.id)}
                   className="flex items-center gap-1 rounded-md py-1.5 text-sm font-medium"
                 >
                   {tab.locked ? <TabLockIcon /> : null}
@@ -142,7 +150,7 @@ export function TabBar({
                 </button>
               )}
               <TabPresenceStack participants={participantsByTab.get(tab.id) ?? []} />
-              {isActive && !isEditing ? (
+              {isActive && !isEditing && !readOnly ? (
                 <EllipsisMenuButton
                   open={menuFor === tab.id}
                   onToggle={() => setMenuFor(menuFor === tab.id ? null : tab.id)}
@@ -180,14 +188,16 @@ export function TabBar({
             </div>
           );
         })}
-        <button
-          type="button"
-          onClick={onAdd}
-          aria-label="Add tab"
-          className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-        >
-          +
-        </button>
+        {readOnly ? null : (
+          <button
+            type="button"
+            onClick={onAdd}
+            aria-label="Add tab"
+            className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+            +
+          </button>
+        )}
       </div>
     </div>
   );
