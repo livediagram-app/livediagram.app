@@ -726,8 +726,8 @@ Any element can carry a **link to another tab**. Clicking the link jumps to that
 
 ### Setting a link
 
-- The selection popover has a **Link** button (chain icon) between Duplicate and Lock-aspect.
-- Clicking it opens a small **TabLinkPicker** popover above the button (portal-rendered, viewport-clamped) listing every tab except the current one.
+- The selection popover's Relationships group has a **Link to tab** button (chain icon, between Duplicate and Comments). It's hidden entirely when the diagram only has one tab — there's nowhere to link to.
+- Clicking it opens a small **TabLinkPicker** popover above the button (portal-rendered, viewport-clamped) listing every other tab.
 - Click a tab name to set the link. Click again on the same tab to keep it, or click another to switch. A **Remove link** action appears at the bottom of the picker when a link is set.
 
 The Link button is brand-tinted when the selected element has a link.
