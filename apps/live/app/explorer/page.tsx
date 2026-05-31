@@ -15,7 +15,6 @@ import {
   apiLoadTab,
   apiSaveDiagramMeta,
   apiSetDiagramFolder,
-  type Folder,
   type SharedWithItem,
 } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
@@ -26,6 +25,12 @@ import { MenuItem, PortalMenu } from '@/components/PortalMenu';
 import type { Tab } from '@livediagram/diagram';
 
 type DiagramItem = { id: string; name: string; folderId: string | null; savedAt: number };
+
+// "Recent" cap on the top-of-page glance. Big enough to cover a
+// typical "what was I just working on" recall, small enough that
+// the section isn't a wall of cards before you can scroll to the
+// folder buckets below.
+const RECENT_LIMIT = 6;
 
 // Full-page Explorer (item #12). Signed-in only — guests still have
 // the floating Explorer panel on the editor / new-diagram routes,
@@ -184,6 +189,20 @@ export default function ExplorerPage() {
   // "where in the tree?".
   const folderPickerRows = folders.slice().sort((a, b) => a.name.localeCompare(b.name));
 
+  // Derived buckets for the per-folder sections below the Recent
+  // grid. Sorted newest-first within each bucket so the cards
+  // match the Recent ordering convention.
+  const sortedByRecent = diagrams.slice().sort((a, b) => b.savedAt - a.savedAt);
+  const recentDiagrams = sortedByRecent.slice(0, RECENT_LIMIT);
+  const unsortedDiagrams = sortedByRecent.filter((d) => d.folderId === null);
+  const diagramsByFolder = new Map<string, DiagramItem[]>();
+  for (const d of sortedByRecent) {
+    if (d.folderId === null) continue;
+    const bucket = diagramsByFolder.get(d.folderId) ?? [];
+    bucket.push(d);
+    diagramsByFolder.set(d.folderId, bucket);
+  }
+
   if (!clerkEnabled) {
     return (
       <FullPageNotice
@@ -225,9 +244,13 @@ export default function ExplorerPage() {
           </p>
         </div>
 
+        {/* Recent — flat-grid top-of-page surface. Capped so the
+            "what was I just working on" glance stays small; the
+            full per-folder buckets below are the comprehensive
+            view. */}
         <Section
-          title="Your diagrams"
-          count={diagrams.length}
+          title="Recent"
+          count={Math.min(diagrams.length, RECENT_LIMIT)}
           accent={
             <Link
               href="/new"
@@ -244,64 +267,83 @@ export default function ExplorerPage() {
             <EmptyState message="No diagrams yet." cta={{ href: '/new', label: 'Start one' }} />
           ) : (
             <Grid>
-              {diagrams
-                .slice()
-                .sort((a, b) => b.savedAt - a.savedAt)
-                .map((d) => (
-                  <DiagramCard
-                    key={d.id}
-                    id={d.id}
-                    href={`/diagram/${d.id}`}
-                    title={d.name}
-                    savedAt={d.savedAt}
-                    renaming={renamingDiagramId === d.id}
-                    onStartRename={() => setRenamingDiagramId(d.id)}
-                    onCommitRename={(name) => renameDiagram(d.id, name)}
-                    onCancelRename={() => setRenamingDiagramId(null)}
-                    onDuplicate={() => void duplicateDiagram(d.id)}
-                    onDelete={() => deleteDiagram(d.id)}
-                    onMoveRequest={(anchor) => openMovePicker(d.id, anchor)}
-                  />
-                ))}
+              {recentDiagrams.map((d) => (
+                <DiagramCard
+                  key={d.id}
+                  id={d.id}
+                  href={`/diagram/${d.id}`}
+                  title={d.name}
+                  savedAt={d.savedAt}
+                  renaming={renamingDiagramId === d.id}
+                  onStartRename={() => setRenamingDiagramId(d.id)}
+                  onCommitRename={(name) => renameDiagram(d.id, name)}
+                  onCancelRename={() => setRenamingDiagramId(null)}
+                  onDuplicate={() => void duplicateDiagram(d.id)}
+                  onDelete={() => deleteDiagram(d.id)}
+                  onMoveRequest={(anchor) => openMovePicker(d.id, anchor)}
+                />
+              ))}
             </Grid>
           )}
         </Section>
 
-        <Section
-          title="Folders"
-          count={folders.length}
-          accent={
+        {/* Per-folder buckets. Unsorted first, then user folders
+            alphabetically. Each section renders the diagrams in
+            that bucket; user folders include rename + delete on
+            the section title. New-folder action lives at the
+            bottom of the group so it doesn't crowd the header. */}
+        {!loading && diagrams.length > 0 ? (
+          <FolderBucket
+            title="Unsorted"
+            count={unsortedDiagrams.length}
+            diagrams={unsortedDiagrams}
+            renamingDiagramId={renamingDiagramId}
+            onStartRenameDiagram={(id) => setRenamingDiagramId(id)}
+            onCommitRenameDiagram={renameDiagram}
+            onCancelRenameDiagram={() => setRenamingDiagramId(null)}
+            onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+            onDeleteDiagram={deleteDiagram}
+            onMoveDiagramRequest={openMovePicker}
+          />
+        ) : null}
+        {!loading && folders.length > 0
+          ? folders
+              .slice()
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((f) => (
+                <FolderBucket
+                  key={f.id}
+                  title={f.name}
+                  folderId={f.id}
+                  count={(diagramsByFolder.get(f.id) ?? []).length}
+                  diagrams={diagramsByFolder.get(f.id) ?? []}
+                  renamingTitle={renamingFolderId === f.id}
+                  onStartRenameTitle={() => setRenamingFolderId(f.id)}
+                  onCommitRenameTitle={(name) => commitRename(f.id, name)}
+                  onCancelRenameTitle={() => setRenamingFolderId(null)}
+                  onDeleteFolder={() => deleteFolder(f.id)}
+                  renamingDiagramId={renamingDiagramId}
+                  onStartRenameDiagram={(id) => setRenamingDiagramId(id)}
+                  onCommitRenameDiagram={renameDiagram}
+                  onCancelRenameDiagram={() => setRenamingDiagramId(null)}
+                  onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+                  onDeleteDiagram={deleteDiagram}
+                  onMoveDiagramRequest={openMovePicker}
+                />
+              ))
+          : null}
+        {!loading ? (
+          <div className="mb-10">
             <button
               type="button"
               onClick={() => void createFolder()}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700"
+              className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-slate-300 bg-transparent px-3 py-1.5 text-[11px] font-medium text-slate-500 transition hover:border-brand-300 hover:text-brand-700"
             >
               <PlusIcon />
               New folder
             </button>
-          }
-        >
-          {folders.length === 0 ? (
-            <EmptyState message="No folders yet. Group related diagrams to keep things tidy." />
-          ) : (
-            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {folders
-                .slice()
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((f) => (
-                  <FolderRow
-                    key={f.id}
-                    folder={f}
-                    renaming={renamingFolderId === f.id}
-                    onStartRename={() => setRenamingFolderId(f.id)}
-                    onCommitRename={(name) => commitRename(f.id, name)}
-                    onCancelRename={() => setRenamingFolderId(null)}
-                    onDelete={() => deleteFolder(f.id)}
-                  />
-                ))}
-            </ul>
-          )}
-        </Section>
+          </div>
+        ) : null}
 
         {shared.length > 0 ? (
           <Section title="Shared with you" count={shared.length}>
@@ -394,6 +436,175 @@ function Section({
 
 function Grid({ children }: { children: React.ReactNode }) {
   return <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</ul>;
+}
+
+// One bucket = one row of cards under a section heading. Unsorted
+// passes no folder-side props (no rename / delete). User folders
+// pass the full set so the title is inline-editable and an
+// ellipsis menu surfaces Delete.
+function FolderBucket({
+  title,
+  count,
+  folderId,
+  diagrams,
+  renamingTitle,
+  onStartRenameTitle,
+  onCommitRenameTitle,
+  onCancelRenameTitle,
+  onDeleteFolder,
+  renamingDiagramId,
+  onStartRenameDiagram,
+  onCommitRenameDiagram,
+  onCancelRenameDiagram,
+  onDuplicateDiagram,
+  onDeleteDiagram,
+  onMoveDiagramRequest,
+}: {
+  title: string;
+  count: number;
+  folderId?: string;
+  diagrams: DiagramItem[];
+  renamingTitle?: boolean;
+  onStartRenameTitle?: () => void;
+  onCommitRenameTitle?: (name: string) => void;
+  onCancelRenameTitle?: () => void;
+  onDeleteFolder?: () => void;
+  renamingDiagramId: string | null;
+  onStartRenameDiagram: (id: string) => void;
+  onCommitRenameDiagram: (id: string, name: string) => void;
+  onCancelRenameDiagram: () => void;
+  onDuplicateDiagram: (id: string) => void;
+  onDeleteDiagram: (id: string) => void;
+  onMoveDiagramRequest: (id: string, anchor: HTMLElement | null) => void;
+}) {
+  const editable = onCommitRenameTitle !== undefined;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState(title);
+  useEffect(() => {
+    if (renamingTitle) {
+      setDraft(title);
+      const t = window.setTimeout(() => {
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }, 0);
+      return () => window.clearTimeout(t);
+    }
+  }, [renamingTitle, title]);
+
+  const heading = renamingTitle ? (
+    <input
+      ref={inputRef}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => onCommitRenameTitle?.(draft)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          onCommitRenameTitle?.(draft);
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          onCancelRenameTitle?.();
+        }
+      }}
+      className="rounded border border-brand-300 bg-white px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-slate-700 outline-none focus:border-brand-500"
+    />
+  ) : editable ? (
+    <button
+      type="button"
+      onClick={onStartRenameTitle}
+      className="text-xs font-semibold uppercase tracking-wider text-slate-500 transition hover:text-brand-700"
+    >
+      {title}
+    </button>
+  ) : (
+    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</span>
+  );
+
+  return (
+    <section className="mb-10">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2">
+          {heading}
+          <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1.5 text-[10px] font-medium text-slate-600">
+            {count}
+          </span>
+        </h2>
+        {editable && !renamingTitle ? (
+          <button
+            ref={menuButtonRef}
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={`Menu for folder ${title}`}
+            aria-expanded={menuOpen}
+            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+              <circle cx="3" cy="7" r="1.25" fill="currentColor" />
+              <circle cx="7" cy="7" r="1.25" fill="currentColor" />
+              <circle cx="11" cy="7" r="1.25" fill="currentColor" />
+            </svg>
+          </button>
+        ) : null}
+      </div>
+      {diagrams.length === 0 ? (
+        <EmptyState
+          message={
+            folderId !== undefined
+              ? 'Empty folder. Move diagrams here from the Recent grid above.'
+              : 'No unsorted diagrams.'
+          }
+        />
+      ) : (
+        <Grid>
+          {diagrams.map((d) => (
+            <DiagramCard
+              key={d.id}
+              id={d.id}
+              href={`/diagram/${d.id}`}
+              title={d.name}
+              savedAt={d.savedAt}
+              renaming={renamingDiagramId === d.id}
+              onStartRename={() => onStartRenameDiagram(d.id)}
+              onCommitRename={(name) => onCommitRenameDiagram(d.id, name)}
+              onCancelRename={onCancelRenameDiagram}
+              onDuplicate={() => onDuplicateDiagram(d.id)}
+              onDelete={() => onDeleteDiagram(d.id)}
+              onMoveRequest={(anchor) => onMoveDiagramRequest(d.id, anchor)}
+            />
+          ))}
+        </Grid>
+      )}
+      {menuOpen && editable ? (
+        <PortalMenu
+          anchor={menuButtonRef.current}
+          placement="below"
+          onClose={() => setMenuOpen(false)}
+        >
+          <MenuItem
+            icon={<MenuPencilIcon />}
+            label="Rename"
+            onClick={() => {
+              onStartRenameTitle?.();
+              setMenuOpen(false);
+            }}
+          />
+          {onDeleteFolder ? (
+            <MenuItem
+              icon={<MenuTrashIcon />}
+              label="Delete folder"
+              danger
+              onClick={() => {
+                onDeleteFolder();
+                setMenuOpen(false);
+              }}
+            />
+          ) : null}
+        </PortalMenu>
+      ) : null}
+    </section>
+  );
 }
 
 // A larger, glanceable card: a thin themed accent bar across the
@@ -701,80 +912,6 @@ function SharedCard({
 // label to rename inline; the trailing × deletes (server promotes
 // any contents to Unsorted). Renaming is uncommitted until Enter or
 // blur; Escape reverts.
-function FolderRow({
-  folder,
-  renaming,
-  onStartRename,
-  onCommitRename,
-  onCancelRename,
-  onDelete,
-}: {
-  folder: Folder;
-  renaming: boolean;
-  onStartRename: () => void;
-  onCommitRename: (name: string) => void;
-  onCancelRename: () => void;
-  onDelete: () => void;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [draft, setDraft] = useState(folder.name);
-
-  useEffect(() => {
-    if (renaming) {
-      setDraft(folder.name);
-      const t = window.setTimeout(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }, 0);
-      return () => window.clearTimeout(t);
-    }
-  }, [renaming, folder.name]);
-
-  return (
-    <li className="group flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 transition hover:border-brand-300">
-      <span className="text-slate-400">
-        <FolderGlyph />
-      </span>
-      {renaming ? (
-        <input
-          ref={inputRef}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={() => onCommitRename(draft)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              onCommitRename(draft);
-            } else if (e.key === 'Escape') {
-              e.preventDefault();
-              onCancelRename();
-            }
-          }}
-          className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1.5 py-0.5 text-sm text-slate-800 outline-none focus:border-brand-500"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={onStartRename}
-          className="min-w-0 flex-1 truncate text-left text-sm text-slate-700 transition hover:text-brand-700"
-        >
-          {folder.name}
-        </button>
-      )}
-      {renaming ? null : (
-        <button
-          type="button"
-          onClick={onDelete}
-          aria-label="Delete folder"
-          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 focus:opacity-100 group-hover:opacity-100"
-        >
-          <CloseIcon />
-        </button>
-      )}
-    </li>
-  );
-}
-
 function SkeletonGrid() {
   return (
     <Grid>
@@ -828,25 +965,6 @@ function FullPageNotice({
         </Link>
       </div>
     </div>
-  );
-}
-
-function FolderGlyph() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-slate-400"
-      aria-hidden
-    >
-      <path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.4a1 1 0 0 1 .77.37l1 1.24A1 1 0 0 0 8.45 5h4.05A1.5 1.5 0 0 1 14 6.5v5A1.5 1.5 0 0 1 12.5 13h-9A1.5 1.5 0 0 1 2 11.5v-7z" />
-    </svg>
   );
 }
 
