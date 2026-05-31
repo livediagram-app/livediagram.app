@@ -53,8 +53,9 @@ function AuthControlsEnabled() {
     return (
       <Link
         href="/sign-in/"
-        className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+        className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
       >
+        <SignInIcon />
         Sign in
       </Link>
     );
@@ -136,6 +137,29 @@ function AuthControlsDisabled() {
   // Clerk not configured — sign-in is not part of this deployment.
   // Render nothing so the header just shows the Share button.
   return null;
+}
+
+// Door-with-arrow glyph — same 13px / 1.6 stroke convention as the
+// other header icons (ShareIcon in EditorHeader, etc.) so the
+// Sign-in pill reads as a peer of those buttons.
+function SignInIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M9 3h3.5A1.5 1.5 0 0 1 14 4.5v7A1.5 1.5 0 0 1 12.5 13H9" />
+      <path d="M2 8h7" />
+      <path d="M6 5l3 3-3 3" />
+    </svg>
+  );
 }
 
 export const AuthControls = clerkEnabled ? AuthControlsEnabled : AuthControlsDisabled;
