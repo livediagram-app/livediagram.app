@@ -215,7 +215,7 @@ export default function LivePage() {
   // does both — see `hooks/useClerkApiBootstrap.ts`. The values it
   // returns are the same ones `useAuth()` would; we read them via the
   // hook so the page has one source of truth.
-  const { authLoaded, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
+  const { authLoaded, isSignedIn, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
 
   const {
     tabs,
@@ -2074,12 +2074,20 @@ export default function LivePage() {
   // the Explorer list. Not undoable — the menu is an explicit action.
   const deleteDiagram = (id: string) => {
     if (typeof window === 'undefined') return;
-    void apiDeleteDiagram(selfParticipant.id, id).catch(() => {});
     if (id === diagramId) {
+      void apiDeleteDiagram(selfParticipant.id, id).catch(() => {});
       window.location.assign(`${window.location.origin}/live/new`);
       return;
     }
-    refreshDiagramList(selfParticipant.id);
+    // Optimistic local removal so the Recent row disappears the
+    // moment the user clicks Delete. The previous shape was a
+    // fire-and-forget apiDeleteDiagram followed by an immediate
+    // refreshDiagramList — the DELETE and the GET raced, and the
+    // refresh frequently won, repainting the row that the API
+    // hadn't yet committed. Users had to click Delete twice to
+    // make it stick.
+    setDiagramList((prev) => prev.filter((d) => d.id !== id));
+    void apiDeleteDiagram(selfParticipant.id, id).catch(() => {});
   };
 
   // Folder helpers (spec/15). createFolder / renameFolder come
@@ -3726,8 +3734,10 @@ export default function LivePage() {
             loading={diagramListLoading}
             shared={sharedDiagrams}
             onDismissShared={dismissSharedDiagram}
-            onOpenFullExplorer={() =>
-              window.location.assign(`${window.location.origin}/live/explorer`)
+            onOpenFullExplorer={
+              isSignedIn
+                ? () => window.location.assign(`${window.location.origin}/live/explorer`)
+                : undefined
             }
             currentDiagramId={null}
             onMoveTo={(x, y) => setExplorerPosition({ x, y })}
@@ -3855,7 +3865,11 @@ export default function LivePage() {
         folders={folders}
         sharedDiagrams={sharedDiagrams}
         onDismissShared={dismissSharedDiagram}
-        onOpenFullExplorer={() => window.location.assign(`${window.location.origin}/live/explorer`)}
+        onOpenFullExplorer={
+          isSignedIn
+            ? () => window.location.assign(`${window.location.origin}/live/explorer`)
+            : undefined
+        }
         diagramListLoading={diagramListLoading}
         changeLog={changeLog.filter((entry) => entry.tabId === activeId)}
         changeLogLoading={changeLogLoading}

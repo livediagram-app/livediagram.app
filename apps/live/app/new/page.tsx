@@ -49,7 +49,7 @@ export default function NewDiagramPage() {
 
   // Clerk wiring (token provider + guest→authed migration) — same
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
-  const { authLoaded, clerkUserId } = useClerkApiBootstrap();
+  const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
 
   useEffect(() => {
     document.title = 'New diagram | livediagram';
@@ -276,7 +276,12 @@ export default function NewDiagramPage() {
             setSharedDiagrams((prev) => prev.filter((d) => d.id !== diagramId));
             void apiDismissSharedWith(self.id, diagramId).catch(() => {});
           }}
-          onOpenFullExplorer={() => window.location.assign('/live/explorer')}
+          // Only signed-in users can act on the standalone page (it
+          // gates itself on Clerk); hide the button for guests so
+          // the prompt doesn't lead them to a sign-in wall.
+          onOpenFullExplorer={
+            isSignedIn ? () => window.location.assign('/live/explorer') : undefined
+          }
           currentDiagramId={null}
           onMoveTo={(x, y) => setExplorerPosition({ x, y })}
           onToggleMinimized={() => setExplorerMinimized((v) => !v)}
