@@ -20,12 +20,12 @@ export type ThemeId =
   | 'cream'
   | 'rose'
   | 'sand'
-  | 'emerald'
+  | 'olive'
   | 'indigo'
-  | 'plum'
+  | 'pine'
   | 'steel'
-  | 'honey'
-  | 'coral';
+  | 'mocha'
+  | 'charcoal';
 
 export type ThemeDefinition = {
   id: ThemeId;
@@ -169,14 +169,14 @@ export const THEMES: ThemeDefinition[] = [
     elementText: '#292524',
   },
   {
-    id: 'emerald',
-    label: 'Emerald',
-    backgroundColor: '#ecfdf5',
+    id: 'olive',
+    label: 'Olive',
+    backgroundColor: '#f7fee7',
     backgroundPattern: 'grid',
-    patternColor: '#a7f3d0',
-    elementFill: '#d1fae5',
-    elementStroke: '#047857',
-    elementText: '#064e3b',
+    patternColor: '#d9f99d',
+    elementFill: '#ecfccb',
+    elementStroke: '#4d7c0f',
+    elementText: '#365314',
     extra: true,
   },
   {
@@ -191,14 +191,17 @@ export const THEMES: ThemeDefinition[] = [
     extra: true,
   },
   {
-    id: 'plum',
-    label: 'Plum',
-    backgroundColor: '#fdf4ff',
+    id: 'pine',
+    label: 'Pine',
+    // Dark green canvas with light foliage tones on elements.
+    // Sits in the "dark theme" tier alongside Midnight + Charcoal
+    // but with a forest-green base instead of navy or neutral grey.
+    backgroundColor: '#14532d',
     backgroundPattern: 'grid',
-    patternColor: '#f5d0fe',
-    elementFill: '#fae8ff',
-    elementStroke: '#a21caf',
-    elementText: '#701a75',
+    patternColor: '#166534',
+    elementFill: '#166534',
+    elementStroke: '#86efac',
+    elementText: '#dcfce7',
     extra: true,
   },
   {
@@ -213,25 +216,30 @@ export const THEMES: ThemeDefinition[] = [
     extra: true,
   },
   {
-    id: 'honey',
-    label: 'Honey',
-    backgroundColor: '#fffbeb',
+    id: 'mocha',
+    label: 'Mocha',
+    // True warm brown — the palette has no genuine brown otherwise
+    // (Sand and Cream are both pale-yellow neutrals). Coffee-amber
+    // tones on a cream canvas.
+    backgroundColor: '#fef7e6',
     backgroundPattern: 'grid',
-    patternColor: '#fde68a',
-    elementFill: '#fef3c7',
-    elementStroke: '#b45309',
-    elementText: '#78350f',
+    patternColor: '#e7d4b8',
+    elementFill: '#e7d4b8',
+    elementStroke: '#78350f',
+    elementText: '#451a03',
     extra: true,
   },
   {
-    id: 'coral',
-    label: 'Coral',
-    backgroundColor: '#fff7ed',
+    id: 'charcoal',
+    label: 'Charcoal',
+    // Neutral-grey dark theme — distinct from Midnight (which is
+    // blue-shifted slate) and from Mono (which is pure white).
+    backgroundColor: '#18181b',
     backgroundPattern: 'grid',
-    patternColor: '#fdba74',
-    elementFill: '#ffedd5',
-    elementStroke: '#dc2626',
-    elementText: '#7f1d1d',
+    patternColor: '#27272a',
+    elementFill: '#27272a',
+    elementStroke: '#a1a1aa',
+    elementText: '#f4f4f5',
     extra: true,
   },
 ];
