@@ -5,17 +5,6 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-slate-50/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Brand href="/" size="md" />
-        <nav className="hidden items-center gap-8 md:flex">
-          <a href="#features" className="text-sm text-slate-600 hover:text-slate-900">
-            Features
-          </a>
-          <a href="#collab" className="text-sm text-slate-600 hover:text-slate-900">
-            Collaboration
-          </a>
-          <a href="#foundations" className="text-sm text-slate-600 hover:text-slate-900">
-            Open source
-          </a>
-        </nav>
         <div className="flex items-center gap-3">
           <a
             href="/live/new"
