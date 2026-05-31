@@ -4,9 +4,27 @@ import type { ReactNode } from 'react';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 
+const FAQ_TITLE = 'FAQ · livediagram';
+const FAQ_DESCRIPTION =
+  'Common questions about livediagram: accounts, collaboration, pricing, and more.';
+
 export const metadata: Metadata = {
-  title: 'FAQ · livediagram',
-  description: 'Common questions about livediagram: accounts, collaboration, pricing, and more.',
+  title: FAQ_TITLE,
+  description: FAQ_DESCRIPTION,
+  alternates: { canonical: '/faq' },
+  openGraph: {
+    type: 'article',
+    url: '/faq',
+    siteName: 'livediagram',
+    title: FAQ_TITLE,
+    description: FAQ_DESCRIPTION,
+    locale: 'en_GB',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: FAQ_TITLE,
+    description: FAQ_DESCRIPTION,
+  },
 };
 
 const FAQS: { q: string; a: ReactNode }[] = [

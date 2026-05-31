@@ -55,6 +55,20 @@ The canvas works without signing in, and that stays the headline ("no sign-up wa
 
 - No `/pricing` page yet (the router reserves the path). Add one only when free/Pro tiers are concrete, Pro benefits are TBD ([03](03-open-source-and-business-model.md)).
 
+## SEO and metadata
+
+The marketing site is the indexable surface for the product, so its `<head>` carries the search and social signals. The editor at `/live/*` and the API at `/api/*` are not optimised for organic search (the editor lives behind client-side bootstraps and has nothing useful to index).
+
+- `metadataBase`: `https://livediagram.app`. Lets relative paths in metadata resolve into absolute URLs (the canonical, OG image, sitemap entries).
+- `alternates.canonical`: every static page declares its own canonical (`/`, `/faq`, `/terms`, `/privacy`). Stops query-string variants and the `www` mirror from competing with the canonical form.
+- `openGraph`: title, description, url, siteName, locale (`en_GB`), type (`website` for the landing page, `article` for FAQ/legal). Mirrors the page-level title/description so social cards match the actual head.
+- `twitter`: card `summary_large_image`, title, description. The card image falls back to the favicon until a dedicated OG image lands; copy stays identical to the OG / page-level title and description.
+- `robots`: explicit `{ index: true, follow: true }` on every page. The hosted product wants indexing; ambiguity about defaults is the kind of thing a future migration silently breaks.
+- `app/sitemap.ts`: lists the four indexable URLs (`/`, `/faq`, `/terms`, `/privacy`) with `lastModified: new Date()` at build time. Next.js generates `/sitemap.xml` at the root from this.
+- `app/robots.ts`: allows everything, points at the sitemap. Disallows nothing yet (the editor and API aren't under the marketing origin).
+
+When a new public page lands, add it to both `app/sitemap.ts` and its own metadata block (with `alternates.canonical`). Updating one without the other is a regression.
+
 ## Content pages (FAQ, legal)
 
 `/faq` (`app/faq`), `/terms` and `/privacy` (`app/terms`, `app/privacy`) are static routes. Terms and Privacy use the shared `components/LegalPage.tsx` shell; FAQ is a question/answer list. All share the `.legal-prose` styling in `globals.css`. The footer links to FAQ / Terms / Privacy / Contact (a `mailto:`), plus a GitHub link by the licence, a Manager Toolkit cross-promo, and an author link (tommcclean.me). These are plain-English first drafts grounded in what the hosted service actually does (Cloudflare for hosting/DB, Clerk for auth, a localStorage guest id, no trackers/telemetry); they have **not** had legal review, and the contact address (`hello@livediagram.app`) and any governing-law / legal-entity details are placeholders to confirm. Keep the privacy page honest against the data the product really touches (it backs the "no tracking pixels" claim).
