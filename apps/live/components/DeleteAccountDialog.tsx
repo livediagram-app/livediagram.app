@@ -22,6 +22,7 @@ import { useUser } from '@clerk/react';
 import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
+import { messageOf } from './auth-shared';
 
 type Phase = 'idle' | 'submitting' | 'error';
 
@@ -84,13 +85,19 @@ export function DeleteAccountDialog({
     }
     try {
       await user.delete();
-    } catch {
-      // Backend data is already gone — surface but let the user
-      // continue. Most common cause is a stale token; signing out
-      // and back in usually clears it.
+    } catch (err) {
+      // Backend data is already gone, so surface Clerk's actual
+      // error rather than swallowing it. The most common cause is
+      // that account self-deletion is disabled on the Clerk
+      // instance — Clerk's "Delete account" toggle in Dashboard →
+      // User & Authentication → Personal information has to be on
+      // for `user.delete()` to succeed client-side. Other paths
+      // (stale token, network blip) bubble up as-is.
       setPhase('error');
+      const detail = messageOf(err, 'Clerk delete failed');
       setErrorMsg(
-        'Backend data was deleted, but removing the Clerk account failed. Sign out and try again from the dashboard.',
+        `Backend data was deleted, but removing the Clerk account failed: ${detail}. ` +
+          'If this says self-deletion is disabled, enable it in your Clerk dashboard → User & Authentication → Personal information → Delete account.',
       );
       return;
     }
