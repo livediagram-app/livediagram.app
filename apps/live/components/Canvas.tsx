@@ -115,6 +115,10 @@ type CanvasProps = {
   onResetExplorer: () => void;
   diagramList: { id: string; name: string; folderId: string | null; savedAt: number }[];
   folders: { id: string; parentId: string | null; name: string }[];
+  // Shared-with-you list. Empty by default so legacy callers can
+  // omit it.
+  sharedDiagrams?: { id: string; name: string; savedAt: number; role: 'edit' | 'view' }[];
+  onDismissShared?: (diagramId: string) => void;
   diagramListLoading: boolean;
   changeLog: ChangeLogEntry[];
   changeLogLoading: boolean;
@@ -286,6 +290,8 @@ export function Canvas(props: CanvasProps) {
     onResetExplorer,
     diagramList,
     folders,
+    sharedDiagrams,
+    onDismissShared,
     diagramListLoading,
     changeLog,
     changeLogLoading,
@@ -1096,6 +1102,8 @@ export function Canvas(props: CanvasProps) {
         diagrams={diagramList}
         folders={folders}
         loading={diagramListLoading}
+        shared={sharedDiagrams}
+        onDismissShared={onDismissShared}
         currentDiagramId={currentDiagramId}
         onMoveTo={onMoveExplorer}
         onToggleMinimized={onToggleExplorerMinimized}

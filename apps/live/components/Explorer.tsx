@@ -20,6 +20,18 @@ type FolderItem = {
   name: string;
 };
 
+// "Shared with you" entry — a diagram the visitor previously opened
+// via a share link, surfaced by `/api/shared` so the Explorer can
+// list it alongside their owned diagrams without the visitor having
+// to bookmark the share URL. Visitor's resolved owner is the
+// implicit key; rows live in the api worker's `shared_with` table.
+type SharedItem = {
+  id: string;
+  name: string;
+  savedAt: number;
+  role: 'edit' | 'view';
+};
+
 type ExplorerProps = {
   position: { x: number; y: number } | null;
   minimized: boolean;
@@ -30,6 +42,14 @@ type ExplorerProps = {
   // Every folder for the owner. Empty array = no user folders, but
   // the synthetic Unsorted bucket still renders. See spec/15.
   folders: FolderItem[];
+  // Diagrams shared with the current owner (read-only or edit
+  // visitor entries). Empty array hides the section entirely so
+  // pure-private users don't see an empty accordion.
+  shared?: SharedItem[];
+  // Dismiss a single Shared row — drops the shared_with reference
+  // server-side so the row no longer surfaces. Optional so consumers
+  // that haven't wired the api endpoint can omit it.
+  onDismissShared?: (diagramId: string) => void;
   // True while the initial diagram-list fetch is in flight. Shows a
   // skeleton in place of the list so the panel doesn't read as "no
   // diagrams" before the API call resolves.
@@ -76,7 +96,10 @@ export function Explorer({
   onRenameFolder,
   onDeleteFolder,
   onMoveDiagramToFolder,
+  shared = [],
+  onDismissShared,
 }: ExplorerProps) {
+  const [sharedOpen, setSharedOpen] = useState(false);
   // Re-render every 30s so the "Updated X ago" strings stay fresh
   // while the panel is open. Cheap when the panel is minimised (this
   // function returns early below before the interval is set up).
@@ -307,6 +330,36 @@ export function Explorer({
                   ))}
                 </ul>
               )
+            ) : null}
+          </div>
+        ) : null}
+
+        {/* Shared-with-you accordion. Only renders when the api has
+            surfaced at least one entry — empty state would just be
+            a noisy "Shared (0)" line on every user's first ever
+            session. Entries come from the shared_with table
+            (migration 0010) — bumped every time the visitor opens
+            a share link for a diagram they don't own. */}
+        {shared.length > 0 ? (
+          <div className="flex flex-col gap-0.5">
+            <AccordionHeader
+              label="Shared with you"
+              badge={shared.length}
+              open={sharedOpen}
+              onToggle={() => setSharedOpen((v) => !v)}
+            />
+            {sharedOpen ? (
+              <ul className="flex flex-col gap-0.5">
+                {shared.map((s) => (
+                  <SharedRow
+                    key={s.id}
+                    item={s}
+                    active={s.id === currentDiagramId}
+                    onOpen={() => onOpenDiagram(s.id)}
+                    onDismiss={onDismissShared ? () => onDismissShared(s.id) : undefined}
+                  />
+                ))}
+              </ul>
             ) : null}
           </div>
         ) : null}
@@ -737,6 +790,104 @@ function UnsortedNode({
         </ul>
       ) : null}
     </li>
+  );
+}
+
+// One row in the "Shared with you" accordion. Visually similar to
+// the recents list but stripped of folder / move / duplicate menu
+// affordances — the visitor doesn't own these diagrams, so the
+// only meaningful actions are "open" and "dismiss this row from my
+// list." A small role pill ("View" / "Edit") communicates what they
+// can do once they're in.
+function SharedRow({
+  item,
+  active,
+  onOpen,
+  onDismiss,
+}: {
+  item: SharedItem;
+  active: boolean;
+  onOpen: () => void;
+  onDismiss?: () => void;
+}) {
+  useRelativeTimeTick();
+  const relative = formatRelativeTime(Date.now() - item.savedAt);
+  return (
+    <li className="group relative">
+      <button
+        type="button"
+        onClick={onOpen}
+        className={`flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition ${
+          active ? 'bg-brand-50 text-brand-800' : 'hover:bg-slate-50 text-slate-700'
+        }`}
+      >
+        <span className={active ? 'text-brand-500' : 'text-slate-400'}>
+          <SharedDiagramIcon />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-xs font-medium">{item.name}</span>
+          <span className="block truncate text-[10px] text-slate-500">
+            {item.role === 'edit' ? 'Edit · ' : 'View · '}
+            Updated {relative}
+          </span>
+        </span>
+      </button>
+      {onDismiss ? (
+        <div className="absolute right-1.5 top-1.5 hidden group-hover:block group-focus-within:block">
+          <Tooltip title="Remove" description="Drop this from your Shared list.">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDismiss();
+              }}
+              aria-label={`Remove ${item.name} from Shared`}
+              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-1 text-slate-500 shadow-sm transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
+            >
+              <RemoveIcon />
+            </button>
+          </Tooltip>
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
+function SharedDiagramIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
+      <path d="M2.5 6.5h11" />
+      <path d="M10 9.5l2 2-2 2" />
+      <path d="M12 11.5h-4" />
+    </svg>
+  );
+}
+
+function RemoveIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M3.5 3.5l7 7M3.5 10.5l7-7" />
+    </svg>
   );
 }
 

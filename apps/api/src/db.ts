@@ -362,6 +362,73 @@ export async function deleteShareLink(env: Env, code: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------
+// shared_with — "shared with you" tracking (migration 0010)
+// ---------------------------------------------------------------------
+
+// Record a visitor's access to a shared diagram. Idempotent on
+// (owner_id, diagram_id): repeat visits just bump last_seen + role.
+// Caller is expected to only invoke this when the visitor's resolved
+// owner differs from the diagram's owner (an owner opening their own
+// diagram via a share link shouldn't show up in their own
+// "Shared with you" list).
+export async function recordSharedAccess(
+  env: Env,
+  ownerId: string,
+  diagramId: string,
+  role: ShareRole,
+): Promise<void> {
+  const now = Date.now();
+  await env.DB.prepare(
+    `INSERT INTO shared_with (owner_id, diagram_id, role, last_seen) VALUES (?, ?, ?, ?)
+       ON CONFLICT (owner_id, diagram_id) DO UPDATE SET role = excluded.role, last_seen = excluded.last_seen`,
+  )
+    .bind(ownerId, diagramId, role, now)
+    .run();
+}
+
+// List diagrams shared with this owner, newest interaction first.
+// Joins through `diagrams` to surface the diagram name + owner-side
+// savedAt, plus the role the visitor was granted. Skips any rows
+// whose diagram has since been deleted (ON DELETE CASCADE keeps the
+// table consistent, but the join guards against a still-rare race
+// where the diagram is gone but the cascade hasn't fired yet).
+export async function listSharedWith(
+  env: Env,
+  ownerId: string,
+): Promise<{ id: string; name: string; savedAt: number; role: ShareRole }[]> {
+  const res = await env.DB.prepare(
+    `SELECT d.id, d.name, d.saved_at, s.role, s.last_seen
+       FROM shared_with s
+       JOIN diagrams d ON d.id = s.diagram_id
+      WHERE s.owner_id = ?
+      ORDER BY s.last_seen DESC`,
+  )
+    .bind(ownerId)
+    .all<{ id: string; name: string; saved_at: number; role: ShareRole; last_seen: number }>();
+  return (res.results ?? []).map((r) => ({
+    id: r.id,
+    name: r.name,
+    savedAt: r.saved_at,
+    role: r.role,
+  }));
+}
+
+// Drop a single "shared with you" reference — used when the visitor
+// dismisses a row from their Shared list (they don't want it
+// showing up any more) or when the diagram's been duplicated into
+// the visitor's own files (#9) so the shared reference is no longer
+// useful.
+export async function dropSharedAccess(
+  env: Env,
+  ownerId: string,
+  diagramId: string,
+): Promise<void> {
+  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ? AND diagram_id = ?')
+    .bind(ownerId, diagramId)
+    .run();
+}
+
+// ---------------------------------------------------------------------
 // change_log — per-diagram audit log (migration 0004)
 // ---------------------------------------------------------------------
 

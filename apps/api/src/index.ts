@@ -19,10 +19,13 @@ import {
   insertChangeLogEntry,
   listChangeLog,
   deleteAccount,
+  dropSharedAccess,
   listDiagramsByOwner,
   listFoldersByOwner,
+  listSharedWith,
   migrateOwnerId,
   listShareLinks,
+  recordSharedAccess,
   reorderTabs,
   setDiagramFolder,
   setDiagramShare,
@@ -154,10 +157,54 @@ export default {
           const link = await getShareLink(env, code);
           if (link) {
             const d = await getDiagram(env, link.diagramId);
-            return d ? json({ diagram: d, role: link.role }) : notFound();
+            if (!d) return notFound();
+            // Track the visit in shared_with so a "Shared with you"
+            // list (#8) can surface this diagram later. Only record
+            // when (a) the visitor identifies (Bearer or
+            // X-Owner-Id) AND (b) they're not the diagram owner —
+            // an owner opening their own share link shouldn't
+            // appear in their own Shared list. Failure is silent;
+            // resolving the share code is the user-visible thing,
+            // tracking is a nice-to-have.
+            const visitor = resolveOwner();
+            if (visitor && visitor !== d.ownerId) {
+              await recordSharedAccess(env, visitor, d.id, link.role).catch(() => {});
+            }
+            return json({ diagram: d, role: link.role });
           }
           const d = await getDiagramByShareCode(env, code);
-          return d ? json({ diagram: d, role: 'edit' as ShareRole }) : notFound();
+          if (!d) return notFound();
+          const visitor = resolveOwner();
+          if (visitor && visitor !== d.ownerId) {
+            await recordSharedAccess(env, visitor, d.id, 'edit' as ShareRole).catch(() => {});
+          }
+          return json({ diagram: d, role: 'edit' as ShareRole });
+        }
+      }
+
+      // ---------- /api/shared ----------
+      // List diagrams a non-owner has previously accessed via a
+      // share link. Used by the Explorer's "Shared with you"
+      // accordion. Per-owner; pure-guest path works because
+      // shared_with rows are keyed off the resolved owner string.
+      if (segments[1] === 'shared') {
+        if (segments.length === 2) {
+          if (request.method === 'GET') {
+            const owner = resolveOwner();
+            if (!owner) return missingAuth();
+            const shared = await listSharedWith(env, owner);
+            return json({ shared });
+          }
+        }
+        // /api/shared/<diagramId> — dismiss / un-link.
+        if (segments.length === 3) {
+          const diagramId = segments[2]!;
+          if (request.method === 'DELETE') {
+            const owner = resolveOwner();
+            if (!owner) return missingAuth();
+            await dropSharedAccess(env, owner, diagramId);
+            return json({ ok: true });
+          }
         }
       }
 

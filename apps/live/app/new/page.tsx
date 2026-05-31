@@ -11,8 +11,10 @@ import {
   apiCreateFolder,
   apiDeleteDiagram,
   apiDeleteFolder,
+  apiDismissSharedWith,
   apiListDiagrams,
   apiListFolders,
+  apiListSharedWith,
   apiLoadDiagram,
   apiLoadSelf,
   apiLoadTab,
@@ -20,6 +22,7 @@ import {
   apiSetDiagramFolder,
   apiUpdateFolder,
   type Folder,
+  type SharedWithItem,
 } from '@/lib/api-client';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { getGuestSelfId, markNameConfirmed, setGuestSelfId } from '@/lib/local-identity';
@@ -67,6 +70,7 @@ export default function NewDiagramPage() {
     { id: string; name: string; folderId: string | null; savedAt: number }[]
   >([]);
   const [folders, setFolders] = useState<Folder[]>([]);
+  const [sharedDiagrams, setSharedDiagrams] = useState<SharedWithItem[]>([]);
   const [diagramListLoading, setDiagramListLoading] = useState(true);
   const [explorerPosition, setExplorerPosition] = useState<{ x: number; y: number } | null>(null);
   const [explorerMinimized, setExplorerMinimized] = useState(false);
@@ -108,13 +112,15 @@ export default function NewDiagramPage() {
       } else {
         await apiSaveSelf(local).catch(() => {});
       }
-      const [list, foldersList] = await Promise.all([
+      const [list, foldersList, sharedList] = await Promise.all([
         apiListDiagrams(selfId).catch(() => null),
         apiListFolders(selfId).catch(() => null),
+        apiListSharedWith(selfId).catch(() => null),
       ]);
       window.clearTimeout(safety);
       setDiagramList(list ?? []);
       setFolders(foldersList ?? []);
+      setSharedDiagrams(sharedList ?? []);
       setDiagramListLoading(false);
     })();
 
@@ -313,6 +319,11 @@ export default function NewDiagramPage() {
           diagrams={diagramList}
           folders={folders}
           loading={diagramListLoading}
+          shared={sharedDiagrams}
+          onDismissShared={(diagramId) => {
+            setSharedDiagrams((prev) => prev.filter((d) => d.id !== diagramId));
+            void apiDismissSharedWith(self.id, diagramId).catch(() => {});
+          }}
           currentDiagramId={null}
           onMoveTo={(x, y) => setExplorerPosition({ x, y })}
           onToggleMinimized={() => setExplorerMinimized((v) => !v)}

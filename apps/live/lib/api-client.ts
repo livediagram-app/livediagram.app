@@ -451,6 +451,35 @@ export async function apiListDiagrams(ownerId: string): Promise<DiagramSummary[]
 }
 
 // ---------------------------------------------------------------------
+// shared_with — "Shared with you" (migration 0010)
+// ---------------------------------------------------------------------
+
+export type SharedWithItem = {
+  id: string;
+  name: string;
+  savedAt: number;
+  role: 'edit' | 'view';
+};
+
+// List diagrams that have been shared with this owner (i.e. the
+// owner previously opened a share link for them and was identified
+// to the api at the time). Returns newest-interaction-first.
+export async function apiListSharedWith(ownerId: string): Promise<SharedWithItem[]> {
+  const res = await fetch(`${API_BASE}/shared`, { headers: await apiHeaders(ownerId) });
+  const { shared } = await expectOk<{ shared: SharedWithItem[] }>(res, 'list shared');
+  return shared;
+}
+
+// Dismiss a single "shared with you" row.
+export async function apiDismissSharedWith(ownerId: string, diagramId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/shared/${diagramId}`, {
+    method: 'DELETE',
+    headers: await apiHeaders(ownerId),
+  });
+  await expectOkVoid(res, 'dismiss shared');
+}
+
+// ---------------------------------------------------------------------
 // folders — spec/15
 // ---------------------------------------------------------------------
 

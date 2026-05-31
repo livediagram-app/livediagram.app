@@ -108,6 +108,15 @@ Owner-only routes require a resolved owner — either a verified Clerk Bearer JW
 | ------ | -------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | POST   | `/api/migrate` | Clerk only | Body `{ guestOwnerId }`. Reassigns every `diagrams.owner_id` + `folders.owner_id` row from the guest id to the JWT's `sub`. No `X-Owner-Id` fallback. See [spec/04](04-auth-and-guest-access.md). |
 
+**Shared with you** (migration 0010)
+
+| Method | Path              | Auth  | Notes                                                                                                                                                                                  |
+| ------ | ----------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/shared`     | owner | Diagrams the resolved owner has previously opened via a share link. Returns `{ id, name, savedAt, role }` newest-interaction-first. Drives the Explorer's "Shared with you" accordion. |
+| DELETE | `/api/shared/:id` | owner | Drop a single shared_with row — the visitor no longer wants the diagram surfaced in their Shared list. Idempotent; missing rows return 200.                                            |
+
+`GET /api/share/:code` now also UPSERTs a `shared_with` row when the visitor identifies (Bearer or `X-Owner-Id`) AND isn't the diagram's owner. The upsert is silent — share-code resolution succeeds regardless of the bookkeeping write so a transient D1 hiccup doesn't break the visitor's session.
+
 **Account self-delete**
 
 | Method | Path           | Auth       | Notes                                                                                                                                                                                                                                                                                                                   |
@@ -147,6 +156,7 @@ The schema starts at `0001_init.sql` and evolves migration-by-migration; the mig
 - **`share_links`** — code → diagramId + role. Multiple links per diagram are supported; revoking a link is a row delete.
 - **`change_log`** — per-diagram audit entries that drive the Activity Panel + Revert path. See [12-activity-and-audit.md](12-activity-and-audit.md).
 - **`folders`** — id, owner, name, optional self-referential `parent_id`. Diagrams reference a folder via `diagrams.folder_id`. Both FKs `ON DELETE SET NULL` so deleting a folder promotes its children. Cycle prevention is enforced in the API layer (D1 can't declaratively).
+- **`shared_with`** (migration 0010) — `(owner_id, diagram_id, role, last_seen)`, primary key on `(owner_id, diagram_id)`. Tracks which diagrams a non-owner has accessed via a share link so the Explorer can render a "Shared with you" accordion. FK to `diagrams` with `ON DELETE CASCADE` so deleting / revoking a diagram drops every visitor's reference for free.
 
 Document-store hybrid: meta + folder + share state lives in real columns; element content lives in tab `data` JSON. Element-level SQL filtering isn't a use case today, so normalising element rows would buy nothing — and the editor already round-trips JSON for every save.
 

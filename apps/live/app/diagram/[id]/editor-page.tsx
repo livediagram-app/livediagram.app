@@ -88,7 +88,9 @@ import {
   apiDeleteShareLink,
   apiDeleteTab,
   apiListChangeLog,
+  apiDismissSharedWith,
   apiListDiagrams,
+  apiListSharedWith,
   apiListFolders,
   apiListShareLinks,
   apiLoadDiagram,
@@ -336,6 +338,13 @@ export default function LivePage() {
   // state. We only flip this off — subsequent refreshes don't reset it
   // because they're triggered by saves and shouldn't blank the list.
   const [diagramListLoading, setDiagramListLoading] = useState(true);
+  // Diagrams shared with the current owner. Surfaced in the
+  // Explorer's "Shared with you" accordion. Fetched alongside the
+  // owned-diagram list and refreshed when the owner opens a new
+  // share link in this tab.
+  const [sharedDiagrams, setSharedDiagrams] = useState<
+    { id: string; name: string; savedAt: number; role: 'edit' | 'view' }[]
+  >([]);
   // Per-diagram audit log surfaced in the Activity Panel. Newest first.
   // Hydrated from the API for existing diagrams; appended to on every
   // commit. See specs/12-activity-and-audit.md.
@@ -430,6 +439,17 @@ export default function LivePage() {
         window.clearTimeout(safety);
         setDiagramListLoading(false);
       });
+    // Shared-with-you runs in parallel — its loading state isn't
+    // gated on the owned-list skeleton because the section hides
+    // when empty anyway. Silent failure for the same reason as the
+    // diagram list above.
+    apiListSharedWith(ownerId)
+      .then((items) => setSharedDiagrams(items))
+      .catch(() => {});
+  };
+  const dismissSharedDiagram = (diagramId: string) => {
+    setSharedDiagrams((prev) => prev.filter((d) => d.id !== diagramId));
+    void apiDismissSharedWith(selfParticipant.id, diagramId).catch(() => {});
   };
   // `remoteUpdateRef` blocks the auto-save effect from re-broadcasting
   // a remote update back through the room (which would cause an
@@ -3635,6 +3655,8 @@ export default function LivePage() {
             diagrams={diagramList}
             folders={folders}
             loading={diagramListLoading}
+            shared={sharedDiagrams}
+            onDismissShared={dismissSharedDiagram}
             currentDiagramId={null}
             onMoveTo={(x, y) => setExplorerPosition({ x, y })}
             onToggleMinimized={() => setExplorerMinimized((v) => !v)}
@@ -3744,6 +3766,8 @@ export default function LivePage() {
         onResetExplorer={() => setExplorerPosition(null)}
         diagramList={diagramList}
         folders={folders}
+        sharedDiagrams={sharedDiagrams}
+        onDismissShared={dismissSharedDiagram}
         diagramListLoading={diagramListLoading}
         changeLog={changeLog.filter((entry) => entry.tabId === activeId)}
         changeLogLoading={changeLogLoading}
