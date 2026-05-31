@@ -84,7 +84,7 @@ import {
   type ShareRole,
 } from '@/lib/api-client';
 import { applyRevert, diffElements } from '@/lib/change-log';
-import { buildTemplate, type TemplateKind } from '@/lib/templates';
+import { buildTemplate, templateCanvasOverrides, type TemplateKind } from '@/lib/templates';
 import { getTheme, THEMES, type ThemeId } from '@/lib/themes';
 
 function createTab(name: string): Tab {
@@ -2216,6 +2216,7 @@ export default function LivePage() {
                     patternColor: theme.patternColor,
                   }
                 : {}),
+              ...templateCanvasOverrides(kind),
             }
           : t,
       ),

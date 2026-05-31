@@ -101,6 +101,16 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
 ];
 
+// Optional canvas-level overrides a specific template can request
+// on top of whatever theme is applied — soft-edits to backdrop
+// fields that ship with the template. Today only Mind map uses this
+// (the radiating branches read better against a slightly softened
+// canvas). Generalises if other templates want their own tuning.
+export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
+  if (kind === 'mindmap') return { backgroundOpacity: 0.8 };
+  return {};
+}
+
 // Build a fully-themed starter tab for /live/new. Centres the
 // template's scaffold on (0, 0), recolours shape / text / arrow
 // elements with the chosen theme (sticky notes keep their amber
@@ -147,6 +157,7 @@ export function buildTemplatedTab(
     backgroundPattern: theme.backgroundPattern,
     patternColor: theme.patternColor,
     templateChosen: true,
+    ...templateCanvasOverrides(kind),
   };
 }
 
