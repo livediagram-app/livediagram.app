@@ -164,7 +164,7 @@ export function ShareDialog({
             </p>
             {links.length === 0 ? (
               <p className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs text-slate-500">
-                No share links yet. Pick a role below and click <strong>Create link</strong>.
+                No share links yet. Pick a role below and click <strong>Create</strong>.
               </p>
             ) : (
               <ul className="flex flex-col gap-1">
@@ -236,7 +236,7 @@ export function ShareDialog({
                 className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
               >
                 <LinkIcon />
-                Create link
+                Create
               </button>
             </div>
           </div>

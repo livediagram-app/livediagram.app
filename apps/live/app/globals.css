@@ -50,6 +50,8 @@
   --animate-fade-in: fade-in 260ms ease-out;
   --animate-fly-up-in: fly-up-in 420ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-fade-scale-in: fade-scale-in 260ms ease-out;
+  --animate-slide-row-in: slide-row-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-row-out: slide-row-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
 @keyframes pop-in {
@@ -103,5 +105,42 @@
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+/*
+ * Explorer diagram-row enter / exit. Used by the Explorer to make
+ * add + delete feel responsive when the list has many similarly-
+ * named diagrams. Max-height collapse + horizontal translate +
+ * fade gives a real sense of motion; the row above slides up into
+ * the gap as the deleted row collapses out.
+ *
+ * Max-height 80px is generous (rows are ~36-44px tall today) — the
+ * row's actual content sets its rendered height; max-height only
+ * affects the animation interpolation.
+ */
+@keyframes slide-row-in {
+  from {
+    transform: translateX(-12px);
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+    max-height: 80px;
+  }
+}
+
+@keyframes slide-row-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+    max-height: 80px;
+  }
+  to {
+    transform: translateX(12px);
+    opacity: 0;
+    max-height: 0;
   }
 }

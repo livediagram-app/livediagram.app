@@ -15,7 +15,7 @@ type TemplatePickerProps = {
   // current participant name + current tab theme untouched.
   // 'identity' — a participant has joined an existing diagram and hasn't
   // confirmed their name yet. Identity section only (no templates, no
-  // theme grid); confirm becomes "Join Diagram".
+  // theme grid); confirm becomes "Join".
   mode: 'welcome' | 'templates' | 'identity';
   // The user's current identity. Their name is editable inside the picker
   // in welcome mode and hidden in templates-only mode.
@@ -83,7 +83,7 @@ export function TemplatePicker({
           <div>
             <h2 className="text-lg font-semibold text-slate-900">
               {isWelcome
-                ? 'New Diagram'
+                ? 'Quick Start'
                 : isIdentity
                   ? diagramName && diagramName.trim()
                     ? `Welcome to '${diagramName.trim()}'`
@@ -258,7 +258,7 @@ export function TemplatePicker({
             className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
           >
             <SparkleIcon />
-            {isWelcome ? 'Create Diagram' : isIdentity ? 'Join Diagram' : 'Apply Template'}
+            {isWelcome ? 'Create Diagram' : isIdentity ? 'Join' : 'Apply Template'}
           </button>
         </div>
       </div>

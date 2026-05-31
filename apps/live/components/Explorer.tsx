@@ -96,6 +96,32 @@ export function Explorer({
   // Folder id newly created via the New folder button — used to drop
   // the row into rename mode immediately after the API returns.
   const [pendingRenameFolderId, setPendingRenameFolderId] = useState<string | null>(null);
+  // Diagrams currently mid slide-out animation. Adding the id to this
+  // set switches the row's <li> className from animate-slide-row-in to
+  // animate-slide-row-out for ~220ms, then we forward the real delete
+  // to the parent so the row is removed from the underlying
+  // `diagrams` prop. Without the delay the row disappears instantly
+  // and a fresh "5 with the same name" Explorer feels unresponsive.
+  const [exitingDiagramIds, setExitingDiagramIds] = useState<Set<string>>(new Set());
+  const wrappedDeleteDiagram = onDeleteDiagram
+    ? (id: string) => {
+        setExitingDiagramIds((prev) => {
+          if (prev.has(id)) return prev;
+          const next = new Set(prev);
+          next.add(id);
+          return next;
+        });
+        window.setTimeout(() => {
+          onDeleteDiagram(id);
+          setExitingDiagramIds((prev) => {
+            if (!prev.has(id)) return prev;
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        }, 220);
+      }
+    : undefined;
 
   if (minimized) return null;
 
@@ -185,7 +211,7 @@ export function Explorer({
             className="inline-flex items-center justify-center gap-1.5 rounded-md border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition hover:border-brand-400 hover:bg-brand-100"
           >
             <PlusIcon />
-            New Diagram
+            Quick Start
           </button>
         ) : null}
 
@@ -194,14 +220,22 @@ export function Explorer({
             <p className="px-1 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
               Current Diagram
             </p>
-            <ul className="flex flex-col gap-0.5">
-              <li>
+            <ul className="flex flex-col gap-0.5 overflow-hidden">
+              <li
+                className={
+                  exitingDiagramIds.has(current.id)
+                    ? 'animate-slide-row-out overflow-hidden'
+                    : 'animate-slide-row-in overflow-hidden'
+                }
+              >
                 <DiagramRow
                   item={current}
                   active
                   onOpen={() => onOpenDiagram(current.id)}
                   onRename={onRenameCurrent}
-                  onDelete={onDeleteDiagram ? () => onDeleteDiagram(current.id) : undefined}
+                  onDelete={
+                    wrappedDeleteDiagram ? () => wrappedDeleteDiagram(current.id) : undefined
+                  }
                   onDuplicate={
                     onDuplicateDiagram ? () => onDuplicateDiagram(current.id) : undefined
                   }
@@ -244,12 +278,21 @@ export function Explorer({
               ) : (
                 <ul className="scrollbar-slim flex max-h-60 flex-col gap-0.5 overflow-y-auto">
                   {recents.map((d) => (
-                    <li key={d.id}>
+                    <li
+                      key={d.id}
+                      className={
+                        exitingDiagramIds.has(d.id)
+                          ? 'animate-slide-row-out overflow-hidden'
+                          : 'animate-slide-row-in overflow-hidden'
+                      }
+                    >
                       <DiagramRow
                         item={d}
                         active={false}
                         onOpen={() => onOpenDiagram(d.id)}
-                        onDelete={onDeleteDiagram ? () => onDeleteDiagram(d.id) : undefined}
+                        onDelete={
+                          wrappedDeleteDiagram ? () => wrappedDeleteDiagram(d.id) : undefined
+                        }
                         onDuplicate={
                           onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined
                         }
@@ -312,7 +355,8 @@ export function Explorer({
                   onRenameFolder={onRenameFolder}
                   onDeleteFolder={onDeleteFolder}
                   onCreateChild={handleCreateChild}
-                  onDeleteDiagram={onDeleteDiagram}
+                  onDeleteDiagram={wrappedDeleteDiagram}
+                  exitingDiagramIds={exitingDiagramIds}
                   onDuplicateDiagram={onDuplicateDiagram}
                   onMoveDiagramRequest={
                     onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
@@ -325,7 +369,8 @@ export function Explorer({
                 diagrams={diagramsByFolder.get(null) ?? []}
                 currentDiagramId={currentDiagramId}
                 onOpenDiagram={onOpenDiagram}
-                onDeleteDiagram={onDeleteDiagram}
+                onDeleteDiagram={wrappedDeleteDiagram}
+                exitingDiagramIds={exitingDiagramIds}
                 onDuplicateDiagram={onDuplicateDiagram}
                 onMoveDiagramRequest={
                   onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
@@ -402,6 +447,7 @@ function FolderNode({
   onDeleteFolder,
   onCreateChild,
   onDeleteDiagram,
+  exitingDiagramIds,
   onDuplicateDiagram,
   onMoveDiagramRequest,
 }: {
@@ -419,6 +465,10 @@ function FolderNode({
   onDeleteFolder?: (id: string) => void;
   onCreateChild: (parentId: string) => Promise<void> | void;
   onDeleteDiagram?: (id: string) => void;
+  // Set of diagram ids currently mid slide-out animation. Passed
+  // down from the Explorer's wrappedDeleteDiagram so every row in
+  // the tree can apply the matching animation class.
+  exitingDiagramIds: Set<string>;
   onDuplicateDiagram?: (id: string) => void;
   onMoveDiagramRequest?: (diagramId: string, anchor: HTMLElement | null) => void;
 }) {
@@ -588,12 +638,21 @@ function FolderNode({
               onDeleteFolder={onDeleteFolder}
               onCreateChild={onCreateChild}
               onDeleteDiagram={onDeleteDiagram}
+              exitingDiagramIds={exitingDiagramIds}
               onDuplicateDiagram={onDuplicateDiagram}
               onMoveDiagramRequest={onMoveDiagramRequest}
             />
           ))}
           {childDiagrams.map((d) => (
-            <li key={d.id} style={{ paddingLeft: 4 + (depth + 1) * 12 }}>
+            <li
+              key={d.id}
+              style={{ paddingLeft: 4 + (depth + 1) * 12 }}
+              className={
+                exitingDiagramIds.has(d.id)
+                  ? 'animate-slide-row-out overflow-hidden'
+                  : 'animate-slide-row-in overflow-hidden'
+              }
+            >
               <DiagramRow
                 item={d}
                 active={d.id === currentDiagramId}
@@ -621,6 +680,7 @@ function UnsortedNode({
   currentDiagramId,
   onOpenDiagram,
   onDeleteDiagram,
+  exitingDiagramIds,
   onDuplicateDiagram,
   onMoveDiagramRequest,
 }: {
@@ -630,6 +690,7 @@ function UnsortedNode({
   currentDiagramId: string | null;
   onOpenDiagram: (id: string) => void;
   onDeleteDiagram?: (id: string) => void;
+  exitingDiagramIds: Set<string>;
   onDuplicateDiagram?: (id: string) => void;
   onMoveDiagramRequest?: (diagramId: string, anchor: HTMLElement | null) => void;
 }) {
@@ -666,7 +727,15 @@ function UnsortedNode({
       {isExpanded ? (
         <ul className="flex flex-col gap-0.5">
           {diagrams.map((d) => (
-            <li key={d.id} style={{ paddingLeft: 16 }}>
+            <li
+              key={d.id}
+              style={{ paddingLeft: 16 }}
+              className={
+                exitingDiagramIds.has(d.id)
+                  ? 'animate-slide-row-out overflow-hidden'
+                  : 'animate-slide-row-in overflow-hidden'
+              }
+            >
               <DiagramRow
                 item={d}
                 active={d.id === currentDiagramId}
