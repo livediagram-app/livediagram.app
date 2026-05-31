@@ -59,6 +59,10 @@ export default function ExplorerPage() {
   const [renamingDiagramId, setRenamingDiagramId] = useState<string | null>(null);
   const [moveTargetDiagramId, setMoveTargetDiagramId] = useState<string | null>(null);
   const moveAnchorRef = useRef<HTMLElement | null>(null);
+  // Floating "+" FAB: opens a popover with "New diagram" + "New folder"
+  // instead of jumping straight to /new.
+  const [fabMenuOpen, setFabMenuOpen] = useState(false);
+  const fabRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     document.title = 'Explorer | livediagram';
@@ -204,28 +208,14 @@ export default function ExplorerPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Hi {clerkDisplayName ?? 'there'},
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Everything you own and everything that&apos;s been shared with you.
-          </p>
+          <p className="mt-1 text-sm text-slate-600">Here is everything you own...</p>
         </div>
 
         {/* Recent — flat-grid top-of-page surface. Capped so the
             "what was I just working on" glance stays small; the
             full per-folder buckets below are the comprehensive
             view. */}
-        <Section
-          title="Recent"
-          count={Math.min(diagrams.length, RECENT_LIMIT)}
-          accent={
-            <Link
-              href="/new"
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700"
-            >
-              <PlusIcon />
-              New diagram
-            </Link>
-          }
-        >
+        <Section title="Recent" count={Math.min(diagrams.length, RECENT_LIMIT)}>
           {loading ? (
             <SkeletonGrid />
           ) : diagrams.length === 0 ? (
@@ -335,16 +325,40 @@ export default function ExplorerPage() {
           </Section>
         ) : null}
       </main>
-      {/* Floating "new diagram" action. Lives at z-40 so it stays
-          above the sticky header's z-30 backdrop. Aria-label is the
-          source of truth — the glyph is decorative. */}
-      <Link
-        href="/new"
-        aria-label="New diagram"
+      {/* Floating "+" FAB. Lives at z-40 so it stays above the sticky
+          header's z-30 backdrop. Opens a popover with "New diagram"
+          and "New folder" so the page has a single create surface
+          rather than two separate buttons. */}
+      <button
+        ref={fabRef}
+        type="button"
+        aria-label="Create"
+        aria-expanded={fabMenuOpen}
+        onClick={() => setFabMenuOpen((o) => !o)}
         className="fixed bottom-8 right-8 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/40"
       >
         <PlusIcon size={22} />
-      </Link>
+      </button>
+      {fabMenuOpen ? (
+        <PortalMenu anchor={fabRef.current} placement="above" onClose={() => setFabMenuOpen(false)}>
+          <MenuItem
+            icon={<PlusIcon />}
+            label="New diagram"
+            onClick={() => {
+              setFabMenuOpen(false);
+              window.location.assign('/live/new');
+            }}
+          />
+          <MenuItem
+            icon={<PlusIcon />}
+            label="New folder"
+            onClick={() => {
+              setFabMenuOpen(false);
+              void createFolder();
+            }}
+          />
+        </PortalMenu>
+      ) : null}
       {moveTargetDiagramId ? (
         // Move-to-folder picker rendered at the page level so the
         // portal doesn't nest inside the card's per-row PortalMenu.
