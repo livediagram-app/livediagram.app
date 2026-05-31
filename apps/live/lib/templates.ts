@@ -672,11 +672,11 @@ function buildSwot(cx: number, cy: number): Element[] {
 // alternating labels above and below so they don't crowd. Labels are
 // simple Text elements (no underlying card) so the chart reads cleanly.
 function buildTimeline(cx: number, cy: number): Element[] {
-  const lineLength = 720;
-  const milestoneRadius = 14;
-  const labelW = 140;
-  const labelH = 36;
-  const verticalOffset = 56;
+  const lineLength = 1200;
+  const milestoneRadius = 22;
+  const labelW = 200;
+  const labelH = 56;
+  const verticalOffset = 90;
 
   const startX = cx - lineLength / 2;
   const baseY = cy;
