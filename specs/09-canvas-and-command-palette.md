@@ -629,20 +629,13 @@ Every palette `Add ...` button auto-selects the newly created element. The selec
 
 The editor header carries three things:
 
-- The `livediagram` brand mark (left).
-- The **diagram title** (centre). Defaults to `Untitled diagram`. Click to rename in place — the title becomes a text input with the current name pre-selected. **Enter** commits, **Escape** cancels, **blur** commits. Empty value reverts to the previous name.
-- **Participants** (right). The current user (and, eventually, anyone else collaborating on the diagram) appears here as a `ParticipantAvatar` — a circular badge with their initials over their assigned colour, a hover tooltip showing their name + presence label, and a coloured status ring (green = online, orange = away, red = stale, i.e. away ≥ 15 minutes; the stale state is reserved for the post-websockets phase).
+- The `livediagram` brand mark (left), accent-coloured from the active tab's theme stroke.
+- The **diagram title** (centre). Defaults to `Untitled diagram`. Click to rename in place — the title becomes a text input with the current name pre-selected. **Enter** commits, **Escape** cancels, **blur** commits. Empty value reverts to the previous name. A small **Private** or **Shared** badge sits immediately to the right of the title and surfaces the current sharing state.
+- The **Share button** (right). Visible only to the diagram owner — visitors arriving via a share link can't toggle sharing on their host's diagram. Opens the share dialog (manage links, roles).
 
-The diagram title is a single string at the page level (not yet persisted across reloads). Per-tab names live on each `Tab` and are edited from the tab bar (see [Tabs](#tabs)).
+The diagram title persists via the api worker (`apiSaveDiagramMeta`). Per-tab names live on each `Tab` and are edited from the tab bar (see [Tabs](#tabs)).
 
-#### Diagram title menu (ellipsis)
-
-A `⋯` ellipsis button sits immediately to the right of the diagram title and mirrors the tab ellipsis menu pattern. It opens a floating menu (rendered through the shared `PortalMenu`) with:
-
-- **Rename** — enters inline rename mode on the title.
-- **Delete** — clears the diagram back to a single empty `Tab 1`, resets the title to `Untitled diagram`, and resets viewport pan/zoom. The tab reset is undoable via the history hook; the title reset is not (the title is not part of element history).
-
-The menu uses the `below` placement of `PortalMenu` so it drops down from the button. The same `PortalMenu` / `MenuItem` pair is reused by the tab menu (with `above` placement) so the two menus share styling and behaviour.
+Rename and Delete for the **current** diagram live in the Explorer panel's "Current Diagram" row, not in the header — the header stays a thin chrome strip. Other participants render as cursors + selection rings on the canvas itself (see [11-api.md → Durable Object room](11-api.md)), not in the header.
 
 ## Tabs
 

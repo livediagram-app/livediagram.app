@@ -92,11 +92,10 @@ export function EditorHeader({
   );
 }
 
-// Small pill rendered to the right of the diagram-name ellipsis menu
-// so the owner can see at a glance whether the diagram is private or
-// shared. Hover surfaces the same description that lives on the
-// Share button. Hidden on visitor views where the share UI doesn't
-// apply.
+// Small pill rendered to the right of the diagram name so the owner
+// can see at a glance whether the diagram is private or shared.
+// Hover surfaces the same description that lives on the Share
+// button. Hidden on visitor views where the share UI doesn't apply.
 function SharedBadge({ shareable }: { shareable: boolean }) {
   return (
     <Tooltip
