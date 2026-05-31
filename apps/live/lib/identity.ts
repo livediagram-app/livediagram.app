@@ -3,17 +3,40 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
-export type ParticipantStatus = 'online' | 'away' | 'stale';
+export type ParticipantStatus = 'online' | 'away' | 'offline';
+
+// Idle thresholds driving the presence ring colour. Aligned with the
+// product's "you should know when a collaborator wandered off" goal:
+// 5 minutes is the warning point (away, orange); 60 minutes is the
+// "they're probably done" point (offline, red). Both work on the
+// presence connection alone — the WS link can still be open while a
+// peer's tab is in the background.
+export const AWAY_AFTER_MS = 5 * 60 * 1000;
+export const OFFLINE_AFTER_MS = 60 * 60 * 1000;
 
 export type Participant = {
   id: string;
   name: string;
   color: string; // hex
-  // `online` = active in the last few seconds. `away` = idle 1-15 min.
-  // `stale` = idle >15 min (red ring; used once we have websockets so
-  // someone who joined a collab session and disappeared is visible).
+  // Derived presence — never stored on the server. Computed locally
+  // from `lastActiveAt` against the AWAY / OFFLINE thresholds.
   status: ParticipantStatus;
+  // Wall-clock timestamp of this participant's most recent
+  // interaction (cursor / selection / op / local input). Drives the
+  // status derivation + the "Active X ago" tooltip. Optional so
+  // legacy callers that don't track it can still construct a
+  // Participant; treated as "now" when omitted.
+  lastActiveAt?: number;
 };
+
+// Status from idle duration. Used at render time so the ring + label
+// stay in sync with the actual time elapsed without having to PUT
+// anything per minute.
+export function statusFromIdleMs(idleMs: number): ParticipantStatus {
+  if (idleMs >= OFFLINE_AFTER_MS) return 'offline';
+  if (idleMs >= AWAY_AFTER_MS) return 'away';
+  return 'online';
+}
 
 const ADJECTIVES = [
   'Curious',
@@ -118,7 +141,7 @@ export function statusRingColor(status: ParticipantStatus): string {
       return '#22c55e'; // green-500
     case 'away':
       return '#f97316'; // orange-500
-    case 'stale':
+    case 'offline':
       return '#ef4444'; // red-500
   }
 }
@@ -129,7 +152,7 @@ export function statusLabel(status: ParticipantStatus): string {
       return 'Online';
     case 'away':
       return 'Away';
-    case 'stale':
-      return 'Away for 15+ minutes';
+    case 'offline':
+      return 'Offline';
   }
 }

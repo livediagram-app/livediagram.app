@@ -63,7 +63,13 @@ import {
   type DragState,
   type ShapeBounds,
 } from '@/lib/canvas';
-import { nextFreeColor, randomColor, randomName, type Participant } from '@/lib/identity';
+import {
+  nextFreeColor,
+  randomColor,
+  randomName,
+  statusFromIdleMs,
+  type Participant,
+} from '@/lib/identity';
 import {
   getGuestSelfId,
   hasConfirmedName,
@@ -353,6 +359,22 @@ export default function LivePage() {
   // Durable Object room right now. Includes ourselves once our `hello`
   // round-trips. Rendered in the editor header avatar stack.
   const [livePresence, setLivePresence] = useState<Participant[]>([]);
+  // Wall-clock timestamp of each peer's last observed interaction.
+  // Seeded on presence arrival; bumped on every incoming op from
+  // that peer (cursor / selection / tab op). Drives the
+  // online/away/offline derivation + the "Active X ago" tooltip.
+  // Lives in a ref because the bump-on-op needs to be O(1) and we
+  // don't want to re-render the whole tree on every cursor packet
+  // just to update an idle timestamp.
+  const lastSeenRef = useRef<Map<string, number>>(new Map());
+  // Re-derive presence statuses on a 30s tick. Without this, a peer
+  // who fell idle would keep showing "online" until something else
+  // re-rendered the editor.
+  const [, setIdleTick] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setIdleTick((n) => n + 1), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
   // Which tab each remote participant is currently looking at. Driven
   // by the room's 'tab-focus' op; updated on every active-tab change
   // and on initial room connect. Used to render avatar dots on the
@@ -935,14 +957,30 @@ export default function LivePage() {
     }
     const handlers: RoomHandlers = {
       onPresence: (participants) => {
+        const now = Date.now();
         setLivePresence(
           participants.map((p) => ({
             id: p.id,
             name: p.name,
             color: p.color,
+            // Status + lastActiveAt are derived locally rather than
+            // carried on the wire — the server doesn't track idle
+            // time. Seed any peer we haven't seen with `now` so the
+            // tooltip reads "Active just now" until their first op
+            // arrives.
             status: 'online',
+            lastActiveAt: lastSeenRef.current.get(p.id) ?? now,
           })),
         );
+        // Seed lastSeen for any presence-arrival we haven't tracked
+        // yet — without this the next render still shows
+        // `lastActiveAt = undefined` because the merge happens
+        // synchronously above before the ref write.
+        for (const p of participants) {
+          if (!lastSeenRef.current.has(p.id)) {
+            lastSeenRef.current.set(p.id, now);
+          }
+        }
         // Unique-colour reconciliation. Every client computes the
         // same allocation on every presence update; we only act when
         // (a) someone else in the room shares our colour and (b) our
@@ -1013,6 +1051,11 @@ export default function LivePage() {
         });
       },
       onOp: (from, op) => {
+        // Any op from a peer counts as "they're still here". Bumps
+        // the idle timer used by the avatar's away/offline status
+        // derivation. Cursor packets are the most frequent so this
+        // doubles as a perfectly fine activity heartbeat.
+        lastSeenRef.current.set(from, Date.now());
         if (op.kind === 'tab') {
           // Peer updated a single tab's contents. Merge by id; if the
           // tab isn't local yet (new tab the peer just added), append
@@ -1316,15 +1359,34 @@ export default function LivePage() {
     // avatar row on the tab strip would just be a redundant "you're
     // here" indicator. Skip it entirely until the diagram is shared.
     if (!diagramShareable) return map;
-    map.set(activeId, [{ ...selfParticipant, status: 'online' }]);
+    const now = Date.now();
+    map.set(activeId, [
+      // Self is always "online" (you can't be idle to yourself in
+      // any useful sense), with lastActiveAt at "now" so the tooltip
+      // reads "Active just now".
+      { ...selfParticipant, status: 'online', lastActiveAt: now },
+    ]);
     for (const [id, tabId] of remoteTabFocus) {
       if (id === selfParticipant.id) continue;
       const p = livePresenceById.get(id);
       if (!p) continue;
-      const withStatus: Participant = {
-        ...p,
-        status: tabId === activeId ? 'online' : 'away',
-      };
+      // Combine the two presence signals: tab-focus (are they on my
+      // tab) and idle (how long since their last op). Idle wins when
+      // it's worse — a peer who's gone idle for an hour is "offline"
+      // no matter which tab they were last on. Otherwise the
+      // historical "on my tab → online, on another tab → away"
+      // signal applies.
+      const lastActiveAt = lastSeenRef.current.get(id) ?? now;
+      const idleStatus = statusFromIdleMs(now - lastActiveAt);
+      const status =
+        idleStatus === 'offline'
+          ? 'offline'
+          : idleStatus === 'away'
+            ? 'away'
+            : tabId === activeId
+              ? 'online'
+              : 'away';
+      const withStatus: Participant = { ...p, status, lastActiveAt };
       const bucket = map.get(tabId);
       if (bucket) bucket.push(withStatus);
       else map.set(tabId, [withStatus]);

@@ -1,4 +1,5 @@
 import { initialsOf, statusLabel, statusRingColor, type Participant } from '@/lib/identity';
+import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
 import { Tooltip } from './Tooltip';
 
 type ParticipantAvatarProps = {
@@ -18,6 +19,12 @@ export function ParticipantAvatar({
   size = 28,
   withTooltip = false,
 }: ParticipantAvatarProps) {
+  // Subscribe the avatar's tooltip to the 30s relative-time tick so
+  // an opened tooltip's "Active 2 mins ago" refreshes itself instead
+  // of going stale. The hook is cheap so we always pay it — calling
+  // it conditionally would violate rules-of-hooks if `withTooltip`
+  // flipped.
+  useRelativeTimeTick();
   const ringColor = statusRingColor(participant.status);
   // The ring is drawn as a 2px box-shadow with a 1px white gap inside.
   const avatar = (
@@ -36,8 +43,21 @@ export function ParticipantAvatar({
     </div>
   );
   if (!withTooltip) return avatar;
+  // Tooltip description: status + idle duration. Surfaces both at
+  // once because the status word (Away / Offline) alone hides the
+  // useful number ("Away 8 mins ago" reads very differently from
+  // "Away 6 hours ago"). When `lastActiveAt` is omitted (legacy
+  // call site that doesn't track it), fall back to the bare status
+  // label so the tooltip still says something sensible.
+  const idleSuffix =
+    participant.lastActiveAt !== undefined
+      ? ` · Active ${formatRelativeTime(Date.now() - participant.lastActiveAt)}`
+      : '';
   return (
-    <Tooltip title={participant.name} description={statusLabel(participant.status)}>
+    <Tooltip
+      title={participant.name}
+      description={`${statusLabel(participant.status)}${idleSuffix}`}
+    >
       {avatar}
     </Tooltip>
   );
