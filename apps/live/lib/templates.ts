@@ -198,13 +198,13 @@ function buildBlank(cx: number, cy: number): Element[] {
 }
 
 function buildMindMap(cx: number, cy: number): Element[] {
-  const centerSize = 140;
-  const branchW = 130;
-  const branchH = 60;
-  const leafW = 100;
-  const leafH = 44;
-  const branchRadius = 240;
-  const leafOffset = 160;
+  const centerSize = 170;
+  const branchW = 170;
+  const branchH = 80;
+  const leafW = 140;
+  const leafH = 60;
+  const branchRadius = 360;
+  const leafOffset = 230;
 
   // Central node: the only circle on the map. Surrounding topics use
   // squares so the hierarchy reads as "one nucleus, many ideas radiating"
@@ -413,15 +413,15 @@ function buildOrgChart(cx: number, cy: number): Element[] {
 // flowchart shape (terminator / process / decision) plus a branching
 // connector.
 function buildFlowchart(cx: number, cy: number): Element[] {
-  const termW = 160;
-  const termH = 60;
-  const procW = 140;
-  const procH = 64;
-  const decW = 140;
-  const decH = 90;
-  const vGap = 32;
+  const termW = 220;
+  const termH = 80;
+  const procW = 200;
+  const procH = 90;
+  const decW = 200;
+  const decH = 130;
+  const vGap = 70;
 
-  const startY = cy - 260;
+  const startY = cy - 380;
   const step1Y = startY + termH + vGap;
   const decisionY = step1Y + procH + vGap;
   const step2Y = decisionY + decH + vGap;
