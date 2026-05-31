@@ -376,77 +376,83 @@ export function Explorer({
           </div>
         ) : null}
 
-        {/* Folders section (spec/15). Always shows because Unsorted
-            is the home for any uncategorised diagram, so there's
-            always at least one bucket. */}
-        <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60">
-          <AccordionHeader
-            label="Folders"
-            badge={folders.length}
-            open={foldersOpen}
-            onToggle={() => setFoldersOpen((v) => !v)}
-            trailing={
-              onCreateFolder ? (
-                <Tooltip title="New folder" description="Add a root-level folder.">
-                  <button
-                    type="button"
-                    aria-label="New folder"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void handleCreateRoot();
-                    }}
-                    className="flex h-4 w-4 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
-                  >
-                    <PlusIcon />
-                  </button>
-                </Tooltip>
-              ) : null
-            }
-          />
-          {foldersOpen ? (
-            <ul className="flex flex-col gap-0.5">
-              {(foldersByParent.get(null) ?? []).map((f) => (
-                <FolderNode
-                  key={f.id}
-                  folder={f}
-                  depth={0}
-                  foldersByParent={foldersByParent}
-                  diagramsByFolder={diagramsByFolder}
-                  expanded={expandedFolders}
-                  onToggleExpanded={toggleFolder}
-                  currentDiagramId={currentDiagramId}
-                  pendingRenameId={pendingRenameFolderId}
-                  onRenameFolderCommitted={() => setPendingRenameFolderId(null)}
-                  onOpenDiagram={onOpenDiagram}
-                  onRenameFolder={onRenameFolder}
-                  onDeleteFolder={onDeleteFolder}
-                  onCreateChild={handleCreateChild}
-                  onDeleteDiagram={wrappedDeleteDiagram}
-                  exitingDiagramIds={exitingDiagramIds}
-                  onDuplicateDiagram={onDuplicateDiagram}
-                  onMoveDiagramRequest={
-                    onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
-                  }
-                />
-              ))}
-              {(diagramsByFolder.get(null) ?? []).length > 0 ? (
-                <UnsortedNode
-                  expanded={expandedFolders}
-                  onToggleExpanded={toggleFolder}
-                  diagrams={diagramsByFolder.get(null) ?? []}
-                  currentDiagramId={currentDiagramId}
-                  onOpenDiagram={onOpenDiagram}
-                  onDeleteDiagram={wrappedDeleteDiagram}
-                  exitingDiagramIds={exitingDiagramIds}
-                  onDuplicateDiagram={onDuplicateDiagram}
-                  onMoveDiagramRequest={
-                    onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
-                  }
-                />
-              ) : null}
-            </ul>
-          ) : null}
-        </div>
+        {/* Folders section (spec/15). Hidden entirely when the
+            owner has no diagrams AND no folders — an empty
+            Unsorted bucket inside an empty Folders accordion was
+            pure noise on a fresh account. Once any diagram exists
+            the section comes back so Unsorted has a home; user-
+            created folders also bring it back even before the
+            first diagram so the create-folder action sticks. */}
+        {diagrams.length === 0 && folders.length === 0 ? null : (
+          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60">
+            <AccordionHeader
+              label="Folders"
+              badge={folders.length}
+              open={foldersOpen}
+              onToggle={() => setFoldersOpen((v) => !v)}
+              trailing={
+                onCreateFolder ? (
+                  <Tooltip title="New folder" description="Add a root-level folder.">
+                    <button
+                      type="button"
+                      aria-label="New folder"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void handleCreateRoot();
+                      }}
+                      className="flex h-4 w-4 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                    >
+                      <PlusIcon />
+                    </button>
+                  </Tooltip>
+                ) : null
+              }
+            />
+            {foldersOpen ? (
+              <ul className="flex flex-col gap-0.5">
+                {(foldersByParent.get(null) ?? []).map((f) => (
+                  <FolderNode
+                    key={f.id}
+                    folder={f}
+                    depth={0}
+                    foldersByParent={foldersByParent}
+                    diagramsByFolder={diagramsByFolder}
+                    expanded={expandedFolders}
+                    onToggleExpanded={toggleFolder}
+                    currentDiagramId={currentDiagramId}
+                    pendingRenameId={pendingRenameFolderId}
+                    onRenameFolderCommitted={() => setPendingRenameFolderId(null)}
+                    onOpenDiagram={onOpenDiagram}
+                    onRenameFolder={onRenameFolder}
+                    onDeleteFolder={onDeleteFolder}
+                    onCreateChild={handleCreateChild}
+                    onDeleteDiagram={wrappedDeleteDiagram}
+                    exitingDiagramIds={exitingDiagramIds}
+                    onDuplicateDiagram={onDuplicateDiagram}
+                    onMoveDiagramRequest={
+                      onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
+                    }
+                  />
+                ))}
+                {(diagramsByFolder.get(null) ?? []).length > 0 ? (
+                  <UnsortedNode
+                    expanded={expandedFolders}
+                    onToggleExpanded={toggleFolder}
+                    diagrams={diagramsByFolder.get(null) ?? []}
+                    currentDiagramId={currentDiagramId}
+                    onOpenDiagram={onOpenDiagram}
+                    onDeleteDiagram={wrappedDeleteDiagram}
+                    exitingDiagramIds={exitingDiagramIds}
+                    onDuplicateDiagram={onDuplicateDiagram}
+                    onMoveDiagramRequest={
+                      onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
+                    }
+                  />
+                ) : null}
+              </ul>
+            ) : null}
+          </div>
+        )}
 
         {onOpenFullExplorer ? (
           <button
