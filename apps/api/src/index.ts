@@ -44,7 +44,13 @@ export { DiagramRoom };
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Owner-Id, X-Share-Code',
+  // `Authorization` carries the Clerk Bearer token (Stage 2 hybrid
+  // auth — spec/04, spec/11). Without it in the allow-list every
+  // signed-in cross-origin request fails the preflight and surfaces
+  // to JS as "Failed to fetch", which was hiding behind DELETE
+  // /api/account and any other authed call from localhost:3002 →
+  // localhost:8787 in dev.
+  'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Owner-Id, X-Share-Code',
   'Access-Control-Max-Age': '86400',
 };
 
