@@ -20,10 +20,10 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 
 Required by the CI/CD pipeline (see [10-deployment.md](10-deployment.md)):
 
-| Secret          | Purpose                                                                                                                                                           |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | Cloudflare API token with permission to deploy Workers (Account → Workers Scripts → Edit + Account Settings → Read). Scoped to the account that owns the workers. |
-| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                          |
+| Secret          | Purpose                                                                                                                                                                                                                                  |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, D1:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](10-deployment.md). |
+| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                 |
 
 Future Pro/Cloud features will add: `CLERK_SECRET_KEY`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY` and any D1 binding tokens. All same rules: never in source, never in `wrangler.toml`.
 
