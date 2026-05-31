@@ -1350,37 +1350,56 @@ function InlineRenameInput({
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState(initial);
-  // Tracks whether the input has ever actually received focus. The
-  // rename flow runs on the same click that closed a PortalMenu —
-  // when that menu unmounts, the focused MenuItem is removed and
-  // focus bounces around (body, then re-focused into the input).
-  // During that bounce the browser can fire a spurious blur on the
-  // newly-mounted input before any user interaction. Without this
-  // guard, blur fires immediately and commits with the original
-  // name, unmounting the input before the user sees it.
-  const hadFocusRef = useRef(false);
-  // Synchronous focus during the commit phase, before the browser
-  // paints. useEffect + setTimeout(0) leaves a window where the
-  // input is mounted but unfocused, which is exactly the window
-  // where focus bounces away.
+  // draftRef holds the latest draft for the document-level click
+  // handler — that handler is attached once and can't re-close
+  // over a fresh draft on every keystroke without re-binding.
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  // Latest onCommit, same reason as draftRef. The parent rebuilds
+  // it every render (closes over folder id / state) and we don't
+  // want to thrash document listeners chasing that identity.
+  const commitRef = useRef(onCommit);
+  commitRef.current = onCommit;
+
+  // Synchronous focus during the commit phase. useEffect +
+  // setTimeout(0) leaves a window where the input is mounted but
+  // unfocused, which is exactly the window where focus can bounce
+  // away to body during a PortalMenu unmount.
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node) return;
     node.focus();
     node.select();
   }, []);
+
+  // Commit-on-click-outside instead of commit-on-blur. The earlier
+  // blur-based version was unfixable in practice: the rename flow
+  // runs on the same click that unmounts a PortalMenu, and the
+  // portal unmount can transiently steal focus from the freshly-
+  // mounted input. blur then fires, the rename commits with the
+  // original name, and the input unmounts before the user can
+  // type — which is exactly the "input appears for a split second"
+  // bug. mousedown-outside doesn't care about focus at all: as
+  // long as the input is in the DOM, the user can type into it,
+  // and the rename ends only when they click somewhere outside,
+  // press Enter, or press Escape.
+  useEffect(() => {
+    const handle = (e: MouseEvent) => {
+      const node = ref.current;
+      if (!node) return;
+      if (e.target instanceof Node && !node.contains(e.target)) {
+        commitRef.current(draftRef.current);
+      }
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, []);
+
   return (
     <input
       ref={ref}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
-      onFocus={() => {
-        hadFocusRef.current = true;
-      }}
-      onBlur={() => {
-        if (!hadFocusRef.current) return;
-        onCommit(draft);
-      }}
       onKeyDown={(e) => {
         e.stopPropagation();
         if (e.key === 'Enter') {
