@@ -293,8 +293,8 @@ export default function LivePage() {
   // "Changed theme to X" entry opens the Theme accordion).
   const [tabAccordionsOpen, setTabAccordionsOpen] = useState<{
     theme: boolean;
-    background: boolean;
-  }>({ theme: false, background: false });
+    canvas: boolean;
+  }>({ theme: false, canvas: false });
   // Canvas tool — Pan (default, drag-on-empty scrolls) vs Select
   // (drag-on-empty marquee-selects). Holding Space always pans
   // regardless. Lives in page so other components (e.g. status bar
@@ -1404,16 +1404,12 @@ export default function LivePage() {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
       setContextMinimized(false);
-      setTabAccordionsOpen({ theme: true, background: false });
-    } else if (
-      lower.includes('background') ||
-      lower.includes('pattern') ||
-      lower.includes('opacity')
-    ) {
+      setTabAccordionsOpen({ theme: true, canvas: false });
+    } else if (lower.includes('canvas') || lower.includes('pattern') || lower.includes('opacity')) {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
       setContextMinimized(false);
-      setTabAccordionsOpen({ theme: false, background: true });
+      setTabAccordionsOpen({ theme: false, canvas: true });
     }
   };
 
@@ -2242,7 +2238,7 @@ export default function LivePage() {
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundPattern: pattern } : t)),
     );
-    emitTabMeta(activeId, `Changed background pattern to ${pattern}`);
+    emitTabMeta(activeId, `Changed canvas pattern to ${pattern}`);
   };
 
   // Applying a theme swaps backdrop colours/pattern, records the theme
@@ -2302,7 +2298,7 @@ export default function LivePage() {
   const setBackgroundColor = (color: string) => {
     if (activeTabLocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, backgroundColor: color } : t)));
-    emitTabMeta(activeId, `Changed background colour to ${color}`);
+    emitTabMeta(activeId, `Changed canvas colour to ${color}`);
   };
 
   const setBackgroundOpacity = (opacity: number) => {

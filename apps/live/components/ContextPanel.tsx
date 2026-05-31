@@ -64,7 +64,7 @@ export function ContextPanel({
   // doesn't lift state. Same mutual-exclusion shape.
   const [localTabOpen, setLocalTabOpen] = useState<TabAccordionState>({
     theme: false,
-    background: false,
+    canvas: false,
   });
   const tabOpen = tabAccordionsOpen ?? localTabOpen;
   const setTabOpen = setTabAccordionsOpen ?? setLocalTabOpen;

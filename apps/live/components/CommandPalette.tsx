@@ -1090,7 +1090,7 @@ function ArrowEndsIcon({ ends }: { ends: ArrowEnds }) {
   );
 }
 
-export type TabAccordionState = { theme: boolean; background: boolean };
+export type TabAccordionState = { theme: boolean; canvas: boolean };
 
 export function TabSection({
   tab,
@@ -1104,7 +1104,7 @@ export function TabSection({
   // Mutually exclusive (matches SelectedElementSection).
   const toggle = (key: keyof TabAccordionState) =>
     setOpen((prev) => {
-      const closed: TabAccordionState = { theme: false, background: false };
+      const closed: TabAccordionState = { theme: false, canvas: false };
       if (prev[key]) return closed;
       return { ...closed, [key]: true };
     });
@@ -1169,7 +1169,7 @@ export function TabSection({
           <ShowMoreButton label="Show more themes" onClick={themesList.reveal} />
         ) : null}
       </Accordion>
-      <Accordion title="Canvas" open={open.background} onToggle={() => toggle('background')}>
+      <Accordion title="Canvas" open={open.canvas} onToggle={() => toggle('canvas')}>
         <p className="text-[10px] font-medium text-slate-500">Pattern</p>
         <div className="mt-1 grid grid-cols-3 gap-1">
           {patternsList.visible.map((p) => (
