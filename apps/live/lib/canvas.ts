@@ -1,7 +1,7 @@
-export type ShapeDragMode = 'move' | 'resize-nw' | 'resize-ne' | 'resize-sw' | 'resize-se';
-
-// Back-compat alias — used in ShapeView / drag handlers.
-export type DragMode = ShapeDragMode;
+// One of the gestures a `BoxedElementView` can be in mid-drag. `move`
+// is the body drag; the four `resize-*` corners are the bounding-box
+// handles.
+export type DragMode = 'move' | 'resize-nw' | 'resize-ne' | 'resize-sw' | 'resize-se';
 
 export type ArrowEnd = 'from' | 'to';
 
