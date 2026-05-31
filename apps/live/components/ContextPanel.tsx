@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   SelectedElementSection,
   TabSection,
@@ -10,6 +10,50 @@ import {
   type TabSectionControls,
 } from './CommandPalette';
 import { MovablePanel } from './MovablePanel';
+
+// Idle-timeout for the accordions inside the Editor panel: 20 s of
+// no pointer / keyboard activity inside the panel content collapses
+// every open accordion. Same goal as auto-collapsing a menu the user
+// has walked away from — keeps the panel compact for the next
+// glance instead of demanding a manual close. See
+// `useAutoCloseAfterIdle` below.
+const ACCORDION_IDLE_MS = 20000;
+
+// Watches a container element for interaction. Whenever `anyOpen` is
+// true, install pointerdown / pointermove / keydown listeners scoped
+// to the container; if `ACCORDION_IDLE_MS` passes with no event, call
+// `closeAll()`. Scoping to the container (not document) means moving
+// the cursor on the canvas does NOT count as engagement — only
+// interaction inside the panel resets the timer.
+function useAutoCloseAfterIdle(
+  containerRef: React.RefObject<HTMLElement | null>,
+  anyOpen: boolean,
+  closeAll: () => void,
+) {
+  useEffect(() => {
+    if (!anyOpen) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    let timerId: number | undefined;
+    const reset = () => {
+      if (timerId) window.clearTimeout(timerId);
+      timerId = window.setTimeout(closeAll, ACCORDION_IDLE_MS);
+    };
+    reset(); // start the countdown immediately on accordion open
+
+    el.addEventListener('pointerdown', reset);
+    el.addEventListener('pointermove', reset);
+    el.addEventListener('keydown', reset);
+
+    return () => {
+      if (timerId) window.clearTimeout(timerId);
+      el.removeEventListener('pointerdown', reset);
+      el.removeEventListener('pointermove', reset);
+      el.removeEventListener('keydown', reset);
+    };
+  }, [anyOpen, closeAll, containerRef]);
+}
 
 type ContextPanelProps = {
   position: { x: number; y: number } | null;
@@ -68,6 +112,51 @@ export function ContextPanel({
   });
   const tabOpen = tabAccordionsOpen ?? localTabOpen;
   const setTabOpen = setTabAccordionsOpen ?? setLocalTabOpen;
+
+  // Track whichever accordion set is currently visible — when a
+  // selection exists we render SelectedElementSection (5 accordions);
+  // otherwise TabSection (2 accordions). `anyOpen` drives the idle
+  // timer below.
+  const showingSelected = selection !== null;
+  const anyOpen = showingSelected
+    ? Object.values(selectedAccordionsOpen).some(Boolean)
+    : Object.values(tabOpen).some(Boolean);
+  // `closeAll` resets only the visible accordion set — closing the
+  // other one would be pointless work but also incorrect (it'd
+  // collapse state the user left intentionally open from the other
+  // mode).
+  const closeAll = useCallback(() => {
+    if (showingSelected) {
+      setSelectedAccordionsOpen({
+        shape: false,
+        layer: false,
+        text: false,
+        colours: false,
+        pointer: false,
+      });
+    } else {
+      setTabOpen({ theme: false, canvas: false });
+    }
+  }, [showingSelected, setTabOpen]);
+
+  const panelBodyRef = useRef<HTMLDivElement>(null);
+  useAutoCloseAfterIdle(panelBodyRef, anyOpen, closeAll);
+
+  // Stable reference to the visible body content avoids re-creating
+  // listeners on unrelated re-renders.
+  const body = useMemo(() => {
+    return selection ? (
+      <SelectedElementSection
+        selection={selection}
+        open={selectedAccordionsOpen}
+        setOpen={setSelectedAccordionsOpen}
+        scope={selectionScope}
+      />
+    ) : (
+      <TabSection tab={tab} open={tabOpen} setOpen={setTabOpen} />
+    );
+  }, [selection, selectedAccordionsOpen, tab, tabOpen, setTabOpen, selectionScope]);
+
   if (minimized) return null;
   return (
     <MovablePanel
@@ -79,16 +168,12 @@ export function ContextPanel({
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}
     >
-      {selection ? (
-        <SelectedElementSection
-          selection={selection}
-          open={selectedAccordionsOpen}
-          setOpen={setSelectedAccordionsOpen}
-          scope={selectionScope}
-        />
-      ) : (
-        <TabSection tab={tab} open={tabOpen} setOpen={setTabOpen} />
-      )}
+      {/* Wrapper ref scopes the idle-timer listeners to the panel
+          body — the MovablePanel's header (drag handle) doesn't
+          count, so dragging the panel around won't reset the timer
+          and accordions still collapse after 20 s of no body
+          interaction. */}
+      <div ref={panelBodyRef}>{body}</div>
     </MovablePanel>
   );
 }
