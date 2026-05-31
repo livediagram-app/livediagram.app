@@ -447,10 +447,19 @@ export default function LivePage() {
         window.clearTimeout(safety);
         setDiagramListLoading(false);
       });
-    // Shared-with-you runs in parallel — its loading state isn't
-    // gated on the owned-list skeleton because the section hides
-    // when empty anyway. Silent failure for the same reason as the
-    // diagram list above.
+    // Shared-with-you is deliberately NOT fetched here. The list
+    // only changes when the user opens a NEW share URL (which
+    // navigates the page → hydration picks it up) or when the
+    // owner revokes shares (which the visitor won't see until
+    // their next page load anyway). Fetching it on every
+    // autosave-triggered refresh was burning a wasted GET
+    // /api/shared per ~500ms of active editing.
+  };
+  // One-shot shared-list fetch, called from the hydration IIFE
+  // alongside refreshDiagramList. Silent failure: the section
+  // hides when empty so a network glitch just leaves the
+  // accordion absent for this session.
+  const refreshSharedList = (ownerId: string) => {
     apiListSharedWith(ownerId)
       .then((items) => setSharedDiagrams(items))
       .catch(() => {});
@@ -796,6 +805,7 @@ export default function LivePage() {
       }
       setNameConfirmed(hasConfirmedName());
       refreshDiagramList(self.id);
+      refreshSharedList(self.id);
       // Folder list is auto-loaded by the useFolders hook once
       // selfParticipant.id transitions off the placeholder — no
       // manual fetch needed here.

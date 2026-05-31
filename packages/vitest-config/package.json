@@ -1,0 +1,20 @@
+{
+  "name": "@livediagram/vitest-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf node_modules .turbo"
+  },
+  "peerDependencies": {
+    "vitest": "^2.1.8"
+  }
+}
