@@ -130,6 +130,14 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # The `secrets` context can't be read inside a step `if:`
+    # (GitHub only allows env/github/needs/vars there), so lift the
+    # Clerk JWKS URL into a job-level env var. The "Sync" step below
+    # then gates on `env.CLERK_JWKS_URL` instead of the secret
+    # directly. An empty/unset secret yields an empty env var, which
+    # the `if:` treats as "skip" — same pure-guest fallback as before.
+    env:
+      CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -192,12 +200,11 @@ jobs:
       # skipping the step entirely is safe but leaves an old value
       # in place, so this `if:` keeps the rotation story consistent.
       - name: Sync CLERK_JWKS_URL secret
-        if: ${{ secrets.CLERK_JWKS_URL != '' }}
+        if: ${{ env.CLERK_JWKS_URL != '' }}
         working-directory: apps/api
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL }}
         run: printf '%s' "$CLERK_JWKS_URL" | pnpm exec wrangler secret put CLERK_JWKS_URL
 
       - name: Deploy to Cloudflare Workers
