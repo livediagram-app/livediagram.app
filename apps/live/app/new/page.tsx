@@ -176,8 +176,11 @@ export default function NewDiagramPage() {
     window.location.assign(`/live/diagram/${diagramId}`);
   };
 
-  const openDiagram = (id: string) => {
-    window.location.assign(`/live/diagram/${id}`);
+  const openDiagram = (id: string, shareCode?: string) => {
+    const url = shareCode
+      ? `/live/diagram/${id}?s=${encodeURIComponent(shareCode)}`
+      : `/live/diagram/${id}`;
+    window.location.assign(url);
   };
 
   const refreshList = async (ownerId: string) => {

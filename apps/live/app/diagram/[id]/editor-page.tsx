@@ -346,7 +346,7 @@ export default function LivePage() {
   // owned-diagram list and refreshed when the owner opens a new
   // share link in this tab.
   const [sharedDiagrams, setSharedDiagrams] = useState<
-    { id: string; name: string; savedAt: number; role: 'edit' | 'view' }[]
+    { id: string; name: string; savedAt: number; role: 'edit' | 'view'; shareCode: string }[]
   >([]);
   // Per-diagram audit log surfaced in the Activity Panel. Newest first.
   // Hydrated from the API for existing diagrams; appended to on every
@@ -2351,10 +2351,17 @@ export default function LivePage() {
   // Open a different diagram from the Explorer list. Same reload trick
   // as `newDiagram` — the auto-save has already persisted the current
   // diagram so nothing is lost. Path scheme per spec/14.
-  const openDiagram = (id: string) => {
+  const openDiagram = (id: string, shareCode?: string) => {
     if (typeof window === 'undefined') return;
     if (id === diagramId) return;
-    window.location.assign(`${window.location.origin}/live/diagram/${id}`);
+    // Shared-list rows pass a share code so the non-owner can
+    // actually load the target diagram — without it the editor's
+    // hydration goes through the owner-only `/api/diagrams/:id`
+    // path and 404s.
+    const url = shareCode
+      ? `${window.location.origin}/live/diagram/${id}?s=${encodeURIComponent(shareCode)}`
+      : `${window.location.origin}/live/diagram/${id}`;
+    window.location.assign(url);
   };
 
   // Visitor action: duplicate the currently-open shared diagram

@@ -117,7 +117,13 @@ type CanvasProps = {
   folders: { id: string; parentId: string | null; name: string }[];
   // Shared-with-you list. Empty by default so legacy callers can
   // omit it.
-  sharedDiagrams?: { id: string; name: string; savedAt: number; role: 'edit' | 'view' }[];
+  sharedDiagrams?: {
+    id: string;
+    name: string;
+    savedAt: number;
+    role: 'edit' | 'view';
+    shareCode: string;
+  }[];
   onDismissShared?: (diagramId: string) => void;
   diagramListLoading: boolean;
   changeLog: ChangeLogEntry[];
@@ -145,7 +151,7 @@ type CanvasProps = {
   saveStatus: import('./EditorHeader').SaveStatus;
   savedAt: number | null;
   currentDiagramId: string | null;
-  onOpenDiagram: (id: string) => void;
+  onOpenDiagram: (id: string, shareCode?: string) => void;
   onNewDiagram: () => void;
   onRenameCurrent: (name: string) => void;
   onDeleteDiagram: (id: string) => void;

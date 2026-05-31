@@ -30,6 +30,10 @@ type SharedItem = {
   name: string;
   savedAt: number;
   role: 'edit' | 'view';
+  // Still-live share code for the visitor's role — needed so the
+  // row click can navigate to `/live/diagram/<id>?s=<code>`, which
+  // is the only path a non-owner can actually open the diagram on.
+  shareCode: string;
 };
 
 type ExplorerProps = {
@@ -58,7 +62,7 @@ type ExplorerProps = {
   onMoveTo: (x: number, y: number) => void;
   onToggleMinimized: () => void;
   onReset: () => void;
-  onOpenDiagram: (id: string) => void;
+  onOpenDiagram: (id: string, shareCode?: string) => void;
   // Optional so consumers that have nowhere to mint a new diagram
   // (e.g. the welcome route, which IS the new-diagram flow) can hide
   // the button entirely. When omitted the row isn't rendered.
@@ -355,7 +359,7 @@ export function Explorer({
                     key={s.id}
                     item={s}
                     active={s.id === currentDiagramId}
-                    onOpen={() => onOpenDiagram(s.id)}
+                    onOpen={() => onOpenDiagram(s.id, s.shareCode)}
                     onDismiss={onDismissShared ? () => onDismissShared(s.id) : undefined}
                   />
                 ))}
@@ -499,7 +503,7 @@ function FolderNode({
   currentDiagramId: string | null;
   pendingRenameId: string | null;
   onRenameFolderCommitted: () => void;
-  onOpenDiagram: (id: string) => void;
+  onOpenDiagram: (id: string, shareCode?: string) => void;
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
   onCreateChild: (parentId: string) => Promise<void> | void;
@@ -727,7 +731,7 @@ function UnsortedNode({
   onToggleExpanded: (key: string) => void;
   diagrams: DiagramListItem[];
   currentDiagramId: string | null;
-  onOpenDiagram: (id: string) => void;
+  onOpenDiagram: (id: string, shareCode?: string) => void;
   onDeleteDiagram?: (id: string) => void;
   exitingDiagramIds: Set<string>;
   onDuplicateDiagram?: (id: string) => void;

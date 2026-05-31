@@ -169,7 +169,12 @@ export default function ExplorerPage() {
               {shared.map((s) => (
                 <SharedCard
                   key={s.id}
-                  href={`/diagram/${s.id}`}
+                  // Shared diagrams need the `?s=<code>` query so
+                  // the editor's hydration can resolve through the
+                  // share-code path instead of the owner-only
+                  // `/api/diagrams/:id` route. Without it the link
+                  // 404s for the non-owner viewing the Shared list.
+                  href={`/diagram/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
                   title={s.name}
                   role={s.role}
                   savedAt={s.savedAt}

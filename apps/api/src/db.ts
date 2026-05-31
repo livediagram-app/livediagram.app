@@ -484,30 +484,54 @@ export async function recordSharedAccess(
 }
 
 // List diagrams shared with this owner, newest interaction first.
-// Joins through `diagrams` to surface the diagram name + owner-side
-// savedAt, plus the role the visitor was granted. Skips any rows
-// whose diagram has since been deleted (ON DELETE CASCADE keeps the
-// table consistent, but the join guards against a still-rare race
-// where the diagram is gone but the cascade hasn't fired yet).
+// Joins through `diagrams` for the name + owner-side savedAt; also
+// surfaces a still-live `shareCode` for each row so the client can
+// build a `/live/diagram/<id>?s=<code>` URL the visitor can actually
+// open. Without the code the Shared list link would land on the
+// owner-only `/api/diagrams/:id` path and 404 every time.
+//
+// The shareCode is sourced via a correlated subquery against
+// share_links matching the same role the visitor was granted —
+// preferring the oldest still-alive code (matches the "primary
+// code" convention used everywhere else). Rows whose share has
+// been entirely revoked since the visit (no code left at the
+// matching role, or shareable flipped off) are filtered out so the
+// visitor doesn't see a list item they can't act on.
 export async function listSharedWith(
   env: Env,
   ownerId: string,
-): Promise<{ id: string; name: string; savedAt: number; role: ShareRole }[]> {
+): Promise<{ id: string; name: string; savedAt: number; role: ShareRole; shareCode: string }[]> {
   const res = await env.DB.prepare(
-    `SELECT d.id, d.name, d.saved_at, s.role, s.last_seen
+    `SELECT d.id, d.name, d.saved_at, s.role,
+            (SELECT code
+               FROM share_links
+              WHERE share_links.diagram_id = d.id
+                AND share_links.role = s.role
+              ORDER BY share_links.created_at ASC
+              LIMIT 1) AS share_code
        FROM shared_with s
        JOIN diagrams d ON d.id = s.diagram_id
       WHERE s.owner_id = ?
+        AND d.shareable = 1
       ORDER BY s.last_seen DESC`,
   )
     .bind(ownerId)
-    .all<{ id: string; name: string; saved_at: number; role: ShareRole; last_seen: number }>();
-  return (res.results ?? []).map((r) => ({
-    id: r.id,
-    name: r.name,
-    savedAt: r.saved_at,
-    role: r.role,
-  }));
+    .all<{
+      id: string;
+      name: string;
+      saved_at: number;
+      role: ShareRole;
+      share_code: string | null;
+    }>();
+  return (res.results ?? [])
+    .filter((r) => r.share_code !== null)
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      savedAt: r.saved_at,
+      role: r.role,
+      shareCode: r.share_code as string,
+    }));
 }
 
 // Drop a single "shared with you" reference — used when the visitor
