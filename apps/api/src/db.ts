@@ -531,7 +531,6 @@ export async function dropSharedAccess(
 
 type ChangeLogRow = {
   id: string;
-  diagram_id: string;
   tab_id: string | null;
   participant_id: string;
   participant_name: string;
@@ -547,7 +546,6 @@ type ChangeLogRow = {
 function rowToChangeLog(row: ChangeLogRow): ChangeLogEntryDTO {
   return {
     id: row.id,
-    diagramId: row.diagram_id,
     tabId: row.tab_id,
     participantId: row.participant_id,
     participantName: row.participant_name,
@@ -566,13 +564,21 @@ function rowToChangeLog(row: ChangeLogRow): ChangeLogEntryDTO {
 // audit completeness; the V1 UI just doesn't surface them.
 const CHANGE_LOG_LIST_LIMIT = 30;
 
+// Per-diagram log read: change_log.diagram_id was dropped in
+// migration 0012 (item #14), so the filter joins through
+// diagram_tabs to find every tab currently linked to the diagram
+// and pulls log entries for those tabs. A tab shared between
+// diagrams surfaces in both diagrams' logs — which is the right
+// answer once spec/17's many-to-many tabs land: the change exists
+// in every diagram it shows up in.
 export async function listChangeLog(env: Env, diagramId: string): Promise<ChangeLogEntryDTO[]> {
   const result = await env.DB.prepare(
-    `SELECT id, diagram_id, tab_id, participant_id, participant_name, participant_color,
-            kind, summary, element_ids, before_state, after_state, created_at
-       FROM change_log
-      WHERE diagram_id = ?
-      ORDER BY created_at DESC
+    `SELECT cl.id, cl.tab_id, cl.participant_id, cl.participant_name, cl.participant_color,
+            cl.kind, cl.summary, cl.element_ids, cl.before_state, cl.after_state, cl.created_at
+       FROM change_log cl
+       JOIN diagram_tabs dt ON dt.tab_id = cl.tab_id
+      WHERE dt.diagram_id = ?
+      ORDER BY cl.created_at DESC
       LIMIT ?`,
   )
     .bind(diagramId, CHANGE_LOG_LIST_LIMIT)
@@ -583,14 +589,13 @@ export async function listChangeLog(env: Env, diagramId: string): Promise<Change
 export async function insertChangeLogEntry(env: Env, entry: ChangeLogEntryDTO): Promise<void> {
   await env.DB.prepare(
     `INSERT INTO change_log (
-       id, diagram_id, tab_id, participant_id, participant_name, participant_color,
+       id, tab_id, participant_id, participant_name, participant_color,
        kind, summary, element_ids, before_state, after_state, created_at
      )
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       entry.id,
-      entry.diagramId,
       entry.tabId,
       entry.participantId,
       entry.participantName,
@@ -607,28 +612,18 @@ export async function insertChangeLogEntry(env: Env, entry: ChangeLogEntryDTO): 
 
 // Bulk-drop every log entry for a tab. Used by the live app when it
 // deletes a tab — the tab no longer exists, its history is dead with
-// it. See specs/12-activity-and-audit.md.
-export async function deleteChangeLogForTab(
-  env: Env,
-  diagramId: string,
-  tabId: string,
-): Promise<void> {
-  await env.DB.prepare('DELETE FROM change_log WHERE diagram_id = ? AND tab_id = ?')
-    .bind(diagramId, tabId)
-    .run();
+// it. See specs/12-activity-and-audit.md. Post #14 the diagram-side
+// filter is gone (the column was dropped); the tab_id alone keys
+// the delete.
+export async function deleteChangeLogForTab(env: Env, tabId: string): Promise<void> {
+  await env.DB.prepare('DELETE FROM change_log WHERE tab_id = ?').bind(tabId).run();
 }
 
 // Drop a single log entry. Used by the live app when the user clicks
 // Revert — the original entry vanishes rather than gaining a
 // 'reverted' counterpart, so the log stays compact.
-export async function deleteChangeLogEntry(
-  env: Env,
-  diagramId: string,
-  entryId: string,
-): Promise<void> {
-  await env.DB.prepare('DELETE FROM change_log WHERE diagram_id = ? AND id = ?')
-    .bind(diagramId, entryId)
-    .run();
+export async function deleteChangeLogEntry(env: Env, entryId: string): Promise<void> {
+  await env.DB.prepare('DELETE FROM change_log WHERE id = ?').bind(entryId).run();
 }
 
 // ---------------------------------------------------------------------

@@ -34,13 +34,12 @@ the **Activity Panel**.
 
 ## Data model
 
-New D1 table, migration `0004_change_log.sql`:
+New D1 table, migration `0004_change_log.sql`. Migration `0012` dropped the `diagram_id` column (item #14 / spec/17) — every entry is now tab-scoped, and the per-diagram filter joins through `diagram_tabs`:
 
 ```sql
 CREATE TABLE change_log (
   id           TEXT PRIMARY KEY,             -- UUID
-  diagram_id   TEXT NOT NULL,                -- diagram this entry belongs to
-  tab_id       TEXT,                         -- nullable for diagram-level entries
+  tab_id       TEXT,                         -- the tab this entry belongs to (post #14)
   participant_id   TEXT NOT NULL,            -- author at commit time
   participant_name TEXT NOT NULL,            -- snapshot at commit time
   participant_color TEXT NOT NULL,           -- snapshot for the dot

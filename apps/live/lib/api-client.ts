@@ -219,10 +219,11 @@ export async function apiListChangeLog(
 
 export async function apiAppendChangeLogEntry(
   ownerId: string,
-  entry: Omit<ChangeLogEntry, 'diagramId'> & { diagramId: string },
+  diagramId: string,
+  entry: ChangeLogEntry,
   shareCode: string | null = null,
 ): Promise<ChangeLogEntry> {
-  const res = await fetch(`${API_BASE}/diagrams/${entry.diagramId}/log`, {
+  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/log`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
     body: JSON.stringify(entry),

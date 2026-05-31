@@ -512,7 +512,6 @@ export default {
             }
             const entry: ChangeLogEntryDTO = {
               id: body.id,
-              diagramId: id,
               tabId: body.tabId ?? null,
               participantId: body.participantId,
               participantName: body.participantName,
@@ -545,7 +544,7 @@ export default {
           if (!allowed) return forbidden();
 
           if (request.method === 'DELETE') {
-            await deleteChangeLogEntry(env, id, entryId);
+            await deleteChangeLogEntry(env, entryId);
             return new Response(null, { status: 204, headers: CORS_HEADERS });
           }
         }
@@ -563,7 +562,7 @@ export default {
           if (existing.ownerId !== owner) return forbidden();
 
           if (request.method === 'DELETE') {
-            await deleteChangeLogForTab(env, id, tabId);
+            await deleteChangeLogForTab(env, tabId);
             return new Response(null, { status: 204, headers: CORS_HEADERS });
           }
         }

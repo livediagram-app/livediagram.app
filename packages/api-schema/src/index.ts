@@ -146,7 +146,11 @@ export type ChangeLogKind = 'add' | 'edit' | 'delete' | 'revert';
 // id, a delete has after=null).
 export type ChangeLogEntry = {
   id: string;
-  diagramId: string;
+  // Tab the change happened on. Nullable in the schema for legacy
+  // diagram-scoped entries; new entries always carry a real id
+  // (since #14 dropped the diagram_id column the tab id is now the
+  // canonical pointer into the change_log → tabs → diagram_tabs
+  // chain — see spec/17).
   tabId: string | null;
   participantId: string;
   participantName: string;

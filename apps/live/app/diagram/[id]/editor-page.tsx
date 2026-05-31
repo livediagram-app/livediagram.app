@@ -1535,7 +1535,6 @@ export default function LivePage() {
     if (!diff) return;
     const entry: ChangeLogEntry = {
       id: crypto.randomUUID(),
-      diagramId,
       tabId,
       participantId: selfParticipant.id,
       participantName: selfParticipant.name,
@@ -1560,7 +1559,11 @@ export default function LivePage() {
       past: [...entryHistoryRef.current.past, entry].slice(-LOG_HISTORY_LIMIT),
       future: [],
     };
-    apiAppendChangeLogEntry(selfParticipant.id, entry, sessionShareCode).catch(() => {});
+    if (diagramId) {
+      apiAppendChangeLogEntry(selfParticipant.id, diagramId, entry, sessionShareCode).catch(
+        () => {},
+      );
+    }
     roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry } });
   };
 
@@ -1574,7 +1577,6 @@ export default function LivePage() {
     if (!diagramId) return;
     const entry: ChangeLogEntry = {
       id: crypto.randomUUID(),
-      diagramId,
       tabId,
       participantId: selfParticipant.id,
       participantName: selfParticipant.name,
@@ -1751,7 +1753,11 @@ export default function LivePage() {
         // it had before the undo. Idempotent under network retries
         // (the API treats POST as insert; a re-insert of the same id
         // would fail loudly but we don't double-fire).
-        apiAppendChangeLogEntry(selfParticipant.id, next, sessionShareCode).catch(() => {});
+        if (diagramId) {
+          apiAppendChangeLogEntry(selfParticipant.id, diagramId, next, sessionShareCode).catch(
+            () => {},
+          );
+        }
       }
       roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry: next } });
     }
