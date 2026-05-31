@@ -17,13 +17,14 @@ Single landing page (`app/page.tsx`) with a sticky header, hero, themed feature 
 
 0. **Header** (`components/Header.tsx`) — sticky bar with the `Brand`, the **social share row** (see below), and the primary CTA → `/live/new` ("Start drawing").
 1. **Hero** (`components/Hero.tsx`) — headline, subhead, primary CTA → `/live/new` ("Start drawing") with a no-sign-up note, animated `HeroIllustration` mock of the editor.
-2. **Simple by design** (`#why`): the positioning lead-in. Tagline "Simple by design, powerfully deep" plus the easy-yet-powerful duality (start in one click, looks simple/runs deep, multiplayer with no setup) and the two easiest-start features, templates and themes. The three duality cards use light icon badges; the templates/themes cards keep their canvas mocks.
-3. **Collaboration** (`#collaboration`, tinted): the shared-canvas story. Live presence, selection glow, LWW realtime edits, comments, and the laser pointer.
+2. **Simple by design** (`#why`): the positioning lead-in. Tagline "Simple by design, powerfully deep" plus the easy-yet-powerful duality (start in one click, looks simple/runs deep, multiplayer with no setup, works on any device) and the two easiest-start features, templates and themes. The duality cards use light icon badges; the templates/themes cards keep their canvas mocks.
+3. **Collaboration** (`#collaboration`, tinted): the shared-canvas story. Live presence, selection glow, realtime edits, comments, and the laser pointer.
 4. **Draw** (`#features`): the raw materials of a diagram, shapes and arrows.
-5. **Refine** (`#refine`, tinted): working the canvas: multi-select, format painter, tabs + cross-tab links, folders.
-6. **Share & control** (`#sharing`): editor/view-only links, revoke, activity log + revert, collaborator name, durable save.
-7. **Open and honest** (`#foundations`, tinted): MIT license, self-host, no telemetry. See [03-open-source-and-business-model](03-open-source-and-business-model.md).
-8. **Closing CTA** (`#get-started`) — "no sign-up wall" message + `/live/new`.
+5. **Refine** (`#refine`, tinted): working the canvas: multi-select, format painter, folders.
+6. **Tabs** (`#tabs`): unlimited tabs per diagram, link elements across tabs, copy a tab into another diagram (a one-time copy, not a live sync), lock a tab, reorder and theme-colour-code. Tabs have no manual colour or order field: order is array position (drag), colour is derived from the tab's theme accent.
+7. **Share & control** (`#sharing`, tinted): editor/view-only links, revoke, activity log + revert, collaborator name, durable save.
+8. **Open and honest** (`#foundations`): MIT license, self-host, no telemetry. See [03-open-source-and-business-model](03-open-source-and-business-model.md).
+9. **Closing CTA** (`#get-started`) — "no sign-up wall" message + `/live/new`.
 
 The primary CTA reads **"Start drawing"** everywhere (header, hero, closing CTA) — keep it consistent. The `#features` anchor must stay on the first feature section (the hero's "See what's in it" button targets it).
 

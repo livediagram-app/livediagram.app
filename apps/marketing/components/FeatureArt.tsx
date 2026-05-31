@@ -12,7 +12,7 @@
 // fa-theme-*, fa-arrow-*, fa-paint, fa-lww, fa-tab, fa-reveal, fa-chev,
 // fa-laser, fa-spin, fa-dip, fa-swap-*, fa-knob, fa-on/off, fa-fade.
 
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 const BLUE_FILL = '#dbeafe';
 const BLUE_STROKE = '#0284c7';
@@ -35,30 +35,6 @@ function Frame({ children, canvas = false }: { children: ReactNode; canvas?: boo
     >
       {children}
     </div>
-  );
-}
-
-function Avatar({
-  initials,
-  color,
-  className = '',
-  style,
-}: {
-  initials: string;
-  color: string;
-  className?: string;
-  style?: CSSProperties;
-}) {
-  return (
-    <span
-      className={
-        'flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-semibold text-white ' +
-        className
-      }
-      style={{ backgroundColor: color, boxShadow: '0 0 0 2px white, 0 0 0 4px #22c55e', ...style }}
-    >
-      {initials}
-    </span>
   );
 }
 
@@ -522,36 +498,62 @@ function DiagramIcon() {
 /* ─────────────────────── Section: real-time ──────────────────────── */
 
 export function PresenceArt() {
-  const people = [
-    { initials: 'TM', color: SKY },
-    { initials: 'JR', color: PINK },
-    { initials: 'AL', color: '#8b5cf6' },
+  // Presence shows on the tab bar: each tab carries a small stack of the
+  // participants currently focused on it (not in the editor header).
+  const tabs = [
+    { name: 'Overview', people: [{ initials: 'TM', color: SKY, ring: '#22c55e' }] },
+    {
+      name: 'Backend',
+      active: true,
+      people: [
+        { initials: 'JR', color: PINK, ring: '#22c55e' },
+        { initials: 'AL', color: '#8b5cf6', ring: '#f59e0b' },
+      ],
+    },
+    { name: 'Data', people: [] as { initials: string; color: string; ring: string }[] },
   ];
   return (
     <Frame>
-      <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
-        <span className="text-[9px] font-semibold text-slate-900">
-          live<span className="text-brand-600">[diagram]</span>
-        </span>
-        <div className="flex items-center gap-1.5">
-          {people.map((p, i) => (
-            <Avatar
-              key={p.initials}
-              initials={p.initials}
-              color={p.color}
-              className="fa-pop"
-              style={{ animationDelay: `${0.4 + i * 0.9}s` }}
-            />
+      <div className="flex h-full flex-col justify-center gap-3 px-3">
+        <div className="flex items-end justify-center gap-1.5">
+          {tabs.map((t, ti) => (
+            <div
+              key={t.name}
+              className={
+                'relative flex flex-col items-center gap-1 rounded-md border px-2 py-1.5 ' +
+                (t.active ? 'border-brand-300 bg-white' : 'border-slate-200 bg-slate-50')
+              }
+            >
+              <div className="flex h-[14px] -space-x-1.5">
+                {t.people.map((p, i) => (
+                  <span
+                    key={p.initials}
+                    className="fa-pop flex h-[14px] w-[14px] items-center justify-center rounded-full text-[6px] font-bold text-white"
+                    style={{
+                      backgroundColor: p.color,
+                      boxShadow: `0 0 0 1.5px white, 0 0 0 3px ${p.ring}`,
+                      animationDelay: `${0.3 + (ti + i) * 0.5}s`,
+                    }}
+                  >
+                    {p.initials}
+                  </span>
+                ))}
+              </div>
+              <span className="text-[7px] font-medium text-slate-500">{t.name}</span>
+              {t.active ? (
+                <span className="absolute -bottom-px left-2 right-2 h-[2px] rounded bg-brand-500" />
+              ) : null}
+            </div>
           ))}
         </div>
-      </div>
-      <div className="flex h-[calc(100%-33px)] items-center justify-center gap-4 text-[8px] text-slate-400">
-        <span className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> online
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> away
-        </span>
+        <div className="flex items-center justify-center gap-3 text-[8px] text-slate-400">
+          <span className="flex items-center gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> online
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> away
+          </span>
+        </div>
       </div>
     </Frame>
   );
@@ -610,7 +612,7 @@ export function RealtimeArt() {
         <Cursor color={PINK} label="JR" />
       </span>
       <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
-        last write wins
+        in sync
       </span>
     </Frame>
   );
@@ -1026,5 +1028,169 @@ export function MultiplayerArt() {
         <path d="M14 18.5 a4.5 4.5 0 0 1 6.5 -1.2" strokeLinecap="round" />
       </svg>
     </IconBadge>
+  );
+}
+
+export function AnyDeviceArt() {
+  return (
+    <IconBadge delay="1.2s">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        {/* laptop / monitor */}
+        <rect x="2" y="4" width="13" height="9" rx="1.5" />
+        <path d="M5 17 H12" strokeLinecap="round" />
+        <path d="M8.5 13 V17" />
+        {/* phone, sitting over the corner */}
+        <rect x="15" y="9" width="6" height="11" rx="1.5" fill="white" />
+        <path d="M17.5 17.5 h1" strokeLinecap="round" />
+      </svg>
+    </IconBadge>
+  );
+}
+
+/* ───────────────────────────── Section: tabs ─────────────────────── */
+
+export function UnlimitedTabsArt() {
+  const tabs = ['Overview', 'Backend', 'Data', 'Auth', 'API'];
+  return (
+    <Frame>
+      <div className="flex h-full items-center px-2">
+        <div className="flex w-full items-end gap-0.5 border-b border-slate-200">
+          {tabs.map((t, i) => (
+            <span
+              key={t}
+              className="fa-pop rounded-t border border-b-0 border-slate-200 bg-white px-1.5 py-1 text-[7px] font-medium text-slate-600"
+              style={{ animationDelay: `${i * 0.5}s` }}
+            >
+              {t}
+            </span>
+          ))}
+          <span
+            className="fa-pop px-1 text-[11px] font-bold text-brand-500"
+            style={{ animationDelay: `${tabs.length * 0.5}s` }}
+          >
+            +
+          </span>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
+function MiniDiagram({
+  tabs,
+  label,
+}: {
+  tabs: { c: string; on?: boolean; popped?: boolean }[];
+  label: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="w-20 rounded-md border border-slate-200 bg-white p-1 shadow-sm">
+        <div className="flex gap-0.5 border-b border-slate-100 pb-0.5">
+          {tabs.map((t, i) => (
+            <span
+              key={i}
+              className={(t.popped ? 'fa-pop ' : '') + 'h-1.5 w-4 rounded-t'}
+              style={{
+                backgroundColor: t.c,
+                opacity: t.on ? 1 : 0.4,
+                ...(t.popped ? { animationDelay: '0.9s' } : {}),
+              }}
+            />
+          ))}
+        </div>
+        <div className="mt-1 h-6 rounded-sm bg-[radial-gradient(circle_at_center,_#e2e8f0_1px,_transparent_1px)] bg-[size:8px_8px]" />
+      </div>
+      <span className="text-[7px] text-slate-400">{label}</span>
+    </div>
+  );
+}
+
+export function TabCopyArt() {
+  return (
+    <Frame>
+      <div className="flex h-full items-center justify-center gap-2 px-3">
+        <MiniDiagram tabs={[{ c: SKY, on: true }, { c: '#94a3b8' }]} label="Diagram A" />
+        <svg width="22" height="14" viewBox="0 0 22 14" className="shrink-0 text-slate-400">
+          <path
+            d="M2 7 H17 M13 3 L17 7 L13 11"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <MiniDiagram
+          tabs={[{ c: '#94a3b8' }, { c: SKY, on: true, popped: true }]}
+          label="Diagram B"
+        />
+      </div>
+    </Frame>
+  );
+}
+
+export function TabLockArt() {
+  return (
+    <Frame>
+      <div className="flex h-full flex-col items-center justify-center gap-2 px-3">
+        <div className="flex items-end gap-0.5 border-b border-slate-200">
+          <span className="rounded-t border border-b-0 border-slate-200 bg-slate-50 px-1.5 py-1 text-[7px] text-slate-400">
+            Overview
+          </span>
+          <span className="relative flex items-center gap-0.5 rounded-t border border-b-0 border-brand-300 bg-white px-1.5 py-1 text-[7px] font-medium text-slate-700">
+            <LockIcon /> Backend
+            <span className="fa-pulse absolute -inset-px rounded-t ring-1 ring-brand-300" />
+          </span>
+          <span className="rounded-t border border-b-0 border-slate-200 bg-slate-50 px-1.5 py-1 text-[7px] text-slate-400">
+            Data
+          </span>
+        </div>
+        <span className="text-[7px] text-slate-400">locked · read-only</span>
+      </div>
+    </Frame>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg width="7" height="7" viewBox="0 0 16 16" fill="none" stroke="#64748b" strokeWidth="1.6">
+      <rect x="3.5" y="7" width="9" height="6" rx="1.5" />
+      <path d="M5.5 7 V5 a2.5 2.5 0 0 1 5 0 V7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function TabReorderArt() {
+  const tabs = [
+    { name: 'Backend', c: SKY },
+    { name: 'Data', c: PINK },
+    { name: 'Auth', c: '#8b5cf6' },
+    { name: 'API', c: '#f59e0b' },
+  ];
+  return (
+    <Frame>
+      <div className="flex h-full items-center justify-center gap-1 px-3">
+        {tabs.map((t, i) => (
+          <span
+            key={t.name}
+            className={
+              (i === 1 ? 'fa-arrow-move z-10 shadow-md ' : '') +
+              'flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-1 text-[7px] font-medium text-slate-600'
+            }
+          >
+            <span className="h-2.5 w-1 rounded-full" style={{ backgroundColor: t.c }} />
+            {t.name}
+          </span>
+        ))}
+      </div>
+    </Frame>
   );
 }

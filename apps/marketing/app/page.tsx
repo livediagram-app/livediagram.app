@@ -1,5 +1,6 @@
 import {
   ActivityArt,
+  AnyDeviceArt,
   ArrowsArt,
   CommentsArt,
   DepthArt,
@@ -20,9 +21,13 @@ import {
   SelectionGlowArt,
   ShapesArt,
   ShareLinksArt,
+  TabCopyArt,
+  TabLockArt,
+  TabReorderArt,
   TabsArt,
   TemplatesArt,
   ThemesArt,
+  UnlimitedTabsArt,
 } from '@/components/FeatureArt';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -38,7 +43,6 @@ export default function LandingPage() {
 
         <Section
           id="why"
-          eyebrow="Easy, not basic"
           title="Simple by design, powerfully deep"
           description="The simple path is the default: open a link and draw. The depth is there the moment you reach for it, and you never trade one for the other."
         >
@@ -63,6 +67,12 @@ export default function LandingPage() {
                   'Share one link and the whole team is on the canvas live, with cursors, presence, comments, and an activity log you can rewind. No seats, no admin console.',
               },
               {
+                art: <AnyDeviceArt />,
+                title: 'Works on any device',
+                description:
+                  'It runs in the browser, so there is nothing to install. Open the same diagram on your laptop, desktop, or tablet and pick up where you left off.',
+              },
+              {
                 art: <TemplatesArt />,
                 title: 'Twelve starter templates',
                 description:
@@ -80,8 +90,8 @@ export default function LandingPage() {
 
         <Section
           id="collaboration"
-          eyebrow="Collaboration"
           title="A shared canvas your team builds together."
+          description="Diagrams stay private until you share. Everyone you invite shows up on the canvas in real time, with live cursors, comments, and presence."
           variant="tinted"
         >
           <FeatureGrid
@@ -90,7 +100,7 @@ export default function LandingPage() {
                 art: <PresenceArt />,
                 title: 'Live presence',
                 description:
-                  'See who is in the diagram via the participant avatars in the header and on each tab. Status rings show online, away, or stale.',
+                  'See who is in the diagram from the participant avatars on each tab. Status rings show online, away, or stale.',
               },
               {
                 art: <SelectionGlowArt />,
@@ -100,9 +110,9 @@ export default function LandingPage() {
               },
               {
                 art: <RealtimeArt />,
-                title: 'Realtime edits, last-write-wins',
+                title: 'Edits land live',
                 description:
-                  'Every edit propagates over WebSockets within a beat. No queues, no locks. The latest change is the truth.',
+                  'The moment someone makes a change, everyone sees it. If two people edit the same thing at once, the most recent change is the one that sticks.',
               },
               {
                 art: <CommentsArt />,
@@ -122,7 +132,6 @@ export default function LandingPage() {
 
         <Section
           id="features"
-          eyebrow="Draw"
           title="A real diagram editor, in your browser"
           description="Real shapes and connectors that track what they're tied to. The raw materials every diagram is built from."
         >
@@ -146,7 +155,6 @@ export default function LandingPage() {
 
         <Section
           id="refine"
-          eyebrow="Refine"
           title="Keep a busy diagram tidy"
           description="Edit in bulk, copy a look from one element to the next, and split a big system across linked tabs and folders."
           variant="tinted"
@@ -166,12 +174,6 @@ export default function LandingPage() {
                   "Copy one element's look — size, colours, text style, opacity, padding — and brush it onto the next. Consistent diagrams without re-picking every option.",
               },
               {
-                art: <TabsArt />,
-                title: 'Many canvases per diagram',
-                description:
-                  'Split a system across tabs in one diagram, then link an element to another tab to jump straight there. Rename, duplicate, reorder, or lock each tab.',
-              },
-              {
                 art: <FoldersArt />,
                 title: 'Organise in folders',
                 description:
@@ -182,10 +184,51 @@ export default function LandingPage() {
         </Section>
 
         <Section
+          id="tabs"
+          title="One diagram, as many tabs as it takes"
+          description="Every diagram is a stack of tabs, each its own canvas. Split a big system across them, link between them, copy them between diagrams, and lock the ones that are done."
+        >
+          <FeatureGrid
+            items={[
+              {
+                art: <UnlimitedTabsArt />,
+                title: 'Unlimited tabs per diagram',
+                description:
+                  'Add as many tabs as a diagram needs. Each is its own canvas with its own theme, and nothing slows down as the stack grows.',
+              },
+              {
+                art: <TabsArt />,
+                title: 'Link elements across tabs',
+                description:
+                  'Point any element at another tab. Click it and you land on that tab, so a sprawling system stays one click to navigate.',
+              },
+              {
+                art: <TabCopyArt />,
+                title: 'Reuse a tab in another diagram',
+                description:
+                  "Copy a tab's full contents into another diagram you own, as a ready-made starting point you can take further.",
+              },
+              {
+                art: <TabLockArt />,
+                title: 'Lock a tab',
+                description:
+                  'Lock a tab and everything on it becomes read-only. Adds, edits, and theme changes are blocked until you unlock it.',
+              },
+              {
+                art: <TabReorderArt />,
+                title: 'Reorder and tell them apart',
+                description:
+                  'Drag tabs into any order. Each one is colour-coded by its theme, so the right canvas is easy to spot.',
+              },
+            ]}
+          />
+        </Section>
+
+        <Section
           id="sharing"
-          eyebrow="Share & control"
           title="Shared by link, yours to revoke"
           description="Hand out editor or view-only links, rewind any change from a full activity trail, and trust that every save survives a refresh."
+          variant="tinted"
         >
           <FeatureGrid
             items={[
@@ -225,10 +268,8 @@ export default function LandingPage() {
 
         <Section
           id="foundations"
-          eyebrow="Open and honest"
           title="Open source. Self-hostable. No lock-in."
           description="MIT-licensed. Static frontend + Cloudflare Workers backend. Run it on your own account in an afternoon. Or use the hosted version — your call."
-          variant="tinted"
         >
           <FeatureGrid
             items={[
