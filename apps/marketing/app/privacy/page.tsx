@@ -74,8 +74,8 @@ export default function PrivacyPage() {
 
       <h2>Keeping and deleting your data</h2>
       <p>
-        You can delete diagrams you own. To delete your account and the data associated with it,
-        contact us and we will action it.
+        You can delete any diagram you own at any time. You can also delete your account, and the
+        data associated with it, yourself from your account settings.
       </p>
 
       <h2>Children</h2>

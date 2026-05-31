@@ -102,7 +102,7 @@ export default function LandingPage() {
                 art: <ShareLinksArt />,
                 title: 'Editor or view-only links',
                 description:
-                  'Mint an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side.',
+                  'Create an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side.',
               },
               {
                 art: <PresenceArt />,
@@ -146,7 +146,7 @@ export default function LandingPage() {
 
         <Section
           id="refine"
-          title="Keeping your work tidy"
+          title="Keep your work tidy"
           description="Work fast and stay organised: select in bulk, group and lock elements, copy a look from one to the next, and file diagrams into folders."
         >
           <FeatureGrid

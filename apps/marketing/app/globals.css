@@ -9,165 +9,356 @@
 @source '../../../packages/ui/src';
 
 /*
- * Hero illustration animation. Loops every ~14 s:
- *   1. shapes pop in one by one
- *   2. arrows draw between them
- *   3. a remote collaborator's cursor sweeps the canvas
- *   4. everything fades and the cycle restarts
- *
- * Stays in CSS so the marketing site doesn't need any JS for the
- * animation, it works during static export, with reduced-motion
- * support driving a fallback that just shows the finished diagram.
+ * Hero illustration: a single 16 s timeline with NO per-element delays, so
+ * the whole canvas clears together at the end (then a brief blank) instead
+ * of clearing while the next cycle's elements arrive. Entrance staggering is
+ * baked into each keyframe's percentages. Scene: build the flowchart →
+ * recolour it (theme) → rename a box (edit) → a comment pops → a teammate's
+ * cursor visits → clear → rebuild. The editor chrome (header, palette) stays
+ * put; only the canvas content clears. Pure CSS, so it survives static
+ * export; reduced-motion shows the settled diagram.
  */
 
-.hero-shape {
+/* shapes pop in at a baked %, hold, then all fade together at 90–94% */
+.hero-pop1,
+.hero-pop2,
+.hero-pop3,
+.hero-pop4,
+.hero-pop5 {
   opacity: 0;
-  transform-origin: center;
   transform-box: fill-box;
-  animation: hero-shape-in 14s ease-out infinite;
+  transform-origin: center;
 }
-.hero-shape-1 {
-  animation-delay: 0.2s;
+.hero-pop1 {
+  animation: hero-pop1 16s ease-out infinite;
 }
-.hero-shape-2 {
-  animation-delay: 1.4s;
+.hero-pop2 {
+  animation: hero-pop2 16s ease-out infinite;
 }
-.hero-shape-3 {
-  animation-delay: 2.6s;
+.hero-pop3 {
+  animation: hero-pop3 16s ease-out infinite;
 }
-.hero-shape-4 {
-  animation-delay: 4s;
+.hero-pop4 {
+  animation: hero-pop4 16s ease-out infinite;
 }
-.hero-shape-5 {
-  animation-delay: 5.2s;
+.hero-pop5 {
+  animation: hero-pop5 16s ease-out infinite;
 }
-
-@keyframes hero-shape-in {
+@keyframes hero-pop1 {
   0% {
     opacity: 0;
-    transform: scale(0.5);
-  }
-  4% {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-  8% {
-    transform: scale(1);
-  }
-  85% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  95% {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-}
-
-.hero-arrow {
-  stroke-dasharray: 200;
-  stroke-dashoffset: 200;
-  animation: hero-arrow-draw 14s ease-out infinite;
-}
-.hero-arrow-1 {
-  animation-delay: 1.7s;
-}
-.hero-arrow-2 {
-  animation-delay: 3s;
-}
-.hero-arrow-3 {
-  animation-delay: 4.3s;
-}
-.hero-arrow-4 {
-  animation-delay: 5.5s;
-}
-
-@keyframes hero-arrow-draw {
-  0% {
-    stroke-dashoffset: 200;
-    opacity: 0;
+    transform: scale(0.6);
   }
   3% {
     opacity: 1;
+    transform: scale(1.05);
   }
-  10% {
-    stroke-dashoffset: 0;
-  }
-  85% {
-    stroke-dashoffset: 0;
+  6%,
+  90% {
     opacity: 1;
+    transform: scale(1);
   }
-  95% {
-    opacity: 0;
-  }
+  94%,
   100% {
-    stroke-dashoffset: 200;
     opacity: 0;
+    transform: scale(1);
   }
 }
-
-.hero-cursor {
-  top: 220px;
-  left: 80px;
-  animation: hero-cursor-move 14s ease-in-out infinite;
-}
-
-@keyframes hero-cursor-move {
+@keyframes hero-pop2 {
   0%,
-  35% {
-    top: 220px;
-    left: 80px;
+  6% {
     opacity: 0;
+    transform: scale(0.6);
   }
-  40% {
+  9% {
     opacity: 1;
+    transform: scale(1.05);
   }
-  55% {
-    top: 130px;
-    left: 290px;
-  }
-  70% {
-    top: 145px;
-    left: 460px;
-  }
-  85% {
-    top: 230px;
-    left: 460px;
+  12%,
+  90% {
     opacity: 1;
+    transform: scale(1);
   }
-  95% {
-    opacity: 0;
-  }
+  94%,
   100% {
-    top: 220px;
-    left: 80px;
     opacity: 0;
+    transform: scale(1);
+  }
+}
+@keyframes hero-pop3 {
+  0%,
+  12% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  18%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  94%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+@keyframes hero-pop4 {
+  0%,
+  18% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  21% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  24%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  94%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+@keyframes hero-pop5 {
+  0%,
+  24% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  27% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  30%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  94%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
   }
 }
 
-.animate-hero-presence-2 {
-  opacity: 0;
-  animation: hero-presence 14s ease-in-out infinite;
-  animation-delay: 3s;
+/* arrows draw at a baked %, then clear with the rest */
+.hero-line1,
+.hero-line2,
+.hero-line3,
+.hero-line4 {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
 }
-
-@keyframes hero-presence {
+.hero-line1 {
+  animation: hero-line1 16s ease-out infinite;
+}
+.hero-line2 {
+  animation: hero-line2 16s ease-out infinite;
+}
+.hero-line3 {
+  animation: hero-line3 16s ease-out infinite;
+}
+.hero-line4 {
+  animation: hero-line4 16s ease-out infinite;
+}
+@keyframes hero-line1 {
   0%,
+  6% {
+    stroke-dashoffset: 160;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  12%,
+  90% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  94%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+@keyframes hero-line2 {
+  0%,
+  12% {
+    stroke-dashoffset: 160;
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  18%,
+  90% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  94%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+@keyframes hero-line3 {
+  0%,
+  18% {
+    stroke-dashoffset: 160;
+    opacity: 0;
+  }
   20% {
-    opacity: 0;
-    transform: translateX(8px);
-  }
-  25% {
     opacity: 1;
-    transform: translateX(0);
   }
+  24%,
+  90% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  94%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+@keyframes hero-line4 {
+  0%,
+  24% {
+    stroke-dashoffset: 160;
+    opacity: 0;
+  }
+  26% {
+    opacity: 1;
+  }
+  30%,
+  90% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  94%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* theme recolour: fill + stroke on the parent group; the shapes inherit it */
+.hero-theme {
+  animation: hero-theme 16s ease-in-out infinite;
+}
+@keyframes hero-theme {
+  0%,
+  40% {
+    fill: #dbeafe;
+    stroke: #0284c7;
+  }
+  48%,
+  100% {
+    fill: #dcfce7;
+    stroke: #16a34a;
+  }
+}
+
+/* rename a box: cross-fade two labels around the midpoint */
+.hero-text-out {
+  animation: hero-text-out 16s ease-in-out infinite;
+}
+.hero-text-in {
+  opacity: 0;
+  animation: hero-text-in 16s ease-in-out infinite;
+}
+@keyframes hero-text-out {
+  0%,
+  44% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hero-text-in {
+  0%,
+  46% {
+    opacity: 0;
+  }
+  52%,
   90% {
     opacity: 1;
   }
+  94%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* a comment pops in (~58%) and rides along until the clear */
+.hero-comment {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hero-comment 16s ease-out infinite;
+}
+@keyframes hero-comment {
+  0%,
+  56% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  63%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  94%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* a teammate's cursor visits the canvas (HTML span; top/left, not transform) */
+.hero-cursor {
+  top: 230px;
+  left: 90px;
+  animation: hero-cursor 16s ease-in-out infinite;
+}
+@keyframes hero-cursor {
+  0%,
+  30% {
+    top: 230px;
+    left: 90px;
+    opacity: 0;
+  }
+  34% {
+    opacity: 1;
+  }
+  48% {
+    top: 150px;
+    left: 250px;
+  }
+  64% {
+    top: 150px;
+    left: 470px;
+  }
+  86% {
+    top: 150px;
+    left: 470px;
+    opacity: 1;
+  }
+  92%,
   100% {
     opacity: 0;
   }
@@ -705,14 +896,28 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-shape,
-  .hero-arrow,
-  .hero-cursor,
-  .animate-hero-presence-2 {
+  .hero-pop1,
+  .hero-pop2,
+  .hero-pop3,
+  .hero-pop4,
+  .hero-pop5,
+  .hero-line1,
+  .hero-line2,
+  .hero-line3,
+  .hero-line4,
+  .hero-theme,
+  .hero-text-in,
+  .hero-comment,
+  .hero-cursor {
     animation: none;
     opacity: 1;
     transform: none;
     stroke-dashoffset: 0;
+  }
+  /* show only the settled label (the renamed one) */
+  .hero-text-out {
+    animation: none;
+    opacity: 0;
   }
 
   .fa-pop,
