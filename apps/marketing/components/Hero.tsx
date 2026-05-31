@@ -8,10 +8,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[600px] bg-gradient-to-b from-brand-100 via-brand-50 to-transparent"
       />
       <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-center sm:pt-32 sm:pb-28">
-        <span className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-medium tracking-wide text-brand-700 uppercase">
-          Diagrams · Mindmaps · Real-time collab
-        </span>
-        <h1 className="mx-auto mt-6 max-w-3xl text-balance text-4xl font-semibold tracking-tight text-slate-900 sm:text-6xl">
+        <h1 className="mx-auto max-w-3xl text-balance text-4xl font-semibold tracking-tight text-slate-900 sm:text-6xl">
           A canvas your team builds <span className="text-brand-600">together</span>.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-slate-600">
@@ -23,7 +20,7 @@ export function Hero() {
             href="/live/new"
             className="inline-flex w-full items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-base font-medium text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 sm:w-auto"
           >
-            Open the editor
+            Start drawing
           </a>
           <a
             href="#features"
@@ -32,6 +29,7 @@ export function Hero() {
             See what's in it
           </a>
         </div>
+        <p className="mt-4 text-sm text-slate-500">No sign-up — the canvas opens straight away.</p>
 
         <HeroIllustration />
       </div>

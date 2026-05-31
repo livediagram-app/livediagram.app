@@ -210,7 +210,7 @@ export default function LandingPage() {
                 href="/live/new"
                 className="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-base font-medium text-brand-700 shadow-sm transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
-                Open the editor
+                Start drawing
               </a>
             </div>
           </div>
