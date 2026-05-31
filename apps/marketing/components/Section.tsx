@@ -4,7 +4,7 @@ type SectionProps = {
   id?: string;
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   children?: ReactNode;
   variant?: 'default' | 'tinted';
 };
@@ -30,7 +30,9 @@ export function Section({
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
             {title}
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-600">{description}</p>
+          {description ? (
+            <p className="mt-4 text-lg leading-relaxed text-slate-600">{description}</p>
+          ) : null}
         </div>
         {children ? <div className="mt-14">{children}</div> : null}
       </div>

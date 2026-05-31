@@ -79,6 +79,12 @@ export default function LandingPage() {
         </Section>
 
         <Section
+          id="collaboration"
+          eyebrow="Collaboration"
+          title="A shared canvas your team builds together."
+        />
+
+        <Section
           id="features"
           eyebrow="Draw"
           title="A real diagram editor, in your browser"
