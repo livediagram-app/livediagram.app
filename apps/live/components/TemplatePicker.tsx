@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useShowMoreList } from '@/hooks/useShowMoreList';
 import type { Participant } from '@/lib/identity';
 import { initialsOf, randomName } from '@/lib/identity';
 import type { TemplateKind } from '@/lib/templates';
 import { TEMPLATES } from '@/lib/templates';
 import { THEMES, type ThemeId } from '@/lib/themes';
+import { ShowMoreButton } from './ShowMoreButton';
 import { Tooltip } from './Tooltip';
 
 type TemplatePickerProps = {
@@ -61,22 +63,11 @@ export function TemplatePicker({
   const [name, setName] = useState(participant.name);
   const [templateKind, setTemplateKind] = useState<TemplateKind>('blank');
   const [themeId, setThemeId] = useState<ThemeId>(currentThemeId);
-  // "Show more" toggle reveals the templates marked `extra: true`.
-  // Auto-expanded if the user has already picked an extra template
-  // (e.g. revisiting the picker on a tab that was created from one).
-  const [showExtraTemplates, setShowExtraTemplates] = useState(
-    TEMPLATES.find((t) => t.kind === templateKind)?.extra === true,
-  );
-  const visibleTemplates = TEMPLATES.filter((t) => !t.extra || showExtraTemplates);
-  const hasExtraTemplates = TEMPLATES.some((t) => t.extra);
-  // Same opt-in toggle for themes — default twelve render up front,
-  // extras unlock on click. Auto-expanded if the active themeId is
-  // already an extra (revisiting a tab themed with one of them).
-  const [showExtraThemes, setShowExtraThemes] = useState(
-    THEMES.find((t) => t.id === themeId)?.extra === true,
-  );
-  const visibleThemes = THEMES.filter((t) => !t.extra || showExtraThemes);
-  const hasExtraThemes = THEMES.some((t) => t.extra);
+  // "Show more" opt-ins for the templates + themes grids. The hook
+  // auto-expands when the active selection is itself an extra so
+  // the user always sees their current pick.
+  const templatePicker = useShowMoreList(TEMPLATES, (t) => t.kind === templateKind);
+  const themePicker = useShowMoreList(THEMES, (t) => t.id === themeId);
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
 
@@ -167,7 +158,7 @@ export function TemplatePicker({
                 Pick a template
               </p>
               <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {visibleTemplates.map((t) => {
+                {templatePicker.visible.map((t) => {
                   const active = templateKind === t.kind;
                   return (
                     <button
@@ -194,15 +185,8 @@ export function TemplatePicker({
                   );
                 })}
               </div>
-              {hasExtraTemplates && !showExtraTemplates ? (
-                <button
-                  type="button"
-                  onClick={() => setShowExtraTemplates(true)}
-                  className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand-700 hover:text-brand-800"
-                >
-                  Show more templates
-                  <span aria-hidden>↓</span>
-                </button>
+              {templatePicker.hasMore && !templatePicker.showAll ? (
+                <ShowMoreButton label="Show more templates" onClick={templatePicker.reveal} />
               ) : null}
             </>
           ) : null}
@@ -215,7 +199,7 @@ export function TemplatePicker({
                 Select a theme
               </p>
               <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
-                {visibleThemes.map((t) => {
+                {themePicker.visible.map((t) => {
                   const active = themeId === t.id;
                   const dot = t.elementStroke ?? t.patternColor;
                   const swatch = t.elementFill ?? '#ffffff';
@@ -246,15 +230,8 @@ export function TemplatePicker({
                   );
                 })}
               </div>
-              {hasExtraThemes && !showExtraThemes ? (
-                <button
-                  type="button"
-                  onClick={() => setShowExtraThemes(true)}
-                  className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand-700 hover:text-brand-800"
-                >
-                  Show more themes
-                  <span aria-hidden>↓</span>
-                </button>
+              {themePicker.hasMore && !themePicker.showAll ? (
+                <ShowMoreButton label="Show more themes" onClick={themePicker.reveal} />
               ) : null}
             </>
           ) : null}

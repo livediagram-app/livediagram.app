@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useShowMoreList } from '@/hooks/useShowMoreList';
 import type {
   ArrowEnds,
   ArrowheadSize,
@@ -14,6 +14,7 @@ import type {
 import { ARROW_THICKNESS_PX, ARROWHEAD_SIZE_PX } from '@livediagram/diagram';
 import { THEMES, type ThemeId } from '@/lib/themes';
 import { MovablePanel } from './MovablePanel';
+import { ShowMoreButton } from './ShowMoreButton';
 import { Tooltip } from './Tooltip';
 
 export type SelectedElementControls = {
@@ -1108,21 +1109,11 @@ export function TabSection({
       return { ...closed, [key]: true };
     });
 
-  // Same opt-in toggle as the picker. Auto-expanded if the current
-  // tab is already on one of the extra themes, so the active swatch
+  // Same opt-in shape as the welcome / template picker. Auto-expands
+  // when the current tab is already on an extra so the active swatch
   // is always visible.
-  const [showExtraThemes, setShowExtraThemes] = useState(
-    THEMES.find((t) => t.id === tab.themeId)?.extra === true,
-  );
-  const visibleThemes = THEMES.filter((t) => !t.extra || showExtraThemes);
-  const hasExtraThemes = THEMES.some((t) => t.extra);
-  // Same shape for background patterns. Auto-expanded if the current
-  // tab is already on an extra pattern.
-  const [showExtraPatterns, setShowExtraPatterns] = useState(
-    PATTERNS.find((p) => p.id === tab.backgroundPattern)?.extra === true,
-  );
-  const visiblePatterns = PATTERNS.filter((p) => !p.extra || showExtraPatterns);
-  const hasExtraPatterns = PATTERNS.some((p) => p.extra);
+  const themesList = useShowMoreList(THEMES, (t) => t.id === tab.themeId);
+  const patternsList = useShowMoreList(PATTERNS, (p) => p.id === tab.backgroundPattern);
 
   return (
     <div className="flex flex-col border-t border-slate-200">
@@ -1135,7 +1126,7 @@ export function TabSection({
           (sticky notes keep their amber palette).
         </p>
         <div className="mt-1 grid grid-cols-3 gap-1">
-          {visibleThemes.map((t) => {
+          {themesList.visible.map((t) => {
             const active = tab.themeId === t.id;
             // Border / dot colours come from the theme's element-stroke (or
             // pattern colour when the theme is the brand default).
@@ -1174,21 +1165,14 @@ export function TabSection({
             );
           })}
         </div>
-        {hasExtraThemes && !showExtraThemes ? (
-          <button
-            type="button"
-            onClick={() => setShowExtraThemes(true)}
-            className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand-700 hover:text-brand-800"
-          >
-            Show more themes
-            <span aria-hidden>↓</span>
-          </button>
+        {themesList.hasMore && !themesList.showAll ? (
+          <ShowMoreButton label="Show more themes" onClick={themesList.reveal} />
         ) : null}
       </Accordion>
       <Accordion title="Canvas" open={open.background} onToggle={() => toggle('background')}>
         <p className="text-[10px] font-medium text-slate-500">Pattern</p>
         <div className="mt-1 grid grid-cols-3 gap-1">
-          {visiblePatterns.map((p) => (
+          {patternsList.visible.map((p) => (
             <Tooltip key={p.id} title={p.label} description={p.description}>
               <PatternButton
                 active={tab.backgroundPattern === p.id}
@@ -1200,15 +1184,8 @@ export function TabSection({
             </Tooltip>
           ))}
         </div>
-        {hasExtraPatterns && !showExtraPatterns ? (
-          <button
-            type="button"
-            onClick={() => setShowExtraPatterns(true)}
-            className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand-700 hover:text-brand-800"
-          >
-            Show more patterns
-            <span aria-hidden>↓</span>
-          </button>
+        {patternsList.hasMore && !patternsList.showAll ? (
+          <ShowMoreButton label="Show more patterns" onClick={patternsList.reveal} />
         ) : null}
         <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500">
           Colours
