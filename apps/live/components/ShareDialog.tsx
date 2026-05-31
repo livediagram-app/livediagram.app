@@ -13,6 +13,11 @@ type ShareDialogProps = {
   // Whether the owner has confirmed their name (drives the share button
   // behaviour but no longer hides the identity card).
   nameConfirmed: boolean;
+  // When non-null, the owner is signed in via Clerk and their
+  // display name is dictated by their account — the input
+  // becomes read-only and the shuffle button hides. Mirrors the
+  // welcome modal's lockedName treatment (spec/04).
+  lockedName?: string | null;
   onSaveName: (name: string) => Promise<void> | void;
   onCreateLink: (role: ShareRole) => Promise<void> | void;
   onRevokeLink: (code: string) => Promise<void> | void;
@@ -28,12 +33,17 @@ export function ShareDialog({
   links,
   shareUrlFor,
   nameConfirmed,
+  lockedName,
   onSaveName,
   onCreateLink,
   onRevokeLink,
   onClose,
 }: ShareDialogProps) {
-  const [name, setName] = useState(participant.name);
+  // When a Clerk display name is supplied, the input always reads
+  // that value — even if the participant record was originally
+  // created under a guest alias.
+  const [name, setName] = useState(lockedName ?? participant.name);
+  const nameLocked = !!lockedName;
   const [busy, setBusy] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [newRole, setNewRole] = useState<ShareRole>('edit');
@@ -143,19 +153,27 @@ export function ShareDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={participant.name}
-                className="mt-0.5 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
+                readOnly={nameLocked}
+                aria-readonly={nameLocked}
+                className={
+                  nameLocked
+                    ? 'mt-0.5 w-full cursor-default bg-transparent text-sm text-slate-500 outline-none'
+                    : 'mt-0.5 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400'
+                }
               />
             </div>
-            <Tooltip title="Shuffle name" description="Pick a different random name.">
-              <button
-                type="button"
-                onClick={() => setName(randomName())}
-                aria-label="Generate a different name"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-              >
-                <RefreshIcon />
-              </button>
-            </Tooltip>
+            {nameLocked ? null : (
+              <Tooltip title="Shuffle name" description="Pick a different random name.">
+                <button
+                  type="button"
+                  onClick={() => setName(randomName())}
+                  aria-label="Generate a different name"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                >
+                  <RefreshIcon />
+                </button>
+              </Tooltip>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">

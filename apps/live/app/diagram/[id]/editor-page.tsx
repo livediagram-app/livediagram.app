@@ -3796,6 +3796,10 @@ export default function LivePage() {
           links={shareLinks}
           shareUrlFor={shareUrlFor}
           nameConfirmed={nameConfirmed}
+          // Signed-in via Clerk → name is locked to the account
+          // display name (same rule as the welcome modal, spec/04).
+          // Guests pass undefined so the input + shuffle stay live.
+          lockedName={clerkUserId ? clerkDisplayName : null}
           onSaveName={updateParticipantName}
           onCreateLink={createShareLink}
           onRevokeLink={revokeShareLink}
