@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
-    "@livediagram/diagram": "workspace:*"
+    "@livediagram/diagram": "workspace:*",
+    "jose": "^5.9.6"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241218.0",

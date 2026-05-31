@@ -23,3 +23,16 @@ class_name = "DiagramRoom"
 [[migrations]]
 tag = "v1"
 new_classes = ["DiagramRoom"]
+
+# Public env vars. JWKS URLs are not secrets (Clerk publishes them
+# at `.well-known/jwks.json` for token verification) so they live in
+# `[vars]`, not `wrangler secret put`. Leaving the value as the
+# empty string is supported: when CLERK_JWKS_URL is empty the api
+# worker stays in pure-guest mode and trusts `X-Owner-Id` exclusively
+# (see spec/04 + spec/11). Set the URL from your Clerk dashboard →
+# API Keys → Show JWKS URL, format
+# `https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json`
+# (test tenant) or `https://clerk.<your-domain>/.well-known/jwks.json`
+# (production tenant).
+[vars]
+CLERK_JWKS_URL = ""

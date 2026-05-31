@@ -22,11 +22,25 @@ The DTO shapes the api worker emits + the live editor consumes live in `packages
 
 Defining the wire shapes once means server and client cannot drift — adding a field on one side without updating the other is a typechecker error. **Do not redefine these types inline in `apps/api/` or `apps/live/`**; extend the schema package instead. Per CLAUDE.md the reuse-over-duplication rule is non-negotiable.
 
-## Auth (TODO)
+## Auth
 
-The API is currently **open** — no auth on any endpoint. Owner identity is carried by an `X-Owner-Id` header set by the live app to the current participant id. The participant id is a `crypto.randomUUID()` minted on first visit and persisted in `localStorage` under the bootstrap key `livediagram:v2:self-id`.
+The api accepts two equivalent ways of identifying the request owner, in this order of preference (see [spec/04](04-auth-and-guest-access.md)):
 
-Clerk is the planned replacement (per [spec 04](04-auth-and-guest-access.md)). When it lands, `X-Owner-Id` becomes the verified Clerk user id; guests keep the localStorage path and migrate their diagrams on sign-up.
+1. **Clerk Bearer JWT** — `Authorization: Bearer <token>`. Verified against `env.CLERK_JWKS_URL` in `apps/api/src/auth/clerk.ts` using `jose`'s `createRemoteJWKSet` + `jwtVerify`. The token's `sub` claim is the owner id. Returns null on any failure (invalid signature, expired, malformed, missing env var) — never 401, because the worker must still serve the guest path.
+2. **Legacy guest header** — `X-Owner-Id: <participant-id>`. The participant id is a `crypto.randomUUID()` minted on first visit and persisted in `localStorage` under `livediagram:v2:self-id`. Used when the Bearer header is absent or verification failed.
+
+The request handler computes the resolution once at the top of `fetch`:
+
+```ts
+const clerkUserId = await getClerkUserId(env, request);
+const resolveOwner = () => clerkUserId ?? request.headers.get('X-Owner-Id');
+```
+
+Every endpoint uses `resolveOwner()` instead of reading the header directly, so adding new endpoints inherits the hybrid behaviour automatically.
+
+`CLERK_JWKS_URL` lives in `wrangler.toml` `[vars]` (not `secret`, since the JWKS is public). Leaving it as an empty string puts the api in pure-guest mode — useful for local dev or for environments where Clerk hasn't been provisioned yet.
+
+Visitor-edit endpoints (`PUT /api/diagrams/:id/tabs/:tabId`, the change-log writes) still also accept `X-Share-Code` for share-link auth — that header is checked via `canEditDiagram()` and is orthogonal to the Clerk-vs-guest choice. A visitor following a share link is a guest who provides a code, regardless of whether they're separately signed in.
 
 ## Endpoints
 

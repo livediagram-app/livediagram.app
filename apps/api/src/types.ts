@@ -27,4 +27,9 @@ export type {
 export type Env = {
   DB: D1Database;
   DIAGRAM_ROOM: DurableObjectNamespace;
+  // Clerk JWKS URL — when set, the request handler verifies Bearer
+  // tokens against it via `src/auth/clerk.ts` and prefers the
+  // resulting userId over `X-Owner-Id`. When unset, the worker stays
+  // in pure-guest mode (X-Owner-Id only). See spec/04 + spec/11.
+  CLERK_JWKS_URL?: string;
 };
