@@ -526,7 +526,14 @@ function buildRetrospective(cx: number, cy: number): Element[] {
   const topPadding = 24;
   const headerGap = 24;
   const bottomPadding = 24;
-  const containerH = topPadding + headerH + headerGap + 3 * stickyH + 2 * stickyGap + bottomPadding;
+  const stickiesPerColumn = 5;
+  const containerH =
+    topPadding +
+    headerH +
+    headerGap +
+    stickiesPerColumn * stickyH +
+    (stickiesPerColumn - 1) * stickyGap +
+    bottomPadding;
 
   const columns: { label: string; fill: string; stroke: string }[] = [
     { label: 'Mad', fill: '#fee2e2', stroke: '#fca5a5' },
@@ -562,7 +569,7 @@ function buildRetrospective(cx: number, cy: number): Element[] {
       textAlignX: 'center',
     });
 
-    for (let j = 0; j < 3; j++) {
+    for (let j = 0; j < stickiesPerColumn; j++) {
       const stickyY = headerY + headerH + headerGap + j * (stickyH + stickyGap);
       elements.push({
         ...createSticky(innerX, stickyY),
