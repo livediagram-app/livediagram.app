@@ -797,16 +797,14 @@ When a shape is selected, **four corner handles** (NW, NE, SW, SE) appear as sma
 - **Press-and-drag a handle** to resize the shape.
 - The corner opposite the handle stays anchored; the dragged corner follows the cursor.
 - **Minimum size is 20×20** to keep shapes pickable.
-- Resize is free-form — aspect ratio is not preserved (shift-to-constrain is out of scope for now).
-- Mid-edge handles (N, S, E, W) are out of scope for now.
+- Resize uses the four corner handles. Free-form by default; the Shape accordion's **Lock aspect ratio** toggle constrains the W:H ratio while a resize is in progress (Circle and Diamond force the ratio regardless).
+- Mid-edge handles (N, S, E, W) are not implemented — corners only.
 
 ## Out of scope (next iterations)
 
-- Mid-edge resize handles, aspect-ratio constraint.
-- Rotation.
-- Connectors / edges between shapes.
-- Zoom and pan.
-- Snapping / aligning to a grid or other shapes.
-- Keyboard nudging, copy/paste, undo/redo.
-- Re-styling shapes (colour, stroke, label).
-- Saving canvas state across reloads.
+Items still genuinely out of scope today (most of the original list has shipped — see the Editor section above):
+
+- **Mid-edge resize handles** — only corner handles drive resize.
+- **Rotation** — elements always render axis-aligned.
+- **Keyboard nudging** — arrow keys don't pan-shift the selection.
+- **Clipboard copy / paste** — `Duplicate` (in-place clone) is available, but cut/copy/paste against the OS clipboard isn't wired up.
