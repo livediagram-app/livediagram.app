@@ -69,29 +69,29 @@ Reserved for status — never used decoratively.
 
 ## Tailwind integration
 
-The palette is exposed via a shared theme. Apps consume it through a shared Tailwind preset (to be created in `packages/tailwind-config` when the first app lands). Sketch of the config:
+The palette is exposed as a Tailwind v4 theme in `packages/tailwind-config/theme.css`. Apps consume it by importing the package alongside Tailwind itself in their `globals.css`:
 
-```ts
-// packages/tailwind-config/preset.ts
-export default {
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          50: '#F0F9FF',
-          100: '#E0F2FE',
-          200: '#BAE6FD',
-          300: '#7DD3FC',
-          400: '#38BDF8',
-          500: '#0EA5E9',
-          600: '#0284C7',
-          700: '#0369A1',
-          800: '#075985',
-          900: '#0C4A6E',
-          950: '#082F49',
-        },
-      },
-    },
-  },
-};
+```css
+@import 'tailwindcss';
+@import '@livediagram/tailwind-config';
 ```
+
+The package's `theme.css` declares the brand ramp as CSS variables inside a `@theme` block, which Tailwind v4 turns into the `brand-50`…`brand-950` utility classes automatically:
+
+```css
+@theme {
+  --color-brand-50: #f0f9ff;
+  --color-brand-100: #e0f2fe;
+  --color-brand-200: #bae6fd;
+  --color-brand-300: #7dd3fc;
+  --color-brand-400: #38bdf8;
+  --color-brand-500: #0ea5e9;
+  --color-brand-600: #0284c7;
+  --color-brand-700: #0369a1;
+  --color-brand-800: #075985;
+  --color-brand-900: #0c4a6e;
+  --color-brand-950: #082f49;
+}
+```
+
+Slate, success / warning / error utilities live on Tailwind's own defaults — only the `brand` ramp is custom.
