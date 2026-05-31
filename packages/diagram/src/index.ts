@@ -385,6 +385,97 @@ export function arrowStyleOf(arrow: ArrowElement): ArrowStyle {
   return arrow.arrowStyle ?? DEFAULT_ARROW_STYLE;
 }
 
+// Build the SVG `d` attribute for an arrow at the given resolved
+// endpoint positions. Pure geometry — no DOM dependency — so the
+// editor's `<ArrowView>` and any future export / embedded-viewer
+// route can share the same line.
+//
+// Straight is a single line. Curved bows the chord perpendicular
+// to its midpoint by ¼ of its length (quadratic Bezier). Angled
+// drops one right-angle bend; the leg that runs first is chosen
+// from the from-endpoint's anchor side when available so a pinned
+// arrow leaves its element along its anchor direction.
+export function arrowPathD(
+  style: ArrowStyle,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  fromEp: Endpoint,
+  toEp: Endpoint,
+): string {
+  if (style === 'straight') return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
+  if (style === 'curved') {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.hypot(dx, dy);
+    if (len < 0.5) return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const offset = len * 0.25;
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    const cx = mx + nx * offset;
+    const cy = my + ny * offset;
+    return `M ${from.x} ${from.y} Q ${cx} ${cy} ${to.x} ${to.y}`;
+  }
+  const horizontalFirst = angledHorizontalFirst(from, to, fromEp, toEp);
+  const bx = horizontalFirst ? to.x : from.x;
+  const by = horizontalFirst ? from.y : to.y;
+  return `M ${from.x} ${from.y} L ${bx} ${by} L ${to.x} ${to.y}`;
+}
+
+// The point on the rendered path that a label should anchor to.
+// Curves return the t=0.5 point of the quadratic Bezier; angled
+// arrows return the elbow vertex; straight arrows return the chord
+// midpoint.
+export function arrowPathMidpoint(
+  style: ArrowStyle,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  fromEp: Endpoint,
+  toEp: Endpoint,
+): { x: number; y: number } {
+  if (style === 'angled') {
+    const horizontalFirst = angledHorizontalFirst(from, to, fromEp, toEp);
+    return horizontalFirst ? { x: to.x, y: from.y } : { x: from.x, y: to.y };
+  }
+  if (style === 'curved') {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.hypot(dx, dy);
+    if (len < 0.5) return { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+    const nx = -dy / len;
+    const ny = dx / len;
+    const offset = len * 0.25;
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    const cx = mx + nx * offset;
+    const cy = my + ny * offset;
+    return { x: 0.25 * from.x + 0.5 * cx + 0.25 * to.x, y: 0.25 * from.y + 0.5 * cy + 0.25 * to.y };
+  }
+  return { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+}
+
+// Which leg of an angled arrow runs first. Pinned endpoints carry
+// an intrinsic direction (E/W anchors leave horizontally; N/S leave
+// vertically); free endpoints fall back to "travel along the longer
+// axis first" so the elbow sits closer to the destination side.
+function angledHorizontalFirst(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  fromEp: Endpoint,
+  toEp: Endpoint,
+): boolean {
+  if (fromEp.kind === 'pinned') {
+    if (fromEp.anchor === 'e' || fromEp.anchor === 'w') return true;
+    if (fromEp.anchor === 'n' || fromEp.anchor === 's') return false;
+  }
+  if (toEp.kind === 'pinned') {
+    if (toEp.anchor === 'n' || toEp.anchor === 's') return true;
+    if (toEp.anchor === 'e' || toEp.anchor === 'w') return false;
+  }
+  return Math.abs(to.x - from.x) >= Math.abs(to.y - from.y);
+}
+
 // --- Element union ---------------------------------------------------------
 
 export type BoxedElement = ShapeElement | TextElement | StickyElement;
