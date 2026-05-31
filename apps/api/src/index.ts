@@ -73,6 +73,24 @@ function forbidden(): Response {
   return json({ error: 'forbidden' }, { status: 403 });
 }
 
+// Returned whenever `resolveOwner()` yields null on a mutation /
+// owner-scoped read. Owner can be null for two reasons under hybrid
+// auth (spec/04):
+//
+//   1. Pure-guest path with no `X-Owner-Id` header sent.
+//   2. A Bearer token was sent but verification failed silently
+//      (expired, invalid signature, JWKS unreachable, etc.) —
+//      `getClerkUserId` returns null on any error so the guest path
+//      still serves.
+//
+// Pre-Clerk this used to be a flat "missing X-Owner-Id" message,
+// which now misdirects signed-in users debugging an auth failure to
+// look at the wrong header. The new message names both legitimate
+// identity sources so the caller can tell which one they're missing.
+function missingAuth(): Response {
+  return badRequest('authentication required: send a valid Clerk Bearer token or X-Owner-Id');
+}
+
 function shareCodeOf(request: Request): string | null {
   return request.headers.get('X-Share-Code');
 }
@@ -148,14 +166,14 @@ export default {
         if (segments.length === 2) {
           if (request.method === 'GET') {
             const owner = resolveOwner();
-            if (!owner) return badRequest('missing X-Owner-Id');
+            if (!owner) return missingAuth();
             const diagrams = await listDiagramsByOwner(env, owner);
             return json({ diagrams });
           }
           if (request.method === 'POST') {
             const body = (await request.json()) as Partial<DiagramDTO> & { tabs?: Tab[] };
             const owner = resolveOwner();
-            if (!owner) return badRequest('missing X-Owner-Id');
+            if (!owner) return missingAuth();
             if (!body.id || !body.name) {
               return badRequest('missing id/name');
             }
@@ -195,7 +213,7 @@ export default {
             // diagram they don't own. Mismatched owner returns 404
             // (not 403) so we don't leak the diagram's existence.
             const owner = resolveOwner();
-            if (!owner) return badRequest('missing X-Owner-Id');
+            if (!owner) return missingAuth();
             const d = await getDiagram(env, id);
             return d && d.ownerId === owner ? json({ diagram: d }) : notFound();
           }
@@ -207,7 +225,7 @@ export default {
             const body = (await request.json()) as { name?: string; tabIds?: string[] };
             const owner = resolveOwner();
             const shareCode = shareCodeOf(request);
-            if (!owner) return badRequest('missing X-Owner-Id');
+            if (!owner) return missingAuth();
             const existing = await getDiagram(env, id);
             const now = Date.now();
             const ownerId = existing?.ownerId ?? owner;
@@ -244,7 +262,7 @@ export default {
             // leak), and 403 on a mismatched owner. Mirrors the GET
             // branch above which had this guard from the start.
             const owner = resolveOwner();
-            if (!owner) return badRequest('missing X-Owner-Id');
+            if (!owner) return missingAuth();
             const existing = await getDiagram(env, id);
             if (!existing) return notFound();
             if (existing.ownerId !== owner) return forbidden();
@@ -260,7 +278,7 @@ export default {
         if (segments.length === 4 && segments[3] === 'folder') {
           const id = segments[2]!;
           const owner = resolveOwner();
-          if (!owner) return badRequest('missing X-Owner-Id');
+          if (!owner) return missingAuth();
           const existing = await getDiagram(env, id);
           if (!existing) return notFound();
           if (existing.ownerId !== owner) return forbidden();
@@ -286,7 +304,7 @@ export default {
           const tabId = segments[4]!;
           const owner = resolveOwner();
           const shareCode = shareCodeOf(request);
-          if (!owner) return badRequest('missing X-Owner-Id');
+          if (!owner) return missingAuth();
           const existing = await getDiagram(env, id);
           if (!existing) return notFound();
           const allowed = await canEditDiagram(env, id, owner, shareCode, existing.ownerId);
@@ -322,7 +340,7 @@ export default {
         if (segments.length === 4 && segments[3] === 'share') {
           const id = segments[2]!;
           const owner = resolveOwner();
-          if (!owner) return badRequest('missing X-Owner-Id');
+          if (!owner) return missingAuth();
           const existing = await getDiagram(env, id);
           if (!existing) return notFound();
           if (existing.ownerId !== owner) return forbidden();
@@ -353,7 +371,7 @@ export default {
           const id = segments[2]!;
           const code = segments[4]!;
           const owner = resolveOwner();
-          if (!owner) return badRequest('missing X-Owner-Id');
+          if (!owner) return missingAuth();
           const existing = await getDiagram(env, id);
           if (!existing) return notFound();
           if (existing.ownerId !== owner) return forbidden();
@@ -379,7 +397,7 @@ export default {
           const id = segments[2]!;
           const owner = resolveOwner();
           const shareCode = shareCodeOf(request);
-          if (!owner) return badRequest('missing X-Owner-Id');
+          if (!owner) return missingAuth();
           const existing = await getDiagram(env, id);
           if (!existing) return notFound();
           const allowed = await canEditDiagram(env, id, owner, shareCode, existing.ownerId);
@@ -432,7 +450,7 @@ export default {
           const entryId = segments[4]!;
           const owner = resolveOwner();
           const shareCode = shareCodeOf(request);
-          if (!owner) return badRequest('missing X-Owner-Id');
+          if (!owner) return missingAuth();
           const existing = await getDiagram(env, id);
           if (!existing) return notFound();
           const allowed = await canEditDiagram(env, id, owner, shareCode, existing.ownerId);
@@ -451,7 +469,7 @@ export default {
           const id = segments[2]!;
           const tabId = segments[5]!;
           const owner = resolveOwner();
-          if (!owner) return badRequest('missing X-Owner-Id');
+          if (!owner) return missingAuth();
           const existing = await getDiagram(env, id);
           if (!existing) return notFound();
           if (existing.ownerId !== owner) return forbidden();
@@ -467,7 +485,7 @@ export default {
       // Owner-scoped folder tree. See spec/15-folders.md.
       if (segments[1] === 'folders') {
         const owner = resolveOwner();
-        if (!owner) return badRequest('missing X-Owner-Id');
+        if (!owner) return missingAuth();
 
         // /api/folders — list / create
         if (segments.length === 2) {
@@ -602,7 +620,7 @@ export default {
         }
         if (request.method === 'PUT') {
           const owner = resolveOwner();
-          if (!owner) return badRequest('missing X-Owner-Id');
+          if (!owner) return missingAuth();
           if (owner !== id) return forbidden();
           const body = (await request.json()) as Partial<ParticipantDTO>;
           if (!body.name || !body.color) return badRequest('missing name/color');

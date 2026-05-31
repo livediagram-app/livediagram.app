@@ -46,7 +46,7 @@ Visitor-edit endpoints (`PUT /api/diagrams/:id/tabs/:tabId`, the change-log writ
 
 All JSON. CORS allows any origin (the live app is same-origin via the router; this is mostly a dev convenience). Routes are dispatched in `apps/api/src/index.ts` — that file is short enough to skim for the authoritative list.
 
-Owner-only routes require `X-Owner-Id`; shared-edit routes accept `X-Owner-Id` + `X-Share-Code` from visitors holding an edit-role share link.
+Owner-only routes require a resolved owner — either a verified Clerk Bearer JWT (preferred) or a fallback `X-Owner-Id` header. When neither resolves to a non-null owner, the route returns 400 via the shared `missingAuth()` helper. Shared-edit routes additionally accept `X-Share-Code` from visitors holding an edit-role share link.
 
 **Diagrams (meta)**
 
