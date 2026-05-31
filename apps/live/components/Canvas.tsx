@@ -757,17 +757,16 @@ export function Canvas(props: CanvasProps) {
         ref={wrapperRef}
         onPointerDown={(e) => {
           if (e.target !== e.currentTarget) return;
-          // Laser tool is presenter-mode — pointer-down doesn't
-          // initiate a drag (no pan / no marquee). The trail is
-          // captured purely from pointer moves. Space-hold still
-          // pans so the presenter can reposition mid-presentation
-          // without switching tools.
-          if (canvasTool === 'laser' && !spaceHeldRef.current) return;
-          // Tool decides the gesture: Pan tool = drag scrolls. Select
-          // tool = drag draws a marquee. Holding Space pans regardless
-          // (Figma-style override), so power users in Select mode can
-          // still scroll without switching tools.
-          const wantsPan = spaceHeldRef.current || canvasTool === 'pan';
+          // Tool decides the gesture:
+          //  - Pan tool / Space / Laser tool → drag scrolls. Laser
+          //    drags pan because mid-presentation a click-drag is far
+          //    more often "I want to reposition the canvas" than "I
+          //    want to multi-select", and a pan is the safe no-op
+          //    when the presenter is just steadying their hand. The
+          //    trail keeps capturing pointer-moves throughout, so
+          //    the pan reads as a sweeping laser to peers.
+          //  - Select tool → drag draws a marquee for multi-select.
+          const wantsPan = spaceHeldRef.current || canvasTool === 'pan' || canvasTool === 'laser';
           if (wantsPan) {
             setPan({
               startClientX: e.clientX,

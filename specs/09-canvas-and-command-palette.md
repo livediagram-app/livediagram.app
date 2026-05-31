@@ -12,7 +12,7 @@ The first row of the palette holds the canvas-tool toggles:
 
 - **Pan** (default) — drag-on-empty scrolls the canvas.
 - **Select** — drag-on-empty draws a marquee for multi-select.
-- **Laser** — presenter mode. Pointer-down does nothing (no pan, no marquee); pointer-move emits a glowing trail in the local participant's colour that fades over ~1 s. Other participants see the trail in real time in the sender's colour via the `laser` `RoomOp` (see [spec/11](11-api.md)). Cursor indicators broadcast as `null` while laser is active so peers see only the laser dot, not a stacked cursor + dot. Holding Space pans regardless of the active tool so the presenter can reposition mid-presentation without switching out of Laser.
+- **Laser** — presenter mode. Pointer-move emits a glowing trail in the local participant's colour that fades over ~1 s. Click-drag pans the canvas (same as Pan tool) so the presenter can reposition without switching tools — the trail keeps capturing during the pan, so peers see a sweeping laser. Other participants see the trail in real time in the sender's colour via the `laser` `RoomOp` (see [spec/11](11-api.md)). Cursor indicators broadcast as `null` while laser is active so peers see only the laser dot, not a stacked cursor + dot.
 
 ### Movable
 
