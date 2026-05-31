@@ -882,13 +882,20 @@ function buildSwot(cx: number, cy: number): Element[] {
 }
 
 // Horizontal timeline with 5 milestone markers — circles on the line,
-// alternating labels above and below so they don't crowd. Labels are
-// simple Text elements (no underlying card) so the chart reads cleanly.
+// alternating labels above and below so they don't crowd. Each label
+// is a stacked pair: a milestone title on top and a date subtext
+// beneath (e.g. "Phase 1" / "March") so the chart reads as an actual
+// dated schedule, not just a sequence of named beats. Two Text
+// primitives per milestone keeps the date independently styleable
+// (smaller size, muted colour) without a custom element kind.
 function buildTimeline(cx: number, cy: number): Element[] {
   const lineLength = 1200;
   const milestoneRadius = 22;
   const labelW = 200;
-  const labelH = 56;
+  const titleH = 40;
+  const dateH = 28;
+  const labelGap = 4;
+  const labelBlockH = titleH + labelGap + dateH;
   const verticalOffset = 90;
 
   const startX = cx - lineLength / 2;
@@ -904,9 +911,18 @@ function buildTimeline(cx: number, cy: number): Element[] {
     strokeColor: '#64748b',
   });
 
-  const milestones = ['Kick-off', 'Phase 1', 'Phase 2', 'Phase 3', 'Launch'];
+  // Indicative date subtitles — months across the first three quarters
+  // of a hypothetical project so the user can immediately read the
+  // template as a timeline and replace each date with the real one.
+  const milestones: { title: string; date: string }[] = [
+    { title: 'Kick-off', date: 'January' },
+    { title: 'Phase 1', date: 'March' },
+    { title: 'Phase 2', date: 'May' },
+    { title: 'Phase 3', date: 'July' },
+    { title: 'Launch', date: 'September' },
+  ];
   const above = (i: number) => i % 2 === 0;
-  milestones.forEach((label, i) => {
+  milestones.forEach(({ title, date }, i) => {
     const x = startX + ((i + 0.5) / milestones.length) * lineLength;
     elements.push({
       ...createShape('circle', x - milestoneRadius, baseY - milestoneRadius),
@@ -914,16 +930,28 @@ function buildTimeline(cx: number, cy: number): Element[] {
       height: milestoneRadius * 2,
       textSize: 'sm',
     });
+    // Stack the title above the date. `blockTop` is the y of the
+    // whole two-line block; the title fills the top half and the
+    // date sits below with a small gap. Same `blockTop` formula as
+    // before, just sized for the new combined height so the
+    // alternating-side layout still hugs the spine evenly.
+    const blockTop = above(i) ? baseY - verticalOffset : baseY + verticalOffset - labelBlockH;
     elements.push({
-      ...createText(
-        x - labelW / 2,
-        above(i) ? baseY - verticalOffset : baseY + verticalOffset - labelH,
-      ),
+      ...createText(x - labelW / 2, blockTop),
       width: labelW,
-      height: labelH,
-      label,
+      height: titleH,
+      label: title,
       textSize: 'md',
       textAlignX: 'center',
+    });
+    elements.push({
+      ...createText(x - labelW / 2, blockTop + titleH + labelGap),
+      width: labelW,
+      height: dateH,
+      label: date,
+      textSize: 'sm',
+      textAlignX: 'center',
+      textColor: '#64748b',
     });
   });
   return elements;
