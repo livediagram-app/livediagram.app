@@ -32,10 +32,10 @@ Reusable building blocks: `Section` + `FeatureGrid` (`components/Section.tsx`), 
 
 ## Social sharing
 
-Word of mouth is part of the acquisition funnel, so the page lets a happy visitor pass it on in one click. `components/ShareButtons.tsx` renders a compact row of icon-only share targets (X, LinkedIn, Facebook, WhatsApp, email) plus a **Copy link** button, sitting in the header to the left of the "Start drawing" CTA. The row is hidden below the `sm` breakpoint so the CTA always fits on narrow screens.
+Word of mouth is part of the acquisition funnel, so the page lets a happy visitor pass it on in one click. `components/ShareButtons.tsx` renders a **"Share" button** (share-nodes icon) in the header, just left of the "Start drawing" CTA. Clicking it opens a small **popover** listing the share targets (X, LinkedIn, Facebook, WhatsApp, email) plus a **Copy link** action. The popover closes on outside click or Escape; the button keeps its icon at every width and shows the "Share" label from the `sm` breakpoint up.
 
-- **Share targets are plain anchor links** to each network's public share-intent URL (`twitter.com/intent/tweet`, `linkedin.com/sharing/share-offsite`, `facebook.com/sharer`, `wa.me`, `mailto:`). No SDKs, no tracking pixels (keeps the "no tracking pixels" claim honest under [03](03-open-source-and-business-model.md)), and no JS required for them to work — they survive static export. They open in a new tab (`target="_blank"` + `rel="noopener noreferrer"`).
-- **Copy link** is the one interactive control: a client component using the Clipboard API that copies the canonical URL and flips its icon to a checkmark for a beat.
+- **Share targets are plain anchor links** to each network's public share-intent URL (`twitter.com/intent/tweet`, `linkedin.com/sharing/share-offsite`, `facebook.com/sharer`, `wa.me`, `mailto:`). No SDKs, no tracking pixels (keeps the "no tracking pixels" claim honest under [03](03-open-source-and-business-model.md)). They open in a new tab (`target="_blank"` + `rel="noopener noreferrer"`) and close the popover on click.
+- **Copy link** uses the Clipboard API to copy the canonical URL and flips its row to "Link copied" for a beat.
 - The shared URL is the canonical production site (`https://livediagram.app`) and the share text mirrors the product's one-line description. Both live as constants in the component — update them together if the positioning copy changes.
 - The component carries the only `'use client'` boundary on the page; everything else stays a server component for static export.
 
