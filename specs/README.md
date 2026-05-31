@@ -10,7 +10,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | --- | -------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | 00  | [Purpose](00-purpose.md)                                             | What the product is and who it's for                               |
 | 01  | [Color scheme](01-color-scheme.md)                                   | Brand color and visual design tokens                               |
-| 02  | [Prototype scope](02-prototype-scope.md)                             | What's in/out for the current build phase                          |
+| 02  | [Build phase](02-prototype-scope.md)                                 | Where we are now and what's still ahead                            |
 | 03  | [Open source + business model](03-open-source-and-business-model.md) | MIT license, self-host, hosted Pro subscription                    |
 | 04  | [Auth + guest access](04-auth-and-guest-access.md)                   | Clerk auth — but the canvas always works without sign-in           |
 | 05  | [Diagram structure](05-diagram-structure.md)                         | Diagrams contain tabs; elements can link across tabs               |

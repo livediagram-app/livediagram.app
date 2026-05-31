@@ -47,8 +47,6 @@ The router worker is **not required for local dev**. Each app runs on its own po
 
 Visit whichever you're working on directly. The router only matters in production where everything serves from one hostname.
 
-## Why this is in the prototype scope
+## Routing infrastructure, not logic
 
-[02-prototype-scope.md](02-prototype-scope.md) excludes backend / API Workers. The router is an exception: it's **routing infrastructure**, not application logic. It holds no data, runs no business rules, and is required for the apps to coexist under one hostname even at prototype stage.
-
-If you find yourself adding business logic to the router, stop — that logic belongs in a service the router forwards to.
+The router is **routing infrastructure**, not application logic — it holds no data and runs no business rules. That separation is non-negotiable: if you find yourself adding business logic to the router, stop, the logic belongs in a service the router forwards to (marketing, live, or api).

@@ -8,14 +8,14 @@ We don't put auth in front of the core experience. We add auth where it _enables
 
 ## Auth provider
 
-**Clerk** is the chosen provider. It is **not** part of the prototype (see [02-prototype-scope.md](02-prototype-scope.md)). Wiring it up comes after the prototype is solid.
+**Clerk** is the chosen provider. It is **not** wired up yet — the api worker today is open and carries owner identity via an `X-Owner-Id` header (see [02-prototype-scope.md](02-prototype-scope.md) for current build-phase scope). Clerk lands once we're ready to gate sync/sharing behind a real account.
 
 ## Two modes
 
 ### Guest mode (always available)
 
 - No account required.
-- Diagrams persist locally (prototype: `localStorage`; later: still locally on-device, even after auth lands).
+- Diagrams persist via the api worker (D1), keyed by the local participant id minted on first visit. No account is required to save or reload.
 - All core editing features work.
 - No cloud sync, no sharing, no real-time collaboration — those need an account.
 
@@ -40,5 +40,5 @@ When a guest signs up, the diagrams they built locally should **migrate into the
 
 - UI must never block the canvas behind a sign-in wall.
 - Features that genuinely need an account (Share, Invite, Sync) are surfaced as opt-in prompts: "Sign in to share this diagram" — not modal walls.
-- The store interface (`DiagramStore` per [02-prototype-scope.md](02-prototype-scope.md)) abstracts persistence so guest and authenticated modes use the same UI code, just different backing implementations.
+- The single persistence boundary (`apps/live/lib/api-client.ts` against the api worker — see [11-api.md](11-api.md)) is the same in guest and authenticated mode. Only the owner-id header changes: a `localStorage`-minted UUID for guests, a Clerk-verified user id once auth lands.
 - Public client code that uses Clerk uses only the **publishable key** (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`), never the secret key. See [06-secrets-policy.md](06-secrets-policy.md).
