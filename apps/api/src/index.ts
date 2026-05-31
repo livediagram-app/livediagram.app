@@ -106,15 +106,18 @@ export default {
     try {
       // ---------- /api/share/<code> ----------
       // Resolve a share code to its diagram + role. Used by visitors
-      // landing on /live?s=<code>. Returns 404 if the code doesn't
-      // exist OR was revoked.
+      // landing on /live/diagram/shared?s=<code>. Returns 404 if the
+      // code doesn't exist OR was revoked.
       if (segments[1] === 'share' && segments.length === 3) {
         const code = segments[2]!;
         if (request.method === 'GET') {
-          // Prefer share_links so multi-link diagrams resolve any of
-          // their codes; fall back to the legacy column for diagrams
-          // that pre-date migration 0003 and somehow didn't get
-          // backfilled.
+          // Primary: resolve through share_links so the code's role
+          // (edit vs view) is carried back to the visitor.
+          // Defensive fallback: a second share_links lookup gated on
+          // diagrams.shareable so a code on a revoked-then-rewritten
+          // diagram still 404s. Both legs query share_links — the
+          // legacy diagrams.share_code column was dropped in
+          // migration 0008.
           const link = await getShareLink(env, code);
           if (link) {
             const d = await getDiagram(env, link.diagramId);
