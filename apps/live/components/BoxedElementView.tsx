@@ -276,6 +276,35 @@ function ShapeSvgOverlay({
   stroke: string;
   strokeWidth?: number;
 }) {
+  if (shape === 'actor') {
+    // UML actor: an open circle head (the fill colour tints it) over a
+    // line body, arms and legs. The viewBox is taller than wide and
+    // leaves a clear band below the legs (y 116..150) for the label.
+    // `meet` keeps the figure proportional and centred at any size.
+    return (
+      <svg
+        className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+        viewBox="0 0 90 150"
+        preserveAspectRatio="xMidYMid meet"
+        aria-hidden
+      >
+        <g
+          fill="none"
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        >
+          <circle cx={45} cy={22} r={16} fill={fill} />
+          <path d="M 45 38 L 45 82" />
+          <path d="M 16 56 L 74 56" />
+          <path d="M 45 82 L 22 112" />
+          <path d="M 45 82 L 68 112" />
+        </g>
+      </svg>
+    );
+  }
   const common = {
     fill,
     stroke,
@@ -303,6 +332,12 @@ function ShapeSvgOverlay({
           <path d="M 0 15 L 100 15 L 100 85 A 50 12 0 0 1 0 85 Z" {...common} />
           <ellipse cx={50} cy={15} rx={50} ry={12} {...common} />
         </g>
+      ) : null}
+      {shape === 'cloud' ? (
+        <path
+          d="M 30 80 C 14 80, 7 64, 18 55 C 11 42, 26 31, 37 38 C 41 21, 67 19, 70 38 C 84 31, 96 46, 85 57 C 96 65, 88 80, 72 80 Z"
+          {...common}
+        />
       ) : null}
     </svg>
   );

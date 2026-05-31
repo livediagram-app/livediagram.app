@@ -324,6 +324,47 @@ function OpenPalette({
               />
             </svg>
           </IconButton>
+          <IconButton
+            label="Add user"
+            description="User / actor. Use-case and architecture diagrams."
+            onClick={() => onAddShape('actor')}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <circle cx="9" cy="4" r="2.4" />
+              <path d="M9 6.4 L9 11.5" />
+              <path d="M4.8 8.4 L13.2 8.4" />
+              <path d="M9 11.5 L6 15.5" />
+              <path d="M9 11.5 L12 15.5" />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add cloud"
+            description="Cloud. Networking / architecture."
+            onClick={() => onAddShape('cloud')}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M5.5 13.5 C3.2 13.5 2 11.7 3.4 10.2 C2.4 8.7 4 7 5.5 7.7 C6 5.4 9.4 5.2 9.9 7.6 C11.9 6.7 13.5 8.6 12.2 10.2 C13.5 11.2 12.6 13.5 10.8 13.5 Z" />
+            </svg>
+          </IconButton>
         </div>
         <div className="my-1 h-px bg-slate-100" />
         <div className="flex items-center gap-1">
@@ -455,6 +496,8 @@ export function SelectedElementSection({
                 'hexagon',
                 'document',
                 'stadium',
+                'actor',
+                'cloud',
               ] as const
             ).map((kind) => (
               <Tooltip
@@ -828,6 +871,8 @@ const SHAPE_LABEL: Record<ShapeKind, string> = {
   hexagon: 'Hexagon',
   document: 'Document',
   stadium: 'Stadium',
+  actor: 'User',
+  cloud: 'Cloud',
 };
 
 function ShapeIcon({ kind }: { kind: ShapeKind }) {
@@ -951,6 +996,41 @@ function ShapeIcon({ kind }: { kind: ShapeKind }) {
           aria-hidden
         >
           <rect x="2" y="5" width="12" height="6" rx="3" />
+        </svg>
+      );
+    case 'actor':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <circle cx="8" cy="3.4" r="2" />
+          <path d="M8 5.4 L8 10" />
+          <path d="M4.5 7.2 L11.5 7.2" />
+          <path d="M8 10 L5.5 13.6" />
+          <path d="M8 10 L10.5 13.6" />
+        </svg>
+      );
+    case 'cloud':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M5 12 C3 12 2 10.5 3.2 9.3 C2.3 8 3.7 6.6 5 7.2 C5.4 5.2 8.4 5 8.8 7.1 C10.6 6.3 12 8 10.9 9.3 C12 10.2 11.2 12 9.6 12 Z" />
         </svg>
       );
   }

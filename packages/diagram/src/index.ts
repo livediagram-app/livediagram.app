@@ -177,7 +177,9 @@ export type ShapeKind =
   | 'parallelogram'
   | 'hexagon'
   | 'document'
-  | 'stadium';
+  | 'stadium'
+  | 'actor'
+  | 'cloud';
 
 export type ShapeElement = {
   id: ElementId;
@@ -592,12 +594,18 @@ const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: number }> =
   // render path means the ends stay perfectly semicircular at any
   // aspect ratio the user resizes to.
   stadium: { width: 160, height: 64 },
+  // Actor (UML stickman): line-art figure with its label below. Taller
+  // than wide and aspect-locked on create so the figure never distorts.
+  actor: { width: 90, height: 150 },
+  // Cloud: a container shape (networking / architecture). Stretches to
+  // fit its label like the other flowchart shapes.
+  cloud: { width: 180, height: 120 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
 export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement {
   const { width, height } = SHAPE_DEFAULT_SIZE[kind];
-  return {
+  const base: ShapeElement = {
     id: crypto.randomUUID(),
     type: 'shape',
     shape: kind,
@@ -607,6 +615,13 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     height,
     textSize: 'md',
   };
+  // The actor is a figure with its label beneath the legs, not text
+  // inside a box. Lock the aspect ratio so resizing never warps the
+  // stickman, and default the label to the bottom band.
+  if (kind === 'actor') {
+    return { ...base, aspectLocked: true, textAlignY: 'bottom' };
+  }
+  return base;
 }
 
 export function createText(x: number, y: number): TextElement {
