@@ -757,31 +757,37 @@ function AccordionHeader({
   trailing?: React.ReactNode;
 }) {
   return (
+    // Order: [Chevron Label ……] [trailing +] [badge].
+    // The badge sits to the right of any trailing action so the
+    // primary action (e.g. "new folder") is closer to where the user
+    // already has the cursor after expanding the accordion. The
+    // toggle button keeps everything inside it that the user might
+    // misclick onto — but the badge is purely informational and
+    // doesn't need to react to a row-level toggle, so it lives
+    // outside.
     <div className="flex items-center gap-1">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex flex-1 items-center justify-between gap-2 rounded-md px-1 py-1 text-left transition hover:bg-slate-100"
+        className="flex flex-1 items-center gap-2 rounded-md px-1 py-1 text-left transition hover:bg-slate-100"
       >
-        <span className="flex items-center gap-1.5">
-          <span
-            className={`inline-block transition-transform ${open ? 'rotate-90' : 'rotate-0'}`}
-            aria-hidden
-          >
-            <ChevronIcon />
-          </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-            {label}
-          </span>
+        <span
+          className={`inline-block transition-transform ${open ? 'rotate-90' : 'rotate-0'}`}
+          aria-hidden
+        >
+          <ChevronIcon />
         </span>
-        {badge !== null ? (
-          <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1.5 text-[10px] font-medium text-slate-600">
-            {badge}
-          </span>
-        ) : null}
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          {label}
+        </span>
       </button>
       {trailing}
+      {badge !== null ? (
+        <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1.5 text-[10px] font-medium text-slate-600">
+          {badge}
+        </span>
+      ) : null}
     </div>
   );
 }
