@@ -491,15 +491,15 @@ function buildFlowchart(cx: number, cy: number): Element[] {
 // element pushed per column so subsequent label + sticky elements
 // render above it.
 function buildRetrospective(cx: number, cy: number): Element[] {
-  const containerW = 300;
-  const containerSpacing = 320;
-  const colW = 260;
-  const headerH = 56;
-  const stickyH = 110;
-  const stickyGap = 20;
-  const topPadding = 16;
-  const headerGap = 16;
-  const bottomPadding = 16;
+  const containerW = 460;
+  const containerSpacing = 500;
+  const colW = 400;
+  const headerH = 80;
+  const stickyH = 170;
+  const stickyGap = 28;
+  const topPadding = 24;
+  const headerGap = 24;
+  const bottomPadding = 24;
   const containerH = topPadding + headerH + headerGap + 3 * stickyH + 2 * stickyGap + bottomPadding;
 
   const columns: { label: string; fill: string; stroke: string }[] = [
@@ -555,17 +555,17 @@ function buildRetrospective(cx: number, cy: number): Element[] {
 // as a distinct zone; cards are squares (not stickies) since Kanban
 // vocabulary leans more "task ticket" than "thought".
 function buildKanban(cx: number, cy: number): Element[] {
-  const containerW = 280;
-  const containerSpacing = 300;
-  const cardW = 240;
-  const cardH = 56;
-  const headerH = 48;
-  const topPadding = 16;
-  const headerGap = 12;
-  const cardGap = 12;
+  const containerW = 440;
+  const containerSpacing = 480;
+  const cardW = 380;
+  const cardH = 90;
+  const headerH = 72;
+  const topPadding = 24;
+  const headerGap = 20;
+  const cardGap = 20;
   const cardsPerCol = 3;
   const containerH =
-    topPadding + headerH + headerGap + cardsPerCol * cardH + (cardsPerCol - 1) * cardGap + 16;
+    topPadding + headerH + headerGap + cardsPerCol * cardH + (cardsPerCol - 1) * cardGap + 24;
 
   const columns: { label: string; fill: string; stroke: string }[] = [
     { label: 'To do', fill: '#f1f5f9', stroke: '#cbd5e1' },
@@ -615,10 +615,10 @@ function buildKanban(cx: number, cy: number): Element[] {
 // in tinted containers (green / orange / blue / red) that match the
 // emotional weighting of each quadrant.
 function buildSwot(cx: number, cy: number): Element[] {
-  const cellW = 260;
-  const cellH = 200;
-  const gap = 16;
-  const labelH = 36;
+  const cellW = 380;
+  const cellH = 290;
+  const gap = 24;
+  const labelH = 52;
 
   const quadrants: { label: string; col: 0 | 1; row: 0 | 1; fill: string; stroke: string }[] = [
     { label: 'Strengths', col: 0, row: 0, fill: '#dcfce7', stroke: '#86efac' },
@@ -705,18 +705,18 @@ function buildTimeline(cx: number, cy: number): Element[] {
 // a small "All" label at the centre intersection. Outlined-only
 // (no fill) so the overlap reads cleanly.
 function buildVenn(cx: number, cy: number): Element[] {
-  const radius = 110;
+  const radius = 180;
   // Triangle offsets — each circle sits ~0.6r from the centroid so
   // pairwise overlap is meaningful but the three-way intersection
   // stays a recognisable lens.
   const offset = radius * 0.6;
   const centers = [
-    { x: cx, y: cy - offset, label: 'Set A', tx: 0, ty: -radius - 30 },
-    { x: cx - offset * 0.95, y: cy + offset * 0.55, label: 'Set B', tx: -radius - 60, ty: 0 },
-    { x: cx + offset * 0.95, y: cy + offset * 0.55, label: 'Set C', tx: radius + 60, ty: 0 },
+    { x: cx, y: cy - offset, label: 'Set A', tx: 0, ty: -radius - 40 },
+    { x: cx - offset * 0.95, y: cy + offset * 0.55, label: 'Set B', tx: -radius - 80, ty: 0 },
+    { x: cx + offset * 0.95, y: cy + offset * 0.55, label: 'Set C', tx: radius + 80, ty: 0 },
   ];
-  const labelW = 110;
-  const labelH = 32;
+  const labelW = 160;
+  const labelH = 44;
   const elements: Element[] = [];
   centers.forEach((c) => {
     elements.push({
@@ -740,11 +740,11 @@ function buildVenn(cx: number, cy: number): Element[] {
   const centroidX = (centers[0]!.x + centers[1]!.x + centers[2]!.x) / 3;
   const centroidY = (centers[0]!.y + centers[1]!.y + centers[2]!.y) / 3;
   elements.push({
-    ...createText(centroidX - 60, centroidY - 14),
-    width: 120,
-    height: 28,
+    ...createText(centroidX - 90, centroidY - 22),
+    width: 180,
+    height: 44,
     label: 'All',
-    textSize: 'sm',
+    textSize: 'md',
     textAlignX: 'center',
   });
   return elements;
@@ -865,9 +865,9 @@ function buildFishbone(cx: number, cy: number): Element[] {
 // users rename per their domain.
 function buildPyramid(cx: number, cy: number): Element[] {
   const tiers = ['Vision', 'Strategy', 'Tactics', 'Operations'];
-  const tierH = 70;
-  const baseWidth = 480;
-  const widthStep = 90;
+  const tierH = 110;
+  const baseWidth = 760;
+  const widthStep = 140;
   const elements: Element[] = [];
   const totalH = tiers.length * tierH;
   const topY = cy - totalH / 2;
