@@ -22,7 +22,7 @@ Single landing page (`app/page.tsx`) with a sticky header, hero, themed feature 
 4. **Draw** (`#features`): the raw materials of a diagram, shapes and arrows.
 5. **Refine** (`#refine`, tinted): working the canvas: multi-select, format painter, folders.
 6. **Tabs** (`#tabs`): unlimited tabs per diagram, link elements across tabs, copy a tab into another diagram (a one-time copy, not a live sync), lock a tab, reorder and theme-colour-code. Tabs have no manual colour or order field: order is array position (drag), colour is derived from the tab's theme accent.
-7. **Your work is safe** (`#sharing`, tinted): activity log + revert, collaborator name, durable save (the link/revoke tiles moved up into Collaboration).
+7. **Your work is safe** (`#sharing`, tinted): activity log + revert and durable save (the link/revoke tiles moved up into Collaboration; the collaborator-name tile was dropped).
 8. **Open and honest** (`#foundations`): MIT license, self-host, no telemetry. See [03-open-source-and-business-model](03-open-source-and-business-model.md).
 9. **Closing CTA** (`#get-started`) — "no sign-up wall" message + `/live/new`.
 

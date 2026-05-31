@@ -786,52 +786,6 @@ export function RevokeArt() {
   );
 }
 
-export function NameArt() {
-  return (
-    <Frame>
-      <div className="flex h-full items-center justify-center gap-2 px-3">
-        <span
-          className="flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-semibold text-white"
-          style={{ backgroundColor: '#10b981' }}
-        >
-          BP
-        </span>
-        <div className="flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1">
-          <div className="relative h-3 w-24">
-            <span className="fa-swap-a absolute inset-0 text-[10px] font-medium text-slate-700">
-              Bright Porcupine
-            </span>
-            <span className="fa-swap-b absolute inset-0 text-[10px] font-medium text-slate-700">
-              Swift Otter
-            </span>
-          </div>
-          <ShuffleIcon />
-        </div>
-      </div>
-    </Frame>
-  );
-}
-
-function ShuffleIcon() {
-  return (
-    <svg
-      className="fa-spin"
-      width="11"
-      height="11"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="#64748b"
-      strokeWidth="1.5"
-    >
-      <path
-        d="M2 4 L5 4 L13 12 L14 12 M2 12 L5 12 L8 9 M11 8 L14 5 M11 2 L14 5 L11 8 M2 4 L5 4 L8 7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function RefreshArt() {
   return (
     <Frame canvas>
@@ -985,6 +939,15 @@ export function EasyStartArt() {
   return (
     <IconBadge>
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle
+          className="fa-ripple"
+          cx="5"
+          cy="3.5"
+          r="2.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
         <path d="M5 3 L19 11 L12 12 L15 19 L12 20 L9 13 L5 17 Z" fill="currentColor" />
       </svg>
     </IconBadge>
@@ -1003,9 +966,19 @@ export function DepthArt() {
         strokeWidth="2"
         strokeLinejoin="round"
       >
-        <path d="M12 3 L21 8 L12 13 L3 8 Z" />
-        <path d="M3 12 L12 17 L21 12" strokeLinecap="round" />
-        <path d="M3 16 L12 21 L21 16" strokeLinecap="round" />
+        <path className="fa-draw" d="M12 3 L21 8 L12 13 L3 8 Z" />
+        <path
+          className="fa-draw"
+          style={{ animationDelay: '0.25s' }}
+          d="M3 12 L12 17 L21 12"
+          strokeLinecap="round"
+        />
+        <path
+          className="fa-draw"
+          style={{ animationDelay: '0.5s' }}
+          d="M3 16 L12 21 L21 16"
+          strokeLinecap="round"
+        />
       </svg>
     </IconBadge>
   );
@@ -1023,9 +996,12 @@ export function MultiplayerArt() {
         strokeWidth="2"
       >
         <circle cx="9" cy="8" r="3" />
-        <circle cx="17" cy="9" r="2.5" />
         <path d="M3.5 19 a5.5 5.5 0 0 1 11 0" strokeLinecap="round" />
-        <path d="M14 18.5 a4.5 4.5 0 0 1 6.5 -1.2" strokeLinecap="round" />
+        {/* a second collaborator joins on each loop */}
+        <g className="fa-pop" style={{ animationDelay: '0.4s' }}>
+          <circle cx="17" cy="9" r="2.5" />
+          <path d="M14 18.5 a4.5 4.5 0 0 1 6.5 -1.2" strokeLinecap="round" />
+        </g>
       </svg>
     </IconBadge>
   );
@@ -1049,6 +1025,9 @@ export function AnyDeviceArt() {
         {/* phone, sitting over the corner */}
         <rect x="15" y="9" width="6" height="11" rx="1.5" fill="white" />
         <path d="M17.5 17.5 h1" strokeLinecap="round" />
+        {/* the same live diagram, pulsing on both screens in sync */}
+        <circle className="fa-pulse" cx="8" cy="8.5" r="1.3" fill="currentColor" stroke="none" />
+        <circle className="fa-pulse" cx="18" cy="13.5" r="1.1" fill="currentColor" stroke="none" />
       </svg>
     </IconBadge>
   );

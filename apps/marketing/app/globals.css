@@ -684,6 +684,26 @@
   animation: fa-fade 6s ease-in-out infinite;
 }
 
+/* click ripple — an expanding ring, for the icon-badge glyphs */
+@keyframes fa-ripple {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+.fa-ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-ripple 2.4s ease-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-shape,
   .hero-arrow,
@@ -714,7 +734,8 @@
   .fa-dip,
   .fa-swap-a,
   .fa-on,
-  .fa-fade {
+  .fa-fade,
+  .fa-ripple {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

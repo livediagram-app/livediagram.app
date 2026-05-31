@@ -11,7 +11,6 @@ import {
   MarqueeArt,
   MitArt,
   MultiplayerArt,
-  NameArt,
   NoServersArt,
   NoTrackingArt,
   PresenceArt,
@@ -239,7 +238,7 @@ export default function LandingPage() {
         <Section
           id="sharing"
           title="Your work is safe"
-          description="Rewind any change from a full activity trail, keep the name teammates know you by, and trust that every save survives a refresh."
+          description="Rewind any change from a full activity trail, and trust that every save survives a refresh."
           variant="tinted"
         >
           <FeatureGrid
@@ -251,16 +250,10 @@ export default function LandingPage() {
                   'Every tab keeps a running log of who changed what. Hit revert on any entry to undo just that change — even after later edits — without disturbing the rest.',
               },
               {
-                art: <NameArt />,
-                title: 'Pick your collaborator name',
-                description:
-                  "First time joining a shared canvas, you pick the name people see on your cursor and comments. We generate a fun default if you can't be bothered.",
-              },
-              {
                 art: <RefreshArt />,
                 title: 'Survives a refresh',
                 description:
-                  'Every save is durable through the API. Close the tab, reload — your diagram and your name come back exactly as you left them.',
+                  'Every save is durable through the API. Close the tab, reload, and your diagram comes back exactly as you left it.',
               },
             ]}
           />
