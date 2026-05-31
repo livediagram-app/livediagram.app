@@ -50,14 +50,15 @@ Owner-only routes require a resolved owner — either a verified Clerk Bearer JW
 
 **Diagrams (meta)**
 
-| Method | Path                       | Auth        | Notes                                                                  |
-| ------ | -------------------------- | ----------- | ---------------------------------------------------------------------- |
-| GET    | `/api/diagrams`            | owner       | List the caller's diagrams, newest first.                              |
-| POST   | `/api/diagrams`            | owner       | Body `{ id, name, tabs?, folderId? }`. Seeds tabs inline when present. |
-| GET    | `/api/diagrams/:id`        | owner       | Returns the diagram meta; 404 if owner mismatch (no existence leak).   |
-| PUT    | `/api/diagrams/:id`        | owner/share | Body `{ name?, tabIds? }` — rename and/or reorder tabs.                |
-| DELETE | `/api/diagrams/:id`        | owner       |                                                                        |
-| PUT    | `/api/diagrams/:id/folder` | owner       | Body `{ folderId: string \| null }` — move into a folder or Unsorted.  |
+| Method | Path                       | Auth                        | Notes                                                                                                                                                                                                                                                                               |
+| ------ | -------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/diagrams`            | owner                       | List the caller's diagrams, newest first.                                                                                                                                                                                                                                           |
+| POST   | `/api/diagrams`            | owner                       | Body `{ id, name, tabs?, folderId? }`. Seeds tabs inline when present.                                                                                                                                                                                                              |
+| GET    | `/api/diagrams/:id`        | owner                       | Returns the diagram meta; 404 if owner mismatch (no existence leak).                                                                                                                                                                                                                |
+| PUT    | `/api/diagrams/:id`        | owner/share                 | Body `{ name?, tabIds? }` — rename and/or reorder tabs.                                                                                                                                                                                                                             |
+| DELETE | `/api/diagrams/:id`        | owner                       |                                                                                                                                                                                                                                                                                     |
+| POST   | `/api/diagrams/:id/copy`   | owner / share / shared_with | Body `{ name? }`. Duplicates the source into a new diagram owned by the caller. Skips share_links + change_log + the shareable flag — the copy starts private and audit-free. Authorisation accepts the owner, a valid X-Share-Code for the source, or an existing shared_with row. |
+| PUT    | `/api/diagrams/:id/folder` | owner                       | Body `{ folderId: string \| null }` — move into a folder or Unsorted.                                                                                                                                                                                                               |
 
 **Tabs (per-tab content — see [13-per-tab-storage.md](13-per-tab-storage.md))**
 

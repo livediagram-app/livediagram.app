@@ -88,6 +88,7 @@ import {
   apiDeleteShareLink,
   apiDeleteTab,
   apiListChangeLog,
+  apiCopyDiagram,
   apiDismissSharedWith,
   apiListDiagrams,
   apiListSharedWith,
@@ -485,6 +486,10 @@ export default function LivePage() {
   // Share button shows.
   const [isOwner, setIsOwner] = useState(true);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  // Visitor-side "Make a copy" loading flag. Header button disables
+  // itself while the api round-trips so a frantic double-click can't
+  // produce two copies under the user's account.
+  const [copying, setCopying] = useState(false);
   // Every active share link for the current diagram (owner-only). The
   // ShareDialog list renders straight off this array. shareable is
   // derived: shareLinks.length > 0 OR diagramShareable from a freshly
@@ -2281,6 +2286,27 @@ export default function LivePage() {
     window.location.assign(`${window.location.origin}/live/diagram/${id}`);
   };
 
+  // Visitor action: duplicate the currently-open shared diagram
+  // into the caller's own files. Goes to the api worker's copy
+  // endpoint which authorises via owner / shared_with row / share
+  // code (spec/11), then navigates to the new diagram so the
+  // visitor immediately lands on their own copy. Owner case never
+  // hits this — the button is gated on `!isOwner`.
+  const makeCopy = async () => {
+    if (!diagramId || copying) return;
+    setCopying(true);
+    try {
+      const copy = await apiCopyDiagram(selfParticipant.id, diagramId, {
+        shareCode: sessionShareCode,
+      });
+      window.location.assign(`${window.location.origin}/live/diagram/${copy.id}`);
+    } catch {
+      // Network / auth glitch — let the user try again. Leave the
+      // header button enabled by clearing the loading flag.
+      setCopying(false);
+    }
+  };
+
   const openTemplatePicker = () => {
     setTemplatePickerMode('templates');
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, templateChosen: false } : t)));
@@ -3690,6 +3716,13 @@ export default function LivePage() {
         hideTitle={anyWelcomeOpen}
         showShare={isOwner && hydrated && !anyWelcomeOpen}
         shareable={diagramShareable}
+        // Visitors see "Make a copy" instead of "Share" — same slot,
+        // different action. Hidden during the welcome flow so the
+        // first-paint chrome stays minimal, and during hydration so
+        // we don't render the button before we know whether the user
+        // is the owner.
+        onMakeCopy={!isOwner && hydrated && !anyWelcomeOpen && diagramId ? makeCopy : undefined}
+        copying={copying}
         brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
         onOpenShare={() => setShareDialogOpen(true)}
         onRename={setDiagramName}

@@ -18,6 +18,7 @@ import {
   getTab,
   insertChangeLogEntry,
   listChangeLog,
+  copyDiagram,
   deleteAccount,
   dropSharedAccess,
   listDiagramsByOwner,
@@ -315,6 +316,46 @@ export default {
             if (existing.ownerId !== owner) return forbidden();
             await deleteDiagram(env, id);
             return new Response(null, { status: 204, headers: CORS_HEADERS });
+          }
+        }
+
+        // /api/diagrams/<id>/copy — duplicate this diagram into the
+        // caller's own files. Accepted from (a) the owner — same as
+        // any other "duplicate" path; (b) a visitor with an active
+        // `shared_with` row for the source; (c) a visitor providing
+        // a valid X-Share-Code for the source. Skips share_links /
+        // change_log on the copy by design (spec/04 + spec/12) so
+        // the new diagram reads as the visitor's own clean workspace.
+        if (segments.length === 4 && segments[3] === 'copy') {
+          const id = segments[2]!;
+          if (request.method === 'POST') {
+            const owner = resolveOwner();
+            if (!owner) return missingAuth();
+            const source = await getDiagram(env, id);
+            if (!source) return notFound();
+            // Authorisation: any of the three valid paths above.
+            // The share-code check mirrors canEditDiagram's logic;
+            // we don't need full edit role for a read-then-copy
+            // (view-role visitors can also fork their own copy).
+            const code = shareCodeOf(request);
+            let allowed = source.ownerId === owner;
+            if (!allowed && code) {
+              const link = await getShareLink(env, code);
+              if (link && link.diagramId === id) allowed = true;
+            }
+            if (!allowed) {
+              const sharedRows = await listSharedWith(env, owner);
+              if (sharedRows.some((s) => s.id === id)) allowed = true;
+            }
+            if (!allowed) return forbidden();
+            const body = (await request.json().catch(() => ({}) as { name?: string })) as {
+              name?: string;
+            };
+            const newId = crypto.randomUUID();
+            const newName = (body.name?.trim() || `Copy of ${source.name}`).slice(0, 200);
+            const copy = await copyDiagram(env, id, newId, owner, newName);
+            if (!copy) return notFound();
+            return json({ diagram: copy }, { status: 201 });
           }
         }
 

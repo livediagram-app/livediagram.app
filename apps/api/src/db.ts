@@ -250,6 +250,55 @@ export async function deleteDiagram(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM diagrams WHERE id = ?').bind(id).run();
 }
 
+// "Copy this diagram to my own files" — duplicates the source diagram
+// under a brand-new id owned by `newOwnerId`. Carries the diagram
+// meta (name with "Copy of " prefix unless the caller overrides) and
+// every tab's content; deliberately does NOT copy share_links,
+// change_log, or the shareable flag. The new diagram starts private
+// + audit-free so the visitor's copy reads as their own clean
+// workspace, not a clone of the host's collab history.
+//
+// Caller is expected to have already authorised the copy (the index
+// handler checks ownership / share_code / shared_with). This helper
+// just performs the write.
+export async function copyDiagram(
+  env: Env,
+  sourceId: string,
+  newId: string,
+  newOwnerId: string,
+  newName: string,
+): Promise<DiagramDTO | null> {
+  const source = await getDiagram(env, sourceId);
+  if (!source) return null;
+  const now = Date.now();
+  await env.DB.prepare(
+    `INSERT INTO diagrams (id, owner_id, name, shareable, folder_id, saved_at, created_at)
+     VALUES (?, ?, ?, 0, NULL, ?, ?)`,
+  )
+    .bind(newId, newOwnerId, newName, now, now)
+    .run();
+  // Walk the source's tab rows and re-insert each under the new
+  // diagram id with a freshly minted tab id. Preserves order_index
+  // verbatim so the cloned diagram opens to the same tab layout
+  // the visitor was looking at. Skipping share_links + change_log
+  // is by design — those don't survive ownership transfer.
+  const tabRows = await env.DB.prepare(
+    'SELECT id, name, order_index, data FROM tabs WHERE diagram_id = ? ORDER BY order_index ASC',
+  )
+    .bind(sourceId)
+    .all<{ id: string; name: string; order_index: number; data: string }>();
+  for (const row of tabRows.results ?? []) {
+    const freshTabId = crypto.randomUUID();
+    await env.DB.prepare(
+      `INSERT INTO tabs (id, diagram_id, name, order_index, data, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+      .bind(freshTabId, newId, row.name, row.order_index, row.data, now)
+      .run();
+  }
+  return await getDiagram(env, newId);
+}
+
 export async function getParticipant(env: Env, id: string): Promise<ParticipantDTO | null> {
   const row = await env.DB.prepare(
     'SELECT id, name, color, created_at FROM participants WHERE id = ?',

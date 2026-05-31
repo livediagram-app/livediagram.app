@@ -19,6 +19,12 @@ type EditorHeaderProps = {
   // via a share URL can't toggle sharing on their host's diagram.
   showShare: boolean;
   shareable: boolean;
+  // Counterpart to showShare for visitors: when present we render a
+  // "Make a copy" button that duplicates the diagram into the
+  // visitor's own files (item #9 / spec/11). Optional so the owner
+  // view stays unchanged.
+  onMakeCopy?: () => void;
+  copying?: boolean;
   // Accent colour for the brand logo's "diagram" half. Comes from the
   // active tab's theme stroke so the header subtly echoes the canvas.
   brandAccent?: string;
@@ -31,6 +37,8 @@ export function EditorHeader({
   hideTitle = false,
   showShare,
   shareable,
+  onMakeCopy,
+  copying = false,
   brandAccent,
   onOpenShare,
   onRename,
@@ -74,6 +82,19 @@ export function EditorHeader({
         )}
       </div>
       <div className="flex w-56 items-center justify-end gap-2">
+        {onMakeCopy ? (
+          <Tooltip title="Make a copy" description="Duplicate this diagram into your own files.">
+            <button
+              type="button"
+              onClick={onMakeCopy}
+              disabled={copying}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition enabled:hover:border-brand-300 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <CopyIcon />
+              {copying ? 'Copying' : 'Make a copy'}
+            </button>
+          </Tooltip>
+        ) : null}
         {showShare ? (
           <Tooltip
             title={shareable ? 'Shared' : 'Share'}
@@ -167,6 +188,25 @@ function PrivateDotIcon() {
     >
       <rect x="2" y="4" width="5" height="3.5" rx="0.8" />
       <path d="M3.25 4V3a1.25 1.25 0 0 1 2.5 0v1" />
+    </svg>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="5" y="5" width="8" height="8.5" rx="1.5" />
+      <path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" />
     </svg>
   );
 }

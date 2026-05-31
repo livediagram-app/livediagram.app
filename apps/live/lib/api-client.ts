@@ -479,6 +479,25 @@ export async function apiDismissSharedWith(ownerId: string, diagramId: string): 
   await expectOkVoid(res, 'dismiss shared');
 }
 
+// Copy a diagram (typically one shared with the caller) into the
+// caller's own files. Returns the new diagram. Optional shareCode
+// covers the "visitor just arrived via share URL, no shared_with
+// row yet" path — when present the api worker uses it as the
+// authorisation proof instead of looking up shared_with.
+export async function apiCopyDiagram(
+  ownerId: string,
+  sourceId: string,
+  opts: { name?: string; shareCode?: string | null } = {},
+): Promise<StoredDiagram> {
+  const res = await fetch(`${API_BASE}/diagrams/${sourceId}/copy`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId, { body: true, share: opts.shareCode ?? null }),
+    body: JSON.stringify({ name: opts.name }),
+  });
+  const { diagram } = await expectOk<DiagramResponse>(res, 'copy diagram');
+  return diagram;
+}
+
 // ---------------------------------------------------------------------
 // folders — spec/15
 // ---------------------------------------------------------------------
