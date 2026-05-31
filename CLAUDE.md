@@ -38,7 +38,7 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 The frontend-only prototype phase ended when the API app landed (see [spec/02](specs/02-prototype-scope.md) and [spec/11](specs/11-api.md)). Today the editor talks to a Cloudflare Worker API backed by D1 (durable diagram storage) + Durable Objects (per-diagram realtime room). `apps/live/lib/api-client.ts` is the single persistence boundary; the editor never reads or writes `localStorage` for diagrams.
 
 - **Built:** the canvas editor (shapes, arrows of every style, marquee + multi-select, groups, format painter, comments, links, themed templates, folders), the api worker (REST + share links + change log + Durable Object realtime room with cursor/select/log ops), per-tab storage.
-- **Still ahead:** Clerk auth (the API is open today, identity via `X-Owner-Id`), Resend (transactional email), Stripe (Pro subscription), multi-user team permissions, operational-transform / CRDT edits.
+- **Still ahead:** Resend (transactional email), Stripe (Pro subscription), multi-user team permissions, operational-transform / CRDT edits.
 
 ## Open source + commercial
 
@@ -63,9 +63,11 @@ See [specs/06-secrets-policy.md](specs/06-secrets-policy.md). **Repo is public �
 See [specs/04-auth-and-guest-access.md](specs/04-auth-and-guest-access.md).
 
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
-- The api is open today — identity is a per-browser participant id (`livediagram:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Everyone is effectively a guest and gets the full feature set (persistence, share links, real-time collab).
-- Clerk lands later. Auth will unlock per-account sync (diagrams travel across devices), team workspaces, and Pro billing — never gate the canvas itself.
-- On sign-up, guest diagrams should migrate from the per-browser identity into the new account so nothing is lost.
+- **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
+  - **Guest path**: a per-browser participant id (`livediagram:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
+  - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`. The api worker verifies via `CLERK_JWKS_URL` (`apps/api/src/auth/clerk.ts`) and uses the `sub` claim as the owner id. Required for per-account sync, future team workspaces, and Pro billing.
+- The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
+- Sign-in lives at `/live/sign-in/` and sign-up at `/live/get-started/` (custom UI; email-code or Google OAuth). On sign-up, guest diagrams migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
 
 ## Core principle: reuse over duplication
 
@@ -94,7 +96,7 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 - **Routing edge:** Cloudflare Workers (the router app) — ✓
 - **Database:** Cloudflare D1 (via the api worker only) — ✓
 - **Realtime:** Cloudflare Durable Objects (per-diagram room) — ✓
-- **Auth:** Clerk — ✗
+- **Auth:** Clerk — ✓ (frontend ClerkProvider; api worker JWT verification + hybrid `X-Owner-Id` fallback in progress)
 - **Email:** Resend — ✗
 - **Payments:** Stripe — ✗
 
