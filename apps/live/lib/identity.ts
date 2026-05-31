@@ -80,6 +80,26 @@ export function randomColor(): string {
   return pick(COLORS);
 }
 
+// Pick a colour from the palette that isn't in `taken`. When the
+// caller has a `preferred` colour (e.g. the participant's existing
+// persisted choice) and it's still free, return that — otherwise
+// walk the palette in order and pick the first un-taken slot. When
+// every palette colour is taken (room has more participants than
+// the palette has colours), fall back to the preferred (accepting
+// the collision as the lesser visual evil — a duplicate palette
+// colour reads better than an off-palette one).
+//
+// Used by the editor's room-presence reconciliation to keep every
+// live participant on a distinct colour while persistent identity
+// records can stay random.
+export function nextFreeColor(taken: Set<string>, preferred?: string): string {
+  if (preferred && !taken.has(preferred)) return preferred;
+  for (const c of COLORS) {
+    if (!taken.has(c)) return c;
+  }
+  return preferred ?? COLORS[0]!;
+}
+
 // Up to two characters for the avatar. Single-word names use the first
 // two letters; multi-word names use the first letter of the first and
 // last word ("Curious Falcon" → "CF").

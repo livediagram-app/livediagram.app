@@ -63,7 +63,7 @@ import {
   type DragState,
   type ShapeBounds,
 } from '@/lib/canvas';
-import { randomColor, randomName, type Participant } from '@/lib/identity';
+import { nextFreeColor, randomColor, randomName, type Participant } from '@/lib/identity';
 import {
   getGuestSelfId,
   hasConfirmedName,
@@ -943,6 +943,32 @@ export default function LivePage() {
             status: 'online',
           })),
         );
+        // Unique-colour reconciliation. Every client computes the
+        // same allocation on every presence update; we only act when
+        // (a) someone else in the room shares our colour and (b) our
+        // participant id sorts later than theirs — that way only the
+        // later-joining peer yields, the earlier one keeps their
+        // colour, and every client converges on the same assignment
+        // without a server-side allocator. Persisting the new colour
+        // via setSelfParticipant flushes through the autosave effect
+        // and the next hello broadcast carries the fixed colour.
+        // selfParticipantRef instead of selfParticipant because this
+        // effect's deps intentionally omit the participant — without
+        // the ref we'd act on a stale snapshot.
+        const live = selfParticipantRef.current;
+        const me = participants.find((p) => p.id === live.id);
+        if (me) {
+          const conflictHolder = participants.find(
+            (p) => p.id !== live.id && p.color === live.color,
+          );
+          if (conflictHolder && live.id > conflictHolder.id) {
+            const taken = new Set(participants.filter((p) => p.id !== live.id).map((p) => p.color));
+            const fresh = nextFreeColor(taken, undefined);
+            if (fresh !== live.color) {
+              setSelfParticipant((prev) => ({ ...prev, color: fresh }));
+            }
+          }
+        }
         // Drop selections AND cursors for any participant who's no
         // longer connected. Stops stale presence indicators from
         // sticking after a tab close or network drop.
@@ -1230,6 +1256,16 @@ export default function LivePage() {
   useEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
+
+  // Same trick for selfParticipant — the WS effect intentionally
+  // omits selfParticipant from its dep list (re-opening the socket
+  // on every name/colour change would be wasteful), so the
+  // presence callback would otherwise close over a stale value
+  // when reconciling unique colours.
+  const selfParticipantRef = useRef(selfParticipant);
+  useEffect(() => {
+    selfParticipantRef.current = selfParticipant;
+  }, [selfParticipant]);
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
 
