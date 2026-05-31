@@ -42,8 +42,8 @@ each one own a clean state model without conditional gates.
 ## Non-goals
 
 - Changing the visitor `?s=<code>` flow. Visitors still land on
-  `/live?s=<code>` and confirm their name there — the
-  `identityOnlyScreenOpen` mini-flow stays in the editor route
+  `/live/diagram/shared?s=<code>` and confirm their name there —
+  the `identityOnlyScreenOpen` mini-flow stays in the editor route
   because it's about the visitor's session, not about creating a
   new diagram.
 - Splitting the per-tab "Pick a template" flow (the templates
@@ -151,16 +151,16 @@ Kept on the editor route:
 The new route owns:
 
 - The participant-identity bootstrap (same `livediagram:v2:self-id`
-  localStorage key, same `loadSelfParticipant` API).
+  localStorage key, same `apiLoadSelf` / `apiSaveSelf` API).
 - `templatePickerMode = 'welcome'` (only).
 - The template + theme choice locally until the user commits.
 - The "name confirmed" persistence (same
   `livediagram:v2:name-confirmed` localStorage key).
 - On commit: mint a UUID, POST `/api/diagrams` with the
-  templated tab(s) inline, navigate to `/live?d=<id>`.
+  templated tab(s) inline, navigate to `/live/diagram/<id>`.
 - On skip / X: mint a UUID, POST an empty-tab diagram, navigate to
-  `/live?d=<id>` so the user lands on the editor with a fresh
-  diagram already persisted.
+  `/live/diagram/<id>` so the user lands on the editor with a
+  fresh diagram already persisted.
 
 ## API impact
 
@@ -171,11 +171,11 @@ The new route owns:
 
 - `/live` with no params → redirects to `/live/new`, no flash.
 - `/live/new` → welcome card on first paint.
-- Pick template → Create → editor loads on `/live?d=<id>`.
-- Skip welcome → editor loads on `/live?d=<id>` with an empty
-  starter tab.
-- `/live?d=<id>` (existing) → editor hydrates as before.
-- `/live?s=<code>` (visitor) → editor + identity-confirm modal.
+- Pick template → Create → editor loads on `/live/diagram/<id>`.
+- Skip welcome → editor loads on `/live/diagram/<id>` with an
+  empty starter tab.
+- `/live/diagram/<id>` (existing) → editor hydrates as before.
+- `/live/diagram/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/live/new`.
 - "New Diagram" from Explorer → goes to `/live/new`.
 
