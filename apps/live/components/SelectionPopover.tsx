@@ -128,42 +128,50 @@ export function SelectionPopover({
 
       <Divider />
 
-      {/* Group: relationships (links to other tabs, grouping with other elements). */}
-      <Tooltip
-        title={linkedTabId ? 'Edit link' : 'Link to tab'}
-        description={linkedTabId ? 'Edit or clear the link.' : 'Pick a tab to link to.'}
-      >
-        <button
-          ref={linkButtonRef}
-          type="button"
-          onClick={() => setLinkPickerOpen((v) => !v)}
-          aria-label={linkedTabId ? 'Edit link' : 'Link to tab'}
-          aria-pressed={linkedTabId !== null}
-          className={
-            linkedTabId
-              ? 'flex h-8 w-8 items-center justify-center rounded-md bg-brand-100 text-brand-700'
-              : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900'
-          }
-        >
-          <LinkIcon />
-        </button>
-      </Tooltip>
-      {linkPickerOpen ? (
-        <TabLinkPicker
-          anchor={linkButtonRef.current}
-          tabs={tabs}
-          currentTabId={currentTabId}
-          linkedTabId={linkedTabId}
-          onSelect={(id) => {
-            onSetLink(id);
-            setLinkPickerOpen(false);
-          }}
-          onClear={() => {
-            onClearLink();
-            setLinkPickerOpen(false);
-          }}
-          onClose={() => setLinkPickerOpen(false)}
-        />
+      {/* Group: relationships (links to other tabs, grouping with other
+          elements). The link-to-tab button is suppressed when the
+          diagram only has one tab — there's nowhere to link to, so
+          the button would be a dead end. Re-appears as soon as a
+          second tab is added. */}
+      {tabs.length > 1 ? (
+        <>
+          <Tooltip
+            title={linkedTabId ? 'Edit link' : 'Link to tab'}
+            description={linkedTabId ? 'Edit or clear the link.' : 'Pick a tab to link to.'}
+          >
+            <button
+              ref={linkButtonRef}
+              type="button"
+              onClick={() => setLinkPickerOpen((v) => !v)}
+              aria-label={linkedTabId ? 'Edit link' : 'Link to tab'}
+              aria-pressed={linkedTabId !== null}
+              className={
+                linkedTabId
+                  ? 'flex h-8 w-8 items-center justify-center rounded-md bg-brand-100 text-brand-700'
+                  : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900'
+              }
+            >
+              <LinkIcon />
+            </button>
+          </Tooltip>
+          {linkPickerOpen ? (
+            <TabLinkPicker
+              anchor={linkButtonRef.current}
+              tabs={tabs}
+              currentTabId={currentTabId}
+              linkedTabId={linkedTabId}
+              onSelect={(id) => {
+                onSetLink(id);
+                setLinkPickerOpen(false);
+              }}
+              onClear={() => {
+                onClearLink();
+                setLinkPickerOpen(false);
+              }}
+              onClose={() => setLinkPickerOpen(false)}
+            />
+          ) : null}
+        </>
       ) : null}
       {onOpenComments ? (
         <PopoverButton
