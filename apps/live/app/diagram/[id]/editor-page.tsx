@@ -463,12 +463,21 @@ export default function LivePage() {
     // script in `app/layout.tsx` ALSO rewrites the URL in the address
     // bar so the client router resolves the route cleanly (without
     // it, every real id triggers the framework's not-found page on
-    // hydration). The script stashes the real id on
-    // `window.__LD_DIAGRAM_PATH_ID__`; we read it here, then restore
-    // the original URL synchronously so the user never sees
-    // `placeholder` in the address bar.
-    const captured = (window as Window & { __LD_DIAGRAM_PATH_ID__?: string })
-      .__LD_DIAGRAM_PATH_ID__;
+    // hydration). The script stashes:
+    //   - the real id on `window.__LD_DIAGRAM_PATH_ID__`
+    //   - the native, unpatched `history.replaceState` on
+    //     `window.__LD_NATIVE_REPLACE_STATE__`
+    // We read both here, restore the URL using the native reference
+    // (Next.js's patched replaceState would notify its router and
+    // re-trigger notFound on the now-non-matching id), and clear the
+    // globals so subsequent renders don't see stale state.
+    type SwapGlobals = Window & {
+      __LD_DIAGRAM_PATH_ID__?: string;
+      __LD_NATIVE_REPLACE_STATE__?: (data: unknown, unused: string, url?: string | null) => void;
+    };
+    const swapWindow = window as SwapGlobals;
+    const captured = swapWindow.__LD_DIAGRAM_PATH_ID__;
+    const nativeReplace = swapWindow.__LD_NATIVE_REPLACE_STATE__;
     const initialUrl = new URL(window.location.href);
     const pathMatch = initialUrl.pathname.match(/\/live\/diagram\/([^/?#]+)/);
     const rawPathId = captured ?? (pathMatch ? pathMatch[1]! : null);
@@ -477,12 +486,19 @@ export default function LivePage() {
     const initialId = rawPathId && rawPathId !== 'placeholder' ? rawPathId : null;
     const initialShareCode = initialUrl.searchParams.get('s');
     if (captured) {
-      delete (window as Window & { __LD_DIAGRAM_PATH_ID__?: string }).__LD_DIAGRAM_PATH_ID__;
-      window.history.replaceState(
-        null,
-        '',
-        `/live/diagram/${captured}${initialUrl.search}${initialUrl.hash}`,
-      );
+      delete swapWindow.__LD_DIAGRAM_PATH_ID__;
+      const restored = `/live/diagram/${captured}${initialUrl.search}${initialUrl.hash}`;
+      // Prefer the captured native replaceState so the URL change
+      // bypasses Next.js's router. Fall through to the (possibly
+      // patched) global one if the capture somehow didn't happen —
+      // worst case the user sees the not-found page; the script tag
+      // is the only way the global got set, so this branch is
+      // defence in depth, not a likely path.
+      if (nativeReplace) {
+        nativeReplace(null, '', restored);
+      } else {
+        window.history.replaceState(null, '', restored);
+      }
     }
     // No path id and no share code → the user landed on the placeholder
     // route directly. Hand off to /live/new for the welcome flow.

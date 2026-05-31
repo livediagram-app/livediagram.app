@@ -15,23 +15,32 @@ export const metadata: Metadata = {
 // editor swapped for the framework's default 404 on hydration — the
 // editor briefly paints (loading spinner) then vanishes.
 //
-// Fix: rewrite the URL to /live/diagram/placeholder synchronously in
-// <head>, BEFORE React hydrates, and stash the real id on a global.
-// The router sees a path it knows about and renders the editor
-// without ever invoking notFound. The editor's bootstrap useLayout-
-// Effect reads the captured id and immediately replaceState's the
-// real URL back — synchronous, so the user never sees `placeholder`
-// in the address bar.
+// The two-step fix this script bootstraps:
 //
-// Try/catch wraps it so a script failure degrades to the old broken
+//  1. Synchronously in <head> — before React or Next.js's bundle has
+//     loaded — rewrite the URL to /live/diagram/placeholder so the
+//     client router sees a path that matches the static manifest,
+//     and stash the real id on `window.__LD_DIAGRAM_PATH_ID__`.
+//  2. ALSO stash the native, unpatched `history.replaceState` on
+//     `window.__LD_NATIVE_REPLACE_STATE__`. After its bundle loads,
+//     Next.js's app router patches `history.replaceState` and
+//     `history.pushState` so any call notifies its routing layer —
+//     which, on a non-matching dynamic-segment URL, fires `notFound`.
+//     The editor's bootstrap useLayoutEffect uses the captured
+//     native reference to restore the real URL, updating the address
+//     bar WITHOUT notifying Next.js's router → no re-evaluation →
+//     notFound stays dormant → editor stays on screen.
+//
+// Try/catch wraps both steps so a failure degrades to the old broken
 // state rather than blocking the whole page.
 const PRE_HYDRATION_URL_SWAP = `
 (function () {
   try {
+    window.__LD_NATIVE_REPLACE_STATE__ = window.history.replaceState.bind(window.history);
     var m = window.location.pathname.match(/^\\/live\\/diagram\\/([^\\/?#]+)$/);
     if (!m || m[1] === 'placeholder') return;
     window.__LD_DIAGRAM_PATH_ID__ = m[1];
-    window.history.replaceState(
+    window.__LD_NATIVE_REPLACE_STATE__(
       null,
       '',
       '/live/diagram/placeholder' + window.location.search + window.location.hash

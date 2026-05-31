@@ -102,21 +102,31 @@ mismatch, not the not-found component itself.
 The workaround is an inline `<script>` in `apps/live/app/layout.tsx`
 that runs synchronously in `<head>`, before React hydrates:
 
-1. If the path matches `/live/diagram/<x>` and `<x> !== 'placeholder'`,
+1. Stash the native `history.replaceState` on
+   `window.__LD_NATIVE_REPLACE_STATE__` before Next.js's app-router
+   bundle can patch it. After its bundle loads Next.js wraps both
+   `history.pushState` and `history.replaceState` so every call
+   notifies its routing layer — which, on a non-matching dynamic-
+   segment URL, fires `notFound` and replaces the editor with the
+   framework's default 404. The captured native reference lets the
+   editor change the URL without that notification.
+2. If the path matches `/live/diagram/<x>` and `<x> !== 'placeholder'`,
    stash `<x>` on `window.__LD_DIAGRAM_PATH_ID__`.
-2. `history.replaceState` rewrites the address bar to
-   `/live/diagram/placeholder` (preserving search + hash).
-3. React hydrates against a URL that matches the static manifest —
+3. Use the captured native `replaceState` to rewrite the address
+   bar to `/live/diagram/placeholder` (preserving search + hash).
+4. React hydrates against a URL that matches the static manifest —
    no not-found triggered, editor renders normally.
-4. The editor's bootstrap `useLayoutEffect` reads the captured id,
-   clears the global, then `history.replaceState`s the real URL
-   back synchronously (before paint). The user never sees
-   `placeholder` in the address bar.
+5. The editor's bootstrap `useLayoutEffect` reads the captured id,
+   clears the global, then calls the captured native `replaceState`
+   to restore the real URL. Address bar updates synchronously
+   (before paint); Next.js's router is NOT notified, so it doesn't
+   re-evaluate the segment and notFound stays dormant.
 
 The script is wrapped in `try/catch` so a failure degrades to the
 old broken state rather than blocking the page. Other routes
-(`/live/new`, `/live`, marketing) ignore the script — the regex
-gate keeps it scoped to the diagram route.
+(`/live/new`, `/live`, marketing) ignore the path-rewrite step but
+still get the native-replaceState capture — harmless because no
+other code reads it.
 
 Adding routes under `/live/diagram/<x>/...` with deeper paths would
 need the regex to be relaxed; today's routes are flat.
