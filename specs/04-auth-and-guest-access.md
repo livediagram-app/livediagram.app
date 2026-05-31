@@ -61,6 +61,17 @@ The shared card chrome and inputs live in `apps/live/components/auth-shared.tsx`
 
 Signed-in status surfaces in the editor header via `<AuthControls>` (initial bubble + Sign out menu). Signed-out users see a "Sign in" link in the same slot. Neither blocks the editor — they're purely informational.
 
+## Identity display name
+
+A signed-in user's participant `name` is driven by their Clerk profile (`firstName + lastName`, falling back to `fullName` then `username`). On every editor mount we seed the participant record with the current Clerk name, and re-`PUT` it whenever it has drifted from the persisted value — so renaming yourself in Clerk propagates to denormalised activity-log rows on the next load.
+
+Two welcome-modal rules follow from that:
+
+- **Owner on their own diagram**: the identity-only welcome screen never opens. The user's identity is already settled by Clerk; prompting them to pick a display name on a diagram they own would be noise.
+- **Visitor on someone else's diagram (signed in)**: the welcome screen still opens (it carries the "you're joining X's diagram" context), but the "Your name" input is `readOnly` and the shuffle button hides. Visitors who _are_ signed in can't masquerade under a different display name on a host's diagram.
+
+Guests see the legacy behaviour in both cases — first-load identity prompt, fully editable name, shuffle button present.
+
 ## Guest → account migration
 
 When a guest signs up, the diagrams they built as a guest **migrate into their account** rather than being lost. They've already invested effort — losing it on sign-up would be the opposite of friction-free.

@@ -892,16 +892,17 @@ function DiagramRow({
           ) : (
             <span className="truncate">{item.name}</span>
           )}
-          <span
-            className={
-              active
-                ? 'truncate text-[10px] font-normal text-brand-700/80'
-                : 'truncate text-[10px] text-slate-400'
-            }
-            title={new Date(item.savedAt).toLocaleString()}
-          >
-            Updated {relative}
-          </span>
+          <Tooltip title="Last updated" description={new Date(item.savedAt).toLocaleString()}>
+            <span
+              className={
+                active
+                  ? 'truncate text-[10px] font-normal text-brand-700/80'
+                  : 'truncate text-[10px] text-slate-400'
+              }
+            >
+              Updated {relative}
+            </span>
+          </Tooltip>
         </span>
       </button>
       {hasMenu && !editing ? (

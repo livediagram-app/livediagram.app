@@ -23,6 +23,7 @@ import {
   ScalingLabel,
   SingleLineLabelEditor,
 } from './element-parts';
+import { Tooltip } from './Tooltip';
 
 type BoxedElementViewProps = {
   element: BoxedElement;
@@ -334,18 +335,24 @@ function RemoteSelectorsStrip({
       className="pointer-events-none absolute -left-1 -top-1 flex"
     >
       {selectors.map((p, i) => (
+        // Margin / z-index live on the outer wrapper so the Tooltip's
+        // inline-flex span doesn't disturb the overlap stack.
         <div
           key={p.id}
-          title={`${p.name} is here`}
-          aria-label={`${p.name} is here`}
           style={{
-            backgroundColor: p.color,
             marginLeft: i === 0 ? 0 : -6,
             zIndex: selectors.length - i,
           }}
-          className="flex h-5 w-5 items-center justify-center rounded-full border border-white text-[9px] font-semibold text-white shadow-sm"
         >
-          {initialsOf(p.name)}
+          <Tooltip title={p.name} description="is editing this element.">
+            <div
+              aria-label={`${p.name} is here`}
+              style={{ backgroundColor: p.color }}
+              className="flex h-5 w-5 items-center justify-center rounded-full border border-white text-[9px] font-semibold text-white shadow-sm"
+            >
+              {initialsOf(p.name)}
+            </div>
+          </Tooltip>
         </div>
       ))}
     </div>

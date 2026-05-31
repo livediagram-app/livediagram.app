@@ -201,7 +201,7 @@ export default function LivePage() {
   // does both — see `hooks/useClerkApiBootstrap.ts`. The values it
   // returns are the same ones `useAuth()` would; we read them via the
   // hook so the page has one source of truth.
-  const { authLoaded, clerkUserId } = useClerkApiBootstrap();
+  const { authLoaded, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
 
   const {
     tabs,
@@ -517,14 +517,36 @@ export default function LivePage() {
         }
       }
       const storedSelf = await apiLoadSelf(selfId).catch(() => null);
-      const self: Participant = storedSelf ?? {
+      // Signed-in users always use their Clerk-known name on the
+      // participant record. For a brand-new participant (no
+      // storedSelf) this seeds the row; for an existing one we
+      // overwrite the persisted name so it stays in sync with the
+      // user's Clerk profile (rename in Clerk → rename here on next
+      // load). Guests keep the existing random placeholder so their
+      // chosen identity isn't blown away.
+      const baseSelf: Participant = storedSelf ?? {
         id: selfId,
         name: randomName(),
         color: randomColor(),
         status: 'online',
       };
+      const self: Participant =
+        clerkUserId && clerkDisplayName
+          ? { ...baseSelf, name: clerkDisplayName, status: 'online' }
+          : { ...baseSelf, status: 'online' };
       setSelfParticipant({ ...self, status: 'online' });
-      if (!storedSelf) await apiSaveSelf(self).catch(() => {});
+      // Persist on first load, or when a signed-in user's Clerk
+      // display name has drifted from what we have on the server
+      // (e.g. they renamed themselves in the Clerk dashboard). The
+      // denormalised participant name we copy into change_log rows
+      // would otherwise stay stale.
+      const nameDrifted = !!(
+        storedSelf &&
+        clerkUserId &&
+        clerkDisplayName &&
+        storedSelf.name !== clerkDisplayName
+      );
+      if (!storedSelf || nameDrifted) await apiSaveSelf(self).catch(() => {});
       // Seed the persistence guard with whatever's on the server (or
       // what we just saved for a brand-new participant) so the
       // post-hydration effect doesn't immediately echo the same
@@ -608,7 +630,17 @@ export default function LivePage() {
           } else {
             setChangeLogLoading(false);
           }
-          if (window.localStorage.getItem('livediagram:v2:name-confirmed') !== '1') {
+          // Signed-in user opening their own diagram via a share URL
+          // already has a confirmed identity — never prompt. Visitors
+          // (signed in or not) still see the welcome card so they get
+          // the "you're joining X's diagram" context; the name input
+          // is locked downstream when they have a Clerk identity so
+          // they can't pretend to be someone else.
+          const isOwnerVisit = fetched.ownerId === self.id;
+          if (
+            !isOwnerVisit &&
+            window.localStorage.getItem('livediagram:v2:name-confirmed') !== '1'
+          ) {
             setTemplatePickerMode('identity');
           }
         }
@@ -675,7 +707,15 @@ export default function LivePage() {
           } else {
             setChangeLogLoading(false);
           }
-          if (window.localStorage.getItem('livediagram:v2:name-confirmed') !== '1') {
+          // Owner branch (`?d=<id>` / `/diagram/<id>`): a signed-in
+          // user is by definition the owner here and their identity is
+          // settled — skip the identity prompt entirely. Guests fall
+          // back to the legacy localStorage gate so they still get the
+          // one-time naming nudge.
+          if (
+            !clerkUserId &&
+            window.localStorage.getItem('livediagram:v2:name-confirmed') !== '1'
+          ) {
             setTemplatePickerMode('identity');
           }
         }
@@ -1414,9 +1454,16 @@ export default function LivePage() {
   // tick / element-add helpers all consult this early-return guard
   // so a single check covers drag, edit, paint, delete, etc.
   const activeTabLocked = activeTab.locked === true;
+  // A view-only session (a 'view' share role) is read-only in exactly
+  // the same way a locked tab is: no element or tab mutation may land.
+  // Folding both flags into one guard means every mutation helper
+  // below stays blocked with a single check, and the interaction
+  // starters (beginDrag, beginEdit, ...) layer on their own isReadOnly
+  // checks so a viewer can still select and inspect.
+  const editsBlocked = activeTabLocked || isReadOnly;
 
   const commit = (mapElements: (els: Element[]) => Element[]) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     const before = activeTab.elements;
     const after = mapElements(before);
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, elements: after } : t)));
@@ -1511,7 +1558,7 @@ export default function LivePage() {
   };
 
   const tick = (mapElements: (els: Element[]) => Element[]) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     tickTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, elements: mapElements(t.elements) } : t)),
     );
@@ -1630,7 +1677,7 @@ export default function LivePage() {
   };
 
   const addBoxed = <T extends BoxedElement>(make: (x: number, y: number) => T) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     const base = make(0, 0);
     const override = sizeFromSelection();
     let width = override?.width ?? base.width;
@@ -2285,7 +2332,7 @@ export default function LivePage() {
   };
 
   const setBackgroundPattern = (pattern: BackgroundPattern) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundPattern: pattern } : t)),
     );
@@ -2304,7 +2351,7 @@ export default function LivePage() {
   // the user's choice and survives. Sticky notes are skipped entirely
   // — the amber palette is iconic.
   const setTheme = (id: ThemeId) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     const theme = getTheme(id);
     const themeLabel =
       THEMES.find((t) => t.id === id)?.label ?? id.charAt(0).toUpperCase() + id.slice(1);
@@ -2371,7 +2418,7 @@ export default function LivePage() {
   // setTheme's preserve-customs behaviour; surfaces as a "Reset
   // elements to theme" button under the Theme accordion.
   const resetElementsToTheme = () => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     const theme = getTheme(activeTab.theme);
     const themeLabel = THEMES.find((t) => t.id === activeTab.theme)?.label ?? 'theme';
     emitTabMeta(activeId, `Reset elements to ${themeLabel}`);
@@ -2401,7 +2448,7 @@ export default function LivePage() {
   };
 
   const setBackgroundColor = (color: string) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, backgroundColor: color } : t)));
     scheduleTabMetaLog('backgroundColor', `Changed canvas colour to ${color}`);
   };
@@ -2470,7 +2517,7 @@ export default function LivePage() {
   };
 
   const setBackgroundOpacity = (opacity: number) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundOpacity: opacity } : t)),
     );
@@ -2478,7 +2525,7 @@ export default function LivePage() {
   };
 
   const setPatternColor = (color: string) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, patternColor: color } : t)));
     scheduleTabMetaLog('patternColor', `Changed pattern colour to ${color}`);
   };
@@ -2495,7 +2542,7 @@ export default function LivePage() {
   // Endpoints are free (unpinned) — drag them onto shapes after the
   // fact to pin to anchors.
   const addArrow = () => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     const centre = getViewportCenter();
     const halfLen = 80;
     const theme = getTheme(activeTab.theme);
@@ -2729,7 +2776,7 @@ export default function LivePage() {
   };
 
   const setFillColorSelected = (color: string) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     // State update inline (bypass `commit` so emitChange doesn't
@@ -2753,7 +2800,7 @@ export default function LivePage() {
   };
 
   const setStrokeColorSelected = (color: string) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     commitTabs((ts) =>
@@ -2775,7 +2822,7 @@ export default function LivePage() {
   };
 
   const setTextColorSelected = (color: string) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     commitTabs((ts) =>
@@ -2823,7 +2870,7 @@ export default function LivePage() {
   };
 
   const setOpacitySelected = (opacity: number) => {
-    if (activeTabLocked) return;
+    if (editsBlocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     commitTabs((ts) =>
@@ -3078,6 +3125,8 @@ export default function LivePage() {
   };
 
   const beginEdit = (elementId: string) => {
+    // Viewers may select to inspect, but never enter text-edit mode.
+    if (isReadOnly) return;
     if (formatSourceId !== null) return;
     setGroupSourceId(null);
     setSelectedId(elementId);
@@ -3138,7 +3187,9 @@ export default function LivePage() {
     const element = activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
     setSelectedId(elementId);
-    if (element.locked === true) return;
+    // Selection above still lands so viewers can inspect; the drag
+    // itself is blocked for a locked element or a read-only session.
+    if (element.locked === true || isReadOnly) return;
 
     // If the user is dragging a marquee-selected element, move every member
     // of the multi-selection in lockstep. Otherwise fall back to group
@@ -3680,6 +3731,11 @@ export default function LivePage() {
         }
         hydrated={hydrated}
         templatePickerMode={effectiveTemplatePickerMode}
+        // Visitor on someone else's diagram + signed in → lock the
+        // identity input to their Clerk name. Owner branch never
+        // shows the identity prompt so `lockedName` is moot there;
+        // pure guests pass null and keep the editable name field.
+        templatePickerLockedName={!isOwner && clerkUserId ? clerkDisplayName : null}
         welcomeOpen={anyWelcomeOpen}
         selfParticipant={selfParticipant}
         onChooseTemplate={chooseTemplate}

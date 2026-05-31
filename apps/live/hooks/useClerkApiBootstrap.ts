@@ -1,7 +1,7 @@
 'use client';
 
-import { useAuth } from '@clerk/react';
-import { useEffect, useRef } from 'react';
+import { useAuth, useUser } from '@clerk/react';
+import { useEffect, useMemo, useRef } from 'react';
 import { apiMigrateGuestData, setTokenProvider } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 
@@ -43,10 +43,30 @@ type BootstrapResult = {
   isSignedIn: boolean | undefined;
   authLoaded: boolean;
   clerkUserId: string | null | undefined;
+  // Best-guess display name for the signed-in Clerk user. Used to
+  // seed the participant record on first load so a signed-in user
+  // never appears under the random "Sleepy Lemur" placeholder, and
+  // to lock the welcome-modal name input when joining someone
+  // else's diagram (the user explicitly asked that visitors with a
+  // Clerk account aren't allowed to type a different display name).
+  // Null when Clerk hasn't surfaced the user yet, the user signed
+  // out, or the user genuinely has no name configured.
+  clerkDisplayName: string | null;
 };
 
 function useClerkApiBootstrapEnabled(): BootstrapResult {
   const { getToken, isSignedIn, isLoaded: authLoaded, userId: clerkUserId } = useAuth();
+  const { user } = useUser();
+  // First+Last takes precedence so we always present the form the
+  // user picked at sign-up. Falls back to fullName (covers OAuth
+  // flows where Clerk parses the names differently) and finally the
+  // username so we never show a blank pill for an account that does
+  // exist.
+  const clerkDisplayName = useMemo(() => {
+    if (!user) return null;
+    const fl = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+    return fl || user.fullName || user.username || null;
+  }, [user]);
 
   // 1. Token provider registration.
   useEffect(() => {
@@ -77,7 +97,7 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
       });
   }, [isSignedIn, clerkUserId]);
 
-  return { isSignedIn, authLoaded, clerkUserId };
+  return { isSignedIn, authLoaded, clerkUserId, clerkDisplayName };
 }
 
 function useClerkApiBootstrapDisabled(): BootstrapResult {
@@ -85,7 +105,12 @@ function useClerkApiBootstrapDisabled(): BootstrapResult {
   // so anything gated on "has Clerk reported its state yet?" doesn't
   // wait forever; `isSignedIn: false` / `clerkUserId: null` keep the
   // caller in pure-guest mode.
-  return { isSignedIn: false, authLoaded: true, clerkUserId: null };
+  return {
+    isSignedIn: false,
+    authLoaded: true,
+    clerkUserId: null,
+    clerkDisplayName: null,
+  };
 }
 
 export const useClerkApiBootstrap = clerkEnabled

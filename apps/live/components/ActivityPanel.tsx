@@ -80,7 +80,7 @@ export function ActivityPanel({
             stack as the old HistoryControls — moved here so the
             related concept (the audit log) and the related action
             (undo) live together. */}
-        <div className="flex items-center gap-1">
+        <div className="grid grid-cols-2 gap-1">
           <UndoRedoButton label="Undo" disabled={!canUndo} onClick={onUndo} icon={<UndoIcon />} />
           <UndoRedoButton label="Redo" disabled={!canRedo} onClick={onRedo} icon={<RedoIcon />} />
         </div>
@@ -224,12 +224,13 @@ function ActivityRow({
         onClick={onClick}
         className="flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition hover:bg-slate-50"
       >
-        <span
-          aria-hidden
-          style={{ backgroundColor: entry.participantColor }}
-          className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
-          title={entry.participantName}
-        />
+        <Tooltip title={entry.participantName} description="Made this change.">
+          <span
+            aria-hidden
+            style={{ backgroundColor: entry.participantColor }}
+            className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
+          />
+        </Tooltip>
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-medium text-slate-800">{entry.summary}</p>
           <p className="truncate text-[10px] text-slate-500">
@@ -271,17 +272,22 @@ function UndoRedoButton({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
+    <Tooltip
       title={label}
-      className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-700 transition enabled:hover:border-brand-300 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-40"
+      description={disabled ? 'Nothing to apply.' : 'Step through history.'}
+      block
     >
-      {icon}
-      {label}
-    </button>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={label}
+        className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-700 transition enabled:hover:border-brand-300 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        {icon}
+        {label}
+      </button>
+    </Tooltip>
   );
 }
 

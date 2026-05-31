@@ -27,6 +27,12 @@ type TemplatePickerProps = {
   // greet visitors with the actual diagram name ("Welcome to 'API
   // sketch'") instead of the generic "Welcome to this diagram".
   diagramName?: string;
+  // When provided, the visitor is signed in and their display name is
+  // dictated by their Clerk account — the input becomes read-only and
+  // the shuffle button hides so they can't masquerade under a
+  // different identity on someone else's diagram. Has no effect in
+  // 'welcome' / 'templates' modes (no identity row to lock).
+  lockedName?: string | null;
   onPick: (kind: TemplateKind, name: string, themeId: ThemeId) => void;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
@@ -45,6 +51,7 @@ export function TemplatePicker({
   participant,
   currentThemeId,
   diagramName,
+  lockedName,
   onPick,
   onSkip,
 }: TemplatePickerProps) {
@@ -60,7 +67,11 @@ export function TemplatePicker({
   // welcome AND the standalone Browse-templates flow. Identity-only
   // mode (visitors joining via a share link) skips them.
   const showThemes = !isIdentity;
-  const [name, setName] = useState(participant.name);
+  // Locked-name (signed-in visitor) wins over the participant name —
+  // we want the input to read the Clerk identity even if the
+  // pre-existing participant record was created under a guest alias.
+  const [name, setName] = useState(lockedName ?? participant.name);
+  const nameLocked = !!lockedName;
   const [templateKind, setTemplateKind] = useState<TemplateKind>('blank');
   const [themeId, setThemeId] = useState<ThemeId>(currentThemeId);
   // "Show more" opt-ins for the templates + themes grids. The hook
@@ -94,7 +105,9 @@ export function TemplatePicker({
               {isWelcome
                 ? 'Pick a template and a theme to start with.'
                 : isIdentity
-                  ? 'Pick the name people will see while you collaborate on this diagram.'
+                  ? nameLocked
+                    ? 'This is the name from your account — others will see it on this diagram.'
+                    : 'Pick the name people will see while you collaborate on this diagram.'
                   : 'Pick a template and theme to apply to this tab.'}
             </p>
           </div>
@@ -132,19 +145,31 @@ export function TemplatePicker({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={participant.name}
-                  className="mt-0.5 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
+                  readOnly={nameLocked}
+                  aria-readonly={nameLocked}
+                  // Locked: the value comes from Clerk; greying it out
+                  // + removing focus affordance makes it visually
+                  // obvious it isn't editable, but the input stays
+                  // present so the name is still visible.
+                  className={
+                    nameLocked
+                      ? 'mt-0.5 w-full cursor-default bg-transparent text-sm text-slate-500 outline-none'
+                      : 'mt-0.5 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400'
+                  }
                 />
               </div>
-              <Tooltip title="Shuffle name" description="Pick a different random name.">
-                <button
-                  type="button"
-                  onClick={() => setName(randomName())}
-                  aria-label="Generate a different name"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                >
-                  <RefreshIcon />
-                </button>
-              </Tooltip>
+              {nameLocked ? null : (
+                <Tooltip title="Shuffle name" description="Pick a different random name.">
+                  <button
+                    type="button"
+                    onClick={() => setName(randomName())}
+                    aria-label="Generate a different name"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    <RefreshIcon />
+                  </button>
+                </Tooltip>
+              )}
             </div>
           ) : null}
 

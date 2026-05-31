@@ -4,6 +4,7 @@ import type { Tab } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
 import { getTheme } from '@/lib/themes';
 import { ParticipantAvatar } from './ParticipantAvatar';
+import { Tooltip } from './Tooltip';
 
 // Pick the accent colour a tab pill uses to identify itself in the bar.
 // Each tab knows its theme id; the theme's `elementStroke` already
@@ -630,12 +631,11 @@ function TabPresenceStack({ participants }: { participants: Participant[] }) {
         </span>
       ))}
       {overflow > 0 ? (
-        <span
-          className="inline-flex h-4 w-4 animate-pop-in items-center justify-center rounded-full border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm"
-          title={`${overflow} more`}
-        >
-          +{overflow}
-        </span>
+        <Tooltip title={`${overflow} more`} description="Other participants on this tab.">
+          <span className="inline-flex h-4 w-4 animate-pop-in items-center justify-center rounded-full border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm">
+            +{overflow}
+          </span>
+        </Tooltip>
       ) : null}
     </div>
   );

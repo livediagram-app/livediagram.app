@@ -201,6 +201,11 @@ type CanvasProps = {
   // a fresh New Diagram doesn't flash the Empty Canvas message.
   hydrated: boolean;
   templatePickerMode: 'welcome' | 'templates' | 'identity';
+  // When non-null, the visitor is signed in via Clerk and their
+  // display name is fixed to their account name — TemplatePicker
+  // locks the input. Only relevant in 'identity' mode; ignored
+  // otherwise.
+  templatePickerLockedName?: string | null;
   // Hides the floating chrome (palette, explorer, zoom + history dock,
   // plus buttons, selection popover) while the first-run welcome modal
   // is taking the user through identity / template / theme selection.
@@ -355,6 +360,7 @@ export function Canvas(props: CanvasProps) {
     showTemplatePicker,
     hydrated,
     templatePickerMode,
+    templatePickerLockedName,
     welcomeOpen,
     selfParticipant,
     onChooseTemplate,
@@ -1004,6 +1010,7 @@ export function Canvas(props: CanvasProps) {
           participant={selfParticipant}
           currentThemeId={tabThemeId}
           diagramName={diagramName}
+          lockedName={templatePickerLockedName}
           onPick={onChooseTemplate}
           onSkip={onSkipTemplatePicker}
         />
