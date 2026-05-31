@@ -6,6 +6,14 @@ The live app's canvas is where users actually build diagrams. A floating **comma
 
 A small floating panel **initially placed in the top-right corner of the canvas**. The panel has a **`PALETTE` header label** in block caps above the buttons, and below it a row of icon buttons — one per primitive that can be added to the canvas.
 
+### Canvas tools
+
+The first row of the palette holds the canvas-tool toggles:
+
+- **Pan** (default) — drag-on-empty scrolls the canvas.
+- **Select** — drag-on-empty draws a marquee for multi-select.
+- **Laser** — presenter mode. Pointer-down does nothing (no pan, no marquee); pointer-move emits a glowing trail in the local participant's colour that fades over ~1 s. Other participants see the trail in real time in the sender's colour via the `laser` `RoomOp` (see [spec/11](11-api.md)). Cursor indicators broadcast as `null` while laser is active so peers see only the laser dot, not a stacked cursor + dot. Holding Space pans regardless of the active tool so the presenter can reposition mid-presentation without switching out of Laser.
+
 ### Movable
 
 - The header row is a **drag handle** — press it and drag to move the palette anywhere on the canvas. Clicking a button does not start a drag.

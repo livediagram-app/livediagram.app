@@ -525,7 +525,14 @@ export type RoomOp =
   // left the canvas surface so peers can hide their indicator. The
   // active tab id is included so we only render cursors of
   // participants who are looking at the same tab as us.
-  | { kind: 'cursor'; tabId: string; x: number | null; y: number | null };
+  | { kind: 'cursor'; tabId: string; x: number | null; y: number | null }
+  // One sample of the sender's laser-pointer trail (canvas-coords).
+  // Sent on every pointer move while the sender is in laser tool
+  // mode, throttled like cursor. Receivers append to a per-
+  // participant buffer and fade the trail out over ~1 s — see
+  // LaserOverlay. The active tab id scopes the rendering so peers on
+  // a different tab don't see the laser.
+  | { kind: 'laser'; tabId: string; x: number; y: number };
 
 // Outgoing payloads sent from this client.
 export type RoomOutgoing =

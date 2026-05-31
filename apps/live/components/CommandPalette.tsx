@@ -96,7 +96,7 @@ export type TabSectionControls = {
   onResetElementsToTheme: () => void;
 };
 
-export type CanvasTool = 'pan' | 'select';
+export type CanvasTool = 'pan' | 'select' | 'laser';
 
 type CommandPaletteProps = {
   position: { x: number; y: number } | null;
@@ -168,6 +168,18 @@ function OpenPalette({
               onClick={() => onSetCanvasTool('select')}
             >
               <SelectIcon />
+            </ToolButton>
+          </Tooltip>
+          <Tooltip
+            title="Laser"
+            description="Presenter pointer. Move the mouse to draw a glowing trail visible to other participants in your colour."
+          >
+            <ToolButton
+              active={canvasTool === 'laser'}
+              label="Laser"
+              onClick={() => onSetCanvasTool('laser')}
+            >
+              <LaserIcon />
             </ToolButton>
           </Tooltip>
         </div>
@@ -1402,6 +1414,30 @@ function SelectIcon() {
       <rect x="2" y="2" width="9" height="9" strokeDasharray="2 1.5" />
       <path d="M11 11l3 3" />
       <path d="M11 11l-1.5 -0.5l-0.5 -1.5" />
+    </svg>
+  );
+}
+
+function LaserIcon() {
+  // Stylised laser pointer: a beam emerging from a small body in the
+  // bottom-left toward a glowing dot in the top-right.
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2.5 13.5l8-8" />
+      <circle cx="11.5" cy="4.5" r="1.4" fill="currentColor" stroke="none" />
+      <path d="M10 3.2l.7-1" strokeWidth="1.2" />
+      <path d="M12.8 3l1-.4" strokeWidth="1.2" />
+      <path d="M12.8 6l1 .4" strokeWidth="1.2" />
     </svg>
   );
 }

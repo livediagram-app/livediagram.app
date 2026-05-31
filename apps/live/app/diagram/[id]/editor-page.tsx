@@ -107,6 +107,22 @@ function createTab(name: string): Tab {
 // should bump this too.
 const LOG_HISTORY_LIMIT = 3;
 
+// Bound a laser-trail buffer in both dimensions: cap at 60 points and
+// drop any sample older than LASER_BUFFER_TTL_MS. Called on every
+// append (local broadcast + remote receive), so even a flood from a
+// misbehaving peer can't grow the buffer without bound. The overlay
+// has its own (shorter) fade window — LIFETIME_MS — so points
+// between LIFETIME_MS and TTL_MS are buffered but render at 0
+// opacity, protecting against frame jitter at the fade boundary.
+const LASER_BUFFER_TTL_MS = 1500;
+function trimLaserBuffer(
+  points: { x: number; y: number; t: number }[],
+): { x: number; y: number; t: number }[] {
+  const cutoff = performance.now() - LASER_BUFFER_TTL_MS;
+  const fresh = points.filter((p) => p.t >= cutoff);
+  return fresh.length > 60 ? fresh.slice(fresh.length - 60) : fresh;
+}
+
 // Full-screen "loading your diagram…" placeholder. Stand-in for the
 // editor chrome while the post-mount fetch resolves a ?d= or ?s= URL.
 // Reassures the user that data isn't lost — previously they'd briefly
@@ -217,7 +233,7 @@ export default function LivePage() {
   // (drag-on-empty marquee-selects). Holding Space always pans
   // regardless. Lives in page so other components (e.g. status bar
   // later) can read it without prop-drilling through Canvas.
-  const [canvasTool, setCanvasTool] = useState<'pan' | 'select'>('pan');
+  const [canvasTool, setCanvasTool] = useState<'pan' | 'select' | 'laser'>('pan');
   // Picker mode lives here (rather than nearer `chooseTemplate`) so the
   // derived `identityOnlyScreenOpen` below — used to gate page-level
   // chrome for the visitor join flow — can read it. See
@@ -344,6 +360,19 @@ export default function LivePage() {
   const [remoteCursors, setRemoteCursors] = useState<
     Map<string, { tabId: string; x: number; y: number } | null>
   >(new Map());
+  // Per-participant laser-pointer trails, keyed by participant id.
+  // Each entry is a buffer of recent points; the LaserOverlay filters
+  // them by age and renders the fading line. Trail buffers are
+  // bounded both by time (LIFETIME_MS in the overlay) and by a hard
+  // cap of 60 points in the receive handler so a flood can't grow the
+  // buffer without bound. Scoped per tab in the op itself.
+  const [remoteLaserTrails, setRemoteLaserTrails] = useState<
+    Map<string, { tabId: string; points: { x: number; y: number; t: number }[] }>
+  >(new Map());
+  // Local laser trail — held in state so the overlay re-renders when
+  // we append a point, but mutations stay cheap by always producing a
+  // bounded array.
+  const [localLaserTrail, setLocalLaserTrail] = useState<{ x: number; y: number; t: number }[]>([]);
   // Diagram-list refresh, fired after every autosave so the
   // Explorer's "Updated X ago" timestamps stay fresh. Folders are
   // explicitly NOT refetched here — they only change via folder
@@ -948,6 +977,21 @@ export default function LivePage() {
             );
             return next;
           });
+        } else if (op.kind === 'laser') {
+          setRemoteLaserTrails((prev) => {
+            const next = new Map(prev);
+            const existing = next.get(from);
+            // A tab switch resets the buffer for that participant —
+            // otherwise a peer who lasered on tab A then started
+            // lasering on tab B would briefly render an interpolated
+            // line across the gap.
+            const points =
+              existing && existing.tabId === op.tabId
+                ? trimLaserBuffer([...existing.points, { x: op.x, y: op.y, t: performance.now() }])
+                : [{ x: op.x, y: op.y, t: performance.now() }];
+            next.set(from, { tabId: op.tabId, points });
+            return next;
+          });
         } else if (op.kind === 'tab-focus') {
           setRemoteTabFocus((prev) => {
             const next = new Map(prev);
@@ -1082,6 +1126,32 @@ export default function LivePage() {
       },
     });
   };
+  // Laser broadcast — fires per pointer-move while in laser tool.
+  // Throttled to ~30 Hz to match cursor traffic. Trail buffers grow
+  // locally + remotely as points arrive; the overlay's RAF loop is
+  // what makes them visibly decay over the lifetime window.
+  const lastLaserSentRef = useRef(0);
+  const broadcastLaser = (x: number, y: number) => {
+    const now = performance.now();
+    setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
+    if (!hydrated || !diagramId || !diagramShareable) return;
+    if (now - lastLaserSentRef.current < 33) return;
+    lastLaserSentRef.current = now;
+    roomRef.current?.send({
+      kind: 'op',
+      op: { kind: 'laser', tabId: activeId, x, y },
+    });
+  };
+  // Clear the local trail when leaving laser mode so a partial path
+  // doesn't persist in state forever (the overlay's filter would
+  // hide it after LIFETIME_MS, but a fresh laser session shouldn't
+  // start from the prior trail's tail). Also fires on tab switch
+  // for the same reason.
+  useEffect(() => {
+    if (canvasTool !== 'laser') {
+      setLocalLaserTrail([]);
+    }
+  }, [canvasTool, activeId]);
   const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
   // Mobile (≤768 px) defaults to 30% zoom so the diagram fits without
   // a fit-to-screen tap; desktop stays at 100%. Re-evaluated on
@@ -1176,6 +1246,32 @@ export default function LivePage() {
       const p = livePresenceById.get(id);
       if (!p) continue;
       rows.push({ id, name: p.name, color: p.color, x: pos.x, y: pos.y });
+    }
+    return rows;
+  })();
+  // Laser trails for the LaserOverlay — local first, then any peers
+  // whose latest sample is on the active tab and whose participant
+  // entry is still live. The overlay handles fade + cleanup; we just
+  // assemble per-tab visibility here.
+  const laserTrailRows = (() => {
+    const rows: {
+      participantId: string;
+      color: string;
+      points: { x: number; y: number; t: number }[];
+    }[] = [];
+    if (localLaserTrail.length > 0) {
+      rows.push({
+        participantId: selfParticipant.id,
+        color: selfParticipant.color,
+        points: localLaserTrail,
+      });
+    }
+    for (const [id, entry] of remoteLaserTrails) {
+      if (id === selfParticipant.id) continue;
+      if (entry.tabId !== activeId) continue;
+      const p = livePresenceById.get(id);
+      if (!p) continue;
+      rows.push({ participantId: id, color: p.color, points: entry.points });
     }
     return rows;
   })();
@@ -3331,7 +3427,17 @@ export default function LivePage() {
         multiSelectedIds={multiSelectedIds}
         remoteSelectionsByElement={remoteSelectionsByElement}
         remoteCursors={remoteCursorRows}
-        onCanvasPointerMove={(x, y) => broadcastCursor(x !== null && y !== null ? { x, y } : null)}
+        laserTrails={laserTrailRows}
+        onCanvasPointerMove={(x, y) => {
+          if (canvasTool === 'laser' && x !== null && y !== null) {
+            broadcastLaser(x, y);
+            // Laser mode hides the cursor indicator on peer screens —
+            // the laser dot is the cursor. Clear any prior position.
+            broadcastCursor(null);
+            return;
+          }
+          broadcastCursor(x !== null && y !== null ? { x, y } : null);
+        }}
         onSelectMarquee={selectMarquee}
         canvasTool={canvasTool}
         onSetCanvasTool={setCanvasTool}

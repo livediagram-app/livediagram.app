@@ -39,6 +39,7 @@ import { CommandPalette, type SelectedElementControls } from './CommandPalette';
 import { ActivityIcon, ActivityPanel, RedoIcon, UndoIcon } from './ActivityPanel';
 import { ContextIcon, ContextPanel } from './ContextPanel';
 import { Explorer, ExplorerIcon, PaletteIcon } from './Explorer';
+import { LaserOverlay } from './LaserOverlay';
 import { getTheme } from '@/lib/themes';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import { DockButton } from './MovablePanel';
@@ -78,6 +79,14 @@ type CanvasProps = {
   // participant identity. Rendered inside the transformed wrapper so
   // they pan and zoom with the canvas.
   remoteCursors: { id: string; name: string; color: string; x: number; y: number }[];
+  // Laser-pointer trails for the LaserOverlay — local user first
+  // followed by any peers laser-pointing on the active tab. The
+  // overlay handles fading and cleanup; Canvas just renders.
+  laserTrails: {
+    participantId: string;
+    color: string;
+    points: { x: number; y: number; t: number }[];
+  }[];
   onCanvasPointerMove: (canvasX: number | null, canvasY: number | null) => void;
   onDuplicateMultiSelected: () => void;
   onDeleteMultiSelected: () => void;
@@ -243,6 +252,7 @@ export function Canvas(props: CanvasProps) {
     onSetCanvasTool,
     remoteSelectionsByElement,
     remoteCursors,
+    laserTrails,
     onCanvasPointerMove,
     onDuplicateMultiSelected,
     onDeleteMultiSelected,
@@ -597,15 +607,17 @@ export function Canvas(props: CanvasProps) {
     ? 'cursor-grabbing'
     : marquee
       ? 'cursor-crosshair'
-      : canvasTool === 'pan' && !spaceHeldRef.current
-        ? 'cursor-grab'
-        : canvasTool === 'select'
-          ? 'cursor-crosshair'
-          : isPaintMode
-            ? 'cursor-copy'
-            : isGroupMode
-              ? 'cursor-crosshair'
-              : 'cursor-grab';
+      : canvasTool === 'laser' && !spaceHeldRef.current
+        ? 'cursor-crosshair'
+        : canvasTool === 'pan' && !spaceHeldRef.current
+          ? 'cursor-grab'
+          : canvasTool === 'select'
+            ? 'cursor-crosshair'
+            : isPaintMode
+              ? 'cursor-copy'
+              : isGroupMode
+                ? 'cursor-crosshair'
+                : 'cursor-grab';
 
   const selectionSupportsColours = selected ? supportsColours(selected) : false;
   const selectedDefaultAlign = selected && isBoxed(selected) ? defaultTextAlign(selected) : null;
@@ -745,6 +757,12 @@ export function Canvas(props: CanvasProps) {
         ref={wrapperRef}
         onPointerDown={(e) => {
           if (e.target !== e.currentTarget) return;
+          // Laser tool is presenter-mode — pointer-down doesn't
+          // initiate a drag (no pan / no marquee). The trail is
+          // captured purely from pointer moves. Space-hold still
+          // pans so the presenter can reposition mid-presentation
+          // without switching tools.
+          if (canvasTool === 'laser' && !spaceHeldRef.current) return;
           // Tool decides the gesture: Pan tool = drag scrolls. Select
           // tool = drag draws a marquee. Holding Space pans regardless
           // (Figma-style override), so power users in Select mode can
@@ -871,6 +889,12 @@ export function Canvas(props: CanvasProps) {
         {remoteCursors.map((c) => (
           <RemoteCursor key={c.id} cursor={c} zoom={viewportZoom} />
         ))}
+
+        {/* Laser overlay sits inside the viewport-transformed wrapper
+            so trail coordinates (canvas-space) pan + zoom with
+            elements. The overlay component owns its own RAF loop
+            and only runs while there's at least one active trail. */}
+        <LaserOverlay trails={laserTrails} zoom={viewportZoom} />
 
         {showPlus && selectionBounds ? (
           <>
