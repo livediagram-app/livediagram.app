@@ -18,7 +18,7 @@ The first prototype phase ([spec 02](02-prototype-scope.md)) ran entirely client
 
 ## Wire-format types
 
-The DTO shapes the api worker emits + the live editor consumes live in `packages/api-schema` (`@livediagram/api-schema`) — `Diagram`, `TabSummary`, `TabRecord`, `Folder`, `ShareLink`, `ChangeLogEntry`, `ServerMessage` / `ClientMessage`, etc. Both apps import them; the api worker also re-exports under historical `XxxDTO` aliases (`apps/api/src/types.ts`) for backward compatibility with its existing call sites.
+The DTO shapes the api worker emits + the live editor consumes live in `packages/api-schema` (`@livediagram/api-schema`) — `Diagram`, `TabSummary`, `TabRecord`, `Folder`, `ShareLink`, `ChangeLogEntry`, `ServerMessage` / `ClientMessage`, and the room op vocabulary (`RoomOp` / `RoomOutgoing` / `RoomIncoming`). Both apps import them; the api worker also re-exports under historical `XxxDTO` aliases (`apps/api/src/types.ts`) for backward compatibility with its existing call sites.
 
 Defining the wire shapes once means server and client cannot drift — adding a field on one side without updating the other is a typechecker error. **Do not redefine these types inline in `apps/api/` or `apps/live/`**; extend the schema package instead. Per CLAUDE.md the reuse-over-duplication rule is non-negotiable.
 
