@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Brand } from '@livediagram/ui';
 import { AuthControls } from '@/components/AuthControls';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
@@ -12,22 +12,38 @@ import {
   apiListSharedWith,
   apiSaveDiagramMeta,
   apiSetDiagramFolder,
+  apiUpdateFolder,
+  type Folder,
   type SharedWithItem,
 } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useFolders } from '@/hooks/useFolders';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
-import { getTheme, type ThemeId } from '@/lib/themes';
 import { MenuItem, PortalMenu } from '@/components/PortalMenu';
 
 type DiagramItem = { id: string; name: string; folderId: string | null; savedAt: number };
 
-// "Recent" cap on the top-of-page glance. Big enough to cover a
-// typical "what was I just working on" recall, small enough that
-// the section isn't a wall of cards before you can scroll to the
-// folder buckets below.
-const RECENT_LIMIT = 6;
+// What the sidebar tree highlights and what the right pane shows.
+// "Special" nodes (`recent`, `all`, `shared`) are virtual buckets
+// with no folder row behind them; `folder` is a real owned folder.
+type SelectedNode =
+  | { kind: 'recent' }
+  | { kind: 'all' }
+  | { kind: 'shared' }
+  | { kind: 'folder'; id: string };
+
+// "Recent" cap. Big enough for "what was I just working on",
+// small enough that it doesn't drown the list view.
+const RECENT_LIMIT = 12;
+
+// Sidebar width. Wide enough for ~3 levels of indented folder names,
+// narrow enough that the list view keeps its breathing room.
+const SIDEBAR_WIDTH = 256;
+
+// Indent step per tree level. Matches the Windows Explorer visual
+// of a chevron + folder glyph + name with each child nudged in.
+const INDENT_STEP = 16;
 
 // Full-page Explorer (item #12). Signed-in only — guests still have
 // the floating Explorer panel on the editor / new-diagram routes,
@@ -36,6 +52,11 @@ const RECENT_LIMIT = 6;
 // pure-guest identity is per-browser by definition. The non-Clerk
 // deployment renders a permanent "auth not configured" notice (per
 // spec/04's three-deployment-modes table).
+//
+// Layout shape (spec/15): split view — sidebar tree on the left for
+// navigation, breadcrumb + list view on the right for the focused
+// folder's contents. Subfolders nest in both panes; selecting a
+// folder in the tree or double-clicking a folder row drills in.
 export default function ExplorerPage() {
   const { authLoaded, isSignedIn, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
   const [diagrams, setDiagrams] = useState<DiagramItem[]>([]);
@@ -48,21 +69,31 @@ export default function ExplorerPage() {
   } = useFolders(clerkUserId ?? null, { autoLoad: false });
   const [shared, setShared] = useState<SharedWithItem[]>([]);
   const [loading, setLoading] = useState(true);
-  // Folder id mid-rename so the row swaps to an input until the
-  // user commits or escapes. `null` means no folder is being
-  // renamed right now.
+  // Folder id mid-rename so the tree / list row swaps to an input
+  // until the user commits or escapes.
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
-  // Mirror of the floating Explorer's per-card state: which diagram
-  // is mid-rename (so the title swaps to an input) and which is
-  // showing the move-to-folder picker (anchored on a button via
-  // moveAnchorRef so the portal can position itself).
+  // Diagram id mid-rename. Same pattern as folders.
   const [renamingDiagramId, setRenamingDiagramId] = useState<string | null>(null);
-  const [moveTargetDiagramId, setMoveTargetDiagramId] = useState<string | null>(null);
+  // Move picker target. The picker uses moveAnchorRef for placement.
+  // `kind` discriminates whether we're moving a diagram or a folder
+  // so the picker can filter (a folder can't be moved into itself
+  // or its descendants — the server cycle-checks but the picker
+  // hides those rows up-front to make the rejection less surprising).
+  const [moveTarget, setMoveTarget] = useState<
+    { kind: 'diagram'; id: string } | { kind: 'folder'; id: string } | null
+  >(null);
   const moveAnchorRef = useRef<HTMLElement | null>(null);
-  // Floating "+" FAB: opens a popover with "New diagram" + "New folder"
-  // instead of jumping straight to /new.
+  // FAB popover: "+ New diagram" / "+ New folder".
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
   const fabRef = useRef<HTMLButtonElement>(null);
+  // What the tree highlights + right pane shows. Defaults to "All
+  // diagrams" (the root) so the first impression is the full library
+  // — Recent is one sidebar click away.
+  const [selected, setSelected] = useState<SelectedNode>({ kind: 'all' });
+  // Which folder branches are open in the sidebar. Local state only;
+  // a fresh visit starts with the root open and everything else
+  // collapsed (Windows Explorer pattern).
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set<string>());
 
   useEffect(() => {
     document.title = 'Explorer | livediagram';
@@ -92,32 +123,100 @@ export default function ExplorerPage() {
     void refresh(clerkUserId);
   }, [authLoaded, isSignedIn, clerkUserId, refresh]);
 
-  const dismissShared = (diagramId: string) => {
-    if (!clerkUserId) return;
-    setShared((prev) => prev.filter((s) => s.id !== diagramId));
-    void apiDismissSharedWith(clerkUserId, diagramId).catch(() => {});
+  // ---- Derived tree shape ---------------------------------------
+  // Index folders by parentId so the recursive renderer can walk
+  // children in O(1) per node, and by id so breadcrumb-from-id can
+  // walk parents without re-scanning the list.
+  const { folderById, childrenByParent, rootFolders } = useMemo(() => {
+    const byId = new Map<string, Folder>();
+    const byParent = new Map<string | null, Folder[]>();
+    for (const f of folders) {
+      byId.set(f.id, f);
+      const bucket = byParent.get(f.parentId) ?? [];
+      bucket.push(f);
+      byParent.set(f.parentId, bucket);
+    }
+    for (const bucket of byParent.values()) bucket.sort((a, b) => a.name.localeCompare(b.name));
+    return {
+      folderById: byId,
+      childrenByParent: byParent,
+      rootFolders: byParent.get(null) ?? [],
+    };
+  }, [folders]);
+
+  // Build a breadcrumb path from root → folderId, used both by the
+  // header and the move-picker rows. Tolerant of dangling parentIds
+  // (which can happen mid-refresh between an optimistic delete and
+  // the server response). Returns [] for `all` / virtual nodes.
+  const breadcrumb = (folderId: string | null): Folder[] => {
+    if (!folderId) return [];
+    const chain: Folder[] = [];
+    let cursor: Folder | undefined = folderById.get(folderId);
+    const seen = new Set<string>();
+    while (cursor && !seen.has(cursor.id)) {
+      seen.add(cursor.id);
+      chain.unshift(cursor);
+      cursor = cursor.parentId ? folderById.get(cursor.parentId) : undefined;
+    }
+    return chain;
   };
 
-  // Local wrapper around the hook's create — drops the user into
-  // rename mode immediately after the optimistic stub lands so they
-  // can type the real name. On failure rolls back the renaming
-  // state too.
-  const createFolder = async () => {
-    const created = await hookCreateFolder({});
-    if (created) setRenamingFolderId(created.id);
+  // Set of folder ids that are descendants of (or equal to) the
+  // given root. Used to hide a folder + its subtree from the
+  // move-picker — moving a folder into its own descendant would
+  // be a cycle (server rejects, but pre-filtering keeps the UI
+  // honest).
+  const descendantSet = (rootId: string): Set<string> => {
+    const out = new Set<string>([rootId]);
+    const stack = [rootId];
+    while (stack.length > 0) {
+      const cur = stack.pop()!;
+      const kids = childrenByParent.get(cur) ?? [];
+      for (const k of kids)
+        if (!out.has(k.id)) {
+          out.add(k.id);
+          stack.push(k.id);
+        }
+    }
+    return out;
   };
 
-  // Commit a rename via the hook, but also pull the row out of
-  // "renaming" mode regardless of whether the new name is empty
-  // (empty name → cancel; non-empty → persist).
-  const commitRename = (id: string, name: string) => {
+  // ---- Mutations -----------------------------------------------
+  // Wrapper around the hook's create that drops the user into
+  // rename mode on the new stub, optionally nesting it under a
+  // parent. Used by both the FAB (parentId=null) and the tree /
+  // list "New subfolder" actions (parentId=<current folder>).
+  const createFolder = async (parentId: string | null) => {
+    const created = await hookCreateFolder({ parentId });
+    if (created) {
+      setRenamingFolderId(created.id);
+      if (parentId) setExpanded((prev) => new Set(prev).add(parentId));
+    }
+  };
+
+  const commitRenameFolder = (id: string, name: string) => {
     setRenamingFolderId(null);
     renameFolder(id, name);
   };
 
-  // Diagram-side mutations — mirror the floating Explorer's wiring
-  // so the standalone page exposes the same actions per card. All
-  // optimistic with silent rollback to keep the grid responsive.
+  // Move a folder under a new parent. Used by the picker. The hook
+  // doesn't expose a reparent helper directly because folder moves
+  // are rare; we shape the optimistic update locally and fire the
+  // API call ourselves.
+  const moveFolderToParent = (id: string, parentId: string | null) => {
+    if (!clerkUserId) return;
+    // No-op if we'd be moving into ourselves or a descendant — the
+    // picker already filters these, this is belt-and-braces.
+    if (parentId && descendantSet(id).has(parentId)) return;
+    void apiUpdateFolder(clerkUserId, id, { parentId }).catch(() => {});
+    // Optimistic: rewrite the folder row's parentId locally. The
+    // useFolders hook owns the canonical state; we reach in via
+    // `setFolders` — but that's not exposed by the hook... so kick
+    // a refresh after the mutation lands instead. Folder moves are
+    // rare enough that one extra round-trip is fine.
+    void refreshFolders();
+  };
+
   const renameDiagram = (id: string, name: string) => {
     if (!clerkUserId) return;
     const trimmed = name.trim();
@@ -142,36 +241,91 @@ export default function ExplorerPage() {
   const duplicateDiagram = async (id: string) => {
     if (!clerkUserId) return;
     await duplicate(clerkUserId, id);
-    // Re-fetch the owned list so the new diagram lands in the grid
-    // with a real savedAt (rather than a guessed local stub).
     const list = await apiListDiagrams(clerkUserId).catch(() => null);
     if (list) setDiagrams(list);
   };
 
-  const openMovePicker = (id: string, anchor: HTMLElement | null) => {
-    moveAnchorRef.current = anchor;
-    setMoveTargetDiagramId(id);
+  const dismissShared = (diagramId: string) => {
+    if (!clerkUserId) return;
+    setShared((prev) => prev.filter((s) => s.id !== diagramId));
+    void apiDismissSharedWith(clerkUserId, diagramId).catch(() => {});
   };
 
-  // Folder picker rows — every folder is a flat row with its name.
-  // No depth indicator; this surface is for "which folder?" not
-  // "where in the tree?".
-  const folderPickerRows = folders.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const openMovePickerForDiagram = (id: string, anchor: HTMLElement | null) => {
+    moveAnchorRef.current = anchor;
+    setMoveTarget({ kind: 'diagram', id });
+  };
 
-  // Derived buckets for the per-folder sections below the Recent
-  // grid. Sorted newest-first within each bucket so the cards
-  // match the Recent ordering convention.
-  const sortedByRecent = diagrams.slice().sort((a, b) => b.savedAt - a.savedAt);
-  const recentDiagrams = sortedByRecent.slice(0, RECENT_LIMIT);
-  const unsortedDiagrams = sortedByRecent.filter((d) => d.folderId === null);
-  const diagramsByFolder = new Map<string, DiagramItem[]>();
-  for (const d of sortedByRecent) {
-    if (d.folderId === null) continue;
-    const bucket = diagramsByFolder.get(d.folderId) ?? [];
-    bucket.push(d);
-    diagramsByFolder.set(d.folderId, bucket);
-  }
+  const openMovePickerForFolder = (id: string, anchor: HTMLElement | null) => {
+    moveAnchorRef.current = anchor;
+    setMoveTarget({ kind: 'folder', id });
+  };
 
+  // Move picker rows: every folder by breadcrumb path. For a folder
+  // move we hide the target's own subtree so cycle-creating choices
+  // don't appear. Always-first option: "All diagrams" (= move to
+  // root / Unsorted depending on whether the target is a diagram or
+  // a folder).
+  const movePickerRows = useMemo(() => {
+    const excluded =
+      moveTarget?.kind === 'folder' ? descendantSet(moveTarget.id) : new Set<string>();
+    return folders
+      .filter((f) => !excluded.has(f.id))
+      .map((f) => ({
+        id: f.id,
+        path: breadcrumb(f.id)
+          .map((p) => p.name)
+          .join(' / '),
+      }))
+      .sort((a, b) => a.path.localeCompare(b.path));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [folders, moveTarget]);
+
+  // ---- Right-pane content --------------------------------------
+  const diagramsByFolder = useMemo(() => {
+    const m = new Map<string | null, DiagramItem[]>();
+    for (const d of diagrams) {
+      const bucket = m.get(d.folderId) ?? [];
+      bucket.push(d);
+      m.set(d.folderId, bucket);
+    }
+    for (const bucket of m.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
+    return m;
+  }, [diagrams]);
+
+  // What to show in the right pane for the current selection. For
+  // `recent` and `shared` we ignore folders; for `all` and a
+  // specific folder we show direct subfolders + direct diagrams,
+  // mixed in one list (Windows Explorer pattern).
+  const paneContent = useMemo(() => {
+    if (selected.kind === 'recent') {
+      const sorted = diagrams.slice().sort((a, b) => b.savedAt - a.savedAt);
+      return { folders: [] as Folder[], diagrams: sorted.slice(0, RECENT_LIMIT) };
+    }
+    if (selected.kind === 'shared') {
+      return { folders: [] as Folder[], diagrams: [] as DiagramItem[] };
+    }
+    const parentId = selected.kind === 'all' ? null : selected.id;
+    return {
+      folders: childrenByParent.get(parentId) ?? [],
+      diagrams: diagramsByFolder.get(parentId) ?? [],
+    };
+  }, [selected, diagrams, childrenByParent, diagramsByFolder]);
+
+  const paneTitle = useMemo(() => {
+    if (selected.kind === 'recent') return 'Recent';
+    if (selected.kind === 'shared') return 'Shared with me';
+    if (selected.kind === 'all') return 'All diagrams';
+    return folderById.get(selected.id)?.name ?? 'Folder';
+  }, [selected, folderById]);
+
+  const paneCrumbs = useMemo(() => {
+    if (selected.kind === 'folder') return breadcrumb(selected.id);
+    return [];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, folderById]);
+
+  // ---- Early returns -------------------------------------------
   if (!clerkEnabled) {
     return (
       <FullPageNotice
@@ -181,9 +335,7 @@ export default function ExplorerPage() {
       />
     );
   }
-  if (!authLoaded) {
-    return null;
-  }
+  if (!authLoaded) return null;
   if (!isSignedIn) {
     return (
       <FullPageNotice
@@ -194,6 +346,32 @@ export default function ExplorerPage() {
     );
   }
 
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // Folder-row context-menu actions, shared between the tree and
+  // the list view so both surfaces offer the same set.
+  const folderActions = (f: Folder, anchor: HTMLElement | null) => ({
+    rename: () => setRenamingFolderId(f.id),
+    newSubfolder: () => void createFolder(f.id),
+    move: () => openMovePickerForFolder(f.id, anchor),
+    delete: () => {
+      deleteFolder(f.id);
+      // If the currently-selected node is the one being deleted,
+      // promote selection back to "All diagrams" so the right pane
+      // doesn't keep pointing at a phantom folder.
+      if (selected.kind === 'folder' && selected.id === f.id) {
+        setSelected({ kind: 'all' });
+      }
+    },
+  });
+
   return (
     <div className="relative flex min-h-dvh flex-col bg-slate-50">
       <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white/85 px-4 backdrop-blur">
@@ -203,119 +381,117 @@ export default function ExplorerPage() {
         </div>
         <AuthControls />
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 pb-32 pt-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Hi {clerkDisplayName ?? 'there'},
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">Here is everything you own...</p>
-        </div>
 
-        {/* Recent — flat-grid top-of-page surface. Capped so the
-            "what was I just working on" glance stays small; the
-            full per-folder buckets below are the comprehensive
-            view. */}
-        <Section title="Recent" count={Math.min(diagrams.length, RECENT_LIMIT)}>
-          {loading ? (
-            <SkeletonGrid />
-          ) : diagrams.length === 0 ? (
-            <EmptyState message="No diagrams yet." cta={{ href: '/new', label: 'Start one' }} />
-          ) : (
-            <Grid>
-              {recentDiagrams.map((d) => (
-                <DiagramCard
-                  key={d.id}
-                  id={d.id}
-                  href={`/diagram/${d.id}`}
-                  title={d.name}
-                  savedAt={d.savedAt}
-                  renaming={renamingDiagramId === d.id}
-                  onStartRename={() => setRenamingDiagramId(d.id)}
-                  onCommitRename={(name) => renameDiagram(d.id, name)}
-                  onCancelRename={() => setRenamingDiagramId(null)}
-                  onDuplicate={() => void duplicateDiagram(d.id)}
-                  onDelete={() => deleteDiagram(d.id)}
-                  onMoveRequest={(anchor) => openMovePicker(d.id, anchor)}
+      <main className="mx-auto flex w-full max-w-7xl flex-1 gap-6 px-6 pb-16 pt-6">
+        {/* ---------- Sidebar tree ---------- */}
+        <aside
+          className="shrink-0 self-start"
+          style={{ width: SIDEBAR_WIDTH }}
+          aria-label="Folders"
+        >
+          <div className="sticky top-20 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+            <SidebarSectionLabel>Hi {clerkDisplayName ?? 'there'}</SidebarSectionLabel>
+            <SidebarRow
+              icon={<ClockIcon />}
+              label="Recent"
+              selected={selected.kind === 'recent'}
+              onClick={() => setSelected({ kind: 'recent' })}
+              depth={0}
+            />
+
+            <SidebarSectionLabel>Folders</SidebarSectionLabel>
+            <SidebarRow
+              icon={<HomeIcon />}
+              label="All diagrams"
+              selected={selected.kind === 'all'}
+              onClick={() => setSelected({ kind: 'all' })}
+              depth={0}
+              hasChildren={rootFolders.length > 0}
+              expanded={true}
+              onToggleExpand={undefined}
+            />
+            {rootFolders.map((f) => (
+              <SidebarFolderSubtree
+                key={f.id}
+                folder={f}
+                depth={1}
+                expanded={expanded}
+                onToggleExpand={toggleExpand}
+                selected={selected}
+                onSelect={(id) => setSelected({ kind: 'folder', id })}
+                childrenByParent={childrenByParent}
+                renamingFolderId={renamingFolderId}
+                onCommitRenameFolder={commitRenameFolder}
+                onCancelRenameFolder={() => setRenamingFolderId(null)}
+                folderActions={folderActions}
+              />
+            ))}
+
+            {shared.length > 0 ? (
+              <>
+                <SidebarSectionLabel>Shared</SidebarSectionLabel>
+                <SidebarRow
+                  icon={<ShareIcon />}
+                  label="Shared with me"
+                  selected={selected.kind === 'shared'}
+                  onClick={() => setSelected({ kind: 'shared' })}
+                  depth={0}
+                  badge={shared.length}
                 />
-              ))}
-            </Grid>
-          )}
-        </Section>
+              </>
+            ) : null}
+          </div>
+        </aside>
 
-        {/* Thin rule below Recent so the change in scrolling cadence
-            (one tight grid → a column of folder sections) reads as
-            a deliberate transition rather than two sections accidentally
-            butting against each other. */}
-        {!loading && diagrams.length > 0 ? <hr className="mb-8 border-slate-200" /> : null}
-
-        {/* Per-folder buckets. Unsorted first (only when it actually
-            has at least one diagram — empty Unsorted is noise on a
-            fully-bucketed account), then user folders alphabetically.
-            Each section renders the diagrams in that bucket; user
-            folders include rename + delete on the section title.
-            New-folder action lives at the bottom of the group so it
-            doesn't crowd the header. */}
-        {!loading && unsortedDiagrams.length > 0 ? (
-          <FolderBucket
-            title="Unsorted"
-            count={unsortedDiagrams.length}
-            diagrams={unsortedDiagrams}
-            renamingDiagramId={renamingDiagramId}
-            onStartRenameDiagram={(id) => setRenamingDiagramId(id)}
-            onCommitRenameDiagram={renameDiagram}
-            onCancelRenameDiagram={() => setRenamingDiagramId(null)}
-            onDuplicateDiagram={(id) => void duplicateDiagram(id)}
-            onDeleteDiagram={deleteDiagram}
-            onMoveDiagramRequest={openMovePicker}
+        {/* ---------- Right pane ---------- */}
+        <section className="min-w-0 flex-1">
+          <PaneHeader
+            title={paneTitle}
+            crumbs={paneCrumbs}
+            onCrumb={(crumbId) =>
+              setSelected(crumbId === null ? { kind: 'all' } : { kind: 'folder', id: crumbId })
+            }
           />
-        ) : null}
-        {!loading && folders.length > 0
-          ? folders
-              .slice()
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((f) => (
-                <FolderBucket
-                  key={f.id}
-                  title={f.name}
-                  folderId={f.id}
-                  count={(diagramsByFolder.get(f.id) ?? []).length}
-                  diagrams={diagramsByFolder.get(f.id) ?? []}
-                  renamingTitle={renamingFolderId === f.id}
-                  onStartRenameTitle={() => setRenamingFolderId(f.id)}
-                  onCommitRenameTitle={(name) => commitRename(f.id, name)}
-                  onCancelRenameTitle={() => setRenamingFolderId(null)}
-                  onDeleteFolder={() => deleteFolder(f.id)}
-                  renamingDiagramId={renamingDiagramId}
-                  onStartRenameDiagram={(id) => setRenamingDiagramId(id)}
-                  onCommitRenameDiagram={renameDiagram}
-                  onCancelRenameDiagram={() => setRenamingDiagramId(null)}
-                  onDuplicateDiagram={(id) => void duplicateDiagram(id)}
-                  onDeleteDiagram={deleteDiagram}
-                  onMoveDiagramRequest={openMovePicker}
-                />
-              ))
-          : null}
-        {shared.length > 0 ? (
-          <Section title="Shared with you" count={shared.length}>
-            <Grid>
-              {shared.map((s) => (
-                <SharedCard
-                  key={s.id}
-                  href={`/diagram/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
-                  title={s.name}
-                  role={s.role}
-                  savedAt={s.savedAt}
-                  onDismiss={() => dismissShared(s.id)}
-                />
-              ))}
-            </Grid>
-          </Section>
-        ) : null}
+
+          {loading ? (
+            <SkeletonRows />
+          ) : selected.kind === 'shared' ? (
+            <SharedList shared={shared} onDismiss={dismissShared} />
+          ) : paneContent.folders.length === 0 && paneContent.diagrams.length === 0 ? (
+            <EmptyPane
+              selected={selected}
+              onCreateDiagram={() => window.location.assign('/live/new')}
+              onCreateFolder={() =>
+                void createFolder(selected.kind === 'folder' ? selected.id : null)
+              }
+            />
+          ) : (
+            <ListView
+              folders={paneContent.folders}
+              diagrams={paneContent.diagrams}
+              onOpenFolder={(id) => setSelected({ kind: 'folder', id })}
+              onCommitRenameFolder={commitRenameFolder}
+              onCancelRenameFolder={() => setRenamingFolderId(null)}
+              renamingFolderId={renamingFolderId}
+              renamingDiagramId={renamingDiagramId}
+              onCommitRenameDiagram={renameDiagram}
+              onCancelRenameDiagram={() => setRenamingDiagramId(null)}
+              folderActions={folderActions}
+              onStartRenameDiagram={(id) => setRenamingDiagramId(id)}
+              onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+              onDeleteDiagram={deleteDiagram}
+              onMoveDiagram={openMovePickerForDiagram}
+              childrenCount={(id) => childrenByParent.get(id)?.length ?? 0}
+              diagramsCount={(id) => diagramsByFolder.get(id)?.length ?? 0}
+            />
+          )}
+        </section>
       </main>
-      {/* Floating "+" FAB. Lives at z-40 so it stays above the sticky
-          header's z-30 backdrop. Opens a popover with "New diagram"
-          and "New folder" so the page has a single create surface
-          rather than two separate buttons. */}
+
+      {/* Floating "+" FAB. Same as before, with the popover offering
+          "New diagram" + "New folder". "New folder" creates a child
+          of the currently-selected folder (or at root if a special
+          node is selected) so subfolder creation is one click away. */}
       <button
         ref={fabRef}
         type="button"
@@ -338,40 +514,39 @@ export default function ExplorerPage() {
           />
           <MenuItem
             icon={<PlusIcon />}
-            label="New folder"
+            label={selected.kind === 'folder' ? 'New subfolder' : 'New folder'}
             onClick={() => {
               setFabMenuOpen(false);
-              void createFolder();
+              void createFolder(selected.kind === 'folder' ? selected.id : null);
             }}
           />
         </PortalMenu>
       ) : null}
-      {moveTargetDiagramId ? (
-        // Move-to-folder picker rendered at the page level so the
-        // portal doesn't nest inside the card's per-row PortalMenu.
-        // Anchored on whichever card opened the picker via the
-        // moveAnchorRef set in openMovePicker.
+
+      {moveTarget ? (
         <PortalMenu
           anchor={moveAnchorRef.current}
           placement="below"
-          onClose={() => setMoveTargetDiagramId(null)}
+          onClose={() => setMoveTarget(null)}
         >
           <MenuItem
             icon={<MenuFolderIcon />}
-            label="Unsorted"
+            label="All diagrams"
             onClick={() => {
-              moveDiagramToFolder(moveTargetDiagramId, null);
-              setMoveTargetDiagramId(null);
+              if (moveTarget.kind === 'diagram') moveDiagramToFolder(moveTarget.id, null);
+              else moveFolderToParent(moveTarget.id, null);
+              setMoveTarget(null);
             }}
           />
-          {folderPickerRows.map((f) => (
+          {movePickerRows.map((row) => (
             <MenuItem
-              key={f.id}
+              key={row.id}
               icon={<MenuFolderIcon />}
-              label={f.name}
+              label={row.path}
               onClick={() => {
-                moveDiagramToFolder(moveTargetDiagramId, f.id);
-                setMoveTargetDiagramId(null);
+                if (moveTarget.kind === 'diagram') moveDiagramToFolder(moveTarget.id, row.id);
+                else moveFolderToParent(moveTarget.id, row.id);
+                setMoveTarget(null);
               }}
             />
           ))}
@@ -381,340 +556,475 @@ export default function ExplorerPage() {
   );
 }
 
-function Section({
-  title,
-  count,
-  accent,
-  children,
-}: {
-  title: string;
-  count: number;
-  accent?: React.ReactNode;
-  children: React.ReactNode;
-}) {
+// ---------- Sidebar tree primitives -------------------------------
+
+function SidebarSectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <section className="mb-10">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {title}
-          <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1.5 text-[10px] font-medium text-slate-600">
-            {count}
-          </span>
-        </h2>
-        {accent}
-      </div>
+    <div className="mt-2 px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
       {children}
-    </section>
+    </div>
   );
 }
 
-function Grid({ children }: { children: React.ReactNode }) {
-  return <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</ul>;
+// One sidebar row. Re-used for the "Recent", "All diagrams", and
+// "Shared with me" special entries. Folder rows wrap this via
+// SidebarFolderSubtree so they get chevron + recursive rendering.
+function SidebarRow({
+  icon,
+  label,
+  selected,
+  onClick,
+  depth,
+  badge,
+  hasChildren,
+  expanded,
+  onToggleExpand,
+  trailing,
+}: {
+  icon: React.ReactNode;
+  label: React.ReactNode;
+  selected: boolean;
+  onClick: () => void;
+  depth: number;
+  badge?: number;
+  hasChildren?: boolean;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
+  trailing?: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`group flex items-center gap-1 rounded-md px-1 ${selected ? 'bg-brand-50' : 'hover:bg-slate-100'}`}
+      style={{ paddingLeft: depth * INDENT_STEP + 4 }}
+    >
+      <button
+        type="button"
+        onClick={onToggleExpand}
+        aria-label={expanded ? 'Collapse' : 'Expand'}
+        className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition ${
+          hasChildren ? 'hover:text-slate-700' : 'invisible'
+        }`}
+        disabled={!hasChildren || !onToggleExpand}
+      >
+        {hasChildren ? <ChevronIcon open={!!expanded} /> : null}
+      </button>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-xs ${
+          selected ? 'font-semibold text-brand-700' : 'text-slate-700'
+        }`}
+      >
+        <span className="shrink-0 text-slate-400">{icon}</span>
+        <span className="min-w-0 flex-1 truncate">{label}</span>
+        {badge !== undefined ? (
+          <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600">
+            {badge}
+          </span>
+        ) : null}
+      </button>
+      {trailing}
+    </div>
+  );
 }
 
-// One bucket = one row of cards under a section heading. Unsorted
-// passes no folder-side props (no rename / delete). User folders
-// pass the full set so the title is inline-editable and an
-// ellipsis menu surfaces Delete.
-function FolderBucket({
-  title,
-  count,
-  folderId,
-  diagrams,
-  renamingTitle,
-  onStartRenameTitle,
-  onCommitRenameTitle,
-  onCancelRenameTitle,
-  onDeleteFolder,
-  renamingDiagramId,
-  onStartRenameDiagram,
-  onCommitRenameDiagram,
-  onCancelRenameDiagram,
-  onDuplicateDiagram,
-  onDeleteDiagram,
-  onMoveDiagramRequest,
+// Recursive folder subtree in the sidebar. Each row is a SidebarRow
+// with the chevron / folder icon, and children render at +1 depth
+// when expanded.
+function SidebarFolderSubtree({
+  folder,
+  depth,
+  expanded,
+  onToggleExpand,
+  selected,
+  onSelect,
+  childrenByParent,
+  renamingFolderId,
+  onCommitRenameFolder,
+  onCancelRenameFolder,
+  folderActions,
 }: {
-  title: string;
-  count: number;
-  folderId?: string;
-  diagrams: DiagramItem[];
-  renamingTitle?: boolean;
-  onStartRenameTitle?: () => void;
-  onCommitRenameTitle?: (name: string) => void;
-  onCancelRenameTitle?: () => void;
-  onDeleteFolder?: () => void;
-  renamingDiagramId: string | null;
-  onStartRenameDiagram: (id: string) => void;
-  onCommitRenameDiagram: (id: string, name: string) => void;
-  onCancelRenameDiagram: () => void;
-  onDuplicateDiagram: (id: string) => void;
-  onDeleteDiagram: (id: string) => void;
-  onMoveDiagramRequest: (id: string, anchor: HTMLElement | null) => void;
+  folder: Folder;
+  depth: number;
+  expanded: Set<string>;
+  onToggleExpand: (id: string) => void;
+  selected: SelectedNode;
+  onSelect: (id: string) => void;
+  childrenByParent: Map<string | null, Folder[]>;
+  renamingFolderId: string | null;
+  onCommitRenameFolder: (id: string, name: string) => void;
+  onCancelRenameFolder: () => void;
+  folderActions: (
+    f: Folder,
+    anchor: HTMLElement | null,
+  ) => {
+    rename: () => void;
+    newSubfolder: () => void;
+    move: () => void;
+    delete: () => void;
+  };
 }) {
-  const editable = onCommitRenameTitle !== undefined;
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [draft, setDraft] = useState(title);
-  useEffect(() => {
-    if (renamingTitle) {
-      setDraft(title);
-      const t = window.setTimeout(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }, 0);
-      return () => window.clearTimeout(t);
-    }
-  }, [renamingTitle, title]);
+  const kids = childrenByParent.get(folder.id) ?? [];
+  const hasKids = kids.length > 0;
+  const isOpen = expanded.has(folder.id);
+  const isSelected = selected.kind === 'folder' && selected.id === folder.id;
+  const renaming = renamingFolderId === folder.id;
 
-  const heading = renamingTitle ? (
-    <input
-      ref={inputRef}
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={() => onCommitRenameTitle?.(draft)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          onCommitRenameTitle?.(draft);
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          onCancelRenameTitle?.();
-        }
-      }}
-      className="rounded border border-brand-300 bg-white px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-slate-700 outline-none focus:border-brand-500"
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLButtonElement>(null);
+
+  const labelNode = renaming ? (
+    <InlineRenameInput
+      initial={folder.name}
+      onCommit={(name) => onCommitRenameFolder(folder.id, name)}
+      onCancel={onCancelRenameFolder}
+      className="rounded border border-brand-300 bg-white px-1 py-0 text-xs"
     />
-  ) : editable ? (
-    <button
-      type="button"
-      onClick={onStartRenameTitle}
-      className="text-xs font-semibold uppercase tracking-wider text-slate-500 transition hover:text-brand-700"
-    >
-      {title}
-    </button>
   ) : (
-    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</span>
+    folder.name
   );
 
   return (
-    <section className="mb-10">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2">
-          {heading}
-          <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1.5 text-[10px] font-medium text-slate-600">
-            {count}
-          </span>
-        </h2>
-        {editable && !renamingTitle ? (
-          <button
-            ref={menuButtonRef}
-            type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label={`Menu for folder ${title}`}
-            aria-expanded={menuOpen}
-            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-              <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-              <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-              <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-            </svg>
-          </button>
-        ) : null}
-      </div>
-      {diagrams.length === 0 ? (
-        <EmptyState
-          message={
-            folderId !== undefined
-              ? 'Empty folder. Move diagrams here from the Recent grid above.'
-              : 'No unsorted diagrams.'
-          }
-        />
-      ) : (
-        <Grid>
-          {diagrams.map((d) => (
-            <DiagramCard
-              key={d.id}
-              id={d.id}
-              href={`/diagram/${d.id}`}
-              title={d.name}
-              savedAt={d.savedAt}
-              renaming={renamingDiagramId === d.id}
-              onStartRename={() => onStartRenameDiagram(d.id)}
-              onCommitRename={(name) => onCommitRenameDiagram(d.id, name)}
-              onCancelRename={onCancelRenameDiagram}
-              onDuplicate={() => onDuplicateDiagram(d.id)}
-              onDelete={() => onDeleteDiagram(d.id)}
-              onMoveRequest={(anchor) => onMoveDiagramRequest(d.id, anchor)}
-            />
-          ))}
-        </Grid>
-      )}
-      {menuOpen && editable ? (
-        <PortalMenu
-          anchor={menuButtonRef.current}
-          placement="below"
-          onClose={() => setMenuOpen(false)}
-        >
-          <MenuItem
-            icon={<MenuPencilIcon />}
-            label="Rename"
-            onClick={() => {
-              onStartRenameTitle?.();
-              setMenuOpen(false);
-            }}
-          />
-          {onDeleteFolder ? (
-            <MenuItem
-              icon={<MenuTrashIcon />}
-              label="Delete folder"
-              danger
-              onClick={() => {
-                onDeleteFolder();
-                setMenuOpen(false);
+    <>
+      <SidebarRow
+        icon={<FolderIcon open={isOpen} />}
+        label={labelNode}
+        selected={isSelected}
+        onClick={() => onSelect(folder.id)}
+        depth={depth}
+        hasChildren={hasKids}
+        expanded={isOpen}
+        onToggleExpand={() => onToggleExpand(folder.id)}
+        trailing={
+          renaming ? null : (
+            <button
+              ref={menuRef}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen((o) => !o);
               }}
-            />
-          ) : null}
+              aria-label={`Menu for ${folder.name}`}
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-slate-200 hover:text-slate-700"
+            >
+              <EllipsisIcon />
+            </button>
+          )
+        }
+      />
+      {menuOpen ? (
+        <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
+          <FolderMenuItems
+            actions={folderActions(folder, menuRef.current)}
+            close={() => setMenuOpen(false)}
+          />
         </PortalMenu>
       ) : null}
-    </section>
+      {isOpen
+        ? kids.map((k) => (
+            <SidebarFolderSubtree
+              key={k.id}
+              folder={k}
+              depth={depth + 1}
+              expanded={expanded}
+              onToggleExpand={onToggleExpand}
+              selected={selected}
+              onSelect={onSelect}
+              childrenByParent={childrenByParent}
+              renamingFolderId={renamingFolderId}
+              onCommitRenameFolder={onCommitRenameFolder}
+              onCancelRenameFolder={onCancelRenameFolder}
+              folderActions={folderActions}
+            />
+          ))
+        : null}
+    </>
   );
 }
 
-// A larger, glanceable card: a thin themed accent bar across the
-// top hints at "this is one of my diagrams" without needing a real
-// thumbnail (we don't fetch tab snapshots client-side here). Title
-// gets two lines of breathing room, the timestamp drops to a muted
-// caption.
-function DiagramCard({
-  id,
-  href,
+// ---------- Right pane primitives ---------------------------------
+
+function PaneHeader({
   title,
-  savedAt,
+  crumbs,
+  onCrumb,
+}: {
+  title: string;
+  crumbs: Folder[];
+  onCrumb: (id: string | null) => void;
+}) {
+  return (
+    <div className="mb-4">
+      <nav aria-label="Breadcrumb" className="mb-1 text-[11px] text-slate-500">
+        <button
+          type="button"
+          onClick={() => onCrumb(null)}
+          className="rounded px-1 hover:bg-slate-100 hover:text-slate-700"
+        >
+          All diagrams
+        </button>
+        {crumbs.length === 0
+          ? null
+          : crumbs.slice(0, -1).map((c) => (
+              <span key={c.id}>
+                <span className="px-1 text-slate-400">/</span>
+                <button
+                  type="button"
+                  onClick={() => onCrumb(c.id)}
+                  className="rounded px-1 hover:bg-slate-100 hover:text-slate-700"
+                >
+                  {c.name}
+                </button>
+              </span>
+            ))}
+      </nav>
+      <h1 className="truncate text-2xl font-semibold tracking-tight text-slate-900">{title}</h1>
+    </div>
+  );
+}
+
+function ListView({
+  folders,
+  diagrams,
+  onOpenFolder,
+  onCommitRenameFolder,
+  onCancelRenameFolder,
+  renamingFolderId,
+  renamingDiagramId,
+  onCommitRenameDiagram,
+  onCancelRenameDiagram,
+  folderActions,
+  onStartRenameDiagram,
+  onDuplicateDiagram,
+  onDeleteDiagram,
+  onMoveDiagram,
+  childrenCount,
+  diagramsCount,
+}: {
+  folders: Folder[];
+  diagrams: DiagramItem[];
+  onOpenFolder: (id: string) => void;
+  onCommitRenameFolder: (id: string, name: string) => void;
+  onCancelRenameFolder: () => void;
+  renamingFolderId: string | null;
+  renamingDiagramId: string | null;
+  onCommitRenameDiagram: (id: string, name: string) => void;
+  onCancelRenameDiagram: () => void;
+  folderActions: (
+    f: Folder,
+    anchor: HTMLElement | null,
+  ) => {
+    rename: () => void;
+    newSubfolder: () => void;
+    move: () => void;
+    delete: () => void;
+  };
+  onStartRenameDiagram: (id: string) => void;
+  onDuplicateDiagram: (id: string) => void;
+  onDeleteDiagram: (id: string) => void;
+  onMoveDiagram: (id: string, anchor: HTMLElement | null) => void;
+  childrenCount: (id: string) => number;
+  diagramsCount: (id: string) => number;
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="grid grid-cols-[1fr_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+        <span>Name</span>
+        <span>Updated</span>
+        <span aria-hidden></span>
+      </div>
+      <ul className="divide-y divide-slate-100">
+        {folders.map((f) => (
+          <FolderRow
+            key={f.id}
+            folder={f}
+            renaming={renamingFolderId === f.id}
+            childCount={childrenCount(f.id) + diagramsCount(f.id)}
+            onOpen={() => onOpenFolder(f.id)}
+            onCommitRename={(name) => onCommitRenameFolder(f.id, name)}
+            onCancelRename={onCancelRenameFolder}
+            actions={folderActions(f, null)}
+            getActionsForAnchor={(anchor) => folderActions(f, anchor)}
+          />
+        ))}
+        {diagrams.map((d) => (
+          <DiagramRow
+            key={d.id}
+            diagram={d}
+            renaming={renamingDiagramId === d.id}
+            onStartRename={() => onStartRenameDiagram(d.id)}
+            onCommitRename={(name) => onCommitRenameDiagram(d.id, name)}
+            onCancelRename={onCancelRenameDiagram}
+            onDuplicate={() => onDuplicateDiagram(d.id)}
+            onDelete={() => onDeleteDiagram(d.id)}
+            onMove={(anchor) => onMoveDiagram(d.id, anchor)}
+          />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FolderRow({
+  folder,
+  renaming,
+  childCount,
+  onOpen,
+  onCommitRename,
+  onCancelRename,
+  getActionsForAnchor,
+}: {
+  folder: Folder;
+  renaming: boolean;
+  childCount: number;
+  onOpen: () => void;
+  onCommitRename: (name: string) => void;
+  onCancelRename: () => void;
+  actions: {
+    rename: () => void;
+    newSubfolder: () => void;
+    move: () => void;
+    delete: () => void;
+  };
+  getActionsForAnchor: (anchor: HTMLElement | null) => {
+    rename: () => void;
+    newSubfolder: () => void;
+    move: () => void;
+    delete: () => void;
+  };
+}) {
+  useRelativeTimeTick();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLButtonElement>(null);
+
+  return (
+    <li className="group grid grid-cols-[1fr_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
+      <button
+        type="button"
+        onDoubleClick={renaming ? undefined : onOpen}
+        onClick={renaming ? undefined : onOpen}
+        className="flex min-w-0 items-center gap-2 text-left"
+      >
+        <span className="shrink-0 text-amber-500">
+          <FolderIcon open={false} />
+        </span>
+        {renaming ? (
+          <InlineRenameInput
+            initial={folder.name}
+            onCommit={onCommitRename}
+            onCancel={onCancelRename}
+            className="rounded border border-brand-300 bg-white px-1 py-0 text-sm font-medium text-slate-900"
+          />
+        ) : (
+          <span className="truncate text-sm font-medium text-slate-900 group-hover:text-brand-700">
+            {folder.name}
+          </span>
+        )}
+        {childCount > 0 ? (
+          <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600">
+            {childCount}
+          </span>
+        ) : null}
+      </button>
+      <span className="text-[11px] uppercase tracking-wider text-slate-400">
+        {formatRelativeTime(Date.now() - folder.updatedAt)}
+      </span>
+      {renaming ? (
+        <span />
+      ) : (
+        <button
+          ref={menuRef}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((o) => !o);
+          }}
+          aria-label={`Menu for ${folder.name}`}
+          className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-slate-200 hover:text-slate-700"
+        >
+          <EllipsisIcon />
+        </button>
+      )}
+      {menuOpen ? (
+        <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
+          <FolderMenuItems
+            actions={getActionsForAnchor(menuRef.current)}
+            close={() => setMenuOpen(false)}
+          />
+        </PortalMenu>
+      ) : null}
+    </li>
+  );
+}
+
+function DiagramRow({
+  diagram,
   renaming,
   onStartRename,
   onCommitRename,
   onCancelRename,
   onDuplicate,
   onDelete,
-  onMoveRequest,
+  onMove,
 }: {
-  id: string;
-  href: string;
-  title: string;
-  savedAt: number;
+  diagram: DiagramItem;
   renaming: boolean;
   onStartRename: () => void;
   onCommitRename: (name: string) => void;
   onCancelRename: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
-  onMoveRequest: (anchor: HTMLElement | null) => void;
+  onMove: (anchor: HTMLElement | null) => void;
 }) {
   useRelativeTimeTick();
-  // Cheap deterministic accent per diagram — hash the id-ish title
-  // into the theme palette so cards aren't all one colour. Keeps
-  // /explorer feeling like a personal library without making a
-  // network call for the active tab's theme.
-  const accent = pickAccent(title);
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [draft, setDraft] = useState(title);
-  useEffect(() => {
-    if (renaming) {
-      setDraft(title);
-      const t = window.setTimeout(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }, 0);
-      return () => window.clearTimeout(t);
-    }
-  }, [renaming, title]);
+  const menuRef = useRef<HTMLButtonElement>(null);
 
   const titleNode = renaming ? (
-    <input
-      ref={inputRef}
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      onBlur={() => onCommitRename(draft)}
-      onKeyDown={(e) => {
-        e.stopPropagation();
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          onCommitRename(draft);
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          onCancelRename();
-        }
-      }}
-      className="w-full rounded border border-brand-300 bg-white px-2 py-1 text-sm font-semibold text-slate-900 outline-none focus:border-brand-500"
+    <InlineRenameInput
+      initial={diagram.name}
+      onCommit={onCommitRename}
+      onCancel={onCancelRename}
+      className="rounded border border-brand-300 bg-white px-1 py-0 text-sm font-medium text-slate-900"
     />
   ) : (
-    <p className="line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-brand-700">
-      {title}
-    </p>
+    <Link
+      href={`/diagram/${diagram.id}`}
+      className="truncate text-sm font-medium text-slate-900 transition hover:text-brand-700"
+    >
+      {diagram.name}
+    </Link>
   );
-  const cardBody = (
-    <>
-      <div className="h-1.5" style={{ backgroundColor: accent }} />
-      <div className="p-4">
-        {titleNode}
-        <p className="mt-2 text-[11px] uppercase tracking-wider text-slate-400">
-          Updated {formatRelativeTime(Date.now() - savedAt)}
-        </p>
-      </div>
-    </>
-  );
+
   return (
-    <li className="group relative">
+    <li className="group grid grid-cols-[1fr_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="shrink-0 text-slate-400">
+          <DiagramIcon />
+        </span>
+        {titleNode}
+      </span>
+      <span className="text-[11px] uppercase tracking-wider text-slate-400">
+        {formatRelativeTime(Date.now() - diagram.savedAt)}
+      </span>
       {renaming ? (
-        // Rendering the title-as-input requires us to bail out of
-        // the wrapping <Link> for this row only — clicking inside an
-        // <input> inside an <a> still propagates a navigation on
-        // some browsers, which would commit a rename + open the
-        // diagram simultaneously. Plain <div> keeps the input usable.
-        <div className="block overflow-hidden rounded-xl border border-brand-300 bg-white shadow-sm">
-          {cardBody}
-        </div>
+        <span />
       ) : (
-        <Link
-          href={href}
-          className="block overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
-        >
-          {cardBody}
-        </Link>
-      )}
-      {renaming ? null : (
         <button
-          ref={menuButtonRef}
+          ref={menuRef}
           type="button"
           onClick={(e) => {
-            e.preventDefault();
             e.stopPropagation();
             setMenuOpen((o) => !o);
           }}
-          aria-label={`Menu for ${title}`}
-          aria-expanded={menuOpen}
-          className="absolute right-2.5 top-2.5 inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white/90 text-slate-500 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+          aria-label={`Menu for ${diagram.name}`}
+          className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-slate-200 hover:text-slate-700"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-            <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-            <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-            <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-          </svg>
+          <EllipsisIcon />
         </button>
       )}
       {menuOpen ? (
-        <PortalMenu
-          anchor={menuButtonRef.current}
-          placement="below"
-          onClose={() => setMenuOpen(false)}
-        >
+        <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
           <MenuItem
             icon={<MenuPencilIcon />}
             label="Rename"
@@ -735,7 +1045,7 @@ function DiagramCard({
             icon={<MenuFolderIcon />}
             label="Move to folder…"
             onClick={() => {
-              onMoveRequest(menuButtonRef.current);
+              onMove(menuRef.current);
               setMenuOpen(false);
             }}
           />
@@ -752,13 +1062,415 @@ function DiagramCard({
       ) : null}
     </li>
   );
-  // `id` is captured at the call site for keying — referenced here
-  // only to satisfy unused-prop linters until the duplicate flow
-  // ever needs it locally.
-  void id;
 }
 
-// Menu glyphs colocated with DiagramCard so it stays self-contained.
+function FolderMenuItems({
+  actions,
+  close,
+}: {
+  actions: {
+    rename: () => void;
+    newSubfolder: () => void;
+    move: () => void;
+    delete: () => void;
+  };
+  close: () => void;
+}) {
+  return (
+    <>
+      <MenuItem
+        icon={<MenuPencilIcon />}
+        label="Rename"
+        onClick={() => {
+          actions.rename();
+          close();
+        }}
+      />
+      <MenuItem
+        icon={<PlusIcon />}
+        label="New subfolder"
+        onClick={() => {
+          actions.newSubfolder();
+          close();
+        }}
+      />
+      <MenuItem
+        icon={<MenuFolderIcon />}
+        label="Move to folder…"
+        onClick={() => {
+          actions.move();
+          close();
+        }}
+      />
+      <MenuItem
+        icon={<MenuTrashIcon />}
+        label="Delete"
+        danger
+        onClick={() => {
+          actions.delete();
+          close();
+        }}
+      />
+    </>
+  );
+}
+
+function SharedList({
+  shared,
+  onDismiss,
+}: {
+  shared: SharedWithItem[];
+  onDismiss: (id: string) => void;
+}) {
+  useRelativeTimeTick();
+  if (shared.length === 0) {
+    return (
+      <EmptyPane
+        selected={{ kind: 'shared' }}
+        onCreateDiagram={() => window.location.assign('/live/new')}
+        onCreateFolder={() => {}}
+      />
+    );
+  }
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+        <span>Name</span>
+        <span>Role</span>
+        <span>Updated</span>
+        <span aria-hidden></span>
+      </div>
+      <ul className="divide-y divide-slate-100">
+        {shared.map((s) => (
+          <li
+            key={s.id}
+            className="group grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50"
+          >
+            <Link
+              href={`/diagram/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
+              className="flex min-w-0 items-center gap-2 truncate text-sm font-medium text-slate-900 hover:text-brand-700"
+            >
+              <span className="shrink-0 text-slate-400">
+                <DiagramIcon />
+              </span>
+              <span className="truncate">{s.name}</span>
+            </Link>
+            <span className="inline-flex w-fit items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200">
+              {s.role === 'edit' ? 'Edit' : 'View'}
+            </span>
+            <span className="text-[11px] uppercase tracking-wider text-slate-400">
+              {formatRelativeTime(Date.now() - s.savedAt)}
+            </span>
+            <button
+              type="button"
+              onClick={() => onDismiss(s.id)}
+              aria-label="Dismiss"
+              className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-700"
+            >
+              <CloseIcon />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// ---------- Inline rename input ----------------------------------
+
+function InlineRenameInput({
+  initial,
+  onCommit,
+  onCancel,
+  className,
+}: {
+  initial: string;
+  onCommit: (name: string) => void;
+  onCancel: () => void;
+  className?: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState(initial);
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      ref.current?.focus();
+      ref.current?.select();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, []);
+  return (
+    <input
+      ref={ref}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onBlur={() => onCommit(draft)}
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          onCommit(draft);
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          onCancel();
+        }
+      }}
+      className={`outline-none focus:border-brand-500 ${className ?? ''}`}
+    />
+  );
+}
+
+// ---------- States: empty / loading / unauthenticated -------------
+
+function EmptyPane({
+  selected,
+  onCreateDiagram,
+  onCreateFolder,
+}: {
+  selected: SelectedNode;
+  onCreateDiagram: () => void;
+  onCreateFolder: () => void;
+}) {
+  const inFolder = selected.kind === 'folder';
+  const isRecent = selected.kind === 'recent';
+  const isShared = selected.kind === 'shared';
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+      <p className="text-sm text-slate-500">
+        {isRecent
+          ? "Nothing here yet. Diagrams you've opened will show up here."
+          : isShared
+            ? "No-one's shared a diagram with you yet."
+            : inFolder
+              ? 'This folder is empty.'
+              : 'No diagrams yet.'}
+      </p>
+      {isShared ? null : (
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onCreateDiagram}
+            className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
+          >
+            <PlusIcon />
+            New diagram
+          </button>
+          {!isRecent ? (
+            <button
+              type="button"
+              onClick={onCreateFolder}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700"
+            >
+              <PlusIcon />
+              {inFolder ? 'New subfolder' : 'New folder'}
+            </button>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SkeletonRows() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <ul className="divide-y divide-slate-100">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <li key={i} className="flex items-center gap-3 px-4 py-3">
+            <span className="h-4 w-4 animate-pulse rounded bg-slate-200" />
+            <span className="h-4 flex-1 animate-pulse rounded bg-slate-200" />
+            <span className="h-4 w-24 animate-pulse rounded bg-slate-200" />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FullPageNotice({
+  title,
+  body,
+  cta,
+}: {
+  title: string;
+  body: string;
+  cta: { href: string; label: string };
+}) {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-6">
+      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+        <Brand href="/" size="md" />
+        <h1 className="mt-4 text-lg font-semibold text-slate-900">{title}</h1>
+        <p className="mt-2 text-sm text-slate-600">{body}</p>
+        <Link
+          href={cta.href}
+          className="mt-5 inline-flex items-center justify-center rounded-md bg-brand-500 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
+        >
+          {cta.label}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Icons -------------------------------------------------
+
+function PlusIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M8 3v10M3 8h10" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M3.5 3.5l7 7M3.5 10.5l7-7" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.12s' }}
+    >
+      <path d="M3 2l4 3-4 3" />
+    </svg>
+  );
+}
+
+function FolderIcon({ open }: { open: boolean }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      {open ? (
+        <path d="M1.5 4.5a1.5 1.5 0 0 1 1.5-1.5h3.4a1 1 0 0 1 .77.37l1 1.24a1 1 0 0 0 .78.39h4.05A1.5 1.5 0 0 1 14.5 6.5H1.5v-2zm0 3h13l-.93 4.65a1.5 1.5 0 0 1-1.47 1.2H3.9a1.5 1.5 0 0 1-1.47-1.2L1.5 7.5z" />
+      ) : (
+        <path d="M1.5 4.5A1.5 1.5 0 0 1 3 3h3.4a1 1 0 0 1 .77.37l1 1.24a1 1 0 0 0 .78.39H13a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 13 13H3a1.5 1.5 0 0 1-1.5-1.5v-7z" />
+      )}
+    </svg>
+  );
+}
+
+function DiagramIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2" y="2" width="12" height="12" rx="2" />
+      <path d="M5 6h6M5 9h4" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 4.5V8l2 1.5" />
+    </svg>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 7.5L8 3l6 4.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5z" />
+      <path d="M6.5 14V9.5h3V14" />
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="4" cy="8" r="2" />
+      <circle cx="12" cy="4" r="2" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M5.8 7l4.4-2.2M5.8 9l4.4 2.2" />
+    </svg>
+  );
+}
+
+function EllipsisIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+      <circle cx="3" cy="7" r="1.25" fill="currentColor" />
+      <circle cx="7" cy="7" r="1.25" fill="currentColor" />
+      <circle cx="11" cy="7" r="1.25" fill="currentColor" />
+    </svg>
+  );
+}
+
 function MenuPencilIcon() {
   return (
     <svg
@@ -830,168 +1542,4 @@ function MenuTrashIcon() {
       <path d="M3 4h10M6 4V2.5h4V4M4.5 4l.6 9.2A1 1 0 0 0 6.1 14h3.8a1 1 0 0 0 1-0.8l.6-9.2" />
     </svg>
   );
-}
-
-function SharedCard({
-  href,
-  title,
-  role,
-  savedAt,
-  onDismiss,
-}: {
-  href: string;
-  title: string;
-  role: 'edit' | 'view';
-  savedAt: number;
-  onDismiss: () => void;
-}) {
-  useRelativeTimeTick();
-  return (
-    <li className="group relative">
-      <Link
-        href={href}
-        className="block overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
-      >
-        <div className="h-1.5 bg-emerald-400" />
-        <div className="p-4">
-          <p className="line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-brand-700">
-            {title}
-          </p>
-          <div className="mt-2 flex items-center gap-2 text-[11px] uppercase tracking-wider text-slate-400">
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200">
-              {role === 'edit' ? 'Edit' : 'View'}
-            </span>
-            <span>Updated {formatRelativeTime(Date.now() - savedAt)}</span>
-          </div>
-        </div>
-      </Link>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          onDismiss();
-        }}
-        aria-label="Dismiss"
-        className="absolute right-2.5 top-2.5 inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white/90 text-slate-500 opacity-0 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 focus:opacity-100 group-hover:opacity-100"
-      >
-        <CloseIcon />
-      </button>
-    </li>
-  );
-}
-
-// One folder row — collapsed to a small pill in the grid. Click the
-// label to rename inline; the trailing × deletes (server promotes
-// any contents to Unsorted). Renaming is uncommitted until Enter or
-// blur; Escape reverts.
-function SkeletonGrid() {
-  return (
-    <Grid>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <li
-          key={i}
-          className="h-28 animate-pulse rounded-xl border border-slate-200 bg-slate-100"
-        />
-      ))}
-    </Grid>
-  );
-}
-
-function EmptyState({ message, cta }: { message: string; cta?: { href: string; label: string } }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
-      <p className="text-sm text-slate-500">{message}</p>
-      {cta ? (
-        <Link
-          href={cta.href}
-          className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
-        >
-          <PlusIcon />
-          {cta.label}
-        </Link>
-      ) : null}
-    </div>
-  );
-}
-
-function FullPageNotice({
-  title,
-  body,
-  cta,
-}: {
-  title: string;
-  body: string;
-  cta: { href: string; label: string };
-}) {
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-6">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-        <Brand href="/" size="md" />
-        <h1 className="mt-4 text-lg font-semibold text-slate-900">{title}</h1>
-        <p className="mt-2 text-sm text-slate-600">{body}</p>
-        <Link
-          href={cta.href}
-          className="mt-5 inline-flex items-center justify-center rounded-md bg-brand-500 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
-        >
-          {cta.label}
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function PlusIcon({ size = 12 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="M8 3v10M3 8h10" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="M3.5 3.5l7 7M3.5 10.5l7-7" />
-    </svg>
-  );
-}
-
-// Deterministic accent picker — hashes the diagram name into the
-// theme palette so each card gets a stable colour stripe without
-// needing the active tab data. Same string → same colour across
-// renders, which keeps the grid visually settled.
-function pickAccent(seed: string): string {
-  const themeIds: ThemeId[] = [
-    'brand',
-    'forest',
-    'sunset',
-    'lavender',
-    'ocean',
-    'crimson',
-    'rose',
-    'indigo',
-  ];
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-  const id = themeIds[hash % themeIds.length]!;
-  const theme = getTheme(id);
-  return theme.elementStroke ?? theme.patternColor ?? '#0ea5e9';
 }

@@ -97,7 +97,16 @@ All endpoints continue the existing `X-Owner-Id` convention.
 (null for Unsorted). No new endpoint needed for "diagrams in folder
 X" — the Explorer already has the full list client-side.
 
-## Explorer UI
+## Explorer UI — two surfaces
+
+Folders show up in two places, and the two surfaces use different
+layouts because they're solving different problems.
+
+### Floating Explorer panel (editor + `/new`)
+
+This is the docked side-panel on the editor and the new-diagram
+flow. Space is tight; the user is mid-task; "find this thing fast"
+beats "browse my whole library."
 
 - The existing "Current Diagram" and "Recent Diagrams" sections stay
   unchanged at the top.
@@ -122,6 +131,43 @@ X" — the Explorer already has the full list client-side.
 - A "New folder" button sits at the top of the Folders section
   and creates root-level folders. Each folder's own ellipsis offers
   "New subfolder" so deeper layers are reachable.
+
+### Standalone `/explorer` page
+
+This is the full-page library view (signed-in only). The page is
+modelled on Windows Explorer: a sidebar tree drives navigation, a
+breadcrumb + list view on the right shows the focused folder's
+contents.
+
+- **Sidebar (left, fixed width):**
+  - "Recent" — virtual entry, last N most-recently-saved diagrams.
+  - "All diagrams" — the root. Children of the root render below it
+    as a recursive tree with chevron expand/collapse and indented
+    nesting. Each folder row carries an ellipsis menu with Rename,
+    New subfolder, Move to folder, Delete.
+  - "Shared with me" — virtual entry, only present when the user
+    has at least one accepted share.
+- **Right pane:**
+  - Breadcrumb showing the path from "All diagrams" through every
+    ancestor of the focused folder. Each segment is a button that
+    jumps the focus.
+  - List view with three columns: Name, Updated, action. Direct
+    subfolders and direct diagrams render in the same list (Windows
+    Explorer pattern). Folder rows open the folder; diagram rows
+    open the diagram.
+  - "Shared with me" replaces the list with a Role + Updated table
+    of accepted shares; each row is a link into the shared diagram.
+- **Create:** a single floating action button at the bottom-right
+  opens a popover with "New diagram" and "New folder" (or "New
+  subfolder" when a folder is focused). The diagrams-page FAB on the
+  editor / new-diagram routes is unrelated.
+- **Move:** diagrams and folders share the move-to-folder picker.
+  For a folder move, the target folder's own subtree is filtered
+  out client-side so cycle-creating choices don't appear (the server
+  still rejects them via the cycle check on `PUT /api/folders/:id`).
+- **Selection state** (which sidebar node is focused, which
+  branches are expanded) is local React state — it doesn't survive
+  reload. Default selection: "All diagrams".
 
 Empty states:
 
