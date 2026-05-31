@@ -252,8 +252,8 @@ export function Explorer({
         ) : null}
 
         {current ? (
-          <div className="flex flex-col gap-0.5">
-            <p className="px-1 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <div className="flex flex-col gap-0.5 rounded-lg border border-slate-200/70 bg-white p-2 shadow-sm">
+            <p className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
               Current Diagram
             </p>
             <ul className="flex flex-col gap-0.5 overflow-hidden">
@@ -287,7 +287,7 @@ export function Explorer({
         ) : null}
 
         {loading || recents.length > 0 ? (
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-0.5 rounded-lg border border-slate-200/70 bg-white p-2 shadow-sm">
             <AccordionHeader
               label="Recent"
               badge={loading ? null : recents.length}
@@ -353,7 +353,7 @@ export function Explorer({
             (migration 0010) — bumped every time the visitor opens
             a share link for a diagram they don't own. */}
         {shared.length > 0 ? (
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-0.5 rounded-lg border border-slate-200/70 bg-white p-2 shadow-sm">
             <AccordionHeader
               label="Shared with you"
               badge={shared.length}
@@ -379,7 +379,7 @@ export function Explorer({
         {/* Folders section (spec/15). Always shows because Unsorted
             is the home for any uncategorised diagram, so there's
             always at least one bucket. */}
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-0.5 rounded-lg border border-slate-200/70 bg-white p-2 shadow-sm">
           <AccordionHeader
             label="Folders"
             badge={folders.length}
@@ -429,19 +429,21 @@ export function Explorer({
                   }
                 />
               ))}
-              <UnsortedNode
-                expanded={expandedFolders}
-                onToggleExpanded={toggleFolder}
-                diagrams={diagramsByFolder.get(null) ?? []}
-                currentDiagramId={currentDiagramId}
-                onOpenDiagram={onOpenDiagram}
-                onDeleteDiagram={wrappedDeleteDiagram}
-                exitingDiagramIds={exitingDiagramIds}
-                onDuplicateDiagram={onDuplicateDiagram}
-                onMoveDiagramRequest={
-                  onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
-                }
-              />
+              {(diagramsByFolder.get(null) ?? []).length > 0 ? (
+                <UnsortedNode
+                  expanded={expandedFolders}
+                  onToggleExpanded={toggleFolder}
+                  diagrams={diagramsByFolder.get(null) ?? []}
+                  currentDiagramId={currentDiagramId}
+                  onOpenDiagram={onOpenDiagram}
+                  onDeleteDiagram={wrappedDeleteDiagram}
+                  exitingDiagramIds={exitingDiagramIds}
+                  onDuplicateDiagram={onDuplicateDiagram}
+                  onMoveDiagramRequest={
+                    onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
+                  }
+                />
+              ) : null}
             </ul>
           ) : null}
         </div>
