@@ -686,35 +686,6 @@ export function SelectedElementSection({
               <div className="my-2 h-px bg-slate-100" />
             </>
           ) : null}
-          {selection.arrowheadSize !== null ? (
-            <>
-              <p className="text-[10px] font-medium text-slate-500">Arrowhead size</p>
-              <div className="mt-1 grid grid-cols-4 gap-1">
-                {(
-                  [
-                    ['small', 'Small'],
-                    ['medium', 'Medium'],
-                    ['large', 'Large'],
-                    ['extra-large', 'Extra large'],
-                  ] as [ArrowheadSize, string][]
-                ).map(([id, label]) => (
-                  <Tooltip
-                    key={id}
-                    title={label}
-                    description={`Marker size ${ARROWHEAD_SIZE_PX[id]} — independent of line thickness.`}
-                  >
-                    <SizeButton
-                      active={selection.arrowheadSize === id}
-                      onClick={() => selection.onSetArrowheadSize(id)}
-                    >
-                      <ArrowheadSizeIcon px={ARROWHEAD_SIZE_PX[id]} />
-                    </SizeButton>
-                  </Tooltip>
-                ))}
-              </div>
-              <div className="my-2 h-px bg-slate-100" />
-            </>
-          ) : null}
           {selection.arrowStyle !== null ? (
             <>
               <p className="text-[10px] font-medium text-slate-500">Line style</p>
@@ -790,6 +761,35 @@ export function SelectedElementSection({
               </SizeButton>
             </Tooltip>
           </div>
+          {selection.arrowheadSize !== null && selection.arrowEnds !== 'none' ? (
+            <>
+              <div className="my-2 h-px bg-slate-100" />
+              <p className="text-[10px] font-medium text-slate-500">Arrowhead size</p>
+              <div className="mt-1 grid grid-cols-4 gap-1">
+                {(
+                  [
+                    ['small', 'Small'],
+                    ['medium', 'Medium'],
+                    ['large', 'Large'],
+                    ['extra-large', 'Extra large'],
+                  ] as [ArrowheadSize, string][]
+                ).map(([id, label]) => (
+                  <Tooltip
+                    key={id}
+                    title={label}
+                    description={`Marker size ${ARROWHEAD_SIZE_PX[id]} — independent of line thickness.`}
+                  >
+                    <SizeButton
+                      active={selection.arrowheadSize === id}
+                      onClick={() => selection.onSetArrowheadSize(id)}
+                    >
+                      <ArrowheadSizeIcon px={ARROWHEAD_SIZE_PX[id]} />
+                    </SizeButton>
+                  </Tooltip>
+                ))}
+              </div>
+            </>
+          ) : null}
         </Accordion>
       ) : null}
     </div>
