@@ -1162,7 +1162,7 @@ export function TabSection({
           })}
         </div>
       </Accordion>
-      <Accordion title="Background" open={open.background} onToggle={() => toggle('background')}>
+      <Accordion title="Canvas" open={open.background} onToggle={() => toggle('background')}>
         <p className="text-[10px] font-medium text-slate-500">Pattern</p>
         <div className="mt-1 grid grid-cols-3 gap-1">
           <Tooltip title="Grid" description="Subtle dot grid background.">
