@@ -430,8 +430,15 @@ export async function apiDeleteTab(
   await expectOkOr404Void(res, 'delete tab');
 }
 
-export async function apiDeleteDiagram(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/diagrams/${id}`, { method: 'DELETE' });
+export async function apiDeleteDiagram(ownerId: string, id: string): Promise<void> {
+  // Owner-gated server-side as of the security fix — without the
+  // identity headers the worker would 400 / 403. apiHeaders prefers
+  // the Clerk Bearer when a token provider is registered, falls
+  // through to X-Owner-Id otherwise (spec/04, spec/11).
+  const res = await fetch(`${API_BASE}/diagrams/${id}`, {
+    method: 'DELETE',
+    headers: await apiHeaders(ownerId),
+  });
   await expectOkOr404Void(res, 'delete diagram');
 }
 

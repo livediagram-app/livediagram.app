@@ -1812,7 +1812,7 @@ export default function LivePage() {
   // the Explorer list. Not undoable — the menu is an explicit action.
   const deleteDiagram = (id: string) => {
     if (typeof window === 'undefined') return;
-    void apiDeleteDiagram(id).catch(() => {});
+    void apiDeleteDiagram(selfParticipant.id, id).catch(() => {});
     if (id === diagramId) {
       window.location.assign(`${window.location.origin}/live/new`);
       return;

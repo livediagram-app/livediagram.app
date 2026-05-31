@@ -228,6 +228,19 @@ export default {
             return json({ diagram });
           }
           if (request.method === 'DELETE') {
+            // Owner-only. Until this guard landed, any client that
+            // knew or guessed a diagram id could DELETE it — the
+            // endpoint took no auth headers and the handler called
+            // `deleteDiagram(env, id)` unconditionally. Now we
+            // resolve the caller (Clerk Bearer or X-Owner-Id, per
+            // spec/04), 404 on a missing diagram (no existence
+            // leak), and 403 on a mismatched owner. Mirrors the GET
+            // branch above which had this guard from the start.
+            const owner = resolveOwner();
+            if (!owner) return badRequest('missing X-Owner-Id');
+            const existing = await getDiagram(env, id);
+            if (!existing) return notFound();
+            if (existing.ownerId !== owner) return forbidden();
             await deleteDiagram(env, id);
             return new Response(null, { status: 204, headers: CORS_HEADERS });
           }
