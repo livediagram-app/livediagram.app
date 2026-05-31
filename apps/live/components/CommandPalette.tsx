@@ -88,6 +88,12 @@ export type TabSectionControls = {
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetPatternColor: (color: string) => void;
   onSetTheme: (id: ThemeId) => void;
+  // Forcibly re-apply the active theme to every element on the tab,
+  // overwriting any per-element custom colours the user set. Opt-in
+  // counterpart to the normal Theme-pick flow, which preserves
+  // customs. Surfaces as a "Reset elements to theme" button under
+  // the theme grid.
+  onResetElementsToTheme: () => void;
 };
 
 export type CanvasTool = 'pan' | 'select';
@@ -1064,6 +1070,27 @@ function ArrowStyleIcon({ style }: { style: ArrowStyle }) {
   );
 }
 
+// Small circular-arrow glyph used by the "Reset elements to theme"
+// button under the Theme accordion. 12×12 inside a 14×14 box.
+function ResetIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 8 a5 5 0 1 0 1.5 -3.5" />
+      <polyline points="2,2 4,4.5 6.5,3.5" />
+    </svg>
+  );
+}
+
 function ArrowEndsIcon({ ends }: { ends: ArrowEnds }) {
   // Same shape language as the arrowhead used in ArrowView, scaled
   // down to fit a 14×14 button. Line spans the middle; chevrons sit
@@ -1168,6 +1195,20 @@ export function TabSection({
         {themesList.hasMore && !themesList.showAll ? (
           <ShowMoreButton label="Show more themes" onClick={themesList.reveal} />
         ) : null}
+        <div className="my-2 h-px bg-slate-100" />
+        <Tooltip
+          title="Reset elements to theme"
+          description="Recolour every shape, text and arrow on this tab to the active theme's defaults — including elements you've hand-coloured."
+        >
+          <button
+            type="button"
+            onClick={tab.onResetElementsToTheme}
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700"
+          >
+            <ResetIcon />
+            Reset elements to theme
+          </button>
+        </Tooltip>
       </Accordion>
       <Accordion title="Canvas" open={open.canvas} onToggle={() => toggle('canvas')}>
         <p className="text-[10px] font-medium text-slate-500">Pattern</p>

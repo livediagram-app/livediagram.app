@@ -211,6 +211,7 @@ type CanvasProps = {
   onSetBackgroundColor: (color: string) => void;
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetTheme: (id: import('@/lib/themes').ThemeId) => void;
+  onResetElementsToTheme: () => void;
   onSetPatternColor: (color: string) => void;
   onToggleAspectLock: () => void;
   onDuplicateConnect: (direction: 'right' | 'below' | 'left' | 'above') => void;
@@ -351,6 +352,7 @@ export function Canvas(props: CanvasProps) {
     onOpenTemplatePicker,
     tabThemeId,
     onSetTheme,
+    onResetElementsToTheme,
     onSetBackgroundPattern,
     onSetBackgroundColor,
     onSetBackgroundOpacity,
@@ -676,6 +678,7 @@ export function Canvas(props: CanvasProps) {
     onSetBackgroundColor,
     onSetPatternColor,
     onSetTheme,
+    onResetElementsToTheme,
   };
 
   // Colour for the link / comment badges. The active theme's

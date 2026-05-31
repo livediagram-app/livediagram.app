@@ -2315,6 +2315,41 @@ export default function LivePage() {
     );
   };
 
+  // Force-apply the current theme's element colours to every shape /
+  // text / arrow on the tab, OVERWRITING whatever's currently set —
+  // even custom per-element colours. The standalone counterpart to
+  // setTheme's preserve-customs behaviour; surfaces as a "Reset
+  // elements to theme" button under the Theme accordion.
+  const resetElementsToTheme = () => {
+    if (activeTabLocked) return;
+    const theme = getTheme(activeTab.theme);
+    const themeLabel = THEMES.find((t) => t.id === activeTab.theme)?.label ?? 'theme';
+    emitTabMeta(activeId, `Reset elements to ${themeLabel}`);
+    commitTabs((ts) =>
+      ts.map((t) => {
+        if (t.id !== activeId) return t;
+        const elements = t.elements.map((el) => {
+          if (el.type === 'shape') {
+            return {
+              ...el,
+              fillColor: theme.elementFill ?? undefined,
+              strokeColor: theme.elementStroke ?? undefined,
+              textColor: theme.elementText ?? undefined,
+            };
+          }
+          if (el.type === 'text') {
+            return { ...el, textColor: theme.elementText ?? undefined };
+          }
+          if (el.type === 'arrow') {
+            return { ...el, strokeColor: theme.elementStroke ?? undefined };
+          }
+          return el;
+        });
+        return { ...t, elements };
+      }),
+    );
+  };
+
   const setBackgroundColor = (color: string) => {
     if (activeTabLocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, backgroundColor: color } : t)));
@@ -3485,6 +3520,7 @@ export default function LivePage() {
         onOpenTemplatePicker={openTemplatePicker}
         tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
         onSetTheme={setTheme}
+        onResetElementsToTheme={resetElementsToTheme}
         onSetBackgroundPattern={setBackgroundPattern}
         onSetBackgroundColor={setBackgroundColor}
         onSetBackgroundOpacity={setBackgroundOpacity}
