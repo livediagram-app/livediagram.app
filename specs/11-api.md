@@ -96,11 +96,11 @@ Owner-only routes require `X-Owner-Id`; shared-edit routes accept `X-Owner-Id` +
 
 **Realtime + participants**
 
-| Method | Path                    | Notes                                                           |
-| ------ | ----------------------- | --------------------------------------------------------------- |
-| GET    | `/api/diagrams/:id/ws`  | WebSocket upgrade — connects to the `DiagramRoom`.              |
-| GET    | `/api/participants/:id` | Fetch a participant by id.                                      |
-| PUT    | `/api/participants/:id` | Upsert `{ name, color }`. Open — no auth check (prototype-era). |
+| Method | Path                    | Notes                                                                                                                |
+| ------ | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/diagrams/:id/ws`  | WebSocket upgrade — connects to the `DiagramRoom`.                                                                   |
+| GET    | `/api/participants/:id` | Fetch a participant by id.                                                                                           |
+| PUT    | `/api/participants/:id` | Upsert `{ name, color }`. Owner-gated — the caller's resolved owner (Clerk Bearer or `X-Owner-Id`) must match `:id`. |
 
 **Migration (guest → authed)**
 

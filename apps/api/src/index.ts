@@ -553,6 +553,21 @@ export default {
       }
 
       // ---------- /api/participants/<id> ----------
+      //
+      // GET stays open — participant ids are already broadcast through
+      // the WS room and embedded in change-log rows, so anyone in a
+      // shared session can already learn the id; the endpoint just
+      // exposes display name + colour, which the same shared session
+      // surfaces in every cursor / activity entry anyway.
+      //
+      // PUT is owner-only on the participant. Without this guard any
+      // caller who knew (or guessed) another participant's id could
+      // rewrite their display name + colour — and because change-log
+      // rows store name + colour denormalised at write time, that
+      // vandalism would propagate across every diagram they'd
+      // collaborated on. The guard requires the caller's resolved
+      // owner (Clerk Bearer OR X-Owner-Id, spec/04) to match the
+      // participant id being mutated.
       if (segments[1] === 'participants' && segments.length === 3) {
         const id = segments[2]!;
         if (request.method === 'GET') {
@@ -560,6 +575,9 @@ export default {
           return p ? json({ participant: p }) : notFound();
         }
         if (request.method === 'PUT') {
+          const owner = resolveOwner();
+          if (!owner) return badRequest('missing X-Owner-Id');
+          if (owner !== id) return forbidden();
           const body = (await request.json()) as Partial<ParticipantDTO>;
           if (!body.name || !body.color) return badRequest('missing name/color');
           const existing = await getParticipant(env, id);

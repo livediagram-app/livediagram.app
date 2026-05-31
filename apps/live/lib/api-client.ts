@@ -555,9 +555,15 @@ export async function apiMigrateGuestData(
 }
 
 export async function apiSaveSelf(p: Participant): Promise<void> {
+  // Owner-gated server-side as of the participants-PUT security fix.
+  // The api worker requires the caller's resolved owner to match the
+  // participant id being mutated — for both modes that's the same
+  // value as `p.id` (a guest's localStorage UUID is also their
+  // X-Owner-Id; a signed-in user's Clerk userId is also their
+  // participant id, see editor-page.tsx identity bootstrap).
   const res = await fetch(`${API_BASE}/participants/${p.id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await apiHeaders(p.id, { body: true }),
     body: JSON.stringify({ name: p.name, color: p.color }),
   });
   await expectOkVoid(res, 'save self');
