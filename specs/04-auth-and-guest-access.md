@@ -12,21 +12,32 @@ We don't put auth in front of the core experience. We add auth where it _enables
 
 ## Two modes
 
-### Guest mode (always available)
+### Today (pre-Clerk)
 
-- No account required.
-- Diagrams persist via the api worker (D1), keyed by the local participant id minted on first visit. No account is required to save or reload.
-- All core editing features work.
-- No cloud sync, no sharing, no real-time collaboration — those need an account.
+The api is open. Owner identity is carried by the participant id minted on first visit (`livediagram:v2:self-id` in `localStorage`). With auth not wired, every user is effectively a guest and gets the **whole** feature set:
 
-### Authenticated mode (post-Clerk)
+- Diagrams persist via the api worker (D1).
+- Share links (`/api/share/:code`) — anyone with the link can view / edit.
+- Real-time multiplayer collab via the per-diagram Durable Object room (see [11-api.md](11-api.md)).
 
-Adds, on top of guest features:
+The participant id is per-browser, not per-user, so a user clearing storage or switching devices is treated as a different "owner" and won't see the diagrams they made before. That's the gap Clerk closes.
 
-- Cloud sync — diagrams travel across devices.
-- Team workspaces and sharing.
-- Real-time multiplayer collaboration.
-- Profile / settings / billing (Pro — see [03-open-source-and-business-model.md](03-open-source-and-business-model.md)).
+### Future (post-Clerk)
+
+Once Clerk lands, the line between guest and authenticated tightens:
+
+| Capability                  | Guest                         | Authenticated                                                       |
+| --------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| Editing the canvas          | ✓                             | ✓                                                                   |
+| Persistence                 | ✓ (per-browser, not per-user) | ✓ (per-account, syncs across devices)                               |
+| Open a share link as viewer | ✓                             | ✓                                                                   |
+| Open a share link as editor | ✓                             | ✓                                                                   |
+| Mint a new share link       | (TBD — likely auth-gated)     | ✓                                                                   |
+| Real-time presence          | ✓ on shared sessions          | ✓                                                                   |
+| Team workspaces             | —                             | ✓                                                                   |
+| Pro features                | —                             | ✓ (when Pro lands — see [03](03-open-source-and-business-model.md)) |
+
+The principle stays the same: the **canvas itself** is always usable without signing in. Auth unlocks per-account persistence, team scoping, and billing — never gates a feature that doesn't actually need them.
 
 ## Guest → account migration
 
