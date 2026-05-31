@@ -32,6 +32,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
       '@livediagram/diagram':
         specifier: workspace:*
         version: link:../../packages/diagram
@@ -54,6 +57,9 @@ importers:
 
   apps/live:
     dependencies:
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
       '@livediagram/diagram':
         specifier: workspace:*
         version: link:../../packages/diagram
@@ -161,6 +167,22 @@ importers:
       wrangler:
         specifier: ^4.40.0
         version: 4.95.0(@cloudflare/workers-types@4.20260529.1)
+
+  packages/api-schema:
+    dependencies:
+      '@livediagram/diagram':
+        specifier: workspace:*
+        version: link:../diagram
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      eslint:
+        specifier: ^9.17.0
+        version: 9.39.4(jiti@2.7.0)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
   packages/diagram:
     devDependencies:

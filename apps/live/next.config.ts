@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  transpilePackages: ['@livediagram/ui', '@livediagram/diagram'],
+  transpilePackages: ['@livediagram/ui', '@livediagram/diagram', '@livediagram/api-schema'],
 };
 
 export default nextConfig;

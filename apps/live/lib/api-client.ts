@@ -1,5 +1,37 @@
+import type {
+  ChangeLogEntry,
+  ChangeLogKind,
+  Diagram,
+  DiagramSummary,
+  Folder,
+  ShareLink,
+  ShareRole,
+  TabRecord,
+  TabSummary,
+} from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/diagram';
 import type { Participant } from './identity';
+
+// Re-export the wire-format types under the names the live app has
+// historically used so callers (editor-page.tsx, new/page.tsx, etc.)
+// keep their existing imports. The canonical definitions live in
+// `@livediagram/api-schema` — see that package's index.ts for the
+// shapes and per-type rationale.
+export type {
+  ChangeLogEntry,
+  ChangeLogKind,
+  DiagramSummary,
+  Folder,
+  ShareLink,
+  ShareRole,
+  TabSummary,
+};
+
+// Historical alias the live app uses for the "diagram + tab
+// summaries" payload. The wider canonical shape now includes
+// `createdAt`, which the live app simply doesn't read today — the
+// extra field costs nothing and unblocks future "created on X" UI.
+export type StoredDiagram = Diagram;
 
 // Single HTTP/WS client for the livediagram API.
 //
@@ -35,133 +67,26 @@ function wsUrl(path: string): string {
   return `${proto}//${window.location.host}${API_BASE}${path}`;
 }
 
-// What the API ships when the live app loads a diagram: meta + an
-// ordered list of TabSummary objects (id + name + position). Element
-// content lives in TabDTO; fetched per-tab via apiLoadTab.
-export type TabSummary = {
-  id: string;
-  diagramId: string;
-  name: string;
-  orderIndex: number;
-  updatedAt: number;
-};
-
-export type StoredDiagram = {
-  id: string;
-  ownerId: string;
-  name: string;
-  tabs: TabSummary[];
-  shareable: boolean;
-  shareCode: string | null;
-  folderId: string | null;
-  savedAt: number;
-};
-
-export type DiagramSummary = {
-  id: string;
-  name: string;
-  shareable: boolean;
-  shareCode: string | null;
-  folderId: string | null;
-  savedAt: number;
-};
-
-// One row of the folders table (spec/15). `parentId === null` means
-// the folder lives at the tree root; the synthetic "Unsorted" bucket
-// has no row.
-export type Folder = {
-  id: string;
-  parentId: string | null;
-  name: string;
-  createdAt: number;
-  updatedAt: number;
-};
-
-type DiagramResponse = {
-  diagram: {
-    id: string;
-    ownerId: string;
-    name: string;
-    tabs: TabSummary[];
-    shareable: boolean;
-    shareCode: string | null;
-    folderId: string | null;
-    savedAt: number;
-    createdAt: number;
-  };
-};
-
-type TabResponse = {
-  tab: Tab & {
-    diagramId: string;
-    orderIndex: number;
-    updatedAt: number;
-  };
-};
-
-type ListResponse = {
-  diagrams: {
-    id: string;
-    name: string;
-    shareable: boolean;
-    shareCode: string | null;
-    folderId: string | null;
-    savedAt: number;
-  }[];
-};
-
+// Envelope shapes the API wraps payloads in. The canonical inner
+// types come from `@livediagram/api-schema`; these envelopes are
+// purely client-side glue for `expectOk` to destructure.
+type DiagramResponse = { diagram: Diagram };
+type TabResponse = { tab: TabRecord };
+type ListResponse = { diagrams: DiagramSummary[] };
 type FolderResponse = { folder: Folder };
 type FoldersResponse = { folders: Folder[] };
-
 type ShareResponse = { shareable: boolean; shareCode: string | null };
-
-export type ShareRole = 'edit' | 'view';
-
-export type ShareLink = {
-  code: string;
-  diagramId: string;
-  role: ShareRole;
-  createdAt: number;
-};
-
 type ShareLinkResponse = { link: ShareLink };
 type ShareLinksResponse = { links: ShareLink[] };
-
-// One row of the audit log — see specs/12-activity-and-audit.md.
-// `beforeState[id] === null` ⇒ element didn't exist before (an add).
-// `afterState[id]  === null` ⇒ element doesn't exist after (a delete).
-export type ChangeLogKind = 'add' | 'edit' | 'delete' | 'revert';
-
-export type ChangeLogEntry = {
-  id: string;
-  diagramId: string;
-  tabId: string | null;
-  participantId: string;
-  participantName: string;
-  participantColor: string;
-  kind: ChangeLogKind;
-  summary: string;
-  elementIds: string[];
-  beforeState: Record<string, unknown>;
-  afterState: Record<string, unknown>;
-  createdAt: number;
-};
-
 type ChangeLogListResponse = { entries: ChangeLogEntry[] };
 type ChangeLogAppendResponse = { entry: ChangeLogEntry };
+type ParticipantResponse = {
+  participant: { id: string; name: string; color: string; createdAt: number };
+};
 
 export type SharedDiagramResolution = {
   diagram: StoredDiagram;
   role: ShareRole;
-};
-
-type ParticipantResponse = {
-  participant: {
-    id: string;
-    name: string;
-    color: string;
-    createdAt: number;
-  };
 };
 
 // Owner identity is always carried via `X-Owner-Id`. Visitors on a
@@ -220,18 +145,7 @@ export async function apiLoadDiagram(ownerId: string, id: string): Promise<Store
     headers: apiHeaders(ownerId),
   });
   const body = await expectOkOrNull<DiagramResponse>(res, 'load');
-  if (!body) return null;
-  const { diagram } = body;
-  return {
-    id: diagram.id,
-    ownerId: diagram.ownerId,
-    name: diagram.name,
-    tabs: diagram.tabs,
-    shareable: diagram.shareable,
-    shareCode: diagram.shareCode,
-    folderId: diagram.folderId,
-    savedAt: diagram.savedAt,
-  };
+  return body?.diagram ?? null;
 }
 
 // Resolve a share code to a full diagram + the role granted by that
@@ -241,18 +155,8 @@ export async function apiLoadShared(code: string): Promise<SharedDiagramResoluti
   const res = await fetch(`${API_BASE}/share/${code}`);
   const body = await expectOkOrNull<DiagramResponse & { role?: ShareRole }>(res, 'load shared');
   if (!body) return null;
-  const { diagram } = body;
   return {
-    diagram: {
-      id: diagram.id,
-      ownerId: diagram.ownerId,
-      name: diagram.name,
-      tabs: diagram.tabs,
-      shareable: diagram.shareable,
-      shareCode: diagram.shareCode,
-      folderId: diagram.folderId,
-      savedAt: diagram.savedAt,
-    },
+    diagram: body.diagram,
     role: body.role === 'view' ? 'view' : 'edit',
   };
 }
@@ -413,16 +317,7 @@ export async function apiCreateDiagram(
     }),
   });
   const { diagram } = await expectOk<DiagramResponse>(res, 'create diagram');
-  return {
-    id: diagram.id,
-    ownerId: diagram.ownerId,
-    name: diagram.name,
-    tabs: diagram.tabs,
-    shareable: diagram.shareable,
-    shareCode: diagram.shareCode,
-    folderId: diagram.folderId,
-    savedAt: diagram.savedAt,
-  };
+  return diagram;
 }
 
 // In-flight tab loads, keyed by ownerId+diagramId+tabId+shareCode.
@@ -505,14 +400,7 @@ export async function apiListDiagrams(ownerId: string): Promise<DiagramSummary[]
     headers: apiHeaders(ownerId),
   });
   const { diagrams } = await expectOk<ListResponse>(res, 'list');
-  return diagrams.map((d) => ({
-    id: d.id,
-    name: d.name,
-    shareable: d.shareable,
-    shareCode: d.shareCode,
-    folderId: d.folderId,
-    savedAt: d.savedAt,
-  }));
+  return diagrams;
 }
 
 // ---------------------------------------------------------------------
