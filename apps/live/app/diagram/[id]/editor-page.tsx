@@ -2403,35 +2403,84 @@ export default function LivePage() {
   const setBackgroundColor = (color: string) => {
     if (activeTabLocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, backgroundColor: color } : t)));
-    emitTabMeta(activeId, `Changed canvas colour to ${color}`);
+    scheduleTabMetaLog('backgroundColor', `Changed canvas colour to ${color}`);
   };
 
-  // Debounce window for the opacity sliders. Without it, every tick
-  // of a slider drag emits its own activity-log entry — 30+ entries
-  // for a single visual tweak. 500 ms lets a fast drag collapse into
-  // one entry while still feeling responsive to discrete clicks.
-  const OPACITY_LOG_DEBOUNCE_MS = 500;
-  const bgOpacityLogTimerRef = useRef<number | undefined>(undefined);
+  // Debounce window for slider / picker-driven activity-log entries
+  // (opacity sliders, native color pickers). Without debouncing,
+  // every tick of a continuous interaction emits its own log entry —
+  // a single tweak to a fill color through Chrome's eyedropper fills
+  // 30+ rows. 500 ms lets a fast drag collapse into one entry while
+  // still feeling responsive to discrete clicks (two clicks ≥500 ms
+  // apart stay separate entries).
+  const ACTIVITY_LOG_DEBOUNCE_MS = 500;
+
+  // Per-key debounce slots for tab-meta entries (background colour,
+  // pattern colour, background opacity, etc.). Each call resets the
+  // matching timer; on fire the latest summary is what lands.
+  const tabMetaDebounceRef = useRef<Record<string, number | undefined>>({});
+  const scheduleTabMetaLog = (key: string, summary: string) => {
+    const slots = tabMetaDebounceRef.current;
+    if (slots[key]) window.clearTimeout(slots[key]);
+    const tabId = activeId;
+    slots[key] = window.setTimeout(() => {
+      emitTabMeta(tabId, summary);
+      slots[key] = undefined;
+    }, ACTIVITY_LOG_DEBOUNCE_MS);
+  };
+
+  // Per-key debounce slots for element-level changes — captures the
+  // pre-drag elements on the first tick of a window and emits one
+  // emitChange against the post-debounce snapshot. Keys are
+  // independent so opacity + fill-color drags in parallel produce
+  // two separate entries, not a merged one.
+  const elementChangeDebounceRef = useRef<
+    Record<
+      string,
+      {
+        before: Element[] | null;
+        tabId: string | null;
+        timer: number | undefined;
+      }
+    >
+  >({});
+  const scheduleElementChangeLog = (key: string) => {
+    const slots = elementChangeDebounceRef.current;
+    if (!slots[key]) slots[key] = { before: null, tabId: null, timer: undefined };
+    const slot = slots[key];
+    if (slot.before === null) {
+      slot.before = activeTab.elements;
+      slot.tabId = activeId;
+    }
+    if (slot.timer) window.clearTimeout(slot.timer);
+    const flushTabId = slot.tabId;
+    slot.timer = window.setTimeout(() => {
+      const before = slot.before;
+      if (before && flushTabId) {
+        // `tabsRef` (mirrored above) keeps the timer's read of the
+        // post-debounce state fresh — closure-captured `tabs` would
+        // be stale by the time the timer fires.
+        const tab = tabsRef.current.find((t) => t.id === flushTabId);
+        if (tab) emitChange(flushTabId, before, tab.elements);
+      }
+      slot.before = null;
+      slot.tabId = null;
+      slot.timer = undefined;
+    }, ACTIVITY_LOG_DEBOUNCE_MS);
+  };
+
   const setBackgroundOpacity = (opacity: number) => {
     if (activeTabLocked) return;
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundOpacity: opacity } : t)),
     );
-    // The slider state lands immediately; the activity-log entry
-    // gets debounced. The closure captures the LATEST `opacity` +
-    // `activeId` because the timer is reset on every tick — when
-    // it finally fires, those vars are the most recent ones.
-    if (bgOpacityLogTimerRef.current) window.clearTimeout(bgOpacityLogTimerRef.current);
-    bgOpacityLogTimerRef.current = window.setTimeout(() => {
-      emitTabMeta(activeId, `Changed opacity to ${Math.round(opacity * 100)}%`);
-      bgOpacityLogTimerRef.current = undefined;
-    }, OPACITY_LOG_DEBOUNCE_MS);
+    scheduleTabMetaLog('backgroundOpacity', `Changed opacity to ${Math.round(opacity * 100)}%`);
   };
 
   const setPatternColor = (color: string) => {
     if (activeTabLocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, patternColor: color } : t)));
-    emitTabMeta(activeId, `Changed pattern colour to ${color}`);
+    scheduleTabMetaLog('patternColor', `Changed pattern colour to ${color}`);
   };
 
   // --- Element CRUD --------------------------------------------------------
@@ -2680,35 +2729,68 @@ export default function LivePage() {
   };
 
   const setFillColorSelected = (color: string) => {
+    if (activeTabLocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && (el.type === 'shape' || el.type === 'sticky')
-          ? { ...el, fillColor: color }
-          : el,
+    // State update inline (bypass `commit` so emitChange doesn't
+    // fire per-tick); log entry debounced — same pattern as
+    // opacity.
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId
+          ? {
+              ...t,
+              elements: t.elements.map((el) =>
+                ids.has(el.id) && (el.type === 'shape' || el.type === 'sticky')
+                  ? { ...el, fillColor: color }
+                  : el,
+              ),
+            }
+          : t,
       ),
     );
+    scheduleElementChangeLog('fillColor');
   };
 
   const setStrokeColorSelected = (color: string) => {
+    if (activeTabLocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && (el.type === 'shape' || el.type === 'sticky' || el.type === 'arrow')
-          ? { ...el, strokeColor: color }
-          : el,
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId
+          ? {
+              ...t,
+              elements: t.elements.map((el) =>
+                ids.has(el.id) &&
+                (el.type === 'shape' || el.type === 'sticky' || el.type === 'arrow')
+                  ? { ...el, strokeColor: color }
+                  : el,
+              ),
+            }
+          : t,
       ),
     );
+    scheduleElementChangeLog('strokeColor');
   };
 
   const setTextColorSelected = (color: string) => {
+    if (activeTabLocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, textColor: color } : el)),
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId
+          ? {
+              ...t,
+              elements: t.elements.map((el) =>
+                ids.has(el.id) && isBoxed(el) ? { ...el, textColor: color } : el,
+              ),
+            }
+          : t,
+      ),
     );
+    scheduleElementChangeLog('textColor');
   };
 
   const setLinkSelected = (tabId: string) => {
@@ -2740,32 +2822,10 @@ export default function LivePage() {
     setGroupSourceId(null);
   };
 
-  // Mirror of the background-opacity debounce but with before/after
-  // diff. Snapshot the pre-drag elements on the first tick of a
-  // debounce window; apply every tick to state immediately so the
-  // slider feels live; emit ONE change-log entry covering the whole
-  // window once the user stops moving. A "session" is bounded by
-  // OPACITY_LOG_DEBOUNCE_MS of silence — so two slow taps stay as
-  // two entries, a continuous drag stays as one.
-  const elOpacityDebounceRef = useRef<{
-    before: Element[] | null;
-    tabId: string | null;
-    timer: number | undefined;
-  }>({ before: null, tabId: null, timer: undefined });
   const setOpacitySelected = (opacity: number) => {
     if (activeTabLocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    // First tick of a new debounce window captures the before-state +
-    // the tab id (so a tab switch mid-debounce still emits against
-    // the correct tab).
-    if (elOpacityDebounceRef.current.before === null) {
-      elOpacityDebounceRef.current.before = activeTab.elements;
-      elOpacityDebounceRef.current.tabId = activeId;
-    }
-    // Apply the change inline (bypassing `commit` so emitChange
-    // doesn't fire per-tick). State update mirrors what `commit`
-    // would do but without the log emission.
     commitTabs((ts) =>
       ts.map((t) =>
         t.id === activeId
@@ -2776,24 +2836,7 @@ export default function LivePage() {
           : t,
       ),
     );
-    // Reset the debounce; on fire emit one entry against the captured
-    // pre-drag state vs. whatever the tab's elements are right then.
-    if (elOpacityDebounceRef.current.timer) {
-      window.clearTimeout(elOpacityDebounceRef.current.timer);
-    }
-    const flushTabId = elOpacityDebounceRef.current.tabId;
-    elOpacityDebounceRef.current.timer = window.setTimeout(() => {
-      const before = elOpacityDebounceRef.current.before;
-      if (before && flushTabId) {
-        // Read via `tabsRef` (mirrored above) — the closure-captured
-        // `tabs` would be stale, this gets the post-debounce state.
-        const tab = tabsRef.current.find((t) => t.id === flushTabId);
-        if (tab) emitChange(flushTabId, before, tab.elements);
-      }
-      elOpacityDebounceRef.current.before = null;
-      elOpacityDebounceRef.current.tabId = null;
-      elOpacityDebounceRef.current.timer = undefined;
-    }, OPACITY_LOG_DEBOUNCE_MS);
+    scheduleElementChangeLog('elementOpacity');
   };
 
   const setPaddingSelected = (padding: import('@livediagram/diagram').Padding) => {
