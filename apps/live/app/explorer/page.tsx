@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Brand } from '@livediagram/ui';
 import { AuthControls } from '@/components/AuthControls';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
@@ -524,7 +524,11 @@ export default function ExplorerPage() {
             !paneContent.showUnsortedRow ? (
             <EmptyPane
               selected={selected}
-              onCreateDiagram={() => window.location.assign('/live/new')}
+              onCreateDiagram={() =>
+                window.location.assign(
+                  selected.kind === 'folder' ? `/live/new?folder=${selected.id}` : '/live/new',
+                )
+              }
               onCreateFolder={() =>
                 void createFolder(selected.kind === 'folder' ? selected.id : null)
               }
@@ -576,7 +580,9 @@ export default function ExplorerPage() {
             label="New diagram"
             onClick={() => {
               setFabMenuOpen(false);
-              window.location.assign('/live/new');
+              window.location.assign(
+                selected.kind === 'folder' ? `/live/new?folder=${selected.id}` : '/live/new',
+              );
             }}
           />
           <MenuItem
@@ -844,39 +850,45 @@ function PaneHeader({
   title: string;
   crumbs: { name: string; onClick?: () => void }[];
 }) {
+  // A single-item breadcrumb is just the page title in a second
+  // place — visually noisy and provides no navigation. Show only
+  // when there are actual parents to click back to.
+  const showCrumbs = crumbs.length >= 2;
   return (
     <div className="mb-4">
       <h1 className="mb-2 truncate text-2xl font-semibold tracking-tight text-slate-900">
         {title}
       </h1>
-      <nav
-        aria-label="Breadcrumb"
-        className="flex flex-wrap items-center rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-600 shadow-sm"
-      >
-        {crumbs.map((c, i) => {
-          const isLast = i === crumbs.length - 1;
-          return (
-            <span key={`${c.name}-${i}`} className="flex items-center">
-              {i > 0 ? (
-                <span aria-hidden className="px-1 text-slate-300">
-                  ›
-                </span>
-              ) : null}
-              {c.onClick && !isLast ? (
-                <button
-                  type="button"
-                  onClick={c.onClick}
-                  className="rounded px-1.5 py-0.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-                >
-                  {c.name}
-                </button>
-              ) : (
-                <span className="rounded px-1.5 py-0.5 font-medium text-slate-900">{c.name}</span>
-              )}
-            </span>
-          );
-        })}
-      </nav>
+      {showCrumbs ? (
+        <nav
+          aria-label="Breadcrumb"
+          className="flex flex-wrap items-center rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-600 shadow-sm"
+        >
+          {crumbs.map((c, i) => {
+            const isLast = i === crumbs.length - 1;
+            return (
+              <span key={`${c.name}-${i}`} className="flex items-center">
+                {i > 0 ? (
+                  <span aria-hidden className="px-1 text-slate-300">
+                    ›
+                  </span>
+                ) : null}
+                {c.onClick && !isLast ? (
+                  <button
+                    type="button"
+                    onClick={c.onClick}
+                    className="rounded px-1.5 py-0.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    {c.name}
+                  </button>
+                ) : (
+                  <span className="rounded px-1.5 py-0.5 font-medium text-slate-900">{c.name}</span>
+                )}
+              </span>
+            );
+          })}
+        </nav>
+      ) : null}
     </div>
   );
 }
@@ -1338,23 +1350,37 @@ function InlineRenameInput({
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState(initial);
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      ref.current?.focus();
-      ref.current?.select();
-    }, 0);
-    return () => window.clearTimeout(t);
+  // Tracks whether the input has ever actually received focus. The
+  // rename flow runs on the same click that closed a PortalMenu —
+  // when that menu unmounts, the focused MenuItem is removed and
+  // focus bounces around (body, then re-focused into the input).
+  // During that bounce the browser can fire a spurious blur on the
+  // newly-mounted input before any user interaction. Without this
+  // guard, blur fires immediately and commits with the original
+  // name, unmounting the input before the user sees it.
+  const hadFocusRef = useRef(false);
+  // Synchronous focus during the commit phase, before the browser
+  // paints. useEffect + setTimeout(0) leaves a window where the
+  // input is mounted but unfocused, which is exactly the window
+  // where focus bounces away.
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    node.focus();
+    node.select();
   }, []);
   return (
     <input
       ref={ref}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
+      onFocus={() => {
+        hadFocusRef.current = true;
       }}
-      onBlur={() => onCommit(draft)}
+      onBlur={() => {
+        if (!hadFocusRef.current) return;
+        onCommit(draft);
+      }}
       onKeyDown={(e) => {
         e.stopPropagation();
         if (e.key === 'Enter') {

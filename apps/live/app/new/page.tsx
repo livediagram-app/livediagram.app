@@ -178,6 +178,18 @@ export default function NewDiagramPage() {
       // Network glitch — the editor route's autosave will retry on
       // the first edit. Navigation continues either way.
     });
+    // Folder context from the URL: /live/new?folder=<id> lets the
+    // explorer's FAB drop a fresh diagram straight into the folder
+    // the user was browsing. Done as a follow-up PUT rather than
+    // baking folderId into POST /diagrams so the create endpoint
+    // signature stays stable and the per-folder assignment can fail
+    // independently (network glitch → diagram lives in Unsorted,
+    // user can drag it later).
+    const params = new URLSearchParams(window.location.search);
+    const targetFolderId = params.get('folder');
+    if (targetFolderId) {
+      await apiSetDiagramFolder(self.id, diagramId, targetFolderId).catch(() => {});
+    }
     window.location.assign(`/live/diagram/${diagramId}`);
   };
 

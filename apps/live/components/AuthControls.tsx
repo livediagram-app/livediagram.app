@@ -64,6 +64,16 @@ function AuthControlsEnabled() {
   const initial = (user?.firstName ?? user?.username ?? '?').slice(0, 1).toUpperCase();
   const displayName =
     user?.fullName ?? user?.username ?? user?.primaryEmailAddress?.emailAddress ?? '';
+  // Pill label: first name only (or the username fallback). Last
+  // names get truncated in account UIs because most users don't
+  // need the full identity on screen — the avatar dot + first name
+  // is the recognisable "this is me" combo. Truncate at 16 chars
+  // so a very long first name doesn't push the chevron off-pill.
+  const pillLabel = (() => {
+    const raw = user?.firstName ?? user?.username ?? '';
+    if (!raw) return null;
+    return raw.length > 16 ? `${raw.slice(0, 15)}…` : raw;
+  })();
 
   return (
     <div className="relative" ref={menuRef}>
@@ -72,9 +82,12 @@ function AuthControlsEnabled() {
         onClick={() => setMenuOpen((open) => !open)}
         aria-label="Account menu"
         aria-expanded={menuOpen}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
+        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 text-xs font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
       >
-        {initial}
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-[11px] font-semibold text-white">
+          {initial}
+        </span>
+        {pillLabel ? <span className="truncate">{pillLabel}</span> : null}
       </button>
       {menuOpen ? (
         <div
