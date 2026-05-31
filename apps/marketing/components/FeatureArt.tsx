@@ -795,16 +795,12 @@ export function RefreshArt() {
           <rect x="132" y="34" width="48" height="24" rx="6" />
           <line x1="84" y1="46" x2="132" y2="46" stroke={BLUE_STROKE} strokeWidth="2" />
         </g>
-        {/* reload glyph */}
-        <g
-          className="fa-spin"
-          transform="translate(110 78)"
-          stroke="#94a3b8"
-          strokeWidth="1.8"
-          fill="none"
-        >
-          <path d="M-6 0 a6 6 0 1 1 1.8 4.3" strokeLinecap="round" />
-          <path d="M-6 -4 L-6 0 L-2 0" strokeLinecap="round" strokeLinejoin="round" />
+        {/* reload glyph (translate on the outer group, spin on the inner) */}
+        <g transform="translate(110 78)">
+          <g className="fa-spin" stroke="#94a3b8" strokeWidth="1.8" fill="none">
+            <path d="M-6 0 a6 6 0 1 1 1.8 4.3" strokeLinecap="round" />
+            <path d="M-6 -4 L-6 0 L-2 0" strokeLinecap="round" strokeLinejoin="round" />
+          </g>
         </g>
       </svg>
       <span className="absolute bottom-1 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
@@ -935,22 +931,27 @@ function SvgCursor({
   label?: string;
   delay?: string;
 }) {
+  // Position with the transform attribute on the outer group; animate the
+  // scale on an inner group. (A CSS transform animation on the same element
+  // overrides the translate attribute and snaps the element to the origin.)
   return (
-    <g className="fa-pop" style={{ animationDelay: delay }} transform={`translate(${x} ${y})`}>
-      <path
-        d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z"
-        fill={color}
-        stroke="white"
-        strokeWidth="1"
-      />
-      {label ? (
-        <g>
-          <rect x="12" y="-10" width="17" height="11" rx="2" fill={color} />
-          <text x="20.5" y="-2" textAnchor="middle" fontSize="7" fontWeight="600" fill="white">
-            {label}
-          </text>
-        </g>
-      ) : null}
+    <g transform={`translate(${x} ${y})`}>
+      <g className="fa-pop" style={{ animationDelay: delay }}>
+        <path
+          d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z"
+          fill={color}
+          stroke="white"
+          strokeWidth="1"
+        />
+        {label ? (
+          <g>
+            <rect x="12" y="-10" width="17" height="11" rx="2" fill={color} />
+            <text x="20.5" y="-2" textAnchor="middle" fontSize="7" fontWeight="600" fill="white">
+              {label}
+            </text>
+          </g>
+        ) : null}
+      </g>
     </g>
   );
 }
@@ -1473,6 +1474,170 @@ export function UndoRedoArt() {
           </svg>
         </span>
       </div>
+    </Frame>
+  );
+}
+
+/* ──────────────────── Section: refine / reliability extras ────────── */
+
+export function GroupArt() {
+  // Two shapes bound into one group (the dashed group box grows around them).
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <rect
+          x="58"
+          y="28"
+          width="44"
+          height="22"
+          rx="5"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <rect
+          x="118"
+          y="46"
+          width="44"
+          height="22"
+          rx="5"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <rect
+          className="fa-grow"
+          x="50"
+          y="22"
+          width="120"
+          height="52"
+          rx="4"
+          fill="rgba(14,165,233,0.06)"
+          stroke={SKY}
+          strokeWidth="1.5"
+          strokeDasharray="5 3"
+        />
+      </svg>
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        grouped
+      </span>
+    </Frame>
+  );
+}
+
+export function LockArt() {
+  // A shape switched to read-only, with a padlock popping on.
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <rect
+          x="78"
+          y="32"
+          width="64"
+          height="32"
+          rx="6"
+          fill="#eef2f7"
+          stroke="#94a3b8"
+          strokeWidth="2"
+        />
+        <g transform="translate(110 47)">
+          <g className="fa-pop" style={{ animationDelay: '0.4s' }}>
+            <rect x="-7" y="-1" width="14" height="11" rx="2" fill="#475569" />
+            <path d="M-4 -1 V-4 a4 4 0 0 1 8 0 V-1" fill="none" stroke="#475569" strokeWidth="2" />
+            <circle cx="0" cy="4.5" r="1.4" fill="#fff" />
+          </g>
+        </g>
+      </svg>
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        locked
+      </span>
+    </Frame>
+  );
+}
+
+export function AccountSyncArt() {
+  // The same diagram on a laptop and phone, kept in sync via a free account.
+  return (
+    <Frame>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        {/* laptop */}
+        <rect
+          x="14"
+          y="22"
+          width="58"
+          height="34"
+          rx="3"
+          fill="#fff"
+          stroke="#cbd5e1"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M8 60 L78 60 L74 64 L12 64 Z"
+          fill="#e2e8f0"
+          stroke="#cbd5e1"
+          strokeWidth="1"
+          strokeLinejoin="round"
+        />
+        <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.2">
+          <line x1="40" y1="34" x2="46" y2="46" stroke={BLUE_STROKE} />
+          <rect x="24" y="30" width="16" height="8" rx="2" />
+          <rect x="46" y="42" width="16" height="8" rx="2" />
+        </g>
+        {/* phone */}
+        <rect
+          x="156"
+          y="20"
+          width="28"
+          height="50"
+          rx="5"
+          fill="#fff"
+          stroke="#cbd5e1"
+          strokeWidth="1.5"
+        />
+        <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.2">
+          <line x1="170" y1="34" x2="171" y2="46" stroke={BLUE_STROKE} />
+          <rect x="161" y="28" width="18" height="8" rx="2" />
+          <rect x="162" y="44" width="18" height="8" rx="2" />
+        </g>
+        {/* dotted connectors to the sync cloud */}
+        <line
+          x1="78"
+          y1="42"
+          x2="96"
+          y2="42"
+          stroke="#cbd5e1"
+          strokeWidth="1.5"
+          strokeDasharray="3 2"
+        />
+        <line
+          x1="124"
+          y1="42"
+          x2="154"
+          y2="42"
+          stroke="#cbd5e1"
+          strokeWidth="1.5"
+          strokeDasharray="3 2"
+        />
+        {/* sync cloud with pulsing arrows */}
+        <g transform="translate(98 31)">
+          <path
+            d="M5 20 a5 5 0 0 1 0 -10 a5.5 5.5 0 0 1 10.5 -1.4 A4 4 0 0 1 19 20 Z"
+            fill="#e0f2fe"
+            stroke={SKY}
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <g className="fa-pulse" stroke={SKY} strokeWidth="1.3" fill="none" strokeLinecap="round">
+            <path d="M7.5 13 a4 4 0 0 1 8 -0.6" />
+            <path d="M15.5 9.5 v3 h-3" />
+            <path d="M16.5 15 a4 4 0 0 1 -8 0.6" />
+            <path d="M8.5 18.5 v-3 h3" />
+          </g>
+        </g>
+      </svg>
+      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        free account
+      </span>
     </Frame>
   );
 }

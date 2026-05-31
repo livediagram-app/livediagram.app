@@ -1,14 +1,16 @@
 import {
+  AccountSyncArt,
   ActivityArt,
   AnyDeviceArt,
-  ArrowsArt,
   AutosaveArt,
   CommentsArt,
   DepthArt,
   EasyStartArt,
   FoldersArt,
   FormatPainterArt,
+  GroupArt,
   LaserArt,
+  LockArt,
   MarqueeArt,
   MitArt,
   MultiplayerArt,
@@ -19,7 +21,6 @@ import {
   RefreshArt,
   RevokeArt,
   SelectionGlowArt,
-  ShapesArt,
   ShareLinksArt,
   TabCopyArt,
   TabLockArt,
@@ -91,7 +92,7 @@ export default function LandingPage() {
 
         <Section
           id="collaboration"
-          title="A shared canvas your team builds together."
+          title="Invite your team to collaborate"
           description="Diagrams stay private until you share. Everyone you invite shows up on the canvas in real time, with live cursors, comments, and presence."
           variant="tinted"
         >
@@ -110,16 +111,16 @@ export default function LandingPage() {
                   'See who is in the diagram from the participant avatars on each tab. Status rings show online, away, or stale.',
               },
               {
-                art: <SelectionGlowArt />,
-                title: 'See what others are working on',
-                description:
-                  'Click an element and your collaborators see your colour glow on its border, plus your initials in the corner, in real time.',
-              },
-              {
                 art: <RealtimeArt />,
                 title: 'Edits land live',
                 description:
                   'The moment someone makes a change, everyone sees it. If two people edit the same thing at once, the most recent change is the one that sticks.',
+              },
+              {
+                art: <SelectionGlowArt />,
+                title: 'See what others are working on',
+                description:
+                  'Click an element and your collaborators see your colour glow on its border, plus your initials in the corner, in real time.',
               },
               {
                 art: <CommentsArt />,
@@ -144,33 +145,9 @@ export default function LandingPage() {
         </Section>
 
         <Section
-          id="features"
-          title="A real diagram editor, in your browser"
-          description="Real shapes and connectors that track what they're tied to. The raw materials every diagram is built from."
-        >
-          <FeatureGrid
-            items={[
-              {
-                art: <ShapesArt />,
-                title: 'Shapes that match how you think',
-                description:
-                  'Square, circle, diamond, stadium (start/end), cylinder (DB), parallelogram (I/O), hexagon, document. Plus text and sticky notes for annotations.',
-              },
-              {
-                art: <ArrowsArt />,
-                title: 'Arrows that follow content',
-                description:
-                  'Drag from an anchor dot to connect two shapes. Move either shape and the arrow tracks. Straight, curved, or angled, with custom strokes and end-styles per arrow.',
-              },
-            ]}
-          />
-        </Section>
-
-        <Section
           id="refine"
-          title="Keep a busy diagram tidy"
-          description="Edit in bulk, copy a look from one element to the next, and split a big system across linked tabs and folders."
-          variant="tinted"
+          title="Keeping your work tidy"
+          description="Work fast and stay organised: select in bulk, group and lock elements, copy a look from one to the next, and file diagrams into folders."
         >
           <FeatureGrid
             items={[
@@ -178,13 +155,25 @@ export default function LandingPage() {
                 art: <MarqueeArt />,
                 title: 'Multi-select with marquee',
                 description:
-                  'Switch to the Select tool, drag a box. Move, duplicate, group, lock, or delete every element inside, one action, one Cmd-Z.',
+                  'Switch to the Select tool, drag a box, and act on everything inside at once: move, duplicate, or delete in one step, one Cmd-Z.',
+              },
+              {
+                art: <GroupArt />,
+                title: 'Group elements together',
+                description:
+                  'Bundle shapes into a group so they move, lock, and delete as one. Ungroup any time to work on a single piece again.',
+              },
+              {
+                art: <LockArt />,
+                title: 'Lock anything in place',
+                description:
+                  'Lock an element, or a whole tab, and it turns read-only, so a finished part of the diagram cannot be nudged or edited by accident.',
               },
               {
                 art: <FormatPainterArt />,
                 title: 'Format painter',
                 description:
-                  "Copy one element's look, size, colours, text style, opacity, padding, and brush it onto the next. Consistent diagrams without re-picking every option.",
+                  "Copy one element's look, its size, colours, text style, opacity, and padding, then brush it onto the next. Consistent diagrams without re-picking every option.",
               },
               {
                 art: <FoldersArt />,
@@ -200,6 +189,7 @@ export default function LandingPage() {
           id="tabs"
           title="One diagram, as many tabs as it takes"
           description="Every diagram is a stack of tabs, each its own canvas. Split a big system across them, link between them, copy them between diagrams, and lock the ones that are done."
+          variant="tinted"
         >
           <FeatureGrid
             items={[
@@ -241,7 +231,6 @@ export default function LandingPage() {
           id="reliability"
           title="Diagrams you can rely on"
           description="Your work saves itself, steps back when you slip, and comes back exactly as you left it. Nothing to remember, nothing to lose."
-          variant="tinted"
         >
           <FeatureGrid
             items={[
@@ -269,6 +258,12 @@ export default function LandingPage() {
                 description:
                   'Every save is durable through the API. Close the tab, reload, and your diagram comes back exactly as you left it.',
               },
+              {
+                art: <AccountSyncArt />,
+                title: 'Your diagrams, on every device',
+                description:
+                  'Sign in for free and your diagrams follow you. Open the same ones on your laptop, tablet, or phone, always up to date.',
+              },
             ]}
           />
         </Section>
@@ -277,6 +272,7 @@ export default function LandingPage() {
           id="foundations"
           title="Open source. Self-hostable. No lock-in."
           description="MIT-licensed. Static frontend + Cloudflare Workers backend. Run it on your own account in an afternoon. Or use the hosted version, your call."
+          variant="tinted"
         >
           <FeatureGrid
             items={[
@@ -305,7 +301,7 @@ export default function LandingPage() {
         <section id="get-started" className="border-t border-slate-200/70 bg-brand-500">
           <div className="mx-auto max-w-6xl px-6 py-20 text-center sm:py-24">
             <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Open a canvas. Get to drawing.
+              It&rsquo;s time to start
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
               No sign-up wall. No credit card. The editor opens in your browser and remembers the
