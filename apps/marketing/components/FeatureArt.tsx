@@ -917,93 +917,229 @@ export function NoTrackingArt() {
 }
 
 /* ─────────────── Section: simple by design (lead-in) ─────────────────
- * Lighter than the canvas mocks above, a clean icon badge per card, so
- * the section about simplicity reads as simple. Uses the editor's
- * bg-brand-50 / text-brand-500 circle motif with a gentle pulsing ring. */
+ * These cards mock the real editor surface like the rest of the page, so
+ * the lead-in section stays visually consistent with the sections below. */
 
-function IconBadge({ children, delay = '0s' }: { children: ReactNode; delay?: string }) {
+// Cursor drawn inside an SVG (vs the HTML Cursor helper) so it can be
+// placed precisely in a 220x96 illustration. Optional name label.
+function SvgCursor({
+  x,
+  y,
+  color,
+  label,
+  delay,
+}: {
+  x: number;
+  y: number;
+  color: string;
+  label?: string;
+  delay?: string;
+}) {
   return (
-    <div className="mb-5 flex h-24 items-center justify-center" aria-hidden>
-      <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-500">
-        <span
-          className="fa-pulse absolute inset-0 rounded-full ring-2 ring-brand-300"
-          style={{ animationDelay: delay }}
-        />
-        {children}
-      </span>
-    </div>
+    <g className="fa-pop" style={{ animationDelay: delay }} transform={`translate(${x} ${y})`}>
+      <path
+        d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z"
+        fill={color}
+        stroke="white"
+        strokeWidth="1"
+      />
+      {label ? (
+        <g>
+          <rect x="12" y="-10" width="17" height="11" rx="2" fill={color} />
+          <text x="20.5" y="-2" textAnchor="middle" fontSize="7" fontWeight="600" fill="white">
+            {label}
+          </text>
+        </g>
+      ) : null}
+    </g>
   );
 }
 
 export function EasyStartArt() {
+  // A click creates a shape: the cursor taps (ripple) and a shape pops in.
   return (
-    <IconBadge>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <g className="fa-pop" style={{ animationDelay: '0.5s' }}>
+          <rect
+            x="74"
+            y="33"
+            width="66"
+            height="30"
+            rx="15"
+            fill={BLUE_FILL}
+            stroke={BLUE_STROKE}
+            strokeWidth="2"
+          />
+          <text x="107" y="52" textAnchor="middle" fontSize="12" fontWeight="600" fill={BLUE_TEXT}>
+            Start
+          </text>
+        </g>
         <circle
           className="fa-ripple"
-          cx="5"
-          cy="3.5"
-          r="2.5"
+          cx="122"
+          cy="60"
+          r="7"
           fill="none"
-          stroke="currentColor"
+          stroke={SKY}
           strokeWidth="1.5"
         />
-        <path d="M5 3 L19 11 L12 12 L15 19 L12 20 L9 13 L5 17 Z" fill="currentColor" />
+        <g transform="translate(118 54)" fill={SKY} stroke="white" strokeWidth="1">
+          <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
+        </g>
       </svg>
-    </IconBadge>
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        one click
+      </span>
+    </Frame>
   );
 }
 
 export function DepthArt() {
+  // A plain-looking shape, selected, revealing a toolbar of deeper tools.
+  const tools = [
+    <GroupGlyph key="g" />,
+    <LockGlyph key="l" />,
+    <LinkGlyph key="k" />,
+    <CommentGlyph key="c" />,
+  ];
   return (
-    <IconBadge delay="0.4s">
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      >
-        <path className="fa-draw" d="M12 3 L21 8 L12 13 L3 8 Z" />
-        <path
-          className="fa-draw"
-          style={{ animationDelay: '0.25s' }}
-          d="M3 12 L12 17 L21 12"
-          strokeLinecap="round"
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <rect
+          x="28"
+          y="38"
+          width="58"
+          height="30"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
         />
-        <path
-          className="fa-draw"
-          style={{ animationDelay: '0.5s' }}
-          d="M3 16 L12 21 L21 16"
-          strokeLinecap="round"
+        <rect
+          className="fa-pulse"
+          x="24"
+          y="34"
+          width="66"
+          height="38"
+          rx="9"
+          fill="none"
+          stroke={SKY}
+          strokeWidth="1.5"
         />
       </svg>
-    </IconBadge>
+      <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded-md border border-slate-200 bg-white p-1 shadow-md">
+        {tools.map((g, i) => (
+          <span
+            key={i}
+            className="fa-pop flex h-5 w-5 items-center justify-center rounded text-slate-500"
+            style={{ animationDelay: `${0.4 + i * 0.25}s` }}
+          >
+            {g}
+          </span>
+        ))}
+      </div>
+    </Frame>
+  );
+}
+
+function GroupGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+    >
+      <rect x="2" y="2" width="8" height="8" rx="1.5" />
+      <rect x="6" y="6" width="8" height="8" rx="1.5" fill="white" />
+    </svg>
+  );
+}
+
+function LockGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+    >
+      <rect x="3.5" y="7" width="9" height="6" rx="1.5" />
+      <path d="M5.5 7 V5 a2.5 2.5 0 0 1 5 0 V7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LinkGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+    >
+      <path
+        d="M6.5 9.5 L9.5 6.5 M7 4.5 L9 2.5 a3 3 0 0 1 4 4 L11 8.5 M9 11.5 L7 13.5 a3 3 0 0 1 -4 -4 L5 7.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function CommentGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+    >
+      <path d="M2.5 3 h11 v7 h-6.5 l-3 2.5 v-2.5 h-1.5 z" strokeLinejoin="round" />
+    </svg>
   );
 }
 
 export function MultiplayerArt() {
+  // The shared canvas: a shape with a remote selection glow and several
+  // named cursors arriving.
   return (
-    <IconBadge delay="0.8s">
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <circle cx="9" cy="8" r="3" />
-        <path d="M3.5 19 a5.5 5.5 0 0 1 11 0" strokeLinecap="round" />
-        {/* a second collaborator joins on each loop */}
-        <g className="fa-pop" style={{ animationDelay: '0.4s' }}>
-          <circle cx="17" cy="9" r="2.5" />
-          <path d="M14 18.5 a4.5 4.5 0 0 1 6.5 -1.2" strokeLinecap="round" />
-        </g>
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <rect
+          x="82"
+          y="36"
+          width="56"
+          height="28"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <rect
+          className="fa-pulse"
+          x="78"
+          y="32"
+          width="64"
+          height="36"
+          rx="9"
+          fill="none"
+          stroke={PINK}
+          strokeWidth="2"
+        />
+        <SvgCursor x={34} y={22} color={SKY} label="TM" delay="0.3s" />
+        <SvgCursor x={150} y={58} color={PINK} label="JR" delay="0.8s" />
+        <SvgCursor x={58} y={66} color="#8b5cf6" label="AL" delay="1.3s" />
       </svg>
-    </IconBadge>
+    </Frame>
   );
 }
 
