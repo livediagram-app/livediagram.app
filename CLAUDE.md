@@ -62,8 +62,9 @@ See [specs/06-secrets-policy.md](specs/06-secrets-policy.md). **Repo is public �
 See [specs/04-auth-and-guest-access.md](specs/04-auth-and-guest-access.md).
 
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
-- Clerk handles auth (post-prototype). Auth unlocks sync / sharing / collab — it doesn't gate the basic experience.
-- Guests' local diagrams should migrate into their account on sign-up.
+- The api is open today — identity is a per-browser participant id (`livediagram:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Everyone is effectively a guest and gets the full feature set (persistence, share links, real-time collab).
+- Clerk lands later. Auth will unlock per-account sync (diagrams travel across devices), team workspaces, and Pro billing — never gate the canvas itself.
+- On sign-up, guest diagrams should migrate from the per-browser identity into the new account so nothing is lost.
 
 ## Core principle: reuse over duplication
 
