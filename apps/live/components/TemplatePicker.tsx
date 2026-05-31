@@ -69,6 +69,14 @@ export function TemplatePicker({
   );
   const visibleTemplates = TEMPLATES.filter((t) => !t.extra || showExtraTemplates);
   const hasExtraTemplates = TEMPLATES.some((t) => t.extra);
+  // Same opt-in toggle for themes — default twelve render up front,
+  // extras unlock on click. Auto-expanded if the active themeId is
+  // already an extra (revisiting a tab themed with one of them).
+  const [showExtraThemes, setShowExtraThemes] = useState(
+    THEMES.find((t) => t.id === themeId)?.extra === true,
+  );
+  const visibleThemes = THEMES.filter((t) => !t.extra || showExtraThemes);
+  const hasExtraThemes = THEMES.some((t) => t.extra);
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
 
@@ -207,7 +215,7 @@ export function TemplatePicker({
                 Select a theme
               </p>
               <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
-                {THEMES.map((t) => {
+                {visibleThemes.map((t) => {
                   const active = themeId === t.id;
                   const dot = t.elementStroke ?? t.patternColor;
                   const swatch = t.elementFill ?? '#ffffff';
@@ -238,6 +246,16 @@ export function TemplatePicker({
                   );
                 })}
               </div>
+              {hasExtraThemes && !showExtraThemes ? (
+                <button
+                  type="button"
+                  onClick={() => setShowExtraThemes(true)}
+                  className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand-700 hover:text-brand-800"
+                >
+                  Show more themes
+                  <span aria-hidden>↓</span>
+                </button>
+              ) : null}
             </>
           ) : null}
         </div>

@@ -19,7 +19,13 @@ export type ThemeId =
   | 'midnight'
   | 'cream'
   | 'rose'
-  | 'sand';
+  | 'sand'
+  | 'emerald'
+  | 'indigo'
+  | 'plum'
+  | 'steel'
+  | 'honey'
+  | 'coral';
 
 export type ThemeDefinition = {
   id: ThemeId;
@@ -34,6 +40,11 @@ export type ThemeDefinition = {
   elementFill: string | null;
   elementStroke: string | null;
   elementText: string | null;
+  // True for themes that sit behind the picker's "Show more" toggle —
+  // both in the welcome / template picker AND in the Current Tab theme
+  // grid. The default twelve render in the first batch; extras unlock
+  // on click so the grids stay compact for first-time users.
+  extra?: boolean;
 };
 
 export const THEMES: ThemeDefinition[] = [
@@ -156,6 +167,72 @@ export const THEMES: ThemeDefinition[] = [
     elementFill: '#f5f5f4',
     elementStroke: '#78716c',
     elementText: '#292524',
+  },
+  {
+    id: 'emerald',
+    label: 'Emerald',
+    backgroundColor: '#ecfdf5',
+    backgroundPattern: 'grid',
+    patternColor: '#a7f3d0',
+    elementFill: '#d1fae5',
+    elementStroke: '#047857',
+    elementText: '#064e3b',
+    extra: true,
+  },
+  {
+    id: 'indigo',
+    label: 'Indigo',
+    backgroundColor: '#eef2ff',
+    backgroundPattern: 'grid',
+    patternColor: '#c7d2fe',
+    elementFill: '#e0e7ff',
+    elementStroke: '#4338ca',
+    elementText: '#312e81',
+    extra: true,
+  },
+  {
+    id: 'plum',
+    label: 'Plum',
+    backgroundColor: '#fdf4ff',
+    backgroundPattern: 'grid',
+    patternColor: '#f5d0fe',
+    elementFill: '#fae8ff',
+    elementStroke: '#a21caf',
+    elementText: '#701a75',
+    extra: true,
+  },
+  {
+    id: 'steel',
+    label: 'Steel',
+    backgroundColor: '#f1f5f9',
+    backgroundPattern: 'grid',
+    patternColor: '#94a3b8',
+    elementFill: '#e2e8f0',
+    elementStroke: '#334155',
+    elementText: '#0f172a',
+    extra: true,
+  },
+  {
+    id: 'honey',
+    label: 'Honey',
+    backgroundColor: '#fffbeb',
+    backgroundPattern: 'grid',
+    patternColor: '#fde68a',
+    elementFill: '#fef3c7',
+    elementStroke: '#b45309',
+    elementText: '#78350f',
+    extra: true,
+  },
+  {
+    id: 'coral',
+    label: 'Coral',
+    backgroundColor: '#fff7ed',
+    backgroundPattern: 'grid',
+    patternColor: '#fdba74',
+    elementFill: '#ffedd5',
+    elementStroke: '#dc2626',
+    elementText: '#7f1d1d',
+    extra: true,
   },
 ];
 

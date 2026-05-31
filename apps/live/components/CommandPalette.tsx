@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type {
   ArrowEnds,
   ArrowheadSize,
@@ -1107,6 +1108,15 @@ export function TabSection({
       return { ...closed, [key]: true };
     });
 
+  // Same opt-in toggle as the picker. Auto-expanded if the current
+  // tab is already on one of the extra themes, so the active swatch
+  // is always visible.
+  const [showExtraThemes, setShowExtraThemes] = useState(
+    THEMES.find((t) => t.id === tab.themeId)?.extra === true,
+  );
+  const visibleThemes = THEMES.filter((t) => !t.extra || showExtraThemes);
+  const hasExtraThemes = THEMES.some((t) => t.extra);
+
   return (
     <div className="flex flex-col border-t border-slate-200">
       <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
@@ -1118,7 +1128,7 @@ export function TabSection({
           (sticky notes keep their amber palette).
         </p>
         <div className="mt-1 grid grid-cols-3 gap-1">
-          {THEMES.map((t) => {
+          {visibleThemes.map((t) => {
             const active = tab.themeId === t.id;
             // Border / dot colours come from the theme's element-stroke (or
             // pattern colour when the theme is the brand default).
@@ -1157,6 +1167,16 @@ export function TabSection({
             );
           })}
         </div>
+        {hasExtraThemes && !showExtraThemes ? (
+          <button
+            type="button"
+            onClick={() => setShowExtraThemes(true)}
+            className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand-700 hover:text-brand-800"
+          >
+            Show more themes
+            <span aria-hidden>↓</span>
+          </button>
+        ) : null}
       </Accordion>
       <Accordion title="Canvas" open={open.background} onToggle={() => toggle('background')}>
         <p className="text-[10px] font-medium text-slate-500">Pattern</p>
