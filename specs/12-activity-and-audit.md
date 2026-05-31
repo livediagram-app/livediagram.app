@@ -66,16 +66,12 @@ commit**. A later rename doesn't retroactively rewrite the log.
 
 ## Cascade on tab delete
 
-`diagrams` is one row of JSON; tabs are not their own table, so the
-FK on `tab_id` can't cascade. The client must explicitly delete log
-entries for a tab when it deletes the tab:
+Tabs got their own table in migration 0005 (see [13-per-tab-storage.md](13-per-tab-storage.md)), but the `change_log.tab_id` column doesn't have a hard FK back to it — log entries can outlive the row they referenced (an entry mentioning a since-deleted tab still makes historical sense). The client therefore deletes log entries for a tab explicitly when it deletes the tab:
 
-- `DELETE /api/diagrams/:id/log/tab/:tabId` drops every row whose
-  `tab_id` matches.
-- The live app calls this from `deleteTab` before persisting the new
-  tabs list.
+- `DELETE /api/diagrams/:id/log/tab/:tabId` drops every row whose `tab_id` matches.
+- The live app calls this from `deleteTab` alongside the tab row delete.
 
-Diagram delete still cascades through the FK above.
+Diagram delete still cascades through the FK on `diagram_id`.
 
 ## API surface
 
@@ -89,7 +85,7 @@ View-role visitors fail the auth check.
 The bulk tab-cascade DELETE stays owner-only — destructive bulk
 ops shouldn't ride a visitor's share code.
 
-- `GET    /api/diagrams/:id/log` → `{ entries: ChangeLogEntry[] }` newest-first, capped at 200. (owner or edit visitor)
+- `GET    /api/diagrams/:id/log` → `{ entries: ChangeLogEntry[] }` newest-first, capped at 30 (server-side `CHANGE_LOG_LIST_LIMIT` in `apps/api/src/db.ts`). (owner or edit visitor)
 - `POST   /api/diagrams/:id/log` → append. Body: the new entry. (owner or edit visitor)
 - `DELETE /api/diagrams/:id/log/:entryId` → drop one entry (revert / undo). (owner or edit visitor)
 - `DELETE /api/diagrams/:id/log/tab/:tabId` → drop entries for one tab. (owner only)
@@ -155,15 +151,14 @@ ops shouldn't ride a visitor's share code.
 - Append is fire-and-forget — UI doesn't await it.
 - List fetch is debounced into hydration; subsequent appends update
   the in-memory list. We do not poll the server.
-- Cap the in-memory list at 200 entries. Older entries are still in
-  D1 and load on a future `GET /log`; V1 doesn't expose pagination
-  UI.
+- Server caps the list response at 30 entries (`CHANGE_LOG_LIST_LIMIT`). Older entries are still in D1; V1 doesn't expose pagination UI.
+
+## Realtime mirroring
+
+New entries (and their removals on Undo / Revert) propagate through the per-diagram Durable Object room as `log` / `log-remove` ops — see [11-api.md → Realtime model](11-api.md). Peers append / drop from their local Activity Panel without re-fetching, so collaborators see each other's edits land in real time.
 
 ## Out of scope for V1
 
-- Realtime broadcast of new entries between collaborators (V2 — wire
-  through the existing Durable Object room).
 - Pagination / search / filter UI.
-- Diagram-level entries (rename, share toggle, theme change). All V1
-  entries are tab-scoped.
+- Diagram-level entries (rename, share toggle, theme change). All V1 entries are tab-scoped.
 - Selective revert UI ("revert just the fill, not the stroke").
