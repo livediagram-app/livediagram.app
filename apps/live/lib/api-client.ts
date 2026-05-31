@@ -164,32 +164,29 @@ type ParticipantResponse = {
   };
 };
 
-function ownerHeaders(ownerId: string): HeadersInit {
-  return { 'X-Owner-Id': ownerId, 'Content-Type': 'application/json' };
-}
-
-// Visitors on a share URL authorise by the same `X-Owner-Id` (their
-// own participant id) PLUS the share code that admitted them. The
-// API checks the code grants an edit-role share link before allowing
-// the write. Owners pass `null` and the share-code header is omitted.
-function logAuthHeaders(ownerId: string, shareCode: string | null): HeadersInit {
-  const base: Record<string, string> = {
-    'X-Owner-Id': ownerId,
-    'Content-Type': 'application/json',
-  };
-  if (shareCode) base['X-Share-Code'] = shareCode;
-  return base;
-}
-
-function logAuthGetHeaders(ownerId: string, shareCode: string | null): HeadersInit {
-  const base: Record<string, string> = { 'X-Owner-Id': ownerId };
-  if (shareCode) base['X-Share-Code'] = shareCode;
-  return base;
+// Owner identity is always carried via `X-Owner-Id`. Visitors on a
+// share URL include their own participant id there PLUS the share
+// code that admitted them in `X-Share-Code` — the API checks the
+// code's role before allowing the write. Owners pass `share: null`
+// (the default) and the share-code header is omitted.
+//
+// `body: true` adds `Content-Type: application/json` for write
+// requests; GETs / DELETEs omit it. One helper instead of three
+// near-identical ones, with intent at the call site spelled out
+// by the option flags.
+function apiHeaders(
+  ownerId: string,
+  opts: { share?: string | null; body?: boolean } = {},
+): HeadersInit {
+  const h: Record<string, string> = { 'X-Owner-Id': ownerId };
+  if (opts.body) h['Content-Type'] = 'application/json';
+  if (opts.share) h['X-Share-Code'] = opts.share;
+  return h;
 }
 
 export async function apiLoadDiagram(ownerId: string, id: string): Promise<StoredDiagram | null> {
   const res = await fetch(`${API_BASE}/diagrams/${id}`, {
-    headers: { 'X-Owner-Id': ownerId },
+    headers: apiHeaders(ownerId),
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`load failed: ${res.status}`);
@@ -240,7 +237,7 @@ export async function apiListChangeLog(
   shareCode: string | null = null,
 ): Promise<ChangeLogEntry[]> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/log`, {
-    headers: logAuthGetHeaders(ownerId, shareCode),
+    headers: apiHeaders(ownerId, { share: shareCode }),
   });
   if (!res.ok) throw new Error(`list change log failed: ${res.status}`);
   const { entries } = (await res.json()) as ChangeLogListResponse;
@@ -254,7 +251,7 @@ export async function apiAppendChangeLogEntry(
 ): Promise<ChangeLogEntry> {
   const res = await fetch(`${API_BASE}/diagrams/${entry.diagramId}/log`, {
     method: 'POST',
-    headers: logAuthHeaders(ownerId, shareCode),
+    headers: apiHeaders(ownerId, { share: shareCode, body: true }),
     body: JSON.stringify(entry),
   });
   if (!res.ok) throw new Error(`append change log failed: ${res.status}`);
@@ -270,7 +267,7 @@ export async function apiDeleteChangeLogForTab(
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/log/tab/${tabId}`, {
     method: 'DELETE',
-    headers: logAuthGetHeaders(ownerId, shareCode),
+    headers: apiHeaders(ownerId, { share: shareCode }),
   });
   if (!res.ok && res.status !== 404) {
     throw new Error(`delete change log failed: ${res.status}`);
@@ -285,7 +282,7 @@ export async function apiDeleteChangeLogEntry(
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/log/${entryId}`, {
     method: 'DELETE',
-    headers: logAuthGetHeaders(ownerId, shareCode),
+    headers: apiHeaders(ownerId, { share: shareCode }),
   });
   if (!res.ok && res.status !== 404) {
     throw new Error(`delete change log entry failed: ${res.status}`);
@@ -294,7 +291,7 @@ export async function apiDeleteChangeLogEntry(
 
 export async function apiListShareLinks(ownerId: string, id: string): Promise<ShareLink[]> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
-    headers: { 'X-Owner-Id': ownerId },
+    headers: apiHeaders(ownerId),
   });
   if (!res.ok) throw new Error(`list share links failed: ${res.status}`);
   const { links } = (await res.json()) as ShareLinksResponse;
@@ -308,7 +305,7 @@ export async function apiCreateShareLink(
 ): Promise<ShareLink> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
     method: 'POST',
-    headers: ownerHeaders(ownerId),
+    headers: apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ role }),
   });
   if (!res.ok) throw new Error(`create share link failed: ${res.status}`);
@@ -319,7 +316,7 @@ export async function apiCreateShareLink(
 export async function apiDeleteShareLink(ownerId: string, id: string, code: string): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/share/${code}`, {
     method: 'DELETE',
-    headers: { 'X-Owner-Id': ownerId },
+    headers: apiHeaders(ownerId),
   });
   if (!res.ok && res.status !== 404) {
     throw new Error(`delete share link failed: ${res.status}`);
@@ -332,7 +329,7 @@ export async function apiShareDiagram(
 ): Promise<{ shareable: boolean; shareCode: string | null }> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
     method: 'POST',
-    headers: ownerHeaders(ownerId),
+    headers: apiHeaders(ownerId, { body: true }),
   });
   if (!res.ok) throw new Error(`share failed: ${res.status}`);
   return (await res.json()) as ShareResponse;
@@ -344,7 +341,7 @@ export async function apiUnshareDiagram(
 ): Promise<{ shareable: boolean; shareCode: string | null }> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
     method: 'DELETE',
-    headers: ownerHeaders(ownerId),
+    headers: apiHeaders(ownerId, { body: true }),
   });
   if (!res.ok) throw new Error(`unshare failed: ${res.status}`);
   return (await res.json()) as ShareResponse;
@@ -360,7 +357,7 @@ export async function apiSaveDiagramMeta(
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${d.id}`, {
     method: 'PUT',
-    headers: logAuthHeaders(ownerId, shareCode),
+    headers: apiHeaders(ownerId, { share: shareCode, body: true }),
     body: JSON.stringify({ name: d.name, tabIds: d.tabIds }),
   });
   if (!res.ok) throw new Error(`save diagram meta failed: ${res.status}`);
@@ -390,7 +387,7 @@ export async function apiCreateDiagram(
 ): Promise<StoredDiagram> {
   const res = await fetch(`${API_BASE}/diagrams`, {
     method: 'POST',
-    headers: ownerHeaders(ownerId),
+    headers: apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({
       id: d.id,
       name: d.name,
@@ -434,7 +431,7 @@ export function apiLoadTab(
   const request = (async (): Promise<Tab | null> => {
     try {
       const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, {
-        headers: logAuthGetHeaders(ownerId, shareCode),
+        headers: apiHeaders(ownerId, { share: shareCode }),
       });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`load tab failed: ${res.status}`);
@@ -462,7 +459,7 @@ export async function apiSaveTab(
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tab.id}`, {
     method: 'PUT',
-    headers: logAuthHeaders(ownerId, shareCode),
+    headers: apiHeaders(ownerId, { share: shareCode, body: true }),
     body: JSON.stringify(stripTemplateChosen(tab)),
   });
   if (!res.ok) throw new Error(`save tab failed: ${res.status}`);
@@ -476,7 +473,7 @@ export async function apiDeleteTab(
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, {
     method: 'DELETE',
-    headers: logAuthGetHeaders(ownerId, shareCode),
+    headers: apiHeaders(ownerId, { share: shareCode }),
   });
   if (!res.ok && res.status !== 404) throw new Error(`delete tab failed: ${res.status}`);
 }
@@ -488,7 +485,7 @@ export async function apiDeleteDiagram(id: string): Promise<void> {
 
 export async function apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
   const res = await fetch(`${API_BASE}/diagrams`, {
-    headers: { 'X-Owner-Id': ownerId },
+    headers: apiHeaders(ownerId),
   });
   if (!res.ok) throw new Error(`list failed: ${res.status}`);
   const { diagrams } = (await res.json()) as ListResponse;
@@ -507,7 +504,7 @@ export async function apiListDiagrams(ownerId: string): Promise<DiagramSummary[]
 // ---------------------------------------------------------------------
 
 export async function apiListFolders(ownerId: string): Promise<Folder[]> {
-  const res = await fetch(`${API_BASE}/folders`, { headers: { 'X-Owner-Id': ownerId } });
+  const res = await fetch(`${API_BASE}/folders`, { headers: apiHeaders(ownerId) });
   if (!res.ok) throw new Error(`list folders failed: ${res.status}`);
   const { folders } = (await res.json()) as FoldersResponse;
   return folders;
@@ -519,7 +516,7 @@ export async function apiCreateFolder(
 ): Promise<Folder> {
   const res = await fetch(`${API_BASE}/folders`, {
     method: 'POST',
-    headers: { 'X-Owner-Id': ownerId, 'Content-Type': 'application/json' },
+    headers: apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({
       id: input.id,
       name: input.name,
@@ -538,7 +535,7 @@ export async function apiUpdateFolder(
 ): Promise<Folder> {
   const res = await fetch(`${API_BASE}/folders/${id}`, {
     method: 'PUT',
-    headers: { 'X-Owner-Id': ownerId, 'Content-Type': 'application/json' },
+    headers: apiHeaders(ownerId, { body: true }),
     body: JSON.stringify(patch),
   });
   if (!res.ok) throw new Error(`update folder failed: ${res.status}`);
@@ -549,7 +546,7 @@ export async function apiUpdateFolder(
 export async function apiDeleteFolder(ownerId: string, id: string): Promise<void> {
   const res = await fetch(`${API_BASE}/folders/${id}`, {
     method: 'DELETE',
-    headers: { 'X-Owner-Id': ownerId },
+    headers: apiHeaders(ownerId),
   });
   if (!res.ok && res.status !== 404) throw new Error(`delete folder failed: ${res.status}`);
 }
@@ -561,7 +558,7 @@ export async function apiSetDiagramFolder(
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/folder`, {
     method: 'PUT',
-    headers: { 'X-Owner-Id': ownerId, 'Content-Type': 'application/json' },
+    headers: apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ folderId }),
   });
   if (!res.ok) throw new Error(`set folder failed: ${res.status}`);
