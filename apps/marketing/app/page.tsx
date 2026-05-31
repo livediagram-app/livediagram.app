@@ -35,9 +35,9 @@ export default function LandingPage() {
 
         <Section
           id="features"
-          eyebrow="The canvas"
+          eyebrow="Draw"
           title="A real diagram editor, in your browser"
-          description="Twelve templates, eighteen themes, every shape you need for flowcharts and process maps. Group, lock, comment, paint formatting, link across tabs — the things that make a diagram useful, not just a sketch."
+          description="Real shapes, connectors that track what they're tied to, and a dozen templates and themes so you never start from a blank page."
         >
           <FeatureGrid
             items={[
@@ -65,6 +65,19 @@ export default function LandingPage() {
                 description:
                   'Drag from an anchor dot to connect two shapes. Move either shape and the arrow tracks. Straight, curved, or angled, with custom strokes and end-styles per arrow.',
               },
+            ]}
+          />
+        </Section>
+
+        <Section
+          id="refine"
+          eyebrow="Refine"
+          title="Keep a busy diagram tidy"
+          description="Edit in bulk, copy a look from one element to the next, talk in context, and split a big system across linked tabs and folders."
+          variant="tinted"
+        >
+          <FeatureGrid
+            items={[
               {
                 art: <MarqueeArt />,
                 title: 'Multi-select with marquee',
@@ -72,16 +85,16 @@ export default function LandingPage() {
                   'Switch to the Select tool, drag a box. Move, duplicate, group, lock, or delete every element inside — one action, one Cmd-Z.',
               },
               {
-                art: <CommentsArt />,
-                title: 'Comments on any element',
-                description:
-                  "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
-              },
-              {
                 art: <FormatPainterArt />,
                 title: 'Format painter',
                 description:
                   "Copy one element's look — size, colours, text style, opacity, padding — and brush it onto the next. Consistent diagrams without re-picking every option.",
+              },
+              {
+                art: <CommentsArt />,
+                title: 'Comments on any element',
+                description:
+                  "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
               },
               {
                 art: <TabsArt />,
@@ -101,10 +114,9 @@ export default function LandingPage() {
 
         <Section
           id="collab"
-          eyebrow="Real-time when you need it"
-          title="Private by default. Shared by link."
-          description="Diagrams stay private until you share. One click in the header mints a share link — editor or view-only — and anyone with it joins the canvas live, showing up in your presence stack with their own avatar."
-          variant="tinted"
+          eyebrow="Together"
+          title="Edit the same canvas, live"
+          description="Diagrams stay private until you share. Everyone you invite shows up on the canvas in real time — cursors, selections, and all."
         >
           <FeatureGrid
             items={[
@@ -127,28 +139,41 @@ export default function LandingPage() {
                   'Every edit propagates over WebSockets within a beat. No queues, no locks. The latest change is the truth.',
               },
               {
+                art: <LaserArt />,
+                title: 'Laser pointer for presenting',
+                description:
+                  'Switch to the laser tool and your cursor leaves a glowing trail everyone can see — point at the thing you mean while you talk it through. Trails fade on their own.',
+              },
+            ]}
+          />
+        </Section>
+
+        <Section
+          id="sharing"
+          eyebrow="Share & control"
+          title="Shared by link, yours to revoke"
+          description="Hand out editor or view-only links, rewind any change from a full activity trail, and trust that every save survives a refresh."
+          variant="tinted"
+        >
+          <FeatureGrid
+            items={[
+              {
                 art: <ShareLinksArt />,
                 title: 'Editor or view-only links',
                 description:
                   'Mint an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side.',
               },
               {
-                art: <LaserArt />,
-                title: 'Laser pointer for presenting',
+                art: <RevokeArt />,
+                title: 'Stop sharing on demand',
                 description:
-                  'Switch to the laser tool and your cursor leaves a glowing trail everyone can see — point at the thing you mean while you talk it through. Trails fade on their own.',
+                  'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The diagram is yours again.',
               },
               {
                 art: <ActivityArt />,
                 title: 'Activity log with one-click revert',
                 description:
                   'Every tab keeps a running log of who changed what. Hit revert on any entry to undo just that change — even after later edits — without disturbing the rest.',
-              },
-              {
-                art: <RevokeArt />,
-                title: 'Stop sharing on demand',
-                description:
-                  'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The diagram is yours again.',
               },
               {
                 art: <NameArt />,

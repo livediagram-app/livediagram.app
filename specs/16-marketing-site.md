@@ -13,13 +13,17 @@ The marketing app (`apps/marketing`) is the public landing site served at `/` (e
 
 ## Structure
 
-Single landing page (`app/page.tsx`) with a sticky header, hero, three feature sections, a closing CTA, and a footer. Sections are anchor-linked from the nav.
+Single landing page (`app/page.tsx`) with a sticky header, hero, themed feature sections, a closing CTA, and a footer. Feature sections group related capabilities (rather than two large catch-all grids) and alternate the `tinted` background for rhythm.
 
-1. **Hero** (`components/Hero.tsx`) — headline, subhead, primary CTA → `/live/new`, animated `HeroIllustration` mock of the editor.
-2. **The canvas** (`#features`) — the editor's diagramming features (templates, themes, shapes, arrows, multi-select, comments, format painter, tabs + cross-tab links, folders).
-3. **Real-time when you need it** (`#collab`, tinted) — sharing + collaboration (presence, selection glow, LWW edits, editor/view-only links, laser pointer, activity log + revert, revoke, collaborator name, durable save).
-4. **Open and honest** (`#foundations`) — MIT license, self-host, no telemetry. See [03-open-source-and-business-model](03-open-source-and-business-model.md).
-5. **Closing CTA** (`#get-started`) — "no sign-up wall" message + `/live/new`.
+1. **Hero** (`components/Hero.tsx`) — headline, subhead, primary CTA → `/live/new` ("Start drawing") with a no-sign-up note, animated `HeroIllustration` mock of the editor.
+2. **Draw** (`#features`) — the raw materials of a diagram: templates, themes, shapes, arrows.
+3. **Refine** (`#refine`, tinted) — working the canvas: multi-select, format painter, comments, tabs + cross-tab links, folders.
+4. **Together** (`#collab`) — live collaboration: presence, selection glow, LWW realtime edits, laser pointer.
+5. **Share & control** (`#sharing`, tinted) — editor/view-only links, revoke, activity log + revert, collaborator name, durable save.
+6. **Open and honest** (`#foundations`) — MIT license, self-host, no telemetry. See [03-open-source-and-business-model](03-open-source-and-business-model.md).
+7. **Closing CTA** (`#get-started`) — "no sign-up wall" message + `/live/new`.
+
+The primary CTA reads **"Start drawing"** everywhere (header, hero, closing CTA) — keep it consistent. The `#features` anchor must stay on the first feature section (the hero's "See what's in it" button targets it).
 
 Reusable building blocks: `Section` + `FeatureGrid` (`components/Section.tsx`), `Header`, `Footer`, `Brand` (from `@livediagram/ui`). Add new feature cards by editing the `items` arrays in `page.tsx` — do not fork the grid.
 
