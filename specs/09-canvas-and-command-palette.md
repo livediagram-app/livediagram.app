@@ -412,19 +412,27 @@ When a shape is selected, a small **popover menu** appears next to it with actio
 - The popover follows the shape during drag/resize — its position is derived from the shape's current bounds.
 - Clicking inside the popover never deselects.
 
-Initial button set (left to right):
+Button set (left to right, grouped by a thin divider):
+
+Format + duplication:
 
 - **Format painter** — copies the selected element's formatting onto the next element clicked. Paintbrush icon. See [Format painter](#format-painter). (Shown for boxed elements only — not arrows.)
+- **Duplicate** — clones the selected element in place (offset slightly). Arrows are skipped in the duplicate to avoid orphaned endpoints.
+
+Relationships:
+
+- **Link to tab** — opens a `TabLinkPicker` listing every other tab in the diagram. Picking one writes `link: { kind: 'tab', tabId }` onto the element; the linked tab opens on a follow-link click. Hidden when the diagram only has one tab (nothing to link to).
+- **Comments** — opens the `CommentThreadPopover` for the element's comment thread. See [Comments](#comments).
 - **Group / Ungroup** — Group enters group-mode to extend the selection into a group. Ungroup breaks the current group apart. See [Groups](#groups). (Shown for boxed elements only.)
-- **Lock aspect ratio** — toggles `aspectLocked` on the selected element. Off by default. When on, corner-resize scales width and height together (whichever dimension the user pulls more wins; the other is derived from the source aspect ratio). See [Aspect ratio lock](#aspect-ratio-lock).
+
+State + destructive:
+
 - **Lock / Unlock** — toggles the element's locked state. Icon flips between an open and closed padlock.
 - **Delete** — removes the selected element from the active tab and clears selection. Trash icon.
 
-Bring to Front and Send to Back **used to live here**; they're now in the palette's [Selected Element](#selected-element-section) section.
+Bring to Front, Send to Back, **Lock aspect ratio**, and the colour swatches all live in the palette's [Selected Element](#selected-element-section) accordions — they were in the popover at one point and got moved out so the floating widget stays compact.
 
 For **boxed elements** (shapes, text, sticky notes), a separate **plus button** appears just outside the element's right edge while it's selected — see [Quick add + connect](#quick-add--connect).
-
-More buttons (rename label, change colour, duplicate, link, send to back, …) will be added here over time without changing the popover's positioning rules.
 
 ## Panning the canvas
 
