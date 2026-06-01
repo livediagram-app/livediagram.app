@@ -7,6 +7,7 @@ import {
   elementBounds,
   endpointPosition,
   isBoxed,
+  rebindArrowAnchorsAfterMove,
   sendManyToBack,
   sendToBack,
   snapToAnchor,
@@ -137,6 +138,80 @@ describe('bestAnchorTowards', () => {
     expect(bestAnchorTowards(box, { x: 160, y: -40 })).toBe('ne');
     expect(bestAnchorTowards(box, { x: -40, y: 160 })).toBe('sw');
     expect(bestAnchorTowards(box, { x: -40, y: -40 })).toBe('nw');
+  });
+});
+
+describe('rebindArrowAnchorsAfterMove', () => {
+  // Two boxes + a pinned-to-pinned arrow between them. The default
+  // anchors point east-from-a, west-into-b (a classic LTR connector).
+  // Tests drag various boxes around and assert the helper picks the
+  // face the arrow should switch to.
+  const a = (): ShapeElement =>
+    ({ id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 80 }) as const;
+  const b = (overrides: Partial<ShapeElement> = {}): ShapeElement =>
+    ({
+      id: 'b',
+      type: 'shape',
+      shape: 'square',
+      x: 200,
+      y: 0,
+      width: 100,
+      height: 80,
+      ...overrides,
+    }) as const;
+  const arrow = (): ArrowElement =>
+    ({
+      id: 'arr',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
+    }) as const;
+
+  it('returns the same arrow when no endpoint is in the moving set', () => {
+    const els: Element[] = [a(), b(), arrow()];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['unrelated']));
+    expect(out[2]).toEqual(els[2]);
+  });
+
+  it('flips both anchors when b moves above a (now a vertical arrow)', () => {
+    // b at (90, -300) puts it directly above a, so a should point
+    // north and b should point south.
+    const els: Element[] = [a(), b({ x: 90, y: -300 }), arrow()];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['b']));
+    const next = out[2] as ArrowElement;
+    expect(next.from.kind === 'pinned' && next.from.anchor).toBe('n');
+    expect(next.to.kind === 'pinned' && next.to.anchor).toBe('s');
+  });
+
+  it('leaves arrows with a free endpoint untouched (only the pinned end would change, which jitters under drag)', () => {
+    const mixed: ArrowElement = {
+      id: 'arr2',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      to: { kind: 'free', x: 400, y: 400 },
+    };
+    const els: Element[] = [a(), mixed];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['a']));
+    expect(out[1]).toEqual(mixed);
+  });
+
+  it('accepts a Map as movingIds so callers can pass startBounds directly', () => {
+    // useEditorDrag's drag.startBounds is a Map<id, ShapeBounds>;
+    // the helper supports Map natively so the call site doesn't
+    // have to materialise a fresh Set.
+    const movingIds = new Map([['b', { x: 0, y: 0, width: 1, height: 1 }]]);
+    const els: Element[] = [a(), b({ x: 90, y: -300 }), arrow()];
+    const out = rebindArrowAnchorsAfterMove(els, movingIds);
+    const next = out[2] as ArrowElement;
+    expect(next.from.kind === 'pinned' && next.from.anchor).toBe('n');
+  });
+
+  it('preserves elementId + kind when re-anchoring (only `anchor` changes)', () => {
+    const els: Element[] = [a(), b({ x: 90, y: -300 }), arrow()];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['b']));
+    const next = out[2] as ArrowElement;
+    expect(next.from.kind === 'pinned' && next.from.elementId).toBe('a');
+    expect(next.to.kind === 'pinned' && next.to.elementId).toBe('b');
   });
 });
 

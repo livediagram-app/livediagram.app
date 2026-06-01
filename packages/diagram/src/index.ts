@@ -896,6 +896,45 @@ export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
 // though the corner anchor is geometrically closer. Cardinals read
 // as the "middle of a side", which the user has explicitly preferred
 // over corners.
+// Re-pin arrows whose either endpoint is anchored to a moved box,
+// pointing each end at the face that now reads most naturally
+// (cardinals preferred via bestAnchorTowards). Pure: takes the
+// already-translated element list and the set of ids that just
+// moved, returns the same list with each affected arrow's
+// from/to anchors recomputed.
+//
+// Only re-anchors arrows where BOTH ends are pinned to a box.
+// from/to pairs that mix free + pinned (one floating end) keep
+// their anchors as-is; the freely-positioned end already
+// dictates the visual direction, and rebinding the pinned end
+// against a free point would jitter as the user drags.
+export function rebindArrowAnchorsAfterMove(
+  elements: Element[],
+  movingIds: ReadonlySet<ElementId> | Map<ElementId, unknown>,
+): Element[] {
+  const includes = (id: ElementId) =>
+    movingIds instanceof Map ? movingIds.has(id) : movingIds.has(id);
+  return elements.map((el) => {
+    if (el.type !== 'arrow') return el;
+    const fromMoved = el.from.kind === 'pinned' && includes(el.from.elementId);
+    const toMoved = el.to.kind === 'pinned' && includes(el.to.elementId);
+    if (!fromMoved && !toMoved) return el;
+    if (el.from.kind !== 'pinned' || el.to.kind !== 'pinned') return el;
+    const fromEnd = el.from;
+    const toEnd = el.to;
+    const fromEl = elements.find((e) => e.id === fromEnd.elementId);
+    const toEl = elements.find((e) => e.id === toEnd.elementId);
+    if (!fromEl || !isBoxed(fromEl) || !toEl || !isBoxed(toEl)) return el;
+    const toCenter = { x: toEl.x + toEl.width / 2, y: toEl.y + toEl.height / 2 };
+    const fromCenter = { x: fromEl.x + fromEl.width / 2, y: fromEl.y + fromEl.height / 2 };
+    return {
+      ...el,
+      from: { ...fromEnd, anchor: bestAnchorTowards(fromEl, toCenter) },
+      to: { ...toEnd, anchor: bestAnchorTowards(toEl, fromCenter) },
+    };
+  });
+}
+
 export function bestAnchorTowards(element: BoxedElement, towards: Point): Anchor {
   const cx = element.x + element.width / 2;
   const cy = element.y + element.height / 2;

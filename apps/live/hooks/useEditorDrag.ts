@@ -25,10 +25,10 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import {
   anchorPosition,
   arrowStyleOf,
-  bestAnchorTowards,
   curveControlPoint,
   endpointPosition,
   isBoxed,
+  rebindArrowAnchorsAfterMove,
   selectionMembers,
   snapResizeBounds,
   snapToAlignment,
@@ -306,45 +306,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
               if (!start) return el;
               return { ...el, x: start.x + dx + snapDx, y: start.y + dy + snapDy };
             });
-            // Second pass: re-pin arrow anchors so a connected arrow
-            // stays attached to the face that now reads most naturally
-            // (cardinals preferred over corners). Only touches arrows
-            // pinned to at least one dragged element; arrows entirely
-            // unrelated to the drag pass through untouched.
-            const movingIds = drag.startBounds;
-            return moved.map((el) => {
-              if (el.type !== 'arrow') return el;
-              const fromMoved = el.from.kind === 'pinned' && movingIds.has(el.from.elementId);
-              const toMoved = el.to.kind === 'pinned' && movingIds.has(el.to.elementId);
-              if (!fromMoved && !toMoved) return el;
-              let nextFrom = el.from;
-              let nextTo = el.to;
-              if (el.from.kind === 'pinned' && el.to.kind === 'pinned') {
-                const fromEnd = el.from;
-                const toEnd = el.to;
-                const fromEl = moved.find((e) => e.id === fromEnd.elementId);
-                const toEl = moved.find((e) => e.id === toEnd.elementId);
-                if (fromEl && isBoxed(fromEl) && toEl && isBoxed(toEl)) {
-                  const toCenter = {
-                    x: toEl.x + toEl.width / 2,
-                    y: toEl.y + toEl.height / 2,
-                  };
-                  const fromCenter = {
-                    x: fromEl.x + fromEl.width / 2,
-                    y: fromEl.y + fromEl.height / 2,
-                  };
-                  nextFrom = {
-                    ...fromEnd,
-                    anchor: bestAnchorTowards(fromEl, toCenter),
-                  };
-                  nextTo = {
-                    ...toEnd,
-                    anchor: bestAnchorTowards(toEl, fromCenter),
-                  };
-                }
-              }
-              return { ...el, from: nextFrom, to: nextTo };
-            });
+            // Second pass: re-pin connected arrow anchors against
+            // the moved positions so an arrow stays visually
+            // attached as the user drags. Pure helper, tested in
+            // packages/diagram.
+            return rebindArrowAnchorsAfterMove(moved, drag.startBounds);
           });
         } else {
           // Resize branch handles BOTH single-element and group /
