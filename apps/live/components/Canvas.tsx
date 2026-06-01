@@ -1136,18 +1136,32 @@ export function Canvas(props: CanvasProps) {
             <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
               Empty canvas
             </p>
-            <p className="mt-3 text-xs leading-relaxed text-slate-600">
-              Click an element in the Palette to start building your diagram, double-click anywhere
-              to drop text, or connect elements by dragging from their anchor dots.
-            </p>
-            <button
-              type="button"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={onOpenTemplatePicker}
-              className="pointer-events-auto mt-4 inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
-            >
-              Browse templates
-            </button>
+            {readOnly ? (
+              // View-role visitors can't add elements or browse
+              // templates, so the editor copy + CTA would be
+              // misleading. Surface a passive "nothing here yet"
+              // line so the empty state still reads as intentional
+              // rather than broken.
+              <p className="mt-3 text-xs leading-relaxed text-slate-600">
+                Nothing has been added to this tab yet. The diagram's owner can build it out, and
+                your view will update live.
+              </p>
+            ) : (
+              <>
+                <p className="mt-3 text-xs leading-relaxed text-slate-600">
+                  Click an element in the Palette to start building your diagram, double-click
+                  anywhere to drop text, or connect elements by dragging from their anchor dots.
+                </p>
+                <button
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={onOpenTemplatePicker}
+                  className="pointer-events-auto mt-4 inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+                >
+                  Browse templates
+                </button>
+              </>
+            )}
           </div>
         </div>
       ) : null}
