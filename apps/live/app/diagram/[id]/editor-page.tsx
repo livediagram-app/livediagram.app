@@ -66,7 +66,7 @@ import { ShareDialog } from '@/components/ShareDialog';
 import { TabBar } from '@/components/TabBar';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
 import { HISTORY_LIMIT, useDiagramHistory } from '@/hooks/useDiagramHistory';
-import { trimLaserBuffer } from '@/lib/laser-buffer';
+import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import { useFolders } from '@/hooks/useFolders';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import {
@@ -347,12 +347,12 @@ export default function LivePage() {
   // cap of 60 points in the receive handler so a flood can't grow the
   // buffer without bound. Scoped per tab in the op itself.
   const [remoteLaserTrails, setRemoteLaserTrails] = useState<
-    Map<string, { tabId: string; points: { x: number; y: number; t: number }[] }>
+    Map<string, { tabId: string; points: LaserPoint[] }>
   >(new Map());
   // Local laser trail — held in state so the overlay re-renders when
   // we append a point, but mutations stay cheap by always producing a
   // bounded array.
-  const [localLaserTrail, setLocalLaserTrail] = useState<{ x: number; y: number; t: number }[]>([]);
+  const [localLaserTrail, setLocalLaserTrail] = useState<LaserPoint[]>([]);
   // Diagram-list refresh, fired after every autosave so the
   // Explorer's "Updated X ago" timestamps stay fresh. Folders are
   // explicitly NOT refetched here — they only change via folder
@@ -1404,7 +1404,7 @@ export default function LivePage() {
     const rows: {
       participantId: string;
       color: string;
-      points: { x: number; y: number; t: number }[];
+      points: LaserPoint[];
     }[] = [];
     if (localLaserTrail.length > 0) {
       rows.push({

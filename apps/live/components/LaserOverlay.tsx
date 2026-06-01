@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { LaserPoint } from '@/lib/laser-buffer';
 
 // One trail = the laser path drawn by a single participant. Each point
 // carries the time it was sampled so the overlay can fade older
@@ -8,7 +9,7 @@ import { useEffect, useState } from 'react';
 type LaserTrail = {
   participantId: string;
   color: string;
-  points: { x: number; y: number; t: number }[];
+  points: LaserPoint[];
 };
 
 // Lifetime of a single laser sample in ms — older than this and the
