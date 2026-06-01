@@ -13,67 +13,10 @@ import {
   BORDER_DASH_ARRAY,
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
-  DEFAULT_BORDER_RADIUS,
   DEFAULT_BORDER_STROKE,
-  DEFAULT_BORDER_STYLE,
-  borderRadiusOf,
-  borderStrokeOf,
-  borderStyleOf,
   type BorderRadius,
   type BorderStroke,
-  type BorderStyle,
-  type ShapeElement,
 } from './index';
-
-const shape = (overrides: Partial<ShapeElement> = {}): ShapeElement => ({
-  id: 's',
-  type: 'shape',
-  shape: 'square',
-  x: 0,
-  y: 0,
-  width: 100,
-  height: 50,
-  ...overrides,
-});
-
-describe('borderStrokeOf', () => {
-  it('falls back to DEFAULT_BORDER_STROKE when the element has no strokeWidth', () => {
-    expect(borderStrokeOf(shape())).toBe(DEFAULT_BORDER_STROKE);
-  });
-
-  it('returns each set preset verbatim so the Border accordion can highlight it', () => {
-    const presets: BorderStroke[] = ['none', 'thin', 'medium', 'thick', 'extra-thick'];
-    for (const p of presets) {
-      expect(borderStrokeOf(shape({ strokeWidth: p }))).toBe(p);
-    }
-  });
-});
-
-describe('borderStyleOf', () => {
-  it('falls back to DEFAULT_BORDER_STYLE when strokeStyle is unset', () => {
-    expect(borderStyleOf(shape())).toBe(DEFAULT_BORDER_STYLE);
-  });
-
-  it('returns each set preset verbatim', () => {
-    const styles: BorderStyle[] = ['solid', 'dashed', 'dotted'];
-    for (const s of styles) {
-      expect(borderStyleOf(shape({ strokeStyle: s }))).toBe(s);
-    }
-  });
-});
-
-describe('borderRadiusOf', () => {
-  it('falls back to DEFAULT_BORDER_RADIUS when borderRadius is unset', () => {
-    expect(borderRadiusOf(shape())).toBe(DEFAULT_BORDER_RADIUS);
-  });
-
-  it('returns each set preset verbatim', () => {
-    const radii: BorderRadius[] = ['none', 'sm', 'md', 'lg'];
-    for (const r of radii) {
-      expect(borderRadiusOf(shape({ borderRadius: r }))).toBe(r);
-    }
-  });
-});
 
 describe('BORDER_STROKE_PX lookup', () => {
   it('maps every BorderStroke preset to a numeric pixel width', () => {

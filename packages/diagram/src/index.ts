@@ -167,28 +167,6 @@ export function defaultArrowStrokeColor(): string {
   return 'rgb(51 65 85)'; // slate-700, same as ArrowView's fallback
 }
 
-// Effective border-stroke preset for a boxed element. Shapes carry an
-// explicit `strokeWidth` field once the user picks one; until then,
-// resolve to DEFAULT_BORDER_STROKE so the renderer + the Border
-// accordion both show the same value.
-export function borderStrokeOf(element: BoxedElement): BorderStroke {
-  return (element as { strokeWidth?: BorderStroke }).strokeWidth ?? DEFAULT_BORDER_STROKE;
-}
-
-export function borderStyleOf(element: BoxedElement): BorderStyle {
-  return (element as { strokeStyle?: BorderStyle }).strokeStyle ?? DEFAULT_BORDER_STYLE;
-}
-
-// Default radius preset. Note that the CSS-rendered shapes (square,
-// circle, stadium) keep their preexisting fixed corner rounding when
-// borderRadius isn't set, and only switch to the BORDER_RADIUS_PX
-// mapping when the user picks a preset. Use this when you need a
-// preset value (e.g. to highlight a radio button); use the BorderRadius
-// optional field directly when checking "did the user pick yet?".
-export function borderRadiusOf(element: BoxedElement): BorderRadius {
-  return (element as { borderRadius?: BorderRadius }).borderRadius ?? DEFAULT_BORDER_RADIUS;
-}
-
 // --- Shapes ---------------------------------------------------------------
 
 export type ShapeKind =
