@@ -58,6 +58,14 @@ export const viewport: Viewport = {
 // category browse. Both restate facts already on the page; the
 // free-tier offer is truthful (the hosted product is currently
 // free to use).
+// Image URL the schemas reference: the OG card pre-rendered by
+// `apps/marketing/app/opengraph-image.tsx` at build time. Google
+// uses this for the brand card visual and Knowledge Graph
+// preview when the WebSite / SoftwareApplication entities surface
+// in search.
+const OG_IMAGE = `${SITE_URL}/opengraph-image`;
+const REPO_URL = 'https://github.com/livediagram-app/monorepo';
+
 const JSON_LD = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -67,6 +75,8 @@ const JSON_LD = {
       name: SITE_NAME,
       url: SITE_URL,
       description: DESCRIPTION,
+      inLanguage: 'en-GB',
+      image: OG_IMAGE,
     },
     {
       '@type': 'SoftwareApplication',
@@ -76,6 +86,14 @@ const JSON_LD = {
       description: DESCRIPTION,
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
+      inLanguage: 'en-GB',
+      image: OG_IMAGE,
+      // Links the brand entity to the open-source codebase Google
+      // already indexes. Connecting the two helps the Knowledge
+      // Graph recognise "livediagram" as a single thing across the
+      // public marketing site, the GitHub repo, and the social
+      // mentions that cite either.
+      sameAs: [REPO_URL],
       offers: {
         '@type': 'Offer',
         price: '0',
