@@ -234,6 +234,14 @@ export function messageOf(err: unknown, fallback: string): string {
 
 export const POST_AUTH_DEFAULT = '/';
 
+// Default Clerk OAuth completion URL: the full editor-home path.
+// Clerk's authenticateWithRedirect navigates the browser directly,
+// so basePath isn't applied automatically and the /live prefix has
+// to stay on. resolvePostAuthDestination's default is for
+// router.push, which DOES apply basePath, so this is the same
+// destination shape-shifted for the OAuth round-trip.
+const POST_AUTH_OAUTH_DEFAULT = '/live/';
+
 export function resolvePostAuthDestination(searchParams: {
   get: (key: string) => string | null;
 }): string {
@@ -247,4 +255,18 @@ export function resolvePostAuthDestination(searchParams: {
     return stripped.length > 0 ? stripped : '/';
   }
   return POST_AUTH_DEFAULT;
+}
+
+// OAuth-flavoured form of resolvePostAuthDestination. Shares the
+// validation rules (so a malicious or loop-creating redirect_url
+// is rejected in both flows) but returns the path with the /live
+// prefix intact, ready to feed to Clerk's
+// authenticateWithRedirect({ redirectUrlComplete }). Composes on
+// top of resolvePostAuthDestination so the two helpers can't drift.
+export function resolveOAuthCompleteUrl(searchParams: {
+  get: (key: string) => string | null;
+}): string {
+  const dest = resolvePostAuthDestination(searchParams);
+  if (dest === POST_AUTH_DEFAULT) return POST_AUTH_OAUTH_DEFAULT;
+  return `/live${dest}`;
 }

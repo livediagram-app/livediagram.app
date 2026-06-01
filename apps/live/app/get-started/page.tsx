@@ -26,6 +26,7 @@ import {
   GoogleGlyph,
   messageOf,
   RedirectingCard,
+  resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
 } from '@/components/auth-shared';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
@@ -68,7 +69,10 @@ function GetStartedContent() {
       await clerkSignUp.authenticateWithRedirect({
         strategy: 'oauth_google',
         redirectUrl: '/live/sso-callback',
-        redirectUrlComplete: '/live/',
+        // Honour ?redirect_url so an OAuth sign-up from a protected
+        // page lands back where it came from, matching the email-code
+        // path. See spec/04 "Routes" + auth-shared.tsx.
+        redirectUrlComplete: resolveOAuthCompleteUrl(searchParams),
       });
     } catch (err: unknown) {
       setError(messageOf(err, 'Google sign-up failed'));

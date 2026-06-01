@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { POST_AUTH_DEFAULT, resolvePostAuthDestination } from './auth-shared';
+import {
+  POST_AUTH_DEFAULT,
+  resolveOAuthCompleteUrl,
+  resolvePostAuthDestination,
+} from './auth-shared';
 
 // resolvePostAuthDestination decides where the sign-in and sign-up
 // pages send a verified user. Wrong here means either an open
@@ -70,5 +74,55 @@ describe('resolvePostAuthDestination', () => {
     // Stripping the prefix from exactly "/live" leaves the empty
     // string. We promote that to "/" so router.push has a valid path.
     expect(resolvePostAuthDestination(params('redirect_url=/live'))).toBe('/');
+  });
+});
+
+// OAuth-flavoured form: same validation, returns the path with the
+// /live prefix kept on (Clerk's authenticateWithRedirect navigates
+// the browser directly, so basePath isn't applied). Mirrors the
+// resolvePostAuthDestination branches.
+
+describe('resolveOAuthCompleteUrl', () => {
+  it("returns the OAuth default '/live/' when redirect_url is absent", () => {
+    expect(resolveOAuthCompleteUrl(params(''))).toBe('/live/');
+  });
+
+  it('returns the OAuth default for an off-origin or unsafe redirect_url', () => {
+    expect(resolveOAuthCompleteUrl(params('redirect_url=https://evil.example'))).toBe('/live/');
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/marketing'))).toBe('/live/');
+  });
+
+  it('returns the OAuth default for a redirect back to the auth routes (loop guard)', () => {
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/live/sign-in'))).toBe('/live/');
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/LIVE/SIGN-IN'))).toBe('/live/');
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/live/get-started?onboarding=1'))).toBe(
+      '/live/',
+    );
+  });
+
+  it('keeps the /live prefix on safe destinations (no basePath stripping)', () => {
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/live/diagram/abc'))).toBe(
+      '/live/diagram/abc',
+    );
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/live/explorer'))).toBe('/live/explorer');
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/live/new?folder=f1'))).toBe(
+      '/live/new?folder=f1',
+    );
+  });
+
+  it("re-adds /live to a bare /live redirect, landing on '/live/'", () => {
+    // The router.push form collapses bare /live to '/'. The OAuth
+    // form has to put the prefix back so Clerk's full-path
+    // redirectUrlComplete lands on /live/, not the marketing root.
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/live'))).toBe('/live/');
+  });
+
+  it('keeps the POST_AUTH_DEFAULT constant in sync with the OAuth default', () => {
+    // Sanity: the router.push default is '/' and the OAuth default
+    // is '/live/'. The OAuth helper composes on top of the
+    // router.push one, so if POST_AUTH_DEFAULT changes the OAuth
+    // default has to move in lockstep.
+    expect(POST_AUTH_DEFAULT).toBe('/');
+    expect(resolveOAuthCompleteUrl(params(''))).toBe('/live/');
   });
 });
