@@ -693,13 +693,21 @@ export function connectRoom(
 // 503 (R2 not provisioned on this deployment), letting the picker
 // hide the gallery tab + the palette hide its Image entry without
 // throwing through an error boundary. Other failures still throw.
-export async function apiListImages(ownerId: string): Promise<ImageSummary[] | null> {
+//
+// Deduped: when the editor mounts, both the Current Tab "Images"
+// accordion and the lazy ImagePicker (if the user opens it
+// immediately) fire this. React Strict Mode in dev doubles every
+// effect on top. Without dedup that's 2 to 4 concurrent fetches
+// for the same gallery; with it, the second+ callers receive the
+// in-flight promise the first one started.
+async function _apiListImages(ownerId: string): Promise<ImageSummary[] | null> {
   const res = await fetch(`${API_BASE}/images`, {
     headers: await apiHeaders(ownerId),
   });
   if (res.status === 503) return null;
   return expectOk<{ images: ImageSummary[] }>(res, 'list images').then((b) => b.images);
 }
+export const apiListImages = dedupeInFlight(_apiListImages, (ownerId) => ownerId);
 
 // Upload bytes + index in the gallery. `sha256` and dimensions are
 // computed client-side (the picker reads the file into an
@@ -752,7 +760,13 @@ export async function apiDeleteImage(ownerId: string, imageId: string): Promise<
 // missing key as "0 uses, safe to delete"). 503 collapses to an
 // empty map so a self-host without R2 still renders an empty
 // gallery rather than a hard error.
-export async function apiImageUsage(
+//
+// Deduped alongside apiListImages: the GalleryPane fires both in a
+// Promise.all on mount, and React Strict Mode doubles the effect.
+// The endpoint does a full join + JSON parse per call on the
+// server, so squashing concurrent identical fetches matters even
+// more than for the cheap list endpoint.
+async function _apiImageUsage(
   ownerId: string,
 ): Promise<Record<string, { id: string; name: string }[]>> {
   const res = await fetch(`${API_BASE}/images/usage`, {
@@ -764,6 +778,7 @@ export async function apiImageUsage(
     'image usage',
   ).then((b) => b.usage);
 }
+export const apiImageUsage = dedupeInFlight(_apiImageUsage, (ownerId) => ownerId);
 
 // Fetch the bytes of one image (authenticated) and return a blob
 // URL the caller can stick on an `<img>`. The caller is responsible
