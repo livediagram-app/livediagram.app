@@ -8,8 +8,9 @@ type ZoomControlsProps = {
   onFitToScreen: () => void;
 };
 
-// Floating zoom controls. Sits next to HistoryControls at the bottom-right.
-// Four actions: −10% / current % (click to reset) / +10% / Fit to screen.
+// Floating zoom controls, bottom-right of the canvas. Four
+// actions: -10% / current % (click to reset) / +10% / Fit to
+// screen.
 export function ZoomControls({
   zoom,
   onZoomIn,
