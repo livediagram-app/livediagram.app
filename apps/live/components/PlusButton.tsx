@@ -1,4 +1,4 @@
-export type PlusPlacement = 'right' | 'below' | 'left' | 'above';
+type PlusPlacement = 'right' | 'below' | 'left' | 'above';
 
 type PlusButtonProps = {
   x: number;

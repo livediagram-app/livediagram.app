@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 // segments out and drop dead points entirely. `color` is the
 // participant's identity colour — every viewer sees the same hue for
 // the same person.
-export type LaserTrail = {
+type LaserTrail = {
   participantId: string;
   color: string;
   points: { x: number; y: number; t: number }[];

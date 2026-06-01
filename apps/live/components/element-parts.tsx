@@ -89,7 +89,7 @@ const TEXT_ALIGN: Record<TextAlignX, 'left' | 'center' | 'right'> = {
 // Inline label-style props applied by every label renderer (scaling,
 // fixed, multiline). Stored independently so any combination — e.g.
 // bold + italic + strikethrough — works.
-export type LabelTextStyle = {
+type LabelTextStyle = {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;

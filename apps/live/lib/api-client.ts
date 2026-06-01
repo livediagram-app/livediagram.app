@@ -90,7 +90,7 @@ type ParticipantResponse = {
   participant: { id: string; name: string; color: string; createdAt: number };
 };
 
-export type SharedDiagramResolution = {
+type SharedDiagramResolution = {
   diagram: StoredDiagram;
   role: ShareRole;
 };
@@ -119,7 +119,7 @@ export type SharedDiagramResolution = {
 //
 // `body: true` adds `Content-Type: application/json` for write
 // requests; GETs / DELETEs omit it.
-export type TokenProvider = () => Promise<string | null>;
+type TokenProvider = () => Promise<string | null>;
 
 let currentTokenProvider: TokenProvider | null = null;
 

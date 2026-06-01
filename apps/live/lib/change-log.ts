@@ -11,7 +11,7 @@ import type { ChangeLogKind } from './api-client';
 
 // What the diff function returns. The caller wraps this with the
 // participant + diagram identifiers before POSTing.
-export type ChangeDiff = {
+type ChangeDiff = {
   kind: ChangeLogKind;
   summary: string;
   elementIds: string[];

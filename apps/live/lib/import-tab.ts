@@ -13,7 +13,7 @@
 import type { Tab } from '@livediagram/diagram';
 import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
 
-export type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
+type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 
 // Parse text from a chosen `.json` file. Returns a discriminated
 // union — callers branch on `.ok` and surface the error string to

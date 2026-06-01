@@ -150,7 +150,7 @@ function contentBounds(elements: Element[]): { x: number; y: number; w: number; 
 // triangular head. Fancier rendering (rich text, padding, theme
 // patterns) is intentionally out of scope; the export is meant as
 // a faithful overview, not a pixel-perfect screenshot.
-export function renderTabToCanvas(tab: Tab, opts: { scale?: number } = {}): HTMLCanvasElement {
+function renderTabToCanvas(tab: Tab, opts: { scale?: number } = {}): HTMLCanvasElement {
   const scale = opts.scale ?? 2; // default 2× for crisp output
   const bounds = contentBounds(tab.elements);
   const w = (bounds.w + EXPORT_PADDING * 2) * scale;
