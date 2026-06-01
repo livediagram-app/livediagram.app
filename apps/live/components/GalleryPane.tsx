@@ -8,6 +8,7 @@ import {
   uploadImageFile,
   ImageUploadError,
 } from '@/lib/upload-image';
+import { useConfirm } from '@/hooks/useConfirm';
 import { GalleryImageButton } from './GalleryImageButton';
 
 // Image Gallery pane on the Explorer page (spec/15). Shows every
@@ -33,6 +34,7 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
   const [uploading, setUploading] = useState(false);
   const [dropActive, setDropActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const confirm = useConfirm();
 
   const refresh = useMemo(
     () => async () => {
@@ -81,11 +83,16 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
   const handleDelete = async (image: ImageSummary) => {
     const refs = usage[image.id] ?? [];
     const detail = refs.length
-      ? `\n\nIt's still attached to ${refs.length} diagram${
+      ? `It's still attached to ${refs.length} diagram${
           refs.length === 1 ? '' : 's'
         }: those tiles will render as broken images.`
-      : '';
-    if (!confirm(`Delete "${image.originalName ?? 'image'}" from your gallery?${detail}`)) return;
+      : 'The bytes are dropped from R2 and the gallery row removed. This cannot be undone.';
+    const ok = await confirm({
+      title: `Delete "${image.originalName ?? 'image'}"?`,
+      message: detail,
+      confirmLabel: 'Delete image',
+    });
+    if (!ok) return;
     try {
       await apiDeleteImage(ownerId, image.id);
       setGallery((prev) => (prev ? prev.filter((i) => i.id !== image.id) : prev));

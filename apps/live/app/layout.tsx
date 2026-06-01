@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { ClerkProvider } from '@/components/providers/ClerkProvider';
+import { ConfirmProvider } from '@/hooks/useConfirm';
 import './globals.css';
 
 // The live app is the product, not a content surface. Every route
@@ -31,7 +32,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider>
+          <ConfirmProvider>{children}</ConfirmProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

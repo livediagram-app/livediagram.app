@@ -77,6 +77,18 @@ The editor ships with a UI **light / dark mode** toggle, distinct from the per-t
 - The `@custom-variant dark (&:where(.dark, .dark *))` declaration in `packages/tailwind-config/theme.css` configures Tailwind v4's `dark:` variant to use the class selector rather than the media query.
 - **Phase 1 surfaces** (covered today): body backdrop, TabBar, EditorHeader. Panel chromes (`MovablePanel`) carry the toggle's effect on the outer frame; per-panel content (Palette, Context, Explorer, Activity) light up incrementally as the `dark:` variants get added to each accordion / row. Until that's done, an open panel reads light over a dark backdrop — usable, not yet polished.
 
+## Destructive actions
+
+Every irreversible flow (delete a diagram, a folder, a tab, or an image gallery row) is gated by a single branded confirmation modal: `apps/live/components/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/live/hooks/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. We never fall back to `window.confirm()`: the OS-default chrome reads as a non-livediagram dialog and underplays the consequences.
+
+Non-destructive everyday actions (delete an element, clear a comment, undo a stroke) stay unprompted: undo restores them, and adding a modal at every keystroke would shred the editing flow. The confirmation gate is reserved for actions where one of the following is true:
+
+- The change is persisted to the server and not part of the undo stack.
+- The change cascades (removes child rows, breaks cross-references, invalidates share links).
+- The change is invisible to other participants in the same room.
+
+The modal supports `danger` (rose-tinted confirm button) and `neutral` variants; default is `danger` because the current call sites are all destructive. Esc cancels, Enter confirms, backdrop click cancels, focus lands on the confirm button so keyboard-only users get the same muscle memory as `window.confirm`.
+
 ## Out of scope (next iterations)
 
 - **Auth UI** — Clerk integration. Today the api carries owner identity in `X-Owner-Id` only.

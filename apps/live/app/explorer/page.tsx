@@ -18,6 +18,7 @@ import {
 } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useFolders } from '@/hooks/useFolders';
+import { useConfirm } from '@/hooks/useConfirm';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
 import dynamic from 'next/dynamic';
@@ -120,6 +121,7 @@ export default function ExplorerPage() {
   // diagrams" (the root) so the first impression is the full library
   // — Recent is one sidebar click away.
   const [selected, setSelected] = useState<SelectedNode>({ kind: 'all' });
+  const confirm = useConfirm();
   // Which folder branches are open in the sidebar. Local state only;
   // a fresh visit starts with the root open and everything else
   // collapsed (Windows Explorer pattern).
@@ -256,8 +258,16 @@ export default function ExplorerPage() {
     void apiSaveDiagramMeta(clerkUserId, { id, name: trimmed }).catch(() => {});
   };
 
-  const deleteDiagram = (id: string) => {
+  const deleteDiagram = async (id: string) => {
     if (!clerkUserId) return;
+    const target = diagrams.find((d) => d.id === id);
+    const ok = await confirm({
+      title: `Delete "${target?.name || 'this diagram'}"?`,
+      message:
+        'Every tab, change-log entry, and share link on this diagram is removed. Visitors holding a share link will see a 404. This cannot be undone.',
+      confirmLabel: 'Delete diagram',
+    });
+    if (!ok) return;
     setDiagrams((prev) => prev.filter((d) => d.id !== id));
     void apiDeleteDiagram(clerkUserId, id).catch(() => {});
   };
@@ -442,7 +452,14 @@ export default function ExplorerPage() {
     rename: () => setRenamingFolderId(f.id),
     newSubfolder: () => void createFolder(f.id),
     move: () => openMovePickerForFolder(f.id, anchor),
-    delete: () => {
+    delete: async () => {
+      const ok = await confirm({
+        title: `Delete "${f.name || 'folder'}"?`,
+        message:
+          'Diagrams inside this folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
+        confirmLabel: 'Delete folder',
+      });
+      if (!ok) return;
       // Mirror what the server actually does (apps/api/src/db.ts
       // deleteFolder): only direct children get re-parented or
       // null-folder-ed. Subfolders of f become root-level (handled

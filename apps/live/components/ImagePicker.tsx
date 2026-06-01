@@ -9,6 +9,7 @@ import {
   uploadImageFile,
   ImageUploadError,
 } from '@/lib/upload-image';
+import { useConfirm } from '@/hooks/useConfirm';
 import { GalleryImageButton } from './GalleryImageButton';
 
 // Two-tab modal launched from the Image element's placeholder + the
@@ -58,6 +59,7 @@ export function ImagePicker({
   const [dropActive, setDropActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const confirm = useConfirm();
 
   useEffect(() => {
     apiListImages(ownerId)
@@ -134,7 +136,13 @@ export function ImagePicker({
   };
 
   const handleDelete = async (image: ImageSummary) => {
-    if (!confirm(`Delete "${image.originalName ?? 'image'}" from your gallery?`)) return;
+    const ok = await confirm({
+      title: `Delete "${image.originalName ?? 'image'}"?`,
+      message:
+        'The bytes are dropped from R2 and the gallery row removed. Any diagram element still attached to this image will render as broken.',
+      confirmLabel: 'Delete image',
+    });
+    if (!ok) return;
     try {
       await apiDeleteImage(ownerId, image.id);
       setGallery((prev) => (prev ? prev.filter((i) => i.id !== image.id) : prev));

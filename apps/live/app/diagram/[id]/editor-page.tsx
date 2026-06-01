@@ -115,6 +115,7 @@ import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
 import { HISTORY_LIMIT, useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import { useFolders } from '@/hooks/useFolders';
+import { useConfirm } from '@/hooks/useConfirm';
 import { autoAlignElements } from '@/lib/auto-align';
 import {
   readDiagramSettings,
@@ -447,6 +448,7 @@ export default function LivePage() {
     renameFolder,
     deleteFolder: hookDeleteFolder,
   } = useFolders(selfParticipant.id === 'self' ? null : selfParticipant.id);
+  const confirm = useConfirm();
   // True while the very first diagram-list fetch is in flight, so the
   // Explorer can render a skeleton instead of an empty "no diagrams"
   // state. We only flip this off — subsequent refreshes don't reset it
@@ -2134,8 +2136,16 @@ export default function LivePage() {
   // (the editor would otherwise be staring at a row that no longer
   // exists). Deleting any *other* diagram just hits the API + refreshes
   // the Explorer list. Not undoable — the menu is an explicit action.
-  const deleteDiagram = (id: string) => {
+  const deleteDiagram = async (id: string) => {
     if (typeof window === 'undefined') return;
+    const target = id === diagramId ? { name: diagramName } : diagramList.find((d) => d.id === id);
+    const ok = await confirm({
+      title: `Delete "${target?.name || 'this diagram'}"?`,
+      message:
+        'Every tab, change-log entry, and share link on this diagram is removed. Visitors holding a share link will see a 404. This cannot be undone.',
+      confirmLabel: 'Delete diagram',
+    });
+    if (!ok) return;
     if (id === diagramId) {
       void apiDeleteDiagram(selfParticipant.id, id).catch(() => {});
       window.location.assign(`${window.location.origin}/live/new`);
@@ -2144,7 +2154,7 @@ export default function LivePage() {
     // Optimistic local removal so the Recent row disappears the
     // moment the user clicks Delete. The previous shape was a
     // fire-and-forget apiDeleteDiagram followed by an immediate
-    // refreshDiagramList — the DELETE and the GET raced, and the
+    // refreshDiagramList: the DELETE and the GET raced, and the
     // refresh frequently won, repainting the row that the API
     // hadn't yet committed. Users had to click Delete twice to
     // make it stick.
@@ -2157,7 +2167,14 @@ export default function LivePage() {
   // diagram-side cascade so diagrams that pointed at the deleted
   // folder visibly re-bucket to Unsorted instead of waiting for
   // the next list refresh.
-  const deleteFolder = (id: string) => {
+  const deleteFolder = async (id: string) => {
+    const ok = await confirm({
+      title: 'Delete this folder?',
+      message:
+        'Diagrams inside the folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
+      confirmLabel: 'Delete folder',
+    });
+    if (!ok) return;
     setDiagramList((prev) => prev.map((d) => (d.folderId === id ? { ...d, folderId: null } : d)));
     hookDeleteFolder(id);
   };
@@ -2255,10 +2272,18 @@ export default function LivePage() {
     setEditingId(null);
   };
 
-  const deleteTab = (id: string) => {
+  const deleteTab = async (id: string) => {
     if (tabs.length <= 1) return;
     const idx = tabs.findIndex((t) => t.id === id);
     if (idx < 0) return;
+    const target = tabs[idx]!;
+    const ok = await confirm({
+      title: `Delete tab "${target.name || 'Untitled'}"?`,
+      message:
+        "The tab's elements and its activity log entries are removed. Links on other tabs pointing here are stripped. Undo restores everything.",
+      confirmLabel: 'Delete tab',
+    });
+    if (!ok) return;
     // Drop the tab AND strip any links on remaining elements that point to
     // it, so we don't leave dangling cross-tab references. Bundled into one
     // commit so undo restores both.
