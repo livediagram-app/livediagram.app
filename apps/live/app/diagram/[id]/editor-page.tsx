@@ -67,6 +67,7 @@ import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { arrowReferencesAny } from '@/lib/canvas';
 import { useEditorDrag } from '@/hooks/useEditorDrag';
+import { useEditorViewport } from '@/hooks/useEditorViewport';
 import {
   nextFreeColor,
   randomColor,
@@ -1250,22 +1251,11 @@ export default function LivePage() {
       setLocalLaserTrail([]);
     }
   }, [canvasTool, activeId]);
-  const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
-  // Mobile (≤768 px) defaults to 30% zoom so the diagram fits without
-  // a fit-to-screen tap; desktop stays at 100%. Re-evaluated on
-  // window resize so a rotation / desktop-to-mobile breakpoint
-  // change still gives a reasonable starting view.
-  const [viewportZoom, setViewportZoom] = useState(() => {
-    if (typeof window === 'undefined') return 1;
-    return window.innerWidth <= 768 ? 0.3 : 1;
-  });
-  const canvasMainRef = useRef<HTMLElement>(null);
-  // Keep latest zoom available to drag effects without re-creating them on
-  // every zoom change (which would interrupt an in-progress drag).
-  const zoomRef = useRef(viewportZoom);
-  useEffect(() => {
-    zoomRef.current = viewportZoom;
-  }, [viewportZoom]);
+  // Viewport state (pan offset, zoom, the canvas wrapper ref the
+  // measurements read through, and a parallel zoomRef the drag hook
+  // reads each pointer-move) lives in useEditorViewport. The hook
+  // is invoked further down, once `activeTab` is in scope; it
+  // also owns `getViewportCenter` and `fitToScreen`.
 
   // Latest tabs mirrored to a ref so timer-driven callbacks (e.g.
   // the opacity debounce below) can read the post-debounce state
@@ -1286,6 +1276,17 @@ export default function LivePage() {
   }, [selfParticipant]);
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+
+  const {
+    viewportOffset,
+    setViewportOffset,
+    viewportZoom,
+    setViewportZoom,
+    zoomRef,
+    canvasMainRef,
+    getViewportCenter,
+    fitToScreen,
+  } = useEditorViewport({ activeTab });
 
   // Fit-to-screen on every tab load. Fires when:
   //   - the page hydrates and lands on the first tab
@@ -1712,49 +1713,6 @@ export default function LivePage() {
   };
 
   // --- Placement helpers ---------------------------------------------------
-
-  // Centre of the currently visible canvas viewport, in canvas-local coords.
-  // With transform `scale(z) translate(offset)` centred on the wrapper, the
-  // canvas-coord at viewport centre is just (canvasCentre - offset) — zoom
-  // doesn't enter the equation because scale is centred on the same point.
-  const getViewportCenter = (): { x: number; y: number } => {
-    const rect = canvasMainRef.current?.getBoundingClientRect();
-    if (!rect) return { x: 0, y: 0 };
-    return {
-      x: rect.width / 2 - viewportOffset.x,
-      y: rect.height / 2 - viewportOffset.y,
-    };
-  };
-
-  // Compute zoom + offset so every element on the tab fits in the viewport
-  // with padding, then centre the bounding box on the viewport centre.
-  const fitToScreen = () => {
-    const rect = canvasMainRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const boxedIds = new Set(activeTab.elements.filter(isBoxed).map((el) => el.id));
-    if (boxedIds.size === 0) {
-      setViewportOffset({ x: 0, y: 0 });
-      setViewportZoom(1);
-      return;
-    }
-    const bbox = unionBoxedBounds(activeTab.elements, boxedIds);
-    if (!bbox) return;
-    const padding = 60;
-    const zoom = Math.max(
-      0.1,
-      Math.min(
-        5,
-        (rect.width - 2 * padding) / Math.max(1, bbox.width),
-        (rect.height - 2 * padding) / Math.max(1, bbox.height),
-        1,
-      ),
-    );
-    setViewportZoom(zoom);
-    setViewportOffset({
-      x: rect.width / 2 - (bbox.x + bbox.width / 2),
-      y: rect.height / 2 - (bbox.y + bbox.height / 2),
-    });
-  };
 
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
