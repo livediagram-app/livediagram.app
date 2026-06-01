@@ -120,7 +120,14 @@ import {
 } from '@/lib/api-client';
 import { applyRevert, diffElements } from '@/lib/change-log';
 import { buildTemplate, templateCanvasOverrides, type TemplateKind } from '@/lib/templates';
-import { getTheme, recolourElementForTheme, THEMES, type ThemeId } from '@/lib/themes';
+import {
+  getTheme,
+  recolourElementForTheme,
+  resetThemeElement,
+  switchThemeElement,
+  THEMES,
+  type ThemeId,
+} from '@/lib/themes';
 
 function createTab(name: string): Tab {
   return { id: crypto.randomUUID(), name, elements: [] };
@@ -2379,46 +2386,11 @@ export default function LivePage() {
       ts.map((t) => {
         if (t.id !== activeId) return t;
         const prevTheme = getTheme(t.theme);
-        // For one colour field on one element: if the element's
-        // current value matches the previous theme's value for that
-        // field (or is unset), the user hasn't overridden it — apply
-        // the new theme. Otherwise it's custom; leave it.
-        const applyOrKeep = (
-          current: string | undefined,
-          prev: string | null,
-          next: string | null,
-        ) => (current === undefined || current === prev ? (next ?? undefined) : current);
-        const elements = t.elements.map((el) => {
-          if (el.type === 'shape') {
-            return {
-              ...el,
-              fillColor: applyOrKeep(el.fillColor, prevTheme.elementFill, theme.elementFill),
-              strokeColor: applyOrKeep(
-                el.strokeColor,
-                prevTheme.elementStroke,
-                theme.elementStroke,
-              ),
-              textColor: applyOrKeep(el.textColor, prevTheme.elementText, theme.elementText),
-            };
-          }
-          if (el.type === 'text') {
-            return {
-              ...el,
-              textColor: applyOrKeep(el.textColor, prevTheme.elementText, theme.elementText),
-            };
-          }
-          if (el.type === 'arrow') {
-            return {
-              ...el,
-              strokeColor: applyOrKeep(
-                el.strokeColor,
-                prevTheme.elementStroke,
-                theme.elementStroke,
-              ),
-            };
-          }
-          return el;
-        });
+        // Per-field, preserve-customs walk. See `switchThemeElement`
+        // in lib/themes.ts for the rule (a field is replaced when
+        // it's unset or still matches the previous theme's value,
+        // and kept when the user has set it to something else).
+        const elements = t.elements.map((el) => switchThemeElement(el, prevTheme, theme));
         return {
           ...t,
           elements,
@@ -2444,23 +2416,9 @@ export default function LivePage() {
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id !== activeId) return t;
-        const elements = t.elements.map((el) => {
-          if (el.type === 'shape') {
-            return {
-              ...el,
-              fillColor: theme.elementFill ?? undefined,
-              strokeColor: theme.elementStroke ?? undefined,
-              textColor: theme.elementText ?? undefined,
-            };
-          }
-          if (el.type === 'text') {
-            return { ...el, textColor: theme.elementText ?? undefined };
-          }
-          if (el.type === 'arrow') {
-            return { ...el, strokeColor: theme.elementStroke ?? undefined };
-          }
-          return el;
-        });
+        // Hard reset: blank user overrides too. See `resetThemeElement`
+        // in lib/themes.ts for the rule.
+        const elements = t.elements.map((el) => resetThemeElement(el, theme));
         return { ...t, elements };
       }),
     );

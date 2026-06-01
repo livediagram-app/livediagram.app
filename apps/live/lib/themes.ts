@@ -280,3 +280,75 @@ export function recolourElementForTheme(el: Element, theme: ThemeDefinition): El
   }
   return el;
 }
+
+// Soft theme switch: change the diagram's theme but preserve every
+// per-element colour the user has CUSTOMISED. A field counts as
+// "still on the old theme" (and is therefore safe to replace) when
+// either:
+//   - it's unset (undefined), or
+//   - it equals the previous theme's value for that field.
+// Otherwise it's a user override and we leave it alone. Used by the
+// Theme accordion's preset row.
+//
+// The rule applies per-field, not per-element, so a shape whose
+// fill was customised but whose stroke wasn't will get a new
+// stroke while keeping its fill. Sticky notes stay untouched (same
+// rule as `recolourElementForTheme`).
+export function switchThemeElement(
+  el: Element,
+  prev: ThemeDefinition,
+  next: ThemeDefinition,
+): Element {
+  const pick = (current: string | undefined, prevVal: string | null, nextVal: string | null) =>
+    current === undefined || current === prevVal ? (nextVal ?? undefined) : current;
+  if (el.type === 'shape') {
+    return {
+      ...el,
+      fillColor: pick(el.fillColor, prev.elementFill, next.elementFill),
+      strokeColor: pick(el.strokeColor, prev.elementStroke, next.elementStroke),
+      textColor: pick(el.textColor, prev.elementText, next.elementText),
+    };
+  }
+  if (el.type === 'text') {
+    return {
+      ...el,
+      textColor: pick(el.textColor, prev.elementText, next.elementText),
+    };
+  }
+  if (el.type === 'arrow') {
+    return {
+      ...el,
+      strokeColor: pick(el.strokeColor, prev.elementStroke, next.elementStroke),
+    };
+  }
+  return el;
+}
+
+// Hard reset: force every themable colour on every shape / text /
+// arrow back to the current theme's value, OVERWRITING any custom
+// per-element colours the user set. Surfaces as "Reset elements to
+// theme" under the Theme accordion. Sticky notes stay untouched.
+//
+// Difference vs `recolourElementForTheme`: when the theme's value
+// is null (e.g. the Brand theme has no element-fill override), the
+// reset BLANKS the element's field (sets it to undefined) rather
+// than leaving the existing custom value in place. Recolour-for-
+// theme is "apply when present", reset is "make match the theme,
+// blank when the theme blanks".
+export function resetThemeElement(el: Element, theme: ThemeDefinition): Element {
+  if (el.type === 'shape') {
+    return {
+      ...el,
+      fillColor: theme.elementFill ?? undefined,
+      strokeColor: theme.elementStroke ?? undefined,
+      textColor: theme.elementText ?? undefined,
+    };
+  }
+  if (el.type === 'text') {
+    return { ...el, textColor: theme.elementText ?? undefined };
+  }
+  if (el.type === 'arrow') {
+    return { ...el, strokeColor: theme.elementStroke ?? undefined };
+  }
+  return el;
+}
