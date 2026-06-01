@@ -35,6 +35,9 @@ import {
   type Anchor,
   type ArrowElement,
   type BackgroundPattern,
+  type BorderRadius,
+  type BorderStroke,
+  type BorderStyle,
   type BoxedElement,
   type Element,
   type Endpoint,
@@ -3076,6 +3079,34 @@ export default function LivePage() {
     );
   };
 
+  // Border-preset setters. Each writes the field on the selected
+  // shape only; non-shape elements are ignored (the Border accordion
+  // is hidden for them anyway, but defensive against a stale id).
+  const setBorderStrokeSelected = (value: BorderStroke) => {
+    if (!selectedId) return;
+    commit((els) =>
+      els.map((el) =>
+        el.id === selectedId && el.type === 'shape' ? { ...el, strokeWidth: value } : el,
+      ),
+    );
+  };
+  const setBorderStyleSelected = (value: BorderStyle) => {
+    if (!selectedId) return;
+    commit((els) =>
+      els.map((el) =>
+        el.id === selectedId && el.type === 'shape' ? { ...el, strokeStyle: value } : el,
+      ),
+    );
+  };
+  const setBorderRadiusSelected = (value: BorderRadius) => {
+    if (!selectedId) return;
+    commit((els) =>
+      els.map((el) =>
+        el.id === selectedId && el.type === 'shape' ? { ...el, borderRadius: value } : el,
+      ),
+    );
+  };
+
   // Clear per-element colour overrides so the element falls back to
   // whatever the current tab theme dictates. Each colour field is set
   // to undefined; the history hook snapshots the present so this is
@@ -3885,6 +3916,9 @@ export default function LivePage() {
         onSetArrowheadSize={setArrowheadSizeSelected}
         onSetArrowStyle={setArrowStyleSelected}
         onSetShapeKind={setShapeKindSelected}
+        onSetBorderStroke={setBorderStrokeSelected}
+        onSetBorderStyle={setBorderStyleSelected}
+        onSetBorderRadius={setBorderRadiusSelected}
         onDuplicateSelected={duplicateSelected}
         tabs={tabs}
         currentTabId={activeId}

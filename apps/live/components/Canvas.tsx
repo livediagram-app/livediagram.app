@@ -203,6 +203,9 @@ type CanvasProps = {
   onSetArrowheadSize: (size: import('@livediagram/diagram').ArrowheadSize) => void;
   onSetArrowStyle: (style: import('@livediagram/diagram').ArrowStyle) => void;
   onSetShapeKind: (kind: ShapeKind) => void;
+  onSetBorderStroke: (value: import('@livediagram/diagram').BorderStroke) => void;
+  onSetBorderStyle: (value: import('@livediagram/diagram').BorderStyle) => void;
+  onSetBorderRadius: (value: import('@livediagram/diagram').BorderRadius) => void;
   onDuplicateSelected: () => void;
   tabs: Tab[];
   currentTabId: string;
@@ -377,6 +380,9 @@ export function Canvas(props: CanvasProps) {
     onSetArrowheadSize,
     onSetArrowStyle,
     onSetShapeKind,
+    onSetBorderStroke,
+    onSetBorderStyle,
+    onSetBorderRadius,
     onDuplicateSelected,
     tabs,
     currentTabId,
@@ -712,6 +718,16 @@ export function Canvas(props: CanvasProps) {
         onSetShapeKind,
         aspectLocked: isBoxed(selected) ? (selected.aspectLocked ?? false) : null,
         onToggleAspectLock,
+        // Border presets only meaningful for shapes (text has no
+        // outline; sticky's amber palette is fixed). Default to
+        // medium / solid / sm to match the renderer's fallbacks
+        // when the element hasn't been customised yet.
+        borderStroke: selected.type === 'shape' ? (selected.strokeWidth ?? 'medium') : null,
+        borderStyle: selected.type === 'shape' ? (selected.strokeStyle ?? 'solid') : null,
+        borderRadius: selected.type === 'shape' ? (selected.borderRadius ?? 'sm') : null,
+        onSetBorderStroke,
+        onSetBorderStyle,
+        onSetBorderRadius,
       }
     : null;
 

@@ -167,6 +167,28 @@ export function defaultArrowStrokeColor(): string {
   return 'rgb(51 65 85)'; // slate-700, same as ArrowView's fallback
 }
 
+// Effective border-stroke preset for a boxed element. Shapes carry an
+// explicit `strokeWidth` field once the user picks one; until then,
+// resolve to DEFAULT_BORDER_STROKE so the renderer + the Border
+// accordion both show the same value.
+export function borderStrokeOf(element: BoxedElement): BorderStroke {
+  return (element as { strokeWidth?: BorderStroke }).strokeWidth ?? DEFAULT_BORDER_STROKE;
+}
+
+export function borderStyleOf(element: BoxedElement): BorderStyle {
+  return (element as { strokeStyle?: BorderStyle }).strokeStyle ?? DEFAULT_BORDER_STYLE;
+}
+
+// Default radius preset. Note that the CSS-rendered shapes (square,
+// circle, stadium) keep their preexisting fixed corner rounding when
+// borderRadius isn't set, and only switch to the BORDER_RADIUS_PX
+// mapping when the user picks a preset. Use this when you need a
+// preset value (e.g. to highlight a radio button); use the BorderRadius
+// optional field directly when checking "did the user pick yet?".
+export function borderRadiusOf(element: BoxedElement): BorderRadius {
+  return (element as { borderRadius?: BorderRadius }).borderRadius ?? DEFAULT_BORDER_RADIUS;
+}
+
 // --- Shapes ---------------------------------------------------------------
 
 export type ShapeKind =
@@ -212,12 +234,64 @@ export type ShapeElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // Border styling (shapes + stickies). Each is a preset bucket so
+  // saved diagrams round-trip without carrying arbitrary numeric
+  // values; the renderer maps to pixel widths / SVG dasharrays /
+  // border-radius pixels (BORDER_STROKE_PX, BORDER_DASH_ARRAY,
+  // BORDER_RADIUS_PX further down).
+  strokeWidth?: BorderStroke;
+  strokeStyle?: BorderStyle;
+  borderRadius?: BorderRadius;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
   commentThread?: CommentThread;
   padding?: Padding;
 };
+
+// Border styling presets. Keep these as small unions so the
+// CommandPalette can render them as 3-to-4-button icon rows that
+// match the Pointer accordion's pattern (Line thickness /
+// Arrowhead size / etc).
+export type BorderStroke = 'thin' | 'medium' | 'thick' | 'extra-thick';
+export type BorderStyle = 'solid' | 'dashed' | 'dotted';
+export type BorderRadius = 'none' | 'sm' | 'md' | 'lg';
+
+export const BORDER_STROKE_PX: Record<BorderStroke, number> = {
+  thin: 1,
+  medium: 2,
+  thick: 4,
+  'extra-thick': 7,
+};
+
+// Default for shapes that don't carry a strokeWidth field. Picked to
+// match what the renderer was hardcoding before this field existed
+// so old diagrams render exactly the same.
+export const DEFAULT_BORDER_STROKE: BorderStroke = 'medium';
+
+// Dash patterns in user units, expanded by the renderer with the
+// active stroke width so dashes scale with thickness. 'solid' maps
+// to no dasharray (omit the attribute) so the default solid stroke
+// path stays the same.
+export const BORDER_DASH_ARRAY: Record<BorderStyle, string | null> = {
+  solid: null,
+  dashed: '6 4',
+  dotted: '1 3',
+};
+
+export const DEFAULT_BORDER_STYLE: BorderStyle = 'solid';
+
+// Corner radius in pixels. Only meaningful on shapes whose silhouette
+// has user-visible corners (square / stadium and the device frames);
+// the SVG-overlay shapes (diamond, hexagon, cloud etc) ignore it.
+export const BORDER_RADIUS_PX: Record<BorderRadius, number> = {
+  none: 0,
+  sm: 4,
+  md: 12,
+  lg: 24,
+};
+
+export const DEFAULT_BORDER_RADIUS: BorderRadius = 'sm';
 
 // --- Text ------------------------------------------------------------------
 

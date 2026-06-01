@@ -1,6 +1,11 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
   activeCommentCount,
+  BORDER_DASH_ARRAY,
+  BORDER_RADIUS_PX,
+  BORDER_STROKE_PX,
+  DEFAULT_BORDER_STROKE,
+  DEFAULT_BORDER_STYLE,
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
@@ -183,7 +188,12 @@ export function BoxedElementView({
           shape={element.shape}
           fill={element.fillColor ?? defaultFillColor(element)}
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
-          strokeWidth={remoteBorderColor ? 3 : 2}
+          strokeWidth={
+            remoteBorderColor ? 3 : BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]
+          }
+          strokeDasharray={
+            BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
+          }
         />
       ) : null}
 
@@ -270,11 +280,15 @@ function ShapeSvgOverlay({
   fill,
   stroke,
   strokeWidth = 2,
+  strokeDasharray,
 }: {
   shape: ShapeKind;
   fill: string;
   stroke: string;
   strokeWidth?: number;
+  // SVG dasharray string when the user picked a dashed / dotted
+  // border style; undefined for solid (the default, omits the attr).
+  strokeDasharray?: string;
 }) {
   if (shape === 'actor') {
     // UML actor: an open circle head (the fill colour tints it) over a
@@ -294,6 +308,7 @@ function ShapeSvgOverlay({
           fill="none"
           stroke={stroke}
           strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
@@ -311,6 +326,14 @@ function ShapeSvgOverlay({
     fill,
     stroke,
     strokeWidth,
+    // strokeDasharray propagates so the user's dashed / dotted
+    // pick affects the main outline path of every SVG-rendered
+    // shape (diamond / cylinder / hexagon / device frames...).
+    // The chrome details inside the device frames (the URL pill,
+    // window dots, etc.) keep their own stroke setup and stay
+    // solid, which reads correctly: a dotted browser frame still
+    // has a solid URL bar inside it.
+    strokeDasharray,
     vectorEffect: 'non-scaling-stroke' as const,
     strokeLinejoin: 'round' as const,
   };
@@ -698,14 +721,29 @@ function describeVariant(
           style: { borderRadius: '4px' },
         };
       }
+      // CSS-rendered shapes (square / circle / stadium and the
+      // rectangular device frames). The user-pickable border
+      // strength + style apply here as the HTML element's
+      // borderWidth / borderStyle; borderRadius only applies to
+      // free-corner shapes (NOT circle / stadium, whose radii
+      // are part of the silhouette).
+      const fixedRadius =
+        element.shape === 'circle' ? '50%' : element.shape === 'stadium' ? '9999px' : null;
+      const userRadius =
+        element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : null;
+      const strokePx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
+      const dashStyle = (element.strokeStyle ??
+        DEFAULT_BORDER_STYLE) as React.CSSProperties['borderStyle'];
       return {
-        className: `border-2 text-brand-800 shadow-sm ${ring}`,
+        // Drop the border-2 class so we can drive border width from
+        // the user's strokeWidth pick instead of a fixed 2px.
+        className: `text-brand-800 shadow-sm ${ring}`,
         style: {
-          borderRadius:
-            element.shape === 'circle' ? '50%' : element.shape === 'stadium' ? '9999px' : '8px',
+          borderRadius: fixedRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),
           backgroundColor: element.fillColor ?? defaultFillColor(element),
           borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
-          borderWidth: remoteBorderColor ? remoteBorderWidth : undefined,
+          borderWidth: remoteBorderColor ? remoteBorderWidth : strokePx,
+          borderStyle: dashStyle,
         },
       };
     }

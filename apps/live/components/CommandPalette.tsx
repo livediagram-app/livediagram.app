@@ -6,6 +6,9 @@ import type {
   ArrowStyle,
   ArrowThickness,
   BackgroundPattern,
+  BorderRadius,
+  BorderStroke,
+  BorderStyle,
   Padding,
   ShapeKind,
   TextAlignX,
@@ -76,6 +79,16 @@ export type SelectedElementControls = {
   // that doesn't support aspect-lock (e.g. arrows).
   aspectLocked: boolean | null;
   onToggleAspectLock: () => void;
+  // Border presets. Non-null only when a shape is selected (text
+  // elements have no border and stickies have a fixed peeled-corner
+  // visual). The Border accordion renders three icon-button rows:
+  // strength, pattern, radius.
+  borderStroke: BorderStroke | null;
+  borderStyle: BorderStyle | null;
+  borderRadius: BorderRadius | null;
+  onSetBorderStroke: (value: BorderStroke) => void;
+  onSetBorderStyle: (value: BorderStyle) => void;
+  onSetBorderRadius: (value: BorderRadius) => void;
 };
 
 export type TabSectionControls = {
@@ -558,6 +571,7 @@ export type SelectedAccordionState = {
   layer: boolean;
   text: boolean;
   colours: boolean;
+  border: boolean;
   pointer: boolean;
 };
 
@@ -592,6 +606,7 @@ export function SelectedElementSection({
         layer: false,
         text: false,
         colours: false,
+        border: false,
         pointer: false,
       };
       if (prev[key]) return closed;
@@ -849,6 +864,71 @@ export function SelectedElementSection({
           >
             Reset to theme
           </button>
+        </Accordion>
+      ) : null}
+
+      {/* Border accordion: visible when a shape is selected (shapes
+          carry the strokeWidth / strokeStyle / borderRadius fields).
+          Mirrors the Pointer accordion's icon-button-row pattern so
+          shape borders feel like a peer of arrow pointers. */}
+      {selection.borderStroke !== null &&
+      selection.borderStyle !== null &&
+      selection.borderRadius !== null ? (
+        <Accordion title="Border" open={open.border} onToggle={() => toggle('border')}>
+          <p className="text-[10px] font-medium text-slate-500">Strength</p>
+          <div className="mt-1 grid grid-cols-4 gap-1">
+            {(['thin', 'medium', 'thick', 'extra-thick'] as const).map((value) => (
+              <Tooltip
+                key={value}
+                block
+                title={BORDER_STROKE_LABEL[value]}
+                description={`Border thickness: ${BORDER_STROKE_LABEL[value].toLowerCase()}.`}
+              >
+                <SizeButton
+                  active={selection.borderStroke === value}
+                  onClick={() => selection.onSetBorderStroke(value)}
+                >
+                  <BorderStrokeIcon value={value} />
+                </SizeButton>
+              </Tooltip>
+            ))}
+          </div>
+          <p className="mt-3 text-[10px] font-medium text-slate-500">Pattern</p>
+          <div className="mt-1 grid grid-cols-3 gap-1">
+            {(['solid', 'dashed', 'dotted'] as const).map((value) => (
+              <Tooltip
+                key={value}
+                block
+                title={BORDER_STYLE_LABEL[value]}
+                description={`Border pattern: ${BORDER_STYLE_LABEL[value].toLowerCase()}.`}
+              >
+                <SizeButton
+                  active={selection.borderStyle === value}
+                  onClick={() => selection.onSetBorderStyle(value)}
+                >
+                  <BorderStyleIcon value={value} />
+                </SizeButton>
+              </Tooltip>
+            ))}
+          </div>
+          <p className="mt-3 text-[10px] font-medium text-slate-500">Radius</p>
+          <div className="mt-1 grid grid-cols-4 gap-1">
+            {(['none', 'sm', 'md', 'lg'] as const).map((value) => (
+              <Tooltip
+                key={value}
+                block
+                title={BORDER_RADIUS_LABEL[value]}
+                description={`Corner radius: ${BORDER_RADIUS_LABEL[value].toLowerCase()}.`}
+              >
+                <SizeButton
+                  active={selection.borderRadius === value}
+                  onClick={() => selection.onSetBorderRadius(value)}
+                >
+                  <BorderRadiusIcon value={value} />
+                </SizeButton>
+              </Tooltip>
+            ))}
+          </div>
         </Accordion>
       ) : null}
 
@@ -1249,6 +1329,85 @@ function ShapeIcon({ kind }: { kind: ShapeKind }) {
         </svg>
       );
   }
+}
+
+// Border-accordion labels + glyphs. Three rows: stroke strength,
+// stroke pattern, corner radius. Each glyph renders a horizontal
+// line / squiggle whose visual weight or pattern hints at the preset
+// the button maps to, matching the Pointer accordion's row
+// conventions so the two reads as siblings.
+
+const BORDER_STROKE_LABEL: Record<BorderStroke, string> = {
+  thin: 'Thin',
+  medium: 'Medium',
+  thick: 'Thick',
+  'extra-thick': 'Extra-thick',
+};
+
+const BORDER_STYLE_LABEL: Record<BorderStyle, string> = {
+  solid: 'Solid',
+  dashed: 'Dashed',
+  dotted: 'Dotted',
+};
+
+const BORDER_RADIUS_LABEL: Record<BorderRadius, string> = {
+  none: 'None',
+  sm: 'Small',
+  md: 'Medium',
+  lg: 'Large',
+};
+
+function BorderStrokeIcon({ value }: { value: BorderStroke }) {
+  const sw = { thin: 1, medium: 2, thick: 4, 'extra-thick': 7 }[value];
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+      <line
+        x1="2"
+        y1="9"
+        x2="16"
+        y2="9"
+        stroke="currentColor"
+        strokeWidth={sw}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function BorderStyleIcon({ value }: { value: BorderStyle }) {
+  const dash = value === 'solid' ? undefined : value === 'dashed' ? '4 3' : '1.5 2.5';
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+      <line
+        x1="2"
+        y1="9"
+        x2="16"
+        y2="9"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray={dash}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function BorderRadiusIcon({ value }: { value: BorderRadius }) {
+  const rx = { none: 0, sm: 2, md: 4.5, lg: 7 }[value];
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+      <rect
+        x="3"
+        y="3"
+        width="12"
+        height="12"
+        rx={rx}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+    </svg>
+  );
 }
 
 // iOS-style toggle switch. Used by the Shape accordion's Lock-aspect
