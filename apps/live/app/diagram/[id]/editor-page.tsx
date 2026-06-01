@@ -2310,16 +2310,16 @@ export default function LivePage() {
           }),
         })),
     );
-    // Cascade: drop every audit-log entry whose tab_id points at the
-    // gone tab. Local list first so the panel updates immediately,
-    // then the API (fire-and-forget).
+    // Local cascade: drop audit-log entries for the gone tab from the
+    // visible panel immediately. The server-side cascade lives inside
+    // deleteTabRow (apps/api/src/db.ts): it only drops the change_log
+    // rows when the underlying `tabs` row is itself dropped, so a
+    // shared tab unlinked from this diagram keeps its history in any
+    // diagram that still surfaces it (per spec/17). The previous
+    // client-side apiDeleteChangeLogForTab call wiped the log
+    // globally, which silently broke the audit panel for every other
+    // diagram sharing the tab.
     setChangeLog((prev) => prev.filter((entry) => entry.tabId !== id));
-    if (diagramId) {
-      apiDeleteChangeLogForTab(selfParticipant.id, diagramId, id, sessionShareCode).catch(() => {
-        // Best-effort. Stale rows in D1 are harmless; next list fetch
-        // simply omits them because the diagram is the source of truth.
-      });
-    }
     if (activeId === id) {
       const fallback = tabs[idx + 1] ?? tabs[idx - 1];
       if (fallback) setActiveId(fallback.id);

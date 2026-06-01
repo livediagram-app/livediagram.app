@@ -251,6 +251,12 @@ export async function upsertTab(
 // an unlink from one of their containing diagrams so the body
 // stays readable from the rest. Legacy single-link tabs end up
 // fully deleted, matching the prior contract.
+//
+// change_log entries follow the tabs row: they live on the tab id
+// (per #14 in spec/17), so they get dropped only when the tab
+// itself goes away. Cascading the log on every unlink would wipe
+// the audit panel for every other diagram that still surfaces the
+// shared tab.
 export async function deleteTabRow(env: Env, diagramId: string, tabId: string): Promise<void> {
   await env.DB.prepare('DELETE FROM diagram_tabs WHERE diagram_id = ? AND tab_id = ?')
     .bind(diagramId, tabId)
@@ -260,6 +266,7 @@ export async function deleteTabRow(env: Env, diagramId: string, tabId: string): 
     .first<{ n: number }>();
   if ((remaining?.n ?? 0) === 0) {
     await env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId).run();
+    await env.DB.prepare('DELETE FROM change_log WHERE tab_id = ?').bind(tabId).run();
   }
 }
 
