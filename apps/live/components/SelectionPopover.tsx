@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { Tab } from '@livediagram/diagram';
-import { TabLinkPicker } from './TabLinkPicker';
+import { TabLinkPicker, type LinkPickerDiagram } from './TabLinkPicker';
 import { Tooltip } from './Tooltip';
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -16,7 +16,7 @@ type SelectionPopoverProps = {
   // Up to 5 of the user's most-recently-saved diagrams. Surfaces in
   // the link picker's "Link to diagram" section. Optional; visitor
   // sessions on a share link pass undefined so the section hides.
-  recentDiagrams?: import('./TabLinkPicker').LinkPickerDiagram[];
+  recentDiagrams?: LinkPickerDiagram[];
   // Currently-linked diagram id when the element's link kind is
   // 'diagram'. Drives the active highlight in the diagram section.
   linkedDiagramId?: string | null;
@@ -24,7 +24,7 @@ type SelectionPopoverProps = {
   onDelete: () => void;
   onDuplicate: () => void;
   onSetLink: (tabId: string) => void;
-  onSetDiagramLink?: (diagram: import('./TabLinkPicker').LinkPickerDiagram) => void;
+  onSetDiagramLink?: (diagram: LinkPickerDiagram) => void;
   onClearLink: () => void;
   onCopyFormat?: () => void;
   onGroup?: () => void;

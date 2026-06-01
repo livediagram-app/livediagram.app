@@ -46,6 +46,7 @@ import { MultiSelectionToolbar } from './MultiSelectionToolbar';
 import { ModeBanner } from './ModeBanner';
 import { PlusButton } from './PlusButton';
 import { SelectionPopover } from './SelectionPopover';
+import type { LinkPickerDiagram } from './TabLinkPicker';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
 // is gated on `showTemplatePicker`, which is false for the common
@@ -221,10 +222,10 @@ type CanvasProps = {
   tabs: Tab[];
   currentTabId: string;
   onSetLink: (tabId: string) => void;
-  onSetDiagramLink?: (diagram: import('./TabLinkPicker').LinkPickerDiagram) => void;
+  onSetDiagramLink?: (diagram: LinkPickerDiagram) => void;
   // Up to 5 of the user's recent diagrams. Surfaced in the link
   // picker's "Link to diagram" section.
-  recentDiagrams?: import('./TabLinkPicker').LinkPickerDiagram[];
+  recentDiagrams?: LinkPickerDiagram[];
   onClearLink: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
