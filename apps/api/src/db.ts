@@ -831,30 +831,54 @@ export async function deleteAccount(
   };
 }
 
-// Owner-id migration. Reassigns every `diagrams.owner_id` and
-// `folders.owner_id` row from `fromOwnerId` to `toOwnerId`. Called
-// from POST /api/migrate when a guest signs up — their localStorage
-// participant id moves to their Clerk userId so the new account sees
-// the diagrams + folders they built as a guest. Other tables
-// (`change_log`, `share_links`, `tabs`) don't carry their own
-// owner_id — they link via `diagram_id`, which is owner-bound, so
-// updating the diagrams cascade-fixes them implicitly.
+// Owner-id migration. Reassigns every `diagrams.owner_id`,
+// `folders.owner_id`, AND `shared_with.owner_id` row from
+// `fromOwnerId` to `toOwnerId`. Called from POST /api/migrate when
+// a guest signs up: their localStorage participant id moves to
+// their Clerk userId so the new account sees the diagrams +
+// folders they built as a guest AND the shared-with-them list
+// they accumulated by accepting share links.
 //
-// Returns `{ diagrams: N, folders: M }`. Idempotent — re-running
+// shared_with's primary key is (owner_id, diagram_id), so a naive
+// UPDATE could PK-collide if the visitor accepted the same share
+// link both as a guest AND, later in the same session, as Clerk
+// (recordSharedAccess upserts a row each time). INSERT OR IGNORE
+// then DELETE handles both cases in one shot: copy guest rows to
+// the Clerk userId, skip rows where (clerkId, diagramId) already
+// exists, then drop every leftover guest row. The skipped Clerk
+// rows keep the role + last_seen they already had (which is the
+// more recent of the two paths the user actually used).
+//
+// Other tables (`change_log`, `share_links`, `tabs`) don't carry
+// their own owner_id, they link via `diagram_id` which is
+// owner-bound, so updating the diagrams cascade-fixes them
+// implicitly.
+//
+// Returns `{ diagrams, folders, shared }`. Idempotent: re-running
 // with the same `fromOwnerId` is a no-op once the rows have moved.
 export async function migrateOwnerId(
   env: Env,
   fromOwnerId: string,
   toOwnerId: string,
-): Promise<{ diagrams: number; folders: number }> {
+): Promise<{ diagrams: number; folders: number; shared: number }> {
   const diagramsRes = await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   const foldersRes = await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
+  const sharedInsertRes = await env.DB.prepare(
+    `INSERT OR IGNORE INTO shared_with (owner_id, diagram_id, role, last_seen)
+     SELECT ?, diagram_id, role, last_seen
+     FROM shared_with
+     WHERE owner_id = ?`,
+  )
+    .bind(toOwnerId, fromOwnerId)
+    .run();
+  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(fromOwnerId).run();
   return {
     diagrams: diagramsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
+    shared: sharedInsertRes.meta.changes ?? 0,
   };
 }

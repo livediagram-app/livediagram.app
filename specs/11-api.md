@@ -105,9 +105,9 @@ Owner-only routes require a resolved owner — either a verified Clerk Bearer JW
 
 **Migration (guest → authed)**
 
-| Method | Path           | Auth       | Notes                                                                                                                                                                                             |
-| ------ | -------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/migrate` | Clerk only | Body `{ guestOwnerId }`. Reassigns every `diagrams.owner_id` + `folders.owner_id` row from the guest id to the JWT's `sub`. No `X-Owner-Id` fallback. See [spec/04](04-auth-and-guest-access.md). |
+| Method | Path           | Auth       | Notes                                                                                                                                                                                                                                                                                                                                                                         |
+| ------ | -------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/migrate` | Clerk only | Body `{ guestOwnerId }`. Reassigns every `diagrams.owner_id` + `folders.owner_id` + `shared_with.owner_id` row from the guest id to the JWT's `sub`. `shared_with` uses INSERT OR IGNORE + DELETE because its PK is `(owner_id, diagram_id)` and the same share may already be accepted under both ids. No `X-Owner-Id` fallback. See [spec/04](04-auth-and-guest-access.md). |
 
 **Shared with you** (migration 0010)
 
