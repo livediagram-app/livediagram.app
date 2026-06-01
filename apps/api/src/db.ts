@@ -194,10 +194,6 @@ export async function getTab(env: Env, diagramId: string, tabId: string): Promis
   return row ? rowToTab(row) : null;
 }
 
-export async function listTabSummaries(env: Env, diagramId: string): Promise<TabSummaryDTO[]> {
-  return listTabSummariesFor(env, diagramId);
-}
-
 // Full upsert for a single tab. Splits the live-app's Tab type into
 // columns + a `data` JSON blob (everything except id + name) so list
 // queries can return summaries without parsing element trees.
