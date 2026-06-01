@@ -27,7 +27,13 @@ export const metadata: Metadata = {
   },
 };
 
-const FAQS: { q: string; a: ReactNode }[] = [
+// Each entry's `a` is what renders on the page (a ReactNode so we
+// can mix prose with anchor links). `aText` is the plain-text form
+// the FAQPage JSON-LD emits, since schema.org's Answer.text expects
+// a string. Entries whose `a` is already a string can omit
+// `aText`; the rest restate the sentence sans markup so the
+// structured data stays a faithful image of the visible answer.
+const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   {
     q: 'Do I need an account to use livediagram?',
     a: 'No. Open the editor and start drawing straight away, with no sign-up. An account is optional, and signing in (for free) keeps your diagrams synced across your devices.',
@@ -77,6 +83,8 @@ const FAQS: { q: string; a: ReactNode }[] = [
         the details.
       </>
     ),
+    aText:
+      'Your diagrams are stored in our database on Cloudflare. There are no tracking pixels, no advertising, and no third-party analytics. See the privacy policy for the details.',
   },
   {
     q: 'Can I self-host livediagram?',
@@ -94,6 +102,8 @@ const FAQS: { q: string; a: ReactNode }[] = [
         get every feature in the open-source codebase.
       </>
     ),
+    aText:
+      'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontend plus the Cloudflare Workers backend on your own account and you get every feature in the open-source codebase.',
   },
   {
     q: 'How do I delete my data or account?',
@@ -111,12 +121,38 @@ const FAQS: { q: string; a: ReactNode }[] = [
         <a href="mailto:hello@livediagram.app">hello@livediagram.app</a>.
       </>
     ),
+    aText: 'It is built by Tom McClean. Questions or feedback? Email hello@livediagram.app.',
   },
 ];
+
+// FAQPage JSON-LD: unlocks Google's expandable-FAQ rich result
+// for this page. Each Question.acceptedAnswer.text falls back to
+// the entry's plain-text a-field when aText isn't set (the
+// string-typed entries), and uses the parallel aText for entries
+// whose `a` carries JSX (so the structured-data text stays
+// markup-free). Build-time only, no client JS.
+const FAQ_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: f.aText ?? (typeof f.a === 'string' ? f.a : ''),
+    },
+  })),
+};
 
 export default function FaqPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // Static export, build-time-serialised. </ escapes match the
+        // root layout's hardening (see apps/marketing/app/layout.tsx).
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD).replace(/</g, '\\u003c') }}
+      />
       <Header />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
