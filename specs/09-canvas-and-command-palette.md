@@ -453,7 +453,7 @@ Format + duplication:
 
 Relationships:
 
-- **Link to tab** — opens a `TabLinkPicker` listing every other tab in the diagram. Picking one writes `link: { kind: 'tab', tabId }` onto the element; the linked tab opens on a follow-link click. Hidden when the diagram only has one tab (nothing to link to).
+- **Link Element** — opens a `TabLinkPicker` listing every other tab in the diagram (and the user's most recent diagrams when available). Picking a tab writes `link: { kind: 'tab', tabId }` onto the element; picking a diagram writes `link: { kind: 'diagram', diagramId }`. The linked target opens on a follow-link click. Hidden when the diagram only has one tab and there are no recent diagrams to offer.
 - **Comments** — opens the `CommentThreadPopover` for the element's comment thread. See [Comments](#comments).
 - **Group / Ungroup** — Group enters group-mode to extend the selection into a group. Ungroup breaks the current group apart. See [Groups](#groups). (Shown for boxed elements only.)
 
@@ -753,7 +753,7 @@ Any element can carry a **link to another tab**. Clicking the link jumps to that
 
 ### Setting a link
 
-- The selection popover's Relationships group has a **Link to tab** button (chain icon, between Duplicate and Comments). It's hidden entirely when the diagram only has one tab — there's nowhere to link to.
+- The selection popover's Relationships group has a **Link Element** button (chain icon, between Duplicate and Comments). It's hidden entirely when the diagram only has one tab and there are no recent diagrams to link to.
 - Clicking it opens a small **TabLinkPicker** popover above the button (portal-rendered, viewport-clamped) listing every other tab.
 - Click a tab name to set the link. Click again on the same tab to keep it, or click another to switch. A **Remove link** action appears at the bottom of the picker when a link is set.
 

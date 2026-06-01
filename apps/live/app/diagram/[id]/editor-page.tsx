@@ -4040,7 +4040,7 @@ export default function LivePage() {
                   {tabs.length > 1 ? (
                     <MenuItem
                       icon={<LinkMenuIcon />}
-                      label={target.link ? 'Edit link' : 'Link to tab'}
+                      label={target.link ? 'Edit link' : 'Link Element'}
                       onClick={() => {
                         setLinkPickerOpenForId(target.id);
                         close();

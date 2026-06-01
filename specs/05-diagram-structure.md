@@ -83,4 +83,4 @@ Element IDs are diagram-scoped so cross-tab links are stable even if elements mo
 - A `+` button on the tab bar adds a new empty tab and switches to it.
 - **Rename** a tab by double-clicking its label (inline input — Enter commits, Escape cancels). Also available via the per-tab ellipsis menu.
 - **Reorder** tabs by dragging a tab to a new position in the bar.
-- **Create a cross-tab link** from the selection popover — click "Link to tab", pick a target tab; the link follows the element if it's moved.
+- **Create a cross-tab link** from the selection popover, click "Link Element", pick a target tab; the link follows the element if it's moved.
