@@ -1721,41 +1721,46 @@ function buildFlywheel(cx: number, cy: number): Element[] {
     angleDeg: number;
     label: string;
     caption: string;
-    // Anchors used for the outgoing arrow to the NEXT sector and the
-    // incoming arrow from the PREVIOUS sector. Picking diagonal
-    // anchors makes the loop read as a circulation around the hub.
+    // Anchors on THIS sector. `out` is where this sector's outgoing
+    // arrow leaves (toward the next sector clockwise). `into` is
+    // where this sector's incoming arrow arrives (from the previous
+    // sector). Picking the cardinal anchor that FACES the neighbour
+    // keeps the arrow off the hub and off the other sectors — e.g.
+    // Attract (top) leaves from its east face toward Engage (right),
+    // and Engage's incoming arrow arrives at its north face.
     out: Anchor;
-    nextIn: Anchor;
+    into: Anchor;
   };
-  // Clockwise starting at the top.
+  // Clockwise starting at the top. Each sector's `out` faces the
+  // NEXT sector clockwise; each `into` faces the PREVIOUS sector.
   const sectors: SectorSpec[] = [
     {
       angleDeg: -90,
       label: 'Attract',
       caption: 'Ads, SEO, content',
-      out: 'e',
-      nextIn: 'n',
+      out: 'e', // Attract.E -> Engage.N
+      into: 'w', // Refer.N -> Attract.W
     },
     {
       angleDeg: 0,
       label: 'Engage',
       caption: 'Demos, onboarding, support',
-      out: 's',
-      nextIn: 'e',
+      out: 's', // Engage.S -> Delight.E
+      into: 'n', // Attract.E -> Engage.N
     },
     {
       angleDeg: 90,
       label: 'Delight',
       caption: 'Wins, outcomes, wow moments',
-      out: 'w',
-      nextIn: 's',
+      out: 'w', // Delight.W -> Refer.S
+      into: 'e', // Engage.S -> Delight.E
     },
     {
       angleDeg: 180,
       label: 'Refer',
       caption: 'Reviews, word of mouth, referrals',
-      out: 'n',
-      nextIn: 'w',
+      out: 'n', // Refer.N -> Attract.W
+      into: 's', // Delight.W -> Refer.S
     },
   ];
 
@@ -1790,16 +1795,15 @@ function buildFlywheel(cx: number, cy: number): Element[] {
     });
   });
 
-  // Clockwise arrows between adjacent sectors.
+  // Clockwise arrows between adjacent sectors. The outgoing arrow
+  // leaves THIS sector's `out` anchor and lands on the NEXT sector's
+  // `into` anchor, so each arrow stays on the outside of the wheel
+  // rather than cutting through the hub.
   sectors.forEach((sector, i) => {
     const next = sectors[(i + 1) % sectors.length]!;
+    const nextEl = sectorElements[(i + 1) % sectors.length]!;
     elements.push(
-      createPinnedArrow(
-        sectorElements[i]!.id,
-        sector.out,
-        sectorElements[(i + 1) % sectors.length]!.id,
-        next.nextIn,
-      ),
+      createPinnedArrow(sectorElements[i]!.id, sector.out, nextEl.id, next.into),
     );
   });
 
