@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplatedTab } from './template-builders';
-import { templateCanvasOverrides } from './templates';
+import { TEMPLATES, templateCanvasOverrides, type TemplateKind } from './templates';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome
@@ -9,6 +9,68 @@ import { getTheme } from './themes';
 // "Untitled" diagram that doesn't match the option they picked.
 // The theming is the bit most likely to silently drift, so the
 // tests below pin each element type's recolouring contract.
+
+// The catalogue's shape (count + default/extra split + no kind
+// drift) is load-bearing across both the picker and the marketing
+// site. spec/16 claims "16 templates (8 default + 8 extra)" and
+// spec/09 catalogues the picker UX. These tests pin the array so
+// either the spec or the catalogue can't silently drift away from
+// the other.
+describe('TEMPLATES catalogue', () => {
+  // List of every TemplateKind union member, kept in lockstep with
+  // the catalogue. If a new kind lands in the union, both this list
+  // AND the catalogue must grow; the test below catches a drift in
+  // either direction.
+  const ALL_KINDS: TemplateKind[] = [
+    'blank',
+    'mindmap',
+    'orgchart',
+    'retrospective',
+    'flowchart',
+    'kanban',
+    'swot',
+    'timeline',
+    'venn',
+    'journey',
+    'fishbone',
+    'pyramid',
+    'mobile-wireframe',
+    'laptop-wireframe',
+    'slide-deck',
+    'flywheel',
+  ];
+
+  it('lists exactly 16 templates (matches spec/16 and spec/09)', () => {
+    expect(TEMPLATES).toHaveLength(16);
+  });
+
+  it('splits cleanly into 8 default + 8 extra (the picker uses `extra` to gate behind "Show more")', () => {
+    const defaults = TEMPLATES.filter((t) => !t.extra);
+    const extras = TEMPLATES.filter((t) => t.extra);
+    expect(defaults).toHaveLength(8);
+    expect(extras).toHaveLength(8);
+  });
+
+  it('has no duplicate kinds (guards against accidental copy-paste in the catalogue)', () => {
+    const kinds = TEMPLATES.map((t) => t.kind);
+    expect(new Set(kinds).size).toBe(kinds.length);
+  });
+
+  it('lists every TemplateKind member exactly once', () => {
+    const kinds = new Set(TEMPLATES.map((t) => t.kind));
+    for (const kind of ALL_KINDS) {
+      expect(kinds.has(kind)).toBe(true);
+    }
+    expect(kinds.size).toBe(ALL_KINDS.length);
+  });
+
+  it('every kind builds to at least one element (the buildTemplate switch handles every union member)', () => {
+    for (const kind of ALL_KINDS) {
+      const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
+      expect(tab.elements.length).toBeGreaterThan(0);
+    }
+  });
+});
 
 describe('templateCanvasOverrides', () => {
   it('gives mind maps a softer backdrop opacity', () => {
