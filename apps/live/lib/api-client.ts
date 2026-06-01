@@ -176,18 +176,26 @@ async function expectOkOr404Void(res: Response, action: string): Promise<void> {
   if (!res.ok && res.status !== 404) throw new Error(`${action} failed: ${res.status}`);
 }
 
-export async function apiLoadDiagram(ownerId: string, id: string): Promise<Diagram | null> {
+// Deduped on `${ownerId}|${id}`: the editor mounts and React Strict
+// Mode in dev double-invokes its hydration effect, so this fires
+// twice on first paint. With dedup, the second call receives the
+// in-flight promise instead of opening a second request to the
+// same diagram.
+async function _apiLoadDiagram(ownerId: string, id: string): Promise<Diagram | null> {
   const res = await fetch(`${API_BASE}/diagrams/${id}`, {
     headers: await apiHeaders(ownerId),
   });
   const body = await expectOkOrNull<DiagramResponse>(res, 'load');
   return body?.diagram ?? null;
 }
+export const apiLoadDiagram = dedupeInFlight(_apiLoadDiagram, (ownerId, id) => `${ownerId}|${id}`);
 
 // Resolve a share code to a full diagram + the role granted by that
 // code. Visitors landing on `/live/diagram/shared?s=<code>` use
-// this; revoked codes return 404 from the API.
-export async function apiLoadShared(code: string): Promise<SharedDiagramResolution | null> {
+// this; revoked codes return 404 from the API. Deduped by code so
+// Strict Mode's double-invoke doesn't fire two share lookups for
+// the same visitor.
+async function _apiLoadShared(code: string): Promise<SharedDiagramResolution | null> {
   const res = await fetch(`${API_BASE}/share/${code}`);
   const body = await expectOkOrNull<DiagramResponse & { role?: ShareRole }>(res, 'load shared');
   if (!body) return null;
@@ -196,6 +204,7 @@ export async function apiLoadShared(code: string): Promise<SharedDiagramResoluti
     role: body.role === 'view' ? 'view' : 'edit',
   };
 }
+export const apiLoadShared = dedupeInFlight(_apiLoadShared, (code) => code);
 
 // ---------------------------------------------------------------------
 // Change log (per-diagram audit) — see specs/12-activity-and-audit.md
@@ -557,7 +566,11 @@ export async function apiSetDiagramFolder(
   await expectOkVoid(res, 'set folder');
 }
 
-export async function apiLoadSelf(id: string): Promise<Participant | null> {
+// Deduped by id: the editor's hydration effect AND /live/new's
+// initial fetch both call this on first paint; React Strict Mode
+// in dev doubles each. With dedup, all four collapse to one fetch
+// when they land in the same tick.
+async function _apiLoadSelf(id: string): Promise<Participant | null> {
   const res = await fetch(`${API_BASE}/participants/${id}`);
   const body = await expectOkOrNull<ParticipantResponse>(res, 'load self');
   if (!body) return null;
@@ -569,6 +582,7 @@ export async function apiLoadSelf(id: string): Promise<Participant | null> {
     status: 'online',
   };
 }
+export const apiLoadSelf = dedupeInFlight(_apiLoadSelf, (id) => id);
 
 // Account self-deletion (Clerk-only). Wipes the caller's diagrams,
 // folders, and participant row server-side; the caller is expected
