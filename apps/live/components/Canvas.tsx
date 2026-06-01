@@ -1457,7 +1457,7 @@ export function Canvas(props: CanvasProps) {
                       onPointerDown={(e) => e.stopPropagation()}
                       onClick={onToggleActivityMinimized}
                       aria-label="Open Tab Activity"
-                      className="flex h-11 w-11 items-center justify-center border-r border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                      className="hidden h-11 w-11 items-center justify-center border-r border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 sm:flex dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                     >
                       <ActivityIcon />
                     </button>

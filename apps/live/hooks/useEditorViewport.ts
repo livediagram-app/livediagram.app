@@ -12,12 +12,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/diagram';
 import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
 
-// Breakpoint at which we initialise the viewport at 30% zoom rather
+// Breakpoint at which we initialise the viewport at 60% zoom rather
 // than 100%, so a mobile visitor lands on a usable overview instead
-// of a single nodes-fill-the-screen view. Matches the previous
-// inline initializer in editor-page.tsx.
+// of a single nodes-fill-the-screen view. 30% was too far out, the
+// text on every element became unreadable; 60% keeps labels legible
+// while still showing a workable chunk of canvas around the
+// pointer.
 const MOBILE_BREAKPOINT_PX = 768;
-const MOBILE_DEFAULT_ZOOM = 0.3;
+const MOBILE_DEFAULT_ZOOM = 0.6;
 const DESKTOP_DEFAULT_ZOOM = 1;
 
 export type EditorViewportDeps = {

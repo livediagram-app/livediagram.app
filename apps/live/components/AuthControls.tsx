@@ -94,12 +94,12 @@ function AuthControlsEnabled() {
         onClick={() => setMenuOpen((open) => !open)}
         aria-label="Account menu"
         aria-expanded={menuOpen}
-        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 text-xs font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 text-xs font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:py-1 sm:pl-1 sm:pr-3"
       >
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-[11px] font-semibold text-white">
           {initial}
         </span>
-        {pillLabel ? <span className="truncate">{pillLabel}</span> : null}
+        {pillLabel ? <span className="hidden truncate sm:inline">{pillLabel}</span> : null}
       </button>
       {menuOpen ? (
         <div

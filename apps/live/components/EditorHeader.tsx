@@ -127,8 +127,10 @@ export function EditorHeader({
                   the verb changing to "Shared". State is communicated
                   by the brand-500 fill + aria-pressed flip; the small
                   green SharedBadge next to the diagram title in the
-                  centre cluster is the explicit "on" affordance. */}
-              Share
+                  centre cluster is the explicit "on" affordance.
+                  Hidden on mobile to keep the header dense; the icon
+                  + brand-500 fill carry the state on small screens. */}
+              <span className="hidden sm:inline">Share</span>
             </button>
           </Tooltip>
         ) : null}
@@ -151,8 +153,8 @@ function SharedBadge({ shareable }: { shareable: boolean }) {
       <span
         className={
           shareable
-            ? 'inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30'
-            : 'inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30'
+            ? 'hidden items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 sm:inline-flex dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30'
+            : 'hidden items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 sm:inline-flex dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30'
         }
       >
         <span aria-hidden className={shareable ? 'text-emerald-500' : 'text-amber-500'}>
