@@ -373,7 +373,7 @@ function TabNameEditor({
           onCancel();
         }
       }}
-      className="w-32 rounded-md bg-white px-2 py-1 text-sm font-medium text-slate-800 outline-none ring-1 ring-brand-300"
+      className="w-32 rounded-md bg-white px-2 py-1 text-sm font-medium text-slate-800 outline-none ring-1 ring-brand-300 dark:bg-slate-800 dark:text-slate-100 dark:ring-brand-400"
     />
   );
 }
@@ -530,7 +530,7 @@ function PortalMenu({
     <div
       ref={ref}
       role="menu"
-      className={`fixed z-50 flex ${view === 'copyTo' ? 'w-56' : 'w-44'} flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg`}
+      className={`fixed z-50 flex ${view === 'copyTo' ? 'w-56' : 'w-44'} flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
       style={{
         // pos pins the menu's right edge to the ellipsis button's right edge,
         // then translate shifts it left and up. adjust nudges back on-screen
@@ -574,12 +574,14 @@ function PortalMenu({
           <button
             type="button"
             onClick={() => setView('actions')}
-            className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:text-slate-700"
+            className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           >
             <BackIcon />
             Back
           </button>
-          <p className="px-2 pb-1 text-[10px] text-slate-400">Pick a destination diagram</p>
+          <p className="px-2 pb-1 text-[10px] text-slate-400 dark:text-slate-500">
+            Pick a destination diagram
+          </p>
           <div className="max-h-56 overflow-y-auto">
             {otherDiagrams.map((d) => (
               <MenuItem
@@ -613,13 +615,21 @@ function MenuItem({
   const base =
     'flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition';
   const tone = disabled
-    ? 'cursor-not-allowed text-slate-300'
+    ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
     : danger
-      ? 'text-rose-700 hover:bg-rose-50'
-      : 'text-slate-700 hover:bg-slate-100';
+      ? 'text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
+      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
   return (
     <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${tone}`}>
-      <span className={disabled ? 'text-slate-300' : danger ? 'text-rose-600' : 'text-slate-400'}>
+      <span
+        className={
+          disabled
+            ? 'text-slate-300 dark:text-slate-600'
+            : danger
+              ? 'text-rose-600 dark:text-rose-300'
+              : 'text-slate-400 dark:text-slate-500'
+        }
+      >
         {icon}
       </span>
       <span>{label}</span>
