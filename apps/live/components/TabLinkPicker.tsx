@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Tab } from '@livediagram/diagram';
+import { clampToViewport } from '@/lib/clamp-to-viewport';
 
 type TabLinkPickerProps = {
   anchor: HTMLElement | null;
@@ -46,16 +47,8 @@ export function TabLinkPicker({
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node || !pos) return;
-    const rect = node.getBoundingClientRect();
-    const margin = 8;
-    let dx = 0;
-    let dy = 0;
-    if (rect.left < margin) dx = margin - rect.left;
-    else if (rect.right > window.innerWidth - margin) dx = window.innerWidth - margin - rect.right;
-    if (rect.top < margin) dy = margin - rect.top;
-    else if (rect.bottom > window.innerHeight - margin)
-      dy = window.innerHeight - margin - rect.bottom;
-    if (dx !== adjust.x || dy !== adjust.y) setAdjust({ x: dx, y: dy });
+    const next = clampToViewport(node.getBoundingClientRect(), adjust);
+    if (next.x !== adjust.x || next.y !== adjust.y) setAdjust(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pos]);
 

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Tab } from '@livediagram/diagram';
+import { clampToViewport } from '@/lib/clamp-to-viewport';
 import type { Participant } from '@/lib/identity';
 import { getTheme } from '@/lib/themes';
 import { ParticipantAvatar } from './ParticipantAvatar';
@@ -371,26 +372,8 @@ function PortalMenu({
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node || !pos) return;
-    const rect = node.getBoundingClientRect();
-    // Re-measure WITHOUT the previous adjust applied, so dx / dy are
-    // computed against the menu's native position. Otherwise toggling
-    // back from a clamped state would never relax: the stale clamp
-    // shifts the rect into-frame, the new measurement reports
-    // "already in-frame", and the box stays kicked.
-    const naturalLeft = rect.left - adjust.x;
-    const naturalRight = rect.right - adjust.x;
-    const naturalTop = rect.top - adjust.y;
-    const naturalBottom = rect.bottom - adjust.y;
-    const margin = 8;
-    let dx = 0;
-    let dy = 0;
-    if (naturalLeft < margin) dx = margin - naturalLeft;
-    else if (naturalRight > window.innerWidth - margin)
-      dx = window.innerWidth - margin - naturalRight;
-    if (naturalTop < margin) dy = margin - naturalTop;
-    else if (naturalBottom > window.innerHeight - margin)
-      dy = window.innerHeight - margin - naturalBottom;
-    if (dx !== adjust.x || dy !== adjust.y) setAdjust({ x: dx, y: dy });
+    const next = clampToViewport(node.getBoundingClientRect(), adjust);
+    if (next.x !== adjust.x || next.y !== adjust.y) setAdjust(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pos, view]);
 
