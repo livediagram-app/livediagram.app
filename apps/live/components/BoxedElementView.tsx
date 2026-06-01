@@ -881,9 +881,13 @@ function describeVariant(
       // children of this wrapper. The wrapper here just contributes
       // the selection ring + remote-selector border, with a
       // transparent background so the bitmap shows through.
+      // No overflow-hidden on the wrapper: the lock / comment /
+      // note badges sit at -right-1 / -top-1 outside the box, and
+      // clipping the wrapper cuts them off (the bitmap clipping
+      // happens inside ImageElementView instead).
       const ring = `${singleRing('ring-2 ring-brand-300')} ${multiRing}`.trim();
       return {
-        className: `overflow-hidden rounded ${ring}`,
+        className: `rounded ${ring}`,
         style: {
           borderColor: remoteBorderColor ?? undefined,
           borderWidth: remoteBorderColor ? remoteBorderWidth : undefined,

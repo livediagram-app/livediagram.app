@@ -3244,12 +3244,31 @@ export default function LivePage() {
     // to it), offset diagonally so it's visible next to the original.
     const offset = 24;
     if (isBoxed(source)) {
+      // Group-aware: if the source belongs to a group, duplicate
+      // every group member together with a fresh shared groupId
+      // and remapped element ids. duplicateGroupedElements keeps
+      // any arrows between the group members re-pinned to the
+      // copies. A single-element selection (no group) returns the
+      // source element only, which is the original behaviour.
+      const ids = memberIdsOf(source.id);
+      if (ids.size > 1) {
+        const { newElements, idMap } = duplicateGroupedElements(
+          activeTab.elements,
+          ids,
+          offset,
+          offset,
+        );
+        const sourceCopyId = idMap.get(source.id);
+        commit((els) => [...els, ...newElements]);
+        if (sourceCopyId) setSelectedId(sourceCopyId);
+        return;
+      }
       const copy: BoxedElement = {
         ...source,
         id: crypto.randomUUID(),
         x: source.x + offset,
         y: source.y + offset,
-        // Drop group membership — the duplicate is independent.
+        // Drop group membership: the duplicate is independent.
         groupId: undefined,
       };
       commit((els) => [...els, copy]);

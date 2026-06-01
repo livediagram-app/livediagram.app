@@ -666,6 +666,7 @@ export function Canvas(props: CanvasProps) {
     editingId !== selected.id &&
     !isPaintMode &&
     !isGroupMode &&
+    !selectedLocked &&
     !tabLocked &&
     !readOnly;
   const showHandles = (id: string) =>

@@ -83,13 +83,19 @@ export function ImageElementView({
   }
 
   return (
-    <img
-      src={state.src}
-      alt={element.alt ?? ''}
-      draggable={false}
-      className="block h-full w-full select-none"
-      style={{ objectFit: 'contain' }}
-    />
+    // `overflow-hidden rounded` lives here (not on the BoxedElement
+    // wrapper) so the parent can let lock / comment / note badges
+    // overflow outside the box without being clipped, while the
+    // bitmap still gets its rounded-corner clip.
+    <div className="h-full w-full overflow-hidden rounded">
+      <img
+        src={state.src}
+        alt={element.alt ?? ''}
+        draggable={false}
+        className="block h-full w-full select-none"
+        style={{ objectFit: 'contain' }}
+      />
+    </div>
   );
 }
 
