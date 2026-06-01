@@ -66,6 +66,7 @@ import { useFolders } from '@/hooks/useFolders';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { arrowReferencesAny } from '@/lib/canvas';
+import { useEditorBroadcast } from '@/hooks/useEditorBroadcast';
 import { useEditorDrag } from '@/hooks/useEditorDrag';
 import { useEditorKeyboardShortcuts } from '@/hooks/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/useEditorViewport';
@@ -345,7 +346,10 @@ export default function LivePage() {
   // Local laser trail — held in state so the overlay re-renders when
   // we append a point, but mutations stay cheap by always producing a
   // bounded array.
-  const [localLaserTrail, setLocalLaserTrail] = useState<LaserPoint[]>([]);
+  // `localLaserTrail` now comes from useEditorBroadcast, declared
+  // further down once the WS gates (roomRef, diagramShareable...)
+  // are in scope. Editor-page still reads it for the laserTrailRows
+  // aggregator that Canvas consumes.
   // Diagram-list refresh, fired after every autosave so the
   // Explorer's "Updated X ago" timestamps stay fresh. Folders are
   // explicitly NOT refetched here — they only change via folder
@@ -1205,53 +1209,18 @@ export default function LivePage() {
     };
   }, [hydrated, diagramId, activeId, selfParticipant.id, sessionShareCode, resetTabs]);
 
-  // Local cursor broadcaster. Sends the participant's pointer position
-  // in canvas-coords whenever it moves, throttled to ~30 Hz so we
-  // don't flood the room. `broadcastCursor(null)` is called when the
-  // pointer leaves the canvas — peers hide the indicator until the
-  // next position arrives.
-  const lastCursorSentRef = useRef(0);
-  const broadcastCursor = (pos: { x: number; y: number } | null) => {
-    if (!hydrated || !diagramId || !diagramShareable) return;
-    const now = performance.now();
-    if (pos && now - lastCursorSentRef.current < 33) return;
-    lastCursorSentRef.current = now;
-    roomRef.current?.send({
-      kind: 'op',
-      op: {
-        kind: 'cursor',
-        tabId: activeId,
-        x: pos?.x ?? null,
-        y: pos?.y ?? null,
-      },
-    });
-  };
-  // Laser broadcast — fires per pointer-move while in laser tool.
-  // Throttled to ~30 Hz to match cursor traffic. Trail buffers grow
-  // locally + remotely as points arrive; the overlay's RAF loop is
-  // what makes them visibly decay over the lifetime window.
-  const lastLaserSentRef = useRef(0);
-  const broadcastLaser = (x: number, y: number) => {
-    const now = performance.now();
-    setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
-    if (!hydrated || !diagramId || !diagramShareable) return;
-    if (now - lastLaserSentRef.current < 33) return;
-    lastLaserSentRef.current = now;
-    roomRef.current?.send({
-      kind: 'op',
-      op: { kind: 'laser', tabId: activeId, x, y },
-    });
-  };
-  // Clear the local trail when leaving laser mode so a partial path
-  // doesn't persist in state forever (the overlay's filter would
-  // hide it after LIFETIME_MS, but a fresh laser session shouldn't
-  // start from the prior trail's tail). Also fires on tab switch
-  // for the same reason.
-  useEffect(() => {
-    if (canvasTool !== 'laser') {
-      setLocalLaserTrail([]);
-    }
-  }, [canvasTool, activeId]);
+  // Outbound realtime broadcasters (cursor + laser) and the local
+  // laser-trail buffer live in useEditorBroadcast. Same throttle,
+  // same gates, same trail-clears-on-tool-change behaviour as
+  // before, just out of the page file.
+  const { broadcastCursor, broadcastLaser, localLaserTrail } = useEditorBroadcast({
+    roomRef,
+    hydrated,
+    diagramId,
+    diagramShareable,
+    activeId,
+    canvasTool,
+  });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the
   // measurements read through, and a parallel zoomRef the drag hook
   // reads each pointer-move) lives in useEditorViewport. The hook
