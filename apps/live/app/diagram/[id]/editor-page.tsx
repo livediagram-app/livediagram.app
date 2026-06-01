@@ -44,11 +44,21 @@ import {
   type TextAlignY,
   type TextSize,
 } from '@livediagram/diagram';
+import dynamic from 'next/dynamic';
 import { Canvas } from '@/components/Canvas';
 import { CommentThreadPopover } from '@/components/CommentThreadPopover';
 import { DiagramLoading } from '@/components/DiagramLoading';
 import { EditorHeader, type SaveStatus } from '@/components/EditorHeader';
-import { ExportTabDialog } from '@/components/ExportTabDialog';
+
+// Lazy-load ExportTabDialog: it pulls in lib/export-tab's canvas
+// + PDF renderers (a measurable chunk of bytes), all of which only
+// matter the moment the user actually clicks Export. The dialog
+// is already gated on `exportOpen`, so swapping the static import
+// for next/dynamic doesn't change any render code, just hoists the
+// underlying module into its own chunk that loads on demand.
+const ExportTabDialog = dynamic(() =>
+  import('@/components/ExportTabDialog').then((m) => m.ExportTabDialog),
+);
 import { parseImportedTab, pickTabFile } from '@/lib/import-tab';
 import { Explorer } from '@/components/Explorer';
 import { NotFound } from '@/components/NotFound';
