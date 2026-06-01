@@ -66,6 +66,39 @@ export function ImagePicker({
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  // Clipboard paste support. While the picker is open, a paste
+  // gesture (Cmd-V / Ctrl-V or right-click → Paste) lifts the
+  // first image file off the clipboard and runs it through the
+  // same handleFile path as drag-drop / file input. Pasting a
+  // screenshot is the most common image source after drag-drop,
+  // so handling it natively saves the user a "save to disk → drag
+  // in" detour. Only attaches the listener while the picker is
+  // mounted; the keydown handler above lives on the document so
+  // the paste one does too (a focused button inside the dialog
+  // doesn't bubble the paste event to the dialog otherwise).
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.kind !== 'file') continue;
+        const file = item.getAsFile();
+        if (!file) continue;
+        if (file.type.startsWith('image/')) {
+          e.preventDefault();
+          void handleFile(file);
+          return;
+        }
+      }
+    };
+    document.addEventListener('paste', onPaste);
+    return () => document.removeEventListener('paste', onPaste);
+    // handleFile reads `ownerId` / `onSelect` from the enclosing
+    // closure; both are stable for the picker's lifetime so the
+    // empty dep array is intentional.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleFile = async (file: File) => {
     setUploadError(null);
     if (!ACCEPTED_TYPES.includes(file.type as (typeof ACCEPTED_TYPES)[number])) {
@@ -193,7 +226,7 @@ export function ImagePicker({
               >
                 <UploadIcon />
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {uploading ? 'Uploading…' : 'Drop an image or click to choose'}
+                  {uploading ? 'Uploading…' : 'Drop, paste, or click to choose an image'}
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   PNG, JPEG, WebP, or GIF up to 10 MB
