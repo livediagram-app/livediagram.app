@@ -54,7 +54,7 @@ import { NotFound } from '@/components/NotFound';
 import { ShareDialog } from '@/components/ShareDialog';
 import { TabBar } from '@/components/TabBar';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
-import { useDiagramHistory } from '@/hooks/useDiagramHistory';
+import { HISTORY_LIMIT, useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { useFolders } from '@/hooks/useFolders';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import {
@@ -117,11 +117,12 @@ function createTab(name: string): Tab {
   return { id: crypto.randomUUID(), name, elements: [] };
 }
 
-// Mirrors useDiagramHistory.HISTORY_LIMIT — we can't undo past what
-// the state-snapshot stack remembers, so there's no point in tracking
-// more log entries than that. Bumping HISTORY_LIMIT in useDiagramHistory
-// should bump this too.
-const LOG_HISTORY_LIMIT = 3;
+// Activity-log past/future stacks share the cap with the
+// state-snapshot stack: we can't undo past what useDiagramHistory
+// remembers, so there's no point in tracking more log entries than
+// that. Imported from the hook directly so the two stacks can't
+// drift (was a literal mirror of `3` here, which is the kind of
+// duplication a future HISTORY_LIMIT bump would silently break).
 
 // Bound a laser-trail buffer in both dimensions: cap at 60 points and
 // drop any sample older than LASER_BUFFER_TTL_MS. Called on every
@@ -1502,7 +1503,7 @@ export default function LivePage() {
   const appendLogEntry = (entry: ChangeLogEntry) => {
     setChangeLog((prev) => [entry, ...prev].slice(0, 30));
     entryHistoryRef.current = {
-      past: [...entryHistoryRef.current.past, entry].slice(-LOG_HISTORY_LIMIT),
+      past: [...entryHistoryRef.current.past, entry].slice(-HISTORY_LIMIT),
       future: [],
     };
     if (diagramId) {
@@ -1664,7 +1665,7 @@ export default function LivePage() {
     if (popped) {
       entryHistoryRef.current = {
         past: past.slice(0, -1),
-        future: [popped, ...future].slice(0, LOG_HISTORY_LIMIT),
+        future: [popped, ...future].slice(0, HISTORY_LIMIT),
       };
       setChangeLog((prev) => prev.filter((e) => e.id !== popped.id));
       if (diagramId) {
@@ -1690,7 +1691,7 @@ export default function LivePage() {
     const next = future[0];
     if (next) {
       entryHistoryRef.current = {
-        past: [...past, next].slice(-LOG_HISTORY_LIMIT),
+        past: [...past, next].slice(-HISTORY_LIMIT),
         future: future.slice(1),
       };
       setChangeLog((prev) => [next, ...prev].slice(0, 30));
