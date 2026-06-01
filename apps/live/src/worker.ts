@@ -22,6 +22,12 @@ type Env = { ASSETS: AssetsBinding };
 //     compromised script can't request them. Clipboard isn't denied
 //     because the image picker uses paste; fullscreen=self is
 //     allowed for the laser-presenter view.
+//   - Strict-Transport-Security: 1-year HSTS with includeSubDomains.
+//     Pins the browser to HTTPS for the apex + every subdomain
+//     after the first visit; subsequent loads can't be downgraded
+//     to plain HTTP by a network-level attacker. Cloudflare's zone-
+//     level toggle covers the same ground but this code-side header
+//     is the source of truth so self-host deployments inherit it.
 //
 // CSP itself is left for a dedicated cycle: it needs explicit allow-
 // listing for Clerk's external script + the api / R2 origins, and
@@ -32,6 +38,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy':
     'camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 };
 
 function withSecurityHeaders(res: Response): Response {
