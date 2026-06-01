@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 
@@ -38,6 +38,18 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+};
+
+// Mobile chrome + colour-scheme signal. Brand-500 tints Android
+// Chrome's URL bar, the iOS PWA status bar, and Windows' tile when
+// the site is installed; declaring colorScheme: 'light' avoids a
+// flash of dark-mode default styling on browsers that would
+// otherwise auto-toggle. The viewport object is the Next 15
+// metadata API's replacement for hand-rolled <meta> tags, see
+// spec/16-marketing-site.md "SEO and metadata".
+export const viewport: Viewport = {
+  themeColor: '#0EA5E9',
+  colorScheme: 'light',
 };
 
 // JSON-LD structured data, see spec/16-marketing-site.md "SEO and
