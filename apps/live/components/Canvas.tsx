@@ -36,6 +36,7 @@ import type { TemplateKind } from '@/lib/templates';
 import { ArrowDefs, ArrowView } from './ArrowView';
 import { BoxedElementView } from './BoxedElementView';
 import { CommandPalette, type SelectedElementControls } from './CommandPalette';
+import { UnionResizeHandles } from './element-parts';
 import { ActivityIcon, ActivityPanel, RedoIcon, UndoIcon } from './ActivityPanel';
 import { ContextIcon, ContextPanel } from './ContextPanel';
 import { Explorer, ExplorerIcon, PaletteIcon } from './Explorer';
@@ -634,6 +635,33 @@ export function Canvas(props: CanvasProps) {
     !isGroupMode &&
     !selectedLocked &&
     !tabLocked;
+  // Union-level resize handles render on the selection bounding box
+  // whenever the selection covers more than one boxed element — either
+  // via marquee multi-select OR clicking into a group. Multi-select
+  // uses multiSelectedIds; group uses memberIds. For a plain single
+  // selection, the per-element handles (see ResizeHandles inside
+  // BoxedElementView) keep doing their job. Suppressed in the same
+  // edit-blocking modes as the single-element handles.
+  const unionResizeIds: Set<string> | null =
+    multiSelectedIds.size > 1 ? multiSelectedIds : memberIds.size > 1 ? memberIds : null;
+  const unionResizeBounds =
+    unionResizeIds && selected ? unionBoxedBounds(elements, unionResizeIds) : null;
+  const unionResizePrimaryId =
+    multiSelectedIds.size > 1
+      ? (multiPrimaryId ?? selectedId)
+      : memberIds.size > 1
+        ? selectedId
+        : null;
+  const showUnionResize =
+    !!unionResizeBounds &&
+    !!unionResizePrimaryId &&
+    selectedIsBoxed &&
+    editingId !== unionResizePrimaryId &&
+    !isPaintMode &&
+    !isGroupMode &&
+    !selectedLocked &&
+    !tabLocked &&
+    !readOnly;
   const showAnchorsFor = (id: string) =>
     selectedIsBoxed &&
     id === selectedId &&
@@ -961,6 +989,15 @@ export function Canvas(props: CanvasProps) {
             elements. The overlay component owns its own RAF loop
             and only runs while there's at least one active trail. */}
         <LaserOverlay trails={laserTrails} zoom={viewportZoom} />
+
+        {showUnionResize && unionResizeBounds && unionResizePrimaryId ? (
+          <UnionResizeHandles
+            bounds={unionResizeBounds}
+            primaryId={unionResizePrimaryId}
+            zoom={viewportZoom}
+            onBeginDrag={onBeginDrag}
+          />
+        ) : null}
 
         {showPlus && selectionBounds ? (
           <>

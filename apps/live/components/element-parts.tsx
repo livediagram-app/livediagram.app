@@ -72,6 +72,57 @@ export function ResizeHandles({ elementId, zoom, onBeginDrag }: ResizeHandlesPro
   );
 }
 
+// --- Union resize handles (for multi-selection + group resize) ------------
+
+type UnionResizeHandlesProps = {
+  // Canvas-space bounds of the union (selection bounding box).
+  bounds: { x: number; y: number; width: number; height: number };
+  // The id we hand back to onBeginDrag — typically the primary
+  // (currently-selected) element. The drag effect picks up every
+  // other member from the captured startBounds so they all scale
+  // proportionally.
+  primaryId: string;
+  zoom: number;
+  onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+};
+
+// Renders the same 4 corner handles as ResizeHandles, but positioned
+// in canvas-space at the union bounding box of a multi-selection /
+// group. Mounted inside the viewport-transformed wrapper so its
+// coordinates pan + zoom with the canvas; the handles themselves are
+// counter-scaled so they remain a constant on-screen size.
+export function UnionResizeHandles({
+  bounds,
+  primaryId,
+  zoom,
+  onBeginDrag,
+}: UnionResizeHandlesProps) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute"
+      style={{
+        left: bounds.x,
+        top: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+      }}
+    >
+      {(Object.keys(positionClasses) as HandlePosition[]).map((pos) => (
+        <div
+          key={pos}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onBeginDrag(primaryId, `resize-${pos}`, e);
+          }}
+          style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
+          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-brand-600 bg-white ${positionClasses[pos]}`}
+        />
+      ))}
+    </div>
+  );
+}
+
 // --- Alignment helpers -----------------------------------------------------
 
 const ALIGN_ITEMS: Record<TextAlignY, 'flex-start' | 'center' | 'flex-end'> = {
