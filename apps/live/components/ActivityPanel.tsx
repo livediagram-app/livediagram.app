@@ -16,6 +16,11 @@ type ActivityPanelProps = {
   tabLocked: boolean;
   entries: ChangeLogEntry[];
   loading: boolean;
+  // View-role / read-only mode. Hides the Undo / Redo bar at the
+  // top and the per-row Revert button. The entries stay visible
+  // (visitors still benefit from seeing the change history) and
+  // row clicks still jump to the affected element via onRowClick.
+  readOnly?: boolean;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
@@ -51,6 +56,7 @@ export function ActivityPanel({
   tabLocked,
   entries,
   loading,
+  readOnly = false,
   canUndo,
   canRedo,
   onUndo,
@@ -79,15 +85,30 @@ export function ActivityPanel({
       <div className="flex flex-1 flex-col gap-2 px-3 pb-3 pt-1">
         {/* Undo / Redo bar lives at the top so the most common actions
             are the easiest to find. They drive the same local history
-            stack as the old HistoryControls — moved here so the
-            related concept (the audit log) and the related action
-            (undo) live together. */}
-        <div className="grid grid-cols-2 gap-1">
-          <UndoRedoButton label="Undo" disabled={!canUndo} onClick={onUndo} icon={<UndoIcon />} />
-          <UndoRedoButton label="Redo" disabled={!canRedo} onClick={onRedo} icon={<RedoIcon />} />
-        </div>
+            stack as the old HistoryControls (moved here so the
+            related concept, the audit log, and the related action,
+            undo, live together). Suppressed in view-role mode since
+            visitors can't author edits to roll back. */}
+        {readOnly ? null : (
+          <>
+            <div className="grid grid-cols-2 gap-1">
+              <UndoRedoButton
+                label="Undo"
+                disabled={!canUndo}
+                onClick={onUndo}
+                icon={<UndoIcon />}
+              />
+              <UndoRedoButton
+                label="Redo"
+                disabled={!canRedo}
+                onClick={onRedo}
+                icon={<RedoIcon />}
+              />
+            </div>
 
-        <div className="h-px bg-slate-100 dark:bg-slate-800" />
+            <div className="h-px bg-slate-100 dark:bg-slate-800" />
+          </>
+        )}
 
         {/* Entries area sized to ~8 rows; anything beyond scrolls
             inside the area so the panel stays predictable on long
@@ -115,7 +136,7 @@ export function ActivityPanel({
                 <ActivityRow
                   key={entry.id}
                   entry={entry}
-                  canRevert={!tabLocked}
+                  canRevert={!tabLocked && !readOnly}
                   onRevert={() => onRevert(entry)}
                   onClick={() => onRowClick(entry)}
                 />
