@@ -23,6 +23,9 @@ type TabBarProps = {
   // Optional callback that pops the keyboard-shortcuts modal. Lives
   // alongside the dark-mode toggle on the right edge of the bar.
   onOpenShortcuts?: () => void;
+  // Optional callback that pops the global search panel. The
+  // button sits to the LEFT of the dark-mode toggle.
+  onOpenSearch?: () => void;
   tabs: Tab[];
   activeId: string;
   // True when the active tab has at least one element. Used to enable
@@ -79,6 +82,7 @@ export function TabBar({
   readOnly = false,
   participantsByTab,
   onOpenShortcuts,
+  onOpenSearch,
 }: TabBarProps) {
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -205,6 +209,18 @@ export function TabBar({
           </button>
         )}
       </div>
+      {onOpenSearch ? (
+        <Tooltip title="Search" description="Find diagrams, folders, tabs and elements.">
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            aria-label="Search"
+            className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+          >
+            <SearchGlyph />
+          </button>
+        </Tooltip>
+      ) : null}
       {onOpenShortcuts ? (
         <Tooltip
           title="Keyboard shortcuts"
@@ -222,6 +238,24 @@ export function TabBar({
       ) : null}
       <UiModeToggle />
     </div>
+  );
+}
+
+function SearchGlyph() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <circle cx="7" cy="7" r="4" />
+      <path d="M10 10l3.5 3.5" />
+    </svg>
   );
 }
 

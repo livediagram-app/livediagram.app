@@ -65,6 +65,7 @@ import { NotFound } from '@/components/NotFound';
 // helpers up front.
 const ShareDialog = dynamic(() => import('@/components/ShareDialog').then((m) => m.ShareDialog));
 import { NotePopover } from '@/components/NotePopover';
+import { SearchPanel } from '@/components/SearchPanel';
 import { ShortcutsDialog } from '@/components/ShortcutsDialog';
 import { TabBar } from '@/components/TabBar';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
@@ -273,6 +274,11 @@ export default function LivePage() {
     resolveThread,
     unresolveThread,
   } = useEditorComments({ activeId, tickTabs, selfParticipant });
+
+  // Global search panel state. Triggered from a footer button;
+  // searches the user's diagram + folder list always, and (when
+  // open inside a diagram) the current diagram's tabs + elements.
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Keyboard-shortcut catalog modal + per-device disable toggle.
   // The toggle gates EVERY shortcut in useEditorKeyboardShortcuts
@@ -3657,8 +3663,29 @@ export default function LivePage() {
           readOnly={isReadOnly}
           participantsByTab={participantsByTab}
           onOpenShortcuts={() => setShortcutsOpen(true)}
+          onOpenSearch={() => setSearchOpen(true)}
         />
       )}
+      {searchOpen ? (
+        <SearchPanel
+          diagrams={diagramList.map((d) => ({ id: d.id, name: d.name }))}
+          folders={folders.map((f) => ({ id: f.id, name: f.name }))}
+          tabs={tabs}
+          currentTabId={activeId}
+          onSelectDiagram={(id) => {
+            openDiagram(id);
+          }}
+          onSelectTab={(tabId) => {
+            setActiveId(tabId);
+            setSelectedId(null);
+          }}
+          onSelectElement={(tabId, elementId) => {
+            setActiveId(tabId);
+            setSelectedId(elementId);
+          }}
+          onClose={() => setSearchOpen(false)}
+        />
+      ) : null}
       {shortcutsOpen ? (
         <ShortcutsDialog
           enabled={shortcutsEnabled}
