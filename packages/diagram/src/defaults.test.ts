@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  PADDING_PX,
   createShape,
   createSticky,
   createText,
@@ -9,6 +10,7 @@ import {
   defaultStrokeColor,
   defaultTextAlign,
   defaultTextColor,
+  type Padding,
 } from './index';
 
 // These default-resolution helpers drive the editor's rendering
@@ -31,6 +33,26 @@ describe('defaultPadding', () => {
 
   it('stickies get a medium inset for the post-it look', () => {
     expect(defaultPadding(createSticky(0, 0))).toBe('md');
+  });
+});
+
+describe('PADDING_PX lookup', () => {
+  it('maps every Padding preset to a non-negative pixel value', () => {
+    const presets: Padding[] = ['none', 'sm', 'md', 'lg'];
+    for (const p of presets) {
+      expect(typeof PADDING_PX[p]).toBe('number');
+      expect(PADDING_PX[p]).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('keeps "none" at exactly 0 so a hugging text element has zero inset', () => {
+    expect(PADDING_PX.none).toBe(0);
+  });
+
+  it('orders presets monotonically (none < sm < md < lg) so the Layer accordion icons read correctly', () => {
+    expect(PADDING_PX.none).toBeLessThan(PADDING_PX.sm);
+    expect(PADDING_PX.sm).toBeLessThan(PADDING_PX.md);
+    expect(PADDING_PX.md).toBeLessThan(PADDING_PX.lg);
   });
 });
 

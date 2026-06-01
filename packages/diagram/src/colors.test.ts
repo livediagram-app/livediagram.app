@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ARROW_THICKNESS_PX,
+  ARROWHEAD_SIZE_PX,
+  DEFAULT_ARROW_THICKNESS,
+  DEFAULT_ARROWHEAD_SIZE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
   arrowStyleOf,
@@ -9,6 +13,8 @@ import {
   deriveTextColorForBg,
   isLightColor,
   type ArrowElement,
+  type ArrowThickness,
+  type ArrowheadSize,
 } from './index';
 
 const channels = (hex: string): [number, number, number] => {
@@ -103,5 +109,45 @@ describe('arrow preset resolvers', () => {
     expect(arrowStyleOf(arrow())).toBe('straight');
     expect(arrowStyleOf(arrow({ arrowStyle: 'curved' }))).toBe('curved');
     expect(arrowStyleOf(arrow({ arrowStyle: 'angled' }))).toBe('angled');
+  });
+});
+
+describe('ARROW_THICKNESS_PX lookup', () => {
+  it('maps every ArrowThickness preset to a positive pixel width', () => {
+    const presets: ArrowThickness[] = ['thin', 'medium', 'thick', 'extra-thick'];
+    for (const p of presets) {
+      expect(typeof ARROW_THICKNESS_PX[p]).toBe('number');
+      expect(ARROW_THICKNESS_PX[p]).toBeGreaterThan(0);
+    }
+  });
+
+  it('orders thicknesses monotonically so the Pointer accordion icons read correctly', () => {
+    expect(ARROW_THICKNESS_PX.thin).toBeLessThan(ARROW_THICKNESS_PX.medium);
+    expect(ARROW_THICKNESS_PX.medium).toBeLessThan(ARROW_THICKNESS_PX.thick);
+    expect(ARROW_THICKNESS_PX.thick).toBeLessThan(ARROW_THICKNESS_PX['extra-thick']);
+  });
+
+  it('DEFAULT_ARROW_THICKNESS has a non-zero pixel mapping so the default stroke paints', () => {
+    expect(ARROW_THICKNESS_PX[DEFAULT_ARROW_THICKNESS]).toBeGreaterThan(0);
+  });
+});
+
+describe('ARROWHEAD_SIZE_PX lookup', () => {
+  it('maps every ArrowheadSize preset to a positive marker size', () => {
+    const presets: ArrowheadSize[] = ['small', 'medium', 'large', 'extra-large'];
+    for (const p of presets) {
+      expect(typeof ARROWHEAD_SIZE_PX[p]).toBe('number');
+      expect(ARROWHEAD_SIZE_PX[p]).toBeGreaterThan(0);
+    }
+  });
+
+  it('orders sizes monotonically (small < medium < large < extra-large)', () => {
+    expect(ARROWHEAD_SIZE_PX.small).toBeLessThan(ARROWHEAD_SIZE_PX.medium);
+    expect(ARROWHEAD_SIZE_PX.medium).toBeLessThan(ARROWHEAD_SIZE_PX.large);
+    expect(ARROWHEAD_SIZE_PX.large).toBeLessThan(ARROWHEAD_SIZE_PX['extra-large']);
+  });
+
+  it('DEFAULT_ARROWHEAD_SIZE has a non-zero pixel mapping so the default head paints', () => {
+    expect(ARROWHEAD_SIZE_PX[DEFAULT_ARROWHEAD_SIZE]).toBeGreaterThan(0);
   });
 });
