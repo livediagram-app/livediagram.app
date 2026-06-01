@@ -423,6 +423,11 @@ export function Canvas(props: CanvasProps) {
 
   // Pan tracking. viewportOffset is owned by the page (so element placement
   // can reason about the visible viewport); we just read/write through props.
+  // Palette's rendered height. The ContextPanel uses this to stack
+  // dynamically below the Palette as accordions open / close;
+  // MovablePanel publishes its bounding box via onSize.
+  const [paletteHeight, setPaletteHeight] = useState<number>(0);
+
   const [pan, setPan] = useState<{
     startClientX: number;
     startClientY: number;
@@ -1213,6 +1218,7 @@ export function Canvas(props: CanvasProps) {
           onAddText={onAddText}
           onAddSticky={onAddSticky}
           onAddArrow={onAddArrow}
+          onSize={(size) => setPaletteHeight(size.height)}
         />
       )}
 
@@ -1228,6 +1234,12 @@ export function Canvas(props: CanvasProps) {
           onMoveTo={onMoveContext}
           onToggleMinimized={onToggleContextMinimized}
           onReset={onResetContext}
+          // Palette's bottom edge: its top corner (top-4 = 16) plus
+          // its measured height. ContextPanel adds another 16px gap.
+          // When paletteHeight is 0 (first paint, before the observer
+          // fires) MovablePanel falls back to its legacy static
+          // top-[15rem] so the panel never lands at 0,0.
+          stackBelowY={paletteMinimized || paletteHeight === 0 ? undefined : 16 + paletteHeight}
         />
       )}
 

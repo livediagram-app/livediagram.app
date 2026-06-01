@@ -74,6 +74,12 @@ type ContextPanelProps = {
   onMoveTo: (x: number, y: number) => void;
   onToggleMinimized: () => void;
   onReset: () => void;
+  // Bottom-y of the panel this one should stack under (the Palette).
+  // When set and the user hasn't dragged this panel anywhere yet, the
+  // panel positions itself at `stackBelowY + 16` rather than the
+  // legacy static top-[15rem] default, so it follows the Palette as
+  // it grows / shrinks (Palette accordions open / close).
+  stackBelowY?: number;
 };
 
 // Right-hand inspector — shows either the Selected Element controls
@@ -92,6 +98,7 @@ export function ContextPanel({
   onMoveTo,
   onToggleMinimized,
   onReset,
+  stackBelowY,
 }: ContextPanelProps) {
   // Accordion open state lives at the panel level so it survives the
   // SelectedElement <-> Tab swap whenever the user deselects or
@@ -167,6 +174,7 @@ export function ContextPanel({
       position={position}
       defaultCorner="top-right-stacked"
       width="w-64"
+      stackBelowY={stackBelowY}
       onReset={onReset}
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}

@@ -33,6 +33,20 @@ type MovablePanelProps = {
   onReset?: () => void;
   onMoveTo: (x: number, y: number) => void;
   onMinimize: () => void;
+  // When set AND the panel is at its default corner (position is null)
+  // AND defaultCorner is 'top-right-stacked', the panel's top is
+  // computed as `stackBelowY + 16` (16 = gap-4) instead of the
+  // hardcoded top-[15rem]. This lets the caller stack a panel
+  // dynamically beneath another resizable panel (the Editor /
+  // ContextPanel sitting below the Palette, which now changes height
+  // as accordions open / close). User drags break out of stacking
+  // (position becomes non-null and explicit left/top win).
+  stackBelowY?: number;
+  // Optional ResizeObserver-driven callback fired with the panel's
+  // current bounding box when it mounts and every time its size
+  // changes. Used by the Palette to publish its height upward so the
+  // ContextPanel can stack below it.
+  onSize?: (size: { width: number; height: number }) => void;
   children: ReactNode;
 };
 
@@ -52,6 +66,8 @@ export function MovablePanel({
   onReset,
   onMoveTo,
   onMinimize,
+  stackBelowY,
+  onSize,
   children,
 }: MovablePanelProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -61,6 +77,24 @@ export function MovablePanel({
     startX: number;
     startY: number;
   } | null>(null);
+
+  // Publish the panel's bounding box upward whenever it changes
+  // (the Palette uses this so the ContextPanel can stack below).
+  // Cheap when no caller subscribes: the observer just never fires
+  // a callback if `onSize` is undefined.
+  useEffect(() => {
+    if (!onSize) return;
+    const node = ref.current;
+    if (!node) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const rect = entry.contentRect;
+      onSize({ width: rect.width, height: rect.height });
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [onSize]);
 
   useEffect(() => {
     if (!drag) return;
@@ -91,18 +125,31 @@ export function MovablePanel({
     setDrag({ startClientX: e.clientX, startClientY: e.clientY, startX, startY });
   };
 
-  const style: React.CSSProperties = position ? { left: position.x, top: position.y } : {};
+  // When stackBelowY is provided and we're still at the default
+  // corner, use it as a dynamic top (above the panel sitting at
+  // its bottom + a 16px gap). Falls back to the static top-[15rem]
+  // class when stackBelowY isn't wired (legacy callers, or no
+  // measurement yet on first paint).
+  const useDynamicStack =
+    position === null && defaultCorner === 'top-right-stacked' && stackBelowY !== undefined;
+  const style: React.CSSProperties = position
+    ? { left: position.x, top: position.y }
+    : useDynamicStack
+      ? { right: 16, top: stackBelowY + 16 }
+      : {};
   const cornerClass = position
     ? ''
-    : defaultCorner === 'top-right'
-      ? 'right-4 top-4'
-      : defaultCorner === 'top-right-stacked'
-        ? 'right-4 top-[15rem]'
-        : defaultCorner === 'bottom-left'
-          ? 'bottom-4 left-4'
-          : defaultCorner === 'bottom-right'
-            ? 'bottom-4 right-4'
-            : 'left-4 top-4';
+    : useDynamicStack
+      ? ''
+      : defaultCorner === 'top-right'
+        ? 'right-4 top-4'
+        : defaultCorner === 'top-right-stacked'
+          ? 'right-4 top-[15rem]'
+          : defaultCorner === 'bottom-left'
+            ? 'bottom-4 left-4'
+            : defaultCorner === 'bottom-right'
+              ? 'bottom-4 right-4'
+              : 'left-4 top-4';
 
   return (
     <div

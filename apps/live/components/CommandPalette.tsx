@@ -134,6 +134,11 @@ type CommandPaletteProps = {
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.
   onAddArrow: () => void;
+  // Optional callback fired with the palette's current bounding box
+  // whenever it changes (via MovablePanel's ResizeObserver). Canvas
+  // wires this up so the ContextPanel can stack dynamically below
+  // the palette as accordions open / close.
+  onSize?: (size: { width: number; height: number }) => void;
 };
 
 export function CommandPalette(props: CommandPaletteProps) {
@@ -153,6 +158,7 @@ function OpenPalette({
   onAddText,
   onAddSticky,
   onAddArrow,
+  onSize,
 }: CommandPaletteProps) {
   // The Selected Element / Current Tab sections moved out into the
   // ContextPanel (bottom-right, above zoom). The palette now hosts
@@ -180,6 +186,7 @@ function OpenPalette({
       position={position}
       defaultCorner="top-right"
       width="w-64"
+      onSize={onSize}
       onReset={onReset}
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}
