@@ -116,7 +116,7 @@ When **any** element is selected, the palette grows a fourth section at the bott
 Accordion groups (rendered in this order top-to-bottom, hidden when their gate doesn't apply):
 
 - **Shape** _(shape elements only)_
-  - 8-shape grid (Square, Circle, Diamond, Cylinder, Parallelogram, Hexagon, Document, Stadium) — clicking morphs the selected element into that kind in place, preserving size + colour overrides. Circle and diamond force the bounding box square; the rest preserve free aspect.
+  - Shape grid (Square, Circle, Diamond, Cylinder, Parallelogram, Hexagon, Document, Stadium, User, Cloud, plus the device frames Web browser, Computer monitor, Laptop, Phone, Tablet) — clicking morphs the selected element into that kind in place, preserving size + colour overrides. Circle and diamond force the bounding box square; the rest preserve free aspect.
   - **Lock aspect ratio** toggle — when on, resize handles enforce the current width:height ratio.
   - **Padding** preset (None / Small / Medium / Large) — distance between the label and the element box, snapped to a preset for round-trip simplicity.
 - **Layer**
@@ -159,7 +159,9 @@ Undo-able actions: adding/deleting any element, label commits, lock toggle, laye
 
 Not in history: selection, edit mode entry, palette position/minimize state, format-painter mode.
 
-For the initial version, the palette has these buttons:
+The add buttons are split into three labelled accordions in the palette: **Shapes** (open by default; the most common entry point on a fresh canvas), **Tools** (collapsed), **Devices** (collapsed). Only one accordion is open at a time so the palette stays compact; clicking another header closes the current. The canvas-tool toggle (Pan / Select / Laser) sits above the accordions as a permanent row, since those are mode switches rather than element adds.
+
+**Shapes** accordion (general shapes):
 
 - **Square** — adds a 120×120 square node to the active tab.
 - **Circle** — adds a 120×120 circle node to the active tab.
@@ -168,7 +170,22 @@ For the initial version, the palette has these buttons:
 - **Parallelogram** — adds a 160×100 parallelogram (wider than tall).
 - **Hexagon** — adds a 140×120 flat-top hexagon.
 - **Document** — adds a 140×110 document shape (slightly wider than tall).
+- **Stadium** — adds a 160×64 pill (flowchart Start / End terminator).
+- **User** — adds a 90×130 UML actor (stickman + label band below).
+- **Cloud** — adds a 180×140 cloud container (networking / architecture).
+
+**Devices** accordion (UI-device frames for wireframing). Each renders as the device's silhouette so users can drop them on the canvas as containers and arrange interface elements inside:
+
+- **Web browser** — adds a 240×160 browser window (tab strip + URL bar + viewport).
+- **Computer monitor** — adds a 220×170 desktop monitor with stand.
+- **Laptop** — adds a 240×150 laptop (screen + keyboard base).
+- **Phone** — adds a 90×170 phone (tall portrait with rounded corners).
+- **Tablet** — adds a 140×180 tablet (medium portrait with rounded corners).
+
+**Tools** accordion (other element kinds):
+
 - **Text** — adds a free-floating text element (see [Text element](#text-element)).
+- **Arrow** — adds a plain straight connector (see [Adding an arrow](#adding-an-arrow)).
 - **Sticky note** — adds a sticky-note element (see [Sticky note element](#sticky-note-element)).
 
 Arrows are no longer in the palette — see [Adding an arrow](#adding-an-arrow).

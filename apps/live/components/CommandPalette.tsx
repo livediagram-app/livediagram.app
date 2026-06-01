@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useShowMoreList } from '@/hooks/useShowMoreList';
 import type {
   ArrowEnds,
@@ -142,7 +143,23 @@ function OpenPalette({
 }: CommandPaletteProps) {
   // The Selected Element / Current Tab sections moved out into the
   // ContextPanel (bottom-right, above zoom). The palette now hosts
-  // only the canvas-tool toggle and the shape primitives.
+  // the canvas-tool toggle plus three accordions of add buttons:
+  // Shapes (open by default, the most common entry point on a fresh
+  // canvas), Tools (text + arrow + sticky), Devices (the wireframing
+  // device frames). Mutually exclusive: opening one closes the
+  // others, same as the SelectedElementSection's pattern, so the
+  // palette stays compact.
+  const [paletteOpen, setPaletteOpen] = useState({
+    shapes: true,
+    tools: false,
+    devices: false,
+  });
+  const togglePalette = (key: 'shapes' | 'tools' | 'devices') =>
+    setPaletteOpen((prev) => {
+      const closed = { shapes: false, tools: false, devices: false };
+      if (prev[key]) return closed;
+      return { ...closed, [key]: true };
+    });
   return (
     <MovablePanel
       title="Palette"
@@ -153,47 +170,47 @@ function OpenPalette({
       onMoveTo={onMoveTo}
       onMinimize={onToggleMinimized}
     >
-      <div className="px-2 pb-2">
-        {/* Canvas tool toggle. Pan is the default — drag-on-empty
-            scrolls the canvas. Switching to Select makes drag-on-empty
-            draw a marquee for multi-select. Holding Space pans
-            regardless of the active tool, mirroring Figma. */}
-        <div className="flex items-center gap-1 pb-1.5">
-          <Tooltip title="Pan" description="Drag to scroll. Space pans in Select mode too.">
-            <ToolButton
-              active={canvasTool === 'pan'}
-              label="Pan"
-              onClick={() => onSetCanvasTool('pan')}
-            >
-              <PanIcon />
-            </ToolButton>
-          </Tooltip>
-          <Tooltip title="Select" description="Drag to marquee-select multiple elements.">
-            <ToolButton
-              active={canvasTool === 'select'}
-              label="Select"
-              onClick={() => onSetCanvasTool('select')}
-            >
-              <SelectIcon />
-            </ToolButton>
-          </Tooltip>
-          <Tooltip
-            title="Laser"
-            description="Presenter pointer. Move the mouse to draw a glowing trail visible to other participants in your colour."
+      {/* Canvas tool toggle (Pan / Select / Laser). Lives above the
+          accordions as a permanent row because these are mode
+          switches, not element-add buttons. Pan is the default; Space
+          pans regardless of the active tool, mirroring Figma. */}
+      <div className="flex items-center gap-1 px-2 pb-1.5 pt-1">
+        <Tooltip title="Pan" description="Drag to scroll. Space pans in Select mode too.">
+          <ToolButton
+            active={canvasTool === 'pan'}
+            label="Pan"
+            onClick={() => onSetCanvasTool('pan')}
           >
-            <ToolButton
-              active={canvasTool === 'laser'}
-              label="Laser"
-              onClick={() => onSetCanvasTool('laser')}
-            >
-              <LaserIcon />
-            </ToolButton>
-          </Tooltip>
-        </div>
-        <div className="mb-1.5 h-px bg-slate-100" />
-        {/* Shape primitives. Wraps to a second row once the palette runs
-            out of horizontal room. Ordered by frequency / familiarity:
-            primitive geometry first, then flowchart-vocabulary shapes. */}
+            <PanIcon />
+          </ToolButton>
+        </Tooltip>
+        <Tooltip title="Select" description="Drag to marquee-select multiple elements.">
+          <ToolButton
+            active={canvasTool === 'select'}
+            label="Select"
+            onClick={() => onSetCanvasTool('select')}
+          >
+            <SelectIcon />
+          </ToolButton>
+        </Tooltip>
+        <Tooltip
+          title="Laser"
+          description="Presenter pointer. Move the mouse to draw a glowing trail visible to other participants in your colour."
+        >
+          <ToolButton
+            active={canvasTool === 'laser'}
+            label="Laser"
+            onClick={() => onSetCanvasTool('laser')}
+          >
+            <LaserIcon />
+          </ToolButton>
+        </Tooltip>
+      </div>
+      <Accordion title="Shapes" open={paletteOpen.shapes} onToggle={() => togglePalette('shapes')}>
+        {/* Shape primitives. Wraps to a second row once the palette
+            runs out of horizontal room. Ordered by frequency /
+            familiarity: primitive geometry first, then flowchart-
+            vocabulary shapes. */}
         <div className="flex flex-wrap items-center gap-1">
           <IconButton
             label="Add square"
@@ -366,7 +383,8 @@ function OpenPalette({
             </svg>
           </IconButton>
         </div>
-        <div className="my-1 h-px bg-slate-100" />
+      </Accordion>
+      <Accordion title="Tools" open={paletteOpen.tools} onToggle={() => togglePalette('tools')}>
         <div className="flex items-center gap-1">
           <IconButton
             label="Add text"
@@ -422,7 +440,112 @@ function OpenPalette({
             </svg>
           </IconButton>
         </div>
-      </div>
+      </Accordion>
+      <Accordion
+        title="Devices"
+        open={paletteOpen.devices}
+        onToggle={() => togglePalette('devices')}
+      >
+        {/* Wireframing primitives. Each renders as the device's
+            silhouette so the user can drop it as a container and
+            arrange interface elements inside. See spec/09 "Devices". */}
+        <div className="flex flex-wrap items-center gap-1">
+          <IconButton
+            label="Add web browser"
+            description="Browser window. Wireframe a web page or a web-app screen."
+            onClick={() => onAddShape('browser')}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <rect x="2" y="3" width="14" height="12" rx="1.5" />
+              <path d="M2 7 L16 7" />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add computer monitor"
+            description="Desktop monitor with stand. Wireframe a desktop app."
+            onClick={() => onAddShape('monitor')}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <rect x="2" y="2.5" width="14" height="9" rx="1" />
+              <path d="M6 15.5 L12 15.5" />
+              <path d="M9 11.5 L9 15.5" />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add laptop"
+            description="Laptop. Screen plus keyboard base."
+            onClick={() => onAddShape('laptop')}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <rect x="3.5" y="3" width="11" height="8" rx="1" />
+              <path d="M1.5 14 L16.5 14 L15 11 L3 11 Z" />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add phone"
+            description="Phone. Wireframe a mobile screen."
+            onClick={() => onAddShape('phone')}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <rect x="5.5" y="1.5" width="7" height="15" rx="1.6" />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add tablet"
+            description="Tablet. Larger than a phone, smaller than a laptop screen."
+            onClick={() => onAddShape('tablet')}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <rect x="3" y="2" width="12" height="14" rx="1.2" />
+            </svg>
+          </IconButton>
+        </div>
+      </Accordion>
     </MovablePanel>
   );
 }
@@ -498,6 +621,11 @@ export function SelectedElementSection({
                 'stadium',
                 'actor',
                 'cloud',
+                'browser',
+                'monitor',
+                'laptop',
+                'phone',
+                'tablet',
               ] as const
             ).map((kind) => (
               <Tooltip
@@ -873,6 +1001,11 @@ const SHAPE_LABEL: Record<ShapeKind, string> = {
   stadium: 'Stadium',
   actor: 'User',
   cloud: 'Cloud',
+  browser: 'Web browser',
+  monitor: 'Computer monitor',
+  laptop: 'Laptop',
+  phone: 'Phone',
+  tablet: 'Tablet',
 };
 
 function ShapeIcon({ kind }: { kind: ShapeKind }) {
@@ -1031,6 +1164,85 @@ function ShapeIcon({ kind }: { kind: ShapeKind }) {
           aria-hidden
         >
           <path d="M5 12 C3 12 2 10.5 3.2 9.3 C2.3 8 3.7 6.6 5 7.2 C5.4 5.2 8.4 5 8.8 7.1 C10.6 6.3 12 8 10.9 9.3 C12 10.2 11.2 12 9.6 12 Z" />
+        </svg>
+      );
+    case 'browser':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <rect x="2" y="3" width="12" height="10" rx="1.5" />
+          <path d="M2 6 L14 6" />
+        </svg>
+      );
+    case 'monitor':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <rect x="2" y="2.5" width="12" height="8" rx="1" />
+          <path d="M5.5 13.5 L10.5 13.5" />
+          <path d="M8 10.5 L8 13.5" />
+        </svg>
+      );
+    case 'laptop':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <rect x="3" y="3" width="10" height="7" rx="0.8" />
+          <path d="M1.5 12.5 L14.5 12.5 L13.5 10 L2.5 10 Z" />
+        </svg>
+      );
+    case 'phone':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <rect x="5" y="1.5" width="6" height="13" rx="1.4" />
+        </svg>
+      );
+    case 'tablet':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <rect x="3" y="2" width="10" height="12" rx="1" />
         </svg>
       );
   }

@@ -179,7 +179,13 @@ export type ShapeKind =
   | 'document'
   | 'stadium'
   | 'actor'
-  | 'cloud';
+  | 'cloud'
+  // UI device frames (wireframing). See spec/09 "Devices" accordion.
+  | 'browser'
+  | 'monitor'
+  | 'laptop'
+  | 'phone'
+  | 'tablet';
 
 export type ShapeElement = {
   id: ElementId;
@@ -604,6 +610,17 @@ const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: number }> =
   // Cloud: a container shape (networking / architecture). Stretches to
   // fit its label like the other flowchart shapes.
   cloud: { width: 180, height: 140 },
+  // UI device frames. Sized to evoke each device's natural aspect
+  // ratio at a glance: browser + monitor land on a 4:3-ish landscape
+  // (with the monitor a touch taller to leave room for its stand);
+  // laptop is wider with a flatter total profile (screen + keyboard
+  // base stacked); phone + tablet are portrait at typical phone /
+  // tablet ratios.
+  browser: { width: 240, height: 160 },
+  monitor: { width: 220, height: 170 },
+  laptop: { width: 240, height: 150 },
+  phone: { width: 90, height: 170 },
+  tablet: { width: 140, height: 180 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").

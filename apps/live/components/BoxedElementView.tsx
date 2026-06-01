@@ -341,6 +341,88 @@ function ShapeSvgOverlay({
           {...common}
         />
       ) : null}
+      {/* Browser: rounded outer frame + chrome separator + URL pill.
+          Themed fill paints the whole window; the chrome details
+          inherit the same stroke so they read as part of the silhouette. */}
+      {shape === 'browser' ? (
+        <g>
+          <rect x={1} y={1} width={98} height={98} rx={3} {...common} />
+          <line
+            x1={1}
+            y1={16}
+            x2={99}
+            y2={16}
+            stroke={stroke}
+            strokeWidth={1}
+            vectorEffect="non-scaling-stroke"
+          />
+          <rect
+            x={36}
+            y={4}
+            width={56}
+            height={9}
+            rx={2}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={0.8}
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+      ) : null}
+      {/* Monitor: screen rect on top, trapezoid stand on the bottom. */}
+      {shape === 'monitor' ? (
+        <g>
+          <rect x={1} y={1} width={98} height={80} rx={3} {...common} />
+          <path d="M 32 88 L 68 88 L 76 99 L 24 99 Z" {...common} />
+        </g>
+      ) : null}
+      {/* Laptop: inset screen + wider keyboard trapezoid below. The
+          hinge gap between screen and keyboard reads as the
+          fold-line. */}
+      {shape === 'laptop' ? (
+        <g>
+          <rect x={8} y={2} width={84} height={68} rx={3} {...common} />
+          <path d="M 0 78 L 100 78 L 95 96 L 5 96 Z" {...common} />
+        </g>
+      ) : null}
+      {/* Phone: tall pill silhouette. Heavily rounded corners are the
+          single most recognisable tell of "phone" at this scale; an
+          inset screen line gives the front-face bezel. */}
+      {shape === 'phone' ? (
+        <g>
+          <rect x={2} y={2} width={96} height={96} rx={10} {...common} />
+          <rect
+            x={6}
+            y={10}
+            width={88}
+            height={80}
+            rx={3}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={0.8}
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+      ) : null}
+      {/* Tablet: same skeleton as phone but with a thinner bezel and
+          less-aggressive corner radius, so they read as different
+          devices at a glance. */}
+      {shape === 'tablet' ? (
+        <g>
+          <rect x={2} y={2} width={96} height={96} rx={6} {...common} />
+          <rect
+            x={5}
+            y={6}
+            width={90}
+            height={88}
+            rx={3}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={0.8}
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+      ) : null}
     </svg>
   );
 }
