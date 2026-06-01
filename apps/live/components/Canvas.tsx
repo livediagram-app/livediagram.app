@@ -930,7 +930,7 @@ export function Canvas(props: CanvasProps) {
           });
         }
       }}
-      className="relative flex-1 overflow-hidden outline-none"
+      className="relative flex-1 touch-none select-none overflow-hidden outline-none [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent]"
       style={tabBackgroundStyle(
         tabBackgroundPattern,
         viewportOffset,
@@ -980,7 +980,7 @@ export function Canvas(props: CanvasProps) {
           const sy = (e.clientY - rect.top) / viewportZoom;
           onCanvasDoubleClick(sx, sy);
         }}
-        className={`absolute inset-0 origin-center ${cursorClass}`}
+        className={`absolute inset-0 origin-center touch-none ${cursorClass}`}
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.

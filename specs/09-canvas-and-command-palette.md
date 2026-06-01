@@ -478,6 +478,10 @@ The canvas can be **panned** to bring off-screen content into view.
 
 There is no pan reset / "centre on content" control yet — that's a future addition.
 
+### Touch (iOS / iPad)
+
+On a touch device, the canvas surface declares `touch-action: none` and `user-select: none` (plus the iOS-specific `-webkit-touch-callout: none` and `-webkit-tap-highlight-color: transparent`). Without those, mobile Safari intercepts a one-finger drag for native scrolling, treats a long-press as the system text-selection callout, and shows a tap highlight ring on every element press. Pointer events are then dispatched normally so the same handlers (pan in Pan mode, marquee in Select mode, move / resize on elements) work from a finger or a stylus the same way they work from a mouse. Pinch-to-zoom is also disabled because the canvas owns its own zoom (wheel / +/- buttons / Fit). A dedicated touch pinch handler can land later; until it does, touch zoom goes through the Zoom controls.
+
 ## Marquee box-select
 
 **Press-and-drag the empty canvas background** (without holding Space) to draw a translucent selection rectangle. On release, every boxed element whose bounding box intersects the rectangle is multi-selected. Releasing inside a sub-4-pixel area is treated as a click and deselects.
