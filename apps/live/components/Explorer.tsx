@@ -271,7 +271,7 @@ export function Explorer({
           <button
             type="button"
             onClick={onNewDiagram}
-            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition hover:border-brand-400 hover:bg-brand-100"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition hover:border-brand-400 hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-200 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20"
           >
             <PlusIcon />
             New diagram
@@ -279,8 +279,8 @@ export function Explorer({
         ) : null}
 
         {current ? (
-          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60">
-            <p className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
+            <p className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Current Diagram
             </p>
             <ul className="flex flex-col gap-0.5 overflow-hidden">
@@ -315,7 +315,7 @@ export function Explorer({
         ) : null}
 
         {loading || recents.length > 0 ? (
-          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60">
+          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
             <AccordionHeader
               label="Recent"
               badge={loading ? null : recents.length}
@@ -382,7 +382,7 @@ export function Explorer({
             (migration 0010) — bumped every time the visitor opens
             a share link for a diagram they don't own. */}
         {shared.length > 0 ? (
-          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60">
+          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
             <AccordionHeader
               label="Shared with you"
               badge={shared.length}
@@ -413,7 +413,7 @@ export function Explorer({
             created folders also bring it back even before the
             first diagram so the create-folder action sticks. */}
         {diagrams.length === 0 && folders.length === 0 ? null : (
-          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60">
+          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
             <AccordionHeader
               label="Folders"
               badge={folders.length}
@@ -429,7 +429,7 @@ export function Explorer({
                         e.stopPropagation();
                         void handleCreateRoot();
                       }}
-                      className="flex h-4 w-4 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                      className="flex h-4 w-4 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
                     >
                       <PlusIcon />
                     </button>
@@ -489,7 +489,7 @@ export function Explorer({
           <button
             type="button"
             onClick={onOpenFullExplorer}
-            className="mt-1 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700"
+            className="mt-1 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
           >
             <ExpandIcon />
             Open Explorer
@@ -630,8 +630,8 @@ function FolderNode({
   return (
     <li>
       <div
-        className={`group flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 ${
-          isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50' : ''
+        className={`group flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 ${
+          isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50 dark:bg-brand-500/15' : ''
         }`}
         style={{ paddingLeft: 4 + depth * 12 }}
         onDragOver={onMoveDiagramToFolder ? handleDragOver : undefined}
@@ -643,7 +643,7 @@ function FolderNode({
           onClick={() => onToggleExpanded(folder.id)}
           aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Collapse folder' : 'Expand folder'}
-          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700"
+          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200"
         >
           <span
             className={`inline-block transition-transform ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
@@ -652,7 +652,7 @@ function FolderNode({
             <ChevronIcon />
           </span>
         </button>
-        <span className="text-slate-400">
+        <span className="text-slate-400 dark:text-slate-500">
           <FolderIcon />
         </span>
         {editing ? (
@@ -660,7 +660,7 @@ function FolderNode({
             initial={folder.name}
             onCommit={commitRename}
             onCancel={() => setEditing(false)}
-            className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800"
+            className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-100"
           />
         ) : (
           <button
@@ -669,7 +669,9 @@ function FolderNode({
             className="flex min-w-0 flex-1 items-center gap-1 truncate text-left"
           >
             <span className="truncate">{folder.name}</span>
-            <span className="text-[10px] font-medium text-slate-400">{childCount}</span>
+            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
+              {childCount}
+            </span>
           </button>
         )}
         {!editing ? (
@@ -682,7 +684,7 @@ function FolderNode({
             }}
             aria-label="Folder menu"
             aria-expanded={menuOpen}
-            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-slate-200/70 hover:text-slate-700 ${
+            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-slate-200/70 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${
               menuOpen ? 'opacity-100' : ''
             }`}
           >
@@ -840,8 +842,8 @@ function UnsortedNode({
   return (
     <li>
       <div
-        className={`flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 ${
-          isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50' : ''
+        className={`flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 ${
+          isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50 dark:bg-brand-500/15' : ''
         }`}
         onDragOver={onMoveDiagramToFolder ? handleDragOver : undefined}
         onDragLeave={onMoveDiagramToFolder ? handleDragLeave : undefined}
@@ -852,7 +854,7 @@ function UnsortedNode({
           onClick={() => onToggleExpanded('unsorted')}
           aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Collapse Unsorted' : 'Expand Unsorted'}
-          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700"
+          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200"
         >
           <span
             className={`inline-block transition-transform ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
@@ -861,7 +863,7 @@ function UnsortedNode({
             <ChevronIcon />
           </span>
         </button>
-        <span className="text-slate-400">
+        <span className="text-slate-400 dark:text-slate-500">
           <UnsortedIcon />
         </span>
         <button
@@ -869,8 +871,10 @@ function UnsortedNode({
           onClick={() => onToggleExpanded('unsorted')}
           className="flex min-w-0 flex-1 items-center gap-1 truncate text-left"
         >
-          <span className="truncate italic text-slate-500">Unsorted</span>
-          <span className="text-[10px] font-medium text-slate-400">{diagrams.length}</span>
+          <span className="truncate italic text-slate-500 dark:text-slate-400">Unsorted</span>
+          <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
+            {diagrams.length}
+          </span>
         </button>
       </div>
       {isExpanded ? (
@@ -929,15 +933,21 @@ function SharedRow({
         type="button"
         onClick={onOpen}
         className={`flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition ${
-          active ? 'bg-brand-50 text-brand-800' : 'hover:bg-slate-50 text-slate-700'
+          active
+            ? 'bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-200'
+            : 'hover:bg-slate-50 text-slate-700 dark:text-slate-200 dark:hover:bg-slate-800'
         }`}
       >
-        <span className={active ? 'text-brand-500' : 'text-slate-400'}>
+        <span
+          className={
+            active ? 'text-brand-500 dark:text-brand-300' : 'text-slate-400 dark:text-slate-500'
+          }
+        >
           <SharedDiagramIcon />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-xs font-medium">{item.name}</span>
-          <span className="block truncate text-[10px] text-slate-500">
+          <span className="block truncate text-[10px] text-slate-500 dark:text-slate-400">
             {item.role === 'edit' ? 'Edit · ' : 'View · '}
             Updated {relative}
           </span>
@@ -953,7 +963,7 @@ function SharedRow({
                 onDismiss();
               }}
               aria-label={`Remove ${item.name} from Shared`}
-              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-1 text-slate-500 shadow-sm transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
+              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-1 text-slate-500 shadow-sm transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
             >
               <RemoveIcon />
             </button>
@@ -994,7 +1004,7 @@ function AccordionHeader({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex flex-1 items-center gap-2 rounded-md px-1 py-1 text-left transition hover:bg-slate-100"
+        className="flex flex-1 items-center gap-2 rounded-md px-1 py-1 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
       >
         <span
           className={`inline-block transition-transform ${open ? 'rotate-90' : 'rotate-0'}`}
@@ -1002,13 +1012,13 @@ function AccordionHeader({
         >
           <ChevronIcon />
         </span>
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           {label}
         </span>
       </button>
       {trailing}
       {badge !== null ? (
-        <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1.5 text-[10px] font-medium text-slate-600">
+        <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
           {badge}
         </span>
       ) : null}
@@ -1059,8 +1069,8 @@ function DiagramRow({
   const relative = formatRelativeTime(Date.now() - item.savedAt);
 
   const pillClasses = active
-    ? 'group flex items-stretch rounded-md bg-brand-100 text-brand-800'
-    : 'group flex items-stretch rounded-md text-slate-700 transition hover:bg-slate-100';
+    ? 'group flex items-stretch rounded-md bg-brand-100 text-brand-800 dark:bg-brand-500/20 dark:text-brand-100'
+    : 'group flex items-stretch rounded-md text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
 
   // The row's main area is a clickable <button> when not editing
   // (clicking the row opens the diagram). When editing it has to
@@ -1089,8 +1099,8 @@ function DiagramRow({
           <span
             className={
               active
-                ? 'truncate text-[10px] font-normal text-brand-700/80'
-                : 'truncate text-[10px] text-slate-400'
+                ? 'truncate text-[10px] font-normal text-brand-700/80 dark:text-brand-200/80'
+                : 'truncate text-[10px] text-slate-400 dark:text-slate-500'
             }
           >
             Updated {relative}
@@ -1133,7 +1143,7 @@ function DiagramRow({
           }}
           aria-label="Diagram menu"
           aria-expanded={menuOpen}
-          className={`mr-1 flex w-6 shrink-0 items-center justify-center self-center rounded text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-slate-200/70 hover:text-slate-700 ${
+          className={`mr-1 flex w-6 shrink-0 items-center justify-center self-center rounded text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-slate-200/70 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${
             menuOpen ? 'opacity-100' : ''
           }`}
         >

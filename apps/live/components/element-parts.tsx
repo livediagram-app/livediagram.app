@@ -65,7 +65,7 @@ export function ResizeHandles({ elementId, zoom, onBeginDrag }: ResizeHandlesPro
             onBeginDrag(elementId, `resize-${pos}`, e);
           }}
           style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
-          className={`absolute h-3 w-3 rounded-sm border border-brand-600 bg-white ${positionClasses[pos]}`}
+          className={`absolute h-3 w-3 rounded-sm border border-brand-600 bg-white dark:border-brand-300 dark:bg-slate-900 ${positionClasses[pos]}`}
         />
       ))}
     </>
@@ -116,7 +116,7 @@ export function UnionResizeHandles({
             onBeginDrag(primaryId, `resize-${pos}`, e);
           }}
           style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
-          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-brand-600 bg-white ${positionClasses[pos]}`}
+          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-brand-600 bg-white dark:border-brand-300 dark:bg-slate-900 ${positionClasses[pos]}`}
         />
       ))}
     </div>

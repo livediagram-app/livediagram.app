@@ -92,18 +92,20 @@ export function TabLinkPicker({
       ref={ref}
       role="menu"
       onPointerDown={(e) => e.stopPropagation()}
-      className="fixed z-50 flex w-56 animate-fade-in flex-col gap-0.5 rounded-lg border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/10"
+      className="fixed z-50 flex w-56 animate-fade-in flex-col gap-0.5 rounded-lg border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
       style={{
         left: pos.left + adjust.x,
         top: pos.top + adjust.y,
         transform: 'translate(-50%, calc(-100% - 8px))',
       }}
     >
-      <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+      <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Link to tab
       </p>
       {otherTabs.length === 0 ? (
-        <p className="px-2 py-2 text-xs text-slate-500">No other tabs to link to.</p>
+        <p className="px-2 py-2 text-xs text-slate-500 dark:text-slate-400">
+          No other tabs to link to.
+        </p>
       ) : (
         otherTabs.map((tab) => {
           const isActive = tab.id === linkedTabId;
@@ -114,8 +116,8 @@ export function TabLinkPicker({
               onClick={() => onSelect(tab.id)}
               className={
                 isActive
-                  ? 'flex items-center gap-2 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-700'
-                  : 'flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100'
+                  ? 'flex items-center gap-2 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+                  : 'flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
               }
             >
               <span className="truncate flex-1">{tab.name}</span>
@@ -126,8 +128,8 @@ export function TabLinkPicker({
       )}
       {recentDiagrams && recentDiagrams.length > 0 && onSelectDiagram ? (
         <>
-          <div className="my-1 h-px bg-slate-100" />
-          <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
+          <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Link to diagram
           </p>
           {recentDiagrams.map((d) => {
@@ -152,11 +154,11 @@ export function TabLinkPicker({
       ) : null}
       {linkedTabId || linkedDiagramId ? (
         <>
-          <div className="my-1 h-px bg-slate-100" />
+          <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
           <button
             type="button"
             onClick={onClear}
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-rose-700 transition hover:bg-rose-50"
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-rose-700 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15"
           >
             Remove link
           </button>

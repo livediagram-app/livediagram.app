@@ -113,15 +113,17 @@ export function Tooltip({ title, description, block = false, children }: Tooltip
             <div
               ref={cardRef}
               role="tooltip"
-              className="pointer-events-none fixed z-50 w-56 animate-fade-in rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-lg shadow-slate-900/10"
+              className="pointer-events-none fixed z-50 w-56 animate-fade-in rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-950/40"
               style={
                 layout
                   ? { left: layout.left, top: layout.top }
                   : { left: -9999, top: -9999, visibility: 'hidden' }
               }
             >
-              <p className="text-xs font-semibold text-slate-900">{title}</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-slate-600">{description}</p>
+              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">{title}</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                {description}
+              </p>
               {layout ? <Arrow placement={layout.placement} offset={layout.arrowOffset} /> : null}
             </div>,
             document.body,
@@ -131,43 +133,40 @@ export function Tooltip({ title, description, block = false, children }: Tooltip
   );
 }
 
-// Small white triangle that connects the card to its anchor. Rendered
-// as a CSS-rotated square so it inherits the card's border + shadow.
-// `offset` is the distance (px) from the card's leading edge to the
-// arrow centre, so a card that clamped sideways still points at the
-// trigger.
+// Triangle that connects the card to its anchor. Rendered as a CSS-
+// rotated square so it inherits the card's border + shadow. Border /
+// background colours come from Tailwind classes so dark mode flips
+// them with the rest of the tooltip; positioning stays inline because
+// `offset` is computed per-tooltip.
 function Arrow({ placement, offset }: { placement: Placement; offset: number }) {
   const style: React.CSSProperties = { position: 'absolute' };
   const size = 10;
+  let borderClass = '';
   if (placement === 'top') {
     style.bottom = -size / 2;
     style.left = offset - size / 2;
-    style.borderRight = '1px solid rgb(226 232 240)';
-    style.borderBottom = '1px solid rgb(226 232 240)';
+    borderClass = 'border-r border-b';
   } else if (placement === 'bottom') {
     style.top = -size / 2;
     style.left = offset - size / 2;
-    style.borderLeft = '1px solid rgb(226 232 240)';
-    style.borderTop = '1px solid rgb(226 232 240)';
+    borderClass = 'border-l border-t';
   } else if (placement === 'right') {
     style.left = -size / 2;
     style.top = offset - size / 2;
-    style.borderLeft = '1px solid rgb(226 232 240)';
-    style.borderBottom = '1px solid rgb(226 232 240)';
+    borderClass = 'border-l border-b';
   } else {
     style.right = -size / 2;
     style.top = offset - size / 2;
-    style.borderRight = '1px solid rgb(226 232 240)';
-    style.borderTop = '1px solid rgb(226 232 240)';
+    borderClass = 'border-r border-t';
   }
   return (
     <span
       aria-hidden
+      className={`${borderClass} border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800`}
       style={{
         ...style,
         width: size,
         height: size,
-        background: 'white',
         transform: 'rotate(45deg)',
       }}
     />

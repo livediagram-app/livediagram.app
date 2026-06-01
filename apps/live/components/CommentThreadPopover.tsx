@@ -116,14 +116,16 @@ export function CommentThreadPopover({
       ref={ref}
       role="dialog"
       onPointerDown={(e) => e.stopPropagation()}
-      className="fixed z-50 flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10"
+      className="fixed z-50 flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
       style={{ left: pos.left, top: pos.top, width: WIDTH }}
     >
-      <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
-        <h3 className="text-xs font-semibold text-slate-800">
+      <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+        <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100">
           Comments
           {comments.length > 0 ? (
-            <span className="ml-1 font-normal text-slate-500">({comments.length})</span>
+            <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">
+              ({comments.length})
+            </span>
           ) : null}
         </h3>
         <div className="flex items-center gap-1">
@@ -134,7 +136,7 @@ export function CommentThreadPopover({
               // nothing here (no toggleable affordance to suggest
               // they could act on it).
               resolved ? (
-                <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
                   Resolved
                 </span>
               ) : null
@@ -144,8 +146,8 @@ export function CommentThreadPopover({
                 onClick={resolved ? onUnresolve : onResolve}
                 className={
                   resolved
-                    ? 'rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 transition hover:bg-emerald-200'
-                    : 'rounded px-2 py-0.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-100'
+                    ? 'rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 transition hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25'
+                    : 'rounded px-2 py-0.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
                 }
                 aria-pressed={resolved}
               >
@@ -157,7 +159,7 @@ export function CommentThreadPopover({
             type="button"
             aria-label="Close comments"
             onClick={onClose}
-            className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+            className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <CloseIcon />
           </button>
@@ -166,7 +168,9 @@ export function CommentThreadPopover({
 
       <ul className="max-h-72 overflow-y-auto px-3 py-1">
         {comments.length === 0 ? (
-          <li className="py-4 text-center text-xs text-slate-500">No comments yet.</li>
+          <li className="py-4 text-center text-xs text-slate-500 dark:text-slate-400">
+            No comments yet.
+          </li>
         ) : (
           comments.map((c) => (
             <CommentRow
@@ -181,7 +185,7 @@ export function CommentThreadPopover({
       </ul>
 
       {!resolved && !readOnly ? (
-        <footer className="border-t border-slate-100 p-2">
+        <footer className="border-t border-slate-100 p-2 dark:border-slate-800">
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -194,10 +198,10 @@ export function CommentThreadPopover({
             }}
             placeholder="Add a comment…"
             rows={2}
-            className="w-full resize-none rounded border border-slate-200 px-2 py-1.5 text-xs text-slate-800 outline-none transition focus:border-brand-400"
+            className="w-full resize-none rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
           <div className="mt-1 flex items-center justify-between">
-            <p className="text-[10px] text-slate-400">⌘↵ to send</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500">⌘↵ to send</p>
             <button
               type="button"
               onClick={submit}
@@ -236,17 +240,23 @@ function CommentRow({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 text-[11px]">
-          <span className="truncate font-semibold text-slate-800">{comment.authorName}</span>
-          <span className="text-slate-400">{relativeTime(comment.createdAt)}</span>
+          <span className="truncate font-semibold text-slate-800 dark:text-slate-100">
+            {comment.authorName}
+          </span>
+          <span className="text-slate-400 dark:text-slate-500">
+            {relativeTime(comment.createdAt)}
+          </span>
         </div>
-        <p className="mt-0.5 whitespace-pre-wrap text-xs text-slate-700">{comment.text}</p>
+        <p className="mt-0.5 whitespace-pre-wrap text-xs text-slate-700 dark:text-slate-200">
+          {comment.text}
+        </p>
       </div>
       {!resolved && onDelete ? (
         <button
           type="button"
           aria-label="Delete comment"
           onClick={onDelete}
-          className="self-start rounded p-0.5 text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 group-hover:opacity-100"
+          className="self-start rounded p-0.5 text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 group-hover:opacity-100 dark:text-slate-500 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
         >
           <TrashIcon />
         </button>

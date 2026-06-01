@@ -76,7 +76,7 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
     <div
       ref={ref}
       role="menu"
-      className="fixed z-50 flex w-36 animate-fade-in flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg"
+      className="fixed z-50 flex w-36 animate-fade-in flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
       style={{
         left: pos.left + adjust.x,
         top: pos.top + adjust.y,
@@ -101,13 +101,21 @@ export function MenuItem({ icon, label, onClick, danger, disabled }: MenuItemPro
   const base =
     'flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition';
   const tone = disabled
-    ? 'cursor-not-allowed text-slate-300'
+    ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
     : danger
-      ? 'text-rose-700 hover:bg-rose-50'
-      : 'text-slate-700 hover:bg-slate-100';
+      ? 'text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
+      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
   return (
     <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${tone}`}>
-      <span className={disabled ? 'text-slate-300' : danger ? 'text-rose-600' : 'text-slate-400'}>
+      <span
+        className={
+          disabled
+            ? 'text-slate-300 dark:text-slate-600'
+            : danger
+              ? 'text-rose-600 dark:text-rose-300'
+              : 'text-slate-400 dark:text-slate-500'
+        }
+      >
         {icon}
       </span>
       <span>{label}</span>

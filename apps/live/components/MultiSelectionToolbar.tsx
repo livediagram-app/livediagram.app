@@ -28,19 +28,19 @@ export function MultiSelectionToolbar({
   return (
     <div
       onPointerDown={(e) => e.stopPropagation()}
-      className="pointer-events-auto absolute left-1/2 top-4 z-30 flex -translate-x-1/2 animate-fade-in items-center gap-1 rounded-full border border-slate-200 bg-white py-1 pl-3 pr-1 shadow-lg shadow-slate-900/10"
+      className="pointer-events-auto absolute left-1/2 top-4 z-30 flex -translate-x-1/2 animate-fade-in items-center gap-1 rounded-full border border-slate-200 bg-white py-1 pl-3 pr-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
-      <span className="select-none pr-1 text-xs font-medium text-slate-700">
+      <span className="select-none pr-1 text-xs font-medium text-slate-700 dark:text-slate-200">
         Selected Elements
-        <span className="ml-1 font-normal text-slate-400">({count})</span>
+        <span className="ml-1 font-normal text-slate-400 dark:text-slate-500">({count})</span>
       </span>
-      <span aria-hidden className="h-5 w-px bg-slate-200" />
+      <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
       <Tooltip title="Duplicate" description="Duplicate selected (arrows skipped).">
         <button
           type="button"
           onClick={onDuplicate}
           aria-label="Duplicate selected elements"
-          className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
         >
           <DuplicateIcon />
         </button>
@@ -50,7 +50,7 @@ export function MultiSelectionToolbar({
           type="button"
           onClick={onGroup}
           aria-label="Group selected elements"
-          className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
         >
           <GroupIcon />
         </button>
@@ -66,7 +66,7 @@ export function MultiSelectionToolbar({
           aria-pressed={anyLocked}
           className={
             anyLocked
-              ? 'flex h-7 w-7 items-center justify-center rounded-md bg-brand-100 text-brand-700'
+              ? 'flex h-7 w-7 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
               : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900'
           }
         >
@@ -78,7 +78,7 @@ export function MultiSelectionToolbar({
           type="button"
           onClick={onDelete}
           aria-label="Delete selected elements"
-          className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-rose-50 hover:text-rose-700"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-300 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
         >
           <TrashIcon />
         </button>

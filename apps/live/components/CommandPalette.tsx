@@ -247,7 +247,7 @@ function OpenPalette({
           payoff. Tools and Devices stay accordion'd because they're
           situational. Ordered by frequency / familiarity: primitive
           geometry first, then flowchart-vocabulary shapes. */}
-      <div className="border-t border-slate-100 px-3 pb-2 pt-2">
+      <div className="border-t border-slate-100 px-3 pb-2 pt-2 dark:border-slate-800">
         <div className="flex flex-wrap items-center gap-1">
           <IconButton
             label="Add square"
@@ -682,10 +682,12 @@ export function SelectedElementSection({
             ))}
           </div>
           {selection.aspectLocked !== null ? (
-            <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+            <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
               <div className="flex flex-col">
-                <span className="text-[11px] font-medium text-slate-700">Lock aspect ratio</span>
-                <span className="text-[10px] text-slate-500">
+                <span className="text-[11px] font-medium text-slate-700 dark:text-slate-200">
+                  Lock aspect ratio
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
                   Keep width-to-height fixed when resizing.
                 </span>
               </div>
@@ -712,7 +714,7 @@ export function SelectedElementSection({
             </LabelButton>
           </Tooltip>
         </div>
-        <div className="my-2 h-px bg-slate-100" />
+        <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
         <p className="text-[10px] font-medium text-slate-500">Opacity</p>
         <div className="mt-1 flex items-center gap-2">
           <input
@@ -722,9 +724,9 @@ export function SelectedElementSection({
             value={Math.round(selection.opacity * 100)}
             onChange={(e) => selection.onSetOpacity(Number(e.target.value) / 100)}
             aria-label="Opacity"
-            className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500"
+            className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
           />
-          <span className="w-10 text-right text-xs font-medium text-slate-700">
+          <span className="w-10 text-right text-xs font-medium text-slate-700 dark:text-slate-200">
             {Math.round(selection.opacity * 100)}%
           </span>
         </div>
@@ -772,7 +774,7 @@ export function SelectedElementSection({
             </div>
           ) : null}
           {selection.textBold !== null ? (
-            <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3">
+            <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
               <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Style</p>
               <div className="grid grid-cols-4 gap-1">
                 <Tooltip block title="Bold" description="Make the label bold.">
@@ -811,7 +813,7 @@ export function SelectedElementSection({
             </div>
           ) : null}
           {selection.textAlignX !== null && selection.textAlignY !== null ? (
-            <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3">
+            <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
               <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
                 Alignment
               </p>
@@ -823,7 +825,7 @@ export function SelectedElementSection({
             </div>
           ) : null}
           {selection.padding !== null ? (
-            <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3">
+            <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
               <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Padding</p>
               <div className="grid grid-cols-4 gap-1">
                 {(['none', 'sm', 'md', 'lg'] as const).map((p) => (
@@ -883,7 +885,7 @@ export function SelectedElementSection({
           <button
             type="button"
             onClick={selection.onResetColors}
-            className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50"
+            className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
           >
             Reset to theme
           </button>
@@ -985,7 +987,7 @@ export function SelectedElementSection({
                   </Tooltip>
                 ))}
               </div>
-              <div className="my-2 h-px bg-slate-100" />
+              <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
             </>
           ) : null}
           {selection.arrowStyle !== null ? (
@@ -1019,7 +1021,7 @@ export function SelectedElementSection({
                   </Tooltip>
                 ))}
               </div>
-              <div className="my-2 h-px bg-slate-100" />
+              <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
             </>
           ) : null}
           {selection.arrowStrokeStyle !== null ? (
@@ -1044,7 +1046,7 @@ export function SelectedElementSection({
                   </Tooltip>
                 ))}
               </div>
-              <div className="my-2 h-px bg-slate-100" />
+              <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
             </>
           ) : null}
           <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
@@ -1092,7 +1094,7 @@ export function SelectedElementSection({
           </div>
           {selection.arrowheadSize !== null && selection.arrowEnds !== 'none' ? (
             <>
-              <div className="my-2 h-px bg-slate-100" />
+              <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
               <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
                 Arrowhead size
               </p>
@@ -1508,7 +1510,7 @@ function ToggleSwitch({
       className={
         checked
           ? 'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-brand-500 transition'
-          : 'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-slate-300 transition'
+          : 'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-slate-300 transition dark:bg-slate-600'
       }
     >
       <span
@@ -1524,17 +1526,23 @@ function ToggleSwitch({
 }
 
 function BoldIcon() {
-  return <span className="text-[13px] font-bold leading-none text-slate-700">B</span>;
+  return (
+    <span className="text-[13px] font-bold leading-none text-slate-700 dark:text-slate-200">B</span>
+  );
 }
 
 function ItalicIcon() {
-  return <span className="text-[13px] font-semibold italic leading-none text-slate-700">I</span>;
+  return (
+    <span className="text-[13px] font-semibold italic leading-none text-slate-700 dark:text-slate-200">
+      I
+    </span>
+  );
 }
 
 function UnderlineIcon() {
   return (
     <span
-      className="text-[13px] font-semibold leading-none text-slate-700"
+      className="text-[13px] font-semibold leading-none text-slate-700 dark:text-slate-200"
       style={{ textDecoration: 'underline' }}
     >
       U
@@ -1545,7 +1553,7 @@ function UnderlineIcon() {
 function StrikethroughIcon() {
   return (
     <span
-      className="text-[13px] font-semibold leading-none text-slate-700"
+      className="text-[13px] font-semibold leading-none text-slate-700 dark:text-slate-200"
       style={{ textDecoration: 'line-through' }}
     >
       S
@@ -1732,13 +1740,13 @@ export function TabSection({
                   className={
                     active
                       ? 'flex w-full flex-col items-center gap-1 rounded-md border border-brand-400 bg-brand-50 p-1.5 text-[10px] font-medium text-brand-800'
-                      : 'flex w-full flex-col items-center gap-1 rounded-md border border-slate-200 bg-white p-1.5 text-[10px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40'
+                      : 'flex w-full flex-col items-center gap-1 rounded-md border border-slate-200 bg-white p-1.5 text-[10px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15'
                   }
                 >
                   <span
                     aria-hidden
                     style={{ backgroundColor: t.backgroundColor }}
-                    className="flex h-7 w-full items-center justify-center rounded-sm border border-slate-200"
+                    className="flex h-7 w-full items-center justify-center rounded-sm border border-slate-200 dark:border-slate-700"
                   >
                     <span
                       style={{ backgroundColor: swatch, borderColor: dot }}
@@ -1754,7 +1762,7 @@ export function TabSection({
         {themesList.hasMore && !themesList.showAll ? (
           <ShowMoreButton label="Show more themes" onClick={themesList.reveal} />
         ) : null}
-        <div className="my-2 h-px bg-slate-100" />
+        <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
         <Tooltip
           title="Reset elements to theme"
           description="Recolour every shape, text and arrow on this tab to the active theme's defaults — including elements you've hand-coloured."
@@ -1762,7 +1770,7 @@ export function TabSection({
           <button
             type="button"
             onClick={tab.onResetElementsToTheme}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700"
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
           >
             <ResetIcon />
             Reset elements to theme
@@ -1787,7 +1795,7 @@ export function TabSection({
         {patternsList.hasMore && !patternsList.showAll ? (
           <ShowMoreButton label="Show more patterns" onClick={patternsList.reveal} />
         ) : null}
-        <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500">
+        <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
           Colours
         </p>
         <div className="mt-1 flex items-stretch gap-1">
@@ -1820,7 +1828,7 @@ export function TabSection({
             step={0.05}
             value={tab.backgroundOpacity}
             onChange={(e) => tab.onSetBackgroundOpacity(parseFloat(e.target.value))}
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500"
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
           />
         </div>
       </Accordion>
@@ -1835,7 +1843,7 @@ export function TabSection({
                 <button
                   type="button"
                   onClick={tab.onImportTab}
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700"
+                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
                 >
                   <FileImportIcon />
                   Import
@@ -1847,7 +1855,7 @@ export function TabSection({
                 <button
                   type="button"
                   onClick={tab.onExportTab}
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700"
+                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
                 >
                   <FileExportIcon />
                   Export
@@ -1880,8 +1888,8 @@ export function TabSection({
                 disabled={!tab.canAutoAlign}
                 className={
                   tab.canAutoAlign
-                    ? 'inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700'
-                    : 'inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] font-medium text-slate-400'
+                    ? 'inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200'
+                    : 'inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] font-medium text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500'
                 }
               >
                 <AutoAlignIcon />
@@ -2020,9 +2028,9 @@ function LabelButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+      className="flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
     >
-      <span className="text-slate-500">{children}</span>
+      <span className="text-slate-500 dark:text-slate-400">{children}</span>
       {label}
     </button>
   );
@@ -2043,7 +2051,7 @@ function ToolButton({
     'flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition';
   const tone = active
     ? 'bg-brand-500 text-white shadow-sm'
-    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900';
+    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
   return (
     <button type="button" onClick={onClick} className={`${base} ${tone}`} aria-pressed={active}>
       {children}
@@ -2207,8 +2215,8 @@ function SizeButton({
   const base =
     'flex w-full items-center justify-center rounded-md px-1.5 py-1 text-xs font-medium transition';
   const styled = active
-    ? 'bg-brand-100 text-brand-700'
-    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900';
+    ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
+    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
   return (
     <button type="button" onClick={onClick} className={`${base} ${styled}`}>
       {children}
@@ -2229,8 +2237,8 @@ function PatternButton({
 }) {
   const base = 'flex flex-col items-center gap-1 rounded-md p-2 transition';
   const styled = active
-    ? 'bg-brand-100 text-brand-700'
-    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900';
+    ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
+    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
   return (
     <button type="button" onClick={onClick} className={`${base} ${styled}`}>
       {children}
@@ -2607,7 +2615,7 @@ function AlignmentGrid({
               className={
                 active
                   ? 'flex h-7 w-full items-center justify-center rounded-md bg-brand-100 text-brand-700'
-                  : 'flex h-7 w-full items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900'
+                  : 'flex h-7 w-full items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
               }
             >
               <AlignIcon x={x} y={y} />
@@ -2649,10 +2657,10 @@ function ColorSwatch({
   onChange: (color: string) => void;
 }) {
   return (
-    <label className="relative flex flex-1 cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100">
+    <label className="relative flex flex-1 cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
       <span
         aria-hidden
-        className="h-4 w-4 rounded border border-slate-300"
+        className="h-4 w-4 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800"
         style={{ backgroundColor: value }}
       />
       <span className="flex-1">{label}</span>
@@ -2687,7 +2695,7 @@ function IconButton({ label, description, onClick, children, disabled }: IconBut
       onClick={onClick}
       aria-label={label}
       disabled={disabled}
-      className="flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+      className="flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white"
     >
       {children}
     </button>
