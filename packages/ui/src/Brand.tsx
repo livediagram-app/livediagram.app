@@ -19,7 +19,7 @@ const BRAND_500 = '#0ea5e9';
 
 export function Brand({ href, size = 'md', className = '', accentColor }: BrandProps) {
   const classes =
-    `inline-flex items-center gap-1.5 ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
+    `group inline-flex items-center gap-1.5 ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
   const accentStyle: React.CSSProperties = accentColor
     ? { color: accentColor, transition: 'color 200ms ease-out' }
     : { transition: 'color 200ms ease-out' };
@@ -59,15 +59,19 @@ function BrandMark({ className, style }: { className?: string; style?: React.CSS
         <path d="M16.8 3.8 A9.5 9.5 0 0 1 16.8 20.2" />
         <path d="M7.2 20.2 A9.5 9.5 0 0 1 7.2 3.8" />
       </g>
-      <path
-        d="M15 11.6 C15 14.4 10.2 11.4 10 14.2"
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <circle cx="15.2" cy="9" r="2.9" fill="currentColor" />
-      <rect x="6.6" y="12.4" width="5.8" height="5.8" rx="1.9" fill="currentColor" />
+      {/* The two connected nodes spin 45° about the icon centre on hover.
+          transform-box:view-box makes `origin-center` resolve to (12,12). */}
+      <g className="origin-center transition-transform duration-300 ease-out [transform-box:view-box] group-hover:[transform:rotate(45deg)] motion-reduce:transition-none">
+        <path
+          d="M15 11.6 C15 14.4 10.2 11.4 10 14.2"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <circle cx="15.2" cy="9" r="2.9" fill="currentColor" />
+        <rect x="6.6" y="12.4" width="5.8" height="5.8" rx="1.9" fill="currentColor" />
+      </g>
     </svg>
   );
 }

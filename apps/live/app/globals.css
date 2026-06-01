@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 @import '@livediagram/tailwind-config';
 
+/* Scan the shared UI package so utility classes used only inside its
+ * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
+ * Tailwind v4 skips node_modules, where the workspace package is symlinked. */
+@source '../../../packages/ui/src';
+
 @layer base {
   button:not(:disabled),
   [role='button']:not([aria-disabled='true']) {
