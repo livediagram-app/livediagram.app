@@ -1,6 +1,6 @@
-export type BrandSize = 'sm' | 'md';
+type BrandSize = 'sm' | 'md';
 
-export type BrandProps = {
+type BrandProps = {
   href?: string;
   size?: BrandSize;
   className?: string;
