@@ -128,6 +128,15 @@ beats "browse my whole library."
 - Diagram-row ellipsis menu gains a "Move to folder…" sub-action
   that lists every folder by breadcrumb path + Unsorted as choices.
   Picking one calls `PUT /api/diagrams/:id/folder`.
+- **Drag-and-drop**: diagram rows are HTML5-draggable. Drop targets
+  are folder headers (any nested depth) and the synthetic Unsorted
+  header. Drag-over highlights the target with a brand-blue ring so
+  the user sees where the diagram will land. Drop fires the same
+  `onMoveDiagramToFolder(diagramId, targetFolderId)` callback the
+  picker uses, so the move travels through the same API path and
+  optimistic update. Drag transfer uses a custom MIME type
+  (`application/x-livediagram-id`) so dragging a diagram never
+  triggers a browser navigation when dropped outside any target.
 - A "New folder" button sits at the top of the Folders section
   and creates root-level folders. Each folder's own ellipsis offers
   "New subfolder" so deeper layers are reachable.

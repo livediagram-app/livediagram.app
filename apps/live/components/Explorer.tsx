@@ -22,6 +22,12 @@ import {
   UnsortedIcon,
 } from './explorer-icons';
 
+// Custom MIME type for the diagram-to-folder drag flow. A custom
+// type means dropping a diagram outside any registered target (the
+// page background, the URL bar, an unrelated app) is a no-op rather
+// than triggering a browser navigation to "the dragged URL".
+const DIAGRAM_DRAG_MIME = 'application/x-livediagram-id';
+
 type DiagramListItem = {
   id: string;
   name: string;
@@ -288,6 +294,7 @@ export function Explorer({
                 <DiagramRow
                   item={current}
                   active
+                  draggable={!!onMoveDiagramToFolder}
                   onOpen={() => onOpenDiagram(current.id)}
                   onRename={onRenameCurrent}
                   onDelete={
@@ -346,6 +353,7 @@ export function Explorer({
                       <DiagramRow
                         item={d}
                         active={false}
+                        draggable={!!onMoveDiagramToFolder}
                         onOpen={() => onOpenDiagram(d.id)}
                         onDelete={
                           wrappedDeleteDiagram ? () => wrappedDeleteDiagram(d.id) : undefined
@@ -453,6 +461,7 @@ export function Explorer({
                     onMoveDiagramRequest={
                       onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
                     }
+                    onMoveDiagramToFolder={onMoveDiagramToFolder}
                   />
                 ))}
                 {(diagramsByFolder.get(null) ?? []).length > 0 ? (
@@ -468,6 +477,7 @@ export function Explorer({
                     onMoveDiagramRequest={
                       onMoveDiagramToFolder ? (id, anchor) => openMovePicker(id, anchor) : undefined
                     }
+                    onMoveDiagramToFolder={onMoveDiagramToFolder}
                   />
                 ) : null}
               </ul>
@@ -541,6 +551,7 @@ function FolderNode({
   exitingDiagramIds,
   onDuplicateDiagram,
   onMoveDiagramRequest,
+  onMoveDiagramToFolder,
 }: {
   folder: FolderItem;
   depth: number;
@@ -562,6 +573,11 @@ function FolderNode({
   exitingDiagramIds: Set<string>;
   onDuplicateDiagram?: (id: string) => void;
   onMoveDiagramRequest?: (diagramId: string, anchor: HTMLElement | null) => void;
+  // Drop target callback for the DnD flow. Picks up
+  // `application/x-livediagram-id` off the dataTransfer when a
+  // diagram row is dropped on this folder's header and routes the
+  // move through the same handler the picker uses.
+  onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
 }) {
   const isExpanded = expanded[folder.id] ?? false;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -571,6 +587,7 @@ function FolderNode({
   const childCount = childFolders.length + childDiagrams.length;
 
   const [editing, setEditing] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Auto-enter rename mode for freshly-created folders.
   useEffect(() => {
@@ -586,11 +603,40 @@ function FolderNode({
     setEditing(false);
   };
 
+  // Drop-target wiring. preventDefault on dragOver is what permits
+  // the drop; without it the browser blocks the drop with a circle-
+  // slash cursor. dataTransfer.types is consulted on enter so a
+  // random text drag from another app doesn't trigger our hover
+  // styling.
+  const acceptsDrop = (e: React.DragEvent) =>
+    !!onMoveDiagramToFolder && e.dataTransfer.types.includes(DIAGRAM_DRAG_MIME);
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!acceptsDrop(e)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (!isDragOver) setIsDragOver(true);
+  };
+  const handleDragLeave = () => {
+    if (isDragOver) setIsDragOver(false);
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    if (!acceptsDrop(e)) return;
+    e.preventDefault();
+    const id = e.dataTransfer.getData(DIAGRAM_DRAG_MIME);
+    setIsDragOver(false);
+    if (id && onMoveDiagramToFolder) onMoveDiagramToFolder(id, folder.id);
+  };
+
   return (
     <li>
       <div
-        className="group flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100"
+        className={`group flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 ${
+          isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50' : ''
+        }`}
         style={{ paddingLeft: 4 + depth * 12 }}
+        onDragOver={onMoveDiagramToFolder ? handleDragOver : undefined}
+        onDragLeave={onMoveDiagramToFolder ? handleDragLeave : undefined}
+        onDrop={onMoveDiagramToFolder ? handleDrop : undefined}
       >
         <button
           type="button"
@@ -707,6 +753,7 @@ function FolderNode({
               exitingDiagramIds={exitingDiagramIds}
               onDuplicateDiagram={onDuplicateDiagram}
               onMoveDiagramRequest={onMoveDiagramRequest}
+              onMoveDiagramToFolder={onMoveDiagramToFolder}
             />
           ))}
           {childDiagrams.map((d) => (
@@ -722,6 +769,7 @@ function FolderNode({
               <DiagramRow
                 item={d}
                 active={d.id === currentDiagramId}
+                draggable={!!onMoveDiagramToFolder}
                 onOpen={() => onOpenDiagram(d.id)}
                 onDelete={onDeleteDiagram ? () => onDeleteDiagram(d.id) : undefined}
                 onDuplicate={onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined}
@@ -749,6 +797,7 @@ function UnsortedNode({
   exitingDiagramIds,
   onDuplicateDiagram,
   onMoveDiagramRequest,
+  onMoveDiagramToFolder,
 }: {
   expanded: Record<string, boolean>;
   onToggleExpanded: (key: string) => void;
@@ -759,11 +808,45 @@ function UnsortedNode({
   exitingDiagramIds: Set<string>;
   onDuplicateDiagram?: (id: string) => void;
   onMoveDiagramRequest?: (diagramId: string, anchor: HTMLElement | null) => void;
+  // Drop target callback; receives `null` as the folder id to drop
+  // the diagram back to root (Unsorted is the synthetic null folder).
+  onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
 }) {
   const isExpanded = expanded['unsorted'] ?? false;
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  // Same drop wiring as FolderNode but the move callback gets a
+  // null folderId so the diagram lands in Unsorted (the root
+  // bucket).
+  const acceptsDrop = (e: React.DragEvent) =>
+    !!onMoveDiagramToFolder && e.dataTransfer.types.includes(DIAGRAM_DRAG_MIME);
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!acceptsDrop(e)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (!isDragOver) setIsDragOver(true);
+  };
+  const handleDragLeave = () => {
+    if (isDragOver) setIsDragOver(false);
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    if (!acceptsDrop(e)) return;
+    e.preventDefault();
+    const id = e.dataTransfer.getData(DIAGRAM_DRAG_MIME);
+    setIsDragOver(false);
+    if (id && onMoveDiagramToFolder) onMoveDiagramToFolder(id, null);
+  };
+
   return (
     <li>
-      <div className="flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100">
+      <div
+        className={`flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 ${
+          isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50' : ''
+        }`}
+        onDragOver={onMoveDiagramToFolder ? handleDragOver : undefined}
+        onDragLeave={onMoveDiagramToFolder ? handleDragLeave : undefined}
+        onDrop={onMoveDiagramToFolder ? handleDrop : undefined}
+      >
         <button
           type="button"
           onClick={() => onToggleExpanded('unsorted')}
@@ -805,6 +888,7 @@ function UnsortedNode({
               <DiagramRow
                 item={d}
                 active={d.id === currentDiagramId}
+                draggable={!!onMoveDiagramToFolder}
                 onOpen={() => onOpenDiagram(d.id)}
                 onDelete={onDeleteDiagram ? () => onDeleteDiagram(d.id) : undefined}
                 onDuplicate={onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined}
@@ -943,6 +1027,7 @@ function DiagramRow({
   onDelete,
   onDuplicate,
   onMoveRequest,
+  draggable: isDraggable,
 }: {
   item: DiagramListItem;
   active: boolean;
@@ -954,6 +1039,11 @@ function DiagramRow({
   // anchored to the supplied element. Stored at the panel level so
   // the portal isn't nested inside another PortalMenu.
   onMoveRequest?: (anchor: HTMLElement | null) => void;
+  // Set true on rows the user can drag into folders. The actual
+  // drop handling lives on FolderNode + UnsortedNode; this row just
+  // sets the custom MIME data so a drop target knows what was
+  // dragged.
+  draggable?: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -1010,8 +1100,17 @@ function DiagramRow({
     </>
   );
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData(DIAGRAM_DRAG_MIME, item.id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
-    <div className={pillClasses}>
+    <div
+      className={pillClasses}
+      draggable={isDraggable && !editing}
+      onDragStart={isDraggable && !editing ? handleDragStart : undefined}
+    >
       {editing ? (
         <div className={mainClass}>{mainInner}</div>
       ) : (
