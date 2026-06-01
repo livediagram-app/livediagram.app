@@ -21,10 +21,22 @@
 // touches Clerk.
 
 import { useAuth, useClerk, useUser } from '@clerk/react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { clerkEnabled } from '@/lib/clerk-config';
-import { DeleteAccountDialog } from './DeleteAccountDialog';
+
+// Lazy-load the delete-account dialog. Almost every signed-in
+// session NEVER opens it (it's the destructive option at the
+// bottom of an account menu most users won't even look at), but
+// the static import shipped the 192-line component (plus its
+// Clerk reverification + useReverification dependency surface)
+// in the eager AuthControls bundle on every page. Switching to
+// next/dynamic + gating the JSX on `deleteOpen` means the chunk
+// only fetches when the user actually clicks Delete account.
+const DeleteAccountDialog = dynamic(() =>
+  import('./DeleteAccountDialog').then((m) => m.DeleteAccountDialog),
+);
 
 function AuthControlsEnabled() {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
@@ -140,20 +152,22 @@ function AuthControlsEnabled() {
           </button>
         </div>
       ) : null}
-      <DeleteAccountDialog
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onDeleted={async () => {
-          // Backend + Clerk delete already completed inside the
-          // dialog. Sign out (just to clear any client-side Clerk
-          // state — the token's already invalid) and land the user
-          // on the marketing site at `/` (router worker serves the
-          // marketing app there). signOut's redirectUrl goes through
-          // window.location, so the basePath '/live' is NOT applied
-          // — `/` is the real root, not `/live/`.
-          await signOut({ redirectUrl: '/' });
-        }}
-      />
+      {deleteOpen ? (
+        <DeleteAccountDialog
+          open={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          onDeleted={async () => {
+            // Backend + Clerk delete already completed inside the
+            // dialog. Sign out (just to clear any client-side Clerk
+            // state, the token's already invalid) and land the user
+            // on the marketing site at `/` (router worker serves the
+            // marketing app there). signOut's redirectUrl goes
+            // through window.location, so the basePath '/live' is
+            // NOT applied: '/' is the real root, not '/live/'.
+            await signOut({ redirectUrl: '/' });
+          }}
+        />
+      ) : null}
     </div>
   );
 }
