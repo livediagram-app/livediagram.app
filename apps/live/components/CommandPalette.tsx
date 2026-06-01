@@ -237,7 +237,7 @@ function OpenPalette({
       title="Palette"
       position={position}
       defaultCorner="top-right"
-      width="w-52 sm:w-64"
+      width="w-auto sm:w-64"
       onSize={onSize}
       onReset={onReset}
       onMoveTo={onMoveTo}
@@ -417,29 +417,6 @@ function OpenPalette({
             </svg>
           </IconButton>
           <IconButton
-            label="Add user"
-            description="User / actor. Use-case and architecture diagrams."
-            onClick={() => onAddShape('actor')}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <circle cx="9" cy="4" r="2.4" />
-              <path d="M9 6.4 L9 11.5" />
-              <path d="M4.8 8.4 L13.2 8.4" />
-              <path d="M9 11.5 L6 15.5" />
-              <path d="M9 11.5 L12 15.5" />
-            </svg>
-          </IconButton>
-          <IconButton
             label="Add cloud"
             description="Cloud. Networking / architecture."
             onClick={() => onAddShape('cloud')}
@@ -543,6 +520,29 @@ function OpenPalette({
               </svg>
             </IconButton>
           ) : null}
+          <IconButton
+            label="Add user"
+            description="User / actor. Use-case and architecture diagrams."
+            onClick={() => onAddShape('actor')}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <circle cx="9" cy="4" r="2.4" />
+              <path d="M9 6.4 L9 11.5" />
+              <path d="M4.8 8.4 L13.2 8.4" />
+              <path d="M9 11.5 L6 15.5" />
+              <path d="M9 11.5 L12 15.5" />
+            </svg>
+          </IconButton>
         </div>
       </Accordion>
       <Accordion

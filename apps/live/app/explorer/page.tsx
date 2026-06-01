@@ -491,10 +491,14 @@ export default function ExplorerPage() {
         <AuthControls />
       </header>
 
-      <main className="mx-auto flex w-full max-w-7xl flex-1 gap-6 px-6 pb-16 pt-6">
+      <main className="mx-auto flex w-full max-w-7xl flex-1 gap-6 px-4 pb-16 pt-6 sm:px-6">
         {/* ---------- Sidebar tree ---------- */}
+        {/* Hidden on mobile: at 375px the 256px sidebar swallows
+            the right pane entirely. Users on a phone navigate via
+            the right pane (folder rows + the existing header search
+            button); the full sidebar tree is desktop chrome. */}
         <aside
-          className="shrink-0 self-start"
+          className="hidden shrink-0 self-start sm:block"
           style={{ width: SIDEBAR_WIDTH }}
           aria-label="Folders"
         >

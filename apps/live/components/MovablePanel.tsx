@@ -142,7 +142,11 @@ export function MovablePanel({
     : useDynamicStack
       ? ''
       : defaultCorner === 'top-right'
-        ? 'right-4 top-4'
+        ? // Mobile: pin to the top of the viewport with a small
+          // breathing-room margin on each side so a `w-auto sm:w-<size>`
+          // palette becomes a banner that doesn't kiss the screen
+          // edges. Desktop: original corner.
+          'inset-x-2 top-2 sm:inset-x-auto sm:right-4 sm:top-4'
         : defaultCorner === 'top-right-stacked'
           ? 'right-4 top-[15rem]'
           : defaultCorner === 'bottom-left'
