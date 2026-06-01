@@ -253,11 +253,12 @@ export type ShapeElement = {
 // CommandPalette can render them as 3-to-4-button icon rows that
 // match the Pointer accordion's pattern (Line thickness /
 // Arrowhead size / etc).
-export type BorderStroke = 'thin' | 'medium' | 'thick' | 'extra-thick';
+export type BorderStroke = 'none' | 'thin' | 'medium' | 'thick' | 'extra-thick';
 export type BorderStyle = 'solid' | 'dashed' | 'dotted';
 export type BorderRadius = 'none' | 'sm' | 'md' | 'lg';
 
 export const BORDER_STROKE_PX: Record<BorderStroke, number> = {
+  none: 0,
   thin: 1,
   medium: 2,
   thick: 4,

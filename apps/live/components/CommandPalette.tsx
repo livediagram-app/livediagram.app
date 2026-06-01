@@ -883,8 +883,8 @@ export function SelectedElementSection({
       selection.borderRadius !== null ? (
         <Accordion title="Border" open={open.border} onToggle={() => toggle('border')}>
           <p className="text-[10px] font-medium text-slate-500">Strength</p>
-          <div className="mt-1 grid grid-cols-4 gap-1">
-            {(['thin', 'medium', 'thick', 'extra-thick'] as const).map((value) => (
+          <div className="mt-1 grid grid-cols-5 gap-1">
+            {(['none', 'thin', 'medium', 'thick', 'extra-thick'] as const).map((value) => (
               <Tooltip
                 key={value}
                 block
@@ -1345,6 +1345,7 @@ function ShapeIcon({ kind }: { kind: ShapeKind }) {
 // conventions so the two reads as siblings.
 
 const BORDER_STROKE_LABEL: Record<BorderStroke, string> = {
+  none: 'None',
   thin: 'Thin',
   medium: 'Medium',
   thick: 'Thick',
@@ -1365,6 +1366,27 @@ const BORDER_RADIUS_LABEL: Record<BorderRadius, string> = {
 };
 
 function BorderStrokeIcon({ value }: { value: BorderStroke }) {
+  if (value === 'none') {
+    // "No border" glyph: a small dashed outline rendered at low
+    // opacity so it reads as "absence of a border" rather than as
+    // a fifth thickness preset.
+    return (
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+        <rect
+          x="3"
+          y="3"
+          width="12"
+          height="12"
+          rx="2"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeDasharray="2 2"
+          opacity="0.55"
+        />
+      </svg>
+    );
+  }
   const sw = { thin: 1, medium: 2, thick: 4, 'extra-thick': 7 }[value];
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
