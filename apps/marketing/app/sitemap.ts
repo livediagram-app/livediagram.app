@@ -15,6 +15,18 @@ export const dynamic = 'force-static';
 // When a new public page lands, add it here AND wire up its
 // per-page alternates.canonical block. Updating one without the
 // other is a regression.
+//
+// `lastModified` per page reflects the truth of when that page's
+// content last changed. The landing + FAQ pages update with most
+// product releases, so they use the build-time `now`. Terms +
+// Privacy carry a `lastUpdated="31 May 2026"` prop in their JSX
+// (rendered by `<LegalPage>`); the sitemap mirrors that exact
+// date so crawlers don't get a "this changed daily" signal for a
+// page whose visible disclaimer hasn't moved in months. Bump the
+// date here AND in app/terms/page.tsx + app/privacy/page.tsx in
+// the same change when revising the legal copy.
+const LEGAL_LAST_UPDATED = new Date('2026-05-31');
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const base = 'https://livediagram.app';
@@ -33,13 +45,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${base}/terms`,
-      lastModified: now,
+      lastModified: LEGAL_LAST_UPDATED,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${base}/privacy`,
-      lastModified: now,
+      lastModified: LEGAL_LAST_UPDATED,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
