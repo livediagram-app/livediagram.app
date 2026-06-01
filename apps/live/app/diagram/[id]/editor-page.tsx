@@ -1,15 +1,7 @@
 'use client';
 
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from 'react';
-import {
-  anchorPosition,
   ARROW_THICKNESS_PX,
   bringManyToFront,
   createComment,
@@ -18,14 +10,10 @@ import {
   createSticky,
   createText,
   duplicateGroupedElements,
-  endpointPosition,
   isBoxed,
   joinGroups,
   selectionMembers,
   sendManyToBack,
-  snapResizeBounds,
-  snapToAlignment,
-  snapToAnchor,
   ungroup,
   unionBoxedBounds,
   DEFAULT_BACKGROUND_COLOR,
@@ -40,7 +28,6 @@ import {
   type BorderStyle,
   type BoxedElement,
   type Element,
-  type Endpoint,
   type ShapeKind,
   type Tab,
   type TextAlignX,
@@ -72,20 +59,8 @@ import { HISTORY_LIMIT, useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import { useFolders } from '@/hooks/useFolders';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
-import {
-  ALIGN_SNAP_THRESHOLD,
-  arrowReferencesAny,
-  cornerOf,
-  MIN_SIZE,
-  nextBounds,
-  SNAP_THRESHOLD,
-  unionOfBounds,
-  unionResizeMember,
-  type ArrowEnd,
-  type DragMode,
-  type DragState,
-  type ShapeBounds,
-} from '@/lib/canvas';
+import { arrowReferencesAny } from '@/lib/canvas';
+import { useEditorDrag } from '@/hooks/useEditorDrag';
 import {
   nextFreeColor,
   randomColor,
@@ -168,7 +143,11 @@ export default function LivePage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formatSourceId, setFormatSourceId] = useState<string | null>(null);
   const [groupSourceId, setGroupSourceId] = useState<string | null>(null);
-  const [drag, setDrag] = useState<DragState | null>(null);
+  // Drag state lives inside the useEditorDrag hook, lifted out of
+  // this component to keep the page focused on orchestration. The
+  // hook is invoked further down (after `tick`, `commit`,
+  // `applyFormatFromSource` and the rest of the drag dependencies
+  // exist).
   const [palettePosition, setPalettePosition] = useState<{ x: number; y: number } | null>(null);
   const [paletteMinimized, setPaletteMinimized] = useState(false);
   const [explorerPosition, setExplorerPosition] = useState<{ x: number; y: number } | null>(null);
@@ -3347,83 +3326,7 @@ export default function LivePage() {
 
   const cancelEdit = () => setEditingId(null);
 
-  // --- Drag handlers -------------------------------------------------------
-
-  const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
-    if (formatSourceId !== null && mode === 'move') {
-      applyFormatFromSource(elementId);
-      return;
-    }
-    if (groupSourceId !== null && mode === 'move') {
-      completeGrouping(elementId);
-      return;
-    }
-    if (editingId === elementId) return;
-    const element = activeTab.elements.find((el) => el.id === elementId);
-    if (!element || !isBoxed(element)) return;
-    setSelectedId(elementId);
-    // Selection above still lands so viewers can inspect; the drag
-    // itself is blocked for a locked element or a read-only session.
-    if (element.locked === true || isReadOnly) return;
-
-    // Multi-selection AND group selection both drag in lockstep — for
-    // 'move' the whole set translates together, for 'resize-*' the whole
-    // set scales together (members reposition + resize proportionally
-    // around the corner opposite the drag handle). A bare single-element
-    // drag falls through to the singleton set.
-    const ids = multiSelectedIds.has(elementId)
-      ? multiSelectedIds
-      : element.groupId
-        ? new Set(selectionMembers(activeTab.elements, elementId))
-        : new Set<string>([elementId]);
-
-    const startBounds = new Map<string, ShapeBounds>();
-    for (const el of activeTab.elements) {
-      if (ids.has(el.id) && isBoxed(el)) {
-        startBounds.set(el.id, { x: el.x, y: el.y, width: el.width, height: el.height });
-      }
-    }
-
-    markCheckpoint();
-    setDrag({
-      kind: 'boxed',
-      primaryId: elementId,
-      mode,
-      startClientX: e.clientX,
-      startClientY: e.clientY,
-      startBounds,
-      aspectLocked: element.aspectLocked === true,
-    });
-  };
-
-  const beginAnchorDrag = (elementId: string, anchor: Anchor, e: ReactPointerEvent) => {
-    if (formatSourceId !== null || groupSourceId !== null) return;
-    const element = activeTab.elements.find((el) => el.id === elementId);
-    if (!element || !isBoxed(element) || element.locked === true || isReadOnly) return;
-    const start = anchorPosition(element, anchor);
-    // New arrows inherit the tab's theme stroke colour so they
-    // visually belong with the rest of the diagram. Falls back to the
-    // built-in arrow default when the theme has no override (Brand).
-    const theme = getTheme(activeTab.theme);
-    const arrow: ArrowElement = {
-      id: crypto.randomUUID(),
-      type: 'arrow',
-      from: { kind: 'pinned', elementId, anchor },
-      to: { kind: 'free', x: start.x, y: start.y },
-      ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
-    };
-    commit((els) => [...els, arrow]);
-    setSelectedId(arrow.id);
-    setDrag({
-      kind: 'arrow-endpoint',
-      arrowId: arrow.id,
-      end: 'to',
-      startClientX: e.clientX,
-      startClientY: e.clientY,
-      startCanvasX: start.x,
-      startCanvasY: start.y,
-    });
-  };
+  // --- Selection + drag dispatch ------------------------------------------
 
   const selectElement = (id: string) => {
     if (formatSourceId !== null) {
@@ -3461,225 +3364,31 @@ export default function LivePage() {
     setGroupSourceId(null);
   };
 
-  const beginArrowTranslate = (arrowId: string, e: ReactPointerEvent) => {
-    if (formatSourceId !== null || groupSourceId !== null) return;
-    const arrow = activeTab.elements.find((el) => el.id === arrowId);
-    if (!arrow || arrow.type !== 'arrow') return;
-    if (arrow.locked === true || isReadOnly) return;
-    if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
-    setSelectedId(arrowId);
-    markCheckpoint();
-    setDrag({
-      kind: 'arrow-translate',
-      arrowId,
-      startClientX: e.clientX,
-      startClientY: e.clientY,
-      startFromX: arrow.from.x,
-      startFromY: arrow.from.y,
-      startToX: arrow.to.x,
-      startToY: arrow.to.y,
-    });
-  };
-
-  const beginEndpointDrag = (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => {
-    if (formatSourceId !== null || groupSourceId !== null) return;
-    const arrow = activeTab.elements.find((el) => el.id === arrowId);
-    if (!arrow || arrow.type !== 'arrow') return;
-    setSelectedId(arrowId);
-    if (arrow.locked === true || isReadOnly) return;
-    const start = endpointPosition(end === 'from' ? arrow.from : arrow.to, activeTab.elements);
-    markCheckpoint();
-    setDrag({
-      kind: 'arrow-endpoint',
-      arrowId,
-      end,
-      startClientX: e.clientX,
-      startClientY: e.clientY,
-      startCanvasX: start.x,
-      startCanvasY: start.y,
-    });
-  };
-
-  useEffect(() => {
-    if (!drag) return;
-    const onMove = (e: PointerEvent) => {
-      // Screen-pixel delta → canvas-coord delta, accounting for current zoom.
-      const dx = (e.clientX - drag.startClientX) / zoomRef.current;
-      const dy = (e.clientY - drag.startClientY) / zoomRef.current;
-
-      if (drag.kind === 'boxed') {
-        if (drag.mode === 'move') {
-          // Snap the primary's candidate bounds to align with other
-          // elements' edges/centres; apply the same nudge to every group
-          // member so they translate together.
-          const primaryStart = drag.startBounds.get(drag.primaryId);
-          const memberIds = new Set(drag.startBounds.keys());
-          let snapDx = 0;
-          let snapDy = 0;
-          if (primaryStart) {
-            const candidate = {
-              x: primaryStart.x + dx,
-              y: primaryStart.y + dy,
-              width: primaryStart.width,
-              height: primaryStart.height,
-            };
-            const snap = snapToAlignment(
-              candidate,
-              activeTab.elements,
-              memberIds,
-              ALIGN_SNAP_THRESHOLD,
-            );
-            snapDx = snap.dx;
-            snapDy = snap.dy;
-          }
-          tick((els) =>
-            els.map((el) => {
-              if (!isBoxed(el)) return el;
-              const start = drag.startBounds.get(el.id);
-              if (!start) return el;
-              return { ...el, x: start.x + dx + snapDx, y: start.y + dy + snapDy };
-            }),
-          );
-        } else {
-          // Resize branch handles BOTH single-element and group / multi
-          // resizes uniformly:
-          // - Single member: scale the lone member directly via nextBounds
-          //   (the original behaviour, snapping included).
-          // - Multiple members: compute a UNION start box, scale that as
-          //   if it were one element, then map every member through the
-          //   same proportional scale around the anchor (corner opposite
-          //   the drag handle).
-          const corner = cornerOf(drag.mode);
-          const memberIds = new Set(drag.startBounds.keys());
-
-          if (drag.startBounds.size <= 1) {
-            const start = drag.startBounds.get(drag.primaryId);
-            if (!start) return;
-            const raw = nextBounds(start, drag.mode, dx, dy, drag.aspectLocked);
-            const next =
-              !drag.aspectLocked && corner
-                ? snapResizeBounds(
-                    raw,
-                    corner,
-                    activeTab.elements,
-                    memberIds,
-                    ALIGN_SNAP_THRESHOLD,
-                    MIN_SIZE,
-                  )
-                : raw;
-            tick((els) =>
-              els.map((el) => (el.id === drag.primaryId && isBoxed(el) ? { ...el, ...next } : el)),
-            );
-            return;
-          }
-
-          // Multi-member resize: derive union bounds, run them
-          // through nextBounds, and scale every member around the
-          // anchor (corner opposite the drag handle). Aspect-lock is
-          // forced on if ANY member is aspect-locked so locked
-          // figures (e.g. the actor) don't get warped by an
-          // unevenly-dragged corner. Snap is skipped for multi-resize
-          // because the primary's edges aren't load-bearing here:
-          // snapping one member's edge would push the whole group
-          // around in ways the user didn't ask for.
-          const unionStart = unionOfBounds(drag.startBounds.values());
-          if (!unionStart || !corner) return;
-          const anyAspectLocked = activeTab.elements.some(
-            (el) => isBoxed(el) && drag.startBounds.has(el.id) && el.aspectLocked === true,
-          );
-          const unionNext = nextBounds(
-            unionStart,
-            drag.mode,
-            dx,
-            dy,
-            drag.aspectLocked || anyAspectLocked,
-          );
-          tick((els) =>
-            els.map((el) => {
-              if (!isBoxed(el)) return el;
-              const start = drag.startBounds.get(el.id);
-              if (!start) return el;
-              return { ...el, ...unionResizeMember(start, unionStart, unionNext, corner) };
-            }),
-          );
-        }
-        return;
-      }
-
-      if (drag.kind === 'arrow-translate') {
-        // Shift both free endpoints by the same canvas delta from
-        // their captured start positions. No anchor / angle snap —
-        // the user explicitly chose a fully-floating arrow.
-        tick((els) =>
-          els.map((el) => {
-            if (el.id !== drag.arrowId || el.type !== 'arrow') return el;
-            return {
-              ...el,
-              from: { kind: 'free', x: drag.startFromX + dx, y: drag.startFromY + dy },
-              to: { kind: 'free', x: drag.startToX + dx, y: drag.startToY + dy },
-            };
-          }),
-        );
-        return;
-      }
-
-      const cursor = { x: drag.startCanvasX + dx, y: drag.startCanvasY + dy };
-      tick((els) => {
-        // Element anchor wins over angle snap: pinning to another
-        // shape is the strongest constraint and the most desirable
-        // outcome when both are plausible.
-        const anchorSnap = snapToAnchor(cursor, els, SNAP_THRESHOLD);
-        let endpoint: Endpoint;
-        if (anchorSnap) {
-          endpoint = {
-            kind: 'pinned',
-            elementId: anchorSnap.elementId,
-            anchor: anchorSnap.anchor,
-          };
-        } else {
-          // Angle snap: lock the arrow to 45° increments from its
-          // other endpoint when the cursor is within ~5° of one.
-          // Keeps right-angle connectors easy to draw without
-          // fighting the cursor at oblique angles.
-          const arrow = els.find((e) => e.id === drag.arrowId && e.type === 'arrow') as
-            | ArrowElement
-            | undefined;
-          let resolved = cursor;
-          if (arrow) {
-            const otherKey = drag.end === 'from' ? 'to' : 'from';
-            const other = endpointPosition(arrow[otherKey], els);
-            const ax = cursor.x - other.x;
-            const ay = cursor.y - other.y;
-            const len = Math.hypot(ax, ay);
-            if (len > 0) {
-              const angle = Math.atan2(ay, ax);
-              const STEP = Math.PI / 4;
-              const THRESH = (5 * Math.PI) / 180;
-              const nearest = Math.round(angle / STEP) * STEP;
-              if (Math.abs(angle - nearest) <= THRESH) {
-                resolved = {
-                  x: other.x + Math.cos(nearest) * len,
-                  y: other.y + Math.sin(nearest) * len,
-                };
-              }
-            }
-          }
-          endpoint = { kind: 'free', x: resolved.x, y: resolved.y };
-        }
-        return els.map((el) =>
-          el.id === drag.arrowId && el.type === 'arrow' ? { ...el, [drag.end]: endpoint } : el,
-        );
-      });
-    };
-    const onUp = () => setDrag(null);
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-    return () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drag, activeId]);
+  // Drag state machine + its global pointer-move / pointer-up
+  // listeners live in useEditorDrag (see apps/live/hooks/useEditorDrag.ts).
+  // The hook owns the drag state and the four `begin*` dispatchers.
+  // Wiring it up here passes the editor-page's "what is going on
+  // right now" state as deps so the hook can read fresh values on
+  // every pointer move without re-attaching listeners.
+  // `drag` itself isn't consumed in the page (Canvas pulls cursor
+  // styling from `canvasTool`, not the drag state); only the four
+  // begin-handlers below are passed through to Canvas as props.
+  const { beginDrag, beginAnchorDrag, beginArrowTranslate, beginEndpointDrag } = useEditorDrag({
+    activeTab,
+    zoomRef,
+    selectedId,
+    setSelectedId,
+    multiSelectedIds,
+    editingId,
+    isReadOnly,
+    formatSourceId,
+    applyFormatFromSource,
+    groupSourceId,
+    completeGrouping,
+    tick,
+    commit,
+    markCheckpoint,
+  });
 
   useEffect(() => {
     if (formatSourceId === null && groupSourceId === null) return;
