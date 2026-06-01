@@ -1802,9 +1802,7 @@ function buildFlywheel(cx: number, cy: number): Element[] {
   sectors.forEach((sector, i) => {
     const next = sectors[(i + 1) % sectors.length]!;
     const nextEl = sectorElements[(i + 1) % sectors.length]!;
-    elements.push(
-      createPinnedArrow(sectorElements[i]!.id, sector.out, nextEl.id, next.into),
-    );
+    elements.push(createPinnedArrow(sectorElements[i]!.id, sector.out, nextEl.id, next.into));
   });
 
   return elements;
