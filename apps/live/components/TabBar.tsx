@@ -361,23 +361,38 @@ function PortalMenu({
     };
   }, [anchor]);
 
-  // After the menu mounts, nudge it back on-screen if it overflows any edge
-  // (e.g. Tab 1 is near the left and the menu opens left of its anchor).
+  // After the menu mounts, nudge it back on-screen if it overflows any
+  // edge (e.g. Tab 1 is near the left and the menu opens left of its
+  // anchor). Also re-runs when `view` flips: the "Add to another
+  // diagram" submenu is wider (w-56 vs w-44) and taller (destination
+  // list + Back row), so without a fresh measurement the box could
+  // overflow the bottom or left edges of the viewport with stale
+  // adjust state carried over from the actions view.
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node || !pos) return;
     const rect = node.getBoundingClientRect();
+    // Re-measure WITHOUT the previous adjust applied, so dx / dy are
+    // computed against the menu's native position. Otherwise toggling
+    // back from a clamped state would never relax: the stale clamp
+    // shifts the rect into-frame, the new measurement reports
+    // "already in-frame", and the box stays kicked.
+    const naturalLeft = rect.left - adjust.x;
+    const naturalRight = rect.right - adjust.x;
+    const naturalTop = rect.top - adjust.y;
+    const naturalBottom = rect.bottom - adjust.y;
     const margin = 8;
     let dx = 0;
     let dy = 0;
-    if (rect.left < margin) dx = margin - rect.left;
-    else if (rect.right > window.innerWidth - margin) dx = window.innerWidth - margin - rect.right;
-    if (rect.top < margin) dy = margin - rect.top;
-    else if (rect.bottom > window.innerHeight - margin)
-      dy = window.innerHeight - margin - rect.bottom;
+    if (naturalLeft < margin) dx = margin - naturalLeft;
+    else if (naturalRight > window.innerWidth - margin)
+      dx = window.innerWidth - margin - naturalRight;
+    if (naturalTop < margin) dy = margin - naturalTop;
+    else if (naturalBottom > window.innerHeight - margin)
+      dy = window.innerHeight - margin - naturalBottom;
     if (dx !== adjust.x || dy !== adjust.y) setAdjust({ x: dx, y: dy });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos]);
+  }, [pos, view]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
