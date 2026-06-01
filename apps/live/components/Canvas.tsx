@@ -980,7 +980,7 @@ export function Canvas(props: CanvasProps) {
           const sy = (e.clientY - rect.top) / viewportZoom;
           onCanvasDoubleClick(sx, sy);
         }}
-        className={`absolute inset-0 z-20 origin-center ${cursorClass}`}
+        className={`absolute inset-0 origin-center ${cursorClass}`}
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
@@ -1129,8 +1129,27 @@ export function Canvas(props: CanvasProps) {
             />
           </>
         ) : null}
+      </div>
 
-        {showPopover && selectionBounds ? (
+      {/* SelectionPopover rides on a sibling wrapper that mirrors
+          the canvas transform but lives AFTER the editor panels in
+          DOM order. Desktop (`sm:z-40`) lifts the toolbar above
+          panels (Palette, Editor / Context, Explorer) so it stays
+          visible when a selected element sits near a panel-pinned
+          corner. Mobile (`z-0`) keeps the toolbar BELOW panels:
+          the user prefers tapping a panel without the toolbar
+          fighting for the same space, and the toolbar is already
+          centred under the selected element on small screens.
+          Diagram elements stay in the original wrapper at z-auto
+          and continue to be visually covered by panels where they
+          overlap. */}
+      {showPopover && selectionBounds ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-0 origin-center sm:z-40"
+          style={{
+            transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+          }}
+        >
           <SelectionPopover
             bounds={selectionBounds}
             canvasOffset={viewportOffset}
@@ -1162,8 +1181,8 @@ export function Canvas(props: CanvasProps) {
             }
             compact={readOnly}
           />
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {hydrated && elements.length === 0 && !showTemplatePicker && !welcomeOpen ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
