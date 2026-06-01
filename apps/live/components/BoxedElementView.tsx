@@ -196,6 +196,17 @@ export function BoxedElementView({
           }
         />
       ) : null}
+      {/* Browser-only HTML chrome overlay. SVG handles only the
+          outer frame + divider so the user's border style applies;
+          the dots / nav / URL bar render here so their geometry is
+          fixed-pixel and doesn't deform with the box's aspect
+          ratio. */}
+      {element.type === 'shape' && element.shape === 'browser' ? (
+        <BrowserChrome
+          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          zoom={zoom}
+        />
+      ) : null}
 
       {renderLabel(
         element,
@@ -364,11 +375,11 @@ function ShapeSvgOverlay({
           {...common}
         />
       ) : null}
-      {/* Browser: rounded outer frame + chrome details. Two-row
-          chrome reads as a real browser: window dots + nav buttons
-          on top, URL pill on the row below. The themed fill paints
-          the whole window; the chrome details inherit the same
-          stroke so they belong to the silhouette. */}
+      {/* Browser: just the rounded outer frame + the divider line
+          under the chrome row. The chrome details (dots, nav icons,
+          URL pill) render as an HTML overlay (see BrowserChrome
+          below) so their geometry stays fixed at any aspect ratio
+          rather than warping with the box. */}
       {shape === 'browser' ? (
         <g>
           <rect x={1} y={1} width={98} height={98} rx={3} {...common} />
@@ -379,55 +390,6 @@ function ShapeSvgOverlay({
             y2={20}
             stroke={stroke}
             strokeWidth={1}
-            vectorEffect="non-scaling-stroke"
-          />
-          {/* Three window control dots, traffic-light style. Sit at
-              the far left of the chrome row. */}
-          <circle cx={5} cy={6} r={1.6} fill={stroke} stroke="none" />
-          <circle cx={11} cy={6} r={1.6} fill={stroke} stroke="none" />
-          <circle cx={17} cy={6} r={1.6} fill={stroke} stroke="none" />
-          {/* Back / forward / reload icons. Right of the dots, left
-              of the URL pill. Short paths so they survive the
-              non-uniform scale without distorting beyond recognition. */}
-          <path
-            d="M 26 13 L 23 16 L 26 19"
-            fill="none"
-            stroke={stroke}
-            strokeWidth={1}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-          />
-          <path
-            d="M 31 19 L 34 16 L 31 13"
-            fill="none"
-            stroke={stroke}
-            strokeWidth={1}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-          />
-          <path
-            d="M 41 13 A 3 3 0 1 1 38 19 M 41 13 L 43 13 M 41 13 L 41 15"
-            fill="none"
-            stroke={stroke}
-            strokeWidth={1}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-          />
-          {/* URL pill on the right of the chrome row. Shorter than
-              the original (now ~38 wide vs the previous 56) to leave
-              room for the new nav icons. */}
-          <rect
-            x={47}
-            y={11}
-            width={48}
-            height={9}
-            rx={2}
-            fill="none"
-            stroke={stroke}
-            strokeWidth={0.8}
             vectorEffect="non-scaling-stroke"
           />
         </g>
@@ -487,6 +449,62 @@ function ShapeSvgOverlay({
         </g>
       ) : null}
     </svg>
+  );
+}
+
+// Browser chrome rendered as fixed-pixel HTML rather than scaled SVG so
+// the window dots stay round, the nav icons keep their stroke weight,
+// and the URL bar grows to fill the available width at any aspect
+// ratio. The outer frame + divider line still come from the SVG layer
+// (so the user's themed fill / border style / dashed pattern apply).
+// Counter-scaled by `zoom` is intentionally NOT applied — chrome
+// elements should scale with the canvas zoom like the rest of the
+// shape so a small browser at low zoom still reads as a browser.
+function BrowserChrome({ stroke, zoom: _zoom }: { stroke: string; zoom: number }) {
+  return (
+    <div
+      aria-hidden
+      // The chrome strip sits in the top 20% of the SVG viewBox (y 0
+      // to 20 of 100). Match that on the HTML side with a 20% height.
+      // pointer-events: none so it never intercepts clicks on the
+      // shape itself.
+      className="pointer-events-none absolute left-0 right-0 top-0 flex items-center gap-2 px-2"
+      style={{ height: '20%', color: stroke }}
+    >
+      {/* Three traffic-light window dots. Fixed-pixel so they stay
+          round regardless of how the box stretches. */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stroke }} aria-hidden />
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stroke }} aria-hidden />
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stroke }} aria-hidden />
+      </div>
+      {/* Back / forward / reload icons. Single SVG group with fixed
+          pixel size so the icon weight + spacing stays consistent. */}
+      <svg
+        width="44"
+        height="14"
+        viewBox="0 0 44 14"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="shrink-0"
+        aria-hidden
+      >
+        <path d="M 7 3 L 3 7 L 7 11" />
+        <path d="M 15 11 L 19 7 L 15 3" />
+        <path d="M 30 4 A 4 4 0 1 1 27 11 M 30 4 L 33 4 M 30 4 L 30 7" />
+      </svg>
+      {/* URL pill. Flex-fills the remaining width so it scales with
+          the shape; the height stays fixed so it always reads as a
+          pill no matter how tall the chrome strip is. */}
+      <div
+        className="h-3 min-w-0 flex-1 rounded-full border"
+        style={{ borderColor: stroke }}
+        aria-hidden
+      />
+    </div>
   );
 }
 
