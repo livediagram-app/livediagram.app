@@ -46,7 +46,18 @@ import { MultiSelectionToolbar } from './MultiSelectionToolbar';
 import { ModeBanner } from './ModeBanner';
 import { PlusButton } from './PlusButton';
 import { SelectionPopover } from './SelectionPopover';
-import { TemplatePicker } from './TemplatePicker';
+// Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
+// the same way ExportTabDialog + ShareDialog already are. The picker
+// is gated on `showTemplatePicker`, which is false for the common
+// path (a returning user opening an existing diagram with tabs that
+// already have content). For first-time guests on a fresh diagram
+// the gate is true on first paint, but the empty canvas underneath
+// has already rendered by then, so the user sees the welcome modal
+// fade in a frame later rather than blocking the route on the
+// picker's JS. The /live/new entry keeps the static import because
+// the picker is the whole UI there.
+import dynamic from 'next/dynamic';
+const TemplatePicker = dynamic(() => import('./TemplatePicker').then((m) => m.TemplatePicker));
 import { Tooltip } from './Tooltip';
 import { ZoomControls } from './ZoomControls';
 
