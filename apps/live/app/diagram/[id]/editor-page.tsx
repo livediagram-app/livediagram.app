@@ -59,6 +59,7 @@ import { HISTORY_LIMIT, useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import { useFolders } from '@/hooks/useFolders';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
+import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { arrowReferencesAny } from '@/lib/canvas';
 import { useEditorDrag } from '@/hooks/useEditorDrag';
 import {
@@ -1869,58 +1870,24 @@ export default function LivePage() {
       setFormatSourceId(null);
       return;
     }
-    // Format-paint copies every formatting field on the source. Skip
-    // identity (`id`, `type`, `shape`) and content (`label`, `link`,
-    // `commentThread`, `groupId`, `locked`, position `x`/`y`) — those
-    // belong to the target. Anything else that visually styles the
-    // element gets carried over. Boxed↔arrow paints are no-ops since
-    // the two kinds share almost no formattable fields.
-    //
-    // Each new style field (text bold/italic/underline/strike, padding,
-    // arrow thickness, aspect lock, etc.) is included explicitly so
-    // future additions need a deliberate update here — easier to spot
-    // missing coverage than to debug "format painter forgot X" later.
+    // Field projections live in lib/format-painter.ts so the list
+    // of painted fields (and the rule that future additions to
+    // BoxedElement / ArrowElement must be opted into the painter
+    // by hand) is one tested source of truth. Boxed-to-arrow and
+    // arrow-to-boxed paints are no-ops: the two kinds share
+    // almost no formattable fields.
     if (isBoxed(source) && isBoxed(target)) {
-      const copied: Partial<BoxedElement> = {
-        width: source.width,
-        height: source.height,
-        aspectLocked: source.aspectLocked,
-        opacity: source.opacity,
-        fillColor: source.fillColor,
-        strokeColor: source.strokeColor,
-        textColor: source.textColor,
-        textSize: source.textSize,
-        textAlignX: source.textAlignX,
-        textAlignY: source.textAlignY,
-        textBold: source.textBold,
-        textItalic: source.textItalic,
-        textUnderline: source.textUnderline,
-        textStrikethrough: source.textStrikethrough,
-        padding: source.padding,
-      };
-      const definedCopied = Object.fromEntries(
-        Object.entries(copied).filter(([, v]) => v !== undefined),
-      );
+      const projection = paintableBoxedFields(source);
       commit((els) =>
         els.map((el) =>
-          el.id === targetId && isBoxed(el) ? ({ ...el, ...definedCopied } as typeof el) : el,
+          el.id === targetId && isBoxed(el) ? ({ ...el, ...projection } as typeof el) : el,
         ),
       );
     } else if (source.type === 'arrow' && target.type === 'arrow') {
-      const copied: Partial<ArrowElement> = {
-        strokeColor: source.strokeColor,
-        strokeWidth: source.strokeWidth,
-        opacity: source.opacity,
-        arrowEnds: source.arrowEnds,
-      };
-      const definedCopied = Object.fromEntries(
-        Object.entries(copied).filter(([, v]) => v !== undefined),
-      );
+      const projection = paintableArrowFields(source);
       commit((els) =>
         els.map((el) =>
-          el.id === targetId && el.type === 'arrow'
-            ? ({ ...el, ...definedCopied } as typeof el)
-            : el,
+          el.id === targetId && el.type === 'arrow' ? ({ ...el, ...projection } as typeof el) : el,
         ),
       );
     }
