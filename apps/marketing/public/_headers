@@ -1,0 +1,17 @@
+# Defense-in-depth response headers for every marketing page.
+# Mirrors the set applied by the live worker (apps/live/src/worker.ts);
+# marketing has no worker (just an assets binding) so the headers go
+# through Cloudflare Workers Static Assets' `_headers` file convention,
+# which Next.js copies from public/ into out/ at build time.
+#
+# Permissions-Policy denies every powerful feature outright on the
+# marketing site (no need to keep `fullscreen=(self)` open like the
+# live worker does for the laser-presenter view). X-Frame-Options
+# DENY blocks the landing page being iframed inside a malicious site
+# that would steal clicks on the "Open editor" CTA.
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=()
