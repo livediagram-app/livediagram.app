@@ -97,7 +97,7 @@ export function TabBar({
   return (
     <div className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900">
       <span
-        className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+        className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:flex dark:text-slate-500"
         aria-hidden
       >
         <TabsLabelIcon />
@@ -235,7 +235,7 @@ export function TabBar({
             type="button"
             onClick={onOpenShortcuts}
             aria-label="Keyboard shortcuts"
-            className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            className="ml-1 hidden h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:flex dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             <KeyboardIcon />
           </button>
@@ -247,7 +247,7 @@ export function TabBar({
             type="button"
             onClick={onOpenSettings}
             aria-label="Diagram settings"
-            className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            className="ml-1 hidden h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:flex dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             <GearIcon />
           </button>

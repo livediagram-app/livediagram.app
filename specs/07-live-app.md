@@ -100,6 +100,16 @@ Toasts are NOT used for:
 
 They ARE used for actions that finish off-surface from the gesture: clicking "Add to another diagram", duplicating a diagram, or any future flow whose UI has already navigated away by the time the network call resolves.
 
+## Mobile chrome
+
+The editor's floating panels (Palette, Explorer, Editor/Context, Activity) were designed for desktop where they overlap a wide canvas comfortably. On a phone-sized viewport they crowd each other and the canvas. The first responsive pass tightens the chrome so a mobile visitor can at least read the canvas and tap through:
+
+- **Editor (ContextPanel) + Explorer default to minimised** below the `sm` breakpoint, so they render as dock buttons instead of fixed-position panels. Tapping a dock promotes one to the canvas at a time. Done in a `useEffect` (not the `useState` initialiser) so the static-export build hydrates without a window-driven mismatch. Palette + Activity stay open by default; they have separately-tuned default corners that don't pile on top of each other.
+- **EditorHeader** drops the `livediagram` wordmark on mobile via the Brand component's new `wordmarkClassName` prop (set to `hidden sm:inline`). The mark stays for orientation. The header's reserved width shrinks accordingly so the diagram title centres correctly.
+- **TabBar** hides the leading `Tabs` label, the keyboard-shortcuts button, and the Settings button below `sm`. Tabs themselves, the +-add and the dark-mode toggle stay. The shortcuts dialog is keyboard-driven anyway; on a touch device its UI value is low.
+
+These don't change desktop layout. The remaining "panels overlap when all four open" mobile case is tracked separately, the dock-button entry points + the mobile picker (spec/14 responsive section) give the user a path to anywhere they need to go.
+
 ## Out of scope (next iterations)
 
 - **Auth UI** — Clerk integration. Today the api carries owner identity in `X-Owner-Id` only.

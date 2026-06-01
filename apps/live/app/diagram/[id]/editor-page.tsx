@@ -238,6 +238,19 @@ export default function LivePage() {
   // under the Palette by default.
   const [contextPosition, setContextPosition] = useState<{ x: number; y: number } | null>(null);
   const [contextMinimized, setContextMinimized] = useState(false);
+  // On mobile the floating panels (Editor / Explorer) overlap each
+  // other and the canvas. Start them minimised to docks so a tap
+  // promotes one to the screen at a time. Done in an effect (not
+  // the useState initialiser) so the static-export build doesn't
+  // hydrate a tree that disagrees with the server pass over
+  // window.innerWidth. One-tick flash on mobile, no flash on
+  // desktop. Runs once.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.innerWidth >= 640) return;
+    setExplorerMinimized(true);
+    setContextMinimized(true);
+  }, []);
   // Tab-section accordion state lifted here so the Activity row
   // click handler can pop the matching accordion (e.g. clicking a
   // "Changed theme to X" entry opens the Theme accordion).

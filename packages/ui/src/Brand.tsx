@@ -8,6 +8,11 @@ export type BrandProps = {
   // mark. Used by the editor header to tint the logo with the active tab's
   // theme accent — when unset, falls back to the brand-500 utility.
   accentColor?: string;
+  // Extra classes for the wordmark span ("live" + "diagram"). The editor
+  // passes `hidden sm:inline` here so the wordmark drops off the mobile
+  // header (the logo mark stays for orientation). Marketing surfaces leave
+  // this unset so the wordmark always shows.
+  wordmarkClassName?: string;
 };
 
 const sizeClasses: Record<BrandSize, string> = {
@@ -17,7 +22,13 @@ const sizeClasses: Record<BrandSize, string> = {
 
 const BRAND_500 = '#0ea5e9';
 
-export function Brand({ href, size = 'md', className = '', accentColor }: BrandProps) {
+export function Brand({
+  href,
+  size = 'md',
+  className = '',
+  accentColor,
+  wordmarkClassName = '',
+}: BrandProps) {
   const classes =
     `group inline-flex items-center gap-1.5 ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
   const accentStyle: React.CSSProperties = accentColor
@@ -29,7 +40,7 @@ export function Brand({ href, size = 'md', className = '', accentColor }: BrandP
         className={`${size === 'sm' ? 'h-4 w-4' : 'h-5 w-5'} shrink-0`}
         style={{ color: accentColor ?? BRAND_500, transition: 'color 200ms ease-out' }}
       />
-      <span>
+      <span className={wordmarkClassName}>
         live
         <span className={accentColor ? '' : 'text-brand-500'} style={accentStyle}>
           diagram

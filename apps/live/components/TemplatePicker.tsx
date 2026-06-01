@@ -290,7 +290,7 @@ export function TemplatePicker({
             className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
           >
             <SparkleIcon />
-            {isWelcome ? 'Create Diagram' : isIdentity ? 'Join' : 'Apply Template'}
+            {isWelcome ? 'Create' : isIdentity ? 'Join' : 'Apply Template'}
           </button>
         </div>
       </div>
