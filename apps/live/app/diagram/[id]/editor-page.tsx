@@ -52,7 +52,12 @@ const ExportTabDialog = dynamic(() =>
 import { parseImportedTab, pickTabFile } from '@/lib/import-tab';
 import { Explorer } from '@/components/Explorer';
 import { NotFound } from '@/components/NotFound';
-import { ShareDialog } from '@/components/ShareDialog';
+// Lazy-load ShareDialog for the same reason as ExportTabDialog: it
+// mounts only when the user clicks Share, and most sessions never
+// open it. Hoisting it into its own chunk means the editor's initial
+// bundle doesn't ship the dialog's 382 lines + its share-link
+// helpers up front.
+const ShareDialog = dynamic(() => import('@/components/ShareDialog').then((m) => m.ShareDialog));
 import { TabBar } from '@/components/TabBar';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
 import { HISTORY_LIMIT, useDiagramHistory } from '@/hooks/useDiagramHistory';
