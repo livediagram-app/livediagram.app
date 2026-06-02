@@ -1216,6 +1216,7 @@ export function Canvas(props: CanvasProps) {
         <MultiSelectionToolbar
           count={multiSelectedIds.size}
           anyLocked={elements.some((el) => multiSelectedIds.has(el.id) && el.locked === true)}
+          offsetForOwnerRow={!isOwner}
           onDuplicate={onDuplicateMultiSelected}
           onDelete={onDeleteMultiSelected}
           onGroup={onGroupMultiSelected}
@@ -1335,33 +1336,34 @@ export function Canvas(props: CanvasProps) {
         />
       )}
 
-      {/* Top-middle status row. Two pills: who owns this diagram (when
-          the owner is in the room — selfParticipant when the visitor
-          IS the owner, otherwise a livePresence lookup) and the
-          visitor's own role (Viewing / Editing). Pointer events stay
-          off so the badges don't intercept clicks on the canvas. */}
-      <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex -translate-x-1/2 items-center gap-2">
-        {ownerParticipant ? (
-          <div className="flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
-            <span className="text-slate-500 dark:text-slate-400">Owner:</span>
-            <ParticipantAvatar participant={ownerParticipant} size={14} />
-            <span className="max-w-[10rem] truncate">
-              {ownerParticipant.name}
-              {isOwner ? <span className="ml-1 text-slate-400">(you)</span> : null}
-            </span>
+      {/* Top-middle status row. Only renders for visitors (non-owners):
+          owners already know it's their own diagram and that they're
+          editing, so the extra chrome is just noise. Visitors see who
+          owns it ("Owner: <avatar> <name>", when the owner is in the
+          room and so reachable via livePresence) and their own role
+          (Viewing in amber, Editing in green). Pointer events stay off
+          so the badges don't intercept clicks on the canvas. */}
+      {!isOwner ? (
+        <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex -translate-x-1/2 items-center gap-2">
+          {ownerParticipant ? (
+            <div className="flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
+              <span className="text-slate-500 dark:text-slate-400">Owner:</span>
+              <ParticipantAvatar participant={ownerParticipant} size={14} />
+              <span className="max-w-[10rem] truncate">{ownerParticipant.name}</span>
+            </div>
+          ) : null}
+          <div
+            className={
+              'rounded-full px-2.5 py-1 text-[11px] font-medium shadow-sm ' +
+              (readOnly
+                ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
+                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200')
+            }
+          >
+            {readOnly ? 'Viewing' : 'Editing'}
           </div>
-        ) : null}
-        <div
-          className={
-            'rounded-full px-2.5 py-1 text-[11px] font-medium shadow-sm ' +
-            (readOnly
-              ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
-              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200')
-          }
-        >
-          {readOnly ? 'Viewing' : 'Editing'}
         </div>
-      </div>
+      ) : null}
       {welcomeOpen || readOnly ? null : (
         <CommandPalette
           position={palettePosition}
