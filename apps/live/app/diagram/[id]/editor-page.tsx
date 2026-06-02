@@ -47,7 +47,6 @@ import { EditorHeader, type SaveStatus } from '@/components/EditorHeader';
 const ExportTabDialog = dynamic(() =>
   import('@/components/ExportTabDialog').then((m) => m.ExportTabDialog),
 );
-import { parseImportedTab, pickTabFile } from '@/lib/import-tab';
 import { Explorer } from '@/components/Explorer';
 // Lazy-load NotFound: the diagram-404 surface only renders when the
 // `diagramNotFound` state flips true, which happens on (a) a guest
@@ -126,6 +125,7 @@ import { useElementLinks } from '@/hooks/useElementLinks';
 import { useElementSelectionActions } from '@/hooks/useElementSelectionActions';
 import { useElementStyle } from '@/hooks/useElementStyle';
 import { useShareLinks } from '@/hooks/useShareLinks';
+import { useTabActions } from '@/hooks/useTabActions';
 import { useTabCanvas } from '@/hooks/useTabCanvas';
 import { useEditorKeyboardShortcuts } from '@/hooks/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/useEditorViewport';
@@ -148,7 +148,6 @@ import {
   apiDismissSharedWith,
   apiListDiagrams,
   apiListSharedWith,
-  apiLinkTab,
   apiListShareLinks,
   apiLoadDiagram,
   apiLoadSelf,
@@ -1950,69 +1949,43 @@ export default function LivePage() {
 
   // --- Tab actions ---------------------------------------------------------
 
-  const addTab = () => {
-    const tab = createTab(`Tab ${tabs.length + 1}`);
-    commitTabs((ts) => [...ts, tab]);
-    track('Tab', 'Created');
-    setActiveId(tab.id);
-    setSelectedId(null);
-    setEditingId(null);
-    setFormatSourceId(null);
-    setGroupSourceId(null);
-    // New tabs jump straight into the lighter template picker (just the
-    // template grid). The welcome flow is first-run only — the user
-    // already has an identity + theme by this point.
-    setTemplatePickerMode('templates');
-  };
-
-  // Import a tab from a `.livediagram-tab.json` file the user picks.
-  // Tab id + nested element ids are re-minted client-side so the
-  // imported tab can never collide with an existing one. Schema
-  // mismatches surface via setImportError which the header button
-  // renders in-place.
-  const importTabFromFile = async () => {
-    const text = await pickTabFile();
-    if (!text) return;
-    const result = parseImportedTab(text);
-    if (!result.ok) {
-      setImportError(result.error);
-      return;
-    }
-    setImportError(null);
-    // Re-mint ids so the imported tab can't collide. Pinned arrows
-    // need their element references rewritten to the new ids — walk
-    // boxed elements first, build an old→new id map, then rewrite
-    // arrow endpoints.
-    const idMap = new Map<string, string>();
-    const newElements = result.tab.elements.map((el) => {
-      const newId = crypto.randomUUID();
-      idMap.set(el.id, newId);
-      return { ...el, id: newId };
-    });
-    for (const el of newElements) {
-      if (el.type === 'arrow') {
-        if (el.from.kind === 'pinned') {
-          const mapped = idMap.get(el.from.elementId);
-          if (mapped) el.from = { ...el.from, elementId: mapped };
-        }
-        if (el.to.kind === 'pinned') {
-          const mapped = idMap.get(el.to.elementId);
-          if (mapped) el.to = { ...el.to, elementId: mapped };
-        }
-      }
-    }
-    const newTab: Tab = {
-      ...result.tab,
-      id: crypto.randomUUID(),
-      elements: newElements,
-    };
-    commitTabs((ts) => [...ts, newTab]);
-    setActiveId(newTab.id);
-    setSelectedId(null);
-    setEditingId(null);
-    setFormatSourceId(null);
-    setGroupSourceId(null);
-  };
+  // Tab-lifecycle actions (add / import / rename / duplicate / delete /
+  // reorder, active-tab lock, link-into-diagram, clear content). They
+  // touch history, the activity log, selection, telemetry, confirm /
+  // toast, the change-log panel and the diagram list — see
+  // useTabActions. Diagram-level lifecycle + the template flow stay in
+  // the page below.
+  const {
+    addTab,
+    importTabFromFile,
+    toggleActiveTabLock,
+    renameTab,
+    linkActiveTabTo,
+    duplicateTab,
+    deleteTab,
+    reorderTabs,
+    clearTabContent,
+  } = useTabActions({
+    tabs,
+    activeId,
+    diagramList,
+    ownerId: selfParticipant.id,
+    createTab,
+    commit,
+    commitTabs,
+    emitTabMeta,
+    setActiveId,
+    setSelectedId,
+    setEditingId,
+    setFormatSourceId,
+    setGroupSourceId,
+    setTemplatePickerMode,
+    setImportError,
+    setChangeLog,
+    refreshDiagramList,
+    confirm,
+    toast,
+  });
 
   // Delete a diagram by id. When the target is the currently-open one,
   // redirect to /live/new so the user lands on a fresh welcome flow
@@ -2092,144 +2065,6 @@ export default function LivePage() {
   // Flip the active tab's locked flag. Emits a tab-meta entry so the
   // toggle shows up in the Activity panel alongside theme / background
   // changes.
-  const toggleActiveTabLock = () => {
-    const target = tabs.find((t) => t.id === activeId);
-    if (!target) return;
-    const next = !target.locked;
-    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, locked: next } : t)));
-    emitTabMeta(activeId, next ? 'Locked tab' : 'Unlocked tab');
-    track('Tab', next ? 'Locked' : 'Unlocked');
-    if (next) {
-      // Drop any in-progress UI state that would be useless on a
-      // newly-locked tab.
-      setSelectedId(null);
-      setEditingId(null);
-      setFormatSourceId(null);
-      setGroupSourceId(null);
-    }
-  };
-
-  const renameTab = (id: string, name: string) => {
-    const previous = tabs.find((t) => t.id === id)?.name ?? '';
-    const trimmed = name.trim();
-    if (trimmed === previous.trim()) return;
-    commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name } : t)));
-    emitTabMeta(
-      id,
-      previous ? `Renamed tab '${previous}' to '${trimmed}'` : `Renamed tab to '${trimmed}'`,
-    );
-    track('Tab', 'Renamed');
-  };
-
-  // Link the active tab into another of the user's diagrams (spec/17).
-  // Goes through POST /api/diagrams/<target>/tabs/<tabId>/link so the
-  // server inserts one `diagram_tabs` row pointing at the existing
-  // tab body. The previous implementation cloned the tab into a fresh
-  // row with a new id; that duplicated the content (edits on either
-  // side stayed siloed) and the menu label promised the linking
-  // behaviour the user actually wanted. After this call, edits to
-  // the tab from either diagram write to the same `tabs.data` row.
-  const linkActiveTabTo = async (targetDiagramId: string) => {
-    const source = tabs.find((t) => t.id === activeId);
-    if (!source) return;
-    const targetName = diagramList.find((d) => d.id === targetDiagramId)?.name ?? 'that diagram';
-    try {
-      await apiLinkTab(selfParticipant.id, targetDiagramId, source.id);
-      toast.success(`Tab added to "${targetName}"`);
-      track('Tab', 'Linked');
-    } catch {
-      // Previously swallowed silently: the user clicked a destination
-      // and nothing visible happened. The toast surfaces the failure
-      // without forcing a modal; refresh still runs so the source
-      // diagram's local state remains consistent with what landed.
-      toast.error(`Could not add tab to "${targetName}". Try again.`);
-    }
-    refreshDiagramList(selfParticipant.id);
-  };
-
-  const duplicateTab = (id: string) => {
-    const src = tabs.find((t) => t.id === id);
-    if (!src) return;
-    const copy: Tab = {
-      ...src,
-      id: crypto.randomUUID(),
-      name: `${src.name} copy`,
-      elements: src.elements.map((el) => ({ ...el })),
-    };
-    const srcIndex = tabs.findIndex((t) => t.id === id);
-    commitTabs((ts) => {
-      const next = [...ts];
-      next.splice(srcIndex + 1, 0, copy);
-      return next;
-    });
-    setActiveId(copy.id);
-    setSelectedId(null);
-    setEditingId(null);
-    track('Tab', 'Duplicated');
-  };
-
-  const deleteTab = async (id: string) => {
-    if (tabs.length <= 1) return;
-    const idx = tabs.findIndex((t) => t.id === id);
-    if (idx < 0) return;
-    const target = tabs[idx]!;
-    const ok = await confirm({
-      title: `Delete tab "${target.name || 'Untitled'}"?`,
-      message:
-        "The tab's elements and its activity log entries are removed. Links on other tabs pointing here are stripped. Undo restores everything.",
-      confirmLabel: 'Delete tab',
-    });
-    if (!ok) return;
-    track('Tab', 'Deleted');
-    // Drop the tab AND strip any links on remaining elements that point to
-    // it, so we don't leave dangling cross-tab references. Bundled into one
-    // commit so undo restores both.
-    commitTabs((ts) =>
-      ts
-        .filter((t) => t.id !== id)
-        .map((t) => ({
-          ...t,
-          elements: t.elements.map((el) => {
-            if (!el.link) return el;
-            // Tab-level deletion cleans up links pointing at the
-            // gone tab. Diagram-kind links survive (they target
-            // another diagram entirely, unrelated to this tab).
-            if (el.link.kind === 'diagram' || el.link.tabId !== id) return el;
-            const { link: _drop, ...rest } = el;
-            return rest as typeof el;
-          }),
-        })),
-    );
-    // Local cascade: drop audit-log entries for the gone tab from the
-    // visible panel immediately. The server-side cascade lives inside
-    // deleteTabRow (apps/api/src/db.ts): it only drops the change_log
-    // rows when the underlying `tabs` row is itself dropped, so a
-    // shared tab unlinked from this diagram keeps its history in any
-    // diagram that still surfaces it (per spec/17). The previous
-    // client-side apiDeleteChangeLogForTab call wiped the log
-    // globally, which silently broke the audit panel for every other
-    // diagram sharing the tab.
-    setChangeLog((prev) => prev.filter((entry) => entry.tabId !== id));
-    if (activeId === id) {
-      const fallback = tabs[idx + 1] ?? tabs[idx - 1];
-      if (fallback) setActiveId(fallback.id);
-    }
-    setSelectedId(null);
-    setEditingId(null);
-  };
-
-  const reorderTabs = (sourceId: string, targetId: string) => {
-    commitTabs((ts) => {
-      const srcIdx = ts.findIndex((t) => t.id === sourceId);
-      const tgtIdx = ts.findIndex((t) => t.id === targetId);
-      if (srcIdx < 0 || tgtIdx < 0 || srcIdx === tgtIdx) return ts;
-      const next = [...ts];
-      const [moved] = next.splice(srcIdx, 1);
-      next.splice(tgtIdx, 0, moved!);
-      return next;
-    });
-  };
-
   // "New Diagram" from the Explorer. Welcome / create-new lives at
   // /live/new (spec/14), so hand off there — that route owns the
   // identity + template + theme picker and the actual diagram POST.
@@ -2395,17 +2230,6 @@ export default function LivePage() {
     setEditingId(null);
   };
 
-  const clearTabContent = () => {
-    commit(() => []);
-    setSelectedId(null);
-    setEditingId(null);
-  };
-
-  // "Auto align" cleanup pass. Snaps every element's position and
-  // dimensions to the canvas grid; the pure helper lives in
-  // lib/auto-align.ts so it's reasoned about + tested in isolation.
-  // Goes through `commit` so the operation is undoable and the
-  // activity log captures it like any other edit.
   // Open one of the Tab section accordions inside the Editor panel,
   // popping the panel back if it was minimised. Both context-menu
   // actions ("Change Theme", "Change Canvas") route here rather than
