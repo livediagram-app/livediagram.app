@@ -184,7 +184,14 @@ export function CommentThreadPopover({
         )}
       </ul>
 
-      {!resolved && !readOnly ? (
+      {/* Add-comment textarea is available even in view-role: viewers
+          can chime in (POSTs go through a dedicated comments endpoint
+          that allows view-role), but can't toggle resolve / unresolve
+          or delete others' comments. Resolved threads still hide the
+          textarea — adding a comment would functionally reopen the
+          thread and that's a deliberate intent best surfaced as the
+          reopen button up top, not a sneaky side effect of typing. */}
+      {!resolved ? (
         <footer className="border-t border-slate-100 p-2 dark:border-slate-800">
           <textarea
             value={draft}

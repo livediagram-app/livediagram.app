@@ -421,6 +421,46 @@ export async function apiSaveTab(
   await expectOkVoid(res, 'save tab');
 }
 
+// Append a comment to one element's thread on a specific tab.
+// View-role visitors can call this (the only write path open to
+// them): owner / edit-role visitors also could but already get
+// the same write via the tab autosave, so the editor only invokes
+// this for view-role sessions so a viewer's contribution actually
+// persists. Returns the freshly-created comment so the caller can
+// merge it into local state without a tab refetch.
+export async function apiAddComment(
+  ownerId: string,
+  diagramId: string,
+  tabId: string,
+  elementId: string,
+  text: string,
+  shareCode: string | null = null,
+): Promise<{
+  id: string;
+  text: string;
+  createdAt: number;
+  authorName: string;
+  authorColor: string;
+}> {
+  const res = await fetch(
+    `${API_BASE}/diagrams/${encodeURIComponent(diagramId)}/tabs/${encodeURIComponent(tabId)}/comments`,
+    {
+      method: 'POST',
+      headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
+      body: JSON.stringify({ elementId, text }),
+    },
+  );
+  return expectOk<{
+    comment: {
+      id: string;
+      text: string;
+      createdAt: number;
+      authorName: string;
+      authorColor: string;
+    };
+  }>(res, 'add comment').then((b) => b.comment);
+}
+
 // Link an existing tab into another of the caller's diagrams
 // (spec/17). After this returns, the tab body is shared: edits
 // from either diagram write to the same `tabs.data` row. Returns

@@ -801,6 +801,73 @@ export default {
           }
         }
 
+        // /api/diagrams/<id>/tabs/<tabId>/comments — append a comment
+        // to an element's thread. Read-role visitors are allowed here
+        // (the only write path open to view-role) so view-only
+        // collaborators can chime in on a thread without being
+        // promoted to edit. Owner / edit-role roles already get this
+        // via the normal tab autosave; this endpoint short-circuits
+        // that path so a view-role visitor's autosave (blocked) isn't
+        // their only way to persist.
+        if (
+          segments.length === 6 &&
+          segments[3] === 'tabs' &&
+          segments[5] === 'comments' &&
+          request.method === 'POST'
+        ) {
+          const id = segments[2]!;
+          const tabId = segments[4]!;
+          const owner = resolveOwner();
+          const shareCode = shareCodeOf(request);
+          if (!owner) return missingAuth();
+          const existing = await getDiagram(env, id);
+          if (!existing) return notFound();
+          const allowed = await canReadDiagram(env, id, owner, shareCode, existing.ownerId);
+          if (!allowed) return forbidden();
+          let body: { elementId?: unknown; text?: unknown };
+          try {
+            body = (await request.json()) as { elementId?: unknown; text?: unknown };
+          } catch {
+            return badRequest('invalid json');
+          }
+          const elementId = typeof body.elementId === 'string' ? body.elementId : null;
+          const text = typeof body.text === 'string' ? body.text.trim() : '';
+          if (!elementId) return badRequest('missing elementId');
+          if (!text) return badRequest('missing text');
+          if (text.length > 2000) return badRequest('text too long');
+          const tab = await getTab(env, id, tabId);
+          if (!tab) return notFound();
+          const target = tab.elements.find((el) => el.id === elementId);
+          if (!target || target.type === 'arrow') return notFound();
+          const writer = await getParticipant(env, owner);
+          const authorName = writer?.name ?? 'Anonymous';
+          const authorColor = writer?.color ?? '#94a3b8';
+          const comment = {
+            id: crypto.randomUUID(),
+            text,
+            createdAt: Date.now(),
+            authorName,
+            authorColor,
+          };
+          const updatedElements = tab.elements.map((el) => {
+            if (el.id !== elementId || el.type === 'arrow') return el;
+            const thread = (
+              el as { commentThread?: { comments: (typeof comment)[]; resolved: boolean } }
+            ).commentThread ?? { comments: [], resolved: false };
+            return {
+              ...el,
+              commentThread: {
+                comments: [...thread.comments, comment],
+                // Adding a comment unresolves a resolved thread; same
+                // rule as the editor's local addComment.
+                resolved: false,
+              },
+            };
+          });
+          await upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex);
+          return json({ comment });
+        }
+
         // /api/diagrams/<id>/tabs/<tabId>/link — owner only.
         //   POST — add an existing tab to this diagram (spec/17).
         // Auth: the caller must own this diagram AND own at least

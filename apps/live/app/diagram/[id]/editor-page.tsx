@@ -155,6 +155,7 @@ import {
   apiLoadTab,
   apiSaveDiagramMeta,
   apiSaveSelf,
+  apiAddComment,
   apiSaveTab,
   apiSetDiagramFolder,
   connectRoom,
@@ -3118,6 +3119,23 @@ export default function LivePage() {
                 onAddComment={(text) => {
                   addComment(target.id, text);
                   track('Comment', 'Added');
+                  // View-role visitors don't autosave the tab, so
+                  // their addComment via the local commit alone
+                  // would vanish on refresh. Persist via the
+                  // dedicated POST /tabs/<id>/comments endpoint
+                  // (the only write path open to view-role) so the
+                  // viewer's contribution lives in D1 like an
+                  // owner / editor's would.
+                  if (isReadOnly && diagramId) {
+                    void apiAddComment(
+                      selfParticipant.id,
+                      diagramId,
+                      activeTab.id,
+                      target.id,
+                      text,
+                      sessionShareCode,
+                    ).catch(() => {});
+                  }
                 }}
                 onDeleteComment={(cid) => {
                   deleteComment(target.id, cid);
