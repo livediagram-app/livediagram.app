@@ -94,6 +94,21 @@ function shareCodeOf(request: Request): string | null {
   return request.headers.get('X-Share-Code');
 }
 
+// Dev escape hatch for the telemetry same-origin filter (spec/22):
+// allow a cross-port localhost pair (live editor :3002 posting to api
+// :8787) so local dev actually lands events in D1. Production never
+// sees a localhost origin, so this widening is dev-only in practice.
+function isLocalhostPair(origin: string, target: string): boolean {
+  try {
+    const a = new URL(origin).hostname;
+    const b = new URL(target).hostname;
+    const local = (h: string) => h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
+    return local(a) && local(b);
+  } catch {
+    return false;
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === 'OPTIONS') {
@@ -161,7 +176,7 @@ export default {
         //       front of all this (see spec/22). Always 204 — telemetry
         //       must never surface an error.
         const origin = request.headers.get('Origin');
-        if (origin && origin !== url.origin) return noop;
+        if (origin && origin !== url.origin && !isLocalhostPair(origin, url.origin)) return noop;
         if (env.EVENTS_RATE_LIMITER) {
           const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous';
           const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: ip });
