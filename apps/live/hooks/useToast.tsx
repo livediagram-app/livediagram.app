@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal } from '@/components/Portal';
 
 // Lightweight toast surface. Used to make previously-silent async
 // failures visible (linkTab, copy diagram, upload errors that
@@ -100,20 +100,21 @@ function ToastStack({
   toasts: ToastEntry[];
   onDismiss: (id: number) => void;
 }) {
-  if (typeof document === 'undefined' || toasts.length === 0) return null;
-  return createPortal(
-    <div
-      // Sits above ConfirmDialog (z-50) and the api worker dialogs
-      // so a failure toast surfaces even when one of those is open.
-      className="pointer-events-none fixed bottom-4 right-4 z-[60] flex flex-col items-end gap-2"
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      {toasts.map((t) => (
-        <ToastBubble key={t.id} toast={t} onDismiss={() => onDismiss(t.id)} />
-      ))}
-    </div>,
-    document.body,
+  if (toasts.length === 0) return null;
+  return (
+    <Portal>
+      <div
+        // Sits above ConfirmDialog (z-50) and the api worker dialogs
+        // so a failure toast surfaces even when one of those is open.
+        className="pointer-events-none fixed bottom-4 right-4 z-[60] flex flex-col items-end gap-2"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {toasts.map((t) => (
+          <ToastBubble key={t.id} toast={t} onDismiss={() => onDismiss(t.id)} />
+        ))}
+      </div>
+    </Portal>
   );
 }
 

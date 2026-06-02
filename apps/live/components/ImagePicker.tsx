@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal } from './Portal';
 import { apiDeleteImage, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { ImageUploadError, uploadImageFile } from '@/lib/upload-image';
 import { useConfirm } from '@/hooks/useConfirm';
@@ -139,80 +139,79 @@ export function ImagePicker({
     }
   };
 
-  if (typeof document === 'undefined') return null;
-
-  return createPortal(
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
-    >
+  return (
+    <Portal>
       <div
-        ref={dialogRef}
-        role="dialog"
-        aria-label="Image picker"
-        className="flex w-[640px] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+        onPointerDown={(e) => e.stopPropagation()}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
       >
-        <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Image</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            aria-label="Close"
-          >
-            <CloseIcon />
-          </button>
-        </header>
-        <nav className="flex gap-1 border-b border-slate-200 px-4 pt-3 dark:border-slate-800">
-          <TabButton active={tab === 'upload'} onClick={() => setTab('upload')}>
-            Upload
-          </TabButton>
-          <TabButton active={tab === 'gallery'} onClick={() => setTab('gallery')}>
-            Gallery {gallery ? `(${gallery.length})` : ''}
-          </TabButton>
-        </nav>
-        <div className="p-4">
-          {tab === 'upload' ? (
-            <ImageDropZone
-              onSelectFile={handleFile}
-              uploading={uploading}
-              error={uploadError}
-              prompt="Drop, paste, or click to choose an image"
-              heightClass="h-48"
-              gapClass="gap-2"
-            />
-          ) : (
-            <GalleryGrid
-              ownerId={ownerId}
-              diagramId={diagramId}
-              gallery={gallery}
-              error={galleryError}
-              onSelect={onSelect}
-              onDelete={handleDelete}
-            />
-          )}
-        </div>
-        {currentImageId && onRemove ? (
-          <footer className="flex items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-slate-800">
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Detaches the image from this element. The gallery copy is kept.
-            </p>
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-label="Image picker"
+          className="flex w-[640px] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+        >
+          <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Image</h2>
             <button
               type="button"
-              onClick={onRemove}
-              className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-50 dark:border-slate-700 dark:text-rose-300 dark:hover:bg-rose-500/15"
+              onClick={onClose}
+              className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              aria-label="Close"
             >
-              Remove from element
+              <CloseIcon />
             </button>
-          </footer>
-        ) : null}
+          </header>
+          <nav className="flex gap-1 border-b border-slate-200 px-4 pt-3 dark:border-slate-800">
+            <TabButton active={tab === 'upload'} onClick={() => setTab('upload')}>
+              Upload
+            </TabButton>
+            <TabButton active={tab === 'gallery'} onClick={() => setTab('gallery')}>
+              Gallery {gallery ? `(${gallery.length})` : ''}
+            </TabButton>
+          </nav>
+          <div className="p-4">
+            {tab === 'upload' ? (
+              <ImageDropZone
+                onSelectFile={handleFile}
+                uploading={uploading}
+                error={uploadError}
+                prompt="Drop, paste, or click to choose an image"
+                heightClass="h-48"
+                gapClass="gap-2"
+              />
+            ) : (
+              <GalleryGrid
+                ownerId={ownerId}
+                diagramId={diagramId}
+                gallery={gallery}
+                error={galleryError}
+                onSelect={onSelect}
+                onDelete={handleDelete}
+              />
+            )}
+          </div>
+          {currentImageId && onRemove ? (
+            <footer className="flex items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Detaches the image from this element. The gallery copy is kept.
+              </p>
+              <button
+                type="button"
+                onClick={onRemove}
+                className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-50 dark:border-slate-700 dark:text-rose-300 dark:hover:bg-rose-500/15"
+              >
+                Remove from element
+              </button>
+            </footer>
+          ) : null}
+        </div>
       </div>
-    </div>,
-    document.body,
+    </Portal>
   );
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal } from './Portal';
 import type { Tab } from '@livediagram/diagram';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { useUiMode } from '@/hooks/useUiMode';
@@ -606,80 +606,81 @@ function PortalMenu({
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose, anchor]);
 
-  if (typeof document === 'undefined' || !pos) return null;
+  if (!pos) return null;
 
-  return createPortal(
-    <div
-      ref={ref}
-      role="menu"
-      className={`fixed z-50 flex ${view === 'copyTo' ? 'w-56' : 'w-44'} flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
-      style={{
-        // pos pins the menu's right edge to the ellipsis button's right edge,
-        // then translate shifts it left and up. adjust nudges back on-screen
-        // when the menu would otherwise overflow a viewport edge.
-        left: pos.left + adjust.x,
-        top: pos.top + adjust.y,
-        transform: 'translate(-100%, calc(-100% - 4px))',
-      }}
-    >
-      {view === 'actions' ? (
-        <>
-          <MenuItem
-            icon={<TabLockIcon />}
-            label={locked ? 'Unlock tab' : 'Lock tab'}
-            onClick={onToggleLock}
-          />
-          <MenuItem icon={<PencilIcon />} label="Rename" onClick={onRename} />
-          <MenuItem icon={<CopyIcon />} label="Duplicate" onClick={onDuplicate} />
-          <MenuItem
-            icon={<MoveIcon />}
-            label="Add to another diagram…"
-            onClick={() => setView('copyTo')}
-            disabled={otherDiagrams.length === 0}
-          />
-          <MenuItem
-            icon={<ClearIcon />}
-            label="Clear content"
-            onClick={onClearContent}
-            disabled={!canClearContent}
-          />
-          <MenuItem icon={<FileImportIcon />} label="Import…" onClick={onImport} />
-          <MenuItem icon={<FileExportIcon />} label="Export…" onClick={onExport} />
-          <MenuItem
-            icon={<TrashIcon />}
-            label="Delete"
-            onClick={onDelete}
-            danger
-            disabled={!canDelete}
-          />
-        </>
-      ) : (
-        <>
-          <button
-            type="button"
-            onClick={() => setView('actions')}
-            className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            <BackIcon />
-            Back
-          </button>
-          <p className="px-2 pb-1 text-[10px] text-slate-400 dark:text-slate-500">
-            Pick a destination diagram
-          </p>
-          <div className="max-h-56 overflow-y-auto">
-            {otherDiagrams.map((d) => (
-              <MenuItem
-                key={d.id}
-                icon={<DiagramIcon />}
-                label={d.name || 'Untitled diagram'}
-                onClick={() => onCopyTo(d.id)}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </div>,
-    document.body,
+  return (
+    <Portal>
+      <div
+        ref={ref}
+        role="menu"
+        className={`fixed z-50 flex ${view === 'copyTo' ? 'w-56' : 'w-44'} flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
+        style={{
+          // pos pins the menu's right edge to the ellipsis button's right edge,
+          // then translate shifts it left and up. adjust nudges back on-screen
+          // when the menu would otherwise overflow a viewport edge.
+          left: pos.left + adjust.x,
+          top: pos.top + adjust.y,
+          transform: 'translate(-100%, calc(-100% - 4px))',
+        }}
+      >
+        {view === 'actions' ? (
+          <>
+            <MenuItem
+              icon={<TabLockIcon />}
+              label={locked ? 'Unlock tab' : 'Lock tab'}
+              onClick={onToggleLock}
+            />
+            <MenuItem icon={<PencilIcon />} label="Rename" onClick={onRename} />
+            <MenuItem icon={<CopyIcon />} label="Duplicate" onClick={onDuplicate} />
+            <MenuItem
+              icon={<MoveIcon />}
+              label="Add to another diagram…"
+              onClick={() => setView('copyTo')}
+              disabled={otherDiagrams.length === 0}
+            />
+            <MenuItem
+              icon={<ClearIcon />}
+              label="Clear content"
+              onClick={onClearContent}
+              disabled={!canClearContent}
+            />
+            <MenuItem icon={<FileImportIcon />} label="Import…" onClick={onImport} />
+            <MenuItem icon={<FileExportIcon />} label="Export…" onClick={onExport} />
+            <MenuItem
+              icon={<TrashIcon />}
+              label="Delete"
+              onClick={onDelete}
+              danger
+              disabled={!canDelete}
+            />
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => setView('actions')}
+              className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            >
+              <BackIcon />
+              Back
+            </button>
+            <p className="px-2 pb-1 text-[10px] text-slate-400 dark:text-slate-500">
+              Pick a destination diagram
+            </p>
+            <div className="max-h-56 overflow-y-auto">
+              {otherDiagrams.map((d) => (
+                <MenuItem
+                  key={d.id}
+                  icon={<DiagramIcon />}
+                  label={d.name || 'Untitled diagram'}
+                  onClick={() => onCopyTo(d.id)}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </Portal>
   );
 }
 

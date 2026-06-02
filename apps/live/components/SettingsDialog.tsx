@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal } from './Portal';
 import type { UserPreferences } from '@/lib/user-preferences';
 
 // Per-user preference dialog (spec/20). Launched from the settings
@@ -26,61 +26,60 @@ export function SettingsDialog({ settings, onChange, onClose }: SettingsDialogPr
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  if (typeof document === 'undefined') return null;
-
   const autoRebind = settings.autoRebindArrows !== false;
   const telemetryOn = settings.telemetryEnabled !== false;
 
-  return createPortal(
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
-    >
+  return (
+    <Portal>
       <div
-        role="dialog"
-        aria-label="Settings"
-        className="flex w-[480px] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+        onPointerDown={(e) => e.stopPropagation()}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
       >
-        <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Settings</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-          >
-            <CloseIcon />
-          </button>
-        </header>
-        <div className="flex flex-col gap-3 p-4">
-          <ToggleRow
-            label="Auto-attach arrows when elements move"
-            description="Arrows connected to a shape re-pin to whichever face reads most naturally as you drag. Turn off to keep arrow anchors fixed at whatever you chose originally."
-            checked={autoRebind}
-            onChange={(v) => onChange({ ...settings, autoRebindArrows: v })}
-          />
-          <ToggleRow
-            label="Send anonymous usage events"
-            description="Sends the small, first-party events listed on /telemetry (no user content, no third-party trackers) so we can see which features actually help. Turn off to keep everything you do strictly on your device."
-            checked={telemetryOn}
-            onChange={(v) => onChange({ ...settings, telemetryEnabled: v })}
-          />
+        <div
+          role="dialog"
+          aria-label="Settings"
+          className="flex w-[480px] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+        >
+          <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Settings</h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <CloseIcon />
+            </button>
+          </header>
+          <div className="flex flex-col gap-3 p-4">
+            <ToggleRow
+              label="Auto-attach arrows when elements move"
+              description="Arrows connected to a shape re-pin to whichever face reads most naturally as you drag. Turn off to keep arrow anchors fixed at whatever you chose originally."
+              checked={autoRebind}
+              onChange={(v) => onChange({ ...settings, autoRebindArrows: v })}
+            />
+            <ToggleRow
+              label="Send anonymous usage events"
+              description="Sends the small, first-party events listed on /telemetry (no user content, no third-party trackers) so we can see which features actually help. Turn off to keep everything you do strictly on your device."
+              checked={telemetryOn}
+              onChange={(v) => onChange({ ...settings, telemetryEnabled: v })}
+            />
+          </div>
+          <footer className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              Settings are stored on this device and apply to every diagram you open.
+            </p>
+          </footer>
         </div>
-        <footer className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
-          <p className="text-[10px] text-slate-500 dark:text-slate-400">
-            Settings are stored on this device and apply to every diagram you open.
-          </p>
-        </footer>
       </div>
-    </div>,
-    document.body,
+    </Portal>
   );
 }
 

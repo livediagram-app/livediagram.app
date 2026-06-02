@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal } from './Portal';
 
 // Per-element note popover. Distinct from CommentThreadPopover:
 // notes are a SINGLE plain-text paragraph (no author, no thread,
@@ -113,48 +113,49 @@ export function NotePopover({ elementId, initial, onCommit, onClose }: NotePopov
     }
   };
 
-  if (typeof document === 'undefined' || !pos) return null;
+  if (!pos) return null;
 
-  return createPortal(
-    <div
-      ref={ref}
-      onPointerDown={(e) => e.stopPropagation()}
-      className="fixed z-50 flex w-72 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 shadow-xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
-      style={{
-        left: pos.left,
-        top: pos.top,
-        transform: 'translate(-50%, 0)',
-      }}
-    >
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        Note
-      </p>
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKey}
-        rows={5}
-        placeholder="Add a note for this element..."
-        className="resize-y rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-      />
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-[10px] text-slate-400 dark:text-slate-500">
-          Cmd-Enter saves, Esc cancels.
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            onCommit('');
-            onClose();
-          }}
-          disabled={!initial && !value}
-          className="text-[10px] font-medium text-rose-700 transition hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline dark:text-rose-300 dark:disabled:text-slate-600"
-        >
-          Delete note
-        </button>
+  return (
+    <Portal>
+      <div
+        ref={ref}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="fixed z-50 flex w-72 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 shadow-xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
+        style={{
+          left: pos.left,
+          top: pos.top,
+          transform: 'translate(-50%, 0)',
+        }}
+      >
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Note
+        </p>
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={handleKey}
+          rows={5}
+          placeholder="Add a note for this element..."
+          className="resize-y rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+        />
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">
+            Cmd-Enter saves, Esc cancels.
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              onCommit('');
+              onClose();
+            }}
+            disabled={!initial && !value}
+            className="text-[10px] font-medium text-rose-700 transition hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline dark:text-rose-300 dark:disabled:text-slate-600"
+          >
+            Delete note
+          </button>
+        </div>
       </div>
-    </div>,
-    document.body,
+    </Portal>
   );
 }

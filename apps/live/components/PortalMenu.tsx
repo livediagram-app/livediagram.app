@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal } from './Portal';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 
 type Placement = 'above' | 'below';
@@ -70,22 +70,23 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose, anchor]);
 
-  if (typeof document === 'undefined' || !pos) return null;
+  if (!pos) return null;
 
-  return createPortal(
-    <div
-      ref={ref}
-      role="menu"
-      className="fixed z-50 flex w-36 animate-fade-in flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-      style={{
-        left: pos.left + adjust.x,
-        top: pos.top + adjust.y,
-        transform: PLACEMENT_TRANSFORM[placement],
-      }}
-    >
-      {children}
-    </div>,
-    document.body,
+  return (
+    <Portal>
+      <div
+        ref={ref}
+        role="menu"
+        className="fixed z-50 flex w-36 animate-fade-in flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        style={{
+          left: pos.left + adjust.x,
+          top: pos.top + adjust.y,
+          transform: PLACEMENT_TRANSFORM[placement],
+        }}
+      >
+        {children}
+      </div>
+    </Portal>
   );
 }
 

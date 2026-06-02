@@ -19,7 +19,7 @@
 // rows behind that the user could no longer reach.
 
 import { useReverification, useUser } from '@clerk/react';
-import { createPortal } from 'react-dom';
+import { Portal } from './Portal';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
 import { messageOf } from './auth-shared';
@@ -116,77 +116,78 @@ export function DeleteAccountDialog({
     await onDeleted();
   };
 
-  return createPortal(
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
-    >
+  return (
+    <Portal>
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="delete-account-title"
-        className="pointer-events-auto flex w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10"
+        onPointerDown={(e) => e.stopPropagation()}
+        className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
       >
-        <div className="border-b border-slate-100 px-6 pt-6 pb-4">
-          <h2 id="delete-account-title" className="text-lg font-semibold text-slate-900">
-            Delete account
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            This permanently removes your diagrams, folders, and participant record from the
-            livediagram server, then deletes your Clerk account. This cannot be undone.
-          </p>
-        </div>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-account-title"
+          className="pointer-events-auto flex w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10"
+        >
+          <div className="border-b border-slate-100 px-6 pt-6 pb-4">
+            <h2 id="delete-account-title" className="text-lg font-semibold text-slate-900">
+              Delete account
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              This permanently removes your diagrams, folders, and participant record from the
+              livediagram server, then deletes your Clerk account. This cannot be undone.
+            </p>
+          </div>
 
-        <div className="px-6 py-5">
-          <label
-            htmlFor="delete-confirm-email"
-            className="block text-sm font-medium text-slate-700"
-          >
-            Type{' '}
-            <strong className="font-semibold text-slate-900">
-              {expectedEmail || 'your email address'}
-            </strong>{' '}
-            to confirm
-          </label>
-          <input
-            ref={inputRef}
-            id="delete-confirm-email"
-            type="email"
-            autoComplete="off"
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            disabled={phase === 'submitting'}
-            className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100 disabled:opacity-60"
-            placeholder="you@example.com"
-          />
+          <div className="px-6 py-5">
+            <label
+              htmlFor="delete-confirm-email"
+              className="block text-sm font-medium text-slate-700"
+            >
+              Type{' '}
+              <strong className="font-semibold text-slate-900">
+                {expectedEmail || 'your email address'}
+              </strong>{' '}
+              to confirm
+            </label>
+            <input
+              ref={inputRef}
+              id="delete-confirm-email"
+              type="email"
+              autoComplete="off"
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              disabled={phase === 'submitting'}
+              className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100 disabled:opacity-60"
+              placeholder="you@example.com"
+            />
 
-          {phase === 'error' && errorMsg ? (
-            <div className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-              {errorMsg}
-            </div>
-          ) : null}
-        </div>
+            {phase === 'error' && errorMsg ? (
+              <div className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                {errorMsg}
+              </div>
+            ) : null}
+          </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={phase === 'submitting'}
-            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={!emailsMatch || phase === 'submitting'}
-            className="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-300"
-          >
-            {phase === 'submitting' ? 'Deleting…' : 'Delete account'}
-          </button>
+          <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={phase === 'submitting'}
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={!emailsMatch || phase === 'submitting'}
+              className="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-300"
+            >
+              {phase === 'submitting' ? 'Deleting…' : 'Delete account'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>,
-    document.body,
+    </Portal>
   );
 }

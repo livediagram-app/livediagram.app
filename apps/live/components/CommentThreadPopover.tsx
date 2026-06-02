@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal } from './Portal';
 import type { Comment, CommentThread } from '@livediagram/diagram';
 import { initialsOf } from '@/lib/identity';
 
@@ -99,7 +99,7 @@ export function CommentThreadPopover({
     };
   }, [onClose]);
 
-  if (typeof document === 'undefined' || !pos) return null;
+  if (!pos) return null;
 
   const resolved = thread?.resolved ?? false;
   const comments = thread?.comments ?? [];
@@ -111,117 +111,118 @@ export function CommentThreadPopover({
     setDraft('');
   };
 
-  return createPortal(
-    <div
-      ref={ref}
-      role="dialog"
-      onPointerDown={(e) => e.stopPropagation()}
-      className="fixed z-50 flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-      style={{ left: pos.left, top: pos.top, width: WIDTH }}
-    >
-      <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-        <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100">
-          Comments
-          {comments.length > 0 ? (
-            <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">
-              ({comments.length})
-            </span>
-          ) : null}
-        </h3>
-        <div className="flex items-center gap-1">
-          {comments.length > 0 ? (
-            readOnly ? (
-              // View-role can see WHETHER the thread is resolved
-              // but can't flip the state. Unresolved threads show
-              // nothing here (no toggleable affordance to suggest
-              // they could act on it).
-              resolved ? (
-                <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
-                  Resolved
-                </span>
-              ) : null
-            ) : (
-              <button
-                type="button"
-                onClick={resolved ? onUnresolve : onResolve}
-                className={
-                  resolved
-                    ? 'rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 transition hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25'
-                    : 'rounded px-2 py-0.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                }
-                aria-pressed={resolved}
-              >
-                {resolved ? 'Resolved' : 'Resolve'}
-              </button>
-            )
-          ) : null}
-          <button
-            type="button"
-            aria-label="Close comments"
-            onClick={onClose}
-            className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-      </header>
+  return (
+    <Portal>
+      <div
+        ref={ref}
+        role="dialog"
+        onPointerDown={(e) => e.stopPropagation()}
+        className="fixed z-50 flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        style={{ left: pos.left, top: pos.top, width: WIDTH }}
+      >
+        <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+          <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100">
+            Comments
+            {comments.length > 0 ? (
+              <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">
+                ({comments.length})
+              </span>
+            ) : null}
+          </h3>
+          <div className="flex items-center gap-1">
+            {comments.length > 0 ? (
+              readOnly ? (
+                // View-role can see WHETHER the thread is resolved
+                // but can't flip the state. Unresolved threads show
+                // nothing here (no toggleable affordance to suggest
+                // they could act on it).
+                resolved ? (
+                  <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
+                    Resolved
+                  </span>
+                ) : null
+              ) : (
+                <button
+                  type="button"
+                  onClick={resolved ? onUnresolve : onResolve}
+                  className={
+                    resolved
+                      ? 'rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 transition hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25'
+                      : 'rounded px-2 py-0.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                  }
+                  aria-pressed={resolved}
+                >
+                  {resolved ? 'Resolved' : 'Resolve'}
+                </button>
+              )
+            ) : null}
+            <button
+              type="button"
+              aria-label="Close comments"
+              onClick={onClose}
+              className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+        </header>
 
-      <ul className="max-h-72 overflow-y-auto px-3 py-1">
-        {comments.length === 0 ? (
-          <li className="py-4 text-center text-xs text-slate-500 dark:text-slate-400">
-            No comments yet.
-          </li>
-        ) : (
-          comments.map((c) => (
-            <CommentRow
-              key={c.id}
-              comment={c}
-              resolved={resolved}
-              // View-role hides the per-row delete button entirely.
-              onDelete={readOnly ? undefined : () => onDeleteComment(c.id)}
-            />
-          ))
-        )}
-      </ul>
+        <ul className="max-h-72 overflow-y-auto px-3 py-1">
+          {comments.length === 0 ? (
+            <li className="py-4 text-center text-xs text-slate-500 dark:text-slate-400">
+              No comments yet.
+            </li>
+          ) : (
+            comments.map((c) => (
+              <CommentRow
+                key={c.id}
+                comment={c}
+                resolved={resolved}
+                // View-role hides the per-row delete button entirely.
+                onDelete={readOnly ? undefined : () => onDeleteComment(c.id)}
+              />
+            ))
+          )}
+        </ul>
 
-      {/* Add-comment textarea is available even in view-role: viewers
+        {/* Add-comment textarea is available even in view-role: viewers
           can chime in (POSTs go through a dedicated comments endpoint
           that allows view-role), but can't toggle resolve / unresolve
           or delete others' comments. Resolved threads still hide the
           textarea — adding a comment would functionally reopen the
           thread and that's a deliberate intent best surfaced as the
           reopen button up top, not a sneaky side effect of typing. */}
-      {!resolved ? (
-        <footer className="border-t border-slate-100 p-2 dark:border-slate-800">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              // Cmd/Ctrl+Enter submits — Enter alone keeps newline support.
-              if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            placeholder="Add a comment…"
-            rows={2}
-            className="w-full resize-none rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-          />
-          <div className="mt-1 flex items-center justify-between">
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">⌘↵ to send</p>
-            <button
-              type="button"
-              onClick={submit}
-              disabled={!draft.trim()}
-              className="rounded bg-brand-500 px-3 py-1 text-[11px] font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Comment
-            </button>
-          </div>
-        </footer>
-      ) : null}
-    </div>,
-    document.body,
+        {!resolved ? (
+          <footer className="border-t border-slate-100 p-2 dark:border-slate-800">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                // Cmd/Ctrl+Enter submits — Enter alone keeps newline support.
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                  e.preventDefault();
+                  submit();
+                }
+              }}
+              placeholder="Add a comment…"
+              rows={2}
+              className="w-full resize-none rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
+            <div className="mt-1 flex items-center justify-between">
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">⌘↵ to send</p>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={!draft.trim()}
+                className="rounded bg-brand-500 px-3 py-1 text-[11px] font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Comment
+              </button>
+            </div>
+          </footer>
+        ) : null}
+      </div>
+    </Portal>
   );
 }
 

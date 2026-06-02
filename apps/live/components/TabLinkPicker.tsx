@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal } from './Portal';
 import type { Tab } from '@livediagram/diagram';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 
@@ -83,89 +83,90 @@ export function TabLinkPicker({
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose, anchor]);
 
-  if (typeof document === 'undefined' || !pos) return null;
+  if (!pos) return null;
 
   const otherTabs = tabs.filter((t) => t.id !== currentTabId);
 
-  return createPortal(
-    <div
-      ref={ref}
-      role="menu"
-      onPointerDown={(e) => e.stopPropagation()}
-      className="fixed z-50 flex w-56 animate-fade-in flex-col gap-0.5 rounded-lg border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-      style={{
-        left: pos.left + adjust.x,
-        top: pos.top + adjust.y,
-        transform: 'translate(-50%, calc(-100% - 8px))',
-      }}
-    >
-      <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        Link to tab
-      </p>
-      {otherTabs.length === 0 ? (
-        <p className="px-2 py-2 text-xs text-slate-500 dark:text-slate-400">
-          No other tabs to link to.
+  return (
+    <Portal>
+      <div
+        ref={ref}
+        role="menu"
+        onPointerDown={(e) => e.stopPropagation()}
+        className="fixed z-50 flex w-56 animate-fade-in flex-col gap-0.5 rounded-lg border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        style={{
+          left: pos.left + adjust.x,
+          top: pos.top + adjust.y,
+          transform: 'translate(-50%, calc(-100% - 8px))',
+        }}
+      >
+        <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Link to tab
         </p>
-      ) : (
-        otherTabs.map((tab) => {
-          const isActive = tab.id === linkedTabId;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onSelect(tab.id)}
-              className={
-                isActive
-                  ? 'flex items-center gap-2 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-              }
-            >
-              <span className="truncate flex-1">{tab.name}</span>
-              {isActive ? <CheckIcon /> : null}
-            </button>
-          );
-        })
-      )}
-      {recentDiagrams && recentDiagrams.length > 0 && onSelectDiagram ? (
-        <>
-          <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
-          <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Link to diagram
+        {otherTabs.length === 0 ? (
+          <p className="px-2 py-2 text-xs text-slate-500 dark:text-slate-400">
+            No other tabs to link to.
           </p>
-          {recentDiagrams.map((d) => {
-            const isActive = d.id === linkedDiagramId;
+        ) : (
+          otherTabs.map((tab) => {
+            const isActive = tab.id === linkedTabId;
             return (
               <button
-                key={d.id}
+                key={tab.id}
                 type="button"
-                onClick={() => onSelectDiagram(d)}
+                onClick={() => onSelect(tab.id)}
                 className={
                   isActive
-                    ? 'flex items-center gap-2 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-700'
-                    : 'flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100'
+                    ? 'flex items-center gap-2 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+                    : 'flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
                 }
               >
-                <span className="truncate flex-1">{d.name || 'Untitled diagram'}</span>
+                <span className="truncate flex-1">{tab.name}</span>
                 {isActive ? <CheckIcon /> : null}
               </button>
             );
-          })}
-        </>
-      ) : null}
-      {linkedTabId || linkedDiagramId ? (
-        <>
-          <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
-          <button
-            type="button"
-            onClick={onClear}
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-rose-700 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15"
-          >
-            Remove link
-          </button>
-        </>
-      ) : null}
-    </div>,
-    document.body,
+          })
+        )}
+        {recentDiagrams && recentDiagrams.length > 0 && onSelectDiagram ? (
+          <>
+            <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
+            <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Link to diagram
+            </p>
+            {recentDiagrams.map((d) => {
+              const isActive = d.id === linkedDiagramId;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => onSelectDiagram(d)}
+                  className={
+                    isActive
+                      ? 'flex items-center gap-2 rounded-md bg-brand-100 px-2 py-1.5 text-left text-xs font-medium text-brand-700'
+                      : 'flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100'
+                  }
+                >
+                  <span className="truncate flex-1">{d.name || 'Untitled diagram'}</span>
+                  {isActive ? <CheckIcon /> : null}
+                </button>
+              );
+            })}
+          </>
+        ) : null}
+        {linkedTabId || linkedDiagramId ? (
+          <>
+            <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
+            <button
+              type="button"
+              onClick={onClear}
+              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-rose-700 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15"
+            >
+              Remove link
+            </button>
+          </>
+        ) : null}
+      </div>
+    </Portal>
   );
 }
 

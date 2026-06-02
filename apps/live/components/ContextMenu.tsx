@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal } from './Portal';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 
 // Right-click context menu portal. Mirrors PortalMenu's portal +
@@ -53,23 +53,22 @@ export function ContextMenu({ position, onClose, children }: ContextMenuProps) {
     };
   }, [onClose]);
 
-  if (typeof document === 'undefined') return null;
-
-  return createPortal(
-    <div
-      ref={ref}
-      role="menu"
-      onPointerDown={(e) => e.stopPropagation()}
-      onContextMenu={(e) => e.preventDefault()}
-      className="fixed z-50 flex w-48 animate-fade-in flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-      style={{
-        left: position.x + adjust.x,
-        top: position.y + adjust.y,
-      }}
-    >
-      {children}
-    </div>,
-    document.body,
+  return (
+    <Portal>
+      <div
+        ref={ref}
+        role="menu"
+        onPointerDown={(e) => e.stopPropagation()}
+        onContextMenu={(e) => e.preventDefault()}
+        className="fixed z-50 flex w-48 animate-fade-in flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        style={{
+          left: position.x + adjust.x,
+          top: position.y + adjust.y,
+        }}
+      >
+        {children}
+      </div>
+    </Portal>
   );
 }
 
