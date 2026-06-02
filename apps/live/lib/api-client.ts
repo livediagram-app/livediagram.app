@@ -210,17 +210,26 @@ export const apiLoadShared = dedupeInFlight(_apiLoadShared, (code) => code);
 // Change log (per-diagram audit) — see specs/12-activity-and-audit.md
 // ---------------------------------------------------------------------
 
-export async function apiListChangeLog(
+// Deduped on `${ownerId}|${id}|${shareCode ?? ''}`: fires on editor
+// mount alongside apiLoadDiagram; React Strict Mode doubles the
+// effect. A share-link visitor and the owner are different code
+// paths (different shareCode) so the key includes it to keep them
+// independent.
+async function _apiListChangeLog(
   ownerId: string,
   id: string,
-  shareCode: string | null = null,
+  shareCode?: string | null,
 ): Promise<ChangeLogEntry[]> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/log`, {
-    headers: await apiHeaders(ownerId, { share: shareCode }),
+    headers: await apiHeaders(ownerId, { share: shareCode ?? null }),
   });
   const { entries } = await expectOk<ChangeLogListResponse>(res, 'list change log');
   return entries;
 }
+export const apiListChangeLog = dedupeInFlight(
+  _apiListChangeLog,
+  (ownerId, id, shareCode) => `${ownerId}|${id}|${shareCode ?? ''}`,
+);
 
 export async function apiAppendChangeLogEntry(
   ownerId: string,
@@ -263,13 +272,20 @@ export async function apiDeleteChangeLogEntry(
   await expectOkOr404Void(res, 'delete change log entry');
 }
 
-export async function apiListShareLinks(ownerId: string, id: string): Promise<ShareLink[]> {
+// Deduped on `${ownerId}|${id}`: editor mount fires this for the
+// share-dialog state alongside the other read endpoints. Strict
+// Mode doubling collapses to one fetch.
+async function _apiListShareLinks(ownerId: string, id: string): Promise<ShareLink[]> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
     headers: await apiHeaders(ownerId),
   });
   const { links } = await expectOk<ShareLinksResponse>(res, 'list share links');
   return links;
 }
+export const apiListShareLinks = dedupeInFlight(
+  _apiListShareLinks,
+  (ownerId, id) => `${ownerId}|${id}`,
+);
 
 export async function apiCreateShareLink(
   ownerId: string,

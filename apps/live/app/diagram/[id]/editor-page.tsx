@@ -953,7 +953,7 @@ export default function LivePage() {
             apiListShareLinks(self.id, fetched.id)
               .then((links) => setShareLinks(links))
               .catch(() => {});
-            apiListChangeLog(self.id, fetched.id)
+            apiListChangeLog(self.id, fetched.id, null)
               .then((entries) => {
                 setChangeLog(entries);
                 setChangeLogLoading(false);
