@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
 
+import { ALTERNATIVE_SLUGS } from '@/lib/alternatives';
+
 // Required for `output: 'export'` (same reason as robots.ts):
 // route handlers must declare themselves fully static so Next
 // resolves them at build time, not runtime.
@@ -32,7 +34,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = 'https://livediagram.app';
   return [
     {
-      url: `${base}/`,
+      // No trailing slash, to match the homepage canonical / og:url /
+      // JSON-LD (Next emits the root URL slash-less under trailingSlash:
+      // false) and the slash-less subpage convention below.
+      url: base,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 1,
@@ -55,5 +60,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly',
       priority: 0.3,
     },
+    // Comparison / "alternative" pages (spec/21). Derived from the same
+    // ALTERNATIVES list the route + metadata use, so adding a competitor
+    // updates the sitemap automatically.
+    {
+      url: `${base}/alternatives`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    ...ALTERNATIVE_SLUGS.map((slug) => ({
+      url: `${base}/alternatives/${slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    })),
   ];
 }

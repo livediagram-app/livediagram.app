@@ -1,47 +1,48 @@
 // Renders a schema.org BreadcrumbList <script type="application/ld+json">
-// for a subpage. Two-level by convention (Home > Page) because the
-// marketing site is intentionally flat: there's no /resources/article/x
-// shape that would need a longer trail. Kept in one place so the three
-// callers (FAQ, Terms, Privacy) can't drift apart in subtle ways like
-// trailing slashes or @id formats, which Google's structured-data
+// for a subpage. The leading "Home" item is added automatically; callers
+// supply the rest of the trail. Most pages are two-level (Home > Page) and
+// pass `name`/`path`; deeper pages (e.g. Home > Alternatives > Miro) pass a
+// `trail` array. Kept in one place so callers can't drift apart on subtle
+// things like trailing slashes or @id formats, which Google's structured-data
 // validator is strict about.
 
 const SITE_URL = 'https://livediagram.app';
 
+type Crumb = { name: string; path: string };
+
 type BreadcrumbJsonLdProps = {
-  // The current page's display name + path. The leading "Home" item
-  // is added automatically. `path` is the canonical path with a
-  // leading slash, no trailing slash, matching the per-page
+  // Two-level shorthand: a single crumb after Home. `path` is the canonical
+  // path with a leading slash and no trailing slash, matching the per-page
   // alternates.canonical declarations.
-  name: string;
-  path: string;
+  name?: string;
+  path?: string;
+  // Deeper trail (each crumb after Home), used instead of name/path when a
+  // page sits more than one level down.
+  trail?: Crumb[];
 };
 
-export function BreadcrumbJsonLd({ name, path }: BreadcrumbJsonLdProps) {
+export function BreadcrumbJsonLd({ name, path, trail }: BreadcrumbJsonLdProps) {
+  const crumbs: Crumb[] = trail ?? (name && path ? [{ name, path }] : []);
   const json = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      {
+      // Home uses the slash-less canonical origin to match the homepage's
+      // own canonical / og:url (see app/sitemap.ts).
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      ...crumbs.map((c, i) => ({
         '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: `${SITE_URL}/`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name,
-        item: `${SITE_URL}${path}`,
-      },
+        position: i + 2,
+        name: c.name,
+        item: `${SITE_URL}${c.path}`,
+      })),
     ],
   };
   return (
     <script
       type="application/ld+json"
-      // < escape mirrors layout.tsx + faq/page.tsx: keeps the JSON
-      // safe to inline even if a future entry's name accidentally
-      // contains a "<".
+      // < escape mirrors layout.tsx + faq/page.tsx: keeps the JSON safe to
+      // inline even if a future entry's name accidentally contains a "<".
       dangerouslySetInnerHTML={{ __html: JSON.stringify(json).replace(/</g, '\\u003c') }}
     />
   );

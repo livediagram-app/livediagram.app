@@ -13,6 +13,9 @@ export function Footer() {
           </p>
         </div>
         <div className="flex items-center gap-6 text-sm text-slate-500">
+          <a href="/alternatives" className="hover:text-slate-900">
+            Compare
+          </a>
           <a href="/faq" className="hover:text-slate-900">
             FAQ
           </a>

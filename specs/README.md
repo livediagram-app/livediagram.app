@@ -29,6 +29,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 18  | [Testing](18-testing.md)                                             | Vitest across the monorepo; shared config; co-located unit tests   |
 | 19  | [Images](19-images.md)                                               | Image element + per-owner R2-backed gallery with dedupe            |
 | 20  | [Diagram settings](20-diagram-settings.md)                           | Per-diagram editor preference flags (footer settings dialog)       |
+| 21  | [Comparison pages](21-comparison-pages.md)                           | `/alternatives/<tool>` SEO pages (Miro, XMind, Excalidraw, …)      |
 
 ## Workflow
 
