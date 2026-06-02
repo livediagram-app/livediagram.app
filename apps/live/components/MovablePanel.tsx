@@ -7,6 +7,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { Tooltip } from './Tooltip';
 
@@ -203,25 +204,17 @@ export function MovablePanel({
     setCollapsed(false);
   }, [collapsible, expandSignal]);
 
-  // Outside-tap auto-close. Window-level pointerdown listener: when
-  // the panel is expanded on mobile AND the user taps anywhere that
-  // isn't inside this panel, collapse. Bypassed entirely on desktop
-  // (`(min-width: 640px)`) where the user is in control of when to
-  // close. Active only while expanded so a collapsed panel doesn't
-  // churn listeners on every canvas interaction.
-  useEffect(() => {
-    if (!collapsible || collapsed) return;
-    if (typeof window === 'undefined') return;
-    if (window.matchMedia?.(`(min-width: ${MOBILE_BREAKPOINT_PX}px)`).matches) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const node = ref.current;
-      if (!node) return;
-      if (e.target instanceof Node && node.contains(e.target)) return;
-      setCollapsed(true);
-    };
-    window.addEventListener('pointerdown', onPointerDown, true);
-    return () => window.removeEventListener('pointerdown', onPointerDown, true);
-  }, [collapsible, collapsed]);
+  // Outside-tap auto-close. Active only while the banner is
+  // expanded on mobile, the matchMedia gate skips the listener on
+  // desktop where the user is in control of when to close.
+  useClickOutside(
+    ref,
+    () => setCollapsed(true),
+    collapsible &&
+      !collapsed &&
+      typeof window !== 'undefined' &&
+      !window.matchMedia?.(`(min-width: ${MOBILE_BREAKPOINT_PX}px)`).matches,
+  );
 
   // When stackBelowY is provided and we're still at the default
   // corner, use it as a dynamic top (above the panel sitting at

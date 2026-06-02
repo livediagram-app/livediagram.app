@@ -23,7 +23,8 @@
 import { useAuth, useClerk, useUser } from '@clerk/react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { clerkEnabled } from '@/lib/clerk-config';
 
 // Lazy-load the delete-account dialog. Almost every signed-in
@@ -46,18 +47,9 @@ function AuthControlsEnabled() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Click-outside to close. Bound only when the menu is open so
-  // we're not running pointerdown listeners for an inert button.
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handle = (e: PointerEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', handle);
-    return () => document.removeEventListener('pointerdown', handle);
-  }, [menuOpen]);
+  // Click-outside closes the menu. Listener installs only while
+  // the menu is open so an inert button doesn't pay for it.
+  useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
 
   if (!authLoaded) return null;
 
