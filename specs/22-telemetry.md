@@ -58,7 +58,16 @@ The dashboard surfaces three fixed windows that top out at **30 days** (Last mon
       today: Window;
       last7: Window;
       last30: Window;
-    }
+    };
+    // 30 zero-filled UTC-day buckets oldest -> newest, pre-aggregated
+    // server-side so the dashboard's trend charts render without any
+    // client work. Optional: absent in the disabled-state response so
+    // older clients still parse, present whenever `enabled` is true.
+    daily?: {
+      days: number[];                       // UTC-midnight ms per bucket
+      totals: number[];                     // total events that day
+      byCategory: Record<string, number[]>; // per-category counts, same indexing
+    };
   }
   // Window = { total: number; rows: { category; action; type; count }[] }
   ```
@@ -102,7 +111,7 @@ Extend by adding to the `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums (if n
 
 ## Dashboard app (`apps/telemetry`)
 
-A new Next.js static-export app (same stack as the others), mounted by the router at **`/telemetry`** (`basePath: '/telemetry'`, prefix stripped by the router exactly like `/live`). Public, read-only. A timeframe toggle (Today / Last 7 days / Last month) switches which window of the single `GET /api/telemetry/summary` payload it shows: headline totals + breakdowns grouped by category → action → type. Explains in-page that the data is anonymous, first-party, no vendors. Degrades to an "analytics not enabled" state when the summary returns `enabled: false`.
+A new Next.js static-export app (same stack as the others), mounted by the router at **`/telemetry`** (`basePath: '/telemetry'`, prefix stripped by the router exactly like `/live`). Public, read-only. A timeframe toggle (Today / Last 7 days / Last month) switches which window of the single `GET /api/telemetry/summary` payload it shows: headline totals + breakdowns grouped by category → action → type, plus a 30-day overall sparkline and a per-category stacked-area chart driven by the `daily` field on the same response. Charts render in inline SVG; no charting library, no extra request. Explains in-page that the data is anonymous, first-party, no vendors. Degrades to an "analytics not enabled" state when the summary returns `enabled: false`.
 
 ## Routing & deploy
 
