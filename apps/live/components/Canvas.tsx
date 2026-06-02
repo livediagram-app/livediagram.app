@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -882,6 +883,20 @@ export function Canvas(props: CanvasProps) {
     onCanvasPointerMove(null, null);
   };
 
+  // Stable wrapper for the element-right-click flow. BoxedElementView
+  // is memoed; passing inline arrows for `onContextSelect` would
+  // recreate them per element per render and invalidate the memo.
+  // useCallback gives it one identity across renders, so the memoed
+  // child sees the same function reference until `onSelect` or
+  // `onElementContextMenu` itself changes upstream.
+  const handleElementContextSelect = useCallback(
+    (id: string, sx: number, sy: number) => {
+      onSelect(id);
+      onElementContextMenu?.(id, sx, sy);
+    },
+    [onSelect, onElementContextMenu],
+  );
+
   return (
     <main
       ref={mainRef}
@@ -1085,17 +1100,14 @@ export function Canvas(props: CanvasProps) {
               onBeginDrag={onBeginDrag}
               onShiftSelect={onShiftSelect}
               onBeginAnchorDrag={onBeginAnchorDrag}
-              onBeginEdit={() => onBeginEdit(element.id)}
-              onCommitLabel={(label) => onCommitLabel(element.id, label)}
+              onBeginEdit={onBeginEdit}
+              onCommitLabel={onCommitLabel}
               onCancelEdit={onCancelEdit}
               onFollowLink={onFollowLink}
-              onOpenComments={() => onOpenComments(element.id)}
-              onOpenNote={onOpenNote ? () => onOpenNote(element.id) : undefined}
+              onOpenComments={onOpenComments}
+              onOpenNote={onOpenNote}
               imageContext={imageContext}
-              onContextSelect={(sx, sy) => {
-                onSelect(element.id);
-                onElementContextMenu?.(element.id, sx, sy);
-              }}
+              onContextSelect={handleElementContextSelect}
             />
           );
         })}

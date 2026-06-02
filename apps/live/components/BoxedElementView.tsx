@@ -1,4 +1,4 @@
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import { memo, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   activeCommentCount,
   BORDER_DASH_ARRAY,
@@ -54,11 +54,18 @@ type BoxedElementViewProps = {
   // page can toggle membership in the marquee multi-selection.
   onShiftSelect?: (id: string) => void;
   onBeginAnchorDrag: (id: string, anchor: Anchor, e: ReactPointerEvent) => void;
-  onBeginEdit: () => void;
-  onCommitLabel: (label: string) => void;
+  // Element-id-bearing signatures so the parent can pass a single
+  // stable callback per kind (rather than recreating a closure per
+  // element on every render). The child has `element.id` in scope
+  // and forwards it where needed. This is what makes the React.memo
+  // wrapper around the export viable: with pre-bound callbacks,
+  // every parent render would invalidate the memo via fresh function
+  // identities.
+  onBeginEdit: (id: string) => void;
+  onCommitLabel: (id: string, label: string) => void;
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
-  onOpenComments: () => void;
+  onOpenComments: (id: string) => void;
   // Image element context: the editor passes these so the inner
   // ImageElementView can fetch the bitmap with the right
   // owner / share / diagram identity (the bytes are auth-gated by
@@ -73,12 +80,12 @@ type BoxedElementViewProps = {
   // Open the per-element note popover. Optional so read-only viewers
   // (who shouldn't see a clickable badge) can omit it. When omitted
   // the note badge does not render.
-  onOpenNote?: () => void;
-  // Right-click on the element. Receives the cursor's screen-space
-  // coords so the caller can anchor a context menu under it. The
-  // caller is also responsible for selecting the element (the menu's
-  // actions assume it is the current selection).
-  onContextSelect: (screenX: number, screenY: number) => void;
+  onOpenNote?: (id: string) => void;
+  // Right-click on the element. Receives the element id + the
+  // cursor's screen-space coords so the caller can anchor a context
+  // menu under it. The caller is also responsible for selecting the
+  // element (the menu's actions assume it is the current selection).
+  onContextSelect: (id: string, screenX: number, screenY: number) => void;
   // The colour for the link/comment badges. Comes from the active
   // tab's theme so the icons read as part of the diagram rather than
   // floating brand-blue dots on a coloured palette.
@@ -92,7 +99,16 @@ type BoxedElementViewProps = {
   remoteSelectors: { id: string; name: string; color: string }[];
 };
 
-export function BoxedElementView({
+// Wrapped in React.memo at the export below: with id-bearing
+// callbacks the parent passes a single stable function per kind
+// (rather than recreating per-element closures every render), so
+// shallow prop equality on `element` + the per-id selection flags
+// + `zoom` etc. lets BoxedElementView skip the work when only an
+// unrelated element changed. Defaulting parameters happen inside
+// the function body (rather than the destructure) so the memo's
+// shallow check sees the underlying undefined vs concrete value
+// rather than the defaulted boolean.
+function BoxedElementViewImpl({
   element,
   isSelected,
   isMultiSelected = false,
@@ -163,7 +179,7 @@ export function BoxedElementView({
     }
     // Don't gate on isPaintMode here (the page-level beginEdit decides whether
     // edit can start; it rejects during format painter, and exits group mode).
-    onBeginEdit();
+    onBeginEdit(element.id);
   };
 
   // Right-click selects the element + asks the page to open a
@@ -174,7 +190,7 @@ export function BoxedElementView({
     e.preventDefault();
     e.stopPropagation();
     if (isEditing) return;
-    onContextSelect(e.clientX, e.clientY);
+    onContextSelect(element.id, e.clientX, e.clientY);
   };
 
   const cursor = isPaintMode
@@ -261,7 +277,7 @@ export function BoxedElementView({
           alignY,
           PADDING_PX[element.padding ?? defaultPadding(element)],
           isEditing,
-          onCommitLabel,
+          (next) => onCommitLabel(element.id, next),
           onCancelEdit,
         )
       )}
@@ -282,8 +298,8 @@ export function BoxedElementView({
           onFollowLink={() => {
             if (element.link) onFollowLink(element.link);
           }}
-          onOpenComments={onOpenComments}
-          onOpenNote={onOpenNote}
+          onOpenComments={() => onOpenComments(element.id)}
+          onOpenNote={onOpenNote ? () => onOpenNote(element.id) : undefined}
         />
       ) : null}
 
@@ -322,6 +338,13 @@ export function BoxedElementView({
     </div>
   );
 }
+
+// Default shallow-prop comparison is good enough here: `element` is
+// reference-stable across renders that don't touch it (commit /
+// commitTabs return new arrays only when something actually
+// changed), every other prop is a primitive or an id-bearing
+// callback that the parent keeps stable.
+export const BoxedElementView = memo(BoxedElementViewImpl);
 
 // Shapes that draw themselves via an inner SVG overlay rather than relying
 // on the wrapper's border/background. The CSS-rendered set are the ones
