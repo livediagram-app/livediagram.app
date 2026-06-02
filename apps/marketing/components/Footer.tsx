@@ -12,7 +12,10 @@ export function Footer() {
             Diagrams and mindmaps for teams who think together.
           </p>
         </div>
-        <nav aria-label="Footer" className="flex items-center gap-6 text-sm text-slate-500">
+        <nav
+          aria-label="Footer"
+          className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-500"
+        >
           <a href="/alternatives" className="hover:text-slate-900">
             Compare
           </a>
