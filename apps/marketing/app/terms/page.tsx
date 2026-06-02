@@ -1,5 +1,5 @@
 import { LegalPage } from '@/components/LegalPage';
-import { LEGAL_LAST_UPDATED_DISPLAY } from '@/lib/legal-revisions';
+import { LEGAL_LAST_UPDATED, LEGAL_LAST_UPDATED_DISPLAY } from '@/lib/legal-revisions';
 import { subpageMetadata } from '@/lib/subpage-metadata';
 
 const TERMS_TITLE = 'Terms of Service · livediagram';
@@ -9,6 +9,7 @@ export const metadata = subpageMetadata({
   title: TERMS_TITLE,
   description: TERMS_DESCRIPTION,
   path: '/terms',
+  modifiedTime: LEGAL_LAST_UPDATED,
 });
 
 export default function TermsPage() {

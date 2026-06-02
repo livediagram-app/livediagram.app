@@ -1,5 +1,5 @@
 import { LegalPage } from '@/components/LegalPage';
-import { LEGAL_LAST_UPDATED_DISPLAY } from '@/lib/legal-revisions';
+import { LEGAL_LAST_UPDATED, LEGAL_LAST_UPDATED_DISPLAY } from '@/lib/legal-revisions';
 import { subpageMetadata } from '@/lib/subpage-metadata';
 
 const PRIVACY_TITLE = 'Privacy Policy · livediagram';
@@ -10,6 +10,7 @@ export const metadata = subpageMetadata({
   title: PRIVACY_TITLE,
   description: PRIVACY_DESCRIPTION,
   path: '/privacy',
+  modifiedTime: LEGAL_LAST_UPDATED,
 });
 
 export default function PrivacyPage() {
