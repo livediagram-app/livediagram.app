@@ -446,9 +446,24 @@ export function MovablePanel({
       {/* Body. Children can use flex utilities to lay themselves out
           inside the panel's intrinsic width. Each panel handles its
           own internal scrolling so the body doesn't grow unbounded
-          on long lists. When `collapsible` is true the body hides
-          whenever the user has collapsed it (regardless of viewport). */}
-      <div className={`flex flex-col ${collapsible && collapsed ? 'hidden' : ''}`}>{children}</div>
+          on long lists. When `collapsible` is true the body collapses
+          via a grid-template-rows transition so it slides open / shut
+          rather than popping (`hidden` had no transition; on mobile
+          the abrupt swap was hard to follow as the panel chrome
+          jumped to its new size). The inner wrapper carries
+          `overflow-hidden` so the body's intrinsic height is clipped
+          while the row track interpolates from 0fr to 1fr. */}
+      <div
+        className={
+          'grid transition-[grid-template-rows] duration-200 ease-out ' +
+          (collapsible && collapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]')
+        }
+        aria-hidden={collapsible && collapsed ? true : undefined}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col">{children}</div>
+        </div>
+      </div>
     </div>
   );
 }
