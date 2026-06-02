@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiDeleteImage, apiImageUsage, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { ImageUploadError, uploadImageFile } from '@/lib/upload-image';
 import { useConfirm } from '@/hooks/useConfirm';
+import { TrashIcon } from './explorer-icons';
 import { GalleryImageButton } from './GalleryImageButton';
 import { ImageDropZone } from './ImageDropZone';
 
@@ -167,7 +168,7 @@ function GalleryCard({
           aria-label={`Delete ${image.originalName ?? 'image'}`}
           className="rounded p-1 text-rose-700 transition hover:bg-rose-50"
         >
-          <TrashIcon />
+          <TrashIcon strokeWidth={1.6} />
         </button>
       </div>
       <div className="mt-1">
@@ -208,24 +209,4 @@ function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function TrashIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2.5 4h11" />
-      <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
-      <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
-    </svg>
-  );
 }

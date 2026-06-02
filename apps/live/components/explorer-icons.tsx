@@ -142,15 +142,25 @@ export function PencilIcon() {
   );
 }
 
-export function TrashIcon() {
+// `size` + `strokeWidth` props let every "delete a row" surface
+// share the same SVG paths. Defaults (13 / 1.5) match the
+// Explorer's original local copy and the now-shared TabBar +
+// ShareDialog import, so existing callers stay byte-identical.
+// Other callers (ActivityPanel 12/1.5, MultiSelectionToolbar
+// 14/1.5, GalleryPane + ImagePicker 13/1.6, SelectionPopover
+// 16/1.75) override per their layout context.
+export function TrashIcon({
+  size = 13,
+  strokeWidth = 1.5,
+}: { size?: number; strokeWidth?: number } = {}) {
   return (
     <svg
-      width="13"
-      height="13"
+      width={size}
+      height={size}
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
