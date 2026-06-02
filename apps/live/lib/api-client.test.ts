@@ -1,5 +1,12 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { apiHeaders, setTokenProvider } from './api-client';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  apiCreateShareLink,
+  apiDeleteShareLink,
+  apiHeaders,
+  apiLoadDiagram,
+  apiSaveDiagramMeta,
+  setTokenProvider,
+} from './api-client';
 
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a
@@ -96,5 +103,144 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
     const h = await call('guest-uuid-6', { share: null });
     expect(h['X-Share-Code']).toBeUndefined();
     expect(h['X-Owner-Id']).toBe('guest-uuid-6');
+  });
+});
+
+// Helper to stub the global fetch with a one-shot mocked Response.
+// Each test reaches for its own fixture so the cases don't leak
+// state through the shared Response object. `body` is plain JSON
+// the helper stringifies; `status` defaults to 200.
+function stubFetch(status: number, body: unknown = {}): void {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    ),
+  );
+}
+
+// `expectOk`, `expectOkOrNull`, `expectOkVoid`, and `expectOkOr404Void`
+// are module-private helpers that every api function in this file
+// passes its Response through. Their contract is observable from the
+// outside via the api functions themselves, so the cases below pin
+// each helper through a representative caller. A regression in any
+// one of these helpers (e.g. the error message format changing, the
+// 404-tolerance dropping, a missing await on res.json()) would
+// silently break error reporting across every endpoint downstream.
+describe('response helpers (observed through api callers)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  describe('expectOk (via apiCreateShareLink)', () => {
+    it('returns the parsed body on 200', async () => {
+      const link = {
+        code: 'ABCD2345',
+        role: 'edit' as const,
+        createdAt: 0,
+        diagramId: 'diag-1',
+      };
+      stubFetch(200, { link });
+      const got = await apiCreateShareLink('owner-1', 'diag-1', 'edit');
+      expect(got).toEqual(link);
+    });
+
+    it('throws "<action> failed: <status>" on 500', async () => {
+      // The thrown message is what the editor surfaces through the
+      // generic error toast. Locking the shape ("create share link
+      // failed: 500") ensures a regression in `expectOk` (e.g.
+      // dropping the status) doesn't quietly remove the diagnostic
+      // signal users see when they report an issue.
+      stubFetch(500);
+      await expect(apiCreateShareLink('owner-1', 'diag-1', 'edit')).rejects.toThrow(
+        'create share link failed: 500',
+      );
+    });
+  });
+
+  describe('expectOkOrNull (via apiLoadDiagram)', () => {
+    it('returns the parsed diagram on 200', async () => {
+      // apiLoadDiagram is wrapped in dedupeInFlight keyed by
+      // `${ownerId}|${id}`, so each test below uses a unique key
+      // pair to avoid collecting a cached promise from a prior
+      // case. Without unique keys, the second test in this block
+      // would observe the first test's resolved value and the
+      // fetch mock would never be consulted.
+      const diagram = {
+        id: 'd-200',
+        name: 'Hello',
+        createdAt: 0,
+        updatedAt: 0,
+        shareable: false,
+        ownerId: 'o-200',
+        tabs: [],
+      };
+      stubFetch(200, { diagram });
+      const got = await apiLoadDiagram('o-200', 'd-200');
+      expect(got).toEqual(diagram);
+    });
+
+    it('returns null on 404 (the load-doesnt-exist path)', async () => {
+      // The 404 contract is what lets `/live/diagram/<unknown-id>`
+      // surface the NotFound page instead of throwing into the
+      // editor's load effect. A regression that re-threw 404
+      // would tip every welcome flow + share-resolution into a
+      // crash boundary.
+      stubFetch(404, {});
+      const got = await apiLoadDiagram('o-404', 'd-404');
+      expect(got).toBeNull();
+    });
+
+    it('throws "load failed: <status>" on 500', async () => {
+      stubFetch(500);
+      await expect(apiLoadDiagram('o-500', 'd-500')).rejects.toThrow('load failed: 500');
+    });
+  });
+
+  describe('expectOkVoid (via apiSaveDiagramMeta)', () => {
+    it('resolves quietly on 200 (no body to parse)', async () => {
+      // apiSaveDiagramMeta is a write with no response body. The
+      // helper must NOT call res.json() or it would throw on an
+      // empty body. Asserting the promise resolves without value
+      // pins both the no-throw + no-body contract.
+      stubFetch(200);
+      await expect(
+        apiSaveDiagramMeta('owner', { id: 'd-1', name: 'New' }),
+      ).resolves.toBeUndefined();
+    });
+
+    it('throws "save diagram meta failed: <status>" on 500', async () => {
+      stubFetch(500);
+      await expect(apiSaveDiagramMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(
+        'save diagram meta failed: 500',
+      );
+    });
+  });
+
+  describe('expectOkOr404Void (via apiDeleteShareLink)', () => {
+    it('resolves on 200', async () => {
+      stubFetch(200);
+      await expect(apiDeleteShareLink('owner', 'd-1', 'ABCD2345')).resolves.toBeUndefined();
+    });
+
+    it('resolves on 404 (idempotent: concurrent delete already cleared the row)', async () => {
+      // The tolerance is the whole point of this helper. "Delete
+      // this share link" is a fire-and-forget gesture; another
+      // collaborator clicking revoke at the same time, or the
+      // share link already being gone, must not surface as an
+      // error toast in the UI.
+      stubFetch(404, {});
+      await expect(apiDeleteShareLink('owner', 'd-1', 'ABCD2345')).resolves.toBeUndefined();
+    });
+
+    it('still throws on a non-200 non-404 (500, etc.)', async () => {
+      stubFetch(500);
+      await expect(apiDeleteShareLink('owner', 'd-1', 'ABCD2345')).rejects.toThrow(
+        'delete share link failed: 500',
+      );
+    });
   });
 });
