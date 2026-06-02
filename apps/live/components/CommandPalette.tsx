@@ -216,6 +216,10 @@ type CommandPaletteProps = {
   // wires this up so the ContextPanel can stack dynamically below
   // the palette as accordions open / close.
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
+  // Mobile-only top override (the palette banner sits below the
+  // Explorer banner so signed-out users can switch diagrams without
+  // leaving the canvas). See MovablePanel for semantics.
+  mobileTopOverridePx?: number;
 };
 
 export function CommandPalette({
@@ -230,6 +234,7 @@ export function CommandPalette({
   onAddImage,
   onAddArrow,
   onSize,
+  mobileTopOverridePx,
 }: CommandPaletteProps) {
   // The Selected Element / Current Tab sections moved out into the
   // ContextPanel (bottom-right, above zoom). The palette now hosts
@@ -258,6 +263,7 @@ export function CommandPalette({
       defaultCorner="top-right"
       width="w-auto sm:w-64"
       onSize={onSize}
+      mobileTopOverridePx={mobileTopOverridePx}
       onReset={onReset}
       onMoveTo={onMoveTo}
       collapsible

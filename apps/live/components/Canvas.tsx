@@ -509,6 +509,11 @@ export function Canvas(props: CanvasProps) {
   // paletteBottomY + 16 regardless of whether the palette pins to
   // top-2 (mobile) or top-4 (desktop).
   const [paletteBottomY, setPaletteBottomY] = useState<number>(0);
+  // Explorer's measured bottom edge on mobile. The Palette sits BELOW
+  // this via its `mobileTopOverridePx` so the diagram switcher fits
+  // above the Palette without overlapping. Desktop ignores it (the
+  // Explorer pins to top-left there, not as a banner).
+  const [explorerBottomY, setExplorerBottomY] = useState<number>(0);
 
   // Pan + marquee + held-Space machinery lives in
   // useCanvasPanAndMarquee. The hook owns the pointerdown / move
@@ -1301,6 +1306,7 @@ export function Canvas(props: CanvasProps) {
         onRenameFolder={onRenameFolder}
         onDeleteFolder={onDeleteFolder}
         onMoveDiagramToFolder={onMoveDiagramToFolder}
+        onSize={(size) => setExplorerBottomY(size.bottomY)}
       />
 
       {/* Activity panel — per-diagram audit log + Undo/Redo. Hidden
@@ -1369,6 +1375,7 @@ export function Canvas(props: CanvasProps) {
           onAddImage={onAddImage}
           onAddArrow={onAddArrow}
           onSize={(size) => setPaletteBottomY(size.bottomY)}
+          mobileTopOverridePx={explorerBottomY > 0 ? explorerBottomY + 4 : undefined}
         />
       )}
 

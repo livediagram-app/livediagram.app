@@ -21,7 +21,13 @@ type MovablePanelProps = {
   // Where to render the panel when the user hasn't dragged it yet.
   // `top-right-stacked` is for panels that should sit below another
   // right-anchored panel (e.g. the Editor under the Palette).
-  defaultCorner: 'top-left' | 'top-right' | 'top-right-stacked' | 'bottom-left' | 'bottom-right';
+  defaultCorner:
+    | 'top-left'
+    | 'top-right'
+    | 'top-right-stacked'
+    | 'top-banner'
+    | 'bottom-left'
+    | 'bottom-right';
   // Tailwind width utility for the panel body (e.g. `w-56`, `w-64`).
   width?: string;
   // Optional content rendered to the right of the title inside the
@@ -56,6 +62,13 @@ type MovablePanelProps = {
   // independently of which corner / top-utility class the upper
   // panel uses (top-2 on mobile vs top-4 on desktop).
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
+  // Mobile-only override for the top edge of `top-right` panels. Used
+  // when ANOTHER panel sits above on mobile (Explorer above Palette),
+  // so the Palette starts below it instead of overlapping. Ignored on
+  // desktop, where the panel keeps its right-corner layout. Numeric
+  // pixels, applied as an inline `top` so it wins over the Tailwind
+  // mobile class without disturbing the `sm:top-4` desktop class.
+  mobileTopOverridePx?: number;
   // When true the panel can collapse to a banner (title row only)
   // via its header button, on both mobile and desktop. The button's
   // icon flips between dash (collapse) and plus (expand) so the
@@ -94,6 +107,7 @@ export function MovablePanel({
   onMinimize,
   stackBelowY,
   onSize,
+  mobileTopOverridePx,
   collapsible = false,
   expandSignal,
   children,
@@ -113,6 +127,18 @@ export function MovablePanel({
   // render via `isMobileViewportSync` so the panel paints in the
   // right state on first mount (no expand-then-collapse flash).
   const [collapsed, setCollapsed] = useState(() => collapsible && isMobileViewportSync());
+  // Reactive mobile flag so a viewport rotation / desktop->mobile
+  // resize re-applies the mobileTopOverridePx inline-style. Initial
+  // value reads sync to avoid a one-frame flicker.
+  const [isMobile, setIsMobile] = useState(isMobileViewportSync);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia?.(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`);
+    if (!mq) return;
+    const onChange = () => setIsMobile(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   // Publish the panel's bounding box upward whenever it changes
   // (the Palette uses this so the ContextPanel can stack below).
@@ -237,7 +263,11 @@ export function MovablePanel({
         // mobile (inset-x-2) and stay pinned to the right edge on
         // desktop (right-4).
         { top: stackBelowY + stackGapPx }
-      : {};
+      : isMobile && mobileTopOverridePx !== undefined && defaultCorner === 'top-right'
+        ? // Mobile override: another panel (Explorer) is above this
+          // one, so start below it instead of at the default top-2.
+          { top: mobileTopOverridePx }
+        : {};
   const cornerClass = position
     ? ''
     : useDynamicStack
@@ -253,11 +283,16 @@ export function MovablePanel({
             // static fallback top (15rem) instead of the dynamic
             // stackBelowY (which isn't wired here).
             'inset-x-2 top-[15rem] sm:inset-x-auto sm:right-4'
-          : defaultCorner === 'bottom-left'
-            ? 'bottom-4 left-4'
-            : defaultCorner === 'bottom-right'
-              ? 'bottom-4 right-4'
-              : 'left-4 top-4';
+          : defaultCorner === 'top-banner'
+            ? // Full-width top banner. Mobile callers (Explorer)
+              // place this ABOVE the Palette / Editor stack so the
+              // diagram switcher is reachable on a phone.
+              'inset-x-2 top-2'
+            : defaultCorner === 'bottom-left'
+              ? 'bottom-4 left-4'
+              : defaultCorner === 'bottom-right'
+                ? 'bottom-4 right-4'
+                : 'left-4 top-4';
 
   return (
     <div

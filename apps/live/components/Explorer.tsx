@@ -70,6 +70,11 @@ type ExplorerProps = {
   // /live/new surface flips this to true when there are recent
   // diagrams so a returning user lands looking at their library.
   defaultRecentOpen?: boolean;
+  // Callback the Canvas wires up to track Explorer's bottom edge so
+  // the Palette can stack beneath it on mobile (where Explorer
+  // banner-pins to the top of the viewport rather than the left
+  // corner). Optional: desktop layout doesn't need it.
+  onSize?: (size: { width: number; height: number; bottomY: number }) => void;
 };
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
@@ -95,6 +100,7 @@ export function Explorer({
   onDismissShared,
   onOpenFullExplorer,
   defaultRecentOpen = false,
+  onSize,
 }: ExplorerProps) {
   // Mobile viewport ⇒ render nothing. Mobile users reach the
   // Explorer from the AuthControls "Explorer" menu item (spec/07)
@@ -104,12 +110,19 @@ export function Explorer({
   // the panel without a page reload. Initial value reads sync so
   // the static-export build doesn't paint a desktop-shaped panel
   // a tick before the effect runs.
-  const [hideOnMobile, setHideOnMobile] = useState(isMobileViewportSync);
+  // Mobile-aware flag, kept up-to-date via a matchMedia listener so a
+  // device rotation / desktop-to-mobile resize repositions correctly.
+  // Previously Explorer was hidden entirely on mobile (the canvas is
+  // small enough that the panel ate the whole screen), but signed-out
+  // users had no other way to switch diagrams, so the panel now also
+  // shows on mobile, banner-collapsed at the very top of the viewport
+  // above the Palette + Editor stack.
+  const [isMobile, setIsMobile] = useState(isMobileViewportSync);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mq = window.matchMedia?.(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`);
     if (!mq) return;
-    const onChange = () => setHideOnMobile(mq.matches);
+    const onChange = () => setIsMobile(mq.matches);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
@@ -175,7 +188,9 @@ export function Explorer({
       }
     : undefined;
 
-  if (hideOnMobile) return null;
+  // (Previously: `if (hideOnMobile) return null;` — Explorer now
+  // renders on mobile too, banner-collapsed by default. The panel
+  // sits at the top of the canvas above Palette + Editor.)
 
   const current = currentDiagramId
     ? (diagrams.find((d) => d.id === currentDiagramId) ?? null)
@@ -249,10 +264,15 @@ export function Explorer({
     <MovablePanel
       title="Explorer"
       position={position}
-      defaultCorner="top-left"
-      width="w-64"
+      // On mobile the panel becomes a full-width top banner (matches
+      // the Palette / Editor pattern) so users can switch diagrams
+      // without leaving the canvas. On desktop it stays in the
+      // top-left corner.
+      defaultCorner={isMobile ? 'top-banner' : 'top-left'}
+      width={isMobile ? 'w-auto' : 'w-64'}
       onReset={onReset}
       onMoveTo={onMoveTo}
+      onSize={onSize}
       collapsible
     >
       <div className="flex flex-col gap-2.5 px-3 pb-3 pt-1">
