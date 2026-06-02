@@ -80,7 +80,15 @@ const ExportTabDialog = dynamic(() =>
 );
 import { parseImportedTab, pickTabFile } from '@/lib/import-tab';
 import { Explorer } from '@/components/Explorer';
-import { NotFound } from '@/components/NotFound';
+// Lazy-load NotFound: the diagram-404 surface only renders when the
+// `diagramNotFound` state flips true, which happens on (a) a guest
+// id with no diagrams at that slug, (b) a revoked share code, or
+// (c) a bad URL. Every successful editor load (the overwhelming
+// majority) renders the canvas + editor chrome and never touches
+// NotFound, so eagerly shipping its 69 lines was paying for the
+// rare-path branch on every common-path load. Same lazy pattern
+// as the dialogs below.
+const NotFound = dynamic(() => import('@/components/NotFound').then((m) => m.NotFound));
 // Lazy-load ShareDialog for the same reason as ExportTabDialog: it
 // mounts only when the user clicks Share, and most sessions never
 // open it. Hoisting it into its own chunk means the editor's initial
