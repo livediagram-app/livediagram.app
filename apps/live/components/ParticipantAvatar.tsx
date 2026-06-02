@@ -8,6 +8,12 @@ type ParticipantAvatarProps = {
   size?: number;
   // When true, wrap in a Tooltip with the participant's name + status.
   withTooltip?: boolean;
+  // Small chip pinned next to the name in the tooltip title. Optional,
+  // multiple allowed. Callers pass strings like "You" (own avatar) or
+  // "Viewer" / "Editor" (when the role is known). Renders as a pill so
+  // it's visually distinct from the bare name — matches the in-canvas
+  // role badge style at the top of the diagram.
+  badges?: string[];
 };
 
 // Round avatar showing the participant's initials over their assigned
@@ -18,6 +24,7 @@ export function ParticipantAvatar({
   participant,
   size = 28,
   withTooltip = false,
+  badges,
 }: ParticipantAvatarProps) {
   // Subscribe the avatar's tooltip to the 30s relative-time tick so
   // an opened tooltip's "Active 2 mins ago" refreshes itself instead
@@ -53,11 +60,24 @@ export function ParticipantAvatar({
     participant.lastActiveAt !== undefined
       ? ` · Active ${formatRelativeTime(Date.now() - participant.lastActiveAt)}`
       : '';
+  const title =
+    badges && badges.length > 0 ? (
+      <span className="flex flex-wrap items-center gap-1">
+        <span>{participant.name}</span>
+        {badges.map((b) => (
+          <span
+            key={b}
+            className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+          >
+            {b}
+          </span>
+        ))}
+      </span>
+    ) : (
+      participant.name
+    );
   return (
-    <Tooltip
-      title={participant.name}
-      description={`${statusLabel(participant.status)}${idleSuffix}`}
-    >
+    <Tooltip title={title} description={`${statusLabel(participant.status)}${idleSuffix}`}>
       {avatar}
     </Tooltip>
   );

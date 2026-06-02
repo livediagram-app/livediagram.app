@@ -3042,6 +3042,8 @@ export default function LivePage() {
           onReorder={reorderTabs}
           readOnly={isReadOnly}
           participantsByTab={participantsByTab}
+          selfId={selfParticipant.id}
+          selfRole={sessionRole}
           onOpenShortcuts={() => {
             setShortcutsOpen(true);
             track('UI', 'Opened', 'Shortcuts');

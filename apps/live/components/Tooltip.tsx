@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 type TooltipProps = {
-  title: string;
+  title: ReactNode;
   description: string;
   // When true, the wrapping span renders as a full-width flex container so
   // the tooltip-wrapped child can stretch to fill a grid cell or flex

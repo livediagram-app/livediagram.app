@@ -70,6 +70,13 @@ type TabBarProps = {
   // focused on. Each tab in the bar renders the matching avatars so
   // collaborators can see at a glance where everyone is working.
   participantsByTab: Map<string, Participant[]>;
+  // Local viewer's identity + role, so the per-tab avatar tooltip can
+  // tag the local user with "You" + their role (Viewer / Editor). We
+  // can't reliably tag peers with their role yet (the api doesn't
+  // broadcast role per ParticipantPresence), so the badge only appears
+  // when the participant id matches `selfId`.
+  selfId: string;
+  selfRole: 'edit' | 'view';
 };
 
 export function TabBar({
@@ -88,6 +95,8 @@ export function TabBar({
   onReorder,
   readOnly = false,
   participantsByTab,
+  selfId,
+  selfRole,
   onOpenShortcuts,
   onOpenSettings,
   onOpenSearch,
@@ -167,7 +176,11 @@ export function TabBar({
                   {tab.name}
                 </button>
               )}
-              <TabPresenceStack participants={participantsByTab.get(tab.id) ?? []} />
+              <TabPresenceStack
+                participants={participantsByTab.get(tab.id) ?? []}
+                selfId={selfId}
+                selfRole={selfRole}
+              />
               {isActive && !isEditing && !readOnly ? (
                 <EllipsisMenuButton
                   open={menuFor === tab.id}
@@ -673,7 +686,15 @@ function CopyIcon() {
 // leavers long enough to finish their exit transition.
 const POP_OUT_MS = 240;
 
-function TabPresenceStack({ participants }: { participants: Participant[] }) {
+function TabPresenceStack({
+  participants,
+  selfId,
+  selfRole,
+}: {
+  participants: Participant[];
+  selfId: string;
+  selfRole: 'edit' | 'view';
+}) {
   type Slot = { p: Participant; leaving: boolean };
   const [rendered, setRendered] = useState<Slot[]>(() =>
     participants.map((p) => ({ p, leaving: false })),
@@ -747,7 +768,14 @@ function TabPresenceStack({ participants }: { participants: Participant[] }) {
           }`}
           style={{ zIndex: slots - i, transformOrigin: 'center' }}
         >
-          <ParticipantAvatar participant={slot.p} size={16} withTooltip />
+          <ParticipantAvatar
+            participant={slot.p}
+            size={16}
+            withTooltip
+            badges={
+              slot.p.id === selfId ? ['You', selfRole === 'view' ? 'Viewer' : 'Editor'] : undefined
+            }
+          />
         </span>
       ))}
       {overflow > 0 ? (
