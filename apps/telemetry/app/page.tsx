@@ -1165,7 +1165,11 @@ export default function TelemetryDashboard() {
           {groups.length === 0 ? (
             <p className="mt-8 text-slate-500">No events recorded in this window yet.</p>
           ) : (
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+            // `items-start` keeps each card sized to its own content
+            // height instead of the row's tallest member — without it
+            // expanding one accordion stretched the collapsed card
+            // next to it to match.
+            <div className="mt-8 grid items-start gap-6 sm:grid-cols-2">
               {groups.map((group) => {
                 const isOpen = expanded.has(group.category);
                 return (
