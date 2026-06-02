@@ -821,9 +821,19 @@ export default function LivePage() {
               firstSummary.id,
               codeForVisitor,
             ).catch(() => null);
-            if (first) placeholderTabs[0] = first;
-            loadedTabIdsRef.current.add(firstSummary.id);
-            setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
+            // Only mark the tab loaded when the eager fetch actually
+            // returned content. If it failed (e.g. a transient 403 from
+            // a request that raced ahead of the Clerk token / session
+            // share code being wired up), leave it OUT of the loaded set
+            // so the lazy-load effect below retries it once auth is in
+            // place. Marking it loaded regardless used to leave the
+            // first tab permanently blank while later tabs — fetched
+            // through that effect after bootstrap — loaded fine.
+            if (first) {
+              placeholderTabs[0] = first;
+              loadedTabIdsRef.current.add(firstSummary.id);
+              setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
+            }
           }
           resetTabs(placeholderTabs);
           // Seed the autosave's "last saved" mirror with the hydrated
@@ -911,9 +921,14 @@ export default function LivePage() {
             const first = await apiLoadTab(self.id, fetched.id, firstSummary.id, null).catch(
               () => null,
             );
-            if (first) placeholderTabs[0] = first;
-            loadedTabIdsRef.current.add(firstSummary.id);
-            setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
+            // Only mark loaded on success, so a failed eager fetch falls
+            // through to the lazy-load effect's retry (see the visitor
+            // branch above for the full rationale).
+            if (first) {
+              placeholderTabs[0] = first;
+              loadedTabIdsRef.current.add(firstSummary.id);
+              setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
+            }
           }
           resetTabs(placeholderTabs);
           // Seed the autosave's "last saved" mirror with the hydrated
