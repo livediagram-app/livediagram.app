@@ -35,6 +35,8 @@ Per competitor, rendered by the shared template:
 
 Each page uses the `subpageMetadata()` factory ([16](16-marketing-site.md)) for `title` / `description` / `alternates.canonical` (`/alternatives/<slug>`) / OpenGraph / Twitter, generated from the competitor data via `generateMetadata`. The index page has its own metadata + canonical `/alternatives`. All are added to `app/sitemap.ts` and internally linked from the footer so they're discoverable without relying on the sitemap alone.
 
+The hub page (`/alternatives`) also emits an `ItemList` JSON-LD script alongside its `BreadcrumbList`, listing every comparison URL in display order. This is the schema.org shape for a curated index of related pages (see [16](16-marketing-site.md) "JSON-LD structured data"), built from the same `ALTERNATIVES` array, so adding a competitor updates the visible list, the sitemap, and the structured data in one place.
+
 ## Initial set
 
 Miro, XMind, Excalidraw, draw.io (diagrams.net), and Google Slides (used for diagrams). Add more by appending to `lib/alternatives.ts`.

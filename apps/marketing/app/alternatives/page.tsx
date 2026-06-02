@@ -4,6 +4,8 @@ import { Header } from '@/components/Header';
 import { ALTERNATIVES } from '@/lib/alternatives';
 import { subpageMetadata } from '@/lib/subpage-metadata';
 
+const SITE_URL = 'https://livediagram.app';
+
 // Hub page for the comparison set (see specs/21-comparison-pages.md): a
 // crawlable parent that links to every /alternatives/<slug> page.
 export const metadata = subpageMetadata({
@@ -13,9 +15,42 @@ export const metadata = subpageMetadata({
   path: '/alternatives',
 });
 
+// ItemList JSON-LD (see spec/16 "JSON-LD structured data", spec/21
+// "Metadata"). The schema.org shape Google expects for a curated
+// index of related pages: tells crawlers the hub is a list-of-links
+// page (not editorial content in its own right), pairs each entry
+// with its destination URL + competitor-specific name, and can
+// surface as a carousel-style rich result. Built from the same
+// ALTERNATIVES array the visible <ul> + the sitemap consume so
+// adding a competitor updates all three together.
+const ITEM_LIST_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'How livediagram compares',
+  description:
+    'Side-by-side comparisons of livediagram against Miro, XMind, Excalidraw, draw.io, and Google Slides.',
+  itemListOrder: 'https://schema.org/ItemListOrderAscending',
+  numberOfItems: ALTERNATIVES.length,
+  itemListElement: ALTERNATIVES.map((alt, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    url: `${SITE_URL}/alternatives/${alt.slug}`,
+    name: `livediagram vs ${alt.name}`,
+  })),
+};
+
 export default function AlternativesIndexPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // Build-time-serialised on the static export. The </
+        // escape mirrors the root layout's hardening
+        // (apps/marketing/app/layout.tsx).
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(ITEM_LIST_JSON_LD).replace(/</g, '\\u003c'),
+        }}
+      />
       <BreadcrumbJsonLd name="Alternatives" path="/alternatives" />
       <Header />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
