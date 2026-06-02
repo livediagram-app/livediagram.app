@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import type { ImageElement } from '@livediagram/diagram';
 import { useImageBlobUrl } from '@/hooks/useImageBlobUrl';
 
@@ -13,6 +14,11 @@ import { useImageBlobUrl } from '@/hooks/useImageBlobUrl';
 // the same authenticated client used everywhere else and hands back
 // a blob URL. The URL is revoked on unmount + on `imageId` change so
 // the browser doesn't leak the blob.
+//
+// Wrapped in React.memo at the export below. Every prop is a
+// primitive or a reference-stable element object, so the shallow
+// equality check skips re-renders when only an unrelated element
+// or selection flag changed on the surrounding tab.
 type ImageElementViewProps = {
   element: ImageElement;
   // Owner identifying the requester. Either the diagram owner (when
@@ -25,19 +31,22 @@ type ImageElementViewProps = {
   // Share code carried by the visitor, when any. Null for the owner
   // session. Drives the X-Share-Code header on the fetch.
   shareCode: string | null;
-  // Fired when the user clicks the empty-state placeholder, asking
-  // the editor to open the image picker for this element. Optional
-  // so view-role visitors who can't upload pass undefined; the
-  // placeholder then renders as a static "no image" state.
-  onOpenPicker?: () => void;
+  // True when the editor exposes an image-picker affordance for this
+  // session (signed-in editor / edit-role visitor). False for
+  // view-role visitors. The actual double-click handler that opens
+  // the picker lives in BoxedElementView; this flag only drives the
+  // empty-state placeholder copy. A plain boolean (rather than a
+  // pre-bound callback) keeps the memo's shallow equality cheap
+  // and stable.
+  canOpenPicker: boolean;
 };
 
-export function ImageElementView({
+function ImageElementViewImpl({
   element,
   ownerId,
   diagramId,
   shareCode,
-  onOpenPicker,
+  canOpenPicker,
 }: ImageElementViewProps) {
   const { imageId } = element;
   const state = useImageBlobUrl(ownerId, imageId, { diagramId, shareCode });
@@ -49,7 +58,7 @@ export function ImageElementView({
     // View-role visitors see the same hint with no picker.
     const placeholderBase =
       'flex h-full w-full flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400';
-    if (!onOpenPicker) {
+    if (!canOpenPicker) {
       return (
         <div className={placeholderBase}>
           <ImageIcon />
@@ -105,6 +114,8 @@ export function ImageElementView({
     </div>
   );
 }
+
+export const ImageElementView = memo(ImageElementViewImpl);
 
 function ImageIcon() {
   return (

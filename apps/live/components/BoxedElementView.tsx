@@ -264,9 +264,7 @@ function BoxedElementViewImpl({
           ownerId={imageContext.ownerId}
           diagramId={imageContext.diagramId}
           shareCode={imageContext.shareCode}
-          onOpenPicker={
-            imageContext.onOpenPicker ? () => imageContext.onOpenPicker!(element.id) : undefined
-          }
+          canOpenPicker={!!imageContext.onOpenPicker}
         />
       ) : (
         renderLabel(

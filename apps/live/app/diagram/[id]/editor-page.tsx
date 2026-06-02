@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   ARROW_THICKNESS_PX,
   bringManyToFront,
@@ -2697,10 +2697,35 @@ export default function LivePage() {
   };
   // Open the picker for an existing image element (the user clicked
   // its empty placeholder or "Change image" in the context menu).
-  const openImagePickerFor = (elementId: string) => {
-    if (editsBlocked) return;
-    setImagePickerOpenFor({ forElementId: elementId });
-  };
+  // useCallback so the function identity stays stable across
+  // renders: the imageContext object below references it, and
+  // BoxedElementView is memoised on imageContext identity (a fresh
+  // arrow per render would invalidate the memo for every image
+  // element on the active tab).
+  const openImagePickerFor = useCallback(
+    (elementId: string) => {
+      if (editsBlocked) return;
+      setImagePickerOpenFor({ forElementId: elementId });
+    },
+    [editsBlocked],
+  );
+  // Memoised so BoxedElementView's React.memo (commit e8e34f9)
+  // doesn't see a fresh object identity every editor-page render.
+  // Without this the parent passed a new object literal each time,
+  // invalidating the memo for every image element on the active
+  // tab whenever any unrelated state moved.
+  const imageContext = useMemo(
+    () =>
+      diagramId
+        ? {
+            ownerId: selfParticipant.id,
+            diagramId,
+            shareCode: sessionShareCode,
+            onOpenPicker: isReadOnly ? undefined : openImagePickerFor,
+          }
+        : undefined,
+    [diagramId, selfParticipant.id, sessionShareCode, isReadOnly, openImagePickerFor],
+  );
   // Apply the picker's selection: set imageId + natural dimensions on
   // the target element. When the picker was opened with a fresh
   // forElementId (from addImage), the placeholder created by
@@ -3851,16 +3876,7 @@ export default function LivePage() {
         onFollowLink={followLink}
         onOpenComments={openComments}
         onOpenNote={openNote}
-        imageContext={
-          diagramId
-            ? {
-                ownerId: selfParticipant.id,
-                diagramId,
-                shareCode: sessionShareCode,
-                onOpenPicker: isReadOnly ? undefined : openImagePickerFor,
-              }
-            : undefined
-        }
+        imageContext={imageContext}
         showTemplatePicker={
           // Wait for the active tab's content to land before
           // deciding whether to show the picker. Otherwise the
