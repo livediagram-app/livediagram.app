@@ -60,6 +60,15 @@ import { SelectionPopover } from './SelectionPopover';
 // the picker is the whole UI there.
 import dynamic from 'next/dynamic';
 const TemplatePicker = dynamic(() => import('./TemplatePicker').then((m) => m.TemplatePicker));
+
+// Stable empty-array constant for the `remoteSelectors` prop on the
+// (very common) "no remote participants have this element selected"
+// path. A fresh `[]` per render would invalidate BoxedElementView's
+// memo (commit e8e34f9) on every editor-page render, defeating the
+// memo for every element nobody else is currently selecting. The
+// shared constant lets shallow equality see the same reference
+// across renders.
+const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = [];
 import { Tooltip } from './Tooltip';
 import { ZoomControls } from './ZoomControls';
 
@@ -977,7 +986,7 @@ export function Canvas(props: CanvasProps) {
               isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
               isMultiSelected={multiSelectedIds.has(element.id)}
               multiSelectActive={multiSelectedIds.size > 0}
-              remoteSelectors={remoteSelectionsByElement.get(element.id) ?? []}
+              remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
               isEditing={element.id === editingId}
               isPaintMode={isPaintMode || isGroupMode}
               showHandles={showHandles(element.id)}
