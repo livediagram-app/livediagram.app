@@ -2,8 +2,6 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
-  ARROW_THICKNESS_PX,
-  bringManyToFront,
   createPinnedArrow,
   createShape,
   createSticky,
@@ -12,7 +10,6 @@ import {
   isBoxed,
   joinGroups,
   selectionMembers,
-  sendManyToBack,
   ungroup,
   unionBoxedBounds,
   DEFAULT_BACKGROUND_COLOR,
@@ -20,16 +17,10 @@ import {
   type Anchor,
   type ArrowElement,
   type BackgroundPattern,
-  type BorderRadius,
-  type BorderStroke,
-  type BorderStyle,
   type BoxedElement,
   type Element,
   type ShapeKind,
   type Tab,
-  type TextAlignX,
-  type TextAlignY,
-  type TextSize,
 } from '@livediagram/diagram';
 import dynamic from 'next/dynamic';
 import { Canvas } from '@/components/Canvas';
@@ -154,6 +145,7 @@ import { useEditorComments } from '@/hooks/useEditorComments';
 import { useEditorDrag } from '@/hooks/useEditorDrag';
 import { useEditorImages } from '@/hooks/useEditorImages';
 import { useEditorNotes } from '@/hooks/useEditorNotes';
+import { useElementStyle } from '@/hooks/useElementStyle';
 import { useEditorKeyboardShortcuts } from '@/hooks/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/useEditorViewport';
 import {
@@ -2820,136 +2812,44 @@ export default function LivePage() {
     setEditingId(null);
   };
 
-  const toggleLockSelected = () => {
-    if (!selectedId) return;
-    const source = selectionPrimary();
-    if (!source) return;
-    const shouldLock = !(source.locked === true);
-    const ids = currentSelectionIds();
-    commit((els) => els.map((el) => (ids.has(el.id) ? { ...el, locked: shouldLock } : el)));
-  };
-
-  const toggleAspectLockSelected = () => {
-    if (!selectedId) return;
-    const source = selectionPrimary();
-    if (!source || !isBoxed(source)) return;
-    const shouldLock = !(source.aspectLocked === true);
-    const ids = currentSelectionIds();
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, aspectLocked: shouldLock } : el)),
-    );
-  };
-
-  const bringSelectedToFront = () => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) => bringManyToFront(els, ids));
-  };
-
-  const sendSelectedToBack = () => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) => sendManyToBack(els, ids));
-  };
-
-  const setTextSizeSelected = (size: TextSize) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, textSize: size } : el)),
-    );
-  };
-
-  const setTextAlignSelected = (x: TextAlignX, y: TextAlignY) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && isBoxed(el) ? { ...el, textAlignX: x, textAlignY: y } : el,
-      ),
-    );
-  };
-
-  // Generic helper for the inline label styles. Each toggle flips the
-  // matching boolean on every member of the current selection. We
-  // derive the next value from the primary so a partially-applied
-  // group all jumps to the same state.
-  const toggleTextStyleSelected = (
-    field: 'textBold' | 'textItalic' | 'textUnderline' | 'textStrikethrough',
-  ) => {
-    const primary = selectionPrimary();
-    if (!primary || !isBoxed(primary)) return;
-    const next = !(primary[field] ?? false);
-    const ids = currentSelectionIds();
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, [field]: next } : el)),
-    );
-  };
-
-  const setFillColorSelected = (color: string) => {
-    if (editsBlocked) return;
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    // State update inline (bypass `commit` so emitChange doesn't
-    // fire per-tick); log entry debounced — same pattern as
-    // opacity.
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              elements: t.elements.map((el) =>
-                ids.has(el.id) && (el.type === 'shape' || el.type === 'sticky')
-                  ? { ...el, fillColor: color }
-                  : el,
-              ),
-            }
-          : t,
-      ),
-    );
-    scheduleElementChangeLog('fillColor');
-  };
-
-  const setStrokeColorSelected = (color: string) => {
-    if (editsBlocked) return;
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              elements: t.elements.map((el) =>
-                ids.has(el.id) &&
-                (el.type === 'shape' || el.type === 'sticky' || el.type === 'arrow')
-                  ? { ...el, strokeColor: color }
-                  : el,
-              ),
-            }
-          : t,
-      ),
-    );
-    scheduleElementChangeLog('strokeColor');
-  };
-
-  const setTextColorSelected = (color: string) => {
-    if (editsBlocked) return;
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              elements: t.elements.map((el) =>
-                ids.has(el.id) && isBoxed(el) ? { ...el, textColor: color } : el,
-              ),
-            }
-          : t,
-      ),
-    );
-    scheduleElementChangeLog('textColor');
-  };
+  // Element styling / layering actions (lock, layer order, text size /
+  // align / style, fill / stroke / text colour, opacity, padding, the
+  // arrow + border presets, shape-kind morph, reset-to-theme). All
+  // mutate the current selection; see useElementStyle.
+  const {
+    toggleLockSelected,
+    toggleAspectLockSelected,
+    bringSelectedToFront,
+    sendSelectedToBack,
+    setTextSizeSelected,
+    setTextAlignSelected,
+    toggleTextStyleSelected,
+    setFillColorSelected,
+    setStrokeColorSelected,
+    setTextColorSelected,
+    setOpacitySelected,
+    setPaddingSelected,
+    setArrowEndsSelected,
+    setArrowThicknessSelected,
+    setArrowheadSizeSelected,
+    setArrowStyleSelected,
+    setArrowStrokeStyleSelected,
+    setShapeKindSelected,
+    setBorderStrokeSelected,
+    setBorderStyleSelected,
+    setBorderRadiusSelected,
+    resetColorsSelected,
+  } = useElementStyle({
+    currentSelectionIds,
+    selectionPrimary,
+    selectedId,
+    activeTab,
+    activeId,
+    editsBlocked,
+    commit,
+    commitTabs,
+    scheduleElementChangeLog,
+  });
 
   const setLinkSelected = (tabId: string) => {
     const ids = currentSelectionIds();
@@ -3003,183 +2903,6 @@ export default function LivePage() {
       // path on the destination route.
       openDiagram(link.diagramId);
     }
-  };
-
-  const setOpacitySelected = (opacity: number) => {
-    if (editsBlocked) return;
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              elements: t.elements.map((el) => (ids.has(el.id) ? { ...el, opacity } : el)),
-            }
-          : t,
-      ),
-    );
-    scheduleElementChangeLog('elementOpacity');
-  };
-
-  const setPaddingSelected = (padding: import('@livediagram/diagram').Padding) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) => els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, padding } : el)));
-  };
-
-  const setArrowEndsSelected = (arrowEnds: import('@livediagram/diagram').ArrowEnds) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && el.type === 'arrow' ? { ...el, arrowEnds } : el)),
-    );
-  };
-
-  const setArrowThicknessSelected = (thickness: import('@livediagram/diagram').ArrowThickness) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    const px = ARROW_THICKNESS_PX[thickness];
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && el.type === 'arrow' ? { ...el, strokeWidth: px } : el)),
-    );
-  };
-
-  const setArrowheadSizeSelected = (size: import('@livediagram/diagram').ArrowheadSize) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'arrow' ? { ...el, arrowheadSize: size } : el,
-      ),
-    );
-  };
-
-  const setArrowStyleSelected = (style: import('@livediagram/diagram').ArrowStyle) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && el.type === 'arrow' ? { ...el, arrowStyle: style } : el)),
-    );
-  };
-
-  // Line pattern (solid / dashed / dotted) on the selected arrow.
-  // Reuses the BorderStyle union shapes already carry so future
-  // pattern additions (e.g. 'long-dash') just need a single
-  // BORDER_DASH_ARRAY entry to light up both surfaces.
-  const setArrowStrokeStyleSelected = (style: BorderStyle) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && el.type === 'arrow' ? { ...el, strokeStyle: style } : el)),
-    );
-  };
-
-  // Morph the selected shape into a different kind, preserving width /
-  // height / label / colour overrides. Circle and diamond are 1:1
-  // shapes — coming from a non-square box, snap to the larger side so
-  // the result fits the original footprint.
-  const setShapeKindSelected = (kind: ShapeKind) => {
-    if (!selectedId) return;
-    commit((els) =>
-      els.map((el) => {
-        if (el.id !== selectedId || el.type !== 'shape') return el;
-        const oneToOne = kind === 'circle' || kind === 'diamond';
-        if (oneToOne) {
-          const side = Math.max(el.width, el.height);
-          return { ...el, shape: kind, width: side, height: side };
-        }
-        return { ...el, shape: kind };
-      }),
-    );
-  };
-
-  // Border-preset setters. Each writes the field on the selected
-  // shape only; non-shape elements are ignored (the Border accordion
-  // is hidden for them anyway, but defensive against a stale id).
-  const setBorderStrokeSelected = (value: BorderStroke) => {
-    if (!selectedId) return;
-    commit((els) =>
-      els.map((el) =>
-        el.id === selectedId && el.type === 'shape' ? { ...el, strokeWidth: value } : el,
-      ),
-    );
-  };
-  const setBorderStyleSelected = (value: BorderStyle) => {
-    if (!selectedId) return;
-    commit((els) =>
-      els.map((el) =>
-        el.id === selectedId && el.type === 'shape' ? { ...el, strokeStyle: value } : el,
-      ),
-    );
-  };
-  const setBorderRadiusSelected = (value: BorderRadius) => {
-    if (!selectedId) return;
-    commit((els) =>
-      els.map((el) =>
-        el.id === selectedId && el.type === 'shape' ? { ...el, borderRadius: value } : el,
-      ),
-    );
-  };
-
-  // Clear per-element colour overrides so the element falls back to
-  // whatever the current tab theme dictates. Each colour field is set
-  // to undefined; the history hook snapshots the present so this is
-  // undoable as one step.
-  const resetColorsSelected = () => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    // "Reset to theme" applies the tab's current theme colours when
-    // the tab has one set. Plain delete-the-override only works when
-    // the theme is the brand default (its `elementFill / Stroke / Text`
-    // are all null, so falling back to the type-default produces the
-    // brand look). For any other theme we need to explicitly set the
-    // colours since `addBoxed` is what normally writes them on create.
-    const theme = getTheme(activeTab.theme);
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id)) return el;
-        if (el.type === 'shape') {
-          return {
-            ...el,
-            ...(theme.elementFill !== null
-              ? { fillColor: theme.elementFill }
-              : { fillColor: undefined }),
-            ...(theme.elementStroke !== null
-              ? { strokeColor: theme.elementStroke }
-              : { strokeColor: undefined }),
-            ...(theme.elementText !== null
-              ? { textColor: theme.elementText }
-              : { textColor: undefined }),
-          };
-        }
-        if (el.type === 'text') {
-          return {
-            ...el,
-            ...(theme.elementText !== null
-              ? { textColor: theme.elementText }
-              : { textColor: undefined }),
-            fillColor: undefined,
-            strokeColor: undefined,
-          };
-        }
-        if (el.type === 'sticky') {
-          // Sticky's amber palette is iconic — wipe any user overrides
-          // but DON'T apply theme colours.
-          const { fillColor: _f, strokeColor: _s, textColor: _t, ...rest } = el;
-          return rest as typeof el;
-        }
-        if (el.type === 'arrow') {
-          return {
-            ...el,
-            ...(theme.elementStroke !== null
-              ? { strokeColor: theme.elementStroke }
-              : { strokeColor: undefined }),
-          };
-        }
-        return el;
-      }),
-    );
   };
 
   const duplicateSelected = () => {
