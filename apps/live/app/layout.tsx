@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 // — ClerkProvider doesn't touch the route tree.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en-GB">
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
         <ClerkProvider>
           <ToastProvider>

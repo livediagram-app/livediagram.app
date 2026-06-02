@@ -105,7 +105,7 @@ const JSON_LD = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en-GB">
       <body className="bg-slate-50 text-slate-800 antialiased">
         <script
           type="application/ld+json"
