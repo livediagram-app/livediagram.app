@@ -139,6 +139,7 @@ import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { arrowReferencesAny } from '@/lib/canvas';
 import { useActivityLogDebounce } from '@/hooks/useActivityLogDebounce';
+import { useActivityLogEmitter } from '@/hooks/useActivityLogEmitter';
 import { useEditorBroadcast } from '@/hooks/useEditorBroadcast';
 import { useShortcutsEnabled } from '@/hooks/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/useEditorComments';
@@ -184,7 +185,7 @@ import {
   type ShareLink,
   type ShareRole,
 } from '@/lib/api-client';
-import { applyRevert, diffElements } from '@/lib/change-log';
+import { applyRevert } from '@/lib/change-log';
 import { templateCanvasOverrides, type TemplateKind } from '@/lib/templates';
 import {
   deriveNewBoxedColours,
@@ -1697,73 +1698,22 @@ export default function LivePage() {
   // change goes through here — both element commits and surgical
   // reverts — so the audit stays honest. See
   // specs/12-activity-and-audit.md. Optimistic: we prepend the entry
-  // to the local log immediately and fire the POST without awaiting.
-  const emitChange = (
-    tabId: string,
-    beforeElements: Element[],
-    afterElements: Element[],
-    override?: { kind: ChangeLogEntry['kind']; summary: string },
-  ) => {
-    if (!diagramId) return;
-    const diff = diffElements(beforeElements, afterElements);
-    if (!diff) return;
-    const entry: ChangeLogEntry = {
-      id: crypto.randomUUID(),
-      tabId,
-      participantId: selfParticipant.id,
-      participantName: selfParticipant.name,
-      participantColor: selfParticipant.color,
-      kind: override?.kind ?? diff.kind,
-      summary: override?.summary ?? diff.summary,
-      elementIds: diff.elementIds,
-      beforeState: diff.beforeState as Record<string, unknown>,
-      afterState: diff.afterState as Record<string, unknown>,
-      createdAt: Date.now(),
-    };
-    appendLogEntry(entry);
-  };
-
-  // Shared bookkeeping for any new log entry, regardless of whether
-  // it came from an element diff or a tab-meta change. Optimistic
-  // local append + fire-and-forget API + room broadcast + push onto
-  // the Undo/Redo memory stack so the entry pops cleanly on undo.
-  const appendLogEntry = (entry: ChangeLogEntry) => {
-    setChangeLog((prev) => [entry, ...prev].slice(0, 30));
-    entryHistoryRef.current = {
-      past: [...entryHistoryRef.current.past, entry].slice(-HISTORY_LIMIT),
-      future: [],
-    };
-    if (diagramId) {
-      apiAppendChangeLogEntry(selfParticipant.id, diagramId, entry, sessionShareCode).catch(
-        () => {},
-      );
-    }
-    roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry } });
-  };
-
-  // Emit a tab-meta entry — theme change, background tweak, rename,
-  // anything that mutates Tab metadata rather than its elements. The
-  // entry carries no before/after payload (revert isn't supported for
-  // these in V1) so the panel renders the row without a Revert
-  // button. Undo still works because the matching state lives in
-  // useDiagramHistory.
-  const emitTabMeta = (tabId: string, summary: string) => {
-    if (!diagramId) return;
-    const entry: ChangeLogEntry = {
-      id: crypto.randomUUID(),
-      tabId,
-      participantId: selfParticipant.id,
-      participantName: selfParticipant.name,
-      participantColor: selfParticipant.color,
-      kind: 'edit',
-      summary,
-      elementIds: [],
-      beforeState: {},
-      afterState: {},
-      createdAt: Date.now(),
-    };
-    appendLogEntry(entry);
-  };
+  // Activity-log entry emission lives in useActivityLogEmitter.
+  // The hook owns the shared appendLogEntry path (optimistic local
+  // append + fire-and-forget API + room broadcast + entry-history
+  // push) and exposes the two emit shapes the page calls: emitChange
+  // for element diffs, emitTabMeta for theme / canvas / lock /
+  // background tweaks. `entryHistoryRef` stays declared in this
+  // file because the undo / redo flow below also reads + mutates
+  // it; passing the ref in lets the hook write to the same buffer.
+  const { emitChange, emitTabMeta } = useActivityLogEmitter({
+    diagramId,
+    selfParticipant,
+    setChangeLog,
+    entryHistoryRef,
+    sessionShareCode,
+    roomRef,
+  });
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
