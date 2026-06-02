@@ -89,7 +89,7 @@ The aim is to cover every meaningful interaction a person has with a diagram (di
 - **Element**: Added `<shape kind | Text | Sticky | Arrow | Image>`; Deleted; Duplicated; Grouped; Ungrouped; Locked; Unlocked; Linked; Unlinked; Reordered `Front`/`Back`; Changed `FormatPainter` (style copied from a source onto a target).
 - **Tab**: Created; Deleted; Duplicated; Renamed; Locked; Unlocked; Linked; Reordered; Imported `JSON`; Aligned; Cleared.
 - **Theme**: Changed `<theme label>`.
-- **Canvas**: Changed `<background pattern>`; Zoomed `In`/`Out`/`Fit`/`Reset`.
+- **Canvas**: Changed `<background pattern>`/`BackgroundColor`/`BackgroundOpacity`/`PatternColor`; Zoomed `In`/`Out`/`Fit`/`Reset`. The `BackgroundColor` / `BackgroundOpacity` / `PatternColor` emits are debounced ~800ms per slider so a single drag collapses to one event rather than dozens (carved-out exception to the "raw colour tweaks are noise" rule, justified because a debounced single-emit captures the discrete "user changed canvas appearance" signal without flooding).
 - **Template**: Used `<template kind>`.
 - **Comment**: Added; Deleted; Resolved; Unresolved; Opened (user opened the comment popover on an element).
 - **Note**: Added (transition empty -> non-empty); Changed (existing note's text edited); Deleted (transition non-empty -> empty); Opened (user opened the note popover on an element). One Add/Change/Delete emit per save (popover commit), not per keystroke; a save that doesn't change the text emits nothing.

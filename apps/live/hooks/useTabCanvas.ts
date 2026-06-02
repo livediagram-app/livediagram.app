@@ -11,6 +11,7 @@
 // the same debounce hook also feeds `scheduleElementChangeLog` to
 // useElementStyle — one debounce instance, two consumers.
 
+import { useRef } from 'react';
 import { autoAlignElements } from '@/lib/auto-align';
 import {
   getTheme,
@@ -21,6 +22,15 @@ import {
 } from '@/lib/themes';
 import { type BackgroundPattern, type Element, type Tab } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
+
+// Slider-edit debounce window for the canvas colour / opacity
+// telemetry. Spec/22's noise rule excludes "raw colour tweaks", and
+// emitting on every slider tick would absolutely qualify; debouncing
+// at ~800ms means one user dragging a slider end-to-end produces one
+// event instead of dozens, while still capturing "did they actually
+// change the canvas appearance" as a discrete signal. Matches the
+// activity-log debounce in spirit (`scheduleTabMetaLog`).
+const CANVAS_TELEMETRY_DEBOUNCE_MS = 800;
 
 type TabCanvasDeps = {
   // True when edits are disallowed (read-only role / locked tab). Every
@@ -44,6 +54,22 @@ type TabCanvasDeps = {
 export function useTabCanvas(deps: TabCanvasDeps) {
   const { editsBlocked, activeId, activeTab, commit, commitTabs, emitTabMeta, scheduleTabMetaLog } =
     deps;
+
+  // Per-setter debounce timers for the canvas colour / opacity
+  // telemetry emits. Keyed by setter name so a colour drag and an
+  // opacity drag debounce independently and one doesn't cancel the
+  // other. Refs (not state) because changing them mustn't re-render.
+  const telemetryTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const scheduleCanvasTelemetry = (key: string, type: string) => {
+    const timers = telemetryTimersRef.current;
+    const existing = timers.get(key);
+    if (existing !== undefined) clearTimeout(existing);
+    const id = setTimeout(() => {
+      timers.delete(key);
+      track('Canvas', 'Changed', type);
+    }, CANVAS_TELEMETRY_DEBOUNCE_MS);
+    timers.set(key, id);
+  };
 
   const autoAlignTab = () => {
     if (editsBlocked) return;
@@ -131,6 +157,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     if (editsBlocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, backgroundColor: color } : t)));
     scheduleTabMetaLog('backgroundColor', `Changed canvas colour to ${color}`);
+    scheduleCanvasTelemetry('backgroundColor', 'BackgroundColor');
   };
 
   const setBackgroundOpacity = (opacity: number) => {
@@ -139,12 +166,14 @@ export function useTabCanvas(deps: TabCanvasDeps) {
       ts.map((t) => (t.id === activeId ? { ...t, backgroundOpacity: opacity } : t)),
     );
     scheduleTabMetaLog('backgroundOpacity', `Changed opacity to ${Math.round(opacity * 100)}%`);
+    scheduleCanvasTelemetry('backgroundOpacity', 'BackgroundOpacity');
   };
 
   const setPatternColor = (color: string) => {
     if (editsBlocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, patternColor: color } : t)));
     scheduleTabMetaLog('patternColor', `Changed pattern colour to ${color}`);
+    scheduleCanvasTelemetry('patternColor', 'PatternColor');
   };
 
   return {

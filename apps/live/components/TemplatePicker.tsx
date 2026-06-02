@@ -1159,5 +1159,56 @@ function TemplatePreview({ kind }: { kind: TemplateKind }) {
           <polygon points="29,9 31,11 31,7" fill="rgb(100 116 139)" />
         </svg>
       );
+    case 'logo-design':
+      // Four mini lockups in a 2x2 grid: top-left icon-left, top-right
+      // icon-left-with-tagline, bottom-left icon-above, bottom-right
+      // icon-above-with-tagline. Matches the canvas layout the builder
+      // produces so the preview previews what users get.
+      return (
+        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
+          {/* Top-left: icon left, brand only. */}
+          <circle
+            cx="9"
+            cy="11"
+            r="4"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <rect x="16" y="9" width="18" height="4" rx="0.8" fill="rgb(15 23 42)" />
+          {/* Top-right: icon left + tagline. */}
+          <circle
+            cx="48"
+            cy="11"
+            r="4"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <rect x="55" y="7" width="18" height="4" rx="0.8" fill="rgb(15 23 42)" />
+          <rect x="55" y="12.5" width="14" height="2.5" rx="0.5" fill="rgb(148 163 184)" />
+          {/* Bottom-left: icon above, brand only. */}
+          <circle
+            cx="14"
+            cy="32"
+            r="4"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <rect x="5" y="39" width="18" height="4" rx="0.8" fill="rgb(15 23 42)" />
+          {/* Bottom-right: icon above + tagline. */}
+          <circle
+            cx="53"
+            cy="30"
+            r="4"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <rect x="44" y="37" width="18" height="4" rx="0.8" fill="rgb(15 23 42)" />
+          <rect x="46" y="43" width="14" height="2.5" rx="0.5" fill="rgb(148 163 184)" />
+        </svg>
+      );
   }
 }
