@@ -22,7 +22,15 @@ export type TemplateKind =
   // A growth / momentum flywheel: hub + four sectors with a clockwise
   // arrow loop. Sits under "Show more" alongside the other strategy /
   // wireframing starters.
-  | 'flywheel';
+  | 'flywheel'
+  // Logo-design starters: a placeholder icon next to (or above) a
+  // brand wordmark, with and without a tagline below. Four variants
+  // so a designer landing on a blank canvas has a usable composition
+  // to tweak rather than nothing. All under "Show more".
+  | 'logo-horizontal'
+  | 'logo-vertical'
+  | 'logo-horizontal-tagline'
+  | 'logo-vertical-tagline';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -123,6 +131,30 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Flywheel',
     description:
       'A central momentum hub with four reinforcing stages and a clockwise loop of arrows.',
+    extra: true,
+  },
+  {
+    kind: 'logo-horizontal',
+    title: 'Logo (icon left)',
+    description: 'A placeholder icon to the left of a brand wordmark — drop in your real logo.',
+    extra: true,
+  },
+  {
+    kind: 'logo-vertical',
+    title: 'Logo (icon above)',
+    description: 'A placeholder icon stacked above a brand wordmark — symmetric, centred mark.',
+    extra: true,
+  },
+  {
+    kind: 'logo-horizontal-tagline',
+    title: 'Logo + tagline (icon left)',
+    description: 'Icon on the left, brand on top, tagline underneath — typical horizontal lockup.',
+    extra: true,
+  },
+  {
+    kind: 'logo-vertical-tagline',
+    title: 'Logo + tagline (icon above)',
+    description: 'Icon on top, brand below, tagline underneath — typical vertical lockup.',
     extra: true,
   },
 ];

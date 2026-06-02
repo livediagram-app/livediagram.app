@@ -38,17 +38,21 @@ describe('TEMPLATES catalogue', () => {
     'laptop-wireframe',
     'slide-deck',
     'flywheel',
+    'logo-horizontal',
+    'logo-vertical',
+    'logo-horizontal-tagline',
+    'logo-vertical-tagline',
   ];
 
-  it('lists exactly 16 templates (matches spec/16 and spec/09)', () => {
-    expect(TEMPLATES).toHaveLength(16);
+  it('lists exactly 20 templates (8 default + 12 extra, matches spec/16 and spec/09)', () => {
+    expect(TEMPLATES).toHaveLength(20);
   });
 
-  it('splits cleanly into 8 default + 8 extra (the picker uses `extra` to gate behind "Show more")', () => {
+  it('splits cleanly into 8 default + 12 extra (the picker uses `extra` to gate behind "Show more")', () => {
     const defaults = TEMPLATES.filter((t) => !t.extra);
     const extras = TEMPLATES.filter((t) => t.extra);
     expect(defaults).toHaveLength(8);
-    expect(extras).toHaveLength(8);
+    expect(extras).toHaveLength(12);
   });
 
   it('has no duplicate kinds (guards against accidental copy-paste in the catalogue)', () => {

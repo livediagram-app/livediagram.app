@@ -87,7 +87,108 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildSlideDeck(cx, cy);
     case 'flywheel':
       return buildFlywheel(cx, cy);
+    case 'logo-horizontal':
+      return buildLogo(cx, cy, { orientation: 'horizontal', tagline: false });
+    case 'logo-vertical':
+      return buildLogo(cx, cy, { orientation: 'vertical', tagline: false });
+    case 'logo-horizontal-tagline':
+      return buildLogo(cx, cy, { orientation: 'horizontal', tagline: true });
+    case 'logo-vertical-tagline':
+      return buildLogo(cx, cy, { orientation: 'vertical', tagline: true });
   }
+}
+
+// Four logo-design lockups built from one helper. Each gives the user
+// a placeholder icon (a centred circle so it reads as a "mark" rather
+// than a Generic Square), a brand wordmark in larger text, and an
+// optional tagline below. Spacing is rounded to the canvas grid so
+// nudging into snap-position feels natural. Users replace the
+// placeholder icon by deleting it and dropping in an image (spec/19)
+// or any other shape.
+function buildLogo(
+  cx: number,
+  cy: number,
+  opts: { orientation: 'horizontal' | 'vertical'; tagline: boolean },
+): Element[] {
+  const iconSize = 96;
+  const brandW = 280;
+  const brandH = 64;
+  const taglineW = 280;
+  const taglineH = 40;
+  const gap = 24;
+
+  if (opts.orientation === 'horizontal') {
+    // Composition width = icon + gap + textBlock. Centre on cx by
+    // splitting that width evenly either side. Text block right of
+    // the icon stacks brand + (optional) tagline.
+    const textBlockH = brandH + (opts.tagline ? 4 + taglineH : 0);
+    const compositionW = iconSize + gap + brandW;
+    const startX = cx - compositionW / 2;
+    const iconY = cy - iconSize / 2;
+    const textX = startX + iconSize + gap;
+    const textTop = cy - textBlockH / 2;
+    const elements: Element[] = [
+      {
+        ...createShape('circle', startX, iconY),
+        width: iconSize,
+        height: iconSize,
+        label: 'Logo',
+        textSize: 'sm' as const,
+      },
+      {
+        ...createText(textX, textTop),
+        width: brandW,
+        height: brandH,
+        label: 'Brand',
+        textSize: 'lg' as const,
+      },
+    ];
+    if (opts.tagline) {
+      elements.push({
+        ...createText(textX, textTop + brandH + 4),
+        width: taglineW,
+        height: taglineH,
+        label: 'Tagline goes here',
+        textSize: 'sm' as const,
+      });
+    }
+    return elements;
+  }
+
+  // Vertical: icon centred horizontally, brand below, tagline below
+  // that. Composition height stacks them with the same `gap` so the
+  // vertical rhythm matches the horizontal variant.
+  const compositionH = iconSize + gap + brandH + (opts.tagline ? 4 + taglineH : 0);
+  const top = cy - compositionH / 2;
+  const iconX = cx - iconSize / 2;
+  const brandX = cx - brandW / 2;
+  const taglineX = cx - taglineW / 2;
+  const elements: Element[] = [
+    {
+      ...createShape('circle', iconX, top),
+      width: iconSize,
+      height: iconSize,
+      label: 'Logo',
+      textSize: 'sm' as const,
+    },
+    {
+      ...createText(brandX, top + iconSize + gap),
+      width: brandW,
+      height: brandH,
+      label: 'Brand',
+      textSize: 'lg' as const,
+    },
+  ];
+  if (opts.tagline) {
+    elements.push({
+      ...createText(taglineX, top + iconSize + gap + brandH + 4),
+      width: taglineW,
+      height: taglineH,
+      label: 'Tagline goes here',
+      textSize: 'sm' as const,
+    });
+  }
+  return elements;
 }
 
 // A truly blank canvas is intimidating, so the "Blank diagram" template
