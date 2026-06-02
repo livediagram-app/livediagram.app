@@ -1,7 +1,7 @@
 import { isBoxed, type Tab } from '@livediagram/diagram';
+import { rowToChangeLog, type ChangeLogRow } from './change-log-row';
 import type {
   ChangeLogEntryDTO,
-  ChangeLogKind,
   DiagramDTO,
   DiagramSummary,
   Env,
@@ -612,49 +612,9 @@ export async function dropSharedAccess(
 }
 
 // ---------------------------------------------------------------------
-// change_log — per-diagram audit log (migration 0004)
-// ---------------------------------------------------------------------
-
-type ChangeLogRow = {
-  id: string;
-  tab_id: string | null;
-  participant_id: string;
-  // LEFT-joined from participants — null when the participant row
-  // was deleted (account delete, sign-out cleanup). The DTO
-  // surfaces an "Unknown" fallback on the client.
-  participant_name: string | null;
-  participant_color: string | null;
-  kind: string;
-  summary: string;
-  element_ids: string;
-  before_state: string;
-  after_state: string;
-  created_at: number;
-};
-
-// Fallback display values for change_log rows whose participant has
-// been deleted since the entry was written. The denormalised columns
-// went away with migration 0013 (item #15), so we have to fill
-// something in — leaving these undefined would mean the activity
-// panel renders blank rows.
-const UNKNOWN_PARTICIPANT_NAME = 'Unknown';
-const UNKNOWN_PARTICIPANT_COLOR = '#94a3b8'; // slate-400
-
-function rowToChangeLog(row: ChangeLogRow): ChangeLogEntryDTO {
-  return {
-    id: row.id,
-    tabId: row.tab_id,
-    participantId: row.participant_id,
-    participantName: row.participant_name ?? UNKNOWN_PARTICIPANT_NAME,
-    participantColor: row.participant_color ?? UNKNOWN_PARTICIPANT_COLOR,
-    kind: (row.kind as ChangeLogKind) ?? 'edit',
-    summary: row.summary,
-    elementIds: JSON.parse(row.element_ids),
-    beforeState: JSON.parse(row.before_state),
-    afterState: JSON.parse(row.after_state),
-    createdAt: row.created_at,
-  };
-}
+// change_log (per-diagram audit log, migration 0004). Row shape and
+// the denormalisation fallback live in change-log-row.ts (so the
+// pure mapper has its own test surface); D1 queries here use them.
 
 // 200 entries is plenty to drive the Activity Panel's scrolling list
 // while keeping the response small. Older entries stay in D1 for
