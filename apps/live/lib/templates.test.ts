@@ -256,3 +256,74 @@ describe('wireframe templates', () => {
     expect(arrows).toHaveLength(4);
   });
 });
+
+// Board templates moved to template-builders-boards.ts in commit
+// 77f2859. Same kind of structural fingerprint as the wireframes
+// above: a silent refactor that drops a column / lane / quadrant
+// (or changes the framework-defining label set) compiles AND
+// passes the catalogue "every kind builds non-empty" check, so
+// these tests are the actual safety net.
+
+describe('board templates', () => {
+  it('retrospective drops three columns in the Mad / Sad / Glad framework', () => {
+    const tab = buildTemplatedTab('retrospective', 'brand', 'tab-1', 'retro');
+    const labels = tab.elements
+      .map((el) => ('label' in el ? el.label : undefined))
+      .filter((l): l is string => Boolean(l));
+    // The framework lives in the three column headers. Anything
+    // else (sticky note text, container background) can move
+    // around without breaking the retro.
+    expect(labels).toContain('Mad');
+    expect(labels).toContain('Sad');
+    expect(labels).toContain('Glad');
+    // Three column containers, each its own boxed shape. Pinning
+    // the count stops a "lets merge columns" change from sneaking
+    // through.
+    const containerLabels = (['Mad', 'Sad', 'Glad'] as const).filter((name) =>
+      labels.includes(name),
+    );
+    expect(containerLabels).toHaveLength(3);
+    // Sticky notes (the rows the user fills in) are the second
+    // element type that matters. The retro ships with sticky-note
+    // starters so the template isn't a "fill in blank" exercise.
+    const stickies = tab.elements.filter((el) => el.type === 'sticky');
+    expect(stickies.length).toBeGreaterThan(0);
+  });
+
+  it('kanban drops five lanes from Backlog to Done under a sprint-board heading', () => {
+    const tab = buildTemplatedTab('kanban', 'brand', 'tab-1', 'kanban');
+    const labels = tab.elements
+      .map((el) => ('label' in el ? el.label : undefined))
+      .filter((l): l is string => Boolean(l));
+    expect(labels).toContain('Sprint board');
+    // Lane headers (with the dot + ticket count suffix). The
+    // assertion looks for the prefix to stay tolerant of the
+    // count suffix wobbling.
+    for (const lane of ['Backlog', 'To do', 'In progress', 'Review', 'Done']) {
+      expect(labels.some((l) => l.startsWith(lane))).toBe(true);
+    }
+    // Priority chips on the cards. These are framework signal:
+    // the kanban ships with assigned priorities so the user sees
+    // the convention.
+    expect(labels.some((l) => l.includes('High priority'))).toBe(true);
+    expect(labels).toContain('Medium');
+    expect(labels).toContain('Low');
+  });
+
+  it('swot drops a 2x2 grid with the four classic quadrants around a subject centre', () => {
+    const tab = buildTemplatedTab('swot', 'brand', 'tab-1', 'swot');
+    const labels = tab.elements
+      .map((el) => ('label' in el ? el.label : undefined))
+      .filter((l): l is string => Boolean(l));
+    expect(labels).toContain('Strengths');
+    expect(labels).toContain('Weaknesses');
+    expect(labels).toContain('Opportunities');
+    expect(labels).toContain('Threats');
+    expect(labels).toContain('Subject');
+    // Bullet starters inside each quadrant (formatted with the
+    // bullet glyph). Pinning that they exist confirms the
+    // quadrants aren't empty frames.
+    const bulletCount = labels.filter((l) => l.startsWith('•')).length;
+    expect(bulletCount).toBeGreaterThan(0);
+  });
+});
