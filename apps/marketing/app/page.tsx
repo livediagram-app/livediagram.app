@@ -43,6 +43,7 @@ import dynamic from 'next/dynamic';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { PrivacySection } from '@/components/PrivacySection';
 import { FeatureGrid, Section } from '@/components/Section';
 // Lazy-load UseCaseCarousel: the 470-line `'use client'` rotator
 // sits below several feature sections (well below the fold) and
@@ -307,6 +308,8 @@ export default function LandingPage() {
             ]}
           />
         </Section>
+
+        <PrivacySection />
 
         <Section
           id="versatile"
