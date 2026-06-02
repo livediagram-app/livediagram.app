@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import { buildSearchResults, type SearchGroup, type SearchResultItem } from '@/lib/search';
 import { titleCaseType, track } from '@/lib/telemetry';
+import { useEscape } from '@/hooks/useEscape';
 
 // Global search panel: triggered from a footer button, blurs the
 // canvas behind it, pops up near the top-centre. The scope is
@@ -68,18 +69,9 @@ export function SearchPanel({
     track('Search', 'Opened');
   }, []);
 
-  // Esc closes. Capture phase so the modal owns the key even when
-  // the editor's global shortcuts are listening.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [onClose]);
+  // Esc closes. Capture phase + stopPropagation so the modal owns
+  // the key even when the editor's global shortcuts are listening.
+  useEscape(onClose, { capture: true, stopPropagation: true });
 
   const groups = useMemo<SearchGroup[]>(
     () => buildSearchResults({ query, diagrams, folders, tabs, currentTabId }),

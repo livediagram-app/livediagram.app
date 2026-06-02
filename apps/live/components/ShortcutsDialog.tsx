@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEscape } from '@/hooks/useEscape';
 
 // Keyboard shortcut catalogue + per-device disable toggle. The
 // modal lists every shortcut the editor binds today and lets the
@@ -36,19 +36,10 @@ type ShortcutsDialogProps = {
 };
 
 export function ShortcutsDialog({ enabled, onToggleEnabled, onClose }: ShortcutsDialogProps) {
-  // Esc closes. The modal owns its own keydown listener (and uses
-  // capture so it wins against the editor's global shortcuts even
-  // when those are disabled).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [onClose]);
+  // Esc closes. Capture phase + stopPropagation so the modal wins
+  // against the editor's global shortcuts at document bubble even
+  // when those are disabled.
+  useEscape(onClose, { capture: true, stopPropagation: true });
 
   return (
     <div

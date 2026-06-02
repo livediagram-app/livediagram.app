@@ -5,6 +5,7 @@ import { Portal } from './Portal';
 import { apiDeleteImage, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { ImageUploadError, uploadImageFile } from '@/lib/upload-image';
 import { useConfirm } from '@/hooks/useConfirm';
+import { useEscape } from '@/hooks/useEscape';
 import { TrashIcon } from './explorer-icons';
 import { GalleryImageButton } from './GalleryImageButton';
 import { ImageDropZone } from './ImageDropZone';
@@ -69,13 +70,7 @@ export function ImagePicker({
       .catch(() => setGalleryError('Could not load your gallery.'));
   }, [ownerId]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
 
   // Clipboard paste support. While the picker is open, a paste
   // gesture (Cmd-V / Ctrl-V or right-click → Paste) lifts the

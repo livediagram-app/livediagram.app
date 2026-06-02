@@ -22,6 +22,7 @@ import { useReverification, useUser } from '@clerk/react';
 import { Portal } from './Portal';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
+import { useEscape } from '@/hooks/useEscape';
 import { messageOf } from './auth-shared';
 
 type Phase = 'idle' | 'submitting' | 'error';
@@ -70,15 +71,10 @@ export function DeleteAccountDialog({
     }
   }, [open]);
 
-  // Escape closes — same convention as other modals (ShareDialog).
-  useEffect(() => {
-    if (!open) return;
-    const handle = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && phase !== 'submitting') onClose();
-    };
-    document.addEventListener('keydown', handle);
-    return () => document.removeEventListener('keydown', handle);
-  }, [open, onClose, phase]);
+  // Escape closes, same convention as other modals (ShareDialog).
+  // Disabled mid-submit so the user can't cancel a request that's
+  // already in flight.
+  useEscape(onClose, { enabled: open && phase !== 'submitting' });
 
   if (!open) return null;
 

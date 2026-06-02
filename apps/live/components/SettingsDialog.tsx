@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { Portal } from './Portal';
+import { useEscape } from '@/hooks/useEscape';
 import type { UserPreferences } from '@/lib/user-preferences';
 
 // Per-user preference dialog (spec/20). Launched from the settings
@@ -18,13 +18,7 @@ type SettingsDialogProps = {
 };
 
 export function SettingsDialog({ settings, onChange, onClose }: SettingsDialogProps) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
 
   const autoRebind = settings.autoRebindArrows !== false;
   const telemetryOn = settings.telemetryEnabled !== false;
