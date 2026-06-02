@@ -143,7 +143,12 @@ beats "browse my whole library."
 
 ### Standalone `/explorer` page
 
-This is the full-page library view (signed-in only). The page is
+This is the full-page library view. Open to both guests and signed-in
+users: the owner id resolves the same way every other surface in the
+live app does (Clerk userId when signed in, the `livediagram:v2:self-id`
+localStorage UUID otherwise), so a guest sees the diagrams + folders +
+Image Gallery their per-browser id owns. AuthControls in the page header
+surfaces a "Sign in" CTA for guests who want to upgrade. The page is
 modelled on Windows Explorer: a sidebar tree drives navigation, a
 breadcrumb + list view on the right shows the focused folder's
 contents.
@@ -155,10 +160,10 @@ contents.
     nesting. Each folder row carries an ellipsis menu with Rename,
     New subfolder, Move to folder, Delete.
   - "Image Gallery" (under a "Library" section heading) — virtual
-    entry that opens the per-account image gallery on the right
-    pane. Always present for signed-in users (the section behind it
-    degrades to an empty state when the api worker reports 503,
-    e.g. a self-host without R2).
+    entry that opens the per-owner image gallery on the right
+    pane. Always present (the section behind it degrades to an
+    empty state when the api worker reports 503, e.g. a self-host
+    without R2).
   - "Shared with me" — virtual entry, only present when the user
     has at least one accepted share.
 - **Right pane:**

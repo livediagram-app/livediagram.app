@@ -16,7 +16,7 @@ import {
   type Folder,
   type SharedWithItem,
 } from '@/lib/api-client';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { getGuestSelfId, setGuestSelfId } from '@/lib/local-identity';
 import { useFolders } from '@/hooks/useFolders';
 import { useConfirm } from '@/hooks/useConfirm';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
@@ -75,20 +75,42 @@ const SIDEBAR_WIDTH = 256;
 // of a chevron + folder glyph + name with each child nudged in.
 const INDENT_STEP = 16;
 
-// Full-page Explorer (item #12). Signed-in only — guests still have
-// the floating Explorer panel on the editor / new-diagram routes,
-// but the standalone page is gated on Clerk because the value of
-// the dedicated page is "see everything I own across devices," and
-// pure-guest identity is per-browser by definition. The non-Clerk
-// deployment renders a permanent "auth not configured" notice (per
-// spec/04's three-deployment-modes table).
+// Full-page Explorer (item #12). Open to both guests and signed-in
+// users (spec/04 + spec/15): the owner id resolves to the Clerk userId
+// when signed in, otherwise to the `livediagram:v2:self-id` localStorage
+// UUID (minting one on first visit, same as `/live/new`). Signed-out
+// visitors get the AuthControls "Sign in" CTA in the page header but
+// the library view itself is not gated, so guests can browse + rename
+// + delete + foldering the diagrams their per-browser id already owns.
 //
-// Layout shape (spec/15): split view — sidebar tree on the left for
+// Layout shape (spec/15): split view, sidebar tree on the left for
 // navigation, breadcrumb + list view on the right for the focused
 // folder's contents. Subfolders nest in both panes; selecting a
 // folder in the tree or double-clicking a folder row drills in.
 export default function ExplorerPage() {
-  const { authLoaded, isSignedIn, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
+  const { authLoaded, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
+  // Guest fallback id, mirroring the new/page.tsx pattern: a signed-in
+  // user gets `clerkUserId`, a guest gets the existing localStorage id
+  // or a freshly-minted UUID on first visit so the FAB's "+ New folder"
+  // path has a real owner to send to the api. Null until Clerk has
+  // settled so a signed-in user never momentarily reads a guest id.
+  const [guestId, setGuestId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!authLoaded) return;
+    if (clerkUserId) {
+      setGuestId(null);
+      return;
+    }
+    const stored = getGuestSelfId();
+    if (stored) {
+      setGuestId(stored);
+      return;
+    }
+    const fresh = crypto.randomUUID();
+    setGuestSelfId(fresh);
+    setGuestId(fresh);
+  }, [authLoaded, clerkUserId]);
+  const ownerId: string | null = clerkUserId ?? guestId;
   const [diagrams, setDiagrams] = useState<DiagramItem[]>([]);
   const {
     folders,
@@ -96,7 +118,7 @@ export default function ExplorerPage() {
     renameFolder,
     deleteFolder,
     refresh: refreshFolders,
-  } = useFolders(clerkUserId ?? null, { autoLoad: false });
+  } = useFolders(ownerId, { autoLoad: false });
   const [shared, setShared] = useState<SharedWithItem[]>([]);
   const [loading, setLoading] = useState(true);
   // Folder id mid-rename so the tree / list row swaps to an input
@@ -148,12 +170,12 @@ export default function ExplorerPage() {
 
   useEffect(() => {
     if (!authLoaded) return;
-    if (!isSignedIn || !clerkUserId) {
+    if (!ownerId) {
       setLoading(false);
       return;
     }
-    void refresh(clerkUserId);
-  }, [authLoaded, isSignedIn, clerkUserId, refresh]);
+    void refresh(ownerId);
+  }, [authLoaded, ownerId, refresh]);
 
   // ---- Derived tree shape ---------------------------------------
   // Index folders by parentId so the recursive renderer can walk
@@ -236,11 +258,11 @@ export default function ExplorerPage() {
   // are rare; we shape the optimistic update locally and fire the
   // API call ourselves.
   const moveFolderToParent = (id: string, parentId: string | null) => {
-    if (!clerkUserId) return;
+    if (!ownerId) return;
     // No-op if we'd be moving into ourselves or a descendant — the
     // picker already filters these, this is belt-and-braces.
     if (parentId && descendantSet(id).has(parentId)) return;
-    void apiUpdateFolder(clerkUserId, id, { parentId }).catch(() => {});
+    void apiUpdateFolder(ownerId, id, { parentId }).catch(() => {});
     // Optimistic: rewrite the folder row's parentId locally. The
     // useFolders hook owns the canonical state; we reach in via
     // `setFolders` — but that's not exposed by the hook... so kick
@@ -250,16 +272,16 @@ export default function ExplorerPage() {
   };
 
   const renameDiagram = (id: string, name: string) => {
-    if (!clerkUserId) return;
+    if (!ownerId) return;
     const trimmed = name.trim();
     setRenamingDiagramId(null);
     if (!trimmed) return;
     setDiagrams((prev) => prev.map((d) => (d.id === id ? { ...d, name: trimmed } : d)));
-    void apiSaveDiagramMeta(clerkUserId, { id, name: trimmed }).catch(() => {});
+    void apiSaveDiagramMeta(ownerId, { id, name: trimmed }).catch(() => {});
   };
 
   const deleteDiagram = async (id: string) => {
-    if (!clerkUserId) return;
+    if (!ownerId) return;
     const target = diagrams.find((d) => d.id === id);
     const ok = await confirm({
       title: `Delete "${target?.name || 'this diagram'}"?`,
@@ -269,26 +291,26 @@ export default function ExplorerPage() {
     });
     if (!ok) return;
     setDiagrams((prev) => prev.filter((d) => d.id !== id));
-    void apiDeleteDiagram(clerkUserId, id).catch(() => {});
+    void apiDeleteDiagram(ownerId, id).catch(() => {});
   };
 
   const moveDiagramToFolder = (id: string, folderId: string | null) => {
-    if (!clerkUserId) return;
+    if (!ownerId) return;
     setDiagrams((prev) => prev.map((d) => (d.id === id ? { ...d, folderId } : d)));
-    void apiSetDiagramFolder(clerkUserId, id, folderId).catch(() => {});
+    void apiSetDiagramFolder(ownerId, id, folderId).catch(() => {});
   };
 
   const duplicateDiagram = async (id: string) => {
-    if (!clerkUserId) return;
-    await duplicate(clerkUserId, id);
-    const list = await apiListDiagrams(clerkUserId).catch(() => null);
+    if (!ownerId) return;
+    await duplicate(ownerId, id);
+    const list = await apiListDiagrams(ownerId).catch(() => null);
     if (list) setDiagrams(list);
   };
 
   const dismissShared = (diagramId: string) => {
-    if (!clerkUserId) return;
+    if (!ownerId) return;
     setShared((prev) => prev.filter((s) => s.id !== diagramId));
-    void apiDismissSharedWith(clerkUserId, diagramId).catch(() => {});
+    void apiDismissSharedWith(ownerId, diagramId).catch(() => {});
   };
 
   const openMovePickerForDiagram = (id: string, anchor: HTMLElement | null) => {
@@ -416,26 +438,11 @@ export default function ExplorerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, folderById]);
 
-  // ---- Early returns -------------------------------------------
-  if (!clerkEnabled) {
-    return (
-      <FullPageNotice
-        title="Explorer needs auth"
-        body="This deployment was built without Clerk, so there's no signed-in workspace to show here. The floating Explorer on the editor still works for per-browser guest sessions."
-        cta={{ href: '/live/', label: 'Back to editor' }}
-      />
-    );
-  }
+  // Wait for Clerk to settle so a signed-in user never momentarily
+  // reads the localStorage guest id and refreshes against the wrong
+  // owner. After this gate, `ownerId` is either the Clerk userId or
+  // the guest UUID (never null in practice).
   if (!authLoaded) return null;
-  if (!isSignedIn) {
-    return (
-      <FullPageNotice
-        title="Sign in to see your Explorer"
-        body="Your owned diagrams, folders, and the diagrams others have shared with you all live here once you sign in."
-        cta={{ href: '/live/sign-in/', label: 'Sign in' }}
-      />
-    );
-  }
 
   const toggleExpand = (id: string) => {
     setExpanded((prev) => {
@@ -592,8 +599,8 @@ export default function ExplorerPage() {
           {loading ? (
             <SkeletonRows />
           ) : selected.kind === 'gallery' ? (
-            clerkUserId ? (
-              <GalleryPane ownerId={clerkUserId} />
+            ownerId ? (
+              <GalleryPane ownerId={ownerId} />
             ) : null
           ) : selected.kind === 'shared' ? (
             <SharedList shared={shared} onDismiss={dismissShared} />
@@ -1508,32 +1515,6 @@ function SkeletonRows() {
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function FullPageNotice({
-  title,
-  body,
-  cta,
-}: {
-  title: string;
-  body: string;
-  cta: { href: string; label: string };
-}) {
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-6">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-        <Brand href="/" size="md" />
-        <h1 className="mt-4 text-lg font-semibold text-slate-900">{title}</h1>
-        <p className="mt-2 text-sm text-slate-600">{body}</p>
-        <Link
-          href={cta.href}
-          className="mt-5 inline-flex items-center justify-center rounded-md bg-brand-500 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
-        >
-          {cta.label}
-        </Link>
-      </div>
     </div>
   );
 }
