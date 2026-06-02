@@ -884,11 +884,39 @@ export default {
           }
         }
 
-        // /api/diagrams/<id>/ws — Durable Object WebSocket
+        // /api/diagrams/<id>/ws — Durable Object WebSocket. Resolve
+        // the visitor's role server-side before handing the request
+        // to the DO so peer avatars can show "Editor" / "Viewer"
+        // badges that the client can't lie about: clients sending a
+        // crafted `hello` frame still get their role re-stamped from
+        // the X-Verified-Role header below. Falls through to no role
+        // when we can't resolve (e.g. owner request with no share
+        // code and no auth) — the DO leaves role undefined and the
+        // UI hides the badge for that peer.
         if (segments.length === 4 && segments[3] === 'ws') {
           const id = segments[2]!;
           const stub = env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(id));
-          return stub.fetch(request);
+          // Browsers can't put custom headers on a WebSocket upgrade,
+          // so the client passes its share code / owner id as query
+          // params (`?s=...&o=...`). We resolve role here and forward
+          // it to the Durable Object via X-Verified-Role; the DO
+          // ignores any role the client might set in its own hello
+          // payload, so this header is the trust boundary.
+          let role: 'edit' | 'view' | null = null;
+          const claimedOwnerId = url.searchParams.get('o');
+          const diagram = await getDiagram(env, id);
+          if (diagram && claimedOwnerId && claimedOwnerId === diagram.ownerId) {
+            role = 'edit';
+          } else {
+            const code = url.searchParams.get('s');
+            if (code) {
+              const link = await getShareLink(env, code);
+              if (link && link.diagramId === id) role = link.role;
+            }
+          }
+          const forwarded = new Request(request);
+          if (role) forwarded.headers.set('X-Verified-Role', role);
+          return stub.fetch(forwarded);
         }
 
         // /api/diagrams/<id>/log — owner OR edit-role share-code holder.

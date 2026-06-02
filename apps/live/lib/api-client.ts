@@ -689,7 +689,14 @@ export async function apiSaveSelf(p: Participant): Promise<void> {
 // so it stays here next to the connect helper.
 
 export type RoomHandlers = {
-  onPresence: (participants: { id: string; name: string; color: string }[]) => void;
+  onPresence: (
+    participants: {
+      id: string;
+      name: string;
+      color: string;
+      role?: 'edit' | 'view';
+    }[],
+  ) => void;
   onOp: (from: string, op: RoomOp) => void;
   onClose?: () => void;
 };
@@ -698,11 +705,22 @@ export function connectRoom(
   diagramId: string,
   participant: { id: string; name: string; color: string },
   handlers: RoomHandlers,
+  options: { shareCode?: string | null; ownerId?: string | null } = {},
 ): {
   send: (msg: RoomOutgoing) => void;
   close: () => void;
 } {
-  const ws = new WebSocket(wsUrl(`/diagrams/${diagramId}/ws`));
+  // Browsers can't set custom headers on a WebSocket upgrade, so the
+  // share code (and owner id, for diagrams the visitor owns) ride on
+  // the query string. The api worker reads them, resolves role, and
+  // forwards an X-Verified-Role header to the Durable Object before
+  // the upgrade reaches it. Empty / missing values are stripped so
+  // the URL stays clean.
+  const params = new URLSearchParams();
+  if (options.shareCode) params.set('s', options.shareCode);
+  if (options.ownerId) params.set('o', options.ownerId);
+  const qs = params.toString();
+  const ws = new WebSocket(wsUrl(`/diagrams/${diagramId}/ws${qs ? `?${qs}` : ''}`));
   ws.addEventListener('open', () => {
     ws.send(JSON.stringify({ kind: 'hello', participant } satisfies RoomOutgoing));
   });

@@ -772,9 +772,15 @@ function TabPresenceStack({
             participant={slot.p}
             size={16}
             withTooltip
-            badges={
-              slot.p.id === selfId ? ['You', selfRole === 'view' ? 'Viewer' : 'Editor'] : undefined
-            }
+            badges={(() => {
+              if (slot.p.id === selfId) {
+                return ['You', selfRole === 'view' ? 'Viewer' : 'Editor'];
+              }
+              if (slot.p.role) {
+                return [slot.p.role === 'view' ? 'Viewer' : 'Editor'];
+              }
+              return undefined;
+            })()}
           />
         </span>
       ))}

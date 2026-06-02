@@ -54,7 +54,16 @@ export class DiagramRoom implements DurableObject {
     // owned by this Durable Object.
     const client = pair[0]!;
     const server = pair[1]!;
-    this.handleSession(server);
+    // Server-resolved role (set by the api worker before forwarding the
+    // upgrade). The DO trusts this header because only the worker can
+    // set it: clients reach the DO via env.DIAGRAM_ROOM.get(...).fetch,
+    // never directly. Stashed per-session so the hello-handler can
+    // re-stamp role onto the broadcast presence, defeating a crafted
+    // client that lies in its own hello payload.
+    const headerRole = request.headers.get('X-Verified-Role');
+    const verifiedRole: 'edit' | 'view' | undefined =
+      headerRole === 'edit' || headerRole === 'view' ? headerRole : undefined;
+    this.handleSession(server, verifiedRole);
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -74,7 +83,7 @@ export class DiagramRoom implements DurableObject {
     }
   }
 
-  handleSession(ws: WebSocket): void {
+  handleSession(ws: WebSocket, verifiedRole?: 'edit' | 'view'): void {
     ws.accept();
     this.sessions.set(ws, null);
 
@@ -86,7 +95,11 @@ export class DiagramRoom implements DurableObject {
         return;
       }
       if (msg.kind === 'hello') {
-        this.sessions.set(ws, msg.participant);
+        // Force the server-resolved role onto the stored presence: the
+        // hello frame's own `role` field (if any) is ignored. This is
+        // the lie-defence that justifies surfacing a Viewer / Editor
+        // badge to peers.
+        this.sessions.set(ws, { ...msg.participant, role: verifiedRole });
         this.broadcastPresence();
         return;
       }

@@ -27,6 +27,12 @@ export type Participant = {
   // legacy callers that don't track it can still construct a
   // Participant; treated as "now" when omitted.
   lastActiveAt?: number;
+  // Server-verified share-code role inside this diagram. Set by the
+  // api worker at WS upgrade time; clients can't forge it. Optional
+  // because guest / private-diagram sessions don't have a role. The
+  // tooltip uses it to tag a peer as 'Editor' / 'Viewer' alongside
+  // their name.
+  role?: 'edit' | 'view';
 };
 
 // Status from idle duration. Used at render time so the ring + label

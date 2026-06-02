@@ -132,6 +132,13 @@ export type ParticipantPresence = {
   id: string;
   name: string;
   color: string;
+  // Server-resolved role inside this diagram. Set by the api worker
+  // at WebSocket upgrade time before the request reaches the Durable
+  // Object — derived from owner-id match (always 'edit') or the
+  // share-code the visitor used to join. Optional so existing
+  // hello frames keep parsing while clients catch up; missing value
+  // is treated as "unknown role" by the UI (no badge surfaced).
+  role?: 'edit' | 'view';
 };
 
 // ---------------------------------------------------------------------

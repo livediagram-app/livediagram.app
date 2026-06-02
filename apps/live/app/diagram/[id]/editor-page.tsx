@@ -1133,6 +1133,11 @@ export default function LivePage() {
             // arrives.
             status: 'online',
             lastActiveAt: lastSeenRef.current.get(p.id) ?? now,
+            // Role is server-verified (api worker resolved it at WS
+            // upgrade from the share-code / owner-id query params
+            // and stamped it onto the broadcast row). Optional on the
+            // wire so a connection without role info still parses.
+            ...(p.role ? { role: p.role } : {}),
           })),
         );
         // Seed lastSeen for any presence-arrival we haven't tracked
@@ -1312,6 +1317,13 @@ export default function LivePage() {
       diagramId,
       { id: selfParticipant.id, name: selfParticipant.name, color: selfParticipant.color },
       handlers,
+      {
+        // The api worker resolves role from these on WS upgrade and
+        // stamps it into the participant row via X-Verified-Role so
+        // peers see a trustworthy Viewer / Editor badge.
+        shareCode: sessionShareCode,
+        ownerId: isOwner ? selfParticipant.id : null,
+      },
     );
     roomRef.current = room;
     return () => {
