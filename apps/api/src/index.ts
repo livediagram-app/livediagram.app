@@ -32,6 +32,7 @@ import {
   insertTelemetryEvents,
   listChangeLog,
   telemetryCountsSince,
+  telemetryDailyCountsSince,
   copyDiagram,
   deleteAccount,
   deleteOldChangeLogEntries,
@@ -229,19 +230,45 @@ export default {
         const day = 24 * 60 * 60 * 1000;
         const d = new Date(now);
         const midnightUtc = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-        const [today, last7, last30] = await Promise.all([
+        const dailySince = midnightUtc - 29 * day; // 30 buckets inclusive
+        const [today, last7, last30, dailyRows] = await Promise.all([
           telemetryCountsSince(env, midnightUtc),
           telemetryCountsSince(env, now - 7 * day),
           telemetryCountsSince(env, now - 30 * day),
+          telemetryDailyCountsSince(env, dailySince),
         ]);
         const toWindow = (rows: typeof today) => ({
           total: rows.reduce((sum, r) => sum + r.count, 0),
           rows,
         });
+        // Build the 30-day buckets: `days` carries the UTC-midnight ms
+        // for each slot oldest -> newest, with zero-filled totals /
+        // category arrays for days that had no events (SQL drops them).
+        const days: number[] = [];
+        const totals: number[] = [];
+        const byCategory: Record<string, number[]> = {};
+        const dayIndex: Map<string, number> = new Map();
+        for (let i = 0; i < 30; i++) {
+          const ts = dailySince + i * day;
+          days.push(ts);
+          totals.push(0);
+          // ISO YYYY-MM-DD for matching against SQLite's date() output.
+          const iso = new Date(ts).toISOString().slice(0, 10);
+          dayIndex.set(iso, i);
+        }
+        for (const row of dailyRows) {
+          const idx = dayIndex.get(row.day);
+          if (idx === undefined) continue;
+          totals[idx] = (totals[idx] ?? 0) + row.count;
+          const arr = byCategory[row.category] ?? new Array(30).fill(0);
+          arr[idx] = (arr[idx] ?? 0) + row.count;
+          byCategory[row.category] = arr;
+        }
         const summary: TelemetrySummary = {
           enabled: true,
           generatedAt: now,
           windows: { today: toWindow(today), last7: toWindow(last7), last30: toWindow(last30) },
+          daily: { days, totals, byCategory },
         };
         const res = json(summary);
         if (isLocalDev) return res;

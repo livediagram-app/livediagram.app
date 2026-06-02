@@ -1162,6 +1162,29 @@ export async function deleteOldEvents(env: Env, cutoffMs: number): Promise<numbe
   return result.meta.changes ?? 0;
 }
 
+// Per-day per-category counts since `since`, used to render the
+// dashboard's daily-volume sparkline + the per-category stacked
+// area chart. SQLite's date() with the 'unixepoch' modifier
+// produces YYYY-MM-DD which is naturally sortable; we re-bucket
+// into the caller's 30-day array client-side rather than in SQL so
+// missing-day rows (zero events) still show up as zero rather than
+// being dropped. The events_ts_idx covers the range filter.
+export async function telemetryDailyCountsSince(
+  env: Env,
+  since: number,
+): Promise<{ day: string; category: string; count: number }[]> {
+  const result = await env.DB.prepare(
+    `SELECT date(ts / 1000, 'unixepoch') AS day, category, COUNT(*) AS count
+       FROM events
+      WHERE ts >= ?
+      GROUP BY day, category
+      ORDER BY day ASC`,
+  )
+    .bind(since)
+    .all<{ day: string; category: string; count: number }>();
+  return result.results ?? [];
+}
+
 // Grouped counts for every event at or after `since` (ms epoch). One
 // row per (category, action, type). Drives the dashboard's fixed
 // windows; the events_ts_idx covers the range filter.

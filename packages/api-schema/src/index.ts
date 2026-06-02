@@ -399,8 +399,22 @@ export type TelemetryWindow = {
   rows: TelemetryCount[];
 };
 
+// Per-day buckets for the trend charts on the dashboard. `days` is
+// 30 UTC-midnight timestamps oldest -> newest; `totals[i]` is total
+// events on `days[i]`; `byCategory[category][i]` is the per-category
+// count on the same day. Pre-aggregated server-side so the dashboard
+// can render the sparkline + stacked-area without any client work.
+export type TelemetryDaily = {
+  days: number[];
+  totals: number[];
+  byCategory: Record<string, number[]>;
+};
+
 export type TelemetrySummary = {
   enabled: boolean;
   generatedAt: number;
   windows: Record<TelemetryWindowKey, TelemetryWindow>;
+  // Optional so older clients (and the disabled-state response) still
+  // parse. Present whenever `enabled` is true.
+  daily?: TelemetryDaily;
 };
