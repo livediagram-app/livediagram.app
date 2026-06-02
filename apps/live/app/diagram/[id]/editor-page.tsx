@@ -181,6 +181,19 @@ function createTab(name: string): Tab {
   return { id: crypto.randomUUID(), name, elements: [] };
 }
 
+// Build the lazy-load placeholder tabs from a diagram's tab summaries.
+// A diagram should always carry at least one tab; if the API ever
+// returns zero summaries (a partial delete, a seeding bug, or a race
+// that stripped the last tab) we materialise a fresh Tab 1 rather than
+// leaving `tabs` empty. An empty tabs array makes `activeTab` (which
+// falls back to `tabs[0]`) undefined, and the editor crashes on the
+// first `activeTab.elements` read. The seeded tab autosaves back to the
+// API on the next save cycle, healing the diagram.
+function placeholdersFromSummaries(summaries: { id: string; name: string }[]): Tab[] {
+  if (summaries.length === 0) return [createTab('Tab 1')];
+  return summaries.map((summary) => ({ id: summary.id, name: summary.name, elements: [] }));
+}
+
 // Activity-log past/future stacks share the cap with the
 // state-snapshot stack: we can't undo past what useDiagramHistory
 // remembers, so there's no point in tracking more log entries than
@@ -735,11 +748,7 @@ export default function LivePage() {
           // summaries) gets its full payload inline so the first paint
           // has real content; the rest land as placeholders and a
           // useEffect below fetches each one when the user switches.
-          const placeholderTabs: Tab[] = fetched.tabs.map((summary) => ({
-            id: summary.id,
-            name: summary.name,
-            elements: [],
-          }));
+          const placeholderTabs: Tab[] = placeholdersFromSummaries(fetched.tabs);
           const firstSummary = fetched.tabs[0];
           if (firstSummary) {
             const first = await apiLoadTab(
@@ -844,11 +853,7 @@ export default function LivePage() {
         if (fetched) {
           // Lazy per-tab fetch — see the share branch above for
           // rationale.
-          const placeholderTabs: Tab[] = fetched.tabs.map((summary) => ({
-            id: summary.id,
-            name: summary.name,
-            elements: [],
-          }));
+          const placeholderTabs: Tab[] = placeholdersFromSummaries(fetched.tabs);
           const firstSummary = fetched.tabs[0];
           if (firstSummary) {
             const first = await apiLoadTab(self.id, fetched.id, firstSummary.id, null).catch(
