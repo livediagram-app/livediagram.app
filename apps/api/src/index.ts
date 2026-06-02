@@ -110,6 +110,28 @@ async function canEditDiagram(
   return link.role === 'edit';
 }
 
+// True when the request is allowed to READ the given diagram — the
+// owner, OR ANY valid share code (view or edit) that maps to this
+// diagram. Reads must be open to view-role visitors: a view-only
+// share link exists precisely so stakeholders can see the diagram
+// (spec/04), and tab content is fetched lazily per tab (spec/13), so
+// the per-tab GET is the only path a viewer has to that content.
+// Writes still gate on canEditDiagram. Mirrors the read check the
+// image route applies (a share code for the diagram, regardless of
+// role).
+async function canReadDiagram(
+  env: Env,
+  diagramId: string,
+  owner: string | null,
+  shareCode: string | null,
+  ownerId: string,
+): Promise<boolean> {
+  if (owner && owner === ownerId) return true;
+  if (!shareCode) return false;
+  const link = await getShareLink(env, shareCode);
+  return !!link && link.diagramId === diagramId;
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === 'OPTIONS') {
@@ -586,11 +608,17 @@ export default {
           }
         }
 
-        // /api/diagrams/<id>/tabs/<tabId> — owner or edit-role visitor.
-        //   GET    — full tab payload (data + everything).
+        // /api/diagrams/<id>/tabs/<tabId>
+        //   GET    — full tab payload. READ access: owner or ANY valid
+        //            share code (view OR edit) for this diagram, so
+        //            view-only visitors can load tab content (spec/04 +
+        //            spec/13). This is a viewer's only path to content:
+        //            the share resolve returns summaries, and the
+        //            realtime room relays ops, not snapshots.
         //   PUT    — upsert one tab. Body is a Tab. orderIndex falls
         //            through the existing row, or appends when new.
         //   DELETE — remove one tab.
+        //   PUT / DELETE are writes: owner or edit-role only.
         if (segments.length === 5 && segments[3] === 'tabs') {
           const id = segments[2]!;
           const tabId = segments[4]!;
@@ -599,13 +627,17 @@ export default {
           if (!owner) return missingAuth();
           const existing = await getDiagram(env, id);
           if (!existing) return notFound();
-          const allowed = await canEditDiagram(env, id, owner, shareCode, existing.ownerId);
-          if (!allowed) return forbidden();
 
           if (request.method === 'GET') {
+            const allowed = await canReadDiagram(env, id, owner, shareCode, existing.ownerId);
+            if (!allowed) return forbidden();
             const tab = await getTab(env, id, tabId);
             return tab ? json({ tab }) : notFound();
           }
+
+          // Writes below: owner or edit-role share visitor only.
+          const allowed = await canEditDiagram(env, id, owner, shareCode, existing.ownerId);
+          if (!allowed) return forbidden();
           if (request.method === 'PUT') {
             const body = (await request.json()) as Tab;
             if (!body.id || !body.name || !Array.isArray(body.elements)) {
