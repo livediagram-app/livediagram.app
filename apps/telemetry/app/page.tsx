@@ -35,6 +35,26 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   Session: 'Account-level events when Clerk auth is configured: sign-in, sign-up, sign-out.',
 };
 
+// Per-category colour used by every chart so the category-share bar,
+// per-category sparkline, and category-card legend dot all agree. Hand-
+// picked so adjacent slices in the stacked bar stay visually distinct
+// (no two adjacent blues). Any future category falls back to a slate.
+const CATEGORY_COLORS: Record<string, string> = {
+  Diagram: '#0ea5e9',
+  Element: '#10b981',
+  Tab: '#f59e0b',
+  Theme: '#8b5cf6',
+  Canvas: '#ec4899',
+  Template: '#06b6d4',
+  Comment: '#84cc16',
+  Note: '#f97316',
+  Search: '#6366f1',
+  UI: '#0891b2',
+  Folder: '#a855f7',
+  Session: '#64748b',
+};
+const categoryColor = (c: string) => CATEGORY_COLORS[c] ?? '#94a3b8';
+
 type Group = { category: string; subtotal: number; items: TelemetryCount[] };
 
 function groupByCategory(rows: TelemetryCount[]): Group[] {
@@ -834,6 +854,189 @@ function DotGlyph() {
   );
 }
 
+// ---------------------------------------------------------------------
+// Charts
+// ---------------------------------------------------------------------
+
+// Window-comparison strip: three pill-shaped bars showing the totals
+// for the three windows side by side. Width inside each pill scales
+// by the largest of the three totals so the proportions read at
+// a glance even when last-30 dwarfs today.
+function WindowStrip({ today, last7, last30 }: { today: number; last7: number; last30: number }) {
+  const max = Math.max(today, last7, last30, 1);
+  const bars: { label: string; value: number }[] = [
+    { label: 'Today', value: today },
+    { label: 'Last 7 days', value: last7 },
+    { label: 'Last month', value: last30 },
+  ];
+  return (
+    <div className="grid gap-3 sm:grid-cols-3">
+      {bars.map((b) => (
+        <div
+          key={b.label}
+          className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
+        >
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            {b.label}
+          </p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            {b.value.toLocaleString()}
+          </p>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+            <div
+              className="h-full rounded-full bg-brand-500"
+              style={{ width: `${Math.round((b.value / max) * 100)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Daily-volume sparkline: 30 vertical bars, oldest -> newest, height
+// proportional to that day's total. Hover surfaces a native title
+// tooltip with the date + count for each bar.
+function DailySparkline({ days, totals }: { days: number[]; totals: number[] }) {
+  const max = Math.max(...totals, 1);
+  const fmt = (ms: number) => {
+    const d = new Date(ms);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+      <div className="flex items-baseline justify-between">
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          Daily volume — last 30 days
+        </p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Peak {max.toLocaleString()}</p>
+      </div>
+      <div className="mt-4 flex h-24 items-end gap-1">
+        {totals.map((v, i) => (
+          <div
+            key={days[i] ?? i}
+            title={`${fmt(days[i] ?? 0)} · ${v.toLocaleString()}`}
+            className="flex-1 rounded-sm bg-brand-200 transition hover:bg-brand-500 dark:bg-brand-500/40 dark:hover:bg-brand-400"
+            style={{ height: `${Math.max(2, (v / max) * 100)}%` }}
+          />
+        ))}
+      </div>
+      <div className="mt-2 flex justify-between text-[10px] text-slate-400">
+        <span>{fmt(days[0] ?? 0)}</span>
+        <span>{fmt(days[days.length - 1] ?? 0)}</span>
+      </div>
+    </div>
+  );
+}
+
+// Category share bar: one stacked horizontal bar broken into segments
+// per category, with a legend underneath. Reads at a glance which
+// area of the product dominates the active window's activity.
+function CategoryShareBar({ groups, total }: { groups: Group[]; total: number }) {
+  if (total === 0) return null;
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        Share of events by category
+      </p>
+      <div className="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+        {groups.map((g) => (
+          <div
+            key={g.category}
+            title={`${g.category} · ${((g.subtotal / total) * 100).toFixed(1)}%`}
+            style={{
+              width: `${(g.subtotal / total) * 100}%`,
+              backgroundColor: categoryColor(g.category),
+            }}
+          />
+        ))}
+      </div>
+      <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
+        {groups.map((g) => (
+          <li key={g.category} className="flex items-center gap-1.5 text-xs text-slate-600">
+            <span
+              aria-hidden
+              className="inline-block h-2.5 w-2.5 rounded-sm"
+              style={{ backgroundColor: categoryColor(g.category) }}
+            />
+            <span>{g.category}</span>
+            <span className="text-slate-400">{((g.subtotal / total) * 100).toFixed(1)}%</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// Top-N leaderboard: highest-count events across all categories.
+// Each row is icon + label + a relative bar + count, sorted desc.
+function TopNLeaderboard({ rows, n = 10 }: { rows: TelemetryCount[]; n?: number }) {
+  const sorted = [...rows].sort((a, b) => b.count - a.count).slice(0, n);
+  if (sorted.length === 0) return null;
+  const top = sorted[0]?.count ?? 1;
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        Top {sorted.length} events
+      </p>
+      <ul className="mt-3 flex flex-col gap-2">
+        {sorted.map((row) => (
+          <li
+            key={`${row.category}:${row.action}:${row.type ?? ''}`}
+            title={eventExplanation(row.category, row.action, row.type ?? null)}
+            className="flex items-center gap-2 text-sm"
+          >
+            <span className="shrink-0 text-slate-400">
+              <EventIcon category={row.category} action={row.action} type={row.type ?? null} />
+            </span>
+            <span className="w-32 shrink-0 truncate text-slate-600">
+              {row.category} · {eventLabel(row)}
+            </span>
+            <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+              <span
+                className="absolute inset-y-0 left-0 rounded-full"
+                style={{
+                  width: `${(row.count / top) * 100}%`,
+                  backgroundColor: categoryColor(row.category),
+                }}
+              />
+            </span>
+            <span className="w-12 shrink-0 text-right font-medium text-slate-900">
+              {row.count.toLocaleString()}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// Per-category sparkline rendered inside each category card so a
+// reader can see "is this category trending up?" without scrolling
+// back to the global daily-volume chart. 30 bars, scaled to the
+// category's own peak (not the global peak) so a quiet category
+// isn't a flat line beneath a dominant one.
+function CategorySparkline({ days, series }: { days: number[]; series: number[] }) {
+  if (series.length === 0) return null;
+  const max = Math.max(...series, 1);
+  const fmt = (ms: number) => {
+    const d = new Date(ms);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
+  return (
+    <div className="mt-3 flex h-10 items-end gap-[2px]">
+      {series.map((v, i) => (
+        <div
+          key={days[i] ?? i}
+          title={`${fmt(days[i] ?? 0)} · ${v.toLocaleString()}`}
+          className="flex-1 rounded-[1px] bg-slate-200 dark:bg-slate-700"
+          style={{ height: `${Math.max(2, (v / max) * 100)}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function TelemetryDashboard() {
   const [summary, setSummary] = useState<TelemetrySummary | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -931,6 +1134,34 @@ export default function TelemetryDashboard() {
             </p>
           </div>
 
+          {/* Window-comparison strip: read all three windows at once
+              without flipping the toggle. */}
+          <div className="mt-6">
+            <WindowStrip
+              today={summary.windows.today.total}
+              last7={summary.windows.last7.total}
+              last30={summary.windows.last30.total}
+            />
+          </div>
+
+          {/* Daily volume across the last 30 days. Driven by the
+              `daily` field the api now serves; absent means an older
+              api revision and the chart is skipped. */}
+          {summary.daily ? (
+            <div className="mt-6">
+              <DailySparkline days={summary.daily.days} totals={summary.daily.totals} />
+            </div>
+          ) : null}
+
+          {/* Category-share stacked bar + top-N leaderboard. Side by
+              side on wide screens. */}
+          {window && window.total > 0 ? (
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <CategoryShareBar groups={groups} total={window.total} />
+              <TopNLeaderboard rows={window.rows} />
+            </div>
+          ) : null}
+
           {groups.length === 0 ? (
             <p className="mt-8 text-slate-500">No events recorded in this window yet.</p>
           ) : (
@@ -980,28 +1211,62 @@ export default function TelemetryDashboard() {
                               {CATEGORY_DESCRIPTIONS[group.category]}
                             </p>
                           ) : null}
+                          {/* Per-category sparkline: last 30 days of
+                              this category's daily count, scaled to
+                              its own peak so a quiet category still
+                              shows a useful shape. */}
+                          {summary.daily && summary.daily.byCategory[group.category] ? (
+                            <CategorySparkline
+                              days={summary.daily.days}
+                              series={summary.daily.byCategory[group.category]!}
+                            />
+                          ) : null}
                           <ul className="mt-3 divide-y divide-slate-100">
-                            {group.items.map((row) => (
-                              <li
-                                key={`${row.action}:${row.type ?? ''}`}
-                                title={eventExplanation(row.category, row.action, row.type ?? null)}
-                                className="flex items-center justify-between gap-3 py-1.5 text-sm"
-                              >
-                                <span className="flex min-w-0 flex-1 items-center gap-2 text-slate-600">
-                                  <span className="shrink-0 text-slate-400">
-                                    <EventIcon
-                                      category={row.category}
-                                      action={row.action}
-                                      type={row.type ?? null}
+                            {group.items.map((row) => {
+                              const share = group.subtotal > 0 ? row.count / group.subtotal : 0;
+                              return (
+                                <li
+                                  key={`${row.action}:${row.type ?? ''}`}
+                                  title={eventExplanation(
+                                    row.category,
+                                    row.action,
+                                    row.type ?? null,
+                                  )}
+                                  className="py-1.5 text-sm"
+                                >
+                                  <div className="flex items-center justify-between gap-3">
+                                    <span className="flex min-w-0 flex-1 items-center gap-2 text-slate-600">
+                                      <span className="shrink-0 text-slate-400">
+                                        <EventIcon
+                                          category={row.category}
+                                          action={row.action}
+                                          type={row.type ?? null}
+                                        />
+                                      </span>
+                                      <span className="truncate">{eventLabel(row)}</span>
+                                    </span>
+                                    <span className="font-medium text-slate-900">
+                                      {row.count.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  {/* Inline share bar: row's share of
+                                      the category's subtotal. Same
+                                      data the count above carries,
+                                      visualised so the dominant rows
+                                      stand out without scanning the
+                                      numbers. */}
+                                  <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                                    <div
+                                      className="h-full rounded-full"
+                                      style={{
+                                        width: `${share * 100}%`,
+                                        backgroundColor: categoryColor(group.category),
+                                      }}
                                     />
-                                  </span>
-                                  <span className="truncate">{eventLabel(row)}</span>
-                                </span>
-                                <span className="font-medium text-slate-900">
-                                  {row.count.toLocaleString()}
-                                </span>
-                              </li>
-                            ))}
+                                  </div>
+                                </li>
+                              );
+                            })}
                           </ul>
                         </div>
                       </div>
