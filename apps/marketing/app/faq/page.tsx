@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { JsonLd } from '@/components/JsonLd';
 import { subpageMetadata } from '@/lib/subpage-metadata';
 
 const FAQ_TITLE = 'FAQ · livediagram';
@@ -135,12 +136,7 @@ const FAQ_JSON_LD = {
 export default function FaqPage() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        // Static export, build-time-serialised. </ escapes match the
-        // root layout's hardening (see apps/marketing/app/layout.tsx).
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD).replace(/</g, '\\u003c') }}
-      />
+      <JsonLd data={FAQ_JSON_LD} />
       <BreadcrumbJsonLd name="FAQ" path="/faq" />
       <Header />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">

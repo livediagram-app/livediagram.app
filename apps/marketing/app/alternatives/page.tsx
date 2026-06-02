@@ -1,6 +1,7 @@
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { JsonLd } from '@/components/JsonLd';
 import { ALTERNATIVES } from '@/lib/alternatives';
 import { subpageMetadata } from '@/lib/subpage-metadata';
 
@@ -42,15 +43,7 @@ const ITEM_LIST_JSON_LD = {
 export default function AlternativesIndexPage() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        // Build-time-serialised on the static export. The </
-        // escape mirrors the root layout's hardening
-        // (apps/marketing/app/layout.tsx).
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(ITEM_LIST_JSON_LD).replace(/</g, '\\u003c'),
-        }}
-      />
+      <JsonLd data={ITEM_LIST_JSON_LD} />
       <BreadcrumbJsonLd name="Alternatives" path="/alternatives" />
       <Header />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">

@@ -6,6 +6,8 @@
 // things like trailing slashes or @id formats, which Google's structured-data
 // validator is strict about.
 
+import { JsonLd } from './JsonLd';
+
 const SITE_URL = 'https://livediagram.app';
 
 type Crumb = { name: string; path: string };
@@ -38,12 +40,5 @@ export function BreadcrumbJsonLd({ name, path, trail }: BreadcrumbJsonLdProps) {
       })),
     ],
   };
-  return (
-    <script
-      type="application/ld+json"
-      // < escape mirrors layout.tsx + faq/page.tsx: keeps the JSON safe to
-      // inline even if a future entry's name accidentally contains a "<".
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(json).replace(/</g, '\\u003c') }}
-    />
-  );
+  return <JsonLd data={json} />;
 }

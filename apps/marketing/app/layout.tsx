@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+import { JsonLd } from '@/components/JsonLd';
 
 // SEO and social-card metadata. See spec/16-marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
@@ -107,14 +108,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en-GB">
       <body className="bg-slate-50 text-slate-800 antialiased">
-        <script
-          type="application/ld+json"
-          // The JSON is serialised at build time (static export), so
-          // dangerouslySetInnerHTML is safe here. JSON.stringify
-          // escapes </ to prevent script-tag injection, the only
-          // attack vector for embedded JSON-LD.
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, '\\u003c') }}
-        />
+        <JsonLd data={JSON_LD} />
         {children}
       </body>
     </html>
