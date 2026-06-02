@@ -223,6 +223,12 @@ export function MovablePanel({
   // measurement yet on first paint).
   const useDynamicStack =
     position === null && defaultCorner === 'top-right-stacked' && stackBelowY !== undefined;
+  // Mobile drops the inter-panel gap to 4px because the palette
+  // banner-collapses to a one-line strip there: keeping the old
+  // desktop 16px gap left a visible empty band between the two
+  // panels. Desktop stays at 16 (gap-4) so the stacked panels keep
+  // breathing room.
+  const stackGapPx = typeof window !== 'undefined' && isMobileViewportSync() ? 4 : 16;
   const style: React.CSSProperties = position
     ? { left: position.x, top: position.y }
     : useDynamicStack
@@ -230,7 +236,7 @@ export function MovablePanel({
         // className below so the stacked panel can go full-width on
         // mobile (inset-x-2) and stay pinned to the right edge on
         // desktop (right-4).
-        { top: stackBelowY + 16 }
+        { top: stackBelowY + stackGapPx }
       : {};
   const cornerClass = position
     ? ''
