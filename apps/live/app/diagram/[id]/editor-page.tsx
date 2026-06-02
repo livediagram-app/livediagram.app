@@ -4142,14 +4142,6 @@ export default function LivePage() {
             return (
               <ContextMenu position={{ x: contextMenu.x, y: contextMenu.y }} onClose={close}>
                 <MenuItem
-                  icon={<AutoAlignIcon />}
-                  label="Auto-align tab"
-                  onClick={() => {
-                    autoAlignTab();
-                    close();
-                  }}
-                />
-                <MenuItem
                   icon={<PaletteMenuIcon />}
                   label="Change Theme"
                   onClick={() => {
@@ -4162,6 +4154,15 @@ export default function LivePage() {
                   label="Change Canvas"
                   onClick={() => {
                     openTabAccordion('canvas');
+                    close();
+                  }}
+                />
+                <ContextMenuDivider />
+                <MenuItem
+                  icon={<AutoAlignIcon />}
+                  label="Auto-align tab"
+                  onClick={() => {
+                    autoAlignTab();
                     close();
                   }}
                 />
