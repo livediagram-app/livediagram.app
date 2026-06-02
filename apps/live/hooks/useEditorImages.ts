@@ -30,6 +30,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createImage, isBoxed, type Element } from '@livediagram/diagram';
 import { apiListImages, type ImageSummary } from '@/lib/api-client';
+import { track } from '@/lib/telemetry';
 
 type ImageDescriptor = {
   id: string;
@@ -102,6 +103,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
     const placeholder = createImage(centre.x - 100, centre.y - 75);
     commit((els) => [...els, placeholder]);
     setSelectedId(placeholder.id);
+    track('Element', 'Added', 'Image');
   };
 
   // Open the picker for an existing image element (the user clicked
@@ -205,6 +207,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
     };
     commit((els) => [...els, placed]);
     setSelectedId(placed.id);
+    track('Element', 'Added', 'Image');
   };
 
   return {

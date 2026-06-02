@@ -289,6 +289,7 @@ export const TELEMETRY_CATEGORIES = [
   'Element',
   'Tab',
   'Theme',
+  'Canvas',
   'Template',
   'Comment',
   'Session',
@@ -306,8 +307,13 @@ export const TELEMETRY_ACTIONS = [
   'Changed',
   'Exported',
   'Locked',
+  'Unlocked',
   'Grouped',
+  'Ungrouped',
   'Duplicated',
+  'Renamed',
+  'Reordered',
+  'Linked',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 

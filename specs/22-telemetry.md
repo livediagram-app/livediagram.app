@@ -15,7 +15,7 @@ Every event is three small fields (`packages/api-schema`, shared by emitter + in
 
 ```ts
 type TelemetryEvent = {
-  category: TelemetryCategory; // the "parent": Diagram | Element | Tab | Theme | Template | Comment | Session
+  category: TelemetryCategory; // the "parent": Diagram | Element | Tab | Theme | Canvas | Template | Comment | Session
   action: TelemetryAction; // the "verb": Created | Deleted | Shared | Joined | Added | ...
   type?: string | null; // one app-defined reference value: 'Square', 'Edit', 'PNG', a template id, a theme name
 };
@@ -79,7 +79,17 @@ Residual risk: a distributed botnet across many IPs could still nudge the number
 
 A `track(category, action, type?)` helper in `apps/live/lib` buffers events and flushes them batched on an interval and on `visibilitychange`/unload via `navigator.sendBeacon`. Fire-and-forget; failures are swallowed (telemetry must never affect the editor). Gated by `NEXT_PUBLIC_TELEMETRY_ENABLED`. Instrumented only in the **editor** (`apps/live`), never the static marketing site, so the marketing "0 trackers" claim stays literally true. Call sites are one-liners, e.g. `track('Element', 'Added', 'Square')`.
 
-Initial taxonomy: Diagram Created; Diagram Shared `Edit`/`View`; Diagram Joined `Edit`/`View`; Diagram Exported `<format>`; Element Added `<shape kind | Arrow | Image>`; Element Deleted; Template Used `<id>`; Theme Changed `<name>`; Comment Added; Tab Created. Extend by adding to the enums + a one-line `track()` call.
+The aim is to cover every meaningful interaction a person has with a diagram (discrete feature actions, never continuous gestures like drag/resize/pan/zoom or raw colour tweaks, which would just be noise). Current taxonomy:
+
+- **Diagram**: Created; Shared `Edit`/`View`; Joined `Edit`/`View`; Duplicated; Deleted; Exported `Markdown`/`PDF`/`PNG`/`JSON`.
+- **Element**: Added `<shape kind | Text | Sticky | Arrow | Image>`; Deleted; Duplicated; Grouped; Ungrouped; Locked; Unlocked.
+- **Tab**: Created; Deleted; Duplicated; Renamed; Locked; Unlocked; Linked.
+- **Theme**: Changed `<theme label>`.
+- **Canvas**: Changed `<background pattern>`.
+- **Template**: Used `<template kind>`.
+- **Comment**: Added.
+
+Extend by adding to the `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums (if needed) + a one-line `track()` call at the interaction's handler. Hits / unique visits (a `Session` event per load) are deliberately not wired yet.
 
 ## Dashboard app (`apps/telemetry`)
 

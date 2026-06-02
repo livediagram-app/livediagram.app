@@ -22,6 +22,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { arrowReferencesAny } from '@/lib/canvas';
+import { track } from '@/lib/telemetry';
 
 type EditorSelectionActionsDeps = {
   // The active selection resolved to ids (single selection expands to
@@ -72,6 +73,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     );
     setSelectedId(null);
     setEditingId(null);
+    track('Element', 'Deleted');
   };
 
   // Marquee box-select committed by Canvas on pointer-up. Mutex with
@@ -112,6 +114,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     const firstBoxed = activeTab.elements.find((el) => multiSelectedIds.has(el.id) && isBoxed(el));
     if (firstBoxed) setSelectedId(firstBoxed.id);
     setMultiSelectedIds(new Set());
+    track('Element', 'Grouped');
   };
 
   // Toggle lock across every multi-selected element. If any member is
@@ -126,6 +129,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     commit((els) =>
       els.map((el) => (multiSelectedIds.has(el.id) ? { ...el, locked: anyUnlocked } : el)),
     );
+    track('Element', anyUnlocked ? 'Locked' : 'Unlocked');
   };
 
   // Multi-select duplicate: clones every multi-selected boxed element
@@ -137,6 +141,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // visual layout of the duplicated cluster matches the source.
   const duplicateMultiSelected = () => {
     if (multiSelectedIds.size === 0) return;
+    track('Element', 'Duplicated');
     const offset = 24;
     const boxedSources = activeTab.elements.filter(
       (el) => multiSelectedIds.has(el.id) && isBoxed(el),
@@ -198,6 +203,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
     if (!source) return;
+    track('Element', 'Duplicated');
     // Element-only duplicate: clones just this element (not arrows attached
     // to it), offset diagonally so it's visible next to the original.
     const offset = 24;
@@ -317,6 +323,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     if (!source || !isBoxed(source) || source.groupId === undefined) return;
     const groupId = source.groupId;
     commit((els) => ungroup(els, groupId));
+    track('Element', 'Ungrouped');
   };
 
   return {

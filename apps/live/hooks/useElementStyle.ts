@@ -38,6 +38,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
+import { track } from '@/lib/telemetry';
 
 type EditorElementStyleDeps = {
   // The active selection, resolved to a set of element ids (single
@@ -88,6 +89,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     const shouldLock = !(source.locked === true);
     const ids = currentSelectionIds();
     commit((els) => els.map((el) => (ids.has(el.id) ? { ...el, locked: shouldLock } : el)));
+    track('Element', shouldLock ? 'Locked' : 'Unlocked');
   };
 
   const toggleAspectLockSelected = () => {

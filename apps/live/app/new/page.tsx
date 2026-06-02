@@ -213,6 +213,7 @@ export default function NewDiagramPage() {
   };
 
   const deleteDiagram = (id: string) => {
+    track('Diagram', 'Deleted');
     void apiDeleteDiagram(self.id, id).catch(() => {});
     setDiagramList((prev) => prev.filter((d) => d.id !== id));
     void refreshList(self.id);

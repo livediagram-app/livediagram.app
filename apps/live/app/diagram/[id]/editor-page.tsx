@@ -1971,6 +1971,7 @@ export default function LivePage() {
   const addTab = () => {
     const tab = createTab(`Tab ${tabs.length + 1}`);
     commitTabs((ts) => [...ts, tab]);
+    track('Tab', 'Created');
     setActiveId(tab.id);
     setSelectedId(null);
     setEditingId(null);
@@ -2046,6 +2047,7 @@ export default function LivePage() {
       confirmLabel: 'Delete diagram',
     });
     if (!ok) return;
+    track('Diagram', 'Deleted');
     if (id === diagramId) {
       void apiDeleteDiagram(selfParticipant.id, id).catch(() => {});
       window.location.assign(`${window.location.origin}/live/new`);
@@ -2094,7 +2096,10 @@ export default function LivePage() {
     const newId = await duplicate(selfParticipant.id, id);
     // Open the freshly created copy. Navigation reloads the editor onto
     // the new id, so a separate list refresh is unnecessary.
-    if (newId) openDiagram(newId);
+    if (newId) {
+      track('Diagram', 'Duplicated');
+      openDiagram(newId);
+    }
   };
 
   // Comment-thread handlers live in useEditorComments (declared
@@ -2111,6 +2116,7 @@ export default function LivePage() {
     const next = !target.locked;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, locked: next } : t)));
     emitTabMeta(activeId, next ? 'Locked tab' : 'Unlocked tab');
+    track('Tab', next ? 'Locked' : 'Unlocked');
     if (next) {
       // Drop any in-progress UI state that would be useless on a
       // newly-locked tab.
@@ -2130,6 +2136,7 @@ export default function LivePage() {
       id,
       previous ? `Renamed tab '${previous}' to '${trimmed}'` : `Renamed tab to '${trimmed}'`,
     );
+    track('Tab', 'Renamed');
   };
 
   // Link the active tab into another of the user's diagrams (spec/17).
@@ -2147,6 +2154,7 @@ export default function LivePage() {
     try {
       await apiLinkTab(selfParticipant.id, targetDiagramId, source.id);
       toast.success(`Tab added to "${targetName}"`);
+      track('Tab', 'Linked');
     } catch {
       // Previously swallowed silently: the user clicked a destination
       // and nothing visible happened. The toast surfaces the failure
@@ -2175,6 +2183,7 @@ export default function LivePage() {
     setActiveId(copy.id);
     setSelectedId(null);
     setEditingId(null);
+    track('Tab', 'Duplicated');
   };
 
   const deleteTab = async (id: string) => {
@@ -2189,6 +2198,7 @@ export default function LivePage() {
       confirmLabel: 'Delete tab',
     });
     if (!ok) return;
+    track('Tab', 'Deleted');
     // Drop the tab AND strip any links on remaining elements that point to
     // it, so we don't leave dangling cross-tab references. Bundled into one
     // commit so undo restores both.
@@ -2382,6 +2392,8 @@ export default function LivePage() {
       setTemplatePickerMode('welcome');
       return;
     }
+    // Telemetry (spec/22): a template was applied; `type` is the kind.
+    track('Template', 'Used', titleCaseType(kind));
     // Templates flow: applying a template / theme to an existing tab.
     // The diagram already exists in D1; no mint required.
     if (name && name !== selfParticipant.name) {
@@ -2485,6 +2497,7 @@ export default function LivePage() {
       ts.map((t) => (t.id === activeId ? { ...t, backgroundPattern: pattern } : t)),
     );
     emitTabMeta(activeId, `Changed canvas pattern to ${pattern}`);
+    track('Canvas', 'Changed', titleCaseType(pattern));
   };
 
   // Applying a theme swaps backdrop colours/pattern, records the theme
@@ -2504,6 +2517,7 @@ export default function LivePage() {
     const themeLabel =
       THEMES.find((t) => t.id === id)?.label ?? id.charAt(0).toUpperCase() + id.slice(1);
     emitTabMeta(activeId, `Changed theme to ${themeLabel}`);
+    track('Theme', 'Changed', themeLabel);
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id !== activeId) return t;
@@ -2654,6 +2668,7 @@ export default function LivePage() {
     // explicitly.
     emitChange(activeId, before, after);
     setSelectedId(arrow.id);
+    track('Element', 'Added', 'Arrow');
   };
 
   const handleCanvasDoubleClick = (x: number, y: number) => {
@@ -3334,7 +3349,10 @@ export default function LivePage() {
               <CommentThreadPopover
                 elementId={target.id}
                 thread={target.commentThread}
-                onAddComment={(text) => addComment(target.id, text)}
+                onAddComment={(text) => {
+                  addComment(target.id, text);
+                  track('Comment', 'Added');
+                }}
                 onDeleteComment={(cid) => deleteComment(target.id, cid)}
                 onResolve={() => resolveThread(target.id)}
                 onUnresolve={() => unresolveThread(target.id)}

@@ -7,6 +7,16 @@ import {
   exportTabAsPdf,
   exportTabAsPng,
 } from '@/lib/export-tab';
+import { track } from '@/lib/telemetry';
+
+// Telemetry (spec/22): map the internal format key to the public label
+// the dashboard shows. 'file' is the portable .json export.
+const EXPORT_LABEL: Record<Format, string> = {
+  markdown: 'Markdown',
+  pdf: 'PDF',
+  png: 'PNG',
+  file: 'JSON',
+};
 
 type ExportTabDialogProps = {
   tab: Tab;
@@ -41,6 +51,7 @@ export function ExportTabDialog({ tab, diagramName, onClose }: ExportTabDialogPr
       } else if (format === 'pdf') {
         downloadBlob(await exportTabAsPdf(tab), `${baseName}.pdf`);
       }
+      track('Diagram', 'Exported', EXPORT_LABEL[format]);
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Export failed.');

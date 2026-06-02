@@ -16,6 +16,7 @@ import {
   type SharedWithItem,
 } from '@/lib/api-client';
 import { ensureGuestSelfId } from '@/lib/local-identity';
+import { track } from '@/lib/telemetry';
 import { useFolders } from '@/hooks/useFolders';
 import { useConfirm } from '@/hooks/useConfirm';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
@@ -258,6 +259,7 @@ export default function ExplorerPage() {
       confirmLabel: 'Delete diagram',
     });
     if (!ok) return;
+    track('Diagram', 'Deleted');
     setDiagrams((prev) => prev.filter((d) => d.id !== id));
     void apiDeleteDiagram(ownerId, id).catch(() => {});
   };
