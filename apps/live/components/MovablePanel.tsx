@@ -48,9 +48,13 @@ type MovablePanelProps = {
   stackBelowY?: number;
   // Optional ResizeObserver-driven callback fired with the panel's
   // current bounding box when it mounts and every time its size
-  // changes. Used by the Palette to publish its height upward so the
-  // ContextPanel can stack below it.
-  onSize?: (size: { width: number; height: number }) => void;
+  // changes. The Palette uses this so the ContextPanel can stack
+  // beneath it; `bottomY` is the absolute offset (in offsetParent
+  // coords) of the panel's bottom edge, so the consumer can hand it
+  // back as `stackBelowY` and the panel above and below align
+  // independently of which corner / top-utility class the upper
+  // panel uses (top-2 on mobile vs top-4 on desktop).
+  onSize?: (size: { width: number; height: number; bottomY: number }) => void;
   // When true the panel can collapse to a banner (title row only)
   // via its header button, on both mobile and desktop. The button's
   // icon flips between dash (collapse) and plus (expand) so the
@@ -121,7 +125,17 @@ export function MovablePanel({
       const entry = entries[0];
       if (!entry) return;
       const rect = entry.contentRect;
-      onSize({ width: rect.width, height: rect.height });
+      // offsetTop + offsetHeight gives the bottom edge in the
+      // offsetParent's coordinate space. Both the Palette and the
+      // stacked Editor share the same offsetParent (Canvas's main
+      // element), so handing this value back as `stackBelowY` lets
+      // the lower panel align below regardless of the upper panel's
+      // own top-utility class.
+      onSize({
+        width: rect.width,
+        height: rect.height,
+        bottomY: node.offsetTop + node.offsetHeight,
+      });
     });
     observer.observe(node);
     return () => observer.disconnect();

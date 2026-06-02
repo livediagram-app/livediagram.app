@@ -187,7 +187,7 @@ type CommandPaletteProps = {
   // whenever it changes (via MovablePanel's ResizeObserver). Canvas
   // wires this up so the ContextPanel can stack dynamically below
   // the palette as accordions open / close.
-  onSize?: (size: { width: number; height: number }) => void;
+  onSize?: (size: { width: number; height: number; bottomY: number }) => void;
 };
 
 export function CommandPalette({

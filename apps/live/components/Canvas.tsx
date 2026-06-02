@@ -476,10 +476,15 @@ export function Canvas(props: CanvasProps) {
 
   // Pan tracking. viewportOffset is owned by the page (so element placement
   // can reason about the visible viewport); we just read/write through props.
-  // Palette's rendered height. The ContextPanel uses this to stack
-  // dynamically below the Palette as accordions open / close;
-  // MovablePanel publishes its bounding box via onSize.
-  const [paletteHeight, setPaletteHeight] = useState<number>(0);
+  // Palette's bottom-Y (offsetTop + offsetHeight in offsetParent
+  // coords). The ContextPanel uses this to stack dynamically below
+  // the Palette as accordions open / close and as the banner
+  // collapses; MovablePanel publishes it via onSize. The bottom-Y
+  // (vs height alone) makes the alignment robust to the upper
+  // panel's own top-utility class, the editor lands at
+  // paletteBottomY + 16 regardless of whether the palette pins to
+  // top-2 (mobile) or top-4 (desktop).
+  const [paletteBottomY, setPaletteBottomY] = useState<number>(0);
 
   const [pan, setPan] = useState<{
     startClientX: number;
@@ -1403,7 +1408,7 @@ export function Canvas(props: CanvasProps) {
           onAddSticky={onAddSticky}
           onAddImage={onAddImage}
           onAddArrow={onAddArrow}
-          onSize={(size) => setPaletteHeight(size.height)}
+          onSize={(size) => setPaletteBottomY(size.bottomY)}
         />
       )}
 
@@ -1418,12 +1423,12 @@ export function Canvas(props: CanvasProps) {
           expandSignal={editorExpandSignal}
           onMoveTo={onMoveContext}
           onReset={onResetContext}
-          // Palette's bottom edge: its top corner (top-4 = 16) plus
-          // its measured height. ContextPanel adds another 16px gap.
-          // When paletteHeight is 0 (first paint, before the observer
-          // fires) MovablePanel falls back to its legacy static
-          // top-[15rem] so the panel never lands at 0,0.
-          stackBelowY={paletteHeight === 0 ? undefined : 16 + paletteHeight}
+          // Palette's measured bottom edge (offsetTop + offsetHeight).
+          // ContextPanel adds another 16px gap via MovablePanel. When
+          // paletteBottomY is still 0 (first paint, before the
+          // observer fires) MovablePanel falls back to its legacy
+          // static top-[15rem] so the panel never lands at 0,0.
+          stackBelowY={paletteBottomY === 0 ? undefined : paletteBottomY}
         />
       )}
 
