@@ -1,4 +1,5 @@
-import { apiUploadImage, type ImageSummary } from './api-client';
+import { sha256Hex, type ImageSummary } from '@livediagram/api-schema';
+import { apiUploadImage } from './api-client';
 
 // Shared client-side file → /api/images upload flow. Called from
 // the editor's ImagePicker AND from the Explorer Image Gallery so
@@ -46,10 +47,9 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
   const bytes = await file.arrayBuffer();
   // SHA-256 dedupe key. The server re-verifies this against the
   // body so a client can't poison the gallery with a fake hash.
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  const sha = Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+  // Shared with the api worker via @livediagram/api-schema so
+  // both sides produce byte-for-byte identical hex.
+  const sha = await sha256Hex(bytes);
   const dims = await readImageDimensions(file);
   if (!dims) {
     throw new ImageUploadError('Could not read image dimensions.');

@@ -265,3 +265,8 @@ export type RoomOutgoing =
 export type RoomIncoming =
   | { kind: 'presence'; participants: ParticipantPresence[] }
   | { kind: 'op'; from: string; op: RoomOp };
+
+// Canonical hash function for the X-Image-Sha256 wire-format header.
+// Lives here so the client and server can't drift on the dedup key
+// (see ./sha256.ts for the rationale).
+export { sha256Hex } from './sha256';

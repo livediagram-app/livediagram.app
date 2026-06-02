@@ -1,4 +1,5 @@
 import type { Tab } from '@livediagram/diagram';
+import { sha256Hex } from '@livediagram/api-schema';
 import { rewriteCommentAuthors } from './comments';
 import {
   createFolder,
@@ -72,20 +73,6 @@ export { DiagramRoom };
 // uploaded SVG would be an XSS / SSRF surface (inline <script>,
 // foreignObject, external xlink:href refs).
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB, see spec/19.
-
-function bytesToHex(buf: Uint8Array): string {
-  let out = '';
-  for (let i = 0; i < buf.length; i++) {
-    const v = buf[i]!;
-    out += (v < 16 ? '0' : '') + v.toString(16);
-  }
-  return out;
-}
-
-async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return bytesToHex(new Uint8Array(digest));
-}
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
