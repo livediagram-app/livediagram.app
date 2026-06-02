@@ -34,6 +34,34 @@ describe('THEMES catalogue', () => {
       expect(t.backgroundPattern).toBeTruthy();
     }
   });
+
+  // spec/16-marketing-site.md claims "18 themes (12 default + 6
+  // extra)". The marketing site cites the number directly in its
+  // copy and the welcome picker gates the extras behind a "Show
+  // more" toggle (apps/live/components/TemplatePicker.tsx +
+  // hooks/useShowMoreList.ts). If the catalogue drifts from those
+  // counts the spec stops being accurate and the picker's two-row
+  // visual cadence breaks (the extras row currently fills cleanly
+  // with 6 entries). Mirrors the equivalent assertions in
+  // templates.test.ts.
+  it('lists exactly 18 themes (matches spec/16)', () => {
+    expect(THEMES).toHaveLength(18);
+  });
+
+  it('splits cleanly into 12 default + 6 extra (the picker uses `extra` to gate behind "Show more")', () => {
+    const defaults = THEMES.filter((t) => !t.extra);
+    const extras = THEMES.filter((t) => t.extra);
+    expect(defaults).toHaveLength(12);
+    expect(extras).toHaveLength(6);
+  });
+
+  it('keeps the brand theme out of the "extras" bucket (it must be visible without expanding)', () => {
+    // The default picker view always shows brand on its first row,
+    // since the un-themed default is the most common pick. Hiding
+    // it behind "Show more" would be a visible regression.
+    const brand = THEMES.find((t) => t.id === 'brand');
+    expect(brand?.extra).toBeFalsy();
+  });
 });
 
 describe('getTheme', () => {
