@@ -145,14 +145,24 @@ export function MovablePanel({
   }, [drag, onMoveTo]);
 
   const beginDrag = (e: ReactPointerEvent) => {
-    // Collapsible panels treat a touch on the title row as a banner
-    // tap that toggles the body open/closed. Dragging the palette
-    // on a 375 px viewport has nowhere useful to land it anyway, so
-    // the gesture is repurposed for mobile users. Desktop mice keep
-    // dragging; desktop users use the +/- button to collapse.
+    // Collapsible panels in their collapsed (banner) state treat the
+    // entire title row as a tap target: clicking anywhere on the
+    // banner expands the body, regardless of input device, because
+    // the visible chrome is the banner row itself and pointing at it
+    // is the most direct "open me" gesture. The +/- button still
+    // works for explicit users. Mobile (touch) on an EXPANDED panel
+    // also taps-to-collapse (a 375 px viewport has nowhere useful to
+    // drag the panel to anyway, so the gesture is repurposed). On
+    // desktop the expanded panel keeps drag semantics on the title
+    // row, the +/- button is the collapse path.
+    if (collapsible && collapsed) {
+      e.stopPropagation();
+      setCollapsed(false);
+      return;
+    }
     if (collapsible && e.pointerType === 'touch') {
       e.stopPropagation();
-      setCollapsed((v) => !v);
+      setCollapsed(true);
       return;
     }
     e.stopPropagation();
