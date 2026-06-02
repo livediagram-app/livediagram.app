@@ -1,4 +1,5 @@
 import { LegalPage } from '@/components/LegalPage';
+import { LEGAL_LAST_UPDATED_DISPLAY } from '@/lib/legal-revisions';
 import { subpageMetadata } from '@/lib/subpage-metadata';
 
 const PRIVACY_TITLE = 'Privacy Policy · livediagram';
@@ -13,7 +14,7 @@ export const metadata = subpageMetadata({
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy" path="/privacy" lastUpdated="31 May 2026">
+    <LegalPage title="Privacy Policy" path="/privacy" lastUpdated={LEGAL_LAST_UPDATED_DISPLAY}>
       <p>
         livediagram is built to need as little of your data as possible, and the whole codebase is
         public so you can check that for yourself. This policy explains what the hosted service at{' '}

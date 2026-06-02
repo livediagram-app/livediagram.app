@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { ALTERNATIVE_SLUGS, ALTERNATIVES_LAST_UPDATED } from '@/lib/alternatives';
+import { LEGAL_LAST_UPDATED } from '@/lib/legal-revisions';
 
 // Required for `output: 'export'` (same reason as robots.ts):
 // route handlers must declare themselves fully static so Next
@@ -21,14 +22,10 @@ export const dynamic = 'force-static';
 // `lastModified` per page reflects the truth of when that page's
 // content last changed. The landing + FAQ pages update with most
 // product releases, so they use the build-time `now`. Terms +
-// Privacy carry a `lastUpdated="31 May 2026"` prop in their JSX
-// (rendered by `<LegalPage>`); the sitemap mirrors that exact
-// date so crawlers don't get a "this changed daily" signal for a
-// page whose visible disclaimer hasn't moved in months. Bump the
-// date here AND in app/terms/page.tsx + app/privacy/page.tsx in
-// the same change when revising the legal copy.
-const LEGAL_LAST_UPDATED = new Date('2026-05-31');
-
+// Privacy share their revision date with the visible "Last
+// updated" line on each page via lib/legal-revisions.ts, so
+// bumping the legal copy is a one-line ISO change.
+//
 // ALTERNATIVES_LAST_UPDATED lives alongside the ALTERNATIVES array
 // in lib/alternatives.ts so the sitemap, the per-competitor pages'
 // article:modified_time OG meta, and the data revision all share
