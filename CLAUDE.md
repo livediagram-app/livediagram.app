@@ -30,6 +30,7 @@ Treat them as part of the change, not an afterthought:
 apps/
   marketing/    # static marketing site (Next.js, /)
   live/         # the diagram editor app (Next.js, /live)
+  telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
   router/       # Cloudflare Worker stitching the apps under one hostname
 packages/
@@ -39,6 +40,7 @@ packages/
   eslint-config/  # shared ESLint flat config
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
+  vitest-config/  # shared Vitest defaults (extended per workspace)
 specs/          # product specs — read these first
 ```
 
@@ -48,7 +50,7 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 
 The frontend-only prototype phase ended when the API app landed (see [spec/02](specs/02-prototype-scope.md) and [spec/11](specs/11-api.md)). Today the editor talks to a Cloudflare Worker API backed by D1 (durable diagram storage) + Durable Objects (per-diagram realtime room). `apps/live/lib/api-client.ts` is the single persistence boundary; the editor never reads or writes `localStorage` for diagrams.
 
-- **Built:** the canvas editor (shapes, arrows of every style, marquee + multi-select, groups, format painter, comments, links, themed templates, folders), the api worker (REST + share links + change log + Durable Object realtime room with cursor/select/log ops), per-tab storage.
+- **Built:** the canvas editor (shapes, arrows of every style, marquee + multi-select, groups, format painter, comments, links, themed templates, folders), the api worker (REST + share links + change log + Durable Object realtime room with cursor/select/log ops), per-tab storage, anonymous first-party telemetry + the public `/telemetry` dashboard (see [spec/22](specs/22-telemetry.md)).
 - **Still ahead:** Resend (transactional email), multi-user team permissions, operational-transform / CRDT edits.
 
 ## Open source
@@ -113,7 +115,7 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 ## Naming conventions
 
 - Workspace packages: `@livediagram/<name>`.
-- Apps in `apps/<name>` (e.g. `apps/marketing`, `apps/live`, `apps/api`, `apps/router`).
+- Apps in `apps/<name>` (e.g. `apps/marketing`, `apps/live`, `apps/telemetry`, `apps/api`, `apps/router`).
 - Cross-workspace deps use `"@livediagram/foo": "workspace:*"`.
 
 ## Shared config
@@ -135,11 +137,11 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 
 See [specs/10-deployment.md](specs/10-deployment.md).
 
-All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing` and `live`). CI runs lint / format / typecheck / test / build on every PR and push. On `main`, a successful CI triggers the deploy workflow which builds, then deploys `marketing` + `live` + `api` in parallel, then `router` last (its service bindings depend on the other three existing).
+All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing`, `live`, and `telemetry`). CI runs lint / format / typecheck / test / build on every PR and push. On `main`, a successful CI triggers the deploy workflow which builds, then deploys `marketing` + `live` + `telemetry` + `api` in parallel, then `router` last (its service bindings depend on the other four existing).
 
-Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-api`, `livediagram-router` — matching the service-binding targets in `apps/router/wrangler.toml`. Deploy order: marketing + live + api in parallel → router last (its service bindings depend on the other three existing).
+Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetry`, `livediagram-api`, `livediagram-router`, matching the service-binding targets in `apps/router/wrangler.toml`. Deploy order: marketing + live + telemetry + api in parallel, then router last (its service bindings depend on the other four existing).
 
-Production is live at **https://livediagram.app** (`/` → marketing, `/live` → editor, `/api/*` → api).
+Production is live at **https://livediagram.app** (`/` → marketing, `/live` → editor, `/telemetry` → telemetry dashboard, `/api/*` → api).
 
 Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets policy](specs/06-secrets-policy.md).
 
