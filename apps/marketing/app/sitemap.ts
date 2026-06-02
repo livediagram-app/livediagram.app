@@ -29,6 +29,15 @@ export const dynamic = 'force-static';
 // the same change when revising the legal copy.
 const LEGAL_LAST_UPDATED = new Date('2026-05-31');
 
+// Same rationale for the comparison / "alternative" pages
+// (spec/21): the content lives entirely in `apps/marketing/lib/
+// alternatives.ts` and doesn't drift between builds, so claiming
+// `lastModified: now` was the same "changed daily" noise the legal
+// pages used to emit before commit 24a4def. Bump this when
+// `ALTERNATIVES` gains a new competitor or an existing entry's
+// rows / claims get revised.
+const ALTERNATIVES_LAST_UPDATED = new Date('2026-06-02');
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const base = 'https://livediagram.app';
@@ -65,13 +74,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // updates the sitemap automatically.
     {
       url: `${base}/alternatives`,
-      lastModified: now,
+      lastModified: ALTERNATIVES_LAST_UPDATED,
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     ...ALTERNATIVE_SLUGS.map((slug) => ({
       url: `${base}/alternatives/${slug}`,
-      lastModified: now,
+      lastModified: ALTERNATIVES_LAST_UPDATED,
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     })),
