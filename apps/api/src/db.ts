@@ -1134,6 +1134,17 @@ export async function insertTelemetryEvents(
   await env.DB.batch(events.map((e) => stmt.bind(e.category, e.action, e.type, ts)));
 }
 
+// Retention sweep: drop rows older than `cutoffMs`. Wired to the
+// daily 03:00 UTC cron via the worker's `scheduled` handler, with a
+// 60-day floor (twice the dashboard's longest window, see spec/22
+// "Retention"). The events_ts_idx supports the range scan. Returns
+// the row count deleted so the handler can log it for observability,
+// mirroring `deleteOldChangeLogEntries`.
+export async function deleteOldEvents(env: Env, cutoffMs: number): Promise<number> {
+  const result = await env.DB.prepare('DELETE FROM events WHERE ts < ?').bind(cutoffMs).run();
+  return result.meta.changes ?? 0;
+}
+
 // Grouped counts for every event at or after `since` (ms epoch). One
 // row per (category, action, type). Drives the dashboard's fixed
 // windows; the events_ts_idx covers the range filter.

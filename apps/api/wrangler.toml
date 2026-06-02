@@ -79,10 +79,14 @@ new_classes = ["DiagramRoom"]
 # entry per cron; each fires the same handler with `event.cron` set
 # to the matching pattern so the body can dispatch.
 #
-# `0 3 * * *` — daily at 03:00 UTC. Drops change_log entries older
-# than 90 days (item #16 / spec/12). The 90-day retention matches
-# what's surfaced in the Activity Panel today; older entries were
-# never user-visible, just sitting on the table.
+# `0 3 * * *`: daily at 03:00 UTC. Fires two independent retention
+# sweeps on this trigger:
+#   - change_log, 90-day floor (item #16 / spec/12). Matches what's
+#     surfaced in the Activity Panel; older entries were never user-
+#     visible, just sitting on the table.
+#   - events, 60-day floor (spec/22 "Retention"). The /telemetry
+#     dashboard surfaces a 30-day max window, so anything past 60
+#     days is dead storage.
 [triggers]
 crons = ["0 3 * * *"]
 

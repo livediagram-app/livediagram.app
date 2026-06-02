@@ -42,6 +42,10 @@ CREATE INDEX idx_events_ts ON events (ts);
 
 No owner/IP column — rows are anonymous by construction. If write volume ever outgrows D1, the migration path is Workers Analytics Engine (write-optimised, same Cloudflare account, no new vendor); the ingest + summary contract stays the same.
 
+## Retention
+
+The dashboard surfaces three fixed windows that top out at **30 days** (Last month). Rows older than that are dead storage: never read, never aggregated, never user-visible. The api worker's `scheduled` handler runs a daily **60-day sweep** at 03:00 UTC that deletes events older than the retention floor (twice the dashboard's longest window, so a future "Last 60 days" expansion would have data to populate). Symmetric with the existing 90-day `change_log` retention (spec/12); both fire on the same cron, dispatched on `event.cron`. Self-hosters with `TELEMETRY_ENABLED` off never accumulate events in the first place, so the sweep is a no-op for them.
+
 ## API
 
 - **`POST /api/events`** — ingest. Body `{ events: TelemetryEvent[] }` (batched). Validates each against the schema; inserts the valid ones with a server-stamped `ts`. Returns 204. **Deliberately exempt from the diagram write-rate-limiter** so a busy editor session's telemetry can never eat into / block a user's real diagram saves; client-side batching keeps request volume low. Anonymous (no auth required); no body field is stored beyond the three enums + ts. When telemetry is disabled, no-ops with 204.

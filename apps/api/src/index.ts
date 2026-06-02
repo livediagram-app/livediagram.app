@@ -35,6 +35,7 @@ import {
   copyDiagram,
   deleteAccount,
   deleteOldChangeLogEntries,
+  deleteOldEvents,
   dropSharedAccess,
   listDiagramsByOwner,
   listFoldersByOwner,
@@ -1084,31 +1085,54 @@ export default {
     return notFound();
   },
 
-  // Scheduled handler — wired to the cron schedule in wrangler.toml.
+  // Scheduled handler. Wired to the cron schedule in wrangler.toml.
   // One worker invocation per `triggers.crons` entry; dispatch on
-  // `event.cron` if we add more patterns later. Today's only job is
-  // the 90-day change_log retention sweep (item #16 / spec/12).
+  // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
+  // fires two independent retention sweeps:
+  //   - change_log, 90-day floor (item #16 / spec/12).
+  //   - events,     60-day floor (spec/22 "Retention").
+  // Both are no-ops when nothing is over the floor; both use
+  // `ctx.waitUntil` so they run concurrently and the worker can
+  // exit as soon as the schedule callback returns.
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     if (event.cron === '0 3 * * *') {
-      const cutoff = Date.now() - CHANGE_LOG_RETENTION_MS;
+      const now = Date.now();
+      const changeLogCutoff = now - CHANGE_LOG_RETENTION_MS;
       ctx.waitUntil(
-        deleteOldChangeLogEntries(env, cutoff)
+        deleteOldChangeLogEntries(env, changeLogCutoff)
           .then((count) => {
             // wrangler tail shows these so an oversized sweep
             // surfaces in observability without needing a metrics
-            // pipeline. A zero is fine — most days nothing's older
+            // pipeline. A zero is fine: most days nothing's older
             // than 90 days yet.
-            console.log(`change_log sweep: deleted ${count} entries older than ${cutoff}`);
+            console.log(`change_log sweep: deleted ${count} entries older than ${changeLogCutoff}`);
           })
           .catch((err) => {
             console.error('change_log sweep failed', err);
+          }),
+      );
+
+      const eventsCutoff = now - EVENTS_RETENTION_MS;
+      ctx.waitUntil(
+        deleteOldEvents(env, eventsCutoff)
+          .then((count) => {
+            console.log(`events sweep: deleted ${count} rows older than ${eventsCutoff}`);
+          })
+          .catch((err) => {
+            console.error('events sweep failed', err);
           }),
       );
     }
   },
 } satisfies ExportedHandler<Env>;
 
-// 90 days in ms — pulled out as a named constant because the
-// scheduled handler is the only caller today and naming it makes
-// the intent obvious from the dispatch site.
+// 90 days in ms. Pulled out as a named constant because the
+// scheduled handler is the only caller and naming it makes the
+// intent obvious from the dispatch site.
 const CHANGE_LOG_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
+
+// 60 days in ms. The /telemetry dashboard's longest window is
+// "Last 30 days", so anything past 60 days is dead storage (twice
+// the surfaced window, leaving headroom for a future "Last 60
+// days" view to populate). See spec/22 "Retention".
+const EVENTS_RETENTION_MS = 60 * 24 * 60 * 60 * 1000;
