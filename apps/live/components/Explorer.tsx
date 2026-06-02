@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { MovablePanel } from './MovablePanel';
@@ -192,47 +192,67 @@ export function Explorer({
   // renders on mobile too, banner-collapsed by default. The panel
   // sits at the top of the canvas above Palette + Editor.)
 
-  const current = currentDiagramId
-    ? (diagrams.find((d) => d.id === currentDiagramId) ?? null)
-    : null;
+  // All derived collections below are useMemo'd against their real
+  // inputs (diagrams, folders, currentDiagramId): Explorer holds a
+  // pile of internal state (accordion open flags, expandedFolders,
+  // moveTargetDiagramId, exitingDiagramIds, the 30s relative-time
+  // tick from useRelativeTimeTick) that re-renders the component
+  // frequently without changing the underlying lists. Without these
+  // memos every accordion toggle rebuilt foldersByParent +
+  // diagramsByFolder + sorted both, and re-walked the folder tree
+  // just to render a different chevron.
+  const current = useMemo(
+    () => (currentDiagramId ? (diagrams.find((d) => d.id === currentDiagramId) ?? null) : null),
+    [diagrams, currentDiagramId],
+  );
   // Cap the recents list at 5 so the accordion stays compact.
   const RECENT_LIMIT = 5;
-  const allOthers = [...diagrams]
-    .filter((d) => d.id !== currentDiagramId)
-    .sort((a, b) => b.savedAt - a.savedAt);
-  const recents = allOthers.slice(0, RECENT_LIMIT);
+  const allOthers = useMemo(
+    () =>
+      [...diagrams].filter((d) => d.id !== currentDiagramId).sort((a, b) => b.savedAt - a.savedAt),
+    [diagrams, currentDiagramId],
+  );
+  const recents = useMemo(() => allOthers.slice(0, RECENT_LIMIT), [allOthers]);
 
   // Folder tree: index folders by parentId so the recursive renderer
   // can ask for children by id without rescanning the full list.
-  const foldersByParent = new Map<string | null, FolderItem[]>();
-  for (const f of folders) {
-    const bucket = foldersByParent.get(f.parentId) ?? [];
-    bucket.push(f);
-    foldersByParent.set(f.parentId, bucket);
-  }
-  for (const bucket of foldersByParent.values())
-    bucket.sort((a, b) => a.name.localeCompare(b.name));
+  const foldersByParent = useMemo(() => {
+    const map = new Map<string | null, FolderItem[]>();
+    for (const f of folders) {
+      const bucket = map.get(f.parentId) ?? [];
+      bucket.push(f);
+      map.set(f.parentId, bucket);
+    }
+    for (const bucket of map.values()) bucket.sort((a, b) => a.name.localeCompare(b.name));
+    return map;
+  }, [folders]);
 
-  const diagramsByFolder = new Map<string | null, DiagramListItem[]>();
-  for (const d of diagrams) {
-    const bucket = diagramsByFolder.get(d.folderId) ?? [];
-    bucket.push(d);
-    diagramsByFolder.set(d.folderId, bucket);
-  }
-  for (const bucket of diagramsByFolder.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
+  const diagramsByFolder = useMemo(() => {
+    const map = new Map<string | null, DiagramListItem[]>();
+    for (const d of diagrams) {
+      const bucket = map.get(d.folderId) ?? [];
+      bucket.push(d);
+      map.set(d.folderId, bucket);
+    }
+    for (const bucket of map.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
+    return map;
+  }, [diagrams]);
 
   // Flat list of every folder with its breadcrumb path. Used as the
   // "Move to folder…" picker options. Built depth-first so children
   // appear under their parents in the dropdown.
-  const folderPathPicker: { id: string; path: string }[] = [];
-  const walk = (parentId: string | null, prefix: string[]) => {
-    for (const f of foldersByParent.get(parentId) ?? []) {
-      const path = [...prefix, f.name];
-      folderPathPicker.push({ id: f.id, path: path.join(' / ') });
-      walk(f.id, path);
-    }
-  };
-  walk(null, []);
+  const folderPathPicker = useMemo(() => {
+    const list: { id: string; path: string }[] = [];
+    const walk = (parentId: string | null, prefix: string[]) => {
+      for (const f of foldersByParent.get(parentId) ?? []) {
+        const path = [...prefix, f.name];
+        list.push({ id: f.id, path: path.join(' / ') });
+        walk(f.id, path);
+      }
+    };
+    walk(null, []);
+    return list;
+  }, [foldersByParent]);
 
   const toggleFolder = (key: string) =>
     setExpandedFolders((prev) => ({ ...prev, [key]: !prev[key] }));
