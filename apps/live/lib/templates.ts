@@ -23,14 +23,11 @@ export type TemplateKind =
   // arrow loop. Sits under "Show more" alongside the other strategy /
   // wireframing starters.
   | 'flywheel'
-  // Logo-design starters: a placeholder icon next to (or above) a
-  // brand wordmark, with and without a tagline below. Four variants
-  // so a designer landing on a blank canvas has a usable composition
-  // to tweak rather than nothing. All under "Show more".
-  | 'logo-horizontal'
-  | 'logo-vertical'
-  | 'logo-horizontal-tagline'
-  | 'logo-vertical-tagline';
+  // Logo-design lockup sheet: one canvas with all four common
+  // wordmark compositions side by side (icon-left / icon-above,
+  // each with and without a tagline) so a designer can pick the
+  // composition that fits, delete the rest, and iterate.
+  | 'logo-design';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -134,27 +131,10 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'logo-horizontal',
-    title: 'Logo (icon left)',
-    description: 'A placeholder icon to the left of a brand wordmark — drop in your real logo.',
-    extra: true,
-  },
-  {
-    kind: 'logo-vertical',
-    title: 'Logo (icon above)',
-    description: 'A placeholder icon stacked above a brand wordmark — symmetric, centred mark.',
-    extra: true,
-  },
-  {
-    kind: 'logo-horizontal-tagline',
-    title: 'Logo + tagline (icon left)',
-    description: 'Icon on the left, brand on top, tagline underneath — typical horizontal lockup.',
-    extra: true,
-  },
-  {
-    kind: 'logo-vertical-tagline',
-    title: 'Logo + tagline (icon above)',
-    description: 'Icon on top, brand below, tagline underneath — typical vertical lockup.',
+    kind: 'logo-design',
+    title: 'Logo design',
+    description:
+      'Four wordmark lockups on one canvas (icon-left / icon-above, each with and without a tagline). Pick a composition, delete the rest, replace the placeholder icons with your own.',
     extra: true,
   },
 ];
