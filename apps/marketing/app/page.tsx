@@ -39,11 +39,22 @@ import {
   UndoRedoArt,
   UnlimitedTabsArt,
 } from '@/components/FeatureArt';
+import dynamic from 'next/dynamic';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { FeatureGrid, Section } from '@/components/Section';
-import { UseCaseCarousel } from '@/components/UseCaseCarousel';
+// Lazy-load UseCaseCarousel: the 470-line `'use client'` rotator
+// sits below several feature sections (well below the fold) and
+// carries its own state + sketch components, none of which the
+// initial paint needs. The static-export HTML still inlines its
+// markup (next/dynamic defaults to ssr: true), so SEO and first
+// scroll are unchanged; what shrinks is the hydration JS chunk
+// the browser fetches before the user has any reason to look at
+// the carousel.
+const UseCaseCarousel = dynamic(() =>
+  import('@/components/UseCaseCarousel').then((m) => m.UseCaseCarousel),
+);
 
 export default function LandingPage() {
   return (
