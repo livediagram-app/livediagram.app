@@ -565,6 +565,12 @@ export default function LivePage() {
   // arrived via /live/diagram/shared?s=<code>. Drives whether the
   // Share button shows.
   const [isOwner, setIsOwner] = useState(true);
+  // The diagram's owner id (from the api fetch). Used to derive the
+  // owner badge at the top of the canvas: when the owner is currently
+  // in the room their full Participant row is in `livePresence` and we
+  // can show avatar + name; otherwise the badge shows just the role
+  // strip (Viewing / Editing) and skips the owner row entirely.
+  const [diagramOwnerId, setDiagramOwnerId] = useState<string | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   // Visitor-side "Make a copy" loading flag. Header button disables
   // itself while the api round-trips so a frantic double-click can't
@@ -772,6 +778,7 @@ export default function LivePage() {
           setDiagramShareable(fetched.shareable);
           setDiagramShareCode(fetched.shareCode);
           setIsOwner(fetched.ownerId === self.id);
+          setDiagramOwnerId(fetched.ownerId);
           // Visitors inherit the role from their share code. Owners
           // overwrite this to 'edit' below.
           setSessionRole(fetched.ownerId === self.id ? 'edit' : role);
@@ -864,6 +871,7 @@ export default function LivePage() {
           setDiagramShareable(fetched.shareable);
           setDiagramShareCode(fetched.shareCode);
           setIsOwner(fetched.ownerId === self.id);
+          setDiagramOwnerId(fetched.ownerId);
           setSessionRole('edit');
           // If we own the diagram, prefetch its full share-link list so
           // the dialog opens populated.
@@ -2748,6 +2756,14 @@ export default function LivePage() {
         tabName={activeTab.name}
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
+        ownerParticipant={
+          // Self is owner -> always have name + colour; otherwise look
+          // the owner up in livePresence (only present when the owner
+          // is currently in the room). null = owner not online; the
+          // Canvas hides the owner row and keeps just the role pill.
+          isOwner ? selfParticipant : (livePresence.find((p) => p.id === diagramOwnerId) ?? null)
+        }
+        isOwner={isOwner}
         diagramName={diagramName}
         tabBackgroundPattern={activeTab.backgroundPattern ?? 'grid'}
         tabBackgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}

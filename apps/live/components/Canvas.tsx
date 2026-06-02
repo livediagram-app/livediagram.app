@@ -38,6 +38,7 @@ import { BoxedElementView } from './BoxedElementView';
 import { CommandPalette, type CanvasTool, type SelectedElementControls } from './CommandPalette';
 import { UnionResizeHandles } from './element-parts';
 import { ActivityIcon, ActivityPanel, RedoIcon, UndoIcon } from './ActivityPanel';
+import { ParticipantAvatar } from './ParticipantAvatar';
 import { ContextPanel } from './ContextPanel';
 import { Explorer } from './Explorer';
 import { LaserOverlay } from './LaserOverlay';
@@ -87,6 +88,12 @@ type CanvasProps = {
   // True for a view-only ('view' share role) session: the editing chrome
   // (command palette, selection + multi-select toolbars) is suppressed.
   readOnly: boolean;
+  // Owner of the diagram, looked up by the page (selfParticipant when
+  // the viewer is the owner; the live-presence row for the owner-id
+  // otherwise). `null` when the owner is not currently in the room,
+  // in which case the owner half of the top-middle badge is hidden.
+  ownerParticipant: import('@/lib/identity').Participant | null;
+  isOwner: boolean;
   diagramName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;
@@ -328,6 +335,8 @@ export function Canvas(props: CanvasProps) {
     tabName,
     tabLocked,
     readOnly,
+    ownerParticipant,
+    isOwner,
     diagramName,
     tabBackgroundPattern,
     tabBackgroundColor,
@@ -1320,11 +1329,33 @@ export function Canvas(props: CanvasProps) {
         />
       )}
 
-      {readOnly && (
-        <div className="pointer-events-none absolute left-1/2 top-3 z-30 -translate-x-1/2 rounded-full bg-slate-900/80 px-3 py-1 text-xs font-medium text-white shadow-sm">
-          View only
+      {/* Top-middle status row. Two pills: who owns this diagram (when
+          the owner is in the room — selfParticipant when the visitor
+          IS the owner, otherwise a livePresence lookup) and the
+          visitor's own role (Viewing / Editing). Pointer events stay
+          off so the badges don't intercept clicks on the canvas. */}
+      <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex -translate-x-1/2 items-center gap-2">
+        {ownerParticipant ? (
+          <div className="flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
+            <span className="text-slate-500 dark:text-slate-400">Owner:</span>
+            <ParticipantAvatar participant={ownerParticipant} size={14} />
+            <span className="max-w-[10rem] truncate">
+              {ownerParticipant.name}
+              {isOwner ? <span className="ml-1 text-slate-400">(you)</span> : null}
+            </span>
+          </div>
+        ) : null}
+        <div
+          className={
+            'rounded-full px-2.5 py-1 text-[11px] font-medium shadow-sm ' +
+            (readOnly
+              ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
+              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200')
+          }
+        >
+          {readOnly ? 'Viewing' : 'Editing'}
         </div>
-      )}
+      </div>
       {welcomeOpen || readOnly ? null : (
         <CommandPalette
           position={palettePosition}
