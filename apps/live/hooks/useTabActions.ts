@@ -78,7 +78,25 @@ export function useTabActions(deps: TabActionsDeps) {
   } = deps;
 
   const addTab = () => {
-    const tab = createTab(`Tab ${tabs.length + 1}`);
+    // Seed the new tab with the current tab's theme + canvas styling
+    // so a user mid-diagram who hits "+ tab" doesn't lose their
+    // visual context. Each tab still has its own independent
+    // styling once created (changing the new tab's theme doesn't
+    // affect the source). Skips when activeTab can't be resolved
+    // (the hook is mid-mount or the active id points at a tab
+    // that's been removed in another window), falling back to
+    // brand defaults the same way Tab 1 does.
+    const activeTab = tabs.find((t) => t.id === activeId);
+    const seed: Partial<Tab> = activeTab
+      ? {
+          theme: activeTab.theme,
+          backgroundPattern: activeTab.backgroundPattern,
+          backgroundColor: activeTab.backgroundColor,
+          backgroundOpacity: activeTab.backgroundOpacity,
+          patternColor: activeTab.patternColor,
+        }
+      : {};
+    const tab: Tab = { ...createTab(`Tab ${tabs.length + 1}`), ...seed };
     commitTabs((ts) => [...ts, tab]);
     track('Tab', 'Created');
     setActiveId(tab.id);
@@ -87,7 +105,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId(null);
     setGroupSourceId(null);
     // New tabs jump straight into the lighter template picker (just the
-    // template grid). The welcome flow is first-run only — the user
+    // template grid). The welcome flow is first-run only, the user
     // already has an identity + theme by this point.
     setTemplatePickerMode('templates');
   };
