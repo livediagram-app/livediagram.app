@@ -54,11 +54,13 @@ CREATE TABLE change_log (
   before_state TEXT NOT NULL,                -- JSON: { [elementId]: Element | null }
   after_state  TEXT NOT NULL,                -- JSON: { [elementId]: Element | null }
   created_at   INTEGER NOT NULL,             -- epoch ms
-  FOREIGN KEY (diagram_id) REFERENCES diagrams(id) ON DELETE CASCADE
+  FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE
 );
 
-CREATE INDEX change_log_diagram_idx ON change_log(diagram_id, created_at DESC);
-CREATE INDEX change_log_tab_idx     ON change_log(tab_id);
+-- "Most recent N entries for this diagram" walks tab_id (post #14 the
+-- diagram filter is an outer JOIN through diagram_tabs), then orders
+-- by created_at. Tab-scoped reads pick up the same index.
+CREATE INDEX change_log_tab_created_at_idx ON change_log(tab_id, created_at DESC);
 ```
 
 - `before_state[id] = null` ⇒ the element didn't exist before (added).
@@ -75,7 +77,7 @@ Tabs got their own table in migration 0005 (see [13-per-tab-storage.md](13-per-t
 - `DELETE /api/diagrams/:id/log/tab/:tabId` drops every row whose `tab_id` matches.
 - The live app calls this from `deleteTab` alongside the tab row delete.
 
-Diagram delete still cascades through the FK on `diagram_id`.
+Diagram delete no longer cascades to `change_log` rows directly: post #14 there's no `diagram_id` column to hang the cascade off, only `tab_id`. Deleting a diagram drops the `diagrams` row + cascades to `diagram_tabs` link rows, but tabs that were only linked to the deleted diagram survive as orphans in the `tabs` table (no explicit sweep, intentional under the many-to-many model in spec/17), and their `change_log` entries survive with them. The 90-day retention cron (item #16) sweeps the latter eventually. The explicit per-tab `DELETE /api/diagrams/:id/log/tab/:tabId` above is what keeps the panel honest for tabs the user deletes interactively, where there's no other cleanup path.
 
 ## API surface
 
