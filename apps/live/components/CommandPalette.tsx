@@ -1,18 +1,11 @@
 import { useState } from 'react';
-import { useShowMoreList } from '@/hooks/useShowMoreList';
-import {
-  Accordion,
-  PATTERNS,
-  ColorSwatch,
-  IconButton,
-  PatternButton,
-  ToolButton,
-} from './palette-controls';
+import { Accordion, IconButton, ToolButton } from './palette-controls';
 export {
   SelectedElementSection,
   ALL_SELECTED_ACCORDIONS_CLOSED,
   type SelectedAccordionState,
 } from './SelectedElementSection';
+export { TabSection, type TabAccordionState } from './TabSection';
 import type {
   ArrowEnds,
   ArrowheadSize,
@@ -28,10 +21,9 @@ import type {
   TextAlignY,
   TextSize,
 } from '@livediagram/diagram';
-import { THEMES, type ThemeId } from '@/lib/themes';
+import { type ThemeId } from '@/lib/themes';
 import { MovablePanel } from './MovablePanel';
-import { AutoAlignIcon, LaserIcon, PanIcon, ResetIcon, SelectIcon } from './palette-icons';
-import { ShowMoreButton } from './ShowMoreButton';
+import { LaserIcon, PanIcon, SelectIcon } from './palette-icons';
 import { Tooltip } from './Tooltip';
 
 export type SelectedElementControls = {
@@ -701,199 +693,5 @@ export function CommandPalette({
         </div>
       </Accordion>
     </MovablePanel>
-  );
-}
-
-export type TabAccordionState = {
-  theme: boolean;
-  canvas: boolean;
-  cleanup: boolean;
-};
-
-export function TabSection({
-  tab,
-  open,
-  setOpen,
-}: {
-  tab: TabSectionControls;
-  open: TabAccordionState;
-  setOpen: React.Dispatch<React.SetStateAction<TabAccordionState>>;
-}) {
-  // Mutually exclusive (matches SelectedElementSection).
-  const toggle = (key: keyof TabAccordionState) =>
-    setOpen((prev) => {
-      const closed: TabAccordionState = {
-        theme: false,
-        canvas: false,
-        cleanup: false,
-      };
-      if (prev[key]) return closed;
-      return { ...closed, [key]: true };
-    });
-
-  // Same opt-in shape as the welcome / template picker. Auto-expands
-  // when the current tab is already on an extra so the active swatch
-  // is always visible.
-  const themesList = useShowMoreList(THEMES, (t) => t.id === tab.themeId);
-  const patternsList = useShowMoreList(PATTERNS, (p) => p.id === tab.backgroundPattern);
-
-  return (
-    <div className="flex flex-col border-t border-slate-200 dark:border-slate-800">
-      <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
-        Current Tab
-      </p>
-      <Accordion title="Theme" open={open.theme} onToggle={() => toggle('theme')}>
-        <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
-          Sets the canvas backdrop and recolours every element on this tab to match the theme
-          (sticky notes keep their amber palette).
-        </p>
-        <div className="mt-1 grid grid-cols-3 gap-1">
-          {themesList.visible.map((t) => {
-            const active = tab.themeId === t.id;
-            // Border / dot colours come from the theme's element-stroke (or
-            // pattern colour when the theme is the brand default).
-            const dot = t.elementStroke ?? t.patternColor;
-            const swatch = t.elementFill ?? '#ffffff';
-            return (
-              <Tooltip
-                key={t.id}
-                title={t.label}
-                description="Applies the theme's background and new-element colours."
-                block
-              >
-                <button
-                  type="button"
-                  onClick={() => tab.onSetTheme(t.id)}
-                  aria-pressed={active}
-                  className={
-                    active
-                      ? 'flex w-full flex-col items-center gap-1 rounded-md border border-brand-400 bg-brand-50 p-1.5 text-[10px] font-medium text-brand-800'
-                      : 'flex w-full flex-col items-center gap-1 rounded-md border border-slate-200 bg-white p-1.5 text-[10px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15'
-                  }
-                >
-                  <span
-                    aria-hidden
-                    style={{ backgroundColor: t.backgroundColor }}
-                    className="flex h-7 w-full items-center justify-center rounded-sm border border-slate-200 dark:border-slate-700"
-                  >
-                    <span
-                      style={{ backgroundColor: swatch, borderColor: dot }}
-                      className="h-3 w-3 rounded-sm border"
-                    />
-                  </span>
-                  <span>{t.label}</span>
-                </button>
-              </Tooltip>
-            );
-          })}
-        </div>
-        {themesList.hasMore && !themesList.showAll ? (
-          <ShowMoreButton label="Show more themes" onClick={themesList.reveal} />
-        ) : null}
-        <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
-        <Tooltip
-          title="Reset elements to theme"
-          description="Recolour every shape, text and arrow on this tab to the active theme's defaults — including elements you've hand-coloured."
-        >
-          <button
-            type="button"
-            onClick={tab.onResetElementsToTheme}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
-          >
-            <ResetIcon />
-            Reset elements to theme
-          </button>
-        </Tooltip>
-      </Accordion>
-      <Accordion title="Canvas" open={open.canvas} onToggle={() => toggle('canvas')}>
-        <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">Pattern</p>
-        <div className="mt-1 grid grid-cols-3 gap-1">
-          {patternsList.visible.map((p) => (
-            <Tooltip key={p.id} title={p.label} description={p.description}>
-              <PatternButton
-                active={tab.backgroundPattern === p.id}
-                onClick={() => tab.onSetBackgroundPattern(p.id)}
-                label={p.shortLabel}
-              >
-                <p.icon />
-              </PatternButton>
-            </Tooltip>
-          ))}
-        </div>
-        {patternsList.hasMore && !patternsList.showAll ? (
-          <ShowMoreButton label="Show more patterns" onClick={patternsList.reveal} />
-        ) : null}
-        <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
-          Colours
-        </p>
-        <div className="mt-1 flex items-stretch gap-1">
-          <Tooltip title="Canvas colour" description="The colour of the canvas background.">
-            <ColorSwatch
-              label="Canvas"
-              value={tab.backgroundColor}
-              onChange={tab.onSetBackgroundColor}
-            />
-          </Tooltip>
-          <Tooltip title="Pattern colour" description="The colour of the grid dots or ruled lines.">
-            <ColorSwatch
-              label="Pattern"
-              value={tab.patternColor}
-              onChange={tab.onSetPatternColor}
-            />
-          </Tooltip>
-        </div>
-        <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3">
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Opacity</p>
-            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
-              {Math.round(tab.backgroundOpacity * 100)}%
-            </span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
-            value={tab.backgroundOpacity}
-            onChange={(e) => tab.onSetBackgroundOpacity(parseFloat(e.target.value))}
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
-          />
-        </div>
-      </Accordion>
-      {tab.importError ? (
-        <p className="rounded-md border border-rose-200 bg-rose-50 px-2 py-1.5 text-[11px] text-rose-700">
-          {tab.importError}
-        </p>
-      ) : null}
-      {tab.onAutoAlign ? (
-        <Accordion title="Assistant" open={open.cleanup} onToggle={() => toggle('cleanup')}>
-          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
-            Snap every element on this tab to the canvas grid so near-aligned shapes line up exactly
-            and minor dimension drift collapses. Undoable.
-          </p>
-          <div className="mt-1 flex items-stretch gap-1.5">
-            <Tooltip
-              title="Auto align"
-              description="Snap positions and sizes to the canvas grid."
-              block
-            >
-              <button
-                type="button"
-                onClick={tab.onAutoAlign}
-                disabled={!tab.canAutoAlign}
-                className={
-                  tab.canAutoAlign
-                    ? 'inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200'
-                    : 'inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] font-medium text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500'
-                }
-              >
-                <AutoAlignIcon />
-                Auto align
-              </button>
-            </Tooltip>
-          </div>
-        </Accordion>
-      ) : null}
-    </div>
   );
 }
