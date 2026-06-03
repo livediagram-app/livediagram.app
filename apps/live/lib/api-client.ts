@@ -183,6 +183,40 @@ async function expectOkOr404Void(res: Response, action: string): Promise<void> {
   if (!res.ok && res.status !== 404) throw new Error(`${action} failed: ${res.status}`);
 }
 
+// Shared DELETE shape. Every apiDelete*-style endpoint in this file
+// (8 callers at the time of writing) did the same three things:
+// fetch with method DELETE + apiHeaders, then either expectOkOr404Void
+// (the common "remove this if it exists" semantic) or expectOkVoid
+// (the rarer "404 should surface as a failure" case). Centralising
+// that here means a new DELETE caller never has to think about which
+// helper to reach for, and the share-code wiring is opt-in via the
+// `share` field instead of a 4th positional argument on every site.
+async function apiDelete(
+  url: string,
+  ownerId: string,
+  opts: {
+    action: string;
+    // Forwarded to apiHeaders when present. Skip the field (or pass
+    // null) for endpoints that don't accept a share-code path.
+    share?: string | null;
+    // Defaults to true: most DELETEs are idempotent ("if it exists,
+    // remove it") and a racing concurrent delete should NOT throw.
+    // Pass `false` to require a successful 2xx and surface 404 as a
+    // real error.
+    allow404?: boolean;
+  },
+): Promise<void> {
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: await apiHeaders(ownerId, opts.share === undefined ? {} : { share: opts.share }),
+  });
+  if (opts.allow404 ?? true) {
+    await expectOkOr404Void(res, opts.action);
+  } else {
+    await expectOkVoid(res, opts.action);
+  }
+}
+
 // Deduped on `${ownerId}|${id}`: the editor mounts and React Strict
 // Mode in dev double-invokes its hydration effect, so this fires
 // twice on first paint. With dedup, the second call receives the
@@ -271,11 +305,10 @@ export async function apiDeleteChangeLogForTab(
   tabId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/log/tab/${tabId}`, {
-    method: 'DELETE',
-    headers: await apiHeaders(ownerId, { share: shareCode }),
+  return apiDelete(`${API_BASE}/diagrams/${diagramId}/log/tab/${tabId}`, ownerId, {
+    action: 'delete change log',
+    share: shareCode,
   });
-  await expectOkOr404Void(res, 'delete change log');
 }
 
 export async function apiDeleteChangeLogEntry(
@@ -284,11 +317,10 @@ export async function apiDeleteChangeLogEntry(
   entryId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/log/${entryId}`, {
-    method: 'DELETE',
-    headers: await apiHeaders(ownerId, { share: shareCode }),
+  return apiDelete(`${API_BASE}/diagrams/${diagramId}/log/${entryId}`, ownerId, {
+    action: 'delete change log entry',
+    share: shareCode,
   });
-  await expectOkOr404Void(res, 'delete change log entry');
 }
 
 // Deduped on `${ownerId}|${id}`: editor mount fires this for the
@@ -321,11 +353,9 @@ export async function apiCreateShareLink(
 }
 
 export async function apiDeleteShareLink(ownerId: string, id: string, code: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/diagrams/${id}/share/${code}`, {
-    method: 'DELETE',
-    headers: await apiHeaders(ownerId),
+  return apiDelete(`${API_BASE}/diagrams/${id}/share/${code}`, ownerId, {
+    action: 'delete share link',
   });
-  await expectOkOr404Void(res, 'delete share link');
 }
 
 // Persist diagram-level metadata: name (rename) and tab order. Used
@@ -488,11 +518,10 @@ export async function apiDeleteTab(
   tabId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, {
-    method: 'DELETE',
-    headers: await apiHeaders(ownerId, { share: shareCode }),
+  return apiDelete(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, ownerId, {
+    action: 'delete tab',
+    share: shareCode,
   });
-  await expectOkOr404Void(res, 'delete tab');
 }
 
 export async function apiDeleteDiagram(ownerId: string, id: string): Promise<void> {
@@ -500,11 +529,7 @@ export async function apiDeleteDiagram(ownerId: string, id: string): Promise<voi
   // identity headers the worker would 400 / 403. apiHeaders prefers
   // the Clerk Bearer when a token provider is registered, falls
   // through to X-Owner-Id otherwise (spec/04, spec/11).
-  const res = await fetch(`${API_BASE}/diagrams/${id}`, {
-    method: 'DELETE',
-    headers: await apiHeaders(ownerId),
-  });
-  await expectOkOr404Void(res, 'delete diagram');
+  return apiDelete(`${API_BASE}/diagrams/${id}`, ownerId, { action: 'delete diagram' });
 }
 
 async function _apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
@@ -554,11 +579,10 @@ export const apiListSharedWith = dedupeInFlight(_apiListSharedWith, (ownerId) =>
 
 // Dismiss a single "shared with you" row.
 export async function apiDismissSharedWith(ownerId: string, diagramId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/shared/${diagramId}`, {
-    method: 'DELETE',
-    headers: await apiHeaders(ownerId),
+  return apiDelete(`${API_BASE}/shared/${diagramId}`, ownerId, {
+    action: 'dismiss shared',
+    allow404: false,
   });
-  await expectOkVoid(res, 'dismiss shared');
 }
 
 // Copy a diagram (typically one shared with the caller) into the
@@ -628,11 +652,7 @@ export async function apiUpdateFolder(
 }
 
 export async function apiDeleteFolder(ownerId: string, id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/folders/${id}`, {
-    method: 'DELETE',
-    headers: await apiHeaders(ownerId),
-  });
-  await expectOkOr404Void(res, 'delete folder');
+  return apiDelete(`${API_BASE}/folders/${id}`, ownerId, { action: 'delete folder' });
 }
 
 export async function apiSetDiagramFolder(
@@ -861,11 +881,10 @@ export async function apiUploadImage(
 }
 
 export async function apiDeleteImage(ownerId: string, imageId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/images/${encodeURIComponent(imageId)}`, {
-    method: 'DELETE',
-    headers: await apiHeaders(ownerId),
+  return apiDelete(`${API_BASE}/images/${encodeURIComponent(imageId)}`, ownerId, {
+    action: 'delete image',
+    allow404: false,
   });
-  await expectOkVoid(res, 'delete image');
 }
 
 // Inverse-index of which diagrams reference each owned image.
