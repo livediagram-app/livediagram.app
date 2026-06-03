@@ -4,12 +4,13 @@ The frontend-only prototype phase ended once the API app landed. This spec captu
 
 ## Where we are now
 
-Four apps, all deployable to Cloudflare Workers (with Static Assets for the two Next.js apps):
+Five apps, all deployable to Cloudflare Workers (with Static Assets for the three Next.js apps):
 
 - **marketing** — static landing site at `/`.
 - **live** — the diagram editor at `/live`. Statically exported Next.js.
+- **telemetry**, public anonymous-events dashboard at `/telemetry`. Statically exported Next.js. Reads aggregate counts from the api worker's D1 events table. See [22-telemetry.md](22-telemetry.md).
 - **api** — Cloudflare Worker holding the REST endpoints + Durable Object realtime room. D1 is the durable store.
-- **router** — Worker that stitches the three above under one hostname.
+- **router** — Worker that stitches the four above under one hostname.
 
 The editor is real:
 
@@ -22,6 +23,7 @@ The editor is real:
 - Export the active tab as Markdown / PDF / PNG / JSON file from the header (welcome-style overlay). Import is the round-trip: a previously-exported JSON envelope drops back in as a new tab; the envelope's `schemaVersion` lets the editor refuse files newer than it understands instead of silently corrupting state.
 - "Shared with you" Explorer accordion + standalone `/live/explorer` page surface the diagrams another owner has shared with the visitor; the row's link carries a still-live share code so the non-owner can actually open it. Visitor can copy a shared diagram into their own files via the header's "Make a copy" button.
 - **Hybrid Clerk auth.** Guests use the editor without signing in (the spec/04 hard rule); a signed-in user's diagrams travel under their Clerk userId via Bearer-verified requests. Sign-in lives at `/live/sign-in/` (email-code OR Google OAuth), sign-up at `/live/get-started/`, account self-delete from the header menu (gated by Clerk's reverification step-up). Guest → authed migration runs on first sign-in via `POST /api/migrate`. The api worker degrades to pure guest mode when `CLERK_JWKS_URL` is unset, and the frontend ClerkProvider becomes a pass-through when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is unset — so a self-hoster can ship without Clerk (spec/03). See [04-auth-and-guest-access.md](04-auth-and-guest-access.md) and [11-api.md](11-api.md).
+- **Anonymous first-party telemetry** + the public `/telemetry` dashboard. The editor emits a closed-vocabulary `{category, action, type}` event for every meaningful interaction (shapes added, themes changed, comments posted, etc.) via batched POSTs to `/api/events`; the dashboard renders aggregate counts read from the api worker's D1 summary. Off by default for self-hosters (the api's `TELEMETRY_ENABLED` flag + the live build's `NEXT_PUBLIC_TELEMETRY_ENABLED` both need to be on for events to flow end-to-end), and a per-user opt-out (spec/20) overrides both when off. See [22-telemetry.md](22-telemetry.md).
 
 The editor never touches `localStorage` for diagrams — `apps/live/lib/api-client.ts` is the single persistence boundary. `localStorage` is only used for **identity bootstrap** (the guest participant id + name-confirmed flag — Clerk users key off their userId instead).
 
