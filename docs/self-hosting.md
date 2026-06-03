@@ -111,6 +111,8 @@ See [spec/10](../specs/10-deployment.md) for the deeper deploy mechanics, includ
 
 The api worker's telemetry ingest (`/api/events`) is off unless `TELEMETRY_ENABLED=true` is set in `apps/api/wrangler.toml`. OSS forks ingest nothing by default. If you DO turn it on, the public `/telemetry` dashboard renders aggregate counts from your own D1; there's no third-party analytics involved. See [spec/22](../specs/22-telemetry.md).
 
+Turning telemetry on end-to-end takes BOTH the server gate above AND a build-time gate on the editor + dashboard apps. The api flag is the authoritative gate (ingest + summary refuse to serve without it), but the live editor also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` at build time and skips emission entirely when it isn't `"true"`, and the telemetry dashboard does the same. So a fork that only flips the api flag will see "ingest on" but no events flow, and the dashboard stays empty. To turn it fully on, set `NEXT_PUBLIC_TELEMETRY_ENABLED=true` in your CI build env (or `apps/live/.env.production` + `apps/telemetry/.env.production`) alongside the api flag. Per-user opt-out via the Settings dialog (spec/20) still overrides both when off.
+
 ## Custom domain
 
 Add a custom-domain route to the router worker (`apps/router/wrangler.toml`) and point your DNS at Cloudflare. The router stitches all paths under one hostname:
