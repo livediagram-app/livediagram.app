@@ -34,7 +34,7 @@ specs/          product source of truth, read these before adding features
 
 Each app pulls these in via `workspace:*`:
 
-- **`@livediagram/diagram`** owns the diagram data model: `Tab`, every `Element` type (Shape / Text / Sticky / Image / Arrow), defaults, geometry helpers, snap math, group operations. The single source of what a diagram IS.
+- **`@livediagram/diagram`** owns the diagram data model: `Tab`, every `Element` type (Shape / Text / Sticky / Image / Freehand / Arrow), defaults, geometry helpers, snap math, group operations, and the pencil's shape-recognition heuristics. The single source of what a diagram IS.
 - **`@livediagram/api-schema`** owns the wire format between the api worker and the live editor: every request / response shape, plus the canonical `sha256Hex` used for image-upload dedupe. Adding a field on the server without updating the client used to be routine drift; the typechecker catches it now.
 - **`@livediagram/ui`** owns the cross-app UI primitives (today just `Brand`, the logo + wordmark; more arrive as common patterns emerge).
 - **`@livediagram/eslint-config`** / **`prettier-config`** / **`tailwind-config`** / **`vitest-config`** own the shared lint / format / theme / test configs so every workspace stays consistent.
