@@ -7,7 +7,6 @@ import {
   createShape,
   createSticky,
   createText,
-  duplicateGroupedElements,
   isBoxed,
   recogniseShape,
   simplifyPolyline,
@@ -115,6 +114,7 @@ const SettingsDialog = dynamic(() =>
 );
 import { TabBar } from '@/components/TabBar';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
+import { useClipboard } from '@/hooks/useClipboard';
 import { HISTORY_LIMIT, useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import { useFolders } from '@/hooks/useFolders';
@@ -182,7 +182,6 @@ import {
   type SharedWithItem,
 } from '@/lib/api-client';
 import { applyRevert } from '@/lib/change-log';
-import { uploadImageFile } from '@/lib/upload-image';
 import { commentRowsFromElements } from '@/components/CommentsPanel';
 import { templateCanvasOverrides, type TemplateKind } from '@/lib/templates';
 import {
@@ -3023,57 +3022,24 @@ export default function LivePage() {
     autoRebindArrowsRef,
   });
 
-  // Session-only clipboard for Cmd-C / Cmd-V. Lives in React state
-  // so a refresh clears it (matches every other browser's "clipboard
-  // gone on reload" expectation) but stays put across tab switches
-  // and selection changes so the user can copy in one tab, switch,
-  // and paste in another.
-  const [clipboard, setClipboard] = useState<Element[] | null>(null);
-
-  const copySelection = () => {
-    if (isReadOnly) return;
-    const idSet =
-      multiSelectedIds.size > 0
-        ? new Set(multiSelectedIds)
-        : selectedId !== null
-          ? memberIdsOf(selectedId)
-          : null;
-    if (!idSet || idSet.size === 0) return;
-    const snapshot = activeTab.elements
-      .filter((el) => idSet.has(el.id))
-      // Deep clone so a later edit to the originals doesn't bleed
-      // into a future paste.
-      .map((el) => JSON.parse(JSON.stringify(el)) as Element);
-    if (snapshot.length === 0) return;
-    setClipboard(snapshot);
-    track('Element', 'Copied');
-  };
-
-  const pasteFromClipboard = () => {
-    if (isReadOnly) return;
-    if (!clipboard || clipboard.length === 0) return;
-    const offset = 24;
-    const clipIds = new Set(clipboard.map((el) => el.id));
-    // Clipboard ids may not exist in the current tab (the source
-    // was deleted, the user pasted into a different tab, etc.).
-    // Temporarily merge them in so duplicateGroupedElements can do
-    // its id-remap + arrow-rewire. Only the freshly-minted copies
-    // get committed back, not the merged sources.
-    const existingIds = new Set(activeTab.elements.map((el) => el.id));
-    const novel = clipboard.filter((el) => !existingIds.has(el.id));
-    const merged = [...activeTab.elements, ...novel];
-    const { newElements } = duplicateGroupedElements(merged, clipIds, offset, offset);
-    if (newElements.length === 0) return;
-    commit((els) => [...els, ...newElements]);
-    if (newElements.length === 1) {
-      setSelectedId(newElements[0]!.id);
-      setMultiSelectedIds(new Set());
-    } else {
-      setSelectedId(null);
-      setMultiSelectedIds(new Set(newElements.map((el) => el.id)));
-    }
-    track('Element', 'Duplicated');
-  };
+  // Copy / paste (in-app element clipboard + OS-clipboard image
+  // paste). `copySelection` feeds the keyboard hook below; paste is
+  // driven by a native `paste` listener the hook owns. See
+  // useClipboard.
+  const { copySelection } = useClipboard({
+    isReadOnly,
+    selectedId,
+    multiSelectedIds,
+    editingId,
+    memberIdsOf,
+    activeTab,
+    commit,
+    setSelectedId,
+    setMultiSelectedIds,
+    addImageFromGallery,
+    ownerId: selfParticipant.id,
+    toast,
+  });
 
   // Global keyboard shortcuts (Escape cancels modes, Delete /
   // Backspace wipes selection, Cmd-Z / Cmd-Shift-Z undo / redo,
@@ -3103,118 +3069,6 @@ export default function LivePage() {
     onCancelDraw: cancelDrawShape,
     enabled: shortcutsEnabled,
   });
-
-  // Paste a file (typically a clipboard image) by routing it through
-  // the same upload pipeline as the picker: validate + hash, POST to
-  // /api/images, then drop a new image element on the canvas
-  // pre-filled with the uploaded image's id + natural dimensions.
-  // The OS clipboard hand off doesn't carry a filename for inline
-  // images (screenshots etc.), so we synthesise one from the MIME
-  // suffix so the gallery has something to render in the title slot.
-  const pasteImageFile = async (file: File) => {
-    if (!addImageFromGallery) return;
-    // Browsers hand inline screenshots over with file.name === ""
-    // or "image.png"; synthesise a clearer name so the gallery row
-    // doesn't read as "image.png" for everything pasted.
-    const named =
-      file.name && file.name !== 'image.png'
-        ? file
-        : new File([file], `pasted-${Date.now()}.${file.type.split('/')[1] ?? 'png'}`, {
-            type: file.type,
-          });
-    try {
-      const { image } = await uploadImageFile(selfParticipant.id, named);
-      addImageFromGallery({
-        id: image.id,
-        width: image.width,
-        height: image.height,
-        originalName: image.originalName,
-      });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not paste the image.');
-    }
-  };
-
-  // System-clipboard paste handler. Cmd/Ctrl+V triggers the browser's
-  // native `paste` event, which carries whatever the OS clipboard
-  // holds (text, files, images). When the user has an image on
-  // their clipboard (a screenshot, a copy-image-from-browser, etc.),
-  // route it to the image-upload path so a new image element lands
-  // on the canvas pre-filled with the bytes. When the clipboard has
-  // no image, fall back to the in-app element clipboard so pasting
-  // copied canvas elements still works as before. Text-input focus
-  // is left to the browser's default (let users paste text into a
-  // label / comment composer the normal way).
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const onPaste = (e: ClipboardEvent) => {
-      const target = e.target as Element | null;
-      if (
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        (target instanceof HTMLElement && target.isContentEditable)
-      ) {
-        return;
-      }
-      if (isReadOnly) return;
-      if (editingId !== null) return;
-      // Prefer the typed `files` list over iterating `items`: some
-      // browsers / OS clipboards report an image as a `file` item
-      // with an empty or generic MIME type (e.g.
-      // `application/octet-stream` for a Finder copy), which the
-      // old image/* check missed and dropped through to the in-app
-      // clipboard, pasting the user's previously-copied canvas
-      // elements alongside the expected image. `dataTransfer.files`
-      // is the authoritative file list and works the same way for
-      // every browser.
-      const files = e.clipboardData?.files;
-      if (files && files.length > 0) {
-        // Pick the first image file, or the first file overall when
-        // none declare an image MIME (some clipboards strip the type
-        // hint). pasteImageFile validates the bytes via the upload
-        // pipeline, so a non-image file just produces a toast and a
-        // no-op without polluting the canvas.
-        let chosen: File | null = null;
-        for (const file of Array.from(files)) {
-          if (file.type.startsWith('image/')) {
-            chosen = file;
-            break;
-          }
-        }
-        if (!chosen) chosen = files[0] ?? null;
-        if (chosen) {
-          e.preventDefault();
-          void pasteImageFile(chosen);
-          return;
-        }
-      }
-      // Belt-and-braces: also check items in case `files` is empty
-      // but an image item is present (Safari edge case). Same early
-      // return so we never fall through to pasteFromClipboard when
-      // the system clipboard had image content the user expected.
-      const items = e.clipboardData?.items;
-      if (items) {
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i]!;
-          if (item.kind === 'file' && item.type.startsWith('image/')) {
-            const file = item.getAsFile();
-            if (file) {
-              e.preventDefault();
-              void pasteImageFile(file);
-              return;
-            }
-          }
-        }
-      }
-      // No image / file on the system clipboard: fall through to the
-      // editor's own element clipboard (the Cmd+C copy buffer).
-      e.preventDefault();
-      pasteFromClipboard();
-    };
-    document.addEventListener('paste', onPaste);
-    return () => document.removeEventListener('paste', onPaste);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReadOnly, editingId]);
 
   if (diagramNotFound) {
     return (
