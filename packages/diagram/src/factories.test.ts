@@ -3,6 +3,7 @@ import {
   activeCommentCount,
   createArrow,
   createComment,
+  createImage,
   createPinnedArrow,
   createShape,
   createSticky,
@@ -50,8 +51,26 @@ describe('boxed-element factories', () => {
     });
   });
 
+  it('createImage drops a 200x150 placeholder with null imageId and aspect-lock on', () => {
+    // spec/19 contract: the canvas drops an image element with no
+    // bytes attached, the picker fills imageId in afterwards. The
+    // empty-state thumbnail renders while imageId is null, then the
+    // aspectLocked default kicks in so resizing once a real image
+    // lands preserves the natural ratio.
+    expect(createImage(3, 4)).toMatchObject({
+      type: 'image',
+      x: 3,
+      y: 4,
+      width: 200,
+      height: 150,
+      imageId: null,
+      aspectLocked: true,
+    });
+  });
+
   it('factories mint distinct ids on each call', () => {
     expect(createShape('square', 0, 0).id).not.toBe(createShape('square', 0, 0).id);
+    expect(createImage(0, 0).id).not.toBe(createImage(0, 0).id);
   });
 });
 
