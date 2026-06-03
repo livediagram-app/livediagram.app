@@ -86,28 +86,28 @@ export function ExportTabDialog({ tab, diagramName, onClose }: ExportTabDialogPr
             <ExportCard
               kind="markdown"
               title="Markdown"
-              description="Flatten labels and connections into a .md outline."
+              description="A text outline of this tab's elements and connections, ready to paste into a doc."
               busy={busyFormat === 'markdown'}
               onClick={() => void handle('markdown')}
             />
             <ExportCard
               kind="pdf"
               title="PDF"
-              description="A single-page PDF of the rendered canvas."
+              description="A single-page PDF of this tab, ready to print or share."
               busy={busyFormat === 'pdf'}
               onClick={() => void handle('pdf')}
             />
             <ExportCard
               kind="png"
               title="PNG"
-              description="A 2× pixel-ratio raster of the active tab."
+              description="A high-resolution image of this tab, for slides or screenshots."
               busy={busyFormat === 'png'}
               onClick={() => void handle('png')}
             />
             <ExportCard
               kind="file"
               title="File"
-              description="JSON envelope round-trippable via Import (#11)."
+              description="A livediagram file. Drop it back into any diagram via Import to recreate this tab."
               busy={busyFormat === 'file'}
               onClick={() => void handle('file')}
             />
