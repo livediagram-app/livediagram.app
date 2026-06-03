@@ -305,7 +305,7 @@ type Element = ShapeElement | ArrowElement;
 
 ## Shape primitives
 
-Seven shape kinds, all rendered as absolutely positioned elements on the canvas:
+Fifteen shape kinds, all rendered as absolutely positioned elements on the canvas. The table below covers the seven general-purpose primitives the spec originally shipped with; three more general shapes (`stadium`, `actor`, `cloud`) and five UI device frames (`browser`, `monitor`, `laptop`, `phone`, `tablet`) landed alongside the wireframe templates and are documented in the [Devices accordion](#main-palette-sections) above. The canonical list lives in `packages/diagram/src/index.ts` `ShapeKind`; the test in `apps/live/lib/templates.test.ts` pins shape coverage indirectly via the template catalogue.
 
 | Kind            | Rendering                                                                                                                        | Aspect lock |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
@@ -333,11 +333,20 @@ type ShapeKind =
   | 'cylinder'
   | 'parallelogram'
   | 'hexagon'
-  | 'document';
+  | 'document'
+  | 'stadium'
+  | 'actor'
+  | 'cloud'
+  // UI device frames (wireframing). See spec/09 "Devices" accordion.
+  | 'browser'
+  | 'monitor'
+  | 'laptop'
+  | 'phone'
+  | 'tablet';
 
 type Element = {
   id: ElementId;
-  type: 'shape'; // discriminator — future: 'edge', 'group', ...
+  type: 'shape'; // discriminator: future 'edge', 'group', etc.
   shape: ShapeKind;
   x: number;
   y: number;
@@ -367,7 +376,7 @@ At the top of the modal, an inline avatar + name input lets the user adjust thei
 
 ### Templates section
 
-Below the welcome section, a 4-column responsive grid of template cards (2-col on narrow viewports). One card is always selected (defaults to **Blank**). The catalogue (`apps/live/lib/templates.ts`) ships **8 default templates** plus **4 extras behind a "Show more templates" toggle**:
+Below the welcome section, a 4-column responsive grid of template cards (2-col on narrow viewports). One card is always selected (defaults to **Blank**). The catalogue (`apps/live/lib/templates.ts`, pinned by `templates.test.ts` so spec drift surfaces as a test failure) ships **8 default templates** plus **9 extras behind a "Show more templates" toggle**:
 
 - **Blank diagram** — drops a **single 220 × 100 square** centred on the visible viewport, pre-labelled `Blank Diagram` at `md` text size, and **auto-selects it** so the user can immediately rename or edit. Generalised rule: a template that produces exactly one element auto-selects that element; multi-element templates leave the selection cleared.
 - **Mind map** — a central circle with four labelled branch boxes, each sprouting two leaf cards, all connected by pinned arrows.
@@ -384,6 +393,11 @@ Extras (behind Show more):
 - **User journey** — five stage cards in a row with arrows between, each backed by a sticky note for the feeling at that stage.
 - **Fishbone** — horizontal spine arrow pointing at an Effect card, four diagonal category branches.
 - **Pyramid** — four stacked tiers (Vision → Strategy → Tactics → Operations), peak tier accent-coloured.
+- **Mobile wireframe**: phone-frame device shape pre-populated with a stack of UI primitives (status bar, header, content rows, action button) sized for the phone canvas.
+- **Laptop wireframe**: laptop-frame device shape with a browser-window header + content rows + sidebar columns laid out for desktop-screen prototyping.
+- **Slide deck**: sequence of slide-shaped rectangles arranged for a deck outline (title slide + N content slides).
+- **Flywheel**: four labelled stages arranged in a momentum loop with arrows curving from each stage to the next.
+- **Logo design**: four logo-design variations on one canvas: icon-left-of-text and icon-above-text layouts, each in a title-only and title-with-tagline pairing.
 
 The opt-in shape mirrors themes + canvas patterns: `TemplateDescriptor.extra?: boolean` drives the toggle; the picker filters by `(!t.extra || showExtra)`. Auto-expands on revisit when the tab was created from an extra template.
 
