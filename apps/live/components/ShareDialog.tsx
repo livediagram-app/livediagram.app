@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Portal } from './Portal';
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
 import type { ShareLink, ShareRole } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { useClickOutside } from '@/hooks/useClickOutside';
+import { useEscape } from '@/hooks/useEscape';
 import { TrashIcon } from './explorer-icons';
 import { Tooltip } from './Tooltip';
 
@@ -51,21 +53,8 @@ export function ShareDialog({
   const [newRole, setNewRole] = useState<ShareRole>('edit');
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    const onClick = (e: MouseEvent) => {
-      if (!ref.current) return;
-      if (e.target instanceof Node && !ref.current.contains(e.target)) onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onClick);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onClick);
-    };
-  }, [onClose]);
+  useEscape(onClose);
+  useClickOutside(ref, onClose);
 
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;

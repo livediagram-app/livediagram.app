@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Portal } from './Portal';
 import type { Comment, CommentThread } from '@livediagram/diagram';
 import { initialsOf } from '@/lib/identity';
+import { useClickOutside } from '@/hooks/useClickOutside';
+import { useEscape } from '@/hooks/useEscape';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying
@@ -77,27 +79,10 @@ export function CommentThreadPopover({
     };
   }, [elementId]);
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (!ref.current) return;
-      if (e.target instanceof Node && !ref.current.contains(e.target)) {
-        // Don't close if the click was on a comment badge — that's the
-        // toggle, and parent state handles flip-flop.
-        const onBadge = (e.target as Element).closest?.('[data-comment-trigger]');
-        if (onBadge) return;
-        onClose();
-      }
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('mousedown', handler);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', handler);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [onClose]);
+  // Don't close on a click that lands on a comment badge: those are
+  // the popover's own toggle, and parent state handles flip-flop.
+  useClickOutside(ref, onClose, true, '[data-comment-trigger]');
+  useEscape(onClose);
 
   if (!pos) return null;
 
