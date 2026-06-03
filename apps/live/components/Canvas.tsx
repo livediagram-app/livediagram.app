@@ -960,8 +960,18 @@ export function Canvas(props: CanvasProps) {
         // outline; sticky's amber palette is fixed). Default to
         // medium / solid / sm to match the renderer's fallbacks
         // when the element hasn't been customised yet.
-        borderStroke: selected.type === 'shape' ? (selected.strokeWidth ?? 'medium') : null,
-        borderStyle: selected.type === 'shape' ? (selected.strokeStyle ?? 'solid') : null,
+        // Border-stroke + border-style apply to shapes AND the
+        // freehand pen tool (both render through the same width /
+        // pattern fields). Border-radius is shape-only because the
+        // freehand path defines its own corners via the polyline.
+        borderStroke:
+          selected.type === 'shape' || selected.type === 'freehand'
+            ? (selected.strokeWidth ?? 'medium')
+            : null,
+        borderStyle:
+          selected.type === 'shape' || selected.type === 'freehand'
+            ? (selected.strokeStyle ?? 'solid')
+            : null,
         borderRadius: selected.type === 'shape' ? (selected.borderRadius ?? 'sm') : null,
         onSetBorderStroke,
         onSetBorderStyle,

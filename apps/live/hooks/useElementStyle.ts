@@ -164,7 +164,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
           ? {
               ...t,
               elements: t.elements.map((el) =>
-                ids.has(el.id) && (el.type === 'shape' || el.type === 'sticky')
+                ids.has(el.id) &&
+                (el.type === 'shape' || el.type === 'sticky' || el.type === 'freehand')
                   ? { ...el, fillColor: color }
                   : el,
               ),
@@ -186,7 +187,10 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
               ...t,
               elements: t.elements.map((el) =>
                 ids.has(el.id) &&
-                (el.type === 'shape' || el.type === 'sticky' || el.type === 'arrow')
+                (el.type === 'shape' ||
+                  el.type === 'sticky' ||
+                  el.type === 'arrow' ||
+                  el.type === 'freehand')
                   ? { ...el, strokeColor: color }
                   : el,
               ),
@@ -305,14 +309,17 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     );
   };
 
-  // Border-preset setters. Each writes the field on the selected
-  // shape only; non-shape elements are ignored (the Border accordion
-  // is hidden for them anyway, but defensive against a stale id).
+  // Border-preset setters. Each writes the field on shapes + the
+  // freehand pen tool (both render the stored stroke width / style
+  // through the same renderer fields); non-supporting elements are
+  // ignored.
   const setBorderStrokeSelected = (value: BorderStroke) => {
     if (!selectedId) return;
     commit((els) =>
       els.map((el) =>
-        el.id === selectedId && el.type === 'shape' ? { ...el, strokeWidth: value } : el,
+        el.id === selectedId && (el.type === 'shape' || el.type === 'freehand')
+          ? { ...el, strokeWidth: value }
+          : el,
       ),
     );
   };
@@ -320,7 +327,9 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     if (!selectedId) return;
     commit((els) =>
       els.map((el) =>
-        el.id === selectedId && el.type === 'shape' ? { ...el, strokeStyle: value } : el,
+        el.id === selectedId && (el.type === 'shape' || el.type === 'freehand')
+          ? { ...el, strokeStyle: value }
+          : el,
       ),
     );
   };

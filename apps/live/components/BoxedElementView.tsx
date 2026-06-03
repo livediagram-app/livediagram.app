@@ -269,11 +269,34 @@ function BoxedElementViewImpl({
           canOpenPicker={!!imageContext.onOpenPicker}
         />
       ) : element.type === 'freehand' ? (
-        <FreehandSvg
-          element={element}
-          fill={element.fillColor ?? defaultFillColor(element)}
-          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
-        />
+        <>
+          <FreehandSvg
+            element={element}
+            fill={element.fillColor ?? defaultFillColor(element)}
+            stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          />
+          {/* Render the label on top of the SVG path so a freehand
+              can carry text the same way a shape does (the Editor
+              panel's Text accordion lights up for it). Both the SVG
+              and the label use absolute inset-0 so they overlay
+              cleanly inside the element's bounding box. Skipped when
+              there's no label AND we're not mid-edit, to avoid the
+              empty placeholder taking up space and competing with
+              the drawn stroke. */}
+          {isEditing || label.length > 0
+            ? renderLabel(
+                element,
+                label,
+                textSize,
+                alignX,
+                alignY,
+                PADDING_PX[element.padding ?? defaultPadding(element)],
+                isEditing,
+                (next) => onCommitLabel(element.id, next),
+                onCancelEdit,
+              )
+            : null}
+        </>
       ) : (
         renderLabel(
           element,
