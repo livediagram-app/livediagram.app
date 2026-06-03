@@ -556,6 +556,11 @@ Both plus buttons are hidden while the element is being edited or while format-p
 
 Boxed elements paint in **array order** — earlier in the tab's `elements` array means rendered earlier (further back); later means rendered on top. Arrows always render in a single SVG layer on top of all boxed elements (this is a current rendering limitation, not a long-term design).
 
+New-element placement defaults follow a deliberate asymmetry:
+
+- **Palette adds** (shape / text / sticky / image / arrow / freehand, including the draw-to-size + pencil paths) **prepend** to `elements`, so the new element lands at the **back** of the z-order. "Add behind existing content" was the friendlier default once the user observed that the previous append-default forced a manual Send to Back after most adds.
+- **Paste and duplicate** **append**, so the freshly minted copies land at the **front**: the user just copied them, surfacing them on top of the source is the expected behaviour.
+
 The selection popover exposes:
 
 - **Bring to Front** — moves the selected element to the end of the elements array.
