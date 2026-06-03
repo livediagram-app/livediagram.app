@@ -111,6 +111,8 @@ The editor's floating panels (Palette, Explorer, Editor/Context, Activity) were 
 
 These don't change desktop layout. The remaining "panels overlap when all four open" mobile case is tracked separately, the dock-button entry points + the mobile picker (spec/14 responsive section) give the user a path to anywhere they need to go.
 
+The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
+
 ## Out of scope (next iterations)
 
 - **Operational transform / CRDT edits** — realtime is LWW broadcast; concurrent edits to the same element clobber.
