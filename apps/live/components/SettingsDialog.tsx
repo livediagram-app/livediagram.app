@@ -8,9 +8,11 @@ import type { UserPreferences } from '@/lib/user-preferences';
 // Per-user preference dialog (spec/20). Launched from the settings
 // gear in the TabBar footer. Each row is a toggle bound to a single
 // flag in UserPreferences; the editor owns the state and persists it
-// via the user-preferences helpers. Settings travel with the user
-// (device-scoped localStorage), not with the diagram, so flipping a
-// flag applies the next time they open any diagram.
+// via the user-preferences helpers. Settings sync to D1 keyed by the
+// resolved owner (Clerk userId when signed in, the per-browser
+// participant id otherwise), with localStorage as a synchronous warm
+// cache, so flipping a flag applies immediately on this device and
+// reaches every other device the same account is signed into.
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -90,7 +92,8 @@ export function SettingsDialog({ settings, onChange, onClose }: SettingsDialogPr
           </div>
           <footer className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
-              Settings are stored on this device and apply to every diagram you open.
+              Settings sync to your account and apply to every diagram you open, on every device you
+              sign in from.
             </p>
           </footer>
         </div>
