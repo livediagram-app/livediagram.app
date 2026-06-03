@@ -146,24 +146,69 @@ function drawBannerMessage(intent: PendingDraw): string {
 // diamond); everything else uses the plain crosshair branch since
 // the banner already shows the shape name.
 function drawShapeCursor(kind: ShapeKind): string {
-  let shape = '';
   if (kind === 'square') {
-    shape = `<rect x="13" y="13" width="11" height="8" fill="none" stroke="black" stroke-width="1.4" />`;
-  } else if (kind === 'circle') {
-    shape = `<ellipse cx="18.5" cy="17" rx="5.5" ry="4" fill="none" stroke="black" stroke-width="1.4" />`;
-  } else if (kind === 'diamond') {
-    shape = `<path d="M18.5 12 L24 17 L18.5 22 L13 17 Z" fill="none" stroke="black" stroke-width="1.4" />`;
-  } else {
-    return 'crosshair';
+    return drawCursorFromGlyph(
+      `<rect x="13" y="13" width="11" height="8" fill="none" stroke="black" stroke-width="1.4" />`,
+    );
   }
-  // Crosshair tip at (4, 4); white halo first for visibility on dark
-  // canvas backgrounds (graph paper, dark mode), black stroke on top
-  // so it remains legible on light backgrounds too.
+  if (kind === 'circle') {
+    return drawCursorFromGlyph(
+      `<ellipse cx="18.5" cy="17" rx="5.5" ry="4" fill="none" stroke="black" stroke-width="1.4" />`,
+    );
+  }
+  if (kind === 'diamond') {
+    return drawCursorFromGlyph(
+      `<path d="M18.5 12 L24 17 L18.5 22 L13 17 Z" fill="none" stroke="black" stroke-width="1.4" />`,
+    );
+  }
+  // Other shape kinds fall back to the plain crosshair (so a Tab key
+  // press never lands them on an undefined cursor): the banner
+  // carries the kind name and the palette button is pressed, so the
+  // user still sees what's queued.
+  return 'crosshair';
+}
+
+// Builds a per-tool cursor for non-shape draw intents: text, sticky,
+// image, arrow. Reads the same crosshair-at-(4, 4) shape as
+// drawShapeCursor so every draw-mode pointer has the same anchor,
+// then layers a tiny tool-specific glyph in the lower-right. Anything
+// the discriminated union adds in future falls back to 'crosshair'
+// rather than 'auto' / inherited so the cursor never reads as "not
+// in a mode" when one is active.
+function drawIntentCursor(intent: PendingDraw): string {
+  if (intent.type === 'shape') return drawShapeCursor(intent.kind);
+  if (intent.type === 'text') {
+    return drawCursorFromGlyph(
+      `<path d="M13 13 H24 M18.5 13 V23 M16 23 H21" stroke="black" stroke-width="1.4" stroke-linecap="round" fill="none" />`,
+    );
+  }
+  if (intent.type === 'sticky') {
+    return drawCursorFromGlyph(
+      `<path d="M13 13 H21 L24 16 V23 H13 Z M21 13 V16 H24" stroke="black" stroke-width="1.4" stroke-linejoin="round" fill="none" />`,
+    );
+  }
+  if (intent.type === 'image') {
+    return drawCursorFromGlyph(
+      `<rect x="13" y="14" width="11" height="9" rx="1" fill="none" stroke="black" stroke-width="1.4" /><circle cx="15.5" cy="16.5" r="0.9" fill="black" /><path d="M13 21 L16 18.5 L18.5 20.5 L21 18 L24 20" stroke="black" stroke-width="1.2" stroke-linejoin="round" fill="none" />`,
+    );
+  }
+  // Arrow: a tiny line with a head at the right end.
+  return drawCursorFromGlyph(
+    `<path d="M13 18 L23 18 M20 15.5 L23 18 L20 20.5" stroke="black" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />`,
+  );
+}
+
+// Shared SVG-cursor builder. Crosshair tip at (4, 4), white halo
+// first for visibility on dark canvas backgrounds (graph paper, dark
+// mode), black stroke on top so it remains legible on light
+// backgrounds too. The glyph is the tool / shape preview, drawn in
+// the lower-right of a 28x28 hotspot box.
+function drawCursorFromGlyph(glyph: string): string {
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'>` +
     `<path d='M0 4 H8 M4 0 V8' stroke='white' stroke-width='3' stroke-linecap='round' />` +
     `<path d='M0 4 H8 M4 0 V8' stroke='black' stroke-width='1.5' stroke-linecap='round' />` +
-    shape +
+    glyph +
     `</svg>`;
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}") 4 4, crosshair`;
 }
@@ -1265,14 +1310,13 @@ export function Canvas(props: CanvasProps) {
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
           transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
-          // Draw-mode cursor: shape intents get a crosshair with a
-          // tiny outline of the shape kind in its lower-right, so the
-          // user sees what they're about to draw without looking at
-          // the banner. Tools (text / sticky / image / arrow) fall
-          // back to the plain crosshair, the banner carries the name.
-          ...(pendingDraw && pendingDraw.type === 'shape'
-            ? { cursor: drawShapeCursor(pendingDraw.kind) }
-            : null),
+          // Draw-mode cursor: every intent gets a custom inline-SVG
+          // cursor (crosshair at the pointer tip plus a small glyph
+          // hinting at what's about to land). Without this, tool
+          // intents inherited the default arrow cursor because the
+          // wrapper drops its Tailwind cursor- class above when
+          // pendingDraw is set, leaving no cursor specified at all.
+          ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
         }}
       >
         {/* Shared arrowhead defs. Multiple per-arrow <svg>s below

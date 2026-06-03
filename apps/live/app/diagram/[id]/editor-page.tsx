@@ -109,6 +109,7 @@ import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/hooks/useToast';
 import {
   readUserPreferences,
+  fetchUserPreferences,
   writeUserPreferences,
   type UserPreferences,
 } from '@/lib/user-preferences';
@@ -618,6 +619,26 @@ export default function LivePage() {
   useEffect(() => {
     setUserPreferences(readUserPreferences());
   }, []);
+
+  // Server-side preferences sync (spec/20). Once the owner id
+  // resolves (Clerk userId for signed-in users, the per-browser
+  // participant id for guests), fetch the row from D1 and merge it
+  // over the localStorage cache. Server wins for any key present on
+  // both sides. The cache-only read above still fired first so the
+  // UI never blocks on this network step; this just reconciles
+  // toggles the user made on another device.
+  useEffect(() => {
+    const ownerId = selfParticipant?.id;
+    if (!ownerId) return;
+    let cancelled = false;
+    void fetchUserPreferences(ownerId).then((merged) => {
+      if (cancelled || merged === null) return;
+      setUserPreferences(merged);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selfParticipant?.id]);
 
   useEffect(() => {
     if (!importError) return;
@@ -2970,6 +2991,40 @@ export default function LivePage() {
       }
       if (isReadOnly) return;
       if (editingId !== null) return;
+      // Prefer the typed `files` list over iterating `items`: some
+      // browsers / OS clipboards report an image as a `file` item
+      // with an empty or generic MIME type (e.g.
+      // `application/octet-stream` for a Finder copy), which the
+      // old image/* check missed and dropped through to the in-app
+      // clipboard, pasting the user's previously-copied canvas
+      // elements alongside the expected image. `dataTransfer.files`
+      // is the authoritative file list and works the same way for
+      // every browser.
+      const files = e.clipboardData?.files;
+      if (files && files.length > 0) {
+        // Pick the first image file, or the first file overall when
+        // none declare an image MIME (some clipboards strip the type
+        // hint). pasteImageFile validates the bytes via the upload
+        // pipeline, so a non-image file just produces a toast and a
+        // no-op without polluting the canvas.
+        let chosen: File | null = null;
+        for (const file of Array.from(files)) {
+          if (file.type.startsWith('image/')) {
+            chosen = file;
+            break;
+          }
+        }
+        if (!chosen) chosen = files[0] ?? null;
+        if (chosen) {
+          e.preventDefault();
+          void pasteImageFile(chosen);
+          return;
+        }
+      }
+      // Belt-and-braces: also check items in case `files` is empty
+      // but an image item is present (Safari edge case). Same early
+      // return so we never fall through to pasteFromClipboard when
+      // the system clipboard had image content the user expected.
       const items = e.clipboardData?.items;
       if (items) {
         for (let i = 0; i < items.length; i++) {
@@ -2984,7 +3039,7 @@ export default function LivePage() {
           }
         }
       }
-      // No image on the system clipboard: fall through to the
+      // No image / file on the system clipboard: fall through to the
       // editor's own element clipboard (the Cmd+C copy buffer).
       e.preventDefault();
       pasteFromClipboard();
@@ -3429,7 +3484,12 @@ export default function LivePage() {
           settings={userPreferences}
           onChange={(next) => {
             setUserPreferences(next);
-            writeUserPreferences(next);
+            // Pass the resolved owner id so the new prefs round-trip
+            // to D1 (spec/20). selfParticipant?.id is null until the
+            // identity effect resolves it, but settingsOpen can't be
+            // true until the user clicks the gear, which only renders
+            // after that effect ran, so the id is always set here.
+            writeUserPreferences(next, selfParticipant?.id ?? null);
           }}
           onClose={() => setSettingsOpen(false)}
         />

@@ -1,9 +1,13 @@
 // Per-user editor preference flags. See spec/20.
 //
-// Storage shape: a single `localStorage` entry under
-// `livediagram:user-preferences:v1`, JSON value. Missing key ===
-// defaults (every flag undefined === everything on, since flags
-// exist to opt out, not into, default behaviours).
+// Storage:
+//   - D1 (`user_preferences` table) is the authoritative store, fetched
+//     once at editor mount via fetchUserPreferences() so a signed-in
+//     user's flags follow them across devices.
+//   - `localStorage` under `livediagram:user-preferences:v1` is a warm
+//     cache so the editor never blocks on the network at boot. Reads
+//     are synchronous; writes go to BOTH localStorage and the api
+//     (fire-and-forget PUT). Last-write-wins per device.
 //
 // Cross-tab consistency: callers can listen for the native `storage`
 // event on STORAGE_KEY. Same-tab writes also fire a window event
@@ -11,6 +15,7 @@
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
 // in-memory gate cache) still refresh promptly.
 
+import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 
 export type UserPreferences = {
@@ -38,11 +43,12 @@ export type UserPreferences = {
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
 
-// Read the current preferences. Returns `{}` on missing key, an
-// SSR / private-window environment without `localStorage`, or a
-// parse error (corrupted JSON). The empty-object default lets
-// the call site spread it without nulls, and field-level `?? true`
-// defaults handle every flag uniformly.
+// Read the current preferences from localStorage. Returns `{}` on
+// missing key, an SSR / private-window environment without
+// `localStorage`, or a parse error (corrupted JSON). Synchronous so
+// the editor can use it during render; the network fetch via
+// fetchUserPreferences happens separately at mount and merges its
+// result back into the cache when it arrives.
 export function readUserPreferences(): UserPreferences {
   const raw = readLocalStorageSafe(STORAGE_KEY);
   if (!raw) return {};
@@ -59,13 +65,48 @@ export function readUserPreferences(): UserPreferences {
 
 // Write preferences back. Best-effort: a quota / private-window
 // failure is swallowed (the dialog state still applies in-memory
-// for the session; the user just loses the persistence). On
-// success a same-tab `livediagram:preferences-changed` event
-// fires so in-process listeners refresh without polling. The
-// browser handles cross-tab via its native `storage` event.
-export function writeUserPreferences(prefs: UserPreferences): void {
+// for the session; the user just loses the persistence). The
+// network sync to D1 is fire-and-forget when `ownerId` is supplied:
+// the cache write happens synchronously so the UI updates without
+// waiting, and the PUT runs in the background. Callers without an
+// ownerId (e.g. unit tests, the editor before identity resolves)
+// skip the network step. On success a same-tab
+// `livediagram:preferences-changed` event fires so in-process
+// listeners refresh without polling. The browser handles cross-tab
+// via its native `storage` event.
+export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | null): void {
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(prefs));
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
+  if (ownerId) {
+    // Cast to the wider Record shape the api-client expects.
+    // UserPreferences is the typed surface in this app; the wire
+    // is intentionally opaque so adding a flag doesn't need an
+    // api-schema bump.
+    void apiPutPreferences(ownerId, prefs as Record<string, unknown>);
+  }
+}
+
+// Fetch preferences from D1, merge over the localStorage cache, and
+// dispatch `livediagram:preferences-changed` so in-process listeners
+// pick up the merged value. Returns the merged preferences (or null
+// when the fetch failed; the caller can treat that as "stick with
+// the cache"). Called once at editor mount per spec/20's sync flow.
+//
+// Server-wins on conflict: the server holds the most-recently-saved
+// state across all of this owner's devices, so any key present on
+// both sides takes the server's value. Keys only in the cache (a
+// PUT that hasn't reached the server yet, or a write made offline)
+// are preserved by the spread order below.
+export async function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
+  const remote = await apiGetPreferences(ownerId);
+  if (remote === null) return null;
+  const local = readUserPreferences();
+  const merged: UserPreferences = { ...local, ...(remote as UserPreferences) };
+  writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
+  }
+  return merged;
 }

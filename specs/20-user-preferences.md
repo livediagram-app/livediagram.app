@@ -5,29 +5,78 @@ changing diagram content. A small Settings dialog launched from
 the footer (gear button to the left of the dark-mode toggle)
 exposes them. Replaces the earlier per-diagram-settings shape:
 preferences are about the user's editor experience, not about any
-particular diagram, so they live once on the device and apply
-everywhere.
+particular diagram, so they live once per account / device and
+apply everywhere.
 
 ## Where preferences live
 
-Stored client-side in `localStorage` under a single key
-`livediagram:user-preferences:v1` (no per-diagram suffix). Per
-browser, per user, applies to every diagram they open from this
-device. v1 deliberately avoids a D1 migration because:
+Preferences live in **D1** as the source of truth, with
+`localStorage` as a fast warm cache so the editor never blocks on
+a network round-trip at boot.
 
-- The flag set is small and UI-only, so a server round-trip per
-  toggle is overkill.
-- Different users editing the same diagram may legitimately
-  disagree about "should arrows auto-rebind?" (one likes the
-  magic, another finds it disorienting). Per-user keeps that
-  honest.
-- The persistence shape is easy to graft into D1 (Clerk-keyed)
-  later if any flag ever needs to follow a signed-in user
-  across devices.
+- **D1 table** `user_preferences` (migration `0016_user_preferences.sql`),
+  one row per owner (Clerk userId for signed-in users, the per-
+  browser participant id for guests). Columns: `owner_id TEXT
+PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
+  `updated_at INTEGER NOT NULL` (Unix ms). The JSON blob shape
+  keeps the migration count low when new flags arrive: adding a
+  field never requires altering the table.
+- **localStorage cache** keyed `livediagram:user-preferences:v1`
+  (legacy key, unchanged). Read synchronously at page-load so the
+  Settings dialog and gate caches (telemetry, draw-to-add, etc.)
+  have a value to read before the network fetch returns.
 
-When `localStorage` is unavailable (SSR build, private-window
-restrictions) the dialog still renders but falls back to in-
-memory state for the session.
+### Sync flow
+
+- **On editor open**: read the localStorage cache synchronously
+  (zero-blocking), then fire-and-forget `GET /api/preferences`.
+  When the server response arrives, merge it over the cache
+  (server wins for any key present on both sides), persist back
+  to localStorage, and dispatch the existing
+  `livediagram:preferences-changed` window event so in-process
+  listeners refresh. If the fetch fails the cache value stays
+  authoritative for the session.
+- **On toggle**: update localStorage immediately (so the UI
+  reflects the change without waiting for the network), then
+  fire-and-forget `PUT /api/preferences` with the full updated
+  blob. If the PUT fails the local change still applies; the
+  next page load picks the cache again. Last-write-wins per
+  device.
+- **Cross-tab updates**: the browser's native `storage` event on
+  the preferences key still fires across tabs in the same
+  browser, so toggling in one tab updates every open editor.
+
+### Why D1 instead of localStorage-only
+
+The original v1 shape was localStorage-only on the grounds that
+flags were UI-only and a server round-trip per toggle was
+overkill. That trade-off was wrong for the user experience:
+signed-in users who use livediagram on a laptop and a phone had
+to re-flip every setting on each device. Per-account sync is the
+expected behaviour for an account-bound app.
+
+Guests get the same persistence model (the api keys them by
+their `X-Owner-Id` participant id), so server-side storage is
+effectively a remote copy of localStorage for that device, but
+with a cross-browser bonus: a guest who clears localStorage but
+keeps the same browser session still recovers their preferences.
+
+### Sign-up migration
+
+`POST /api/migrate` (spec/04) moves `user_preferences.owner_id`
+along with the diagrams + folders + shared-with rows, so a guest
+who signs up keeps the settings they'd already chosen. Idempotent
+in the same shape as the existing migrations: a second call with
+the same `guestOwnerId` moves zero rows.
+
+### Self-host degradation
+
+When the api worker is unset (pure-guest self-host without a D1
+binding configured) the client treats the fetch as a no-op
+failure: the localStorage cache acts as the only persistence,
+which is the same behaviour as the original v1 design and works
+exactly like it did before. No required SaaS calls, self-hosting
+stays viable.
 
 ## Schema
 
@@ -51,11 +100,21 @@ type UserPreferences = {
   // setting it to false is the only state that changes behaviour.
   // See spec/22 for the rest of the telemetry contract.
   telemetryEnabled?: boolean;
+
+  // When true, picking a shape (or tool) from the palette enters
+  // a draw-to-size mode: the canvas cursor becomes a shape-aware
+  // crosshair and the next drag defines the bounds of the new
+  // element. Defaults to false (the historical drop-at-viewport-
+  // centre behaviour). See `apps/live/components/Canvas.tsx` for
+  // the PendingDraw discriminated union the gesture commits
+  // through.
+  drawToAdd?: boolean;
 };
 ```
 
-Stored as serialised JSON. Unknown keys are preserved on read so a
-forward-rolled client doesn't strip another version's flags.
+Stored as serialised JSON on both sides of the wire. Unknown keys
+are preserved on read so a forward-rolled client doesn't strip
+another version's flags.
 
 ## Defaults
 
@@ -66,9 +125,13 @@ Missing key === undefined === default behaviour. Concretely:
   changes behaviour.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
+- `drawToAdd` undefined → drop-at-centre placement (the default).
+  Setting it to `true` flips the palette into draw-to-size mode
+  for every element kind.
 
-Empty (or missing entirely) localStorage entry for users who
-never open the dialog is therefore the "everything on" state.
+Empty (or missing entirely) localStorage entry, AND no row in
+`user_preferences` for this owner, is therefore the "everything
+on" state.
 
 ## UI placement
 
@@ -86,12 +149,31 @@ never open the dialog is therefore the "everything on" state.
 Live in `apps/live/lib/user-preferences.ts`:
 
 - `readUserPreferences(): UserPreferences` returns the current
-  preferences, parsing the stored JSON and defaulting any missing
-  key. Returns `{}` on parse failure (graceful).
-- `writeUserPreferences(prefs): void` serialises and writes back.
-  Also dispatches a `livediagram:preferences-changed` window event
-  so same-tab listeners (notably `lib/telemetry.ts`) can refresh
-  their cached gate without polling.
+  cached preferences, parsing the stored JSON and defaulting any
+  missing key. Returns `{}` on parse failure (graceful). Sync,
+  reads localStorage only, so the editor can use it during render.
+- `writeUserPreferences(prefs): void` serialises and writes back
+  to localStorage AND fires a non-blocking `PUT /api/preferences`
+  with the full blob. Also dispatches a
+  `livediagram:preferences-changed` window event so same-tab
+  listeners (notably `lib/telemetry.ts`) can refresh their cached
+  gate without polling.
+- `fetchUserPreferences(): Promise<UserPreferences | null>` does
+  a single `GET /api/preferences`. Returns null on failure or
+  when the api worker is unreachable. Callers use this once at
+  editor mount to reconcile with the server.
 
 Cross-tab updates are picked up via the browser's native `storage`
 event on the preferences key.
+
+## API
+
+- **`GET /api/preferences`** — returns `{ prefs: UserPreferences }`
+  for the resolved owner. Empty object when no row exists. Auth:
+  the standard hybrid identity (Clerk Bearer OR `X-Owner-Id`).
+- **`PUT /api/preferences`** — body `{ prefs: UserPreferences }`,
+  upserts the row for the resolved owner. Returns 204. The blob
+  is opaque to the api worker beyond a size cap (4 KB; defends
+  against runaway clients). No per-field validation: the client
+  is responsible for the shape, and a malformed client just
+  reflects malformed prefs back to itself.

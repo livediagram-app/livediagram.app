@@ -841,6 +841,10 @@ export async function deleteAccount(
     .bind(ownerId)
     .run();
   await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(ownerId).run();
+  // user_preferences (spec/20) holds the Settings dialog state for
+  // this owner. Wipe along with everything else so a delete-account
+  // run leaves no row carrying their flags.
+  await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(ownerId).run();
   return {
     diagrams: diagramsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
@@ -893,6 +897,21 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(fromOwnerId).run();
+  // user_preferences (spec/20): same INSERT OR IGNORE pattern as
+  // shared_with so a Clerk userId who somehow already had a row (an
+  // earlier sign-in on a different device) keeps that authoritative
+  // copy and the guest row gets dropped. Guest-only is the common
+  // path; the existing-row case just stops the migration clobbering
+  // intentional preferences with stale ones.
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO user_preferences (owner_id, prefs, updated_at)
+     SELECT ?, prefs, updated_at
+     FROM user_preferences
+     WHERE owner_id = ?`,
+  )
+    .bind(toOwnerId, fromOwnerId)
+    .run();
+  await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
   return {
     diagrams: diagramsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
