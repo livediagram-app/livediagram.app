@@ -213,12 +213,11 @@ function placeholdersFromSummaries(summaries: { id: string; name: string }[]): T
 // Patch one tab in a Tab[] by id, spreading `patch` over its fields.
 // Tabs whose id doesn't match are returned by reference, so callers
 // that diff by-identity (notably the autosave's `prevTabById !== t`
-// check) still skip the unchanged ones. Extracted from 8+ inline
-// `ts.map((t) => (t.id === ... ? { ...t, ... } : t))` sites that
-// were all doing the same thing; the one site that needs access to
-// the prior tab (it computes the new elements array from
-// `t.elements`) stays inline since the static-patch shape doesn't
-// fit it.
+// check) still skip the unchanged ones. Replaces every inline
+// `ts.map((t) => (t.id === ... ? { ...t, ... } : t))` site whose
+// patch is a static Partial<Tab>. Two sites that build their patch
+// from the prior tab's elements (mapElements / [...t.elements, el])
+// stay inline since the static-patch shape doesn't fit them.
 function patchTab(ts: Tab[], id: string, patch: Partial<Tab>): Tab[] {
   return ts.map((t) => (t.id === id ? { ...t, ...patch } : t));
 }
@@ -2363,30 +2362,23 @@ export default function LivePage() {
     const elements = !theme
       ? rawElements
       : rawElements.map((el) => recolourElementForTheme(el, theme));
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              elements,
-              templateChosen: true,
-              // Apply the picker's theme choice at the same time as the
-              // template scaffold so the user lands on a fully themed
-              // canvas in one step instead of having to revisit the
-              // Theme accordion.
-              ...(theme && themeId
-                ? {
-                    theme: themeId,
-                    backgroundColor: theme.backgroundColor,
-                    backgroundPattern: theme.backgroundPattern,
-                    patternColor: theme.patternColor,
-                  }
-                : {}),
-              ...templateCanvasOverrides(kind),
-            }
-          : t,
-      ),
-    );
+    // Apply the picker's theme choice at the same time as the
+    // template scaffold so the user lands on a fully themed canvas
+    // in one step instead of having to revisit the Theme accordion.
+    const patch: Partial<Tab> = {
+      elements,
+      templateChosen: true,
+      ...(theme && themeId
+        ? {
+            theme: themeId,
+            backgroundColor: theme.backgroundColor,
+            backgroundPattern: theme.backgroundPattern,
+            patternColor: theme.patternColor,
+          }
+        : {}),
+      ...templateCanvasOverrides(kind),
+    };
+    commitTabs((ts) => patchTab(ts, activeId, patch));
     // Auto-select when a template produces a single element (today: blank
     // diagram's seeded rectangle) so the user can immediately rename or edit
     // it. Multi-element templates leave the selection cleared.
@@ -2690,11 +2682,7 @@ export default function LivePage() {
           };
           const before = activeTab.elements;
           const after = [arrow, ...before];
-          commitTabs((ts) =>
-            ts.map((t) =>
-              t.id === activeId ? { ...t, elements: after, templateChosen: true } : t,
-            ),
-          );
+          commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
           emitChange(activeId, before, after);
           setSelectedId(arrow.id);
           setPendingDraw(null);
