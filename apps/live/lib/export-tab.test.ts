@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, ShapeElement, Tab } from '@livediagram/diagram';
+import type { ArrowElement, FreehandElement, ShapeElement, Tab } from '@livediagram/diagram';
 import {
   TAB_SCHEMA_VERSION,
   exportTabAsJson,
@@ -16,6 +16,21 @@ const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement 
   y: 0,
   width: 100,
   height: 80,
+  ...overrides,
+});
+
+const freehand = (id: string, overrides: Partial<FreehandElement> = {}): FreehandElement => ({
+  id,
+  type: 'freehand',
+  x: 0,
+  y: 0,
+  width: 60,
+  height: 60,
+  points: [
+    { nx: 0, ny: 0 },
+    { nx: 1, ny: 1 },
+  ],
+  closed: false,
   ...overrides,
 });
 
@@ -141,6 +156,31 @@ describe('exportTabAsMarkdown', () => {
       ),
     );
     expect(md).toContain('- *calls*: A → ?');
+  });
+
+  it('includes labelled freehand strokes in the Elements section with a (freehand) tag', async () => {
+    // Regression guard: before isBoxed-driven filtering, the Markdown
+    // export hard-coded shape / text / sticky as the only boxed
+    // kinds, which silently dropped FreehandElement after it shipped
+    // as a first-class boxed type. The downstream tag computation
+    // already falls back to `(<type>)` for non-shape kinds, so once
+    // the filter lets freehand through the bullet renders correctly.
+    const md = await text(
+      exportTabAsMarkdown(
+        tab({
+          elements: [
+            shape('s', { label: 'Box', y: 0 }),
+            freehand('f', { label: 'Sketch', y: 100 }),
+            freehand('u', { y: 200 }), // unlabelled freehand stays dropped
+          ],
+        }),
+      ),
+    );
+    expect(md).toContain('## Elements');
+    expect(md).toContain('- **Box** (square)');
+    expect(md).toContain('- **Sketch** (freehand)');
+    // The unlabelled freehand contributes no bullet.
+    expect(md.match(/^- \*\*/gm)?.length).toBe(2);
   });
 
   it('drops unlabelled arrows entirely (no Connections section)', async () => {

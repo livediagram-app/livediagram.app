@@ -9,7 +9,13 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import type { ArrowElement, BoxedElement, Element, Tab } from '@livediagram/diagram';
+import {
+  isBoxed,
+  type ArrowElement,
+  type BoxedElement,
+  type Element,
+  type Tab,
+} from '@livediagram/diagram';
 
 // ---------------------------------------------------------------------
 // File (JSON)
@@ -59,9 +65,12 @@ export function exportTabAsMarkdown(tab: Tab): Blob {
   lines.push(`# ${tab.name || 'Untitled tab'}`);
   lines.push('');
 
-  const boxed = tab.elements.filter(
-    (e): e is BoxedElement => e.type === 'shape' || e.type === 'text' || e.type === 'sticky',
-  );
+  // Use isBoxed instead of an inline kind list so a future
+  // BoxedElement variant (FreehandElement landed via this gap)
+  // doesn't silently drop out of the markdown export. The tag
+  // computation below already falls back to `(<type>)` for any
+  // non-shape kind.
+  const boxed = tab.elements.filter(isBoxed);
   const arrows = tab.elements.filter((e): e is ArrowElement => e.type === 'arrow');
   const labelledBoxed = boxed.filter((b) => b.label && b.label.trim().length > 0);
   labelledBoxed.sort((a, b) => a.y - b.y || a.x - b.x);
