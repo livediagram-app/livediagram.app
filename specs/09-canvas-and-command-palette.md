@@ -37,9 +37,12 @@ Sections, top to bottom:
 - **Current Diagram** — the active diagram's row. Click to rename in place; the row's ellipsis menu surfaces Rename, Duplicate, and Delete for the current diagram (moved here from the editor header).
 - **Recent Diagrams** — accordion listing up to the five most-recently-saved diagrams the current participant owns, newest first. Capped + collapsed by default with a count badge.
 - **Folders + Unsorted** — accordion holding the nested folder tree per [15-folders.md](15-folders.md). Every folder is itself an accordion (expand to show child folders + direct diagrams). The synthetic **Unsorted** bucket always renders so freshly-created diagrams have an obvious home, even when no user folders exist. Folder rows have their own ellipsis (Rename, Delete, New subfolder, Move-to-folder); diagram rows have a "Move to folder…" sub-action.
-- **Sign-in nudge** — a dashed-border card at the bottom with "Sign in to keep your diagrams" copy and a disabled **Sign in (coming soon)** button. Surfaces the value of accounts (cross-device persistence) right where the user is looking at their library; lights up once Clerk lands and the per-browser participant id is replaced by a Clerk user id.
+- **Sign-in nudge** — a dashed-border card at the bottom of the Explorer body that surfaces the value of accounts (cross-device persistence) where the user is looking at their library. Three states driven by the deployment + session:
+  - **Clerk disabled** (self-host without auth): "Diagrams saved to this browser" with the body explaining that sign-in isn't enabled on this deployment and clearing storage wipes everything. No button.
+  - **Clerk enabled, signed out**: "Sign in to keep your content" with body "A free account keeps your diagrams and content across sessions and devices." and a primary CTA linking to `/sign-in/`.
+  - **Clerk enabled, signed in**: renders nothing. The signed-in user already has the account that syncs everything; the nudge would just be noise.
 
-When minimised, the Explorer collapses into a dock button (folder icon) in the bottom dock, left of the Palette's dock button.
+When the user collapses the Explorer, it banner-collapses in place via the shared `MovablePanel` `collapsible` prop (same as the Palette and Editor's ContextPanel). The legacy dock-button-in-the-bottom-dock minimised state is no longer wired for any of these three panels. Activity still docks via its own minimise path, see that section.
 
 ## Text alignment
 
