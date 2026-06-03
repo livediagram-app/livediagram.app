@@ -3,6 +3,7 @@ import type { TelemetryCount } from '@livediagram/api-schema';
 import { rowToChangeLog, type ChangeLogRow } from './change-log-row';
 import { rowToShareLink, type ShareLinkRow } from './share-link-row';
 import { rowToFolder, type FolderRow } from './folder-row';
+import { imageRowToSummary, type ImageRow } from './image-row';
 import { rowToTab, rowToTabSummary, type TabRow } from './tab-row';
 import type {
   ChangeLogEntryDTO,
@@ -900,30 +901,6 @@ export async function migrateOwnerId(
 }
 
 // --- Images (spec/19) ----------------------------------------------------
-
-type ImageRow = {
-  id: string;
-  owner_id: string;
-  content_type: string;
-  byte_size: number;
-  width: number;
-  height: number;
-  sha256: string;
-  original_name: string | null;
-  created_at: number;
-};
-
-function imageRowToSummary(row: ImageRow): ImageSummary {
-  return {
-    id: row.id,
-    contentType: row.content_type,
-    byteSize: row.byte_size,
-    width: row.width,
-    height: row.height,
-    originalName: row.original_name ?? undefined,
-    createdAt: row.created_at,
-  };
-}
 
 export async function listImagesByOwner(env: Env, ownerId: string): Promise<ImageSummary[]> {
   const rows = await env.DB.prepare(
