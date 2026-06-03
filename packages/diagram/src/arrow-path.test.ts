@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { arrowPathD, arrowPathMidpoint, curveControlPoint, type Endpoint } from './index';
+import {
+  angledElbow,
+  arrowPathD,
+  arrowPathMidpoint,
+  curveControlPoint,
+  type Endpoint,
+} from './index';
 
 // Free endpoints just carry coordinates — used everywhere a pinned
 // anchor would otherwise dictate direction.
@@ -89,5 +95,70 @@ describe('curveControlPoint', () => {
       dy: 60,
     });
     expect(d).toBe('M 0 0 Q 90 60 100 0');
+  });
+});
+
+describe('angledElbow', () => {
+  // The elbow handle (spec/09 Arrows / Manipulating arrows) lets
+  // the user drag the right-angle corner of an angled arrow to a
+  // non-default position. The default corner is at (to.x, from.y)
+  // for horizontal-first arrows or (from.x, to.y) for vertical-
+  // first. `elbowOffset` translates that auto-corner so the user's
+  // chosen bend survives endpoint moves: the auto-corner shifts
+  // with the endpoints, the offset stays the same.
+
+  it('returns the auto-corner when no offset is set (horizontal-first)', () => {
+    // Free endpoints with a longer horizontal-than-vertical chord
+    // → horizontal-first → corner sits at (to.x, from.y).
+    const elbow = angledElbow({ x: 0, y: 0 }, { x: 100, y: 50 }, free(0, 0), free(100, 50));
+    expect(elbow).toEqual({ x: 100, y: 0 });
+  });
+
+  it('returns the auto-corner when no offset is set (vertical-first)', () => {
+    // Free endpoints with a longer vertical-than-horizontal chord
+    // → vertical-first → corner sits at (from.x, to.y).
+    const elbow = angledElbow({ x: 0, y: 0 }, { x: 50, y: 100 }, free(0, 0), free(50, 100));
+    expect(elbow).toEqual({ x: 0, y: 100 });
+  });
+
+  it('translates the auto-corner by elbowOffset when one is supplied', () => {
+    // User has dragged the elbow 30px right + 20px down from the
+    // auto-corner.
+    const elbow = angledElbow({ x: 0, y: 0 }, { x: 100, y: 50 }, free(0, 0), free(100, 50), {
+      dx: 30,
+      dy: 20,
+    });
+    expect(elbow).toEqual({ x: 130, y: 20 });
+  });
+
+  it('threads the offset through arrowPathD so the rendered L goes through the dragged point', () => {
+    // Angled arrow with a custom elbow at (130, 20). The path
+    // should read M from L elbow L to.
+    const d = arrowPathD(
+      'angled',
+      { x: 0, y: 0 },
+      { x: 100, y: 50 },
+      free(0, 0),
+      free(100, 50),
+      undefined,
+      { dx: 30, dy: 20 },
+    );
+    expect(d).toBe('M 0 0 L 130 20 L 100 50');
+  });
+
+  it('keeps arrowPathMidpoint anchored to the user-dragged elbow on angled arrows', () => {
+    // The label / midpoint on an angled arrow sits at the elbow.
+    // A regression that ignores the offset would put the label
+    // back at the auto-corner.
+    const mid = arrowPathMidpoint(
+      'angled',
+      { x: 0, y: 0 },
+      { x: 100, y: 50 },
+      free(0, 0),
+      free(100, 50),
+      undefined,
+      { dx: 30, dy: 20 },
+    );
+    expect(mid).toEqual({ x: 130, y: 20 });
   });
 });
