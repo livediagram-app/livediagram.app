@@ -3420,6 +3420,12 @@ export default function LivePage() {
             ...userPreferences,
             recogniseShapes: userPreferences.recogniseShapes !== true,
           };
+          // Telemetry (spec/22): emit BEFORE persistence so the
+          // flip itself reaches the wire even when the new state
+          // would suppress emission later (matches how
+          // TelemetryOn / TelemetryOff are handled in the
+          // Settings dialog).
+          track('UI', 'Toggled', next.recogniseShapes ? 'RecogniseShapesOn' : 'RecogniseShapesOff');
           setUserPreferences(next);
           writeUserPreferences(next, selfParticipant?.id ?? null);
         }}
