@@ -14,8 +14,12 @@ import type { Env } from '../types';
 // helpers' module evaluates its `import { getShareLink } from
 // '../db'`. The stub returns the spy we control per test case.
 const getShareLinkMock = vi.fn<(env: Env, code: string) => Promise<ShareLink | null>>();
+// Share password (spec/24). Defaults to "no password" so every legacy
+// case below is unaffected; the password-specific cases set it.
+const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
 vi.mock('../db', () => ({
   getShareLink: (env: Env, code: string) => getShareLinkMock(env, code),
+  getDiagramSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
 }));
 
 // Import AFTER the mock declaration so the helpers pick up the
@@ -27,6 +31,10 @@ const FAKE_ENV = {} as Env;
 
 beforeEach(() => {
   getShareLinkMock.mockReset();
+  getSharePasswordMock.mockReset();
+  // Default: the diagram has no share password, so the password gate
+  // is a no-op and the link/role checks behave exactly as before.
+  getSharePasswordMock.mockResolvedValue(null);
 });
 
 afterEach(() => {
@@ -177,5 +185,69 @@ describe('canReadDiagram', () => {
     });
     const allowed = await canReadDiagram(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a');
     expect(allowed).toBe(true);
+  });
+});
+
+describe('share password gate (spec/24)', () => {
+  // A valid edit-role code for diag-1 in every case below; the password
+  // is what flips access.
+  const editLink: ShareLink = { code: 'EDIT2345', role: 'edit', diagramId: 'diag-1', createdAt: 0 };
+
+  it('denies a share-code edit when the password is required but absent', async () => {
+    getShareLinkMock.mockResolvedValue(editLink);
+    getSharePasswordMock.mockResolvedValue('hunter2');
+    const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a', null);
+    expect(allowed).toBe(false);
+  });
+
+  it('denies a share-code edit when the password is wrong', async () => {
+    getShareLinkMock.mockResolvedValue(editLink);
+    getSharePasswordMock.mockResolvedValue('hunter2');
+    const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a', 'nope');
+    expect(allowed).toBe(false);
+  });
+
+  it('allows a share-code edit when the password matches', async () => {
+    getShareLinkMock.mockResolvedValue(editLink);
+    getSharePasswordMock.mockResolvedValue('hunter2');
+    const allowed = await canEditDiagram(
+      FAKE_ENV,
+      'diag-1',
+      null,
+      'EDIT2345',
+      'owner-a',
+      'hunter2',
+    );
+    expect(allowed).toBe(true);
+  });
+
+  it('denies a view read on a protected diagram without the password', async () => {
+    getShareLinkMock.mockResolvedValue({ ...editLink, code: 'VIEW2345', role: 'view' });
+    getSharePasswordMock.mockResolvedValue('hunter2');
+    const allowed = await canReadDiagram(FAKE_ENV, 'diag-1', null, 'VIEW2345', 'owner-a', null);
+    expect(allowed).toBe(false);
+  });
+
+  it('allows a view read on a protected diagram with the matching password', async () => {
+    getShareLinkMock.mockResolvedValue({ ...editLink, code: 'VIEW2345', role: 'view' });
+    getSharePasswordMock.mockResolvedValue('hunter2');
+    const allowed = await canReadDiagram(
+      FAKE_ENV,
+      'diag-1',
+      null,
+      'VIEW2345',
+      'owner-a',
+      'hunter2',
+    );
+    expect(allowed).toBe(true);
+  });
+
+  it('never consults the password for the owner (bypass stays cheap)', async () => {
+    // Owner short-circuit must fire before any password lookup, so an
+    // owner is never locked out of their own diagram.
+    getSharePasswordMock.mockResolvedValue('hunter2');
+    const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', 'owner-a', null, 'owner-a', null);
+    expect(allowed).toBe(true);
+    expect(getSharePasswordMock).not.toHaveBeenCalled();
   });
 });

@@ -79,17 +79,24 @@ type ListResponse = { diagrams: DiagramSummary[] };
 type FolderResponse = { folder: Folder };
 type FoldersResponse = { folders: Folder[] };
 type ShareLinkResponse = { link: ShareLink };
-type ShareLinksResponse = { links: ShareLink[] };
+// The share-links list doubles as the owner's read of the diagram's
+// share password (spec/24): owner-only endpoint, so it's safe in the
+// clear. `password` is null when the diagram has no password.
+type ShareLinksResponse = { links: ShareLink[]; password: string | null };
+type SharePasswordResponse = { password: string | null };
 type ChangeLogListResponse = { entries: ChangeLogEntry[] };
 type ChangeLogAppendResponse = { entry: ChangeLogEntry };
 type ParticipantResponse = {
   participant: { id: string; name: string; color: string; createdAt: number };
 };
 
-type SharedDiagramResolution = {
-  diagram: Diagram;
-  role: ShareRole;
-};
+// Result of resolving a share code (spec/24). A protected diagram
+// returns `passwordRequired` instead of the diagram until the visitor
+// supplies the matching password; `invalid` is true only when a wrong
+// password was submitted (vs none yet), so the gate can show an error.
+type SharedDiagramResolution =
+  | { diagram: Diagram; role: ShareRole }
+  | { passwordRequired: true; invalid: boolean };
 
 // Hybrid identity (spec/04, spec/11). When a token provider has been
 // registered via `setTokenProvider` and resolves to a non-null Clerk
@@ -129,6 +136,17 @@ export function setTokenProvider(provider: TokenProvider | null): void {
   currentTokenProvider = provider;
 }
 
+// Share password for the current visitor session (spec/24). Same
+// module-level rationale as the token provider: rather than thread the
+// password through every call signature, the viewer sets it once after
+// passing the password gate and `apiHeaders` (HTTP) + `connectRoom`
+// (WebSocket) attach it automatically. Owners never set it, so their
+// requests never carry it. Null = no password in play.
+let sessionSharePassword: string | null = null;
+export function setSessionSharePassword(password: string | null): void {
+  sessionSharePassword = password && password.length > 0 ? password : null;
+}
+
 // Exported for direct testing of the hybrid identity gate (spec/04):
 // Bearer token wins when present, X-Owner-Id is the fallback, and the
 // two MUST NOT coexist on a single request (an api worker that sees
@@ -149,6 +167,10 @@ export async function apiHeaders(
   }
   if (opts.body) h['Content-Type'] = 'application/json';
   if (opts.share) h['X-Share-Code'] = opts.share;
+  // Share password (spec/24) rides on every request once the visitor
+  // has passed the gate; the api ignores it unless the diagram is
+  // protected + accessed via a share code. Owners never set it.
+  if (sessionSharePassword) h['X-Share-Password'] = sessionSharePassword;
   return h;
 }
 
@@ -247,6 +269,14 @@ async function _apiLoadShared(
   const res = await fetch(`${API_BASE}/share/${code}`, {
     headers: await apiHeaders(ownerId, { share: null }),
   });
+  // Password gate (spec/24): 401 = the diagram is protected and we sent
+  // no (or no longer-valid) password; 403 = we sent a wrong one. Both
+  // surface as `passwordRequired` so the editor shows the gate; only
+  // 403 flags `invalid` so it can show an error line. The password the
+  // visitor enters next is attached automatically by apiHeaders.
+  if (res.status === 401 || res.status === 403) {
+    return { passwordRequired: true, invalid: res.status === 403 };
+  }
   const body = await expectOkOrNull<DiagramResponse & { role?: ShareRole }>(res, 'load shared');
   if (!body) return null;
   return {
@@ -326,17 +356,38 @@ export async function apiDeleteChangeLogEntry(
 // Deduped on `${ownerId}|${id}`: editor mount fires this for the
 // share-dialog state alongside the other read endpoints. Strict
 // Mode doubling collapses to one fetch.
-async function _apiListShareLinks(ownerId: string, id: string): Promise<ShareLink[]> {
+// Returns the diagram's share links AND its current share password
+// (spec/24) in one owner-only round-trip — the Share dialog needs both.
+async function _apiListShareLinks(
+  ownerId: string,
+  id: string,
+): Promise<{ links: ShareLink[]; password: string | null }> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
     headers: await apiHeaders(ownerId),
   });
-  const { links } = await expectOk<ShareLinksResponse>(res, 'list share links');
-  return links;
+  const { links, password } = await expectOk<ShareLinksResponse>(res, 'list share links');
+  return { links, password: password ?? null };
 }
 export const apiListShareLinks = dedupeInFlight(
   _apiListShareLinks,
   (ownerId, id) => `${ownerId}|${id}`,
 );
+
+// Set (or clear, with null / empty) the diagram's share password.
+// Owner-only on the api side. Returns the stored value (normalised).
+export async function apiSetSharePassword(
+  ownerId: string,
+  id: string,
+  password: string | null,
+): Promise<string | null> {
+  const res = await fetch(`${API_BASE}/diagrams/${id}/share-password`, {
+    method: 'PUT',
+    headers: await apiHeaders(ownerId, { body: true }),
+    body: JSON.stringify({ password }),
+  });
+  const { password: stored } = await expectOk<SharePasswordResponse>(res, 'set share password');
+  return stored ?? null;
+}
 
 export async function apiCreateShareLink(
   ownerId: string,
@@ -798,6 +849,11 @@ export function connectRoom(
   const params = new URLSearchParams();
   if (options.shareCode) params.set('s', options.shareCode);
   if (options.ownerId) params.set('o', options.ownerId);
+  // Share password (spec/24) for a protected diagram's room. The api
+  // refuses the upgrade if it's missing / wrong. Read from the same
+  // session state apiHeaders uses, so the editor doesn't have to thread
+  // it through; owners never have it set so their `o` upgrade bypasses.
+  if (sessionSharePassword) params.set('p', sessionSharePassword);
   const qs = params.toString();
   const ws = new WebSocket(wsUrl(`/diagrams/${diagramId}/ws${qs ? `?${qs}` : ''}`));
   ws.addEventListener('open', () => {

@@ -32,6 +32,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 21  | [Comparison pages](21-comparison-pages.md)                         | `/alternatives/<tool>` SEO pages (Miro, XMind, Excalidraw, …)      |
 | 22  | [Telemetry](22-telemetry.md)                                       | Anonymous first-party events in D1 + public `/telemetry` dashboard |
 | 23  | [Marketing assets](23-marketing-assets.md)                         | `marketing/` folder: off-site copy + media for listings/promotion  |
+| 24  | [Share password](24-share-password.md)                             | Optional per-diagram password gating share-link view + edit access |
 
 ## Workflow
 

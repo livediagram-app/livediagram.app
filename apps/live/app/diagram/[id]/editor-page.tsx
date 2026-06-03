@@ -66,6 +66,11 @@ import { Explorer } from '@/components/Explorer';
 // rare-path branch on every common-path load. Same lazy pattern
 // as the dialogs below.
 const NotFound = dynamic(() => import('@/components/NotFound').then((m) => m.NotFound));
+// Lazy-load SharePasswordGate: only a visitor opening a password-
+// protected diagram's share link ever sees it (spec/24).
+const SharePasswordGate = dynamic(() =>
+  import('@/components/SharePasswordGate').then((m) => m.SharePasswordGate),
+);
 // Lazy-load ShareDialog for the same reason as ExportTabDialog: it
 // mounts only when the user clicks Share, and most sessions never
 // open it. Hoisting it into its own chunk means the editor's initial
@@ -168,6 +173,7 @@ import {
   apiAddComment,
   apiSaveTab,
   connectRoom,
+  setSessionSharePassword,
   type ChangeLogEntry,
   type RoomHandlers,
   type ShareLink,
@@ -669,6 +675,16 @@ export default function LivePage() {
   // derived: shareLinks.length > 0 OR diagramShareable from a freshly
   // loaded row.
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
+  // The diagram's optional share password (spec/24), owner-only. Null
+  // when unset. The ShareDialog shows + edits this in the clear.
+  const [sharePassword, setSharePassword] = useState<string | null>(null);
+  // Viewer-side password gate. Non-null when the visitor's share URL
+  // points at a password-protected diagram and they haven't supplied a
+  // valid password yet; `invalid` flags a wrong attempt so the gate
+  // shows an error. `passwordRetry` bumps to re-run the bootstrap once
+  // the visitor submits a password (see the bootstrap effect deps).
+  const [sharePasswordGate, setSharePasswordGate] = useState<{ invalid: boolean } | null>(null);
+  const [passwordRetry, setPasswordRetry] = useState(0);
   // The role granted to the current session. Owners always have 'edit';
   // visitors get whatever role their share code carried. Drives the
   // save / op-broadcast gates so view-only visitors can't push edits.
@@ -796,6 +812,17 @@ export default function LivePage() {
           // diagram loaded but is empty").
           setDiagramNotFound(true);
           setHydrated(true);
+          setLoadingDiagram(false);
+          setNameConfirmed(hasConfirmedName());
+          return;
+        }
+        if ('passwordRequired' in resolution) {
+          // The diagram is password-protected (spec/24). Show the gate
+          // instead of hydrating. Deliberately leave `hydrated` false
+          // so bumping `passwordRetry` (on submit) re-runs this effect
+          // with the password now set on the session. `invalid` marks
+          // a wrong attempt so the gate can show an error.
+          setSharePasswordGate({ invalid: resolution.invalid });
           setLoadingDiagram(false);
           setNameConfirmed(hasConfirmedName());
           return;
@@ -957,7 +984,10 @@ export default function LivePage() {
           // the dialog opens populated.
           if (fetched.ownerId === self.id) {
             apiListShareLinks(self.id, fetched.id)
-              .then((links) => setShareLinks(links))
+              .then(({ links, password }) => {
+                setShareLinks(links);
+                setSharePassword(password);
+              })
               .catch(() => {});
             apiListChangeLog(self.id, fetched.id, null)
               .then((entries) => {
@@ -994,7 +1024,7 @@ export default function LivePage() {
       setLoadingDiagram(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoaded]);
+  }, [authLoaded, passwordRetry]);
 
   // The id of the tab we last auto-fit. Drives the "fit on tab load"
   // effect below — fits the first time we land on a tab (or on the
@@ -2180,11 +2210,18 @@ export default function LivePage() {
   // save the participant name). The share-link list + shareable flags
   // stay as page state since the hydration / save effects also write
   // them; the hook reconciles via the setters. See useShareLinks.
-  const { updateParticipantName, createShareLink, revokeShareLink, shareUrlFor } = useShareLinks({
+  const {
+    updateParticipantName,
+    createShareLink,
+    revokeShareLink,
+    setDiagramSharePassword,
+    shareUrlFor,
+  } = useShareLinks({
     diagramId,
     selfParticipant,
     setSelfParticipant,
     setShareLinks,
+    setSharePassword,
     setDiagramShareable,
     setDiagramShareCode,
     diagramShareCode,
@@ -2783,6 +2820,37 @@ export default function LivePage() {
     );
   }
 
+  // Password gate (spec/24): a visitor opened a protected diagram's
+  // share link and hasn't supplied a valid password yet. Submitting
+  // sets the session password and bumps passwordRetry to re-run the
+  // bootstrap, which now carries the password on every request.
+  if (sharePasswordGate) {
+    return (
+      <div className="flex h-dvh flex-col">
+        <EditorHeader
+          diagramName="Password required"
+          hideTitle
+          showShare={false}
+          shareable={false}
+          onOpenShare={() => {}}
+          onRename={() => {}}
+        />
+        <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
+          <SharePasswordGate
+            invalid={sharePasswordGate.invalid}
+            ownerName={diagramOwnerName}
+            onSubmit={(pw) => {
+              setSharePasswordGate(null);
+              setSessionSharePassword(pw);
+              setLoadingDiagram(true);
+              setPasswordRetry((n) => n + 1);
+            }}
+          />
+        </main>
+      </div>
+    );
+  }
+
   if (loadingDiagram) {
     return (
       <div className="flex h-dvh flex-col">
@@ -2829,6 +2897,7 @@ export default function LivePage() {
         <ShareDialog
           participant={selfParticipant}
           links={shareLinks}
+          sharePassword={sharePassword}
           shareUrlFor={shareUrlFor}
           nameConfirmed={nameConfirmed}
           // Signed-in via Clerk → name is locked to the account
@@ -2838,6 +2907,7 @@ export default function LivePage() {
           onSaveName={updateParticipantName}
           onCreateLink={createShareLink}
           onRevokeLink={revokeShareLink}
+          onSetPassword={setDiagramSharePassword}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

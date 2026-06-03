@@ -13,6 +13,9 @@ import { Tooltip } from './Tooltip';
 type ShareDialogProps = {
   participant: Participant;
   links: ShareLink[];
+  // The diagram's current share password (spec/24), or null when unset.
+  // Shown in the clear so the owner can always see + change it.
+  sharePassword: string | null;
   shareUrlFor: (code: string) => string;
   // Whether the owner has confirmed their name (drives the share button
   // behaviour but no longer hides the identity card).
@@ -25,6 +28,9 @@ type ShareDialogProps = {
   onSaveName: (name: string) => Promise<void> | void;
   onCreateLink: (role: ShareRole) => Promise<void> | void;
   onRevokeLink: (code: string) => Promise<void> | void;
+  // Set (or clear, with null) the diagram's share password. Returns the
+  // stored value so the field can reflect what now gates access.
+  onSetPassword: (password: string | null) => Promise<string | null> | void;
   onClose: () => void;
 };
 
@@ -35,12 +41,14 @@ type ShareDialogProps = {
 export function ShareDialog({
   participant,
   links,
+  sharePassword,
   shareUrlFor,
   nameConfirmed,
   lockedName,
   onSaveName,
   onCreateLink,
   onRevokeLink,
+  onSetPassword,
   onClose,
 }: ShareDialogProps) {
   // When a Clerk display name is supplied, the input always reads
@@ -51,6 +59,11 @@ export function ShareDialog({
   const [busy, setBusy] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [newRole, setNewRole] = useState<ShareRole>('edit');
+  // Password field (spec/24). Kept in the clear (type="text") so the
+  // owner can always read it. Seeded from the saved value; `pwSaved`
+  // flips the button to "Saved" for a beat after a successful write.
+  const [pw, setPw] = useState(sharePassword ?? '');
+  const [pwSaved, setPwSaved] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEscape(onClose);
@@ -74,6 +87,31 @@ export function ShareDialog({
     setBusy(true);
     try {
       await onRevokeLink(code);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const savePassword = async () => {
+    setBusy(true);
+    try {
+      const next = pw.trim() ? pw : null;
+      const stored = await onSetPassword(next);
+      // onSetPassword returns the server-normalised value (or void in
+      // tests); reflect it so a whitespace-only entry visibly clears.
+      setPw(typeof stored === 'string' ? stored : (next ?? ''));
+      setPwSaved(true);
+      window.setTimeout(() => setPwSaved(false), 1500);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removePassword = async () => {
+    setBusy(true);
+    try {
+      await onSetPassword(null);
+      setPw('');
     } finally {
       setBusy(false);
     }
@@ -165,6 +203,47 @@ export function ShareDialog({
                   </button>
                 </Tooltip>
               )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                Password
+              </p>
+              <p className="-mt-1 text-xs text-slate-500">
+                Optional. When set, anyone opening any share link must enter it before they can see
+                or edit the diagram. It is shown here in the clear so you can always read and change
+                it.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={pw}
+                  onChange={(e) => setPw(e.target.value)}
+                  placeholder="No password"
+                  aria-label="Share password"
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="flex-1 min-w-0 rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-sm text-slate-800 outline-none focus:border-brand-400"
+                />
+                <button
+                  type="button"
+                  onClick={savePassword}
+                  disabled={busy || pw === (sharePassword ?? '')}
+                  className="inline-flex items-center rounded-md bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
+                >
+                  {pwSaved ? 'Saved' : 'Save'}
+                </button>
+                {sharePassword ? (
+                  <button
+                    type="button"
+                    onClick={removePassword}
+                    disabled={busy}
+                    className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             <div className="flex flex-col gap-2">

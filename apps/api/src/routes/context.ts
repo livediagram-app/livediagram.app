@@ -29,3 +29,11 @@ export type RouteContext = {
 export function shareCodeOf(request: Request): string | null {
   return request.headers.get('X-Share-Code');
 }
+
+// Share password (spec/24) carried alongside the share code when the
+// diagram the visitor is accessing is password-protected. Owners never
+// send it (their identity short-circuits the check); a non-owner with a
+// share code must, or the access gate denies password-protected diagrams.
+export function sharePasswordOf(request: Request): string | null {
+  return request.headers.get('X-Share-Password');
+}

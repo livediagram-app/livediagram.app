@@ -24,7 +24,7 @@ import {
   missingAuth,
   notFound,
 } from '../responses';
-import { shareCodeOf, type RouteContext } from './context';
+import { shareCodeOf, sharePasswordOf, type RouteContext } from './context';
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB, see spec/19.
 
@@ -196,6 +196,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
             callerOwner,
             shareCodeOf(request),
             diagram.ownerId,
+            sharePasswordOf(request),
           );
           if (diagramReadable) {
             allowed = await diagramReferencesImage(env, d, imageId);

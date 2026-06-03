@@ -159,6 +159,33 @@ export async function setDiagramShare(env: Env, id: string, shareable: boolean):
     .run();
 }
 
+// Share password (spec/24). Stored in plain text — deliberately
+// readable by the owner (the Share dialog shows it) and the threat
+// model is anti-URL-guessing, not cryptographic. NULL / empty means
+// the diagram has no password. Kept OUT of the diagram DTO columns
+// (DIAGRAM_COLS) so it never leaks to a viewer; only these owner-only
+// paths touch it.
+export async function getDiagramSharePassword(env: Env, id: string): Promise<string | null> {
+  const row = await env.DB.prepare('SELECT share_password FROM diagrams WHERE id = ?')
+    .bind(id)
+    .first<{ share_password: string | null }>();
+  const value = row?.share_password ?? null;
+  // An all-whitespace value counts as "no password" so a stray space
+  // can't lock a diagram in a way the owner can't see in the dialog.
+  return value && value.trim() ? value : null;
+}
+
+export async function setDiagramSharePassword(
+  env: Env,
+  id: string,
+  password: string | null,
+): Promise<void> {
+  const normalised = password && password.trim() ? password : null;
+  await env.DB.prepare('UPDATE diagrams SET share_password = ? WHERE id = ?')
+    .bind(normalised, id)
+    .run();
+}
+
 export async function deleteDiagram(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM diagrams WHERE id = ?').bind(id).run();
 }

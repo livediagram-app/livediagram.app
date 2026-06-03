@@ -18,6 +18,7 @@ import {
   diagramsContainingTab,
   generateShareCode,
   getDiagram,
+  getDiagramSharePassword,
   getFolder,
   getParticipant,
   getShareLink,
@@ -31,12 +32,13 @@ import {
   reorderTabs,
   setDiagramFolder,
   setDiagramShare,
+  setDiagramSharePassword,
   upsertDiagramMeta,
   upsertTab,
 } from '../db';
 import { badRequest, CORS_HEADERS, forbidden, json, missingAuth, notFound } from '../responses';
 import type { ChangeLogEntryDTO, DiagramDTO, ShareRole } from '../types';
-import { shareCodeOf, type RouteContext } from './context';
+import { shareCodeOf, sharePasswordOf, type RouteContext } from './context';
 
 export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments, resolveOwner } = ctx;
@@ -110,7 +112,9 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // Anyone with the diagram id could previously rewrite it.
       // We now gate on canEditDiagram so only the owner or an
       // edit-role share visitor can touch metadata.
-      const allowed = existing ? await canEditDiagram(env, id, owner, shareCode, ownerId) : true; // create-on-first-write keeps the prior behaviour
+      const allowed = existing
+        ? await canEditDiagram(env, id, owner, shareCode, ownerId, sharePasswordOf(request))
+        : true; // create-on-first-write keeps the prior behaviour
       if (!allowed) return forbidden();
       await upsertDiagramMeta(env, {
         id,
@@ -168,7 +172,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // (view-role visitors can fork their own copy, so this
       // is a read check, not an edit check). The third leg is
       // copy-specific so it stays inline.
-      let allowed = await canReadDiagram(env, id, owner, shareCodeOf(request), source.ownerId);
+      let allowed = await canReadDiagram(
+        env,
+        id,
+        owner,
+        shareCodeOf(request),
+        source.ownerId,
+        sharePasswordOf(request),
+      );
       if (!allowed) {
         const sharedRows = await listSharedWith(env, owner);
         if (sharedRows.some((s) => s.id === id)) allowed = true;
@@ -229,14 +240,28 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (!existing) return notFound();
 
     if (request.method === 'GET') {
-      const allowed = await canReadDiagram(env, id, owner, shareCode, existing.ownerId);
+      const allowed = await canReadDiagram(
+        env,
+        id,
+        owner,
+        shareCode,
+        existing.ownerId,
+        sharePasswordOf(request),
+      );
       if (!allowed) return forbidden();
       const tab = await getTab(env, id, tabId);
       return tab ? json({ tab }) : notFound();
     }
 
     // Writes below: owner or edit-role share visitor only.
-    const allowed = await canEditDiagram(env, id, owner, shareCode, existing.ownerId);
+    const allowed = await canEditDiagram(
+      env,
+      id,
+      owner,
+      shareCode,
+      existing.ownerId,
+      sharePasswordOf(request),
+    );
     if (!allowed) return forbidden();
     if (request.method === 'PUT') {
       const body = (await request.json()) as Tab;
@@ -295,7 +320,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (!owner) return missingAuth();
     const existing = await getDiagram(env, id);
     if (!existing) return notFound();
-    const allowed = await canReadDiagram(env, id, owner, shareCode, existing.ownerId);
+    const allowed = await canReadDiagram(
+      env,
+      id,
+      owner,
+      shareCode,
+      existing.ownerId,
+      sharePasswordOf(request),
+    );
     if (!allowed) return forbidden();
     let body: { elementId?: unknown; text?: unknown };
     try {
@@ -400,8 +432,11 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (existing.ownerId !== owner) return forbidden();
 
     if (request.method === 'GET') {
+      // Owner-only response, so it's safe to return the share password
+      // in the clear — this is how the Share dialog shows it (spec/24).
       const links = await listShareLinks(env, id);
-      return json({ links });
+      const password = await getDiagramSharePassword(env, id);
+      return json({ links, password });
     }
     if (request.method === 'POST') {
       const body = (await request.json().catch(() => ({}))) as { role?: ShareRole };
@@ -417,6 +452,27 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       for (const link of links) await deleteShareLink(env, link.code);
       await setDiagramShare(env, id, false);
       return json({ shareable: false, shareCode: null });
+    }
+  }
+
+  // /api/diagrams/<id>/share-password — owner-only get/set of the
+  // diagram's optional share password (spec/24). PUT body
+  // { password: string | null }; null / empty clears it.
+  if (segments.length === 4 && segments[3] === 'share-password') {
+    const id = segments[2]!;
+    const owner = resolveOwner();
+    if (!owner) return missingAuth();
+    const existing = await getDiagram(env, id);
+    if (!existing) return notFound();
+    if (existing.ownerId !== owner) return forbidden();
+
+    if (request.method === 'PUT') {
+      const body = (await request.json().catch(() => ({}))) as { password?: string | null };
+      const password = typeof body.password === 'string' ? body.password : null;
+      await setDiagramSharePassword(env, id, password);
+      // Echo back the stored value (normalised: whitespace-only ->
+      // null) so the dialog reflects exactly what gates access.
+      return json({ password: await getDiagramSharePassword(env, id) });
     }
   }
 
@@ -471,7 +527,8 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     let role: 'edit' | 'view' | null = null;
     const claimedOwnerId = url.searchParams.get('o');
     const diagram = await getDiagram(env, id);
-    if (diagram && claimedOwnerId && claimedOwnerId === diagram.ownerId) {
+    const isOwnerUpgrade = !!(diagram && claimedOwnerId && claimedOwnerId === diagram.ownerId);
+    if (isOwnerUpgrade) {
       role = 'edit';
     } else {
       const code = url.searchParams.get('s');
@@ -479,6 +536,15 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         const link = await getShareLink(env, code);
         if (link && link.diagramId === id) role = link.role;
       }
+    }
+    // Password gate (spec/24): a non-owner joining the realtime room of
+    // a password-protected diagram must carry the matching password on
+    // the `p` query param (WS upgrades can't set headers). Owners
+    // bypass. A bad / missing password refuses the upgrade outright so
+    // the room never even sees the peer.
+    if (!isOwnerUpgrade) {
+      const required = await getDiagramSharePassword(env, id);
+      if (required && url.searchParams.get('p') !== required) return forbidden();
     }
     const forwarded = new Request(request);
     if (role) forwarded.headers.set('X-Verified-Role', role);
@@ -496,7 +562,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (!owner) return missingAuth();
     const existing = await getDiagram(env, id);
     if (!existing) return notFound();
-    const allowed = await canEditDiagram(env, id, owner, shareCode, existing.ownerId);
+    const allowed = await canEditDiagram(
+      env,
+      id,
+      owner,
+      shareCode,
+      existing.ownerId,
+      sharePasswordOf(request),
+    );
     if (!allowed) return forbidden();
 
     if (request.method === 'GET') {
@@ -524,7 +597,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (!owner) return missingAuth();
     const existing = await getDiagram(env, id);
     if (!existing) return notFound();
-    const allowed = await canEditDiagram(env, id, owner, shareCode, existing.ownerId);
+    const allowed = await canEditDiagram(
+      env,
+      id,
+      owner,
+      shareCode,
+      existing.ownerId,
+      sharePasswordOf(request),
+    );
     if (!allowed) return forbidden();
 
     if (request.method === 'DELETE') {

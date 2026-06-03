@@ -1,9 +1,15 @@
 // /api/share/<code> — resolve a share code to its diagram + role.
 
-import { getDiagram, getDiagramByShareCode, getShareLink, recordSharedAccess } from '../db';
+import {
+  getDiagram,
+  getDiagramByShareCode,
+  getDiagramSharePassword,
+  getShareLink,
+  recordSharedAccess,
+} from '../db';
 import { json, notFound } from '../responses';
 import type { ShareRole } from '../types';
-import type { RouteContext } from './context';
+import { sharePasswordOf, type RouteContext } from './context';
 
 // Resolve a share code to its diagram + role. Used by visitors
 // landing on /live/diagram/shared?s=<code>. Returns 404 if the
@@ -24,6 +30,13 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     if (link) {
       const d = await getDiagram(env, link.diagramId);
       if (!d) return notFound();
+      // Password gate (spec/24): a protected diagram won't resolve
+      // until the visitor supplies the matching X-Share-Password.
+      // 401 = none supplied (show the prompt), 403 = wrong one (show
+      // an error). We bail BEFORE recording the visit so a failed
+      // gate doesn't seed the "Shared with you" list.
+      const gate = await passwordGate(env, d.id, sharePasswordOf(request));
+      if (gate) return gate;
       // Track the visit in shared_with so a "Shared with you"
       // list (#8) can surface this diagram later. Only record
       // when (a) the visitor identifies (Bearer or
@@ -40,6 +53,8 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     }
     const d = await getDiagramByShareCode(env, code);
     if (!d) return notFound();
+    const gate = await passwordGate(env, d.id, sharePasswordOf(request));
+    if (gate) return gate;
     const visitor = resolveOwner();
     if (visitor && visitor !== d.ownerId) {
       await recordSharedAccess(env, visitor, d.id, 'edit' as ShareRole).catch(() => {});
@@ -47,4 +62,19 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     return json({ diagram: d, role: 'edit' as ShareRole });
   }
   return notFound();
+}
+
+// Returns a 401/403 Response when the diagram is password-protected and
+// the provided password is missing / wrong, else null (access allowed).
+// The error codes mirror what the client maps to its password gate.
+async function passwordGate(
+  env: RouteContext['env'],
+  diagramId: string,
+  provided: string | null,
+): Promise<Response | null> {
+  const required = await getDiagramSharePassword(env, diagramId);
+  if (!required) return null;
+  if (provided == null) return json({ error: 'password_required' }, { status: 401 });
+  if (provided !== required) return json({ error: 'password_invalid' }, { status: 403 });
+  return null;
 }

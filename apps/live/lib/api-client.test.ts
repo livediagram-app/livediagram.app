@@ -7,7 +7,9 @@ import {
   apiDismissSharedWith,
   apiHeaders,
   apiLoadDiagram,
+  apiLoadShared,
   apiSaveDiagramMeta,
+  setSessionSharePassword,
   setTokenProvider,
 } from './api-client';
 
@@ -18,6 +20,9 @@ import {
 // down the Bearer branch.
 afterEach(() => {
   setTokenProvider(null);
+  // Clear the session share password (spec/24) so a password-path case
+  // doesn't leak X-Share-Password into a later case's headers.
+  setSessionSharePassword(null);
 });
 
 // Helper: apiHeaders returns HeadersInit which can be either a plain
@@ -106,6 +111,47 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
     const h = await call('guest-uuid-6', { share: null });
     expect(h['X-Share-Code']).toBeUndefined();
     expect(h['X-Owner-Id']).toBe('guest-uuid-6');
+  });
+
+  it('attaches X-Share-Password once a session password is set (spec/24)', async () => {
+    // After the visitor passes the password gate, every request must
+    // carry the password automatically so reads/writes stay authorised.
+    expect((await call('guest-uuid-7'))['X-Share-Password']).toBeUndefined();
+    setSessionSharePassword('hunter2');
+    expect((await call('guest-uuid-7'))['X-Share-Password']).toBe('hunter2');
+    // Clearing it removes the header again (owner sessions never set it).
+    setSessionSharePassword(null);
+    expect((await call('guest-uuid-7'))['X-Share-Password']).toBeUndefined();
+  });
+});
+
+describe('apiLoadShared password gate (spec/24)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    setSessionSharePassword(null);
+  });
+
+  it('returns passwordRequired (not invalid) on 401', async () => {
+    stubFetch(401, { error: 'password_required' });
+    const res = await apiLoadShared('CODE2345', 'guest-1');
+    expect(res).toEqual({ passwordRequired: true, invalid: false });
+  });
+
+  it('returns passwordRequired with invalid=true on 403 (wrong password)', async () => {
+    stubFetch(403, { error: 'password_invalid' });
+    const res = await apiLoadShared('CODE2345', 'guest-2');
+    expect(res).toEqual({ passwordRequired: true, invalid: true });
+  });
+
+  it('returns null on 404 (revoked / nonexistent)', async () => {
+    stubFetch(404, {});
+    expect(await apiLoadShared('CODE2345', 'guest-3')).toBeNull();
+  });
+
+  it('resolves the diagram + role on 200', async () => {
+    stubFetch(200, { diagram: { id: 'd1' }, role: 'view' });
+    const res = await apiLoadShared('CODE2345', 'guest-4');
+    expect(res).toMatchObject({ role: 'view', diagram: { id: 'd1' } });
   });
 });
 

@@ -11,6 +11,7 @@ import {
   apiCreateShareLink,
   apiDeleteShareLink,
   apiSaveSelf,
+  apiSetSharePassword,
   type ShareLink,
   type ShareRole,
 } from '@/lib/api-client';
@@ -25,6 +26,9 @@ type ShareLinksDeps = {
   selfParticipant: Participant;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   setShareLinks: Dispatch<SetStateAction<ShareLink[]>>;
+  // The diagram's share password (spec/24). setSharePassword reconciles
+  // page state after a save / clear.
+  setSharePassword: Dispatch<SetStateAction<string | null>>;
   setDiagramShareable: Dispatch<SetStateAction<boolean>>;
   setDiagramShareCode: Dispatch<SetStateAction<string | null>>;
   // The diagram's primary share code; revoke promotes the next link to
@@ -41,6 +45,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
     selfParticipant,
     setSelfParticipant,
     setShareLinks,
+    setSharePassword,
     setDiagramShareable,
     setDiagramShareCode,
     diagramShareCode,
@@ -97,6 +102,25 @@ export function useShareLinks(deps: ShareLinksDeps) {
     });
   };
 
+  // Set or clear the diagram's share password (spec/24). A null / empty
+  // value removes it. Persists through the api, reconciles page state
+  // with the server-normalised value, and emits telemetry. Returns the
+  // stored value so the dialog can reflect exactly what now gates access.
+  const setDiagramSharePassword = async (password: string | null): Promise<string | null> => {
+    if (!diagramId) return null;
+    const trimmed = password && password.trim() ? password : null;
+    try {
+      const stored = await apiSetSharePassword(selfParticipant.id, diagramId, trimmed);
+      setSharePassword(stored);
+      // Telemetry (spec/22): the `type` is a preset, never the password.
+      track('Diagram', 'Shared', stored ? 'PasswordSet' : 'PasswordCleared');
+      return stored;
+    } catch {
+      // Network glitch — leave state alone. A real app would toast.
+      return null;
+    }
+  };
+
   // Absolute share URL helper used by the dialog. Visitor links carry
   // the share code as a query param and land on the dedicated visitor
   // path; the editor page reads the code there. Router stitches /live
@@ -104,5 +128,11 @@ export function useShareLinks(deps: ShareLinksDeps) {
   const shareUrlFor = (code: string) =>
     typeof window === 'undefined' ? '' : `${window.location.origin}/live/diagram/shared?s=${code}`;
 
-  return { updateParticipantName, createShareLink, revokeShareLink, shareUrlFor };
+  return {
+    updateParticipantName,
+    createShareLink,
+    revokeShareLink,
+    setDiagramSharePassword,
+    shareUrlFor,
+  };
 }
