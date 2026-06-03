@@ -362,8 +362,6 @@ export default function LivePage() {
   // diagram-scoped anymore) and mutated through the SettingsDialog.
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({});
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const settingsRef = useRef(userPreferences);
-  settingsRef.current = userPreferences;
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults
   // to true (auto-rebind on) so a fresh session keeps today's UX.
