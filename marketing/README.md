@@ -18,6 +18,7 @@ marketing/
   copy/
     taglines.md          short one-liners by character budget
     descriptions.md      blurbs by word / character budget
+    tags.md              one-word tags / keywords by platform
     facts.md             the canonical fact sheet copy is built from
   media/                 logos, screenshots, social cards (see media/README.md)
 ```

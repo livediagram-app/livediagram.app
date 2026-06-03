@@ -30,6 +30,7 @@ marketing/
     facts.md             canonical fact sheet; all copy derives from it
     taglines.md          one-liners bucketed by character budget
     descriptions.md      blurbs bucketed by word / character budget
+    tags.md              one-word tags / keywords bucketed by platform
   media/                 logos, screenshots, social cards (see media/README.md)
 ```
 
