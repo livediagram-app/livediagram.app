@@ -47,7 +47,6 @@ type EditorKeyboardShortcutsDeps = {
   undo: () => void;
   redo: () => void;
   copySelection: () => void;
-  pasteFromClipboard: () => void;
   // Canvas tool setter. V / H / L cycle through select / pan /
   // laser. Mirrors the in-canvas tool picker so a keyboard user
   // can switch tools without leaving home position. View-role
@@ -138,6 +137,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       }
 
       // --- Cmd / Ctrl modified shortcuts ---
+      // Cmd+V is intentionally NOT handled here. The browser's
+      // native `paste` event fires on Cmd/Ctrl+V and carries the
+      // system clipboard contents (text, files, images). editor-page
+      // listens for paste directly so it can route images from the
+      // system clipboard to image-upload, falling back to the
+      // in-app element clipboard when no system content is present.
       if (mod) {
         if (inText) return;
         if (live.isReadOnly) return;
@@ -155,11 +160,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (lower === 'c') {
           e.preventDefault();
           live.copySelection();
-          return;
-        }
-        if (lower === 'v') {
-          e.preventDefault();
-          live.pasteFromClipboard();
           return;
         }
         return;

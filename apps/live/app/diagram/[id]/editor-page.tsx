@@ -167,6 +167,7 @@ import {
   type SharedWithItem,
 } from '@/lib/api-client';
 import { applyRevert } from '@/lib/change-log';
+import { uploadImageFile } from '@/lib/upload-image';
 import { templateCanvasOverrides, type TemplateKind } from '@/lib/templates';
 import {
   deriveNewBoxedColours,
@@ -2757,7 +2758,6 @@ export default function LivePage() {
     undo,
     redo,
     copySelection,
-    pasteFromClipboard,
     setCanvasTool,
     addShape,
     addText,
@@ -2766,6 +2766,84 @@ export default function LivePage() {
     onAddImage: addImage ?? null,
     enabled: shortcutsEnabled,
   });
+
+  // Paste a file (typically a clipboard image) by routing it through
+  // the same upload pipeline as the picker: validate + hash, POST to
+  // /api/images, then drop a new image element on the canvas
+  // pre-filled with the uploaded image's id + natural dimensions.
+  // The OS clipboard hand off doesn't carry a filename for inline
+  // images (screenshots etc.), so we synthesise one from the MIME
+  // suffix so the gallery has something to render in the title slot.
+  const pasteImageFile = async (file: File) => {
+    if (!addImageFromGallery) return;
+    // Browsers hand inline screenshots over with file.name === ""
+    // or "image.png"; synthesise a clearer name so the gallery row
+    // doesn't read as "image.png" for everything pasted.
+    const named =
+      file.name && file.name !== 'image.png'
+        ? file
+        : new File([file], `pasted-${Date.now()}.${file.type.split('/')[1] ?? 'png'}`, {
+            type: file.type,
+          });
+    try {
+      const { image } = await uploadImageFile(selfParticipant.id, named);
+      addImageFromGallery({
+        id: image.id,
+        width: image.width,
+        height: image.height,
+        originalName: image.originalName,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not paste the image.');
+    }
+  };
+
+  // System-clipboard paste handler. Cmd/Ctrl+V triggers the browser's
+  // native `paste` event, which carries whatever the OS clipboard
+  // holds (text, files, images). When the user has an image on
+  // their clipboard (a screenshot, a copy-image-from-browser, etc.),
+  // route it to the image-upload path so a new image element lands
+  // on the canvas pre-filled with the bytes. When the clipboard has
+  // no image, fall back to the in-app element clipboard so pasting
+  // copied canvas elements still works as before. Text-input focus
+  // is left to the browser's default (let users paste text into a
+  // label / comment composer the normal way).
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const onPaste = (e: ClipboardEvent) => {
+      const target = e.target as Element | null;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        (target instanceof HTMLElement && target.isContentEditable)
+      ) {
+        return;
+      }
+      if (isReadOnly) return;
+      if (editingId !== null) return;
+      const items = e.clipboardData?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i]!;
+          if (item.kind === 'file' && item.type.startsWith('image/')) {
+            const file = item.getAsFile();
+            if (file) {
+              e.preventDefault();
+              void pasteImageFile(file);
+              return;
+            }
+          }
+        }
+      }
+      // No image on the system clipboard: fall through to the
+      // editor's own element clipboard (the Cmd+C copy buffer).
+      e.preventDefault();
+      pasteFromClipboard();
+    };
+    document.addEventListener('paste', onPaste);
+    return () => document.removeEventListener('paste', onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReadOnly, editingId]);
 
   if (diagramNotFound) {
     return (
