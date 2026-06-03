@@ -871,7 +871,7 @@ When a shape is selected, **four corner handles** (NW, NE, SW, SE) appear as sma
 - **Press-and-drag a handle** to resize the shape.
 - The corner opposite the handle stays anchored; the dragged corner follows the cursor.
 - **Minimum size is 20×20** to keep shapes pickable.
-- Resize uses the four corner handles. Free-form by default; the Shape accordion's **Lock aspect ratio** toggle constrains the W:H ratio while a resize is in progress (Circle and Diamond force the ratio regardless).
+- Resize uses the four corner handles. Free-form by default; the Shape accordion's **Lock aspect ratio** toggle constrains the W:H ratio while a resize is in progress (Circle and Diamond force the ratio regardless). **Holding Shift during the drag** is the standard one-off constrain modifier (Figma / Photoshop convention): the active drag honours the shape's start ratio without flipping the persistent toggle. Locked shapes stay locked regardless of Shift; the modifier is additive, not a toggle.
 - Mid-edge handles (N, S, E, W) are not implemented, corners only.
 - **Snap during resize** nudges the active edge to align with neighbour elements' edges / centres AND to match their width or height. Dimension-match means dragging a shape that's 215 px wide near another at 220 px snaps the width to exactly 220, so the user can size siblings to a shared width without pixel-fiddling. Edge-align and dimension-match compete on each axis; the smaller absolute delta wins (so a near-edge alignment beats a near-match dimension when both fall inside the threshold). Degenerate (zero-width / zero-height) elements are excluded as dimension targets. See `snapResizeBounds`.
 

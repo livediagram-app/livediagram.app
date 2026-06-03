@@ -337,12 +337,18 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           const corner = cornerOf(drag.mode);
           const memberIds = new Set(drag.startBounds.keys());
 
+          // Shift-held during resize is the standard "constrain
+          // aspect" modifier (Figma, Photoshop, Illustrator). It
+          // works on top of the per-element aspectLocked toggle: a
+          // shape with the toggle off honours the shift; a shape
+          // with the toggle on stays locked regardless.
+          const constrain = drag.aspectLocked || e.shiftKey;
           if (drag.startBounds.size <= 1) {
             const start = drag.startBounds.get(drag.primaryId);
             if (!start) return;
-            const raw = nextBounds(start, drag.mode, dx, dy, drag.aspectLocked);
+            const raw = nextBounds(start, drag.mode, dx, dy, constrain);
             const next =
-              !drag.aspectLocked && corner
+              !constrain && corner
                 ? snapResizeBounds(
                     raw,
                     corner,
@@ -372,12 +378,17 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           const anyAspectLocked = activeTab.elements.some(
             (el) => isBoxed(el) && drag.startBounds.has(el.id) && el.aspectLocked === true,
           );
+          // Shift-held forces constrain for multi-resize too, on
+          // top of the per-element flags. Any aspect-locked member
+          // already forces constrain to avoid warping (e.g. an
+          // actor inside the selection) so this just adds the
+          // user's modifier-key opt-in for unlocked selections.
           const unionNext = nextBounds(
             unionStart,
             drag.mode,
             dx,
             dy,
-            drag.aspectLocked || anyAspectLocked,
+            drag.aspectLocked || anyAspectLocked || e.shiftKey,
           );
           tick((els) =>
             els.map((el) => {
