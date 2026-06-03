@@ -91,4 +91,53 @@ describe('snapResizeBounds', () => {
     const result = snapResizeBounds(box(0, 0, 12, 100), 'se', [neighbour], new Set(), 10, 20);
     expect(result.width).toBeGreaterThanOrEqual(20);
   });
+
+  it('snaps the candidate width to match a neighbour width (SE drag)', () => {
+    // Neighbour is 220px wide and far away on both axes (no edge or
+    // centre alignment opportunity). Candidate at 215 is 5px short of
+    // matching: the dimension-match snap should pull it to 220.
+    const neighbour = shape('n', { x: 600, y: 800, width: 220, height: 150 });
+    const result = snapResizeBounds(box(0, 0, 215, 100), 'se', [neighbour], new Set(), 10, 20);
+    expect(result.width).toBe(220);
+    expect(result.x).toBe(0); // left edge still anchored
+  });
+
+  it('snaps the candidate height to match a neighbour height (SE drag)', () => {
+    const neighbour = shape('n', { x: 600, y: 800, width: 50, height: 120 });
+    const result = snapResizeBounds(box(0, 0, 100, 115), 'se', [neighbour], new Set(), 10, 20);
+    expect(result.height).toBe(120);
+    expect(result.y).toBe(0);
+  });
+
+  it('preserves the anchor when matching width during an NW drag', () => {
+    // NW drag anchors the right edge. Candidate has right at 100,
+    // width 85 (so left at 15). Neighbour width 80 lives elsewhere.
+    // Width-match should pull the left edge from 15 to 20 (right
+    // anchor minus neighbour width = 100 - 80), so width lands at
+    // exactly 80 and the right edge stays put.
+    const neighbour = shape('n', { x: 600, y: 800, width: 80, height: 50 });
+    const result = snapResizeBounds(box(15, 0, 85, 100), 'nw', [neighbour], new Set(), 10, 20);
+    expect(result.width).toBe(80);
+    expect(result.x + result.width).toBe(100);
+  });
+
+  it('prefers edge alignment over dimension match when both fall in range', () => {
+    // SE drag, right edge at 100. Neighbour at x=104 (left edge in
+    // range, delta +4) with width 90 (width-match delta -10, out of
+    // range at threshold 5). Edge wins, width unchanged from candidate
+    // size required by edge snap (104).
+    const neighbour = shape('n', { x: 104, y: 1000, width: 90, height: 90 });
+    const result = snapResizeBounds(box(0, 0, 100, 100), 'se', [neighbour], new Set(), 5, 20);
+    expect(result.width).toBe(104);
+  });
+
+  it('skips zero-width / zero-height elements as dimension targets', () => {
+    // A degenerate element with width 0 would otherwise read as a
+    // "match anything within threshold" trap (every candidate
+    // approaching 0 width would snap to 0, then minSize would clamp,
+    // confusing the user). The snap explicitly skips these.
+    const degenerate = shape('z', { x: 1000, y: 1000, width: 0, height: 0 });
+    const c = box(0, 0, 100, 100);
+    expect(snapResizeBounds(c, 'se', [degenerate], new Set(), 10, 20)).toEqual(c);
+  });
 });

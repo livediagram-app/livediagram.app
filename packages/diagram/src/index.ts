@@ -1115,9 +1115,19 @@ export function snapToAlignment(
 }
 
 // Snap candidate bounds during a resize to align with other elements'
-// edges and centres. Mirrors `snapToAlignment` but only nudges the
-// edges that the active resize handle actually moves — the opposite
-// corner is anchored and must not drift. Threshold is in canvas px.
+// edges, centres, and dimensions. Mirrors `snapToAlignment` but only
+// nudges the edges that the active resize handle actually moves
+// (the opposite corner is anchored and must not drift). Threshold
+// is in canvas px.
+//
+// Two snap modes combine on each axis, with the smaller delta winning
+// when they conflict:
+//   1. Edge alignment: the active edge lines up with another element's
+//      left / centre / right (or top / centre / bottom).
+//   2. Dimension match: the candidate's width (or height) matches
+//      another element's width (or height), so the user can size a
+//      shape to be visually identical to a nearby one without
+//      pixel-fiddling.
 //
 // `mode` is the corner being dragged ("se" = bottom-right handle =
 // right + bottom edges move; etc.).
@@ -1134,7 +1144,7 @@ export function snapResizeBounds(
   const movesBottom = mode === 'se' || mode === 'sw';
   const movesTop = mode === 'ne' || mode === 'nw';
 
-  // Anchored coordinates — the corner that should NOT move.
+  // Anchored coordinates, the corner that should NOT move.
   const anchorRight = movesLeft ? candidate.x + candidate.width : null;
   const anchorLeft = movesRight ? candidate.x : null;
   const anchorBottom = movesTop ? candidate.y + candidate.height : null;
@@ -1161,6 +1171,29 @@ export function snapResizeBounds(
           bestDx = delta;
         }
       }
+      // Dimension match: translate "candidate.width should equal
+      // el.width" into a delta on the active X edge. movesRight
+      // pushes the active edge to anchorLeft + el.width; movesLeft
+      // pulls it to anchorRight - el.width. Skip degenerate sources
+      // (zero-width elements would always be within threshold and
+      // confuse the user).
+      if (el.width > 0) {
+        const targetActiveX =
+          movesRight && anchorLeft !== null
+            ? anchorLeft + el.width
+            : movesLeft && anchorRight !== null
+              ? anchorRight - el.width
+              : null;
+        if (targetActiveX !== null) {
+          const delta = targetActiveX - activeX;
+          if (
+            Math.abs(delta) <= threshold &&
+            (bestDx === null || Math.abs(delta) < Math.abs(bestDx))
+          ) {
+            bestDx = delta;
+          }
+        }
+      }
     }
     if (movesTop || movesBottom) {
       for (const ty of targetYs) {
@@ -1170,6 +1203,23 @@ export function snapResizeBounds(
           (bestDy === null || Math.abs(delta) < Math.abs(bestDy))
         ) {
           bestDy = delta;
+        }
+      }
+      if (el.height > 0) {
+        const targetActiveY =
+          movesBottom && anchorTop !== null
+            ? anchorTop + el.height
+            : movesTop && anchorBottom !== null
+              ? anchorBottom - el.height
+              : null;
+        if (targetActiveY !== null) {
+          const delta = targetActiveY - activeY;
+          if (
+            Math.abs(delta) <= threshold &&
+            (bestDy === null || Math.abs(delta) < Math.abs(bestDy))
+          ) {
+            bestDy = delta;
+          }
         }
       }
     }

@@ -998,9 +998,8 @@ export function Canvas(props: CanvasProps) {
     // in a closure variable lets onMove update it synchronously and
     // onUp call onCommitDraw cleanly OUTSIDE any setState updater.
     // setDrawDrag is now only used to trigger preview re-renders.
-    let latest:
-      | { startX: number; startY: number; currentX: number; currentY: number }
-      | null = drawDrag;
+    let latest: { startX: number; startY: number; currentX: number; currentY: number } | null =
+      drawDrag;
     const onMove = (e: PointerEvent) => {
       const rect = wrapperEl?.getBoundingClientRect();
       if (!rect || !latest) return;
