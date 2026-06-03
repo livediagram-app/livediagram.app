@@ -38,6 +38,8 @@ const SHORTCUTS: ShortcutRow[] = [
   { keys: ['I'], label: 'Open the Image picker' },
   { keys: ['F'], label: 'Switch to the Pencil (freehand) tool' },
   { keys: ['Space'], label: 'Edit the label of the selected element' },
+  { keys: ['Type'], label: 'Type with an element selected to replace its label' },
+  { keys: ['Arrow'], label: 'Nudge the current selection 1px (Shift: 10px)' },
   { keys: ['⌘', 'hold'], label: 'Reveal shortcut badges on palette buttons' },
   { keys: ['Escape'], label: 'Cancel format painter or group mode' },
   { keys: ['Shift', 'Click'], label: 'Toggle an element in the multi-selection' },
