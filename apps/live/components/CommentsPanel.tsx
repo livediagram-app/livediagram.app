@@ -65,7 +65,12 @@ export function CommentsPanel({
   useRelativeTimeTick();
   return (
     <MovablePanel
-      title={`Comments (${rows.length})`}
+      title="Comments"
+      headerExtra={
+        <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold text-white">
+          {rows.length}
+        </span>
+      }
       position={position}
       defaultCorner="top-right-stacked"
       width="w-auto sm:w-64"

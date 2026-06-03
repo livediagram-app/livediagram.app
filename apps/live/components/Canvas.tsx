@@ -1340,16 +1340,21 @@ export function Canvas(props: CanvasProps) {
           is already tight, the per-element comment popover stays
           available for viewing / replying, and a floating cheat
           sheet of threads would crowd the surface that's already
-          banner-collapsing the Palette + Editor. Wrapped in a
-          `hidden sm:contents` shell so the MovablePanel beneath
-          gets `display: none` on phones without changing its props
-          or position math. */}
-      {!welcomeOpen && commentRows.length > 0 ? (
+          banner-collapsing the Palette + Editor. Wrapped in
+          `hidden sm:contents` so the MovablePanel beneath gets
+          `display: none` on phones without changing its props.
+          Mount is also gated on contextBottomY > 0 so the panel
+          waits until the Editor pane above has reported its size:
+          mounting before that would let MovablePanel fall back to
+          its static top-[15rem], landing the panel BEHIND the
+          Editor pane (Editor renders later in the DOM and wins
+          z-order) instead of stacking cleanly under it. */}
+      {!welcomeOpen && commentRows.length > 0 && contextBottomY > 0 ? (
         <div className="hidden sm:contents">
           <CommentsPanel
             position={commentsPanelPosition}
             rows={commentRows}
-            stackBelowY={contextBottomY === 0 ? undefined : contextBottomY}
+            stackBelowY={contextBottomY}
             onMoveTo={onMoveCommentsPanel}
             onReset={onResetCommentsPanel}
             onRowClick={onOpenCommentsForElement}
