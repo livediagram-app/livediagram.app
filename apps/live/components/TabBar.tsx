@@ -178,6 +178,25 @@ export function TabBar({
                   type="button"
                   onClick={() => onSelect(tab.id)}
                   onDoubleClick={readOnly ? undefined : () => isActive && setEditingId(tab.id)}
+                  onContextMenu={
+                    readOnly
+                      ? undefined
+                      : (e) => {
+                          // Right-click on a tab opens the same menu the
+                          // active tab's ellipsis button does. If the
+                          // user clicked a non-active tab, switch to it
+                          // first so the menu's "active tab" actions
+                          // (Rename / Duplicate / Clear / Lock / Import /
+                          // Export / Move) operate on the tab they just
+                          // pointed at. Preventing the browser's default
+                          // context menu is the whole point of the
+                          // binding; without it the menu would open
+                          // briefly and then get shadowed.
+                          e.preventDefault();
+                          if (!isActive) onSelect(tab.id);
+                          setMenuFor(tab.id);
+                        }
+                  }
                   className="flex items-center gap-1 rounded-md py-1.5 text-sm font-medium"
                 >
                   {tab.locked ? <TabLockIcon /> : null}

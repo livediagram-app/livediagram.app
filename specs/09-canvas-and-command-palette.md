@@ -770,7 +770,7 @@ A tab can be renamed in two ways:
 
 ### Tab menu (ellipsis)
 
-The active tab carries a **`⋯` ellipsis button** to the right of its name. Clicking opens a small floating menu with:
+The active tab carries a **`⋯` ellipsis button** to the right of its name. Clicking opens a small floating menu (right-clicking any tab opens the same menu, suppressing the browser's default context menu and switching to that tab first if it isn't active so the menu's actions operate on the tab the user pointed at) with:
 
 - **Rename** — enters inline rename mode.
 - **Duplicate** — creates a copy of the tab (same elements, same pattern, name suffixed with " copy") inserted directly after the source, and switches to it.
