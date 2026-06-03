@@ -31,15 +31,7 @@ const SearchPanel = dynamic(() => import('@/components/SearchPanel').then((m) =>
 // picks the Image Gallery sidebar item, so the upload + delete +
 // usage view doesn't sit in the default explorer chunk.
 const GalleryPane = dynamic(() => import('@/components/GalleryPane').then((m) => m.GalleryPane));
-import {
-  ClockIcon,
-  FolderIcon,
-  HomeIcon,
-  ImageIcon,
-  MenuFolderIcon,
-  PlusIcon,
-  ShareIcon,
-} from './icons';
+import { ClockIcon, FolderIcon, HomeIcon, ImageIcon, MenuFolderIcon, ShareIcon } from './icons';
 import {
   EmptyPane,
   ListView,
@@ -108,10 +100,7 @@ export default function ExplorerPage() {
     { kind: 'diagram'; id: string } | { kind: 'folder'; id: string } | null
   >(null);
   const moveAnchorRef = useRef<HTMLElement | null>(null);
-  // FAB popover: "+ New diagram" / "+ New folder".
-  const [fabMenuOpen, setFabMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const fabRef = useRef<HTMLButtonElement>(null);
   // What the tree highlights + right pane shows. Defaults to "All
   // diagrams" (the root) so the first impression is the full library
   // — Recent is one sidebar click away.
@@ -572,7 +561,26 @@ export default function ExplorerPage() {
 
         {/* ---------- Right pane ---------- */}
         <section className="min-w-0 flex-1">
-          <PaneHeader title={paneTitle} crumbs={paneCrumbs} />
+          <PaneHeader
+            title={paneTitle}
+            crumbs={paneCrumbs}
+            onCreateDiagram={
+              selected.kind === 'shared' || selected.kind === 'gallery'
+                ? undefined
+                : () =>
+                    window.location.assign(
+                      selected.kind === 'folder' ? `/live/new?folder=${selected.id}` : '/live/new',
+                    )
+            }
+            onCreateFolder={
+              selected.kind === 'shared' ||
+              selected.kind === 'gallery' ||
+              selected.kind === 'recent'
+                ? undefined
+                : () => createFolder(selected.kind === 'folder' ? selected.id : null)
+            }
+            folderLabel={selected.kind === 'folder' ? 'New subfolder' : 'New folder'}
+          />
 
           {loading ? (
             <SkeletonRows />
@@ -585,17 +593,7 @@ export default function ExplorerPage() {
           ) : paneContent.folders.length === 0 &&
             paneContent.diagrams.length === 0 &&
             !paneContent.showUnsortedRow ? (
-            <EmptyPane
-              selected={selected}
-              onCreateDiagram={() =>
-                window.location.assign(
-                  selected.kind === 'folder' ? `/live/new?folder=${selected.id}` : '/live/new',
-                )
-              }
-              onCreateFolder={() =>
-                void createFolder(selected.kind === 'folder' ? selected.id : null)
-              }
-            />
+            <EmptyPane selected={selected} />
           ) : (
             <ListView
               folders={paneContent.folders}
@@ -621,43 +619,6 @@ export default function ExplorerPage() {
           )}
         </section>
       </main>
-
-      {/* Floating "+" FAB. Same as before, with the popover offering
-          "New diagram" + "New folder". "New folder" creates a child
-          of the currently-selected folder (or at root if a special
-          node is selected) so subfolder creation is one click away. */}
-      <button
-        ref={fabRef}
-        type="button"
-        aria-label="Create"
-        aria-expanded={fabMenuOpen}
-        onClick={() => setFabMenuOpen((o) => !o)}
-        className="fixed bottom-8 right-8 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/40"
-      >
-        <PlusIcon size={22} />
-      </button>
-      {fabMenuOpen ? (
-        <PortalMenu anchor={fabRef.current} placement="above" onClose={() => setFabMenuOpen(false)}>
-          <MenuItem
-            icon={<PlusIcon />}
-            label="New diagram"
-            onClick={() => {
-              setFabMenuOpen(false);
-              window.location.assign(
-                selected.kind === 'folder' ? `/live/new?folder=${selected.id}` : '/live/new',
-              );
-            }}
-          />
-          <MenuItem
-            icon={<PlusIcon />}
-            label={selected.kind === 'folder' ? 'New subfolder' : 'New folder'}
-            onClick={() => {
-              setFabMenuOpen(false);
-              void createFolder(selected.kind === 'folder' ? selected.id : null);
-            }}
-          />
-        </PortalMenu>
-      ) : null}
 
       {moveTarget ? (
         <PortalMenu

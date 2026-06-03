@@ -282,19 +282,61 @@ export function SidebarFolderSubtree({
 export function PaneHeader({
   title,
   crumbs,
+  onCreateDiagram,
+  onCreateFolder,
+  folderLabel,
 }: {
   title: string;
   crumbs: { name: string; onClick?: () => void }[];
+  // Optional CTAs rendered in the title row's right edge. Replaces
+  // the standalone floating "+" FAB so the actions sit in their
+  // current context rather than as a global affordance. New diagram
+  // renders first, then New folder / New subfolder (the label
+  // varies by selection, so the caller passes it). Both are
+  // optional: the Shared / Gallery views pass neither because the
+  // verbs don't apply.
+  onCreateDiagram?: () => void;
+  onCreateFolder?: () => void;
+  // "New folder" at the root level, "New subfolder" inside an
+  // existing folder. Caller resolves the wording.
+  folderLabel?: string;
 }) {
   // A single-item breadcrumb is just the page title in a second
   // place: visually noisy and provides no navigation. Show only
   // when there are actual parents to click back to.
   const showCrumbs = crumbs.length >= 2;
+  const hasActions = Boolean(onCreateDiagram || onCreateFolder);
   return (
     <div className="mb-4">
-      <h1 className="mb-2 truncate text-2xl font-semibold tracking-tight text-slate-900">
-        {title}
-      </h1>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight text-slate-900">
+          {title}
+        </h1>
+        {hasActions ? (
+          <div className="flex shrink-0 items-center gap-2">
+            {onCreateDiagram ? (
+              <button
+                type="button"
+                onClick={onCreateDiagram}
+                className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
+              >
+                <PlusIcon />
+                New diagram
+              </button>
+            ) : null}
+            {onCreateFolder ? (
+              <button
+                type="button"
+                onClick={onCreateFolder}
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700"
+              >
+                <PlusIcon />
+                {folderLabel ?? 'New folder'}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
       {showCrumbs ? (
         <nav
           aria-label="Breadcrumb"
@@ -719,13 +761,7 @@ export function SharedList({
 }) {
   useRelativeTimeTick();
   if (shared.length === 0) {
-    return (
-      <EmptyPane
-        selected={{ kind: 'shared' }}
-        onCreateDiagram={() => window.location.assign('/live/new')}
-        onCreateFolder={() => {}}
-      />
-    );
+    return <EmptyPane selected={{ kind: 'shared' }} />;
   }
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -773,51 +809,24 @@ export function SharedList({
 
 // ---------- States: empty / loading / unauthenticated -------------
 
-export function EmptyPane({
-  selected,
-  onCreateDiagram,
-  onCreateFolder,
-}: {
-  selected: SelectedNode;
-  onCreateDiagram: () => void;
-  onCreateFolder: () => void;
-}) {
+export function EmptyPane({ selected }: { selected: SelectedNode }) {
   const inFolder = selected.kind === 'folder';
   const isRecent = selected.kind === 'recent';
   const isShared = selected.kind === 'shared';
+  // CTAs now live in the PaneHeader's right edge ("New diagram" /
+  // "New folder"), so this empty state is just the explainer copy.
+  // Adding buttons here would be a second copy of the same actions.
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
       <p className="max-w-md text-sm text-slate-500">
         {isRecent
           ? "Nothing here yet. Diagrams you've opened will show up here."
           : isShared
-            ? "No-one's shared a diagram with you yet. When someone sends you a share link (`livediagram.app/live/diagram/<id>?s=<code>`) and you open it, the diagram lands here so you can find it again without keeping the link bookmarked."
+            ? 'Nothing shared with you yet. Open a share link someone sent you, and the diagram will land here.'
             : inFolder
               ? 'This folder is empty.'
               : 'No diagrams yet.'}
       </p>
-      {isShared ? null : (
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onCreateDiagram}
-            className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
-          >
-            <PlusIcon />
-            New diagram
-          </button>
-          {!isRecent ? (
-            <button
-              type="button"
-              onClick={onCreateFolder}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700"
-            >
-              <PlusIcon />
-              {inFolder ? 'New subfolder' : 'New folder'}
-            </button>
-          ) : null}
-        </div>
-      )}
     </div>
   );
 }
