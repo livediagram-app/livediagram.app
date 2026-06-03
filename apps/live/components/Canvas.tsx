@@ -39,7 +39,13 @@ import { BoxedElementView, ShapeSvgOverlay, isSvgRenderedShape } from './BoxedEl
 import { CommandPalette, type CanvasTool, type SelectedElementControls } from './CommandPalette';
 import { UnionResizeHandles } from './element-parts';
 import { ActivityIcon, ActivityPanel, RedoIcon, UndoIcon } from './ActivityPanel';
-import { CommentsPanel } from './CommentsPanel';
+// Lazy-load CommentsPanel: only mounts when the active tab has at
+// least one element with comments AND the ContextPanel has reported
+// its bottom edge (so we don't paint the panel at the legacy fallback
+// position). Most diagrams never accumulate comments, so deferring
+// the 164-line panel + its formatRelativeTimeShort + useRelativeTimeTick
+// dependencies keeps the editor's initial chunk lean.
+const CommentsPanel = dynamic(() => import('./CommentsPanel').then((m) => m.CommentsPanel));
 import { ParticipantAvatar } from './ParticipantAvatar';
 import { ContextPanel } from './ContextPanel';
 import { Explorer } from './Explorer';
