@@ -256,6 +256,7 @@ export function CommandPalette({
             active={canvasTool === 'pan'}
             label="Pan"
             onClick={() => onSetCanvasTool('pan')}
+            shortcut="P"
           >
             <PanIcon />
           </ToolButton>
@@ -265,6 +266,7 @@ export function CommandPalette({
             active={canvasTool === 'select'}
             label="Select"
             onClick={() => onSetCanvasTool('select')}
+            shortcut="S"
           >
             <SelectIcon />
           </ToolButton>
@@ -277,6 +279,7 @@ export function CommandPalette({
             active={canvasTool === 'laser'}
             label="Laser"
             onClick={() => onSetCanvasTool('laser')}
+            shortcut="L"
           >
             <LaserIcon />
           </ToolButton>
@@ -1558,14 +1561,22 @@ function ToolButton({
   label,
   onClick,
   children,
+  shortcut,
 }: {
   active: boolean;
   label: string;
   onClick: () => void;
   children: React.ReactNode;
+  // Single-key shortcut letter rendered as a corner badge while
+  // Cmd/Ctrl is held. Same visual treatment as IconButton's badge
+  // so the cheat sheet reads consistently across tool buttons and
+  // shape buttons.
+  shortcut?: string;
 }) {
+  const modHeld = useModKeyHeld();
+  const showBadge = !!shortcut && modHeld;
   const base =
-    'flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition';
+    'relative flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition';
   const tone = active
     ? 'bg-brand-500 text-white shadow-sm'
     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
@@ -1573,6 +1584,14 @@ function ToolButton({
     <button type="button" onClick={onClick} className={`${base} ${tone}`} aria-pressed={active}>
       {children}
       <span>{label}</span>
+      {showBadge ? (
+        <kbd
+          aria-hidden
+          className="pointer-events-none absolute right-0.5 top-0.5 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-[3px] border border-slate-300 bg-white px-0.5 text-[8px] font-semibold uppercase leading-none text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+        >
+          {shortcut}
+        </kbd>
+      ) : null}
     </button>
   );
 }
@@ -1855,7 +1874,7 @@ function IconButton({
       {showBadge ? (
         <kbd
           aria-hidden
-          className="pointer-events-none absolute -right-0.5 -top-0.5 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-[3px] border border-slate-300 bg-white px-0.5 text-[8px] font-semibold uppercase leading-none text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+          className="pointer-events-none absolute right-0.5 top-0.5 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-[3px] border border-slate-300 bg-white px-0.5 text-[8px] font-semibold uppercase leading-none text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
         >
           {shortcut}
         </kbd>
