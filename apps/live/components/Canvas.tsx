@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -761,9 +762,18 @@ export function Canvas(props: CanvasProps) {
   // boxed element so the Editor panel can read shared properties
   // from it; setters in the editor bulk-apply across all selected
   // members.
-  const memberIds = selectedId
-    ? new Set(selectionMembers(elements, selectedId))
-    : new Set<string>();
+  // Memoised: `selectionMembers` walks every element looking for
+  // matching groupIds (O(N)), and Set construction allocates fresh
+  // memory. Canvas re-renders on every drag tick / pointermove
+  // during gestures; recomputing this set on every render is wasted
+  // work because the membership only changes when `elements` or
+  // `selectedId` does. Stable identity also keeps the downstream
+  // consumers (unionBoxedBounds, selectionBounds, selectionScope)
+  // from re-deriving on unrelated state changes.
+  const memberIds = useMemo(
+    () => (selectedId ? new Set(selectionMembers(elements, selectedId)) : new Set<string>()),
+    [elements, selectedId],
+  );
   const multiPrimaryId =
     multiSelectedIds.size > 0
       ? (elements.find((el) => multiSelectedIds.has(el.id))?.id ?? null)
