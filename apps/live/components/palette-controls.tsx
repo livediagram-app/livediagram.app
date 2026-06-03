@@ -432,3 +432,40 @@ export function IconButton({
     </Tooltip>
   );
 }
+
+// iOS-style toggle switch. Used by the Shape accordion's Lock-aspect
+// row but generic enough for any future boolean preference that
+// belongs alongside its label rather than as an icon button.
+export function ToggleSwitch({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={onChange}
+      className={
+        checked
+          ? 'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-brand-500 transition'
+          : 'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-slate-300 transition dark:bg-slate-600'
+      }
+    >
+      <span
+        aria-hidden
+        className={
+          checked
+            ? 'inline-block h-3.5 w-3.5 translate-x-[18px] rounded-full bg-white shadow-sm transition'
+            : 'inline-block h-3.5 w-3.5 translate-x-[3px] rounded-full bg-white shadow-sm transition'
+        }
+      />
+    </button>
+  );
+}
