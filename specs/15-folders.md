@@ -123,8 +123,14 @@ beats "browse my whole library."
   combined number of direct children (folders + diagrams).
 - Folder-row ellipsis menu: Rename, Delete, "Move to folder…".
   Rename is inline (same pattern as the diagram-row rename). Delete
-  is immediate because contents survive (subfolders promote to
-  root, diagrams fall to Unsorted) — no confirmation in V1.
+  pops a confirmation dialog ("Delete this folder?" with the
+  cascade rules in the body: diagrams inside move to Unsorted,
+  subfolders promote to root, the folder row itself goes) via the
+  shared `useConfirm` hook. The cascade is genuinely non-destructive
+  for the contents, but a folder vanishing without a tap-back is
+  startling enough that the confirmation is worth the extra click;
+  both the editor and the standalone `/explorer` page wire delete
+  through the same prompt.
 - Diagram-row ellipsis menu gains a "Move to folder…" sub-action
   that lists every folder by breadcrumb path + Unsorted as choices.
   Picking one calls `PUT /api/diagrams/:id/folder`.
