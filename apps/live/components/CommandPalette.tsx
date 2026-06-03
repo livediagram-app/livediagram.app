@@ -189,6 +189,12 @@ type CommandPaletteProps = {
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.
   onAddArrow: () => void;
+  // Currently-queued draw-to-size shape kind, or null. When set, the
+  // matching shape button on the palette renders pressed so the user
+  // can see which shape will be drawn on the next canvas drag. Only
+  // populated when user-preferences.drawToAdd is on; otherwise this
+  // is always null and no button ever shows the pressed treatment.
+  pendingDrawShape?: ShapeKind | null;
   // Optional callback fired with the palette's current bounding box
   // whenever it changes (via MovablePanel's ResizeObserver). Canvas
   // wires this up so the ContextPanel can stack dynamically below
@@ -211,6 +217,7 @@ export function CommandPalette({
   onAddSticky,
   onAddImage,
   onAddArrow,
+  pendingDrawShape,
   onSize,
   mobileTopOverridePx,
 }: CommandPaletteProps) {
@@ -297,6 +304,7 @@ export function CommandPalette({
             label="Add square"
             description="Drop a new square shape on the canvas."
             onClick={() => onAddShape('square')}
+            active={pendingDrawShape === 'square'}
             shortcut="R"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -316,6 +324,7 @@ export function CommandPalette({
             label="Add circle"
             description="Drop a new circle shape on the canvas."
             onClick={() => onAddShape('circle')}
+            active={pendingDrawShape === 'circle'}
             shortcut="O"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -326,6 +335,7 @@ export function CommandPalette({
             label="Add diamond"
             description="Diamond. Decision node."
             onClick={() => onAddShape('diamond')}
+            active={pendingDrawShape === 'diamond'}
             shortcut="D"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -342,6 +352,7 @@ export function CommandPalette({
             label="Add cylinder"
             description="Cylinder. Flowchart database / storage."
             onClick={() => onAddShape('cylinder')}
+            active={pendingDrawShape === 'cylinder'}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
               <path
@@ -366,6 +377,7 @@ export function CommandPalette({
             label="Add parallelogram"
             description="Parallelogram. Flowchart input / output."
             onClick={() => onAddShape('parallelogram')}
+            active={pendingDrawShape === 'parallelogram'}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
               <polygon
@@ -381,6 +393,7 @@ export function CommandPalette({
             label="Add hexagon"
             description="Hexagon. Preparation / milestone."
             onClick={() => onAddShape('hexagon')}
+            active={pendingDrawShape === 'hexagon'}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
               <polygon
@@ -396,6 +409,7 @@ export function CommandPalette({
             label="Add document"
             description="Document shape. Flowchart output."
             onClick={() => onAddShape('document')}
+            active={pendingDrawShape === 'document'}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
               <path
@@ -411,6 +425,7 @@ export function CommandPalette({
             label="Add stadium"
             description="Stadium shape. Flowchart Start / End."
             onClick={() => onAddShape('stadium')}
+            active={pendingDrawShape === 'stadium'}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
               <rect
@@ -429,6 +444,7 @@ export function CommandPalette({
             label="Add cloud"
             description="Cloud. Networking / architecture."
             onClick={() => onAddShape('cloud')}
+            active={pendingDrawShape === 'cloud'}
           >
             <svg
               width="18"
@@ -537,6 +553,7 @@ export function CommandPalette({
             label="Add user"
             description="User / actor. Use-case and architecture diagrams."
             onClick={() => onAddShape('actor')}
+            active={pendingDrawShape === 'actor'}
           >
             <svg
               width="18"
@@ -571,6 +588,7 @@ export function CommandPalette({
             label="Add web browser"
             description="Browser window. Wireframe a web page or a web-app screen."
             onClick={() => onAddShape('browser')}
+            active={pendingDrawShape === 'browser'}
           >
             <svg
               width="18"
@@ -590,6 +608,7 @@ export function CommandPalette({
             label="Add computer monitor"
             description="Desktop monitor with stand. Wireframe a desktop app."
             onClick={() => onAddShape('monitor')}
+            active={pendingDrawShape === 'monitor'}
           >
             <svg
               width="18"
@@ -610,6 +629,7 @@ export function CommandPalette({
             label="Add laptop"
             description="Laptop. Screen plus keyboard base."
             onClick={() => onAddShape('laptop')}
+            active={pendingDrawShape === 'laptop'}
           >
             <svg
               width="18"
@@ -629,6 +649,7 @@ export function CommandPalette({
             label="Add phone"
             description="Phone. Wireframe a mobile screen."
             onClick={() => onAddShape('phone')}
+            active={pendingDrawShape === 'phone'}
           >
             <svg
               width="18"
@@ -647,6 +668,7 @@ export function CommandPalette({
             label="Add tablet"
             description="Tablet. Larger than a phone, smaller than a laptop screen."
             onClick={() => onAddShape('tablet')}
+            active={pendingDrawShape === 'tablet'}
           >
             <svg
               width="18"
@@ -1844,6 +1866,13 @@ type IconButtonProps = {
   onClick: () => void;
   children: React.ReactNode;
   disabled?: boolean;
+  // Pressed-state styling. Used by the shape buttons during draw-to-
+  // size mode so the user sees which shape is queued for the next
+  // canvas drag (the cursor + the banner already say it, but a
+  // highlighted palette button closes the loop for the
+  // "where did I click?" question). Same brand-50 fill as the
+  // canvas-tool ToolButton's active state for visual consistency.
+  active?: boolean;
   // Single-key shortcut letter (e.g. "R"). Renders a corner badge
   // whenever the user is holding Cmd/Ctrl, so the palette becomes a
   // self-documenting cheat sheet without permanent visual clutter.
@@ -1858,17 +1887,22 @@ function IconButton({
   onClick,
   children,
   disabled,
+  active,
   shortcut,
 }: IconButtonProps) {
   const modHeld = useModKeyHeld();
   const showBadge = !disabled && !!shortcut && modHeld;
+  const tone = active
+    ? 'bg-brand-100 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50'
+    : 'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
   const button = (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
+      aria-pressed={active}
       disabled={disabled}
-      className="relative flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white"
+      className={`relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40 ${tone}`}
     >
       {children}
       {showBadge ? (

@@ -351,11 +351,11 @@ export const BoxedElementView = memo(BoxedElementViewImpl);
 //   - square: rounded rectangle
 //   - circle: border-radius 50% (forced 1:1 so it stays a circle)
 //   - stadium: border-radius 9999px → always semicircular ends
-function isSvgRenderedShape(kind: ShapeKind): boolean {
+export function isSvgRenderedShape(kind: ShapeKind): boolean {
   return kind !== 'square' && kind !== 'circle' && kind !== 'stadium';
 }
 
-function ShapeSvgOverlay({
+export function ShapeSvgOverlay({
   shape,
   fill,
   stroke,

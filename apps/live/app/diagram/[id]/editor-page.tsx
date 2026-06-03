@@ -2431,6 +2431,19 @@ export default function LivePage() {
   const addShape = (kind: ShapeKind) => {
     if (editsBlocked) return;
     if (userPreferences.drawToAdd === true) {
+      // Clear any existing selection so the canvas reads as a clean
+      // "pick a corner" surface: the selection popover would
+      // otherwise stick around above the about-to-be-drawn rectangle
+      // and confuse the gesture.
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+      setEditingId(null);
+      // Laser mode swallows pointer-down to paint trail dots, which
+      // would prevent the draw-to-size drag from ever starting. Bump
+      // back to pan so the canvas accepts the gesture; select would
+      // also work but pan is the friction-free default (matches the
+      // tool you'd be in if you'd never touched the toolbar).
+      if (canvasTool === 'laser') setCanvasTool('pan');
       setPendingDrawShape(kind);
       return;
     }
@@ -3093,6 +3106,7 @@ export default function LivePage() {
         onAddArrow={addArrow}
         pendingDrawShape={pendingDrawShape}
         onCommitDrawShape={commitDrawShape}
+        onCancelDrawShape={cancelDrawShape}
         onUndo={undo}
         onRedo={redo}
         onMovePalette={(x, y) => setPalettePosition({ x, y })}

@@ -34,7 +34,7 @@ import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { track } from '@/lib/telemetry';
 import type { TemplateKind } from '@/lib/templates';
 import { ArrowDefs, ArrowView } from './ArrowView';
-import { BoxedElementView } from './BoxedElementView';
+import { BoxedElementView, ShapeSvgOverlay, isSvgRenderedShape } from './BoxedElementView';
 import { CommandPalette, type CanvasTool, type SelectedElementControls } from './CommandPalette';
 import { UnionResizeHandles } from './element-parts';
 import { ActivityIcon, ActivityPanel, RedoIcon, UndoIcon } from './ActivityPanel';
@@ -80,6 +80,52 @@ const TemplatePicker = dynamic(() => import('./TemplatePicker').then((m) => m.Te
 // shared constant lets shallow equality see the same reference
 // across renders.
 const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = [];
+
+// Title-cased shape label for the draw-to-size mode banner. Avoids the
+// "a / an" article problem by reading "Drag to draw {Rectangle}"
+// instead of "draw a rectangle / an oval". Two kinds get human-
+// friendly aliases (square -> Rectangle, circle -> Oval) to match the
+// palette wording the user just clicked; everything else falls back
+// to a Capitalised version of the raw kind, which is fine for the
+// dozen-or-so other ShapeKind values without anyone having to keep a
+// dictionary in sync.
+function prettyShapeLabel(kind: ShapeKind): string {
+  if (kind === 'square') return 'Rectangle';
+  if (kind === 'circle') return 'Oval';
+  return kind.charAt(0).toUpperCase() + kind.slice(1);
+}
+
+// Per-shape draw-mode cursor. Returns a `cursor:` CSS value, an
+// `url(data:image/svg+xml,...)` referencing an inline SVG whose
+// hotspot sits at (4, 4): a small crosshair at the pointer tip,
+// plus a faded outline of the shape kind in the cursor's lower-
+// right so the user can see at a glance which shape is queued.
+// `crosshair` is the system fallback for browsers that won't load
+// the data URL. Three kinds get explicit outlines (square, circle,
+// diamond); everything else uses the plain crosshair branch since
+// the banner already shows the shape name.
+function drawShapeCursor(kind: ShapeKind): string {
+  let shape = '';
+  if (kind === 'square') {
+    shape = `<rect x="13" y="13" width="11" height="8" fill="none" stroke="black" stroke-width="1.4" />`;
+  } else if (kind === 'circle') {
+    shape = `<ellipse cx="18.5" cy="17" rx="5.5" ry="4" fill="none" stroke="black" stroke-width="1.4" />`;
+  } else if (kind === 'diamond') {
+    shape = `<path d="M18.5 12 L24 17 L18.5 22 L13 17 Z" fill="none" stroke="black" stroke-width="1.4" />`;
+  } else {
+    return 'crosshair';
+  }
+  // Crosshair tip at (4, 4); white halo first for visibility on dark
+  // canvas backgrounds (graph paper, dark mode), black stroke on top
+  // so it remains legible on light backgrounds too.
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'>` +
+    `<path d='M0 4 H8 M4 0 V8' stroke='white' stroke-width='3' stroke-linecap='round' />` +
+    `<path d='M0 4 H8 M4 0 V8' stroke='black' stroke-width='1.5' stroke-linecap='round' />` +
+    shape +
+    `</svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}") 4 4, crosshair`;
+}
 import { Tooltip } from './Tooltip';
 import { ZoomControls } from './ZoomControls';
 
@@ -153,11 +199,12 @@ type CanvasProps = {
   // canvas then changes its cursor to a crosshair and the next
   // pointer-down on its surface starts a drag-to-size gesture.
   // pointer-up calls onCommitDrawShape with the dragged bounds
-  // (canvas coords, post-floor on min size). Cancellation goes
-  // through Escape in the keyboard hook, not through the canvas,
-  // so there's no Canvas-level onCancelDrawShape.
+  // (canvas coords, post-floor on min size). onCancelDrawShape
+  // backs the Cancel button on the in-canvas ModeBanner (Escape
+  // calls it from the keyboard hook too).
   pendingDrawShape: ShapeKind | null;
   onCommitDrawShape: (kind: ShapeKind, x: number, y: number, width: number, height: number) => void;
+  onCancelDrawShape: () => void;
   onUndo: () => void;
   onRedo: () => void;
   onMovePalette: (x: number, y: number) => void;
@@ -399,6 +446,7 @@ export function Canvas(props: CanvasProps) {
     onAddArrow,
     pendingDrawShape,
     onCommitDrawShape,
+    onCancelDrawShape,
     onUndo,
     onRedo,
     onMovePalette,
@@ -1105,11 +1153,18 @@ export function Canvas(props: CanvasProps) {
           const sy = (e.clientY - rect.top) / viewportZoom;
           onCanvasDoubleClick(sx, sy);
         }}
-        className={`absolute inset-0 origin-center touch-none ${cursorClass}`}
+        className={`absolute inset-0 origin-center touch-none ${pendingDrawShape ? '' : cursorClass}`}
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
           transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+          // Draw-mode cursor: a crosshair with a tiny outline of the
+          // shape kind in its lower-right, so the user sees what
+          // they're about to draw without looking at the banner. The
+          // inline `cursor` overrides the Tailwind cursor- class
+          // above (which we drop in this branch to avoid specificity
+          // surprises).
+          ...(pendingDrawShape ? { cursor: drawShapeCursor(pendingDrawShape) } : null),
         }}
       >
         {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
@@ -1386,13 +1441,17 @@ export function Canvas(props: CanvasProps) {
         />
       ) : null}
 
-      {/* Draw-to-size preview rectangle. drawDrag holds canvas
-          coords; convert to client coords via the wrapper rect +
-          viewportZoom so the overlay aligns with the canvas content
-          under it as the user drags. Same dashed-brand styling as
-          the rest of the editor's "you're about to commit this"
-          ghosts. */}
-      {drawDrag
+      {/* Draw-to-size preview. drawDrag holds canvas coords; convert
+          to client coords via the wrapper rect + viewportZoom so the
+          overlay aligns with the canvas content under it. The shape
+          itself renders via ShapeSvgOverlay (the same primitive
+          BoxedElementView uses for committed shapes) with a dashed-
+          brand stroke + translucent brand fill, so "draw circle"
+          looks like an oval, "draw diamond" like a diamond, etc.
+          The three simple kinds (square / circle / stadium) bypass
+          SVG and use border-radius on the wrapping div, matching
+          how BoxedElementView renders them at rest. */}
+      {drawDrag && pendingDrawShape
         ? (() => {
             const rect = wrapperRef.current?.getBoundingClientRect();
             if (!rect) return null;
@@ -1400,17 +1459,41 @@ export function Canvas(props: CanvasProps) {
             const canvasMinY = Math.min(drawDrag.startY, drawDrag.currentY);
             const canvasW = Math.abs(drawDrag.currentX - drawDrag.startX);
             const canvasH = Math.abs(drawDrag.currentY - drawDrag.startY);
+            const widthPx = Math.max(canvasW * viewportZoom, 1);
+            const heightPx = Math.max(canvasH * viewportZoom, 1);
+            const usesSvg = isSvgRenderedShape(pendingDrawShape);
+            const radius =
+              pendingDrawShape === 'circle'
+                ? '50%'
+                : pendingDrawShape === 'stadium'
+                  ? '9999px'
+                  : '4px';
             return (
               <div
                 aria-hidden
-                className="pointer-events-none fixed z-30 rounded-sm border border-dashed border-brand-500 bg-brand-500/10"
+                className="pointer-events-none fixed z-30"
                 style={{
                   left: rect.left + canvasMinX * viewportZoom,
                   top: rect.top + canvasMinY * viewportZoom,
-                  width: Math.max(canvasW * viewportZoom, 1),
-                  height: Math.max(canvasH * viewportZoom, 1),
+                  width: widthPx,
+                  height: heightPx,
                 }}
-              />
+              >
+                {usesSvg ? (
+                  <ShapeSvgOverlay
+                    shape={pendingDrawShape}
+                    fill="rgba(14, 165, 233, 0.10)"
+                    stroke="rgb(14, 165, 233)"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 3"
+                  />
+                ) : (
+                  <div
+                    className="h-full w-full border border-dashed border-brand-500 bg-brand-500/10"
+                    style={{ borderRadius: radius }}
+                  />
+                )}
+              </div>
             );
           })()
         : null}
@@ -1459,6 +1542,28 @@ export function Canvas(props: CanvasProps) {
           message="Click another element to add to the group"
           actionLabel="Done"
           onAction={onCancelGroup}
+        />
+      ) : null}
+
+      {pendingDrawShape ? (
+        <ModeBanner
+          icon={
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" strokeDasharray="2 1.5" />
+              <path d="M5.5 5.5l5 5" />
+            </svg>
+          }
+          message={`Drag to draw ${prettyShapeLabel(pendingDrawShape)}`}
+          onAction={onCancelDrawShape}
         />
       ) : null}
 
@@ -1580,6 +1685,7 @@ export function Canvas(props: CanvasProps) {
           onAddSticky={onAddSticky}
           onAddImage={onAddImage}
           onAddArrow={onAddArrow}
+          pendingDrawShape={pendingDrawShape}
           onSize={(size) => setPaletteBottomY(size.bottomY)}
           mobileTopOverridePx={explorerBottomY > 0 ? explorerBottomY + 4 : undefined}
         />
