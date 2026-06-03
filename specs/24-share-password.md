@@ -49,7 +49,8 @@ identity, share-code path) and [11-api](11-api.md) (share links).
   password-protected diagram refuses the upgrade (403) unless `p` matches; the
   owner (`o` matches) bypasses.
 
-Helpers in `src/db.ts`: `getDiagramSharePassword(env, id)`,
+Helpers in `src/db/diagrams.ts` (the db.ts split moved them out of the
+old monolithic module): `getDiagramSharePassword(env, id)`,
 `setDiagramSharePassword(env, id, password | null)`.
 
 ## Client (apps/live)
