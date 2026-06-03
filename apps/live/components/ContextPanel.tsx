@@ -72,6 +72,10 @@ type ContextPanelProps = {
   setTabAccordionsOpen?: React.Dispatch<React.SetStateAction<TabAccordionState>>;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
+  // Optional bottom-Y reporter, forwarded through to MovablePanel's
+  // onSize so a downstream panel (CommentsPanel today, anything
+  // else later) can stack itself just below this one.
+  onSize?: (size: { width: number; height: number; bottomY: number }) => void;
   // Bottom-y of the panel this one should stack under (the Palette).
   // When set and the user hasn't dragged this panel anywhere yet, the
   // panel positions itself at `stackBelowY + 16` rather than the
@@ -102,6 +106,7 @@ export function ContextPanel({
   setTabAccordionsOpen,
   onMoveTo,
   onReset,
+  onSize,
   stackBelowY,
   expandSignal,
 }: ContextPanelProps) {
@@ -181,6 +186,7 @@ export function ContextPanel({
       stackBelowY={stackBelowY}
       onReset={onReset}
       onMoveTo={onMoveTo}
+      onSize={onSize}
       collapsible
       expandSignal={expandSignal}
     >

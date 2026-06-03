@@ -532,6 +532,11 @@ export function Canvas(props: CanvasProps) {
   // above the Palette without overlapping. Desktop ignores it (the
   // Explorer pins to top-left there, not as a banner).
   const [explorerBottomY, setExplorerBottomY] = useState<number>(0);
+  // ContextPanel's measured bottom edge. Drives the CommentsPanel's
+  // top-right-stacked positioning so it lands directly under the
+  // Editor pane on first paint and slides when Editor expands /
+  // collapses.
+  const [contextBottomY, setContextBottomY] = useState<number>(0);
 
   // Pan + marquee + held-Space machinery lives in
   // useCanvasPanAndMarquee. The hook owns the pointerdown / move
@@ -1331,14 +1336,25 @@ export function Canvas(props: CanvasProps) {
       {/* Activity panel — per-diagram audit log + Undo/Redo. Hidden
           during the welcome flow because there's nothing to audit
           yet and Undo/Redo would target an empty history. */}
+      {/* Comments panel is desktop-only chrome: on mobile, the canvas
+          is already tight, the per-element comment popover stays
+          available for viewing / replying, and a floating cheat
+          sheet of threads would crowd the surface that's already
+          banner-collapsing the Palette + Editor. Wrapped in a
+          `hidden sm:contents` shell so the MovablePanel beneath
+          gets `display: none` on phones without changing its props
+          or position math. */}
       {!welcomeOpen && commentRows.length > 0 ? (
-        <CommentsPanel
-          position={commentsPanelPosition}
-          rows={commentRows}
-          onMoveTo={onMoveCommentsPanel}
-          onReset={onResetCommentsPanel}
-          onRowClick={onOpenCommentsForElement}
-        />
+        <div className="hidden sm:contents">
+          <CommentsPanel
+            position={commentsPanelPosition}
+            rows={commentRows}
+            stackBelowY={contextBottomY === 0 ? undefined : contextBottomY}
+            onMoveTo={onMoveCommentsPanel}
+            onReset={onResetCommentsPanel}
+            onRowClick={onOpenCommentsForElement}
+          />
+        </div>
       ) : null}
 
       {welcomeOpen ? null : (
@@ -1426,6 +1442,7 @@ export function Canvas(props: CanvasProps) {
           // observer fires) MovablePanel falls back to its legacy
           // static top-[15rem] so the panel never lands at 0,0.
           stackBelowY={paletteBottomY === 0 ? undefined : paletteBottomY}
+          onSize={(size) => setContextBottomY(size.bottomY)}
         />
       )}
 

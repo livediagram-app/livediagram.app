@@ -93,6 +93,13 @@ type MovablePanelProps = {
   // panels: the banner stays in the corner so the affordance is
   // always visible. See spec/09 "Collapse to banner".
   collapsible?: boolean;
+  // When true, start collapsed on first paint regardless of viewport.
+  // Default (undefined / false) preserves the historical behaviour:
+  // collapsible panels start collapsed only on mobile, expanded on
+  // desktop. Used by panels that should default out of the way (the
+  // Comments panel ships closed so it doesn't compete with the
+  // always-visible Editor pane above it).
+  defaultCollapsed?: boolean;
   // Counter the parent bumps whenever it wants to force the banner
   // open (e.g. navigating to a theme accordion from an Activity row).
   // Only meaningful with `collapsible`. On every change of this value
@@ -125,6 +132,7 @@ export function MovablePanel({
   lockOpen = false,
   outsideExceptSelector,
   collapsible = false,
+  defaultCollapsed = false,
   expandSignal,
   children,
 }: MovablePanelProps) {
@@ -142,7 +150,9 @@ export function MovablePanel({
   // without crowding the canvas. Initial value is read sync on first
   // render via `isMobileViewportSync` so the panel paints in the
   // right state on first mount (no expand-then-collapse flash).
-  const [collapsed, setCollapsed] = useState(() => collapsible && isMobileViewportSync());
+  const [collapsed, setCollapsed] = useState(
+    () => collapsible && (defaultCollapsed || isMobileViewportSync()),
+  );
   // Reactive mobile flag so a viewport rotation / desktop->mobile
   // resize re-applies the mobileTopOverridePx inline-style. Initial
   // value reads sync to avoid a one-frame flicker.

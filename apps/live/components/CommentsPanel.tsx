@@ -34,6 +34,10 @@ type CommentsPanelProps = {
   // all when the list is empty, so the panel itself can assume
   // there's content to render.
   rows: CommentRow[];
+  // ContextPanel's reported bottom Y. Drives top-right-stacked
+  // positioning so the panel sits directly under the Editor pane
+  // and slides with it as Editor expands / collapses.
+  stackBelowY?: number;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
   // Row click: the editor selects the element + opens its comment
@@ -51,6 +55,7 @@ type CommentsPanelProps = {
 export function CommentsPanel({
   position,
   rows,
+  stackBelowY,
   onMoveTo,
   onReset,
   onRowClick,
@@ -62,11 +67,18 @@ export function CommentsPanel({
     <MovablePanel
       title={`Comments (${rows.length})`}
       position={position}
-      defaultCorner="bottom-right"
-      width="w-64"
+      defaultCorner="top-right-stacked"
+      width="w-auto sm:w-64"
+      stackBelowY={stackBelowY}
       onReset={onReset}
       onMoveTo={onMoveTo}
       collapsible
+      // Default collapsed: an open Comments panel would compete with
+      // the always-visible Editor pane right above it. Users open
+      // the panel deliberately when they want to scan comments;
+      // until then it banner-collapses to its title row so the
+      // canvas stays as roomy as possible.
+      defaultCollapsed
     >
       <ul className="flex flex-col divide-y divide-slate-100 px-2 pb-2 dark:divide-slate-800">
         {rows.map((row) => (
