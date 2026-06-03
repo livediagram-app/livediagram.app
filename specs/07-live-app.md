@@ -113,7 +113,9 @@ These don't change desktop layout. The remaining "panels overlap when all four o
 
 ## Out of scope (next iterations)
 
-- **Auth UI** — Clerk integration. Today the api carries owner identity in `X-Owner-Id` only.
-- **Export** — PNG / SVG / JSON. The data model is JSON-serialisable already; an export route just needs to surface it.
 - **Operational transform / CRDT edits** — realtime is LWW broadcast; concurrent edits to the same element clobber.
 - **Comments inbox / mentions** — comment threads exist per-element but there's no aggregated view yet.
+- **Transactional email** (Resend) for share notifications and account flows. The api worker has no outbound email path today.
+- **Multi-user team permissions beyond share links**: today a diagram is either private or shared via a per-link role. No teams, no per-user grants.
+
+(The previous "Auth UI" and "Export" bullets are now shipped: Clerk auth landed per [spec/04](04-auth-and-guest-access.md), and the active tab can be exported as JSON / Markdown / PNG / PDF via the `ExportTabDialog`.)
