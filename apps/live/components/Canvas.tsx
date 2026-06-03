@@ -990,64 +990,80 @@ export function Canvas(props: CanvasProps) {
     // to grab edges without surprise-snapping while the user is
     // still freely placing.
     const snapPx = 6 / viewportZoom;
+    // Local mutable mirror of drawDrag. The effect's setDrawDrag
+    // updater used to call onCommitDraw inline, which re-entered
+    // the editor's commit handler (a parent setState) from inside
+    // React's setState updater path and tripped a "setState during
+    // render" warning on LivePage. Keeping the latest gesture state
+    // in a closure variable lets onMove update it synchronously and
+    // onUp call onCommitDraw cleanly OUTSIDE any setState updater.
+    // setDrawDrag is now only used to trigger preview re-renders.
+    let latest:
+      | { startX: number; startY: number; currentX: number; currentY: number }
+      | null = drawDrag;
     const onMove = (e: PointerEvent) => {
       const rect = wrapperEl?.getBoundingClientRect();
-      if (!rect) return;
+      if (!rect || !latest) return;
       const rawX = (e.clientX - rect.left) / viewportZoom;
       const rawY = (e.clientY - rect.top) / viewportZoom;
-      setDrawDrag((prev) => {
-        if (!prev) return null;
-        let endX = rawX;
-        let endY = rawY;
-        // 1:1 aspect lock on shift. Mirrors Figma / Photoshop: hold
-        // shift while drawing to get a perfect square / circle.
-        // Picks the dominant axis (the one the user moved further)
-        // and matches the other to it, preserving the drag's
-        // direction so the box still grows where the cursor is.
-        if (e.shiftKey) {
-          const dx = endX - prev.startX;
-          const dy = endY - prev.startY;
-          const absMax = Math.max(Math.abs(dx), Math.abs(dy));
-          endX = prev.startX + (dx === 0 ? absMax : Math.sign(dx) * absMax);
-          endY = prev.startY + (dy === 0 ? absMax : Math.sign(dy) * absMax);
-        }
-        // Element-edge snap for box intents. Arrows skip this: their
-        // endpoints don't read as a bounding box (the natural snap
-        // there is per-end anchor pinning, handled by the existing
-        // arrow drag-handle flow after creation).
-        if (isBoxIntent) {
-          const x = Math.min(prev.startX, endX);
-          const y = Math.min(prev.startY, endY);
-          const width = Math.max(1, Math.abs(endX - prev.startX));
-          const height = Math.max(1, Math.abs(endY - prev.startY));
-          const mode: 'se' | 'sw' | 'ne' | 'nw' =
-            endX >= prev.startX
-              ? endY >= prev.startY
-                ? 'se'
-                : 'ne'
-              : endY >= prev.startY
-                ? 'sw'
-                : 'nw';
-          const snapped = snapResizeBounds(
-            { x, y, width, height },
-            mode,
-            elements,
-            EMPTY_ID_SET,
-            snapPx,
-            1,
-          );
-          endX = mode === 'se' || mode === 'ne' ? snapped.x + snapped.width : snapped.x;
-          endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
-        }
-        return { ...prev, currentX: endX, currentY: endY };
-      });
+      let endX = rawX;
+      let endY = rawY;
+      // 1:1 aspect lock on shift. Mirrors Figma / Photoshop: hold
+      // shift while drawing to get a perfect square / circle. Picks
+      // the dominant axis (the one the user moved further) and
+      // matches the other to it, preserving the drag's direction so
+      // the box still grows where the cursor is.
+      if (e.shiftKey) {
+        const dx = endX - latest.startX;
+        const dy = endY - latest.startY;
+        const absMax = Math.max(Math.abs(dx), Math.abs(dy));
+        endX = latest.startX + (dx === 0 ? absMax : Math.sign(dx) * absMax);
+        endY = latest.startY + (dy === 0 ? absMax : Math.sign(dy) * absMax);
+      }
+      // Element-edge snap for box intents. Arrows skip this: their
+      // endpoints don't read as a bounding box (the natural snap
+      // there is per-end anchor pinning, handled by the existing
+      // arrow drag-handle flow after creation).
+      if (isBoxIntent) {
+        const x = Math.min(latest.startX, endX);
+        const y = Math.min(latest.startY, endY);
+        const width = Math.max(1, Math.abs(endX - latest.startX));
+        const height = Math.max(1, Math.abs(endY - latest.startY));
+        const mode: 'se' | 'sw' | 'ne' | 'nw' =
+          endX >= latest.startX
+            ? endY >= latest.startY
+              ? 'se'
+              : 'ne'
+            : endY >= latest.startY
+              ? 'sw'
+              : 'nw';
+        const snapped = snapResizeBounds(
+          { x, y, width, height },
+          mode,
+          elements,
+          EMPTY_ID_SET,
+          snapPx,
+          1,
+        );
+        endX = mode === 'se' || mode === 'ne' ? snapped.x + snapped.width : snapped.x;
+        endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
+      }
+      latest = { ...latest, currentX: endX, currentY: endY };
+      setDrawDrag(latest);
     };
     const onUp = () => {
-      setDrawDrag((prev) => {
-        if (!prev) return null;
-        onCommitDraw(pendingDraw, prev.startX, prev.startY, prev.currentX, prev.currentY);
-        return null;
-      });
+      const snapshot = latest;
+      latest = null;
+      setDrawDrag(null);
+      if (snapshot) {
+        onCommitDraw(
+          pendingDraw,
+          snapshot.startX,
+          snapshot.startY,
+          snapshot.currentX,
+          snapshot.currentY,
+        );
+      }
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
