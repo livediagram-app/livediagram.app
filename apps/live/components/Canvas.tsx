@@ -827,11 +827,15 @@ export function Canvas(props: CanvasProps) {
     !tabLocked &&
     !readOnly;
 
-  // Cached counts only. Render loops iterate `elements` directly so
+  // Cached check only. Render loops iterate `elements` directly so
   // arrows and boxed elements interleave in z-order (see render
   // block below); the only thing we still need eagerly is "are
   // there any arrows" to decide whether to mount the ArrowDefs.
-  const arrowCount = elements.reduce((n, el) => (el.type === 'arrow' ? n + 1 : n), 0);
+  // `some` short-circuits on the first arrow (which is usually
+  // near the front of the list once a diagram has any), so the
+  // typical render pays O(1); the prior reduce was unconditional
+  // O(N) for the sole purpose of computing a boolean.
+  const hasArrows = elements.some((el) => el.type === 'arrow');
 
   const cursorClass = pendingDraw
     ? 'cursor-crosshair'
@@ -1340,7 +1344,7 @@ export function Canvas(props: CanvasProps) {
             all reference url(#arrowhead) — defs are document-scoped
             in SVG so a single defs node lets every arrow render
             with the same marker. */}
-        {arrowCount > 0 ? (
+        {hasArrows ? (
           <svg
             className="absolute"
             style={{ width: 0, height: 0, overflow: 'visible' }}
