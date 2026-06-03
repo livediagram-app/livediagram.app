@@ -53,18 +53,18 @@ export default {
     // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
     // pacing under Cloudflare's DDoS threshold still can't spam
     // diagram / image creation through to D1 / R2 quota
-    // exhaustion. Reads pass through untouched. A request with no
-    // resolved owner falls back to keying on the IP-equivalent
-    // X-Owner-Id header (or the empty string when neither exists);
-    // either way one client can't burn the global quota.
-    // Telemetry ingest (/api/events) is deliberately exempt: it's
-    // anonymous, high-frequency, and must never compete with a user's
-    // real diagram writes for the per-owner write budget (spec/22).
-    // Client-side batching keeps its volume low instead.
+    // exhaustion. Reads pass through untouched. When neither a
+    // Clerk token nor X-Owner-Id resolves the caller, fall back to
+    // a literal 'anonymous' key so one unauthenticated client still
+    // can't burn the global quota. Telemetry ingest (/api/events)
+    // is deliberately exempt: it's anonymous, high-frequency, and
+    // must never compete with a user's real diagram writes for the
+    // per-owner write budget (spec/22). Client-side batching keeps
+    // its volume low instead.
     const isWrite =
       request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE';
     if (isWrite && url.pathname !== '/api/events') {
-      const key = resolveOwner() ?? request.headers.get('X-Owner-Id') ?? 'anonymous';
+      const key = resolveOwner() ?? 'anonymous';
       if (await isWriteRateLimited(env, key)) return rateLimited();
     }
 
