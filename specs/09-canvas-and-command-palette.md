@@ -243,6 +243,10 @@ Snapping during the drag continues to consider all eight anchors of every shape 
 - **Drag an endpoint handle** to move that endpoint. While dragging:
   - If the cursor is within **~24 px** of any shape's anchor, the endpoint **snaps** to that anchor (becomes pinned).
   - Otherwise the endpoint stays free at the cursor position.
+- **Drag the middle control handle** to bend the arrow:
+  - **Curved arrows** show a small white square (the `CurveHandle`) on the Bezier control point. Drag it to change the bow direction and magnitude; the stored `curveOffset` is a delta from the chord midpoint so the curve survives endpoint moves (the midpoint shifts with the endpoints, the user's chosen offset stays).
+  - **Angled arrows** show the same handle on the elbow vertex. Drag it to move the right-angle bend somewhere other than the default auto-corner. The stored `elbowOffset` is a delta from the auto-elbow (`(to.x, from.y)` or `(from.x, to.y)` depending on the direction heuristic) so the bend survives endpoint moves the same way the curve does.
+  - Straight arrows have no middle handle (nothing to bend).
 - **Click the empty canvas** deselects.
 - The selection popover applies to arrows the same way it does to shapes (lock + delete).
 
@@ -287,6 +291,18 @@ type ArrowElement = {
   // the elbow runs first so the line leaves the element along its
   // anchor direction.
   arrowStyle?: 'straight' | 'curved' | 'angled';
+  // Optional user-dragged overrides for the middle control point.
+  // `curveOffset` is consulted only when arrowStyle === 'curved',
+  // `elbowOffset` only when arrowStyle === 'angled'. Both are
+  // stored as deltas from the auto-position (chord midpoint for
+  // the curve control point, auto-elbow corner for the angled
+  // bend) so the user's chosen shape survives endpoint moves: the
+  // auto-position shifts with the endpoints, the delta stays the
+  // same. Setting either back to undefined "resets" the arrow to
+  // its default shape. See `arrowPathD` + `angledElbow` in
+  // packages/diagram for the geometry.
+  curveOffset?: { dx: number; dy: number };
+  elbowOffset?: { dx: number; dy: number };
   // Optional label rendered next to the arrow's geometric midpoint.
   // Double-click on the arrow body opens an inline editor for this
   // field. The renderer picks one of four cardinal slots (right →
