@@ -9,6 +9,7 @@ import {
   createText,
   duplicateGroupedElements,
   isBoxed,
+  recogniseShape,
   simplifyPolyline,
   joinGroups,
   selectionMembers,
@@ -17,6 +18,7 @@ import {
   type ArrowElement,
   type BoxedElement,
   type Element,
+  type ShapeElement,
   type ShapeKind,
   type Tab,
 } from '@livediagram/diagram';
@@ -2631,7 +2633,7 @@ export default function LivePage() {
   //      doesn't trip the close), commit a closed path. Otherwise
   //      commit an open stroke.
   //   3. createFreehand to mint the element + commit.
-  const commitFreehand = (rawPoints: { x: number; y: number }[]) => {
+  const commitFreehand = (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean) => {
     if (editsBlocked || rawPoints.length < 2) {
       setPendingDraw(null);
       return;
@@ -2643,12 +2645,80 @@ export default function LivePage() {
       setPendingDraw(null);
       return;
     }
+    const theme = getTheme(activeTab.theme);
+
+    // Shape-recognition mode: try classifying the simplified
+    // polyline before falling back to FreehandElement. Threshold
+    // 0.72 is the "user clearly meant this" line: high enough that
+    // a loose squiggle stays a sketch, low enough that a careful
+    // shape converts reliably. The mode is per-pen-session
+    // (Canvas resets it when pendingDraw clears), so a stray
+    // false-convert is one Cmd+Z away and a deliberate sketch is
+    // one toggle-click away.
+    const RECOGNITION_THRESHOLD = 0.72;
+    if (recogniseShapesMode) {
+      const detected = recogniseShape(simplified);
+      if (detected !== null && detected.confidence >= RECOGNITION_THRESHOLD) {
+        if (detected.kind === 'line') {
+          const fromPt = detected.from ?? simplified[0]!;
+          const toPt = detected.to ?? simplified[simplified.length - 1]!;
+          // Map "line" to an ArrowElement with arrowEnds 'none'
+          // (the existing addArrow drop). The arrowEnds toggle in
+          // the Pointer accordion is there if the user wants to
+          // promote it to a pointer afterwards.
+          const arrow: ArrowElement = {
+            id: crypto.randomUUID(),
+            type: 'arrow',
+            from: { kind: 'free', x: fromPt.x, y: fromPt.y },
+            to: { kind: 'free', x: toPt.x, y: toPt.y },
+            arrowEnds: 'none',
+            ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
+          };
+          const before = activeTab.elements;
+          const after = [arrow, ...before];
+          commitTabs((ts) =>
+            ts.map((t) =>
+              t.id === activeId ? { ...t, elements: after, templateChosen: true } : t,
+            ),
+          );
+          emitChange(activeId, before, after);
+          setSelectedId(arrow.id);
+          setPendingDraw(null);
+          track('Element', 'Added', 'Arrow');
+          return;
+        }
+        // square / circle / diamond all map directly to ShapeKind.
+        // Bounding box is the gesture's bbox; the renderer stretches
+        // each shape to fill it, so a tall-and-thin rectangle stays
+        // tall-and-thin, an oval stays oval, etc.
+        const shapeBase = createShape(detected.kind, detected.bbox.x, detected.bbox.y);
+        const colours = deriveNewBoxedColours(shapeBase, {
+          backgroundColor: activeTab.backgroundColor,
+          patternColor: activeTab.patternColor,
+          theme: activeTab.theme,
+        });
+        const sized: ShapeElement = {
+          ...shapeBase,
+          ...colours,
+          x: detected.bbox.x,
+          y: detected.bbox.y,
+          width: Math.max(16, detected.bbox.width),
+          height: Math.max(16, detected.bbox.height),
+        };
+        commit((els) => [sized, ...els]);
+        setSelectedId(sized.id);
+        setPendingDraw(null);
+        track('Element', 'Added', titleCaseType(detected.kind));
+        return;
+      }
+    }
+
+    // Fallback: commit the polyline as-is as a FreehandElement.
     const first = simplified[0]!;
     const last = simplified[simplified.length - 1]!;
     const closeDist = Math.hypot(last.x - first.x, last.y - first.y);
     const closed = simplified.length >= 4 && closeDist <= 16 / zoom;
     const base = createFreehand(simplified, closed);
-    const theme = getTheme(activeTab.theme);
     const elementToInsert: typeof base = {
       ...base,
       // Theme-aware stroke colour so a freehand sketch reads as

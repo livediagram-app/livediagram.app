@@ -1662,3 +1662,8 @@ export function ungroup(elements: Element[], groupId: ElementId): Element[] {
     return rest as typeof el;
   });
 }
+
+// Pen-tool shape recognition (spec/09 Pen subsection's recognise
+// mode). Re-exported so callers import from the package root the
+// same way they do every other helper here.
+export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from './recognise-shape';

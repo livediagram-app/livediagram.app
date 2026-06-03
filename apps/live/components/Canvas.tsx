@@ -327,7 +327,11 @@ type CanvasProps = {
   // polyline in canvas coords. The editor applies RDP simplification
   // and Catmull-Rom-to-Bezier smoothing before minting the
   // FreehandElement, both for storage size and visual smoothness.
-  onCommitFreehand: (points: { x: number; y: number }[]) => void;
+  // `recogniseShapes` is the per-session toggle from the pen
+  // ModeBanner; when true, the caller (editor-page commitFreehand)
+  // runs the polyline through recogniseShape and may mint a real
+  // shape primitive instead of a FreehandElement.
+  onCommitFreehand: (points: { x: number; y: number }[], recogniseShapes: boolean) => void;
   onCancelDraw: () => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -1079,6 +1083,18 @@ export function Canvas(props: CanvasProps) {
   // reconciliation). Null when no pen drag is active.
   const [penPoints, setPenPoints] = useState<{ x: number; y: number }[] | null>(null);
 
+  // Per-pen-session "recognise shapes" toggle. When on, commitFreehand
+  // runs the polyline through recogniseShape and may mint a real
+  // shape kind (rectangle, circle, diamond, arrow-line) instead of a
+  // FreehandElement. Reset whenever pendingDraw clears (i.e. the user
+  // exited pen mode) so each fresh draw-mode entry starts with the
+  // raw-sketch default; the toggle button is rendered in the pen
+  // ModeBanner.
+  const [recogniseShapes, setRecogniseShapes] = useState(false);
+  useEffect(() => {
+    if (!pendingDraw || pendingDraw.type !== 'freehand') setRecogniseShapes(false);
+  }, [pendingDraw]);
+
   // Window-level move + up listeners for the draw gesture. Attached
   // only while a drag is in flight so the canvas pays nothing in the
   // common case (idle, or in pan / marquee mode). pointermove
@@ -1212,7 +1228,7 @@ export function Canvas(props: CanvasProps) {
       const snapshot = buffer;
       setPenPoints(null);
       if (snapshot.length >= 2) {
-        onCommitFreehand(snapshot);
+        onCommitFreehand(snapshot, recogniseShapes);
       }
     };
     window.addEventListener('pointermove', onMove);
@@ -1930,6 +1946,51 @@ export function Canvas(props: CanvasProps) {
           }
           message={drawBannerMessage(pendingDraw)}
           onAction={onCancelDraw}
+          // Pen-mode-only extras slot: the "recognise shapes" toggle.
+          // Icon-only with a Tooltip-able title; the pressed state
+          // (brand-100 fill) signals when the mode is active so the
+          // user always knows whether the next stroke will convert
+          // or stay as a sketch. Reset on pen-mode exit by the
+          // effect above.
+          extras={
+            pendingDraw.type === 'freehand' ? (
+              <button
+                type="button"
+                onClick={() => setRecogniseShapes((v) => !v)}
+                title={
+                  recogniseShapes
+                    ? 'Recognise shapes: on (turn off to keep sketches as-is)'
+                    : 'Recognise shapes: off (turn on to auto-convert rectangles, circles, diamonds, lines)'
+                }
+                aria-label="Toggle shape recognition"
+                aria-pressed={recogniseShapes}
+                className={
+                  'flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition ' +
+                  (recogniseShapes
+                    ? 'bg-brand-200 text-brand-900 hover:bg-brand-300'
+                    : 'bg-white text-slate-700 hover:bg-slate-50')
+                }
+              >
+                {/* Sparkle / magic-wand glyph signals "auto" without
+                    being a literal AI motif. Two-star composition so
+                    it parses at 14px. */}
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M6 2 L6.9 4.6 L9.5 5.5 L6.9 6.4 L6 9 L5.1 6.4 L2.5 5.5 L5.1 4.6 Z" />
+                  <path d="M11.5 9 L12.1 10.4 L13.5 11 L12.1 11.6 L11.5 13 L10.9 11.6 L9.5 11 L10.9 10.4 Z" />
+                </svg>
+              </button>
+            ) : undefined
+          }
         />
       ) : null}
 
