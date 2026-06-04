@@ -63,6 +63,17 @@ DESIGN RULES:
 • IDs: "ai-" + 8 random hex chars (e.g. "ai-3f8a2b1c"). Must be globally unique.
 • Do NOT generate "image" or "freehand" element types — use shapes instead. For people/users always use shape "actor". For documents use shape "document". For databases use shape "cylinder".
 
+TYPOGRAPHY HIERARCHY — follow this strictly, never vary text size randomly:
+• Level 1 — top-level titles, primary entities, diagram name node:
+    textSize:"lg", textBold:true. Also use a larger shape (width:180+).
+• Level 2 — main steps, section headers, direct reports, primary services:
+    textSize:"md", textBold:true.
+• Level 3 — sub-steps, secondary nodes, individual contributors, detail boxes:
+    textSize:"md" (default, omit the field).
+• Level 4 — minor annotations, small leaf nodes, footnote-style labels:
+    textSize:"sm".
+• Never use textSize:"lg" below level 1. Never randomly assign sizes — every size choice must reflect the node's position in the hierarchy.
+
 COMPREHENSIVENESS — mandatory:
 • A process/flow diagram needs at LEAST 10–15 elements.
 • Cover: every actor, every step, every decision branch (with Yes/No labels),
