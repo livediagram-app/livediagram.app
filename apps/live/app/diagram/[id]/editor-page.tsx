@@ -2789,6 +2789,7 @@ export default function LivePage() {
     commit,
     markCheckpoint,
     autoRebindArrowsRef,
+    isPinchingRef,
   });
 
   // Copy / paste (in-app element clipboard + OS-clipboard image

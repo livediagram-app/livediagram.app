@@ -101,6 +101,10 @@ type EditorDragDeps = {
   // mid-drag toggle takes effect on the next pointermove without
   // re-attaching listeners.
   autoRebindArrowsRef: React.RefObject<boolean>;
+  // Set to true while a 2-finger pinch is active. The move handler
+  // checks this and cancels any in-flight drag so a pinch-to-zoom
+  // gesture that starts on an element doesn't also move it.
+  isPinchingRef?: React.RefObject<boolean>;
 };
 
 type EditorDragApi = {
@@ -311,7 +315,16 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // active-tab swap) is reflected without re-attaching.
   useEffect(() => {
     if (!drag) return;
+    // Cancel the drag immediately when a second touch finger lands — that
+    // signals a pinch gesture, not a solo drag.
+    const onSecondTouch = (e: PointerEvent) => {
+      if (e.pointerType === 'touch' && !e.isPrimary) setDrag(null);
+    };
     const onMove = (e: PointerEvent) => {
+      if (depsRef.current.isPinchingRef?.current) {
+        setDrag(null);
+        return;
+      }
       const { activeTab, zoomRef, tick } = depsRef.current;
       // Screen-pixel delta into canvas-coord delta (invert the
       // current zoom).
@@ -550,9 +563,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const onUp = () => setDrag(null);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointerdown', onSecondTouch);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointerdown', onSecondTouch);
     };
   }, [drag]);
 
