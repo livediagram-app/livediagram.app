@@ -2848,6 +2848,13 @@ export default function LivePage() {
         ungroupSelected();
       }
     },
+    onToggleLock: () => {
+      if (multiSelectedIds.size > 0) {
+        toggleLockMultiSelected();
+      } else {
+        toggleLockSelected();
+      }
+    },
     onSelectAll: () => {
       const allIds = new Set(activeTab.elements.map((el) => el.id));
       if (allIds.size === 0) return;

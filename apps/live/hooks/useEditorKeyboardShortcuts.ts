@@ -90,6 +90,8 @@ type EditorKeyboardShortcutsDeps = {
   // currently-selected element's group. The callback handles both
   // cases (caller checks multi vs single selection state).
   onGroupOrUngroup: () => void;
+  // Cmd/Ctrl+L: toggle lock on the current selection (single or multi).
+  onToggleLock: () => void;
   // Cmd/Ctrl+A: select every element on the active tab at once.
   onSelectAll: () => void;
   // Space-tap on a single selected element drops into label edit
@@ -236,6 +238,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (lower === 'g') {
           e.preventDefault();
           live.onGroupOrUngroup();
+          return;
+        }
+        if (lower === 'l') {
+          e.preventDefault();
+          live.onToggleLock();
           return;
         }
         if (lower === 'a') {
