@@ -86,6 +86,12 @@ type EditorKeyboardShortcutsDeps = {
   // drag), but it lives next to them in the keyboard surface so the
   // user reaches for the same row of letters for every tool.
   onBeginFreehand: () => void;
+  // Cmd/Ctrl+G: group multi-selected boxed elements, or ungroup the
+  // currently-selected element's group. The callback handles both
+  // cases (caller checks multi vs single selection state).
+  onGroupOrUngroup: () => void;
+  // Cmd/Ctrl+A: select every element on the active tab at once.
+  onSelectAll: () => void;
   // Space-tap on a single selected element drops into label edit
   // mode (mirroring double-click on the element). Distinct from
   // Space-drag, which the canvas hook already binds to "temporary
@@ -105,6 +111,12 @@ type EditorKeyboardShortcutsDeps = {
   // for a non-labelable selection (image / freehand) so the tool
   // shortcuts still fire there.
   onTypeIntoSelected: (elementId: string, char: string) => boolean;
+  // Zoom controls. Allowed for view-role visitors (zooming doesn't
+  // mutate the diagram). Ctrl/Cmd + = / + zooms in, - zooms out,
+  // 0 resets to 100%. Mirrors the ZoomControls buttons.
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onZoomReset: () => void;
   // Per-device disable flag. When false, every shortcut effect
   // below short-circuits before attaching its listener. The
   // checkbox lives in the keyboard-shortcuts modal; the storage
@@ -187,6 +199,23 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // in-app element clipboard when no system content is present.
       if (mod) {
         if (inText) return;
+        // Zoom: allowed for view-role visitors — doesn't mutate the diagram.
+        // + / = zoom in (= is the unshifted + key), - zooms out, 0 resets.
+        if (key === '=' || key === '+') {
+          e.preventDefault();
+          live.onZoomIn();
+          return;
+        }
+        if (key === '-') {
+          e.preventDefault();
+          live.onZoomOut();
+          return;
+        }
+        if (key === '0') {
+          e.preventDefault();
+          live.onZoomReset();
+          return;
+        }
         if (live.isReadOnly) return;
         // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z.
         if (lower === 'y' || (lower === 'z' && e.shiftKey)) {
@@ -202,6 +231,16 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (lower === 'c') {
           e.preventDefault();
           live.copySelection();
+          return;
+        }
+        if (lower === 'g') {
+          e.preventDefault();
+          live.onGroupOrUngroup();
+          return;
+        }
+        if (lower === 'a') {
+          e.preventDefault();
+          live.onSelectAll();
           return;
         }
         return;

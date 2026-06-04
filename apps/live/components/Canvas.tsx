@@ -268,6 +268,7 @@ type CanvasProps = {
   viewportZoom: number;
   setViewportZoom: (zoom: number) => void;
   onFitToScreen: () => void;
+  isPinchingRef?: React.RefObject<boolean>;
   elements: Element[];
   selectedId: string | null;
   multiSelectedIds: Set<string>;
@@ -556,6 +557,7 @@ export function Canvas(props: CanvasProps) {
     tabBackgroundOpacity,
     tabPatternColor,
     mainRef,
+    isPinchingRef,
     viewportOffset,
     setViewportOffset,
     viewportZoom,
@@ -759,6 +761,7 @@ export function Canvas(props: CanvasProps) {
     wrapperRef,
     onDeselect,
     onSelectMarquee,
+    isPinchingRef,
   });
 
   const zoomStep = 0.1;

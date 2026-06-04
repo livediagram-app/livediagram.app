@@ -147,6 +147,7 @@ import { useTabActions } from '@/hooks/useTabActions';
 import { useTabCanvas } from '@/hooks/useTabCanvas';
 import { useEditorKeyboardShortcuts } from '@/hooks/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/useEditorViewport';
+import { useCanvasPinchZoom } from '@/hooks/useCanvasPinchZoom';
 import {
   nextFreeColor,
   randomColor,
@@ -1598,6 +1599,15 @@ export default function LivePage() {
     fitToScreen,
   } = useEditorViewport({ activeTab });
 
+  // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
+  const { isPinchingRef } = useCanvasPinchZoom({
+    canvasMainRef,
+    viewportZoom,
+    setViewportZoom,
+    viewportOffset,
+    setViewportOffset,
+  });
+
   // Fit-to-screen on every tab load. Fires when:
   //   - the page hydrates and lands on the first tab
   //   - the user switches to a different tab
@@ -2830,6 +2840,22 @@ export default function LivePage() {
     onTypeIntoSelected: typeIntoSelected,
     pendingDraw,
     onCancelDraw: cancelDrawShape,
+    onGroupOrUngroup: () => {
+      if (multiSelectedIds.size > 1) {
+        groupMultiSelected();
+      } else {
+        ungroupSelected();
+      }
+    },
+    onSelectAll: () => {
+      const allIds = new Set(activeTab.elements.map((el) => el.id));
+      if (allIds.size === 0) return;
+      setSelectedId(null);
+      setMultiSelectedIds(allIds);
+    },
+    onZoomIn: () => setViewportZoom((z) => Math.min(5, Math.round((z + 0.1) * 10) / 10)),
+    onZoomOut: () => setViewportZoom((z) => Math.max(0.1, Math.round((z - 0.1) * 10) / 10)),
+    onZoomReset: () => setViewportZoom(1),
     enabled: shortcutsEnabled,
   });
 
@@ -3005,6 +3031,7 @@ export default function LivePage() {
         tabBackgroundOpacity={activeTab.backgroundOpacity ?? 1}
         tabPatternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
         mainRef={canvasMainRef}
+        isPinchingRef={isPinchingRef}
         viewportZoom={viewportZoom}
         setViewportZoom={setViewportZoom}
         onFitToScreen={() => {

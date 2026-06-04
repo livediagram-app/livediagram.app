@@ -20,7 +20,7 @@
 // the hook registers, so `pasteFromClipboard` / `pasteImageFile` stay
 // internal.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { duplicateGroupedElements, type Element, type Tab } from '@livediagram/diagram';
 import { uploadImageFile } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
@@ -147,6 +147,13 @@ export function useClipboard(deps: ClipboardDeps) {
     }
   };
 
+  // Single mutable ref holding the latest paste functions. The paste
+  // event listener is only re-registered when isReadOnly/editingId
+  // changes, so without this the listener would call stale closures
+  // that see clipboard=null even after the user has copied elements.
+  const pasteRef = useRef({ pasteFromClipboard, pasteImageFile });
+  pasteRef.current = { pasteFromClipboard, pasteImageFile };
+
   // System-clipboard paste handler. Cmd/Ctrl+V triggers the browser's
   // native `paste` event, which carries whatever the OS clipboard
   // holds (text, files, images). When the user has an image on
@@ -196,7 +203,7 @@ export function useClipboard(deps: ClipboardDeps) {
         if (!chosen) chosen = files[0] ?? null;
         if (chosen) {
           e.preventDefault();
-          void pasteImageFile(chosen);
+          void pasteRef.current.pasteImageFile(chosen);
           return;
         }
       }
@@ -212,7 +219,7 @@ export function useClipboard(deps: ClipboardDeps) {
             const file = item.getAsFile();
             if (file) {
               e.preventDefault();
-              void pasteImageFile(file);
+              void pasteRef.current.pasteImageFile(file);
               return;
             }
           }
@@ -221,7 +228,7 @@ export function useClipboard(deps: ClipboardDeps) {
       // No image / file on the system clipboard: fall through to the
       // editor's own element clipboard (the Cmd+C copy buffer).
       e.preventDefault();
-      pasteFromClipboard();
+      pasteRef.current.pasteFromClipboard();
     };
     document.addEventListener('paste', onPaste);
     return () => document.removeEventListener('paste', onPaste);

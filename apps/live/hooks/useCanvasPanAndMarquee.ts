@@ -54,6 +54,9 @@ type Deps = {
   // the canvas-empty deselect path.
   onDeselect: () => void;
   onSelectMarquee: (hits: Set<string>) => void;
+  // Suppresses pointer-driven pan updates while a 2-finger pinch is
+  // active so the pan and pinch hooks don't fight over viewportOffset.
+  isPinchingRef?: RefObject<boolean>;
 };
 
 type Api = {
@@ -104,6 +107,8 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
   useEffect(() => {
     if (!pan) return;
     const onMove = (e: PointerEvent) => {
+      // Pinch zoom is active — let the pinch hook own viewportOffset.
+      if (deps.isPinchingRef?.current) return;
       // Pan offset is stored in canvas-coords; mouse delta is
       // screen-coords. Divide by zoom so a 100px screen drag
       // produces 100/zoom canvas-pixels of pan.
