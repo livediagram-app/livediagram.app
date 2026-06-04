@@ -56,7 +56,8 @@ import { useCanvasPanAndMarquee } from '@/hooks/useCanvasPanAndMarquee';
 import { getTheme } from '@/lib/themes';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import { isMobileViewportSync } from '@/lib/responsive';
-import { DockButton } from './MovablePanel';
+import { DockButton, MovablePanel } from './MovablePanel';
+import { AiPanelContent } from './AiPanel';
 // Lazy-load MultiSelectionToolbar: only mounts when the user has
 // drag-marquee'd two or more elements. Most sessions never trigger
 // it (single-element edits dominate), so deferring the 172-line
@@ -542,6 +543,18 @@ type CanvasProps = {
   onToggleLockSelected: () => void;
   onDeleteSelected: () => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
+  // AI Assistance panel (spec/25). Optional group so callers that
+  // haven't provisioned an OpenAI key simply omit the prop and the
+  // panel is never rendered.
+  aiPanel?: {
+    position: { x: number; y: number } | null;
+    onMove: (x: number, y: number) => void;
+    onReset: () => void;
+    onClose: () => void;
+    contextElements: Element[];
+    onApplyElements: (elements: Element[], mode: 'generate' | 'amend' | 'clean') => void;
+    ownerId: string;
+  };
 };
 
 export function Canvas(props: CanvasProps) {
@@ -719,6 +732,7 @@ export function Canvas(props: CanvasProps) {
     onToggleLockSelected,
     onDeleteSelected,
     onCanvasDoubleClick,
+    aiPanel,
   } = props;
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -2061,6 +2075,38 @@ export function Canvas(props: CanvasProps) {
             onRowClick={onOpenCommentsForElement}
           />
         </div>
+      ) : null}
+
+      {!welcomeOpen && aiPanel ? (
+        <MovablePanel
+          title="AI Assistant"
+          position={aiPanel.position}
+          defaultCorner="bottom-left"
+          width="w-72"
+          collapsible
+          onReset={aiPanel.onReset}
+          onMoveTo={aiPanel.onMove}
+          headerExtra={
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={aiPanel.onClose}
+              aria-label="Close AI panel"
+              className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
+                <path d="M1.5 1.5l7 7M1.5 8.5l7-7" />
+              </svg>
+            </button>
+          }
+        >
+          <AiPanelContent
+            contextElements={aiPanel.contextElements}
+            tabName={tabName}
+            ownerId={aiPanel.ownerId}
+            onApplyElements={aiPanel.onApplyElements}
+          />
+        </MovablePanel>
       ) : null}
 
       {welcomeOpen ? null : (

@@ -5,17 +5,17 @@ import type { Element } from '@livediagram/diagram';
 import { apiAiMutate, apiAiReview, type AiMode } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
+// Content rendered inside the MovablePanel wrapper in Canvas.tsx.
+// Owns all AI interaction state (mode, prompt, response); the panel
+// chrome (drag handle, collapse/minimize, reset position) is provided
+// by MovablePanel so the AI surface looks and behaves consistently
+// with every other floating panel in the editor.
+
 type Props = {
-  // Elements to send as context — either the current selection or
-  // the full active tab (computed by editor-page).
   contextElements: Element[];
   tabName: string;
   ownerId: string;
-  // Called after a successful mutating response so editor-page can
-  // apply the elements to the diagram via commit().
   onApplyElements: (elements: Element[], mode: 'generate' | 'amend' | 'clean') => void;
-  // Hides the panel for the session (does not touch the preference).
-  onClose: () => void;
 };
 
 const MODES: { id: AiMode; label: string }[] = [
@@ -34,23 +34,20 @@ const PLACEHOLDERS: Record<AiMode, string> = {
 
 type Status = 'idle' | 'loading' | 'done' | 'error';
 
-export function AiPanel({ contextElements, tabName, ownerId, onApplyElements, onClose }: Props) {
+export function AiPanelContent({ contextElements, tabName, ownerId, onApplyElements }: Props) {
   const [mode, setMode] = useState<AiMode>('generate');
   const [prompt, setPrompt] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [reviewText, setReviewText] = useState('');
   const [statusMsg, setStatusMsg] = useState('');
   const responseRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll response area as streaming text arrives.
   useEffect(() => {
     if (responseRef.current) {
       responseRef.current.scrollTop = responseRef.current.scrollHeight;
     }
   }, [reviewText]);
 
-  // Reset review text when mode changes.
   useEffect(() => {
     setReviewText('');
     setStatusMsg('');
@@ -60,8 +57,7 @@ export function AiPanel({ contextElements, tabName, ownerId, onApplyElements, on
   const isLoading = status === 'loading';
 
   const handleSend = async () => {
-    if (isLoading) return;
-    if (ownerId === 'self') return; // identity not yet resolved
+    if (isLoading || ownerId === 'self') return;
 
     setStatus('loading');
     setStatusMsg('');
@@ -95,12 +91,12 @@ export function AiPanel({ contextElements, tabName, ownerId, onApplyElements, on
         setPrompt('');
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      if (msg === 'off_topic') {
-        setStatusMsg("I can only help with diagrams. Please describe a diagram change.");
-      } else {
-        setStatusMsg(`Something went wrong. Please try again.`);
-      }
+      const msg = err instanceof Error ? err.message : '';
+      setStatusMsg(
+        msg === 'off_topic'
+          ? "I can only help with diagrams. Please describe a diagram change."
+          : 'Something went wrong. Please try again.',
+      );
       setStatus('error');
     }
   };
@@ -115,28 +111,9 @@ export function AiPanel({ contextElements, tabName, ownerId, onApplyElements, on
   const showResponse = status !== 'idle' || reviewText.length > 0;
 
   return (
-    <div
-      className="fixed bottom-16 left-4 z-30 flex w-72 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
-      onPointerDown={(e) => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-        <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100">
-          <SparkleIcon />
-          AI Assistant
-        </span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close AI panel"
-          className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-        >
-          <CloseIcon />
-        </button>
-      </div>
-
+    <div className="flex flex-col">
       {/* Mode tabs */}
-      <div className="flex gap-1 border-b border-slate-100 px-2 py-1.5 dark:border-slate-800">
+      <div className="flex flex-wrap gap-1 border-b border-slate-100 px-2 py-1.5 dark:border-slate-800">
         {MODES.map(({ id, label }) => (
           <button
             key={id}
@@ -182,7 +159,7 @@ export function AiPanel({ contextElements, tabName, ownerId, onApplyElements, on
               )}
               {statusMsg}
               {status === 'done' && (
-                <span className="ml-1 text-slate-400 dark:text-slate-500"> Press ⌘Z to undo.</span>
+                <span className="ml-1 text-slate-400 dark:text-slate-500">Press ⌘Z to undo.</span>
               )}
             </p>
           )}
@@ -190,18 +167,15 @@ export function AiPanel({ contextElements, tabName, ownerId, onApplyElements, on
       )}
 
       {/* Context hint */}
-      <div className="px-3 pb-0.5 pt-1 text-[10px] text-slate-400 dark:text-slate-600">
+      <p className="px-3 pb-0.5 pt-1 text-[10px] text-slate-400 dark:text-slate-600">
         {contextElements.length === 0
           ? 'No elements on this tab.'
-          : contextElements.length > 0
-            ? `Context: ${contextElements.length} element${contextElements.length !== 1 ? 's' : ''}`
-            : null}
-      </div>
+          : `Context: ${contextElements.length} element${contextElements.length !== 1 ? 's' : ''}`}
+      </p>
 
       {/* Prompt + send */}
       <div className="flex gap-2 px-2 pb-2 pt-1">
         <textarea
-          ref={textareaRef}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -224,22 +198,6 @@ export function AiPanel({ contextElements, tabName, ownerId, onApplyElements, on
   );
 }
 
-function SparkleIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden className="text-brand-500">
-      <path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
-      <path d="M3 3l8 8M3 11l8-8" />
-    </svg>
-  );
-}
-
 function SendIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -251,17 +209,7 @@ function SendIcon() {
 function Spinner({ small }: { small?: boolean }) {
   const size = small ? 12 : 14;
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      className="animate-spin"
-      aria-hidden
-    >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="animate-spin" aria-hidden>
       <path d="M12 2a10 10 0 0 1 10 10" />
     </svg>
   );

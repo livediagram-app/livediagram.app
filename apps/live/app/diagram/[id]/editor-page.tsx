@@ -112,9 +112,7 @@ const ShortcutsDialog = dynamic(() =>
 const SettingsDialog = dynamic(() =>
   import('@/components/SettingsDialog').then((m) => m.SettingsDialog),
 );
-// Lazy-load AiPanel (spec/25): only rendered when the AI capability
-// is enabled on the server and the user has opted in via Settings.
-const AiPanel = dynamic(() => import('@/components/AiPanel').then((m) => m.AiPanel));
+// AiPanel content is rendered inside Canvas via MovablePanel (spec/25).
 import { TabBar } from '@/components/TabBar';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
 import { useClipboard } from '@/hooks/useClipboard';
@@ -389,6 +387,7 @@ export default function LivePage() {
   // on; the close button hides it for the session without touching the
   // preference (user can re-show by toggling in Settings).
   const [aiPanelVisible, setAiPanelVisible] = useState(false);
+  const [aiPanelPosition, setAiPanelPosition] = useState<{ x: number; y: number } | null>(null);
   useEffect(() => {
     if (userPreferences.aiAssistanceEnabled) setAiPanelVisible(true);
   }, [userPreferences.aiAssistanceEnabled]);
@@ -3308,6 +3307,24 @@ export default function LivePage() {
         onToggleLockSelected={toggleLockSelected}
         onDeleteSelected={deleteSelected}
         onCanvasDoubleClick={handleCanvasDoubleClick}
+        aiPanel={
+          aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly
+            ? {
+                position: aiPanelPosition,
+                onMove: (x, y) => setAiPanelPosition({ x, y }),
+                onReset: () => setAiPanelPosition(null),
+                onClose: () => setAiPanelVisible(false),
+                contextElements:
+                  multiSelectedIds.size > 0
+                    ? activeTab.elements.filter((el) => multiSelectedIds.has(el.id))
+                    : selectedId !== null
+                      ? activeTab.elements.filter((el) => el.id === selectedId)
+                      : activeTab.elements,
+                onApplyElements: applyAiElements,
+                ownerId: selfParticipant.id,
+              }
+            : undefined
+        }
       />
       {anyWelcomeOpen ? null : (
         <TabBar
@@ -3392,21 +3409,6 @@ export default function LivePage() {
           }}
           onClose={() => setSettingsOpen(false)}
           aiCapable={aiCapable}
-        />
-      ) : null}
-      {aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly ? (
-        <AiPanel
-          contextElements={
-            multiSelectedIds.size > 0
-              ? activeTab.elements.filter((el) => multiSelectedIds.has(el.id))
-              : selectedId !== null
-                ? activeTab.elements.filter((el) => el.id === selectedId)
-                : activeTab.elements
-          }
-          tabName={activeTab.name}
-          ownerId={selfParticipant.id}
-          onApplyElements={applyAiElements}
-          onClose={() => setAiPanelVisible(false)}
         />
       ) : null}
       {commentThreadOpenId !== null

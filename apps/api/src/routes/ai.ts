@@ -26,7 +26,7 @@ sticky: {id,type:"sticky",x,y,width,height,label?,fillColor?,textColor?}
 arrow: {id,type:"arrow",from:Endpoint,to:Endpoint,label?,strokeColor?,arrowStyle?:"straight"|"curved"|"angled",arrowEnds?:"from"|"to"|"both"|"none",strokeStyle?:"solid"|"dashed"|"dotted"}
 Endpoint: {kind:"free",x,y} OR {kind:"pinned",elementId:string,anchor:"n"|"s"|"e"|"w"|"ne"|"nw"|"se"|"sw"}
 
-RULES: IDs must be unique strings (prefix "ai-" + short random hex). Colors: hex #rrggbb only. Positions: 0–3000. Do NOT output image or freehand elements.
+RULES: IDs must be unique strings (prefix "ai-" + short random hex). Colors: hex #rrggbb only. Positions: 0–3000. Do NOT output image or freehand elements. Default to "square" for generic boxes/nodes unless there is a specific semantic reason to use another shape (e.g. "diamond" for decisions, "circle" for start/end states, "actor" only for UML actors, "cylinder" only for databases).
 `.trim();
 
 // Security guard prepended to every system prompt. Instructs the model
