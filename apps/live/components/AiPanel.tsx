@@ -228,10 +228,10 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
           className="max-h-64 min-h-[4rem] overflow-y-auto px-3 py-2 text-[12px] leading-relaxed"
         >
           {mode === 'review' || mode === 'ask' ? (
-            <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-              {reviewText}
+            <div className="text-slate-700 dark:text-slate-300">
+              <MarkdownText text={reviewText} />
               {status === 'loading' && <BlinkCursor />}
-            </p>
+            </div>
           ) : status === 'loading' ? (
             <p className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
               <Spinner />
@@ -302,6 +302,81 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
       </div>
     </div>
   );
+}
+
+// ── Markdown renderer ────────────────────────────────────────────────
+// Handles the subset the AI actually produces: **bold**, *italic*,
+// - bullet lists, 1. numbered lists, and paragraph breaks.
+
+function inlineFormat(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  // Split on **bold** and *italic* spans.
+  const re = /(\*\*(.+?)\*\*|\*(.+?)\*)/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+  while ((match = re.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index));
+    if (match[0].startsWith('**')) {
+      parts.push(<strong key={key++}>{match[2]}</strong>);
+    } else {
+      parts.push(<em key={key++}>{match[3]}</em>);
+    }
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
+
+function MarkdownText({ text }: { text: string }) {
+  if (!text) return null;
+  const lines = text.split('\n');
+  const nodes: React.ReactNode[] = [];
+  let listItems: React.ReactNode[] = [];
+  let listType: 'ul' | 'ol' | null = null;
+  let key = 0;
+
+  const flushList = () => {
+    if (listItems.length === 0) return;
+    const Tag = listType === 'ol' ? 'ol' : 'ul';
+    nodes.push(
+      <Tag key={key++} className={listType === 'ol' ? 'ml-4 list-decimal' : 'ml-4 list-disc'}>
+        {listItems}
+      </Tag>
+    );
+    listItems = [];
+    listType = null;
+  };
+
+  for (const line of lines) {
+    const ulMatch = line.match(/^[-*] (.+)/);
+    const olMatch = line.match(/^\d+\. (.+)/);
+    const h1Match = line.match(/^### (.+)/);
+    const h2Match = line.match(/^## (.+)/);
+    const h3Match = line.match(/^# (.+)/);
+
+    if (ulMatch) {
+      if (listType === 'ol') flushList();
+      listType = 'ul';
+      listItems.push(<li key={key++}>{inlineFormat(ulMatch[1]!)}</li>);
+    } else if (olMatch) {
+      if (listType === 'ul') flushList();
+      listType = 'ol';
+      listItems.push(<li key={key++}>{inlineFormat(olMatch[1]!)}</li>);
+    } else {
+      flushList();
+      if (h1Match || h2Match || h3Match) {
+        const content = (h1Match ?? h2Match ?? h3Match)![1]!;
+        nodes.push(<p key={key++} className="font-semibold mt-1">{inlineFormat(content)}</p>);
+      } else if (line.trim() === '') {
+        // blank line — paragraph gap handled by spacing on sibling <p>
+      } else {
+        nodes.push(<p key={key++} className="mt-1 first:mt-0">{inlineFormat(line)}</p>);
+      }
+    }
+  }
+  flushList();
+  return <>{nodes}</>;
 }
 
 // ── Icons ────────────────────────────────────────────────────────────
