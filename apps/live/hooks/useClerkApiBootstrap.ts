@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth, useUser } from '@clerk/react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { apiMigrateGuestData, setTokenProvider } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { clearGuestSelfId, getGuestSelfId } from '@/lib/local-identity';
@@ -56,8 +56,25 @@ type BootstrapResult = {
 };
 
 function useClerkApiBootstrapEnabled(): BootstrapResult {
-  const { getToken, isSignedIn, isLoaded: authLoaded, userId: clerkUserId } = useAuth();
+  const { getToken, isSignedIn, isLoaded: clerkLoaded, userId: clerkUserId } = useAuth();
   const { user } = useUser();
+
+  // If Clerk hasn't reported its state within 5 s, treat the session as
+  // guest rather than hanging the canvas indefinitely. Corporate proxies
+  // (e.g. Zscaler) sometimes hold connections to auth subdomains open
+  // for tens of seconds before failing, which blocks rendering. When the
+  // timer fires isSignedIn is still undefined so the token provider stays
+  // null and the guest X-Owner-Id path is used. If Clerk eventually loads
+  // after the timeout, isSignedIn updates and the token provider effect
+  // below re-runs, switching subsequent API calls to the JWT path.
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    if (clerkLoaded) return;
+    const id = window.setTimeout(() => setTimedOut(true), 5000);
+    return () => window.clearTimeout(id);
+  }, [clerkLoaded]);
+  const authLoaded = clerkLoaded || timedOut;
+
   // First+Last takes precedence so we always present the form the
   // user picked at sign-up. Falls back to fullName (covers OAuth
   // flows where Clerk parses the names differently) and finally the
