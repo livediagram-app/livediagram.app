@@ -1,4 +1,7 @@
 import type {
+  AiMode,
+  AiRequest,
+  CapabilitiesResponse,
   ChangeLogEntry,
   ChangeLogKind,
   Diagram,
@@ -13,7 +16,7 @@ import type {
   TabRecord,
   TabSummary,
 } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/diagram';
+import type { Element, Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from './dedupe';
 import type { Participant } from './identity';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
@@ -1071,3 +1074,81 @@ export async function apiFetchImageBlobUrl(
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }
+
+// ---------------------------------------------------------------------
+// AI Assistance (spec/25)
+// ---------------------------------------------------------------------
+
+// Fetch server capabilities once at editor mount. Returns
+// { aiEnabled: false } on any network error so callers can fail-closed.
+export async function apiGetCapabilities(): Promise<CapabilitiesResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/capabilities`);
+    if (!res.ok) return { aiEnabled: false };
+    return (await res.json()) as CapabilitiesResponse;
+  } catch {
+    return { aiEnabled: false };
+  }
+}
+
+// POST /api/ai for mutating modes (generate / amend / clean).
+// Returns the elements array from the response. Throws on non-2xx or
+// if the model flagged the request as off-topic (422).
+export async function apiAiMutate(
+  ownerId: string,
+  payload: AiRequest,
+): Promise<Element[]> {
+  const res = await fetch(`${API_BASE}/ai`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId, { body: true }),
+    body: JSON.stringify(payload),
+  });
+  if (res.status === 422) throw new Error('off_topic');
+  if (!res.ok) throw new Error(`ai request failed: ${res.status}`);
+  const data = (await res.json()) as { elements: Element[] };
+  return data.elements ?? [];
+}
+
+// POST /api/ai for review mode. Reads the OpenAI SSE stream and calls
+// onChunk with each incremental text fragment. Resolves when the stream
+// ends; rejects on network error or non-2xx.
+export async function apiAiReview(
+  ownerId: string,
+  payload: AiRequest,
+  onChunk: (text: string) => void,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/ai`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId, { body: true }),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`ai review failed: ${res.status}`);
+  const reader = res.body?.getReader();
+  if (!reader) return;
+  const decoder = new TextDecoder();
+  let buf = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop() ?? '';
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+      if (data === '[DONE]') return;
+      try {
+        const parsed = JSON.parse(data) as {
+          choices?: Array<{ delta?: { content?: string } }>;
+        };
+        const text = parsed.choices?.[0]?.delta?.content;
+        if (text) onChunk(text);
+      } catch {
+        // Malformed chunk — skip.
+      }
+    }
+  }
+}
+
+// Re-export AiMode so callers don't need a second import.
+export type { AiMode };

@@ -112,6 +112,9 @@ const ShortcutsDialog = dynamic(() =>
 const SettingsDialog = dynamic(() =>
   import('@/components/SettingsDialog').then((m) => m.SettingsDialog),
 );
+// Lazy-load AiPanel (spec/25): only rendered when the AI capability
+// is enabled on the server and the user has opted in via Settings.
+const AiPanel = dynamic(() => import('@/components/AiPanel').then((m) => m.AiPanel));
 import { TabBar } from '@/components/TabBar';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
 import { useClipboard } from '@/hooks/useClipboard';
@@ -148,6 +151,7 @@ import { useTabCanvas } from '@/hooks/useTabCanvas';
 import { useEditorKeyboardShortcuts } from '@/hooks/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/useEditorViewport';
 import { useCanvasPinchZoom } from '@/hooks/useCanvasPinchZoom';
+import { useCapabilities } from '@/hooks/useCapabilities';
 import {
   nextFreeColor,
   randomColor,
@@ -381,6 +385,13 @@ export default function LivePage() {
   // diagram-scoped anymore) and mutated through the SettingsDialog.
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({});
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // AI panel session visibility. Starts visible when the preference is
+  // on; the close button hides it for the session without touching the
+  // preference (user can re-show by toggling in Settings).
+  const [aiPanelVisible, setAiPanelVisible] = useState(false);
+  useEffect(() => {
+    if (userPreferences.aiAssistanceEnabled) setAiPanelVisible(true);
+  }, [userPreferences.aiAssistanceEnabled]);
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults
   // to true (auto-rebind on) so a fresh session keeps today's UX.
@@ -1599,6 +1610,10 @@ export default function LivePage() {
     fitToScreen,
   } = useEditorViewport({ activeTab });
 
+  // Server capabilities (spec/25). Fetched once at mount; determines
+  // whether the AI panel option is shown in Settings and rendered.
+  const { aiEnabled: aiCapable } = useCapabilities();
+
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   const { isPinchingRef } = useCanvasPinchZoom({
     canvasMainRef,
@@ -1849,6 +1864,19 @@ export default function LivePage() {
     const after = mapElements(before);
     commitTabs((ts) => patchTab(ts, activeId, { elements: after }));
     emitChange(activeId, before, after);
+  };
+
+  // Apply AI-returned elements as a single undo block (spec/25).
+  // Generate: append all new elements. Amend / clean: replace matched
+  // IDs in place, append any genuinely new IDs from the AI.
+  const applyAiElements = (elements: Element[], mode: 'generate' | 'amend' | 'clean') => {
+    commit((els) => {
+      if (mode === 'generate') return [...els, ...elements];
+      const byId = new Map(elements.map((e) => [e.id, e]));
+      const updated = els.map((el) => (byId.has(el.id) ? (byId.get(el.id) as Element) : el));
+      const appended = elements.filter((e) => !els.some((ex) => ex.id === e.id));
+      return [...updated, ...appended];
+    });
   };
 
   // Click handler for Activity rows (Revert has its own button that
@@ -3363,6 +3391,22 @@ export default function LivePage() {
             writeUserPreferences(next, selfParticipant?.id ?? null);
           }}
           onClose={() => setSettingsOpen(false)}
+          aiCapable={aiCapable}
+        />
+      ) : null}
+      {aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly ? (
+        <AiPanel
+          contextElements={
+            multiSelectedIds.size > 0
+              ? activeTab.elements.filter((el) => multiSelectedIds.has(el.id))
+              : selectedId !== null
+                ? activeTab.elements.filter((el) => el.id === selectedId)
+                : activeTab.elements
+          }
+          tabName={activeTab.name}
+          ownerId={selfParticipant.id}
+          onApplyElements={applyAiElements}
+          onClose={() => setAiPanelVisible(false)}
         />
       ) : null}
       {commentThreadOpenId !== null

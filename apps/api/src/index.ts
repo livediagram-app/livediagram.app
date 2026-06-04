@@ -3,6 +3,8 @@ import { deleteOldChangeLogEntries, deleteOldEvents } from './db';
 import { DiagramRoom } from './diagram-room';
 import { CORS_HEADERS, json, notFound, rateLimited } from './responses';
 import { handleAccount } from './routes/account';
+import { handleAi } from './routes/ai';
+import { handleCapabilities } from './routes/capabilities';
 import type { RouteContext } from './routes/context';
 import { handleDiagrams } from './routes/diagrams';
 import { handleEvents } from './routes/events';
@@ -76,6 +78,10 @@ export default {
     const ctx: RouteContext = { request, env, url, segments, clerkUserId, resolveOwner };
     try {
       switch (segments[1]) {
+        case 'capabilities':
+          return handleCapabilities(ctx);
+        case 'ai':
+          return await handleAi(ctx);
         case 'events':
           return await handleEvents(ctx);
         case 'telemetry':

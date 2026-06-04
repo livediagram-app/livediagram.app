@@ -50,6 +50,12 @@ export type UserPreferences = {
   // where the tool is). Missing / undefined / false === raw-
   // sketch mode, the historical default.
   recogniseShapes?: boolean;
+  // AI Assistance panel (spec/25). When `true`, the AI panel is
+  // rendered in the editor. Defaults to false (opt-in). Only
+  // surfaced in Settings when the api worker reports aiEnabled:true
+  // (i.e. OPENAI_API_KEY is configured). Missing / undefined / false
+  // === panel hidden.
+  aiAssistanceEnabled?: boolean;
 };
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';

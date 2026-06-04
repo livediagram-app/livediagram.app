@@ -319,6 +319,7 @@ export const TELEMETRY_CATEGORIES = [
   'UI',
   'Folder',
   'Session',
+  'AI',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -405,6 +406,35 @@ export type TelemetryCount = {
 export type TelemetryWindow = {
   total: number;
   rows: TelemetryCount[];
+};
+
+// ---------------------------------------------------------------------
+// AI Assistance (spec/25)
+// ---------------------------------------------------------------------
+
+export type AiMode = 'generate' | 'amend' | 'clean' | 'review';
+
+// Request body for POST /api/ai.
+export type AiRequest = {
+  mode: AiMode;
+  // Free-text instruction from the user (max 1 000 chars, enforced server-side).
+  prompt: string;
+  // Elements to act on — either the selected subset or the full active
+  // tab, computed client-side before the request is sent.
+  elements: unknown[];
+  // Name of the active tab, included in the system prompt for context.
+  tabName: string;
+};
+
+// Response body for mutating modes (generate / amend / clean).
+// Review mode returns text/event-stream instead.
+export type AiElementsResponse = {
+  elements: unknown[];
+};
+
+// Response body for GET /api/capabilities.
+export type CapabilitiesResponse = {
+  aiEnabled: boolean;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is

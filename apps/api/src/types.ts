@@ -56,4 +56,17 @@ export type Env = {
   // default, so OSS forks never ingest or serve analytics unless they
   // opt in.
   TELEMETRY_ENABLED?: string;
+  // OpenAI API key for the AI assistance feature (spec/25). When absent
+  // the feature is hidden entirely — GET /api/capabilities returns
+  // { aiEnabled: false } and POST /api/ai returns 503. Set via
+  // `wrangler secret put OPENAI_API_KEY` for production; drop into
+  // `apps/api/.dev.vars` for local dev (gitignored, never commit).
+  OPENAI_API_KEY?: string;
+  // Override the OpenAI model (optional). Defaults to gpt-4o-mini.
+  // Set in wrangler.toml [vars] if you want a different model.
+  OPENAI_MODEL?: string;
+  // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
+  // per IP so a single client can't exhaust the OpenAI budget.
+  // Optional: absent (self-host) falls through to "allow".
+  AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
 };

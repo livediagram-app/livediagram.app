@@ -90,6 +90,30 @@ new_classes = ["DiagramRoom"]
 [triggers]
 crons = ["0 3 * * *"]
 
+# Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
+# spec/25). Separate namespace so AI abuse never eats into diagram-write
+# or telemetry budgets. 20 requests / 60s per IP is generous for a
+# real user session while bounding runaway OpenAI spend. Absent binding
+# → helper allows, so self-host still works without this feature.
+[[unsafe.bindings]]
+name = "AI_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1003"
+simple = { limit = 20, period = 60 }
+
+# OPENAI_API_KEY and OPENAI_MODEL are provisioned out-of-band (spec/25):
+#
+#   - Local dev: drop `OPENAI_API_KEY=sk-...` into `apps/api/.dev.vars`
+#     (gitignored). `OPENAI_MODEL` can also go there to override the
+#     default (gpt-4o-mini).
+#   - Production: `wrangler secret put OPENAI_API_KEY`.
+#     `OPENAI_MODEL` can be set as a plain [vars] entry if you want to
+#     override the default in production.
+#
+# When OPENAI_API_KEY is absent the feature is entirely hidden:
+# GET /api/capabilities returns { aiEnabled: false } and POST /api/ai
+# returns 503. No UI surface appears in the live app.
+
 # CLERK_JWKS_URL is provisioned out-of-band so the value never lands
 # in the public repo (spec/06):
 #

@@ -18,14 +18,19 @@ type SettingsDialogProps = {
   settings: UserPreferences;
   onChange: (next: UserPreferences) => void;
   onClose: () => void;
+  // When true, the AI assistance toggle row is shown. Controlled by
+  // the server capabilities response so operators without an OpenAI
+  // key never see the option.
+  aiCapable?: boolean;
 };
 
-export function SettingsDialog({ settings, onChange, onClose }: SettingsDialogProps) {
+export function SettingsDialog({ settings, onChange, onClose, aiCapable }: SettingsDialogProps) {
   useEscape(onClose);
 
   const autoRebind = settings.autoRebindArrows !== false;
   const telemetryOn = settings.telemetryEnabled !== false;
   const drawToAdd = settings.drawToAdd === true;
+  const aiEnabled = settings.aiAssistanceEnabled === true;
 
   return (
     <Portal>
@@ -89,6 +94,17 @@ export function SettingsDialog({ settings, onChange, onClose }: SettingsDialogPr
                 onChange({ ...settings, drawToAdd: v });
               }}
             />
+            {aiCapable && (
+              <ToggleRow
+                label="AI Assistant"
+                description="Shows an AI panel in the bottom-left of the editor. Use it to generate new elements, amend or clean existing ones, or get a written review of your diagram. Off by default."
+                checked={aiEnabled}
+                onChange={(v) => {
+                  track('AI', 'Toggled', v ? 'AiOn' : 'AiOff');
+                  onChange({ ...settings, aiAssistanceEnabled: v });
+                }}
+              />
+            )}
           </div>
           <footer className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
