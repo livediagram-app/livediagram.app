@@ -90,6 +90,17 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
     setProgressCount(0);
   }, [mode]);
 
+  // Clear all state including history when the active tab changes — the
+  // previous tab's conversation is irrelevant to the new diagram.
+  useEffect(() => {
+    setReviewText('');
+    setStatusMsg('');
+    setSummary('');
+    setStatus('idle');
+    setProgressCount(0);
+    setHistory([]);
+  }, [tabName]);
+
   const isLoading = status === 'loading';
 
   const handleSend = async (overridePrompt?: string) => {
