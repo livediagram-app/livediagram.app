@@ -238,22 +238,22 @@ function buildSystemPrompt(
 
   switch (mode) {
     case 'generate': {
-      // Tell the model exactly where free space starts so it doesn't
-      // collide with or interleave with existing content.
       const placementRule = bbox
-        ? `PLACEMENT: Existing content occupies up to x≈${bbox.x2}, y≈${bbox.y2}. Start your new elements at y≥${bbox.y2 + 120} (below existing) or x≥${bbox.x2 + 120} (to the right), whichever suits the diagram type. Do NOT place elements on top of or interspersed with the existing diagram.`
+        ? `PLACEMENT: Existing content occupies up to x≈${bbox.x2}, y≈${bbox.y2}.`
         : `PLACEMENT: Canvas is empty — start elements at x:100, y:80.`;
       return (
         base +
         placementRule +
-        `\n\nTask: Generate new elements described by the user's prompt as a COMPLETE, SELF-CONTAINED diagram unit. Return ONLY the new elements (fresh IDs). If the request describes a full diagram type (mind map, flowchart, org chart, etc.), produce the entire structure as a standalone unit in the placement zone above — do not split it across existing and new content.`
+        `\n\nTask: Either add new elements OR modify existing ones — whichever the user's request calls for. You may do both in the same response.
+
+RULES:
+• If the request targets existing elements (rename, reconnect, restructure, change shape, etc.): return those elements with their ORIGINAL IDs and your modifications applied.
+• If the request adds new content: return fresh IDs and position new elements at y≥${bbox ? bbox.y2 + 120 : 80} (below existing) or x≥${bbox ? bbox.x2 + 120 : 100} (to the right).
+• If the request is for a COMPLETE new diagram (mind map, flowchart, org chart, etc.) on a canvas that already has content: generate it as a standalone unit in the placement zone — do not interleave with existing elements.
+• Return ONLY the elements that are new or changed. Do not return unchanged elements.
+• Return: {"elements":[...new and/or changed...],"summary":"..."}`
       );
     }
-    case 'amend':
-      return (
-        base +
-        `Task: Modify the diagram per the user's request. Return ONLY the elements that changed or are new — not every unchanged element. For changed elements preserve their original IDs. For new elements use fresh IDs. Return: {"elements":[...changed and new only...],"summary":"..."}`
-      );
     case 'clean':
       return (
         base +
@@ -294,7 +294,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
 
   const { mode, prompt, elements, tabName, focusIds = [], history = [] } = body;
 
-  if (!mode || !['generate', 'amend', 'clean', 'review', 'ask'].includes(mode))
+  if (!mode || !['generate', 'clean', 'review', 'ask'].includes(mode))
     return badRequest('invalid mode');
   if (typeof prompt !== 'string') return badRequest('prompt must be a string');
   if (prompt.length > MAX_PROMPT_CHARS) return badRequest('prompt too long');

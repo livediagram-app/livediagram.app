@@ -553,7 +553,7 @@ type CanvasProps = {
     onClose: () => void;
     contextElements: Element[];
     focusIds: string[];
-    onApplyElements: (elements: Element[], mode: 'generate' | 'amend' | 'clean') => void;
+    onApplyElements: (elements: Element[], mode: 'generate' | 'clean') => void;
     ownerId: string;
   };
 };

@@ -11,7 +11,7 @@ type Props = {
   focusIds: string[];           // selected element IDs (empty = whole tab)
   tabName: string;
   ownerId: string;
-  onApplyElements: (elements: Element[], mode: 'generate' | 'amend' | 'clean') => void;
+  onApplyElements: (elements: Element[], mode: 'generate' | 'clean') => void;
 };
 
 type ModeConfig = {
@@ -29,13 +29,6 @@ const MODES: ModeConfig[] = [
     tooltip: 'Add new elements to the diagram based on your prompt.',
     icon: <GenerateIcon />,
     suggestions: ['Login flow', 'Approval process', 'System architecture', 'Org chart', 'User journey'],
-  },
-  {
-    id: 'amend',
-    label: 'Amend',
-    tooltip: 'Modify existing elements based on your prompt.',
-    icon: <AmendIcon />,
-    suggestions: ['Add error states', 'Add a decision point', 'Split this step in two', 'Add notifications'],
   },
   {
     id: 'clean',
@@ -61,8 +54,7 @@ const MODES: ModeConfig[] = [
 ];
 
 const PLACEHOLDERS: Record<AiMode, string> = {
-  generate: 'Describe what to add… (⌘↵ to send)',
-  amend: 'Describe the changes… (⌘↵ to send)',
+  generate: 'Describe what to add or change… (⌘↵ to send)',
   clean: 'Any specific instructions, or leave blank…',
   review: 'Any specific focus, or leave blank…',
   ask: 'Ask a question about the diagram…',
@@ -153,8 +145,8 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
                 userTurn,
                 { role: 'assistant', content: `Applied changes (${elements.length} elements)` },
               ]);
-              track('AI', 'Used', mode === 'generate' ? 'Generate' : mode === 'amend' ? 'Amend' : 'Clean');
-              onApplyElements(elements, mode as 'generate' | 'amend' | 'clean');
+              track('AI', 'Used', mode === 'generate' ? 'Generate' : 'Clean');
+              onApplyElements(elements, mode as 'generate' | 'clean');
               setSummary(s);
               setPrompt('');
             }

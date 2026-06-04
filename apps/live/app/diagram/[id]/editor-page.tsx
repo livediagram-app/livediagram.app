@@ -1867,42 +1867,62 @@ export default function LivePage() {
   };
 
   // Apply AI-returned elements as a single undo block (spec/25).
-  // Generate: append new elements with ID deduplication so running
-  //   Generate multiple times never silently overwrites existing elements
-  //   (the AI reuses short IDs like "ai-001" across sessions).
-  // Amend / clean: replace matched IDs in place; append any new ones.
-  // Auto-align is applied to the full result so AI-generated positions
-  // are snapped to the 10px grid regardless of what the model produced.
-  const applyAiElements = (elements: Element[], mode: 'generate' | 'amend' | 'clean') => {
+  // Generate handles both modifications and additions in one pass:
+  //   - Elements whose ID matches an existing element → replace in place
+  //   - Elements with a new ID → append; deduplicate if the AI reused a
+  //     short ID (e.g. "ai-001") from a previous generation, remapping
+  //     arrow endpoints to keep connections intact.
+  // Clean always gets the full element list back so it replaces everything.
+  const applyAiElements = (elements: Element[], mode: 'generate' | 'clean') => {
     commit((existingEls) => {
-      if (mode === 'generate') {
-        const existingIds = new Set(existingEls.map((e) => e.id));
-        // Build an ID remap for any clash, then fix arrow endpoints.
-        const idMap = new Map<string, string>();
-        for (const el of elements) {
-          if (existingIds.has(el.id)) idMap.set(el.id, crypto.randomUUID());
+      const existingById = new Map(existingEls.map((e) => [e.id, e]));
+
+      // Partition: which returned elements modify existing ones vs add new.
+      const modifications = elements.filter((e) => existingById.has(e.id));
+      const additions = elements.filter((e) => !existingById.has(e.id));
+
+      // Deduplicate addition IDs that clash with each other or with
+      // existing elements (the AI reuses short IDs like "ai-001").
+      const allIds = new Set(existingEls.map((e) => e.id));
+      const idMap = new Map<string, string>();
+      for (const el of additions) {
+        if (allIds.has(el.id)) {
+          idMap.set(el.id, crypto.randomUUID());
+        } else {
+          allIds.add(el.id);
         }
-        const deduped: Element[] = elements.map((el) => {
-          const newId = idMap.get(el.id) ?? el.id;
-          if (el.type === 'arrow') {
-            const from =
-              el.from.kind === 'pinned' && idMap.has(el.from.elementId)
-                ? { ...el.from, elementId: idMap.get(el.from.elementId)! }
-                : el.from;
-            const to =
-              el.to.kind === 'pinned' && idMap.has(el.to.elementId)
-                ? { ...el.to, elementId: idMap.get(el.to.elementId)! }
-                : el.to;
-            return { ...el, id: newId, from, to };
-          }
-          return { ...el, id: newId };
-        });
-        return autoAlignElements([...existingEls, ...deduped]);
       }
-      const byId = new Map(elements.map((e) => [e.id, e]));
-      const updated = existingEls.map((el) => (byId.has(el.id) ? (byId.get(el.id) as Element) : el));
-      const appended = elements.filter((e) => !existingEls.some((ex) => ex.id === e.id));
-      return autoAlignElements([...updated, ...appended]);
+      const deduped: Element[] = additions.map((el) => {
+        const newId = idMap.get(el.id) ?? el.id;
+        if (el.type === 'arrow') {
+          const from =
+            el.from.kind === 'pinned' && idMap.has(el.from.elementId)
+              ? { ...el.from, elementId: idMap.get(el.from.elementId)! }
+              : el.from;
+          const to =
+            el.to.kind === 'pinned' && idMap.has(el.to.elementId)
+              ? { ...el.to, elementId: idMap.get(el.to.elementId)! }
+              : el.to;
+          return { ...el, id: newId, from, to };
+        }
+        return { ...el, id: newId };
+      });
+
+      if (mode === 'clean') {
+        // Clean returns ALL elements; replace the whole set.
+        const modById = new Map(modifications.map((e) => [e.id, e]));
+        return autoAlignElements([
+          ...existingEls.map((el) => (modById.has(el.id) ? (modById.get(el.id) as Element) : el)),
+          ...deduped,
+        ]);
+      }
+
+      // Generate: apply modifications in place, append new elements.
+      const modById = new Map(modifications.map((e) => [e.id, e]));
+      return autoAlignElements([
+        ...existingEls.map((el) => (modById.has(el.id) ? (modById.get(el.id) as Element) : el)),
+        ...deduped,
+      ]);
     });
   };
 
