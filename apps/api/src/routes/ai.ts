@@ -227,6 +227,7 @@ function buildSystemPrompt(
   tabName: string,
   focusIds: string[],
   bbox: { x2: number; y2: number } | null,
+  prompt: string,
 ): string {
   const tab = tabName.replace(/"/g, '');
   const focusClause =
@@ -254,11 +255,15 @@ RULES:
 • Return: {"elements":[...new and/or changed...],"summary":"..."}`
       );
     }
-    case 'clean':
+    case 'clean': {
+      const task = prompt.trim()
+        ? `Task: Apply ONLY what the user asked for — nothing else. Do not change sizes, positions, styles, borderRadius, or anything not mentioned in the request.`
+        : `Task: Clean up the diagram. Fix: label spelling/grammar, inconsistent sizes (normalise to match the dominant size), overlapping positions (add spacing), inconsistent borderRadius, and wrong textSize hierarchy.`;
       return (
         base +
-        `Task: Clean up the diagram. Fix: label spelling/grammar, inconsistent sizes (normalise to match the dominant size), overlapping positions (add spacing), inconsistent borderRadius, and wrong textSize hierarchy. Return ALL elements with improvements applied (same IDs). Return: {"elements":[...all...],"summary":"..."}`
+        `${task} Return ALL elements with improvements applied (same IDs). Return: {"elements":[...all...],"summary":"..."}`
       );
+    }
     case 'review':
       return `${SECURITY_GUARD}\n\nDiagram tab: "${tab}". Give concise, direct feedback in plain text. Cover: clarity, completeness, logical gaps, one or two concrete improvements. Maximum 2 short paragraphs. Do not output JSON.`;
     case 'ask':
@@ -310,6 +315,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
     typeof tabName === 'string' ? tabName : '',
     focusIds,
     bbox,
+    prompt,
   );
 
   const typeHint = !isTextMode ? diagramTypeHint(prompt) : '';

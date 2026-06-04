@@ -91,6 +91,11 @@ type ContextPanelProps = {
   // the panel a moment earlier. Optional so callers that don't need
   // imperative open can omit it.
   expandSignal?: number;
+  // Mobile dock control — forwarded to the inner MovablePanel.
+  mobileOpenOverride?: boolean;
+  mobileTopOverridePx?: number;
+  onMobileClose?: () => void;
+  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
 };
 
 // Right-hand inspector — shows either the Selected Element controls
@@ -110,6 +115,10 @@ export function ContextPanel({
   onSize,
   stackBelowY,
   expandSignal,
+  mobileOpenOverride,
+  mobileTopOverridePx,
+  onMobileClose,
+  mobileDockAnchor,
 }: ContextPanelProps) {
   // Accordion open state lives at the panel level so it survives the
   // SelectedElement <-> Tab swap whenever the user deselects or
@@ -124,7 +133,6 @@ export function ContextPanel({
     theme: false,
     canvas: false,
     cleanup: false,
-    assistant: false,
   });
   const tabOpen = tabAccordionsOpen ?? localTabOpen;
   const setTabOpen = setTabAccordionsOpen ?? setLocalTabOpen;
@@ -145,7 +153,7 @@ export function ContextPanel({
     if (showingSelected) {
       setSelectedAccordionsOpen(ALL_SELECTED_ACCORDIONS_CLOSED);
     } else {
-      setTabOpen({ theme: false, canvas: false, cleanup: false, assistant: false });
+      setTabOpen({ theme: false, canvas: false, cleanup: false });
     }
   }, [showingSelected, setTabOpen]);
 
@@ -179,6 +187,10 @@ export function ContextPanel({
       onSize={onSize}
       collapsible
       expandSignal={expandSignal}
+      mobileOpenOverride={mobileOpenOverride}
+      mobileTopOverridePx={mobileTopOverridePx}
+      onMobileClose={onMobileClose}
+      mobileDockAnchor={mobileDockAnchor}
     >
       {/* Wrapper ref scopes the idle-timer listeners to the panel
           body — the MovablePanel's header (drag handle) doesn't

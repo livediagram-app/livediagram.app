@@ -232,7 +232,6 @@ export function useClipboard(deps: ClipboardDeps) {
     };
     document.addEventListener('paste', onPaste);
     return () => document.removeEventListener('paste', onPaste);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReadOnly, editingId]);
 
   return { copySelection };

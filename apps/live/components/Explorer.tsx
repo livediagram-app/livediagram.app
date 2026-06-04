@@ -75,6 +75,11 @@ type ExplorerProps = {
   // banner-pins to the top of the viewport rather than the left
   // corner). Optional: desktop layout doesn't need it.
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
+  // Mobile dock control — forwarded to the inner MovablePanel.
+  mobileOpenOverride?: boolean;
+  mobileTopOverridePx?: number;
+  onMobileClose?: () => void;
+  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
 };
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
@@ -101,6 +106,10 @@ export function Explorer({
   onOpenFullExplorer,
   defaultRecentOpen = false,
   onSize,
+  mobileOpenOverride,
+  mobileTopOverridePx,
+  onMobileClose,
+  mobileDockAnchor,
 }: ExplorerProps) {
   // Mobile viewport ⇒ render nothing. Mobile users reach the
   // Explorer from the AuthControls "Explorer" menu item (spec/07)
@@ -293,6 +302,10 @@ export function Explorer({
       onReset={onReset}
       onMoveTo={onMoveTo}
       onSize={onSize}
+      mobileOpenOverride={mobileOpenOverride}
+      mobileTopOverridePx={mobileTopOverridePx}
+      onMobileClose={onMobileClose}
+      mobileDockAnchor={mobileDockAnchor}
       // Mobile auto-collapse fires on any tap outside the panel's
       // DOM. Ellipsis menus (PortalMenu, role="menu") and confirm
       // modals (ConfirmDialog, role="dialog") render via React

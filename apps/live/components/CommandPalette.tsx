@@ -131,18 +131,6 @@ export type TabSectionControls = {
   // True when the active tab has at least one boxed element. When
   // false the button is disabled, the action would be a no-op.
   canAutoAlign?: boolean;
-  // AI Assistance (spec/25). When present the Assistant accordion
-  // renders the AI panel inline instead of as a floating panel.
-  ai?: {
-    contextElements: import('@livediagram/diagram').Element[];
-    focusIds: string[];
-    ownerId: string;
-    tabName: string;
-    onApplyElements: (
-      elements: import('@livediagram/diagram').Element[],
-      mode: 'generate' | 'clean',
-    ) => void;
-  };
 };
 
 export type CanvasTool = 'pan' | 'select' | 'laser';
@@ -188,6 +176,10 @@ type CommandPaletteProps = {
   // Explorer banner so signed-out users can switch diagrams without
   // leaving the canvas). See MovablePanel for semantics.
   mobileTopOverridePx?: number;
+  // Mobile dock control — forwarded to the inner MovablePanel.
+  mobileOpenOverride?: boolean;
+  onMobileClose?: () => void;
+  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
 };
 
 export function CommandPalette({
@@ -205,6 +197,9 @@ export function CommandPalette({
   pendingDraw,
   onSize,
   mobileTopOverridePx,
+  mobileOpenOverride,
+  onMobileClose,
+  mobileDockAnchor,
 }: CommandPaletteProps) {
   const pendingShapeKind = pendingDraw && pendingDraw.type === 'shape' ? pendingDraw.kind : null;
   // The Selected Element / Current Tab sections moved out into the
@@ -235,6 +230,9 @@ export function CommandPalette({
       width="w-auto sm:w-64"
       onSize={onSize}
       mobileTopOverridePx={mobileTopOverridePx}
+      mobileOpenOverride={mobileOpenOverride}
+      onMobileClose={onMobileClose}
+      mobileDockAnchor={mobileDockAnchor}
       onReset={onReset}
       onMoveTo={onMoveTo}
       collapsible

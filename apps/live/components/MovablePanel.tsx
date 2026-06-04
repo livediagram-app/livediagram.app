@@ -107,6 +107,15 @@ type MovablePanelProps = {
   // so the panel still picks its viewport-driven default on first
   // render. Optional; callers that don't need imperative open omit it.
   expandSignal?: number;
+  // Mobile dock mode. When true: force the panel open and position it
+  // below the dock bar (using mobileTopOverridePx as the top offset).
+  // When false: render nothing on mobile so the dock button is the
+  // only affordance. When undefined: existing self-managed behaviour.
+  mobileOpenOverride?: boolean;
+  // Called when the user taps the collapse/minimize button while the
+  // panel is dock-controlled. The dock should deactivate this panel.
+  onMobileClose?: () => void;
+  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   children: ReactNode;
 };
 
@@ -134,6 +143,9 @@ export function MovablePanel({
   collapsible = false,
   defaultCollapsed = false,
   expandSignal,
+  mobileOpenOverride,
+  onMobileClose,
+  mobileDockAnchor,
   children,
 }: MovablePanelProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -228,10 +240,9 @@ export function MovablePanel({
       return;
     }
     // Tap-to-collapse on mobile, except while the parent has locked
-    // the panel open (rename input live, confirm modal in flight) —
-    // those flows need the body visible regardless of the user's
-    // tap location.
-    if (collapsible && e.pointerType === 'touch' && !lockOpen) {
+    // the panel open or the dock is controlling this panel (dock
+    // button is the collapse affordance in that case).
+    if (collapsible && e.pointerType === 'touch' && !lockOpen && mobileOpenOverride === undefined) {
       e.stopPropagation();
       setCollapsed(true);
       return;
@@ -246,6 +257,10 @@ export function MovablePanel({
     if (position === null) onMoveTo(startX, startY);
     setDrag({ startClientX: e.clientX, startClientY: e.clientY, startX, startY });
   };
+
+  const dockControlledOpen = isMobile && mobileOpenOverride === true;
+  // Dock-controlled on mobile: hide when not active, force open when active.
+  const effectiveCollapsed = dockControlledOpen ? false : collapsed;
 
   // Imperative open from the parent. Whenever `expandSignal` changes
   // (compared to the value cached in the ref) we reset the local
@@ -269,12 +284,16 @@ export function MovablePanel({
   // panel" hides the rename input the same tap is about to mount.
   useClickOutside(
     ref,
-    () => setCollapsed(true),
-    collapsible &&
-      !collapsed &&
-      !lockOpen &&
-      typeof window !== 'undefined' &&
-      !window.matchMedia?.(`(min-width: ${MOBILE_BREAKPOINT_PX}px)`).matches,
+    () => {
+      if (dockControlledOpen) {
+        onMobileClose?.();
+      } else {
+        setCollapsed(true);
+      }
+    },
+    isMobile &&
+      (dockControlledOpen ||
+        (collapsible && !effectiveCollapsed && !lockOpen && mobileOpenOverride === undefined)),
     outsideExceptSelector,
   );
 
@@ -291,44 +310,56 @@ export function MovablePanel({
   // panels. Desktop stays at 16 (gap-4) so the stacked panels keep
   // breathing room.
   const stackGapPx = typeof window !== 'undefined' && isMobileViewportSync() ? 4 : 16;
-  const style: React.CSSProperties = position
-    ? { left: position.x, top: position.y }
-    : useDynamicStack
-      ? // Vertical only: leave the horizontal pin to a responsive
-        // className below so the stacked panel can go full-width on
-        // mobile (inset-x-2) and stay pinned to the right edge on
-        // desktop (right-4).
-        { top: stackBelowY + stackGapPx }
-      : isMobile && mobileTopOverridePx !== undefined && defaultCorner === 'top-right'
-        ? // Mobile override: another panel (Explorer) is above this
-          // one, so start below it instead of at the default top-2.
-          { top: mobileTopOverridePx }
-        : {};
-  const cornerClass = position
+  const style: React.CSSProperties = dockControlledOpen
+    ? {}
+    : position
+      ? { left: position.x, top: position.y }
+      : useDynamicStack
+        ? { top: stackBelowY + stackGapPx }
+        : isMobile && mobileTopOverridePx !== undefined && defaultCorner === 'top-right'
+          ? { top: mobileTopOverridePx }
+          : {};
+  const cornerClass = dockControlledOpen
+    ? ''
+    : position
     ? ''
     : useDynamicStack
       ? 'inset-x-2 sm:left-auto sm:right-4'
       : defaultCorner === 'top-right'
-        ? // Mobile: pin to the top of the viewport with a small
-          // breathing-room margin on each side so a `w-auto sm:w-<size>`
-          // palette becomes a banner that doesn't kiss the screen
-          // edges. Desktop: original corner.
-          'inset-x-2 top-2 sm:inset-x-auto sm:right-4 sm:top-4'
+        ? 'inset-x-2 top-2 sm:inset-x-auto sm:right-4 sm:top-4'
         : defaultCorner === 'top-right-stacked'
-          ? // Same mobile-banner rule as `top-right` but using the
-            // static fallback top (15rem) instead of the dynamic
-            // stackBelowY (which isn't wired here).
-            'inset-x-2 top-[15rem] sm:inset-x-auto sm:right-4'
+          ? 'inset-x-2 top-[15rem] sm:inset-x-auto sm:right-4'
           : defaultCorner === 'top-banner'
-            ? // Full-width top banner. Mobile callers (Explorer)
-              // place this ABOVE the Palette / Editor stack so the
-              // diagram switcher is reachable on a phone.
-              'inset-x-2 top-2'
+            ? 'inset-x-2 top-2'
             : defaultCorner === 'bottom-left'
               ? 'bottom-4 left-4'
               : defaultCorner === 'bottom-right'
                 ? 'bottom-4 right-4'
                 : 'left-4 top-4';
+
+  if (isMobile && mobileOpenOverride === false) return null;
+
+  // Dock-controlled on mobile: render as a popover with arrow, no header.
+  if (dockControlledOpen) {
+    const anchor = mobileDockAnchor;
+    return (
+      <div
+        ref={ref}
+        onPointerDown={(e) => e.stopPropagation()}
+        onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+        style={anchor ? { top: anchor.top + 8, left: anchor.left } : { top: 50, right: 8 }}
+        className="pointer-events-auto absolute z-20 flex w-64 max-w-[calc(100vw-1rem)] animate-pop-in flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+      >
+        {anchor ? (
+          <div
+            style={{ left: anchor.arrowOffset - 7 }}
+            className="absolute -top-[7px] h-3.5 w-3.5 rotate-45 rounded-tl-sm border-l border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+          />
+        ) : null}
+        <div className="overflow-y-auto">{children}</div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -406,14 +437,14 @@ export function MovablePanel({
           <Tooltip
             title={
               collapsible
-                ? collapsed
+                ? effectiveCollapsed
                   ? `Expand ${title.toLowerCase()}`
                   : `Collapse ${title.toLowerCase()}`
                 : `Minimize ${title.toLowerCase()}`
             }
             description={
               collapsible
-                ? collapsed
+                ? effectiveCollapsed
                   ? 'Show the panel body.'
                   : 'Hide the panel body, keep the banner.'
                 : 'Collapse to a dock button.'
@@ -423,6 +454,10 @@ export function MovablePanel({
               type="button"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => {
+                if (dockControlledOpen) {
+                  onMobileClose?.();
+                  return;
+                }
                 if (collapsible) {
                   setCollapsed((v) => !v);
                   return;
@@ -431,14 +466,14 @@ export function MovablePanel({
               }}
               aria-label={
                 collapsible
-                  ? collapsed
+                  ? effectiveCollapsed
                     ? `Expand ${title.toLowerCase()}`
                     : `Collapse ${title.toLowerCase()}`
                   : `Minimize ${title.toLowerCase()}`
               }
               className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
-              {collapsible && collapsed ? (
+              {collapsible && effectiveCollapsed ? (
                 // Plus glyph: expand the body. Same 12 x 12 grid as
                 // the dash so the button slot doesn't visually
                 // jitter when the icon flips.
@@ -492,9 +527,9 @@ export function MovablePanel({
       <div
         className={
           'grid transition-[grid-template-rows] duration-200 ease-out ' +
-          (collapsible && collapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]')
+          (collapsible && effectiveCollapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]')
         }
-        aria-hidden={collapsible && collapsed ? true : undefined}
+        aria-hidden={collapsible && effectiveCollapsed ? true : undefined}
       >
         <div className="overflow-hidden">
           <div className="flex flex-col">{children}</div>

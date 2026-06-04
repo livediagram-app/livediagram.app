@@ -31,11 +31,11 @@ const MODES: ModeConfig[] = [
     suggestions: ['Login flow', 'Approval process', 'System architecture', 'Org chart', 'User journey'],
   },
   {
-    id: 'clean',
-    label: 'Clean',
-    tooltip: 'Fix typos, normalise layout, sizes and styles.',
-    icon: <CleanIcon />,
-    suggestions: ['Fix spelling', 'Align and space evenly', 'Normalise colors', 'Improve layout'],
+    id: 'ask',
+    label: 'Ask',
+    tooltip: 'Ask a question about the selected elements or whole tab.',
+    icon: <AskIcon />,
+    suggestions: ['How many steps are there?', 'What are the decision points?', 'Summarise this diagram', 'What could go wrong?'],
   },
   {
     id: 'review',
@@ -45,11 +45,11 @@ const MODES: ModeConfig[] = [
     suggestions: ['Is this clear?', 'What\'s missing?', 'Check the flow logic', 'How can I improve this?'],
   },
   {
-    id: 'ask',
-    label: 'Ask',
-    tooltip: 'Ask a question about the selected elements or whole tab.',
-    icon: <AskIcon />,
-    suggestions: ['How many steps are there?', 'What are the decision points?', 'Summarise this diagram', 'What could go wrong?'],
+    id: 'clean',
+    label: 'Clean',
+    tooltip: 'Fix typos, normalise layout, sizes and styles.',
+    icon: <CleanIcon />,
+    suggestions: ['Fix spelling', 'Align and space evenly', 'Normalise colors', 'Improve layout'],
   },
 ];
 
@@ -386,14 +386,6 @@ function GenerateIcon() {
   return (
     <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
       <path d="M8 1l1.8 5H15l-4.2 3.1 1.6 5L8 11.2 3.6 14.1l1.6-5L1 6h5.2z" />
-    </svg>
-  );
-}
-
-function AmendIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M11 2l3 3-9 9H2v-3L11 2z" />
     </svg>
   );
 }

@@ -57,6 +57,7 @@ import { getTheme } from '@/lib/themes';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { DockButton, MovablePanel } from './MovablePanel';
+import { AiPanelContent } from './AiPanel';
 // Lazy-load MultiSelectionToolbar: only mounts when the user has
 // drag-marquee'd two or more elements. Most sessions never trigger
 // it (single-element edits dominate), so deferring the 172-line
@@ -529,7 +530,15 @@ type CanvasProps = {
   // CommandPalette's Cleanup accordion + lib/auto-align.ts.
   onAutoAlign?: () => void;
   canAutoAlign?: boolean;
-  aiAssistant?: import('./CommandPalette').TabSectionControls['ai'];
+  aiPanel?: {
+    position: { x: number; y: number } | null;
+    onMove: (x: number, y: number) => void;
+    onReset: () => void;
+    contextElements: Element[];
+    focusIds: string[];
+    onApplyElements: (elements: Element[], mode: 'generate' | 'clean') => void;
+    ownerId: string;
+  };
   // Recent-images list for the Current Tab "Images" accordion (spec/19).
   // Forwarded through to TabSection unchanged.
   recentImages?: ImageSummary[];
@@ -720,7 +729,7 @@ export function Canvas(props: CanvasProps) {
     onToggleLockSelected,
     onDeleteSelected,
     onCanvasDoubleClick,
-    aiAssistant,
+    aiPanel,
   } = props;
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -749,6 +758,39 @@ export function Canvas(props: CanvasProps) {
   // Editor pane on first paint and slides when Editor expands /
   // collapses.
   const [contextBottomY, setContextBottomY] = useState<number>(0);
+  // Mobile dock: which panel (if any) is open. Compact button row
+  // replaces the 4 full-width collapse banners on mobile.
+  const [activeMobilePanel, setActiveMobilePanel] = useState<
+    'explorer' | 'palette' | 'editor' | 'ai' | null
+  >(null);
+  const dockButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [activeDockAnchor, setActiveDockAnchor] = useState<{
+    left: number;
+    top: number;
+    arrowOffset: number;
+  } | null>(null);
+  const POPOVER_WIDTH = 256;
+  const handleDockButtonClick = (id: 'explorer' | 'palette' | 'editor' | 'ai') => {
+    if (activeMobilePanel === id) {
+      setActiveMobilePanel(null);
+      setActiveDockAnchor(null);
+      return;
+    }
+    setActiveMobilePanel(id);
+    const btn = dockButtonRefs.current[id];
+    const canvas = mainRef && 'current' in mainRef ? mainRef.current : null;
+    if (btn && canvas) {
+      const btnRect = btn.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+      const centerX = btnRect.left + btnRect.width / 2 - canvasRect.left;
+      const bottomY = btnRect.bottom - canvasRect.top;
+      const clampedLeft = Math.max(
+        8,
+        Math.min(centerX - POPOVER_WIDTH / 2, canvasRect.width - POPOVER_WIDTH - 8),
+      );
+      setActiveDockAnchor({ left: clampedLeft, top: bottomY, arrowOffset: centerX - clampedLeft });
+    }
+  };
 
   // Pan + marquee + held-Space machinery lives in
   // useCanvasPanAndMarquee. The hook owns the pointerdown / move
@@ -1028,7 +1070,6 @@ export function Canvas(props: CanvasProps) {
     importError,
     onAutoAlign,
     canAutoAlign,
-    ai: aiAssistant,
     recentImages,
     imageOwnerId,
     imageDiagramId,
@@ -2011,6 +2052,64 @@ export function Canvas(props: CanvasProps) {
         />
       ) : null}
 
+      {/* Mobile dock — replaces the 4 stacked full-width collapse
+          banners with a single compact button row at top-right.
+          Hidden on sm: where panels render at their own corners. */}
+      {!welcomeOpen && (
+        <div
+          className="pointer-events-auto absolute top-2 right-2 z-20 flex items-stretch rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900 sm:hidden"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          {(
+            [
+              { id: 'explorer', label: 'Explorer', icon: (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                  <path d="M2 3.5C2 2.67 2.67 2 3.5 2h2.25l1.5 1.5H10.5c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5h-7C2.67 11.5 2 10.83 2 10V3.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                </svg>
+              )},
+              { id: 'palette', label: 'Palette', icon: (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                  <rect x="2" y="2" width="4" height="4" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
+                  <rect x="8" y="2" width="4" height="4" rx="2" stroke="currentColor" strokeWidth="1.2"/>
+                  <rect x="2" y="8" width="4" height="4" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
+                  <path d="M10 8v4M8 10h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+              )},
+              { id: 'editor', label: 'Editor', icon: (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                  <path d="M2 10.5V12h1.5l5-5-1.5-1.5-5 5zM10.8 3.7a1 1 0 0 0 0-1.4l-.1-.1a1 1 0 0 0-1.4 0L8 3.5 9.5 5l1.3-1.3z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                </svg>
+              )},
+              ...(!readOnly && aiPanel ? [{ id: 'ai' as const, label: 'AI', icon: (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                  <path d="M7 2v1.5M7 10.5V12M2 7h1.5M10.5 7H12M3.8 3.8l1 1M9.2 9.2l1 1M3.8 10.2l1-1M9.2 4.8l1-1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                  <circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.2"/>
+                </svg>
+              )}] : []),
+            ] as { id: 'explorer' | 'palette' | 'editor' | 'ai'; label: string; icon: React.ReactNode }[]
+          ).map((btn, i, arr) => (
+            <button
+              key={btn.id}
+              ref={(el) => { dockButtonRefs.current[btn.id] = el; }}
+              type="button"
+              onClick={() => handleDockButtonClick(btn.id)}
+              className={
+                'flex flex-1 flex-col items-center gap-0.5 px-2.5 py-1.5 text-[9px] font-semibold tracking-wide transition ' +
+                (i === 0 ? 'rounded-l-lg ' : '') +
+                (i === arr.length - 1 ? 'rounded-r-lg ' : '') +
+                (i > 0 ? 'border-l border-slate-200 dark:border-slate-800 ' : '') +
+                (activeMobilePanel === btn.id
+                  ? 'bg-brand-500 text-white'
+                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')
+              }
+            >
+              {btn.icon}
+              {btn.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Explorer is the one piece of chrome that stays visible during
           the welcome flow — the sign-up nudge is genuinely useful there
           and lives outside the diagram's controls. */}
@@ -2035,6 +2134,9 @@ export function Canvas(props: CanvasProps) {
         onDeleteFolder={onDeleteFolder}
         onMoveDiagramToFolder={onMoveDiagramToFolder}
         onSize={(size) => setExplorerBottomY(size.bottomY)}
+        mobileOpenOverride={activeMobilePanel === 'explorer' ? true : false}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        onMobileClose={() => { setActiveMobilePanel(null); setActiveDockAnchor(null); }}
       />
 
       {/* Activity panel — per-diagram audit log + Undo/Redo. Hidden
@@ -2066,6 +2168,29 @@ export function Canvas(props: CanvasProps) {
         </div>
       ) : null}
 
+      {!welcomeOpen && aiPanel ? (
+        <MovablePanel
+          title="AI Assistant"
+          position={aiPanel.position}
+          defaultCorner="top-right-stacked"
+          stackBelowY={contextBottomY}
+          width="w-auto sm:w-64"
+          collapsible
+          onReset={aiPanel.onReset}
+          onMoveTo={aiPanel.onMove}
+          mobileOpenOverride={activeMobilePanel === 'ai' ? true : false}
+          mobileDockAnchor={activeDockAnchor ?? undefined}
+          onMobileClose={() => { setActiveMobilePanel(null); setActiveDockAnchor(null); }}
+        >
+          <AiPanelContent
+            contextElements={aiPanel.contextElements}
+            focusIds={aiPanel.focusIds}
+            tabName={tabName}
+            ownerId={aiPanel.ownerId}
+            onApplyElements={aiPanel.onApplyElements}
+          />
+        </MovablePanel>
+      ) : null}
 
       {welcomeOpen ? null : (
         <ActivityPanel
@@ -2140,6 +2265,9 @@ export function Canvas(props: CanvasProps) {
           pendingDraw={pendingDraw}
           onSize={(size) => setPaletteBottomY(size.bottomY)}
           mobileTopOverridePx={explorerBottomY > 0 ? explorerBottomY + 4 : undefined}
+          mobileOpenOverride={activeMobilePanel === 'palette' ? true : false}
+          mobileDockAnchor={activeDockAnchor ?? undefined}
+          onMobileClose={() => { setActiveMobilePanel(null); setActiveDockAnchor(null); }}
         />
       )}
 
@@ -2154,22 +2282,13 @@ export function Canvas(props: CanvasProps) {
           expandSignal={editorExpandSignal}
           onMoveTo={onMoveContext}
           onReset={onResetContext}
-          // Palette's measured bottom edge (offsetTop + offsetHeight).
-          // ContextPanel adds another 16px gap via MovablePanel. When
-          // paletteBottomY is still 0 (first paint, before the
-          // observer fires) MovablePanel falls back to its legacy
-          // static top-[15rem] so the panel never lands at 0,0.
-          //
-          // Skipped entirely when the palette has been dragged to a
-          // custom position: the auto-stack only exists so the
-          // Editor follows the palette as the palette banner-grows
-          // or as its accordions open. Once the user manually moves
-          // the palette, the two panels are independent and the
-          // Editor stays at its own default / dragged position.
           stackBelowY={
             palettePosition !== null || paletteBottomY === 0 ? undefined : paletteBottomY
           }
           onSize={(size) => setContextBottomY(size.bottomY)}
+          mobileOpenOverride={activeMobilePanel === 'editor' ? true : false}
+          mobileDockAnchor={activeDockAnchor ?? undefined}
+          onMobileClose={() => { setActiveMobilePanel(null); setActiveDockAnchor(null); }}
         />
       )}
 

@@ -5,7 +5,6 @@ import { THEMES } from '@/lib/themes';
 import { AutoAlignIcon, ResetIcon } from './palette-icons';
 import { ShowMoreButton } from './ShowMoreButton';
 import { Tooltip } from './Tooltip';
-import { AiPanelContent } from './AiPanel';
 
 import type { TabSectionControls } from './CommandPalette';
 
@@ -13,7 +12,6 @@ export type TabAccordionState = {
   theme: boolean;
   canvas: boolean;
   cleanup: boolean;
-  assistant: boolean;
 };
 
 export function TabSection({
@@ -32,7 +30,6 @@ export function TabSection({
         theme: false,
         canvas: false,
         cleanup: false,
-        assistant: false,
       };
       if (prev[key]) return closed;
       return { ...closed, [key]: true };
@@ -172,46 +169,33 @@ export function TabSection({
           {tab.importError}
         </p>
       ) : null}
-      {(tab.onAutoAlign || tab.ai) ? (
-        <Accordion
-          title="Assistant"
-          open={tab.ai ? open.assistant : open.cleanup}
-          onToggle={() => tab.ai ? toggle('assistant') : toggle('cleanup')}
-        >
-          {tab.onAutoAlign && (
-            <div className="flex items-stretch gap-1.5 pb-2">
-              <Tooltip
-                title="Auto align"
-                description="Snap positions and sizes to the canvas grid."
-                block
+      {tab.onAutoAlign ? (
+        <Accordion title="Assistant" open={open.cleanup} onToggle={() => toggle('cleanup')}>
+          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+            Snap every element on this tab to the canvas grid so near-aligned shapes line up exactly
+            and minor dimension drift collapses. Undoable.
+          </p>
+          <div className="mt-1 flex items-stretch gap-1.5">
+            <Tooltip
+              title="Auto align"
+              description="Snap positions and sizes to the canvas grid."
+              block
+            >
+              <button
+                type="button"
+                onClick={tab.onAutoAlign}
+                disabled={!tab.canAutoAlign}
+                className={
+                  tab.canAutoAlign
+                    ? 'inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200'
+                    : 'inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] font-medium text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500'
+                }
               >
-                <button
-                  type="button"
-                  onClick={tab.onAutoAlign}
-                  disabled={!tab.canAutoAlign}
-                  className={
-                    tab.canAutoAlign
-                      ? 'inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200'
-                      : 'inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] font-medium text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500'
-                  }
-                >
-                  <AutoAlignIcon />
-                  Auto align
-                </button>
-              </Tooltip>
-            </div>
-          )}
-          {tab.ai && (
-            <div className="-mx-3">
-              <AiPanelContent
-                contextElements={tab.ai.contextElements}
-                focusIds={tab.ai.focusIds}
-                tabName={tab.ai.tabName}
-                ownerId={tab.ai.ownerId}
-                onApplyElements={tab.ai.onApplyElements}
-              />
-            </div>
-          )}
+                <AutoAlignIcon />
+                Auto align
+              </button>
+            </Tooltip>
+          </div>
         </Accordion>
       ) : null}
     </div>
