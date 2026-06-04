@@ -71,6 +71,7 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
   const [reviewText, setReviewText] = useState('');
   const [statusMsg, setStatusMsg] = useState('');
   const [progressCount, setProgressCount] = useState(0);
+  const [summary, setSummary] = useState('');
   const [history, setHistory] = useState<AiConversationTurn[]>([]);
   const responseRef = useRef<HTMLDivElement>(null);
 
@@ -84,6 +85,7 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
   useEffect(() => {
     setReviewText('');
     setStatusMsg('');
+    setSummary('');
     setStatus('idle');
     setProgressCount(0);
   }, [mode]);
@@ -97,6 +99,7 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
     setStatus('loading');
     setStatusMsg('');
     setReviewText('');
+    setSummary('');
     setProgressCount(0);
 
     const userTurn: AiConversationTurn = { role: 'user', content: finalPrompt || `(${mode})` };
@@ -115,10 +118,8 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
         {
           onTextChunk: (chunk) => setReviewText((t) => t + chunk),
           onProgress: (count) => setProgressCount(count),
-          onDone: ({ elements, reviewText: rt }) => {
-            const assistantContent = mode === 'review'
-              ? rt
-              : `Applied changes (${elements.length} elements)`;
+          onDone: ({ elements, reviewText: rt, summary: s }) => {
+            const assistantContent = mode === 'review' ? rt : `Applied changes (${elements.length} elements)`;
             setHistory((h) => [
               ...h.slice(-(MAX_HISTORY - 2)),
               userTurn,
@@ -128,11 +129,7 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
             if (mode !== 'review') {
               track('AI', 'Used', mode === 'generate' ? 'Generate' : mode === 'amend' ? 'Amend' : 'Clean');
               onApplyElements(elements, mode);
-              setStatusMsg(
-                mode === 'generate'
-                  ? `Added ${elements.length} element${elements.length !== 1 ? 's' : ''}.`
-                  : `Changes applied to ${elements.length} element${elements.length !== 1 ? 's' : ''}.`,
-              );
+              setSummary(s);
               setPrompt('');
             } else {
               track('AI', 'Used', 'Review');
@@ -191,26 +188,28 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
         ))}
       </div>
 
-      {/* Suggestions */}
-      <div className="flex flex-wrap gap-1 px-2 pt-1.5 pb-1">
-        {currentMode.suggestions.map((s) => (
-          <button
-            key={s}
-            type="button"
-            disabled={isLoading}
-            onClick={() => { setPrompt(s); void handleSend(s); }}
-            className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-brand-500/50 dark:hover:text-brand-400"
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+      {/* Suggestions — only for modes where quick-action shortcuts make sense */}
+      {mode !== 'generate' && currentMode.suggestions.length > 0 && (
+        <div className="flex flex-wrap gap-1 px-2 pt-1.5 pb-1">
+          {currentMode.suggestions.map((s) => (
+            <button
+              key={s}
+              type="button"
+              disabled={isLoading}
+              onClick={() => { setPrompt(s); void handleSend(s); }}
+              className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-brand-500/50 dark:hover:text-brand-400"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Response area */}
       {showResponse && (
         <div
           ref={responseRef}
-          className="max-h-48 min-h-[3rem] overflow-y-auto px-3 py-2 text-[12px] leading-relaxed"
+          className="max-h-64 min-h-[4rem] overflow-y-auto px-3 py-2 text-[12px] leading-relaxed"
         >
           {mode === 'review' ? (
             <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
@@ -220,32 +219,41 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
           ) : status === 'loading' ? (
             <p className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
               <Spinner />
-              {progressCount > 0 ? `Generating… ${progressCount} element${progressCount !== 1 ? 's' : ''} so far` : 'Thinking…'}
+              {progressCount > 0
+                ? `Generating… ${progressCount} element${progressCount !== 1 ? 's' : ''} so far`
+                : 'Thinking…'}
             </p>
           ) : (
-            <p className={status === 'error' ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-300'}>
-              {status === 'done' && <span className="mr-1 text-green-600 dark:text-green-400">✓</span>}
-              {statusMsg}
-              {status === 'done' && (
-                <span className="ml-1 text-slate-400 dark:text-slate-500">Press ⌘Z to undo.</span>
+            <div className="flex flex-col gap-1.5">
+              {status === 'error' ? (
+                <p className="text-red-600 dark:text-red-400">{statusMsg || 'Something went wrong.'}</p>
+              ) : (
+                <>
+                  {summary && (
+                    <p className="text-slate-600 dark:text-slate-300">{summary}</p>
+                  )}
+                  <p className="text-slate-400 dark:text-slate-500">
+                    Press ⌘Z to undo.
+                  </p>
+                </>
               )}
-            </p>
+            </div>
           )}
         </div>
       )}
 
       {/* History indicator */}
       {history.length > 0 && (
-        <div className="flex items-center justify-between px-3 pb-0.5 pt-0.5">
-          <span className="text-[10px] text-slate-400 dark:text-slate-600">
+        <div className="flex items-center justify-between gap-2 px-2 pb-1 pt-0.5">
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">
             {Math.floor(history.length / 2)} prior exchange{history.length > 2 ? 's' : ''} in context
           </span>
           <button
             type="button"
             onClick={() => setHistory([])}
-            className="text-[10px] text-slate-400 transition hover:text-slate-600 dark:text-slate-600 dark:hover:text-slate-400"
+            className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-500 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
           >
-            Clear
+            Clear context
           </button>
         </div>
       )}

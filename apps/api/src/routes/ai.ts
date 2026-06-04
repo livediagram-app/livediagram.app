@@ -7,7 +7,7 @@ const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const MAX_PROMPT_CHARS = 1000;
 const MAX_ELEMENTS = 200;
 const MAX_TOKENS_MUTATE = 8000;
-const MAX_TOKENS_REVIEW = 800;
+const MAX_TOKENS_REVIEW = 400;
 const MAX_HISTORY_TURNS = 6;
 
 // The exact ShapeKind values the diagram package supports.
@@ -57,10 +57,7 @@ Endpoint: {kind:"pinned", elementId:string, anchor:"n"|"s"|"e"|"w"|"ne"|"nw"|"se
 DESIGN RULES:
 • Default box: width:140 height:60. Large/important nodes: 180×70. Small detail nodes: 120×50.
 • Spacing: minimum 40px between shapes. Grid layout, left-to-right or top-to-bottom.
-• Colors: always give shapes a fillColor + matching darker strokeColor.
-  Blues: fill #e0e7ff stroke #6366f1 | Greens: fill #dcfce7 stroke #16a34a
-  Yellows: fill #fef9c3 stroke #ca8a04 | Reds: fill #fee2e2 stroke #dc2626
-  Purples: fill #f3e8ff stroke #9333ea | Grays: fill #f1f5f9 stroke #64748b
+• Do NOT set fillColor, strokeColor, or textColor — leave them unset so the diagram theme applies its own color scheme consistently.
 • Add borderRadius:"sm" to most shapes for a polished look.
 • Org-chart arrows: arrowEnds:"to" (directional hierarchy, no arrowhead at parent).
 • IDs: "ai-" + 8 random hex chars (e.g. "ai-3f8a2b1c"). Must be globally unique.
@@ -80,22 +77,26 @@ TEMPLATE STYLE GUIDE (follow these layout conventions):
 • Mind map: central large square hub, radiating branches of squares connected by straight arrows.
 • Kanban: vertical columns of sticky notes under text column headers.
 
+SUMMARY FIELD — every mutating response must include a "summary" key alongside "elements":
+{"elements":[...],"summary":"1–2 sentence plain-English explanation of what was produced and why."}
+Keep the summary brief and factual (e.g. "Added a 12-node lost-and-found process with intake, verification, matching, and resolution branches.").
+
 EXAMPLE — 3-step approval flow:
 {"elements":[
-  {"id":"ai-001a0001","type":"shape","shape":"stadium","x":240,"y":80,"width":160,"height":60,"label":"Start","fillColor":"#dcfce7","strokeColor":"#16a34a"},
-  {"id":"ai-001a0002","type":"shape","shape":"square","x":240,"y":200,"width":160,"height":60,"label":"Submit Request","fillColor":"#e0e7ff","strokeColor":"#6366f1","borderRadius":"sm"},
-  {"id":"ai-001a0003","type":"shape","shape":"square","x":240,"y":320,"width":160,"height":60,"label":"Manager Review","fillColor":"#e0e7ff","strokeColor":"#6366f1","borderRadius":"sm"},
-  {"id":"ai-001a0004","type":"shape","shape":"diamond","x":230,"y":440,"width":180,"height":100,"label":"Approved?","fillColor":"#fef9c3","strokeColor":"#ca8a04"},
-  {"id":"ai-001a0005","type":"shape","shape":"square","x":480,"y":460,"width":140,"height":60,"label":"Reject & Notify","fillColor":"#fee2e2","strokeColor":"#dc2626","borderRadius":"sm"},
-  {"id":"ai-001a0006","type":"shape","shape":"square","x":240,"y":600,"width":160,"height":60,"label":"Process Request","fillColor":"#dcfce7","strokeColor":"#16a34a","borderRadius":"sm"},
-  {"id":"ai-001a0007","type":"shape","shape":"stadium","x":240,"y":720,"width":160,"height":60,"label":"End","fillColor":"#fee2e2","strokeColor":"#dc2626"},
+  {"id":"ai-001a0001","type":"shape","shape":"stadium","x":240,"y":80,"width":160,"height":60,"label":"Start"},
+  {"id":"ai-001a0002","type":"shape","shape":"square","x":240,"y":200,"width":160,"height":60,"label":"Submit Request","borderRadius":"sm"},
+  {"id":"ai-001a0003","type":"shape","shape":"square","x":240,"y":320,"width":160,"height":60,"label":"Manager Review","borderRadius":"sm"},
+  {"id":"ai-001a0004","type":"shape","shape":"diamond","x":230,"y":440,"width":180,"height":100,"label":"Approved?"},
+  {"id":"ai-001a0005","type":"shape","shape":"square","x":480,"y":460,"width":140,"height":60,"label":"Reject & Notify","borderRadius":"sm"},
+  {"id":"ai-001a0006","type":"shape","shape":"square","x":240,"y":600,"width":160,"height":60,"label":"Process Request","borderRadius":"sm"},
+  {"id":"ai-001a0007","type":"shape","shape":"stadium","x":240,"y":720,"width":160,"height":60,"label":"End"},
   {"id":"ai-001a0008","type":"arrow","from":{"kind":"pinned","elementId":"ai-001a0001","anchor":"s"},"to":{"kind":"pinned","elementId":"ai-001a0002","anchor":"n"}},
   {"id":"ai-001a0009","type":"arrow","from":{"kind":"pinned","elementId":"ai-001a0002","anchor":"s"},"to":{"kind":"pinned","elementId":"ai-001a0003","anchor":"n"}},
   {"id":"ai-001a0010","type":"arrow","from":{"kind":"pinned","elementId":"ai-001a0003","anchor":"s"},"to":{"kind":"pinned","elementId":"ai-001a0004","anchor":"n"}},
   {"id":"ai-001a0011","type":"arrow","from":{"kind":"pinned","elementId":"ai-001a0004","anchor":"e"},"to":{"kind":"pinned","elementId":"ai-001a0005","anchor":"w"},"label":"No"},
   {"id":"ai-001a0012","type":"arrow","from":{"kind":"pinned","elementId":"ai-001a0004","anchor":"s"},"to":{"kind":"pinned","elementId":"ai-001a0006","anchor":"n"},"label":"Yes"},
   {"id":"ai-001a0013","type":"arrow","from":{"kind":"pinned","elementId":"ai-001a0006","anchor":"s"},"to":{"kind":"pinned","elementId":"ai-001a0007","anchor":"n"}}
-]}
+],"summary":"Added a 7-node approval flow with a decision branch for rejection."}
 `.trim();
 
 const SECURITY_GUARD = `
@@ -143,7 +144,7 @@ function buildSystemPrompt(mode: AiMode, tabName: string, focusIds: string[]): s
     case 'clean':
       return header + 'Task: Clean up the diagram — fix label typos/grammar, normalise sizes and positions, reduce overlaps, improve visual consistency. Return JSON: {"elements":[...]} with ALL elements improved (same IDs).';
     case 'review':
-      return `${SECURITY_GUARD}\n\nYou are a diagram reviewer (tab: "${tabName.replace(/"/g, '')}"). Give constructive feedback in plain text covering: clarity, structural completeness, missing connections or steps, logical gaps, and concrete suggestions. 2–4 paragraphs. Do not output JSON.`;
+      return `${SECURITY_GUARD}\n\nYou are a diagram reviewer (tab: "${tabName.replace(/"/g, '')}"). Give concise constructive feedback in plain text. Cover the most important points only: clarity, completeness, logical gaps, and one or two concrete suggestions. Maximum 2 short paragraphs. Be direct. Do not output JSON.`;
   }
 }
 

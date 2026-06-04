@@ -1168,7 +1168,7 @@ export async function apiAiStream(
   callbacks: {
     onTextChunk?: (text: string) => void;
     onProgress?: (count: number) => void;
-    onDone: (result: { elements: Element[]; offTopic: boolean; reviewText: string }) => void;
+    onDone: (result: { elements: Element[]; offTopic: boolean; reviewText: string; summary: string }) => void;
   },
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/ai`, {
@@ -1178,7 +1178,7 @@ export async function apiAiStream(
   });
   if (!res.ok) throw new Error(`ai request failed: ${res.status}`);
   const reader = res.body?.getReader();
-  if (!reader) { callbacks.onDone({ elements: [], offTopic: false, reviewText: '' }); return; }
+  if (!reader) { callbacks.onDone({ elements: [], offTopic: false, reviewText: '', summary: '' }); return; }
 
   const decoder = new TextDecoder();
   let buf = '';
@@ -1219,7 +1219,7 @@ export async function apiAiStream(
   }
 
   if (isReview) {
-    callbacks.onDone({ elements: [], offTopic: false, reviewText });
+    callbacks.onDone({ elements: [], offTopic: false, reviewText, summary: '' });
     return;
   }
 
@@ -1227,7 +1227,13 @@ export async function apiAiStream(
   if (offTopic) throw new Error('off_topic');
   // Final parse — use the fully accumulated buffer for the authoritative list.
   const elements = extractElementsFromBuffer(jsonBuf);
-  callbacks.onDone({ elements, offTopic: false, reviewText: '' });
+  // Extract the optional summary field the model includes alongside elements.
+  let summary = '';
+  try {
+    const summaryMatch = jsonBuf.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    if (summaryMatch) summary = summaryMatch[1]!.replace(/\\n/g, ' ').replace(/\\"/g, '"');
+  } catch { /* no summary */ }
+  callbacks.onDone({ elements, offTopic: false, reviewText: '', summary });
 }
 
 // Re-export types so callers don't need extra imports.

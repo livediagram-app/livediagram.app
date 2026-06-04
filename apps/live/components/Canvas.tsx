@@ -2083,23 +2083,10 @@ export function Canvas(props: CanvasProps) {
           title="AI Assistant"
           position={aiPanel.position}
           defaultCorner="bottom-left"
-          width="w-72"
+          width="w-80"
           collapsible
           onReset={aiPanel.onReset}
           onMoveTo={aiPanel.onMove}
-          headerExtra={
-            <button
-              type="button"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={aiPanel.onClose}
-              aria-label="Close AI panel"
-              className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            >
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
-                <path d="M1.5 1.5l7 7M1.5 8.5l7-7" />
-              </svg>
-            </button>
-          }
         >
           <AiPanelContent
             contextElements={aiPanel.contextElements}
