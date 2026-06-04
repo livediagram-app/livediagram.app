@@ -105,7 +105,7 @@ export function SelectedElementSection({
     selection.textColor !== null || selection.fillColor !== null || selection.strokeColor !== null;
 
   return (
-    <div className="flex flex-col border-t border-slate-200 dark:border-slate-800">
+    <div className="flex flex-col">
       <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
         {heading}
       </p>

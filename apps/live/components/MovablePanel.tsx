@@ -294,7 +294,11 @@ export function MovablePanel({
     isMobile &&
       (dockControlledOpen ||
         (collapsible && !effectiveCollapsed && !lockOpen && mobileOpenOverride === undefined)),
-    outsideExceptSelector,
+    dockControlledOpen
+      ? outsideExceptSelector
+        ? `[data-mobile-dock],${outsideExceptSelector}`
+        : '[data-mobile-dock]'
+      : outsideExceptSelector,
   );
 
   // When stackBelowY is provided and we're still at the default
@@ -348,7 +352,7 @@ export function MovablePanel({
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
         style={anchor ? { top: anchor.top + 8, left: anchor.left } : { top: 50, right: 8 }}
-        className="pointer-events-auto absolute z-20 flex w-64 max-w-[calc(100vw-1rem)] animate-pop-in flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+        className="pointer-events-auto absolute z-20 flex w-64 max-w-[calc(100vw-1rem)] flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-150 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
         {anchor ? (
           <div
@@ -356,7 +360,7 @@ export function MovablePanel({
             className="absolute -top-[7px] h-3.5 w-3.5 rotate-45 rounded-tl-sm border-l border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
           />
         ) : null}
-        <div className="overflow-y-auto">{children}</div>
+        <div className="overflow-y-auto pt-2">{children}</div>
       </div>
     );
   }
@@ -378,7 +382,7 @@ export function MovablePanel({
     >
       <div
         onPointerDown={beginDrag}
-        className={`flex items-center justify-between gap-2 rounded-t-lg px-2 pt-2 pb-1.5 ${drag ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 pt-2 pb-1.5 dark:border-slate-800 ${drag ? 'cursor-grabbing' : 'cursor-grab'}`}
       >
         <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
           {title}

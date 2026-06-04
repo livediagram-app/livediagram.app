@@ -2057,6 +2057,7 @@ export function Canvas(props: CanvasProps) {
           Hidden on sm: where panels render at their own corners. */}
       {!welcomeOpen && (
         <div
+          data-mobile-dock
           className="pointer-events-auto absolute top-2 right-2 z-20 flex items-stretch rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900 sm:hidden"
           onPointerDown={(e) => e.stopPropagation()}
         >
