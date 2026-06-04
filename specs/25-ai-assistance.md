@@ -16,12 +16,12 @@ the AI panel are never rendered.
 
 ## Modes
 
-| Mode | What it does | Response |
-|------|-------------|----------|
-| **Generate** | Appends new elements described by the prompt | JSON `{ elements }` — new elements to append |
-| **Amend** | Modifies existing elements per the prompt | JSON `{ elements }` — full element list with changes applied |
-| **Clean** | Fixes label typos, normalises sizes/positions/styles | JSON `{ elements }` — full element list cleaned |
-| **Review** | Gives textual feedback on structure and content | `text/event-stream` SSE (streamed) |
+| Mode         | What it does                                         | Response                                                     |
+| ------------ | ---------------------------------------------------- | ------------------------------------------------------------ |
+| **Generate** | Appends new elements described by the prompt         | JSON `{ elements }` — new elements to append                 |
+| **Amend**    | Modifies existing elements per the prompt            | JSON `{ elements }` — full element list with changes applied |
+| **Clean**    | Fixes label typos, normalises sizes/positions/styles | JSON `{ elements }` — full element list cleaned              |
+| **Review**   | Gives textual feedback on structure and content      | `text/event-stream` SSE (streamed)                           |
 
 ## Context
 
@@ -94,10 +94,10 @@ Error responses follow the standard worker envelope:
 
 ## Environment variables
 
-| Variable | Where | Purpose |
-|----------|-------|---------|
-| `OPENAI_API_KEY` | Worker secret | Required to enable AI. Absent = feature hidden. |
-| `OPENAI_MODEL` | Worker var (optional) | OpenAI model name. Defaults to `gpt-4o-mini`. |
+| Variable         | Where                 | Purpose                                         |
+| ---------------- | --------------------- | ----------------------------------------------- |
+| `OPENAI_API_KEY` | Worker secret         | Required to enable AI. Absent = feature hidden. |
+| `OPENAI_MODEL`   | Worker var (optional) | OpenAI model name. Defaults to `gpt-4o-mini`.   |
 
 Set via `wrangler secret put OPENAI_API_KEY` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored).
@@ -121,6 +121,7 @@ Fixed panel, bottom-left corner of the editor canvas. Visible when
 view-role sessions (AI mutates the diagram; guests can't persist changes they don't own).
 
 Contains:
+
 - Mode selector (Generate / Amend / Clean / Review tabs)
 - Scrollable response / status area
 - Prompt textarea + Send button (disabled while a request is in flight)

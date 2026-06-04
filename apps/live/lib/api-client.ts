@@ -1095,9 +1095,21 @@ export async function apiGetCapabilities(): Promise<CapabilitiesResponse> {
 // Valid shape kinds — must stay in sync with packages/diagram ShapeKind.
 // Used to validate AI-returned elements before applying them.
 const VALID_SHAPE_KINDS = new Set([
-  'square', 'circle', 'diamond', 'cylinder', 'parallelogram', 'hexagon',
-  'document', 'stadium', 'actor', 'cloud', 'browser', 'monitor', 'laptop',
-  'phone', 'tablet',
+  'square',
+  'circle',
+  'diamond',
+  'cylinder',
+  'parallelogram',
+  'hexagon',
+  'document',
+  'stadium',
+  'actor',
+  'cloud',
+  'browser',
+  'monitor',
+  'laptop',
+  'phone',
+  'tablet',
 ]);
 
 function isValidElement(el: unknown): el is Element {
@@ -1110,14 +1122,18 @@ function isValidElement(el: unknown): el is Element {
       VALID_SHAPE_KINDS.has(obj.shape as string) &&
       typeof obj.x === 'number' &&
       typeof obj.y === 'number' &&
-      typeof obj.width === 'number' && (obj.width as number) > 0 &&
-      typeof obj.height === 'number' && (obj.height as number) > 0
+      typeof obj.width === 'number' &&
+      (obj.width as number) > 0 &&
+      typeof obj.height === 'number' &&
+      (obj.height as number) > 0
     );
   }
   if (t === 'text' || t === 'sticky') {
     return (
-      typeof obj.x === 'number' && typeof obj.y === 'number' &&
-      typeof obj.width === 'number' && typeof obj.height === 'number'
+      typeof obj.x === 'number' &&
+      typeof obj.y === 'number' &&
+      typeof obj.width === 'number' &&
+      typeof obj.height === 'number'
     );
   }
   if (t === 'arrow') {
@@ -1138,14 +1154,18 @@ function extractElementsFromBuffer(buffer: string): Element[] {
   let start = -1;
   for (let i = match.index + match[0].length; i < buffer.length; i++) {
     const ch = buffer[i];
-    if (ch === '{') { if (depth === 0) start = i; depth++; }
-    else if (ch === '}') {
+    if (ch === '{') {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === '}') {
       depth--;
       if (depth === 0 && start >= 0) {
         try {
           const el = JSON.parse(buffer.slice(start, i + 1));
           if (isValidElement(el)) elements.push(el);
-        } catch { /* skip malformed */ }
+        } catch {
+          /* skip malformed */
+        }
         start = -1;
       }
     }
@@ -1168,7 +1188,12 @@ export async function apiAiStream(
   callbacks: {
     onTextChunk?: (text: string) => void;
     onProgress?: (count: number) => void;
-    onDone: (result: { elements: Element[]; offTopic: boolean; reviewText: string; summary: string }) => void;
+    onDone: (result: {
+      elements: Element[];
+      offTopic: boolean;
+      reviewText: string;
+      summary: string;
+    }) => void;
   },
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/ai`, {
@@ -1178,11 +1203,14 @@ export async function apiAiStream(
   });
   if (!res.ok) throw new Error(`ai request failed: ${res.status}`);
   const reader = res.body?.getReader();
-  if (!reader) { callbacks.onDone({ elements: [], offTopic: false, reviewText: '', summary: '' }); return; }
+  if (!reader) {
+    callbacks.onDone({ elements: [], offTopic: false, reviewText: '', summary: '' });
+    return;
+  }
 
   const decoder = new TextDecoder();
   let buf = '';
-  let jsonBuf = '';  // accumulated JSON tokens for mutating modes
+  let jsonBuf = ''; // accumulated JSON tokens for mutating modes
   let reviewText = '';
   let lastCount = 0;
   const isReview = payload.mode === 'review' || payload.mode === 'ask';
@@ -1214,7 +1242,9 @@ export async function apiAiStream(
             callbacks.onProgress?.(lastCount);
           }
         }
-      } catch { /* skip malformed SSE chunk */ }
+      } catch {
+        /* skip malformed SSE chunk */
+      }
     }
   }
 
@@ -1232,7 +1262,9 @@ export async function apiAiStream(
   try {
     const summaryMatch = jsonBuf.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
     if (summaryMatch) summary = summaryMatch[1]!.replace(/\\n/g, ' ').replace(/\\"/g, '"');
-  } catch { /* no summary */ }
+  } catch {
+    /* no summary */
+  }
   callbacks.onDone({ elements, offTopic: false, reviewText: '', summary });
 }
 

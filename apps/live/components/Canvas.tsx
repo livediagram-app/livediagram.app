@@ -2063,35 +2063,105 @@ export function Canvas(props: CanvasProps) {
         >
           {(
             [
-              { id: 'explorer', label: 'Explorer', icon: (
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                  <path d="M2 3.5C2 2.67 2.67 2 3.5 2h2.25l1.5 1.5H10.5c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5h-7C2.67 11.5 2 10.83 2 10V3.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                </svg>
-              )},
-              { id: 'palette', label: 'Palette', icon: (
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                  <rect x="2" y="2" width="4" height="4" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
-                  <rect x="8" y="2" width="4" height="4" rx="2" stroke="currentColor" strokeWidth="1.2"/>
-                  <rect x="2" y="8" width="4" height="4" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
-                  <path d="M10 8v4M8 10h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                </svg>
-              )},
-              { id: 'editor', label: 'Editor', icon: (
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                  <path d="M2 10.5V12h1.5l5-5-1.5-1.5-5 5zM10.8 3.7a1 1 0 0 0 0-1.4l-.1-.1a1 1 0 0 0-1.4 0L8 3.5 9.5 5l1.3-1.3z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                </svg>
-              )},
-              ...(!readOnly && aiPanel ? [{ id: 'ai' as const, label: 'AI', icon: (
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                  <path d="M7 2v1.5M7 10.5V12M2 7h1.5M10.5 7H12M3.8 3.8l1 1M9.2 9.2l1 1M3.8 10.2l1-1M9.2 4.8l1-1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                  <circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.2"/>
-                </svg>
-              )}] : []),
-            ] as { id: 'explorer' | 'palette' | 'editor' | 'ai'; label: string; icon: React.ReactNode }[]
+              {
+                id: 'explorer',
+                label: 'Explorer',
+                icon: (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                    <path
+                      d="M2 3.5C2 2.67 2.67 2 3.5 2h2.25l1.5 1.5H10.5c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5h-7C2.67 11.5 2 10.83 2 10V3.5z"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ),
+              },
+              {
+                id: 'palette',
+                label: 'Palette',
+                icon: (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                    <rect
+                      x="2"
+                      y="2"
+                      width="4"
+                      height="4"
+                      rx="0.8"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                    />
+                    <rect
+                      x="8"
+                      y="2"
+                      width="4"
+                      height="4"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                    />
+                    <rect
+                      x="2"
+                      y="8"
+                      width="4"
+                      height="4"
+                      rx="0.8"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                    />
+                    <path
+                      d="M10 8v4M8 10h4"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                ),
+              },
+              {
+                id: 'editor',
+                label: 'Editor',
+                icon: (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                    <path
+                      d="M2 10.5V12h1.5l5-5-1.5-1.5-5 5zM10.8 3.7a1 1 0 0 0 0-1.4l-.1-.1a1 1 0 0 0-1.4 0L8 3.5 9.5 5l1.3-1.3z"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ),
+              },
+              ...(!readOnly && aiPanel
+                ? [
+                    {
+                      id: 'ai' as const,
+                      label: 'AI',
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                          <path
+                            d="M7 2v1.5M7 10.5V12M2 7h1.5M10.5 7H12M3.8 3.8l1 1M9.2 9.2l1 1M3.8 10.2l1-1M9.2 4.8l1-1"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                            strokeLinecap="round"
+                          />
+                          <circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.2" />
+                        </svg>
+                      ),
+                    },
+                  ]
+                : []),
+            ] as {
+              id: 'explorer' | 'palette' | 'editor' | 'ai';
+              label: string;
+              icon: React.ReactNode;
+            }[]
           ).map((btn, i, arr) => (
             <button
               key={btn.id}
-              ref={(el) => { dockButtonRefs.current[btn.id] = el; }}
+              ref={(el) => {
+                dockButtonRefs.current[btn.id] = el;
+              }}
               type="button"
               onClick={() => handleDockButtonClick(btn.id)}
               className={
@@ -2137,7 +2207,10 @@ export function Canvas(props: CanvasProps) {
         onSize={(size) => setExplorerBottomY(size.bottomY)}
         mobileOpenOverride={activeMobilePanel === 'explorer' ? true : false}
         mobileDockAnchor={activeDockAnchor ?? undefined}
-        onMobileClose={() => { setActiveMobilePanel(null); setActiveDockAnchor(null); }}
+        onMobileClose={() => {
+          setActiveMobilePanel(null);
+          setActiveDockAnchor(null);
+        }}
       />
 
       {/* Activity panel — per-diagram audit log + Undo/Redo. Hidden
@@ -2181,7 +2254,10 @@ export function Canvas(props: CanvasProps) {
           onMoveTo={aiPanel.onMove}
           mobileOpenOverride={activeMobilePanel === 'ai' ? true : false}
           mobileDockAnchor={activeDockAnchor ?? undefined}
-          onMobileClose={() => { setActiveMobilePanel(null); setActiveDockAnchor(null); }}
+          onMobileClose={() => {
+            setActiveMobilePanel(null);
+            setActiveDockAnchor(null);
+          }}
         >
           <AiPanelContent
             contextElements={aiPanel.contextElements}
@@ -2268,7 +2344,10 @@ export function Canvas(props: CanvasProps) {
           mobileTopOverridePx={explorerBottomY > 0 ? explorerBottomY + 4 : undefined}
           mobileOpenOverride={activeMobilePanel === 'palette' ? true : false}
           mobileDockAnchor={activeDockAnchor ?? undefined}
-          onMobileClose={() => { setActiveMobilePanel(null); setActiveDockAnchor(null); }}
+          onMobileClose={() => {
+            setActiveMobilePanel(null);
+            setActiveDockAnchor(null);
+          }}
         />
       )}
 
@@ -2289,7 +2368,10 @@ export function Canvas(props: CanvasProps) {
           onSize={(size) => setContextBottomY(size.bottomY)}
           mobileOpenOverride={activeMobilePanel === 'editor' ? true : false}
           mobileDockAnchor={activeDockAnchor ?? undefined}
-          onMobileClose={() => { setActiveMobilePanel(null); setActiveDockAnchor(null); }}
+          onMobileClose={() => {
+            setActiveMobilePanel(null);
+            setActiveDockAnchor(null);
+          }}
         />
       )}
 

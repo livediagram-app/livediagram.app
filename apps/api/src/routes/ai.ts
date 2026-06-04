@@ -123,7 +123,11 @@ function diagramTypeHint(prompt: string): string {
   const p = prompt.toLowerCase();
   if (/\borg ?chart|hierarchy|reports? to|ceo|vp |director|manager|head of|team struct/i.test(p))
     return 'ORG CHART: top-down tree. Root at top (lg+bold). VP row below (md+bold). Reports row below that (md). All arrows anchor s→n, arrowEnds:"to". At least 3 levels, 2+ reports per manager.';
-  if (/flowchart|approval|process|workflow|procedure|request|submit|steps?|stages?|lost.and.found/i.test(p))
+  if (
+    /flowchart|approval|process|workflow|procedure|request|submit|steps?|stages?|lost.and.found/i.test(
+      p,
+    )
+  )
     return 'FLOWCHART: strict top-to-bottom. stadium=Start/End, square=steps (md+bold), diamond=decisions. Arrow anchors: s→n (down), e→w (side branches). Label Yes/No on decision branches. Include error/rejection paths. 10+ nodes.';
   if (/architect|system|service|microservice|infrastructure|deploy|cloud|infra|pipeline/i.test(p))
     return 'ARCHITECTURE: left-to-right tiers. squares=services, cylinders=databases, hexagons=APIs/gateways, cloud=external. Dashed arrows for async. s→n or e→w anchors as appropriate.';
@@ -147,8 +151,11 @@ function diagramTypeHint(prompt: string): string {
 // ---------------------------------------------------------------------------
 function computeBoundingBox(elements: unknown[]): { x2: number; y2: number } | null {
   const boxed = (elements as Record<string, unknown>[]).filter(
-    (el) => typeof el.x === 'number' && typeof el.y === 'number' &&
-            typeof el.width === 'number' && typeof el.height === 'number',
+    (el) =>
+      typeof el.x === 'number' &&
+      typeof el.y === 'number' &&
+      typeof el.width === 'number' &&
+      typeof el.height === 'number',
   );
   if (boxed.length === 0) return null;
   return {
@@ -205,16 +212,52 @@ function sanitiseElements(elements: unknown[]): unknown[] {
   return elements.map((el) => {
     if (typeof el !== 'object' || el === null) return el;
     const {
-      id, type, shape, x, y, width, height, label,
-      strokeWidth, strokeStyle, borderRadius,
-      textSize, textBold, textItalic, opacity, locked,
-      from, to, arrowStyle, arrowEnds, groupId, aspectLocked,
+      id,
+      type,
+      shape,
+      x,
+      y,
+      width,
+      height,
+      label,
+      strokeWidth,
+      strokeStyle,
+      borderRadius,
+      textSize,
+      textBold,
+      textItalic,
+      opacity,
+      locked,
+      from,
+      to,
+      arrowStyle,
+      arrowEnds,
+      groupId,
+      aspectLocked,
     } = el as Record<string, unknown>;
     return {
-      id, type, shape, x, y, width, height, label,
-      strokeWidth, strokeStyle, borderRadius,
-      textSize, textBold, textItalic, opacity, locked,
-      from, to, arrowStyle, arrowEnds, groupId, aspectLocked,
+      id,
+      type,
+      shape,
+      x,
+      y,
+      width,
+      height,
+      label,
+      strokeWidth,
+      strokeStyle,
+      borderRadius,
+      textSize,
+      textBold,
+      textItalic,
+      opacity,
+      locked,
+      from,
+      to,
+      arrowStyle,
+      arrowEnds,
+      groupId,
+      aspectLocked,
     };
   });
 }
@@ -321,17 +364,16 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   const typeHint = !isTextMode ? diagramTypeHint(prompt) : '';
   const existingStyle = !isTextMode ? extractExistingStyle(safe) : '';
 
-  const userContent =
-    isTextMode
-      ? `Diagram elements:\n${JSON.stringify(safe)}\n\n${prompt.trim() || (mode === 'review' ? 'Give general feedback.' : 'Answer any questions about this diagram.')}`
-      : [
-          `Existing diagram elements:\n${JSON.stringify(safe)}`,
-          existingStyle && `Style to match: ${existingStyle}`,
-          typeHint && `Layout guidance: ${typeHint}`,
-          `Request: ${prompt.trim() || 'Clean up this diagram.'}`,
-        ]
-          .filter(Boolean)
-          .join('\n\n');
+  const userContent = isTextMode
+    ? `Diagram elements:\n${JSON.stringify(safe)}\n\n${prompt.trim() || (mode === 'review' ? 'Give general feedback.' : 'Answer any questions about this diagram.')}`
+    : [
+        `Existing diagram elements:\n${JSON.stringify(safe)}`,
+        existingStyle && `Style to match: ${existingStyle}`,
+        typeHint && `Layout guidance: ${typeHint}`,
+        `Request: ${prompt.trim() || 'Clean up this diagram.'}`,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
 
   const safeHistory = history
     .slice(-MAX_HISTORY_TURNS)

@@ -326,20 +326,20 @@ export function MovablePanel({
   const cornerClass = dockControlledOpen
     ? ''
     : position
-    ? ''
-    : useDynamicStack
-      ? 'inset-x-2 sm:left-auto sm:right-4'
-      : defaultCorner === 'top-right'
-        ? 'inset-x-2 top-2 sm:inset-x-auto sm:right-4 sm:top-4'
-        : defaultCorner === 'top-right-stacked'
-          ? 'inset-x-2 top-[15rem] sm:inset-x-auto sm:right-4'
-          : defaultCorner === 'top-banner'
-            ? 'inset-x-2 top-2'
-            : defaultCorner === 'bottom-left'
-              ? 'bottom-4 left-4'
-              : defaultCorner === 'bottom-right'
-                ? 'bottom-4 right-4'
-                : 'left-4 top-4';
+      ? ''
+      : useDynamicStack
+        ? 'inset-x-2 sm:left-auto sm:right-4'
+        : defaultCorner === 'top-right'
+          ? 'inset-x-2 top-2 sm:inset-x-auto sm:right-4 sm:top-4'
+          : defaultCorner === 'top-right-stacked'
+            ? 'inset-x-2 top-[15rem] sm:inset-x-auto sm:right-4'
+            : defaultCorner === 'top-banner'
+              ? 'inset-x-2 top-2'
+              : defaultCorner === 'bottom-left'
+                ? 'bottom-4 left-4'
+                : defaultCorner === 'bottom-right'
+                  ? 'bottom-4 right-4'
+                  : 'left-4 top-4';
 
   if (isMobile && mobileOpenOverride === false) return null;
 
@@ -350,7 +350,10 @@ export function MovablePanel({
       <div
         ref={ref}
         onPointerDown={(e) => e.stopPropagation()}
-        onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
         style={anchor ? { top: anchor.top + 8, left: anchor.left } : { top: 50, right: 8 }}
         className="pointer-events-auto absolute z-20 flex w-64 max-w-[calc(100vw-1rem)] flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-150 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
