@@ -51,6 +51,13 @@ const MODES: ModeConfig[] = [
     icon: <ReviewIcon />,
     suggestions: ['Is this clear?', 'What\'s missing?', 'Check the flow logic', 'How can I improve this?'],
   },
+  {
+    id: 'ask',
+    label: 'Ask',
+    tooltip: 'Ask a question about the selected elements or whole tab.',
+    icon: <AskIcon />,
+    suggestions: ['How many steps are there?', 'What are the decision points?', 'Summarise this diagram', 'What could go wrong?'],
+  },
 ];
 
 const PLACEHOLDERS: Record<AiMode, string> = {
@@ -58,6 +65,7 @@ const PLACEHOLDERS: Record<AiMode, string> = {
   amend: 'Describe the changes… (⌘↵ to send)',
   clean: 'Any specific instructions, or leave blank…',
   review: 'Any specific focus, or leave blank…',
+  ask: 'Ask a question about the diagram…',
 };
 
 type Status = 'idle' | 'loading' | 'done' | 'error';
@@ -115,6 +123,8 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
 
     const userTurn: AiConversationTurn = { role: 'user', content: finalPrompt || `(${mode})` };
 
+    const isTextMode = mode === 'review' || mode === 'ask';
+
     try {
       await apiAiStream(
         ownerId,
@@ -130,20 +140,23 @@ export function AiPanelContent({ contextElements, focusIds, tabName, ownerId, on
           onTextChunk: (chunk) => setReviewText((t) => t + chunk),
           onProgress: (count) => setProgressCount(count),
           onDone: ({ elements, reviewText: rt, summary: s }) => {
-            const assistantContent = mode === 'review' ? rt : `Applied changes (${elements.length} elements)`;
-            setHistory((h) => [
-              ...h.slice(-(MAX_HISTORY - 2)),
-              userTurn,
-              { role: 'assistant', content: assistantContent },
-            ]);
-
-            if (mode !== 'review') {
+            if (isTextMode) {
+              setHistory((h) => [
+                ...h.slice(-(MAX_HISTORY - 2)),
+                userTurn,
+                { role: 'assistant', content: rt },
+              ]);
+              track('AI', 'Used', mode === 'ask' ? 'Ask' : 'Review');
+            } else {
+              setHistory((h) => [
+                ...h.slice(-(MAX_HISTORY - 2)),
+                userTurn,
+                { role: 'assistant', content: `Applied changes (${elements.length} elements)` },
+              ]);
               track('AI', 'Used', mode === 'generate' ? 'Generate' : mode === 'amend' ? 'Amend' : 'Clean');
-              onApplyElements(elements, mode);
+              onApplyElements(elements, mode as 'generate' | 'amend' | 'clean');
               setSummary(s);
               setPrompt('');
-            } else {
-              track('AI', 'Used', 'Review');
             }
             setStatus('done');
           },
@@ -331,6 +344,16 @@ function ReviewIcon() {
     <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
       <circle cx="7" cy="7" r="5" />
       <path d="M11 11l3 3" />
+    </svg>
+  );
+}
+
+function AskIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M6 6.5a2 2 0 0 1 4 0c0 1.5-2 1.5-2 3" />
+      <circle cx="8" cy="12" r="0.5" fill="currentColor" />
     </svg>
   );
 }

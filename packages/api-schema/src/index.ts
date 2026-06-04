@@ -412,7 +412,7 @@ export type TelemetryWindow = {
 // AI Assistance (spec/25)
 // ---------------------------------------------------------------------
 
-export type AiMode = 'generate' | 'amend' | 'clean' | 'review';
+export type AiMode = 'generate' | 'amend' | 'clean' | 'review' | 'ask';
 
 export type AiConversationTurn = { role: 'user' | 'assistant'; content: string };
 

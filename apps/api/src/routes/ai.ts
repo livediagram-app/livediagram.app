@@ -261,6 +261,8 @@ function buildSystemPrompt(
       );
     case 'review':
       return `${SECURITY_GUARD}\n\nDiagram tab: "${tab}". Give concise, direct feedback in plain text. Cover: clarity, completeness, logical gaps, one or two concrete improvements. Maximum 2 short paragraphs. Do not output JSON.`;
+    case 'ask':
+      return `${SECURITY_GUARD}\n\nDiagram tab: "${tab}"${focusClause}. Answer the user's question about the diagram directly and concisely. Base your answer only on the provided diagram elements. If the question cannot be answered from the diagram alone, say so briefly. Plain text only, no JSON, no preamble.`;
   }
 }
 
@@ -292,7 +294,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
 
   const { mode, prompt, elements, tabName, focusIds = [], history = [] } = body;
 
-  if (!mode || !['generate', 'amend', 'clean', 'review'].includes(mode))
+  if (!mode || !['generate', 'amend', 'clean', 'review', 'ask'].includes(mode))
     return badRequest('invalid mode');
   if (typeof prompt !== 'string') return badRequest('prompt must be a string');
   if (prompt.length > MAX_PROMPT_CHARS) return badRequest('prompt too long');
@@ -300,6 +302,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   if (elements.length > MAX_ELEMENTS) return badRequest('too many elements');
 
   const model = env.OPENAI_MODEL ?? 'gpt-4o';
+  const isTextMode = mode === 'review' || mode === 'ask';
   const safe = sanitiseElements(elements);
   const bbox = mode === 'generate' ? computeBoundingBox(safe) : null;
   const systemPrompt = buildSystemPrompt(
@@ -309,12 +312,12 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
     bbox,
   );
 
-  const typeHint = mode !== 'review' ? diagramTypeHint(prompt) : '';
-  const existingStyle = mode !== 'review' ? extractExistingStyle(safe) : '';
+  const typeHint = !isTextMode ? diagramTypeHint(prompt) : '';
+  const existingStyle = !isTextMode ? extractExistingStyle(safe) : '';
 
   const userContent =
-    mode === 'review'
-      ? `Diagram elements:\n${JSON.stringify(safe)}\n\n${prompt.trim() || 'Give general feedback.'}`
+    isTextMode
+      ? `Diagram elements:\n${JSON.stringify(safe)}\n\n${prompt.trim() || (mode === 'review' ? 'Give general feedback.' : 'Answer any questions about this diagram.')}`
       : [
           `Existing diagram elements:\n${JSON.stringify(safe)}`,
           existingStyle && `Style to match: ${existingStyle}`,
@@ -335,7 +338,6 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
     { role: 'user', content: userContent },
   ];
 
-  const isReview = mode === 'review';
   const oaiRes = await fetch(OPENAI_URL, {
     method: 'POST',
     headers: {
@@ -346,8 +348,8 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
       model,
       messages,
       stream: true,
-      max_tokens: isReview ? MAX_TOKENS_REVIEW : MAX_TOKENS_MUTATE,
-      ...(isReview ? {} : { response_format: { type: 'json_object' } }),
+      max_tokens: isTextMode ? MAX_TOKENS_REVIEW : MAX_TOKENS_MUTATE,
+      ...(isTextMode ? {} : { response_format: { type: 'json_object' } }),
     }),
   });
 
