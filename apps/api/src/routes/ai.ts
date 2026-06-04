@@ -61,6 +61,13 @@ DESIGN RULES:
 - Positions: integers, 0–3000. No negative values.
 - Do NOT output image or freehand elements.
 
+COMPREHENSIVENESS — this is critical:
+- A process diagram should have AT LEAST 10–15 elements. A simple 4-step flow is never enough.
+- Cover the COMPLETE end-to-end flow: every actor, every step, every decision point, every outcome (happy path AND failure/edge cases).
+- Include: start and end states, all decision branches (diamond shapes with labelled Yes/No arrows), error/rejection paths, notifications or handoffs between actors, and a clear finish.
+- Think: who initiates? what happens at each stage? what can go wrong? who is notified? what are the possible outcomes?
+- Err on the side of MORE detail. A comprehensive 15-node diagram is always better than a sparse 4-node one.
+
 EXAMPLE — a two-step flow:
 {"elements":[
   {"id":"ai-001","type":"shape","shape":"square","x":100,"y":200,"width":140,"height":60,"label":"Step 1","fillColor":"#e0e7ff","strokeColor":"#6366f1","borderRadius":"sm"},
@@ -134,7 +141,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   if (!Array.isArray(elements)) return badRequest('elements must be an array');
   if (elements.length > MAX_ELEMENTS) return badRequest('too many elements');
 
-  const model = env.OPENAI_MODEL ?? 'gpt-4o-mini';
+  const model = env.OPENAI_MODEL ?? 'gpt-4o';
   const systemPrompt = buildSystemPrompt(mode, typeof tabName === 'string' ? tabName : '');
 
   // Strip any keys that aren't diagram data to avoid leaking server-
