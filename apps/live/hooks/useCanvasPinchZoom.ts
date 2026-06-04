@@ -54,7 +54,10 @@ export function useCanvasPinchZoom(deps: Deps): Api {
 
     const wrapperCenter = () => {
       const r = depsRef.current.canvasMainRef.current?.getBoundingClientRect();
-      return { wCX: (r?.left ?? 0) + (r?.width ?? 0) / 2, wCY: (r?.top ?? 0) + (r?.height ?? 0) / 2 };
+      return {
+        wCX: (r?.left ?? 0) + (r?.width ?? 0) / 2,
+        wCY: (r?.top ?? 0) + (r?.height ?? 0) / 2,
+      };
     };
 
     const touchDist = (a: Touch, b: Touch) => {
