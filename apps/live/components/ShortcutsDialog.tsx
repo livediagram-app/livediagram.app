@@ -27,6 +27,7 @@ const SECTIONS: ShortcutSection[] = [
       { keys: ['⌘', 'C'], label: 'Copy selection' },
       { keys: ['⌘', 'V'], label: 'Paste (offset copy)' },
       { keys: ['⌘', 'G'], label: 'Group selection  /  Ungroup' },
+      { keys: ['⌘', 'L'], label: 'Lock  /  Unlock selection' },
       { keys: ['⌘', 'A'], label: 'Select all' },
       { keys: ['Del', '/  ⌫'], label: 'Delete selection' },
       { keys: ['⌘', '+'], label: 'Zoom in' },
