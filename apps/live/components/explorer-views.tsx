@@ -654,13 +654,13 @@ export function DiagramRow({
               >
                 <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden>
                   <path
-                    d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7"
+                    d="M4.5 7.5a2.5 2.5 0 0 0 3.5 0l1.5-1.5a2.5 2.5 0 0 0-3.5-3.5L5 3.5"
                     stroke="currentColor"
                     strokeWidth="1.4"
                     strokeLinecap="round"
                   />
                   <path
-                    d="M8 1h3v3M11 1 6 6"
+                    d="M7.5 4.5a2.5 2.5 0 0 0-3.5 0L2.5 6a2.5 2.5 0 0 0 3.5 3.5L7 8.5"
                     stroke="currentColor"
                     strokeWidth="1.4"
                     strokeLinecap="round"
