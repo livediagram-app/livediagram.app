@@ -18,6 +18,7 @@ The unit of value is the team, not the individual. See [spec/00](../specs/00-pur
 
 - **Canvas primitives**: shapes (ten core), sticky notes, text, images, arrows (straight / curved / angled with draggable curve / elbow handles, configurable thickness + arrowhead size, optional labels), freehand sketches via the Pencil tool (smooth SVG paths with optional shape-recognition mode that auto-converts rectangles / circles / diamonds / lines), comment threads, per-element links + locks.
 - **Multi-select**: marquee drag, shift-click, format painter, groups.
+- **Rotation**: free-rotate any boxed element about its centre via a dedicated handle; the angle round-trips through copy / paste / duplicate / save (spec/09).
 - **Templates**: seventeen starters (Blank, Mind map, Flowchart, Kanban, SWOT, Retrospective, Org chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey, Logo design, plus three UI wireframes).
 - **Themes**: eighteen presets that recolour the canvas, every shape, every arrow in one click.
 - **Multiplayer**: live presence, cursors, selection rings, comments, laser-pointer broadcast via per-diagram Durable Object rooms.
