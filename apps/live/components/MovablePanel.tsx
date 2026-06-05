@@ -149,6 +149,11 @@ export function MovablePanel({
   children,
 }: MovablePanelProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  // Max height for the panel body so it never extends below the viewport.
+  // Recomputed on mount, on resize, and whenever the panel's position
+  // changes (drag end updates `position`; stackBelowY changes move it too).
+  const [bodyMaxH, setBodyMaxH] = useState<number | null>(null);
   const [drag, setDrag] = useState<{
     startClientX: number;
     startClientY: number;
@@ -177,6 +182,23 @@ export function MovablePanel({
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
+
+  // Constrain panel body to the remaining viewport space below its header.
+  // Uses rAF so the panel has painted at its new position before we measure.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const compute = () => {
+      const panel = ref.current;
+      if (!panel) return;
+      const panelTop = panel.getBoundingClientRect().top;
+      const headerH = headerRef.current?.getBoundingClientRect().height ?? 36;
+      setBodyMaxH(Math.max(window.innerHeight - panelTop - headerH - 16, 80));
+    };
+    const raf = requestAnimationFrame(compute);
+    window.addEventListener('resize', compute);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', compute); };
+  // Re-measure after drag (position changes) or dynamic stacking (stackBelowY changes).
+  }, [position, stackBelowY]);
 
   // Publish the panel's bounding box upward whenever it changes
   // (the Palette uses this so the ContextPanel can stack below).
@@ -388,6 +410,7 @@ export function MovablePanel({
       className={`pointer-events-auto absolute z-10 flex animate-pop-in cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${cornerClass}`}
     >
       <div
+        ref={headerRef}
         onPointerDown={beginDrag}
         className={`flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 pt-2 pb-1.5 dark:border-slate-800 ${drag ? 'cursor-grabbing' : 'cursor-grab'}`}
       >
@@ -543,7 +566,12 @@ export function MovablePanel({
         aria-hidden={collapsible && effectiveCollapsed ? true : undefined}
       >
         <div className="overflow-hidden">
-          <div className="flex flex-col">{children}</div>
+          <div
+            style={bodyMaxH !== null ? { maxHeight: bodyMaxH } : undefined}
+            className="flex flex-col overflow-y-auto"
+          >
+            {children}
+          </div>
         </div>
       </div>
     </div>
