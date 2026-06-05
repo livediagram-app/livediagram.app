@@ -112,6 +112,10 @@ type MovablePanelProps = {
   // When false: render nothing on mobile so the dock button is the
   // only affordance. When undefined: existing self-managed behaviour.
   mobileOpenOverride?: boolean;
+  // When true, apply the mobile dock behaviour on desktop too (the
+  // "minimal panel layout" user preference). The dock in Canvas.tsx
+  // stays visible and panels render as popovers regardless of viewport.
+  forceDockMode?: boolean;
   // Called when the user taps the collapse/minimize button while the
   // panel is dock-controlled. The dock should deactivate this panel.
   onMobileClose?: () => void;
@@ -144,6 +148,7 @@ export function MovablePanel({
   defaultCollapsed = false,
   expandSignal,
   mobileOpenOverride,
+  forceDockMode = false,
   onMobileClose,
   mobileDockAnchor,
   children,
@@ -283,8 +288,10 @@ export function MovablePanel({
     setDrag({ startClientX: e.clientX, startClientY: e.clientY, startX, startY });
   };
 
-  const dockControlledOpen = isMobile && mobileOpenOverride === true;
-  // Dock-controlled on mobile: hide when not active, force open when active.
+  // forceDockMode extends mobile dock behaviour to desktop (minimal panel preference).
+  const dockActive = isMobile || forceDockMode;
+  const dockControlledOpen = dockActive && mobileOpenOverride === true;
+  // Dock-controlled: hide when not active, force open when active.
   const effectiveCollapsed = dockControlledOpen ? false : collapsed;
 
   // Imperative open from the parent. Whenever `expandSignal` changes
@@ -316,7 +323,7 @@ export function MovablePanel({
         setCollapsed(true);
       }
     },
-    isMobile &&
+    dockActive &&
       (dockControlledOpen ||
         (collapsible && !effectiveCollapsed && !lockOpen && mobileOpenOverride === undefined)),
     dockControlledOpen
@@ -366,7 +373,7 @@ export function MovablePanel({
                   ? 'bottom-4 right-4'
                   : 'left-4 top-4';
 
-  if (isMobile && mobileOpenOverride === false) return null;
+  if (dockActive && mobileOpenOverride === false) return null;
 
   // Dock-controlled on mobile: render as a popover with arrow, no header.
   if (dockControlledOpen) {

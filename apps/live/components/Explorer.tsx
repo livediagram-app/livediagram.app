@@ -80,6 +80,7 @@ type ExplorerProps = {
   mobileTopOverridePx?: number;
   onMobileClose?: () => void;
   mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  forceDockMode?: boolean;
 };
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
@@ -110,6 +111,7 @@ export function Explorer({
   mobileTopOverridePx,
   onMobileClose,
   mobileDockAnchor,
+  forceDockMode,
 }: ExplorerProps) {
   // Mobile viewport ⇒ render nothing. Mobile users reach the
   // Explorer from the AuthControls "Explorer" menu item (spec/07)
@@ -314,6 +316,7 @@ export function Explorer({
       mobileTopOverridePx={mobileTopOverridePx}
       onMobileClose={onMobileClose}
       mobileDockAnchor={mobileDockAnchor}
+      forceDockMode={forceDockMode}
       // Mobile auto-collapse fires on any tap outside the panel's
       // DOM. Ellipsis menus (PortalMenu, role="menu") and confirm
       // modals (ConfirmDialog, role="dialog") render via React
@@ -567,18 +570,25 @@ export function Explorer({
           </div>
         )}
 
-        {onOpenFullExplorer ? (
-          <button
-            type="button"
-            onClick={onOpenFullExplorer}
-            className="mt-1 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
-          >
-            <ExpandIcon />
-            Open Explorer
-          </button>
-        ) : null}
-
-        <SignInPrompt />
+        {/* The sign-in prompt and the "Open Explorer" button share this
+            slot: the prompt owns it for signed-out guests who haven't
+            dismissed it, and hands it to the button (its `fallback`) once
+            the user signs in or dismisses the prompt — so the button still
+            surfaces for guests without ever stacking under the prompt. */}
+        <SignInPrompt
+          fallback={
+            onOpenFullExplorer ? (
+              <button
+                type="button"
+                onClick={onOpenFullExplorer}
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+              >
+                <ExpandIcon />
+                Open Explorer
+              </button>
+            ) : null
+          }
+        />
       </div>
 
       {moveTargetDiagramId && onMoveDiagramToFolder ? (

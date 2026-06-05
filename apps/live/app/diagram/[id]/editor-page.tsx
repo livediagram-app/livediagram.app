@@ -242,7 +242,7 @@ export default function LivePage() {
   // does both — see `hooks/useClerkApiBootstrap.ts`. The values it
   // returns are the same ones `useAuth()` would; we read them via the
   // hook so the page has one source of truth.
-  const { authLoaded, isSignedIn, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
+  const { authLoaded, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
 
   const {
     tabs,
@@ -3000,10 +3000,8 @@ export default function LivePage() {
             loading={diagramListLoading}
             shared={sharedDiagrams}
             onDismissShared={dismissSharedDiagram}
-            onOpenFullExplorer={
-              isSignedIn
-                ? () => window.location.assign(`${window.location.origin}/live/explorer`)
-                : undefined
+            onOpenFullExplorer={() =>
+              window.location.assign(`${window.location.origin}/live/explorer`)
             }
             currentDiagramId={null}
             onMoveTo={(x, y) => setExplorerPosition({ x, y })}
@@ -3197,6 +3195,7 @@ export default function LivePage() {
         onCommitDraw={commitDraw}
         onCommitFreehand={commitFreehand}
         recogniseShapes={userPreferences.recogniseShapes === true}
+        minimalPanels={userPreferences.minimalPanels === true}
         onToggleRecogniseShapes={() => {
           const next: UserPreferences = {
             ...userPreferences,
@@ -3222,10 +3221,8 @@ export default function LivePage() {
         folders={folders}
         sharedDiagrams={sharedDiagrams}
         onDismissShared={dismissSharedDiagram}
-        onOpenFullExplorer={
-          isSignedIn
-            ? () => window.location.assign(`${window.location.origin}/live/explorer`)
-            : undefined
+        onOpenFullExplorer={() =>
+          window.location.assign(`${window.location.origin}/live/explorer`)
         }
         diagramListLoading={diagramListLoading}
         changeLog={changeLog.filter((entry) => entry.tabId === activeId)}

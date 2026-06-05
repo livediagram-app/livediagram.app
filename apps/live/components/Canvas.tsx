@@ -205,6 +205,9 @@ type CanvasProps = {
   // setter writes through writeUserPreferences so D1 syncs.
   recogniseShapes: boolean;
   onToggleRecogniseShapes: () => void;
+  // Minimal panel layout preference (spec/20). When true, the floating
+  // panels render as dock popovers on desktop too (always on mobile).
+  minimalPanels?: boolean;
   onCancelDraw: () => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -473,6 +476,7 @@ export function Canvas(props: CanvasProps) {
     onCommitDraw,
     onCommitFreehand,
     recogniseShapes,
+    minimalPanels,
     onToggleRecogniseShapes,
     onCancelDraw,
     onUndo,
@@ -1929,7 +1933,7 @@ export function Canvas(props: CanvasProps) {
       {!welcomeOpen && (
         <div
           data-mobile-dock
-          className="pointer-events-auto absolute top-2 right-2 z-20 flex items-stretch rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900 sm:hidden"
+          className={`pointer-events-auto absolute top-2 right-2 z-20 flex items-stretch rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900${minimalPanels ? '' : ' sm:hidden'}`}
           onPointerDown={(e) => e.stopPropagation()}
         >
           {(
@@ -1948,61 +1952,65 @@ export function Canvas(props: CanvasProps) {
                   </svg>
                 ),
               },
-              {
-                id: 'palette',
-                label: 'Palette',
-                icon: (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                    <rect
-                      x="2"
-                      y="2"
-                      width="4"
-                      height="4"
-                      rx="0.8"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                    />
-                    <rect
-                      x="8"
-                      y="2"
-                      width="4"
-                      height="4"
-                      rx="2"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                    />
-                    <rect
-                      x="2"
-                      y="8"
-                      width="4"
-                      height="4"
-                      rx="0.8"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                    />
-                    <path
-                      d="M10 8v4M8 10h4"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                ),
-              },
-              {
-                id: 'editor',
-                label: 'Editor',
-                icon: (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                    <path
-                      d="M2 10.5V12h1.5l5-5-1.5-1.5-5 5zM10.8 3.7a1 1 0 0 0 0-1.4l-.1-.1a1 1 0 0 0-1.4 0L8 3.5 9.5 5l1.3-1.3z"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                ),
-              },
+              ...(!readOnly
+                ? [
+                    {
+                      id: 'palette' as const,
+                      label: 'Palette',
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                          <rect
+                            x="2"
+                            y="2"
+                            width="4"
+                            height="4"
+                            rx="0.8"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                          />
+                          <rect
+                            x="8"
+                            y="2"
+                            width="4"
+                            height="4"
+                            rx="2"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                          />
+                          <rect
+                            x="2"
+                            y="8"
+                            width="4"
+                            height="4"
+                            rx="0.8"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                          />
+                          <path
+                            d="M10 8v4M8 10h4"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: 'editor' as const,
+                      label: 'Editor',
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                          <path
+                            d="M2 10.5V12h1.5l5-5-1.5-1.5-5 5zM10.8 3.7a1 1 0 0 0 0-1.4l-.1-.1a1 1 0 0 0-1.4 0L8 3.5 9.5 5l1.3-1.3z"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      ),
+                    },
+                  ]
+                : []),
               ...(!readOnly && aiPanel
                 ? [
                     {
@@ -2078,6 +2086,7 @@ export function Canvas(props: CanvasProps) {
         onSize={(size) => setExplorerBottomY(size.bottomY)}
         mobileOpenOverride={activeMobilePanel === 'explorer' ? true : false}
         mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
         onMobileClose={() => {
           setActiveMobilePanel(null);
           setActiveDockAnchor(null);
@@ -2125,6 +2134,7 @@ export function Canvas(props: CanvasProps) {
           onMoveTo={aiPanel.onMove}
           mobileOpenOverride={activeMobilePanel === 'ai' ? true : false}
           mobileDockAnchor={activeDockAnchor ?? undefined}
+          forceDockMode={!!minimalPanels}
           onMobileClose={() => {
             setActiveMobilePanel(null);
             setActiveDockAnchor(null);
@@ -2215,6 +2225,7 @@ export function Canvas(props: CanvasProps) {
           mobileTopOverridePx={explorerBottomY > 0 ? explorerBottomY + 4 : undefined}
           mobileOpenOverride={activeMobilePanel === 'palette' ? true : false}
           mobileDockAnchor={activeDockAnchor ?? undefined}
+          forceDockMode={!!minimalPanels}
           onMobileClose={() => {
             setActiveMobilePanel(null);
             setActiveDockAnchor(null);
@@ -2239,6 +2250,7 @@ export function Canvas(props: CanvasProps) {
           onSize={(size) => setContextBottomY(size.bottomY)}
           mobileOpenOverride={activeMobilePanel === 'editor' ? true : false}
           mobileDockAnchor={activeDockAnchor ?? undefined}
+          forceDockMode={!!minimalPanels}
           onMobileClose={() => {
             setActiveMobilePanel(null);
             setActiveDockAnchor(null);

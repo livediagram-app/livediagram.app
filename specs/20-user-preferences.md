@@ -121,6 +121,21 @@ type UserPreferences = {
   // toggle's state still persists here so flipping it once
   // sticks across sessions.
   recogniseShapes?: boolean;
+
+  // When true, the AI Assistant panel renders in the editor.
+  // Defaults to false (opt-in). Only surfaced in the Settings
+  // dialog when the api worker reports aiEnabled:true (an
+  // OPENAI_API_KEY is configured). See spec/25.
+  aiAssistanceEnabled?: boolean;
+
+  // When true, the floating Explorer / Palette / Editor / AI panels
+  // are replaced by a compact dock of buttons that open each panel
+  // as a popover on click — the "minimal panel layout". Defaults to
+  // false (floating panels) on desktop. The dock layout is ALWAYS
+  // active on mobile regardless of this flag, because the floating
+  // panels don't fit a phone viewport; the preference only changes
+  // desktop behaviour. See spec/09.
+  minimalPanels?: boolean;
 };
 ```
 
@@ -144,6 +159,12 @@ Missing key === undefined === default behaviour. Concretely:
   Setting it to `true` makes every pencil commit attempt
   classification first. Flipped from the pencil ModeBanner icon
   button rather than from the Settings dialog.
+- `aiAssistanceEnabled` undefined → AI panel hidden (the default).
+  Setting it to `true` shows the panel; the toggle only appears in
+  Settings when the api worker advertises AI capability.
+- `minimalPanels` undefined → floating panels on desktop (the
+  default). Setting it to `true` switches desktop to the dock /
+  popover layout. Mobile ignores the flag — it is always docked.
 
 Empty (or missing entirely) localStorage entry, AND no row in
 `user_preferences` for this owner, is therefore the "everything
@@ -151,10 +172,10 @@ on" state.
 
 ## UI placement
 
-Global preferences (auto-rebind, telemetry, draw-to-add) sit in
-the Settings dialog. Per-tool preferences (today: `recogniseShapes`
-for the pencil) sit next to the tool they affect, because
-walking the user back to a separate dialog to flip a per-tool
+Global preferences (auto-rebind, draw-to-add, minimal-panels, AI,
+telemetry) sit in the Settings dialog. Per-tool preferences (today:
+`recogniseShapes` for the pencil) sit next to the tool they affect,
+because walking the user back to a separate dialog to flip a per-tool
 behaviour is friction the tool's banner already solves.
 
 - **Settings dialog**: `apps/live/components/SettingsDialog.tsx`,
@@ -165,6 +186,10 @@ behaviour is friction the tool's banner already solves.
   toggle. Visible in every role: view-role visitors can still
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
+  Toggles are organised into collapsible groups (Canvas, Interface,
+  AI, Privacy) so the growing list stays scannable; each group
+  defaults open. The Interface group holds `minimalPanels`, whose
+  description notes the dock layout is always on for mobile.
 - **Per-tool surfaces**: today only the pencil's ModeBanner (a
   sparkle / magic-wand icon button to the left of Cancel) carries
   the `recogniseShapes` toggle. The button reads the value from

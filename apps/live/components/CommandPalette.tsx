@@ -180,6 +180,7 @@ type CommandPaletteProps = {
   mobileOpenOverride?: boolean;
   onMobileClose?: () => void;
   mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  forceDockMode?: boolean;
 };
 
 export function CommandPalette({
@@ -200,6 +201,7 @@ export function CommandPalette({
   mobileOpenOverride,
   onMobileClose,
   mobileDockAnchor,
+  forceDockMode,
 }: CommandPaletteProps) {
   const pendingShapeKind = pendingDraw && pendingDraw.type === 'shape' ? pendingDraw.kind : null;
   // On mobile (dock popover mode) close the palette after adding a
@@ -259,6 +261,7 @@ export function CommandPalette({
       mobileOpenOverride={mobileOpenOverride}
       onMobileClose={onMobileClose}
       mobileDockAnchor={mobileDockAnchor}
+      forceDockMode={forceDockMode}
       onReset={onReset}
       onMoveTo={onMoveTo}
       collapsible

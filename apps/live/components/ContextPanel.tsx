@@ -96,6 +96,7 @@ type ContextPanelProps = {
   mobileTopOverridePx?: number;
   onMobileClose?: () => void;
   mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  forceDockMode?: boolean;
 };
 
 // Right-hand inspector — shows either the Selected Element controls
@@ -119,6 +120,7 @@ export function ContextPanel({
   mobileTopOverridePx,
   onMobileClose,
   mobileDockAnchor,
+  forceDockMode,
 }: ContextPanelProps) {
   // Accordion open state lives at the panel level so it survives the
   // SelectedElement <-> Tab swap whenever the user deselects or
@@ -198,6 +200,7 @@ export function ContextPanel({
       mobileTopOverridePx={mobileTopOverridePx}
       onMobileClose={onMobileClose}
       mobileDockAnchor={mobileDockAnchor}
+      forceDockMode={forceDockMode}
     >
       {/* Wrapper ref scopes the idle-timer listeners to the panel
           body — the MovablePanel's header (drag handle) doesn't

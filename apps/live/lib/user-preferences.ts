@@ -56,6 +56,12 @@ export type UserPreferences = {
   // (i.e. OPENAI_API_KEY is configured). Missing / undefined / false
   // === panel hidden.
   aiAssistanceEnabled?: boolean;
+  // Minimal panel layout (spec/09). When `true`, the floating panels
+  // (Explorer, Palette, Editor, AI) are replaced by a compact button
+  // row that opens each panel as a popover on click. Always active on
+  // mobile regardless of this setting. Missing / undefined / false ===
+  // standard floating panels on desktop.
+  minimalPanels?: boolean;
 };
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';

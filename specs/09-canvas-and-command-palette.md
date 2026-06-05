@@ -28,6 +28,10 @@ The header has a **collapse button** to the right of the `PALETTE` label. Clicki
 
 On desktop the Palette and Editor (ContextPanel) collapse to a banner in place via the `MovablePanel` `collapsible` prop. On mobile they (and the Explorer) are reached from the top-right mobile dock instead (spec/07 "Mobile chrome"); the old bottom-of-canvas dock button next to the zoom controls is retired. Activity still docks via its own minimise path, see that section.
 
+### Minimal panel layout (desktop opt-in)
+
+Desktop users can opt into the mobile-style dock via the **"Minimal panel layout"** preference (`minimalPanels`, spec/20, Settings → Interface). When on, the floating Explorer / Palette / Editor / AI panels are replaced on desktop by the same top-right button dock and popover behaviour mobile already uses: each button opens its panel as a popover with an arrow pointing at the button, click-outside or a second click closes it, and adding a shape / tool auto-closes the Palette popover. Implemented by the `MovablePanel` `forceDockMode` prop, which extends the existing mobile dock code path to desktop (the dock is `sm:hidden` by default but shown at all widths when `minimalPanels` is set). Defaults off; mobile is always docked regardless of the flag.
+
 ## Explorer panel
 
 A second floating panel, pinned to the **top-left** of the canvas by default. Shares the same draggable + minimisable behaviour as the [Command palette](#command-palette) via the shared `MovablePanel` component. Title: `EXPLORER`.

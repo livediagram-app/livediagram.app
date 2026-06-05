@@ -88,12 +88,20 @@ function PromptShell({
   );
 }
 
-function SignInPromptEnabled() {
+// `fallback` is rendered in the prompt's slot once it has settled into a
+// state where the prompt itself doesn't show (signed in, or the user has
+// dismissed it). The Explorer passes its "Open Explorer" button here so
+// the two never occupy the panel at once but the button still surfaces
+// for dismissed guests. While Clerk / the dismissal read are still
+// loading we render nothing, so the fallback doesn't flash in before the
+// prompt has a chance to claim the slot.
+type SignInPromptProps = { fallback?: React.ReactNode };
+
+function SignInPromptEnabled({ fallback }: SignInPromptProps) {
   const { isLoaded, isSignedIn } = useAuth();
   const { dismissed, dismiss } = usePromptDismissed();
-  // Wait for Clerk to settle + the dismissal read; hide entirely for
-  // signed-in users or once the user has dismissed it.
-  if (!isLoaded || isSignedIn || dismissed === null || dismissed) return null;
+  if (!isLoaded || dismissed === null) return null;
+  if (isSignedIn || dismissed) return <>{fallback ?? null}</>;
   return (
     <PromptShell
       title="Sign in to keep your content"
@@ -111,9 +119,10 @@ function SignInPromptEnabled() {
   );
 }
 
-function SignInPromptDisabled() {
+function SignInPromptDisabled({ fallback }: SignInPromptProps) {
   const { dismissed, dismiss } = usePromptDismissed();
-  if (dismissed === null || dismissed) return null;
+  if (dismissed === null) return null;
+  if (dismissed) return <>{fallback ?? null}</>;
   return (
     <PromptShell
       title="Diagrams saved to this browser"
