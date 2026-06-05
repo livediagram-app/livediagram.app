@@ -371,7 +371,7 @@ export function Explorer({
               ) : currentShared ? (
                 <li className="animate-slide-row-in overflow-hidden">
                   <DiagramRow
-                    item={{ ...currentShared, folderId: null }}
+                    item={{ ...currentShared, folderId: null, shareCode: null }}
                     active
                     onOpen={() => onOpenDiagram(currentShared.id, currentShared.shareCode)}
                   />
