@@ -108,9 +108,8 @@ type UserPreferences = {
   // a draw-to-size mode: the canvas cursor becomes a shape-aware
   // crosshair and the next drag defines the bounds of the new
   // element. Defaults to false (the historical drop-at-viewport-
-  // centre behaviour). See `apps/live/components/Canvas.tsx` for
-  // the PendingDraw discriminated union the gesture commits
-  // through.
+  // centre behaviour). See `apps/live/lib/draw-mode.ts` for the
+  // PendingDraw discriminated union the gesture commits through.
   drawToAdd?: boolean;
   // Pencil tool's shape-recognition toggle (spec/09 Pencil
   // subsection). When true, every freehand commit while the
