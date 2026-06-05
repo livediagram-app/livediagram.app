@@ -192,9 +192,9 @@ export function ListView({
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="grid grid-cols-[1fr_90px_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+      <div className="grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
         <span>Name</span>
-        <span>Visibility</span>
+        <span className="hidden sm:block">Visibility</span>
         <span>Updated</span>
         <span aria-hidden></span>
       </div>
@@ -238,7 +238,7 @@ export function ListView({
 // pseudo-folder which lists every diagram with folder_id IS NULL.
 export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => void }) {
   return (
-    <li className="group grid grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
+    <li className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
       <button
         type="button"
         onDoubleClick={onOpen}
@@ -257,7 +257,7 @@ export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => vo
           </span>
         ) : null}
       </button>
-      <span />
+      <span className="hidden sm:block" />
       <span className="text-[11px] uppercase tracking-wider text-slate-400">—</span>
       <span aria-hidden />
     </li>
@@ -317,7 +317,7 @@ export function FolderRow({
     </>
   );
   return (
-    <li className="group grid grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
+    <li className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
       {renaming ? (
         <div className="flex min-w-0 items-center gap-2">{labelInner}</div>
       ) : (
@@ -330,7 +330,7 @@ export function FolderRow({
           {labelInner}
         </button>
       )}
-      <span />
+      <span className="hidden sm:block" />
       <span className="text-[11px] uppercase tracking-wider text-slate-400">
         {formatRelativeTime(Date.now() - folder.updatedAt)}
       </span>
@@ -402,14 +402,14 @@ export function DiagramRow({
   );
 
   return (
-    <li className="group grid grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
+    <li className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
       <span className="flex min-w-0 items-center gap-2">
         <span className="shrink-0 text-slate-400">
           <DiagramIcon />
         </span>
         {titleNode}
       </span>
-      <span>
+      <span className="hidden sm:block">
         {diagram.shareCode ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
             <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
