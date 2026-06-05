@@ -29,13 +29,7 @@ import {
 // view primitives (which render it). Lifted here, not into a third
 // `types.ts`, because every consumer of these types also reaches
 // for one of the view components.
-export type DiagramItem = {
-  id: string;
-  name: string;
-  folderId: string | null;
-  savedAt: number;
-  shareCode: string | null;
-};
+export type DiagramItem = { id: string; name: string; folderId: string | null; savedAt: number; shareCode: string | null };
 
 // What the sidebar tree highlights and what the right pane shows.
 // "Special" nodes (`recent`, `all`, `shared`) are virtual buckets
@@ -198,8 +192,9 @@ export function ListView({
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="grid grid-cols-[1fr_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+      <div className="grid grid-cols-[1fr_90px_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
         <span>Name</span>
+        <span>Visibility</span>
         <span>Updated</span>
         <span aria-hidden></span>
       </div>
@@ -243,7 +238,7 @@ export function ListView({
 // pseudo-folder which lists every diagram with folder_id IS NULL.
 export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => void }) {
   return (
-    <li className="group grid grid-cols-[1fr_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
+    <li className="group grid grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
       <button
         type="button"
         onDoubleClick={onOpen}
@@ -262,6 +257,7 @@ export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => vo
           </span>
         ) : null}
       </button>
+      <span />
       <span className="text-[11px] uppercase tracking-wider text-slate-400">—</span>
       <span aria-hidden />
     </li>
@@ -321,7 +317,7 @@ export function FolderRow({
     </>
   );
   return (
-    <li className="group grid grid-cols-[1fr_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
+    <li className="group grid grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
       {renaming ? (
         <div className="flex min-w-0 items-center gap-2">{labelInner}</div>
       ) : (
@@ -334,6 +330,7 @@ export function FolderRow({
           {labelInner}
         </button>
       )}
+      <span />
       <span className="text-[11px] uppercase tracking-wider text-slate-400">
         {formatRelativeTime(Date.now() - folder.updatedAt)}
       </span>
@@ -405,28 +402,21 @@ export function DiagramRow({
   );
 
   return (
-    <li className="group grid grid-cols-[1fr_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
+    <li className="group grid grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
       <span className="flex min-w-0 items-center gap-2">
         <span className="shrink-0 text-slate-400">
           <DiagramIcon />
         </span>
         {titleNode}
+      </span>
+      <span>
         {diagram.shareCode ? (
-          <span title="Has a share link" className="shrink-0 text-slate-400">
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
-              <path
-                d="M4.5 7.5a2.5 2.5 0 0 0 3.5 0l1.5-1.5a2.5 2.5 0 0 0-3.5-3.5L5 3.5"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-              />
-              <path
-                d="M7.5 4.5a2.5 2.5 0 0 0-3.5 0L2.5 6a2.5 2.5 0 0 0 3.5 3.5L7 8.5"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-              />
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
+            <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <circle cx="2" cy="4.5" r="1.4" /><circle cx="7" cy="2" r="1.2" /><circle cx="7" cy="7" r="1.2" />
+              <path d="M3.2 3.8L5.9 2.5M3.2 5.2L5.9 6.5" />
             </svg>
+            Shared
           </span>
         ) : null}
       </span>
