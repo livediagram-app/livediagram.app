@@ -33,14 +33,16 @@ const SearchPanel = dynamic(() => import('@/components/SearchPanel').then((m) =>
 const GalleryPane = dynamic(() => import('@/components/GalleryPane').then((m) => m.GalleryPane));
 import { ClockIcon, FolderIcon, HomeIcon, ImageIcon, MenuFolderIcon, ShareIcon } from './icons';
 import {
-  EmptyPane,
-  ListView,
-  PaneHeader,
   SearchSidebarIcon,
-  SharedList,
   SidebarFolderSubtree,
   SidebarRow,
   SidebarSectionLabel,
+} from './sidebar';
+import {
+  EmptyPane,
+  ListView,
+  PaneHeader,
+  SharedList,
   SkeletonRows,
   type DiagramItem,
   type SelectedNode,
