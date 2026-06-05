@@ -168,16 +168,23 @@ export function ContextPanel({
         selection={selection}
         open={selectedAccordionsOpen}
         setOpen={setSelectedAccordionsOpen}
-        scope={selectionScope}
       />
     ) : (
       <TabSection tab={tab} open={tabOpen} setOpen={setTabOpen} />
     );
-  }, [selection, selectedAccordionsOpen, tab, tabOpen, setTabOpen, selectionScope]);
+  }, [selection, selectedAccordionsOpen, tab, tabOpen, setTabOpen]);
 
   return (
     <MovablePanel
-      title="Editor"
+      title={
+        selection === null
+          ? 'Current Tab'
+          : selectionScope === 'group'
+            ? 'Selected Group'
+            : selectionScope === 'multi'
+              ? 'Selected Elements'
+              : 'Selected Element'
+      }
       position={position}
       defaultCorner="top-right-stacked"
       width="w-auto sm:w-64"

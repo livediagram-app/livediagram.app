@@ -43,9 +43,6 @@ export function TabSection({
 
   return (
     <div className="flex flex-col">
-      <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
-        Current Tab
-      </p>
       <Accordion title="Theme" open={open.theme} onToggle={() => toggle('theme')}>
         <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
           Sets the canvas backdrop and recolours every element on this tab to match the theme

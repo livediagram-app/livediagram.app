@@ -74,23 +74,11 @@ export function SelectedElementSection({
   selection,
   open,
   setOpen,
-  scope = 'single',
 }: {
   selection: SelectedElementControls;
   open: SelectedAccordionState;
   setOpen: React.Dispatch<React.SetStateAction<SelectedAccordionState>>;
-  // Drives the section's heading: a one-off select is "Selected
-  // Element", a marquee selection is "Selected Elements", and a
-  // group selection is "Selected Group". Default keeps the old
-  // single-element wording when callers don't pass it.
-  scope?: 'single' | 'multi' | 'group';
 }) {
-  const heading =
-    scope === 'group'
-      ? 'Selected Group'
-      : scope === 'multi'
-        ? 'Selected Elements'
-        : 'Selected Element';
   // Mutually exclusive: opening an accordion closes every other one.
   // Same key being toggled flips it shut. Keeps the panel compact
   // even when several accordion-eligible sections apply.
@@ -106,10 +94,6 @@ export function SelectedElementSection({
 
   return (
     <div className="flex flex-col">
-      <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
-        {heading}
-      </p>
-
       {selection.shapeKind !== null ? (
         <Accordion title="Shape" open={open.shape} onToggle={() => toggle('shape')}>
           <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Change shape</p>
