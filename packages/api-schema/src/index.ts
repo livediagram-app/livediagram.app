@@ -436,12 +436,6 @@ export type AiRequest = {
   history?: AiConversationTurn[];
 };
 
-// Response body for mutating modes (generate / amend / clean).
-// Review mode returns text/event-stream instead.
-export type AiElementsResponse = {
-  elements: unknown[];
-};
-
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
   aiEnabled: boolean;
