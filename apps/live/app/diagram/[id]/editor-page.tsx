@@ -3221,9 +3221,7 @@ export default function LivePage() {
         folders={folders}
         sharedDiagrams={sharedDiagrams}
         onDismissShared={dismissSharedDiagram}
-        onOpenFullExplorer={() =>
-          window.location.assign(`${window.location.origin}/live/explorer`)
-        }
+        onOpenFullExplorer={() => window.location.assign(`${window.location.origin}/live/explorer`)}
         diagramListLoading={diagramListLoading}
         changeLog={changeLog.filter((entry) => entry.tabId === activeId)}
         changeLogLoading={changeLogLoading}

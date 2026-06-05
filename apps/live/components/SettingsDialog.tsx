@@ -26,8 +26,13 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
     <Portal>
       <div
         onPointerDown={(e) => e.stopPropagation()}
-        onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
-        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
         className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
       >
         <div
@@ -184,7 +189,16 @@ function ChevronIcon({ open }: { open: boolean }) {
 
 function CloseIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden
+    >
       <path d="M3 3l10 10M3 13l10-10" />
     </svg>
   );
