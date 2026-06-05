@@ -31,11 +31,11 @@ import {
   PaddingIcon,
   ScaleIcon,
   SendToBackIcon,
-  ShapeIcon,
   StrikethroughIcon,
   ThicknessIcon,
   UnderlineIcon,
 } from './palette-icons';
+import { ShapeIcon } from './shape-icon';
 import { Tooltip } from './Tooltip';
 
 import type { SelectedElementControls } from './CommandPalette';
