@@ -378,6 +378,11 @@ export default function LivePage() {
   // below; the modal opens from a button in the TabBar.
   const { enabled: shortcutsEnabled, setEnabled: setShortcutsEnabled } = useShortcutsEnabled();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  // Viewer-side password gate. Non-null when the visitor's share URL
+  // points at a password-protected diagram and they haven't supplied a
+  // valid password yet. Declared early so the preferences and capabilities
+  // effects below can gate on it.
+  const [sharePasswordGate, setSharePasswordGate] = useState<{ invalid: boolean } | null>(null);
   // Per-user editor preferences (spec/20). One localStorage key,
   // applies to every diagram the user opens from this device. Loaded
   // on mount (not gated on diagramId, since preferences aren't
@@ -670,7 +675,10 @@ export default function LivePage() {
   // toggles the user made on another device.
   useEffect(() => {
     const ownerId = selfParticipant?.id;
-    if (!ownerId) return;
+    if (!ownerId || ownerId === 'self') return;
+    // Don't sync until the share-link password has been accepted — no
+    // point fetching preferences for a visitor who hasn't got in yet.
+    if (sharePasswordGate !== null) return;
     let cancelled = false;
     void fetchUserPreferences(ownerId).then((merged) => {
       if (cancelled || merged === null) return;
@@ -679,7 +687,7 @@ export default function LivePage() {
     return () => {
       cancelled = true;
     };
-  }, [selfParticipant?.id]);
+  }, [selfParticipant?.id, sharePasswordGate]);
 
   useEffect(() => {
     if (!importError) return;
@@ -694,12 +702,8 @@ export default function LivePage() {
   // The diagram's optional share password (spec/24), owner-only. Null
   // when unset. The ShareDialog shows + edits this in the clear.
   const [sharePassword, setSharePassword] = useState<string | null>(null);
-  // Viewer-side password gate. Non-null when the visitor's share URL
-  // points at a password-protected diagram and they haven't supplied a
-  // valid password yet; `invalid` flags a wrong attempt so the gate
-  // shows an error. `passwordRetry` bumps to re-run the bootstrap once
-  // the visitor submits a password (see the bootstrap effect deps).
-  const [sharePasswordGate, setSharePasswordGate] = useState<{ invalid: boolean } | null>(null);
+  // `passwordRetry` bumps to re-run the bootstrap once the visitor
+  // submits a password (see the bootstrap effect deps).
   const [passwordRetry, setPasswordRetry] = useState(0);
   // The role granted to the current session. Owners always have 'edit';
   // visitors get whatever role their share code carried. Drives the
@@ -1610,7 +1614,7 @@ export default function LivePage() {
 
   // Server capabilities (spec/25). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
-  const { aiEnabled: aiCapable } = useCapabilities();
+  const { aiEnabled: aiCapable } = useCapabilities(sharePasswordGate === null);
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   const { isPinchingRef } = useCanvasPinchZoom({
