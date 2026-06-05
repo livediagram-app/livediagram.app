@@ -204,12 +204,30 @@ export function CommandPalette({
   const pendingShapeKind = pendingDraw && pendingDraw.type === 'shape' ? pendingDraw.kind : null;
   // On mobile (dock popover mode) close the palette after adding a
   // shape/tool so the user can draw immediately without dismissing manually.
-  const addShape = (kind: import('@livediagram/diagram').ShapeKind) => { onAddShape(kind); onMobileClose?.(); };
-  const addText = () => { onAddText(); onMobileClose?.(); };
-  const addSticky = () => { onAddSticky(); onMobileClose?.(); };
-  const addArrow = () => { onAddArrow(); onMobileClose?.(); };
-  const beginFreehand = () => { onBeginFreehand(); onMobileClose?.(); };
-  const addImage = () => { onAddImage?.(); onMobileClose?.(); };
+  const addShape = (kind: import('@livediagram/diagram').ShapeKind) => {
+    onAddShape(kind);
+    onMobileClose?.();
+  };
+  const addText = () => {
+    onAddText();
+    onMobileClose?.();
+  };
+  const addSticky = () => {
+    onAddSticky();
+    onMobileClose?.();
+  };
+  const addArrow = () => {
+    onAddArrow();
+    onMobileClose?.();
+  };
+  const beginFreehand = () => {
+    onBeginFreehand();
+    onMobileClose?.();
+  };
+  const addImage = () => {
+    onAddImage?.();
+    onMobileClose?.();
+  };
   // The Selected Element / Current Tab sections moved out into the
   // ContextPanel (bottom-right, above zoom). The palette now hosts
   // the canvas-tool toggle row at the top, the general Shapes row

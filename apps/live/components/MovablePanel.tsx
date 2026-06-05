@@ -196,8 +196,11 @@ export function MovablePanel({
     };
     const raf = requestAnimationFrame(compute);
     window.addEventListener('resize', compute);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', compute); };
-  // Re-measure after drag (position changes) or dynamic stacking (stackBelowY changes).
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', compute);
+    };
+    // Re-measure after drag (position changes) or dynamic stacking (stackBelowY changes).
   }, [position, stackBelowY]);
 
   // Publish the panel's bounding box upward whenever it changes
