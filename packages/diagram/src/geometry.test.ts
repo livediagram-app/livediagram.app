@@ -42,6 +42,23 @@ describe('anchorPosition', () => {
     expect(anchorPosition(box, 'sw')).toEqual({ x: 10, y: 100 });
     expect(anchorPosition(box, 'w')).toEqual({ x: 10, y: 60 });
   });
+
+  it('treats rotation 0 / absent as unrotated', () => {
+    expect(anchorPosition(shape('a', { rotation: 0 }), 'e')).toEqual({ x: 100, y: 40 });
+  });
+
+  it('rotates the anchor about the element centre (90deg clockwise)', () => {
+    // Square at (0,0) 100x100, centre (50,50), spun 90deg clockwise:
+    // each edge anchor moves a quarter-turn round the centre.
+    const sq = shape('s', { width: 100, height: 100, rotation: 90 });
+    const close = (p: { x: number; y: number }, x: number, y: number) => {
+      expect(p.x).toBeCloseTo(x, 6);
+      expect(p.y).toBeCloseTo(y, 6);
+    };
+    close(anchorPosition(sq, 'e'), 50, 100); // east edge swings to the south
+    close(anchorPosition(sq, 'n'), 100, 50); // north edge swings to the east
+    close(anchorPosition(sq, 'nw'), 100, 0); // nw corner swings to the ne corner
+  });
 });
 
 describe('endpointPosition', () => {
@@ -139,6 +156,13 @@ describe('bestAnchorTowards', () => {
     expect(bestAnchorTowards(box, { x: 160, y: -40 })).toBe('ne');
     expect(bestAnchorTowards(box, { x: -40, y: 160 })).toBe('sw');
     expect(bestAnchorTowards(box, { x: -40, y: -40 })).toBe('nw');
+  });
+  it('accounts for rotation: a 90deg-CW box facing a target to the east picks its local north face', () => {
+    // Spun 90deg clockwise, the local north edge now points east in
+    // world space, so a target to the right resolves to the 'n' anchor
+    // (which anchorPosition then rotates back out to the east side).
+    const spun = shape('a', { x: 10, y: 20, width: 100, height: 80, rotation: 90 });
+    expect(bestAnchorTowards(spun, { x: 300, y: 60 })).toBe('n');
   });
 });
 

@@ -46,13 +46,14 @@ export function LockBadge({ zoom = 1 }: { zoom?: number }) {
 
 type HandlePosition = 'nw' | 'ne' | 'sw' | 'se';
 
-// -3 (12px) offset centres a 24px (h-6) handle on the corner, the same
-// size + style as the plus buttons (FLOATING_CONTROL_CLASS).
+// -2 (8px) offset centres a 16px (h-4) handle on the corner. Same round
+// white style as the plus buttons (FLOATING_CONTROL_CLASS), but a touch
+// smaller so the four corner grips stay unobtrusive.
 const positionClasses: Record<HandlePosition, string> = {
-  nw: '-top-3 -left-3 cursor-nwse-resize',
-  ne: '-top-3 -right-3 cursor-nesw-resize',
-  sw: '-bottom-3 -left-3 cursor-nesw-resize',
-  se: '-bottom-3 -right-3 cursor-nwse-resize',
+  nw: '-top-2 -left-2 cursor-nwse-resize',
+  ne: '-top-2 -right-2 cursor-nesw-resize',
+  sw: '-bottom-2 -left-2 cursor-nesw-resize',
+  se: '-bottom-2 -right-2 cursor-nwse-resize',
 };
 
 // Pseudo-element that extends each handle's pointer-capture region on
@@ -83,7 +84,7 @@ export function ResizeHandles({ elementId, zoom, onBeginDrag }: ResizeHandlesPro
             onBeginDrag(elementId, `resize-${pos}`, e);
           }}
           style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
-          className={`absolute h-6 w-6 opacity-70 hover:opacity-100 ${FLOATING_CONTROL_CLASS} ${FLOATING_CONTROL_HOVER_CLASS} ${positionClasses[pos]} ${HIT_PAD_CLASSES}`}
+          className={`absolute h-4 w-4 opacity-70 hover:opacity-100 ${FLOATING_CONTROL_CLASS} ${FLOATING_CONTROL_HOVER_CLASS} ${positionClasses[pos]} ${HIT_PAD_CLASSES}`}
         />
       ))}
     </>

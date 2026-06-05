@@ -12,9 +12,30 @@ import {
 
 export type Point = { x: number; y: number };
 
-// Works on any boxed element since they share x/y/width/height.
-export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
-  const { x, y, width, height } = element;
+// Rotate `p` clockwise about `center` by `deg` degrees, matching the
+// CSS `transform: rotate(deg)` the canvas applies to a rotated element
+// (positive = clockwise in the y-down canvas space). Pure helper shared
+// by anchorPosition + bestAnchorTowards.
+function rotatePoint(p: Point, center: Point, deg: number): Point {
+  const rad = (deg * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  const dx = p.x - center.x;
+  const dy = p.y - center.y;
+  return {
+    x: center.x + dx * cos - dy * sin,
+    y: center.y + dx * sin + dy * cos,
+  };
+}
+
+// The anchor point on the element's UNROTATED axis-aligned box.
+function localAnchorPosition(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  anchor: Anchor,
+): Point {
   switch (anchor) {
     case 'nw':
       return { x, y };
@@ -33,6 +54,19 @@ export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
     case 'w':
       return { x, y: y + height / 2 };
   }
+}
+
+// Works on any boxed element since they share x/y/width/height. When the
+// element carries a `rotation`, the anchor is rotated about the
+// element's centre so a pinned arrow lands on the visually-rotated edge,
+// not the pre-rotation position. Every pinned endpoint (rendering) and
+// snapToAnchor (pinning) resolve through here, so they stay consistent.
+export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
+  const { x, y, width, height } = element;
+  const local = localAnchorPosition(x, y, width, height, anchor);
+  const rotation = element.rotation ?? 0;
+  if (!rotation) return local;
+  return rotatePoint(local, { x: x + width / 2, y: y + height / 2 }, rotation);
 }
 
 // Pick the anchor on `element` that faces `towards` most naturally.
@@ -89,8 +123,22 @@ export function rebindArrowAnchorsAfterMove(
 export function bestAnchorTowards(element: BoxedElement, towards: Point): Anchor {
   const cx = element.x + element.width / 2;
   const cy = element.y + element.height / 2;
-  const dx = towards.x - cx;
-  const dy = towards.y - cy;
+  let dx = towards.x - cx;
+  let dy = towards.y - cy;
+  // Rotate the world-space direction back into the element's local
+  // frame so the chosen face is the one that, once the element is
+  // rotated, actually points at `towards` (the returned anchor name is
+  // local; anchorPosition rotates it back out to world space).
+  const rotation = element.rotation ?? 0;
+  if (rotation) {
+    const rad = (-rotation * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    const rx = dx * cos - dy * sin;
+    const ry = dx * sin + dy * cos;
+    dx = rx;
+    dy = ry;
+  }
   const ax = Math.abs(dx);
   const ay = Math.abs(dy);
   // Cardinal-dominant zones: one axis at least 2x the other.
