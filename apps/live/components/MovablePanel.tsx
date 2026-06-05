@@ -570,7 +570,7 @@ export function MovablePanel({
       >
         <div
           style={bodyMaxH !== null ? { maxHeight: bodyMaxH } : undefined}
-          className="overflow-y-auto"
+          className="overflow-y-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700"
         >
           <div className="flex flex-col">{children}</div>
         </div>
