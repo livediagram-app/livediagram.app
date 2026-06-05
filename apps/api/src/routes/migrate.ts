@@ -1,7 +1,7 @@
 // /api/migrate — guest -> authed ownership migration.
 
 import { migrateOwnerId } from '../db';
-import { badRequest, forbidden, json, notFound } from '../responses';
+import { badRequest, json, missingAuth, notFound } from '../responses';
 import type { RouteContext } from './context';
 
 // Guest → authed ownership migration. Called from the live
@@ -17,7 +17,7 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, clerkUserId } = ctx;
   if (!(segments[1] === 'migrate' && segments.length === 2)) return notFound();
   if (request.method === 'POST') {
-    if (!clerkUserId) return forbidden();
+    if (!clerkUserId) return missingAuth();
     const body = (await request.json().catch(() => null)) as {
       guestOwnerId?: string;
     } | null;

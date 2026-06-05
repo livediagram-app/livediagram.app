@@ -3,7 +3,7 @@
 import { isValidTelemetryEvent } from '@livediagram/api-schema';
 import { insertTelemetryEvents } from '../db';
 import { isLocalhostPair } from '../origin-check';
-import { CORS_HEADERS, notFound } from '../responses';
+import { noContent, notFound } from '../responses';
 import type { RouteContext } from './context';
 
 // Anonymous telemetry ingest (spec/22). Batched POST of
@@ -16,7 +16,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments } = ctx;
   if (!(segments[1] === 'events' && segments.length === 2)) return notFound();
   if (request.method !== 'POST') return notFound();
-  const noop = new Response(null, { status: 204, headers: CORS_HEADERS });
+  const noop = noContent();
   if (env.TELEMETRY_ENABLED !== 'true') return noop;
   // Abuse controls (spec/22). The endpoint is anonymous +
   // unauthenticated, so guard it WITHOUT identifying users:

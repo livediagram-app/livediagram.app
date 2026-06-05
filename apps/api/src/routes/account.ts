@@ -1,7 +1,7 @@
 // /api/account — account self-deletion.
 
 import { deleteAccount } from '../db';
-import { forbidden, json, notFound } from '../responses';
+import { json, missingAuth, notFound } from '../responses';
 import type { RouteContext } from './context';
 
 // Account self-deletion. Clerk-only — no X-Owner-Id fallback,
@@ -18,7 +18,7 @@ export async function handleAccount(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, clerkUserId } = ctx;
   if (!(segments[1] === 'account' && segments.length === 2)) return notFound();
   if (request.method === 'DELETE') {
-    if (!clerkUserId) return forbidden();
+    if (!clerkUserId) return missingAuth();
     const deleted = await deleteAccount(env, clerkUserId);
     return json({ deleted });
   }

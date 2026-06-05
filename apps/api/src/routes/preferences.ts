@@ -1,6 +1,6 @@
 // /api/preferences — per-user editor preference flags (spec/20).
 
-import { badRequest, CORS_HEADERS, forbidden, json, notFound } from '../responses';
+import { badRequest, json, missingAuth, noContent, notFound } from '../responses';
 import type { RouteContext } from './context';
 
 // Per-user editor preference flags (spec/20). Stored as a single
@@ -14,7 +14,7 @@ export async function handlePreferences(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, resolveOwner } = ctx;
   if (!(segments[1] === 'preferences' && segments.length === 2)) return notFound();
   const ownerId = resolveOwner();
-  if (!ownerId) return forbidden();
+  if (!ownerId) return missingAuth();
   if (request.method === 'GET') {
     const row = await env.DB.prepare(
       'SELECT prefs FROM user_preferences WHERE owner_id = ?1 LIMIT 1',
@@ -56,7 +56,7 @@ export async function handlePreferences(ctx: RouteContext): Promise<Response> {
     )
       .bind(ownerId, serialised, now)
       .run();
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return noContent();
   }
   return notFound();
 }
