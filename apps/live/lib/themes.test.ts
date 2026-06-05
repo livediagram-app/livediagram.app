@@ -1,6 +1,7 @@
 import type {
   ArrowElement,
   Element,
+  FreehandElement,
   ShapeElement,
   StickyElement,
   TextElement,
@@ -136,6 +137,19 @@ describe('recolourElementForTheme', () => {
     width: 200,
     height: 200,
   };
+  const freehand: FreehandElement = {
+    id: 'f',
+    type: 'freehand',
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    points: [
+      { nx: 0, ny: 0 },
+      { nx: 1, ny: 1 },
+    ],
+    closed: true,
+  };
 
   it('writes fill, stroke, and text on shapes when the theme overrides each', () => {
     const out = recolourElementForTheme(shape, themed) as ShapeElement;
@@ -165,8 +179,19 @@ describe('recolourElementForTheme', () => {
     expect(out).toEqual(sticky);
   });
 
+  it('writes fill + stroke on freehand sketches so they follow the theme like shapes', () => {
+    // Regression: all three theme transforms used to skip freehand,
+    // leaving sketches stuck at their creation-time colours when the
+    // user themed the tab. Sketches carry fill + stroke (no text).
+    const out = recolourElementForTheme(freehand, themed) as FreehandElement;
+    expect(out.fillColor).toBe('#e2e8f0');
+    expect(out.strokeColor).toBe('#475569');
+    // No text colour: freehand renders no inline label.
+    expect((out as unknown as Record<string, unknown>).textColor).toBeUndefined();
+  });
+
   it('no-ops every type when the theme has no element-colour overrides (Brand)', () => {
-    const inputs: Element[] = [shape, text, arrow, sticky];
+    const inputs: Element[] = [shape, text, arrow, sticky, freehand];
     for (const el of inputs) {
       const out = recolourElementForTheme(el, passthrough);
       expect(out).toEqual(el);
@@ -280,6 +305,27 @@ describe('switchThemeElement', () => {
       next.elementStroke,
     );
   });
+
+  it('flips uncustomised fill + stroke on freehand sketches but keeps a customised one', () => {
+    const f: FreehandElement = {
+      id: 'f',
+      type: 'freehand',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      points: [
+        { nx: 0, ny: 0 },
+        { nx: 1, ny: 1 },
+      ],
+      closed: true,
+      fillColor: '#ff00ff', // customised: must survive
+      strokeColor: prev.elementStroke ?? undefined, // on old theme: must flip
+    };
+    const out = switchThemeElement(f, prev, next) as FreehandElement;
+    expect(out.fillColor).toBe('#ff00ff');
+    expect(out.strokeColor).toBe(next.elementStroke);
+  });
 });
 
 describe('resetThemeElement', () => {
@@ -362,6 +408,30 @@ describe('resetThemeElement', () => {
       strokeColor: '#abc',
     };
     expect((resetThemeElement(a, theme) as ArrowElement).strokeColor).toBe(theme.elementStroke);
+  });
+
+  it('overwrites fill + stroke on freehand sketches, blanking them on a null theme', () => {
+    const f: FreehandElement = {
+      id: 'f',
+      type: 'freehand',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      points: [
+        { nx: 0, ny: 0 },
+        { nx: 1, ny: 1 },
+      ],
+      closed: true,
+      fillColor: '#ff00ff',
+      strokeColor: '#003366',
+    };
+    const themed = resetThemeElement(f, theme) as FreehandElement;
+    expect(themed.fillColor).toBe(theme.elementFill);
+    expect(themed.strokeColor).toBe(theme.elementStroke);
+    const blanked = resetThemeElement(f, passthrough) as FreehandElement;
+    expect(blanked.fillColor).toBeUndefined();
+    expect(blanked.strokeColor).toBeUndefined();
   });
 
   it('leaves sticky notes alone so the iconic amber palette survives a reset', () => {

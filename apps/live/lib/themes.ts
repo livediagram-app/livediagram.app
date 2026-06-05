@@ -257,36 +257,55 @@ export function getTheme(id: string | undefined): ThemeDefinition {
   return found ?? THEMES[0]!;
 }
 
+// Which element-colour fields each element type writes from a theme.
+// The three theme transforms below (recolour / switch / reset) all
+// iterate this one table, so adding a themable element kind is a single
+// entry here rather than three parallel `if (el.type === ...)` chains
+// that can silently drift apart — which is exactly how freehand sketches
+// ended up ignored by all three before this table landed. Sticky notes
+// and images map to nothing: stickies keep their iconic amber across
+// every theme (same rule `addBoxed` applies to ad-hoc sticky creation),
+// and an image renders its bytes so its colour fields are inert (see
+// ImageElement in @livediagram/diagram).
+type ThemeColourField = {
+  element: 'fillColor' | 'strokeColor' | 'textColor';
+  theme: 'elementFill' | 'elementStroke' | 'elementText';
+};
+const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
+  shape: [
+    { element: 'fillColor', theme: 'elementFill' },
+    { element: 'strokeColor', theme: 'elementStroke' },
+    { element: 'textColor', theme: 'elementText' },
+  ],
+  // Sketches carry the same fill + stroke a shape does (open paths
+  // render stroke-only, so a written fill is inert until the path is
+  // closed); mirrors the theme-aware colours commitFreehand applies on
+  // creation so a sketch reads as part of the diagram either way.
+  freehand: [
+    { element: 'fillColor', theme: 'elementFill' },
+    { element: 'strokeColor', theme: 'elementStroke' },
+  ],
+  text: [{ element: 'textColor', theme: 'elementText' }],
+  arrow: [{ element: 'strokeColor', theme: 'elementStroke' }],
+  sticky: [],
+  image: [],
+};
+
 // Apply a theme's element-colour overrides to a single Element,
-// returning a new element with the theme's fill / stroke / text
-// fields written when present, and untouched otherwise. Sticky notes
-// keep their amber identity (the yellow note is iconic) regardless
-// of theme, matching the rule `addBoxed` applies to ad-hoc sticky
-// creation. Used by both the /live/new template path (templates.ts)
-// and the in-editor "Browse templates" picker (editor-page.tsx) so
-// the two paths can't drift, e.g. by accidentally omitting arrows.
+// returning a new element with the theme's fill / stroke / text fields
+// written when the theme defines them, and untouched otherwise. Used by
+// both the /live/new template path (templates.ts) and the in-editor
+// "Browse templates" picker (editor-page.tsx) so the two paths can't
+// drift, e.g. by accidentally omitting arrows or sketches.
 export function recolourElementForTheme(el: Element, theme: ThemeDefinition): Element {
-  if (el.type === 'shape') {
-    return {
-      ...el,
-      ...(theme.elementFill ? { fillColor: theme.elementFill } : {}),
-      ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
-      ...(theme.elementText ? { textColor: theme.elementText } : {}),
-    };
+  const fields = THEME_COLOUR_FIELDS[el.type];
+  if (fields.length === 0) return el;
+  const patch: Record<string, string> = {};
+  for (const { element, theme: themeKey } of fields) {
+    const value = theme[themeKey];
+    if (value) patch[element] = value;
   }
-  if (el.type === 'text') {
-    return {
-      ...el,
-      ...(theme.elementText ? { textColor: theme.elementText } : {}),
-    };
-  }
-  if (el.type === 'arrow') {
-    return {
-      ...el,
-      ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
-    };
-  }
-  return el;
+  return { ...el, ...patch } as Element;
 }
 
 // Soft theme switch: change the diagram's theme but preserve every
@@ -300,42 +319,34 @@ export function recolourElementForTheme(el: Element, theme: ThemeDefinition): El
 //
 // The rule applies per-field, not per-element, so a shape whose
 // fill was customised but whose stroke wasn't will get a new
-// stroke while keeping its fill. Sticky notes stay untouched (same
-// rule as `recolourElementForTheme`).
+// stroke while keeping its fill. Sticky notes + images stay
+// untouched (empty field list in THEME_COLOUR_FIELDS).
 export function switchThemeElement(
   el: Element,
   prev: ThemeDefinition,
   next: ThemeDefinition,
 ): Element {
-  const pick = (current: string | undefined, prevVal: string | null, nextVal: string | null) =>
-    current === undefined || current === prevVal ? (nextVal ?? undefined) : current;
-  if (el.type === 'shape') {
-    return {
-      ...el,
-      fillColor: pick(el.fillColor, prev.elementFill, next.elementFill),
-      strokeColor: pick(el.strokeColor, prev.elementStroke, next.elementStroke),
-      textColor: pick(el.textColor, prev.elementText, next.elementText),
-    };
+  const fields = THEME_COLOUR_FIELDS[el.type];
+  if (fields.length === 0) return el;
+  // Read the colour fields off the element generically. The cast is
+  // safe: we only ever index keys from THEME_COLOUR_FIELDS, all of
+  // which are `string | undefined` colour fields on every type that
+  // has a non-empty field list.
+  const current = el as unknown as Record<string, string | undefined>;
+  const patch: Record<string, string | undefined> = {};
+  for (const { element, theme: themeKey } of fields) {
+    const value = current[element];
+    patch[element] =
+      value === undefined || value === prev[themeKey] ? (next[themeKey] ?? undefined) : value;
   }
-  if (el.type === 'text') {
-    return {
-      ...el,
-      textColor: pick(el.textColor, prev.elementText, next.elementText),
-    };
-  }
-  if (el.type === 'arrow') {
-    return {
-      ...el,
-      strokeColor: pick(el.strokeColor, prev.elementStroke, next.elementStroke),
-    };
-  }
-  return el;
+  return { ...el, ...patch } as Element;
 }
 
 // Hard reset: force every themable colour on every shape / text /
-// arrow back to the current theme's value, OVERWRITING any custom
-// per-element colours the user set. Surfaces as "Reset elements to
-// theme" under the Theme accordion. Sticky notes stay untouched.
+// arrow / sketch back to the current theme's value, OVERWRITING any
+// custom per-element colours the user set. Surfaces as "Reset elements
+// to theme" under the Theme accordion. Sticky notes + images stay
+// untouched (empty field list in THEME_COLOUR_FIELDS).
 //
 // Difference vs `recolourElementForTheme`: when the theme's value
 // is null (e.g. the Brand theme has no element-fill override), the
@@ -344,21 +355,13 @@ export function switchThemeElement(
 // theme is "apply when present", reset is "make match the theme,
 // blank when the theme blanks".
 export function resetThemeElement(el: Element, theme: ThemeDefinition): Element {
-  if (el.type === 'shape') {
-    return {
-      ...el,
-      fillColor: theme.elementFill ?? undefined,
-      strokeColor: theme.elementStroke ?? undefined,
-      textColor: theme.elementText ?? undefined,
-    };
+  const fields = THEME_COLOUR_FIELDS[el.type];
+  if (fields.length === 0) return el;
+  const patch: Record<string, string | undefined> = {};
+  for (const { element, theme: themeKey } of fields) {
+    patch[element] = theme[themeKey] ?? undefined;
   }
-  if (el.type === 'text') {
-    return { ...el, textColor: theme.elementText ?? undefined };
-  }
-  if (el.type === 'arrow') {
-    return { ...el, strokeColor: theme.elementStroke ?? undefined };
-  }
-  return el;
+  return { ...el, ...patch } as Element;
 }
 
 // Colour projection for a NEWLY-added boxed element, given the
