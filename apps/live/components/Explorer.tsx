@@ -218,7 +218,8 @@ export function Explorer({
   // `diagrams`. Fall back to the shared list so the Current Diagram
   // section still renders for visitors.
   const currentShared = useMemo(
-    () => (!current && currentDiagramId ? (shared.find((s) => s.id === currentDiagramId) ?? null) : null),
+    () =>
+      !current && currentDiagramId ? (shared.find((s) => s.id === currentDiagramId) ?? null) : null,
     [current, shared, currentDiagramId],
   );
   // Cap the recents list at 5 so the accordion stays compact.
