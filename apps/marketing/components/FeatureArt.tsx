@@ -2284,3 +2284,191 @@ export function CanvasBackdropArt() {
     </Frame>
   );
 }
+
+/* ──────────────── Section: AI / rotation / layout (newest) ──────────────
+ * The latest editor surfaces. Same vocabulary + shared fa-* timing as
+ * everything above, plus the one fa-rotate keyframe for the rotate card. */
+
+// Optional AI assistant: the floating panel (Build / Ask / Review / Clean
+// tabs + a prompt) sits over the canvas while freshly generated shapes pop in
+// on the left, mirroring the editor's AI Assistant panel (spec/25).
+export function AiAssistArt() {
+  const tabs = ['Build', 'Ask', 'Review', 'Clean'];
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        {/* shapes the assistant just generated, popping in */}
+        <g className="fa-pop" style={{ animationDelay: '0.5s' }}>
+          <rect
+            x="18"
+            y="20"
+            width="46"
+            height="20"
+            rx="5"
+            fill={BLUE_FILL}
+            stroke={BLUE_STROKE}
+            strokeWidth="2"
+          />
+        </g>
+        <line
+          className="fa-draw"
+          x1="41"
+          y1="40"
+          x2="50"
+          y2="56"
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+          strokeLinecap="round"
+          style={{ animationDelay: '1s' }}
+        />
+        <g className="fa-pop" style={{ animationDelay: '1.2s' }}>
+          <rect
+            x="32"
+            y="56"
+            width="46"
+            height="20"
+            rx="5"
+            fill={BLUE_FILL}
+            stroke={BLUE_STROKE}
+            strokeWidth="2"
+          />
+        </g>
+      </svg>
+      {/* floating assistant panel */}
+      <div className="fa-fade absolute right-2 top-2.5 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md">
+        <div className="flex items-center gap-1 border-b border-slate-100 pb-1">
+          <SparkleIcon />
+          <span className="text-[8px] font-semibold text-slate-700">Assistant</span>
+        </div>
+        <div className="mt-1 flex gap-0.5">
+          {tabs.map((t, i) => (
+            <span
+              key={t}
+              className={
+                'rounded px-1 py-0.5 text-[6.5px] font-medium ' +
+                (i === 0 ? 'bg-brand-100 text-brand-700' : 'text-slate-400')
+              }
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        <div className="mt-1 flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1 py-0.5">
+          <span className="min-w-0 flex-1 truncate text-[7px] text-slate-500">
+            Draw a login flow…
+          </span>
+          <span className="fa-pulse flex h-3.5 w-3.5 items-center justify-center rounded bg-brand-500 text-white">
+            <SparkleIcon light />
+          </span>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
+function SparkleIcon({ light = false }: { light?: boolean }) {
+  return (
+    <svg width="9" height="9" viewBox="0 0 16 16" fill={light ? '#fff' : BLUE_STROKE} aria-hidden>
+      <path d="M8 1 l1.4 4.2 L13.6 6.6 l-4.2 1.4 L8 12.2 l-1.4 -4.2 L2.4 6.6 l4.2 -1.4 Z" />
+      <path d="M13 9.5 l0.55 1.65 L15.2 11.7 l-1.65 0.55 L13 13.9 l-0.55 -1.65 L10.8 11.7 l1.65 -0.55 Z" />
+    </svg>
+  );
+}
+
+// Shape rotation: a selected shape with a rotate handle on a stem above it,
+// rocking to the 15° snap angle and back. Resize handles are hidden while
+// rotating, matching the editor (snaps to 15°, Shift for free) (spec/09).
+export function RotateArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <g
+          className="fa-rotate"
+          style={{ transformBox: 'view-box', transformOrigin: '110px 50px' }}
+        >
+          {/* selection ring */}
+          <rect
+            x="74"
+            y="30"
+            width="72"
+            height="40"
+            rx="2"
+            fill="none"
+            stroke={SKY}
+            strokeWidth="1.5"
+          />
+          {/* the shape itself */}
+          <rect
+            x="78"
+            y="34"
+            width="64"
+            height="32"
+            rx="6"
+            fill={BLUE_FILL}
+            stroke={BLUE_STROKE}
+            strokeWidth="2"
+          />
+          {/* stem + rotate handle */}
+          <line x1="110" y1="30" x2="110" y2="17" stroke={SKY} strokeWidth="1.5" />
+          <circle cx="110" cy="14" r="4" fill="#fff" stroke={SKY} strokeWidth="1.8" />
+          <path
+            d="M108.4 14 a1.6 1.6 0 1 1 0.5 1.15"
+            fill="none"
+            stroke={SKY}
+            strokeWidth="1"
+            strokeLinecap="round"
+          />
+        </g>
+      </svg>
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        snaps to 15°
+      </span>
+    </Frame>
+  );
+}
+
+// Minimal panel layout: the editor chrome crossfades between the standard
+// floating panels and the compact dock + popover layout, with the toggle —
+// pick how you want to work (always on for mobile) (spec/09, spec/20).
+export function MinimalPanelArt() {
+  return (
+    <Frame canvas>
+      {/* standard — floating panels docked on the sides */}
+      <div className="fa-on absolute inset-0">
+        <div className="absolute bottom-7 left-2 top-2 flex w-7 flex-col items-center gap-1 rounded-md border border-slate-200 bg-white py-1.5 shadow-sm">
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} className="h-3 w-3 rounded bg-slate-200" />
+          ))}
+        </div>
+        <div className="absolute bottom-7 right-2 top-2 w-12 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-sm">
+          <div className="h-1.5 w-full rounded bg-slate-300" />
+          <div className="h-1.5 w-3/4 rounded bg-slate-200" />
+          <div className="h-1.5 w-full rounded bg-slate-200" />
+        </div>
+        <span className="absolute bottom-1.5 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+          standard panels
+        </span>
+      </div>
+      {/* minimal — compact dock + popover */}
+      <div className="fa-off absolute inset-0">
+        <div className="absolute bottom-7 left-1/2 w-[46%] -translate-x-1/2 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-md">
+          <div className="h-1.5 w-3/4 rounded bg-slate-300" />
+          <div className="h-1.5 w-full rounded bg-slate-200" />
+        </div>
+        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <span key={i} className="h-2.5 w-2.5 rounded-full bg-slate-200" />
+          ))}
+        </div>
+        <span className="absolute left-2 top-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+          compact dock
+        </span>
+      </div>
+      {/* toggle (synced with the crossfade above) */}
+      <span className="absolute right-2 top-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm">
+        <span className="fa-off absolute inset-0 rounded-full bg-brand-500" />
+        <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow" />
+      </span>
+    </Frame>
+  );
+}

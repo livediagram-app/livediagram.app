@@ -1035,6 +1035,26 @@
   animation: fa-ripple 2.4s ease-out infinite;
 }
 
+/* shape rotation, a gentle rock to the 15° snap angle and back (the origin
+   is set inline on the rotating <g> so it pivots about the shape's centre). */
+@keyframes fa-rotate {
+  0%,
+  16% {
+    transform: rotate(0deg);
+  }
+  44%,
+  70% {
+    transform: rotate(15deg);
+  }
+  92%,
+  100% {
+    transform: rotate(0deg);
+  }
+}
+.fa-rotate {
+  animation: fa-rotate 5s ease-in-out infinite;
+}
+
 /* one-shot entrance for the use-case carousel's featured card; replays on
    selection change via a React key remount (components/UseCaseCarousel). */
 @keyframes uc-pop {
@@ -1104,6 +1124,7 @@
   .fa-laser,
   .fa-spin,
   .fa-dip,
+  .fa-rotate,
   .fa-swap-a,
   .fa-on,
   .fa-fade,

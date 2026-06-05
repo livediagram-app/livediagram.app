@@ -1,6 +1,7 @@
 import {
   AccountSyncArt,
   ActivityArt,
+  AiAssistArt,
   AnyDeviceArt,
   ArrowsArt,
   AutosaveArt,
@@ -18,6 +19,7 @@ import {
   NotesArt,
   LockArt,
   MarqueeArt,
+  MinimalPanelArt,
   PencilArt,
   MitArt,
   MultiplayerArt,
@@ -27,6 +29,7 @@ import {
   RealtimeArt,
   RefreshArt,
   RevokeArt,
+  RotateArt,
   SearchArt,
   SelectionGlowArt,
   ShapesArt,
@@ -218,6 +221,12 @@ export default function LandingPage() {
                 description:
                   'Flip the whole editor to a dark theme with one toggle. Toolbars, panels, dialogs, and menus all come along, and the choice sticks per device. The canvas stays crisp either way.',
               },
+              {
+                art: <MinimalPanelArt />,
+                title: 'Panels your way',
+                description:
+                  'Prefer floating side panels or a clean canvas? Switch on the minimal layout and the palette and tools collapse into a compact dock with pop-out panels, the same tidy chrome you get on mobile. The choice sticks per device.',
+              },
             ]}
           />
         </Section>
@@ -322,6 +331,12 @@ export default function LandingPage() {
           <FeatureGrid
             items={[
               {
+                art: <AiAssistArt />,
+                title: 'An optional AI assistant',
+                description:
+                  'Switch it on and describe what you want: Build drafts new elements and edits existing ones, Clean tidies sizes and labels, while Ask and Review answer questions and critique what you have. It works from your selection or the whole tab, and one undo takes it all back. Off by default, and self-hosters bring their own key.',
+              },
+              {
                 art: <ImagesArt />,
                 title: 'Images on the canvas',
                 description:
@@ -338,6 +353,12 @@ export default function LandingPage() {
                 title: 'Arrows that bend your way',
                 description:
                   'Connect anything with straight, curved, or angled arrows. Drag the handle on a curve to reshape its bow, or on an elbow to move the bend. Set the thickness, size the arrowhead, add a label, and pin an end to a shape so it follows when things move.',
+              },
+              {
+                art: <RotateArt />,
+                title: 'Rotate to any angle',
+                description:
+                  'Grab the rotate handle above a selected shape and turn it. It snaps to neat 15° steps, or hold Shift for free rotation, and pinned arrows keep tracking the shape as it turns.',
               },
               {
                 art: <PencilArt />,
