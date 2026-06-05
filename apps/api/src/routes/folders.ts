@@ -8,14 +8,14 @@ import {
   listFoldersByOwner,
   updateFolder,
 } from '../db';
-import { badRequest, CORS_HEADERS, forbidden, json, missingAuth, notFound } from '../responses';
-import type { RouteContext } from './context';
+import { badRequest, forbidden, json, noContent, notFound } from '../responses';
+import { requireOwner, type RouteContext } from './context';
 
 export async function handleFolders(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, resolveOwner } = ctx;
+  const { request, env, segments } = ctx;
   if (segments[1] !== 'folders') return notFound();
-  const owner = resolveOwner();
-  if (!owner) return missingAuth();
+  const owner = requireOwner(ctx);
+  if (owner instanceof Response) return owner;
 
   // /api/folders — list / create
   if (segments.length === 2) {
@@ -74,7 +74,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
     }
     if (request.method === 'DELETE') {
       await deleteFolder(env, id);
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
+      return noContent();
     }
   }
   return notFound();

@@ -20,10 +20,9 @@ import {
   forbidden,
   imagesUnavailable,
   json,
-  missingAuth,
   notFound,
 } from '../responses';
-import { gateRead, type RouteContext } from './context';
+import { gateRead, requireOwner, type RouteContext } from './context';
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB, see spec/19.
 
@@ -38,8 +37,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
 
   // GET /api/images: gallery list. Owner only.
   if (segments.length === 2 && request.method === 'GET') {
-    const owner = resolveOwner();
-    if (!owner) return missingAuth();
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
     const images = await listImagesByOwner(env, owner);
     return json({ images });
   }
@@ -52,8 +51,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   // SHA before trusting it (the dedupe key has to be the
   // body's real hash, not whatever the client claimed).
   if (segments.length === 2 && request.method === 'POST') {
-    const owner = resolveOwner();
-    if (!owner) return missingAuth();
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
     const declaredType = (request.headers.get('Content-Type') ?? '').toLowerCase();
     if (!ACCEPTED_IMAGE_TYPES.includes(declaredType as AcceptedImageType)) {
       return json(
@@ -152,8 +151,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   // canvas yet (the entry simply doesn't appear in the map).
   // See spec/15 + spec/19.
   if (segments.length === 3 && segments[2] === 'usage' && request.method === 'GET') {
-    const owner = resolveOwner();
-    if (!owner) return missingAuth();
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
     const usage = await imageUsageByOwner(env, owner);
     return json({ usage });
   }
@@ -215,8 +214,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   // image placeholder.
   if (segments.length === 3 && request.method === 'DELETE') {
     const imageId = segments[2]!;
-    const owner = resolveOwner();
-    if (!owner) return missingAuth();
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
     const meta = await getImage(env, imageId);
     if (!meta) return json({ ok: true });
     if (meta.ownerId !== owner) return forbidden();

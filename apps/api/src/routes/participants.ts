@@ -1,9 +1,9 @@
 // /api/participants/<id> — read / update a participant's display row.
 
 import { getParticipant, upsertParticipant } from '../db';
-import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
+import { badRequest, forbidden, json, notFound } from '../responses';
 import type { ParticipantDTO } from '../types';
-import type { RouteContext } from './context';
+import { requireOwner, type RouteContext } from './context';
 
 // GET stays open — participant ids are already broadcast through
 // the WS room and embedded in change-log rows, so anyone in a
@@ -20,7 +20,7 @@ import type { RouteContext } from './context';
 // owner (Clerk Bearer OR X-Owner-Id, spec/04) to match the
 // participant id being mutated.
 export async function handleParticipants(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, resolveOwner } = ctx;
+  const { request, env, segments } = ctx;
   if (!(segments[1] === 'participants' && segments.length === 3)) return notFound();
   const id = segments[2]!;
   if (request.method === 'GET') {
@@ -28,8 +28,8 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     return p ? json({ participant: p }) : notFound();
   }
   if (request.method === 'PUT') {
-    const owner = resolveOwner();
-    if (!owner) return missingAuth();
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
     if (owner !== id) return forbidden();
     const body = (await request.json()) as Partial<ParticipantDTO>;
     if (!body.name || !body.color) return badRequest('missing name/color');
