@@ -130,4 +130,44 @@ describe('autoAlignElements', () => {
     expect((out[0] as ShapeElement).x).toBe(10);
     expect(((out[1] as ArrowElement).from as { x: number; y: number }).x).toBe(10);
   });
+
+  it('unifies the sizes of same-type elements that are close', () => {
+    // Two squares 20px apart in width (within tolerance) collapse to the
+    // cluster mean (110) so the row reads as uniform.
+    const out = autoAlignElements([
+      square({ id: 'a', x: 0, y: 0, width: 100, height: 50 }),
+      square({ id: 'b', x: 0, y: 200, width: 120, height: 50 }),
+    ]);
+    expect((out[0] as ShapeElement).width).toBe(110);
+    expect((out[1] as ShapeElement).width).toBe(110);
+  });
+
+  it('pulls near-aligned edges onto a shared line', () => {
+    // Left edges 0 and 15 (within tolerance) snap to a shared column.
+    const out = autoAlignElements([
+      square({ id: 'a', x: 0, y: 0, width: 100, height: 50 }),
+      square({ id: 'b', x: 15, y: 200, width: 100, height: 50 }),
+    ]);
+    expect((out[0] as ShapeElement).x).toBe((out[1] as ShapeElement).x);
+  });
+
+  it('leaves a lone element of its type unsized (no false unification)', () => {
+    const out = autoAlignElements([
+      square({ id: 'a', x: 0, y: 0, width: 100, height: 50 }),
+      square({ id: 'b', x: 0, y: 400, width: 240, height: 130 }),
+    ]);
+    // 100 vs 240 are far apart -> two clusters of one -> each keeps its
+    // own grid-snapped size rather than averaging into one.
+    expect((out[0] as ShapeElement).width).toBe(100);
+    expect((out[1] as ShapeElement).width).toBe(240);
+  });
+
+  it('is idempotent (running the aggressive pass twice matches once)', () => {
+    const input = [
+      square({ id: 'a', x: 0, y: 0, width: 100, height: 50 }),
+      square({ id: 'b', x: 15, y: 200, width: 120, height: 50 }),
+    ];
+    const once = autoAlignElements(input);
+    expect(autoAlignElements(once)).toEqual(once);
+  });
 });
