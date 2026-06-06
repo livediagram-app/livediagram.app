@@ -128,6 +128,7 @@ import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
 import { useTemplateFlow } from './useTemplateFlow';
 import { usePanelLayout } from './usePanelLayout';
+import { useEditorDialogs } from './useEditorDialogs';
 import { useElementHelpers } from './useElementHelpers';
 import { useElementCreation } from './useElementCreation';
 import { useSelectionEditing } from './useSelectionEditing';
@@ -179,6 +180,7 @@ export function useEditorState() {
   // Spread wholesale into the returned view-model (see the return below);
   // only requestEditorOpen is consumed internally, off the slice object.
   const panelLayout = usePanelLayout();
+  const dialogs = useEditorDialogs();
   // Tab-section accordion state lifted here so the Activity row
   // click handler can pop the matching accordion (e.g. clicking a
   // "Changed theme to X" entry opens the Theme accordion).
@@ -272,16 +274,10 @@ export function useEditorState() {
     unresolveThread,
   } = useEditorComments({ activeId, tickTabs, selfParticipant });
 
-  // Global search panel state. Triggered from a footer button;
-  // searches the user's diagram + folder list always, and (when
-  // open inside a diagram) the current diagram's tabs + elements.
-  const [searchOpen, setSearchOpen] = useState(false);
-
   // Keyboard-shortcut catalog modal + per-device disable toggle.
   // The toggle gates EVERY shortcut in useEditorKeyboardShortcuts
   // below; the modal opens from a button in the TabBar.
   const { enabled: shortcutsEnabled, setEnabled: setShortcutsEnabled } = useShortcutsEnabled();
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   // Viewer-side password gate. Non-null when the visitor's share URL
   // points at a password-protected diagram and they haven't supplied a
   // valid password yet. Declared early so the preferences and capabilities
@@ -292,7 +288,6 @@ export function useEditorState() {
   // on mount (not gated on diagramId, since preferences aren't
   // diagram-scoped anymore) and mutated through the SettingsDialog.
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({});
-  const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
     if (userPreferences.aiAssistanceEnabled) panelLayout.setAiPanelVisible(true);
   }, [userPreferences.aiAssistanceEnabled]);
@@ -534,14 +529,10 @@ export function useEditorState() {
   // badge would hide.
   const [diagramOwnerName, setDiagramOwnerName] = useState<string | null>(null);
   const [diagramOwnerColor, setDiagramOwnerColor] = useState<string | null>(null);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   // Visitor-side "Make a copy" loading flag. Header button disables
   // itself while the api round-trips so a frantic double-click can't
   // produce two copies under the user's account.
   const [copying, setCopying] = useState(false);
-  // Export-tab overlay (item #10). Open / closed only; the picker
-  // surface lives in components/ExportTabDialog.
-  const [exportOpen, setExportOpen] = useState(false);
   // Brief error string surfaced by the Import-tab flow when the
   // picked file is malformed or its schema is newer than this
   // editor understands. Rendered as a transient toast under the
@@ -1716,6 +1707,7 @@ export function useEditorState() {
 
   return {
     ...panelLayout,
+    ...dialogs,
     activeId,
     activeTab,
     activeTabLocked,
@@ -1799,7 +1791,6 @@ export function useEditorState() {
     effectiveTemplatePickerMode,
     exitFormatPainter,
     exitGroupMode,
-    exportOpen,
     fitToScreen,
     folders,
     followLink,
@@ -1852,7 +1843,6 @@ export function useEditorState() {
     revokeShareLink,
     saveStatus,
     savedAt,
-    searchOpen,
     selectElement,
     selectMarquee,
     selectedId,
@@ -1878,7 +1868,6 @@ export function useEditorState() {
     setDiagramName,
     setDiagramSharePassword,
     setEditingId,
-    setExportOpen,
     setFillColorSelected,
     setFormatSourceId,
     setGroupSourceId,
@@ -1891,14 +1880,10 @@ export function useEditorState() {
     setPaddingSelected,
     setPasswordRetry,
     setPatternColor,
-    setSearchOpen,
     setSelectedId,
-    setSettingsOpen,
     setShapeKindSelected,
-    setShareDialogOpen,
     setSharePasswordGate,
     setShortcutsEnabled,
-    setShortcutsOpen,
     setStrokeColorSelected,
     setTabAccordionsOpen,
     setTextAlignSelected,
@@ -1908,15 +1893,12 @@ export function useEditorState() {
     setUserPreferences,
     setViewportOffset,
     setViewportZoom,
-    settingsOpen,
-    shareDialogOpen,
     shareLinks,
     sharePassword,
     sharePasswordGate,
     shareUrlFor,
     sharedDiagrams,
     shortcutsEnabled,
-    shortcutsOpen,
     skipTemplatePicker,
     tabAccordionsOpen,
     tabs,
