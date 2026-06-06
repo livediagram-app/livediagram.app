@@ -176,26 +176,9 @@ export function useEditorState() {
   // row navigation, tab-context-menu Change Theme / Canvas) can pop it
   // open; the panel resets its collapsed state on each change so
   // navigation always lands on a visible accordion (spec/09).
-  const {
-    palettePosition,
-    setPalettePosition,
-    explorerPosition,
-    setExplorerPosition,
-    contextPosition,
-    setContextPosition,
-    activityPosition,
-    setActivityPosition,
-    commentsPanelPosition,
-    setCommentsPanelPosition,
-    aiPanelPosition,
-    setAiPanelPosition,
-    aiPanelVisible,
-    setAiPanelVisible,
-    activityMinimized,
-    setActivityMinimized,
-    editorExpandSignal,
-    requestEditorOpen,
-  } = usePanelLayout();
+  // Spread wholesale into the returned view-model (see the return below);
+  // only requestEditorOpen is consumed internally, off the slice object.
+  const panelLayout = usePanelLayout();
   // Tab-section accordion state lifted here so the Activity row
   // click handler can pop the matching accordion (e.g. clicking a
   // "Changed theme to X" entry opens the Theme accordion).
@@ -311,7 +294,7 @@ export function useEditorState() {
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({});
   const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
-    if (userPreferences.aiAssistanceEnabled) setAiPanelVisible(true);
+    if (userPreferences.aiAssistanceEnabled) panelLayout.setAiPanelVisible(true);
   }, [userPreferences.aiAssistanceEnabled]);
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults
@@ -1198,7 +1181,7 @@ export function useEditorState() {
       editsBlocked,
       canUndo,
       canRedo,
-      requestEditorOpen,
+      requestEditorOpen: panelLayout.requestEditorOpen,
       commitTabs,
       tickTabs,
       undoHistory,
@@ -1368,7 +1351,7 @@ export function useEditorState() {
   // popping the panel back if it was minimised. Both context-menu
   // actions ("Change Theme", "Change Canvas") route here rather than
   const openTabAccordion = (which: 'theme' | 'canvas') => {
-    requestEditorOpen();
+    panelLayout.requestEditorOpen();
     setTabAccordionsOpen({
       theme: which === 'theme',
       canvas: which === 'canvas',
@@ -1732,11 +1715,10 @@ export function useEditorState() {
   });
 
   return {
+    ...panelLayout,
     activeId,
     activeTab,
     activeTabLocked,
-    activityMinimized,
-    activityPosition,
     addArrow,
     addComment,
     addImage,
@@ -1746,8 +1728,6 @@ export function useEditorState() {
     addTab,
     addText,
     aiCapable,
-    aiPanelPosition,
-    aiPanelVisible,
     anyWelcomeOpen,
     applyAiElements,
     applyImageToElement,
@@ -1786,12 +1766,10 @@ export function useEditorState() {
     closeNote,
     commentRows,
     commentThreadOpenId,
-    commentsPanelPosition,
     commitDraw,
     commitFreehand,
     commitLabel,
     contextMenu,
-    contextPosition,
     copying,
     createFolder,
     createShareLink,
@@ -1818,11 +1796,9 @@ export function useEditorState() {
     duplicateSelected,
     duplicateTab,
     editingId,
-    editorExpandSignal,
     effectiveTemplatePickerMode,
     exitFormatPainter,
     exitGroupMode,
-    explorerPosition,
     exportOpen,
     fitToScreen,
     folders,
@@ -1859,7 +1835,6 @@ export function useEditorState() {
     openNote,
     openTabAccordion,
     openTemplatePicker,
-    palettePosition,
     participantsByTab,
     pendingDraw,
     redo,
@@ -1886,9 +1861,6 @@ export function useEditorState() {
     sessionRole,
     sessionShareCode,
     setActiveId,
-    setActivityMinimized,
-    setActivityPosition,
-    setAiPanelPosition,
     setArrowEndsSelected,
     setArrowStrokeStyleSelected,
     setArrowStyleSelected,
@@ -1901,14 +1873,11 @@ export function useEditorState() {
     setBorderStrokeSelected,
     setBorderStyleSelected,
     setCanvasTool,
-    setCommentsPanelPosition,
     setContextMenu,
-    setContextPosition,
     setDiagramLinkSelected,
     setDiagramName,
     setDiagramSharePassword,
     setEditingId,
-    setExplorerPosition,
     setExportOpen,
     setFillColorSelected,
     setFormatSourceId,
@@ -1920,7 +1889,6 @@ export function useEditorState() {
     setNote,
     setOpacitySelected,
     setPaddingSelected,
-    setPalettePosition,
     setPasswordRetry,
     setPatternColor,
     setSearchOpen,
