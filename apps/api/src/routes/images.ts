@@ -8,6 +8,7 @@ import {
   findImageBySha,
   getDiagram,
   getImage,
+  imageTotalsByOwner,
   imageUsageByOwner,
   insertImage,
   listImagesByOwner,
@@ -25,6 +26,18 @@ import {
 import { gateRead, requireOwner, type RouteContext } from './context';
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB, see spec/19.
+
+// Parse a positive-integer cap from a wrangler.toml [vars] entry.
+// Returns null when the string is missing, blank, non-numeric, or
+// not strictly positive, so callers treat "unset" and "0" and
+// "garbage" identically as "no cap" (the OSS self-host default per
+// spec/19).
+function parsePositiveCap(raw: string | undefined): number | null {
+  if (!raw) return null;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}
 
 // Per-owner gallery + dedup'd upload + auth-gated byte read.
 // When the R2 binding is absent (self-host without R2), every
@@ -69,6 +82,43 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     }
     if (declaredLen > MAX_IMAGE_BYTES) {
       return json({ error: 'file-too-large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
+    }
+    // Per-owner soft cap (spec/19). Enforcement order: per-file cap
+    // first (above) so an oversize upload is rejected before any D1
+    // round-trip; then this owner-sum check so the body parse only
+    // happens for uploads that would actually land. Both caps zero
+    // out when their env var is unset, which is the OSS self-host
+    // default. Dedupe (identical bytes already on this owner)
+    // happens AFTER the body parse below, so a deduped upload that
+    // would not grow either total still pays the parse: that is
+    // acceptable because dedupe wins are rare and the cap check is
+    // a single grouped query.
+    const maxImages = parsePositiveCap(env.IMAGE_MAX_PER_OWNER);
+    const maxBytes = parsePositiveCap(env.IMAGE_MAX_BYTES_PER_OWNER);
+    if (maxImages !== null || maxBytes !== null) {
+      const totals = await imageTotalsByOwner(env, owner);
+      if (maxImages !== null && totals.count >= maxImages) {
+        return json(
+          {
+            error: 'gallery-full',
+            reason: 'count',
+            limit: maxImages,
+            current: totals.count,
+          },
+          { status: 403 },
+        );
+      }
+      if (maxBytes !== null && totals.bytes + declaredLen > maxBytes) {
+        return json(
+          {
+            error: 'gallery-full',
+            reason: 'bytes',
+            limit: maxBytes,
+            current: totals.bytes,
+          },
+          { status: 403 },
+        );
+      }
     }
     const width = Number(request.headers.get('X-Image-Width') ?? '0');
     const height = Number(request.headers.get('X-Image-Height') ?? '0');

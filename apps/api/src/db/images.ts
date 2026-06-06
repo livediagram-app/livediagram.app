@@ -83,6 +83,25 @@ export async function deleteImage(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM images WHERE id = ?').bind(id).run();
 }
 
+// Total image count + summed byte_size for one owner. Drives the
+// soft-cap enforcement in POST /api/images (spec/19) plus the usage
+// bar surfaced in the picker. Single grouped query so the worker
+// doesn't pay two D1 round-trips per upload attempt.
+export async function imageTotalsByOwner(
+  env: Env,
+  ownerId: string,
+): Promise<{ count: number; bytes: number }> {
+  const row = await env.DB.prepare(
+    'SELECT COUNT(*) AS count, COALESCE(SUM(byte_size), 0) AS bytes FROM images WHERE owner_id = ?',
+  )
+    .bind(ownerId)
+    .first<{ count: number; bytes: number }>();
+  return {
+    count: row?.count ?? 0,
+    bytes: row?.bytes ?? 0,
+  };
+}
+
 // Build a map of imageId → list of the owner's diagrams that use it.
 // Used by the Explorer Image Gallery so the user can spot unused
 // images (empty list, safe to delete) vs. live ones (which diagrams

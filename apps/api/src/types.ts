@@ -83,4 +83,17 @@ export type Env = {
   // OSS self-hosters who run Clerk-less stay on the open path by
   // default.
   AI_REQUIRE_CLERK?: string;
+  // Per-owner soft cap on the number of images one owner may keep
+  // in the gallery (spec/19). Stored as a decimal string in
+  // wrangler.toml [vars]; parsed via parseInt at request time.
+  // Unset or non-positive = no limit (the OSS self-host default
+  // where the operator runs their own storage budget). Hosted
+  // livediagram.app sets this to "100".
+  IMAGE_MAX_PER_OWNER?: string;
+  // Per-owner soft cap on the total bytes one owner may keep in
+  // the gallery (spec/19). Stored as a decimal byte count in
+  // wrangler.toml [vars]; parsed via parseInt at request time.
+  // Unset or non-positive = no limit. Hosted livediagram.app sets
+  // this to "104857600" (100 MB).
+  IMAGE_MAX_BYTES_PER_OWNER?: string;
 };

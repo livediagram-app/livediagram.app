@@ -133,6 +133,23 @@ simple = { limit = 20, period = 60 }
 # Both are plain [vars] (no secret material), set them in this file,
 # the Cloudflare dashboard, or `.dev.vars` for local testing.
 
+# Per-owner soft caps on the image gallery (spec/19). Both default to
+# "no limit" so OSS self-host operators run their own storage budget;
+# hosted livediagram.app sets both so a single owner can't drain the
+# R2 bucket. POST /api/images returns 403 { error: "gallery-full" }
+# once either cap is reached:
+#
+#   - IMAGE_MAX_PER_OWNER: maximum number of image rows one owner
+#     may keep in the gallery. Hosted livediagram.app sets this to
+#     "100".
+#   - IMAGE_MAX_BYTES_PER_OWNER: maximum total byte_size summed
+#     across one owner's images. Hosted livediagram.app sets this
+#     to "104857600" (100 MB).
+#
+# Plain [vars] entries; values are decimal strings parsed via
+# parseInt at request time. Unset, blank, "0", or non-numeric values
+# all read as "no limit".
+
 # CLERK_JWKS_URL is provisioned out-of-band so the value never lands
 # in the public repo (spec/06):
 #
