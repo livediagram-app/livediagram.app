@@ -61,7 +61,7 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
       ? `It's still attached to ${refs.length} diagram${
           refs.length === 1 ? '' : 's'
         }: those tiles will render as broken images.`
-      : 'The bytes are dropped from R2 and the gallery row removed. This cannot be undone.';
+      : 'This image will be permanently removed from your gallery. This can’t be undone.';
     const ok = await confirm({
       title: `Delete "${image.originalName ?? 'image'}"?`,
       message: detail,

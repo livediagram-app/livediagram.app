@@ -122,7 +122,7 @@ export function ImagePicker({
     const ok = await confirm({
       title: `Delete "${image.originalName ?? 'image'}"?`,
       message:
-        'The bytes are dropped from R2 and the gallery row removed. Any diagram element still attached to this image will render as broken.',
+        'This image will be permanently removed from your gallery. This can’t be undone, and any element still using it will show a broken-image placeholder.',
       confirmLabel: 'Delete image',
     });
     if (!ok) return;
