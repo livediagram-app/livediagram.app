@@ -105,7 +105,7 @@ simple = { limit = 20, period = 60 }
 #
 #   - Local dev: drop `OPENAI_API_KEY=sk-...` into `apps/api/.dev.vars`
 #     (gitignored). `OPENAI_MODEL` can also go there to override the
-#     default (gpt-4o-mini).
+#     default (gpt-4o).
 #   - Production: `wrangler secret put OPENAI_API_KEY`.
 #     `OPENAI_MODEL` can be set as a plain [vars] entry if you want to
 #     override the default in production.

@@ -31,7 +31,9 @@ marketing/
     taglines.md          one-liners bucketed by character budget
     descriptions.md      blurbs bucketed by word / character budget
     tags.md              one-word tags / keywords bucketed by platform
-  media/                 logos, screenshots, social cards (see media/README.md)
+  media/                 see media/README.md
+    desktop/             desktop product screenshots, captioned
+    mobile/              mobile product screenshots, captioned
 ```
 
 `copy/facts.md` is the single source the taglines and descriptions are built

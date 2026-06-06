@@ -83,19 +83,17 @@ the `folder_id` column.
 
 All endpoints continue the existing `X-Owner-Id` convention.
 
-| Method | Path                       | Body                                 | Returns    |
-| ------ | -------------------------- | ------------------------------------ | ---------- |
-| GET    | `/api/folders`             | —                                    | `Folder[]` |
-| POST   | `/api/folders`             | `{ id, name, parentId? }`            | `Folder`   |
-| PUT    | `/api/folders/:id`         | `{ name?, parentId? }` (cycle check) | `Folder`   |
-| DELETE | `/api/folders/:id`         | —                                    | 204        |
-| PUT    | `/api/diagrams/:id/folder` | `{ folderId \| null }`               | 204        |
+| Method | Path                       | Body                                 | Returns                 |
+| ------ | -------------------------- | ------------------------------------ | ----------------------- |
+| GET    | `/api/folders`             |                                      | `{ folders: Folder[] }` |
+| POST   | `/api/folders`             | `{ id, name, parentId? }`            | `{ folder: Folder }`    |
+| PUT    | `/api/folders/:id`         | `{ name?, parentId? }` (cycle check) | `{ folder: Folder }`    |
+| DELETE | `/api/folders/:id`         |                                      | 204                     |
+| PUT    | `/api/diagrams/:id/folder` | `{ folderId \| null }`               | 204                     |
 
 `Folder` = `{ id, name, parentId, createdAt, updatedAt }`.
 
-`GET /api/diagrams` is extended to include `folder_id` on each row
-(null for Unsorted). No new endpoint needed for "diagrams in folder
-X" — the Explorer already has the full list client-side.
+`GET /api/diagrams` is extended to include `folderId` on each row (camelCase DTO; null for Unsorted). No new endpoint needed for "diagrams in folder X": the Explorer already has the full list client-side.
 
 ## Explorer UI — two surfaces
 

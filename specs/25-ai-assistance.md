@@ -18,19 +18,22 @@ the AI panel are never rendered.
 
 | Mode         | What it does                                                                                     | Response                                           |
 | ------------ | ------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
-| **Generate** | Adds new elements and/or modifies existing ones per the prompt (labelled **Build** in the panel) | JSON `{ elements }` — appended + replaced elements |
-| **Clean**    | Fixes label typos, normalises sizes/positions/styles                                             | JSON `{ elements }` — full element list cleaned    |
-| **Review**   | Gives textual feedback on structure and content                                                  | `text/event-stream` SSE (streamed)                 |
-| **Ask**      | Answers questions about the diagram (read-only Q&A)                                              | `text/event-stream` SSE (streamed)                 |
+| **Generate** | Adds new elements and/or modifies existing ones per the prompt (labelled **Build** in the panel) | `text/event-stream` SSE; client parses JSON on end |
+| **Clean**    | Fixes label typos, normalises sizes/positions/styles                                             | `text/event-stream` SSE; client parses JSON on end |
+| **Review**   | Gives textual feedback on structure and content                                                  | `text/event-stream` SSE (text deltas)              |
+| **Ask**      | Answers questions about the diagram (read-only Q&A)                                              | `text/event-stream` SSE (text deltas)              |
+
+Every mode streams: the worker pipes OpenAI's SSE through unchanged so the panel can render progress (text deltas for review / ask, a "thinking" indicator for the JSON modes). The client buffers the JSON-mode stream until completion, parses it, then applies the elements via `commit()` so undo still treats the change as one block.
 
 ## Context
 
-The elements sent to the AI depend on the current editor selection:
+The full element list on the active tab is always sent, plus an explicit `focusIds` list pointing at the currently-selected elements (empty when the user has nothing selected). The system prompt tells the model to focus its edits on the focused IDs while treating the rest as read-only context, except where arrow connections require adjusting an out-of-focus element. This sends more tokens than a strict "selection only" cut would, but gives the model the structural context it needs to keep the diagram coherent (e.g. seeing an arrow's other endpoint when only one end is in focus).
 
-- One or more elements selected → send only those elements.
-- Nothing selected → send all elements on the current (active) tab.
+Only the **active tab** is ever in scope, other tabs are never sent.
 
-Only the **active tab** is ever in scope — other tabs are never sent.
+## Conversation history
+
+Each AI request optionally includes a `history` array of prior `{ role, content }` turns from the same panel session. The worker caps it at the most recent **6 turns** server-side (`MAX_HISTORY_TURNS`) so an extra-long session can't blow the context window. The panel maintains the history client-side and clears it when the user closes the panel or starts a new mode.
 
 ## Security
 
@@ -60,7 +63,7 @@ Only the **active tab** is ever in scope — other tabs are never sent.
 - For mutating modes `response_format: { type: "json_object" }` is set on the OpenAI
   request so the model can only return parseable JSON, preventing injection of arbitrary
   text through the diagram data layer.
-- Max-token caps: mutating modes (generate / clean) 4 000, text modes (review / ask) 600.
+- Max-token caps: mutating modes (generate / clean) 8 000, text modes (review / ask) 400.
 
 ## API
 
@@ -85,26 +88,19 @@ Request body:
   "mode": "generate" | "clean" | "review" | "ask",
   "prompt": "string (max 1 000 chars)",
   "elements": [...],
-  "tabName": "string"
+  "tabName": "string",
+  "focusIds": ["elementId", ...],
+  "history": [{ "role": "user" | "assistant", "content": "..." }, ...]
 }
 ```
 
-`elements` is an `Element[]` from `@livediagram/diagram` — either the selected subset or
-the full active tab, computed client-side before the request.
+`elements` is the full active-tab `Element[]` from `@livediagram/diagram`. `focusIds` is the optional list of selected element IDs; the system prompt steers the model toward editing those while preserving everything else. `history` is the optional prior-turn list (capped server-side at the last 6 turns); both fields default to `[]`.
 
-Response for **mutating modes** (generate / clean):
+Response for **every mode**: `Content-Type: text/event-stream`, OpenAI SSE format piped through with CORS headers added. The JSON-mode payload (generate / clean) is collected by the client into a single `{ elements: [...] }` block on stream completion:
 
-```json
-{ "elements": [...] }
-```
-
-- `generate`: a mix of **appended** elements (fresh IDs) and **modified** ones (existing
-  IDs, replaced in place) — the prompt decides which. This is the former separate "amend"
-  mode folded in: generate now adds, edits, or does both in one response.
+- `generate`: a mix of **appended** elements (fresh IDs) and **modified** ones (existing IDs, replaced in place), the prompt decides which. This is the former separate "amend" mode folded in: generate now adds, edits, or does both in one response.
 - `clean`: elements to **replace by ID** (same IDs as input; new IDs = append).
-
-Response for **review** and **ask**: `Content-Type: text/event-stream`, OpenAI SSE format
-piped directly from the OpenAI API with CORS headers added.
+- `review` / `ask`: SSE text deltas rendered straight into the panel as they arrive.
 
 Error responses follow the standard worker envelope:
 `{ "error": "ai_not_configured" | "ai_error" | "ai_parse_error" | "off_topic" | ... }`
@@ -114,7 +110,7 @@ Error responses follow the standard worker envelope:
 | Variable             | Where                 | Purpose                                                                                                                                                                                                                 |
 | -------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY`     | Worker secret         | Required to enable AI. Absent = feature hidden.                                                                                                                                                                         |
-| `OPENAI_MODEL`       | Worker var (optional) | OpenAI model name. Defaults to `gpt-4o-mini`.                                                                                                                                                                           |
+| `OPENAI_MODEL`       | Worker var (optional) | OpenAI model name. Defaults to `gpt-4o`.                                                                                                                                                                                |
 | `AI_ALLOWED_ORIGINS` | Worker var (optional) | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
 | `AI_REQUIRE_CLERK`   | Worker var (optional) | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                  |
 
@@ -168,7 +164,6 @@ don't inflate the count.
 ## Out of scope (this spec)
 
 - Multi-tab context
-- Conversation history / multi-turn sessions
 - Image or freehand element generation
 - Per-user cost attribution or quota
 - Model switching in the UI

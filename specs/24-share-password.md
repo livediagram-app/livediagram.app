@@ -84,6 +84,16 @@ fails the gate and they are re-prompted. We do not actively kick them mid-sessio
 (no realtime broadcast for password changes); that is acceptable for the threat
 model and can be added later like the `share-revoked` broadcast.
 
+The editor also defers two ancillary fetches behind the gate so a visitor on the
+wrong password doesn't accumulate noise: the participant fetch (`apiLoadParticipant`)
+skips its retry while the gate is showing, so refreshing the input doesn't replay
+a 401 on every keystroke; and the `useCapabilities` hook plus the
+server-preferences sync take an `enabled` flag that stays false until the gate
+passes, so the AI capability check and the user's preferences PUT only fire
+once the password is right. Without these defers the visitor would burn a
+handful of failing requests per wrong attempt; with them the gate is the only
+moving piece while it is up.
+
 ## Share dialog (owner)
 
 The "Share this diagram" dialog gains a **Password** section, above the link

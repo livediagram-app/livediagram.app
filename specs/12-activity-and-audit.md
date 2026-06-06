@@ -72,12 +72,11 @@ commit**. A later rename doesn't retroactively rewrite the log.
 
 ## Cascade on tab delete
 
-Tabs got their own table in migration 0005 (see [13-per-tab-storage.md](13-per-tab-storage.md)), but the `change_log.tab_id` column doesn't have a hard FK back to it — log entries can outlive the row they referenced (an entry mentioning a since-deleted tab still makes historical sense). The client therefore deletes log entries for a tab explicitly when it deletes the tab:
+Tabs got their own table in migration 0005 (see [13-per-tab-storage.md](13-per-tab-storage.md)). Migration 0012 added `FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE` to `change_log`, so deleting a `tabs` row drops the matching log entries automatically: no per-tab cascade call from the client is needed (the historical `useTabActions.deleteTab` cascade has been removed).
 
-- `DELETE /api/diagrams/:id/log/tab/:tabId` drops every row whose `tab_id` matches.
-- The live app calls this from `deleteTab` alongside the tab row delete.
+- `DELETE /api/diagrams/:id/log/tab/:tabId` still exists: the editor's Activity Panel surfaces it as the per-tab "Clear" button so a user can wipe one tab's audit trail intentionally without deleting the tab itself.
 
-Diagram delete no longer cascades to `change_log` rows directly: post #14 there's no `diagram_id` column to hang the cascade off, only `tab_id`. Deleting a diagram drops the `diagrams` row + cascades to `diagram_tabs` link rows, but tabs that were only linked to the deleted diagram survive as orphans in the `tabs` table (no explicit sweep, intentional under the many-to-many model in spec/17), and their `change_log` entries survive with them. The 90-day retention cron (item #16) sweeps the latter eventually. The explicit per-tab `DELETE /api/diagrams/:id/log/tab/:tabId` above is what keeps the panel honest for tabs the user deletes interactively, where there's no other cleanup path.
+Diagram delete no longer cascades to `change_log` rows directly: post #14 there's no `diagram_id` column to hang the cascade off, only `tab_id`. Deleting a diagram drops the `diagrams` row + cascades to `diagram_tabs` link rows, but tabs that were only linked to the deleted diagram survive as orphans in the `tabs` table (no explicit sweep, intentional under the many-to-many model in spec/17), and their `change_log` entries survive with them. The 90-day retention cron (item #16) sweeps the latter eventually.
 
 ## API surface
 
@@ -91,7 +90,7 @@ View-role visitors fail the auth check.
 The bulk tab-cascade DELETE stays owner-only — destructive bulk
 ops shouldn't ride a visitor's share code.
 
-- `GET    /api/diagrams/:id/log` → `{ entries: ChangeLogEntry[] }` newest-first, capped at 30 (server-side `CHANGE_LOG_LIST_LIMIT` in `apps/api/src/db.ts`). (owner or edit visitor)
+- `GET    /api/diagrams/:id/log` → `{ entries: ChangeLogEntry[] }` newest-first, capped at 30 (server-side `CHANGE_LOG_LIST_LIMIT` in `apps/api/src/db/change-log.ts`). (owner or edit visitor)
 - `POST   /api/diagrams/:id/log` → append. Body: the new entry. (owner or edit visitor)
 - `DELETE /api/diagrams/:id/log/:entryId` → drop one entry (revert / undo). (owner or edit visitor)
 - `DELETE /api/diagrams/:id/log/tab/:tabId` → drop entries for one tab. (owner only)

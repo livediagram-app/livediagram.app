@@ -62,7 +62,7 @@ export type Env = {
   // `wrangler secret put OPENAI_API_KEY` for production; drop into
   // `apps/api/.dev.vars` for local dev (gitignored, never commit).
   OPENAI_API_KEY?: string;
-  // Override the OpenAI model (optional). Defaults to gpt-4o-mini.
+  // Override the OpenAI model (optional). Defaults to gpt-4o.
   // Set in wrangler.toml [vars] if you want a different model.
   OPENAI_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s

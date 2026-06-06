@@ -83,8 +83,8 @@ Server-side enforcement: the upload endpoint checks `Content-Type` against the w
 ### Size cap
 
 - **Per-file cap: 10 MB.** Sits comfortably above typical phone JPEGs (2–4 MB) and 4K screenshots (~3–6 MB as PNG), while staying well below the Workers request-body limit (100 MB). Going higher hurts the picker UX (long uploads on slow networks) without serving real diagram content; canvas images render at thumbnail or modest sizes, so an 8K original is wasted bytes.
-- **Per-owner soft cap: 100 images, 100 MB total.** Surfaces as a usage bar in the picker + a 403 on POST when the cap is hit. Hosted-only; the limit constants are zeroed for self-host builds where the operator runs their own storage budget (see [03](03-open-source-and-business-model.md)).
-- Enforcement order on POST: `Content-Length` against the per-file cap first (rejects oversize uploads before any R2 write), then per-owner sum against the soft cap. Both reads come from D1 (`SUM(byte_size) WHERE owner_id = ?`) and skip the upload body parse entirely on rejection.
+- **Per-owner soft cap: configurable via two env vars** in the api worker, `IMAGE_MAX_PER_OWNER` and `IMAGE_MAX_BYTES_PER_OWNER` (decimal strings, parsed with `parseInt`). Hosted livediagram.app sets them to `100` and `104857600` (100 MB) respectively. Both are optional: unset, blank, `0`, or non-numeric values read as "no limit", which is the OSS self-host default where the operator runs their own storage budget (see [03](03-open-source-and-business-model.md)). When either cap is exceeded the worker returns 403 with `{ error: "gallery-full", reason: "count" | "bytes", limit, current }` so the client can render an accurate message.
+- Enforcement order on POST: `Content-Length` against the per-file cap first (rejects oversize uploads before any D1 round-trip), then an early `X-Image-Sha256` dedupe lookup (returns the existing image without parsing the body when the header matches a row at `(owner, sha)`), then per-owner totals against the soft cap (a single grouped `COUNT + SUM(byte_size) WHERE owner_id = ?` query). Only uploads that clear all three actually parse the body and write to R2.
 
 ## API endpoints
 

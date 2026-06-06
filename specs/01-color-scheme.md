@@ -26,19 +26,19 @@ A single brand hue with a full 50–950 ramp. Built on Tailwind's `sky` scale.
 
 Slate complements sky cleanly (both are cool-toned). Use for text, borders, surfaces, and dividers.
 
-| Token         | Hex       | Usage                          |
-| ------------- | --------- | ------------------------------ |
-| `neutral-50`  | `#F8FAFC` | Page background (light mode)   |
-| `neutral-100` | `#F1F5F9` | Card / panel background        |
-| `neutral-200` | `#E2E8F0` | Subtle borders, dividers       |
-| `neutral-300` | `#CBD5E1` | Default borders                |
-| `neutral-400` | `#94A3B8` | Disabled text, placeholder     |
-| `neutral-500` | `#64748B` | Secondary text                 |
-| `neutral-600` | `#475569` | Body text on light surfaces    |
-| `neutral-700` | `#334155` | Headings                       |
-| `neutral-800` | `#1E293B` | Strong text, dark surface bg   |
-| `neutral-900` | `#0F172A` | Highest-contrast text, dark bg |
-| `neutral-950` | `#020617` | Dark mode page background      |
+| Token       | Hex       | Usage                          |
+| ----------- | --------- | ------------------------------ |
+| `slate-50`  | `#F8FAFC` | Page background (light mode)   |
+| `slate-100` | `#F1F5F9` | Card / panel background        |
+| `slate-200` | `#E2E8F0` | Subtle borders, dividers       |
+| `slate-300` | `#CBD5E1` | Default borders                |
+| `slate-400` | `#94A3B8` | Disabled text, placeholder     |
+| `slate-500` | `#64748B` | Secondary text                 |
+| `slate-600` | `#475569` | Body text on light surfaces    |
+| `slate-700` | `#334155` | Headings                       |
+| `slate-800` | `#1E293B` | Strong text, dark surface bg   |
+| `slate-900` | `#0F172A` | Highest-contrast text, dark bg |
+| `slate-950` | `#020617` | Dark mode page background      |
 
 ## Semantic colors
 
@@ -54,12 +54,12 @@ Reserved for status — never used decoratively.
 ## Usage rules
 
 - **Primary actions** (Save, Share, Create) use `brand-500` filled, white text. Hover → `brand-600`, active → `brand-700`.
-- **Secondary actions** use a `neutral-200` border with `neutral-700` text on white. No filled neutrals as buttons.
+- **Secondary actions** use a `slate-200` border with `slate-700` text on white. No filled neutrals as buttons.
 - **Links** are `brand-600` with underline on hover.
 - **Focus rings** are 2px `brand-500` with a 2px `brand-100` halo for accessibility.
 - **Selection / collaborator highlights** on the canvas use `brand-200`–`brand-300` tints. Individual collaborator cursors may shift hue (per-user color), but the default user's selection stays in the brand range.
-- **Page background**: `neutral-50`. **Canvas background**: pure white (`#FFFFFF`) so diagrams read cleanly.
-- **Dark mode** uses `neutral-950` page bg, `neutral-900` surfaces, `brand-400` for primary actions (lighter shade reads better on dark).
+- **Page background**: `slate-50`. **Canvas background**: pure white (`#FFFFFF`) so diagrams read cleanly.
+- **Dark mode** uses `slate-950` page bg, `slate-900` surfaces, `brand-400` for primary actions (lighter shade reads better on dark).
 
 ## Accessibility
 
