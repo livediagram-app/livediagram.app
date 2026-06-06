@@ -1,0 +1,622 @@
+// Feature illustrations — versatility + AI / rotation / layout scenes.
+// Split from FeatureArt.tsx; see ./shared for Frame + color constants.
+import { BLUE_FILL, BLUE_STROKE, Frame, SKY } from './shared';
+
+/* ──────────────── Section: versatility (shapes / notes / borders /
+ * backdrops). Breadth-of-canvas cards, same vocabulary + shared fa-*
+ * timing as the rest. */
+
+// The shape library: ten core shapes plus the five device frames, a
+// brand-highlight cycling across the palette like the real Shapes /
+// Devices accordions.
+export function ShapesArt() {
+  const glyphs = [
+    'square',
+    'circle',
+    'diamond',
+    'hexagon',
+    'browser',
+    'phone',
+    'tablet',
+    'cylinder',
+  ];
+  return (
+    <Frame>
+      <div className="flex h-full flex-col justify-center gap-1.5 px-3">
+        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+          Shapes · Devices
+        </p>
+        <div className="grid grid-cols-4 gap-1.5">
+          {glyphs.map((g, i) => (
+            <span
+              key={g}
+              className="relative flex h-7 items-center justify-center rounded border border-slate-200 bg-white text-slate-500"
+            >
+              <span
+                className="fa-hl pointer-events-none absolute inset-0 rounded ring-2 ring-brand-500"
+                style={{ animationDelay: `${i * 0.7}s` }}
+              />
+              <ShapeGlyph kind={g} />
+            </span>
+          ))}
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
+function ShapeGlyph({ kind }: { kind: string }) {
+  const c = {
+    width: 15,
+    height: 15,
+    viewBox: '0 0 16 16',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.4,
+    'aria-hidden': true,
+  } as const;
+  switch (kind) {
+    case 'square':
+      return (
+        <svg {...c}>
+          <rect x="3" y="3" width="10" height="10" rx="2" />
+        </svg>
+      );
+    case 'circle':
+      return (
+        <svg {...c}>
+          <circle cx="8" cy="8" r="5" />
+        </svg>
+      );
+    case 'diamond':
+      return (
+        <svg {...c}>
+          <polygon points="8,3 13,8 8,13 3,8" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'hexagon':
+      return (
+        <svg {...c}>
+          <polygon points="4,3 11,3 14,8 11,13 4,13 1,8" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'cylinder':
+      return (
+        <svg {...c}>
+          <path d="M3 5 L3 12 A5 1.5 0 0 0 13 12 L13 5" strokeLinejoin="round" />
+          <ellipse cx="8" cy="5" rx="5" ry="1.5" />
+        </svg>
+      );
+    case 'browser':
+      return (
+        <svg {...c}>
+          <rect x="2" y="3" width="12" height="10" rx="1.5" />
+          <line x1="2" y1="6" x2="14" y2="6" />
+          <circle cx="4" cy="4.5" r="0.5" fill="currentColor" />
+          <circle cx="5.8" cy="4.5" r="0.5" fill="currentColor" />
+        </svg>
+      );
+    case 'phone':
+      return (
+        <svg {...c}>
+          <rect x="5" y="2" width="6" height="12" rx="1.5" />
+          <line x1="7" y1="3.4" x2="9" y2="3.4" />
+        </svg>
+      );
+    case 'tablet':
+      return (
+        <svg {...c}>
+          <rect x="3.5" y="2.5" width="9" height="11" rx="1.5" />
+          <circle cx="8" cy="12" r="0.5" fill="currentColor" />
+        </svg>
+      );
+  }
+  return null;
+}
+
+// Per-element notes: a note pinned to a shape, its card fading in like the
+// real NotePopover.
+export function NotesArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <rect
+          x="22"
+          y="36"
+          width="64"
+          height="32"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+      </svg>
+      {/* note badge on the element */}
+      <span className="absolute left-[34%] top-6 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-white shadow">
+        <span className="fa-pulse absolute inset-0 rounded-full bg-amber-400" />
+        <span className="relative">
+          <NoteIcon />
+        </span>
+      </span>
+      {/* note card */}
+      <div className="fa-fade absolute right-2 top-3 w-[52%] rounded-md border border-amber-200 bg-amber-50 p-1.5 shadow-md">
+        <div className="flex items-center gap-1 text-[7px] font-semibold text-amber-700">
+          <NoteIcon /> Note
+        </div>
+        <div className="mt-1 h-1.5 w-full rounded bg-amber-200/80" />
+        <div className="mt-0.5 h-1.5 w-3/4 rounded bg-amber-200/80" />
+      </div>
+    </Frame>
+  );
+}
+
+function NoteIcon() {
+  return (
+    <svg
+      width="8"
+      height="8"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+    >
+      <path d="M3 2.5 H13 V13.5 H3 Z" strokeLinejoin="round" />
+      <path d="M5.5 6 H10.5 M5.5 9 H9" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// Border styling: three shapes showing solid / dashed / dotted strokes with
+// increasing corner radius, the brand highlight cycling between them.
+export function BorderStyleArt() {
+  const variants = [
+    { dash: undefined as string | undefined, rx: 4 },
+    { dash: '6 4', rx: 14 },
+    { dash: '0.5 4', rx: 22 },
+  ];
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        {variants.map((v, i) => {
+          const x = 18 + i * 68;
+          return (
+            <g key={i}>
+              <rect
+                x={x}
+                y="32"
+                width="52"
+                height="32"
+                rx={v.rx}
+                fill={BLUE_FILL}
+                stroke={BLUE_STROKE}
+                strokeWidth="2.5"
+                strokeDasharray={v.dash}
+                strokeLinecap="round"
+              />
+              <rect
+                className="fa-hl"
+                x={x - 4}
+                y="28"
+                width="60"
+                height="40"
+                rx={v.rx + 4}
+                fill="none"
+                stroke={SKY}
+                strokeWidth="1.5"
+                style={{ animationDelay: `${i * 2}s` }}
+              />
+            </g>
+          );
+        })}
+      </svg>
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        solid · dashed · dotted
+      </span>
+    </Frame>
+  );
+}
+
+// Arrows: the three line styles (straight / curved / angled) stacked, with the
+// draggable middle handle shown on the curve (control point) and the elbow
+// (bend vertex). The two handles pulse to read as "grab and drag me"; straight
+// has none (nothing to bend). Mirrors the editor's arrow handle flow (spec/09).
+export function ArrowsArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <defs>
+          <marker
+            id="li-arrowhead"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="5"
+            markerHeight="5"
+            orient="auto-start-reverse"
+          >
+            <path d="M0 0 L10 5 L0 10 z" fill={BLUE_STROKE} />
+          </marker>
+        </defs>
+        {/* straight */}
+        <line
+          x1="24"
+          y1="20"
+          x2="150"
+          y2="20"
+          stroke={BLUE_STROKE}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          markerEnd="url(#li-arrowhead)"
+        />
+        {/* curved, with a draggable control knob at the apex */}
+        <path
+          d="M24 50 Q 87 30, 150 50"
+          fill="none"
+          stroke={BLUE_STROKE}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          markerEnd="url(#li-arrowhead)"
+        />
+        <circle
+          className="fa-pulse"
+          cx="87"
+          cy="40"
+          r="6"
+          fill="none"
+          stroke={SKY}
+          strokeWidth="2"
+        />
+        <circle cx="87" cy="40" r="3.5" fill="#fff" stroke={SKY} strokeWidth="1.5" />
+        {/* angled, with a draggable elbow knob at the bend */}
+        <path
+          d="M24 80 L96 80 L96 66 L150 66"
+          fill="none"
+          stroke={BLUE_STROKE}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          markerEnd="url(#li-arrowhead)"
+        />
+        <circle
+          className="fa-pulse"
+          cx="96"
+          cy="80"
+          r="6"
+          fill="none"
+          stroke={SKY}
+          strokeWidth="2"
+          style={{ animationDelay: '1s' }}
+        />
+        <circle cx="96" cy="80" r="3.5" fill="#fff" stroke={SKY} strokeWidth="1.5" />
+        {/* style labels */}
+        <text x="166" y="23" fontSize="8" fontWeight="500" fill="#94a3b8">
+          straight
+        </text>
+        <text x="166" y="53" fontSize="8" fontWeight="500" fill="#94a3b8">
+          curved
+        </text>
+        <text x="166" y="69" fontSize="8" fontWeight="500" fill="#94a3b8">
+          angled
+        </text>
+      </svg>
+      <span className="absolute bottom-1.5 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        drag to bend
+      </span>
+    </Frame>
+  );
+}
+
+// Pencil (freehand) + shape recognition: a hand-drawn wobbly stroke draws on
+// the left (fa-draw), an arrow points right, and the recognised clean shape
+// fades in on the right (fa-fade), under a pulsing magic-wand chip. Mirrors the
+// pencil ModeBanner's recognise toggle that mints a real primitive (spec/09).
+export function PencilArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        {/* hand-drawn, wobbly rectangle outline being sketched */}
+        <path
+          className="fa-draw"
+          d="M22 34 C 40 30, 64 31, 78 33 C 80 44, 79 56, 77 64 C 58 66, 38 65, 23 63 C 21 52, 21 43, 22 34 Z"
+          fill="none"
+          stroke={BLUE_STROKE}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* transition arrow */}
+        <path
+          d="M96 49 H120 M115 44 L121 49 L115 54"
+          fill="none"
+          stroke="#94a3b8"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* recognised clean shape */}
+        <rect
+          className="fa-fade"
+          x="138"
+          y="32"
+          width="58"
+          height="34"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2.5"
+        />
+      </svg>
+      {/* magic-wand recognise chip */}
+      <span className="fa-pulse absolute right-2 top-2 flex items-center gap-1 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-brand-600 shadow-sm">
+        <WandIcon /> recognise
+      </span>
+      <span className="absolute bottom-1.5 left-2 flex items-center gap-1 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        <PencilGlyph /> freehand
+      </span>
+    </Frame>
+  );
+}
+
+function WandIcon() {
+  return (
+    <svg
+      width="9"
+      height="9"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke={BLUE_STROKE}
+      strokeWidth="1.5"
+    >
+      <path d="M3 13 L11 5" strokeLinecap="round" />
+      <path
+        d="M12 2 l0.7 1.8 L14.5 4.5 l-1.8 0.7 L12 7 l-0.7-1.8 L9.5 4.5 l1.8-0.7 Z"
+        fill={BLUE_STROKE}
+        stroke="none"
+      />
+    </svg>
+  );
+}
+
+function PencilGlyph() {
+  return (
+    <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="#64748b" strokeWidth="1.5">
+      <path d="M11 2.5 L13.5 5 L5 13.5 L2.5 13.5 L2.5 11 Z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Canvas backdrop: four background patterns in a picker, the brand highlight
+// cycling to say "swap the canvas backdrop".
+export function CanvasBackdropArt() {
+  const pats: { key: string; bg: string; size: string }[] = [
+    {
+      key: 'grid',
+      bg: 'linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(90deg, #cbd5e1 1px, transparent 1px)',
+      size: '9px 9px',
+    },
+    {
+      key: 'lines',
+      bg: 'repeating-linear-gradient(0deg, #cbd5e1 0 1px, transparent 1px 9px)',
+      size: 'auto',
+    },
+    {
+      key: 'crosshatch',
+      bg: 'repeating-linear-gradient(45deg, #cbd5e1 0 1px, transparent 1px 8px), repeating-linear-gradient(-45deg, #cbd5e1 0 1px, transparent 1px 8px)',
+      size: 'auto',
+    },
+    {
+      key: 'dots',
+      bg: 'radial-gradient(#cbd5e1 1.2px, transparent 1.2px)',
+      size: '9px 9px',
+    },
+  ];
+  return (
+    <Frame>
+      <div className="flex h-full items-center justify-center gap-2 px-3">
+        {pats.map((p, i) => (
+          <div
+            key={p.key}
+            className="relative h-16 w-1/4 overflow-hidden rounded border border-slate-200 bg-white"
+          >
+            <span
+              className="absolute inset-0"
+              style={{ backgroundImage: p.bg, backgroundSize: p.size }}
+            />
+            <span
+              className="fa-hl pointer-events-none absolute inset-0 rounded ring-2 ring-brand-500"
+              style={{ animationDelay: `${i * 1.5}s` }}
+            />
+          </div>
+        ))}
+      </div>
+    </Frame>
+  );
+}
+
+/* ──────────────── Section: AI / rotation / layout (newest) ──────────────
+ * The latest editor surfaces. Same vocabulary + shared fa-* timing as
+ * everything above, plus the one fa-rotate keyframe for the rotate card. */
+
+// Optional AI assistant: the floating panel (Build / Ask / Review / Clean
+// tabs + a prompt) sits over the canvas while freshly generated shapes pop in
+// on the left, mirroring the editor's AI Assistant panel (spec/25).
+export function AiAssistArt() {
+  const tabs = ['Build', 'Ask', 'Review', 'Clean'];
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        {/* shapes the assistant just generated, popping in */}
+        <g className="fa-pop" style={{ animationDelay: '0.5s' }}>
+          <rect
+            x="18"
+            y="20"
+            width="46"
+            height="20"
+            rx="5"
+            fill={BLUE_FILL}
+            stroke={BLUE_STROKE}
+            strokeWidth="2"
+          />
+        </g>
+        <line
+          className="fa-draw"
+          x1="41"
+          y1="40"
+          x2="50"
+          y2="56"
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+          strokeLinecap="round"
+          style={{ animationDelay: '1s' }}
+        />
+        <g className="fa-pop" style={{ animationDelay: '1.2s' }}>
+          <rect
+            x="32"
+            y="56"
+            width="46"
+            height="20"
+            rx="5"
+            fill={BLUE_FILL}
+            stroke={BLUE_STROKE}
+            strokeWidth="2"
+          />
+        </g>
+      </svg>
+      {/* floating assistant panel */}
+      <div className="fa-fade absolute right-2 top-2.5 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md">
+        <div className="flex items-center gap-1 border-b border-slate-100 pb-1">
+          <SparkleIcon />
+          <span className="text-[8px] font-semibold text-slate-700">Assistant</span>
+        </div>
+        <div className="mt-1 flex gap-0.5">
+          {tabs.map((t, i) => (
+            <span
+              key={t}
+              className={
+                'rounded px-1 py-0.5 text-[6.5px] font-medium ' +
+                (i === 0 ? 'bg-brand-100 text-brand-700' : 'text-slate-400')
+              }
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        <div className="mt-1 flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1 py-0.5">
+          <span className="min-w-0 flex-1 truncate text-[7px] text-slate-500">
+            Draw a login flow…
+          </span>
+          <span className="fa-pulse flex h-3.5 w-3.5 items-center justify-center rounded bg-brand-500 text-white">
+            <SparkleIcon light />
+          </span>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
+function SparkleIcon({ light = false }: { light?: boolean }) {
+  return (
+    <svg width="9" height="9" viewBox="0 0 16 16" fill={light ? '#fff' : BLUE_STROKE} aria-hidden>
+      <path d="M8 1 l1.4 4.2 L13.6 6.6 l-4.2 1.4 L8 12.2 l-1.4 -4.2 L2.4 6.6 l4.2 -1.4 Z" />
+      <path d="M13 9.5 l0.55 1.65 L15.2 11.7 l-1.65 0.55 L13 13.9 l-0.55 -1.65 L10.8 11.7 l1.65 -0.55 Z" />
+    </svg>
+  );
+}
+
+// Shape rotation: a selected shape with a rotate handle on a stem above it,
+// rocking to the 15° snap angle and back. Resize handles are hidden while
+// rotating, matching the editor (snaps to 15°, Shift for free) (spec/09).
+export function RotateArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <g
+          className="fa-rotate"
+          style={{ transformBox: 'view-box', transformOrigin: '110px 50px' }}
+        >
+          {/* selection ring */}
+          <rect
+            x="74"
+            y="30"
+            width="72"
+            height="40"
+            rx="2"
+            fill="none"
+            stroke={SKY}
+            strokeWidth="1.5"
+          />
+          {/* the shape itself */}
+          <rect
+            x="78"
+            y="34"
+            width="64"
+            height="32"
+            rx="6"
+            fill={BLUE_FILL}
+            stroke={BLUE_STROKE}
+            strokeWidth="2"
+          />
+          {/* stem + rotate handle */}
+          <line x1="110" y1="30" x2="110" y2="17" stroke={SKY} strokeWidth="1.5" />
+          <circle cx="110" cy="14" r="4" fill="#fff" stroke={SKY} strokeWidth="1.8" />
+          <path
+            d="M108.4 14 a1.6 1.6 0 1 1 0.5 1.15"
+            fill="none"
+            stroke={SKY}
+            strokeWidth="1"
+            strokeLinecap="round"
+          />
+        </g>
+      </svg>
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        snaps to 15°
+      </span>
+    </Frame>
+  );
+}
+
+// Minimal panel layout: the editor chrome crossfades between the standard
+// floating panels and the compact dock + popover layout, with the toggle —
+// pick how you want to work (always on for mobile) (spec/09, spec/20).
+export function MinimalPanelArt() {
+  return (
+    <Frame canvas>
+      {/* standard — floating panels docked on the sides */}
+      <div className="fa-on absolute inset-0">
+        <div className="absolute bottom-7 left-2 top-2 flex w-7 flex-col items-center gap-1 rounded-md border border-slate-200 bg-white py-1.5 shadow-sm">
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} className="h-3 w-3 rounded bg-slate-200" />
+          ))}
+        </div>
+        <div className="absolute bottom-7 right-2 top-2 w-12 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-sm">
+          <div className="h-1.5 w-full rounded bg-slate-300" />
+          <div className="h-1.5 w-3/4 rounded bg-slate-200" />
+          <div className="h-1.5 w-full rounded bg-slate-200" />
+        </div>
+        <span className="absolute bottom-1.5 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+          standard panels
+        </span>
+      </div>
+      {/* minimal — compact dock + popover */}
+      <div className="fa-off absolute inset-0">
+        <div className="absolute bottom-7 left-1/2 w-[46%] -translate-x-1/2 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-md">
+          <div className="h-1.5 w-3/4 rounded bg-slate-300" />
+          <div className="h-1.5 w-full rounded bg-slate-200" />
+        </div>
+        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <span key={i} className="h-2.5 w-2.5 rounded-full bg-slate-200" />
+          ))}
+        </div>
+        <span className="absolute left-2 top-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+          compact dock
+        </span>
+      </div>
+      {/* toggle (synced with the crossfade above) */}
+      <span className="absolute right-2 top-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm">
+        <span className="fa-off absolute inset-0 rounded-full bg-brand-500" />
+        <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow" />
+      </span>
+    </Frame>
+  );
+}
