@@ -7,6 +7,7 @@ import { initialsOf } from '@/lib/identity';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useEscape } from '@/hooks/useEscape';
 import { isMobileViewportSync } from '@/lib/responsive';
+import { formatRelativeTimeCompact } from '@/lib/relative-time';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying
@@ -250,7 +251,7 @@ function CommentRow({
             {comment.authorName}
           </span>
           <span className="text-slate-400 dark:text-slate-500">
-            {relativeTime(comment.createdAt)}
+            {formatRelativeTimeCompact(Date.now() - comment.createdAt)}
           </span>
         </div>
         <p className="mt-0.5 whitespace-pre-wrap text-xs text-slate-700 dark:text-slate-200">
@@ -269,18 +270,6 @@ function CommentRow({
       ) : null}
     </li>
   );
-}
-
-function relativeTime(ts: number): string {
-  const diff = Date.now() - ts;
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 }
 
 function CloseIcon() {

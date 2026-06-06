@@ -60,6 +60,12 @@ export type {
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
+// Hard cap on how long the Explorer's diagram-list spinner spins before
+// we give up and show whatever we have. Both mount paths that load the
+// list (the editor and the new-diagram screen) arm this same safety
+// timeout, so it lives here next to the list-load calls.
+export const DIAGRAM_LIST_LOAD_SAFETY_MS = 10_000;
+
 // WebSocket counterpart of API_BASE. Converts http(s):// to ws(s):// for
 // absolute bases; for the same-origin default it builds from
 // `window.location` at call time (so SSR-safe modules can still import

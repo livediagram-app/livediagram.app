@@ -15,6 +15,7 @@ import {
   apiLoadSelf,
   apiSaveSelf,
   apiSetDiagramFolder,
+  DIAGRAM_LIST_LOAD_SAFETY_MS,
   type SharedWithItem,
 } from '@/lib/api-client';
 import { useFolders } from '@/hooks/useFolders';
@@ -115,7 +116,10 @@ export default function NewDiagramPage() {
     // Explorer skeleton up otherwise. 10s feels right — long enough
     // for a real fetch to complete, short enough that a dead network
     // surfaces an empty list rather than an indefinite spinner.
-    const safety = window.setTimeout(() => setDiagramListLoading(false), 10000);
+    const safety = window.setTimeout(
+      () => setDiagramListLoading(false),
+      DIAGRAM_LIST_LOAD_SAFETY_MS,
+    );
     void (async () => {
       const stored = await apiLoadSelf(selfId).catch(() => null);
       if (stored) {

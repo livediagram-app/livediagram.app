@@ -116,6 +116,7 @@ import {
   type ShareLink,
   type ShareRole,
   type SharedWithItem,
+  DIAGRAM_LIST_LOAD_SAFETY_MS,
 } from '@/lib/api-client';
 import { commentRowsFromElements } from '@/components/CommentsPanel';
 import { autoAlignElements } from '@/lib/auto-align';
@@ -447,7 +448,10 @@ export function useEditorState() {
   // optimistically themselves. Pulling them every save spammed
   // /api/folders on every edit.
   const refreshDiagramList = (ownerId: string) => {
-    const safety = window.setTimeout(() => setDiagramListLoading(false), 10000);
+    const safety = window.setTimeout(
+      () => setDiagramListLoading(false),
+      DIAGRAM_LIST_LOAD_SAFETY_MS,
+    );
     apiListDiagrams(ownerId)
       .then((list) => {
         window.clearTimeout(safety);
