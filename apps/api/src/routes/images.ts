@@ -83,16 +83,32 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (declaredLen > MAX_IMAGE_BYTES) {
       return json({ error: 'file-too-large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
     }
+    // Early dedupe via the client-supplied SHA (spec/19). The client
+    // computes sha256(bytes) before posting and sends it as
+    // X-Image-Sha256; if a row already exists at (owner, sha) the
+    // server can return the existing image without touching the
+    // body. Defence: the lookup is owner-scoped, so a malicious or
+    // mistyped header at most lets the caller "dedupe" against
+    // their OWN image (a no-op outcome) and never crosses owners.
+    // Falls through to the post-parse dedupe + insert below when
+    // the header is missing or doesn't match anything.
+    const headerSha = (request.headers.get('X-Image-Sha256') ?? '').toLowerCase();
+    if (/^[0-9a-f]{64}$/.test(headerSha)) {
+      const headerDedupe = await findImageBySha(env, owner, headerSha);
+      if (headerDedupe) {
+        return json({ image: headerDedupe, deduped: true });
+      }
+    }
     // Per-owner soft cap (spec/19). Enforcement order: per-file cap
     // first (above) so an oversize upload is rejected before any D1
     // round-trip; then this owner-sum check so the body parse only
     // happens for uploads that would actually land. Both caps zero
     // out when their env var is unset, which is the OSS self-host
-    // default. Dedupe (identical bytes already on this owner)
-    // happens AFTER the body parse below, so a deduped upload that
-    // would not grow either total still pays the parse: that is
-    // acceptable because dedupe wins are rare and the cap check is
-    // a single grouped query.
+    // default. Dedupe via the body-recomputed hash happens AFTER
+    // the body parse below, so a deduped upload that would not grow
+    // either total still pays the parse: that is acceptable because
+    // the early X-Image-Sha256 path above already handles the common
+    // dedupe case without the parse.
     const maxImages = parsePositiveCap(env.IMAGE_MAX_PER_OWNER);
     const maxBytes = parsePositiveCap(env.IMAGE_MAX_BYTES_PER_OWNER);
     if (maxImages !== null || maxBytes !== null) {
