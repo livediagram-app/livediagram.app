@@ -162,7 +162,6 @@ import {
   apiAppendChangeLogEntry,
   apiDeleteChangeLogEntry,
   apiDeleteChangeLogForTab,
-  apiDeleteTab,
   apiListChangeLog,
   apiDismissSharedWith,
   apiListDiagrams,
@@ -172,10 +171,8 @@ import {
   apiLoadSelf,
   apiLoadShared,
   apiLoadTab,
-  apiSaveDiagramMeta,
   apiSaveSelf,
   apiAddComment,
-  apiSaveTab,
   connectRoom,
   getSessionSharePassword,
   readCachedSharePassword,
@@ -199,13 +196,13 @@ import {
   type ThemeId,
 } from '@/lib/themes';
 import {
-  computeTabSaveDiff,
   createTab,
   placeholdersFromSummaries,
   patchTab,
   pruneMapToPresent,
   resolveDiagramSession,
 } from './editor-page-helpers';
+import { useAutosave } from './useAutosave';
 
 // Activity-log past/future stacks share the cap with the
 // state-snapshot stack: we can't undo past what useDiagramHistory
@@ -1105,135 +1102,24 @@ export default function LivePage() {
   const lastSavedTabsRef = useRef<Tab[]>([]);
   const lastSavedNameRef = useRef<string>('');
 
-  // Flush any pending autosave when the page unloads. Without this a
-  // fast user (edit → reload before the 600ms debounce fires) would
-  // lose changes. Uses `fetch` with `keepalive: true` so the browser
-  // keeps the request alive across the navigation. Reads the refs
-  // directly (rather than the stale closure) so the handler always
-  // ships the most recent state. See task #85.
-  useEffect(() => {
-    if (!hydrated || !diagramId || isReadOnly) return;
-    const handler = () => {
-      const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
-        lastSavedTabsRef.current,
-        tabs,
-        lastSavedNameRef.current,
-        diagramName,
-      );
-      if (!hasChanges) return;
-      const apiBase = '/api';
-      const headers: Record<string, string> = {
-        'X-Owner-Id': selfParticipant.id,
-        'Content-Type': 'application/json',
-      };
-      if (sessionShareCode) headers['X-Share-Code'] = sessionShareCode;
-      for (const t of changedTabs) {
-        // Strip `templateChosen` (UI-only) before persisting,
-        // mirroring apiSaveTab.
-        const { templateChosen: _tc, ...persistable } = t;
-        void _tc;
-        fetch(`${apiBase}/diagrams/${diagramId}/tabs/${t.id}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(persistable),
-          keepalive: true,
-        }).catch(() => {});
-      }
-      for (const tabId of deletedIds) {
-        const getHeaders: Record<string, string> = { 'X-Owner-Id': selfParticipant.id };
-        if (sessionShareCode) getHeaders['X-Share-Code'] = sessionShareCode;
-        fetch(`${apiBase}/diagrams/${diagramId}/tabs/${tabId}`, {
-          method: 'DELETE',
-          headers: getHeaders,
-          keepalive: true,
-        }).catch(() => {});
-      }
-      if (orderChanged || nameChanged) {
-        fetch(`${apiBase}/diagrams/${diagramId}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify({ name: diagramName, tabIds: tabs.map((t) => t.id) }),
-          keepalive: true,
-        }).catch(() => {});
-      }
-    };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [hydrated, diagramId, isReadOnly, tabs, diagramName, selfParticipant.id, sessionShareCode]);
-
-  useEffect(() => {
-    if (!hydrated || !diagramId) return;
-    if (isReadOnly) return;
-    if (remoteUpdateRef.current) {
-      remoteUpdateRef.current = false;
-      return;
-    }
-    const handle = window.setTimeout(() => {
-      const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
-        lastSavedTabsRef.current,
-        tabs,
-        lastSavedNameRef.current,
-        diagramName,
-      );
-      if (!hasChanges) return;
-
-      setSaveStatus('saving');
-      const writes: Promise<unknown>[] = [];
-      for (const t of changedTabs) {
-        writes.push(
-          apiSaveTab(selfParticipant.id, diagramId, t, sessionShareCode).then(() => {
-            roomRef.current?.send({
-              kind: 'op',
-              op: { kind: 'tab', tabId: t.id, tab: t },
-            });
-          }),
-        );
-      }
-      for (const tabId of deletedIds) {
-        writes.push(apiDeleteTab(selfParticipant.id, diagramId, tabId, sessionShareCode));
-      }
-      if (orderChanged || nameChanged) {
-        writes.push(
-          apiSaveDiagramMeta(
-            selfParticipant.id,
-            { id: diagramId, name: diagramName, tabIds: tabs.map((t) => t.id) },
-            sessionShareCode,
-          ).then(() => {
-            roomRef.current?.send({
-              kind: 'op',
-              op: {
-                kind: 'diagram-meta',
-                name: diagramName,
-                tabs: tabs.map((t, i) => ({
-                  id: t.id,
-                  name: t.name,
-                  orderIndex: i,
-                })),
-              },
-            });
-          }),
-        );
-      }
-      Promise.all(writes)
-        .then(() => {
-          lastSavedTabsRef.current = tabs;
-          lastSavedNameRef.current = diagramName;
-          setSaveStatus('saved');
-          const now = Date.now();
-          setSavedAt(now);
-          // Bump the current diagram's row locally so the Explorer's
-          // "Updated X ago" stays fresh — used to refetch the whole
-          // list here, which hit /api/diagrams on every autosave.
-          setDiagramList((prev) =>
-            prev.map((d) => (d.id === diagramId ? { ...d, savedAt: now, name: diagramName } : d)),
-          );
-        })
-        .catch(() => {
-          setSaveStatus('error');
-        });
-    }, 600);
-    return () => window.clearTimeout(handle);
-  }, [hydrated, diagramId, tabs, diagramName, selfParticipant.id, isReadOnly, sessionShareCode]);
+  // Per-tab autosave (debounced + beforeunload flush). See useAutosave;
+  // the last-saved mirror refs above are seeded by the hydration effect.
+  useAutosave({
+    hydrated,
+    diagramId,
+    isReadOnly,
+    tabs,
+    diagramName,
+    selfId: selfParticipant.id,
+    sessionShareCode,
+    lastSavedTabsRef,
+    lastSavedNameRef,
+    remoteUpdateRef,
+    roomRef,
+    setSaveStatus,
+    setSavedAt,
+    setDiagramList,
+  });
 
   // Persist self only when name or color actually changed. Without
   // this guard the hydration GET → state set → effect fire chain
