@@ -5,6 +5,7 @@ import {
   createTab,
   patchTab,
   placeholdersFromSummaries,
+  pruneMapToPresent,
   resolveDiagramSession,
 } from './editor-page-helpers';
 
@@ -173,5 +174,48 @@ describe('resolveDiagramSession (owner / role / share-code security)', () => {
     expect(s.sessionRole).toBe('view');
     expect(s.sessionShareCode).toBe('CODE2345');
     expect(s.canEditLog).toBe(false);
+  });
+});
+
+describe('pruneMapToPresent (realtime presence cleanup)', () => {
+  it('drops entries whose participant left, keeping the present ones', () => {
+    const prev = new Map([
+      ['ann', 't1'],
+      ['bob', 't2'],
+      ['cat', 't3'],
+    ]);
+    const out = pruneMapToPresent(prev, new Set(['ann', 'cat']));
+    expect([...out.entries()]).toEqual([
+      ['ann', 't1'],
+      ['cat', 't3'],
+    ]);
+  });
+
+  it('returns the SAME reference when nothing was removed (identity preserved for memo)', () => {
+    // Load-bearing: a fresh Map on every presence ping would re-render
+    // every presence consumer even when the roster is unchanged.
+    const prev = new Map([
+      ['ann', 't1'],
+      ['bob', 't2'],
+    ]);
+    expect(pruneMapToPresent(prev, new Set(['ann', 'bob']))).toBe(prev);
+    // A superset of present ids also counts as "nothing removed".
+    expect(pruneMapToPresent(prev, new Set(['ann', 'bob', 'zoe']))).toBe(prev);
+  });
+
+  it('returns a new empty map when everyone left', () => {
+    const prev = new Map([['ann', 't1']]);
+    const out = pruneMapToPresent(prev, new Set<string>());
+    expect(out).not.toBe(prev);
+    expect(out.size).toBe(0);
+  });
+
+  it('preserves null values (cursor/selection maps store null for "no position")', () => {
+    const prev = new Map<string, string | null>([
+      ['ann', null],
+      ['bob', 'el-1'],
+    ]);
+    const out = pruneMapToPresent(prev, new Set(['ann']));
+    expect([...out.entries()]).toEqual([['ann', null]]);
   });
 });

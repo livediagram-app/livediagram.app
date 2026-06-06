@@ -107,3 +107,22 @@ export function resolveDiagramSession(input: {
     canEditLog: isOwner || input.shareRole === 'edit',
   };
 }
+
+// Drop entries whose key isn't in `present`, returning the SAME map
+// reference when nothing was removed. The realtime presence handler
+// prunes its remote tab-focus / selection / cursor maps with this when
+// a participant disconnects — a stale entry leaves a ghost cursor or
+// selection ring on the canvas. Identity preservation is load-bearing:
+// returning a fresh Map on every presence ping would re-render every
+// presence consumer even when the roster didn't change. Was inlined
+// three times (once per map); generic here so the one tested copy backs
+// all three.
+export function pruneMapToPresent<V>(prev: Map<string, V>, present: Set<string>): Map<string, V> {
+  let changed = false;
+  const next = new Map<string, V>();
+  for (const [id, value] of prev) {
+    if (present.has(id)) next.set(id, value);
+    else changed = true;
+  }
+  return changed ? next : prev;
+}

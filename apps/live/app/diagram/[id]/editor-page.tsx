@@ -203,6 +203,7 @@ import {
   createTab,
   placeholdersFromSummaries,
   patchTab,
+  pruneMapToPresent,
   resolveDiagramSession,
 } from './editor-page-helpers';
 
@@ -1325,42 +1326,9 @@ export default function LivePage() {
         const present = new Set(participants.map((p) => p.id));
         // Drop tab-focus entries for people who left so their avatar
         // dot doesn't linger on a tab they no longer occupy.
-        setRemoteTabFocus((prev) => {
-          let changed = false;
-          const next = new Map<string, string>();
-          for (const [id, tabId] of prev) {
-            if (present.has(id)) {
-              next.set(id, tabId);
-            } else {
-              changed = true;
-            }
-          }
-          return changed ? next : prev;
-        });
-        setRemoteSelections((prev) => {
-          let changed = false;
-          const next = new Map<string, string | null>();
-          for (const [id, sel] of prev) {
-            if (present.has(id)) {
-              next.set(id, sel);
-            } else {
-              changed = true;
-            }
-          }
-          return changed ? next : prev;
-        });
-        setRemoteCursors((prev) => {
-          let changed = false;
-          const next = new Map<string, { tabId: string; x: number; y: number } | null>();
-          for (const [id, pos] of prev) {
-            if (present.has(id)) {
-              next.set(id, pos);
-            } else {
-              changed = true;
-            }
-          }
-          return changed ? next : prev;
-        });
+        setRemoteTabFocus((prev) => pruneMapToPresent(prev, present));
+        setRemoteSelections((prev) => pruneMapToPresent(prev, present));
+        setRemoteCursors((prev) => pruneMapToPresent(prev, present));
       },
       onOp: (from, op) => {
         // Any op from a peer counts as "they're still here". Bumps
