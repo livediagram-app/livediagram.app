@@ -62,12 +62,12 @@ export async function deleteAccount(
 }
 
 // Owner-id migration. Reassigns every `diagrams.owner_id`,
-// `folders.owner_id`, AND `shared_with.owner_id` row from
-// `fromOwnerId` to `toOwnerId`. Called from POST /api/migrate when
-// a guest signs up: their localStorage participant id moves to
-// their Clerk userId so the new account sees the diagrams +
-// folders they built as a guest AND the shared-with-them list
-// they accumulated by accepting share links.
+// `folders.owner_id`, `shared_with.owner_id`, `user_preferences.owner_id`,
+// and `images.owner_id` row from `fromOwnerId` to `toOwnerId`. Called
+// from POST /api/migrate when a guest signs up: their localStorage
+// participant id moves to their Clerk userId so the new account sees
+// the diagrams, folders, shared-with-them list, editor preferences,
+// AND uploaded images they built as a guest.
 //
 // shared_with's primary key is (owner_id, diagram_id), so a naive
 // UPDATE could PK-collide if the visitor accepted the same share
@@ -79,18 +79,30 @@ export async function deleteAccount(
 // rows keep the role + last_seen they already had (which is the
 // more recent of the two paths the user actually used).
 //
+// images has a UNIQUE (owner_id, sha256) index that drives the
+// dedupe. UPDATE OR IGNORE skips rows whose sha256 already exists
+// on the Clerk side (the user uploaded the same bytes under both
+// identities). The skipped guest row stays at fromOwnerId; the
+// formerly-guest diagrams (now Clerk-owned) still resolve those
+// image ids via the diagram-reference fallback in GET
+// /api/images/:id (spec/19), so the canvas keeps rendering them.
+// Only the gallery list filters by owner_id, so the dedupe loser
+// stops showing up there, which is the right outcome (the Clerk
+// twin is identical bytes anyway).
+//
 // Other tables (`change_log`, `share_links`, `tabs`) don't carry
 // their own owner_id, they link via `diagram_id` which is
 // owner-bound, so updating the diagrams cascade-fixes them
 // implicitly.
 //
-// Returns `{ diagrams, folders, shared }`. Idempotent: re-running
-// with the same `fromOwnerId` is a no-op once the rows have moved.
+// Returns `{ diagrams, folders, shared, images }`. Idempotent:
+// re-running with the same `fromOwnerId` is a no-op once the rows
+// have moved.
 export async function migrateOwnerId(
   env: Env,
   fromOwnerId: string,
   toOwnerId: string,
-): Promise<{ diagrams: number; folders: number; shared: number }> {
+): Promise<{ diagrams: number; folders: number; shared: number; images: number }> {
   const diagramsRes = await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
@@ -121,9 +133,19 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
+  // images (spec/19). UPDATE OR IGNORE walks the unique (owner_id,
+  // sha256) collision case (same bytes on both identities) and
+  // leaves those guest rows in place so the image id stays
+  // resolvable by every formerly-guest diagram that references it.
+  const imagesRes = await env.DB.prepare(
+    'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
+  )
+    .bind(toOwnerId, fromOwnerId)
+    .run();
   return {
     diagrams: diagramsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
     shared: sharedInsertRes.meta.changes ?? 0,
+    images: imagesRes.meta.changes ?? 0,
   };
 }

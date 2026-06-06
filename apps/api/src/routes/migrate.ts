@@ -26,7 +26,7 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
     if (fromOwnerId === clerkUserId) {
       // Nothing to do — the guest id already matches the
       // Clerk userId (e.g. retry after a successful run).
-      return json({ migrated: { diagrams: 0, folders: 0, shared: 0 } });
+      return json({ migrated: { diagrams: 0, folders: 0, shared: 0, images: 0 } });
     }
     const migrated = await migrateOwnerId(env, fromOwnerId, clerkUserId);
     return json({ migrated });
