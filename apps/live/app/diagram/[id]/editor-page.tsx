@@ -2,16 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  createShape,
-  createSticky,
-  createText,
   isBoxed,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
-  type ArrowElement,
   type BoxedElement,
   type Element,
-  type ShapeKind,
   type Tab,
 } from '@livediagram/diagram';
 import dynamic from 'next/dynamic';
@@ -127,7 +122,7 @@ import {
   writeUserPreferences,
   type UserPreferences,
 } from '@/lib/user-preferences';
-import { track, titleCaseType } from '@/lib/telemetry';
+import { track } from '@/lib/telemetry';
 import { useActivityLogDebounce } from '@/hooks/useActivityLogDebounce';
 import { useActivityLogEmitter } from '@/hooks/useActivityLogEmitter';
 import { useEditorBroadcast } from '@/hooks/useEditorBroadcast';
@@ -173,6 +168,7 @@ import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
 import { useTemplateFlow } from './useTemplateFlow';
 import { useElementHelpers } from './useElementHelpers';
+import { useElementCreation } from './useElementCreation';
 
 // Activity-log past/future stacks share the cap with the
 // state-snapshot stack: we can't undo past what useDiagramHistory
@@ -1497,71 +1493,19 @@ export default function LivePage() {
     zoomRef,
   });
 
-  const addShape = (kind: ShapeKind) => {
-    if (editsBlocked) return;
-    if (beginDrawIfEnabled({ type: 'shape', kind })) return;
-    addBoxed((x, y) => createShape(kind, x, y));
-    // Telemetry (spec/22): element added; `type` is the shape kind
-    // (a preset enum, e.g. "Square"), never user content.
-    track('Element', 'Added', titleCaseType(kind));
-  };
-
-  const addText = () => {
-    if (editsBlocked) return;
-    if (beginDrawIfEnabled({ type: 'text' })) return;
-    addBoxed((x, y) => createText(x, y));
-    track('Element', 'Added', 'Text');
-  };
-  const addSticky = () => {
-    if (editsBlocked) return;
-    if (beginDrawIfEnabled({ type: 'sticky' })) return;
-    addBoxed((x, y) => createSticky(x, y));
-    track('Element', 'Added', 'Sticky');
-  };
-
-  // Drop a plain connector at the viewport centre. Defaults to no
-  // pointers ('none') so the palette entry behaves like a "Line" tool;
-  // the user can change pointer style later via the Pointer accordion.
-  // Endpoints are free (unpinned) — drag them onto shapes after the
-  // fact to pin to anchors.
-  const addArrow = () => {
-    if (editsBlocked) return;
-    if (beginDrawIfEnabled({ type: 'arrow' })) return;
-    const centre = getViewportCenter();
-    const halfLen = 80;
-    const theme = getTheme(activeTab.theme);
-    const arrow: ArrowElement = {
-      id: crypto.randomUUID(),
-      type: 'arrow',
-      from: { kind: 'free', x: centre.x - halfLen, y: centre.y },
-      to: { kind: 'free', x: centre.x + halfLen, y: centre.y },
-      arrowEnds: 'none',
-      ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
-    };
-    const before = activeTab.elements;
-    const after = [...before, arrow];
-    commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
-    // Same activity-log emit as addBoxed: commit() does this for
-    // element-only commits, but this path also touches
-    // templateChosen on the tab so we use commitTabs and emit
-    // explicitly.
-    emitChange(activeId, before, after);
-    setSelectedId(arrow.id);
-    track('Element', 'Added', 'Arrow');
-  };
-
-  const handleCanvasDoubleClick = (x: number, y: number) => {
-    const TEXT_W = 160;
-    const TEXT_H = 48;
-    const el = createText(x - TEXT_W / 2, y - TEXT_H / 2);
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId ? { ...t, elements: [...t.elements, el], templateChosen: true } : t,
-      ),
-    );
-    setSelectedId(el.id);
-    setEditingId(el.id);
-  };
+  // Palette element-creation handlers. See useElementCreation.
+  const { addShape, addText, addSticky, addArrow, handleCanvasDoubleClick } = useElementCreation({
+    editsBlocked,
+    activeId,
+    activeTab,
+    getViewportCenter,
+    commitTabs,
+    emitChange,
+    setSelectedId,
+    setEditingId,
+    addBoxed,
+    beginDrawIfEnabled,
+  });
 
   // Structural element operations (delete, marquee commit, group /
   // ungroup, and the duplicate family). They change the element set
