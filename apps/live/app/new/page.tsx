@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/EditorHeader';
 import { Explorer } from '@/components/Explorer';
+import { ApiErrorPage } from '@/components/ApiErrorPage';
 import { TemplatePicker } from '@/components/TemplatePicker';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
 import {
@@ -48,6 +49,16 @@ export default function NewDiagramPage() {
   //     local stub with the server-side participant if one exists.
   const [ready, setReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // Set when the create POST fails (network / 5xx). Shows a retryable
+  // error instead of navigating to the editor for a diagram that was
+  // never persisted (which would 404). The ref keeps the last attempt's
+  // args so Retry can re-run the exact same create.
+  const [createError, setCreateError] = useState(false);
+  const lastCreateArgs = useRef<{
+    kind: TemplateKind | null;
+    name: string;
+    themeId: ThemeId;
+  } | null>(null);
 
   // Clerk wiring (token provider + guest→authed migration) — same
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
@@ -139,6 +150,7 @@ export default function NewDiagramPage() {
   ) => {
     if (submitting) return;
     setSubmitting(true);
+    lastCreateArgs.current = { kind: templateKind, name, themeId };
     // Identity persistence first so any subsequent room broadcasts
     // carry the chosen name + colour.
     const trimmed = name.trim() || self.name;
@@ -166,14 +178,21 @@ export default function NewDiagramPage() {
           patternColor: getTheme(themeId).patternColor,
           templateChosen: true,
         };
-    await apiCreateDiagram(self.id, {
-      id: diagramId,
-      name: 'Untitled diagram',
-      tabs: [tab],
-    }).catch(() => {
-      // Network glitch — the editor route's autosave will retry on
-      // the first edit. Navigation continues either way.
-    });
+    try {
+      await apiCreateDiagram(self.id, {
+        id: diagramId,
+        name: 'Untitled diagram',
+        tabs: [tab],
+      });
+    } catch {
+      // Create FAILED (network down / 5xx). Don't navigate to the editor
+      // for a diagram that was never persisted — that lands on a 404.
+      // Surface a retryable error card instead (Retry re-runs this exact
+      // create from lastCreateArgs).
+      setSubmitting(false);
+      setCreateError(true);
+      return;
+    }
     // Anonymous telemetry (spec/22): a diagram was created. No id or
     // name is sent — just the event. The chosen theme is recorded
     // alongside since the picker on this screen is the first place a
@@ -237,6 +256,32 @@ export default function NewDiagramPage() {
     await duplicate(self.id, id);
     await refreshList(self.id);
   };
+
+  if (createError) {
+    return (
+      <div className="flex h-dvh flex-col">
+        <EditorHeader
+          diagramName="New diagram"
+          hideTitle
+          showShare={false}
+          shareable={false}
+          onOpenShare={() => {}}
+          onRename={() => {}}
+        />
+        <main className="relative flex-1 bg-slate-50">
+          <ApiErrorPage
+            title="Couldn’t create the diagram"
+            message="We couldn’t reach the server to create your diagram. Check your connection and try again."
+            onRetry={() => {
+              setCreateError(false);
+              const a = lastCreateArgs.current;
+              if (a) void commitNewDiagram(a.kind, a.name, a.themeId);
+            }}
+          />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-dvh flex-col">

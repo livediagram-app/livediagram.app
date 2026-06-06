@@ -10,6 +10,7 @@ import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 
 const NotFound = dynamic(() => import('@/components/NotFound').then((m) => m.NotFound));
+const ApiErrorPage = dynamic(() => import('@/components/ApiErrorPage').then((m) => m.ApiErrorPage));
 const SharePasswordGate = dynamic(() =>
   import('@/components/SharePasswordGate').then((m) => m.SharePasswordGate),
 );
@@ -18,6 +19,7 @@ export default function LivePage() {
   const state = useEditorState();
   const {
     diagramNotFound,
+    loadError,
     sharePasswordGate,
     loadingDiagram,
     explorerPosition,
@@ -40,6 +42,52 @@ export default function LivePage() {
     setLoadingDiagram,
     setPasswordRetry,
   } = state;
+
+  // The load FAILED (network / 5xx) rather than 404'd. Retryable, so
+  // show the error card (with the Explorer behind it for navigation)
+  // instead of NotFound. Retry re-runs hydration via a full reload.
+  if (loadError) {
+    return (
+      <div className="flex h-dvh flex-col">
+        <EditorHeader
+          diagramName="Couldn’t load diagram"
+          hideTitle
+          showShare={false}
+          shareable={false}
+          onOpenShare={() => {}}
+          onRename={() => {}}
+        />
+        <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
+          <ApiErrorPage
+            onRetry={() => window.location.reload()}
+            message="We couldn’t load this diagram — the server didn’t respond. Check your connection and try again."
+          />
+          <Explorer
+            position={explorerPosition}
+            diagrams={diagramList}
+            folders={folders}
+            loading={diagramListLoading}
+            shared={sharedDiagrams}
+            onDismissShared={dismissSharedDiagram}
+            onOpenFullExplorer={() =>
+              window.location.assign(`${window.location.origin}/live/explorer`)
+            }
+            currentDiagramId={null}
+            onMoveTo={(x, y) => setExplorerPosition({ x, y })}
+            onReset={() => setExplorerPosition(null)}
+            onOpenDiagram={openDiagram}
+            onNewDiagram={newDiagram}
+            onDeleteDiagram={deleteDiagram}
+            onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+            onCreateFolder={createFolder}
+            onRenameFolder={renameFolder}
+            onDeleteFolder={deleteFolder}
+            onMoveDiagramToFolder={moveDiagramToFolder}
+          />
+        </main>
+      </div>
+    );
+  }
 
   if (diagramNotFound) {
     return (

@@ -216,6 +216,9 @@ export function useEditorState() {
   // (deleted, never existed, or owned by someone else). Renders the
   // NotFound surface instead of the editor + welcome modal.
   const [diagramNotFound, setDiagramNotFound] = useState(false);
+  // Distinct from diagramNotFound (a clean 404): the load call itself
+  // FAILED (network down / 5xx), which is retryable. Drives ApiErrorPage.
+  const [loadError, setLoadError] = useState(false);
   // Loading screen is the default — every first paint shows the
   // spinner, including SSG output, so users hitting a `?d=` / `?s=`
   // URL never glimpse the empty canvas and assume their data is gone.
@@ -708,6 +711,7 @@ export function useEditorState() {
       setDiagramId,
       setDiagramName,
       setDiagramNotFound,
+      setLoadError,
       setDiagramOwnerColor,
       setDiagramOwnerId,
       setDiagramOwnerName,
@@ -1789,6 +1793,7 @@ export function useEditorState() {
     diagramListLoading,
     diagramName,
     diagramNotFound,
+    loadError,
     diagramOwnerColor,
     diagramOwnerId,
     diagramOwnerName,

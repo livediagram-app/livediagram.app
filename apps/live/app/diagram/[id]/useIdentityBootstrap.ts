@@ -55,6 +55,7 @@ export function useIdentityBootstrap(opts: {
     setDiagramId: SetState<string | null>;
     setDiagramName: SetState<string>;
     setDiagramNotFound: SetState<boolean>;
+    setLoadError: SetState<boolean>;
     setDiagramOwnerColor: SetState<string | null>;
     setDiagramOwnerId: SetState<string | null>;
     setDiagramOwnerName: SetState<string | null>;
@@ -98,6 +99,7 @@ export function useIdentityBootstrap(opts: {
     setDiagramId,
     setDiagramName,
     setDiagramNotFound,
+    setLoadError,
     setDiagramOwnerColor,
     setDiagramOwnerId,
     setDiagramOwnerName,
@@ -220,7 +222,19 @@ export function useIdentityBootstrap(opts: {
         // their visit into shared_with — without it the server can't
         // identify the visitor and the "Shared with you" list stays
         // empty forever.
-        const resolution = await apiLoadShared(shareCodeParam, self.id).catch(() => null);
+        let resolution;
+        try {
+          resolution = await apiLoadShared(shareCodeParam, self.id);
+        } catch {
+          // Couldn't reach the server to resolve the share link (network
+          // / 5xx). Retryable, so show the error page instead of the
+          // "link revoked / diagram gone" NotFound below.
+          setLoadError(true);
+          setHydrated(true);
+          setLoadingDiagram(false);
+          setNameConfirmed(hasConfirmedName());
+          return;
+        }
         if (!resolution) {
           // The share code didn't resolve. Either it never existed,
           // the owner revoked it, or the diagram was deleted while
@@ -387,7 +401,20 @@ export function useIdentityBootstrap(opts: {
           }
         }
       } else if (id) {
-        const fetched = await apiLoadDiagram(self.id, id).catch(() => null);
+        let fetched;
+        try {
+          fetched = await apiLoadDiagram(self.id, id);
+        } catch {
+          // The load FAILED (network down / 5xx) — not a clean 404.
+          // Surface a retryable error page rather than NotFound, which
+          // would wrongly tell the user the diagram doesn't exist.
+          setDiagramId(id);
+          setLoadError(true);
+          setHydrated(true);
+          setLoadingDiagram(false);
+          setNameConfirmed(hasConfirmedName());
+          return;
+        }
         if (!fetched) {
           // URL had a ?d=<id> but the API didn't return anything for
           // us — either the diagram doesn't exist or we don't own it.
