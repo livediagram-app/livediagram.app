@@ -436,7 +436,25 @@ export function DiagramRow({
             </svg>
             Shared
           </span>
-        ) : null}
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">
+            <svg
+              width="9"
+              height="9"
+              viewBox="0 0 9 9"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <rect x="1.6" y="4" width="5.8" height="3.6" rx="0.9" />
+              <path d="M3 4V2.9a1.5 1.5 0 0 1 3 0V4" />
+            </svg>
+            Private
+          </span>
+        )}
       </span>
       <span className="text-[11px] uppercase tracking-wider text-slate-400">
         {formatRelativeTime(Date.now() - diagram.savedAt)}
