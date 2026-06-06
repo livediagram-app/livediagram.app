@@ -198,7 +198,12 @@ import {
   THEMES,
   type ThemeId,
 } from '@/lib/themes';
-import { createTab, placeholdersFromSummaries, patchTab } from './editor-page-helpers';
+import {
+  computeTabSaveDiff,
+  createTab,
+  placeholdersFromSummaries,
+  patchTab,
+} from './editor-page-helpers';
 
 // Activity-log past/future stacks share the cap with the
 // state-snapshot stack: we can't undo past what useDiagramHistory
@@ -1101,18 +1106,13 @@ export default function LivePage() {
   useEffect(() => {
     if (!hydrated || !diagramId || isReadOnly) return;
     const handler = () => {
-      const prevTabs = lastSavedTabsRef.current;
-      const prevTabById = new Map(prevTabs.map((t) => [t.id, t] as const));
-      const changedTabs = tabs.filter((t) => prevTabById.get(t.id) !== t);
-      const orderChanged =
-        tabs.length !== prevTabs.length || tabs.some((t, i) => prevTabs[i]?.id !== t.id);
-      const nameChanged = diagramName !== lastSavedNameRef.current;
-      const deletedIds = prevTabs
-        .filter((t) => !tabs.some((current) => current.id === t.id))
-        .map((t) => t.id);
-      if (changedTabs.length === 0 && !orderChanged && !nameChanged && deletedIds.length === 0) {
-        return;
-      }
+      const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
+        lastSavedTabsRef.current,
+        tabs,
+        lastSavedNameRef.current,
+        diagramName,
+      );
+      if (!hasChanges) return;
       const apiBase = '/api';
       const headers: Record<string, string> = {
         'X-Owner-Id': selfParticipant.id,
@@ -1161,19 +1161,13 @@ export default function LivePage() {
       return;
     }
     const handle = window.setTimeout(() => {
-      const prevTabs = lastSavedTabsRef.current;
-      const prevTabById = new Map(prevTabs.map((t) => [t.id, t] as const));
-      const changedTabs = tabs.filter((t) => prevTabById.get(t.id) !== t);
-      const orderChanged =
-        tabs.length !== prevTabs.length || tabs.some((t, i) => prevTabs[i]?.id !== t.id);
-      const nameChanged = diagramName !== lastSavedNameRef.current;
-      const deletedIds = prevTabs
-        .filter((t) => !tabs.some((current) => current.id === t.id))
-        .map((t) => t.id);
-
-      if (changedTabs.length === 0 && !orderChanged && !nameChanged && deletedIds.length === 0) {
-        return;
-      }
+      const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
+        lastSavedTabsRef.current,
+        tabs,
+        lastSavedNameRef.current,
+        diagramName,
+      );
+      if (!hasChanges) return;
 
       setSaveStatus('saving');
       const writes: Promise<unknown>[] = [];
