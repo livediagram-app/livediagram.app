@@ -203,6 +203,7 @@ import {
   resolveDiagramSession,
 } from './editor-page-helpers';
 import { useAutosave } from './useAutosave';
+import { usePerTabLoad } from './usePerTabLoad';
 
 // Activity-log past/future stacks share the cap with the
 // state-snapshot stack: we can't undo past what useDiagramHistory
@@ -1353,71 +1354,18 @@ export default function LivePage() {
     roomRef.current?.send({ kind: 'op', op: { kind: 'tab-focus', tabId: activeId } });
   }, [hydrated, diagramId, diagramShareable, activeId]);
 
-  // Lazy fetch the active tab's full payload if we haven't loaded it
-  // yet. The hydration step seeds the first tab; switching to a
-  // never-opened tab kicks off a one-shot GET that merges the
-  // elements into local state. Failures fall back to the placeholder
-  // (empty elements) so the editor doesn't lock up.
-  useEffect(() => {
-    if (!hydrated || !diagramId) return;
-    if (loadedTabIdsRef.current.has(activeId)) return;
-    let cancelled = false;
-    loadedTabIdsRef.current.add(activeId);
-    // Track whether we actually consumed the API response. Cleanup
-    // checks this flag — if the effect was torn down before it could
-    // merge (StrictMode double-invoke, fast activeId switch, etc.),
-    // we remove the id from the loaded-set so the next effect run
-    // can retry instead of skipping forever. Without this, Tab 2
-    // reliably loaded as empty: first effect added the id, then the
-    // cleanup cancelled the in-flight fetch, then the second effect
-    // saw the id in the set and bailed.
-    let merged = false;
-    const targetId = activeId;
-    // Capture the ref value at effect-run time so the cleanup uses
-    // the same Set the effect itself populated (avoids the lint
-    // warning about ref values shifting between effect and cleanup).
-    const loadedTabIds = loadedTabIdsRef.current;
-    apiLoadTab(selfParticipant.id, diagramId, targetId, sessionShareCode)
-      .then((tab) => {
-        if (cancelled || !tab) return;
-        let didMerge = false;
-        resetTabs((prev) =>
-          prev.map((t) => {
-            if (t.id !== tab.id) return t;
-            const userHasEdited = t.elements.length > 0 || t.templateChosen === true;
-            if (userHasEdited) return t;
-            didMerge = true;
-            return tab;
-          }),
-        );
-        if (didMerge) remoteUpdateRef.current = true;
-        // Either way the load is now committed — local state has been
-        // consulted. Keep the id in the loaded-set so subsequent
-        // tab switches don't refetch.
-        merged = true;
-        // Mirror into reactive state so the template-picker gate
-        // can wait on this without rebuilding the ref-based dedupe
-        // logic. Suppresses the brief "pick a template" flash that
-        // used to render between hydration and the fetch landing.
-        setLoadedTabIds((prev) => {
-          if (prev.has(targetId)) return prev;
-          return new Set(prev).add(targetId);
-        });
-      })
-      .catch(() => {
-        loadedTabIds.delete(targetId);
-      });
-    return () => {
-      cancelled = true;
-      // StrictMode double-invoke + cleanup-before-promise-resolve
-      // used to lock the tab in "loaded but empty" state forever:
-      // the first run added the id and was cancelled before the
-      // response arrived; the second run saw the id in the set and
-      // bailed; the user never saw the real content. Drop the id
-      // here so the next run actually fetches.
-      if (!merged) loadedTabIds.delete(targetId);
-    };
-  }, [hydrated, diagramId, activeId, selfParticipant.id, sessionShareCode, resetTabs]);
+  // Lazy fetch the active tab's full payload on first open. See usePerTabLoad.
+  usePerTabLoad({
+    hydrated,
+    diagramId,
+    activeId,
+    selfId: selfParticipant.id,
+    sessionShareCode,
+    loadedTabIdsRef,
+    setLoadedTabIds,
+    remoteUpdateRef,
+    resetTabs,
+  });
 
   // Outbound realtime broadcasters (cursor + laser) and the local
   // laser-trail buffer live in useEditorBroadcast. Same throttle,
