@@ -42,14 +42,19 @@ export function addTableRow(t: TableElement, at?: number): TableElement {
   const blank = Array.from({ length: cols }, () => '');
   const idx = at ?? t.cells.length;
   const cells = [...t.cells.slice(0, idx), blank, ...t.cells.slice(idx)];
-  return { ...t, cells };
+  const rowHeights = t.rowHeights
+    ? [...t.rowHeights.slice(0, idx), null, ...t.rowHeights.slice(idx)]
+    : t.rowHeights;
+  return { ...t, cells, rowHeights };
 }
 
 // Remove a row (the last one by default). Never drops below one row.
 export function removeTableRow(t: TableElement, at?: number): TableElement {
   if (t.cells.length <= 1) return t;
   const idx = at ?? t.cells.length - 1;
-  return { ...t, cells: t.cells.filter((_, i) => i !== idx) };
+  const cells = t.cells.filter((_, i) => i !== idx);
+  const rowHeights = t.rowHeights ? t.rowHeights.filter((_, i) => i !== idx) : t.rowHeights;
+  return { ...t, cells, rowHeights };
 }
 
 export function addTableColumn(t: TableElement, at?: number): TableElement {

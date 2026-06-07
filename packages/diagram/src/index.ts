@@ -251,6 +251,9 @@ export type TableElement = {
   // shares the remaining width as a 1fr track. Lets some columns
   // be pinned while the rest fill the space.
   colWidths?: (number | null)[];
+  // Per-row height override in element-space px (null / undefined =
+  // auto: shares the remaining height as a 1fr track).
+  rowHeights?: (number | null)[];
   // Tables have no single label (cells carry the text). Declared as an
   // always-undefined optional so the generic "boxed element has a
   // label" code paths (change log, export, search) compile without a

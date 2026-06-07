@@ -229,6 +229,7 @@ export type CanvasProps = {
   onCommitLabel: (id: string, label: string) => void;
   onCommitCells: (id: string, cells: string[][]) => void;
   onCommitColWidths: (id: string, colWidths: (number | null)[]) => void;
+  onCommitRowHeights: (id: string, rowHeights: (number | null)[]) => void;
   onCancelEdit: () => void;
   onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
   onBeginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;

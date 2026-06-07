@@ -19,6 +19,7 @@ import { isMobileViewportSync } from '@/lib/responsive';
 const CELL_FONT_PX: Record<string, number> = { sm: 11, md: 13, lg: 16, scale: 13 };
 
 const MIN_COL_PX = 30;
+const MIN_ROW_PX = 24;
 
 function ArrowIcon({ dir }: { dir: 'left' | 'right' | 'up' | 'down' }) {
   const d = {
@@ -146,12 +147,14 @@ export function TableView({
   readOnly,
   onCommitCells,
   onCommitColWidths,
+  onCommitRowHeights,
 }: {
   element: TableElement;
   isSelected: boolean;
   readOnly: boolean;
   onCommitCells: (id: string, cells: string[][]) => void;
   onCommitColWidths: (id: string, colWidths: (number | null)[]) => void;
+  onCommitRowHeights: (id: string, rowHeights: (number | null)[]) => void;
 }) {
   const rows = element.cells.length;
   const cols = element.cells[0]?.length ?? 0;
@@ -159,6 +162,7 @@ export function TableView({
   const [menu, setMenu] = useState<{ axis: 'col' | 'row'; index: number } | null>(null);
   // Live widths while dragging a column divider (committed on release).
   const [resizeWidths, setResizeWidths] = useState<(number | null)[] | null>(null);
+  const [resizeHeights, setResizeHeights] = useState<(number | null)[] | null>(null);
   // On desktop the column / row ⋯ trigger only shows while hovering
   // that column / row; on touch (no hover) they stay visible.
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
@@ -168,6 +172,7 @@ export function TableView({
   const initialTextRef = useRef('');
   const gridRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<(number | null)[] | null>(null);
+  const dragRowRef = useRef<(number | null)[] | null>(null);
 
   useEffect(() => {
     if (editing && (editing.r >= rows || editing.c >= cols)) setEditing(null);
@@ -214,6 +219,11 @@ export function TableView({
   const colTemplate = Array.from({ length: cols }, (_, c) => {
     const w = widths?.[c];
     return w != null ? `${w}px` : 'minmax(0, 1fr)';
+  }).join(' ');
+  const heights = resizeHeights ?? element.rowHeights;
+  const rowTemplate = Array.from({ length: rows }, (_, r) => {
+    const h = heights?.[r];
+    return h != null ? `${h}px` : 'minmax(0, 1fr)';
   }).join(' ');
 
   const beginEdit = (r: number, c: number) => {
@@ -272,6 +282,41 @@ export function TableView({
     window.addEventListener('pointerup', onUp);
   };
 
+  const startRowResize = (r: number) => (e: React.PointerEvent) => {
+    if (!showControls) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const grid = gridRef.current;
+    if (!grid) return;
+    const rect = grid.getBoundingClientRect();
+    const scale = element.height > 0 ? rect.height / element.height : 1;
+    const tracks = getComputedStyle(grid)
+      .gridTemplateRows.split(' ')
+      .map((t) => parseFloat(t));
+    const base: (number | null)[] = Array.from(
+      { length: rows },
+      (_, i) => element.rowHeights?.[i] ?? null,
+    );
+    const startHeightElem = (tracks[r] ?? rect.height / rows) / scale;
+    const startY = e.clientY;
+    const onMove = (ev: PointerEvent) => {
+      const dy = (ev.clientY - startY) / scale;
+      const next = [...base];
+      next[r] = Math.max(MIN_ROW_PX, Math.round(startHeightElem + dy));
+      dragRowRef.current = next;
+      setResizeHeights(next);
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      if (dragRowRef.current) onCommitRowHeights(element.id, dragRowRef.current);
+      dragRowRef.current = null;
+      setResizeHeights(null);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
   return (
     <>
       <div
@@ -283,7 +328,7 @@ export function TableView({
         className="absolute inset-0 grid overflow-hidden"
         style={{
           gridTemplateColumns: colTemplate,
-          gridTemplateRows: `repeat(${rows}, 1fr)`,
+          gridTemplateRows: rowTemplate,
           border: `1px solid ${stroke}`,
           color: textColor,
         }}
@@ -423,6 +468,27 @@ export function TableView({
                     className="group pointer-events-auto absolute -right-1 bottom-0 top-0 z-20 w-2 cursor-col-resize"
                   >
                     <div className="mx-auto h-full w-0.5 bg-brand-400/0 transition group-hover:bg-brand-400" />
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+
+          {/* Row-resize dividers (between rows). */}
+          <div
+            className="pointer-events-none absolute inset-0 grid"
+            style={{ gridTemplateRows: rowTemplate }}
+          >
+            {Array.from({ length: rows }, (_, r) => (
+              <div key={`rzr-${r}`} className="relative">
+                {r < rows - 1 ? (
+                  <div
+                    onPointerDown={startRowResize(r)}
+                    onDoubleClick={(e) => e.stopPropagation()}
+                    title="Drag to set row height"
+                    className="group pointer-events-auto absolute -bottom-1 left-0 right-0 z-20 h-2 cursor-row-resize"
+                  >
+                    <div className="my-auto h-0.5 w-full bg-brand-400/0 transition group-hover:bg-brand-400" />
                   </div>
                 ) : null}
               </div>
