@@ -236,6 +236,35 @@ export function TableView({
     onCommitCells(element.id, setTableCell(element, r, c, text).cells);
   };
 
+  // Commit the current cell and jump to (nr, nc), seeding its text.
+  const moveTo = (fromR: number, fromC: number, nr: number, nc: number) => {
+    commitCell(fromR, fromC, editorRef.current?.textContent ?? '');
+    initialTextRef.current = element.cells[nr]?.[nc] ?? '';
+    setEditing({ r: nr, c: nc });
+  };
+
+  // Where the caret sits in the editor, for arrow-key cell navigation
+  // (so arrows only move cells when they wouldn't fight the text caret).
+  const caretInfo = () => {
+    const el = editorRef.current;
+    const sel = window.getSelection();
+    if (!el || !sel || sel.rangeCount === 0)
+      return { collapsed: true, atStart: true, atEnd: true, firstLine: true, lastLine: true };
+    const range = sel.getRangeAt(0);
+    const pre = range.cloneRange();
+    pre.selectNodeContents(el);
+    pre.setEnd(range.endContainer, range.endOffset);
+    const offset = pre.toString().length;
+    const text = el.textContent ?? '';
+    return {
+      collapsed: sel.isCollapsed,
+      atStart: offset === 0,
+      atEnd: offset === text.length,
+      firstLine: !text.slice(0, offset).includes('\n'),
+      lastLine: !text.slice(offset).includes('\n'),
+    };
+  };
+
   const apply = (next: { cells: string[][] }) => {
     onCommitCells(element.id, next.cells);
     setMenu(null);
@@ -413,22 +442,53 @@ export function TableView({
                       if (e.key === 'Escape') {
                         e.preventDefault();
                         setEditing(null);
-                      } else if (e.key === 'Enter' && !e.shiftKey) {
+                        return;
+                      }
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        // Enter commits + moves DOWN (spreadsheet style);
+                        // Shift+Enter inserts a newline.
                         e.preventDefault();
-                        commitCell(r, c, editorRef.current?.textContent ?? '');
-                        setEditing(null);
-                      } else if (e.key === 'Tab') {
-                        e.preventDefault();
-                        commitCell(r, c, editorRef.current?.textContent ?? '');
-                        const flat = r * cols + c + (e.shiftKey ? -1 : 1);
-                        if (flat >= 0 && flat < rows * cols) {
-                          const nr = Math.floor(flat / cols);
-                          const nc = flat % cols;
-                          initialTextRef.current = element.cells[nr]?.[nc] ?? '';
-                          setEditing({ r: nr, c: nc });
-                        } else {
+                        if (r < rows - 1) moveTo(r, c, r + 1, c);
+                        else {
+                          commitCell(r, c, editorRef.current?.textContent ?? '');
                           setEditing(null);
                         }
+                        return;
+                      }
+                      if (e.key === 'Tab') {
+                        e.preventDefault();
+                        const flat = r * cols + c + (e.shiftKey ? -1 : 1);
+                        if (flat >= 0 && flat < rows * cols)
+                          moveTo(r, c, Math.floor(flat / cols), flat % cols);
+                        else {
+                          commitCell(r, c, editorRef.current?.textContent ?? '');
+                          setEditing(null);
+                        }
+                        return;
+                      }
+                      const info = caretInfo();
+                      if (
+                        e.key === 'ArrowDown' &&
+                        info.collapsed &&
+                        info.lastLine &&
+                        r < rows - 1
+                      ) {
+                        e.preventDefault();
+                        moveTo(r, c, r + 1, c);
+                      } else if (e.key === 'ArrowUp' && info.collapsed && info.firstLine && r > 0) {
+                        e.preventDefault();
+                        moveTo(r, c, r - 1, c);
+                      } else if (
+                        e.key === 'ArrowRight' &&
+                        info.collapsed &&
+                        info.atEnd &&
+                        c < cols - 1
+                      ) {
+                        e.preventDefault();
+                        moveTo(r, c, r, c + 1);
+                      } else if (e.key === 'ArrowLeft' && info.collapsed && info.atStart && c > 0) {
+                        e.preventDefault();
+                        moveTo(r, c, r, c - 1);
                       }
                     }}
                     // A contentEditable flex child (not a full-bleed
@@ -463,8 +523,16 @@ export function TableView({
                 {c < cols - 1 ? (
                   <div
                     onPointerDown={startColResize(c)}
-                    onDoubleClick={(e) => e.stopPropagation()}
-                    title="Drag to set column width"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      onCommitColWidths(
+                        element.id,
+                        Array.from({ length: cols }, (_, i) =>
+                          i === c ? null : (element.colWidths?.[i] ?? null),
+                        ),
+                      );
+                    }}
+                    title="Drag to set width · double-click to auto-fit"
                     className="group pointer-events-auto absolute -right-1 bottom-0 top-0 z-20 w-2 cursor-col-resize"
                   >
                     <div className="mx-auto h-full w-0.5 bg-brand-400/0 transition group-hover:bg-brand-400" />
@@ -484,8 +552,16 @@ export function TableView({
                 {r < rows - 1 ? (
                   <div
                     onPointerDown={startRowResize(r)}
-                    onDoubleClick={(e) => e.stopPropagation()}
-                    title="Drag to set row height"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      onCommitRowHeights(
+                        element.id,
+                        Array.from({ length: rows }, (_, i) =>
+                          i === r ? null : (element.rowHeights?.[i] ?? null),
+                        ),
+                      );
+                    }}
+                    title="Drag to set height · double-click to auto-fit"
                     className="group pointer-events-auto absolute -bottom-1 left-0 right-0 z-20 h-2 cursor-row-resize"
                   >
                     <div className="my-auto h-0.5 w-full bg-brand-400/0 transition group-hover:bg-brand-400" />
