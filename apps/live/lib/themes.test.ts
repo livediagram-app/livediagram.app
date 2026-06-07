@@ -198,6 +198,17 @@ describe('recolourElementForTheme', () => {
       expect(out).toEqual(el);
     }
   });
+
+  it('keeps the fill on a themeLockFill shape but still themes its stroke + text', () => {
+    // The Gantt milestone bars rely on this: a single themed element-fill
+    // would merge all six distinct bars into one block, so the bar fill is
+    // pinned while stroke + text still follow the theme.
+    const locked: ShapeElement = { ...shape, fillColor: '#bdc8d6', themeLockFill: true };
+    const out = recolourElementForTheme(locked, themed) as ShapeElement;
+    expect(out.fillColor).toBe('#bdc8d6');
+    expect(out.strokeColor).toBe('#475569');
+    expect(out.textColor).toBe('#0f172a');
+  });
 });
 
 describe('switchThemeBackdrop', () => {
@@ -338,6 +349,24 @@ describe('switchThemeElement', () => {
     expect(out.textColor).toBe(next.elementText);
   });
 
+  it('keeps a themeLockFill bar fill across a theme switch but flips its stroke', () => {
+    const bar: ShapeElement = {
+      id: 's',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      fillColor: '#bdc8d6',
+      strokeColor: prev.elementStroke ?? undefined,
+      themeLockFill: true,
+    };
+    const out = switchThemeElement(bar, prev, next) as ShapeElement;
+    expect(out.fillColor).toBe('#bdc8d6');
+    expect(out.strokeColor).toBe(next.elementStroke);
+  });
+
   it('switches text colour on text elements but leaves stickies alone', () => {
     const tEl: TextElement = {
       id: 't',
@@ -426,6 +455,29 @@ describe('resetThemeElement', () => {
     };
     const out = resetThemeElement(el, theme) as ShapeElement;
     expect(out.fillColor).toBe(theme.elementFill);
+    expect(out.strokeColor).toBe(theme.elementStroke);
+    expect(out.textColor).toBe(theme.elementText);
+  });
+
+  it('keeps a themeLockFill fill even on a hard reset, but still resets stroke + text', () => {
+    // "Reset elements to theme" is the most aggressive transform (it
+    // overwrites user customisations), yet a pinned fill must still
+    // survive or the Gantt bars would merge under a reset.
+    const bar: ShapeElement = {
+      id: 's',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      fillColor: '#bdc8d6',
+      strokeColor: '#003366',
+      textColor: '#222222',
+      themeLockFill: true,
+    };
+    const out = resetThemeElement(bar, theme) as ShapeElement;
+    expect(out.fillColor).toBe('#bdc8d6');
     expect(out.strokeColor).toBe(theme.elementStroke);
     expect(out.textColor).toBe(theme.elementText);
   });

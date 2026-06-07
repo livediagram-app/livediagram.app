@@ -297,6 +297,22 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
   image: [],
 };
 
+// The colour fields a given element actually exposes to theming. Starts
+// from the per-type table above, then drops `fillColor` when the element
+// opts out via `themeLockFill` — its fill is intrinsic and must survive
+// theme changes (e.g. the Gantt chart's per-milestone bars, which would
+// otherwise all collapse to the theme's single element-fill and lose the
+// distinction that makes the timeline readable). All three transforms
+// below funnel through this so the opt-out can't apply to one and silently
+// drift from the others. Stroke + text stay themed.
+function themeColourFields(el: Element): ThemeColourField[] {
+  const fields = THEME_COLOUR_FIELDS[el.type];
+  if ((el as { themeLockFill?: boolean }).themeLockFill) {
+    return fields.filter((f) => f.element !== 'fillColor');
+  }
+  return fields;
+}
+
 // Apply a theme's element-colour overrides to a single Element,
 // returning a new element with the theme's fill / stroke / text fields
 // written when the theme defines them, and untouched otherwise. Used by
@@ -304,7 +320,7 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
 // "Browse templates" picker (editor-page.tsx) so the two paths can't
 // drift, e.g. by accidentally omitting arrows or sketches.
 export function recolourElementForTheme(el: Element, theme: ThemeDefinition): Element {
-  const fields = THEME_COLOUR_FIELDS[el.type];
+  const fields = themeColourFields(el);
   if (fields.length === 0) return el;
   const patch: Record<string, string> = {};
   for (const { element, theme: themeKey } of fields) {
@@ -332,7 +348,7 @@ export function switchThemeElement(
   prev: ThemeDefinition,
   next: ThemeDefinition,
 ): Element {
-  const fields = THEME_COLOUR_FIELDS[el.type];
+  const fields = themeColourFields(el);
   if (fields.length === 0) return el;
   // Read the colour fields off the element generically. The cast is
   // safe: we only ever index keys from THEME_COLOUR_FIELDS, all of
@@ -398,7 +414,7 @@ export function switchThemeBackdrop(
 // theme is "apply when present", reset is "make match the theme,
 // blank when the theme blanks".
 export function resetThemeElement(el: Element, theme: ThemeDefinition): Element {
-  const fields = THEME_COLOUR_FIELDS[el.type];
+  const fields = themeColourFields(el);
   if (fields.length === 0) return el;
   const patch: Record<string, string | undefined> = {};
   for (const { element, theme: themeKey } of fields) {

@@ -8,9 +8,12 @@
 // further right each row (the classic cascading Gantt look). Geometry
 // is lifted from a hand-built reference diagram and re-centred on the
 // supplied canvas point. Colours are explicit so the chart reads
-// correctly under the neutral brand theme; like every other template
-// they flatten to the chosen theme's element palette when one is
-// applied (see recolourElementForTheme).
+// correctly under the neutral brand theme. The header + track fills
+// flatten to the chosen theme's element palette when one is applied
+// (see recolourElementForTheme), but the per-milestone bar fills are
+// pinned with `themeLockFill` so they stay distinct under every theme —
+// a single themed element-fill would merge all six bars into one block
+// and the timeline would stop reading as separate tasks.
 
 import { createShape, createText, type Element } from '@livediagram/diagram';
 
@@ -97,8 +100,10 @@ const BAR_H = 47;
 
 // Borderless filled rectangle (header / track / bar). strokeWidth 'none'
 // keeps the bars flat; the stroke colour is still carried so a themed
-// re-colour has something to map.
-function rect(x: number, y: number, w: number, h: number, fill: string): Element {
+// re-colour has something to map. `lockFill` pins the fill so it survives
+// a theme change (used for the milestone bars, whose distinct colours
+// carry meaning); header + track leave it off and adopt the theme fill.
+function rect(x: number, y: number, w: number, h: number, fill: string, lockFill = false): Element {
   return {
     ...createShape('square', x, y),
     width: w,
@@ -109,6 +114,7 @@ function rect(x: number, y: number, w: number, h: number, fill: string): Element
     strokeWidth: 'none',
     strokeStyle: 'solid',
     borderRadius: 'none',
+    ...(lockFill ? { themeLockFill: true } : {}),
   };
 }
 
@@ -143,7 +149,7 @@ export function buildGanttChart(cx: number, cy: number): Element[] {
       textAlignY: 'middle',
       padding: 'md',
     });
-    elements.push(rect(cx + r.barX, cy + r.barY, r.barW, BAR_H, r.fill));
+    elements.push(rect(cx + r.barX, cy + r.barY, r.barW, BAR_H, r.fill, true));
   }
 
   return elements;

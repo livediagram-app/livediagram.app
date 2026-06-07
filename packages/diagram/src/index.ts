@@ -108,6 +108,14 @@ export type ShapeElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // When set, theme transforms (recolour / switch / reset) leave this
+  // shape's `fillColor` alone, so an intrinsic fill survives a theme
+  // change the way a sticky note keeps its amber. Used by template
+  // scaffolds whose fills carry meaning that a single theme element-fill
+  // would erase — e.g. the Gantt chart's per-milestone bar colours,
+  // which must stay distinct so the timeline reads as separate tasks.
+  // Stroke + text still theme normally.
+  themeLockFill?: boolean;
   // Border styling (shapes + stickies). Each is a preset bucket so
   // saved diagrams round-trip without carrying arbitrary numeric
   // values; the renderer maps to pixel widths / SVG dasharrays /

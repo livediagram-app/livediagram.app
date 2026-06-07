@@ -155,3 +155,34 @@ describe('buildTemplatedTab', () => {
     expect(tab.backgroundOpacity).toBeUndefined();
   });
 });
+
+describe('gantt milestone bars survive theming', () => {
+  // The six milestone bars carry distinct intrinsic fills. They opt out
+  // of theme recolouring via `themeLockFill` so a non-brand theme (which
+  // maps every shape to one element-fill) can't merge them into a single
+  // indistinguishable block. The header + tracks must NOT carry the flag:
+  // they are background chrome and should adopt the theme fill.
+  it('pins exactly the six milestone-bar fills and leaves chrome unpinned', () => {
+    const els = buildTemplate('gantt', 0, 0);
+    const locked = els.filter(
+      (el) => (el as { themeLockFill?: boolean }).themeLockFill === true,
+    ) as Array<Extract<Element, { type: 'shape' }>>;
+    expect(locked.length).toBe(6);
+    // Each pinned bar has a fill, and the six fills are all distinct.
+    const fills = locked.map((b) => b.fillColor);
+    expect(fills.every((f) => typeof f === 'string')).toBe(true);
+    expect(new Set(fills).size).toBe(6);
+  });
+
+  it('themed gantt build keeps the six bar fills distinct', () => {
+    // End-to-end through buildTemplatedTab (the /live/new path), which
+    // recolours to the chosen theme. Without the lock, all bars would
+    // collapse to the Slate element-fill and the Set would be size 1.
+    const tab = buildTemplatedTab('gantt', 'slate', 'tab-g', 'Gantt');
+    const barFills = tab.elements
+      .filter((el) => (el as { themeLockFill?: boolean }).themeLockFill === true)
+      .map((el) => (el as Extract<Element, { type: 'shape' }>).fillColor);
+    expect(barFills.length).toBe(6);
+    expect(new Set(barFills).size).toBe(6);
+  });
+});
