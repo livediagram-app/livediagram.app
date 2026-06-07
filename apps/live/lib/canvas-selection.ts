@@ -5,6 +5,7 @@
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
 import {
+  arrowheadShapeOf,
   arrowheadSizeOf,
   arrowStyleOf,
   arrowThicknessOf,
@@ -194,6 +195,7 @@ export type SelectedElementFields = Pick<
   | 'arrowEnds'
   | 'arrowThickness'
   | 'arrowheadSize'
+  | 'arrowheadShape'
   | 'arrowStyle'
   | 'arrowStrokeStyle'
   | 'shapeKind'
@@ -256,6 +258,7 @@ export function deriveSelectedElementFields(
     arrowEnds: selected.type === 'arrow' ? (selected.arrowEnds ?? 'to') : null,
     arrowThickness: selected.type === 'arrow' ? arrowThicknessOf(selected) : null,
     arrowheadSize: selected.type === 'arrow' ? arrowheadSizeOf(selected) : null,
+    arrowheadShape: selected.type === 'arrow' ? arrowheadShapeOf(selected) : null,
     arrowStyle: selected.type === 'arrow' ? arrowStyleOf(selected) : null,
     arrowStrokeStyle: selected.type === 'arrow' ? (selected.strokeStyle ?? 'solid') : null,
     shapeKind: selected.type === 'shape' ? selected.shape : null,

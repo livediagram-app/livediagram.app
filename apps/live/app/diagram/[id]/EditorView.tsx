@@ -198,6 +198,7 @@ export function EditorView() {
     setAiPanelPosition,
     setArrowEndsSelected,
     setArrowheadSizeSelected,
+    setArrowheadShapeSelected,
     setArrowStrokeStyleSelected,
     setArrowStyleSelected,
     setArrowThicknessSelected,
@@ -537,6 +538,7 @@ export function EditorView() {
         onSetArrowEnds={setArrowEndsSelected}
         onSetArrowThickness={setArrowThicknessSelected}
         onSetArrowheadSize={setArrowheadSizeSelected}
+        onSetArrowheadShape={setArrowheadShapeSelected}
         onSetArrowStyle={setArrowStyleSelected}
         onSetArrowStrokeStyle={setArrowStrokeStyleSelected}
         onSetShapeKind={setShapeKindSelected}

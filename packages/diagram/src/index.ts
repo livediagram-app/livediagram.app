@@ -425,6 +425,13 @@ export type ArrowElement = {
   // thin line can carry a chunky arrowhead and vice versa. Snapped
   // to a named preset for the toggle UI (see `arrowheadSizeOf`).
   arrowheadSize?: ArrowheadSize;
+  // Arrowhead head SHAPE preset (filled triangle / hollow triangle /
+  // open V / dot / diamond ...). Independent of size + ends so a UML
+  // diagram can pair a hollow triangle (inheritance) or diamond
+  // (aggregation / composition) with any line weight. Defaults to the
+  // filled triangle so arrows authored before the field render
+  // unchanged (see `arrowheadShapeOf`).
+  arrowheadShape?: ArrowheadShape;
   // Path shape. 'straight' is the default and matches every arrow
   // authored before the field existed. 'curved' bows the line out
   // perpendicular to the from→to chord (smooth quadratic Bezier).
@@ -506,6 +513,36 @@ export const DEFAULT_ARROWHEAD_SIZE: ArrowheadSize = 'medium';
 
 export function arrowheadSizeOf(arrow: ArrowElement): ArrowheadSize {
   return arrow.arrowheadSize ?? DEFAULT_ARROWHEAD_SIZE;
+}
+
+// Arrowhead head-shape preset. `triangle` (the filled classic) is the
+// default so every arrow authored before the field renders unchanged.
+// The hollow / open / dot / diamond variants exist mainly for UML and
+// architecture notation: hollow triangle = inheritance, open V (line)
+// = dependency / flow, filled diamond = composition, hollow diamond =
+// aggregation, dot = a terminal marker. The `-hollow` variants render
+// white-filled with the line's stroke as outline; `line` is an open V
+// with no fill. Each (shape x size) pair gets its own SVG <marker>.
+export type ArrowheadShape =
+  | 'triangle'
+  | 'triangle-hollow'
+  | 'line'
+  | 'circle'
+  | 'circle-hollow'
+  | 'diamond'
+  | 'diamond-hollow';
+export const ARROWHEAD_SHAPES: ArrowheadShape[] = [
+  'triangle',
+  'triangle-hollow',
+  'line',
+  'circle',
+  'circle-hollow',
+  'diamond',
+  'diamond-hollow',
+];
+export const DEFAULT_ARROWHEAD_SHAPE: ArrowheadShape = 'triangle';
+export function arrowheadShapeOf(arrow: ArrowElement): ArrowheadShape {
+  return arrow.arrowheadShape ?? DEFAULT_ARROWHEAD_SHAPE;
 }
 
 // Path geometry preset. Straight is the existing behaviour; curved

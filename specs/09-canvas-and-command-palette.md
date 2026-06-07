@@ -151,6 +151,7 @@ Accordion groups (rendered in this order top-to-bottom, hidden when their gate d
   - **Line pattern** — Solid / Dashed / Dotted. Stored as `strokeStyle: BorderStyle` on the arrow (shares the union with the shape Border accordion's pattern row so future style additions, e.g. "long-dash", land on both surfaces with one schema change). The renderer maps to an SVG `strokeDasharray` via the same `BORDER_DASH_ARRAY` lookup the shape outlines use; the selection halo around a selected arrow stays solid for visibility.
   - **Arrowhead type** — Start only / End only / Both / No pointers. Stored as `arrowEnds`.
   - **Arrowhead size** — Small / Medium / Large / Extra-large (4 / 6 / 8.5 / 12 px marker size). Sits **below** Arrowhead type so the user picks whether they want a head before sizing it; hidden entirely when `arrowEnds === 'none'` (nothing to size).
+  - **Arrowhead shape** — Filled triangle (default) / Hollow triangle / Open V / Dot / Hollow dot / Filled diamond / Hollow diamond. Stored as `arrowheadShape: ArrowheadShape` on the arrow, independent of size + ends so a UML diagram can pair, e.g., a hollow triangle (inheritance) or diamond (aggregation / composition) with any line weight. The renderer emits one SVG `<marker>` per (shape × size) pair; hollow variants fill white and outline with the line colour, the open V has no fill. Sits below Arrowhead size and hides with it when `arrowEnds === 'none'`. Defaults to the filled triangle so arrows authored before the field render unchanged.
 
 ### Arrow labels
 
@@ -290,6 +291,18 @@ type ArrowElement = {
   // a chunky head (or vice versa).
   strokeWidth?: number;
   arrowheadSize?: 'small' | 'medium' | 'large' | 'extra-large';
+  // Head SHAPE preset, independent of size + ends. Defaults to the
+  // filled triangle; hollow / open / dot / diamond variants exist for
+  // UML + architecture notation (inheritance, dependency, aggregation,
+  // composition).
+  arrowheadShape?:
+    | 'triangle'
+    | 'triangle-hollow'
+    | 'line'
+    | 'circle'
+    | 'circle-hollow'
+    | 'diamond'
+    | 'diamond-hollow';
   // Path geometry. 'straight' is a single line; 'curved' renders a
   // quadratic bezier bowing perpendicular to the chord by ¼ of its
   // length; 'angled' draws an axis-aligned L-connector with a single

@@ -8,6 +8,7 @@ export {
 export { TabSection, type TabAccordionState } from './TabSection';
 import type {
   ArrowEnds,
+  ArrowheadShape,
   ArrowheadSize,
   ArrowStyle,
   ArrowThickness,
@@ -75,6 +76,11 @@ export type SelectedElementControls = {
   // users can pair a thin line with a chunky head (or vice versa).
   arrowheadSize: ArrowheadSize | null;
   onSetArrowheadSize: (size: ArrowheadSize) => void;
+  // Arrowhead head shape (filled / hollow triangle, open V, dot,
+  // diamond...). Null unless an arrow with at least one head is
+  // selected. Pairs with the UML-style connectors.
+  arrowheadShape: ArrowheadShape | null;
+  onSetArrowheadShape: (shape: ArrowheadShape) => void;
   // Path geometry: straight (default), curved (bezier bow), or angled
   // (axis-aligned right-angle elbow). Null when the selection isn't
   // an arrow.

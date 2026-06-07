@@ -13,6 +13,7 @@
 
 import type {
   ArrowEnds,
+  ArrowheadShape,
   ArrowStyle,
   BorderRadius,
   BorderStroke,
@@ -218,6 +219,56 @@ export function ResetIcon() {
   );
 }
 
+export function ArrowheadShapeIcon({ shape }: { shape: ArrowheadShape }) {
+  // A short line with the head shape at the right end, mirroring the
+  // marker geometry ArrowView paints. Hollow variants draw as an
+  // outline (fill="none") so they read as hollow on light and dark
+  // buttons alike.
+  const head = () => {
+    switch (shape) {
+      case 'triangle':
+        return <path d="M13 3 L21 7 L13 11 z" fill="currentColor" />;
+      case 'triangle-hollow':
+        return (
+          <path d="M13 3 L21 7 L13 11 z" fill="none" stroke="currentColor" strokeWidth="1.4" />
+        );
+      case 'line':
+        return (
+          <path
+            d="M13 3 L21 7 L13 11"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        );
+      case 'circle':
+        return <circle cx="17" cy="7" r="4" fill="currentColor" />;
+      case 'circle-hollow':
+        return (
+          <circle cx="17" cy="7" r="3.4" fill="none" stroke="currentColor" strokeWidth="1.4" />
+        );
+      case 'diamond':
+        return <path d="M13 7 L17 3 L21 7 L17 11 z" fill="currentColor" />;
+      case 'diamond-hollow':
+        return (
+          <path
+            d="M13 7 L17 3 L21 7 L17 11 z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+          />
+        );
+    }
+  };
+  return (
+    <svg width="24" height="14" viewBox="0 0 24 14" fill="none" aria-hidden>
+      <line x1="2" y1="7" x2="13" y2="7" stroke="currentColor" strokeWidth="1.6" />
+      {head()}
+    </svg>
+  );
+}
 export function ArrowEndsIcon({ ends }: { ends: ArrowEnds }) {
   // Same shape language as the arrowhead used in ArrowView, scaled
   // down to fit a 14×14 button. Line spans the middle; chevrons sit

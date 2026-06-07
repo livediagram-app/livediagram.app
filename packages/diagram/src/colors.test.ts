@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   ARROW_THICKNESS_PX,
+  ARROWHEAD_SHAPES,
   ARROWHEAD_SIZE_PX,
   DEFAULT_ARROW_THICKNESS,
+  DEFAULT_ARROWHEAD_SHAPE,
   DEFAULT_ARROWHEAD_SIZE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
   arrowStyleOf,
   arrowThicknessOf,
+  arrowheadShapeOf,
   arrowheadSizeOf,
   createShape,
   deriveShapeColours,
@@ -112,6 +115,16 @@ describe('arrow preset resolvers', () => {
     expect(arrowStyleOf(arrow())).toBe('straight');
     expect(arrowStyleOf(arrow({ arrowStyle: 'curved' }))).toBe('curved');
     expect(arrowStyleOf(arrow({ arrowStyle: 'angled' }))).toBe('angled');
+  });
+
+  it('arrowheadShapeOf defaults to triangle and otherwise echoes the field', () => {
+    expect(arrowheadShapeOf(arrow())).toBe('triangle');
+    expect(arrowheadShapeOf(arrow({ arrowheadShape: 'diamond-hollow' }))).toBe('diamond-hollow');
+  });
+
+  it('ARROWHEAD_SHAPES lists the default first and has no duplicates', () => {
+    expect(ARROWHEAD_SHAPES[0]).toBe(DEFAULT_ARROWHEAD_SHAPE);
+    expect(new Set(ARROWHEAD_SHAPES).size).toBe(ARROWHEAD_SHAPES.length);
   });
 });
 

@@ -7,6 +7,7 @@ import {
   ToggleSwitch,
 } from './palette-controls';
 import type {
+  ArrowheadShape,
   ArrowheadSize,
   ArrowStyle,
   ArrowThickness,
@@ -15,9 +16,10 @@ import type {
   BorderStyle,
   ShapeKind,
 } from '@livediagram/diagram';
-import { ARROW_THICKNESS_PX, ARROWHEAD_SIZE_PX } from '@livediagram/diagram';
+import { ARROW_THICKNESS_PX, ARROWHEAD_SHAPES, ARROWHEAD_SIZE_PX } from '@livediagram/diagram';
 import {
   ArrowEndsIcon,
+  ArrowheadShapeIcon,
   ArrowheadSizeIcon,
   ArrowStyleIcon,
   BoldIcon,
@@ -591,11 +593,57 @@ export function SelectedElementSection({
               </div>
             </>
           ) : null}
+          {selection.arrowheadShape !== null && selection.arrowEnds !== 'none' ? (
+            <>
+              <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
+              <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                Arrowhead shape
+              </p>
+              <div className="mt-1 grid grid-cols-4 gap-1">
+                {ARROWHEAD_SHAPES.map((shape) => (
+                  <Tooltip
+                    key={shape}
+                    title={ARROWHEAD_SHAPE_LABEL[shape]}
+                    description={ARROWHEAD_SHAPE_DESC[shape]}
+                  >
+                    <SizeButton
+                      active={selection.arrowheadShape === shape}
+                      onClick={() => selection.onSetArrowheadShape(shape)}
+                    >
+                      <ArrowheadShapeIcon shape={shape} />
+                    </SizeButton>
+                  </Tooltip>
+                ))}
+              </div>
+            </>
+          ) : null}
         </Accordion>
       ) : null}
     </div>
   );
 }
+
+const ARROWHEAD_SHAPE_LABEL: Record<ArrowheadShape, string> = {
+  triangle: 'Filled triangle',
+  'triangle-hollow': 'Hollow triangle',
+  line: 'Open',
+  circle: 'Dot',
+  'circle-hollow': 'Hollow dot',
+  diamond: 'Filled diamond',
+  'diamond-hollow': 'Hollow diamond',
+};
+
+// Tooltips lean on the conventional UML / flowchart meanings so the
+// picker doubles as a hint for what each head is used for.
+const ARROWHEAD_SHAPE_DESC: Record<ArrowheadShape, string> = {
+  triangle: 'The classic filled arrowhead.',
+  'triangle-hollow': 'A hollow triangle — UML inheritance / "is a".',
+  line: 'An open V with no fill — dependency / flow.',
+  circle: 'A filled dot terminator.',
+  'circle-hollow': 'A hollow dot terminator.',
+  diamond: 'A filled diamond — UML composition.',
+  'diamond-hollow': 'A hollow diamond — UML aggregation.',
+};
 
 const SHAPE_LABEL: Record<ShapeKind, string> = {
   square: 'Square',

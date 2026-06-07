@@ -253,6 +253,7 @@ export type CanvasProps = {
   onSetArrowEnds: (ends: import('@livediagram/diagram').ArrowEnds) => void;
   onSetArrowThickness: (thickness: import('@livediagram/diagram').ArrowThickness) => void;
   onSetArrowheadSize: (size: import('@livediagram/diagram').ArrowheadSize) => void;
+  onSetArrowheadShape: (shape: import('@livediagram/diagram').ArrowheadShape) => void;
   onSetArrowStyle: (style: import('@livediagram/diagram').ArrowStyle) => void;
   onSetArrowStrokeStyle: (style: import('@livediagram/diagram').BorderStyle) => void;
   onSetShapeKind: (kind: ShapeKind) => void;

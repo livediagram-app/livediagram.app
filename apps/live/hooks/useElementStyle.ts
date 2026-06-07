@@ -24,6 +24,7 @@ import {
   sendManyToBack,
   supportsBorder,
   type ArrowEnds,
+  type ArrowheadShape,
   type ArrowheadSize,
   type ArrowStyle,
   type ArrowThickness,
@@ -279,6 +280,16 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     );
   };
 
+  const setArrowheadShapeSelected = (shape: ArrowheadShape) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'arrow' ? { ...el, arrowheadShape: shape } : el,
+      ),
+    );
+  };
+
   // Line pattern (solid / dashed / dotted) on the selected arrow.
   // Reuses the BorderStyle union shapes already carry so future
   // pattern additions (e.g. 'long-dash') just need a single
@@ -418,6 +429,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowEndsSelected,
     setArrowThicknessSelected,
     setArrowheadSizeSelected,
+    setArrowheadShapeSelected,
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
     setShapeKindSelected,
