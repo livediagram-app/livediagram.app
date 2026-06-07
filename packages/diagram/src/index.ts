@@ -229,12 +229,15 @@ export type TextElement = {
 // evenly); per-column / per-row sizing can come later. The first row
 // is rendered as a header when `headerRow` is set.
 export type TableCellStyle = {
-  // Cell background tint.
+  // Per-cell overrides of the table's text styling (each falls back
+  // to the table default when unset).
   bg?: string;
-  // Cell text colour.
   textColor?: string;
-  // Bold the cell's text.
   bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  textSize?: TextSize;
+  alignX?: TextAlignX;
 };
 
 export type TableElement = {

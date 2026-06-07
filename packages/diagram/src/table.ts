@@ -129,6 +129,10 @@ export function setCellStyle(
   if (next.bg !== undefined) cleaned.bg = next.bg;
   if (next.textColor !== undefined) cleaned.textColor = next.textColor;
   if (next.bold !== undefined) cleaned.bold = next.bold;
+  if (next.italic !== undefined) cleaned.italic = next.italic;
+  if (next.underline !== undefined) cleaned.underline = next.underline;
+  if (next.textSize !== undefined) cleaned.textSize = next.textSize;
+  if (next.alignX !== undefined) cleaned.alignX = next.alignX;
   const merged = Object.keys(cleaned).length > 0 ? cleaned : null;
   const cellStyles = Array.from({ length: rows }, (_, ri) =>
     Array.from({ length: cols }, (_, ci) =>

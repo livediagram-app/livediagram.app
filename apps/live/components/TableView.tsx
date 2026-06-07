@@ -44,6 +44,36 @@ function ArrowIcon({ dir }: { dir: 'left' | 'right' | 'up' | 'down' }) {
   );
 }
 
+function Chevron() {
+  return (
+    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden>
+      <path
+        d="M1.5 3l2.5 2.5L6.5 3"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function AlignIcon({ dir }: { dir: 'left' | 'center' | 'right' }) {
+  const lines =
+    dir === 'left'
+      ? ['M2 4h10', 'M2 7h6', 'M2 10h8']
+      : dir === 'right'
+        ? ['M2 4h10', 'M6 7h6', 'M4 10h8']
+        : ['M2 4h10', 'M4 7h6', 'M3 10h8'];
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+      {lines.map((d, i) => (
+        <path key={i} d={d} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      ))}
+    </svg>
+  );
+}
+
 function TrashIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
@@ -166,6 +196,7 @@ export function TableView({
   const [editing, setEditing] = useState<{ r: number; c: number } | null>(null);
   const [menu, setMenu] = useState<{ axis: 'col' | 'row'; index: number } | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
+  const [cellMenu, setCellMenu] = useState<'text' | 'colours' | 'align' | null>(null);
   // Live widths while dragging a column divider (committed on release).
   const [resizeWidths, setResizeWidths] = useState<(number | null)[] | null>(null);
   const [resizeHeights, setResizeHeights] = useState<(number | null)[] | null>(null);
@@ -188,6 +219,7 @@ export function TableView({
     if (!isSelected) {
       setMenu(null);
       setSelectedCell(null);
+      setCellMenu(null);
     }
   }, [isSelected]);
 
@@ -219,7 +251,6 @@ export function TableView({
   const headerTextColor = element.headerTextColor ?? textColor;
   const alignX = element.textAlignX ?? 'center';
   const alignY = element.textAlignY ?? 'middle';
-  const justify = alignX === 'left' ? 'flex-start' : alignX === 'right' ? 'flex-end' : 'center';
   const alignItems = alignY === 'top' ? 'flex-start' : alignY === 'bottom' ? 'flex-end' : 'center';
 
   // Explicit px for overridden columns, 1fr for the rest (they share the
@@ -386,6 +417,14 @@ export function TableView({
                 : null;
             const cs = element.cellStyles?.[r]?.[c] ?? null;
             const isSelCell = selectedCell?.r === r && selectedCell?.c === c;
+            const cellAlignX = cs?.alignX ?? alignX;
+            const cellJustify =
+              cellAlignX === 'left' ? 'flex-start' : cellAlignX === 'right' ? 'flex-end' : 'center';
+            const cellFontPx = cs?.textSize
+              ? cs.textSize === 'scale'
+                ? Math.max(9, Math.min(40, Math.round(rowH * 0.4)))
+                : (CELL_FONT_PX[cs.textSize] ?? fontPx)
+              : fontPx;
             const isEditingCell = editing?.r === r && editing?.c === c;
             return (
               <div
@@ -402,6 +441,7 @@ export function TableView({
                   if (showControls && !isEditingCell) {
                     e.stopPropagation();
                     setSelectedCell({ r, c });
+                    setCellMenu(null);
                   }
                 }}
                 className="min-w-0 overflow-hidden"
@@ -413,17 +453,17 @@ export function TableView({
                     cs?.bg ??
                     (isHeader ? headerFill : (zebraBg ?? element.fillColor ?? 'transparent')),
                   display: 'flex',
-                  justifyContent: justify,
+                  justifyContent: cellJustify,
                   alignItems,
                   color: cs?.textColor ?? (isHeader ? headerTextColor : undefined),
                   outline: isSelCell ? '2px solid rgb(14 165 233)' : undefined,
                   outlineOffset: isSelCell ? '-2px' : undefined,
-                  fontSize: fontPx,
+                  fontSize: cellFontPx,
                   fontWeight: isHeader ? 700 : (cs?.bold ?? element.textBold) ? 600 : 400,
-                  fontStyle: element.textItalic ? 'italic' : undefined,
+                  fontStyle: (cs?.italic ?? element.textItalic) ? 'italic' : undefined,
                   textDecoration:
                     [
-                      element.textUnderline && 'underline',
+                      (cs?.underline ?? element.textUnderline) && 'underline',
                       element.textStrikethrough && 'line-through',
                     ]
                       .filter(Boolean)
@@ -527,7 +567,7 @@ export function TableView({
                     // text on BOTH axes and it inherits the cell font —
                     // editing looks identical to the static cell.
                     className="max-w-full whitespace-pre-wrap break-words outline-none"
-                    style={{ textAlign: alignX, minWidth: '1ch' }}
+                    style={{ textAlign: cellAlignX, minWidth: '1ch' }}
                   />
                 ) : (
                   <span className="whitespace-pre-wrap break-words">{cell}</span>
@@ -710,93 +750,182 @@ export function TableView({
           >
             <div
               onPointerDown={(e) => e.stopPropagation()}
-              className="pointer-events-auto absolute left-1/2 top-0 z-40 flex -translate-x-1/2 -translate-y-[calc(100%+4px)] items-center gap-0.5 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800"
+              className="pointer-events-auto absolute left-1/2 top-0 z-40 flex -translate-x-1/2 -translate-y-[calc(100%+4px)] items-center rounded-lg border border-slate-200 bg-white p-0.5 shadow-lg dark:border-slate-700 dark:bg-slate-800"
             >
-              <button
-                type="button"
-                title="Bold cell"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  applyCellStyle(selectedCell.r, selectedCell.c, {
-                    bold: !(
-                      element.cellStyles?.[selectedCell.r]?.[selectedCell.c]?.bold ??
-                      element.textBold
-                    ),
-                  });
-                }}
-                className="flex h-6 w-6 items-center justify-center rounded text-xs font-bold text-slate-700 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700"
-              >
-                B
-              </button>
-              <label
-                title="Cell background"
-                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded hover:bg-brand-50 dark:hover:bg-slate-700"
-              >
-                <span
-                  className="h-3.5 w-3.5 rounded-sm border border-slate-300"
-                  style={{
-                    backgroundColor:
-                      element.cellStyles?.[selectedCell.r]?.[selectedCell.c]?.bg ?? '#ffffff',
-                  }}
-                />
-                <input
-                  type="color"
-                  className="sr-only"
-                  value={element.cellStyles?.[selectedCell.r]?.[selectedCell.c]?.bg ?? '#ffffff'}
-                  onChange={(e) =>
-                    applyCellStyle(selectedCell.r, selectedCell.c, { bg: e.target.value })
-                  }
-                />
-              </label>
-              <label
-                title="Cell text colour"
-                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-xs font-semibold hover:bg-brand-50 dark:hover:bg-slate-700"
-              >
-                <span
-                  style={{
-                    color:
-                      element.cellStyles?.[selectedCell.r]?.[selectedCell.c]?.textColor ??
-                      textColor,
-                  }}
-                >
-                  A
-                </span>
-                <input
-                  type="color"
-                  className="sr-only"
-                  value={
-                    element.cellStyles?.[selectedCell.r]?.[selectedCell.c]?.textColor ?? textColor
-                  }
-                  onChange={(e) =>
-                    applyCellStyle(selectedCell.r, selectedCell.c, { textColor: e.target.value })
-                  }
-                />
-              </label>
-              <button
-                type="button"
-                title="Clear cell formatting"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCommitCellStyles(
-                    element.id,
-                    clearCellStyle(element, selectedCell.r, selectedCell.c).cellStyles ?? [],
-                  );
-                }}
-                className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-950"
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.4"
-                  strokeLinecap="round"
-                  aria-hidden
-                >
-                  <path d="M3 3l6 6M9 3l-6 6" />
-                </svg>
-              </button>
+              {(() => {
+                const sc = element.cellStyles?.[selectedCell.r]?.[selectedCell.c] ?? null;
+                const rr = selectedCell.r;
+                const cc = selectedCell.c;
+                const sep = <div className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" />;
+                const secCls = (active: boolean) =>
+                  `flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium ${
+                    active
+                      ? 'bg-brand-500 text-white'
+                      : 'text-slate-600 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700'
+                  }`;
+                const tog = (on: boolean) =>
+                  `flex h-7 w-7 items-center justify-center rounded text-sm ${
+                    on
+                      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/30 dark:text-brand-200'
+                      : 'text-slate-600 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700'
+                  }`;
+                const panel =
+                  'absolute left-0 top-full z-50 mt-1 rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-800';
+                return (
+                  <>
+                    {/* Text */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        className={secCls(cellMenu === 'text')}
+                        onClick={() => setCellMenu((m) => (m === 'text' ? null : 'text'))}
+                      >
+                        Text <Chevron />
+                      </button>
+                      {cellMenu === 'text' ? (
+                        <div className={`${panel} w-44`}>
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              title="Bold"
+                              className={tog(sc?.bold ?? element.textBold ?? false)}
+                              onClick={() =>
+                                applyCellStyle(rr, cc, { bold: !(sc?.bold ?? element.textBold) })
+                              }
+                            >
+                              <span className="font-bold">B</span>
+                            </button>
+                            <button
+                              type="button"
+                              title="Italic"
+                              className={tog(sc?.italic ?? element.textItalic ?? false)}
+                              onClick={() =>
+                                applyCellStyle(rr, cc, {
+                                  italic: !(sc?.italic ?? element.textItalic),
+                                })
+                              }
+                            >
+                              <span className="italic">I</span>
+                            </button>
+                            <button
+                              type="button"
+                              title="Underline"
+                              className={tog(sc?.underline ?? element.textUnderline ?? false)}
+                              onClick={() =>
+                                applyCellStyle(rr, cc, {
+                                  underline: !(sc?.underline ?? element.textUnderline),
+                                })
+                              }
+                            >
+                              <span className="underline">U</span>
+                            </button>
+                          </div>
+                          <div className="mt-1.5 grid grid-cols-4 gap-1">
+                            {(['sm', 'md', 'lg', 'scale'] as const).map((sz) => (
+                              <button
+                                key={sz}
+                                type="button"
+                                title={sz === 'scale' ? 'Scale to fit' : `Size ${sz}`}
+                                className={tog((sc?.textSize ?? element.textSize ?? 'md') === sz)}
+                                onClick={() => applyCellStyle(rr, cc, { textSize: sz })}
+                              >
+                                <span style={{ fontSize: sz === 'sm' ? 9 : sz === 'lg' ? 15 : 12 }}>
+                                  {sz === 'scale' ? '\u2195' : 'A'}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                    {sep}
+                    {/* Colours */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        className={secCls(cellMenu === 'colours')}
+                        onClick={() => setCellMenu((m) => (m === 'colours' ? null : 'colours'))}
+                      >
+                        Colours <Chevron />
+                      </button>
+                      {cellMenu === 'colours' ? (
+                        <div className={`${panel} w-40`}>
+                          <label className="flex items-center justify-between gap-2 rounded px-1 py-1 text-[11px] text-slate-600 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700">
+                            Background
+                            <span
+                              className="relative h-5 w-5 overflow-hidden rounded border border-slate-300"
+                              style={{ backgroundColor: sc?.bg ?? '#ffffff' }}
+                            >
+                              <input
+                                type="color"
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                value={sc?.bg ?? '#ffffff'}
+                                onChange={(e) => applyCellStyle(rr, cc, { bg: e.target.value })}
+                              />
+                            </span>
+                          </label>
+                          <label className="flex items-center justify-between gap-2 rounded px-1 py-1 text-[11px] text-slate-600 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700">
+                            Text
+                            <span
+                              className="relative h-5 w-5 overflow-hidden rounded border border-slate-300"
+                              style={{ backgroundColor: sc?.textColor ?? textColor }}
+                            >
+                              <input
+                                type="color"
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                value={sc?.textColor ?? textColor}
+                                onChange={(e) =>
+                                  applyCellStyle(rr, cc, { textColor: e.target.value })
+                                }
+                              />
+                            </span>
+                          </label>
+                        </div>
+                      ) : null}
+                    </div>
+                    {sep}
+                    {/* Alignment */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        className={secCls(cellMenu === 'align')}
+                        onClick={() => setCellMenu((m) => (m === 'align' ? null : 'align'))}
+                      >
+                        Align <Chevron />
+                      </button>
+                      {cellMenu === 'align' ? (
+                        <div className={`${panel} flex gap-1`}>
+                          {(['left', 'center', 'right'] as const).map((al) => (
+                            <button
+                              key={al}
+                              type="button"
+                              title={`Align ${al}`}
+                              className={tog((sc?.alignX ?? element.textAlignX ?? 'center') === al)}
+                              onClick={() => applyCellStyle(rr, cc, { alignX: al })}
+                            >
+                              <AlignIcon dir={al} />
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                    {sep}
+                    <button
+                      type="button"
+                      title="Clear cell formatting"
+                      onClick={() =>
+                        onCommitCellStyles(
+                          element.id,
+                          clearCellStyle(element, rr, cc).cellStyles ?? [],
+                        )
+                      }
+                      className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-950"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
