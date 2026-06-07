@@ -478,6 +478,10 @@ export function TableView({
           setHoveredCol(null);
           setHoveredRow(null);
         }}
+        role="table"
+        aria-label={`Table, ${rows} rows by ${cols} columns`}
+        aria-rowcount={rows}
+        aria-colcount={cols}
         className="absolute inset-0 grid overflow-hidden"
         style={{
           gridTemplateColumns: colTemplate,
@@ -486,176 +490,202 @@ export function TableView({
           color: textColor,
         }}
       >
-        {element.cells.flatMap((row, r) =>
-          row.map((cell, c) => {
-            const isHeader = (element.headerRow && r === 0) || (element.headerColumn && c === 0);
-            const bodyRow = element.headerRow ? r - 1 : r;
-            const zebraBg =
-              element.zebra && !isHeader && bodyRow >= 0 && bodyRow % 2 === 1
-                ? `${stroke}11`
-                : null;
-            const cs = element.cellStyles?.[r]?.[c] ?? null;
-            const isSelCell = selectedCell?.r === r && selectedCell?.c === c;
-            const cellAlignX = cs?.alignX ?? alignX;
-            const cellJustify =
-              cellAlignX === 'left' ? 'flex-start' : cellAlignX === 'right' ? 'flex-end' : 'center';
-            const cellFontPx = cs?.textSize
-              ? cs.textSize === 'scale'
-                ? Math.max(9, Math.min(40, Math.round(rowH * 0.4)))
-                : (CELL_FONT_PX[cs.textSize] ?? fontPx)
-              : fontPx;
-            const isEditingCell = editing?.r === r && editing?.c === c;
-            return (
-              <div
-                key={`${r}-${c}`}
-                onMouseEnter={() => {
-                  setHoveredCol(c);
-                  setHoveredRow(r);
-                }}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  beginEdit(r, c);
-                }}
-                onClick={(e) => {
-                  if (showControls && !isEditingCell) {
-                    e.stopPropagation();
-                    setSelectedCell({ r, c });
-                    setCellMenu(null);
+        {element.cells.map((row, r) => (
+          // display:contents keeps the row out of the CSS grid layout
+          // while still exposing the table > row > cell ARIA structure.
+          <div key={`tr-${r}`} role="row" style={{ display: 'contents' }} aria-rowindex={r + 1}>
+            {row.map((cell, c) => {
+              const isHeader = (element.headerRow && r === 0) || (element.headerColumn && c === 0);
+              const bodyRow = element.headerRow ? r - 1 : r;
+              const zebraBg =
+                element.zebra && !isHeader && bodyRow >= 0 && bodyRow % 2 === 1
+                  ? `${stroke}11`
+                  : null;
+              const cs = element.cellStyles?.[r]?.[c] ?? null;
+              const isSelCell = selectedCell?.r === r && selectedCell?.c === c;
+              const cellAlignX = cs?.alignX ?? alignX;
+              const cellJustify =
+                cellAlignX === 'left'
+                  ? 'flex-start'
+                  : cellAlignX === 'right'
+                    ? 'flex-end'
+                    : 'center';
+              const cellFontPx = cs?.textSize
+                ? cs.textSize === 'scale'
+                  ? Math.max(9, Math.min(40, Math.round(rowH * 0.4)))
+                  : (CELL_FONT_PX[cs.textSize] ?? fontPx)
+                : fontPx;
+              const isEditingCell = editing?.r === r && editing?.c === c;
+              return (
+                <div
+                  key={`${r}-${c}`}
+                  role={
+                    isHeader
+                      ? element.headerRow && r === 0
+                        ? 'columnheader'
+                        : 'rowheader'
+                      : 'cell'
                   }
-                }}
-                className="min-w-0 overflow-hidden"
-                style={{
-                  padding: cellPad,
-                  borderRight: c < cols - 1 ? gridBorder : undefined,
-                  borderBottom: r < rows - 1 ? gridBorder : undefined,
-                  backgroundColor:
-                    cs?.bg ??
-                    (isHeader ? headerFill : (zebraBg ?? element.fillColor ?? 'transparent')),
-                  display: 'flex',
-                  justifyContent: cellJustify,
-                  alignItems,
-                  color: cs?.textColor ?? (isHeader ? headerTextColor : undefined),
-                  outline: isSelCell ? '2px solid rgb(14 165 233)' : undefined,
-                  outlineOffset: isSelCell ? '-2px' : undefined,
-                  fontSize: cellFontPx,
-                  fontWeight:
-                    (cs?.bold ?? (isHeader || element.textBold)) ? (isHeader ? 700 : 600) : 400,
-                  fontStyle: (cs?.italic ?? element.textItalic) ? 'italic' : undefined,
-                  textDecoration:
-                    [
-                      (cs?.underline ?? element.textUnderline) && 'underline',
-                      element.textStrikethrough && 'line-through',
-                    ]
-                      .filter(Boolean)
-                      .join(' ') || undefined,
-                  lineHeight: 1.2,
-                }}
-              >
-                {isEditingCell ? (
-                  <div
-                    ref={editorRef}
-                    contentEditable
-                    suppressContentEditableWarning
-                    role="textbox"
-                    tabIndex={0}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onPaste={(e) => {
-                      const text = e.clipboardData.getData('text/plain');
-                      if (!text) return;
-                      const grid = text
-                        .replace(/\r/g, '')
-                        .split('\n')
-                        .map((line) => line.split('\t'));
-                      while (
-                        grid.length > 1 &&
-                        grid[grid.length - 1]!.length === 1 &&
-                        grid[grid.length - 1]![0] === ''
-                      ) {
-                        grid.pop();
-                      }
-                      const tabular = grid.length > 1 || (grid[0]?.length ?? 0) > 1;
-                      e.preventDefault();
-                      if (tabular) {
-                        // Spreadsheet / TSV paste fills + grows the grid.
-                        onCommitCells(element.id, pasteIntoTable(element, r, c, grid).cells);
-                        setEditing(null);
-                      } else {
-                        // Single value: insert as PLAIN text (strip any
-                        // pasted rich formatting).
-                        document.execCommand('insertText', false, grid[0]?.[0] ?? '');
-                      }
-                    }}
-                    onBlur={() => {
-                      commitCell(r, c, editorRef.current?.textContent ?? '');
-                      setEditing(null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') {
-                        e.preventDefault();
-                        setEditing(null);
-                        return;
-                      }
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        // Enter commits + moves DOWN (spreadsheet style);
-                        // Shift+Enter inserts a newline.
-                        e.preventDefault();
-                        if (r < rows - 1) moveTo(r, c, r + 1, c);
-                        else {
-                          commitCell(r, c, editorRef.current?.textContent ?? '');
-                          setEditing(null);
+                  aria-colindex={c + 1}
+                  onMouseEnter={() => {
+                    setHoveredCol(c);
+                    setHoveredRow(r);
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    beginEdit(r, c);
+                  }}
+                  onClick={(e) => {
+                    if (showControls && !isEditingCell) {
+                      e.stopPropagation();
+                      setSelectedCell({ r, c });
+                      setCellMenu(null);
+                    }
+                  }}
+                  className="min-w-0 overflow-hidden"
+                  style={{
+                    padding: cellPad,
+                    borderRight: c < cols - 1 ? gridBorder : undefined,
+                    borderBottom: r < rows - 1 ? gridBorder : undefined,
+                    backgroundColor:
+                      cs?.bg ??
+                      (isHeader ? headerFill : (zebraBg ?? element.fillColor ?? 'transparent')),
+                    display: 'flex',
+                    justifyContent: cellJustify,
+                    alignItems,
+                    color: cs?.textColor ?? (isHeader ? headerTextColor : undefined),
+                    outline: isSelCell ? '2px solid rgb(14 165 233)' : undefined,
+                    outlineOffset: isSelCell ? '-2px' : undefined,
+                    fontSize: cellFontPx,
+                    fontWeight:
+                      (cs?.bold ?? (isHeader || element.textBold)) ? (isHeader ? 700 : 600) : 400,
+                    fontStyle: (cs?.italic ?? element.textItalic) ? 'italic' : undefined,
+                    textDecoration:
+                      [
+                        (cs?.underline ?? element.textUnderline) && 'underline',
+                        element.textStrikethrough && 'line-through',
+                      ]
+                        .filter(Boolean)
+                        .join(' ') || undefined,
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {isEditingCell ? (
+                    <div
+                      ref={editorRef}
+                      contentEditable
+                      suppressContentEditableWarning
+                      role="textbox"
+                      tabIndex={0}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onPaste={(e) => {
+                        const text = e.clipboardData.getData('text/plain');
+                        if (!text) return;
+                        const grid = text
+                          .replace(/\r/g, '')
+                          .split('\n')
+                          .map((line) => line.split('\t'));
+                        while (
+                          grid.length > 1 &&
+                          grid[grid.length - 1]!.length === 1 &&
+                          grid[grid.length - 1]![0] === ''
+                        ) {
+                          grid.pop();
                         }
-                        return;
-                      }
-                      if (e.key === 'Tab') {
+                        const tabular = grid.length > 1 || (grid[0]?.length ?? 0) > 1;
                         e.preventDefault();
-                        const flat = r * cols + c + (e.shiftKey ? -1 : 1);
-                        if (flat >= 0 && flat < rows * cols)
-                          moveTo(r, c, Math.floor(flat / cols), flat % cols);
-                        else {
-                          commitCell(r, c, editorRef.current?.textContent ?? '');
+                        if (tabular) {
+                          // Spreadsheet / TSV paste fills + grows the grid.
+                          onCommitCells(element.id, pasteIntoTable(element, r, c, grid).cells);
                           setEditing(null);
+                        } else {
+                          // Single value: insert as PLAIN text (strip any
+                          // pasted rich formatting).
+                          document.execCommand('insertText', false, grid[0]?.[0] ?? '');
                         }
-                        return;
-                      }
-                      const info = caretInfo();
-                      if (
-                        e.key === 'ArrowDown' &&
-                        info.collapsed &&
-                        info.lastLine &&
-                        r < rows - 1
-                      ) {
-                        e.preventDefault();
-                        moveTo(r, c, r + 1, c);
-                      } else if (e.key === 'ArrowUp' && info.collapsed && info.firstLine && r > 0) {
-                        e.preventDefault();
-                        moveTo(r, c, r - 1, c);
-                      } else if (
-                        e.key === 'ArrowRight' &&
-                        info.collapsed &&
-                        info.atEnd &&
-                        c < cols - 1
-                      ) {
-                        e.preventDefault();
-                        moveTo(r, c, r, c + 1);
-                      } else if (e.key === 'ArrowLeft' && info.collapsed && info.atStart && c > 0) {
-                        e.preventDefault();
-                        moveTo(r, c, r, c - 1);
-                      }
-                    }}
-                    // A contentEditable flex child (not a full-bleed
-                    // textarea) so the cell's justify / align centre the
-                    // text on BOTH axes and it inherits the cell font —
-                    // editing looks identical to the static cell.
-                    className="max-w-full whitespace-pre-wrap break-words outline-none"
-                    style={{ textAlign: cellAlignX, minWidth: '1ch' }}
-                  />
-                ) : (
-                  <span className="whitespace-pre-wrap break-words">{cell}</span>
-                )}
-              </div>
-            );
-          }),
-        )}
+                      }}
+                      onBlur={() => {
+                        commitCell(r, c, editorRef.current?.textContent ?? '');
+                        setEditing(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          e.preventDefault();
+                          setEditing(null);
+                          return;
+                        }
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          // Enter commits + moves DOWN (spreadsheet style);
+                          // Shift+Enter inserts a newline.
+                          e.preventDefault();
+                          if (r < rows - 1) moveTo(r, c, r + 1, c);
+                          else {
+                            commitCell(r, c, editorRef.current?.textContent ?? '');
+                            setEditing(null);
+                          }
+                          return;
+                        }
+                        if (e.key === 'Tab') {
+                          e.preventDefault();
+                          const flat = r * cols + c + (e.shiftKey ? -1 : 1);
+                          if (flat >= 0 && flat < rows * cols)
+                            moveTo(r, c, Math.floor(flat / cols), flat % cols);
+                          else {
+                            commitCell(r, c, editorRef.current?.textContent ?? '');
+                            setEditing(null);
+                          }
+                          return;
+                        }
+                        const info = caretInfo();
+                        if (
+                          e.key === 'ArrowDown' &&
+                          info.collapsed &&
+                          info.lastLine &&
+                          r < rows - 1
+                        ) {
+                          e.preventDefault();
+                          moveTo(r, c, r + 1, c);
+                        } else if (
+                          e.key === 'ArrowUp' &&
+                          info.collapsed &&
+                          info.firstLine &&
+                          r > 0
+                        ) {
+                          e.preventDefault();
+                          moveTo(r, c, r - 1, c);
+                        } else if (
+                          e.key === 'ArrowRight' &&
+                          info.collapsed &&
+                          info.atEnd &&
+                          c < cols - 1
+                        ) {
+                          e.preventDefault();
+                          moveTo(r, c, r, c + 1);
+                        } else if (
+                          e.key === 'ArrowLeft' &&
+                          info.collapsed &&
+                          info.atStart &&
+                          c > 0
+                        ) {
+                          e.preventDefault();
+                          moveTo(r, c, r, c - 1);
+                        }
+                      }}
+                      // A contentEditable flex child (not a full-bleed
+                      // textarea) so the cell's justify / align centre the
+                      // text on BOTH axes and it inherits the cell font —
+                      // editing looks identical to the static cell.
+                      className="max-w-full whitespace-pre-wrap break-words outline-none"
+                      style={{ textAlign: cellAlignX, minWidth: '1ch' }}
+                    />
+                  ) : (
+                    <span className="whitespace-pre-wrap break-words">{cell}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       {/* Control layer: a non-clipped sibling so menus can spill past the
