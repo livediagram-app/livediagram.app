@@ -46,7 +46,17 @@ export async function getClerkUserId(env: Env, request: Request): Promise<string
   if (!token) return null;
 
   try {
-    const { payload } = await jwtVerify(token, getJWKS(jwksUrl));
+    // jose enforces the JWKS signature (rejecting alg:none / unsigned)
+    // and exp/nbf by default. When CLERK_ISSUER is configured we also
+    // assert the `iss` claim, so a validly-signed token from a different
+    // Clerk instance/tenant sharing the JWKS host can't be replayed.
+    // Left optional (unset → current behaviour) so self-host without it
+    // keeps working.
+    const { payload } = await jwtVerify(
+      token,
+      getJWKS(jwksUrl),
+      env.CLERK_ISSUER ? { issuer: env.CLERK_ISSUER } : undefined,
+    );
     return typeof payload.sub === 'string' ? payload.sub : null;
   } catch {
     return null;

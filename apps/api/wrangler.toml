@@ -101,6 +101,18 @@ type = "ratelimit"
 namespace_id = "1003"
 simple = { limit = 20, period = 60 }
 
+# Per-IP limiter for share-code resolution (GET /api/share/<code>). That
+# read carries the optional share password and is otherwise unauthed +
+# exempt from the write limiter, so without this an attacker holding a
+# code could brute-force the password unbounded. 30 resolves / 60s per IP
+# is ample for legit visitors. Separate namespace. Absent binding → the
+# index.ts check is skipped, so self-host still works.
+[[unsafe.bindings]]
+name = "SHARE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1004"
+simple = { limit = 30, period = 60 }
+
 # OPENAI_API_KEY and OPENAI_MODEL are provisioned out-of-band (spec/25):
 #
 #   - Local dev: drop `OPENAI_API_KEY=sk-...` into `apps/api/.dev.vars`

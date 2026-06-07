@@ -11,6 +11,11 @@ import type { ClientMessage, ParticipantPresence, ServerMessage } from './types'
 // REST endpoints separately — clients save the full diagram snapshot
 // after their local mutation lands. The room is only responsible for
 // propagation.
+// Max ops a single session may broadcast per 1s window. Far above any
+// legit client (cursor / laser broadcasts are throttled to a few dozen
+// per second), so this only ever bites a flood.
+const OP_RATE_CAP = 240;
+
 export class DiagramRoom implements DurableObject {
   state: DurableObjectState;
   // `sessions` is keyed by WebSocket; the value is the most recent
@@ -18,6 +23,11 @@ export class DiagramRoom implements DurableObject {
   // Null means "connected but hasn't said hello yet" — those clients
   // receive presence but aren't included in the presence list.
   sessions: Map<WebSocket, ParticipantPresence | null> = new Map();
+  // Per-session op-rate window (sliding 1s) so one connected peer can't
+  // flood the room. Legit cursor / laser / edit ops are client-throttled
+  // well under the cap; over-cap ops are silently dropped, not a
+  // disconnect, so a brief burst just thins rather than kicking the peer.
+  opRates: Map<WebSocket, { count: number; windowStart: number }> = new Map();
 
   constructor(state: DurableObjectState) {
     this.state = state;
@@ -106,6 +116,22 @@ export class DiagramRoom implements DurableObject {
       if (msg.kind === 'op') {
         const sender = this.sessions.get(ws);
         if (!sender) return;
+        // Only edit-role sessions may broadcast ops. The role is the
+        // server-verified one (X-Verified-Role, re-stamped in hello),
+        // not anything the client claims — so a view-only visitor (or a
+        // session the worker admitted with no role) can read live ops
+        // but can't inject edits into peers' canvases.
+        if (sender.role !== 'edit') return;
+        // Per-session op-rate cap (sliding 1s window) — drop over-cap ops.
+        const now = Date.now();
+        const rate = this.opRates.get(ws);
+        if (!rate || now - rate.windowStart >= 1000) {
+          this.opRates.set(ws, { count: 1, windowStart: now });
+        } else if (rate.count >= OP_RATE_CAP) {
+          return;
+        } else {
+          rate.count++;
+        }
         const payload: ServerMessage = { kind: 'op', from: sender.id, op: msg.op };
         const serialized = JSON.stringify(payload);
         for (const peer of this.sessions.keys()) {
@@ -122,6 +148,7 @@ export class DiagramRoom implements DurableObject {
 
     const close = () => {
       this.sessions.delete(ws);
+      this.opRates.delete(ws);
       this.broadcastPresence();
     };
     ws.addEventListener('close', close);

@@ -5,6 +5,7 @@
 
 import type { Tab } from '@livediagram/diagram';
 import { parseChangeLogEntryBody } from '../change-log-body';
+import { timingSafeEqual } from '../auth/timing-safe';
 import { rewriteCommentAuthors } from '../comments';
 import {
   copyDiagram,
@@ -495,6 +496,12 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         if (link && link.diagramId === id) role = link.role;
       }
     }
+    // Refuse the upgrade unless the caller is the owner or holds a valid
+    // share code for THIS diagram. Without this, a diagram with no share
+    // password forwarded every upgrade (role === null) to the room, so
+    // anyone who learned the diagram id could read live ops; and the DO
+    // additionally drops op frames from non-edit sessions.
+    if (!role) return forbidden();
     // Password gate (spec/24): a non-owner joining the realtime room of
     // a password-protected diagram must carry the matching password on
     // the `p` query param (WS upgrades can't set headers). Owners
@@ -502,7 +509,8 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     // the room never even sees the peer.
     if (!isOwnerUpgrade) {
       const required = await getDiagramSharePassword(env, id);
-      if (required && url.searchParams.get('p') !== required) return forbidden();
+      if (required && !(await timingSafeEqual(url.searchParams.get('p') ?? '', required)))
+        return forbidden();
     }
     const forwarded = new Request(request);
     if (role) forwarded.headers.set('X-Verified-Role', role);
@@ -526,8 +534,22 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const body = (await request.json()) as Partial<ChangeLogEntryDTO>;
       const entry = parseChangeLogEntryBody(body);
       if (!entry) return badRequest('missing change_log fields');
-      await insertChangeLogEntry(env, entry);
-      return json({ entry }, { status: 201 });
+      // Stamp the author from the resolved caller's participant record
+      // rather than trusting the body, so a client can't forge
+      // participantId / participantName / participantColor and frame
+      // another collaborator in the audit trail — the same defence the
+      // comment-write paths apply. requireDiagramAccess already proved
+      // the caller is identified, so resolveOwner() is non-null here.
+      const caller = ctx.resolveOwner()!;
+      const writer = await getParticipant(env, caller);
+      const stamped = {
+        ...entry,
+        participantId: caller,
+        participantName: writer?.name ?? entry.participantName,
+        participantColor: writer?.color ?? entry.participantColor,
+      };
+      await insertChangeLogEntry(env, stamped);
+      return json({ entry: stamped }, { status: 201 });
     }
   }
 

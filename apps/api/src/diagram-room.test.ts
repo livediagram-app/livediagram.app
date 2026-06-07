@@ -245,3 +245,62 @@ describe('DiagramRoom hello frame role forcing', () => {
     expect(peer.sent).toHaveLength(0);
   });
 });
+
+describe('DiagramRoom op-role enforcement', () => {
+  // Drive a fully-connected session (hello sent) at a given verified
+  // role, returning a `sendOp` that pushes an op frame from it.
+  function connect(room: DiagramRoom, id: string, role?: 'edit' | 'view') {
+    const ws = makeSocket();
+    room.handleSession(ws as unknown as WebSocket, role);
+    const handler = ws.listeners['message']![0]!;
+    handler({
+      data: JSON.stringify({ kind: 'hello', participant: { id, name: id, color: '#000' } }),
+    });
+    return {
+      ws,
+      sendOp: () =>
+        handler({ data: JSON.stringify({ kind: 'op', op: { kind: 'move', id, x: 1 } }) }),
+    };
+  }
+
+  function opsReceived(ws: FakeSocket): unknown[] {
+    return ws.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'op');
+  }
+
+  it('relays an op from an edit-role session to peers', () => {
+    const room = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    editor.ws.sent.length = 0;
+    viewer.ws.sent.length = 0;
+
+    editor.sendOp();
+
+    expect(opsReceived(viewer.ws)).toHaveLength(1);
+  });
+
+  it('drops an op from a view-role session so it never reaches peers', () => {
+    const room = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    editor.ws.sent.length = 0;
+    viewer.ws.sent.length = 0;
+
+    // A view-only visitor tries to inject an edit op. Viewers can read
+    // live ops but must not write to peers' canvases.
+    viewer.sendOp();
+
+    expect(opsReceived(editor.ws)).toHaveLength(0);
+  });
+
+  it('drops ops from a session the upgrade admitted with no role', () => {
+    const room = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const noRole = connect(room, 'no-role', undefined);
+    editor.ws.sent.length = 0;
+
+    noRole.sendOp();
+
+    expect(opsReceived(editor.ws)).toHaveLength(0);
+  });
+});

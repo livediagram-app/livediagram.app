@@ -83,12 +83,12 @@ Owner-only routes require a resolved owner — either a verified Clerk Bearer JW
 
 **Change log (audit + activity panel — see [12-activity-and-audit.md](12-activity-and-audit.md))**
 
-| Method | Path                               | Auth        | Notes                               |
-| ------ | ---------------------------------- | ----------- | ----------------------------------- |
-| GET    | `/api/diagrams/:id/log`            | owner/share | Up to N most recent entries.        |
-| POST   | `/api/diagrams/:id/log`            | owner/share | Append one entry.                   |
-| DELETE | `/api/diagrams/:id/log/:entryId`   | owner/share | Drop an entry (Undo / Revert path). |
-| DELETE | `/api/diagrams/:id/log/tab/:tabId` | owner/share | Clear all entries for one tab.      |
+| Method | Path                               | Auth        | Notes                                                                                                                                                                                                                                                                                                      |
+| ------ | ---------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/diagrams/:id/log`            | owner/share | Up to N most recent entries.                                                                                                                                                                                                                                                                               |
+| POST   | `/api/diagrams/:id/log`            | owner/share | Append one entry. The `participantId` / `participantName` / `participantColor` are stamped server-side from the resolved caller's participant record, ignoring the body's values, so a client can't forge another collaborator's attribution in the audit trail (same defence as the comment-write paths). |
+| DELETE | `/api/diagrams/:id/log/:entryId`   | owner/share | Drop an entry (Undo / Revert path).                                                                                                                                                                                                                                                                        |
+| DELETE | `/api/diagrams/:id/log/tab/:tabId` | owner/share | Clear all entries for one tab.                                                                                                                                                                                                                                                                             |
 
 **Folders (Explorer organisation — see [15-folders.md](15-folders.md))**
 
@@ -154,7 +154,9 @@ Self-host: when the `WRITE_RATE_LIMITER` binding is absent the helper short-circ
 
 The `DiagramRoom` Durable Object holds the live state for one diagram id. Clients connect via the `/ws` endpoint and immediately send a `hello` identifying themselves; the room broadcasts a `presence` snapshot whenever the set changes.
 
-Edits propagate via opaque `op` messages. The room never inspects or persists them — it just rebroadcasts to peers. The op vocabulary (defined in `apps/live/lib/api-client.ts` as `RoomOp`):
+**Access is gated at the upgrade.** Browsers can't set headers on a WebSocket upgrade, so the client passes its owner id / share code / share password as `?o=` / `?s=` / `?p=` query params. The api worker resolves a role there — `edit` for the owner, the link's role for a valid share code for _this_ diagram, otherwise none — and **refuses the upgrade outright unless a role resolved** (and, for a password-protected diagram, unless the password matches via a constant-time compare). The resolved role is forwarded to the DO as the `X-Verified-Role` header; the DO re-stamps it onto presence in the `hello` handler, ignoring any role the client typed into its own payload, so that header is the trust boundary.
+
+Edits propagate via opaque `op` messages. The room never inspects or persists them, but it **only relays an `op` from a session whose verified role is `edit`** — a view-only visitor (or any session admitted without a role) can read peers' ops but can't inject edits into their canvases. A per-session sliding-window rate cap bounds how fast one peer can broadcast. The op vocabulary (defined in `apps/live/lib/api-client.ts` as `RoomOp`):
 
 | Kind            | Carries                                      | Purpose                                                                                                                                                                                                                                                                                                    |
 | --------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

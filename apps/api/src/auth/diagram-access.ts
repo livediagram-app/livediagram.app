@@ -23,6 +23,7 @@
 
 import { getDiagramSharePassword, getShareLink } from '../db';
 import type { Env } from '../types';
+import { timingSafeEqual } from './timing-safe';
 
 // Share-password gate (spec/24). When a diagram has a password, every
 // share-code-based access must carry the matching X-Share-Password.
@@ -37,7 +38,7 @@ async function sharePasswordOk(
 ): Promise<boolean> {
   const required = await getDiagramSharePassword(env, diagramId);
   if (!required) return true;
-  return provided != null && provided === required;
+  return provided != null && (await timingSafeEqual(provided, required));
 }
 
 export async function canEditDiagram(

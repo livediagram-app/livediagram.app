@@ -70,6 +70,15 @@ export default {
       if (await isWriteRateLimited(env, key)) return rateLimited();
     }
 
+    // Throttle blind share-code / password guessing on the share-resolve
+    // read (GET /api/share/<code>), which carries the optional share
+    // password and is otherwise an unauthenticated read exempt from the
+    // write limiter above. Per-IP. Absent binding → allow (self-host).
+    if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
+      const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous';
+      if (!(await env.SHARE_RATE_LIMITER.limit({ key: ip })).success) return rateLimited();
+    }
+
     // Dispatch on the resource segment to its route module. Each
     // handler owns every request for its segment and returns
     // notFound() for sub-paths / methods it doesn't recognise, so an

@@ -32,6 +32,10 @@ export type Env = {
   // resulting userId over `X-Owner-Id`. When unset, the worker stays
   // in pure-guest mode (X-Owner-Id only). See spec/04 + spec/11.
   CLERK_JWKS_URL?: string;
+  // Optional: when set, the Clerk JWT verifier also asserts the `iss`
+  // claim (spec/04) so a token from another instance sharing the JWKS
+  // host can't be replayed. Unset → issuer not asserted (back-compat).
+  CLERK_ISSUER?: string;
   // R2 bucket holding image-element bytes (spec/19). Optional so
   // self-hosters who haven't provisioned R2 can still deploy the
   // api worker: when unbound, the image endpoints all return 503
@@ -48,6 +52,12 @@ export type Env = {
   // real diagram writes. Keyed on CF-Connecting-IP. Optional: absent
   // (self-host) falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
+  // Per-IP limiter for share-code resolution (GET /api/share/<code>),
+  // which carries the optional share password and is otherwise an
+  // unauthenticated read exempt from WRITE_RATE_LIMITER. Bounds blind
+  // password / share-code guessing. Keyed on CF-Connecting-IP. Optional:
+  // absent (self-host) → "allow".
+  SHARE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (spec/22). Authoritative: gates both
   // POST /api/events and GET /api/telemetry/summary. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.

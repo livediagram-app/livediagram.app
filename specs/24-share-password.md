@@ -22,6 +22,12 @@ identity, share-code path) and [11-api](11-api.md) (share links).
   API, and the repo's [secrets policy](06-secrets-policy.md) governs _source_
   secrets, not user data. It is **never** returned in the standard diagram DTO
   (no leak to viewers) — only via the owner-only endpoints below.
+- **Verified in constant time and rate-limited.** Even though the password is a
+  low-value, anti-guessing secret, the compare uses a timing-safe digest compare
+  (`apps/api/src/auth/timing-safe.ts`) rather than `===`, so it can't be peeled a
+  byte at a time via response timing, and the unauthenticated share-resolve read
+  (`GET /api/share/:code`, which carries the password) is throttled per-IP by the
+  optional `SHARE_RATE_LIMITER` binding to bound blind guessing.
 - The **owner always bypasses** the password (identified by `ownerId` / Clerk
   `sub`). The gate only applies to non-owner, share-code access.
 

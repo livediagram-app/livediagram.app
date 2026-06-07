@@ -8,6 +8,7 @@ import {
   recordSharedAccess,
 } from '../db';
 import { json, notFound } from '../responses';
+import { timingSafeEqual } from '../auth/timing-safe';
 import type { ShareRole } from '../types';
 import { sharePasswordOf, type RouteContext } from './context';
 
@@ -79,6 +80,7 @@ export async function passwordGate(
   const required = await getDiagramSharePassword(env, diagramId);
   if (!required) return null;
   if (provided == null) return json({ error: 'password_required' }, { status: 401 });
-  if (provided !== required) return json({ error: 'password_invalid' }, { status: 403 });
+  if (!(await timingSafeEqual(provided, required)))
+    return json({ error: 'password_invalid' }, { status: 403 });
   return null;
 }
