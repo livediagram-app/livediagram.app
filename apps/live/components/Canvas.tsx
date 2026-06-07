@@ -14,17 +14,13 @@ import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useCanvasMobileDock } from '@/hooks/useCanvasMobileDock';
 import { drawIntentCursor } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
-import { ArrowDefs, ArrowView } from './ArrowView';
-import { BoxedElementView } from './BoxedElementView';
 import { type SelectedElementControls } from './CommandPalette';
-import { UnionResizeHandles } from './element-parts';
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments AND the ContextPanel has reported
 // its bottom edge (so we don't paint the panel at the legacy fallback
 // position). Most diagrams never accumulate comments, so deferring
 // the 164-line panel + its formatRelativeTimeShort + useRelativeTimeTick
 // dependencies keeps the editor's initial chunk lean.
-import { LaserOverlay } from './LaserOverlay';
 import { useCanvasPanAndMarquee } from '@/hooks/useCanvasPanAndMarquee';
 import { getTheme } from '@/lib/themes';
 // Lazy-load MultiSelectionToolbar: only mounts when the user has
@@ -33,7 +29,6 @@ import { getTheme } from '@/lib/themes';
 // toolbar + its icon set keeps the editor's initial chunk lean.
 // Same pattern as the editor's other gated modals (NotePopover,
 // TabLinkPicker, etc.).
-import { PlusButton } from './PlusButton';
 import { SelectionPopover } from './SelectionPopover';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
@@ -46,15 +41,6 @@ import { SelectionPopover } from './SelectionPopover';
 // picker's JS. The /live/new entry keeps the static import because
 // the picker is the whole UI there.
 
-// Stable empty-array constant for the `remoteSelectors` prop on the
-// (very common) "no remote participants have this element selected"
-// path. A fresh `[]` per render would invalidate BoxedElementView's
-// memo (commit e8e34f9) on every editor-page render, defeating the
-// memo for every element nobody else is currently selecting. The
-// shared constant lets shallow equality see the same reference
-// across renders.
-const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = [];
-
 // Reused as the excludeIds argument to snapResizeBounds during draw-
 // to-size: the new element doesn't exist yet, so there's nothing to
 // exclude. A module-level frozen Set keeps the snap effect from
@@ -62,6 +48,7 @@ const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = []
 const EMPTY_ID_SET: Set<string> = new Set();
 
 import { CanvasChrome } from './CanvasChrome';
+import { CanvasElementsLayer } from './CanvasElementsLayer';
 import type { CanvasProps } from './Canvas.types';
 
 export function Canvas(props: CanvasProps) {
@@ -83,9 +70,6 @@ export function Canvas(props: CanvasProps) {
     multiSelectedIds,
     onSelectMarquee,
     canvasTool,
-    remoteSelectionsByElement,
-    remoteCursors,
-    laserTrails,
     onCanvasPointerMove,
     editingId,
     formatSourceId,
@@ -98,16 +82,6 @@ export function Canvas(props: CanvasProps) {
     onSelect,
     onCanvasContextMenu,
     onElementContextMenu,
-    onBeginDrag,
-    onBeginRotate,
-    onBeginAnchorDrag,
-    onBeginEdit,
-    onCommitLabel,
-    onCancelEdit,
-    onBeginEndpointDrag,
-    onBeginArrowCurveDrag,
-    onBeginArrowElbowDrag,
-    onBeginArrowTranslate,
     onShiftSelect,
     onBeginFormatPainter,
     onBeginGroup,
@@ -135,10 +109,7 @@ export function Canvas(props: CanvasProps) {
     onSetBorderStroke,
     onSetBorderStyle,
     onSetBorderRadius,
-    onFollowLink,
     onOpenComments,
-    onOpenNote,
-    imageContext,
     onOpenElementContextMenu,
     tabThemeId,
     onSetTheme,
@@ -158,7 +129,6 @@ export function Canvas(props: CanvasProps) {
     onSetBackgroundOpacity,
     onSetPatternColor,
     onToggleAspectLock,
-    onDuplicateConnect,
     onToggleLockSelected,
     onDeleteSelected,
     onCanvasDoubleClick,
@@ -805,137 +775,23 @@ export function Canvas(props: CanvasProps) {
           ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
         }}
       >
-        {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
-            all reference url(#arrowhead) — defs are document-scoped
-            in SVG so a single defs node lets every arrow render
-            with the same marker. */}
-        {hasArrows ? (
-          <svg
-            className="absolute"
-            style={{ width: 0, height: 0, overflow: 'visible' }}
-            aria-hidden
-          >
-            <ArrowDefs />
-          </svg>
-        ) : null}
-
-        {/* Render elements in their natural array order so
-            `bringToFront` / `sendToBack` reorder arrows relative to
-            boxed elements (instead of all arrows perpetually stacking
-            above all boxes inside a single SVG layer). Each arrow
-            gets its own <svg> overlay; pointer events on the SVG are
-            disabled in CSS, only the inner arrow line picks them up. */}
-        {elements.map((element) => {
-          if (element.type === 'arrow') {
-            return (
-              <svg
-                key={element.id}
-                className="absolute inset-0 h-full w-full"
-                style={{ pointerEvents: 'none', overflow: 'visible' }}
-              >
-                <ArrowView
-                  arrow={element}
-                  elements={elements}
-                  isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
-                  isPaintMode={isPaintMode || isGroupMode}
-                  isEditing={element.id === editingId}
-                  tabLocked={tabLocked}
-                  readOnly={readOnly}
-                  onSelect={handleArrowSelect}
-                  onBeginEndpointDrag={onBeginEndpointDrag}
-                  onBeginEdit={onBeginEdit}
-                  onCommitLabel={onCommitLabel}
-                  onCancelEdit={onCancelEdit}
-                  onBeginTranslate={onBeginArrowTranslate}
-                  onBeginCurveDrag={onBeginArrowCurveDrag}
-                  onBeginElbowDrag={onBeginArrowElbowDrag}
-                />
-              </svg>
-            );
-          }
-          if (!isBoxed(element)) return null;
-          return (
-            <BoxedElementView
-              key={element.id}
-              element={element}
-              isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
-              isMultiSelected={multiSelectedIds.has(element.id)}
-              multiSelectActive={multiSelectedIds.size > 0}
-              remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
-              isEditing={element.id === editingId}
-              isPaintMode={isPaintMode || isGroupMode}
-              showHandles={showHandles(element.id)}
-              showAnchors={showAnchorsFor(element.id)}
-              zoom={viewportZoom}
-              badgeColor={badgeColor}
-              tabLocked={tabLocked}
-              onBeginDrag={onBeginDrag}
-              onBeginRotate={onBeginRotate}
-              onShiftSelect={onShiftSelect}
-              onBeginAnchorDrag={onBeginAnchorDrag}
-              onBeginEdit={onBeginEdit}
-              onCommitLabel={onCommitLabel}
-              onCancelEdit={onCancelEdit}
-              onFollowLink={onFollowLink}
-              onOpenComments={onOpenComments}
-              onOpenNote={onOpenNote}
-              imageContext={imageContext}
-              onContextSelect={handleElementContextSelect}
-            />
-          );
-        })}
-
-        {remoteCursors.map((c) => (
-          <RemoteCursor key={c.id} cursor={c} zoom={viewportZoom} />
-        ))}
-
-        {/* Laser overlay sits inside the viewport-transformed wrapper
-            so trail coordinates (canvas-space) pan + zoom with
-            elements. The overlay component owns its own RAF loop
-            and only runs while there's at least one active trail. */}
-        <LaserOverlay trails={laserTrails} zoom={viewportZoom} />
-
-        {showUnionResize && unionResizeBounds && unionResizePrimaryId ? (
-          <UnionResizeHandles
-            bounds={unionResizeBounds}
-            primaryId={unionResizePrimaryId}
-            zoom={viewportZoom}
-            onBeginDrag={onBeginDrag}
-          />
-        ) : null}
-
-        {showPlus && selectionBounds ? (
-          <>
-            <PlusButton
-              x={selectionBounds.x + selectionBounds.width}
-              y={selectionBounds.y + selectionBounds.height / 2}
-              placement="right"
-              zoom={viewportZoom}
-              onClick={() => onDuplicateConnect('right')}
-            />
-            <PlusButton
-              x={selectionBounds.x + selectionBounds.width / 2}
-              y={selectionBounds.y + selectionBounds.height}
-              placement="below"
-              zoom={viewportZoom}
-              onClick={() => onDuplicateConnect('below')}
-            />
-            <PlusButton
-              x={selectionBounds.x}
-              y={selectionBounds.y + selectionBounds.height / 2}
-              placement="left"
-              zoom={viewportZoom}
-              onClick={() => onDuplicateConnect('left')}
-            />
-            <PlusButton
-              x={selectionBounds.x + selectionBounds.width / 2}
-              y={selectionBounds.y}
-              placement="above"
-              zoom={viewportZoom}
-              onClick={() => onDuplicateConnect('above')}
-            />
-          </>
-        ) : null}
+        <CanvasElementsLayer
+          {...props}
+          hasArrows={hasArrows}
+          memberIds={memberIds}
+          showHandles={showHandles}
+          showAnchorsFor={showAnchorsFor}
+          badgeColor={badgeColor}
+          selectionBounds={selectionBounds}
+          showPlus={showPlus}
+          showUnionResize={showUnionResize}
+          unionResizeBounds={unionResizeBounds}
+          unionResizePrimaryId={unionResizePrimaryId}
+          isPaintMode={isPaintMode}
+          isGroupMode={isGroupMode}
+          handleArrowSelect={handleArrowSelect}
+          handleElementContextSelect={handleElementContextSelect}
+        />
       </div>
 
       {/* SelectionPopover rides on a sibling wrapper that mirrors
@@ -1020,48 +876,5 @@ export function Canvas(props: CanvasProps) {
         handleResetZoom={handleResetZoom}
       />
     </main>
-  );
-}
-
-// Floating cursor for a remote participant. Position is in canvas
-// coords (so the cursor pans + zooms with the canvas), but the SVG
-// + name pill are counter-scaled so they keep their on-screen size
-// at any zoom — same trick the badges + plus buttons use.
-function RemoteCursor({
-  cursor,
-  zoom,
-}: {
-  cursor: { id: string; name: string; color: string; x: number; y: number };
-  zoom: number;
-}) {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute"
-      style={{
-        left: cursor.x,
-        top: cursor.y,
-        transform: `scale(${1 / zoom})`,
-        transformOrigin: 'top left',
-        zIndex: 40,
-      }}
-    >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill={cursor.color}
-        stroke="white"
-        strokeWidth="1"
-      >
-        <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
-      </svg>
-      <span
-        className="absolute left-3 top-3 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm"
-        style={{ backgroundColor: cursor.color }}
-      >
-        {cursor.name}
-      </span>
-    </div>
   );
 }
