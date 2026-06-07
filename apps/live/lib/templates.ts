@@ -27,7 +27,14 @@ export type TemplateKind =
   // wordmark compositions side by side (icon-left / icon-above,
   // each with and without a tagline) so a designer can pick the
   // composition that fits, delete the rest, and iterate.
-  | 'logo-design';
+  | 'logo-design'
+  // Gantt chart: a month header row plus six cascading milestone rows
+  // (label + full-width track + coloured duration bar). A project-
+  // planning starter; sits under "Show more".
+  | 'gantt'
+  // Live card: a compact event / status card lockup. Sits under
+  // "Show more".
+  | 'live-card';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -135,6 +142,19 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Logo design',
     description:
       'Four wordmark lockups on one canvas (icon-left / icon-above, each with and without a tagline). Pick a composition, delete the rest, replace the placeholder icons with your own.',
+    extra: true,
+  },
+  {
+    kind: 'gantt',
+    title: 'Gantt chart',
+    description:
+      'A month header with six cascading milestone rows: labels, tracks and coloured duration bars for project planning.',
+    extra: true,
+  },
+  {
+    kind: 'live-card',
+    title: 'Live card',
+    description: 'A compact event / status card lockup you can drop in and rename.',
     extra: true,
   },
 ];

@@ -862,5 +862,108 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }) {
           <rect x="46" y="43" width="14" height="2.5" rx="0.5" fill="rgb(148 163 184)" />
         </svg>
       );
+    case 'gantt':
+      // Month header strip + four cascading milestone rows (label +
+      // track + a coloured duration bar that steps right each row).
+      return (
+        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
+          <rect
+            x="24"
+            y="3"
+            width="53"
+            height="7"
+            rx="1"
+            fill="rgb(226 232 240)"
+            stroke="rgb(148 163 184)"
+            strokeWidth="0.5"
+          />
+          {[
+            { y: 13, bx: 26, fill: 'rgb(189 200 214)' },
+            { y: 21, bx: 34, fill: 'rgb(214 189 207)' },
+            { y: 29, bx: 44, fill: 'rgb(210 214 189)' },
+            { y: 37, bx: 53, fill: 'rgb(190 189 214)' },
+          ].map((r) => (
+            <g key={r.y}>
+              <rect
+                x="3"
+                y={r.y}
+                width="74"
+                height="6"
+                rx="1"
+                fill="rgb(241 245 249)"
+                stroke="rgb(203 213 225)"
+                strokeWidth="0.4"
+              />
+              <rect x="4.5" y={r.y + 1} width="17" height="4" rx="0.5" fill="rgb(148 163 184)" />
+              <rect x={r.bx} y={r.y + 1} width="14" height="4" rx="1" fill={r.fill} />
+            </g>
+          ))}
+        </svg>
+      );
+    case 'live-card':
+      // Left panel: hero image placeholder + bold title. Right panel:
+      // a board of grouped avatar + message rows.
+      return (
+        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
+          <rect
+            x="3"
+            y="3"
+            width="36"
+            height="44"
+            rx="2"
+            fill="rgb(224 231 255)"
+            stroke="rgb(67 56 202)"
+            strokeWidth="0.6"
+          />
+          <rect
+            x="6"
+            y="6"
+            width="30"
+            height="24"
+            rx="1"
+            fill="white"
+            stroke="rgb(165 180 252)"
+            strokeWidth="0.5"
+            strokeDasharray="1.5 1"
+          />
+          <rect x="6" y="33" width="30" height="5" rx="1" fill="rgb(49 46 129)" />
+          <rect
+            x="41"
+            y="3"
+            width="36"
+            height="44"
+            rx="2"
+            fill="rgb(224 231 255)"
+            stroke="rgb(67 56 202)"
+            strokeWidth="0.6"
+          />
+          {[6, 16, 26, 36].map((ry) => (
+            <g key={ry}>
+              <rect
+                x="44"
+                y={ry}
+                width="30"
+                height="8"
+                rx="1"
+                fill="none"
+                stroke="rgb(99 102 241)"
+                strokeWidth="0.4"
+                strokeDasharray="1.5 1"
+              />
+              <rect
+                x="45.5"
+                y={ry + 1.5}
+                width="5"
+                height="5"
+                rx="0.8"
+                fill="white"
+                stroke="rgb(165 180 252)"
+                strokeWidth="0.4"
+              />
+              <rect x="52" y={ry + 3} width="20" height="2" rx="0.5" fill="rgb(99 102 241)" />
+            </g>
+          ))}
+        </svg>
+      );
   }
 }

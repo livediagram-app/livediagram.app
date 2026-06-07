@@ -29,6 +29,8 @@ import {
 } from './template-builders-wireframes';
 import { buildKanban, buildRetrospective, buildSwot } from './template-builders-boards';
 import { buildLogoDesign } from './template-builders-logo';
+import { buildGanttChart } from './template-builders-gantt';
+import { buildLiveCard } from './template-builders-livecard';
 
 export function buildTemplatedTab(
   kind: TemplateKind,
@@ -90,6 +92,10 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildFlywheel(cx, cy);
     case 'logo-design':
       return buildLogoDesign(cx, cy);
+    case 'gantt':
+      return buildGanttChart(cx, cy);
+    case 'live-card':
+      return buildLiveCard(cx, cy);
   }
 }
 

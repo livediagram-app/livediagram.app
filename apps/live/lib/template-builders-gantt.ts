@@ -1,0 +1,150 @@
+// Gantt-chart template builder. Kept in its own module (like the
+// board / wireframe / logo builders) so template-builders.ts stays
+// lean and this situational starter only ships when picked.
+//
+// Layout: a month header row (Jan..Dec) across the top, then six
+// "milestone" rows. Each row is a full-width track with a right-
+// aligned label on the left and a coloured duration bar that steps
+// further right each row (the classic cascading Gantt look). Geometry
+// is lifted from a hand-built reference diagram and re-centred on the
+// supplied canvas point. Colours are explicit so the chart reads
+// correctly under the neutral brand theme; like every other template
+// they flatten to the chosen theme's element palette when one is
+// applied (see recolourElementForTheme).
+
+import { createShape, createText, type Element } from '@livediagram/diagram';
+
+const STROKE = '#334155';
+const TEXT = '#0f172a';
+const TRACK_FILL = '#e2e8f0';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// Per-milestone row: the track's vertical position, the label, and the
+// duration bar (offset + width + fill). Offsets are relative to the
+// chart centre; the bar fills cascade through soft pastels so adjacent
+// tasks stay distinguishable.
+const ROWS: {
+  trackY: number;
+  label: string;
+  labelY: number;
+  barX: number;
+  barY: number;
+  barW: number;
+  fill: string;
+}[] = [
+  {
+    trackY: -175,
+    label: 'Milestone One',
+    labelY: -171,
+    barX: -207,
+    barY: -170,
+    barW: 275,
+    fill: '#bdc8d6',
+  },
+  {
+    trackY: -105,
+    label: 'Milestone Two',
+    labelY: -101,
+    barX: -107,
+    barY: -100,
+    barW: 275,
+    fill: '#d6bdcf',
+  },
+  {
+    trackY: -35,
+    label: 'Milestone Three',
+    labelY: -32,
+    barX: 63,
+    barY: -30,
+    barW: 275,
+    fill: '#d2d6bd',
+  },
+  {
+    trackY: 36,
+    label: 'Milestone Four',
+    labelY: 40,
+    barX: 243,
+    barY: 41,
+    barW: 275,
+    fill: '#d6bdbd',
+  },
+  {
+    trackY: 106,
+    label: 'Milestone Five',
+    labelY: 110,
+    barX: 413,
+    barY: 113,
+    barW: 275,
+    fill: '#bebdd6',
+  },
+  {
+    trackY: 176,
+    label: 'Milestone Six',
+    labelY: 181,
+    barX: 503,
+    barY: 182,
+    barW: 275,
+    fill: '#bdd2d6',
+  },
+];
+
+const HEADER = { x: -295, y: -239, w: 1086, h: 59 };
+const MONTH = { y: -230, x0: -287, dx: 89, w: 89, h: 38 };
+const TRACK = { x: -790, w: 1580, h: 62 };
+const LABEL = { x: -790, w: 495, h: 59 };
+const BAR_H = 47;
+
+// Borderless filled rectangle (header / track / bar). strokeWidth 'none'
+// keeps the bars flat; the stroke colour is still carried so a themed
+// re-colour has something to map.
+function rect(x: number, y: number, w: number, h: number, fill: string): Element {
+  return {
+    ...createShape('square', x, y),
+    width: w,
+    height: h,
+    fillColor: fill,
+    strokeColor: STROKE,
+    textColor: TEXT,
+    strokeWidth: 'none',
+    strokeStyle: 'solid',
+    borderRadius: 'none',
+  };
+}
+
+export function buildGanttChart(cx: number, cy: number): Element[] {
+  const elements: Element[] = [];
+
+  // Header background + month column labels.
+  elements.push(rect(cx + HEADER.x, cy + HEADER.y, HEADER.w, HEADER.h, TRACK_FILL));
+  MONTHS.forEach((m, i) => {
+    elements.push({
+      ...createText(cx + MONTH.x0 + i * MONTH.dx, cy + MONTH.y),
+      width: MONTH.w,
+      height: MONTH.h,
+      label: m,
+      textSize: 'md',
+      textColor: TEXT,
+    });
+  });
+
+  // Milestone rows: track, right-aligned label, then the duration bar
+  // on top of the track.
+  for (const r of ROWS) {
+    elements.push(rect(cx + TRACK.x, cy + r.trackY, TRACK.w, TRACK.h, TRACK_FILL));
+    elements.push({
+      ...createText(cx + LABEL.x, cy + r.labelY),
+      width: LABEL.w,
+      height: LABEL.h,
+      label: r.label,
+      textSize: 'sm',
+      textColor: TEXT,
+      textAlignX: 'right',
+      textAlignY: 'middle',
+      padding: 'md',
+    });
+    elements.push(rect(cx + r.barX, cy + r.barY, r.barW, BAR_H, r.fill));
+  }
+
+  return elements;
+}

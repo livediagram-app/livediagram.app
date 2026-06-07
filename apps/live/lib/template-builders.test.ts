@@ -42,6 +42,8 @@ const ALL_KINDS = [
   'slide-deck',
   'flywheel',
   'logo-design',
+  'gantt',
+  'live-card',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
