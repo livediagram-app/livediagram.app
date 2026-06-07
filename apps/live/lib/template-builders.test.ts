@@ -44,6 +44,7 @@ const ALL_KINDS = [
   'logo-design',
   'gantt',
   'live-card',
+  'comparison-table',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from

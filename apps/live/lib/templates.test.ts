@@ -12,7 +12,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. spec/16 pins "19 templates (8 default + 11 extra)" and
+// site. spec/16 pins "20 templates (8 default + 12 extra)" and
 // spec/09 catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -41,17 +41,18 @@ describe('TEMPLATES catalogue', () => {
     'logo-design',
     'gantt',
     'live-card',
+    'comparison-table',
   ];
 
-  it('lists exactly 19 templates (8 default + 11 extra, matches spec/16 and spec/09)', () => {
-    expect(TEMPLATES).toHaveLength(19);
+  it('lists exactly 20 templates (8 default + 12 extra, matches spec/16 and spec/09)', () => {
+    expect(TEMPLATES).toHaveLength(20);
   });
 
-  it('splits cleanly into 8 default + 11 extra (the picker uses `extra` to gate behind "Show more")', () => {
+  it('splits cleanly into 8 default + 12 extra (the picker uses `extra` to gate behind "Show more")', () => {
     const defaults = TEMPLATES.filter((t) => !t.extra);
     const extras = TEMPLATES.filter((t) => t.extra);
     expect(defaults).toHaveLength(8);
-    expect(extras).toHaveLength(11);
+    expect(extras).toHaveLength(12);
   });
 
   it('has no duplicate kinds (guards against accidental copy-paste in the catalogue)', () => {

@@ -31,6 +31,7 @@ import { buildKanban, buildRetrospective, buildSwot } from './template-builders-
 import { buildLogoDesign } from './template-builders-logo';
 import { buildGanttChart } from './template-builders-gantt';
 import { buildLiveCard } from './template-builders-livecard';
+import { buildComparisonTable } from './template-builders-table';
 
 export function buildTemplatedTab(
   kind: TemplateKind,
@@ -96,6 +97,8 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildGanttChart(cx, cy);
     case 'live-card':
       return buildLiveCard(cx, cy);
+    case 'comparison-table':
+      return buildComparisonTable(cx, cy);
   }
 }
 

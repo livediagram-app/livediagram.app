@@ -965,5 +965,44 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }) {
           ))}
         </svg>
       );
+    case 'comparison-table':
+      return (
+        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
+          <rect
+            x="6"
+            y="6"
+            width="68"
+            height="38"
+            rx="2"
+            fill="white"
+            stroke="rgb(148 163 184)"
+            strokeWidth="0.8"
+          />
+          <rect x="6" y="6" width="68" height="9" fill="rgb(226 232 240)" />
+          <rect x="6" y="15" width="17" height="29" fill="rgb(241 245 249)" />
+          {[24, 33].map((y) => (
+            <line
+              key={y}
+              x1="6"
+              y1={y}
+              x2="74"
+              y2={y}
+              stroke="rgb(203 213 225)"
+              strokeWidth="0.5"
+            />
+          ))}
+          {[23, 40, 57].map((x) => (
+            <line
+              key={x}
+              x1={x}
+              y1="6"
+              x2={x}
+              y2="44"
+              stroke="rgb(203 213 225)"
+              strokeWidth="0.5"
+            />
+          ))}
+        </svg>
+      );
   }
 }

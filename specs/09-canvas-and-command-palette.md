@@ -423,7 +423,7 @@ At the top of the modal, an inline avatar + name input lets the user adjust thei
 
 ### Templates section
 
-Below the welcome section, a 4-column responsive grid of template cards (2-col on narrow viewports). One card is always selected (defaults to **Blank**). The catalogue (`apps/live/lib/templates.ts`, pinned by `templates.test.ts` so spec drift surfaces as a test failure) ships **8 default templates** plus **11 extras behind a "Show more templates" toggle**:
+Below the welcome section, a 4-column responsive grid of template cards (2-col on narrow viewports). One card is always selected (defaults to **Blank**). The catalogue (`apps/live/lib/templates.ts`, pinned by `templates.test.ts` so spec drift surfaces as a test failure) ships **8 default templates** plus **12 extras behind a "Show more templates" toggle**:
 
 - **Blank diagram** — drops a **single 220 × 100 square** centred on the visible viewport, pre-labelled `Blank Diagram` at `md` text size, and **auto-selects it** so the user can immediately rename or edit. Generalised rule: a template that produces exactly one element auto-selects that element; multi-element templates leave the selection cleared.
 - **Mind map** — a central circle with four labelled branch boxes, each sprouting two leaf cards, all connected by pinned arrows.

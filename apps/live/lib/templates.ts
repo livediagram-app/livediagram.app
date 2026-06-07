@@ -34,7 +34,9 @@ export type TemplateKind =
   | 'gantt'
   // Live card: a compact event / status card lockup. Sits under
   // "Show more".
-  | 'live-card';
+  | 'live-card'
+  // Comparison table: a plan-comparison grid (the table element).
+  | 'comparison-table';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -155,6 +157,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'live-card',
     title: 'Live card',
     description: 'A compact event / status card lockup you can drop in and rename.',
+    extra: true,
+  },
+  {
+    kind: 'comparison-table',
+    title: 'Comparison table',
+    description: 'A plan-comparison grid with header row + column and zebra striping.',
     extra: true,
   },
 ];
