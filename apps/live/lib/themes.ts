@@ -455,6 +455,11 @@ export function deriveNewBoxedColours(
     if (bg !== DEFAULT_BACKGROUND_COLOR) {
       colours.textColor = deriveTextColorForBg(bg);
     }
+  } else if (base.type === 'table') {
+    // Cell text must contrast with the canvas; the slate default
+    // vanishes on a dark backdrop. (Grid lines use the slate-400
+    // default, which reads on both light and dark.)
+    colours.textColor = deriveTextColorForBg(bg);
   }
   // Theme overrides win. Sticky stays untouched (returns colours
   // empty for that branch).
@@ -465,6 +470,9 @@ export function deriveNewBoxedColours(
     if (theme.elementText) colours.textColor = theme.elementText;
   } else if (base.type === 'text') {
     if (theme.elementText) colours.textColor = theme.elementText;
+  } else if (base.type === 'table') {
+    if (theme.elementText) colours.textColor = theme.elementText;
+    if (theme.elementStroke) colours.strokeColor = theme.elementStroke;
   }
   return colours;
 }

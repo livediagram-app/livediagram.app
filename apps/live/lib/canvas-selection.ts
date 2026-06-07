@@ -133,6 +133,13 @@ export function deriveCanvasSelection(input: {
     !tabLocked &&
     !readOnly;
 
+  // Arrow-anchor dots are suppressed for tables: connecting a
+  // connector to a grid is an unlikely flow and the external dots
+  // clash with the table's own in-cell controls. Resize handles
+  // (handleVisible) still show.
+  const anchorVisible = (id: string) =>
+    handleVisible(id) && elements.find((el) => el.id === id)?.type !== 'table';
+
   const unionResizeIds: Set<string> | null =
     multiSelectedIds.size > 1 ? multiSelectedIds : memberIds.size > 1 ? memberIds : null;
   const unionResizeBounds =
@@ -166,7 +173,7 @@ export function deriveCanvasSelection(input: {
     showPopover,
     showPlus,
     showHandlesFor: handleVisible,
-    showAnchorsFor: handleVisible,
+    showAnchorsFor: anchorVisible,
     unionResizeIds,
     unionResizeBounds,
     unionResizePrimaryId,
