@@ -217,6 +217,58 @@ export type TextElement = {
   padding?: Padding;
 };
 
+// --- Tables ----------------------------------------------------------------
+
+// An editable grid. `cells` is row-major (`cells[r][c]`) and is the
+// source of truth for the grid size: `cells.length` rows, each row the
+// same length = the column count (helpers keep it rectangular). A
+// double-click on a cell edits its text in place. The whole table
+// resizes via the normal element handles (cells share the space
+// evenly); per-column / per-row sizing can come later. The first row
+// is rendered as a header when `headerRow` is set.
+export type TableElement = {
+  id: ElementId;
+  type: 'table';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  // Row-major cell text. Always rectangular (every row same length).
+  cells: string[][];
+  // Render the first row as a header (tinted band + bold text).
+  headerRow?: boolean;
+  // Tables have no single label (cells carry the text). Declared as an
+  // always-undefined optional so the generic "boxed element has a
+  // label" code paths (change log, export, search) compile without a
+  // per-type guard, mirroring ImageElement.
+  label?: string;
+  locked?: boolean;
+  groupId?: ElementId;
+  // Text controls apply to every cell uniformly (a table is one styled
+  // grid, not per-cell formatting — that can come later).
+  textSize?: TextSize;
+  textAlignX?: TextAlignX;
+  textAlignY?: TextAlignY;
+  textBold?: boolean;
+  textItalic?: boolean;
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
+  // fillColor tints the cell background; strokeColor draws the grid
+  // lines + border; textColor is the cell text.
+  fillColor?: string;
+  strokeColor?: string;
+  textColor?: string;
+  strokeWidth?: BorderStroke;
+  strokeStyle?: BorderStyle;
+  aspectLocked?: boolean;
+  opacity?: number; // 0..1, defaults to 1
+  rotation?: number;
+  link?: ElementLink;
+  commentThread?: CommentThread;
+  note?: string;
+  padding?: Padding;
+};
+
 // --- Sticky notes ----------------------------------------------------------
 
 export type StickyElement = {
@@ -576,7 +628,8 @@ export type BoxedElement =
   | TextElement
   | StickyElement
   | ImageElement
-  | FreehandElement;
+  | FreehandElement
+  | TableElement;
 export type Element = BoxedElement | ArrowElement;
 
 export type Tab = {
@@ -662,7 +715,8 @@ export function isBoxed(element: Element): element is BoxedElement {
     element.type === 'text' ||
     element.type === 'sticky' ||
     element.type === 'image' ||
-    element.type === 'freehand'
+    element.type === 'freehand' ||
+    element.type === 'table'
   );
 }
 
@@ -671,6 +725,7 @@ export * from './arrow-path';
 export * from './colors';
 
 export * from './factories';
+export * from './table';
 
 export * from './geometry';
 

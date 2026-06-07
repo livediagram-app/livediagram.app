@@ -54,6 +54,7 @@ export function EditorView() {
     addIcon,
     addShape,
     addSticky,
+    addTable,
     addTab,
     addText,
     aiCapable,
@@ -101,6 +102,7 @@ export function EditorView() {
     commitDraw,
     commitFreehand,
     commitLabel,
+    commitCells,
     contextMenu,
     contextPosition,
     copying,
@@ -400,6 +402,7 @@ export function EditorView() {
         canRedo={canRedo && !activeTabLocked}
         onAddShape={addShape}
         onAddIcon={addIcon}
+        onAddTable={addTable}
         onAddText={addText}
         onAddSticky={addSticky}
         onAddImage={addImage}
@@ -512,6 +515,7 @@ export function EditorView() {
         onBeginAnchorDrag={beginAnchorDrag}
         onBeginEdit={beginEdit}
         onCommitLabel={commitLabel}
+        onCommitCells={commitCells}
         onCancelEdit={cancelEdit}
         onBeginEndpointDrag={beginEndpointDrag}
         onBeginArrowTranslate={beginArrowTranslate}

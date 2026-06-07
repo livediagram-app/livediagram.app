@@ -79,6 +79,7 @@ export type CanvasProps = {
   canRedo: boolean;
   onAddShape: (kind: ShapeKind) => void;
   onAddIcon: (iconId: string) => void;
+  onAddTable: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Spawn an empty image placeholder + open the picker. Optional so
@@ -226,6 +227,7 @@ export type CanvasProps = {
   onBeginAnchorDrag: (id: string, anchor: Anchor, e: ReactPointerEvent) => void;
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string) => void;
+  onCommitCells: (id: string, cells: string[][]) => void;
   onCancelEdit: () => void;
   onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
   onBeginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;

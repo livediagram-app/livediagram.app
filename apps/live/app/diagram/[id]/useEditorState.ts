@@ -1349,7 +1349,7 @@ export function useEditorState() {
   });
 
   // Palette element-creation handlers. See useElementCreation.
-  const { addShape, addIcon, addText, addSticky, addArrow, handleCanvasDoubleClick } =
+  const { addShape, addIcon, addTable, addText, addSticky, addArrow, handleCanvasDoubleClick } =
     useElementCreation({
       editsBlocked,
       activeId,
@@ -1460,6 +1460,7 @@ export function useEditorState() {
     beginGroup,
     beginEdit,
     commitLabel,
+    commitCells,
     cancelEdit,
     typeIntoSelected,
     selectElement,
@@ -1624,6 +1625,7 @@ export function useEditorState() {
     addImageFromGallery,
     addShape,
     addSticky,
+    addTable,
     addTab,
     addText,
     aiCapable,
@@ -1668,6 +1670,7 @@ export function useEditorState() {
     commitDraw,
     commitFreehand,
     commitLabel,
+    commitCells,
     contextMenu,
     copying,
     createFolder,

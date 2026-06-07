@@ -286,6 +286,12 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
     { element: 'strokeColor', theme: 'elementStroke' },
   ],
   text: [{ element: 'textColor', theme: 'elementText' }],
+  // Tables theme their grid lines + cell text, but keep cells
+  // transparent (no fill mapping) so the grid reads as a grid.
+  table: [
+    { element: 'strokeColor', theme: 'elementStroke' },
+    { element: 'textColor', theme: 'elementText' },
+  ],
   arrow: [{ element: 'strokeColor', theme: 'elementStroke' }],
   sticky: [],
   image: [],
@@ -340,6 +346,43 @@ export function switchThemeElement(
       value === undefined || value === prev[themeKey] ? (next[themeKey] ?? undefined) : value;
   }
   return { ...el, ...patch } as Element;
+}
+
+// Backdrop counterpart to `switchThemeElement`. The canvas backdrop
+// (background colour + pattern + pattern colour) follows the SAME
+// preserve-customs rule as element colours: a field is replaced with
+// the new theme's value only when it's unset or still matches the
+// previous theme's value, and kept when the user has deliberately set
+// it to something else. Without this, picking a theme would clobber a
+// chosen canvas pattern — e.g. reset Graph back to the theme's Grid, or
+// blank it entirely for Mono — which reads as "changing the theme loses
+// the canvas grid".
+export type TabBackdrop = {
+  backgroundColor?: string;
+  backgroundPattern?: BackgroundPattern;
+  patternColor?: string;
+};
+
+export function switchThemeBackdrop(
+  current: TabBackdrop,
+  prev: ThemeDefinition,
+  next: ThemeDefinition,
+): Required<TabBackdrop> {
+  return {
+    backgroundColor:
+      current.backgroundColor === undefined || current.backgroundColor === prev.backgroundColor
+        ? next.backgroundColor
+        : current.backgroundColor,
+    backgroundPattern:
+      current.backgroundPattern === undefined ||
+      current.backgroundPattern === prev.backgroundPattern
+        ? next.backgroundPattern
+        : current.backgroundPattern,
+    patternColor:
+      current.patternColor === undefined || current.patternColor === prev.patternColor
+        ? next.patternColor
+        : current.patternColor,
+  };
 }
 
 // Hard reset: force every themable colour on every shape / text /

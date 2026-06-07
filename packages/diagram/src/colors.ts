@@ -23,6 +23,8 @@ export function defaultPadding(element: BoxedElement): Padding {
       return 'none';
     case 'freehand':
       return 'none';
+    case 'table':
+      return 'sm';
   }
 }
 
@@ -100,6 +102,8 @@ export function defaultTextColor(element: BoxedElement): string {
       return '#1e293b'; // slate-800 (only used for alt-text rendering)
     case 'freehand':
       return '#1e293b'; // slate-800 (no inline label today, future-proof)
+    case 'table':
+      return '#1e293b'; // slate-800
   }
 }
 
@@ -126,6 +130,8 @@ export function defaultFillColor(element: BoxedElement): string {
       // the shape default; open paths render stroke-only so the
       // fill is visually inert there.
       return '#f0f9ff';
+    case 'table':
+      return 'transparent';
   }
 }
 
@@ -141,6 +147,8 @@ export function defaultStrokeColor(element: BoxedElement): string {
       return 'transparent';
     case 'freehand':
       return '#0ea5e9'; // brand-500, same accent as shapes
+    case 'table':
+      return '#94a3b8'; // slate-400 grid lines
   }
 }
 
@@ -149,7 +157,8 @@ export function supportsColours(element: Element): boolean {
     element.type === 'shape' ||
     element.type === 'sticky' ||
     element.type === 'arrow' ||
-    element.type === 'freehand'
+    element.type === 'freehand' ||
+    element.type === 'table'
   );
 }
 

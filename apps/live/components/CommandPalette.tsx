@@ -161,6 +161,8 @@ type CommandPaletteProps = {
   onAddIcon: (iconId: string) => void;
   onAddText: () => void;
   onAddSticky: () => void;
+  // Drop a 3x3 editable table at the viewport centre.
+  onAddTable: () => void;
   // Spawn an image placeholder + open the picker. Optional so
   // deployments without R2 (or view-role visitors) can omit it; the
   // Image palette entry hides when the handler is missing. See
@@ -210,6 +212,7 @@ export function CommandPalette({
   onAddIcon,
   onAddText,
   onAddSticky,
+  onAddTable,
   onAddImage,
   onAddArrow,
   onBeginFreehand,
@@ -238,6 +241,10 @@ export function CommandPalette({
   };
   const addSticky = () => {
     onAddSticky();
+    onMobileClose?.();
+  };
+  const addTable = () => {
+    onAddTable();
     onMobileClose?.();
   };
   const addArrow = () => {
@@ -589,6 +596,27 @@ export function CommandPalette({
                 strokeWidth="1.5"
                 strokeLinejoin="round"
               />
+            </svg>
+          </IconButton>
+          <IconButton
+            label="Add table"
+            description="Editable grid. Double-click a cell to type."
+            onClick={addTable}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden
+            >
+              <rect x="2.5" y="3.5" width="13" height="11" rx="1" />
+              <line x1="2.5" y1="7.5" x2="15.5" y2="7.5" />
+              <line x1="2.5" y1="11" x2="15.5" y2="11" />
+              <line x1="7" y1="3.5" x2="7" y2="14.5" />
+              <line x1="11" y1="3.5" x2="11" y2="14.5" />
             </svg>
           </IconButton>
           {onAddImage ? (

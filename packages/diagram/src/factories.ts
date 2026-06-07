@@ -10,6 +10,7 @@ import {
   type ShapeElement,
   type ShapeKind,
   type StickyElement,
+  type TableElement,
   type TextElement,
 } from './index';
 
@@ -93,6 +94,24 @@ export function createText(x: number, y: number): TextElement {
     width: 220,
     height: 64,
     label: 'Text',
+    textSize: 'md',
+  };
+}
+
+// A fresh 3x3 table with an empty header row. Sized so the default
+// cells are comfortably clickable; the grid divides the box evenly.
+export function createTable(x: number, y: number): TableElement {
+  const rows = 3;
+  const cols = 3;
+  return {
+    id: crypto.randomUUID(),
+    type: 'table',
+    x,
+    y,
+    width: 360,
+    height: 150,
+    cells: Array.from({ length: rows }, () => Array.from({ length: cols }, () => '')),
+    headerRow: true,
     textSize: 'md',
   };
 }

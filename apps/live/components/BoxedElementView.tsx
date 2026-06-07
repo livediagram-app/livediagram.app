@@ -31,6 +31,7 @@ import { LockBadge, ResizeHandles, RotateHandle } from './element-parts';
 import { ImageElementView } from './ImageElementView';
 import { isSvgRenderedShape, ShapeSvgOverlay } from './shape-svg-overlay';
 import { IconGlyph } from './icon-glyph';
+import { TableView } from './TableView';
 import { Tooltip } from './Tooltip';
 
 type BoxedElementViewProps = {
@@ -75,6 +76,7 @@ type BoxedElementViewProps = {
   // identities.
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string) => void;
+  onCommitCells: (id: string, cells: string[][]) => void;
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (id: string) => void;
@@ -137,6 +139,7 @@ function BoxedElementViewImpl({
   onBeginAnchorDrag,
   onBeginEdit,
   onCommitLabel,
+  onCommitCells,
   onCancelEdit,
   onFollowLink,
   onOpenComments,
@@ -199,6 +202,9 @@ function BoxedElementViewImpl({
       imageContext.onOpenPicker(element.id);
       return;
     }
+    // Tables edit per-cell (TableView handles the cell double-click),
+    // so the element-level label editor never applies.
+    if (element.type === 'table') return;
     // Don't gate on isPaintMode here (the page-level beginEdit decides whether
     // edit can start; it rejects during format painter, and exits group mode).
     onBeginEdit(element.id);
@@ -340,6 +346,8 @@ function BoxedElementViewImpl({
               )
             : null}
         </>
+      ) : element.type === 'table' ? (
+        <TableView element={element} readOnly={isLocked} onCommitCells={onCommitCells} />
       ) : (
         renderLabel(
           element,
@@ -850,6 +858,18 @@ function describeVariant(
       // (selection-via-outline, not selection-via-border) so a
       // dashed / dotted stroke doesn't get overridden by a box
       // border around it.
+      const ring = `${singleRing('ring-2 ring-brand-300')} ${multiRing}`.trim();
+      return {
+        className: `${ring}`,
+        style: remoteBorderColor
+          ? { outline: `${remoteBorderWidth}px solid ${remoteBorderColor}`, outlineOffset: 2 }
+          : {},
+      };
+    }
+    case 'table': {
+      // TableView draws the grid + cell borders as the child
+      // content; the wrapper only contributes the selection ring
+      // (transparent background so the grid is what shows).
       const ring = `${singleRing('ring-2 ring-brand-300')} ${multiRing}`.trim();
       return {
         className: `${ring}`,

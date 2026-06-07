@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import {
   createShape,
+  createTable,
   createSticky,
   createText,
   type ArrowElement,
@@ -66,6 +67,14 @@ export function useElementCreation(opts: {
     track('Element', 'Added', titleCaseType('icon'));
   };
 
+  // A 3x3 table dropped at the viewport centre (no draw-to-size:
+  // the grid sizes itself; the user resizes the whole box after).
+  const addTable = () => {
+    if (editsBlocked) return;
+    addBoxed((x, y) => createTable(x, y));
+    track('Element', 'Added', titleCaseType('table'));
+  };
+
   const addText = () => {
     if (editsBlocked) return;
     if (beginDrawIfEnabled({ type: 'text' })) return;
@@ -123,5 +132,5 @@ export function useElementCreation(opts: {
     setEditingId(el.id);
   };
 
-  return { addShape, addIcon, addText, addSticky, addArrow, handleCanvasDoubleClick };
+  return { addShape, addIcon, addTable, addText, addSticky, addArrow, handleCanvasDoubleClick };
 }

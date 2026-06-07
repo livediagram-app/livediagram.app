@@ -75,6 +75,12 @@ export function useSelectionEditing(opts: {
     setEditingId(elementId);
   };
 
+  const commitCells = (elementId: string, cells: string[][]) => {
+    commit((els) =>
+      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, cells } : el)),
+    );
+  };
+
   const commitLabel = (elementId: string, label: string) => {
     commit((els) =>
       els.map((el) => {
@@ -179,6 +185,7 @@ export function useSelectionEditing(opts: {
     beginGroup,
     beginEdit,
     commitLabel,
+    commitCells,
     cancelEdit,
     typeIntoSelected,
     selectElement,
