@@ -162,6 +162,28 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // every boxed move / single-element resize, cleared on pointer-up. The
   // render layer (CanvasChrome) draws them as faint lines.
   const [snapGuides, setSnapGuides] = useState<AlignmentGuide[]>([]);
+  // Coalesce snap-guide state updates into a single rAF. The guides are
+  // purely cosmetic — the snap itself is applied synchronously in the
+  // `tick` below — so keeping their state update OFF the synchronous
+  // pointermove path (which fired setSnapGuides + tick back-to-back every
+  // frame) keeps the guide overlay out of the critical drag render and
+  // out of any synchronous update cascade. A pending frame is cancelled +
+  // rescheduled so only the latest guides land; the sameGuides guard then
+  // skips the render when they're unchanged.
+  const guideRafRef = useRef<number | null>(null);
+  const scheduleGuides = (next: AlignmentGuide[]) => {
+    if (guideRafRef.current !== null) cancelAnimationFrame(guideRafRef.current);
+    guideRafRef.current = requestAnimationFrame(() => {
+      guideRafRef.current = null;
+      setSnapGuides((prev) => (sameGuides(prev, next) ? prev : next));
+    });
+  };
+  useEffect(
+    () => () => {
+      if (guideRafRef.current !== null) cancelAnimationFrame(guideRafRef.current);
+    },
+    [],
+  );
 
   // Stash deps on every render so the move-effect always reads
   // fresh values without re-subscribing global pointer listeners.
@@ -399,13 +421,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const onSecondTouch = (e: PointerEvent) => {
       if (e.pointerType === 'touch' && !e.isPrimary) {
         setDrag(null);
-        setSnapGuides((prev) => (prev.length === 0 ? prev : []));
+        scheduleGuides([]);
       }
     };
     const onMove = (e: PointerEvent) => {
       if (depsRef.current.isPinchingRef?.current) {
         setDrag(null);
-        setSnapGuides((prev) => (prev.length === 0 ? prev : []));
+        scheduleGuides([]);
         return;
       }
       const { activeTab, zoomRef, tick } = depsRef.current;
@@ -465,9 +487,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
                     memberIds,
                   )
                 : [];
-            setSnapGuides((prev) => (sameGuides(prev, guides) ? prev : guides));
+            scheduleGuides(guides);
           } else {
-            setSnapGuides((prev) => (prev.length === 0 ? prev : []));
+            scheduleGuides([]);
           }
           tick((els) => {
             // First pass: translate every dragged boxed element.
@@ -528,7 +550,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
               (depsRef.current.alignmentGuidesRef.current ?? true)
                 ? alignmentGuides(next, activeTab.elements, memberIds)
                 : [];
-            setSnapGuides((prev) => (sameGuides(prev, guides) ? prev : guides));
+            scheduleGuides(guides);
             tick((els) =>
               els.map((el) => (el.id === drag.primaryId && isBoxed(el) ? { ...el, ...next } : el)),
             );
@@ -684,7 +706,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     };
     const onUp = () => {
       setDrag(null);
-      setSnapGuides((prev) => (prev.length === 0 ? prev : []));
+      scheduleGuides([]);
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
