@@ -10,6 +10,7 @@ import {
   setTableCell,
   type TableElement,
 } from '@livediagram/diagram';
+import { isMobileViewportSync } from '@/lib/responsive';
 
 // Cell font size per preset (element-space px; the canvas zoom scales
 // it like everything else). 'scale' has no per-element basis on a grid,
@@ -157,6 +158,11 @@ export function TableView({
   const [menu, setMenu] = useState<{ axis: 'col' | 'row'; index: number } | null>(null);
   // Live widths while dragging a column divider (committed on release).
   const [resizeWidths, setResizeWidths] = useState<(number | null)[] | null>(null);
+  // On desktop the column / row ⋯ trigger only shows while hovering
+  // that column / row; on touch (no hover) they stay visible.
+  const [hoveredCol, setHoveredCol] = useState<number | null>(null);
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const isMobile = isMobileViewportSync();
   const editorRef = useRef<HTMLDivElement>(null);
   const initialTextRef = useRef('');
   const gridRef = useRef<HTMLDivElement>(null);
@@ -269,6 +275,10 @@ export function TableView({
     <>
       <div
         ref={gridRef}
+        onMouseLeave={() => {
+          setHoveredCol(null);
+          setHoveredRow(null);
+        }}
         className="absolute inset-0 grid overflow-hidden"
         style={{
           gridTemplateColumns: colTemplate,
@@ -284,6 +294,10 @@ export function TableView({
             return (
               <div
                 key={`${r}-${c}`}
+                onMouseEnter={() => {
+                  setHoveredCol(c);
+                  setHoveredRow(r);
+                }}
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   beginEdit(r, c);
@@ -395,77 +409,94 @@ export function TableView({
             className="pointer-events-none absolute inset-x-0 top-0.5 grid"
             style={{ gridTemplateColumns: colTemplate }}
           >
-            {Array.from({ length: cols }, (_, c) => (
-              <div key={`col-${c}`} className="flex min-w-0 justify-center">
-                <div className="relative">
-                  <Trigger
-                    open={menu?.axis === 'col' && menu.index === c}
-                    onClick={() => toggle('col', c)}
-                  />
-                  {menu?.axis === 'col' && menu.index === c ? (
-                    <div className="pointer-events-auto absolute left-1/2 top-7 z-30 w-36 -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
-                      <MenuButton
-                        label="Insert left"
-                        onClick={() => apply(addTableColumn(element, c))}
-                      >
-                        <ArrowIcon dir="left" />
-                      </MenuButton>
-                      <MenuButton
-                        label="Insert right"
-                        onClick={() => apply(addTableColumn(element, c + 1))}
-                      >
-                        <ArrowIcon dir="right" />
-                      </MenuButton>
-                      <MenuButton
-                        label="Delete column"
-                        danger
-                        disabled={cols <= 1}
-                        onClick={() => apply(removeTableColumn(element, c))}
-                      >
-                        <TrashIcon />
-                      </MenuButton>
+            {Array.from({ length: cols }, (_, c) => {
+              const colOn =
+                isMobile || hoveredCol === c || (menu?.axis === 'col' && menu.index === c);
+              return (
+                <div key={`col-${c}`} className="flex min-w-0 justify-center">
+                  {colOn ? (
+                    <div
+                      className="pointer-events-auto relative"
+                      onMouseEnter={() => setHoveredCol(c)}
+                      onMouseLeave={() => setHoveredCol(null)}
+                    >
+                      <Trigger
+                        open={menu?.axis === 'col' && menu.index === c}
+                        onClick={() => toggle('col', c)}
+                      />
+                      {menu?.axis === 'col' && menu.index === c ? (
+                        <div className="pointer-events-auto absolute left-1/2 top-7 z-30 w-36 -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                          <MenuButton
+                            label="Insert left"
+                            onClick={() => apply(addTableColumn(element, c))}
+                          >
+                            <ArrowIcon dir="left" />
+                          </MenuButton>
+                          <MenuButton
+                            label="Insert right"
+                            onClick={() => apply(addTableColumn(element, c + 1))}
+                          >
+                            <ArrowIcon dir="right" />
+                          </MenuButton>
+                          <MenuButton
+                            label="Delete column"
+                            danger
+                            disabled={cols <= 1}
+                            onClick={() => apply(removeTableColumn(element, c))}
+                          >
+                            <TrashIcon />
+                          </MenuButton>
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Row triggers along the left edge of the grid. */}
-          {Array.from({ length: rows }, (_, r) => (
-            <div
-              key={`row-${r}`}
-              className="absolute left-0.5 -translate-y-1/2"
-              style={{ top: `${((r + 0.5) / rows) * 100}%` }}
-            >
-              <Trigger
-                vertical
-                open={menu?.axis === 'row' && menu.index === r}
-                onClick={() => toggle('row', r)}
-              />
-              {menu?.axis === 'row' && menu.index === r ? (
-                <div className="pointer-events-auto absolute left-7 top-1/2 z-30 w-36 -translate-y-1/2 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
-                  <MenuButton label="Insert above" onClick={() => apply(addTableRow(element, r))}>
-                    <ArrowIcon dir="up" />
-                  </MenuButton>
-                  <MenuButton
-                    label="Insert below"
-                    onClick={() => apply(addTableRow(element, r + 1))}
-                  >
-                    <ArrowIcon dir="down" />
-                  </MenuButton>
-                  <MenuButton
-                    label="Delete row"
-                    danger
-                    disabled={rows <= 1}
-                    onClick={() => apply(removeTableRow(element, r))}
-                  >
-                    <TrashIcon />
-                  </MenuButton>
-                </div>
-              ) : null}
-            </div>
-          ))}
+          {Array.from({ length: rows }, (_, r) => {
+            const rowOn =
+              isMobile || hoveredRow === r || (menu?.axis === 'row' && menu.index === r);
+            if (!rowOn) return null;
+            return (
+              <div
+                key={`row-${r}`}
+                className="pointer-events-auto absolute left-0.5 -translate-y-1/2"
+                style={{ top: `${((r + 0.5) / rows) * 100}%` }}
+                onMouseEnter={() => setHoveredRow(r)}
+                onMouseLeave={() => setHoveredRow(null)}
+              >
+                <Trigger
+                  vertical
+                  open={menu?.axis === 'row' && menu.index === r}
+                  onClick={() => toggle('row', r)}
+                />
+                {menu?.axis === 'row' && menu.index === r ? (
+                  <div className="pointer-events-auto absolute left-7 top-1/2 z-30 w-36 -translate-y-1/2 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                    <MenuButton label="Insert above" onClick={() => apply(addTableRow(element, r))}>
+                      <ArrowIcon dir="up" />
+                    </MenuButton>
+                    <MenuButton
+                      label="Insert below"
+                      onClick={() => apply(addTableRow(element, r + 1))}
+                    >
+                      <ArrowIcon dir="down" />
+                    </MenuButton>
+                    <MenuButton
+                      label="Delete row"
+                      danger
+                      disabled={rows <= 1}
+                      onClick={() => apply(removeTableRow(element, r))}
+                    >
+                      <TrashIcon />
+                    </MenuButton>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </>
