@@ -347,7 +347,12 @@ function BoxedElementViewImpl({
             : null}
         </>
       ) : element.type === 'table' ? (
-        <TableView element={element} readOnly={isLocked} onCommitCells={onCommitCells} />
+        <TableView
+          element={element}
+          isSelected={isSelected}
+          readOnly={isLocked}
+          onCommitCells={onCommitCells}
+        />
       ) : (
         renderLabel(
           element,
