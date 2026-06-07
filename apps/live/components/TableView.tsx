@@ -18,6 +18,7 @@ import {
   type TableElement,
 } from '@livediagram/diagram';
 import { isMobileViewportSync } from '@/lib/responsive';
+import { track } from '@/lib/telemetry';
 
 // Cell font size per preset (element-space px; the canvas zoom scales
 // it like everything else). 'scale' has no per-element basis on a grid,
@@ -367,10 +368,12 @@ export function TableView({
   };
 
   const applyCellStyle = (r: number, c: number, patch: Partial<TableCellStyle>) => {
+    track('Element', 'Changed', 'TableCell');
     onCommitCellStyles(element.id, setCellStyle(element, r, c, patch).cellStyles ?? []);
   };
 
   const moveCol = (from: number, to: number) => {
+    track('Element', 'Reordered', 'TableColumn');
     const m = moveTableColumn(element, from, to);
     onCommitCells(element.id, m.cells);
     if (m.colWidths) onCommitColWidths(element.id, m.colWidths);
@@ -378,6 +381,7 @@ export function TableView({
     setMenu(null);
   };
   const moveRow = (from: number, to: number) => {
+    track('Element', 'Reordered', 'TableRow');
     const m = moveTableRow(element, from, to);
     onCommitCells(element.id, m.cells);
     if (m.rowHeights) onCommitRowHeights(element.id, m.rowHeights);

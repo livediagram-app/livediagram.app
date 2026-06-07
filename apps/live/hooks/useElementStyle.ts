@@ -319,6 +319,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setTableHeaderRowSelected = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
+    track('Element', 'Toggled', 'TableHeaderRow');
     commit((els) =>
       els.map((el) =>
         ids.has(el.id) && el.type === 'table' ? { ...el, headerRow: !el.headerRow } : el,
@@ -328,6 +329,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setTableZebraSelected = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
+    track('Element', 'Toggled', 'TableZebra');
     commit((els) =>
       els.map((el) => (ids.has(el.id) && el.type === 'table' ? { ...el, zebra: !el.zebra } : el)),
     );
@@ -335,6 +337,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setTableHeaderColumnSelected = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
+    track('Element', 'Toggled', 'TableHeaderColumn');
     commit((els) =>
       els.map((el) =>
         ids.has(el.id) && el.type === 'table' ? { ...el, headerColumn: !el.headerColumn } : el,
