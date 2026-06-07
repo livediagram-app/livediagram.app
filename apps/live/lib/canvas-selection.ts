@@ -238,7 +238,7 @@ export function deriveSelectedElementFields(
         ? (selected.textColor ?? defaultTextColor(selected))
         : null,
     fillColor:
-      selectionSupportsColours && isBoxed(selected)
+      selectionSupportsColours && isBoxed(selected) && !isIcon
         ? (selected.fillColor ?? defaultFillColor(selected))
         : null,
     strokeColor: selectionSupportsColours
