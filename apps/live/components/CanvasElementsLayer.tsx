@@ -67,6 +67,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCancelEdit,
     onCommitLabel,
     onCommitCells,
+    onCommitColWidths,
     onDuplicateConnect,
     onFollowLink,
     onOpenComments,
@@ -155,6 +156,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onBeginEdit={onBeginEdit}
             onCommitLabel={onCommitLabel}
             onCommitCells={onCommitCells}
+            onCommitColWidths={onCommitColWidths}
             onCancelEdit={onCancelEdit}
             onFollowLink={onFollowLink}
             onOpenComments={onOpenComments}

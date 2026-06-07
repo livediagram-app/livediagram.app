@@ -55,12 +55,16 @@ export function removeTableRow(t: TableElement, at?: number): TableElement {
 export function addTableColumn(t: TableElement, at?: number): TableElement {
   const idx = at ?? tableColCount(t);
   const cells = t.cells.map((row) => [...row.slice(0, idx), '', ...row.slice(idx)]);
-  return { ...t, cells };
+  const colWidths = t.colWidths
+    ? [...t.colWidths.slice(0, idx), null, ...t.colWidths.slice(idx)]
+    : t.colWidths;
+  return { ...t, cells, colWidths };
 }
 
 export function removeTableColumn(t: TableElement, at?: number): TableElement {
   if (tableColCount(t) <= 1) return t;
   const idx = at ?? tableColCount(t) - 1;
   const cells = t.cells.map((row) => row.filter((_, i) => i !== idx));
-  return { ...t, cells };
+  const colWidths = t.colWidths ? t.colWidths.filter((_, i) => i !== idx) : t.colWidths;
+  return { ...t, cells, colWidths };
 }

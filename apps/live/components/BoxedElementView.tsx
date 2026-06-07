@@ -77,6 +77,7 @@ type BoxedElementViewProps = {
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string) => void;
   onCommitCells: (id: string, cells: string[][]) => void;
+  onCommitColWidths: (id: string, colWidths: (number | null)[]) => void;
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (id: string) => void;
@@ -140,6 +141,7 @@ function BoxedElementViewImpl({
   onBeginEdit,
   onCommitLabel,
   onCommitCells,
+  onCommitColWidths,
   onCancelEdit,
   onFollowLink,
   onOpenComments,
@@ -352,6 +354,7 @@ function BoxedElementViewImpl({
           isSelected={isSelected}
           readOnly={isLocked}
           onCommitCells={onCommitCells}
+          onCommitColWidths={onCommitColWidths}
         />
       ) : (
         renderLabel(

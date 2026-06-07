@@ -246,6 +246,11 @@ export type TableElement = {
   // a tint of the grid stroke (fill) + the cell text colour (text).
   headerFill?: string;
   headerTextColor?: string;
+  // Per-column width override in element-space px. An entry of
+  // null / undefined (or a short array) means "auto": that column
+  // shares the remaining width as a 1fr track. Lets some columns
+  // be pinned while the rest fill the space.
+  colWidths?: (number | null)[];
   // Tables have no single label (cells carry the text). Declared as an
   // always-undefined optional so the generic "boxed element has a
   // label" code paths (change log, export, search) compile without a

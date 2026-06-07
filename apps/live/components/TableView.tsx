@@ -4,6 +4,7 @@ import {
   addTableRow,
   defaultStrokeColor,
   defaultTextColor,
+  PADDING_PX,
   removeTableColumn,
   removeTableRow,
   setTableCell,
@@ -14,6 +15,8 @@ import {
 // it like everything else). 'scale' has no per-element basis on a grid,
 // so it reads as the medium size.
 const CELL_FONT_PX: Record<string, number> = { sm: 11, md: 13, lg: 16, scale: 13 };
+
+const MIN_COL_PX = 30;
 
 function ArrowIcon({ dir }: { dir: 'left' | 'right' | 'up' | 'down' }) {
   const d = {
@@ -129,37 +132,40 @@ function MenuButton({
 }
 
 // Renders a TableElement as an editable grid filling the element box.
-// Double-click a cell to edit its text; Enter / blur commits, Escape
-// cancels, Tab / Shift+Tab moves to the next / previous cell. When the
-// table is selected, a "⋯" trigger sits inside the top of each column /
-// the left of each row; tapping it opens a large add-before / add-after
-// / delete menu that drops INTO the table (away from the canvas's own
-// top-left resize / anchor controls). Editing + menu state is local;
-// committed grids persist via onCommitCells (the whole grid).
+// Double-click a cell to edit; per-column / per-row insert + delete live
+// in tap-to-open menus on the top / left edge. Columns can be given an
+// explicit width by dragging the divider on their right edge; columns
+// without an override share the remaining space as 1fr tracks. Cell
+// padding follows the element's padding preset. Local UI state only;
+// content + structure persist via onCommitCells / onCommitColWidths.
 export function TableView({
   element,
   isSelected,
   readOnly,
   onCommitCells,
+  onCommitColWidths,
 }: {
   element: TableElement;
   isSelected: boolean;
   readOnly: boolean;
   onCommitCells: (id: string, cells: string[][]) => void;
+  onCommitColWidths: (id: string, colWidths: (number | null)[]) => void;
 }) {
   const rows = element.cells.length;
   const cols = element.cells[0]?.length ?? 0;
   const [editing, setEditing] = useState<{ r: number; c: number } | null>(null);
   const [draft, setDraft] = useState('');
   const [menu, setMenu] = useState<{ axis: 'col' | 'row'; index: number } | null>(null);
+  // Live widths while dragging a column divider (committed on release).
+  const [resizeWidths, setResizeWidths] = useState<(number | null)[] | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<(number | null)[] | null>(null);
 
-  // Drop out of edit mode if the grid shrinks under the active cell.
   useEffect(() => {
     if (editing && (editing.r >= rows || editing.c >= cols)) setEditing(null);
   }, [editing, rows, cols]);
 
-  // Close the structural menu whenever the table is deselected.
   useEffect(() => {
     if (!isSelected) setMenu(null);
   }, [isSelected]);
@@ -175,12 +181,21 @@ export function TableView({
   const stroke = element.strokeColor ?? defaultStrokeColor(element);
   const textColor = element.textColor ?? defaultTextColor(element);
   const fontPx = CELL_FONT_PX[element.textSize ?? 'md'] ?? 13;
+  const cellPad = PADDING_PX[element.padding ?? 'sm'];
   const headerFill = element.headerFill ?? `${stroke}22`;
   const headerTextColor = element.headerTextColor ?? textColor;
   const alignX = element.textAlignX ?? 'center';
   const alignY = element.textAlignY ?? 'middle';
   const justify = alignX === 'left' ? 'flex-start' : alignX === 'right' ? 'flex-end' : 'center';
   const alignItems = alignY === 'top' ? 'flex-start' : alignY === 'bottom' ? 'flex-end' : 'center';
+
+  // Explicit px for overridden columns, 1fr for the rest (they share the
+  // remaining width).
+  const widths = resizeWidths ?? element.colWidths;
+  const colTemplate = Array.from({ length: cols }, (_, c) => {
+    const w = widths?.[c];
+    return w != null ? `${w}px` : 'minmax(0, 1fr)';
+  }).join(' ');
 
   const beginEdit = (r: number, c: number) => {
     if (readOnly || element.locked) return;
@@ -192,8 +207,6 @@ export function TableView({
     onCommitCells(element.id, setTableCell(element, r, c, text).cells);
   };
 
-  // Structural edits reuse the pure helpers; each commits the whole grid
-  // and closes the menu.
   const apply = (next: { cells: string[][] }) => {
     onCommitCells(element.id, next.cells);
     setMenu(null);
@@ -202,12 +215,51 @@ export function TableView({
   const toggle = (axis: 'col' | 'row', index: number) =>
     setMenu((m) => (m && m.axis === axis && m.index === index ? null : { axis, index }));
 
+  // Drag the right divider of column c to pin its width; other columns
+  // stay auto and reflow. Reads the live track sizes + the rendered-to-
+  // element scale (zoom) off the grid so it works at any zoom.
+  const startColResize = (c: number) => (e: React.PointerEvent) => {
+    if (!showControls) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const grid = gridRef.current;
+    if (!grid) return;
+    const rect = grid.getBoundingClientRect();
+    const scale = element.width > 0 ? rect.width / element.width : 1;
+    const tracks = getComputedStyle(grid)
+      .gridTemplateColumns.split(' ')
+      .map((t) => parseFloat(t));
+    const base: (number | null)[] = Array.from(
+      { length: cols },
+      (_, i) => element.colWidths?.[i] ?? null,
+    );
+    const startWidthElem = (tracks[c] ?? rect.width / cols) / scale;
+    const startX = e.clientX;
+    const onMove = (ev: PointerEvent) => {
+      const dx = (ev.clientX - startX) / scale;
+      const next = [...base];
+      next[c] = Math.max(MIN_COL_PX, Math.round(startWidthElem + dx));
+      dragRef.current = next;
+      setResizeWidths(next);
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      if (dragRef.current) onCommitColWidths(element.id, dragRef.current);
+      dragRef.current = null;
+      setResizeWidths(null);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
   return (
     <>
       <div
+        ref={gridRef}
         className="absolute inset-0 grid overflow-hidden"
         style={{
-          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gridTemplateColumns: colTemplate,
           gridTemplateRows: `repeat(${rows}, 1fr)`,
           border: `1px solid ${stroke}`,
           color: textColor,
@@ -224,8 +276,9 @@ export function TableView({
                   e.stopPropagation();
                   beginEdit(r, c);
                 }}
-                className="min-w-0 overflow-hidden px-1.5 py-1"
+                className="min-w-0 overflow-hidden"
                 style={{
+                  padding: cellPad,
                   borderRight: c < cols - 1 ? `1px solid ${stroke}` : undefined,
                   borderBottom: r < rows - 1 ? `1px solid ${stroke}` : undefined,
                   backgroundColor: isHeader ? headerFill : (element.fillColor ?? 'transparent'),
@@ -295,12 +348,33 @@ export function TableView({
         )}
       </div>
 
-      {/* Control layer: a non-clipped sibling so an open menu can spill
-          a little past the box. Triggers live INSIDE the top / left
-          edge of the grid; menus drop down / right into the table,
-          away from the canvas's own top-left resize + anchor controls. */}
+      {/* Control layer: a non-clipped sibling so menus can spill past the
+          box. Triggers live inside the top / left edge; column-resize
+          dividers ride a grid that mirrors the table's column template so
+          they sit exactly on each column boundary. */}
       {showControls ? (
         <div className="pointer-events-none absolute inset-0">
+          {/* Column-resize dividers (between columns). */}
+          <div
+            className="pointer-events-none absolute inset-0 grid"
+            style={{ gridTemplateColumns: colTemplate }}
+          >
+            {Array.from({ length: cols }, (_, c) => (
+              <div key={`rz-${c}`} className="relative">
+                {c < cols - 1 ? (
+                  <div
+                    onPointerDown={startColResize(c)}
+                    onDoubleClick={(e) => e.stopPropagation()}
+                    title="Drag to set column width"
+                    className="group pointer-events-auto absolute -right-1 bottom-0 top-0 z-20 w-2 cursor-col-resize"
+                  >
+                    <div className="mx-auto h-full w-0.5 bg-brand-400/0 transition group-hover:bg-brand-400" />
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+
           {/* Column triggers along the top edge of the grid. */}
           {Array.from({ length: cols }, (_, c) => (
             <div
@@ -313,7 +387,7 @@ export function TableView({
                 onClick={() => toggle('col', c)}
               />
               {menu?.axis === 'col' && menu.index === c ? (
-                <div className="pointer-events-auto absolute left-1/2 top-7 z-10 w-36 -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                <div className="pointer-events-auto absolute left-1/2 top-7 z-30 w-36 -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
                   <MenuButton label="Insert left" onClick={() => apply(addTableColumn(element, c))}>
                     <ArrowIcon dir="left" />
                   </MenuButton>
@@ -349,7 +423,7 @@ export function TableView({
                 onClick={() => toggle('row', r)}
               />
               {menu?.axis === 'row' && menu.index === r ? (
-                <div className="pointer-events-auto absolute left-7 top-1/2 z-10 w-36 -translate-y-1/2 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                <div className="pointer-events-auto absolute left-7 top-1/2 z-30 w-36 -translate-y-1/2 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
                   <MenuButton label="Insert above" onClick={() => apply(addTableRow(element, r))}>
                     <ArrowIcon dir="up" />
                   </MenuButton>

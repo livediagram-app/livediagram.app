@@ -75,6 +75,12 @@ export function useSelectionEditing(opts: {
     setEditingId(elementId);
   };
 
+  const commitColWidths = (elementId: string, colWidths: (number | null)[]) => {
+    commit((els) =>
+      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, colWidths } : el)),
+    );
+  };
+
   const commitCells = (elementId: string, cells: string[][]) => {
     commit((els) =>
       els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, cells } : el)),
@@ -186,6 +192,7 @@ export function useSelectionEditing(opts: {
     beginEdit,
     commitLabel,
     commitCells,
+    commitColWidths,
     cancelEdit,
     typeIntoSelected,
     selectElement,
