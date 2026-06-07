@@ -108,7 +108,7 @@ export function TabSection({
       </Accordion>
       <Accordion title="Canvas" open={open.canvas} onToggle={() => toggle('canvas')}>
         <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">Pattern</p>
-        <div className="mt-1 grid grid-cols-3 gap-1">
+        <div className="mt-1 grid grid-cols-4 gap-1">
           {patternsList.visible.map((p) => (
             <Tooltip key={p.id} title={p.label} description={p.description}>
               <PatternButton

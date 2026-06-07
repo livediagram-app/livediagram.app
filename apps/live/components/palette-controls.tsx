@@ -3,13 +3,15 @@ import {
   BackgroundBlankIcon,
   BackgroundBricksIcon,
   BackgroundConfettiIcon,
+  BackgroundCheckerboardIcon,
   BackgroundCrosshatchIcon,
   BackgroundDiagonalIcon,
+  BackgroundEngineeringIcon,
   BackgroundGraphIcon,
   BackgroundGridIcon,
+  BackgroundHexagonalIcon,
+  BackgroundIsometricIcon,
   BackgroundLinesIcon,
-  BackgroundPlusIcon,
-  BackgroundStarsIcon,
   BackgroundStripesIcon,
   BackgroundWavesIcon,
 } from './background-pattern-icons';
@@ -163,14 +165,16 @@ export function PatternButton({
   label: string;
   children: React.ReactNode;
 }) {
-  const base = 'flex flex-col items-center gap-1 rounded-md p-2 transition';
+  // w-full so every button fills its grid cell — the active/hover box
+  // is then a uniform width regardless of how long the label is.
+  const base = 'flex w-full flex-col items-center gap-1 rounded-md px-1 py-2 transition';
   const styled = active
     ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
   return (
     <button type="button" onClick={onClick} className={`${base} ${styled}`}>
       {children}
-      <span className="text-[10px] font-medium">{label}</span>
+      <span className="w-full truncate text-center text-[10px] font-medium">{label}</span>
     </button>
   );
 }
@@ -235,7 +239,6 @@ export const PATTERNS: PatternEntry[] = [
     label: 'Stripes',
     shortLabel: 'Stripes',
     description: 'Vertical ruled lines.',
-    extra: true,
     icon: BackgroundStripesIcon,
   },
   {
@@ -243,7 +246,6 @@ export const PATTERNS: PatternEntry[] = [
     label: 'Diagonal',
     shortLabel: 'Diagonal',
     description: 'Single-direction 45° lines.',
-    extra: true,
     icon: BackgroundDiagonalIcon,
   },
   {
@@ -263,20 +265,36 @@ export const PATTERNS: PatternEntry[] = [
     icon: BackgroundBricksIcon,
   },
   {
-    id: 'plus',
-    label: 'Plus',
-    shortLabel: 'Plus',
-    description: 'Sprinkled plus signs.',
+    id: 'isometric',
+    label: 'Isometric',
+    shortLabel: 'Iso',
+    description: 'Isometric rhombic grid for 3D / technical diagrams.',
     extra: true,
-    icon: BackgroundPlusIcon,
+    icon: BackgroundIsometricIcon,
   },
   {
-    id: 'stars',
-    label: 'Stars',
-    shortLabel: 'Stars',
-    description: 'Sprinkled five-point stars.',
+    id: 'checkerboard',
+    label: 'Checkerboard',
+    shortLabel: 'Check',
+    description: 'Alternating filled squares.',
     extra: true,
-    icon: BackgroundStarsIcon,
+    icon: BackgroundCheckerboardIcon,
+  },
+  {
+    id: 'hexagonal',
+    label: 'Hexagonal',
+    shortLabel: 'Hex',
+    description: 'Honeycomb grid for hex maps and cell layouts.',
+    extra: true,
+    icon: BackgroundHexagonalIcon,
+  },
+  {
+    id: 'engineering',
+    label: 'Engineering',
+    shortLabel: 'Eng',
+    description: 'Graph paper with bold major gridlines every 5 cells.',
+    extra: true,
+    icon: BackgroundEngineeringIcon,
   },
 ];
 

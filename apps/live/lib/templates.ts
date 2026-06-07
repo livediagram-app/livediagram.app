@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/diagram';
+import type { BackgroundPattern, Tab } from '@livediagram/diagram';
 
 export type TemplateKind =
   | 'blank'
@@ -159,12 +159,48 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
 ];
 
-// Optional canvas-level overrides a specific template can request
-// on top of whatever theme is applied — soft-edits to backdrop
-// fields that ship with the template. Today only Mind map uses this
-// (the radiating branches read better against a slightly softened
-// canvas). Generalises if other templates want their own tuning.
+// The canvas backdrop pattern that best suits each template's layout.
+// Applied on top of the chosen theme (which only supplies the colours),
+// so a starter ships with a fitting canvas instead of inheriting the
+// theme's default dot grid:
+//   - graph paper for alignment-heavy scaffolds (flow / org / SWOT /
+//     Gantt / kanban / wireframes) where boxes snap to a square grid,
+//   - a blank canvas for clean radial / slide layouts (Venn, flywheel,
+//     pyramid, slide deck) where the shapes should carry the page,
+//   - a checkerboard "design board" for the logo lockup sheet,
+//   - horizontal rules for the time-ordered timeline / journey,
+//   - the dot grid (explicit, so it survives even a blank-canvas theme)
+//     for the sticky-note / freeform boards.
+// Templates not listed here fall through to the theme's pattern.
+const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
+  flowchart: 'graph',
+  orgchart: 'graph',
+  swot: 'graph',
+  gantt: 'graph',
+  kanban: 'graph',
+  'mobile-wireframe': 'graph',
+  'laptop-wireframe': 'graph',
+  venn: 'blank',
+  flywheel: 'blank',
+  pyramid: 'blank',
+  'slide-deck': 'blank',
+  'logo-design': 'checkerboard',
+  timeline: 'lines',
+  journey: 'lines',
+  retrospective: 'grid',
+  fishbone: 'grid',
+  'live-card': 'grid',
+  mindmap: 'grid',
+};
+
+// Canvas-level overrides a specific template ships with, applied on top
+// of whatever theme is selected. Each template carries its preferred
+// backdrop pattern (see TEMPLATE_PATTERNS); Mind map additionally
+// softens the canvas opacity so its radiating branches read better.
 export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
-  if (kind === 'mindmap') return { backgroundOpacity: 0.8 };
-  return {};
+  const overrides: Partial<Tab> = {};
+  const pattern = TEMPLATE_PATTERNS[kind];
+  if (pattern) overrides.backgroundPattern = pattern;
+  if (kind === 'mindmap') overrides.backgroundOpacity = 0.8;
+  return overrides;
 }

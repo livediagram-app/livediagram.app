@@ -24,8 +24,10 @@ const ALL_PATTERNS: BackgroundPattern[] = [
   'diagonal',
   'waves',
   'bricks',
-  'plus',
-  'stars',
+  'isometric',
+  'hexagonal',
+  'engineering',
+  'checkerboard',
 ];
 
 const NO_OFFSET = { x: 0, y: 0 };

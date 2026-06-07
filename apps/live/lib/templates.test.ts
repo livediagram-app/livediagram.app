@@ -76,17 +76,38 @@ describe('TEMPLATES catalogue', () => {
 });
 
 describe('templateCanvasOverrides', () => {
-  it('gives mind maps a softer backdrop opacity', () => {
+  it('gives mind maps a softer backdrop opacity (plus an explicit grid)', () => {
     // Mind maps sit on a slightly translucent canvas so the central
     // node reads as a focal point rather than competing with the
     // background pattern.
-    expect(templateCanvasOverrides('mindmap')).toEqual({ backgroundOpacity: 0.8 });
+    expect(templateCanvasOverrides('mindmap')).toEqual({
+      backgroundPattern: 'grid',
+      backgroundOpacity: 0.8,
+    });
   });
 
-  it('returns no overrides for any other template', () => {
+  it('gives alignment-heavy scaffolds a square graph paper backdrop', () => {
+    expect(templateCanvasOverrides('flowchart')).toEqual({ backgroundPattern: 'graph' });
+    expect(templateCanvasOverrides('orgchart')).toEqual({ backgroundPattern: 'graph' });
+    expect(templateCanvasOverrides('swot')).toEqual({ backgroundPattern: 'graph' });
+    expect(templateCanvasOverrides('gantt')).toEqual({ backgroundPattern: 'graph' });
+    expect(templateCanvasOverrides('mobile-wireframe')).toEqual({ backgroundPattern: 'graph' });
+  });
+
+  it('gives clean radial / slide layouts a blank backdrop', () => {
+    expect(templateCanvasOverrides('venn')).toEqual({ backgroundPattern: 'blank' });
+    expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
+    expect(templateCanvasOverrides('slide-deck')).toEqual({ backgroundPattern: 'blank' });
+  });
+
+  it('gives the logo sheet a checkerboard design board and timelines ruled lines', () => {
+    expect(templateCanvasOverrides('logo-design')).toEqual({ backgroundPattern: 'checkerboard' });
+    expect(templateCanvasOverrides('timeline')).toEqual({ backgroundPattern: 'lines' });
+    expect(templateCanvasOverrides('journey')).toEqual({ backgroundPattern: 'lines' });
+  });
+
+  it('leaves the blank template to inherit the theme backdrop', () => {
     expect(templateCanvasOverrides('blank')).toEqual({});
-    expect(templateCanvasOverrides('flowchart')).toEqual({});
-    expect(templateCanvasOverrides('orgchart')).toEqual({});
   });
 });
 

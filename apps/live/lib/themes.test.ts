@@ -13,6 +13,7 @@ import {
   getTheme,
   recolourElementForTheme,
   resetThemeElement,
+  switchThemeBackdrop,
   switchThemeElement,
   type ThemeDefinition,
 } from './themes';
@@ -196,6 +197,66 @@ describe('recolourElementForTheme', () => {
       const out = recolourElementForTheme(el, passthrough);
       expect(out).toEqual(el);
     }
+  });
+});
+
+describe('switchThemeBackdrop', () => {
+  const prev: ThemeDefinition = {
+    id: 'brand',
+    label: 'Brand',
+    backgroundColor: '#ffffff',
+    backgroundPattern: 'grid',
+    patternColor: '#cbd5e1',
+    elementFill: null,
+    elementStroke: null,
+    elementText: null,
+  };
+  const next: ThemeDefinition = {
+    id: 'mono',
+    label: 'Mono',
+    backgroundColor: '#0f172a',
+    backgroundPattern: 'blank',
+    patternColor: '#334155',
+    elementFill: null,
+    elementStroke: null,
+    elementText: null,
+  };
+
+  it('adopts the new theme backdrop when fields are unset', () => {
+    expect(switchThemeBackdrop({}, prev, next)).toEqual({
+      backgroundColor: next.backgroundColor,
+      backgroundPattern: next.backgroundPattern,
+      patternColor: next.patternColor,
+    });
+  });
+
+  it('adopts the new theme backdrop when fields still match the previous theme', () => {
+    const out = switchThemeBackdrop(
+      {
+        backgroundColor: prev.backgroundColor,
+        backgroundPattern: prev.backgroundPattern,
+        patternColor: prev.patternColor,
+      },
+      prev,
+      next,
+    );
+    expect(out.backgroundPattern).toBe('blank');
+    expect(out.backgroundColor).toBe(next.backgroundColor);
+  });
+
+  it('preserves a custom pattern across a theme change (the bug fix)', () => {
+    // User chose Graph, then switches theme: the pattern must survive,
+    // not get clobbered back to the new theme's backdrop.
+    const out = switchThemeBackdrop({ backgroundPattern: 'graph' }, prev, next);
+    expect(out.backgroundPattern).toBe('graph');
+  });
+
+  it('preserves a custom background + pattern colour while still unset fields adopt the theme', () => {
+    const out = switchThemeBackdrop({ patternColor: '#ff0000' }, prev, next);
+    expect(out.patternColor).toBe('#ff0000');
+    // backgroundColor/pattern were unset → adopt the new theme.
+    expect(out.backgroundColor).toBe(next.backgroundColor);
+    expect(out.backgroundPattern).toBe(next.backgroundPattern);
   });
 });
 

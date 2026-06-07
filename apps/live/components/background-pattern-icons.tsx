@@ -187,43 +187,123 @@ export function BackgroundBricksIcon() {
   );
 }
 
-export function BackgroundPlusIcon() {
+export function BackgroundIsometricIcon() {
+  // Two shallow (~30°) diagonal families forming isometric rhombi.
   return (
     <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden>
       <rect width="28" height="20" rx="2" fill="white" stroke="currentColor" strokeWidth="0.5" />
-      {[
-        { x: 7, y: 6 },
-        { x: 21, y: 6 },
-        { x: 14, y: 13 },
-      ].map((c) => (
-        <g key={`${c.x}-${c.y}`} stroke="currentColor" strokeWidth="0.9" strokeLinecap="round">
-          <line x1={c.x - 2} y1={c.y} x2={c.x + 2} y2={c.y} />
-          <line x1={c.x} y1={c.y - 2} x2={c.x} y2={c.y + 2} />
-        </g>
+      {[-2, 12, 26].map((x) => (
+        <line
+          key={`u${x}`}
+          x1={x}
+          y1="20"
+          x2={x + 22}
+          y2="0"
+          stroke="currentColor"
+          strokeWidth="0.6"
+        />
+      ))}
+      {[-22, -8, 6].map((x) => (
+        <line
+          key={`d${x}`}
+          x1={x}
+          y1="0"
+          x2={x + 22}
+          y2="20"
+          stroke="currentColor"
+          strokeWidth="0.6"
+        />
       ))}
     </svg>
   );
 }
 
-export function BackgroundStarsIcon() {
-  // Tiny five-point stars sized to read as decorative sprinkles.
-  const star = (cx: number, cy: number, key: string) => {
-    const r = 2;
-    const pts = [];
-    for (let i = 0; i < 10; i++) {
-      const angle = (i * Math.PI) / 5 - Math.PI / 2;
-      const radius = i % 2 === 0 ? r : r * 0.45;
-      pts.push(`${cx + radius * Math.cos(angle)},${cy + radius * Math.sin(angle)}`);
-    }
-    return <polygon key={key} points={pts.join(' ')} fill="currentColor" />;
+export function BackgroundCheckerboardIcon() {
+  // Alternating filled squares.
+  return (
+    <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden>
+      <rect width="28" height="20" rx="2" fill="white" stroke="currentColor" strokeWidth="0.5" />
+      {Array.from({ length: 6 }).flatMap((_, i) =>
+        Array.from({ length: 4 }).map((__, j) =>
+          (i + j) % 2 === 0 ? (
+            <rect
+              key={`${i}-${j}`}
+              x={2 + i * 4}
+              y={2 + j * 4}
+              width="4"
+              height="4"
+              fill="currentColor"
+            />
+          ) : null,
+        ),
+      )}
+    </svg>
+  );
+}
+
+export function BackgroundHexagonalIcon() {
+  // Small flat-top honeycomb cluster.
+  const hex = (cx: number, cy: number, key: string) => {
+    const r = 4.2;
+    const h = r * 0.866;
+    const pts = [
+      [cx + r, cy],
+      [cx + r / 2, cy + h],
+      [cx - r / 2, cy + h],
+      [cx - r, cy],
+      [cx - r / 2, cy - h],
+      [cx + r / 2, cy - h],
+    ]
+      .map((p) => p.join(','))
+      .join(' ');
+    return <polygon key={key} points={pts} fill="none" stroke="currentColor" strokeWidth="0.6" />;
   };
   return (
     <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden>
       <rect width="28" height="20" rx="2" fill="white" stroke="currentColor" strokeWidth="0.5" />
-      {star(7, 6, 'a')}
-      {star(20, 5, 'b')}
-      {star(14, 13, 'c')}
-      {star(23, 15, 'd')}
+      {hex(7, 10, 'a')}
+      {hex(13.3, 6.36, 'b')}
+      {hex(13.3, 13.64, 'c')}
+      {hex(19.6, 10, 'd')}
+      {hex(0.7, 6.36, 'e')}
+      {hex(0.7, 13.64, 'f')}
+      {hex(25.9, 6.36, 'g')}
+      {hex(25.9, 13.64, 'h')}
+    </svg>
+  );
+}
+
+export function BackgroundEngineeringIcon() {
+  // Fine minor grid with a bolder major line each way (graph paper).
+  return (
+    <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden>
+      <rect width="28" height="20" rx="2" fill="white" stroke="currentColor" strokeWidth="0.5" />
+      {[5, 10, 15].map((y) => (
+        <line
+          key={`mh${y}`}
+          x1="0"
+          y1={y}
+          x2="28"
+          y2={y}
+          stroke="currentColor"
+          strokeWidth="0.3"
+          opacity="0.5"
+        />
+      ))}
+      {[4, 8, 12, 16, 20, 24].map((x) => (
+        <line
+          key={`mv${x}`}
+          x1={x}
+          y1="0"
+          x2={x}
+          y2="20"
+          stroke="currentColor"
+          strokeWidth="0.3"
+          opacity="0.5"
+        />
+      ))}
+      <line x1="0" y1="10" x2="28" y2="10" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="14" y1="0" x2="14" y2="20" stroke="currentColor" strokeWidth="0.9" />
     </svg>
   );
 }

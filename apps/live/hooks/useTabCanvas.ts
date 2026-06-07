@@ -16,6 +16,7 @@ import { autoAlignElements } from '@/lib/auto-align';
 import {
   getTheme,
   resetThemeElement,
+  switchThemeBackdrop,
   switchThemeElement,
   THEMES,
   type ThemeId,
@@ -120,13 +121,15 @@ export function useTabCanvas(deps: TabCanvasDeps) {
         // it's unset or still matches the previous theme's value,
         // and kept when the user has set it to something else).
         const elements = t.elements.map((el) => switchThemeElement(el, prevTheme, theme));
+        // Backdrop follows the same preserve-customs rule as the
+        // elements: a deliberately-chosen pattern / colour survives a
+        // theme change instead of being reset to the theme's backdrop.
+        const backdrop = switchThemeBackdrop(t, prevTheme, theme);
         return {
           ...t,
           elements,
           theme: id,
-          backgroundColor: theme.backgroundColor,
-          backgroundPattern: theme.backgroundPattern,
-          patternColor: theme.patternColor,
+          ...backdrop,
         };
       }),
     );
