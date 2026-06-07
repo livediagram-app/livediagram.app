@@ -201,7 +201,7 @@ export function TableView({
       >
         {element.cells.flatMap((row, r) =>
           row.map((cell, c) => {
-            const isHeader = element.headerRow && r === 0;
+            const isHeader = (element.headerRow && r === 0) || (element.headerColumn && c === 0);
             const isEditingCell = editing?.r === r && editing?.c === c;
             return (
               <div

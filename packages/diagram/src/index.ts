@@ -239,6 +239,9 @@ export type TableElement = {
   cells: string[][];
   // Render the first row as a header (tinted band + bold text).
   headerRow?: boolean;
+  // Render the first column as a header (same treatment). Combinable
+  // with headerRow (the corner cell is then both).
+  headerColumn?: boolean;
   // Tables have no single label (cells carry the text). Declared as an
   // always-undefined optional so the generic "boxed element has a
   // label" code paths (change log, export, search) compile without a

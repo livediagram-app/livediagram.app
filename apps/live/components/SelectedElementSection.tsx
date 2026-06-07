@@ -44,6 +44,7 @@ import type { SelectedElementControls } from './CommandPalette';
 
 export type SelectedAccordionState = {
   shape: boolean;
+  table: boolean;
   layer: boolean;
   text: boolean;
   colours: boolean;
@@ -64,6 +65,7 @@ export type SelectedAccordionState = {
 // SelectedAccordionState without being added here.
 export const ALL_SELECTED_ACCORDIONS_CLOSED = {
   shape: false,
+  table: false,
   layer: false,
   text: false,
   colours: false,
@@ -154,6 +156,41 @@ export function SelectedElementSection({
               />
             </div>
           ) : null}
+        </Accordion>
+      ) : null}
+
+      {selection.tableHeaderRow !== null ? (
+        <Accordion title="Table" open={open.table} onToggle={() => toggle('table')}>
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-[11px] font-medium text-slate-700 dark:text-slate-200">
+                Header row
+              </span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                Style the first row as a header.
+              </span>
+            </div>
+            <ToggleSwitch
+              checked={selection.tableHeaderRow ?? false}
+              onChange={selection.onToggleTableHeaderRow}
+              label="Header row"
+            />
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
+            <div className="flex flex-col">
+              <span className="text-[11px] font-medium text-slate-700 dark:text-slate-200">
+                Header column
+              </span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                Style the first column as a header.
+              </span>
+            </div>
+            <ToggleSwitch
+              checked={selection.tableHeaderColumn ?? false}
+              onChange={selection.onToggleTableHeaderColumn}
+              label="Header column"
+            />
+          </div>
         </Accordion>
       ) : null}
 

@@ -112,6 +112,12 @@ export type SelectedElementControls = {
   onSetBorderStroke: (value: BorderStroke) => void;
   onSetBorderStyle: (value: BorderStyle) => void;
   onSetBorderRadius: (value: BorderRadius) => void;
+  // Non-null only when a table is selected. Drive the Table
+  // accordion's header-row / header-column toggles (combinable).
+  tableHeaderRow: boolean | null;
+  tableHeaderColumn: boolean | null;
+  onToggleTableHeaderRow: () => void;
+  onToggleTableHeaderColumn: () => void;
 };
 
 export type TabSectionControls = {

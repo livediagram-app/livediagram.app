@@ -167,7 +167,10 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
               ...t,
               elements: t.elements.map((el) =>
                 ids.has(el.id) &&
-                (el.type === 'shape' || el.type === 'sticky' || el.type === 'freehand')
+                (el.type === 'shape' ||
+                  el.type === 'sticky' ||
+                  el.type === 'freehand' ||
+                  el.type === 'table')
                   ? { ...el, fillColor: color }
                   : el,
               ),
@@ -192,7 +195,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
                 (el.type === 'shape' ||
                   el.type === 'sticky' ||
                   el.type === 'arrow' ||
-                  el.type === 'freehand')
+                  el.type === 'freehand' ||
+                  el.type === 'table')
                   ? { ...el, strokeColor: color }
                   : el,
               ),
@@ -268,6 +272,26 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     commit((els) =>
       els.map((el) =>
         ids.has(el.id) && el.type === 'arrow' ? { ...el, arrowheadSize: size } : el,
+      ),
+    );
+  };
+
+  // Toggle the header row / column band on the selected table(s).
+  const setTableHeaderRowSelected = () => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'table' ? { ...el, headerRow: !el.headerRow } : el,
+      ),
+    );
+  };
+  const setTableHeaderColumnSelected = () => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'table' ? { ...el, headerColumn: !el.headerColumn } : el,
       ),
     );
   };
@@ -430,6 +454,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowThicknessSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
+    setTableHeaderRowSelected,
+    setTableHeaderColumnSelected,
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
     setShapeKindSelected,

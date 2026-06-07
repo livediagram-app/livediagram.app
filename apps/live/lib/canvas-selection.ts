@@ -210,6 +210,8 @@ export type SelectedElementFields = Pick<
   | 'borderStroke'
   | 'borderStyle'
   | 'borderRadius'
+  | 'tableHeaderRow'
+  | 'tableHeaderColumn'
 >;
 
 // Which Editor-panel control values to surface for the selected element,
@@ -279,5 +281,7 @@ export function deriveSelectedElementFields(
     borderStroke: supportsBorder(selected) && !isIcon ? (selected.strokeWidth ?? 'medium') : null,
     borderStyle: supportsBorder(selected) && !isIcon ? (selected.strokeStyle ?? 'solid') : null,
     borderRadius: supportsBorderRadius(selected) ? (selected.borderRadius ?? 'sm') : null,
+    tableHeaderRow: selected.type === 'table' ? (selected.headerRow ?? false) : null,
+    tableHeaderColumn: selected.type === 'table' ? (selected.headerColumn ?? false) : null,
   };
 }
