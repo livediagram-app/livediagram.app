@@ -11,7 +11,6 @@
 export type {
   ChangeLogEntry,
   ChangeLogKind,
-  DiagramSummary,
   Folder,
   ImageSummary,
   ShareLink,
