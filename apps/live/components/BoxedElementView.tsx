@@ -30,6 +30,7 @@ import {
 import { LockBadge, ResizeHandles, RotateHandle } from './element-parts';
 import { ImageElementView } from './ImageElementView';
 import { isSvgRenderedShape, ShapeSvgOverlay } from './shape-svg-overlay';
+import { IconGlyph } from './icon-glyph';
 import { Tooltip } from './Tooltip';
 
 type BoxedElementViewProps = {
@@ -265,7 +266,18 @@ function BoxedElementViewImpl({
         ...(isEditing ? { zIndex: 10 } : {}),
       }}
     >
-      {element.type === 'shape' && isSvgRenderedShape(element.shape) ? (
+      {element.type === 'shape' && element.shape === 'icon' ? (
+        // Curated glyph: line art tinted by the element's stroke
+        // colour. Rendered separately from ShapeSvgOverlay because it
+        // keeps aspect ratio (the catalogue art must not warp) and is
+        // data-driven by `iconId`.
+        <IconGlyph
+          iconId={element.iconId}
+          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          strokeWidth={remoteBorderColor ? 3 : 2}
+          hasLabel={(element.label ?? '').trim().length > 0}
+        />
+      ) : element.type === 'shape' && isSvgRenderedShape(element.shape) ? (
         <ShapeSvgOverlay
           shape={element.shape}
           fill={element.fillColor ?? defaultFillColor(element)}

@@ -51,6 +51,7 @@ export function EditorView() {
     addComment,
     addImage,
     addImageFromGallery,
+    addIcon,
     addShape,
     addSticky,
     addTab,
@@ -398,6 +399,7 @@ export function EditorView() {
         canUndo={canUndo && !activeTabLocked}
         canRedo={canRedo && !activeTabLocked}
         onAddShape={addShape}
+        onAddIcon={addIcon}
         onAddText={addText}
         onAddSticky={addSticky}
         onAddImage={addImage}

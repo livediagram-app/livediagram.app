@@ -217,6 +217,12 @@ export function deriveSelectedElementFields(
   selectionSupportsColours: boolean,
   selectedDefaultAlign: ReturnType<typeof defaultTextAlign> | null,
 ): SelectedElementFields {
+  // Icons are a curated line-art glyph, not a box: they hide the Shape
+  // accordion (no morph grid / aspect / padding — you pick a glyph from
+  // the Icons picker, not by morphing) and the Border accordion
+  // (strength / pattern / radius don't apply to a single-stroke mark).
+  // They keep Colours (the stroke colour tints the glyph) + Text.
+  const isIcon = selected.type === 'shape' && selected.shape === 'icon';
   return {
     textSize: isBoxed(selected) && selected.type !== 'image' ? (selected.textSize ?? 'md') : null,
     textAlignX:
@@ -261,10 +267,10 @@ export function deriveSelectedElementFields(
     arrowheadShape: selected.type === 'arrow' ? arrowheadShapeOf(selected) : null,
     arrowStyle: selected.type === 'arrow' ? arrowStyleOf(selected) : null,
     arrowStrokeStyle: selected.type === 'arrow' ? (selected.strokeStyle ?? 'solid') : null,
-    shapeKind: selected.type === 'shape' ? selected.shape : null,
+    shapeKind: selected.type === 'shape' && !isIcon ? selected.shape : null,
     aspectLocked: isBoxed(selected) ? (selected.aspectLocked ?? false) : null,
-    borderStroke: supportsBorder(selected) ? (selected.strokeWidth ?? 'medium') : null,
-    borderStyle: supportsBorder(selected) ? (selected.strokeStyle ?? 'solid') : null,
+    borderStroke: supportsBorder(selected) && !isIcon ? (selected.strokeWidth ?? 'medium') : null,
+    borderStyle: supportsBorder(selected) && !isIcon ? (selected.strokeStyle ?? 'solid') : null,
     borderRadius: supportsBorderRadius(selected) ? (selected.borderRadius ?? 'sm') : null,
   };
 }

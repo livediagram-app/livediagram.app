@@ -124,6 +124,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onAddArrow,
     onAddImage,
     onAddShape,
+    onAddIcon,
     onAddSticky,
     onAddText,
     onBeginFreehand,
@@ -705,6 +706,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           onMoveTo={onMovePalette}
           onReset={onResetPalette}
           onAddShape={onAddShape}
+          onAddIcon={onAddIcon}
           onAddText={onAddText}
           onAddSticky={onAddSticky}
           onAddImage={onAddImage}

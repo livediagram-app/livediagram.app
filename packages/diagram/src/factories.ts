@@ -52,6 +52,9 @@ const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: number }> =
   laptop: { width: 240, height: 150 },
   phone: { width: 90, height: 170 },
   tablet: { width: 140, height: 180 },
+  // Curated glyph. Square + aspect-locked on create (set in
+  // createShape) so the line art never distorts; the label sits below.
+  icon: { width: 88, height: 88 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -71,6 +74,11 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // inside a box. Lock the aspect ratio so resizing never warps the
   // stickman, and default the label to the bottom band.
   if (kind === 'actor') {
+    return { ...base, aspectLocked: true, textAlignY: 'bottom' };
+  }
+  // Icons: aspect-locked so the glyph never warps, label sits beneath
+  // the glyph (the icon fills the box, text below reads as a caption).
+  if (kind === 'icon') {
     return { ...base, aspectLocked: true, textAlignY: 'bottom' };
   }
   return base;

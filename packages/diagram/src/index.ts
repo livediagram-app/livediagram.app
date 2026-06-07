@@ -66,12 +66,25 @@ export type ShapeKind =
   | 'monitor'
   | 'laptop'
   | 'phone'
-  | 'tablet';
+  | 'tablet'
+  // Curated single-colour glyph from the icon catalogue. Which glyph
+  // is carried by `iconId` (a registry key resolved in the live app's
+  // icon catalogue, NOT a closed enum here, so adding icons is a
+  // one-file change with no model migration). Tinted by `strokeColor`
+  // like a line drawing; keeps aspect ratio when resized. See spec/09
+  // "Icons" accordion.
+  | 'icon';
 
 export type ShapeElement = {
   id: ElementId;
   type: 'shape';
   shape: ShapeKind;
+  // Registry key for the glyph when `shape === 'icon'` (e.g. 'server',
+  // 'database', 'user'). Ignored for every other shape kind. The valid
+  // keys + their SVG live in the live app's icon catalogue; an unknown
+  // key falls back to a placeholder glyph so a diagram authored against
+  // a newer catalogue still renders.
+  iconId?: string;
   x: number;
   y: number;
   width: number;

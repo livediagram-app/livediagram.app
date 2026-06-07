@@ -661,6 +661,10 @@ const SHAPE_LABEL: Record<ShapeKind, string> = {
   laptop: 'Laptop',
   phone: 'Phone',
   tablet: 'Tablet',
+  // Not offered in the morph grid (an icon needs a chosen glyph, added
+  // via the Icons picker); present here only so the label map stays
+  // exhaustive over ShapeKind.
+  icon: 'Icon',
 };
 
 // Border-accordion labels + glyphs. Three rows: stroke strength,

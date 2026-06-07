@@ -78,6 +78,7 @@ export type CanvasProps = {
   canUndo: boolean;
   canRedo: boolean;
   onAddShape: (kind: ShapeKind) => void;
+  onAddIcon: (iconId: string) => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Spawn an empty image placeholder + open the picker. Optional so

@@ -55,6 +55,17 @@ export function useElementCreation(opts: {
     track('Element', 'Added', titleCaseType(kind));
   };
 
+  // Curated icon glyph. Unlike addShape it drops straight at the
+  // viewport centre (no draw-to-size: an icon is a fixed-aspect glyph,
+  // not a box you size by dragging) and carries the chosen iconId.
+  const addIcon = (iconId: string) => {
+    if (editsBlocked) return;
+    addBoxed((x, y) => ({ ...createShape('icon', x, y), iconId }));
+    // `type` stays the shape kind ('Icon'), never the specific iconId,
+    // to keep telemetry free of anything resembling user content.
+    track('Element', 'Added', titleCaseType('icon'));
+  };
+
   const addText = () => {
     if (editsBlocked) return;
     if (beginDrawIfEnabled({ type: 'text' })) return;
@@ -112,5 +123,5 @@ export function useElementCreation(opts: {
     setEditingId(el.id);
   };
 
-  return { addShape, addText, addSticky, addArrow, handleCanvasDoubleClick };
+  return { addShape, addIcon, addText, addSticky, addArrow, handleCanvasDoubleClick };
 }

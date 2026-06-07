@@ -118,7 +118,7 @@ Each boxed element can have its **aspect ratio locked**. Stored as `aspectLocked
 When **nothing is selected**, the Selected Element section is replaced by a **Current Tab** section. Accordions, top to bottom:
 
 - **Theme** — a 3-column grid of preset themes. Picking a theme writes `theme: ThemeId` onto the tab AND replaces the tab's `backgroundColor`, `backgroundPattern`, and `patternColor` with the theme's values. From that point on, newly added boxed elements inherit the theme's `elementFill / elementStroke / elementText` colours (sticky notes keep their amber identity regardless). Existing elements are **not** retroactively recoloured — the user can re-apply colours per-element via the Selected Element → Colours accordion. The theme catalogue (`apps/live/lib/themes.ts`) ships **12 default themes** (Brand, Slate, Forest, Sunset, Lavender, Mono, Ocean, Crimson, Midnight, Cream, Rose, Sand) plus **6 extras behind a "Show more themes" toggle** (Olive, Indigo, Pine, Steel, Mocha, Charcoal). The opt-in is descriptor-driven (`extra?: boolean` on each entry), so adding more is one line in the catalogue with no UI plumbing. The same toggle ships in the welcome / template picker's theme grid. The toggle auto-expands when the active themeId is an extra so the user always sees the active swatch.
-- **Canvas** — per-tab background controls. Twelve pattern choices total: six defaults (Grid, Blank, Lines, Graph, Crosshatch, Confetti) plus six behind a "Show more patterns" toggle (Stripes, Diagonal, Waves, Bricks, Plus, Stars). Patterns store as `backgroundPattern?: BackgroundPattern`. When the user pans, the gradient-based pattern phase tracks the pan offset so the pattern tiles indefinitely. Confetti renders a fixed multi-colour scatter and ignores the pattern colour; Plus, Stars, and Waves render via inline `data:image/svg+xml` and pick up the active pattern colour. Plus Canvas + Pattern colour pickers and an Opacity slider.
+- **Canvas** — per-tab background controls. Fourteen pattern choices total, laid out in a 4-column grid of equal-width buttons: six defaults (Grid, Blank, Lines, Graph, Crosshatch, Confetti) plus eight behind a "Show more patterns" toggle (Stripes, Diagonal, Waves, Bricks, Isometric, Triangular, Hexagonal, Engineering). Patterns store as `backgroundPattern?: BackgroundPattern`. When the user pans, the pattern phase tracks the pan offset so the pattern tiles indefinitely. Axis-aligned line grids (Lines, Stripes, Graph, Engineering) are built from tiled `linear-gradient`s with an explicit `background-size` so lines stay crisp and never double; diagonal grids (Crosshatch, Diagonal, Isometric, Triangular) and Hexagonal render via inline `data:image/svg+xml` tiles that rasterize once and repeat seamlessly. Confetti renders a fixed multi-colour scatter and ignores the pattern colour; the SVG and Waves patterns pick up the active pattern colour. Plus Canvas + Pattern colour pickers and an Opacity slider.
 - **Content** — destructive operations on the tab's contents (today: a single "Remove all content" button, disabled when there's nothing to clear).
 - **Cleanup** — tidiness operations on the tab's existing content. Today: a single "Auto align" button that snaps every boxed element's position (x / y) and dimensions (width / height) to the nearest 10 px (the canvas's grid unit), so almost-aligned shapes become exactly aligned and minor dimension drift collapses. Aspect-locked shapes (circle, diamond, actor) stay square / proportional by snapping the larger axis and matching the other to it. Free-endpoint arrows snap their endpoints to the same grid; pinned arrow endpoints stay attached to their anchored elements (which themselves get snapped). Width / height never go below `MIN_SIZE`. The operation is one undoable commit and emits an Activity-log entry so the user can revert it like any other edit. Disabled when the tab has no boxed elements.
 
@@ -196,6 +196,8 @@ The palette is laid out top-to-bottom as: canvas-tool toggle (Pan / Select / Las
 - **Laptop** — adds a 240×150 laptop (screen + keyboard base).
 - **Phone** — adds a 90×170 phone (tall portrait with rounded corners).
 - **Tablet** — adds a 140×180 tablet (medium portrait with rounded corners).
+
+**Icons** accordion (curated single-colour glyphs). A search box filters a scrollable grid of line icons (tech / cloud / UI / people: server, database, cloud, user, lock, globe, ...). Clicking one drops an `icon` shape (88×88, aspect-locked) at the viewport centre carrying the chosen `iconId`. Icons are line art tinted by the element's **stroke colour** (Colours accordion), with a constant on-screen line weight (non-scaling stroke) so they stay crisp at any size; the label sits in a band beneath the glyph. The glyph catalogue (id + label + keywords + SVG primitives) lives in `apps/live/lib/icons.ts`; `iconId` is a plain string in the model (not a closed enum), so adding an icon is a one-file change and an unknown id renders a placeholder glyph. The **Shape** accordion (morph grid / aspect / padding) and the **Border** accordion (strength / pattern / radius) are both hidden for a selected icon: an icon is a glyph you pick from the Icons picker, not a box you morph or border. Icons keep the Colours + Text accordions. Icons drop at the centre rather than via draw-to-size (a glyph is a fixed-aspect mark, not a box you size by dragging).
 
 **Tools** accordion (other element kinds):
 
@@ -378,12 +380,19 @@ type ShapeKind =
   | 'monitor'
   | 'laptop'
   | 'phone'
-  | 'tablet';
+  | 'tablet'
+  // Curated single-colour glyph; the chosen glyph is carried by
+  // `iconId`. See spec/09 "Icons" accordion.
+  | 'icon';
 
 type Element = {
   id: ElementId;
   type: 'shape'; // discriminator: future 'edge', 'group', etc.
   shape: ShapeKind;
+  // Catalogue key when shape === 'icon' (e.g. 'server'); ignored
+  // otherwise. A plain string, not a closed enum, so the icon set
+  // grows without a model migration (apps/live/lib/icons.ts).
+  iconId?: string;
   x: number;
   y: number;
   width: number;
