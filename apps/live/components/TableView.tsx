@@ -6,6 +6,8 @@ import {
   defaultTextColor,
   PADDING_PX,
   clearCellStyle,
+  moveTableColumn,
+  moveTableRow,
   pasteIntoTable,
   removeTableColumn,
   removeTableRow,
