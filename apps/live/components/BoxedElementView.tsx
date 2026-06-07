@@ -814,7 +814,9 @@ function describeVariant(
         ? multiRing
         : isSelected
           ? 'ring-2 ring-brand-300 ring-offset-2 ring-offset-white'
-          : 'ring-1 ring-dashed ring-slate-300';
+          : // Unselected text has no border / outline — it reads as plain
+            // text on the canvas; the selection ring only appears on select.
+            '';
       return {
         className: `text-slate-800 rounded-sm ${ring}`,
         // Text elements have no real border; render the remote-selector
