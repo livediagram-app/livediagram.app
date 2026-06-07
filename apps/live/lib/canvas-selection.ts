@@ -287,8 +287,14 @@ export function deriveSelectedElementFields(
     arrowStrokeStyle: selected.type === 'arrow' ? (selected.strokeStyle ?? 'solid') : null,
     shapeKind: selected.type === 'shape' && !isIcon ? selected.shape : null,
     aspectLocked: isBoxed(selected) ? (selected.aspectLocked ?? false) : null,
-    borderStroke: supportsBorder(selected) && !isIcon ? (selected.strokeWidth ?? 'medium') : null,
-    borderStyle: supportsBorder(selected) && !isIcon ? (selected.strokeStyle ?? 'solid') : null,
+    borderStroke:
+      (supportsBorder(selected) || selected.type === 'table') && !isIcon
+        ? (selected.strokeWidth ?? (selected.type === 'table' ? 'thin' : 'medium'))
+        : null,
+    borderStyle:
+      (supportsBorder(selected) || selected.type === 'table') && !isIcon
+        ? (selected.strokeStyle ?? 'solid')
+        : null,
     borderRadius: supportsBorderRadius(selected) ? (selected.borderRadius ?? 'sm') : null,
     tableHeaderRow: selected.type === 'table' ? (selected.headerRow ?? false) : null,
     tableHeaderColumn: selected.type === 'table' ? (selected.headerColumn ?? false) : null,

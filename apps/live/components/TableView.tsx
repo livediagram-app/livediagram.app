@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   addTableColumn,
   addTableRow,
+  BORDER_STROKE_PX,
   defaultStrokeColor,
   defaultTextColor,
   PADDING_PX,
@@ -300,6 +301,11 @@ export function TableView({
 
   const stroke = element.strokeColor ?? defaultStrokeColor(element);
   const textColor = element.textColor ?? defaultTextColor(element);
+  // Grid line width + pattern from the Border accordion (default thin
+  // solid). 'none' (0px) hides the grid lines entirely.
+  const borderW = BORDER_STROKE_PX[element.strokeWidth ?? 'thin'];
+  const gridBorder =
+    borderW > 0 ? `${borderW}px ${element.strokeStyle ?? 'solid'} ${stroke}` : undefined;
   // 'scale' fits the text to the table: font tracks the row height so
   // it grows / shrinks as the table is resized. Fixed presets use a
   // constant px.
@@ -472,7 +478,7 @@ export function TableView({
         style={{
           gridTemplateColumns: colTemplate,
           gridTemplateRows: rowTemplate,
-          border: `1px solid ${stroke}`,
+          border: gridBorder,
           color: textColor,
         }}
       >
@@ -516,8 +522,8 @@ export function TableView({
                 className="min-w-0 overflow-hidden"
                 style={{
                   padding: cellPad,
-                  borderRight: c < cols - 1 ? `1px solid ${stroke}` : undefined,
-                  borderBottom: r < rows - 1 ? `1px solid ${stroke}` : undefined,
+                  borderRight: c < cols - 1 ? gridBorder : undefined,
+                  borderBottom: r < rows - 1 ? gridBorder : undefined,
                   backgroundColor:
                     cs?.bg ??
                     (isHeader ? headerFill : (zebraBg ?? element.fillColor ?? 'transparent')),

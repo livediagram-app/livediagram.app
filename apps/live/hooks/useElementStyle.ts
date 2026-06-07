@@ -402,7 +402,9 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     if (!selectedId) return;
     commit((els) =>
       els.map((el) =>
-        el.id === selectedId && supportsBorder(el) ? { ...el, strokeWidth: value } : el,
+        el.id === selectedId && (supportsBorder(el) || el.type === 'table')
+          ? { ...el, strokeWidth: value }
+          : el,
       ),
     );
   };
@@ -410,7 +412,9 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     if (!selectedId) return;
     commit((els) =>
       els.map((el) =>
-        el.id === selectedId && supportsBorder(el) ? { ...el, strokeStyle: value } : el,
+        el.id === selectedId && (supportsBorder(el) || el.type === 'table')
+          ? { ...el, strokeStyle: value }
+          : el,
       ),
     );
   };
