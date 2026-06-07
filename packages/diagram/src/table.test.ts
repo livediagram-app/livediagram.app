@@ -5,6 +5,8 @@ import {
   addTableRow,
   normalizeTable,
   clearCellStyle,
+  moveTableColumn,
+  moveTableRow,
   pasteIntoTable,
   removeTableColumn,
   removeTableRow,
@@ -135,5 +137,18 @@ describe('cell styles', () => {
     // the styled cell shifted from col 2 to col 3
     expect(next.cellStyles![0]![3]).toEqual({ bg: '#00ff00' });
     expect(next.cellStyles![0]![0]).toBeNull();
+  });
+});
+
+describe('reorder', () => {
+  it('moves a column carrying its cells', () => {
+    const next = moveTableColumn(setTableCell(t(), 0, 0, 'A'), 0, 2);
+    expect(next.cells[0]![2]).toBe('A');
+    expect(next.cells[0]![0]).toBe('');
+  });
+
+  it('moves a row carrying its cells', () => {
+    const next = moveTableRow(setTableCell(t(), 0, 1, 'top'), 0, 2);
+    expect(next.cells[2]![1]).toBe('top');
   });
 });
