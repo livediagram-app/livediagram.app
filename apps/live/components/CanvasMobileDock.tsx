@@ -37,7 +37,7 @@ export function CanvasMobileDock({
             id: 'explorer',
             label: 'Explorer',
             icon: (
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+              <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
                 <path
                   d="M2 3.5C2 2.67 2.67 2 3.5 2h2.25l1.5 1.5H10.5c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5h-7C2.67 11.5 2 10.83 2 10V3.5z"
                   stroke="currentColor"
@@ -53,7 +53,7 @@ export function CanvasMobileDock({
                   id: 'palette' as const,
                   label: 'Palette',
                   icon: (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
                       <rect
                         x="2"
                         y="2"
@@ -94,7 +94,7 @@ export function CanvasMobileDock({
                   id: 'editor' as const,
                   label: 'Editor',
                   icon: (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
                       <path
                         d="M2 10.5V12h1.5l5-5-1.5-1.5-5 5zM10.8 3.7a1 1 0 0 0 0-1.4l-.1-.1a1 1 0 0 0-1.4 0L8 3.5 9.5 5l1.3-1.3z"
                         stroke="currentColor"
@@ -112,7 +112,7 @@ export function CanvasMobileDock({
                   id: 'ai' as const,
                   label: 'AI',
                   icon: (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
                       <path
                         d="M7 2v1.5M7 10.5V12M2 7h1.5M10.5 7H12M3.8 3.8l1 1M9.2 9.2l1 1M3.8 10.2l1-1M9.2 4.8l1-1"
                         stroke="currentColor"
@@ -139,7 +139,7 @@ export function CanvasMobileDock({
           type="button"
           onClick={() => onDockButtonClick(btn.id)}
           className={
-            'flex flex-1 flex-col items-center gap-0.5 px-2.5 py-1.5 text-[9px] font-semibold tracking-wide transition ' +
+            'flex min-w-[3.25rem] flex-1 flex-col items-center gap-1 px-3.5 py-2.5 text-[10px] font-semibold tracking-wide transition ' +
             (i === 0 ? 'rounded-l-lg ' : '') +
             (i === arr.length - 1 ? 'rounded-r-lg ' : '') +
             (i > 0 ? 'border-l border-slate-200 dark:border-slate-800 ' : '') +
