@@ -2,13 +2,9 @@
 // the denormalisation fallback live in change-log-row.ts (so the
 // pure mapper has its own test surface); D1 queries here use them.
 
+import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import { rowToChangeLog, type ChangeLogRow } from '../change-log-row';
 import type { ChangeLogEntryDTO, Env } from '../types';
-
-// 200 entries is plenty to drive the Activity Panel's scrolling list
-// while keeping the response small. Older entries stay in D1 for
-// audit completeness; the V1 UI just doesn't surface them.
-const CHANGE_LOG_LIST_LIMIT = 30;
 
 // Per-diagram log read: change_log.diagram_id was dropped in
 // migration 0012 (item #14), so the filter joins through

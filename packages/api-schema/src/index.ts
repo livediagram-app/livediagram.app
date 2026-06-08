@@ -196,6 +196,14 @@ export type ChangeLogEntry = {
   createdAt: number;
 };
 
+// How many of the most recent change-log entries the Activity Panel
+// surfaces (spec/12). Shared so the server hydrate (`GET .../log` LIMIT)
+// and the client's in-session list cap can't drift apart: the panel shows
+// "the most recent N", and if the client retained more than the server
+// hydrates, a reload would silently change how much history is visible.
+// Older entries stay in D1 for audit completeness; the UI just pages to N.
+export const CHANGE_LOG_LIST_LIMIT = 30;
+
 // ---------------------------------------------------------------------
 // Realtime room messages
 // ---------------------------------------------------------------------

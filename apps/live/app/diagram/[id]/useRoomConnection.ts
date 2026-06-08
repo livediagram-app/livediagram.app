@@ -1,5 +1,6 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import type { Tab } from '@livediagram/diagram';
+import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { connectRoom, type ChangeLogEntry, type RoomHandlers } from '@/lib/api-client';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
@@ -219,11 +220,11 @@ export function useRoomConnection(opts: {
         } else if (op.kind === 'log') {
           // Remote participant just emitted an audit entry. Prepend it
           // to the local list (de-duped by id so a sender that round-
-          // trips its own op doesn't show a duplicate). Cap at 200 to
-          // match the hydrated list size.
+          // trips its own op doesn't show a duplicate). Cap at the same
+          // limit the server hydrates so the panel stays consistent.
           setChangeLog((prev) => {
             if (prev.some((e) => e.id === op.entry.id)) return prev;
-            return [op.entry, ...prev].slice(0, 200);
+            return [op.entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT);
           });
         } else if (op.kind === 'log-remove') {
           setChangeLog((prev) => prev.filter((e) => e.id !== op.entryId));

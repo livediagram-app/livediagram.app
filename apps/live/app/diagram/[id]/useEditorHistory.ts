@@ -1,5 +1,6 @@
 import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from 'react';
 import type { Element, Tab } from '@livediagram/diagram';
+import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import {
   apiAppendChangeLogEntry,
   apiDeleteChangeLogEntry,
@@ -217,7 +218,7 @@ export function useEditorHistory(opts: {
         past: [...past, next].slice(-HISTORY_LIMIT),
         future: future.slice(1),
       };
-      setChangeLog((prev) => [next, ...prev].slice(0, 200));
+      setChangeLog((prev) => [next, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
       if (diagramId) {
         // Same entry id and content — D1 ends up with the same row
         // it had before the undo. Idempotent under network retries

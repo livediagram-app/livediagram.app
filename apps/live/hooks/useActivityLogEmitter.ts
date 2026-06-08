@@ -1,7 +1,11 @@
 'use client';
 
 import type { RefObject } from 'react';
-import type { ChangeLogEntry, RoomOutgoing } from '@livediagram/api-schema';
+import {
+  CHANGE_LOG_LIST_LIMIT,
+  type ChangeLogEntry,
+  type RoomOutgoing,
+} from '@livediagram/api-schema';
 import type { Element } from '@livediagram/diagram';
 import { apiAppendChangeLogEntry } from '@/lib/api-client';
 import { diffElements } from '@/lib/change-log';
@@ -70,10 +74,9 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // broadcast + push onto the undo / redo memory stack so the
   // entry pops cleanly on undo.
   const appendLogEntry = (entry: ChangeLogEntry) => {
-    // Cap matches the hydrated list size (apiListChangeLog loads 200) so
-    // the panel doesn't visibly shrink the moment a local edit or remote
-    // op prepends an entry.
-    deps.setChangeLog((prev) => [entry, ...prev].slice(0, 200));
+    // Cap the in-session list at the same limit the server hydrates
+    // (spec/12), so the panel shows a consistent "most recent N".
+    deps.setChangeLog((prev) => [entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
     deps.entryHistoryRef.current = {
       past: [...deps.entryHistoryRef.current.past, entry].slice(-HISTORY_LIMIT),
       future: [],
