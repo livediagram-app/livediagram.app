@@ -77,7 +77,15 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
      Paste the JWKS URL when prompted.
 
-Without these set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend's ClerkProvider becomes a pass-through that renders the editor without any auth UI. Self-host without Clerk is a fully-supported path; the canvas works identically.
+4. **Recommended when Clerk is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into a Clerk account. Without it, anyone who observed a guest's id (it appears in shared-diagram DTOs / presence) could claim that guest's data at sign-up. Generate and set:
+
+   ```sh
+   openssl rand -hex 32 | pnpm --filter @livediagram/api exec wrangler secret put GUEST_ID_HMAC_SECRET
+   ```
+
+   Leaving it unset keeps the legacy unsigned migrate, which is fine for a single-user self-host (no one else to claim from). See [spec/04](../specs/04-auth-and-guest-access.md).
+
+Without the Clerk vars set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend's ClerkProvider becomes a pass-through that renders the editor without any auth UI. Self-host without Clerk is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without Clerk accounts).
 
 See [spec/04](../specs/04-auth-and-guest-access.md) for the hybrid auth model.
 
