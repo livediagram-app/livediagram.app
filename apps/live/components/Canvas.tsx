@@ -6,7 +6,13 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { defaultTextAlign, isBoxed, snapResizeBounds, supportsColours } from '@livediagram/diagram';
+import {
+  defaultTextAlign,
+  isBoxed,
+  snapResizeBounds,
+  snapToAlignment,
+  supportsColours,
+} from '@livediagram/diagram';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 import { deriveCanvasSelection, deriveSelectedElementFields } from '@/lib/canvas-selection';
@@ -407,6 +413,22 @@ export function Canvas(props: CanvasProps) {
   // reconciliation). Null when no pen drag is active.
   const [penPoints, setPenPoints] = useState<{ x: number; y: number }[] | null>(null);
 
+  // Snap a draw gesture's START point to nearby element edge / centre
+  // lines the same way the moving corner snaps: a 0×0 candidate snaps
+  // each axis independently to the nearest line within the same
+  // 6-screen-px halo, so a drawn shape's first corner — or an arrow's
+  // first endpoint — can latch onto a neighbour instead of landing a
+  // pixel off.
+  const snapDrawStart = (px: number, py: number): { x: number; y: number } => {
+    const snap = snapToAlignment(
+      { x: px, y: py, width: 0, height: 0 },
+      elements,
+      EMPTY_ID_SET,
+      6 / viewportZoom,
+    );
+    return { x: px + snap.dx, y: py + snap.dy };
+  };
+
   // Window-level move + up listeners for the draw gesture. Attached
   // only while a drag is in flight so the canvas pays nothing in the
   // common case (idle, or in pan / marquee mode). pointermove
@@ -481,6 +503,20 @@ export function Canvas(props: CanvasProps) {
         );
         endX = mode === 'se' || mode === 'ne' ? snapped.x + snapped.width : snapped.x;
         endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
+      } else {
+        // Arrow: snap the moving endpoint to nearby element edge / centre
+        // lines (a point snap) so it can latch onto a shape's edge or
+        // corner as you draw, the way the box corner does. (Per-end
+        // anchor pinning still happens via the arrow drag-handle flow
+        // after creation.)
+        const snap = snapToAlignment(
+          { x: endX, y: endY, width: 0, height: 0 },
+          elements,
+          EMPTY_ID_SET,
+          snapPx,
+        );
+        endX += snap.dx;
+        endY += snap.dy;
       }
       latest = { ...latest, currentX: endX, currentY: endY };
       setDrawDrag(latest);
@@ -619,7 +655,13 @@ export function Canvas(props: CanvasProps) {
               // release the polyline is handed to onCommitFreehand.
               setPenPoints([{ x: sx, y: sy }]);
             } else {
-              setDrawDrag({ startX: sx, startY: sy, currentX: sx, currentY: sy });
+              const start = snapDrawStart(sx, sy);
+              setDrawDrag({
+                startX: start.x,
+                startY: start.y,
+                currentX: start.x,
+                currentY: start.y,
+              });
             }
             return;
           }
@@ -721,7 +763,13 @@ export function Canvas(props: CanvasProps) {
               if (pendingDraw.type === 'freehand') {
                 setPenPoints([{ x: sx, y: sy }]);
               } else {
-                setDrawDrag({ startX: sx, startY: sy, currentX: sx, currentY: sy });
+                const start = snapDrawStart(sx, sy);
+                setDrawDrag({
+                  startX: start.x,
+                  startY: start.y,
+                  currentX: start.x,
+                  currentY: start.y,
+                });
               }
               return;
             }
