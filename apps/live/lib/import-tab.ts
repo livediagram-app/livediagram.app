@@ -1,14 +1,24 @@
 // Counterpart to export-tab.ts — parses an imported `.livediagram-
-// tab.json` envelope back into a Tab the editor can splice into the
-// current diagram. Single-format support today (the JSON envelope
-// from `exportTabAsJson`); Markdown / PNG / PDF are export-only.
-//
-// Forward-compat: the envelope carries a numeric `schemaVersion`.
-// Files at or below `TAB_SCHEMA_VERSION` are accepted; newer files
-// are refused with a clear error so the user can update the editor
-// rather than silently importing a half-understood shape. Backward
-// compat: when we bump the schema we add a `migrate(version, tab)`
-// branch here that walks old shapes forward.
+// tab.json` envelope back into a Tab. Markdown is also importable
+// (spec/27) via its own module (`markdown-import.ts`). The Import
+// dialog (spec/27) lets the user pick which format; the chosen format
+// drives the picker's file filter + which parser runs. PNG / PDF
+// remain export-only.
+
+// The result of an import attempt, surfaced back to the Import dialog:
+// 'done' (replaced the tab — close), 'cancelled' (file dialog dismissed
+// — stay open, no error), or 'error' (parse / build failed — show it).
+export type ImportOutcome =
+  | { status: 'done' }
+  | { status: 'cancelled' }
+  | { status: 'error'; error: string };
+
+// JSON forward-compat: the envelope carries a numeric `schemaVersion`.
+// Files at or below `TAB_SCHEMA_VERSION` are accepted; newer files are
+// refused with a clear error so the user can update the editor rather
+// than silently importing a half-understood shape. Backward compat:
+// when we bump the schema we add a `migrate(version, tab)` branch in
+// parseImportedTab that walks old shapes forward.
 
 import type { Tab } from '@livediagram/diagram';
 import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
@@ -57,31 +67,61 @@ export function parseImportedTab(text: string): ImportResult {
   return { ok: true, tab };
 }
 
-// Open the browser's file picker and resolve with the chosen text
-// content. Resolves to `null` when the user cancelled the dialog so
-// the caller can no-op silently. Reads as text — the only format we
-// currently import is JSON.
-export function pickTabFile(): Promise<string | null> {
+// Open the browser's file picker and resolve with the chosen file's name
+// + text content. `accept` narrows the picker to the format the user
+// chose in the Import dialog (JSON vs Markdown).
+//
+// Crucially, this ALWAYS settles — resolving `null` on cancel. Browsers
+// don't fire `change` when the file dialog is dismissed, so we detect a
+// cancel via the window regaining focus: when the dialog closes, `focus`
+// fires; if no `change` lands shortly after, it was a cancel. Without
+// this the promise hangs forever and the caller (e.g. the Import dialog)
+// is stuck "busy" with its buttons disabled.
+export function pickTabFile(
+  accept = 'application/json,.json,text/markdown,.md,.markdown,.mdown,.mkd,text/plain',
+): Promise<{ name: string; text: string } | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'application/json,.json';
+    input.accept = accept;
+
+    let settled = false;
+    // `picked` flips synchronously the instant `change` fires (before we
+    // await the file's text), so the focus-based cancel check below never
+    // misfires for a slow-reading large file.
+    let picked = false;
+    const finish = (value: { name: string; text: string } | null) => {
+      if (settled) return;
+      settled = true;
+      window.removeEventListener('focus', onFocus);
+      resolve(value);
+    };
+
+    function onFocus() {
+      window.removeEventListener('focus', onFocus);
+      // `change` (when a file WAS chosen) fires just after focus returns,
+      // so wait a beat before declaring a cancel.
+      window.setTimeout(() => {
+        if (!picked) finish(null);
+      }, 500);
+    }
+
     input.onchange = async () => {
+      picked = (input.files?.length ?? 0) > 0;
       const file = input.files?.[0] ?? null;
       if (!file) {
-        resolve(null);
+        finish(null);
         return;
       }
       try {
         const text = await file.text();
-        resolve(text);
+        finish({ name: file.name, text });
       } catch {
-        resolve(null);
+        finish(null);
       }
     };
-    // Some browsers don't fire `change` when the user cancels the
-    // dialog, so there's no clean cancel callback to wire — the
-    // caller's UI just stays in its pre-click state.
+
+    window.addEventListener('focus', onFocus);
     input.click();
   });
 }

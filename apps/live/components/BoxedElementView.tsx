@@ -117,6 +117,10 @@ type BoxedElementViewProps = {
   // element. Rendered as a small initial-badge stack at the top-left
   // (opposite the link / comment badges).
   remoteSelectors: { id: string; name: string; color: string }[];
+  // Resolved CSS font-family stack for this element's text (spec/28):
+  // its own font, else the tab's, else undefined (inherit the editor
+  // default). Applied to the label / cell text + their live editors.
+  fontFamily?: string;
 };
 
 // Wrapped in React.memo at the export below: with id-bearing
@@ -156,6 +160,7 @@ function BoxedElementViewImpl({
   badgeColor,
   tabLocked,
   readOnly,
+  fontFamily,
 }: BoxedElementViewProps) {
   const isLocked = element.locked === true || tabLocked;
   // Clockwise rotation about the element centre. `isRotated` gates the
@@ -350,6 +355,7 @@ function BoxedElementViewImpl({
                 (next) => onCommitLabel(element.id, next),
                 onCancelEdit,
                 editCursorAtEnd,
+                fontFamily,
               )
             : null}
         </>
@@ -359,6 +365,7 @@ function BoxedElementViewImpl({
           isSelected={isSelected}
           readOnly={isLocked || readOnly}
           onCommitTable={onCommitTable}
+          fontFamily={fontFamily}
         />
       ) : (
         renderLabel(
@@ -372,6 +379,7 @@ function BoxedElementViewImpl({
           (next) => onCommitLabel(element.id, next),
           onCancelEdit,
           editCursorAtEnd,
+          fontFamily,
         )
       )}
 

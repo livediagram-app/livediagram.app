@@ -1,5 +1,6 @@
 import { isBoxed } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
+import { resolveFontStack } from '@/lib/fonts';
 import { ArrowDefs, ArrowView } from './ArrowView';
 import { BoxedElementView } from './BoxedElementView';
 import { LaserOverlay } from './LaserOverlay';
@@ -45,6 +46,7 @@ export type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const {
     badgeColor,
+    editCursorAtEnd,
     editingId,
     elements,
     handleArrowSelect,
@@ -81,11 +83,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     showHandles,
     showPlus,
     showUnionResize,
+    tabFont,
     tabLocked,
     unionResizeBounds,
     unionResizePrimaryId,
     viewportZoom,
   } = props;
+  // Resolved tab default font once; per-element falls back to it (spec/28).
+  const tabFontStack = resolveFontStack(tabFont);
   return (
     <>
       {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
@@ -118,6 +123,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
                 isPaintMode={isPaintMode || isGroupMode}
                 isEditing={element.id === editingId}
+                editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
                 tabLocked={tabLocked}
                 readOnly={readOnly}
                 onSelect={handleArrowSelect}
@@ -128,6 +134,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onBeginTranslate={onBeginArrowTranslate}
                 onBeginCurveDrag={onBeginArrowCurveDrag}
                 onBeginElbowDrag={onBeginArrowElbowDrag}
+                fontFamily={tabFontStack}
               />
             </svg>
           );
@@ -142,6 +149,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             multiSelectActive={multiSelectedIds.size > 0}
             remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
             isEditing={element.id === editingId}
+            editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
             isPaintMode={isPaintMode || isGroupMode}
             showHandles={showHandles(element.id)}
             showAnchors={showAnchorsFor(element.id)}
@@ -162,6 +170,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onOpenNote={onOpenNote}
             imageContext={imageContext}
             onContextSelect={handleElementContextSelect}
+            fontFamily={resolveFontStack(element.font) ?? tabFontStack}
           />
         );
       })}

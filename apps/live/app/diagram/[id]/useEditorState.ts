@@ -171,6 +171,10 @@ export function useEditorState() {
   const [activeId, setActiveId] = useState<string>(() => initialTabs[0]!.id);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // True when the active label edit began via type-to-edit (spec/09): the
+  // editor places the caret at the END instead of select-all, so the
+  // seeded first character isn't replaced by the next keystroke.
+  const [editCursorAtEnd, setEditCursorAtEnd] = useState(false);
   const [formatSourceId, setFormatSourceId] = useState<string | null>(null);
   const [groupSourceId, setGroupSourceId] = useState<string | null>(null);
   // Drag state lives inside the useEditorDrag hook, lifted out of
@@ -1185,7 +1189,7 @@ export function useEditorState() {
   // the page below.
   const {
     addTab,
-    importTabFromFile,
+    importIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,
@@ -1324,6 +1328,7 @@ export function useEditorState() {
   // auto-align). All mutate the active tab; see useTabCanvas.
   const {
     autoAlignTab,
+    setTabFont,
     setBackgroundPattern,
     setTheme,
     resetElementsToTheme,
@@ -1445,6 +1450,7 @@ export function useEditorState() {
     sendSelectedToBack,
     setTextSizeSelected,
     setTextAlignSelected,
+    setFontSelected,
     toggleTextStyleSelected,
     setFillColorSelected,
     setStrokeColorSelected,
@@ -1530,6 +1536,7 @@ export function useEditorState() {
       setGroupSourceId,
       setSelectedId,
       setEditingId,
+      setEditCursorAtEnd,
       setMultiSelectedIds,
       setDiagramName,
     },
@@ -1760,6 +1767,7 @@ export function useEditorState() {
     duplicateMultiSelected,
     duplicateSelected,
     duplicateTab,
+    editCursorAtEnd,
     editingId,
     effectiveTemplatePickerMode,
     exitFormatPainter,
@@ -1777,7 +1785,7 @@ export function useEditorState() {
     imageContext,
     imagePickerOpenFor,
     importError,
-    importTabFromFile,
+    importIntoActiveTab,
     isOwner,
     isPinchingRef,
     isReadOnly,
@@ -1839,6 +1847,7 @@ export function useEditorState() {
     setBackgroundColor,
     setBackgroundOpacity,
     setBackgroundPattern,
+    setTabFont,
     setBorderRadiusSelected,
     setBorderStrokeSelected,
     setBorderStyleSelected,
@@ -1865,6 +1874,7 @@ export function useEditorState() {
     setSharePasswordGate,
     setShortcutsEnabled,
     setStrokeColorSelected,
+    setFontSelected,
     setTabAccordionsOpen,
     setTextAlignSelected,
     setTextColorSelected,

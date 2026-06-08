@@ -27,6 +27,12 @@ export function useSelectionEditing(opts: {
     setGroupSourceId: SetState<string | null>;
     setSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
+    // Type-to-edit (spec/09) seeds the label with the first typed char,
+    // so the editor must place the caret at the END rather than
+    // select-all (which would let the next keystroke replace the seed —
+    // the "first character gets replaced" bug). beginEdit (double-click /
+    // Space) sets this false to keep select-all-then-retype.
+    setEditCursorAtEnd: SetState<boolean>;
     setMultiSelectedIds: SetState<Set<string>>;
     setDiagramName: SetState<string>;
   };
@@ -50,6 +56,7 @@ export function useSelectionEditing(opts: {
     setGroupSourceId,
     setSelectedId,
     setEditingId,
+    setEditCursorAtEnd,
     setMultiSelectedIds,
     setDiagramName,
   } = set;
@@ -72,6 +79,8 @@ export function useSelectionEditing(opts: {
     if (formatSourceId !== null) return;
     setGroupSourceId(null);
     setSelectedId(elementId);
+    // Double-click / Space edit: select-all so a retype replaces the label.
+    setEditCursorAtEnd(false);
     setEditingId(elementId);
   };
 
@@ -148,6 +157,9 @@ export function useSelectionEditing(opts: {
     if (!labelable) return false;
     commit((els) => els.map((e) => (e.id === elementId ? { ...e, label: char } : e)));
     setSelectedId(elementId);
+    // Seeded with the first char → caret at end, NOT select-all, so the
+    // next keystroke appends instead of replacing it.
+    setEditCursorAtEnd(true);
     setEditingId(elementId);
     return true;
   };

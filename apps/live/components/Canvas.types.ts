@@ -38,6 +38,9 @@ export type CanvasProps = {
   tabBackgroundColor: string;
   tabBackgroundOpacity: number;
   tabPatternColor: string;
+  // The active tab's default font id (spec/28). Elements without their
+  // own `font` render in this; undefined = the editor default.
+  tabFont?: string;
   mainRef: Ref<HTMLElement>;
   viewportOffset: { x: number; y: number };
   setViewportOffset: (offset: { x: number; y: number }) => void;
@@ -80,6 +83,10 @@ export type CanvasProps = {
   onGroupMultiSelected: () => void;
   onToggleLockMultiSelected: () => void;
   editingId: string | null;
+  // True when the active label edit began via type-to-edit (spec/09):
+  // the editor places the caret at the end instead of select-all so the
+  // seeded first character isn't replaced by the next keystroke.
+  editCursorAtEnd?: boolean;
   formatSourceId: string | null;
   groupSourceId: string | null;
   palettePosition: { x: number; y: number } | null;
@@ -267,6 +274,7 @@ export type CanvasProps = {
   onToggleTextItalic: () => void;
   onToggleTextUnderline: () => void;
   onToggleTextStrikethrough: () => void;
+  onSetFont: (font: string | null) => void;
   onSetFillColor: (color: string) => void;
   onSetStrokeColor: (color: string) => void;
   onSetTextColor: (color: string) => void;
@@ -335,6 +343,8 @@ export type CanvasProps = {
   onSetBackgroundColor: (color: string) => void;
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetTheme: (id: import('@/lib/themes').ThemeId) => void;
+  // Set the active tab's default font (spec/28); null clears it.
+  onSetTabFont: (font: string | null) => void;
   onResetElementsToTheme: () => void;
   // File I/O for the current tab — moved here so the Current Tab
   // section (right-hand inspector) houses them next to theme +

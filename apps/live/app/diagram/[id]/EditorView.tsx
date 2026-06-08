@@ -24,6 +24,9 @@ const CommentThreadPopover = dynamic(() =>
 const ExportTabDialog = dynamic(() =>
   import('@/components/ExportTabDialog').then((m) => m.ExportTabDialog),
 );
+const ImportTabDialog = dynamic(() =>
+  import('@/components/ImportTabDialog').then((m) => m.ImportTabDialog),
+);
 const ShareDialog = dynamic(() => import('@/components/ShareDialog').then((m) => m.ShareDialog));
 const NotePopover = dynamic(() => import('@/components/NotePopover').then((m) => m.NotePopover));
 const SearchPanel = dynamic(() => import('@/components/SearchPanel').then((m) => m.SearchPanel));
@@ -129,6 +132,7 @@ export function EditorView() {
     duplicateMultiSelected,
     duplicateSelected,
     duplicateTab,
+    editCursorAtEnd,
     editingId,
     editorExpandSignal,
     effectiveTemplatePickerMode,
@@ -149,7 +153,9 @@ export function EditorView() {
     imageContext,
     imagePickerOpenFor,
     importError,
-    importTabFromFile,
+    importIntoActiveTab,
+    importOpen,
+    setImportOpen,
     isOwner,
     isPinchingRef,
     isReadOnly,
@@ -249,8 +255,10 @@ export function EditorView() {
     setStrokeColorSelected,
     setTabAccordionsOpen,
     setTextAlignSelected,
+    setFontSelected,
     setTextColorSelected,
     setTextSizeSelected,
+    setTabFont,
     setTheme,
     settingsOpen,
     setUserPreferences,
@@ -336,6 +344,13 @@ export function EditorView() {
           onClose={() => setExportOpen(false)}
         />
       ) : null}
+      {importOpen ? (
+        <ImportTabDialog
+          tabName={activeTab.name}
+          onImport={importIntoActiveTab}
+          onClose={() => setImportOpen(false)}
+        />
+      ) : null}
       {shareDialogOpen ? (
         <ShareDialog
           participant={selfParticipant}
@@ -388,6 +403,7 @@ export function EditorView() {
         tabBackgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}
         tabBackgroundOpacity={activeTab.backgroundOpacity ?? 1}
         tabPatternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
+        tabFont={activeTab.font}
         mainRef={canvasMainRef}
         isPinchingRef={isPinchingRef}
         viewportZoom={viewportZoom}
@@ -424,6 +440,7 @@ export function EditorView() {
         onGroupMultiSelected={groupMultiSelected}
         onToggleLockMultiSelected={toggleLockMultiSelected}
         editingId={editingId}
+        editCursorAtEnd={editCursorAtEnd}
         formatSourceId={formatSourceId}
         groupSourceId={groupSourceId}
         palettePosition={palettePosition}
@@ -565,6 +582,7 @@ export function EditorView() {
         onToggleTextItalic={() => toggleTextStyleSelected('textItalic')}
         onToggleTextUnderline={() => toggleTextStyleSelected('textUnderline')}
         onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
+        onSetFont={setFontSelected}
         onSetFillColor={setFillColorSelected}
         onSetStrokeColor={setStrokeColorSelected}
         onSetTextColor={setTextColorSelected}
@@ -623,6 +641,7 @@ export function EditorView() {
         onOpenTemplatePicker={openTemplatePicker}
         tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
         onSetTheme={setTheme}
+        onSetTabFont={setTabFont}
         onResetElementsToTheme={resetElementsToTheme}
         importError={importError}
         onAutoAlign={hydrated && !anyWelcomeOpen && !isReadOnly ? autoAlignTab : undefined}
@@ -680,7 +699,7 @@ export function EditorView() {
           onDuplicate={duplicateTab}
           onDelete={deleteTab}
           onClearContent={clearTabContent}
-          onImportTab={() => void importTabFromFile()}
+          onImportTab={() => setImportOpen(true)}
           onExportTab={() => setExportOpen(true)}
           otherDiagrams={diagramList.filter((d) => d.id !== diagramId)}
           onCopyTabTo={linkActiveTabTo}

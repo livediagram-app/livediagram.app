@@ -67,6 +67,10 @@ type ArrowViewProps = {
   // handle lets the user drag the bend to a new position. Fires
   // only when the arrow is angled and the user grabs the elbow.
   onBeginElbowDrag?: (id: string, e: ReactPointerEvent) => void;
+  // Resolved CSS font-family for the arrow's label (spec/28). Arrows
+  // have no per-element font, so this is the tab default; undefined =
+  // the editor default.
+  fontFamily?: string;
 };
 
 const BRAND_600 = 'rgb(2 132 199)';
@@ -94,6 +98,7 @@ function ArrowViewImpl({
   onBeginTranslate,
   onBeginCurveDrag,
   onBeginElbowDrag,
+  fontFamily,
 }: ArrowViewProps) {
   const isLocked = arrow.locked === true || tabLocked;
   const from = endpointPosition(arrow.from, elements);
@@ -228,6 +233,7 @@ function ArrowViewImpl({
           color={baseStroke}
           isEditing={isEditing}
           cursorAtEnd={editCursorAtEnd}
+          fontFamily={fontFamily}
           onCommit={(next) => onCommitLabel(arrow.id, next)}
           onCancel={onCancelEdit}
         />
@@ -436,6 +442,8 @@ type ArrowLabelProps = {
   isEditing: boolean;
   // Caret at end instead of select-all on focus (type-to-edit, spec/09).
   cursorAtEnd?: boolean;
+  // Resolved CSS font-family for the label text + editor (spec/28).
+  fontFamily?: string;
   onCommit: (label: string) => void;
   onCancel: () => void;
 };
@@ -452,6 +460,7 @@ function ArrowLabel({
   color,
   isEditing,
   cursorAtEnd = false,
+  fontFamily,
   onCommit,
   onCancel,
 }: ArrowLabelProps) {
@@ -497,6 +506,7 @@ function ArrowLabel({
             }
             e.stopPropagation();
           }}
+          style={{ fontFamily }}
           className="h-full w-full rounded bg-white px-1 text-center text-xs text-slate-800 shadow-sm outline-none ring-2 ring-sky-400"
         />
       </foreignObject>
@@ -521,7 +531,7 @@ function ArrowLabel({
         dominantBaseline="central"
         fontSize={12}
         fill={color}
-        style={{ pointerEvents: 'none', userSelect: 'none' }}
+        style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
       >
         {text}
       </text>

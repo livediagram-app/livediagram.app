@@ -105,6 +105,12 @@ export type ShapeElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
+  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Unset = inherit the tab's font (Tab.font), which itself falls back to
+  // the editor default. Stored as a stable id and mapped to a CSS stack
+  // at render time so saved diagrams round-trip independent of the
+  // catalogue's exact font stacks.
+  font?: string;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
@@ -207,6 +213,12 @@ export type TextElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
+  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Unset = inherit the tab's font (Tab.font), which itself falls back to
+  // the editor default. Stored as a stable id and mapped to a CSS stack
+  // at render time so saved diagrams round-trip independent of the
+  // catalogue's exact font stacks.
+  font?: string;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
@@ -296,6 +308,12 @@ export type TableElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
+  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Unset = inherit the tab's font (Tab.font), which itself falls back to
+  // the editor default. Stored as a stable id and mapped to a CSS stack
+  // at render time so saved diagrams round-trip independent of the
+  // catalogue's exact font stacks.
+  font?: string;
   // fillColor tints the cell background; strokeColor draws the grid
   // lines + border; textColor is the cell text.
   fillColor?: string;
@@ -335,6 +353,12 @@ export type StickyElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
+  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Unset = inherit the tab's font (Tab.font), which itself falls back to
+  // the editor default. Stored as a stable id and mapped to a CSS stack
+  // at render time so saved diagrams round-trip independent of the
+  // catalogue's exact font stacks.
+  font?: string;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
@@ -402,6 +426,12 @@ export type ImageElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
+  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Unset = inherit the tab's font (Tab.font), which itself falls back to
+  // the editor default. Stored as a stable id and mapped to a CSS stack
+  // at render time so saved diagrams round-trip independent of the
+  // catalogue's exact font stacks.
+  font?: string;
   textColor?: string;
   fillColor?: string;
   strokeColor?: string;
@@ -460,6 +490,12 @@ export type FreehandElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
+  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Unset = inherit the tab's font (Tab.font), which itself falls back to
+  // the editor default. Stored as a stable id and mapped to a CSS stack
+  // at render time so saved diagrams round-trip independent of the
+  // catalogue's exact font stacks.
+  font?: string;
   textColor?: string;
   fillColor?: string;
   strokeColor?: string;
@@ -692,6 +728,11 @@ export type Tab = {
   // elements inherit the same theme colours by default. Unset = brand
   // defaults.
   theme?: string;
+  // Default font-family id for this tab (see apps/live/lib/fonts.ts).
+  // Every text-bearing element without its own `font` renders in this
+  // one; unset = the editor default. Lets a whole tab adopt a font in
+  // one move while individual elements can still override.
+  font?: string;
   // Set to true once the user has explicitly chosen a starting template
   // (including "Blank"), so the template picker doesn't reappear on this tab.
   templateChosen?: boolean;

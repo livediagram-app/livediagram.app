@@ -59,6 +59,11 @@ export type SelectedElementControls = {
   onToggleTextItalic: () => void;
   onToggleTextUnderline: () => void;
   onToggleTextStrikethrough: () => void;
+  // Font (spec/28): the element's font id, `null` when it uses the tab
+  // default / has no text. `onSetFont(null)` clears the override so the
+  // element falls back to the tab's font.
+  font: string | null;
+  onSetFont: (font: string | null) => void;
   // Whether the selected element currently has non-empty label text.
   // The Text accordion is hidden entirely when false: size / style /
   // alignment / padding only matter once the element has a label, and
@@ -133,6 +138,10 @@ export type TabSectionControls = {
   backgroundColor: string;
   patternColor: string;
   themeId: ThemeId;
+  // Tab default font id (spec/28), or null for the editor default.
+  // `onSetTabFont(null)` clears it.
+  font: string | null;
+  onSetTabFont: (font: string | null) => void;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
   onSetBackgroundColor: (color: string) => void;
   backgroundOpacity: number;

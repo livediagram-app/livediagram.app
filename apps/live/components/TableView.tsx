@@ -195,10 +195,14 @@ export function TableView({
   isSelected,
   readOnly,
   onCommitTable,
+  fontFamily,
 }: {
   element: TableElement;
   isSelected: boolean;
   readOnly: boolean;
+  // Resolved CSS font-family for the table's text (spec/28). Set on the
+  // grid root so every cell + the cell editor inherit it.
+  fontFamily?: string;
   // One combined commit for every table field. Structural ops touch
   // `cells` plus the parallel colWidths / rowHeights / cellStyles arrays;
   // committing them together (not as separate commits off a stale base)
@@ -515,6 +519,7 @@ export function TableView({
           gridTemplateRows: rowTemplate,
           border: gridBorder,
           color: textColor,
+          fontFamily,
         }}
       >
         {element.cells.map((row, r) => (

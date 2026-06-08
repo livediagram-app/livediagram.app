@@ -17,7 +17,7 @@
 
 import { type Element, type Tab } from '@livediagram/diagram';
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
-import { parseImportedTab, pickTabFile } from '@/lib/import-tab';
+import { parseImportedTab, pickTabFile, type ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/useConfirm';
 import type { useToast } from '@/hooks/useToast';
@@ -117,31 +117,16 @@ export function useTabActions(deps: TabActionsDeps) {
     setTemplatePickerMode('templates');
   };
 
-  // Import a tab from a `.livediagram-tab.json` file the user picks.
-  // Tab id + nested element ids are re-minted client-side so the
-  // imported tab can never collide with an existing one. Schema
-  // mismatches surface via setImportError which the header button
-  // renders in-place.
-  const importTabFromFile = async () => {
-    const text = await pickTabFile();
-    if (!text) return;
-    const result = parseImportedTab(text);
-    if (!result.ok) {
-      setImportError(result.error);
-      return;
-    }
-    setImportError(null);
-    // Re-mint ids so the imported tab can't collide. Pinned arrows
-    // need their element references rewritten to the new ids — walk
-    // boxed elements first, build an old→new id map, then rewrite
-    // arrow endpoints.
+  // Re-mint element ids (and remap pinned-arrow endpoints) so imported
+  // elements can't collide with anything already on the diagram.
+  const remintElementIds = (elements: Element[]): Element[] => {
     const idMap = new Map<string, string>();
-    const newElements = result.tab.elements.map((el) => {
-      const newId = crypto.randomUUID();
-      idMap.set(el.id, newId);
-      return { ...el, id: newId };
+    const next = elements.map((el) => {
+      const id = crypto.randomUUID();
+      idMap.set(el.id, id);
+      return { ...el, id };
     });
-    for (const el of newElements) {
+    for (const el of next) {
       if (el.type === 'arrow') {
         if (el.from.kind === 'pinned') {
           const mapped = idMap.get(el.from.elementId);
@@ -153,19 +138,73 @@ export function useTabActions(deps: TabActionsDeps) {
         }
       }
     }
-    const newTab: Tab = {
-      ...result.tab,
-      id: crypto.randomUUID(),
-      elements: newElements,
-    };
-    commitTabs((ts) => [...ts, newTab]);
-    markTabLoaded(newTab.id);
-    setActiveId(newTab.id);
+    return next;
+  };
+
+  // Replace the ACTIVE tab's content with an imported tab — its
+  // elements + theme/background, keeping the tab's own id and name.
+  // Goes through `commitTabs` so the whole replace is a single undo
+  // step (the warning in the Import dialog promises this). Selection /
+  // edit state is cleared so nothing dangles over the new content.
+  const replaceActiveTabContent = (imported: Tab) => {
+    setImportError(null);
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId
+          ? {
+              ...t,
+              elements: imported.elements,
+              theme: imported.theme ?? t.theme,
+              backgroundColor: imported.backgroundColor ?? t.backgroundColor,
+              backgroundPattern: imported.backgroundPattern ?? t.backgroundPattern,
+              backgroundOpacity: imported.backgroundOpacity ?? t.backgroundOpacity,
+              patternColor: imported.patternColor ?? t.patternColor,
+              templateChosen: true,
+            }
+          : t,
+      ),
+    );
     setSelectedId(null);
     setEditingId(null);
     setFormatSourceId(null);
     setGroupSourceId(null);
+  };
+
+  // Import a file INTO the active tab, replacing its contents (spec/27).
+  // The Import dialog passes the user's chosen format, which drives both
+  // the file-picker filter and the parser. Returns an outcome the dialog
+  // renders (close / stay / show error) rather than throwing.
+  const importIntoActiveTab = async (format: 'json' | 'markdown'): Promise<ImportOutcome> => {
+    const active = tabs.find((t) => t.id === activeId);
+    if (active?.locked) {
+      return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
+    }
+    const accept =
+      format === 'markdown'
+        ? 'text/markdown,.md,.markdown,.mdown,.mkd,text/plain'
+        : '.json,application/json';
+    const picked = await pickTabFile(accept);
+    if (!picked) return { status: 'cancelled' };
+
+    if (format === 'markdown') {
+      // Lazy-load the parser so its ~300 lines stay out of the editor's
+      // initial bundle (same rationale as the template builders).
+      const { buildTabFromMarkdown } = await import('@/lib/markdown-import');
+      const result = buildTabFromMarkdown(picked.text, {
+        tabName: active?.name,
+        themeId: active?.theme,
+      });
+      if (!result.ok) return { status: 'error', error: result.error };
+      replaceActiveTabContent(result.tab);
+      track('Tab', 'Imported', 'Markdown');
+      return { status: 'done' };
+    }
+
+    const result = parseImportedTab(picked.text);
+    if (!result.ok) return { status: 'error', error: result.error };
+    replaceActiveTabContent({ ...result.tab, elements: remintElementIds(result.tab.elements) });
     track('Tab', 'Imported', 'JSON');
+    return { status: 'done' };
   };
 
   const toggleActiveTabLock = () => {
@@ -318,7 +357,7 @@ export function useTabActions(deps: TabActionsDeps) {
 
   return {
     addTab,
-    importTabFromFile,
+    importIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,

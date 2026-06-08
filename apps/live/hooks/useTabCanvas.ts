@@ -83,6 +83,25 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     track('Tab', 'Aligned');
   };
 
+  // Tab default font (spec/28): every text element without its own
+  // `font` renders in this. null clears it back to the editor default.
+  const setTabFont = (font: string | null) => {
+    if (editsBlocked) return;
+    commitTabs((ts) =>
+      ts.map((t) => {
+        if (t.id !== activeId) return t;
+        if (!font) {
+          const copy = { ...t };
+          delete copy.font;
+          return copy;
+        }
+        return { ...t, font };
+      }),
+    );
+    emitTabMeta(activeId, font ? 'Changed tab font' : 'Cleared tab font');
+    track('Tab', 'Changed', 'Font');
+  };
+
   const setBackgroundPattern = (pattern: BackgroundPattern) => {
     if (editsBlocked) return;
     commitTabs((ts) =>
@@ -181,6 +200,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
 
   return {
     autoAlignTab,
+    setTabFont,
     setBackgroundPattern,
     setTheme,
     resetElementsToTheme,

@@ -39,6 +39,8 @@ import {
 } from './palette-icons';
 import { ShapeIcon } from './shape-icon';
 import { Tooltip } from './Tooltip';
+import { FontSelect } from './FontSelect';
+import { track } from '@/lib/telemetry';
 
 import type { SelectedElementControls } from './CommandPalette';
 
@@ -242,6 +244,18 @@ export function SelectedElementSection({
 
       {showText ? (
         <Accordion title="Text" open={open.text} onToggle={() => toggle('text')}>
+          <div className="mb-3 flex flex-col gap-1">
+            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Font</p>
+            <FontSelect
+              value={selection.font}
+              defaultLabel="Tab default"
+              ariaLabel="Element font"
+              onChange={(font) => {
+                track('Element', 'Changed', 'Font');
+                selection.onSetFont(font);
+              }}
+            />
+          </div>
           {selection.textSize !== null ? (
             <div className="flex flex-col gap-1">
               <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Size</p>

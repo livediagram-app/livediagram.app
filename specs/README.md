@@ -35,6 +35,8 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 24  | [Share password](24-share-password.md)                             | Optional per-diagram password gating share-link view + edit access |
 | 25  | [AI assistance](25-ai-assistance.md)                               | Optional AI assistant (Build / Clean / Ask / Review) on the canvas |
 | 26  | [Zen mode](26-zen-mode.md)                                         | Distraction-free focus mode: hide all chrome, keep canvas + zoom   |
+| 27  | [Markdown import](27-markdown-import.md)                           | Import Markdown outlines (XMind etc.) into a themed tree diagram   |
+| 28  | [Fonts](28-fonts.md)                                               | Eight Google Fonts, pickable per element + as a per-tab default    |
 
 ## Workflow
 

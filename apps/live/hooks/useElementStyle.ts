@@ -127,6 +127,25 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     );
   };
 
+  // Font (spec/28). Passing a font id sets it on every text-bearing
+  // member of the selection; passing null clears the override so they
+  // fall back to the tab's default font.
+  const setFontSelected = (font: string | null) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || !isBoxed(el)) return el;
+        if (!font) {
+          const copy = { ...el };
+          delete (copy as { font?: string }).font;
+          return copy;
+        }
+        return { ...el, font };
+      }),
+    );
+  };
+
   const setTextAlignSelected = (x: TextAlignX, y: TextAlignY) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -512,6 +531,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     sendSelectedToBack,
     setTextSizeSelected,
     setTextAlignSelected,
+    setFontSelected,
     toggleTextStyleSelected,
     setFillColorSelected,
     setStrokeColorSelected,

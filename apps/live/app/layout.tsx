@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ClerkProvider } from '@/components/providers/ClerkProvider';
 import { ConfirmProvider } from '@/hooks/useConfirm';
 import { ToastProvider } from '@/hooks/useToast';
+import { googleFontsHref } from '@/lib/fonts';
 import './globals.css';
 
 // The live app is the product, not a content surface. Every route
@@ -54,6 +55,16 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en-GB">
+      <head>
+        {/* Text fonts (spec/28). One stylesheet defines every option's
+            @font-face; browsers only fetch the families actually applied,
+            and `display=swap` keeps text visible in the fallback stack
+            while a face loads — so the editor still works if these are
+            blocked (self-host / offline). preconnect trims the round-trip. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href={googleFontsHref()} />
+      </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
         {/* Apply the persisted UI light/dark choice before first paint, so
             EVERY route honours it — including /live/new and the welcome /

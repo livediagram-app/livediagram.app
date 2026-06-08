@@ -679,7 +679,12 @@ function PortalMenu({
               onClick={onClearContent}
               disabled={!canClearContent}
             />
-            <MenuItem icon={<FileImportIcon />} label="Import…" onClick={onImport} />
+            <MenuItem
+              icon={<FileImportIcon />}
+              label="Import…"
+              onClick={onImport}
+              disabled={locked}
+            />
             <MenuItem icon={<FileExportIcon />} label="Export…" onClick={onExport} />
             <MenuItem
               icon={<TrashIcon />}

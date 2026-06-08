@@ -5,6 +5,7 @@ import { THEMES } from '@/lib/themes';
 import { AutoAlignIcon, ResetIcon } from './palette-icons';
 import { ShowMoreButton } from './ShowMoreButton';
 import { Tooltip } from './Tooltip';
+import { FontSelect } from './FontSelect';
 
 import type { TabSectionControls } from './CommandPalette';
 
@@ -44,6 +45,15 @@ export function TabSection({
   return (
     <div className="flex flex-col">
       <Accordion title="Theme" open={open.theme} onToggle={() => toggle('theme')}>
+        {/* Tab default font (spec/28): applies to every text element on
+            this tab that hasn't set its own font. */}
+        <div className="mb-3 flex flex-col gap-1 border-b border-slate-100 pb-3 dark:border-slate-800">
+          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">Font</p>
+          <FontSelect value={tab.font} ariaLabel="Tab font" onChange={tab.onSetTabFont} />
+          <p className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+            The default for every element on this tab; individual elements can override it.
+          </p>
+        </div>
         <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
           Sets the canvas backdrop and recolours every element on this tab to match the theme
           (sticky notes keep their amber palette).

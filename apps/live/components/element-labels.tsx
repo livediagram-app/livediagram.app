@@ -36,6 +36,10 @@ type LabelTextStyle = {
   italic?: boolean;
   underline?: boolean;
   strikethrough?: boolean;
+  // Resolved CSS font-family stack (spec/28). Undefined = inherit the
+  // editor default. Applied to both the committed label and its live
+  // editor so there's no font jump on commit.
+  fontFamily?: string;
 };
 
 // Build the CSS payload for a LabelTextStyle. text-decoration combines
@@ -49,6 +53,7 @@ function labelTextStyleCss(style: LabelTextStyle): React.CSSProperties {
     fontStyle: style.italic ? 'italic' : undefined,
     fontWeight: style.bold ? 700 : undefined,
     textDecoration: decorations.length > 0 ? decorations.join(' ') : undefined,
+    fontFamily: style.fontFamily,
   };
 }
 
@@ -98,7 +103,7 @@ export function ScalingLabel({
           x="0"
           y="0"
           dominantBaseline="hanging"
-          fontFamily="ui-sans-serif, system-ui, sans-serif"
+          fontFamily={style?.fontFamily ?? 'ui-sans-serif, system-ui, sans-serif'}
           fontWeight={style?.bold ? 700 : 500}
           fontStyle={style?.italic ? 'italic' : undefined}
           textDecoration={
@@ -451,6 +456,7 @@ export function renderLabel(
   onCommitLabel: (label: string) => void,
   onCancelEdit: () => void,
   editCursorAtEnd: boolean,
+  fontFamily?: string,
 ) {
   const isSticky = element.type === 'sticky';
   // Shape elements don't carry a placeholder during edit. The user
@@ -466,6 +472,7 @@ export function renderLabel(
     italic: element.textItalic,
     underline: element.textUnderline,
     strikethrough: element.textStrikethrough,
+    fontFamily,
   };
 
   if (isEditing) {
