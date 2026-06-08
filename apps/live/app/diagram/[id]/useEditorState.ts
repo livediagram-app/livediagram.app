@@ -472,6 +472,38 @@ export function useEditorState() {
   // would be wasteful; we only update this set after a
   // hydration / fetch lands, so the renders are bounded.
   const [loadedTabIds, setLoadedTabIds] = useState<Set<string>>(new Set());
+  // Tab ids whose lazy fetch FAILED (network / 5xx — not a 404). Drives
+  // the canvas's blocking error overlay so the user can't edit a blank
+  // placeholder and have the autosave wipe the real server row (spec/13).
+  // `tabLoadRetryNonce` lets the Retry button re-run usePerTabLoad's
+  // effect for the same active tab (deps otherwise unchanged).
+  const [tabLoadErrors, setTabLoadErrors] = useState<Set<string>>(new Set());
+  const [tabLoadRetryNonce, setTabLoadRetryNonce] = useState(0);
+  // Mark a tab as loaded — its content is authoritative in local state,
+  // so usePerTabLoad must skip it. Used by hydration and by the
+  // locally-created tab paths (add / duplicate / import): those have no
+  // server row to fetch yet, so without this they'd flash the loader
+  // overlay (and never resolve, since the fetch 404s). Keeping them out
+  // of the lazy-load path also makes the per-tab template picker fire
+  // deterministically for a fresh tab.
+  const markTabLoaded = (id: string) => {
+    loadedTabIdsRef.current.add(id);
+    setLoadedTabIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+  };
+  // Re-attempt the active tab's failed lazy fetch. Clear its error so
+  // the overlay swaps from the error card to the spinner, drop it from
+  // the loaded-set so the effect actually refetches, then bump the nonce
+  // to re-run that effect even though activeId hasn't changed.
+  const retryActiveTabLoad = () => {
+    loadedTabIdsRef.current.delete(activeId);
+    setTabLoadErrors((prev) => {
+      if (!prev.has(activeId)) return prev;
+      const next = new Set(prev);
+      next.delete(activeId);
+      return next;
+    });
+    setTabLoadRetryNonce((n) => n + 1);
+  };
   // Single open room connection for the current diagram. Re-opens
   // whenever diagramId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
@@ -767,6 +799,8 @@ export function useEditorState() {
     sessionShareCode,
     loadedTabIdsRef,
     setLoadedTabIds,
+    setTabLoadErrors,
+    retryNonce: tabLoadRetryNonce,
     remoteUpdateRef,
     resetTabs,
   });
@@ -1168,6 +1202,7 @@ export function useEditorState() {
     commit,
     commitTabs,
     emitTabMeta,
+    markTabLoaded,
     setActiveId,
     setSelectedId,
     setEditingId,
@@ -1765,6 +1800,7 @@ export function useEditorState() {
     resetColorsSelected,
     resetElementsToTheme,
     resolveThread,
+    retryActiveTabLoad,
     revertChange,
     revokeShareLink,
     saveStatus,
@@ -1835,6 +1871,7 @@ export function useEditorState() {
     snapGuides,
     distGuides,
     tabAccordionsOpen,
+    tabLoadErrors,
     tabs,
     toggleActiveTabLock,
     toggleAspectLockSelected,

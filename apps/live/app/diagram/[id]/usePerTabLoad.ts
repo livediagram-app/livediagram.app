@@ -16,6 +16,12 @@ export function usePerTabLoad(opts: {
   sessionShareCode: string | null;
   loadedTabIdsRef: MutableRefObject<Set<string>>;
   setLoadedTabIds: Dispatch<SetStateAction<Set<string>>>;
+  // Tabs whose lazy fetch FAILED (network / 5xx). Drives the canvas
+  // error overlay so the user can't edit a blank placeholder and wipe
+  // the real server row (spec/13). Bumping `retryNonce` re-runs the
+  // effect for the same active tab (the Retry button).
+  setTabLoadErrors: Dispatch<SetStateAction<Set<string>>>;
+  retryNonce: number;
   remoteUpdateRef: MutableRefObject<boolean>;
   resetTabs: (updater: (prev: Tab[]) => Tab[]) => void;
 }) {
@@ -27,6 +33,8 @@ export function usePerTabLoad(opts: {
     sessionShareCode,
     loadedTabIdsRef,
     setLoadedTabIds,
+    setTabLoadErrors,
+    retryNonce,
     remoteUpdateRef,
     resetTabs,
   } = opts;
@@ -50,9 +58,31 @@ export function usePerTabLoad(opts: {
     // the same Set the effect itself populated (avoids the lint
     // warning about ref values shifting between effect and cleanup).
     const loadedTabIds = loadedTabIdsRef.current;
+    // Drop any prior failure marker for this tab now that a fresh
+    // attempt is under way, so a successful retry clears the error
+    // overlay rather than leaving it stuck.
+    const clearError = () =>
+      setTabLoadErrors((prev) => {
+        if (!prev.has(targetId)) return prev;
+        const next = new Set(prev);
+        next.delete(targetId);
+        return next;
+      });
     apiLoadTab(selfId, diagramId, targetId, sessionShareCode)
       .then((tab) => {
-        if (cancelled || !tab) return;
+        if (cancelled) return;
+        if (!tab) {
+          // 404: the tab genuinely has no server content (e.g. deleted
+          // between the summary fetch and now). Not a failure — mark it
+          // loaded so the canvas drops its loader and shows the empty /
+          // template-picker state instead of spinning forever.
+          merged = true;
+          loadedTabIds.add(targetId);
+          setLoadedTabIds((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
+          clearError();
+          return;
+        }
+        clearError();
         let didMerge = false;
         resetTabs((prev) =>
           prev.map((t) => {
@@ -78,7 +108,13 @@ export function usePerTabLoad(opts: {
         });
       })
       .catch(() => {
+        if (cancelled) return;
+        // Network / 5xx. Drop the id from the loaded-set so a later tab
+        // switch (or the Retry button via retryNonce) refetches, and
+        // flag it so the canvas shows the blocking error overlay instead
+        // of an editable blank canvas.
         loadedTabIds.delete(targetId);
+        setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
       });
     return () => {
       cancelled = true;
@@ -90,5 +126,5 @@ export function usePerTabLoad(opts: {
       // here so the next run actually fetches.
       if (!merged) loadedTabIds.delete(targetId);
     };
-  }, [hydrated, diagramId, activeId, selfId, sessionShareCode, resetTabs]);
+  }, [hydrated, diagramId, activeId, selfId, sessionShareCode, retryNonce, resetTabs]);
 }

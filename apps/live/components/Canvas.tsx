@@ -55,6 +55,7 @@ const EMPTY_ID_SET: Set<string> = new Set();
 
 import { CanvasChrome } from './CanvasChrome';
 import { CanvasElementsLayer } from './CanvasElementsLayer';
+import { TabLoadOverlay } from './TabLoadOverlay';
 import type { CanvasProps } from './Canvas.types';
 
 export function Canvas(props: CanvasProps) {
@@ -144,6 +145,8 @@ export function Canvas(props: CanvasProps) {
     onToggleLockSelected,
     onDeleteSelected,
     onCanvasDoubleClick,
+    tabLoadState,
+    onRetryTabLoad,
   } = props;
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -973,6 +976,12 @@ export function Canvas(props: CanvasProps) {
         handleZoomOut={handleZoomOut}
         handleResetZoom={handleResetZoom}
       />
+      {/* Lazy per-tab load (spec/13). Last child + z-50 so it covers the
+          canvas AND the floating palette, blocking any edit that would
+          otherwise overwrite an unfetched tab's real content. */}
+      {tabLoadState && tabLoadState !== 'ready' ? (
+        <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
+      ) : null}
     </main>
   );
 }

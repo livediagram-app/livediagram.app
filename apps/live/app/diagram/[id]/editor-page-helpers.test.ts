@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeTabSaveDiff,
   createTab,
+  deriveTabLoadState,
   patchTab,
   placeholdersFromSummaries,
   pruneMapToPresent,
@@ -217,5 +218,47 @@ describe('pruneMapToPresent (realtime presence cleanup)', () => {
     ]);
     const out = pruneMapToPresent(prev, new Set(['ann']));
     expect([...out.entries()]).toEqual([['ann', null]]);
+  });
+});
+
+describe('deriveTabLoadState', () => {
+  const base = {
+    hydrated: true,
+    hasDiagram: true,
+    loaded: false,
+    errored: false,
+    elementsLength: 0,
+    templateChosen: false,
+  };
+
+  it('is ready before hydration / with no diagram (diagram-level loader owns the screen)', () => {
+    expect(deriveTabLoadState({ ...base, hydrated: false })).toBe('ready');
+    expect(deriveTabLoadState({ ...base, hasDiagram: false })).toBe('ready');
+  });
+
+  it('loads an unfetched, empty tab so the empty-canvas card never flashes', () => {
+    expect(deriveTabLoadState(base)).toBe('loading');
+  });
+
+  it('errors when the fetch failed, even before content arrives', () => {
+    expect(deriveTabLoadState({ ...base, errored: true })).toBe('error');
+  });
+
+  it('error wins over loaded (a refetch that fails should re-surface the error)', () => {
+    expect(deriveTabLoadState({ ...base, loaded: true, errored: true })).toBe('error');
+  });
+
+  it('is ready once the tab is loaded', () => {
+    expect(deriveTabLoadState({ ...base, loaded: true })).toBe('ready');
+  });
+
+  it('is ready for an unloaded tab that already carries elements (peer-delivered content)', () => {
+    // No spinner over real content: a realtime peer can hand us a tab
+    // body before our own lazy fetch records it as loaded.
+    expect(deriveTabLoadState({ ...base, elementsLength: 3 })).toBe('ready');
+  });
+
+  it('is ready for an unloaded tab whose template picker was dismissed', () => {
+    expect(deriveTabLoadState({ ...base, templateChosen: true })).toBe('ready');
   });
 });

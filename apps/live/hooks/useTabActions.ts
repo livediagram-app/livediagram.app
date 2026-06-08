@@ -36,6 +36,11 @@ type TabActionsDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   emitTabMeta: (tabId: string, summary: string) => void;
+  // Mark a freshly-created tab as loaded so the lazy per-tab fetch
+  // (spec/13) skips it — a locally-created tab has no server row to
+  // pull, so without this the canvas would flash its loading overlay
+  // over the new (and never-resolving) tab.
+  markTabLoaded: (id: string) => void;
   setActiveId: (id: string) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
@@ -64,6 +69,7 @@ export function useTabActions(deps: TabActionsDeps) {
     commit,
     commitTabs,
     emitTabMeta,
+    markTabLoaded,
     setActiveId,
     setSelectedId,
     setEditingId,
@@ -98,6 +104,7 @@ export function useTabActions(deps: TabActionsDeps) {
       : {};
     const tab: Tab = { ...createTab(`Tab ${tabs.length + 1}`), ...seed };
     commitTabs((ts) => [...ts, tab]);
+    markTabLoaded(tab.id);
     track('Tab', 'Created');
     setActiveId(tab.id);
     setSelectedId(null);
@@ -152,6 +159,7 @@ export function useTabActions(deps: TabActionsDeps) {
       elements: newElements,
     };
     commitTabs((ts) => [...ts, newTab]);
+    markTabLoaded(newTab.id);
     setActiveId(newTab.id);
     setSelectedId(null);
     setEditingId(null);
@@ -230,6 +238,7 @@ export function useTabActions(deps: TabActionsDeps) {
       next.splice(srcIndex + 1, 0, copy);
       return next;
     });
+    markTabLoaded(copy.id);
     setActiveId(copy.id);
     setSelectedId(null);
     setEditingId(null);

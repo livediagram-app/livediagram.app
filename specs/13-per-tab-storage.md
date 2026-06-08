@@ -98,6 +98,32 @@ so peers only get the one that changed.
    edits go through the tab-level PUT.
 4. The room op shrinks accordingly.
 
+### Loading & failure UX for the lazy fetch
+
+A tab summary carries no `elements`, so before its `GET /tabs/:id`
+lands the tab is an empty placeholder. The canvas MUST NOT render its
+normal "Empty canvas" prompt over that placeholder — it reads as "your
+diagram is gone", and worse, if the user starts adding elements to the
+blank canvas the autosave persists the empty-plus-new tab and **wipes
+the real server row**. So while the active tab's content is outstanding:
+
+- **Loading**: an opaque, pointer-capturing overlay covers the canvas
+  (palette included) with a spinner. It blocks all canvas interaction so
+  no edit can race the fetch. The header + TabBar stay live, so the user
+  can still switch tabs or navigate away.
+- **Error**: if the fetch _fails_ (network down / 5xx — distinct from a
+  legitimate 404, which means the tab genuinely has no content) the same
+  overlay shows a "couldn't load this tab" card with a **Retry** that
+  re-issues the fetch. Editing stays blocked so the blank canvas can't
+  overwrite the unfetched content.
+
+Only tabs that originate on the server take part in this. A tab created
+locally (add / duplicate / import) is treated as already-loaded — its
+content is authoritative in memory and there is nothing to fetch — so it
+never flashes a loader and drops straight into the per-tab template
+picker. A tab whose elements a realtime peer already delivered likewise
+renders immediately rather than showing a spinner over real content.
+
 ## Cutover (historical)
 
 How this rolled out, recorded here so future schema changes can repeat the pattern:

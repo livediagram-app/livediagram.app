@@ -9,6 +9,7 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import { Canvas } from '@/components/Canvas';
 import { EditorHeader } from '@/components/EditorHeader';
 import { TabBar } from '@/components/TabBar';
+import { deriveTabLoadState } from './editor-page-helpers';
 import { useEditorContext } from './EditorContext';
 
 const EditorContextMenu = dynamic(() =>
@@ -183,6 +184,7 @@ export function EditorView() {
     resetColorsSelected,
     resetElementsToTheme,
     resolveThread,
+    retryActiveTabLoad,
     revertChange,
     revokeShareLink,
     savedAt,
@@ -265,6 +267,7 @@ export function EditorView() {
     snapGuides,
     distGuides,
     tabAccordionsOpen,
+    tabLoadErrors,
     tabs,
     toggleActiveTabLock,
     toggleAspectLockSelected,
@@ -281,6 +284,18 @@ export function EditorView() {
     viewportZoom,
     writeUserPreferences,
   } = ctx;
+  // Lazy per-tab load gate (spec/13): show a blocking loader / error
+  // over the canvas while the active tab's content is still being
+  // fetched, so the user never edits a blank placeholder whose autosave
+  // would overwrite the real server row.
+  const tabLoadState = deriveTabLoadState({
+    hydrated,
+    hasDiagram: !!diagramId,
+    loaded: loadedTabIds.has(activeId),
+    errored: tabLoadErrors.has(activeId),
+    elementsLength: activeTab.elements.length,
+    templateChosen: activeTab.templateChosen === true,
+  });
   return (
     <div className="flex h-dvh flex-col">
       <EditorHeader
@@ -618,6 +633,8 @@ export function EditorView() {
         onToggleLockSelected={toggleLockSelected}
         onDeleteSelected={deleteSelected}
         onCanvasDoubleClick={handleCanvasDoubleClick}
+        tabLoadState={tabLoadState}
+        onRetryTabLoad={retryActiveTabLoad}
         aiPanel={
           aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly
             ? {

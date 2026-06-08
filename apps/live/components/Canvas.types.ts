@@ -369,4 +369,12 @@ export type CanvasProps = {
   onToggleLockSelected: () => void;
   onDeleteSelected: () => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
+  // Lazy per-tab load (spec/13). While the active tab's content is being
+  // fetched ('loading') or after that fetch failed ('error'), Canvas
+  // renders a blocking TabLoadOverlay so the user never edits a blank
+  // placeholder whose autosave would wipe the real server row. 'ready'
+  // (or undefined) renders the canvas normally. `onRetryTabLoad`
+  // re-issues the fetch from the error card.
+  tabLoadState?: import('@/app/diagram/[id]/editor-page-helpers').TabLoadState;
+  onRetryTabLoad?: () => void;
 };

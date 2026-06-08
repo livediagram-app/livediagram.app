@@ -20,6 +20,42 @@ export function placeholdersFromSummaries(summaries: { id: string; name: string 
   return summaries.map((summary) => ({ id: summary.id, name: summary.name, elements: [] }));
 }
 
+// What the canvas should show for the ACTIVE tab while its lazy per-tab
+// fetch (spec/13) is outstanding. Without this gate the canvas paints
+// the misleading "Empty canvas" card over a tab whose real content
+// hasn't arrived yet — and worse, lets the user edit that blank
+// placeholder, whose autosave then overwrites the real server row.
+//
+//   - 'error':   the fetch failed (network / 5xx). Block editing, offer retry.
+//   - 'loading': fetch still outstanding AND nothing local to paint yet.
+//   - 'ready':   content is loaded, the tab was created locally, or a peer
+//                already delivered its elements — render the canvas as normal.
+export type TabLoadState = 'loading' | 'error' | 'ready';
+
+export function deriveTabLoadState(input: {
+  hydrated: boolean;
+  hasDiagram: boolean;
+  // The active tab id is in the loaded-set (its content has landed, or
+  // it was created locally so there's nothing to fetch).
+  loaded: boolean;
+  // The active tab's lazy fetch threw (network / 5xx).
+  errored: boolean;
+  elementsLength: number;
+  templateChosen: boolean;
+}): TabLoadState {
+  // Pre-hydration / no diagram: the diagram-level loader owns the screen.
+  if (!input.hydrated || !input.hasDiagram) return 'ready';
+  if (input.errored) return 'error';
+  if (input.loaded) return 'ready';
+  // Not loaded yet. Only a tab with nothing local to paint should show
+  // the loader — a tab that already carries elements (e.g. delivered by
+  // a realtime peer) renders, rather than flashing a spinner over real
+  // content. `templateChosen` covers the freshly-emptied-by-template
+  // case where elements is briefly 0 but the picker has been dismissed.
+  if (input.elementsLength === 0 && !input.templateChosen) return 'loading';
+  return 'ready';
+}
+
 // Patch one tab in a Tab[] by id, spreading `patch` over its fields.
 // Tabs whose id doesn't match are returned by reference, so callers
 // that diff by-identity (notably the autosave's `prevTabById !== t`
