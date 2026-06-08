@@ -69,6 +69,19 @@ export function historyReset(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[]))
   return { past: [], present: next, future: [] };
 }
 
+// Merge a remote peer's change into the present WITHOUT touching the
+// undo / redo stacks. Used by inbound `tab` / `diagram-meta` ops: peers
+// autosave ~every 600ms, so clearing history on each (what `reset` did)
+// made the local user's undo stack vanish several times a second during
+// any shared session. The retained past states predate the remote
+// change, so undoing far enough can locally drop a peer's edit — an
+// accepted limitation of last-write-wins collab without OT / CRDT, and
+// far better than undo not working at all while someone else is editing.
+export function historyApplyRemote(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[])): History {
+  const next = typeof tabs === 'function' ? tabs(h.present) : tabs;
+  return { ...h, present: next };
+}
+
 type DiagramHistory = {
   tabs: Tab[];
   canUndo: boolean;
@@ -77,6 +90,7 @@ type DiagramHistory = {
   tick: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   markCheckpoint: () => void;
   reset: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
+  applyRemote: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
   undo: () => void;
   redo: () => void;
 };
@@ -116,6 +130,11 @@ export function useDiagramHistory(initialTabs: Tab[]): DiagramHistory {
     setHistory((h) => historyReset(h, tabs));
   };
 
+  // Merge a remote peer's change into the present, preserving undo/redo.
+  const applyRemote = (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
+    setHistory((h) => historyApplyRemote(h, tabs));
+  };
+
   return {
     tabs: history.present,
     canUndo: history.past.length > 0,
@@ -124,6 +143,7 @@ export function useDiagramHistory(initialTabs: Tab[]): DiagramHistory {
     tick,
     markCheckpoint,
     reset,
+    applyRemote,
     undo,
     redo,
   };

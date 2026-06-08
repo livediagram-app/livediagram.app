@@ -3,6 +3,7 @@ import type { Tab } from '@livediagram/diagram';
 import {
   HISTORY_LIMIT,
   type History,
+  historyApplyRemote,
   historyCommit,
   historyMarkCheckpoint,
   historyRedo,
@@ -136,5 +137,36 @@ describe('historyReset', () => {
     const h = start([tab('cur', 'c')]);
     const next = historyReset(h, (prev) => [...prev, tab('extra', 'e')]);
     expect(next.present).toEqual([tab('cur', 'c'), tab('extra', 'e')]);
+  });
+});
+
+describe('historyApplyRemote', () => {
+  it('replaces present but PRESERVES past and future (unlike reset)', () => {
+    const h: History = {
+      past: [[tab('P0')]],
+      present: [tab('cur', 'c')],
+      future: [[tab('F0')]],
+    };
+    const next = historyApplyRemote(h, [tab('peer', 'p')]);
+    expect(next.present).toEqual([tab('peer', 'p')]);
+    // The whole point: a collaborator's op must not wipe undo / redo.
+    expect(next.past).toEqual([[tab('P0')]]);
+    expect(next.future).toEqual([[tab('F0')]]);
+  });
+
+  it('accepts a callback merger that receives the current present', () => {
+    const h = start([tab('cur', 'c')]);
+    const next = historyApplyRemote(h, (prev) => [...prev, tab('extra', 'e')]);
+    expect(next.present).toEqual([tab('cur', 'c'), tab('extra', 'e')]);
+    expect(next.past).toEqual([]);
+  });
+
+  it('still allows an undo back to the pre-remote local state', () => {
+    // Local commit (A -> AB), then a remote op lands. Undo should return
+    // to A (the retained past), not be lost.
+    const committed = historyCommit(start([tab('A', 'a')]), (ts) => [...ts, tab('B', 'b')]);
+    const afterRemote = historyApplyRemote(committed, (prev) => [...prev, tab('R', 'r')]);
+    const undone = historyUndo(afterRemote);
+    expect(undone.present).toEqual([tab('A', 'a')]);
   });
 });

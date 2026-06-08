@@ -163,6 +163,7 @@ export function useEditorState() {
     tick: tickTabs,
     markCheckpoint,
     reset: resetTabs,
+    applyRemote: applyRemoteTabs,
     undo: undoHistory,
     redo: redoHistory,
   } = useDiagramHistory(initialTabs);
@@ -727,7 +728,7 @@ export function useEditorState() {
     remoteUpdateRef,
     sessionShareCodeRef,
     roomRef,
-    resetTabs,
+    applyRemoteTabs,
     setLivePresence,
     setRemoteSelections,
     setRemoteCursors,

@@ -210,6 +210,14 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // start of each gesture (in the move effect below); flipped true once the
   // pointer travels far enough that the press is unambiguously a drag.
   const dragEngagedRef = useRef(false);
+  // A begin* handler ARMS a checkpoint here instead of taking it at
+  // pointer-down. It's flushed lazily on the first real `tick` (the first
+  // actual mutation) in the move effect below, so a plain click that
+  // selects an element — or a press on a locked element / tab that never
+  // mutates — leaves the undo history untouched. Taking the checkpoint at
+  // pointer-down pushed a no-op snapshot (and cleared the redo stack) on
+  // every click, evicting real states under the 3-deep HISTORY_LIMIT.
+  const checkpointPendingRef = useRef(false);
   const scheduleGuides = (align: AlignmentGuide[], dist: DistributionGuide[] = []) => {
     if (guideRafRef.current !== null) cancelAnimationFrame(guideRafRef.current);
     guideRafRef.current = requestAnimationFrame(() => {
@@ -266,7 +274,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       }
     }
 
-    d.markCheckpoint();
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
     setDrag({
       kind: 'boxed',
       primaryId: elementId,
@@ -295,7 +304,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     d.setSelectedId(elementId);
     if (element.locked === true || d.isReadOnly) return;
     const startPointerAngle = Math.atan2(e.clientY - centerClientY, e.clientX - centerClientX);
-    d.markCheckpoint();
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
     // Emit at gesture start (same pragmatism as beginAnchorDrag's
     // Added/Arrow): a proxy for "the user reached for rotation". The
     // `type` reuses the Added vocab (shape kind, else element kind).
@@ -354,7 +364,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     if (arrow.locked === true || d.isReadOnly) return;
     if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
     d.setSelectedId(arrowId);
-    d.markCheckpoint();
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
     setDrag({
       kind: 'arrow-translate',
       arrowId,
@@ -375,7 +386,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     d.setSelectedId(arrowId);
     if (arrow.locked === true || d.isReadOnly) return;
     const start = endpointPosition(end === 'from' ? arrow.from : arrow.to, d.activeTab.elements);
-    d.markCheckpoint();
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
     setDrag({
       kind: 'arrow-endpoint',
       arrowId,
@@ -398,7 +410,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     const control = curveControlPoint(from, to, arrow.curveOffset);
-    d.markCheckpoint();
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
     setDrag({
       kind: 'arrow-curve',
       arrowId,
@@ -435,7 +448,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     const baseElbow = angledElbow(from, to, arrow.from, arrow.to);
     const currentElbow = angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset);
-    d.markCheckpoint();
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
     setDrag({
       kind: 'arrow-elbow',
       arrowId,
@@ -473,7 +487,18 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         scheduleGuides([]);
         return;
       }
-      const { activeTab, zoomRef, tick } = depsRef.current;
+      const { activeTab, zoomRef } = depsRef.current;
+      // Flush the armed checkpoint on the FIRST real mutation of the
+      // gesture (every branch below writes through this `tick`), so a
+      // press that never mutates leaves history untouched. After the
+      // first flush it's a plain passthrough for the rest of the drag.
+      const tick = (mapper: (els: Element[]) => Element[]) => {
+        if (checkpointPendingRef.current) {
+          depsRef.current.markCheckpoint();
+          checkpointPendingRef.current = false;
+        }
+        depsRef.current.tick(mapper);
+      };
       // Screen-pixel delta into canvas-coord delta (invert the
       // current zoom).
       if (drag.kind === 'rotate') {
@@ -787,6 +812,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const onUp = () => {
       setDrag(null);
       scheduleGuides([]);
+      // Disarm any checkpoint the gesture never used (a click that
+      // selected without moving), so it can't attach to a later one.
+      checkpointPendingRef.current = false;
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);

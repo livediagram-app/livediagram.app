@@ -28,7 +28,10 @@ export function useRoomConnection(opts: {
   remoteUpdateRef: MutableRefObject<boolean>;
   sessionShareCodeRef: MutableRefObject<string | null>;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
-  resetTabs: (updater: (prev: Tab[]) => Tab[]) => void;
+  // Merge a peer's tab / diagram-meta change into the present, PRESERVING
+  // the local undo / redo stacks (peers autosave ~600ms, so clearing
+  // history on each would wipe undo continuously during a shared session).
+  applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
   setLivePresence: Dispatch<SetStateAction<Participant[]>>;
   setRemoteSelections: Dispatch<SetStateAction<Map<string, string | null>>>;
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
@@ -50,7 +53,7 @@ export function useRoomConnection(opts: {
     remoteUpdateRef,
     sessionShareCodeRef,
     roomRef,
-    resetTabs,
+    applyRemoteTabs,
     setLivePresence,
     setRemoteSelections,
     setRemoteCursors,
@@ -153,7 +156,7 @@ export function useRoomConnection(opts: {
           // tab isn't local yet (new tab the peer just added), append
           // it so the receiver picks it up without a refetch.
           remoteUpdateRef.current = true;
-          resetTabs((prev) => {
+          applyRemoteTabs((prev) => {
             const existing = prev.findIndex((t) => t.id === op.tabId);
             if (existing === -1) return [...prev, op.tab];
             const next = [...prev];
@@ -166,7 +169,7 @@ export function useRoomConnection(opts: {
           // placeholders that a follow-up `tab` op will populate.
           remoteUpdateRef.current = true;
           setDiagramName(op.name);
-          resetTabs((prev) => {
+          applyRemoteTabs((prev) => {
             const localById = new Map(prev.map((t) => [t.id, t] as const));
             return op.tabs.map(
               (summary) =>
