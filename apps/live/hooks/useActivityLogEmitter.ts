@@ -70,7 +70,10 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // broadcast + push onto the undo / redo memory stack so the
   // entry pops cleanly on undo.
   const appendLogEntry = (entry: ChangeLogEntry) => {
-    deps.setChangeLog((prev) => [entry, ...prev].slice(0, 30));
+    // Cap matches the hydrated list size (apiListChangeLog loads 200) so
+    // the panel doesn't visibly shrink the moment a local edit or remote
+    // op prepends an entry.
+    deps.setChangeLog((prev) => [entry, ...prev].slice(0, 200));
     deps.entryHistoryRef.current = {
       past: [...deps.entryHistoryRef.current.past, entry].slice(-HISTORY_LIMIT),
       future: [],

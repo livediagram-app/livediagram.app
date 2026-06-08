@@ -540,8 +540,12 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
               memberIds,
               ALIGN_SNAP_THRESHOLD,
             );
-            if (snapDx === 0) snapDx = dist.dx;
-            if (snapDy === 0) snapDy = dist.dy;
+            // Distribution fills only the axes alignment didn't claim.
+            // Keyed off snap.snappedX/Y (not snapDx === 0) so an EXACT
+            // edge alignment, whose delta is 0, still wins over an
+            // equal-spacing nudge that's also in range.
+            if (!snap.snappedX) snapDx = dist.dx;
+            if (!snap.snappedY) snapDy = dist.dy;
             // Derive guides from the SNAPPED primary bounds so a line
             // only appears once the snap has aligned an edge / centre.
             // Suppressed entirely when the user has turned guides off
@@ -558,7 +562,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // drove (alignment didn't already claim it).
             const distOut = guidesOn
               ? dist.guides.filter((g) =>
-                  g.axis === 'x' ? snap.dx === 0 && dist.dx !== 0 : snap.dy === 0 && dist.dy !== 0,
+                  g.axis === 'x'
+                    ? !snap.snappedX && dist.dx !== 0
+                    : !snap.snappedY && dist.dy !== 0,
                 )
               : [];
             scheduleGuides(guides, distOut);

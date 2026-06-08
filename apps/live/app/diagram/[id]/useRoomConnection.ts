@@ -135,6 +135,12 @@ export function useRoomConnection(opts: {
         setRemoteTabFocus((prev) => pruneMapToPresent(prev, present));
         setRemoteSelections((prev) => pruneMapToPresent(prev, present));
         setRemoteCursors((prev) => pruneMapToPresent(prev, present));
+        // Same for the lastSeen idle tracker (a plain ref, not state):
+        // drop departed peers so it can't grow unbounded over a
+        // long-lived room with people joining / leaving via share links.
+        for (const id of [...lastSeenRef.current.keys()]) {
+          if (!present.has(id)) lastSeenRef.current.delete(id);
+        }
       },
       onOp: (from, op) => {
         // Any op from a peer counts as "they're still here". Bumps
@@ -214,7 +220,7 @@ export function useRoomConnection(opts: {
           // match the hydrated list size.
           setChangeLog((prev) => {
             if (prev.some((e) => e.id === op.entry.id)) return prev;
-            return [op.entry, ...prev].slice(0, 30);
+            return [op.entry, ...prev].slice(0, 200);
           });
         } else if (op.kind === 'log-remove') {
           setChangeLog((prev) => prev.filter((e) => e.id !== op.entryId));

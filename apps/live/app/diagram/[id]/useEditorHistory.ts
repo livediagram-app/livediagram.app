@@ -215,7 +215,7 @@ export function useEditorHistory(opts: {
         past: [...past, next].slice(-HISTORY_LIMIT),
         future: future.slice(1),
       };
-      setChangeLog((prev) => [next, ...prev].slice(0, 30));
+      setChangeLog((prev) => [next, ...prev].slice(0, 200));
       if (diagramId) {
         // Same entry id and content — D1 ends up with the same row
         // it had before the undo. Idempotent under network retries

@@ -181,7 +181,7 @@ export function snapToAlignment(
   elements: Element[],
   excludeIds: Set<ElementId>,
   threshold: number,
-): { dx: number; dy: number } {
+): { dx: number; dy: number; snappedX: boolean; snappedY: boolean } {
   const xs = [candidate.x, candidate.x + candidate.width / 2, candidate.x + candidate.width];
   const ys = [candidate.y, candidate.y + candidate.height / 2, candidate.y + candidate.height];
 
@@ -210,7 +210,11 @@ export function snapToAlignment(
     }
   }
 
-  return { dx: bestX ?? 0, dy: bestY ?? 0 };
+  // snappedX/Y report whether an alignment was FOUND on that axis, which
+  // a 0 delta can't convey (an exact alignment and "nothing in range"
+  // both yield dx 0). Callers that layer another snap (e.g. distribution)
+  // use these to tell "already aligned, leave it" from "free, go ahead".
+  return { dx: bestX ?? 0, dy: bestY ?? 0, snappedX: bestX !== null, snappedY: bestY !== null };
 }
 
 // Snap candidate bounds during a resize to align with other elements'

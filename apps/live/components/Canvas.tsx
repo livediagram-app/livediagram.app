@@ -490,6 +490,10 @@ export function Canvas(props: CanvasProps) {
     const onMove = (e: PointerEvent) => {
       const rect = wrapperEl?.getBoundingClientRect();
       if (!rect || !latest) return;
+      // A 2-finger pinch took over: freeze the draw at its last good
+      // position so finger-1's moves don't size the element to the
+      // pinch-warped pointer (pan + editor-drag bail the same way).
+      if (isPinchingRef?.current) return;
       const rawX = (e.clientX - rect.left) / viewportZoom;
       const rawY = (e.clientY - rect.top) / viewportZoom;
       let endX = rawX;
@@ -589,6 +593,9 @@ export function Canvas(props: CanvasProps) {
     const onMove = (e: PointerEvent) => {
       const rect = wrapperEl?.getBoundingClientRect();
       if (!rect) return;
+      // Stop sampling once a 2-finger pinch takes over, so the committed
+      // polyline doesn't pick up the pinch-warped finger-1 path.
+      if (isPinchingRef?.current) return;
       const x = (e.clientX - rect.left) / viewportZoom;
       const y = (e.clientY - rect.top) / viewportZoom;
       buffer = [...buffer, { x, y }];

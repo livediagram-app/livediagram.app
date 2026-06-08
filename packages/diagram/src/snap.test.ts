@@ -26,6 +26,8 @@ describe('snapToAlignment', () => {
     expect(snapToAlignment(box(0, 0, 100, 100), [other], new Set(), 10)).toEqual({
       dx: 0,
       dy: 0,
+      snappedX: false,
+      snappedY: false,
     });
   });
 
@@ -36,6 +38,8 @@ describe('snapToAlignment', () => {
     expect(snapToAlignment(box(0, 0, 100, 100), [neighbour], new Set(), 10)).toEqual({
       dx: 8,
       dy: 0,
+      snappedX: true,
+      snappedY: true,
     });
   });
 
@@ -51,6 +55,8 @@ describe('snapToAlignment', () => {
     expect(snapToAlignment(box(0, 0, 100, 100), [neighbour], new Set(['n']), 10)).toEqual({
       dx: 0,
       dy: 0,
+      snappedX: false,
+      snappedY: false,
     });
   });
 

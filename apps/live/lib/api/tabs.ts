@@ -1,7 +1,7 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
 // cross-diagram link, and delete.
 import type { TabSummary } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/diagram';
+import { normalizeTable, type Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
 import {
   API_BASE,
@@ -33,6 +33,16 @@ async function _apiLoadTab(
   void _did;
   void _oi;
   void _ua;
+  // Coerce any table to a rectangular grid on load: this is the single
+  // boundary where stored elements enter the editor, so a legacy / hand-
+  // edited row with a ragged `cells` array can't reach the renderer and
+  // break the grid. No-op for the common case (the editor only ever
+  // writes rectangular tables).
+  if (clientTab.elements.some((el) => el.type === 'table')) {
+    clientTab.elements = clientTab.elements.map((el) =>
+      el.type === 'table' ? normalizeTable(el) : el,
+    );
+  }
   return clientTab;
 }
 export const apiLoadTab = dedupeInFlight(
