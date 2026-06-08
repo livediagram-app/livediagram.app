@@ -58,6 +58,9 @@ type ChromeExtras = {
   isGroupMode: boolean;
   marquee: { startX: number; startY: number; currentX: number; currentY: number } | null;
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
+  // Snapped pointer position while a draw is armed but not yet started
+  // (pre-press start-snap preview); null when not armed / not snapped.
+  drawHover: { x: number; y: number } | null;
   penPoints: { x: number; y: number }[] | null;
   wrapperRef: RefObject<HTMLDivElement | null>;
   paletteBottomY: number;
@@ -111,6 +114,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     diagramName,
     dockButtonRefs,
     drawDrag,
+    drawHover,
     editorExpandSignal,
     elements,
     explorerBottomY,
@@ -230,7 +234,21 @@ export function CanvasChrome(props: CanvasChromeProps) {
           NO_GUIDE_EXCLUDE,
         )
       : [];
-  const alignGuides = drawBoxGuides.length > 0 ? [...snapGuides, ...drawBoxGuides] : snapGuides;
+  // Pre-press start-snap preview: guides for the snapped hover point (a
+  // 0×0 candidate), so the user sees the first corner latch before they
+  // press. Mutually exclusive with drawBoxGuides (hover is cleared once a
+  // drag starts). The snapped dot itself renders below the guide overlay.
+  const drawHoverGuides = drawHover
+    ? alignmentGuides(
+        { x: drawHover.x, y: drawHover.y, width: 0, height: 0 },
+        elements,
+        NO_GUIDE_EXCLUDE,
+      )
+    : [];
+  const alignGuides =
+    drawBoxGuides.length > 0 || drawHoverGuides.length > 0
+      ? [...snapGuides, ...drawBoxGuides, ...drawHoverGuides]
+      : snapGuides;
   return (
     <>
       {hydrated && elements.length === 0 && !showTemplatePicker && !welcomeOpen ? (
@@ -349,6 +367,31 @@ export function CanvasChrome(props: CanvasChromeProps) {
                     />
                   );
                 })}
+              </svg>
+            );
+          })()
+        : null}
+
+      {/* Pre-press start-snap dot. While a draw is armed and the hovered
+          pointer has snapped to a neighbour, mark the snapped point so the
+          user knows where the first corner will land before pressing (the
+          guide lines above show what it aligned to). */}
+      {drawHover
+        ? (() => {
+            const rect = wrapperRef.current?.getBoundingClientRect();
+            if (!rect) return null;
+            const x = rect.left + drawHover.x * viewportZoom;
+            const y = rect.top + drawHover.y * viewportZoom;
+            return (
+              <svg aria-hidden className="pointer-events-none fixed inset-0 z-30 h-screen w-screen">
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={3.5}
+                  fill="rgb(14, 165, 233)"
+                  stroke="white"
+                  strokeWidth={1.5}
+                />
               </svg>
             );
           })()

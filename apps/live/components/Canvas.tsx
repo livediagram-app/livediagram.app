@@ -429,6 +429,36 @@ export function Canvas(props: CanvasProps) {
     return { x: px + snap.dx, y: py + snap.dy };
   };
 
+  // Pre-press snap preview: while a draw is armed but not yet started,
+  // snap the hovered pointer to nearby element edges / centres and stash
+  // it, so the user can land the shape's FIRST corner on an alignment
+  // before pressing down (the moving corner already snaps mid-drag). Only
+  // set when a snap is actually in effect, so the preview (a dot + guides
+  // in CanvasChrome) appears exactly when the start would latch.
+  const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
+  useEffect(() => {
+    if (!pendingDraw || drawDrag || penPoints || pendingDraw.type === 'freehand') {
+      setDrawHover(null);
+      return;
+    }
+    const wrapperEl = wrapperRef.current;
+    const onMove = (e: PointerEvent) => {
+      const rect = wrapperEl?.getBoundingClientRect();
+      if (!rect) return;
+      const px = (e.clientX - rect.left) / viewportZoom;
+      const py = (e.clientY - rect.top) / viewportZoom;
+      const snap = snapToAlignment(
+        { x: px, y: py, width: 0, height: 0 },
+        elements,
+        EMPTY_ID_SET,
+        6 / viewportZoom,
+      );
+      setDrawHover(snap.dx === 0 && snap.dy === 0 ? null : { x: px + snap.dx, y: py + snap.dy });
+    };
+    window.addEventListener('pointermove', onMove);
+    return () => window.removeEventListener('pointermove', onMove);
+  }, [pendingDraw, drawDrag, penPoints, viewportZoom, elements]);
+
   // Window-level move + up listeners for the draw gesture. Attached
   // only while a drag is in flight so the canvas pays nothing in the
   // common case (idle, or in pan / marquee mode). pointermove
@@ -917,6 +947,7 @@ export function Canvas(props: CanvasProps) {
         isGroupMode={isGroupMode}
         marquee={marquee}
         drawDrag={drawDrag}
+        drawHover={drawHover}
         penPoints={penPoints}
         wrapperRef={wrapperRef}
         paletteBottomY={paletteBottomY}
