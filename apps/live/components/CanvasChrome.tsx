@@ -1,4 +1,4 @@
-import { deriveTextColorForBg } from '@livediagram/diagram';
+import { alignmentGuides, deriveTextColorForBg } from '@livediagram/diagram';
 import { drawBannerMessage } from '@/lib/draw-mode';
 import { getTheme } from '@/lib/themes';
 import { CommandPalette, type SelectedElementControls } from './CommandPalette';
@@ -84,6 +84,11 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 // Activity / Comments / Editor / Context panels, the command palette, and
 // the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
 // Canvas's props plus the computed ChromeExtras.
+
+// Nothing to exclude when guiding a draw-to-size box: the element doesn't
+// exist yet, so every neighbour is a candidate.
+const NO_GUIDE_EXCLUDE: Set<string> = new Set();
+
 export function CanvasChrome(props: CanvasChromeProps) {
   const {
     activeDockAnchor,
@@ -204,6 +209,28 @@ export function CanvasChrome(props: CanvasChromeProps) {
     welcomeOpen,
     wrapperRef,
   } = props;
+  // Alignment guides for the in-progress draw-to-size box, so the user
+  // sees which neighbour edges / centres it latched onto — the same faint
+  // lines a move / resize shows. Box intents only (arrows are a line,
+  // freehand a stroke). drawDrag's start + current are already the
+  // SNAPPED points, so alignmentGuides reports a line exactly when a snap
+  // is in effect, mirroring the move/resize derivation. Concatenated with
+  // the move/resize snapGuides (mutually exclusive in practice) for the
+  // single guide overlay below.
+  const drawBoxGuides =
+    drawDrag && pendingDraw && pendingDraw.type !== 'arrow' && pendingDraw.type !== 'freehand'
+      ? alignmentGuides(
+          {
+            x: Math.min(drawDrag.startX, drawDrag.currentX),
+            y: Math.min(drawDrag.startY, drawDrag.currentY),
+            width: Math.abs(drawDrag.currentX - drawDrag.startX),
+            height: Math.abs(drawDrag.currentY - drawDrag.startY),
+          },
+          elements,
+          NO_GUIDE_EXCLUDE,
+        )
+      : [];
+  const alignGuides = drawBoxGuides.length > 0 ? [...snapGuides, ...drawBoxGuides] : snapGuides;
   return (
     <>
       {hydrated && elements.length === 0 && !showTemplatePicker && !welcomeOpen ? (
@@ -291,7 +318,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           theme: the theme's element stroke when it sets one, else a
           slate tuned to contrast with the theme's backdrop — faint via
           opacity so it reads as helper chrome, not content. */}
-      {snapGuides.length > 0
+      {alignGuides.length > 0
         ? (() => {
             const rect = wrapperRef.current?.getBoundingClientRect();
             if (!rect) return null;
@@ -299,7 +326,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             const color = theme.elementStroke ?? deriveTextColorForBg(theme.backgroundColor);
             return (
               <svg aria-hidden className="pointer-events-none fixed inset-0 z-30 h-screen w-screen">
-                {snapGuides.map((g, i) => {
+                {alignGuides.map((g, i) => {
                   // Convert the guide's canvas-space line into the two
                   // screen-space endpoints. A vertical guide (axis 'x')
                   // holds x constant and runs start→end in y; horizontal
