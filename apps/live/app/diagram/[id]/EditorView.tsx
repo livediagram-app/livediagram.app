@@ -270,6 +270,8 @@ export function EditorView() {
     tabLoadErrors,
     tabs,
     toggleActiveTabLock,
+    toggleZenMode,
+    zenMode,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,
@@ -298,31 +300,35 @@ export function EditorView() {
   });
   return (
     <div className="flex h-dvh flex-col">
-      <EditorHeader
-        diagramName={diagramName}
-        hideTitle={anyWelcomeOpen}
-        showShare={isOwner && hydrated && !anyWelcomeOpen}
-        shareable={diagramShareable}
-        // Visitors see "Make a copy" instead of "Share": same slot,
-        // different action. Hidden during the welcome flow so the
-        // first-paint chrome stays minimal, and during hydration so
-        // we don't render the button before we know whether the user
-        // is the owner.
-        onMakeCopy={!isOwner && hydrated && !anyWelcomeOpen && diagramId ? makeCopy : undefined}
-        copying={copying}
-        readOnly={isReadOnly}
-        brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
-        onOpenShare={() => {
-          setShareDialogOpen(true);
-          track('UI', 'Opened', 'Share');
-        }}
-        onRename={(next) => {
-          const prev = diagramName.trim();
-          const nextTrim = next.trim();
-          setDiagramName(next);
-          if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
-        }}
-      />
+      {/* Zen / focus mode (spec/26) hides the header entirely so the
+          canvas gets the full height. */}
+      {zenMode ? null : (
+        <EditorHeader
+          diagramName={diagramName}
+          hideTitle={anyWelcomeOpen}
+          showShare={isOwner && hydrated && !anyWelcomeOpen}
+          shareable={diagramShareable}
+          // Visitors see "Make a copy" instead of "Share": same slot,
+          // different action. Hidden during the welcome flow so the
+          // first-paint chrome stays minimal, and during hydration so
+          // we don't render the button before we know whether the user
+          // is the owner.
+          onMakeCopy={!isOwner && hydrated && !anyWelcomeOpen && diagramId ? makeCopy : undefined}
+          copying={copying}
+          readOnly={isReadOnly}
+          brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
+          onOpenShare={() => {
+            setShareDialogOpen(true);
+            track('UI', 'Opened', 'Share');
+          }}
+          onRename={(next) => {
+            const prev = diagramName.trim();
+            const nextTrim = next.trim();
+            setDiagramName(next);
+            if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
+          }}
+        />
+      )}
       {exportOpen ? (
         <ExportTabDialog
           tab={activeTab}
@@ -635,6 +641,8 @@ export function EditorView() {
         onCanvasDoubleClick={handleCanvasDoubleClick}
         tabLoadState={tabLoadState}
         onRetryTabLoad={retryActiveTabLoad}
+        zenMode={zenMode}
+        onToggleZen={toggleZenMode}
         aiPanel={
           aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly
             ? {
@@ -654,7 +662,7 @@ export function EditorView() {
             : undefined
         }
       />
-      {anyWelcomeOpen ? null : (
+      {anyWelcomeOpen || zenMode ? null : (
         <TabBar
           tabs={tabs}
           activeId={activeId}

@@ -1,3 +1,4 @@
+import { ZenExitIcon } from './palette-icons';
 import { Tooltip } from './Tooltip';
 
 type ZoomControlsProps = {
@@ -6,17 +7,22 @@ type ZoomControlsProps = {
   onZoomOut: () => void;
   onReset: () => void;
   onFitToScreen: () => void;
+  // When set, the editor is in zen / focus mode (spec/26): the zoom
+  // dock is the only visible chrome, so it carries the way out. Renders
+  // an exit button at the end; omitted (undefined) outside zen mode.
+  onExitZen?: () => void;
 };
 
 // Floating zoom controls, bottom-right of the canvas. Four
 // actions: -10% / current % (click to reset) / +10% / Fit to
-// screen.
+// screen. In zen mode it also carries the exit-zen button.
 export function ZoomControls({
   zoom,
   onZoomIn,
   onZoomOut,
   onReset,
   onFitToScreen,
+  onExitZen,
 }: ZoomControlsProps) {
   const percent = Math.round(zoom * 100);
   return (
@@ -90,6 +96,19 @@ export function ZoomControls({
           Fit
         </button>
       </Tooltip>
+      {onExitZen ? (
+        <>
+          <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+          <Tooltip
+            title="Exit zen mode"
+            description="Bring back the toolbars and panels (Z or Esc)."
+          >
+            <IconButton onClick={onExitZen} label="Exit zen mode">
+              <ZenExitIcon />
+            </IconButton>
+          </Tooltip>
+        </>
+      ) : null}
     </div>
   );
 }

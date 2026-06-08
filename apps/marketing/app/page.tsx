@@ -46,6 +46,7 @@ import {
   ThemesArt,
   UndoRedoArt,
   UnlimitedTabsArt,
+  ZenModeArt,
 } from '@/components/FeatureArt';
 import dynamic from 'next/dynamic';
 import { Footer } from '@/components/Footer';
@@ -229,6 +230,12 @@ export default function LandingPage() {
                 title: 'Panels your way',
                 description:
                   'Prefer floating side panels or a clean canvas? Switch on the minimal layout and the palette and tools collapse into a compact dock with pop-out panels, the same tidy chrome you get on mobile. The choice sticks per device.',
+              },
+              {
+                art: <ZenModeArt />,
+                title: 'Zen mode for focus',
+                description:
+                  'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
               },
             ]}
           />

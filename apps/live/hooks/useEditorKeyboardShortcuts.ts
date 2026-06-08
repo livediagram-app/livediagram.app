@@ -119,6 +119,12 @@ type EditorKeyboardShortcutsDeps = {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onZoomReset: () => void;
+  // Zen / focus mode (spec/26). `Z` toggles it; `Escape` exits when
+  // active. Allowed for view-role too (focusing doesn't mutate the
+  // diagram). `zenMode` lets the listener route Escape to exit only
+  // while the mode is on.
+  zenMode: boolean;
+  onToggleZen: () => void;
   // Per-device disable flag. When false, every shortcut effect
   // below short-circuits before attaching its listener. The
   // checkbox lives in the keyboard-shortcuts modal; the storage
@@ -176,6 +182,15 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key;
       const lower = key.toLowerCase();
+
+      // --- Zen mode exit (spec/26) ---
+      // Escape leaves zen mode. Only when actually in zen and not mid-
+      // edit / typing (there Escape cancels the label edit instead).
+      if (key === 'Escape' && live.zenMode && !inText && live.editingId === null) {
+        e.preventDefault();
+        live.onToggleZen();
+        return;
+      }
 
       // --- Delete / Backspace ---
       if (key === 'Delete' || key === 'Backspace') {
@@ -318,6 +333,13 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (lower === 'l') {
         e.preventDefault();
         live.setCanvasTool('laser');
+        return;
+      }
+      // Zen / focus mode (spec/26). Before the read-only gate so
+      // view-role visitors can focus too — it's a pure view toggle.
+      if (lower === 'z') {
+        e.preventDefault();
+        live.onToggleZen();
         return;
       }
       if (live.isReadOnly) return;

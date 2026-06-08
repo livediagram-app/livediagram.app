@@ -377,4 +377,11 @@ export type CanvasProps = {
   // re-issues the fetch from the error card.
   tabLoadState?: import('@/app/diagram/[id]/editor-page-helpers').TabLoadState;
   onRetryTabLoad?: () => void;
+  // Zen / focus mode (spec/26). When true, CanvasChrome hides every
+  // floating panel + the history dock + the owner badge, keeping only
+  // the canvas content and the zoom controls (which grow an exit
+  // button). `onToggleZen` flips it — wired to the palette enter
+  // button, the zoom-dock exit button, and the Z shortcut.
+  zenMode?: boolean;
+  onToggleZen?: () => void;
 };

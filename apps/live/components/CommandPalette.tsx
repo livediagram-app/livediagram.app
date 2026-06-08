@@ -24,7 +24,7 @@ import type {
 } from '@livediagram/diagram';
 import { type ThemeId } from '@/lib/themes';
 import { MovablePanel } from './MovablePanel';
-import { LaserIcon, PanIcon, SelectIcon } from './palette-icons';
+import { LaserIcon, PanIcon, SelectIcon, ZenIcon } from './palette-icons';
 import { Tooltip } from './Tooltip';
 import { searchIcons } from '@/lib/icons';
 import { IconPrims } from './icon-glyph';
@@ -166,6 +166,11 @@ type CommandPaletteProps = {
   position: { x: number; y: number } | null;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
+  // Enter zen / focus mode (spec/26). Sits beside the Pan/Select/Laser
+  // tools but isn't a CanvasTool — it's an orthogonal chrome-hide flag,
+  // so it's a momentary action button, never shown "active" here (the
+  // whole palette is hidden once zen is on; exit lives by the zoom dock).
+  onToggleZen?: () => void;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
   onAddShape: (kind: ShapeKind) => void;
@@ -220,6 +225,7 @@ export function CommandPalette({
   position,
   canvasTool,
   onSetCanvasTool,
+  onToggleZen,
   onMoveTo,
   onReset,
   onAddShape,
@@ -352,6 +358,16 @@ export function CommandPalette({
             <LaserIcon />
           </ToolButton>
         </Tooltip>
+        {onToggleZen ? (
+          <Tooltip
+            title="Zen mode"
+            description="Hide every panel and toolbar to focus on the canvas. Exit from the zoom controls or press Z."
+          >
+            <ToolButton active={false} label="Zen" onClick={onToggleZen} shortcut="Z">
+              <ZenIcon />
+            </ToolButton>
+          </Tooltip>
+        ) : null}
       </div>
       {/* Shapes are always visible above the accordions: they're the
           most common entry point on every fresh canvas and tucking

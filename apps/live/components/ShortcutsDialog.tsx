@@ -43,6 +43,7 @@ const SECTIONS: ShortcutSection[] = [
       { keys: ['P'], label: 'Pan tool' },
       { keys: ['L'], label: 'Laser pointer' },
       { keys: ['F'], label: 'Pencil (freehand)' },
+      { keys: ['Z'], label: 'Zen mode (focus)' },
     ],
   },
   {
@@ -65,7 +66,7 @@ const SECTIONS: ShortcutSection[] = [
       { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },
       { keys: ['Space'], label: 'Edit label of selected element' },
       { keys: ['Type'], label: 'Replace label of selected element' },
-      { keys: ['Escape'], label: 'Cancel format painter or group mode' },
+      { keys: ['Escape'], label: 'Cancel format painter / group mode, or exit zen' },
       { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
     ],
   },

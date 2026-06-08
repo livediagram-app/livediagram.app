@@ -1607,9 +1607,19 @@ export function useEditorState() {
     toast,
   });
 
+  // Zen / focus mode (spec/26). Flips the chrome-hidden flag and emits
+  // the toggle telemetry BEFORE the state change (matches the dark-mode /
+  // settings pattern so an opt-out still reaches the wire). Shared by the
+  // palette enter button, the zoom-dock exit button, and the Z shortcut.
+  const toggleZenMode = () => {
+    const next = !panelLayout.zenMode;
+    track('UI', 'Toggled', next ? 'ZenModeOn' : 'ZenModeOff');
+    panelLayout.setZenMode(next);
+  };
+
   // Global keyboard shortcuts (Escape cancels modes, Delete /
   // Backspace wipes selection, Cmd-Z / Cmd-Shift-Z undo / redo,
-  // Cmd-C / Cmd-V copy / paste, V / H / L canvas-tool switch).
+  // Cmd-C / Cmd-V copy / paste, V / H / L canvas-tool switch, Z zen).
   // Lives in useEditorKeyboardShortcuts.
   useEditorKeyboardShortcuts({
     formatSourceId,
@@ -1660,6 +1670,8 @@ export function useEditorState() {
     onZoomIn: () => setViewportZoom((z) => Math.min(5, Math.round((z + 0.1) * 10) / 10)),
     onZoomOut: () => setViewportZoom((z) => Math.max(0.1, Math.round((z - 0.1) * 10) / 10)),
     onZoomReset: () => setViewportZoom(1),
+    zenMode: panelLayout.zenMode,
+    onToggleZen: toggleZenMode,
     enabled: shortcutsEnabled,
   });
 
@@ -1874,6 +1886,7 @@ export function useEditorState() {
     tabLoadErrors,
     tabs,
     toggleActiveTabLock,
+    toggleZenMode,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,

@@ -14,6 +14,8 @@ The first row of the palette holds the canvas-tool toggles:
 - **Select** — drag-on-empty draws a marquee for multi-select.
 - **Laser**: presenter mode. Pointer-move emits a glowing trail in the local participant's colour that fades over ~1 s. On a mouse, click-drag pans the canvas (same as Pan tool) so the presenter can reposition without switching tools, and the trail keeps capturing during the pan so peers see a sweeping laser. On a touch device the same drag DRAWS the laser instead of panning: touch has no hover, so a finger drag is the only way to point at things and pan-on-drag would pin the laser dot in canvas-coords (the canvas slides under the finger). Touch users pan via the Pan tool, two-finger trackpad, or zoom controls. Other participants see the trail in real time in the sender's colour via the `laser` `RoomOp` (see [spec/11](11-api.md)). Cursor indicators broadcast as `null` while laser is active so peers see only the laser dot, not a stacked cursor + dot.
 
+To the right of Laser sits the **Zen mode** button (a fullscreen / expand icon, shortcut `Z`) — not a canvas tool but an orthogonal focus toggle that hides all chrome. See [spec/26](26-zen-mode.md).
+
 ### Movable
 
 - The header row is a **drag handle** — press it and drag to move the palette anywhere on the canvas. Clicking a button does not start a drag.

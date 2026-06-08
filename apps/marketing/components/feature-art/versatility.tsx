@@ -705,6 +705,67 @@ export function MinimalPanelArt() {
   );
 }
 
+// Zen / focus mode (spec/26): crossfade from a chrome-heavy editor
+// (header bar + side panels) to a clean canvas with just the zoom dock.
+// The centre shape sits outside the crossfade so the chrome melts away
+// around the content that stays.
+export function ZenModeArt() {
+  return (
+    <Frame canvas>
+      {/* full chrome */}
+      <div className="fa-on absolute inset-0">
+        <div className="absolute inset-x-0 top-0 flex h-4 items-center gap-1 border-b border-slate-200 bg-white/90 px-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+          <span className="h-1.5 w-10 rounded bg-slate-200" />
+          <span className="ml-auto h-1.5 w-4 rounded bg-slate-200" />
+        </div>
+        <div className="absolute bottom-2 left-2 top-6 flex w-6 flex-col items-center gap-1 rounded-md border border-slate-200 bg-white py-1 shadow-sm">
+          {[0, 1, 2].map((i) => (
+            <span key={i} className="h-2.5 w-2.5 rounded bg-slate-200" />
+          ))}
+        </div>
+        <div className="absolute bottom-2 right-2 top-6 w-10 space-y-1 rounded-md border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="h-1.5 w-full rounded bg-slate-300" />
+          <div className="h-1.5 w-3/4 rounded bg-slate-200" />
+        </div>
+        <span className="absolute left-2 top-1 text-[7px] font-medium text-slate-400">
+          full editor
+        </span>
+      </div>
+      {/* zen — content + just the zoom dock (with its exit control) */}
+      <div className="fa-off absolute inset-0">
+        <span className="absolute bottom-1.5 right-2 flex items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+          100%
+          <svg
+            width="7"
+            height="7"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M2 6h4V2" />
+            <path d="M14 6h-4V2" />
+            <path d="M14 10h-4v4" />
+            <path d="M2 10h4v4" />
+          </svg>
+        </span>
+        <span className="absolute left-2 top-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+          zen mode
+        </span>
+      </div>
+      {/* the content you focus on — stays put while the chrome fades */}
+      <div
+        className="absolute left-1/2 top-1/2 h-7 w-12 -translate-x-1/2 -translate-y-1/2 rounded-md border-2"
+        style={{ borderColor: BLUE_STROKE, backgroundColor: BLUE_FILL }}
+      />
+    </Frame>
+  );
+}
+
 // Editable table element: a coloured header row over body cells, with one
 // cell ringed as if mid-edit (the real table opens a cell on double-click)
 // and the header tinted to show the per-table header colours.

@@ -212,7 +212,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
     viewportZoom,
     welcomeOpen,
     wrapperRef,
+    zenMode,
+    onToggleZen,
   } = props;
+  // Zen / focus mode (spec/26): hide all floating chrome. `chromeHidden`
+  // folds it in next to the welcome-flow gate that already suppresses
+  // the same panels, so each panel stays hidden in either state.
+  const chromeHidden = welcomeOpen || zenMode === true;
   // Alignment guides for the in-progress draw-to-size box, so the user
   // sees which neighbour edges / centres it latched onto — the same faint
   // lines a move / resize shows. Box intents only (arrows are a line,
@@ -251,7 +257,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       : snapGuides;
   return (
     <>
-      {hydrated && elements.length === 0 && !showTemplatePicker && !welcomeOpen ? (
+      {hydrated && elements.length === 0 && !showTemplatePicker && !chromeHidden ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="pointer-events-none flex max-w-sm animate-fly-up-in flex-col items-center rounded-xl border border-slate-200 bg-white px-6 py-5 text-center shadow-md">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-500">
@@ -706,7 +712,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : null}
 
       <CanvasMobileDock
-        welcomeOpen={welcomeOpen}
+        welcomeOpen={chromeHidden}
         minimalPanels={minimalPanels}
         readOnly={readOnly}
         hasAi={!!aiPanel}
@@ -717,36 +723,39 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
       {/* Explorer is the one piece of chrome that stays visible during
           the welcome flow — the sign-up nudge is genuinely useful there
-          and lives outside the diagram's controls. */}
-      <Explorer
-        position={explorerPosition}
-        diagrams={diagramList}
-        folders={folders}
-        loading={diagramListLoading}
-        shared={sharedDiagrams}
-        onDismissShared={onDismissShared}
-        onOpenFullExplorer={onOpenFullExplorer}
-        currentDiagramId={currentDiagramId}
-        onMoveTo={onMoveExplorer}
-        onReset={onResetExplorer}
-        onOpenDiagram={onOpenDiagram}
-        onNewDiagram={onNewDiagram}
-        onRenameCurrent={onRenameCurrent}
-        onDeleteDiagram={onDeleteDiagram}
-        onDuplicateDiagram={onDuplicateDiagram}
-        onCreateFolder={onCreateFolder}
-        onRenameFolder={onRenameFolder}
-        onDeleteFolder={onDeleteFolder}
-        onMoveDiagramToFolder={onMoveDiagramToFolder}
-        onSize={(size) => setExplorerBottomY(size.bottomY)}
-        mobileOpenOverride={activeMobilePanel === 'explorer' ? true : false}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={() => {
-          setActiveMobilePanel(null);
-          setActiveDockAnchor(null);
-        }}
-      />
+          and lives outside the diagram's controls. Zen mode hides it
+          along with everything else (spec/26). */}
+      {zenMode ? null : (
+        <Explorer
+          position={explorerPosition}
+          diagrams={diagramList}
+          folders={folders}
+          loading={diagramListLoading}
+          shared={sharedDiagrams}
+          onDismissShared={onDismissShared}
+          onOpenFullExplorer={onOpenFullExplorer}
+          currentDiagramId={currentDiagramId}
+          onMoveTo={onMoveExplorer}
+          onReset={onResetExplorer}
+          onOpenDiagram={onOpenDiagram}
+          onNewDiagram={onNewDiagram}
+          onRenameCurrent={onRenameCurrent}
+          onDeleteDiagram={onDeleteDiagram}
+          onDuplicateDiagram={onDuplicateDiagram}
+          onCreateFolder={onCreateFolder}
+          onRenameFolder={onRenameFolder}
+          onDeleteFolder={onDeleteFolder}
+          onMoveDiagramToFolder={onMoveDiagramToFolder}
+          onSize={(size) => setExplorerBottomY(size.bottomY)}
+          mobileOpenOverride={activeMobilePanel === 'explorer' ? true : false}
+          mobileDockAnchor={activeDockAnchor ?? undefined}
+          forceDockMode={!!minimalPanels}
+          onMobileClose={() => {
+            setActiveMobilePanel(null);
+            setActiveDockAnchor(null);
+          }}
+        />
+      )}
 
       {/* Activity panel — per-diagram audit log + Undo/Redo. Hidden
           during the welcome flow because there's nothing to audit
@@ -764,7 +773,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           its static top-[15rem], landing the panel BEHIND the
           Editor pane (Editor renders later in the DOM and wins
           z-order) instead of stacking cleanly under it. */}
-      {!welcomeOpen && commentRows.length > 0 && contextBottomY > 0 ? (
+      {!chromeHidden && commentRows.length > 0 && contextBottomY > 0 ? (
         <div className="hidden sm:contents">
           <CommentsPanel
             position={commentsPanelPosition}
@@ -777,7 +786,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         </div>
       ) : null}
 
-      {!welcomeOpen && aiPanel ? (
+      {!chromeHidden && aiPanel ? (
         <MovablePanel
           title="AI Assistant"
           position={aiPanel.position}
@@ -805,7 +814,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         </MovablePanel>
       ) : null}
 
-      {welcomeOpen ? null : (
+      {chromeHidden ? null : (
         <ActivityPanel
           position={activityPosition}
           minimized={activityMinimized}
@@ -841,7 +850,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           from the canvas chrome (no-add palette + locked element
           affordances for view-role), so dropping the badge on a
           phone is a small loss for a meaningful layout win. */}
-      {!isOwner ? (
+      {!isOwner && !zenMode ? (
         <div className="pointer-events-none absolute left-1/2 top-3 z-30 hidden -translate-x-1/2 items-center gap-2 sm:flex">
           {ownerParticipant ? (
             <div className="flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
@@ -862,11 +871,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
           </div>
         </div>
       ) : null}
-      {welcomeOpen || readOnly ? null : (
+      {chromeHidden || readOnly ? null : (
         <CommandPalette
           position={palettePosition}
           canvasTool={canvasTool}
           onSetCanvasTool={onSetCanvasTool}
+          onToggleZen={onToggleZen}
           onMoveTo={onMovePalette}
           onReset={onResetPalette}
           onAddShape={onAddShape}
@@ -890,7 +900,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       )}
 
-      {welcomeOpen || readOnly ? null : (
+      {chromeHidden || readOnly ? null : (
         <ContextPanel
           position={contextPosition}
           selection={paletteSelection}
@@ -924,7 +934,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       <div className="pointer-events-none absolute bottom-4 right-4 z-10 flex items-center gap-2">
         {welcomeOpen ? null : (
           <>
-            {activityMinimized ? (
+            {!zenMode && activityMinimized ? (
               // Collapsed Activity dock: a single Open button in
               // view-role mode (visitors can still see the audit
               // trail by opening the panel, just not undo/redo it);
@@ -990,6 +1000,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               onZoomOut={handleZoomOut}
               onReset={handleResetZoom}
               onFitToScreen={onFitToScreen}
+              onExitZen={zenMode ? onToggleZen : undefined}
             />
           </>
         )}

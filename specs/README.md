@@ -33,6 +33,8 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 22  | [Telemetry](22-telemetry.md)                                       | Anonymous first-party events in D1 + public `/telemetry` dashboard |
 | 23  | [Marketing assets](23-marketing-assets.md)                         | `marketing/` folder: off-site copy + media for listings/promotion  |
 | 24  | [Share password](24-share-password.md)                             | Optional per-diagram password gating share-link view + edit access |
+| 25  | [AI assistance](25-ai-assistance.md)                               | Optional AI assistant (Build / Clean / Ask / Review) on the canvas |
+| 26  | [Zen mode](26-zen-mode.md)                                         | Distraction-free focus mode: hide all chrome, keep canvas + zoom   |
 
 ## Workflow
 

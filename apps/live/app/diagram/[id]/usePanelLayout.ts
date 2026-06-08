@@ -23,6 +23,10 @@ export function usePanelLayout() {
   // Activity defaults to minimised: most users only peek at it
   // occasionally, and the dock button keeps it one click away.
   const [activityMinimized, setActivityMinimized] = useState(true);
+  // Zen / focus mode (spec/26): hide all floating chrome (header, tab
+  // bar, panels, docks) so only the canvas content + zoom controls
+  // remain. Purely a view flag — not persisted, not synced.
+  const [zenMode, setZenMode] = useState(false);
   const [editorExpandSignal, setEditorExpandSignal] = useState(0);
   const requestEditorOpen = () => setEditorExpandSignal((n) => n + 1);
 
@@ -43,6 +47,8 @@ export function usePanelLayout() {
     setAiPanelVisible,
     activityMinimized,
     setActivityMinimized,
+    zenMode,
+    setZenMode,
     editorExpandSignal,
     requestEditorOpen,
   };

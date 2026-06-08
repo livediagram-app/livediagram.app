@@ -423,6 +423,52 @@ export function LaserIcon() {
   );
 }
 
+// Zen / focus mode (spec/26): an "expand to fullscreen" glyph (four
+// corner arrows pushing outward) for the palette enter button.
+export function ZenIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6 2H2v4" />
+      <path d="M10 2h4v4" />
+      <path d="M14 10v4h-4" />
+      <path d="M2 10v4h4" />
+    </svg>
+  );
+}
+
+// "Exit fullscreen" / compress glyph (corner arrows pulling inward) for
+// the exit-zen control next to the zoom controls.
+export function ZenExitIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 6h4V2" />
+      <path d="M14 6h-4V2" />
+      <path d="M14 10h-4v4" />
+      <path d="M2 10h4v4" />
+    </svg>
+  );
+}
+
 export function NonePaddingIcon() {
   return (
     <svg
