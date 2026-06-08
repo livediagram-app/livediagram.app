@@ -1,8 +1,8 @@
 import { useShowMoreList } from '@/hooks/useShowMoreList';
-import { Accordion, PATTERNS, ColorSwatch, PatternButton } from './palette-controls';
+import { Accordion, PATTERNS, ColorSwatch, PatternButton, SizeButton } from './palette-controls';
 import type {} from '@livediagram/diagram';
 import { THEMES } from '@/lib/themes';
-import { AutoAlignIcon, ResetIcon } from './palette-icons';
+import { AutoAlignIcon, DotsIcon, ResetIcon, ScaleIcon } from './palette-icons';
 import { ShowMoreButton } from './ShowMoreButton';
 import { Tooltip } from './Tooltip';
 import { FontSelect } from './FontSelect';
@@ -10,6 +10,7 @@ import { FontSelect } from './FontSelect';
 import type { TabSectionControls } from './CommandPalette';
 
 export type TabAccordionState = {
+  text: boolean;
   theme: boolean;
   canvas: boolean;
   cleanup: boolean;
@@ -28,6 +29,7 @@ export function TabSection({
   const toggle = (key: keyof TabAccordionState) =>
     setOpen((prev) => {
       const closed: TabAccordionState = {
+        text: false,
         theme: false,
         canvas: false,
         cleanup: false,
@@ -45,15 +47,6 @@ export function TabSection({
   return (
     <div className="flex flex-col">
       <Accordion title="Theme" open={open.theme} onToggle={() => toggle('theme')}>
-        {/* Tab default font (spec/28): applies to every text element on
-            this tab that hasn't set its own font. */}
-        <div className="mb-3 flex flex-col gap-1 border-b border-slate-100 pb-3 dark:border-slate-800">
-          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">Font</p>
-          <FontSelect value={tab.font} ariaLabel="Tab font" onChange={tab.onSetTabFont} />
-          <p className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
-            The default for every element on this tab; individual elements can override it.
-          </p>
-        </div>
         <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
           Sets the canvas backdrop and recolours every element on this tab to match the theme
           (sticky notes keep their amber palette).
@@ -169,6 +162,59 @@ export function TabSection({
             onChange={(e) => tab.onSetBackgroundOpacity(parseFloat(e.target.value))}
             className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
           />
+        </div>
+      </Accordion>
+      {/* Tab text defaults (spec/28): the font every element without its
+          own font inherits, and the size seeded onto new palette elements.
+          Sits under Canvas — it's tab appearance, not a primary control. */}
+      <Accordion title="Text" open={open.text} onToggle={() => toggle('text')}>
+        <div className="flex flex-col gap-1">
+          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">Font</p>
+          <FontSelect value={tab.font} ariaLabel="Tab font" onChange={tab.onSetTabFont} />
+          <p className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+            The default for every element on this tab; individual elements can override it.
+          </p>
+        </div>
+        <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
+          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
+            Default size for new elements
+          </p>
+          {/* Same controls as the element editor's Text > Size row so the
+              two read identically. */}
+          <div className="grid grid-cols-4 gap-1">
+            <Tooltip title="Scale" description="Auto-fit each new element's label to its size.">
+              <SizeButton
+                active={(tab.defaultTextSize ?? 'md') === 'scale'}
+                onClick={() => tab.onSetTabDefaultTextSize('scale')}
+              >
+                <ScaleIcon />
+              </SizeButton>
+            </Tooltip>
+            <Tooltip title="Small" description="New elements start at the small font size.">
+              <SizeButton
+                active={(tab.defaultTextSize ?? 'md') === 'sm'}
+                onClick={() => tab.onSetTabDefaultTextSize('sm')}
+              >
+                <DotsIcon count={1} />
+              </SizeButton>
+            </Tooltip>
+            <Tooltip title="Medium" description="New elements start at the medium font size.">
+              <SizeButton
+                active={(tab.defaultTextSize ?? 'md') === 'md'}
+                onClick={() => tab.onSetTabDefaultTextSize('md')}
+              >
+                <DotsIcon count={2} />
+              </SizeButton>
+            </Tooltip>
+            <Tooltip title="Large" description="New elements start at the large font size.">
+              <SizeButton
+                active={(tab.defaultTextSize ?? 'md') === 'lg'}
+                onClick={() => tab.onSetTabDefaultTextSize('lg')}
+              >
+                <DotsIcon count={3} />
+              </SizeButton>
+            </Tooltip>
+          </div>
         </div>
       </Accordion>
       {tab.importError ? (

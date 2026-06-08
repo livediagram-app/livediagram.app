@@ -21,7 +21,12 @@ import {
   THEMES,
   type ThemeId,
 } from '@/lib/themes';
-import { type BackgroundPattern, type Element, type Tab } from '@livediagram/diagram';
+import {
+  type BackgroundPattern,
+  type Element,
+  type Tab,
+  type TextSize,
+} from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
 
 // Slider-edit debounce window for the canvas colour / opacity
@@ -100,6 +105,14 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     );
     emitTabMeta(activeId, font ? 'Changed tab font' : 'Cleared tab font');
     track('Tab', 'Changed', 'Font');
+  };
+
+  // Tab default text size (spec/28): seeded onto NEW palette elements.
+  const setTabDefaultTextSize = (size: TextSize) => {
+    if (editsBlocked) return;
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, defaultTextSize: size } : t)));
+    emitTabMeta(activeId, `Changed default text size to ${size}`);
+    track('Tab', 'Changed', 'DefaultTextSize');
   };
 
   const setBackgroundPattern = (pattern: BackgroundPattern) => {
@@ -201,6 +214,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   return {
     autoAlignTab,
     setTabFont,
+    setTabDefaultTextSize,
     setBackgroundPattern,
     setTheme,
     resetElementsToTheme,

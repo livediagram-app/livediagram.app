@@ -81,6 +81,8 @@ export function useElementHelpers(opts: {
       y: centre.y - height / 2,
       width,
       height,
+      // Seed the tab's default text size onto the new element (spec/28).
+      ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
     };
     // Single commit that both adds the element and marks the template
     // picker as dismissed for this tab (if it was still showing).

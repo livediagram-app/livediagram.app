@@ -733,6 +733,12 @@ export type Tab = {
   // one; unset = the editor default. Lets a whole tab adopt a font in
   // one move while individual elements can still override.
   font?: string;
+  // Default text size for NEW elements added from the palette on this
+  // tab. Unlike `font`, this is a create-time seed — copied onto each
+  // new element's own `textSize`, not resolved at render — so changing
+  // it later doesn't retroactively resize existing elements. Unset = the
+  // per-type factory default ('md').
+  defaultTextSize?: TextSize;
   // Set to true once the user has explicitly chosen a starting template
   // (including "Blank"), so the template picker doesn't reappear on this tab.
   templateChosen?: boolean;

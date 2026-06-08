@@ -326,7 +326,13 @@ export function TableView({
       ? Math.max(9, Math.min(40, Math.round(rowH * 0.4)))
       : (CELL_FONT_PX[element.textSize ?? 'md'] ?? 13);
   const cellPad = PADDING_PX[element.padding ?? 'sm'];
-  const headerFill = element.headerFill ?? `${stroke}22`;
+  // Default header band: an OPAQUE tint of the grid stroke (the theme
+  // accent) over the cell base, so it reads as a solid header that stands
+  // out from the body cells rather than the old `${stroke}22` (~13% alpha)
+  // translucent wash that let the canvas show through. color-mix keeps it
+  // theme-appropriate regardless of the stroke's colour format.
+  const headerFill =
+    element.headerFill ?? `color-mix(in srgb, ${stroke} 18%, ${element.fillColor ?? '#ffffff'})`;
   const headerTextColor = element.headerTextColor ?? textColor;
   const alignX = element.textAlignX ?? 'center';
   const alignY = element.textAlignY ?? 'middle';

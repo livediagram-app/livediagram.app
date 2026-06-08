@@ -259,6 +259,7 @@ export function EditorView() {
     setTextColorSelected,
     setTextSizeSelected,
     setTabFont,
+    setTabDefaultTextSize,
     setTheme,
     settingsOpen,
     setUserPreferences,
@@ -404,6 +405,7 @@ export function EditorView() {
         tabBackgroundOpacity={activeTab.backgroundOpacity ?? 1}
         tabPatternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
         tabFont={activeTab.font}
+        tabDefaultTextSize={activeTab.defaultTextSize}
         mainRef={canvasMainRef}
         isPinchingRef={isPinchingRef}
         viewportZoom={viewportZoom}
@@ -642,6 +644,7 @@ export function EditorView() {
         tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
         onSetTheme={setTheme}
         onSetTabFont={setTabFont}
+        onSetTabDefaultTextSize={setTabDefaultTextSize}
         onResetElementsToTheme={resetElementsToTheme}
         importError={importError}
         onAutoAlign={hydrated && !anyWelcomeOpen && !isReadOnly ? autoAlignTab : undefined}

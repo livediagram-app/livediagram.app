@@ -105,6 +105,7 @@ export function useEditorHistory(opts: {
       setMultiSelectedIds(new Set());
       requestEditorOpen();
       setTabAccordionsOpen({
+        text: false,
         theme: true,
         canvas: false,
         cleanup: false,
@@ -114,6 +115,7 @@ export function useEditorHistory(opts: {
       setMultiSelectedIds(new Set());
       requestEditorOpen();
       setTabAccordionsOpen({
+        text: false,
         theme: false,
         canvas: true,
         cleanup: false,

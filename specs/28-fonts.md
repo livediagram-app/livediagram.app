@@ -29,9 +29,19 @@ self-host that opts out). The editor never depends on the fonts loading.
 
 - **Per element** — a Font dropdown at the top of the **Text accordion**
   (Editor panel). Sets `Element.font`. "Tab default" clears the override.
-- **Per tab** — a Font dropdown at the top of the **Theme** section of the
-  Current Tab panel. Sets `Tab.font`: the default for **every** text
-  element on the tab that hasn't set its own. "Default" clears it.
+- **Per tab** — a **Text** accordion in the Current Tab panel (below
+  Canvas), holding:
+  - **Font** — sets `Tab.font`: the default for **every** text element on
+    the tab that hasn't set its own. "Default" clears it.
+  - **Default size for new elements** — sets `Tab.defaultTextSize`, which
+    is seeded onto each element added from the palette next (a create-time
+    copy onto the element's own `textSize`, not a render-time resolve — so
+    changing it later never resizes existing elements). Unset = the
+    per-type factory default ('md').
+
+A **new tab** inherits the active tab's `font` and `defaultTextSize` (the
+same way it inherits the theme), so tabs in one diagram stay consistent
+instead of each reverting to the editor default.
 
 Resolution order for any text: `element.font → tab.font → editor default`
 (the system sans stack). `resolveFontStack` maps a stored id to its CSS

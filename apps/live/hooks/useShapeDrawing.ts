@@ -38,6 +38,13 @@ import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 
+// Stroke for a new arrow when the active theme has no explicit
+// `elementStroke` (the Brand theme). brand-500 — matches the shape
+// default stroke (`defaultStrokeColor`) so an added arrow reads as the
+// accent like every other new element, instead of ArrowView's slate-700
+// fallback (which looked like an un-themed black line + arrowhead).
+const NEW_ARROW_THEME_STROKE_FALLBACK = '#0ea5e9';
+
 type ShapeDrawingDeps = {
   editsBlocked: boolean;
   // The currently-selected element id, read at arm-time so a tap-to-drop
@@ -159,7 +166,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         from: { kind: 'free', x: arrowStartX, y: startY },
         to: { kind: 'free', x: arrowEndX, y: arrowEndY },
         arrowEnds: 'none',
-        ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
+        strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
       };
       const before = activeTab.elements;
       // Append: new elements default to the FRONT of z-order
@@ -206,7 +213,16 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       patternColor: activeTab.patternColor,
       theme: activeTab.theme,
     });
-    const sized = { ...base, ...colours, x, y, width, height } as typeof base;
+    // Seed the tab's default text size onto the new element (spec/28).
+    const sized = {
+      ...base,
+      ...colours,
+      x,
+      y,
+      width,
+      height,
+      ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
+    } as typeof base;
     // Append so new elements default to the FRONT of z-order (see
     // addBoxed's note for the rationale).
     commit((els) => [...els, sized]);
@@ -306,7 +322,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
             from: { kind: 'free', x: fromPt.x, y: fromPt.y },
             to: { kind: 'free', x: toPt.x, y: toPt.y },
             arrowEnds: 'none',
-            ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
+            strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
           };
           const before = activeTab.elements;
           const after = [...before, arrow];

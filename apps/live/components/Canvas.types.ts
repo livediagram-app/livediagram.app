@@ -41,6 +41,8 @@ export type CanvasProps = {
   // The active tab's default font id (spec/28). Elements without their
   // own `font` render in this; undefined = the editor default.
   tabFont?: string;
+  // The active tab's default text size for new palette elements (spec/28).
+  tabDefaultTextSize?: import('@livediagram/diagram').TextSize;
   mainRef: Ref<HTMLElement>;
   viewportOffset: { x: number; y: number };
   setViewportOffset: (offset: { x: number; y: number }) => void;
@@ -345,6 +347,8 @@ export type CanvasProps = {
   onSetTheme: (id: import('@/lib/themes').ThemeId) => void;
   // Set the active tab's default font (spec/28); null clears it.
   onSetTabFont: (font: string | null) => void;
+  // Set the active tab's default text size for new palette elements.
+  onSetTabDefaultTextSize: (size: import('@livediagram/diagram').TextSize) => void;
   onResetElementsToTheme: () => void;
   // File I/O for the current tab — moved here so the Current Tab
   // section (right-hand inspector) houses them next to theme +

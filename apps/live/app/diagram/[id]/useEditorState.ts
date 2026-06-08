@@ -196,10 +196,11 @@ export function useEditorState() {
   // click handler can pop the matching accordion (e.g. clicking a
   // "Changed theme to X" entry opens the Theme accordion).
   const [tabAccordionsOpen, setTabAccordionsOpen] = useState<{
+    text: boolean;
     theme: boolean;
     canvas: boolean;
     cleanup: boolean;
-  }>({ theme: false, canvas: false, cleanup: false });
+  }>({ text: false, theme: false, canvas: false, cleanup: false });
   // Canvas tool — Pan (default, drag-on-empty scrolls) vs Select
   // (drag-on-empty marquee-selects). Holding Space always pans
   // regardless. Lives in page so other components (e.g. status bar
@@ -1301,9 +1302,10 @@ export function useEditorState() {
   // Open one of the Tab section accordions inside the Editor panel,
   // popping the panel back if it was minimised. Both context-menu
   // actions ("Change Theme", "Change Canvas") route here rather than
-  const openTabAccordion = (which: 'theme' | 'canvas') => {
+  const openTabAccordion = (which: 'text' | 'theme' | 'canvas') => {
     panelLayout.requestEditorOpen();
     setTabAccordionsOpen({
+      text: which === 'text',
       theme: which === 'theme',
       canvas: which === 'canvas',
       cleanup: false,
@@ -1329,6 +1331,7 @@ export function useEditorState() {
   const {
     autoAlignTab,
     setTabFont,
+    setTabDefaultTextSize,
     setBackgroundPattern,
     setTheme,
     resetElementsToTheme,
@@ -1848,6 +1851,7 @@ export function useEditorState() {
     setBackgroundOpacity,
     setBackgroundPattern,
     setTabFont,
+    setTabDefaultTextSize,
     setBorderRadiusSelected,
     setBorderStrokeSelected,
     setBorderStyleSelected,

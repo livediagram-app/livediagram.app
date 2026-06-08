@@ -100,6 +100,10 @@ export function useTabActions(deps: TabActionsDeps) {
           backgroundColor: activeTab.backgroundColor,
           backgroundOpacity: activeTab.backgroundOpacity,
           patternColor: activeTab.patternColor,
+          // Carry the font + default text size too so tabs in one diagram
+          // stay visually consistent instead of each reverting to default.
+          font: activeTab.font,
+          defaultTextSize: activeTab.defaultTextSize,
         }
       : {};
     const tab: Tab = { ...createTab(`Tab ${tabs.length + 1}`), ...seed };

@@ -26,7 +26,11 @@ const fullyStyledShape: BoxedElement = {
   textItalic: true,
   textUnderline: true,
   textStrikethrough: true,
+  font: 'caveat',
   padding: 'lg',
+  strokeWidth: 'thick',
+  strokeStyle: 'dashed',
+  borderRadius: 'lg',
   // Identity / content fields the painter must NOT copy.
   label: 'Source label',
   groupId: 'g1',
@@ -43,6 +47,9 @@ const fullyStyledArrow: ArrowElement = {
   strokeStyle: 'dashed',
   opacity: 0.5,
   arrowEnds: 'both',
+  arrowheadSize: 'large',
+  arrowheadShape: 'triangle-hollow',
+  arrowStyle: 'curved',
   label: 'Arrow label',
   locked: true,
 };
@@ -65,7 +72,11 @@ describe('paintableBoxedFields', () => {
       textItalic: true,
       textUnderline: true,
       textStrikethrough: true,
+      font: 'caveat',
       padding: 'lg',
+      strokeWidth: 'thick',
+      strokeStyle: 'dashed',
+      borderRadius: 'lg',
     });
   });
 
@@ -113,6 +124,9 @@ describe('paintableArrowFields', () => {
       strokeStyle: 'dashed',
       opacity: 0.5,
       arrowEnds: 'both',
+      arrowheadSize: 'large',
+      arrowheadShape: 'triangle-hollow',
+      arrowStyle: 'curved',
     });
   });
 

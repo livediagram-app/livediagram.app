@@ -142,6 +142,10 @@ export type TabSectionControls = {
   // `onSetTabFont(null)` clears it.
   font: string | null;
   onSetTabFont: (font: string | null) => void;
+  // Tab default text size for NEW palette elements (spec/28). Unset =
+  // the per-type factory default; the picker shows 'md' as the baseline.
+  defaultTextSize: TextSize | null;
+  onSetTabDefaultTextSize: (size: TextSize) => void;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
   onSetBackgroundColor: (color: string) => void;
   backgroundOpacity: number;

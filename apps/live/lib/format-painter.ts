@@ -14,7 +14,13 @@
 // choice ("does this belong on the painter?") instead of a passive,
 // silent one ("the painter just started copying my new field too").
 
-import type { ArrowElement, BoxedElement } from '@livediagram/diagram';
+import type {
+  ArrowElement,
+  BorderRadius,
+  BorderStroke,
+  BorderStyle,
+  BoxedElement,
+} from '@livediagram/diagram';
 
 // Strip undefined keys so a `{ ...target, ...projection }` spread
 // never overwrites a defined value on the target with `undefined`.
@@ -44,6 +50,17 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
       opacity: source.opacity,
     });
   }
+  // Border + font live only on some boxed variants (shape / table carry
+  // the border presets; shape / text / sticky / table carry `font`).
+  // Read them through a loose view so the projection compiles across the
+  // union; stripUndefined drops any the source doesn't actually have, and
+  // a target that lacks the field harmlessly ignores the stray key.
+  const ext = source as {
+    strokeWidth?: BorderStroke;
+    strokeStyle?: BorderStyle;
+    borderRadius?: BorderRadius;
+    font?: string;
+  };
   return stripUndefined<BoxedElement>({
     width: source.width,
     height: source.height,
@@ -59,7 +76,14 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     textItalic: source.textItalic,
     textUnderline: source.textUnderline,
     textStrikethrough: source.textStrikethrough,
+    font: ext.font,
     padding: source.padding,
+    // Border presets (shape / table). Carried so painting a styled
+    // border onto another shape actually copies the border, not just
+    // the fill / stroke colour.
+    strokeWidth: ext.strokeWidth,
+    strokeStyle: ext.strokeStyle,
+    borderRadius: ext.borderRadius,
   });
 }
 
@@ -73,5 +97,10 @@ export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement
     strokeStyle: source.strokeStyle,
     opacity: source.opacity,
     arrowEnds: source.arrowEnds,
+    // Arrowhead + path-shape presets, so painting copies the whole look
+    // (a curved dashed UML connector), not just colour + ends.
+    arrowheadSize: source.arrowheadSize,
+    arrowheadShape: source.arrowheadShape,
+    arrowStyle: source.arrowStyle,
   });
 }
