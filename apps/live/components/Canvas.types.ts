@@ -236,12 +236,17 @@ export type CanvasProps = {
   onBeginAnchorDrag: (id: string, anchor: Anchor, e: ReactPointerEvent) => void;
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string) => void;
-  onCommitCells: (id: string, cells: string[][]) => void;
-  onCommitColWidths: (id: string, colWidths: (number | null)[]) => void;
-  onCommitRowHeights: (id: string, rowHeights: (number | null)[]) => void;
-  onCommitCellStyles: (
+  // Single combined table commit (cells + the parallel colWidths /
+  // rowHeights / cellStyles arrays) applied in ONE commit, so structural
+  // ops can't drop a side array or clobber each other off a stale base.
+  onCommitTable: (
     id: string,
-    cellStyles: (import('@livediagram/diagram').TableCellStyle | null)[][],
+    patch: Partial<
+      Pick<
+        import('@livediagram/diagram').TableElement,
+        'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
+      >
+    >,
   ) => void;
   onCancelEdit: () => void;
   onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;

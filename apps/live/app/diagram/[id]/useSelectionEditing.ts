@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { isBoxed, type Element, type TableCellStyle, type Tab } from '@livediagram/diagram';
+import { isBoxed, type Element, type TableElement, type Tab } from '@livediagram/diagram';
 import { patchTab } from './editor-page-helpers';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
@@ -75,27 +75,19 @@ export function useSelectionEditing(opts: {
     setEditingId(elementId);
   };
 
-  const commitCellStyles = (elementId: string, cellStyles: (TableCellStyle | null)[][]) => {
+  // Single entry point for every table mutation: a partial patch of the
+  // table's fields, applied in ONE commit. Structural ops (insert / delete
+  // / move row-column, clear cell) change `cells` AND the parallel
+  // `colWidths` / `rowHeights` / `cellStyles` arrays at once; issuing those
+  // as separate commits each read the same stale `activeTab.elements` base
+  // and clobbered one another (only the last landed), losing the reorder
+  // and dropping pinned widths / styles. One patch, one commit, no drift.
+  const commitTable = (
+    elementId: string,
+    patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
+  ) => {
     commit((els) =>
-      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, cellStyles } : el)),
-    );
-  };
-
-  const commitRowHeights = (elementId: string, rowHeights: (number | null)[]) => {
-    commit((els) =>
-      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, rowHeights } : el)),
-    );
-  };
-
-  const commitColWidths = (elementId: string, colWidths: (number | null)[]) => {
-    commit((els) =>
-      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, colWidths } : el)),
-    );
-  };
-
-  const commitCells = (elementId: string, cells: string[][]) => {
-    commit((els) =>
-      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, cells } : el)),
+      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, ...patch } : el)),
     );
   };
 
@@ -203,10 +195,7 @@ export function useSelectionEditing(opts: {
     beginGroup,
     beginEdit,
     commitLabel,
-    commitCells,
-    commitColWidths,
-    commitRowHeights,
-    commitCellStyles,
+    commitTable,
     cancelEdit,
     typeIntoSelected,
     selectElement,

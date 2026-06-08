@@ -102,10 +102,7 @@ export function EditorView() {
     commitDraw,
     commitFreehand,
     commitLabel,
-    commitCells,
-    commitColWidths,
-    commitRowHeights,
-    commitCellStyles,
+    commitTable,
     contextMenu,
     contextPosition,
     copying,
@@ -527,10 +524,7 @@ export function EditorView() {
         onBeginAnchorDrag={beginAnchorDrag}
         onBeginEdit={beginEdit}
         onCommitLabel={commitLabel}
-        onCommitCells={commitCells}
-        onCommitColWidths={commitColWidths}
-        onCommitRowHeights={commitRowHeights}
-        onCommitCellStyles={commitCellStyles}
+        onCommitTable={commitTable}
         onCancelEdit={cancelEdit}
         onBeginEndpointDrag={beginEndpointDrag}
         onBeginArrowTranslate={beginArrowTranslate}

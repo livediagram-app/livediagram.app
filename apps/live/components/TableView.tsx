@@ -189,23 +189,24 @@ function MenuButton({
 // explicit width by dragging the divider on their right edge; columns
 // without an override share the remaining space as 1fr tracks. Cell
 // padding follows the element's padding preset. Local UI state only;
-// content + structure persist via onCommitCells / onCommitColWidths.
+// content + structure persist via onCommitTable (one combined patch).
 export function TableView({
   element,
   isSelected,
   readOnly,
-  onCommitCells,
-  onCommitColWidths,
-  onCommitRowHeights,
-  onCommitCellStyles,
+  onCommitTable,
 }: {
   element: TableElement;
   isSelected: boolean;
   readOnly: boolean;
-  onCommitCells: (id: string, cells: string[][]) => void;
-  onCommitColWidths: (id: string, colWidths: (number | null)[]) => void;
-  onCommitRowHeights: (id: string, rowHeights: (number | null)[]) => void;
-  onCommitCellStyles: (id: string, cellStyles: (TableCellStyle | null)[][]) => void;
+  // One combined commit for every table field. Structural ops touch
+  // `cells` plus the parallel colWidths / rowHeights / cellStyles arrays;
+  // committing them together (not as separate commits off a stale base)
+  // keeps the side arrays aligned and avoids clobbering.
+  onCommitTable: (
+    id: string,
+    patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
+  ) => void;
 }) {
   const rows = element.cells.length;
   const cols = element.cells[0]?.length ?? 0;
@@ -230,6 +231,11 @@ export function TableView({
 
   useEffect(() => {
     if (editing && (editing.r >= rows || editing.c >= cols)) setEditing(null);
+    // After a row/column delete a stale selection can point past the
+    // grid — the per-cell toolbar would then float over a non-existent
+    // CSS track and target an out-of-range cell. Clamp it (which also
+    // hides the toolbar) so it can't act on a cell that no longer exists.
+    setSelectedCell((s) => (s && (s.r >= rows || s.c >= cols) ? null : s));
   }, [editing, rows, cols]);
 
   useEffect(() => {
@@ -284,7 +290,7 @@ export function TableView({
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === 'Backspace' || e.key === 'Delete') {
         e.preventDefault();
-        onCommitCells(element.id, setTableCell(element, r, c, '').cells);
+        onCommitTable(element.id, { cells: setTableCell(element, r, c, '').cells });
       } else if (e.key === 'Enter' || e.key === 'F2') {
         e.preventDefault();
         initialTextRef.current = element.cells[r]?.[c] ?? '';
@@ -298,7 +304,7 @@ export function TableView({
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [selectedCell, editing, readOnly, element, onCommitCells]);
+  }, [selectedCell, editing, readOnly, element, onCommitTable]);
 
   const stroke = element.strokeColor ?? defaultStrokeColor(element);
   const textColor = element.textColor ?? defaultTextColor(element);
@@ -335,7 +341,7 @@ export function TableView({
   };
 
   const commitCell = (r: number, c: number, text: string) => {
-    onCommitCells(element.id, setTableCell(element, r, c, text).cells);
+    onCommitTable(element.id, { cells: setTableCell(element, r, c, text).cells });
   };
 
   // Commit the current cell and jump to (nr, nc), seeding its text.
@@ -369,28 +375,49 @@ export function TableView({
 
   const applyCellStyle = (r: number, c: number, patch: Partial<TableCellStyle>) => {
     track('Element', 'Changed', 'TableCell');
-    onCommitCellStyles(element.id, setCellStyle(element, r, c, patch).cellStyles ?? []);
+    onCommitTable(element.id, { cellStyles: setCellStyle(element, r, c, patch).cellStyles ?? [] });
   };
 
   const moveCol = (from: number, to: number) => {
     track('Element', 'Reordered', 'TableColumn');
     const m = moveTableColumn(element, from, to);
-    onCommitCells(element.id, m.cells);
-    if (m.colWidths) onCommitColWidths(element.id, m.colWidths);
-    if (m.cellStyles) onCommitCellStyles(element.id, m.cellStyles);
+    const patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'cellStyles'>> = {
+      cells: m.cells,
+    };
+    if (m.colWidths) patch.colWidths = m.colWidths;
+    if (m.cellStyles) patch.cellStyles = m.cellStyles;
+    onCommitTable(element.id, patch);
     setMenu(null);
   };
   const moveRow = (from: number, to: number) => {
     track('Element', 'Reordered', 'TableRow');
     const m = moveTableRow(element, from, to);
-    onCommitCells(element.id, m.cells);
-    if (m.rowHeights) onCommitRowHeights(element.id, m.rowHeights);
-    if (m.cellStyles) onCommitCellStyles(element.id, m.cellStyles);
+    const patch: Partial<Pick<TableElement, 'cells' | 'rowHeights' | 'cellStyles'>> = {
+      cells: m.cells,
+    };
+    if (m.rowHeights) patch.rowHeights = m.rowHeights;
+    if (m.cellStyles) patch.cellStyles = m.cellStyles;
+    onCommitTable(element.id, patch);
     setMenu(null);
   };
 
-  const apply = (next: { cells: string[][] }) => {
-    onCommitCells(element.id, next.cells);
+  // Insert / delete row or column. The helper returns the spliced `cells`
+  // PLUS the realigned colWidths / rowHeights / cellStyles; commit them
+  // all together (only including the ones the helper actually produced)
+  // so a pinned width or a coloured cell can't drift onto the wrong
+  // track after the structural change.
+  const apply = (next: {
+    cells: string[][];
+    colWidths?: (number | null)[];
+    rowHeights?: (number | null)[];
+    cellStyles?: (TableCellStyle | null)[][];
+  }) => {
+    const patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>> =
+      { cells: next.cells };
+    if (next.colWidths) patch.colWidths = next.colWidths;
+    if (next.rowHeights) patch.rowHeights = next.rowHeights;
+    if (next.cellStyles) patch.cellStyles = next.cellStyles;
+    onCommitTable(element.id, patch);
     setMenu(null);
   };
   const showControls = isSelected && !readOnly && !element.locked;
@@ -427,7 +454,7 @@ export function TableView({
     const onUp = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      if (dragRef.current) onCommitColWidths(element.id, dragRef.current);
+      if (dragRef.current) onCommitTable(element.id, { colWidths: dragRef.current });
       dragRef.current = null;
       setResizeWidths(null);
     };
@@ -462,7 +489,7 @@ export function TableView({
     const onUp = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      if (dragRowRef.current) onCommitRowHeights(element.id, dragRowRef.current);
+      if (dragRowRef.current) onCommitTable(element.id, { rowHeights: dragRowRef.current });
       dragRowRef.current = null;
       setResizeHeights(null);
     };
@@ -596,7 +623,9 @@ export function TableView({
                         e.preventDefault();
                         if (tabular) {
                           // Spreadsheet / TSV paste fills + grows the grid.
-                          onCommitCells(element.id, pasteIntoTable(element, r, c, grid).cells);
+                          onCommitTable(element.id, {
+                            cells: pasteIntoTable(element, r, c, grid).cells,
+                          });
                           setEditing(null);
                         } else {
                           // Single value: insert as PLAIN text (strip any
@@ -706,12 +735,11 @@ export function TableView({
                     onPointerDown={startColResize(c)}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
-                      onCommitColWidths(
-                        element.id,
-                        Array.from({ length: cols }, (_, i) =>
+                      onCommitTable(element.id, {
+                        colWidths: Array.from({ length: cols }, (_, i) =>
                           i === c ? null : (element.colWidths?.[i] ?? null),
                         ),
-                      );
+                      });
                     }}
                     title="Drag to set width · double-click to auto-fit"
                     className="group pointer-events-auto absolute -right-1 bottom-0 top-0 z-20 w-2 cursor-col-resize"
@@ -735,12 +763,11 @@ export function TableView({
                     onPointerDown={startRowResize(r)}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
-                      onCommitRowHeights(
-                        element.id,
-                        Array.from({ length: rows }, (_, i) =>
+                      onCommitTable(element.id, {
+                        rowHeights: Array.from({ length: rows }, (_, i) =>
                           i === r ? null : (element.rowHeights?.[i] ?? null),
                         ),
-                      );
+                      });
                     }}
                     title="Drag to set height · double-click to auto-fit"
                     className="group pointer-events-auto absolute -bottom-1 left-0 right-0 z-20 h-2 cursor-row-resize"
@@ -1069,11 +1096,13 @@ export function TableView({
                       title="Clear cell (text + formatting)"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onCommitCells(element.id, setTableCell(element, rr, cc, '').cells);
-                        onCommitCellStyles(
-                          element.id,
-                          clearCellStyle(element, rr, cc).cellStyles ?? [],
-                        );
+                        // Text + formatting in ONE commit: separate commits
+                        // both read the same stale `element`, so the second
+                        // overwrote the first and the text reappeared.
+                        onCommitTable(element.id, {
+                          cells: setTableCell(element, rr, cc, '').cells,
+                          cellStyles: clearCellStyle(element, rr, cc).cellStyles ?? [],
+                        });
                       }}
                       className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-950"
                     >

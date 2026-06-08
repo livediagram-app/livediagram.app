@@ -69,12 +69,14 @@ type BoxedElementViewProps = {
   // identities.
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string) => void;
-  onCommitCells: (id: string, cells: string[][]) => void;
-  onCommitColWidths: (id: string, colWidths: (number | null)[]) => void;
-  onCommitRowHeights: (id: string, rowHeights: (number | null)[]) => void;
-  onCommitCellStyles: (
+  onCommitTable: (
     id: string,
-    cellStyles: (import('@livediagram/diagram').TableCellStyle | null)[][],
+    patch: Partial<
+      Pick<
+        import('@livediagram/diagram').TableElement,
+        'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
+      >
+    >,
   ) => void;
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
@@ -143,10 +145,7 @@ function BoxedElementViewImpl({
   onBeginAnchorDrag,
   onBeginEdit,
   onCommitLabel,
-  onCommitCells,
-  onCommitColWidths,
-  onCommitRowHeights,
-  onCommitCellStyles,
+  onCommitTable,
   onCancelEdit,
   onFollowLink,
   onOpenComments,
@@ -359,10 +358,7 @@ function BoxedElementViewImpl({
           element={element}
           isSelected={isSelected}
           readOnly={isLocked || readOnly}
-          onCommitCells={onCommitCells}
-          onCommitColWidths={onCommitColWidths}
-          onCommitRowHeights={onCommitRowHeights}
-          onCommitCellStyles={onCommitCellStyles}
+          onCommitTable={onCommitTable}
         />
       ) : (
         renderLabel(
