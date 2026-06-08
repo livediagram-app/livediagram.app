@@ -13,11 +13,11 @@ A theme with no `palette` is a single-colour theme and behaves exactly as before
 
 The catalogue ships three multi-colour themes, all behind the picker's "Show more themes" toggle:
 
-| Theme    | Feel                                                     |
-| -------- | -------------------------------------------------------- |
-| Rainbow  | Saturated six-hue spectrum (red → orange → … → purple)   |
-| Pastel   | Soft, low-saturation version of the same wheel           |
-| Tropical | Vivid teal / cyan / lime / orange / pink / violet        |
+| Theme    | Feel                                                   |
+| -------- | ------------------------------------------------------ |
+| Rainbow  | Saturated six-hue spectrum (red → orange → … → purple) |
+| Pastel   | Soft, low-saturation version of the same wheel         |
+| Tropical | Vivid teal / cyan / lime / orange / pink / violet      |
 
 ## How a branch is decided
 
