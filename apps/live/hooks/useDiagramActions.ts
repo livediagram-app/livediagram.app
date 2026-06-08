@@ -73,10 +73,11 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
   };
 
   // Delete a diagram by id. When the target is the currently-open one,
-  // redirect to /live/new so the user lands on a fresh welcome flow
-  // (the editor would otherwise be staring at a row that no longer
-  // exists). Deleting any *other* diagram just hits the API + refreshes
-  // the Explorer list. Not undoable — the menu is an explicit action.
+  // redirect to /live/explorer so the user lands on their library (the
+  // editor would otherwise be staring at a row that no longer exists),
+  // where they can pick another diagram or start a new one. Deleting any
+  // *other* diagram just hits the API + refreshes the Explorer list. Not
+  // undoable — the menu is an explicit action.
   const deleteDiagram = async (id: string) => {
     if (typeof window === 'undefined') return;
     const target = id === diagramId ? { name: diagramName } : diagramList.find((d) => d.id === id);
@@ -90,7 +91,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
     track('Diagram', 'Deleted');
     if (id === diagramId) {
       void apiDeleteDiagram(ownerId, id).catch(() => {});
-      window.location.assign(`${window.location.origin}/live/new`);
+      window.location.assign(`${window.location.origin}/live/explorer`);
       return;
     }
     // Optimistic local removal so the Recent row disappears the

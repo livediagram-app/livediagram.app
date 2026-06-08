@@ -106,7 +106,9 @@ export default function ExplorerPage() {
   // What the tree highlights + right pane shows. Defaults to "All
   // diagrams" (the root) so the first impression is the full library
   // — Recent is one sidebar click away.
-  const [selected, setSelected] = useState<SelectedNode>({ kind: 'all' });
+  // Land on Recent — the diagrams you're most likely to want — rather
+  // than the full folder tree.
+  const [selected, setSelected] = useState<SelectedNode>({ kind: 'recent' });
   const confirm = useConfirm();
   // Which folder branches are open in the sidebar. Local state only;
   // a fresh visit starts with the root open and everything else

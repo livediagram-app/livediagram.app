@@ -352,7 +352,17 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Reordered');
   };
 
-  const clearTabContent = () => {
+  const clearTabContent = async () => {
+    // Wiping a whole tab is a big, easy-to-misfire action, so gate it on
+    // the branded confirm dialog (same as deleting a tab) rather than
+    // clearing the instant the menu item is clicked. It IS undoable
+    // (one commit), which the message notes.
+    const ok = await confirm({
+      title: 'Clear this tab?',
+      message: 'Every element on this tab is removed. Undo (Cmd/Ctrl-Z) brings it back.',
+      confirmLabel: 'Clear content',
+    });
+    if (!ok) return;
     commit(() => []);
     setSelectedId(null);
     setEditingId(null);
