@@ -47,3 +47,16 @@ export function writeLocalStorageSafe(key: string, value: string): void {
     // Storage quota / private browsing: in-memory only.
   }
 }
+
+// Remove a key from window.localStorage. Silently no-ops on SSR or when
+// the removal throws (same private-browsing / partitioning hazards as the
+// read + write above). Used by callers that clear persisted state, e.g.
+// the guest-identity module on sign-in migration.
+export function removeLocalStorageSafe(key: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // SSR / private browsing: nothing persisted to remove anyway.
+  }
+}

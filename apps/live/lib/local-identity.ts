@@ -6,14 +6,21 @@
 // them here means a v3 migration is a one-line edit and the intent
 // of each piece of state is documented once.
 //
-// All accessors are SSR-safe (`typeof window` guard) so they can be
-// called from module bodies or non-effect code paths without
-// crashing the static export build.
+// All accessors are SSR-safe (via the shared local-storage-safe
+// helpers, which guard `typeof window` + swallow private-mode throws)
+// so they can be called from module bodies or non-effect code paths
+// without crashing the static export build.
 //
 // Namespace prefix: `livediagram:v2:`. The `v2` tag survives a
 // future schema break — if the shape of a stored value changes
 // incompatibly we'll bump to `v3:` and drop the old keys at read
 // time so a returning guest doesn't end up with mixed-version state.
+
+import {
+  readLocalStorageSafe,
+  removeLocalStorageSafe,
+  writeLocalStorageSafe,
+} from './local-storage-safe';
 
 const NS = 'livediagram:v2:';
 
@@ -36,57 +43,41 @@ const KEYS = {
   nameConfirmed: `${NS}name-confirmed`,
 } as const;
 
-function safeLocalStorage(): Storage | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    return window.localStorage;
-  } catch {
-    // Browsers can throw on `localStorage` access in private modes
-    // / when storage is disabled. Treat as no-op storage rather
-    // than blowing up the page — the guest path degrades to a
-    // session that doesn't persist across reloads, which is the
-    // expected behaviour in those environments.
-    return null;
-  }
-}
-
 export function getGuestSelfId(): string | null {
-  return safeLocalStorage()?.getItem(KEYS.selfId) ?? null;
+  return readLocalStorageSafe(KEYS.selfId);
 }
 
 export function setGuestSelfId(id: string): void {
-  safeLocalStorage()?.setItem(KEYS.selfId, id);
+  writeLocalStorageSafe(KEYS.selfId, id);
 }
 
 export function clearGuestSelfId(): void {
-  safeLocalStorage()?.removeItem(KEYS.selfId);
-  safeLocalStorage()?.removeItem(KEYS.selfSig);
+  removeLocalStorageSafe(KEYS.selfId);
+  removeLocalStorageSafe(KEYS.selfSig);
 }
 
 export function getGuestSelfSig(): string | null {
-  return safeLocalStorage()?.getItem(KEYS.selfSig) ?? null;
+  return readLocalStorageSafe(KEYS.selfSig);
 }
 
 // Persist the id + its signature together: they are a pair, and a
 // signature without its matching id (or vice-versa) is useless. Pass
 // `null` sig to clear it (e.g. a worker with signing disabled).
 export function setGuestIdentity(id: string, sig: string | null): void {
-  const ls = safeLocalStorage();
-  if (!ls) return;
-  ls.setItem(KEYS.selfId, id);
-  if (sig) ls.setItem(KEYS.selfSig, sig);
-  else ls.removeItem(KEYS.selfSig);
+  writeLocalStorageSafe(KEYS.selfId, id);
+  if (sig) writeLocalStorageSafe(KEYS.selfSig, sig);
+  else removeLocalStorageSafe(KEYS.selfSig);
 }
 
 // Read the existing guest id, or mint + persist a fresh one. The
 // editor / new-diagram / explorer routes all need this exact "find
 // or create" gesture as the X-Owner-Id fallback for signed-out
 // visitors, and the inline `getGuestSelfId() ?? randomUUID() +
-// setGuestSelfId()` chunk was duplicated at every call site. SSR-
-// safe via `safeLocalStorage`: when storage is unavailable
-// (no window, private mode, storage disabled) the mint still
-// runs and returns a one-shot UUID, the call site just won't
-// see it survive a reload.
+// setGuestSelfId()` chunk was duplicated at every call site. SSR-safe
+// via the shared local-storage helpers: when storage is unavailable
+// (no window, private mode, storage disabled) the mint still runs and
+// returns a one-shot UUID, the call site just won't see it survive a
+// reload.
 export function ensureGuestSelfId(): string {
   const stored = getGuestSelfId();
   if (stored) return stored;
@@ -96,9 +87,9 @@ export function ensureGuestSelfId(): string {
 }
 
 export function hasConfirmedName(): boolean {
-  return safeLocalStorage()?.getItem(KEYS.nameConfirmed) === '1';
+  return readLocalStorageSafe(KEYS.nameConfirmed) === '1';
 }
 
 export function markNameConfirmed(): void {
-  safeLocalStorage()?.setItem(KEYS.nameConfirmed, '1');
+  writeLocalStorageSafe(KEYS.nameConfirmed, '1');
 }

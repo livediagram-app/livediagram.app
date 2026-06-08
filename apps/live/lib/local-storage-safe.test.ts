@@ -14,7 +14,11 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  removeLocalStorageSafe,
+  writeLocalStorageSafe,
+} from './local-storage-safe';
 
 function memoryStorage(): Storage {
   const store = new Map<string, string>();
@@ -129,5 +133,37 @@ describe('writeLocalStorageSafe', () => {
     };
     mockWindow(throwing);
     expect(() => writeLocalStorageSafe('k', 'v')).not.toThrow();
+  });
+});
+
+describe('removeLocalStorageSafe', () => {
+  it('is a silent no-op when window is undefined (SSR)', () => {
+    expect(typeof globalThis.window).toBe('undefined');
+    expect(() => removeLocalStorageSafe('k')).not.toThrow();
+  });
+
+  it('removes the key when storage is available', () => {
+    const storage = memoryStorage();
+    storage.setItem('k', 'v');
+    mockWindow(storage);
+    removeLocalStorageSafe('k');
+    expect(storage.getItem('k')).toBeNull();
+  });
+
+  it('silently swallows a removeItem throw (private mode, partitioning)', () => {
+    const throwing: Storage = {
+      get length() {
+        return 0;
+      },
+      clear: () => undefined,
+      getItem: () => null,
+      key: () => null,
+      removeItem: () => {
+        throw new Error('SecurityError');
+      },
+      setItem: () => undefined,
+    };
+    mockWindow(throwing);
+    expect(() => removeLocalStorageSafe('k')).not.toThrow();
   });
 });
