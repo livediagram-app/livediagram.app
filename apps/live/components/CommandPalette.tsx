@@ -26,7 +26,7 @@ import { type ThemeId } from '@/lib/themes';
 import { MovablePanel } from './MovablePanel';
 import { LaserIcon, PanIcon, SelectIcon } from './palette-icons';
 import { Tooltip } from './Tooltip';
-import { ICON_DND_MIME, searchIcons } from '@/lib/icons';
+import { ICON_CATALOG, ICON_CATEGORIES, ICON_DND_MIME, iconsInCategory } from '@/lib/icons';
 import { IconPrims } from './icon-glyph';
 
 export type SelectedElementControls = {
@@ -310,7 +310,16 @@ export function CommandPalette({
   // Icon-picker search query (Icons accordion). Filters the catalogue
   // by label / keyword as the user types.
   const [iconQuery, setIconQuery] = useState('');
-  const iconResults = searchIcons(iconQuery);
+  // Theme-chip filter ('all' = no category narrowing). Combines with the
+  // search box: search runs WITHIN the selected category.
+  const [iconCategory, setIconCategory] = useState<string>('all');
+  const iconResults = (
+    iconCategory === 'all' ? ICON_CATALOG : iconsInCategory(iconCategory)
+  ).filter((i) => {
+    const q = iconQuery.trim().toLowerCase();
+    if (!q) return true;
+    return i.label.toLowerCase().includes(q) || i.keywords.includes(q) || i.id.includes(q);
+  });
   return (
     <MovablePanel
       title="Palette"
@@ -849,6 +858,25 @@ export function CommandPalette({
               </button>
             </Tooltip>
           ) : null}
+        </div>
+        {/* Theme chips: narrow the grid to a category. "All" clears the
+            filter. Search runs within the chosen category. */}
+        <div className="mb-2 flex flex-wrap gap-1">
+          {[{ id: 'all', label: 'All' }, ...ICON_CATEGORIES].map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setIconCategory(cat.id)}
+              aria-pressed={iconCategory === cat.id}
+              className={
+                iconCategory === cat.id
+                  ? 'rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
+                  : 'rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }
+            >
+              {cat.label}
+            </button>
+          ))}
         </div>
         <div className="grid max-h-44 grid-cols-6 gap-1 overflow-y-auto">
           {iconResults.map((icon) => (

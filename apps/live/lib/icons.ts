@@ -420,3 +420,61 @@ export function searchIcons(query: string): IconDef[] {
     (i) => i.label.toLowerCase().includes(q) || i.keywords.includes(q) || i.id.includes(q),
   );
 }
+
+// Theme chips for the Icons accordion: a handful of categories so the
+// user can narrow ~35 glyphs to the dozen related to what they're
+// drawing. Kept as id-lists here (rather than a per-icon field) so the
+// catalogue entries stay focused on geometry; an icon may sit in one
+// category. The picker prepends an "All" chip itself.
+export type IconCategory = { id: string; label: string; iconIds: string[] };
+
+export const ICON_CATEGORIES: IconCategory[] = [
+  {
+    id: 'tech',
+    label: 'Tech',
+    iconIds: [
+      'server',
+      'database',
+      'cloud',
+      'cpu',
+      'terminal',
+      'code',
+      'git-branch',
+      'package',
+      'wifi',
+      'monitor',
+      'smartphone',
+      'globe',
+    ],
+  },
+  { id: 'people', label: 'People', iconIds: ['user', 'users', 'heart', 'message', 'mail'] },
+  { id: 'security', label: 'Security', iconIds: ['shield', 'lock', 'key'] },
+  { id: 'files', label: 'Files', iconIds: ['folder', 'file', 'image'] },
+  {
+    id: 'ui',
+    label: 'UI',
+    iconIds: [
+      'settings',
+      'search',
+      'bell',
+      'star',
+      'home',
+      'link',
+      'zap',
+      'check-circle',
+      'alert-triangle',
+      'calendar',
+      'clock',
+      'map-pin',
+    ],
+  },
+];
+
+// Icons in a category (existing catalogue entries only), in catalogue
+// order. Unknown category id → empty.
+export function iconsInCategory(categoryId: string): IconDef[] {
+  const cat = ICON_CATEGORIES.find((c) => c.id === categoryId);
+  if (!cat) return [];
+  const ids = new Set(cat.iconIds);
+  return ICON_CATALOG.filter((i) => ids.has(i.id));
+}
