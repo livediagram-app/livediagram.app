@@ -31,9 +31,9 @@ type LinkPickerDialogProps = {
 type Mode = 'tab' | 'diagram' | 'url';
 
 const MODES: { id: Mode; label: string }[] = [
+  { id: 'url', label: 'External URL' },
   { id: 'tab', label: 'Tab' },
   { id: 'diagram', label: 'Diagram' },
-  { id: 'url', label: 'External URL' },
 ];
 
 // Prepend https:// to a bare host (no scheme). Leaves mailto:, http(s)://
@@ -53,8 +53,14 @@ export function LinkPickerDialog({
   onCommit,
   onClose,
 }: LinkPickerDialogProps) {
+  // External URL is the default; when editing an existing link, open on
+  // that link's own mode instead.
   const [mode, setMode] = useState<Mode>(
-    currentLink?.kind === 'url' ? 'url' : currentLink?.kind === 'diagram' ? 'diagram' : 'tab',
+    currentLink?.kind === 'diagram'
+      ? 'diagram'
+      : currentLink?.kind === 'tab' || currentLink?.kind === 'element'
+        ? 'tab'
+        : 'url',
   );
   const [urlInput, setUrlInput] = useState(currentLink?.kind === 'url' ? currentLink.url : '');
 
@@ -125,11 +131,12 @@ export function LinkPickerDialog({
                 <li key={t.id}>
                   <RowButton
                     active={linkedTabId === t.id}
+                    icon={<TabGlyph />}
                     onClick={() => commit({ kind: 'tab', tabId: t.id })}
                   >
                     <span className="truncate">{t.name}</span>
                     {t.id === currentTabId ? (
-                      <span className="ml-2 shrink-0 text-[10px] uppercase tracking-wide text-slate-400">
+                      <span className="ml-2 shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-700 dark:text-slate-300">
                         current
                       </span>
                     ) : null}
@@ -139,15 +146,17 @@ export function LinkPickerDialog({
             </ul>
           ) : mode === 'diagram' ? (
             recentDiagrams.length === 0 ? (
-              <p className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">
-                No other diagrams yet.
-              </p>
+              <div className="flex flex-col items-center gap-1 py-10 text-center">
+                <DiagramGlyph muted />
+                <p className="text-xs text-slate-400 dark:text-slate-500">No other diagrams yet.</p>
+              </div>
             ) : (
               <ul className="flex flex-col gap-1">
                 {recentDiagrams.map((d) => (
                   <li key={d.id}>
                     <RowButton
                       active={linkedDiagramId === d.id}
+                      icon={<DiagramGlyph />}
                       onClick={() => commit({ kind: 'diagram', diagramId: d.id, name: d.name })}
                     >
                       <span className="truncate">{d.name}</span>
@@ -209,10 +218,12 @@ export function LinkPickerDialog({
 
 function RowButton({
   active,
+  icon,
   onClick,
   children,
 }: {
   active: boolean;
+  icon?: React.ReactNode;
   onClick: () => void;
   children: React.ReactNode;
 }) {
@@ -223,12 +234,78 @@ function RowButton({
       aria-pressed={active}
       className={
         active
-          ? 'flex w-full items-center rounded-md border border-brand-300 bg-brand-50 px-3 py-2 text-left text-sm font-medium text-brand-800 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
-          : 'flex w-full items-center rounded-md border border-transparent px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+          ? 'flex w-full items-center gap-2.5 rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 text-left text-sm font-medium text-brand-800 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
+          : 'flex w-full items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
       }
     >
-      {children}
+      <span
+        className={
+          active
+            ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200'
+            : 'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
+        }
+      >
+        {icon}
+      </span>
+      <span className="flex min-w-0 flex-1 items-center">{children}</span>
+      {active ? <CheckGlyph /> : null}
     </button>
+  );
+}
+
+function TabGlyph() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 5.5A1.5 1.5 0 0 1 3.5 4h3l1.2 1.5H12.5A1.5 1.5 0 0 1 14 7v4.5A1.5 1.5 0 0 1 12.5 13h-9A1.5 1.5 0 0 1 2 11.5z" />
+    </svg>
+  );
+}
+
+function DiagramGlyph({ muted }: { muted?: boolean }) {
+  return (
+    <svg
+      width={muted ? 28 : 14}
+      height={muted ? 28 : 14}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinejoin="round"
+      aria-hidden
+      className={muted ? 'text-slate-300 dark:text-slate-600' : undefined}
+    >
+      <rect x="2" y="2.5" width="5" height="4" rx="1" />
+      <rect x="9" y="9.5" width="5" height="4" rx="1" />
+      <path d="M4.5 6.5v3.5a1 1 0 0 0 1 1H9" />
+    </svg>
+  );
+}
+
+function CheckGlyph() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="shrink-0"
+    >
+      <path d="M3.5 8.5l3 3 6-6.5" />
+    </svg>
   );
 }
 

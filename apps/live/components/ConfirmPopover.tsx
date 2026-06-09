@@ -99,12 +99,12 @@ export function ConfirmPopover({
         {layout ? (
           <span
             aria-hidden
-            className="absolute h-3 w-3 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
+            className={`absolute h-3 w-3 rotate-45 bg-white dark:bg-slate-900 ${
+              layout.side === 'left' ? 'border-r border-t' : 'border-b border-l'
+            } border-slate-200 dark:border-slate-700`}
             style={{
               top: layout.arrowTop - ARROW + 2,
-              ...(layout.side === 'left'
-                ? { right: -6, borderRight: '1px solid', borderTop: '1px solid' }
-                : { left: -6, borderLeft: '1px solid', borderBottom: '1px solid' }),
+              ...(layout.side === 'left' ? { right: -6 } : { left: -6 }),
             }}
           />
         ) : null}
