@@ -842,7 +842,12 @@ function ShapeInlineIconLayout({
     // and centred together, padded off the element edges.
     <div
       className="pointer-events-none absolute inset-0 flex items-center justify-center p-2"
-      style={{ flexDirection: isRow ? 'row' : 'column', gap: Math.round(iconSize * 0.22) }}
+      style={{
+        flexDirection: isRow ? 'row' : 'column',
+        // Side-by-side icon + text wants more breathing room than the
+        // stacked layout, so the glyph doesn't crowd the first letter.
+        gap: isRow ? Math.max(8, Math.round(iconSize * 0.32)) : Math.round(iconSize * 0.2),
+      }}
     >
       {iconFirst ? iconBox : text}
       {iconFirst ? text : iconBox}

@@ -93,10 +93,17 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
 
   const broadcastLaser = (x: number, y: number) => {
     const now = performance.now();
-    setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
-    if (!deps.hydrated || !deps.diagramId || !deps.diagramShareable) return;
+    // Throttle the LOCAL trail append (the setState) as well as the
+    // network send — both at ~30 Hz. Beyond matching the wire rate, this
+    // is the safety rail against a setState storm / render loop: if
+    // broadcastLaser is somehow re-entered before the clock advances
+    // (Maximum update depth), the throttle short-circuits every call
+    // after the first in that window, so no further re-render is queued.
+    // 30 Hz is plenty of resolution for a laser trail.
     if (now - lastLaserSentRef.current < BROADCAST_THROTTLE_MS) return;
     lastLaserSentRef.current = now;
+    setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
+    if (!deps.hydrated || !deps.diagramId || !deps.diagramShareable) return;
     deps.roomRef.current?.send({
       kind: 'op',
       op: { kind: 'laser', tabId: deps.activeId, x, y },
