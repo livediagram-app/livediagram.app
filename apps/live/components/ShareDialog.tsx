@@ -357,19 +357,20 @@ function RoleButton({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      title={description}
-      onClick={onClick}
-      aria-pressed={active}
-      className={
-        active
-          ? 'flex-1 rounded-sm bg-white px-2 py-1 text-xs font-semibold text-slate-800 shadow-sm'
-          : 'flex-1 rounded-sm px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-white/60 hover:text-slate-700'
-      }
-    >
-      {label}
-    </button>
+    <Tooltip title={label} description={description}>
+      <button
+        type="button"
+        onClick={onClick}
+        aria-pressed={active}
+        className={
+          active
+            ? 'flex-1 rounded-sm bg-white px-2 py-1 text-xs font-semibold text-slate-800 shadow-sm'
+            : 'flex-1 rounded-sm px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-white/60 hover:text-slate-700'
+        }
+      >
+        {label}
+      </button>
+    </Tooltip>
   );
 }
 

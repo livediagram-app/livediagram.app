@@ -827,26 +827,27 @@ export function CommandPalette({
             className="w-full rounded-md border border-slate-200 bg-white py-1 pl-2 pr-7 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           />
           {iconQuery ? (
-            <button
-              type="button"
-              onClick={() => setIconQuery('')}
-              aria-label="Clear icon search"
-              title="Clear search"
-              className="absolute right-1 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                aria-hidden
+            <Tooltip title="Clear search" description="Clear the icon search query.">
+              <button
+                type="button"
+                onClick={() => setIconQuery('')}
+                aria-label="Clear icon search"
+                className="absolute right-1 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
               >
-                <path d="M3 3 L9 9 M9 3 L3 9" />
-              </svg>
-            </button>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  aria-hidden
+                >
+                  <path d="M3 3 L9 9 M9 3 L3 9" />
+                </svg>
+              </button>
+            </Tooltip>
           ) : null}
         </div>
         <div className="grid max-h-44 grid-cols-6 gap-1 overflow-y-auto">

@@ -19,6 +19,7 @@ import {
 } from '@livediagram/diagram';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { track } from '@/lib/telemetry';
+import { Tooltip } from './Tooltip';
 
 // Cell font size per preset (element-space px; the canvas zoom scales
 // it like everything else). 'scale' has no per-element basis on a grid,
@@ -742,21 +743,25 @@ export function TableView({
             {Array.from({ length: cols }, (_, c) => (
               <div key={`rz-${c}`} className="relative">
                 {c < cols - 1 ? (
-                  <div
-                    onPointerDown={startColResize(c)}
-                    onDoubleClick={(e) => {
-                      e.stopPropagation();
-                      onCommitTable(element.id, {
-                        colWidths: Array.from({ length: cols }, (_, i) =>
-                          i === c ? null : (element.colWidths?.[i] ?? null),
-                        ),
-                      });
-                    }}
-                    title="Drag to set width · double-click to auto-fit"
-                    className="group pointer-events-auto absolute -right-1 bottom-0 top-0 z-20 w-2 cursor-col-resize"
+                  <Tooltip
+                    title="Resize column"
+                    description="Drag to set a fixed column width, or double-click to auto-fit."
                   >
-                    <div className="mx-auto h-full w-0.5 bg-brand-400/0 transition group-hover:bg-brand-400" />
-                  </div>
+                    <div
+                      onPointerDown={startColResize(c)}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        onCommitTable(element.id, {
+                          colWidths: Array.from({ length: cols }, (_, i) =>
+                            i === c ? null : (element.colWidths?.[i] ?? null),
+                          ),
+                        });
+                      }}
+                      className="group pointer-events-auto absolute -right-1 bottom-0 top-0 z-20 w-2 cursor-col-resize"
+                    >
+                      <div className="mx-auto h-full w-0.5 bg-brand-400/0 transition group-hover:bg-brand-400" />
+                    </div>
+                  </Tooltip>
                 ) : null}
               </div>
             ))}
@@ -770,21 +775,25 @@ export function TableView({
             {Array.from({ length: rows }, (_, r) => (
               <div key={`rzr-${r}`} className="relative">
                 {r < rows - 1 ? (
-                  <div
-                    onPointerDown={startRowResize(r)}
-                    onDoubleClick={(e) => {
-                      e.stopPropagation();
-                      onCommitTable(element.id, {
-                        rowHeights: Array.from({ length: rows }, (_, i) =>
-                          i === r ? null : (element.rowHeights?.[i] ?? null),
-                        ),
-                      });
-                    }}
-                    title="Drag to set height · double-click to auto-fit"
-                    className="group pointer-events-auto absolute -bottom-1 left-0 right-0 z-20 h-2 cursor-row-resize"
+                  <Tooltip
+                    title="Resize row"
+                    description="Drag to set a fixed row height, or double-click to auto-fit."
                   >
-                    <div className="my-auto h-0.5 w-full bg-brand-400/0 transition group-hover:bg-brand-400" />
-                  </div>
+                    <div
+                      onPointerDown={startRowResize(r)}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        onCommitTable(element.id, {
+                          rowHeights: Array.from({ length: rows }, (_, i) =>
+                            i === r ? null : (element.rowHeights?.[i] ?? null),
+                          ),
+                        });
+                      }}
+                      className="group pointer-events-auto absolute -bottom-1 left-0 right-0 z-20 h-2 cursor-row-resize"
+                    >
+                      <div className="my-auto h-0.5 w-full bg-brand-400/0 transition group-hover:bg-brand-400" />
+                    </div>
+                  </Tooltip>
                 ) : null}
               </div>
             ))}
@@ -960,69 +969,89 @@ export function TableView({
                   <>
                     {/* Text */}
                     <div className="relative">
-                      <button
-                        type="button"
+                      <Tooltip
                         title="Text formatting"
-                        className={secCls(cellMenu === 'text')}
-                        onClick={() => setCellMenu((m) => (m === 'text' ? null : 'text'))}
+                        description="Open bold, italic, underline, and text-size options for this cell."
                       >
-                        Text <Chevron />
-                      </button>
+                        <button
+                          type="button"
+                          className={secCls(cellMenu === 'text')}
+                          onClick={() => setCellMenu((m) => (m === 'text' ? null : 'text'))}
+                        >
+                          Text <Chevron />
+                        </button>
+                      </Tooltip>
                       {cellMenu === 'text' ? (
                         <div className={`${panel} w-44`}>
                           <div className="flex gap-1">
-                            <button
-                              type="button"
-                              title="Bold"
-                              className={tog(
-                                sc?.bold ?? (isHeaderSel || (element.textBold ?? false)),
-                              )}
-                              onClick={() =>
-                                applyCellStyle(rr, cc, {
-                                  bold: !(sc?.bold ?? (isHeaderSel || element.textBold)),
-                                })
-                              }
-                            >
-                              <span className="font-bold">B</span>
-                            </button>
-                            <button
-                              type="button"
-                              title="Italic"
-                              className={tog(sc?.italic ?? element.textItalic ?? false)}
-                              onClick={() =>
-                                applyCellStyle(rr, cc, {
-                                  italic: !(sc?.italic ?? element.textItalic),
-                                })
-                              }
-                            >
-                              <span className="italic">I</span>
-                            </button>
-                            <button
-                              type="button"
+                            <Tooltip title="Bold" description="Toggle bold text for this cell.">
+                              <button
+                                type="button"
+                                className={tog(
+                                  sc?.bold ?? (isHeaderSel || (element.textBold ?? false)),
+                                )}
+                                onClick={() =>
+                                  applyCellStyle(rr, cc, {
+                                    bold: !(sc?.bold ?? (isHeaderSel || element.textBold)),
+                                  })
+                                }
+                              >
+                                <span className="font-bold">B</span>
+                              </button>
+                            </Tooltip>
+                            <Tooltip title="Italic" description="Toggle italic text for this cell.">
+                              <button
+                                type="button"
+                                className={tog(sc?.italic ?? element.textItalic ?? false)}
+                                onClick={() =>
+                                  applyCellStyle(rr, cc, {
+                                    italic: !(sc?.italic ?? element.textItalic),
+                                  })
+                                }
+                              >
+                                <span className="italic">I</span>
+                              </button>
+                            </Tooltip>
+                            <Tooltip
                               title="Underline"
-                              className={tog(sc?.underline ?? element.textUnderline ?? false)}
-                              onClick={() =>
-                                applyCellStyle(rr, cc, {
-                                  underline: !(sc?.underline ?? element.textUnderline),
-                                })
-                              }
+                              description="Toggle underlined text for this cell."
                             >
-                              <span className="underline">U</span>
-                            </button>
+                              <button
+                                type="button"
+                                className={tog(sc?.underline ?? element.textUnderline ?? false)}
+                                onClick={() =>
+                                  applyCellStyle(rr, cc, {
+                                    underline: !(sc?.underline ?? element.textUnderline),
+                                  })
+                                }
+                              >
+                                <span className="underline">U</span>
+                              </button>
+                            </Tooltip>
                           </div>
                           <div className="mt-1.5 grid grid-cols-4 gap-1">
                             {(['sm', 'md', 'lg', 'scale'] as const).map((sz) => (
-                              <button
+                              <Tooltip
                                 key={sz}
-                                type="button"
                                 title={sz === 'scale' ? 'Scale to fit' : `Size ${sz}`}
-                                className={tog((sc?.textSize ?? element.textSize ?? 'md') === sz)}
-                                onClick={() => applyCellStyle(rr, cc, { textSize: sz })}
+                                description={
+                                  sz === 'scale'
+                                    ? 'Scale the cell text to fit the row height.'
+                                    : `Set this cell's text to the ${sz} size.`
+                                }
                               >
-                                <span style={{ fontSize: sz === 'sm' ? 9 : sz === 'lg' ? 15 : 12 }}>
-                                  {sz === 'scale' ? '\u2195' : 'A'}
-                                </span>
-                              </button>
+                                <button
+                                  type="button"
+                                  className={tog((sc?.textSize ?? element.textSize ?? 'md') === sz)}
+                                  onClick={() => applyCellStyle(rr, cc, { textSize: sz })}
+                                >
+                                  <span
+                                    style={{ fontSize: sz === 'sm' ? 9 : sz === 'lg' ? 15 : 12 }}
+                                  >
+                                    {sz === 'scale' ? '\u2195' : 'A'}
+                                  </span>
+                                </button>
+                              </Tooltip>
                             ))}
                           </div>
                         </div>
@@ -1031,14 +1060,18 @@ export function TableView({
                     {sep}
                     {/* Colours */}
                     <div className="relative">
-                      <button
-                        type="button"
+                      <Tooltip
                         title="Cell colours"
-                        className={secCls(cellMenu === 'colours')}
-                        onClick={() => setCellMenu((m) => (m === 'colours' ? null : 'colours'))}
+                        description="Set the background and text colour for this cell."
                       >
-                        Colours <Chevron />
-                      </button>
+                        <button
+                          type="button"
+                          className={secCls(cellMenu === 'colours')}
+                          onClick={() => setCellMenu((m) => (m === 'colours' ? null : 'colours'))}
+                        >
+                          Colours <Chevron />
+                        </button>
+                      </Tooltip>
                       {cellMenu === 'colours' ? (
                         <div className={`${panel} w-40`}>
                           <label className="flex items-center justify-between gap-2 rounded px-1 py-1 text-[11px] text-slate-600 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700">
@@ -1077,48 +1110,62 @@ export function TableView({
                     {sep}
                     {/* Alignment */}
                     <div className="relative">
-                      <button
-                        type="button"
+                      <Tooltip
                         title="Text alignment"
-                        className={secCls(cellMenu === 'align')}
-                        onClick={() => setCellMenu((m) => (m === 'align' ? null : 'align'))}
+                        description="Align this cell's text to the left, centre, or right."
                       >
-                        Align <Chevron />
-                      </button>
+                        <button
+                          type="button"
+                          className={secCls(cellMenu === 'align')}
+                          onClick={() => setCellMenu((m) => (m === 'align' ? null : 'align'))}
+                        >
+                          Align <Chevron />
+                        </button>
+                      </Tooltip>
                       {cellMenu === 'align' ? (
                         <div className={`${panel} flex gap-1`}>
                           {(['left', 'center', 'right'] as const).map((al) => (
-                            <button
+                            <Tooltip
                               key={al}
-                              type="button"
                               title={`Align ${al}`}
-                              className={tog((sc?.alignX ?? element.textAlignX ?? 'center') === al)}
-                              onClick={() => applyCellStyle(rr, cc, { alignX: al })}
+                              description={`Align this cell's text to the ${al}.`}
                             >
-                              <AlignIcon dir={al} />
-                            </button>
+                              <button
+                                type="button"
+                                className={tog(
+                                  (sc?.alignX ?? element.textAlignX ?? 'center') === al,
+                                )}
+                                onClick={() => applyCellStyle(rr, cc, { alignX: al })}
+                              >
+                                <AlignIcon dir={al} />
+                              </button>
+                            </Tooltip>
                           ))}
                         </div>
                       ) : null}
                     </div>
                     {sep}
-                    <button
-                      type="button"
-                      title="Clear cell (text + formatting)"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Text + formatting in ONE commit: separate commits
-                        // both read the same stale `element`, so the second
-                        // overwrote the first and the text reappeared.
-                        onCommitTable(element.id, {
-                          cells: setTableCell(element, rr, cc, '').cells,
-                          cellStyles: clearCellStyle(element, rr, cc).cellStyles ?? [],
-                        });
-                      }}
-                      className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-950"
+                    <Tooltip
+                      title="Clear cell"
+                      description="Remove the text and all formatting from this cell."
                     >
-                      <TrashIcon />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Text + formatting in ONE commit: separate commits
+                          // both read the same stale `element`, so the second
+                          // overwrote the first and the text reappeared.
+                          onCommitTable(element.id, {
+                            cells: setTableCell(element, rr, cc, '').cells,
+                            cellStyles: clearCellStyle(element, rr, cc).cellStyles ?? [],
+                          });
+                        }}
+                        className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-950"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </Tooltip>
                   </>
                 );
               })()}
