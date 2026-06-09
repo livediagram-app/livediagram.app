@@ -28,6 +28,7 @@ import {
   CodeInputRow,
   GoogleGlyph,
   messageOf,
+  POST_AUTH_SIGNIN_DEFAULT,
   RedirectingCard,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
@@ -52,7 +53,7 @@ function SignInContent() {
   // Honour ?redirect_url via the shared resolver in auth-shared.
   // Wrapped in useCallback so the useEffect below has a stable dep.
   const resolvePostSignInDestination = useCallback(
-    () => resolvePostAuthDestination(searchParams),
+    () => resolvePostAuthDestination(searchParams, POST_AUTH_SIGNIN_DEFAULT),
     [searchParams],
   );
 
@@ -80,7 +81,7 @@ function SignInContent() {
         // Honour ?redirect_url so an OAuth sign-in from a protected
         // page lands back where it came from, same as the email-code
         // path does. See spec/04 "Routes" + auth-shared.tsx.
-        redirectUrlComplete: resolveOAuthCompleteUrl(searchParams),
+        redirectUrlComplete: resolveOAuthCompleteUrl(searchParams, POST_AUTH_SIGNIN_DEFAULT),
       });
     } catch (err: unknown) {
       setError(messageOf(err, 'Google sign-in failed'));

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   POST_AUTH_DEFAULT,
+  POST_AUTH_SIGNIN_DEFAULT,
   messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
@@ -182,5 +183,43 @@ describe('messageOf', () => {
 
   it('returns the fallback for a plain object with no recognised shape', () => {
     expect(messageOf({ unrelated: true }, 'fallback')).toBe('fallback');
+  });
+});
+
+describe('sign-in default (POST_AUTH_SIGNIN_DEFAULT)', () => {
+  it('sends a verified sign-in with no redirect_url to the Explorer', () => {
+    expect(resolvePostAuthDestination(params(''), POST_AUTH_SIGNIN_DEFAULT)).toBe('/explorer');
+    expect(resolveOAuthCompleteUrl(params(''), POST_AUTH_SIGNIN_DEFAULT)).toBe('/live/explorer');
+  });
+
+  it('still lets a valid redirect_url win over the sign-in default', () => {
+    // A protected-page bounce must return where it came from, not the
+    // Explorer, even on the sign-in flow.
+    expect(
+      resolvePostAuthDestination(
+        params('redirect_url=/live/diagram/abc'),
+        POST_AUTH_SIGNIN_DEFAULT,
+      ),
+    ).toBe('/diagram/abc');
+    expect(
+      resolveOAuthCompleteUrl(params('redirect_url=/live/diagram/abc'), POST_AUTH_SIGNIN_DEFAULT),
+    ).toBe('/live/diagram/abc');
+  });
+
+  it('falls back to the Explorer for an unsafe / auth-loop redirect_url', () => {
+    expect(
+      resolvePostAuthDestination(
+        params('redirect_url=https://evil.example'),
+        POST_AUTH_SIGNIN_DEFAULT,
+      ),
+    ).toBe('/explorer');
+    expect(
+      resolvePostAuthDestination(params('redirect_url=/live/sign-in'), POST_AUTH_SIGNIN_DEFAULT),
+    ).toBe('/explorer');
+  });
+
+  it('leaves the sign-up flow (no default arg) on the welcome flow', () => {
+    expect(resolvePostAuthDestination(params(''))).toBe(POST_AUTH_DEFAULT);
+    expect(resolveOAuthCompleteUrl(params(''))).toBe('/live/');
   });
 });

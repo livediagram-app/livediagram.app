@@ -234,6 +234,12 @@ export function messageOf(err: unknown, fallback: string): string {
 
 export const POST_AUTH_DEFAULT = '/';
 
+// Sign-in default (router.push form, so no `/live` prefix — basePath adds
+// it). A returning user with no `?redirect_url` lands on their Explorer
+// ("here's all your stuff") rather than the new-diagram welcome flow that
+// suits a fresh sign-up. See spec/04. The OAuth form derives `/live/explorer`.
+export const POST_AUTH_SIGNIN_DEFAULT = '/explorer';
+
 // Default Clerk OAuth completion URL: the full editor-home path.
 // Clerk's authenticateWithRedirect navigates the browser directly,
 // so basePath isn't applied automatically and the /live prefix has
@@ -242,9 +248,14 @@ export const POST_AUTH_DEFAULT = '/';
 // destination shape-shifted for the OAuth round-trip.
 const POST_AUTH_OAUTH_DEFAULT = '/live/';
 
-export function resolvePostAuthDestination(searchParams: {
-  get: (key: string) => string | null;
-}): string {
+export function resolvePostAuthDestination(
+  searchParams: { get: (key: string) => string | null },
+  // Where to land when there's no safe `?redirect_url`. Sign-up uses the
+  // default (`/` -> the welcome flow); sign-in passes
+  // POST_AUTH_SIGNIN_DEFAULT (`/explorer`). A valid redirect_url always
+  // wins over this so a protected-page bounce still returns where it came.
+  defaultDest: string = POST_AUTH_DEFAULT,
+): string {
   const redirect = searchParams.get('redirect_url');
   const safe =
     redirect?.startsWith('/live') &&
@@ -254,7 +265,7 @@ export function resolvePostAuthDestination(searchParams: {
     const stripped = redirect.replace(/^\/live/, '');
     return stripped.length > 0 ? stripped : '/';
   }
-  return POST_AUTH_DEFAULT;
+  return defaultDest;
 }
 
 // OAuth-flavoured form of resolvePostAuthDestination. Shares the
@@ -263,10 +274,13 @@ export function resolvePostAuthDestination(searchParams: {
 // prefix intact, ready to feed to Clerk's
 // authenticateWithRedirect({ redirectUrlComplete }). Composes on
 // top of resolvePostAuthDestination so the two helpers can't drift.
-export function resolveOAuthCompleteUrl(searchParams: {
-  get: (key: string) => string | null;
-}): string {
-  const dest = resolvePostAuthDestination(searchParams);
+export function resolveOAuthCompleteUrl(
+  searchParams: { get: (key: string) => string | null },
+  defaultDest: string = POST_AUTH_DEFAULT,
+): string {
+  const dest = resolvePostAuthDestination(searchParams, defaultDest);
+  // `/` is the only destination that needs the explicit OAuth form
+  // (`/live/`); every other (incl. `/explorer`) is just `/live` + path.
   if (dest === POST_AUTH_DEFAULT) return POST_AUTH_OAUTH_DEFAULT;
   return `/live${dest}`;
 }
