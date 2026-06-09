@@ -90,7 +90,12 @@ The editor ships with a UI **light / dark mode** toggle, distinct from the per-t
 
 ## Destructive actions
 
-Every irreversible flow (delete a diagram, a folder, a tab, or an image gallery row) is gated by a single branded confirmation modal: `apps/live/components/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/live/hooks/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. We never fall back to `window.confirm()`: the OS-default chrome reads as a non-livediagram dialog and underplays the consequences.
+Every irreversible flow (delete a diagram, a folder, a tab, or an image gallery row) is gated by a branded confirmation. Two forms:
+
+- **Centre modal** — `apps/live/components/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/live/hooks/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
+- **Anchored popover** — `apps/live/components/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. **First use:** the tab menu's Delete row (the menu's own confirm now lives here; `deleteTab` performs the delete directly). Esc cancels, Enter confirms.
+
+We never fall back to `window.confirm()`: the OS-default chrome reads as a non-livediagram dialog and underplays the consequences.
 
 Non-destructive everyday actions (delete an element, clear a comment, undo a stroke) stay unprompted: undo restores them, and adding a modal at every keystroke would shred the editing flow. The confirmation gate is reserved for actions where one of the following is true:
 

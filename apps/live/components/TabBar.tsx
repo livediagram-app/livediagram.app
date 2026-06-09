@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal } from './Portal';
+import { ConfirmPopover } from './ConfirmPopover';
 import {
   folderNamesInDiagram,
   groupTabsIntoRuns,
@@ -674,6 +675,11 @@ function PortalMenu({
   // work unchanged.
   const [view, setView] = useState<'actions' | 'copyTo' | 'folder'>('actions');
   const [newFolder, setNewFolder] = useState('');
+  // Delete confirmation: an inline popover anchored to the Delete row
+  // (rather than the jarring full-screen modal). Rendered inside this
+  // menu's container so the outside-click handler treats it as "inside".
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const deleteRowRef = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
@@ -713,7 +719,17 @@ function PortalMenu({
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!ref.current) return;
-      if (e.target instanceof Node && !ref.current.contains(e.target) && e.target !== anchor) {
+      // The delete-confirm popover is portaled outside this menu's DOM,
+      // so a click on it would otherwise read as "outside" and close the
+      // whole menu before the confirm registers. Treat it as inside.
+      const inConfirm =
+        e.target instanceof Element && e.target.closest('[data-confirm-popover]') !== null;
+      if (
+        e.target instanceof Node &&
+        !ref.current.contains(e.target) &&
+        e.target !== anchor &&
+        !inConfirm
+      ) {
         onClose();
       }
     };
@@ -796,13 +812,15 @@ function PortalMenu({
               disabled={!canClearContent}
             />
             <MenuDivider />
-            <MenuItem
-              icon={<TrashIcon />}
-              label="Delete"
-              onClick={onDelete}
-              danger
-              disabled={!canDelete}
-            />
+            <div ref={deleteRowRef}>
+              <MenuItem
+                icon={<TrashIcon />}
+                label="Delete"
+                onClick={() => setConfirmingDelete(true)}
+                danger
+                disabled={!canDelete}
+              />
+            </div>
           </>
         ) : view === 'copyTo' ? (
           <>
@@ -893,6 +911,19 @@ function PortalMenu({
           </>
         )}
       </div>
+      {confirmingDelete && deleteRowRef.current ? (
+        <ConfirmPopover
+          anchor={deleteRowRef.current}
+          message="Delete this tab? Its content can't be recovered."
+          confirmLabel="Delete"
+          onConfirm={() => {
+            setConfirmingDelete(false);
+            onDelete();
+            onClose();
+          }}
+          onCancel={() => setConfirmingDelete(false)}
+        />
+      ) : null}
     </Portal>
   );
 }

@@ -290,18 +290,14 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Duplicated');
   };
 
-  const deleteTab = async (id: string) => {
+  // Confirmation is handled by the inline ConfirmPopover anchored to the
+  // tab menu's Delete row (TabBar), so this just performs the delete. The
+  // menu's Delete item is already gated on `canDelete` (tabs.length > 1);
+  // the guards here are belt-and-suspenders.
+  const deleteTab = (id: string) => {
     if (tabs.length <= 1) return;
     const idx = tabs.findIndex((t) => t.id === id);
     if (idx < 0) return;
-    const target = tabs[idx]!;
-    const ok = await confirm({
-      title: `Delete tab "${target.name || 'Untitled'}"?`,
-      message:
-        "The tab's elements and its activity log entries are removed. Links on other tabs pointing here are stripped. Undo restores everything.",
-      confirmLabel: 'Delete tab',
-    });
-    if (!ok) return;
     track('Tab', 'Deleted');
     // Drop the tab AND strip any links on remaining elements that point to
     // it, so we don't leave dangling cross-tab references. Bundled into one
