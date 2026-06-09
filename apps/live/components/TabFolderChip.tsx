@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Tab } from '@livediagram/diagram';
+import type { Participant } from '@/lib/identity';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import { TabPresenceStack } from './TabPresenceStack';
 import { Tooltip } from './Tooltip';
 
 // One folder group in the tab bar (spec/30). Collapsed it shows just
@@ -31,6 +33,12 @@ type TabFolderChipProps = {
   // menu-only, spec/30); the parent normalizes afterwards.
   onReorder: (sourceId: string, targetId: string) => void;
   onRename: (oldName: string, newName: string) => void;
+  // Live presence per tab + the local participant, so a COLLAPSED folder
+  // can surface the participants viewing its (hidden) member tabs — when
+  // expanded, each member pill shows its own stack instead.
+  participantsByTab: Map<string, Participant[]>;
+  selfId: string;
+  selfRole: 'edit' | 'view';
 };
 
 export function TabFolderChip({
@@ -42,6 +50,9 @@ export function TabFolderChip({
   renderTab,
   onReorder,
   onRename,
+  participantsByTab,
+  selfId,
+  selfRole,
 }: TabFolderChipProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -78,6 +89,22 @@ export function TabFolderChip({
     setCollapsed(next);
     writeLocalStorageSafe(collapseKey(diagramId, name), next ? '1' : '0');
   };
+
+  // Participants viewing the folder's member tabs, deduped by id. Only
+  // surfaced while collapsed: the member pills are hidden then, so their
+  // own presence stacks aren't visible and a viewer inside the folder
+  // would otherwise be invisible. Expanded, each pill shows its own.
+  const folderParticipants: Participant[] = [];
+  if (!showMembers) {
+    const seen = new Set<string>();
+    for (const t of tabs) {
+      for (const p of participantsByTab.get(t.id) ?? []) {
+        if (seen.has(p.id)) continue;
+        seen.add(p.id);
+        folderParticipants.push(p);
+      }
+    }
+  }
 
   return (
     <div
@@ -142,7 +169,13 @@ export function TabFolderChip({
           </button>
         </Tooltip>
       )}
-      {showMembers ? <div className="flex items-center gap-1">{tabs.map(renderTab)}</div> : null}
+      {showMembers ? (
+        <div className="flex items-center gap-1">{tabs.map(renderTab)}</div>
+      ) : folderParticipants.length > 0 ? (
+        // Collapsed: show who's inside so a viewer on a hidden tab isn't
+        // invisible. The stack's own ml-2 spaces it off the count badge.
+        <TabPresenceStack participants={folderParticipants} selfId={selfId} selfRole={selfRole} />
+      ) : null}
     </div>
   );
 }

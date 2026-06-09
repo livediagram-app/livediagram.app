@@ -309,6 +309,9 @@ export function TabBar({
               renderTab={renderTabPill}
               onReorder={onReorder}
               onRename={onRenameFolder}
+              participantsByTab={participantsByTab}
+              selfId={selfId}
+              selfRole={selfRole}
             />
           ),
         )}
