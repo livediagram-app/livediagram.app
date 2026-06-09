@@ -39,6 +39,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 28  | [Fonts](28-fonts.md)                                               | Eight Google Fonts, pickable per element + as a per-tab default    |
 | 29  | [Multi-colour themes](29-multicolour-themes.md)                    | Rainbow/palette themes that tint each hierarchy branch a hue       |
 | 30  | [Tab folders](30-tab-folders.md)                                   | Group a diagram's tabs into one-level, collapsible named folders   |
+| 31  | [Presentation mode](31-presentation-mode.md)                       | Step through a tab as a progressive-reveal slideshow with notes    |
 
 ## Workflow
 
