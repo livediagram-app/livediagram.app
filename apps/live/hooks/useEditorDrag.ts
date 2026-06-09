@@ -144,6 +144,15 @@ type EditorDragDeps = {
   tick: (mapper: (els: Element[]) => Element[]) => void;
   commit: (mapper: (els: Element[]) => Element[]) => void;
   markCheckpoint: () => void;
+  // A standalone icon shape was dragged + released over another (non-
+  // icon) shape: fold it INTO that shape as an inline icon on the named
+  // side, removing the standalone element (spec/09). Omitted when icon
+  // edits are blocked (read-only / locked tab).
+  onIconElementDroppedOnShape?: (
+    sourceIconId: string,
+    targetShapeId: string,
+    position: 'left' | 'right' | 'above' | 'below',
+  ) => void;
   // Per-user preference (spec/20) controlling whether connected
   // arrows re-pin to the most-natural face as a box is dragged.
   // Defaults to true; setting `false` keeps anchors frozen at
@@ -809,7 +818,42 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         );
       });
     };
-    const onUp = () => {
+    const onUp = (e: PointerEvent) => {
+      const d = depsRef.current;
+      // Fold a dragged standalone icon shape into the shape it was
+      // released over. Only on a real move (not a click), only when the
+      // dragged element is an 'icon' shape, and only when the element
+      // directly beneath the cursor (skipping the dragged icon itself)
+      // is a non-icon shape.
+      if (drag?.kind === 'boxed' && drag.mode === 'move' && d.onIconElementDroppedOnShape) {
+        const moved = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) > 4;
+        const dragged = d.activeTab.elements.find((el) => el.id === drag.primaryId);
+        if (moved && dragged && dragged.type === 'shape' && dragged.shape === 'icon') {
+          for (const node of document.elementsFromPoint(e.clientX, e.clientY)) {
+            const host = node.closest('[data-element-id]');
+            const id = host?.getAttribute('data-element-id');
+            if (!id || id === drag.primaryId) continue;
+            // First real element beneath the icon. Convert only if it's a
+            // non-icon shape; otherwise leave the icon as a plain move.
+            const target = d.activeTab.elements.find((el) => el.id === id);
+            if (target && target.type === 'shape' && target.shape !== 'icon' && host) {
+              const rect = host.getBoundingClientRect();
+              const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
+              const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);
+              const position =
+                Math.abs(dx) >= Math.abs(dy)
+                  ? dx < 0
+                    ? 'left'
+                    : 'right'
+                  : dy < 0
+                    ? 'above'
+                    : 'below';
+              d.onIconElementDroppedOnShape(drag.primaryId, id, position);
+            }
+            break;
+          }
+        }
+      }
       setDrag(null);
       scheduleGuides([]);
       // Disarm any checkpoint the gesture never used (a click that

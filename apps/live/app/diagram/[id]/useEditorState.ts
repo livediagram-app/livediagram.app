@@ -1497,6 +1497,32 @@ export function useEditorState() {
     );
   };
 
+  // Fold a dragged standalone icon ELEMENT into a shape: set the target's
+  // inline icon to the dragged icon's glyph + side, and delete the
+  // standalone element — one commit so it's a single undo. Mirrors the
+  // palette drag, but the source is an existing canvas element.
+  const dropIconElementOnShape = (
+    sourceId: string,
+    targetId: string,
+    position: 'left' | 'right' | 'above' | 'below',
+  ) => {
+    if (editsBlocked) return;
+    commit((els) => {
+      const source = els.find((e) => e.id === sourceId);
+      const glyph =
+        source && source.type === 'shape' && source.shape === 'icon' ? source.iconId : undefined;
+      if (!glyph) return els;
+      return els
+        .filter((e) => e.id !== sourceId)
+        .map((e) =>
+          e.id === targetId && e.type === 'shape' && e.shape !== 'icon'
+            ? { ...e, iconId: glyph, iconPosition: position }
+            : e,
+        );
+    });
+    track('Element', 'Added', titleCaseType('icon'));
+  };
+
   // Per-cell table links (spec/09). Which cell's link picker is open
   // (null = closed); the shared LinkPickerDialog renders against it in
   // EditorView and applyCellLink writes the chosen link into that cell's
@@ -1696,6 +1722,7 @@ export function useEditorState() {
     tick,
     commit,
     markCheckpoint,
+    onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
     autoRebindArrowsRef,
     alignmentGuidesRef,
     isPinchingRef,
