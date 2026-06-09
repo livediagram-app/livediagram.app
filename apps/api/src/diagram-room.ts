@@ -141,6 +141,15 @@ export class DiagramRoom implements DurableObject {
         } else {
           rate.count++;
         }
+        // Remember the sender's current tab so a future joiner learns it
+        // from the presence list (tab-focus ops only fire on a switch, so
+        // they're invisible to anyone who joins afterwards). Stored on the
+        // session presence; the live relay below still drives real-time
+        // updates for peers already connected.
+        if (opKind === 'tab-focus') {
+          const tabId = (msg.op as { tabId?: unknown }).tabId;
+          if (typeof tabId === 'string') sender.tabId = tabId;
+        }
         const payload: ServerMessage = { kind: 'op', from: sender.id, op: msg.op };
         const serialized = JSON.stringify(payload);
         for (const peer of this.sessions.keys()) {

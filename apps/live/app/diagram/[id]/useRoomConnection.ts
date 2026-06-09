@@ -135,8 +135,21 @@ export function useRoomConnection(opts: {
         // sticking after a tab close or network drop.
         const present = new Set(participants.map((p) => p.id));
         // Drop tab-focus entries for people who left so their avatar
-        // dot doesn't linger on a tab they no longer occupy.
-        setRemoteTabFocus((prev) => pruneMapToPresent(prev, present));
+        // dot doesn't linger on a tab they no longer occupy, AND seed
+        // from the presence list: the room echoes each peer's current
+        // tab here, so a late joiner immediately sees where everyone
+        // already is instead of defaulting them to the first tab until
+        // they next switch. Skip self — the remote map never holds it
+        // (the live relay excludes the sender), and our own tab is
+        // tracked from local activeId. A fresh Map guarantees re-render.
+        const selfId = selfParticipantRef.current.id;
+        setRemoteTabFocus((prev) => {
+          const next = new Map(pruneMapToPresent(prev, present));
+          for (const p of participants) {
+            if (p.tabId && p.id !== selfId) next.set(p.id, p.tabId);
+          }
+          return next;
+        });
         setRemoteSelections((prev) => pruneMapToPresent(prev, present));
         setRemoteCursors((prev) => pruneMapToPresent(prev, present));
         // Same for the lastSeen idle tracker (a plain ref, not state):

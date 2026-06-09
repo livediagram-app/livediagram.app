@@ -153,6 +153,13 @@ export type ParticipantPresence = {
   // hello frames keep parsing while clients catch up; missing value
   // is treated as "unknown role" by the UI (no badge surfaced).
   role?: 'edit' | 'view';
+  // Id of the tab this participant is currently focused on. The room
+  // remembers it from their `tab-focus` ops and echoes it in the
+  // presence list so a LATE joiner learns where everyone already is —
+  // tab-focus ops only fire on a switch, so without this a joiner would
+  // default existing peers to the first tab until they happened to move.
+  // Undefined until the participant's first tab-focus op lands.
+  tabId?: string;
 };
 
 // ---------------------------------------------------------------------

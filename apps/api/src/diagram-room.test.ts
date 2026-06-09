@@ -336,3 +336,34 @@ describe('DiagramRoom op-role enforcement', () => {
     expect(opsReceived(editor.ws)).toHaveLength(0);
   });
 });
+
+describe('DiagramRoom tab-focus presence echo', () => {
+  // A late joiner only gets the presence list, never the tab-focus ops
+  // that fired before they connected. So the room must remember each
+  // session's current tab and echo it in presence, or joiners default
+  // existing peers to the first tab until they next switch (the bug).
+  it("remembers a session's tab-focus and echoes it in later presence frames", () => {
+    const room = newRoom();
+    const a = makeSocket();
+    room.handleSession(a as unknown as WebSocket, 'edit');
+    const aHandler = a.listeners['message']![0]!;
+    aHandler({
+      data: JSON.stringify({ kind: 'hello', participant: { id: 'p-a', name: 'A', color: '#abc' } }),
+    });
+    aHandler({ data: JSON.stringify({ kind: 'op', op: { kind: 'tab-focus', tabId: 'tab-2' } }) });
+
+    // Stored on the session presence so future broadcasts carry it.
+    expect(room.sessions.get(a as unknown as WebSocket)?.tabId).toBe('tab-2');
+
+    // A second peer joining triggers a presence broadcast; the frame it
+    // receives must report A on tab-2, not the first-tab default.
+    const b = makeSocket();
+    room.handleSession(b as unknown as WebSocket, 'edit');
+    b.listeners['message']![0]!({
+      data: JSON.stringify({ kind: 'hello', participant: { id: 'p-b', name: 'B', color: '#def' } }),
+    });
+    const presenceFrames = b.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'presence');
+    const aRow = presenceFrames.at(-1)!.participants.find((p: { id: string }) => p.id === 'p-a');
+    expect(aRow?.tabId).toBe('tab-2');
+  });
+});

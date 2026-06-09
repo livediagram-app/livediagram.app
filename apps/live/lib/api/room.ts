@@ -5,18 +5,16 @@
 // (eventually) any other client share one definition. `RoomHandlers`
 // below is the client-side callback shape only — not on the wire —
 // so it stays here next to the connect helper.
-import type { RoomIncoming, RoomOp, RoomOutgoing } from '@livediagram/api-schema';
+import type {
+  ParticipantPresence,
+  RoomIncoming,
+  RoomOp,
+  RoomOutgoing,
+} from '@livediagram/api-schema';
 import { getSessionSharePassword, wsUrl } from './core';
 
 export type RoomHandlers = {
-  onPresence: (
-    participants: {
-      id: string;
-      name: string;
-      color: string;
-      role?: 'edit' | 'view';
-    }[],
-  ) => void;
+  onPresence: (participants: ParticipantPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
   onClose?: () => void;
 };
