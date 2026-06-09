@@ -679,6 +679,13 @@ export function Canvas(props: CanvasProps) {
         onCanvasContextMenu?.(e.clientX, e.clientY);
       }}
       onPointerDown={(e) => {
+        // Primary button only. A right- (or middle-) click must fall
+        // through to onContextMenu untouched: it opens the menu, and if
+        // we also armed a marquee here the matching pointerup would fire
+        // onDeselect (sub-4px "drag") and close the menu the same instant
+        // it appeared. PointerEvent.button is 0 for touch / pen contact
+        // too, so this only filters non-primary mouse buttons.
+        if (e.button !== 0) return;
         // Focus the canvas surface so subsequent Cmd/Ctrl+V dispatches
         // a `paste` event the editor-page-level handler can read. The
         // browser only fires `paste` when something focusable is
@@ -786,6 +793,10 @@ export function Canvas(props: CanvasProps) {
         ref={wrapperRef}
         onPointerDown={(e) => {
           if (e.target !== e.currentTarget) return;
+          // Primary button only — see the outer handler: a right-click
+          // must reach onContextMenu without arming a marquee whose
+          // pointerup would deselect and close the menu instantly.
+          if (e.button !== 0) return;
           // Focus the canvas surface so subsequent Cmd/Ctrl+V
           // dispatches a paste event (see the outer pointerdown
           // handler above for the full rationale). Same call from
