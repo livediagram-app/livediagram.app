@@ -54,14 +54,21 @@ export function TabFolderChip({
   selfId,
   selfRole,
 }: TabFolderChipProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  // Default collapsed: opening a diagram shows every folder folded so the
+  // tab bar stays tidy. Starting true (rather than hydrating to it) also
+  // avoids an expand→collapse flash on first paint. The active tab's
+  // folder still force-expands via `containsActive` below.
+  const [collapsed, setCollapsed] = useState(true);
   const [editing, setEditing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   // Hydrate the persisted collapse state after mount (localStorage is
   // client-only; reading during render would desync SSR/CSR markup).
+  // Only a folder the user EXPLICITLY expanded before (stored '0')
+  // reopens; anything else (never toggled, or explicitly collapsed)
+  // stays folded.
   useEffect(() => {
-    setCollapsed(readLocalStorageSafe(collapseKey(diagramId, name)) === '1');
+    setCollapsed(readLocalStorageSafe(collapseKey(diagramId, name)) !== '0');
   }, [diagramId, name]);
 
   const containsActive = tabs.some((t) => t.id === activeId);
