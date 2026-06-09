@@ -113,7 +113,7 @@ export function FolderNode({
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
   onCreateChild: (parentId: string) => Promise<void> | void;
-  onDeleteDiagram?: (id: string) => void;
+  onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
   // Set of diagram ids currently mid slide-out animation. Passed
   // down from the Explorer's wrappedDeleteDiagram so every row in
   // the tree can apply the matching animation class.
@@ -320,7 +320,7 @@ export function FolderNode({
                 active={d.id === currentDiagramId}
                 draggable={!!onMoveDiagramToFolder}
                 onOpen={() => onOpenDiagram(d.id)}
-                onDelete={onDeleteDiagram ? () => onDeleteDiagram(d.id) : undefined}
+                onDelete={onDeleteDiagram ? (anchor) => onDeleteDiagram(d.id, anchor) : undefined}
                 onDuplicate={onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined}
                 onMoveRequest={
                   onMoveDiagramRequest ? (anchor) => onMoveDiagramRequest(d.id, anchor) : undefined
@@ -353,7 +353,7 @@ export function UnsortedNode({
   diagrams: DiagramListItem[];
   currentDiagramId: string | null;
   onOpenDiagram: (id: string, shareCode?: string) => void;
-  onDeleteDiagram?: (id: string) => void;
+  onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
   exitingDiagramIds: Set<string>;
   onDuplicateDiagram?: (id: string) => void;
   onMoveDiagramRequest?: (diagramId: string, anchor: HTMLElement | null) => void;
@@ -441,7 +441,7 @@ export function UnsortedNode({
                 active={d.id === currentDiagramId}
                 draggable={!!onMoveDiagramToFolder}
                 onOpen={() => onOpenDiagram(d.id)}
-                onDelete={onDeleteDiagram ? () => onDeleteDiagram(d.id) : undefined}
+                onDelete={onDeleteDiagram ? (anchor) => onDeleteDiagram(d.id, anchor) : undefined}
                 onDuplicate={onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined}
                 onMoveRequest={
                   onMoveDiagramRequest ? (anchor) => onMoveDiagramRequest(d.id, anchor) : undefined
@@ -595,7 +595,9 @@ export function DiagramRow({
   active: boolean;
   onOpen: () => void;
   onRename?: (name: string) => void;
-  onDelete?: () => void;
+  // Asks the parent to open the delete-confirm popover anchored to the
+  // passed element (the row's menu button) — see onMoveRequest.
+  onDelete?: (anchor: HTMLElement | null) => void;
   onDuplicate?: () => void;
   // Asks the parent Explorer to open the "Move to folder…" picker
   // anchored to the supplied element. Stored at the panel level so
@@ -781,7 +783,10 @@ export function DiagramRow({
               label="Delete"
               danger
               onClick={() => {
-                onDelete();
+                // Hand the menu button up as the anchor so the panel can
+                // open the delete-confirm popover beside it (same pattern
+                // as Move to folder…).
+                onDelete(menuButtonRef.current);
                 setMenuOpen(false);
               }}
             />

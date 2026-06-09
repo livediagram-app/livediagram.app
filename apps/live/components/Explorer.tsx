@@ -6,6 +6,7 @@ import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { MovablePanel } from './MovablePanel';
 import { MenuItem, PortalMenu } from './PortalMenu';
 import { SignInPrompt } from './SignInPrompt';
+import { ConfirmPopover } from './ConfirmPopover';
 import { Tooltip } from './Tooltip';
 import { ExpandIcon, FolderIcon, PlusIcon, UnsortedIcon } from './explorer-icons';
 import {
@@ -60,7 +61,13 @@ type ExplorerProps = {
   onRenameCurrent?: (name: string) => void;
   // `beforeRemove` runs after the delete is confirmed and before the row is
   // pulled from the list, so the caller (Explorer) can slide it out first.
-  onDeleteDiagram?: (id: string, beforeRemove?: () => Promise<void> | void) => void;
+  // `opts.skipConfirm` is passed by the panel because it confirms inline
+  // via ConfirmPopover (the modal would double-prompt).
+  onDeleteDiagram?: (
+    id: string,
+    beforeRemove?: () => Promise<void> | void,
+    opts?: { skipConfirm?: boolean },
+  ) => void;
   onDuplicateDiagram?: (id: string) => void;
   // Folder mutations. Optional so read-only surfaces can omit them.
   onCreateFolder?: (input: { name: string; parentId: string | null }) => Promise<FolderItem | void>;
@@ -181,27 +188,35 @@ export function Explorer({
   // `diagrams` prop. Without the delay the row disappears instantly
   // and a fresh "5 with the same name" Explorer feels unresponsive.
   const [exitingDiagramIds, setExitingDiagramIds] = useState<Set<string>>(new Set());
-  const wrappedDeleteDiagram = onDeleteDiagram
-    ? (id: string) => {
-        // Confirm FIRST (inside onDeleteDiagram), then — only once the user
-        // has confirmed — slide the row out for ~220ms before the parent
-        // removes it from the list. The animation runs as the `beforeRemove`
-        // hook, so a cancelled delete never animates the row.
-        void onDeleteDiagram(
-          id,
-          () =>
-            new Promise<void>((resolve) => {
-              setExitingDiagramIds((prev) => {
-                if (prev.has(id)) return prev;
-                const next = new Set(prev);
-                next.add(id);
-                return next;
-              });
-              window.setTimeout(resolve, 220);
-            }),
-        );
+  // Inline delete confirmation: the row's menu hands up the id + its menu
+  // button as the anchor; we open a ConfirmPopover beside it. Confirming
+  // runs the delete (skipping the modal — the popover IS the confirm) and
+  // slides the row out first via the beforeRemove hook.
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string } | null>(null);
+  const deleteAnchorRef = useRef<HTMLElement | null>(null);
+  const openDeleteConfirm = onDeleteDiagram
+    ? (id: string, anchor: HTMLElement | null) => {
+        deleteAnchorRef.current = anchor;
+        setDeleteConfirm({ id });
       }
     : undefined;
+  const runDelete = (id: string) => {
+    if (!onDeleteDiagram) return;
+    void onDeleteDiagram(
+      id,
+      () =>
+        new Promise<void>((resolve) => {
+          setExitingDiagramIds((prev) => {
+            if (prev.has(id)) return prev;
+            const next = new Set(prev);
+            next.add(id);
+            return next;
+          });
+          window.setTimeout(resolve, 220);
+        }),
+      { skipConfirm: true },
+    );
+  };
 
   // Once a deleted diagram actually leaves the list, drop its id from the
   // exiting set. Pruning here (rather than clearing on the timeout) avoids a
@@ -382,7 +397,9 @@ export function Explorer({
                     onOpen={() => onOpenDiagram(current.id)}
                     onRename={onRenameCurrent}
                     onDelete={
-                      wrappedDeleteDiagram ? () => wrappedDeleteDiagram(current.id) : undefined
+                      openDeleteConfirm
+                        ? (anchor) => openDeleteConfirm(current.id, anchor)
+                        : undefined
                     }
                     onDuplicate={
                       onDuplicateDiagram ? () => onDuplicateDiagram(current.id) : undefined
@@ -449,7 +466,9 @@ export function Explorer({
                         draggable={!!onMoveDiagramToFolder}
                         onOpen={() => onOpenDiagram(d.id)}
                         onDelete={
-                          wrappedDeleteDiagram ? () => wrappedDeleteDiagram(d.id) : undefined
+                          openDeleteConfirm
+                            ? (anchor) => openDeleteConfirm(d.id, anchor)
+                            : undefined
                         }
                         onDuplicate={
                           onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined
@@ -562,7 +581,7 @@ export function Explorer({
                     onRenameFolder={onRenameFolder}
                     onDeleteFolder={onDeleteFolder}
                     onCreateChild={handleCreateChild}
-                    onDeleteDiagram={wrappedDeleteDiagram}
+                    onDeleteDiagram={openDeleteConfirm}
                     exitingDiagramIds={exitingDiagramIds}
                     onDuplicateDiagram={onDuplicateDiagram}
                     onMoveDiagramRequest={
@@ -578,7 +597,7 @@ export function Explorer({
                     diagrams={diagramsByFolder.get(null) ?? []}
                     currentDiagramId={currentDiagramId}
                     onOpenDiagram={onOpenDiagram}
-                    onDeleteDiagram={wrappedDeleteDiagram}
+                    onDeleteDiagram={openDeleteConfirm}
                     exitingDiagramIds={exitingDiagramIds}
                     onDuplicateDiagram={onDuplicateDiagram}
                     onMoveDiagramRequest={
@@ -639,6 +658,22 @@ export function Explorer({
             />
           ))}
         </PortalMenu>
+      ) : null}
+
+      {deleteConfirm && deleteAnchorRef.current ? (
+        <ConfirmPopover
+          anchor={deleteAnchorRef.current}
+          message={`Delete "${
+            diagrams.find((d) => d.id === deleteConfirm.id)?.name || 'this diagram'
+          }"? Its tabs, history and share links go with it.`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            const id = deleteConfirm.id;
+            setDeleteConfirm(null);
+            runDelete(id);
+          }}
+          onCancel={() => setDeleteConfirm(null)}
+        />
       ) : null}
     </MovablePanel>
   );

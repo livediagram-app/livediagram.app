@@ -78,16 +78,26 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
   // where they can pick another diagram or start a new one. Deleting any
   // *other* diagram just hits the API + refreshes the Explorer list. Not
   // undoable — the menu is an explicit action.
-  const deleteDiagram = async (id: string, beforeRemove?: () => Promise<void> | void) => {
+  const deleteDiagram = async (
+    id: string,
+    beforeRemove?: () => Promise<void> | void,
+    opts?: { skipConfirm?: boolean },
+  ) => {
     if (typeof window === 'undefined') return;
-    const target = id === diagramId ? { name: diagramName } : diagramList.find((d) => d.id === id);
-    const ok = await confirm({
-      title: `Delete "${target?.name || 'this diagram'}"?`,
-      message:
-        'Every tab, change-log entry, and share link on this diagram is removed. Visitors holding a share link will see a 404. This cannot be undone.',
-      confirmLabel: 'Delete diagram',
-    });
-    if (!ok) return;
+    // The Explorer panel confirms inline via ConfirmPopover and passes
+    // skipConfirm; other callers (the full-page route) still get the
+    // modal confirm here.
+    if (!opts?.skipConfirm) {
+      const target =
+        id === diagramId ? { name: diagramName } : diagramList.find((d) => d.id === id);
+      const ok = await confirm({
+        title: `Delete "${target?.name || 'this diagram'}"?`,
+        message:
+          'Every tab, change-log entry, and share link on this diagram is removed. Visitors holding a share link will see a 404. This cannot be undone.',
+        confirmLabel: 'Delete diagram',
+      });
+      if (!ok) return;
+    }
     track('Diagram', 'Deleted');
     if (id === diagramId) {
       void apiDeleteDiagram(ownerId, id).catch(() => {});
