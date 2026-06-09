@@ -54,7 +54,12 @@ export const viewport: Viewport = {
 // — ClerkProvider doesn't touch the route tree.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en-GB">
+    // suppressHydrationWarning: the pre-paint inline scripts below add the
+    // `dark` / `reduce-motion` classes to <html> from localStorage before
+    // React hydrates, so the client's <html> className intentionally
+    // differs from the static-export HTML. Scoped to this one element (it
+    // doesn't cascade to children), so real mismatches elsewhere still warn.
+    <html lang="en-GB" suppressHydrationWarning>
       <head>
         {/* Text fonts (spec/28). One stylesheet defines every option's
             @font-face; browsers only fetch the families actually applied,
