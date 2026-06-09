@@ -57,6 +57,7 @@ export function EditorView() {
     addImageFromGallery,
     addIcon,
     dropIconOnElement,
+    removeIconFromElement,
     addShape,
     addSticky,
     addTable,
@@ -888,6 +889,7 @@ export function EditorView() {
           elements={activeTab.elements}
           onClose={closeContextMenu}
           onLinkElement={setLinkPickerOpenForId}
+          onRemoveIcon={removeIconFromElement}
           onBringToFront={bringSelectedToFront}
           onSendToBack={sendSelectedToBack}
           onOpenNote={openNote}

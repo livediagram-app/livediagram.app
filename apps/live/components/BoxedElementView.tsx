@@ -1,5 +1,6 @@
 import {
   memo,
+  useState,
   type DragEvent as ReactDragEvent,
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
@@ -306,28 +307,44 @@ function BoxedElementViewImpl({
   const inlineIcon = element.type === 'shape' && element.shape !== 'icon' && element.iconId;
 
   // Drag a palette icon onto a regular shape to drop it inside, on the
-  // side of the text nearest the cursor.
+  // side of the text nearest the cursor. `dropSide` drives the live
+  // preview band so the user sees WHERE the icon will land before
+  // releasing (null = not currently a drag target).
   const acceptsIconDrop = !!onDropIcon && element.type === 'shape' && element.shape !== 'icon';
+  const [dropSide, setDropSide] = useState<'left' | 'right' | 'above' | 'below' | null>(null);
+  // Which side the cursor sits nearest, normalised by half-extent so a
+  // wide-but-short box still reads top / bottom drops correctly.
+  const sideFromEvent = (e: ReactDragEvent): 'left' | 'right' | 'above' | 'below' => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
+    const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);
+    return Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'above' : 'below';
+  };
   const handleIconDragOver = (e: ReactDragEvent) => {
     if (!acceptsIconDrop || !e.dataTransfer.types.includes(ICON_DND_MIME)) return;
     // preventDefault marks this element as a valid drop target.
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
+    const side = sideFromEvent(e);
+    setDropSide((prev) => (prev === side ? prev : side));
   };
+  const handleIconDragLeave = () => setDropSide(null);
   const handleIconDrop = (e: ReactDragEvent) => {
     if (!acceptsIconDrop) return;
     const iconId = e.dataTransfer.getData(ICON_DND_MIME);
+    setDropSide(null);
     if (!iconId) return;
     e.preventDefault();
     e.stopPropagation();
-    // Pick the side whose axis the drop sits furthest along, normalised
-    // by half-extent so a wide-but-short box still reads top/bottom drops.
-    const rect = e.currentTarget.getBoundingClientRect();
-    const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
-    const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);
-    const position =
-      Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'above' : 'below';
-    onDropIcon!(element.id, iconId, position);
+    onDropIcon!(element.id, iconId, sideFromEvent(e));
+  };
+  // Translucent band on the target side + a ring, shown while dragging an
+  // icon over this shape so the drop position is obvious.
+  const DROP_BAND: Record<'left' | 'right' | 'above' | 'below', string> = {
+    left: 'left-0 top-0 bottom-0 w-1/3',
+    right: 'right-0 top-0 bottom-0 w-1/3',
+    above: 'left-0 right-0 top-0 h-1/3',
+    below: 'left-0 right-0 bottom-0 h-1/3',
   };
 
   return (
@@ -337,6 +354,7 @@ function BoxedElementViewImpl({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
+      onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
       onDrop={acceptsIconDrop ? handleIconDrop : undefined}
       className={`absolute origin-center animate-pop-in touch-none select-none ${variant.className} ${cursor}`}
       style={{
@@ -439,6 +457,18 @@ function BoxedElementViewImpl({
       ) : (
         labelNode
       )}
+
+      {/* Live drop preview while dragging a palette icon over this shape:
+          a brand ring + a translucent band on the side the icon will
+          land. Cleared on drop / drag-leave. */}
+      {dropSide ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-20 ring-2 ring-brand-400"
+          style={{ borderRadius: 'inherit' }}
+        >
+          <div className={`absolute bg-brand-400/25 ${DROP_BAND[dropSide]}`} />
+        </div>
+      ) : null}
 
       {isLocked ? <LockBadge zoom={zoom} /> : null}
 
@@ -688,26 +718,34 @@ function ShapeInlineIconLayout({
 }) {
   // Icon box in element-space px: a fraction of the shorter side so it
   // stays proportionate, clamped so it's neither a speck nor dominant.
-  const iconSize = Math.max(16, Math.min(Math.min(element.width, element.height) * 0.4, 56));
+  const iconSize = Math.max(16, Math.min(Math.min(element.width, element.height) * 0.32, 48));
   const isRow = position === 'left' || position === 'right';
   const iconFirst = position === 'left' || position === 'above';
+  // self-center keeps the glyph at its fixed size centred on the cross
+  // axis (the container stretches children otherwise).
   const iconBox = (
     <div
-      className="pointer-events-none relative shrink-0"
+      className="pointer-events-none relative shrink-0 self-center"
       style={{ width: iconSize, height: iconSize }}
     >
       <IconGlyph iconId={element.iconId} stroke={iconStroke} strokeWidth={2} hasLabel={false} />
     </div>
   );
-  // flex-1 + relative so the absolute-inset-0 label fills this sub-region
-  // (and centres / aligns within it per the element's text alignment).
+  // The label keeps its own renderer (scale / fixed / alignment). It's
+  // absolute inset-0, so its region MUST be given real height — hence the
+  // container uses items-stretch (default) NOT items-center: with center,
+  // this flex child collapsed to zero height and the text clipped top +
+  // bottom. flex-1 takes the remaining main-axis space beside the icon.
   const labelRegion = (
     <div className="pointer-events-none relative min-h-0 min-w-0 flex-1">{label}</div>
   );
   return (
+    // justify-center groups the icon + label together; items-stretch (the
+    // flex default, left implicit) gives the label region full cross-axis
+    // size so its text renders un-clipped.
     <div
-      className="pointer-events-none absolute inset-0 flex items-center justify-center"
-      style={{ flexDirection: isRow ? 'row' : 'column', gap: Math.round(iconSize * 0.16) }}
+      className="pointer-events-none absolute inset-0 flex justify-center"
+      style={{ flexDirection: isRow ? 'row' : 'column', gap: Math.round(iconSize * 0.18) }}
     >
       {iconFirst ? iconBox : labelRegion}
       {iconFirst ? labelRegion : iconBox}

@@ -43,6 +43,9 @@ type EditorContextMenuProps = {
   elements: Element[];
   onClose: () => void;
   onLinkElement: (elementId: string) => void;
+  // Remove an inline icon from the element. Only surfaced when the
+  // clicked element actually carries one (a non-'icon' shape with iconId).
+  onRemoveIcon: (elementId: string) => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
   onOpenNote: (elementId: string) => void;
@@ -62,6 +65,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     const target = elements.find((el) => el.id === menu.elementId);
     if (!target) return null;
     const boxed = isBoxed(target);
+    // A regular shape carrying an inline icon (drag-an-icon-onto-it
+    // feature, spec/09) gets a "Remove icon" entry; the dedicated 'icon'
+    // shape is its own glyph and excluded.
+    const hasInlineIcon =
+      target.type === 'shape' && target.shape !== 'icon' && target.iconId !== undefined;
     return (
       <ContextMenu position={position} onClose={onClose}>
         <MenuItem
@@ -72,6 +80,16 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             onClose();
           }}
         />
+        {hasInlineIcon ? (
+          <MenuItem
+            icon={<RemoveIconGlyph />}
+            label="Remove icon"
+            onClick={() => {
+              props.onRemoveIcon(target.id);
+              onClose();
+            }}
+          />
+        ) : null}
         <ContextMenuDivider />
         <MenuItem
           icon={<LayerUpIcon />}
@@ -165,5 +183,26 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         }}
       />
     </ContextMenu>
+  );
+}
+
+// A star glyph with a slash — "remove the inline icon". Matches the
+// 12x12 stroke style of the shared context-menu icons.
+function RemoveIconGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
+      <path d="M2.5 13.5l11-11" />
+    </svg>
   );
 }

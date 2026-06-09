@@ -1474,6 +1474,22 @@ export function useEditorState() {
     track('Element', 'Added', titleCaseType('icon'));
   };
 
+  // Remove an inline icon from a shape (drops iconId + iconPosition).
+  // To MOVE an icon, just drag another onto a different side — the drop
+  // overwrites position; this is the explicit "take it off" path.
+  const removeIconFromElement = (elementId: string) => {
+    if (editsBlocked) return;
+    commit((els) =>
+      els.map((e) => {
+        if (e.id !== elementId || e.type !== 'shape' || e.shape === 'icon') return e;
+        const { iconId: _i, iconPosition: _p, ...rest } = e;
+        void _i;
+        void _p;
+        return rest;
+      }),
+    );
+  };
+
   // Structural element operations (delete, marquee commit, group /
   // ungroup, and the duplicate family). They change the element set
   // and/or the selection rather than element fields; see
@@ -1757,6 +1773,7 @@ export function useEditorState() {
     addComment,
     addIcon,
     dropIconOnElement,
+    removeIconFromElement,
     addImage,
     addImageFromGallery,
     addShape,
