@@ -15,8 +15,8 @@ import { useEditorContext } from './EditorContext';
 const EditorContextMenu = dynamic(() =>
   import('@/components/EditorContextMenu').then((m) => m.EditorContextMenu),
 );
-const TabLinkPicker = dynamic(() =>
-  import('@/components/TabLinkPicker').then((m) => m.TabLinkPicker),
+const LinkPickerDialog = dynamic(() =>
+  import('@/components/LinkPickerDialog').then((m) => m.LinkPickerDialog),
 );
 const CommentThreadPopover = dynamic(() =>
   import('@/components/CommentThreadPopover').then((m) => m.CommentThreadPopover),
@@ -94,7 +94,6 @@ export function EditorView() {
     changeLogLoading,
     chooseTemplate,
     clearActivityForActiveTab,
-    clearLinkSelected,
     clearTabContent,
     clerkDisplayName,
     clerkUserId,
@@ -163,7 +162,6 @@ export function EditorView() {
     isReadOnly,
     laserTrailRows,
     linkActiveTabTo,
-    linkPickerAnchorEl,
     linkPickerOpenForId,
     livePresence,
     loadedTabIds,
@@ -233,7 +231,6 @@ export function EditorView() {
     setCommentsPanelPosition,
     setContextMenu,
     setContextPosition,
-    setDiagramLinkSelected,
     setDiagramName,
     setDiagramSharePassword,
     setEditingId,
@@ -243,7 +240,7 @@ export function EditorView() {
     setFormatSourceId,
     setGroupSourceId,
     setLinkPickerOpenForId,
-    setLinkSelected,
+    applyElementLink,
     setMultiSelectedIds,
     setNote,
     setOpacitySelected,
@@ -901,37 +898,25 @@ export function EditorView() {
           onAddSticky={addSticky}
         />
       ) : null}
-      {linkPickerOpenForId !== null && linkPickerAnchorEl && !isReadOnly ? (
-        <TabLinkPicker
-          anchor={linkPickerAnchorEl}
-          tabs={tabs}
+      {linkPickerOpenForId !== null && !isReadOnly ? (
+        <LinkPickerDialog
+          title="Link element"
+          currentLink={activeTab.elements.find((e) => e.id === linkPickerOpenForId)?.link ?? null}
+          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           currentTabId={activeId}
-          linkedTabId={(() => {
-            const el = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
-            return el && el.link && el.link.kind === 'tab' ? el.link.tabId : null;
-          })()}
-          linkedDiagramId={(() => {
-            const el = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
-            return el && el.link && el.link.kind === 'diagram' ? el.link.diagramId : null;
-          })()}
           recentDiagrams={diagramList
             .filter((d) => d.id !== diagramId)
-            .slice(0, 5)
+            .slice(0, 8)
             .map((d) => ({ id: d.id, name: d.name }))}
-          onSelect={(tabId) => {
-            setLinkSelected(tabId);
-            setLinkPickerOpenForId(null);
-            track('Element', 'Linked', 'Tab');
-          }}
-          onSelectDiagram={(d) => {
-            setDiagramLinkSelected(d);
-            setLinkPickerOpenForId(null);
-            track('Element', 'Linked', 'Diagram');
-          }}
-          onClear={() => {
-            clearLinkSelected();
-            setLinkPickerOpenForId(null);
-            track('Element', 'Unlinked');
+          onCommit={(link) => {
+            applyElementLink(link);
+            if (link === null) track('Element', 'Unlinked');
+            else
+              track(
+                'Element',
+                'Linked',
+                link.kind === 'url' ? 'Url' : link.kind === 'diagram' ? 'Diagram' : 'Tab',
+              );
           }}
           onClose={() => setLinkPickerOpenForId(null)}
         />

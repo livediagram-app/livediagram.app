@@ -1,0 +1,250 @@
+import { useState } from 'react';
+import type { ElementLink } from '@livediagram/diagram';
+
+// Shared link picker, styled like the import / export dialogs (centred
+// modal, brand chrome). Used for BOTH element links and per-cell table
+// links (spec/09). Three modes — link to a Tab, another Diagram, or an
+// external URL — plus a Remove action when a link already exists.
+//
+// Generic by design: the dialog builds the chosen `ElementLink` and
+// hands it back via `onCommit` (null = remove). The caller decides where
+// it lands (an element's `link`, or a table cell's `cellStyles.link`).
+
+type LinkTarget = { id: string; name: string };
+
+type LinkPickerDialogProps = {
+  // What's being linked, for the header ("Link element" / "Link cell").
+  title: string;
+  // The link currently on the target, or null. Seeds the active mode +
+  // the URL field, and reveals the Remove button.
+  currentLink: ElementLink | null;
+  // Tabs in this diagram. The current tab is marked but still selectable
+  // (a cell may legitimately link back to its own tab's start).
+  tabs: LinkTarget[];
+  currentTabId: string;
+  // The caller's other diagrams (newest first), for the Diagram mode.
+  recentDiagrams: LinkTarget[];
+  onCommit: (link: ElementLink | null) => void;
+  onClose: () => void;
+};
+
+type Mode = 'tab' | 'diagram' | 'url';
+
+const MODES: { id: Mode; label: string }[] = [
+  { id: 'tab', label: 'Tab' },
+  { id: 'diagram', label: 'Diagram' },
+  { id: 'url', label: 'External URL' },
+];
+
+// Prepend https:// to a bare host (no scheme). Leaves mailto:, http(s)://
+// etc. untouched so the user can paste any address.
+function normaliseUrl(raw: string): string {
+  const t = raw.trim();
+  if (!t) return t;
+  return /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : `https://${t}`;
+}
+
+export function LinkPickerDialog({
+  title,
+  currentLink,
+  tabs,
+  currentTabId,
+  recentDiagrams,
+  onCommit,
+  onClose,
+}: LinkPickerDialogProps) {
+  const [mode, setMode] = useState<Mode>(
+    currentLink?.kind === 'url' ? 'url' : currentLink?.kind === 'diagram' ? 'diagram' : 'tab',
+  );
+  const [urlInput, setUrlInput] = useState(currentLink?.kind === 'url' ? currentLink.url : '');
+
+  const commit = (link: ElementLink | null) => {
+    onCommit(link);
+    onClose();
+  };
+
+  const saveUrl = () => {
+    const url = normaliseUrl(urlInput);
+    if (!url) return;
+    commit({ kind: 'url', url });
+  };
+
+  const linkedTabId =
+    currentLink?.kind === 'tab' || currentLink?.kind === 'element' ? currentLink.tabId : null;
+  const linkedDiagramId = currentLink?.kind === 'diagram' ? currentLink.diagramId : null;
+
+  return (
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onPointerDown={(e) => e.stopPropagation()}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-6 backdrop-blur-sm dark:bg-slate-950/60"
+    >
+      <div className="pointer-events-auto flex max-h-[90vh] w-[34rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              Jump to a tab, open another diagram, or go to a web address.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        {/* Mode switcher */}
+        <div className="flex gap-1 border-b border-slate-100 px-6 py-3 dark:border-slate-800">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => setMode(m.id)}
+              aria-pressed={mode === m.id}
+              className={
+                mode === m.id
+                  ? 'rounded-md bg-brand-100 px-3 py-1.5 text-xs font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
+                  : 'rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+              }
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {mode === 'tab' ? (
+            <ul className="flex flex-col gap-1">
+              {tabs.map((t) => (
+                <li key={t.id}>
+                  <RowButton
+                    active={linkedTabId === t.id}
+                    onClick={() => commit({ kind: 'tab', tabId: t.id })}
+                  >
+                    <span className="truncate">{t.name}</span>
+                    {t.id === currentTabId ? (
+                      <span className="ml-2 shrink-0 text-[10px] uppercase tracking-wide text-slate-400">
+                        current
+                      </span>
+                    ) : null}
+                  </RowButton>
+                </li>
+              ))}
+            </ul>
+          ) : mode === 'diagram' ? (
+            recentDiagrams.length === 0 ? (
+              <p className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">
+                No other diagrams yet.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {recentDiagrams.map((d) => (
+                  <li key={d.id}>
+                    <RowButton
+                      active={linkedDiagramId === d.id}
+                      onClick={() => commit({ kind: 'diagram', diagramId: d.id, name: d.name })}
+                    >
+                      <span className="truncate">{d.name}</span>
+                    </RowButton>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : (
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                Web address
+              </label>
+              <input
+                type="url"
+                inputMode="url"
+                autoFocus
+                value={urlInput}
+                placeholder="https://example.com"
+                onChange={(e) => setUrlInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveUrl();
+                  }
+                }}
+                className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              />
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                Opens in a new tab. We&apos;ll add https:// if you leave off the scheme.
+              </p>
+              <button
+                type="button"
+                onClick={saveUrl}
+                disabled={!urlInput.trim()}
+                className="mt-1 self-start rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Save link
+              </button>
+            </div>
+          )}
+        </div>
+
+        {currentLink ? (
+          <div className="flex justify-end border-t border-slate-100 px-6 py-3 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => commit(null)}
+              className="rounded-md px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15"
+            >
+              Remove link
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function RowButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={
+        active
+          ? 'flex w-full items-center rounded-md border border-brand-300 bg-brand-50 px-3 py-2 text-left text-sm font-medium text-brand-800 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
+          : 'flex w-full items-center rounded-md border border-transparent px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M3.5 3.5l7 7M3.5 10.5l7-7" />
+    </svg>
+  );
+}

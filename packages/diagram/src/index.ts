@@ -265,6 +265,11 @@ export type TableCellStyle = {
   underline?: boolean;
   textSize?: TextSize;
   alignX?: TextAlignX;
+  // Optional per-cell link (tab / diagram / element / external URL).
+  // Lives on the cell style so it rides the same parallel `cellStyles`
+  // grid the table helpers already splice on row / column edits, staying
+  // aligned with no extra bookkeeping (spec/09).
+  link?: ElementLink;
 };
 
 export type TableElement = {
@@ -541,7 +546,11 @@ export type Endpoint =
 export type ElementLink =
   | { kind: 'tab'; tabId: TabId }
   | { kind: 'element'; tabId: TabId; elementId: ElementId }
-  | { kind: 'diagram'; diagramId: string; name: string };
+  | { kind: 'diagram'; diagramId: string; name: string }
+  // An external web address. Followed by opening in a new tab; stored
+  // verbatim (the UI normalises a bare host to https:// on entry). Used
+  // by both element links and per-cell table links (spec/09).
+  | { kind: 'url'; url: string };
 
 // Which endpoint(s) of an arrow get an arrowhead marker. 'to' (default)
 // is the conventional one-way arrow; 'from' flips it; 'both' makes a

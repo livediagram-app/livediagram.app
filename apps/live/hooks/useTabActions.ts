@@ -313,10 +313,12 @@ export function useTabActions(deps: TabActionsDeps) {
           ...t,
           elements: t.elements.map((el) => {
             if (!el.link) return el;
-            // Tab-level deletion cleans up links pointing at the
-            // gone tab. Diagram-kind links survive (they target
-            // another diagram entirely, unrelated to this tab).
-            if (el.link.kind === 'diagram' || el.link.tabId !== id) return el;
+            // Tab-level deletion only cleans up links pointing AT the
+            // gone tab. Diagram + url links target somewhere else
+            // entirely, so they survive; only tab / element links carry
+            // a tabId to check.
+            if (el.link.kind !== 'tab' && el.link.kind !== 'element') return el;
+            if (el.link.tabId !== id) return el;
             const { link: _drop, ...rest } = el;
             return rest as typeof el;
           }),

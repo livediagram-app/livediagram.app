@@ -284,7 +284,8 @@ function BoxedElementViewImpl({
   // onFollowLink callback. 'element' kind is the spec'd
   // jump-and-focus that isn't surfaced in the UI yet.
   const linked =
-    element.link !== undefined && (element.link.kind === 'tab' || element.link.kind === 'diagram');
+    element.link !== undefined &&
+    (element.link.kind === 'tab' || element.link.kind === 'diagram' || element.link.kind === 'url');
 
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
@@ -452,7 +453,12 @@ function BoxedElementViewImpl({
           element={element}
           position={element.iconPosition ?? 'left'}
           iconStroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
-          label={labelNode}
+          isEditing={isEditing}
+          editor={labelNode}
+          label={label}
+          textColor={textColor}
+          textSize={textSize}
+          fontFamily={fontFamily}
         />
       ) : (
         labelNode
@@ -705,50 +711,86 @@ function FreehandSvg({
 // the side named by `position`; icon + label are centred together as a
 // group. Everything is pointer-events-none so a drag still grabs the
 // shape; the label's own editor re-enables pointer events when active.
+// Fixed label sizes mirror element-labels' FIXED_FONT_PX; 'scale' has no
+// fixed px, so derive a reasonable size from the box for the inline case.
+const INLINE_FONT_PX = { sm: 14, md: 22, lg: 32 } as const;
+
 function ShapeInlineIconLayout({
   element,
   position,
   iconStroke,
+  isEditing,
+  editor,
   label,
+  textColor,
+  textSize,
+  fontFamily,
 }: {
   element: ShapeElement;
   position: 'left' | 'right' | 'above' | 'below';
   iconStroke: string;
-  label: ReactNode;
+  isEditing: boolean;
+  // The full label renderer (incl. the inline editor). Shown full-box
+  // while editing so typing keeps the normal editor; the icon reappears
+  // once the edit commits.
+  editor: ReactNode;
+  label: string;
+  textColor: string;
+  textSize: TextSize;
+  fontFamily?: string;
 }) {
+  if (isEditing) return editor;
+
   // Icon box in element-space px: a fraction of the shorter side so it
   // stays proportionate, clamped so it's neither a speck nor dominant.
   const iconSize = Math.max(16, Math.min(Math.min(element.width, element.height) * 0.32, 48));
   const isRow = position === 'left' || position === 'right';
   const iconFirst = position === 'left' || position === 'above';
-  // self-center keeps the glyph at its fixed size centred on the cross
-  // axis (the container stretches children otherwise).
+  const fontSize =
+    textSize === 'scale'
+      ? Math.max(12, Math.min(element.height * 0.26, 26))
+      : INLINE_FONT_PX[textSize];
+
   const iconBox = (
-    <div
-      className="pointer-events-none relative shrink-0 self-center"
-      style={{ width: iconSize, height: iconSize }}
-    >
+    <div className="relative shrink-0" style={{ width: iconSize, height: iconSize }}>
       <IconGlyph iconId={element.iconId} stroke={iconStroke} strokeWidth={2} hasLabel={false} />
     </div>
   );
-  // The label keeps its own renderer (scale / fixed / alignment). It's
-  // absolute inset-0, so its region MUST be given real height — hence the
-  // container uses items-stretch (default) NOT items-center: with center,
-  // this flex child collapsed to zero height and the text clipped top +
-  // bottom. flex-1 takes the remaining main-axis space beside the icon.
-  const labelRegion = (
-    <div className="pointer-events-none relative min-h-0 min-w-0 flex-1">{label}</div>
-  );
-  return (
-    // justify-center groups the icon + label together; items-stretch (the
-    // flex default, left implicit) gives the label region full cross-axis
-    // size so its text renders un-clipped.
-    <div
-      className="pointer-events-none absolute inset-0 flex justify-center"
-      style={{ flexDirection: isRow ? 'row' : 'column', gap: Math.round(iconSize * 0.18) }}
+  // The text flows (NOT absolute / flex-1) so the icon sits right beside
+  // it and the whole group stays centred — `flex-1` previously stretched
+  // the label and shoved the icon to the element edge. min-w-0 lets a
+  // long label wrap / shrink instead of overflowing.
+  const text = label.trim() ? (
+    <span
+      className="min-w-0 whitespace-pre-wrap break-words text-center leading-tight"
+      style={{
+        color: textColor,
+        fontSize,
+        fontFamily,
+        fontWeight: element.textBold ? 700 : 500,
+        fontStyle: element.textItalic ? 'italic' : undefined,
+        textDecoration:
+          element.textUnderline && element.textStrikethrough
+            ? 'underline line-through'
+            : element.textUnderline
+              ? 'underline'
+              : element.textStrikethrough
+                ? 'line-through'
+                : undefined,
+      }}
     >
-      {iconFirst ? iconBox : labelRegion}
-      {iconFirst ? labelRegion : iconBox}
+      {label}
+    </span>
+  ) : null;
+  return (
+    // justify-center + content-sized children keeps icon + text grouped
+    // and centred together, padded off the element edges.
+    <div
+      className="pointer-events-none absolute inset-0 flex items-center justify-center p-2"
+      style={{ flexDirection: isRow ? 'row' : 'column', gap: Math.round(iconSize * 0.22) }}
+    >
+      {iconFirst ? iconBox : text}
+      {iconFirst ? text : iconBox}
     </div>
   );
 }

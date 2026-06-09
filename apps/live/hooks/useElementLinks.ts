@@ -3,17 +3,16 @@
 // read or write an element's `link` field:
 //
 // - `linkPickerOpenForId`: which element's link picker is open (null =
-//   closed). Drives the lazy <TabLinkPicker> JSX gate in the page.
-// - `linkPickerAnchorEl`: the DOM node the picker portal anchors to.
-//   An effect keeps it pointed at the matching [data-element-id] node
-//   so the picker stays attached as the canvas pans / zooms (same
-//   trick as NotePopover).
-// - `setLinkSelected` / `setDiagramLinkSelected` / `clearLinkSelected`:
-//   write or drop the link on the current selection (history-committed).
-// - `followLink`: navigate — switch tab for tab/element links, or full
-//   page-load to another diagram via `openDiagram`.
+//   closed). Drives the <LinkPickerDialog> gate in the page. The dialog
+//   is a centred modal (styled like import/export), so no DOM anchoring
+//   is needed any more.
+// - `applyElementLink`: write a chosen link (tab / diagram / element /
+//   url) onto the current selection, or remove it when passed null.
+//   History-committed.
+// - `followLink`: navigate — switch tab for tab/element links, full
+//   page-load to another diagram, or open an external URL in a new tab.
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { type Element, type ElementLink, type Tab } from '@livediagram/diagram';
 
 type ElementLinksDeps = {
@@ -46,52 +45,26 @@ export function useElementLinks(deps: ElementLinksDeps) {
     openDiagram,
   } = deps;
 
-  // Link-to-tab picker state. Lives at the page level (rather than
-  // inside SelectionPopover, where the toolbar button used to host
-  // it) so the right-click context menu can open it without having
-  // to reach across components.
+  // Link picker state. Lives at the page level (rather than inside
+  // SelectionPopover, where the toolbar button used to host it) so the
+  // right-click context menu can open it without reaching across
+  // components. Holds the element id whose link is being edited.
   const [linkPickerOpenForId, setLinkPickerOpenForId] = useState<string | null>(null);
-  const [linkPickerAnchorEl, setLinkPickerAnchorEl] = useState<HTMLElement | null>(null);
-  useEffect(() => {
-    if (linkPickerOpenForId === null) {
-      setLinkPickerAnchorEl(null);
-      return;
-    }
-    const el = document.querySelector(`[data-element-id="${linkPickerOpenForId}"]`);
-    setLinkPickerAnchorEl(el instanceof HTMLElement ? el : null);
-  }, [linkPickerOpenForId]);
 
-  const setLinkSelected = (tabId: string) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) ? { ...el, link: { kind: 'tab' as const, tabId } } : el)),
-    );
-  };
-
-  // Pick a diagram from the link picker's "Link to diagram" section.
-  // Stores the diagram's name on the element alongside the id so the
-  // badge / picker can show the destination without a round-trip.
-  const setDiagramLinkSelected = (diagram: { id: string; name: string }) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id)
-          ? { ...el, link: { kind: 'diagram' as const, diagramId: diagram.id, name: diagram.name } }
-          : el,
-      ),
-    );
-  };
-
-  const clearLinkSelected = () => {
+  // Apply a chosen link to the current selection, or remove it when
+  // null. One entry point for every kind (tab / diagram / element /
+  // url), history-committed. Multi-selection links them all the same.
+  const applyElementLink = (link: ElementLink | null) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     commit((els) =>
       els.map((el) => {
         if (!ids.has(el.id)) return el;
-        const { link: _drop, ...rest } = el;
-        return rest as typeof el;
+        if (link === null) {
+          const { link: _drop, ...rest } = el;
+          return rest as typeof el;
+        }
+        return { ...el, link };
       }),
     );
   };
@@ -112,16 +85,19 @@ export function useElementLinks(deps: ElementLinksDeps) {
       // realtime room handoff land through the normal hydration
       // path on the destination route.
       openDiagram(link.diagramId);
+      return;
+    }
+    if (link.kind === 'url') {
+      // External address: new tab, noopener so the opened page can't
+      // reach back into this one via window.opener.
+      window.open(link.url, '_blank', 'noopener,noreferrer');
     }
   };
 
   return {
     linkPickerOpenForId,
     setLinkPickerOpenForId,
-    linkPickerAnchorEl,
-    setLinkSelected,
-    setDiagramLinkSelected,
-    clearLinkSelected,
+    applyElementLink,
     followLink,
   };
 }

@@ -6,10 +6,10 @@ import { type EditorContextMenuState } from '@/components/EditorContextMenu';
 // Lazy-load EditorContextMenu: the right-click menu only renders
 // while `contextMenu` is non-null, so the menu's render tree + its
 // icon set never need to ship in the editor's initial chunk. Same
-// gate pattern as TabLinkPicker, ShortcutsDialog, etc. Visitors
+// gate pattern as LinkPickerDialog, ShortcutsDialog, etc. Visitors
 // (view-role) skip it entirely because the parent already gates on
 // `!isReadOnly`.
-// Lazy-load TabLinkPicker: only mounts when `linkPickerOpenForId`
+// Lazy-load LinkPickerDialog: only mounts when `linkPickerOpenForId`
 // is set (the user clicked the link icon on a selected element).
 // Most sessions never open it. Same lazy pattern as the dialogs
 // below, the picker's tab-grid + diagram-grid stays out of the
@@ -1567,25 +1567,18 @@ export function useEditorState() {
 
   // Element link picker state + the link read/write/follow handlers.
   // See useElementLinks.
-  const {
-    linkPickerOpenForId,
-    setLinkPickerOpenForId,
-    linkPickerAnchorEl,
-    setLinkSelected,
-    setDiagramLinkSelected,
-    clearLinkSelected,
-    followLink,
-  } = useElementLinks({
-    currentSelectionIds,
-    commit,
-    tabs,
-    setActiveId,
-    setSelectedId,
-    setEditingId,
-    setFormatSourceId,
-    setGroupSourceId,
-    openDiagram,
-  });
+  const { linkPickerOpenForId, setLinkPickerOpenForId, applyElementLink, followLink } =
+    useElementLinks({
+      currentSelectionIds,
+      commit,
+      tabs,
+      setActiveId,
+      setSelectedId,
+      setEditingId,
+      setFormatSourceId,
+      setGroupSourceId,
+      openDiagram,
+    });
 
   // Selection-editing handlers (format/group modes, label edit, type-to-
   // edit, single + shift-click select). See useSelectionEditing.
@@ -1810,7 +1803,6 @@ export function useEditorState() {
     changeLogLoading,
     chooseTemplate,
     clearActivityForActiveTab,
-    clearLinkSelected,
     clearTabContent,
     clerkDisplayName,
     clerkUserId,
@@ -1874,8 +1866,8 @@ export function useEditorState() {
     isReadOnly,
     laserTrailRows,
     linkActiveTabTo,
-    linkPickerAnchorEl,
     linkPickerOpenForId,
+    applyElementLink,
     livePresence,
     loadedTabIds,
     loadingDiagram,
@@ -1940,7 +1932,6 @@ export function useEditorState() {
     setBorderStyleSelected,
     setCanvasTool: selectCanvasTool,
     setContextMenu,
-    setDiagramLinkSelected,
     setDiagramName,
     setDiagramSharePassword,
     setEditingId,
@@ -1948,7 +1939,6 @@ export function useEditorState() {
     setFormatSourceId,
     setGroupSourceId,
     setLinkPickerOpenForId,
-    setLinkSelected,
     setLoadingDiagram,
     setMultiSelectedIds,
     setNote,
