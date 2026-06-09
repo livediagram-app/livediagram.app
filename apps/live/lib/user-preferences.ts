@@ -58,6 +58,14 @@ export type UserPreferences = {
   // unaffected; only the visual hint is suppressed). Missing /
   // undefined === guides on, the default.
   alignmentGuides?: boolean;
+  // Reduce motion (accessibility, spec/20). When `true`, the editor adds
+  // `.reduce-motion` to <html> so the CSS in globals.css collapses every
+  // decorative animation + transition to ~instant. Independent of the OS
+  // `prefers-reduced-motion` media query (which is always honoured): this
+  // lets a user force the calm UI even when their OS setting is off, and
+  // syncs across their devices. Missing / undefined / false === full
+  // motion (subject to the OS setting), the default.
+  reduceMotion?: boolean;
 };
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';

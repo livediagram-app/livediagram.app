@@ -21,6 +21,7 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
   const aiEnabled = settings.aiAssistanceEnabled === true;
   const minimalPanels = settings.minimalPanels === true;
   const alignmentGuides = settings.alignmentGuides !== false;
+  const reduceMotion = settings.reduceMotion === true;
 
   // Single-open accordion: the title of the one expanded group (or null).
   // Opening one collapses the rest. Starts on Canvas so the dialog lands
@@ -90,6 +91,17 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
                 onChange={(v) => {
                   track('UI', 'Toggled', v ? 'MinimalPanelsOn' : 'MinimalPanelsOff');
                   onChange({ ...settings, minimalPanels: v });
+                }}
+              />
+            </SettingsGroup>
+            <SettingsGroup {...groupProps('Accessibility')}>
+              <ToggleRow
+                label="Reduce motion"
+                description="Turns off the editor's decorative animations and transitions (panels, popovers, the snap guides, etc.) so the interface appears instantly instead of sliding or popping. Your device's own 'reduce motion' setting is always respected; this lets you force it on here too, and it syncs across your devices."
+                checked={reduceMotion}
+                onChange={(v) => {
+                  track('UI', 'Toggled', v ? 'ReduceMotionOn' : 'ReduceMotionOff');
+                  onChange({ ...settings, reduceMotion: v });
                 }}
               />
             </SettingsGroup>

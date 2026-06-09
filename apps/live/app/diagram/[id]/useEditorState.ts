@@ -71,6 +71,7 @@ import type { SaveStatus } from '@/components/EditorHeader';
 // AiPanel content is rendered inside Canvas via MovablePanel (spec/25).
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
 import { useClipboard } from '@/hooks/useClipboard';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useDiagramActions } from '@/hooks/useDiagramActions';
 import { useDiagramHistory } from '@/hooks/useDiagramHistory';
 import { useNudgeSelection } from '@/hooks/useNudgeSelection';
@@ -312,6 +313,10 @@ export function useEditorState() {
   useEffect(() => {
     if (userPreferences.aiAssistanceEnabled) panelLayout.setAiPanelVisible(true);
   }, [userPreferences.aiAssistanceEnabled]);
+  // Apply the "Reduce motion" preference (spec/20) to <html>. The OS
+  // prefers-reduced-motion media query is honoured by globals.css
+  // regardless; this lets the user force it on independent of the OS.
+  useReduceMotion(userPreferences.reduceMotion === true);
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults
   // to true (auto-rebind on) so a fresh session keeps today's UX.

@@ -135,6 +135,14 @@ type UserPreferences = {
   // unaffected; only the visual hint is hidden. Defaults to true
   // (guides on). See spec/09's Alignment guides subsection.
   alignmentGuides?: boolean;
+
+  // When true, the editor adds `.reduce-motion` to <html> so globals.css
+  // collapses decorative animations + transitions to ~instant
+  // (accessibility). Independent of the OS `prefers-reduced-motion` media
+  // query, which globals.css always honours; this lets a user force the
+  // calm UI on regardless of their OS setting, synced across devices.
+  // Defaults to false (full motion, subject to the OS setting).
+  reduceMotion?: boolean;
 };
 ```
 
@@ -164,6 +172,12 @@ Missing key === undefined === default behaviour. Concretely:
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
+- `reduceMotion` undefined / false → full motion (the default), still
+  subject to the OS `prefers-reduced-motion` media query which
+  `globals.css` always honours. Setting it to `true` adds
+  `.reduce-motion` to `<html>` (via `useReduceMotion`), collapsing every
+  decorative animation + transition to ~instant for motion-sensitive
+  users who want it on regardless of their OS setting.
 
 Empty (or missing entirely) localStorage entry, AND no row in
 `user_preferences` for this owner, is therefore the "everything
@@ -186,13 +200,15 @@ behaviour is friction the tool's banner already solves.
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
   Toggles are organised into collapsible groups (Canvas, Interface,
-  AI, Privacy) so the growing list stays scannable; only the first
-  group (Canvas) is open by default and the rest start collapsed, so
-  the dialog opens compact and the user expands what they need. The
-  Canvas group holds `autoRebindArrows` and `alignmentGuides`
+  Accessibility, AI, Privacy) so the growing list stays scannable; only
+  the first group (Canvas) is open by default and the rest start
+  collapsed, so the dialog opens compact and the user expands what they
+  need. The Canvas group holds `autoRebindArrows` and `alignmentGuides`
   (element add is now a single always-on tap-or-drag gesture with no
   setting — see [spec/09](09-canvas-and-command-palette.md)). The Interface group holds `minimalPanels`, whose
-  description notes the dock layout is always on for mobile.
+  description notes the dock layout is always on for mobile. The
+  Accessibility group holds `reduceMotion`, noting the OS setting is
+  always respected and this only adds a user-forced override.
 - **Per-tool surfaces**: today only the pencil's ModeBanner (a
   sparkle / magic-wand icon button to the left of Cancel) carries
   the `recogniseShapes` toggle. The button reads the value from

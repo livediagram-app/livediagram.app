@@ -196,3 +196,31 @@
     max-height: 0;
   }
 }
+
+/*
+ * Reduced motion (accessibility, spec/20). Honour BOTH the operating
+ * system's `prefers-reduced-motion` setting AND the per-user "Reduce
+ * motion" preference, which adds `.reduce-motion` to <html>. Decorative
+ * animations + transitions collapse to ~instant so motion-sensitive users
+ * get a calm, static UI; nothing is hidden or disabled, it just stops
+ * moving. 0.01ms (rather than 0) keeps animationend / transitionend events
+ * firing so any JS waiting on them still resolves.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+:root.reduce-motion *,
+:root.reduce-motion *::before,
+:root.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
