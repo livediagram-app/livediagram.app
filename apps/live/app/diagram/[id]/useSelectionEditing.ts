@@ -22,6 +22,10 @@ export function useSelectionEditing(opts: {
   commit: (updater: (els: Element[]) => Element[]) => void;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   applyFormatFromSource: (targetId: string) => void;
+  // True when ANOTHER participant currently has this element selected
+  // (concurrent-selection lock, spec/07). Blocks select / edit so two
+  // people don't fight over the same element. Advisory + presence-only.
+  lockedByOther: (id: string) => boolean;
   set: {
     setFormatSourceId: SetState<string | null>;
     setGroupSourceId: SetState<string | null>;
@@ -49,6 +53,7 @@ export function useSelectionEditing(opts: {
     commit,
     commitTabs,
     applyFormatFromSource,
+    lockedByOther,
     set,
   } = opts;
   const {
@@ -76,6 +81,8 @@ export function useSelectionEditing(opts: {
   const beginEdit = (elementId: string) => {
     // Viewers may select to inspect, but never enter text-edit mode.
     if (isReadOnly) return;
+    // Another participant has it selected — don't let two people edit it.
+    if (lockedByOther(elementId)) return;
     if (formatSourceId !== null) return;
     setGroupSourceId(null);
     setSelectedId(elementId);
@@ -151,6 +158,7 @@ export function useSelectionEditing(opts: {
 
   const typeIntoSelected = (elementId: string, char: string): boolean => {
     if (isReadOnly) return false;
+    if (lockedByOther(elementId)) return false;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return false;
     const labelable = isBoxed(el) || el.type === 'arrow';
@@ -167,6 +175,12 @@ export function useSelectionEditing(opts: {
   // --- Selection + drag dispatch ------------------------------------------
 
   const selectElement = (id: string) => {
+    // Concurrent-selection lock (spec/07): another participant has this
+    // element selected, so block it — for plain select AND for format-
+    // paint / group targets, since both would mutate an element someone
+    // else is working on. The not-allowed cursor + "Locked to <name>"
+    // tooltip on the element communicate why.
+    if (lockedByOther(id)) return;
     if (formatSourceId !== null) {
       // Format-paint mode: apply the source's formatting to the
       // clicked target instead of selecting it. applyFormatFromSource
@@ -191,6 +205,8 @@ export function useSelectionEditing(opts: {
   // Toggling the last member out of the multi-set drops back to
   // empty selection.
   const toggleInMultiSelect = (id: string) => {
+    // Don't let a shift-click pull a remotely-held element into the set.
+    if (lockedByOther(id)) return;
     const next = new Set(multiSelectedIds);
     if (selectedId && !next.has(selectedId)) next.add(selectedId);
     if (next.has(id)) next.delete(id);

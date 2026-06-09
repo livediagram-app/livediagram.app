@@ -55,6 +55,16 @@ Three regions stacked vertically, filling the viewport:
 - Folders in the Explorer (see [15-folders.md](15-folders.md)).
 - Themed templates (chosen on the new-diagram route).
 
+## Concurrent-selection lock
+
+To cut down on two people fighting over the same element, an element another participant currently has selected is **locked** for everyone else: you can't select, drag, or edit it while they hold it.
+
+- **Advisory, not authoritative.** The lock is driven entirely by the realtime presence layer (`remoteSelectionsByElement`, built from the room's `select` ops). It is a UX guard that prevents the common accidental clash, **not** a hard mutual-exclusion guarantee — two clients can still race inside the presence-propagation window. True conflict-free concurrent editing waits on the OT / CRDT work that's still ahead (see [CLAUDE.md](../CLAUDE.md)). It deliberately does no server-side enforcement.
+- **Self is never locked out.** Only OTHER participants' selections lock an element; your own selection never blocks you.
+- **Auto-releases.** The lock is purely a function of live presence, so it clears the moment the holder deselects, switches tabs, or leaves the room — there's no sticky server state to clean up.
+- **Where it's enforced.** All local selection choke points respect it: single-click select, shift multi-select, and marquee (which filters locked ids out of its hit set), plus the element's own pointer-down / double-click-to-edit. A locked element shows a `not-allowed` cursor and the existing remote-selector badge's hover tooltip reads "Locked to <name>".
+- The user-set element **lock** (`element.locked`, the padlock badge) is a separate, persisted feature; this concurrent-selection lock is ephemeral and presence-only.
+
 ## SEO and indexing
 
 The live app is the product, not a content surface. Every page under `/live/*` is one of:

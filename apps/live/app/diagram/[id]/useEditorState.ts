@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isBoxed, type BoxedElement, type Element, type Tab } from '@livediagram/diagram';
 import { type EditorContextMenuState } from '@/components/EditorContextMenu';
 // Lazy-load EditorContextMenu: the right-click menu only renders
@@ -986,6 +986,16 @@ export function useEditorState() {
     () => buildRemoteSelectionsByElement(remoteSelections, livePresenceById, selfParticipant.id),
     [remoteSelections, livePresenceById, selfParticipant.id],
   );
+  // Concurrent-selection lock (spec/07): an element another participant
+  // has selected is off-limits to the local user. buildRemoteSelections-
+  // ByElement already filters out our own selection, so a hit here always
+  // means someone ELSE holds it. The selection hooks consult this to block
+  // select / edit / marquee; the element view uses it for the cursor +
+  // "Locked to <name>" tooltip.
+  const lockedByOther = useCallback(
+    (id: string) => remoteSelectionsByElement.has(id),
+    [remoteSelectionsByElement],
+  );
   // True only while the first-run welcome modal is up. Drives the chrome
   // hide rule (palette / explorer / dock / tab bar all suppressed so the
   // user's focus is on the modal). The Browse-templates flow uses the
@@ -1467,6 +1477,7 @@ export function useEditorState() {
     setMultiSelectedIds,
     setFormatSourceId,
     setGroupSourceId,
+    lockedByOther,
   });
 
   // Element styling / layering actions (lock, layer order, text size /
@@ -1561,6 +1572,7 @@ export function useEditorState() {
     commit,
     commitTabs,
     applyFormatFromSource,
+    lockedByOther,
     set: {
       setFormatSourceId,
       setGroupSourceId,

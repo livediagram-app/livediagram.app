@@ -29,9 +29,12 @@ export function RemoteSelectorsStrip({
             zIndex: selectors.length - i,
           }}
         >
-          <Tooltip title={p.name} description="is editing this element.">
+          <Tooltip
+            title={`Locked to ${p.name}`}
+            description="Selected by them — you can't edit it right now."
+          >
             <div
-              aria-label={`${p.name} is here`}
+              aria-label={`Locked to ${p.name}`}
               style={{ backgroundColor: p.color }}
               className="flex h-5 w-5 items-center justify-center rounded-full border border-white text-[9px] font-semibold text-white shadow-sm"
             >

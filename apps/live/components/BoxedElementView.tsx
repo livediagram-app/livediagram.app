@@ -163,6 +163,12 @@ function BoxedElementViewImpl({
   fontFamily,
 }: BoxedElementViewProps) {
   const isLocked = element.locked === true || tabLocked;
+  // Concurrent-selection lock (spec/07): another participant has this
+  // element selected (remoteSelectors already excludes our own
+  // selection). We block select / drag / edit and show a not-allowed
+  // cursor so two people don't fight over the same element. Distinct
+  // from `isLocked` above, which is the persisted user-set padlock.
+  const remotelyLocked = remoteSelectors.length > 0;
   // Clockwise rotation about the element centre. `isRotated` gates the
   // resize handles off while rotated: the resize math runs in canvas-
   // axis space, so dragging a corner of a spun box would make it
@@ -180,6 +186,13 @@ function BoxedElementViewImpl({
 
   const handleShapeDown = (e: ReactPointerEvent) => {
     if (isEditing) return;
+    // Remotely locked: swallow the press so it neither starts a drag /
+    // selection nor falls through to the canvas. The not-allowed cursor
+    // + the remote-selector badge tell the user why nothing happened.
+    if (remotelyLocked) {
+      e.stopPropagation();
+      return;
+    }
     e.stopPropagation();
     // Shift modifier turns the down-event into a selection toggle
     // (add or remove this element from the marquee multi-selection)
@@ -205,6 +218,8 @@ function BoxedElementViewImpl({
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isEditing) return;
+    // Can't edit an element another participant holds.
+    if (remotelyLocked) return;
     // Image elements double-click to open the image picker (swap /
     // upload). They have no inline label to edit, so the editor's
     // beginEdit branch doesn't apply. A single click stays the
@@ -233,13 +248,15 @@ function BoxedElementViewImpl({
     onContextSelect(element.id, e.clientX, e.clientY);
   };
 
-  const cursor = isPaintMode
-    ? 'cursor-copy'
-    : isEditing
-      ? 'cursor-text'
-      : isLocked
-        ? 'cursor-default'
-        : 'cursor-move';
+  const cursor = remotelyLocked
+    ? 'cursor-not-allowed'
+    : isPaintMode
+      ? 'cursor-copy'
+      : isEditing
+        ? 'cursor-text'
+        : isLocked
+          ? 'cursor-default'
+          : 'cursor-move';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's

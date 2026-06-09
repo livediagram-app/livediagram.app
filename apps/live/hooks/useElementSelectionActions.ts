@@ -44,6 +44,10 @@ type EditorSelectionActionsDeps = {
   setMultiSelectedIds: (ids: Set<string>) => void;
   setFormatSourceId: (id: string | null) => void;
   setGroupSourceId: (id: string | null) => void;
+  // True when another participant has the element selected (concurrent-
+  // selection lock, spec/07). A marquee skips locked elements so a drag
+  // box doesn't scoop up something someone else is editing.
+  lockedByOther: (id: string) => boolean;
 };
 
 export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
@@ -59,6 +63,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setMultiSelectedIds,
     setFormatSourceId,
     setGroupSourceId,
+    lockedByOther,
   } = deps;
 
   const deleteSelected = () => {
@@ -79,7 +84,11 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // Marquee box-select committed by Canvas on pointer-up. Mutex with
   // single-selection: 0 → clear both; 1 → single-select that element so
   // the popover/accordion still applies; 2+ → enter true multi-select.
-  const selectMarquee = (ids: Set<string>) => {
+  const selectMarquee = (rawIds: Set<string>) => {
+    // Drop any element another participant currently holds — a marquee
+    // shouldn't pull a remotely-locked element into the selection.
+    const ids = new Set<string>();
+    for (const id of rawIds) if (!lockedByOther(id)) ids.add(id);
     if (ids.size === 0) {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
