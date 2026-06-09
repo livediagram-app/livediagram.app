@@ -35,18 +35,23 @@ type NotePopoverProps = {
   // before commit).
   onCommit: (next: string) => void;
   onClose: () => void;
+  // Read-only viewers (view-role share participants) can open a note
+  // to READ it, but not edit or delete it. In this mode the popover
+  // shows the note text as static content and never commits.
+  readOnly?: boolean;
 };
 
-export function NotePopover({ elementId, initial, onCommit, onClose }: NotePopoverProps) {
+export function NotePopover({ elementId, initial, onCommit, onClose, readOnly }: NotePopoverProps) {
   const [value, setValue] = useState(initial);
   const ref = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
   useEffect(() => {
+    if (readOnly) return;
     textareaRef.current?.focus();
     textareaRef.current?.select();
-  }, []);
+  }, [readOnly]);
 
   // Anchor to the element's live bounding rect. Re-runs on resize /
   // scroll so a pan or zoom keeps the popover attached. Same
@@ -84,18 +89,19 @@ export function NotePopover({ elementId, initial, onCommit, onClose }: NotePopov
   // Outside-click commits. Mirrors the commit-on-blur pattern the
   // rest of the editor's inline editors use; an outside click in
   // the canvas should land the user's edits rather than silently
-  // discard them.
+  // discard them. Read-only viewers can't edit, so an outside click
+  // just dismisses without committing.
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!ref.current) return;
       if (e.target instanceof Node && !ref.current.contains(e.target)) {
-        onCommit(value);
+        if (!readOnly) onCommit(value);
         onClose();
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [onCommit, onClose, value]);
+  }, [onCommit, onClose, value, readOnly]);
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Cmd-Enter / Ctrl-Enter commits + closes. Esc cancels (revert
@@ -130,31 +136,39 @@ export function NotePopover({ elementId, initial, onCommit, onClose }: NotePopov
         <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Note
         </p>
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKey}
-          rows={5}
-          placeholder="Add a note for this element..."
-          className="resize-y rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-        />
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] text-slate-400 dark:text-slate-500">
-            Cmd-Enter saves, Esc cancels.
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              onCommit('');
-              onClose();
-            }}
-            disabled={!initial && !value}
-            className="text-[10px] font-medium text-rose-700 transition hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline dark:text-rose-300 dark:disabled:text-slate-600"
-          >
-            Delete note
-          </button>
-        </div>
+        {readOnly ? (
+          <p className="max-h-60 overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
+            {initial}
+          </p>
+        ) : (
+          <>
+            <textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyDown={handleKey}
+              rows={5}
+              placeholder="Add a note for this element..."
+              className="resize-y rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                Cmd-Enter saves, Esc cancels.
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  onCommit('');
+                  onClose();
+                }}
+                disabled={!initial && !value}
+                className="text-[10px] font-medium text-rose-700 transition hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline dark:text-rose-300 dark:disabled:text-slate-600"
+              >
+                Delete note
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </Portal>
   );

@@ -825,7 +825,7 @@ export function EditorView() {
             );
           })()
         : null}
-      {noteOpenId !== null && !isReadOnly
+      {noteOpenId !== null
         ? (() => {
             const target = activeTab.elements.find((el) => el.id === noteOpenId && isBoxed(el));
             if (!target || !isBoxed(target)) return null;
@@ -833,6 +833,7 @@ export function EditorView() {
               <NotePopover
                 elementId={target.id}
                 initial={target.note ?? ''}
+                readOnly={isReadOnly}
                 onCommit={(next) => {
                   const prev = (target.note ?? '').trim();
                   const nextTrim = next.trim();
