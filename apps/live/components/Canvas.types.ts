@@ -309,6 +309,9 @@ export type CanvasProps = {
     iconId: string,
     position: 'left' | 'right' | 'above' | 'below',
   ) => void;
+  // Open the link picker for a specific table cell. Optional so read-
+  // only / pre-identity Canvas mounts can omit it.
+  onLinkCell?: (tableId: string, r: number, c: number) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
   // welcome / new-diagram surface (where Canvas mounts before

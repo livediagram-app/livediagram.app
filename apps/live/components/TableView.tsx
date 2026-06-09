@@ -14,6 +14,7 @@ import {
   removeTableRow,
   setCellStyle,
   setTableCell,
+  type ElementLink,
   type TableCellStyle,
   type TableElement,
 } from '@livediagram/diagram';
@@ -100,6 +101,26 @@ function TrashIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function CellLinkIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M7 4.5l1.5-1.5a3.25 3.25 0 0 1 4.6 4.6L11 9.5" />
+      <path d="M9 11.5l-1.5 1.5a3.25 3.25 0 0 1-4.6-4.6L5 7" />
+      <line x1="6" y1="10" x2="10" y2="6" />
     </svg>
   );
 }
@@ -196,6 +217,8 @@ export function TableView({
   isSelected,
   readOnly,
   onCommitTable,
+  onLinkCell,
+  onFollowLink,
   fontFamily,
 }: {
   element: TableElement;
@@ -212,6 +235,11 @@ export function TableView({
     id: string,
     patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
   ) => void;
+  // Open the shared link picker for a cell (spec/09). Undefined for
+  // read-only viewers (no editing).
+  onLinkCell?: (tableId: string, r: number, c: number) => void;
+  // Follow a cell's link when its badge is clicked (tab / diagram / url).
+  onFollowLink?: (link: ElementLink) => void;
 }) {
   const rows = element.cells.length;
   const cols = element.cells[0]?.length ?? 0;
@@ -581,7 +609,7 @@ export function TableView({
                       setCellMenu(null);
                     }
                   }}
-                  className="min-w-0 overflow-hidden"
+                  className="relative min-w-0 overflow-hidden"
                   style={{
                     padding: cellPad,
                     borderRight: c < cols - 1 ? gridBorder : undefined,
@@ -722,6 +750,23 @@ export function TableView({
                   ) : (
                     <span className="whitespace-pre-wrap break-words">{cell}</span>
                   )}
+                  {/* Linked-cell badge: a small link glyph in the corner.
+                      Clicking it follows the link (works in view + edit
+                      sessions) without selecting / editing the cell. */}
+                  {cs?.link && !isEditingCell ? (
+                    <button
+                      type="button"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (cs.link) onFollowLink?.(cs.link);
+                      }}
+                      aria-label="Follow cell link"
+                      className="pointer-events-auto absolute right-0.5 top-0.5 z-10 flex h-4 w-4 items-center justify-center rounded text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
+                    >
+                      <CellLinkIcon />
+                    </button>
+                  ) : null}
                 </div>
               );
             })}
@@ -1145,6 +1190,28 @@ export function TableView({
                       ) : null}
                     </div>
                     {sep}
+                    {onLinkCell ? (
+                      <Tooltip
+                        title={sc?.link ? 'Edit cell link' : 'Link cell'}
+                        description="Jump to a tab, another diagram, or a web address."
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onLinkCell(element.id, rr, cc);
+                          }}
+                          className={
+                            sc?.link
+                              ? 'flex h-7 w-7 items-center justify-center rounded bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
+                              : 'flex h-7 w-7 items-center justify-center rounded text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          }
+                        >
+                          <CellLinkIcon />
+                        </button>
+                      </Tooltip>
+                    ) : null}
+                    {onLinkCell ? sep : null}
                     <Tooltip
                       title="Clear cell"
                       description="Remove the text and all formatting from this cell."

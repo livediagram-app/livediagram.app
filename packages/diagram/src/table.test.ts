@@ -138,6 +138,18 @@ describe('cell styles', () => {
     expect(next.cellStyles![0]![3]).toEqual({ bg: '#00ff00' });
     expect(next.cellStyles![0]![0]).toBeNull();
   });
+
+  it('stores + clears a per-cell link, and keeps it on column insert', () => {
+    const link = { kind: 'url' as const, url: 'https://example.com' };
+    let next = setCellStyle(t(), 0, 1, { link });
+    expect(next.cellStyles![0]![1]).toEqual({ link });
+    // Survives a structural edit via the shared cellStyles splice.
+    next = addTableColumn(next, 0);
+    expect(next.cellStyles![0]![2]).toEqual({ link });
+    // Passing link: undefined clears just the link.
+    const cleared = setCellStyle(next, 0, 2, { link: undefined });
+    expect(cleared.cellStyles![0]![2]).toBeNull();
+  });
 });
 
 describe('reorder', () => {

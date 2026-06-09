@@ -241,6 +241,10 @@ export function EditorView() {
     setGroupSourceId,
     setLinkPickerOpenForId,
     applyElementLink,
+    cellLinkPickerOpenFor,
+    setCellLinkPickerOpenFor,
+    openCellLinkPicker,
+    applyCellLink,
     setMultiSelectedIds,
     setNote,
     setOpacitySelected,
@@ -469,6 +473,7 @@ export function EditorView() {
         onAddShape={addShape}
         onAddIcon={addIcon}
         onDropIcon={isReadOnly ? undefined : dropIconOnElement}
+        onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
         onAddTable={addTable}
         onAddText={addText}
         onAddSticky={addSticky}
@@ -919,6 +924,36 @@ export function EditorView() {
               );
           }}
           onClose={() => setLinkPickerOpenForId(null)}
+        />
+      ) : null}
+      {cellLinkPickerOpenFor !== null && !isReadOnly ? (
+        <LinkPickerDialog
+          title="Link cell"
+          currentLink={(() => {
+            const t = activeTab.elements.find(
+              (e) => e.id === cellLinkPickerOpenFor.tableId && e.type === 'table',
+            );
+            return t && t.type === 'table'
+              ? (t.cellStyles?.[cellLinkPickerOpenFor.r]?.[cellLinkPickerOpenFor.c]?.link ?? null)
+              : null;
+          })()}
+          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
+          currentTabId={activeId}
+          recentDiagrams={diagramList
+            .filter((d) => d.id !== diagramId)
+            .slice(0, 8)
+            .map((d) => ({ id: d.id, name: d.name }))}
+          onCommit={(link) => {
+            applyCellLink(link);
+            if (link === null) track('Element', 'Unlinked');
+            else
+              track(
+                'Element',
+                'Linked',
+                link.kind === 'url' ? 'Url' : link.kind === 'diagram' ? 'Diagram' : 'Tab',
+              );
+          }}
+          onClose={() => setCellLinkPickerOpenFor(null)}
         />
       ) : null}
       {imagePickerOpenFor && diagramId && !isReadOnly ? (

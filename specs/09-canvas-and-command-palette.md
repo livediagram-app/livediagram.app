@@ -527,7 +527,7 @@ Format + duplication:
 
 Relationships:
 
-- **Link Element** — opens a `TabLinkPicker` listing every other tab in the diagram (and the user's most recent diagrams when available). Picking a tab writes `link: { kind: 'tab', tabId }` onto the element; picking a diagram writes `link: { kind: 'diagram', diagramId }`. The linked target opens on a follow-link click. Hidden when the diagram only has one tab and there are no recent diagrams to offer.
+- **Link Element** (or **Edit link**) — opens the shared `LinkPickerDialog` (Tab / Diagram / External URL modes, plus Remove). Picking writes `link: { kind: 'tab', tabId }`, `{ kind: 'diagram', diagramId, name }`, or `{ kind: 'url', url }` onto the element; the target opens on a follow-link click. See [Element links](#element-links).
 - **Comments** — opens the `CommentThreadPopover` for the element's comment thread. See [Comments](#comments).
 - **Group / Ungroup** — Group enters group-mode to extend the selection into a group. Ungroup breaks the current group apart. See [Groups](#groups). (Shown for boxed elements only.)
 
@@ -844,13 +844,13 @@ Tabs are **draggable** via the native HTML5 drag API. Dragging a tab over anothe
 
 ## Element links
 
-Any element can carry a **link to another tab**. Clicking the link jumps to that tab.
+Any element can carry a **link**: to another **tab**, another **diagram**, or an **external URL** (`ElementLink` kinds `tab` / `diagram` / `element` / `url`). Clicking the link jumps to the tab, opens the diagram, or opens the URL in a new tab (`noopener`).
 
 ### Setting a link
 
-- The selection popover's Relationships group has a **Link Element** button (chain icon, between Duplicate and Comments). It's hidden entirely when the diagram only has one tab and there are no recent diagrams to link to.
-- Clicking it opens a small **TabLinkPicker** popover above the button (portal-rendered, viewport-clamped) listing every other tab.
-- Click a tab name to set the link. Click again on the same tab to keep it, or click another to switch. A **Remove link** action appears at the bottom of the picker when a link is set.
+- Right-click an element → **Link Element** (or **Edit link** when one exists) opens the shared **LinkPickerDialog** — a centred modal styled like the import / export dialogs.
+- The dialog has three modes: **Tab** (lists every tab), **Diagram** (lists the user's other diagrams), and **External URL** (a text field; a bare host gets `https://` prepended). A **Remove link** action shows when a link is already set.
+- The same dialog sets **per-cell table links**: a **Link cell** button in the in-cell toolbar opens it for that cell, storing the link on `cellStyles[r][c].link` (so it rides the cellStyles splice on row / column edits). The dialog and follow behaviour are identical; only the commit target differs (element `link` vs cell style `link`).
 
 The Link button is brand-tinted when the selected element has a link.
 
@@ -859,8 +859,10 @@ The Link button is brand-tinted when the selected element has a link.
 A linked boxed element shows a small brand-coloured **link badge** in its top-right corner with a chain icon. The badge:
 
 - Is counter-scaled with `1/zoom` so it stays the same on-screen size at any zoom.
-- **On click**, navigates to the linked tab (`setActiveId(tabId)`), clearing selection and edit/mode state — the same effect as picking the tab in the tab bar.
+- **On click**, follows the link: a tab/element link switches tab (`setActiveId`, clearing selection + edit/mode state), a diagram link opens that diagram, a url link opens the address in a new tab.
 - Stops propagation so it doesn't trigger element select / drag.
+
+A **linked table cell** shows the same chain glyph in the cell's top-right corner; clicking it follows the link (in view and edit sessions) without selecting / editing the cell.
 
 Arrows can also carry a link but don't show a visible badge yet (no obvious place to put one); future iteration may put a badge at the arrow's midpoint.
 

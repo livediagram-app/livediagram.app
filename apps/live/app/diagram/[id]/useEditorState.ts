@@ -1,7 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { isBoxed, type BoxedElement, type Element, type Tab } from '@livediagram/diagram';
+import {
+  isBoxed,
+  setCellStyle,
+  type BoxedElement,
+  type Element,
+  type ElementLink,
+  type Tab,
+} from '@livediagram/diagram';
 import { type EditorContextMenuState } from '@/components/EditorContextMenu';
 // Lazy-load EditorContextMenu: the right-click menu only renders
 // while `contextMenu` is non-null, so the menu's render tree + its
@@ -1490,6 +1497,31 @@ export function useEditorState() {
     );
   };
 
+  // Per-cell table links (spec/09). Which cell's link picker is open
+  // (null = closed); the shared LinkPickerDialog renders against it in
+  // EditorView and applyCellLink writes the chosen link into that cell's
+  // style via setCellStyle (history-committed; null clears it).
+  const [cellLinkPickerOpenFor, setCellLinkPickerOpenFor] = useState<{
+    tableId: string;
+    r: number;
+    c: number;
+  } | null>(null);
+  const openCellLinkPicker = (tableId: string, r: number, c: number) => {
+    if (editsBlocked) return;
+    setCellLinkPickerOpenFor({ tableId, r, c });
+  };
+  const applyCellLink = (link: ElementLink | null) => {
+    const target = cellLinkPickerOpenFor;
+    if (!target || editsBlocked) return;
+    commit((els) =>
+      els.map((e) =>
+        e.id === target.tableId && e.type === 'table'
+          ? setCellStyle(e, target.r, target.c, { link: link ?? undefined })
+          : e,
+      ),
+    );
+  };
+
   // Structural element operations (delete, marquee commit, group /
   // ungroup, and the duplicate family). They change the element set
   // and/or the selection rather than element fields; see
@@ -1868,6 +1900,10 @@ export function useEditorState() {
     linkActiveTabTo,
     linkPickerOpenForId,
     applyElementLink,
+    cellLinkPickerOpenFor,
+    setCellLinkPickerOpenFor,
+    openCellLinkPicker,
+    applyCellLink,
     livePresence,
     loadedTabIds,
     loadingDiagram,

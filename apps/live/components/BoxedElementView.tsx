@@ -108,6 +108,9 @@ type BoxedElementViewProps = {
   // side of the text the icon landed on and reports it. Omitted in
   // read-only mode so visitors can't drop icons.
   onDropIcon?: (id: string, iconId: string, position: 'left' | 'right' | 'above' | 'below') => void;
+  // Open the link picker for one of this table's cells. Only used by
+  // table elements; omitted for read-only viewers.
+  onLinkCell?: (tableId: string, r: number, c: number) => void;
   // Right-click on the element. Receives the element id + the
   // cursor's screen-space coords so the caller can anchor a context
   // menu under it. The caller is also responsible for selecting the
@@ -167,6 +170,7 @@ function BoxedElementViewImpl({
   onOpenComments,
   onOpenNote,
   onDropIcon,
+  onLinkCell,
   imageContext,
   onContextSelect,
   remoteSelectors,
@@ -446,6 +450,8 @@ function BoxedElementViewImpl({
           isSelected={isSelected}
           readOnly={isLocked || readOnly}
           onCommitTable={onCommitTable}
+          onLinkCell={onLinkCell}
+          onFollowLink={onFollowLink}
           fontFamily={fontFamily}
         />
       ) : inlineIcon ? (
