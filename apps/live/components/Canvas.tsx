@@ -958,7 +958,12 @@ export function Canvas(props: CanvasProps) {
             onUngroup={!readOnly && selectedIsGrouped ? onUngroup : undefined}
             onToggleLock={readOnly ? undefined : onToggleLockSelected}
             onDelete={readOnly ? undefined : onDeleteSelected}
-            onOpenComments={selected ? () => onOpenComments(selected.id) : undefined}
+            // Comment button is VIEW-ROLE ONLY now. Editors reach
+            // comments via the right-click / ellipsis context menu (which
+            // is gated !isReadOnly), so the toolbar button was a
+            // duplicate for them. View-role visitors get no context menu,
+            // so the toolbar stays their only way into a thread.
+            onOpenComments={readOnly && selected ? () => onOpenComments(selected.id) : undefined}
             onOpenContextMenu={
               readOnly
                 ? undefined
