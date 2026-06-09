@@ -60,6 +60,28 @@ describe('diffElements', () => {
   });
 });
 
+describe('summary labelling', () => {
+  it('names an edited table by kind, not by a stray label (no "Edited \'C\'")', () => {
+    // A table's content lives in `cells`; its `label` should never drive
+    // the activity summary (it leaked the cell text "C" before the fix).
+    const before = {
+      id: 't',
+      type: 'table' as const,
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 80,
+      cells: [['B']],
+      label: 'C',
+    };
+    const after = { ...before, cells: [['C']] };
+    const result = diffElements([before], [after]);
+    expect(result).not.toBeNull();
+    expect(result!.summary).toBe('Edited a Table');
+    expect(result!.summary).not.toContain("'C'");
+  });
+});
+
 describe('applyRevert', () => {
   it('reverts a delete by re-adding the element', () => {
     // Original change: deleted 'a'. Before = a, After = null.

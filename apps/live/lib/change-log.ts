@@ -35,6 +35,8 @@ function kindLabel(el: Element): string {
   if (el.type === 'arrow') return 'Arrow';
   if (el.type === 'text') return 'Text';
   if (el.type === 'sticky') return 'Sticky note';
+  if (el.type === 'table') return 'Table';
+  if (el.type === 'image') return 'Image';
   if (el.type === 'shape') {
     const s = el.shape;
     return s.charAt(0).toUpperCase() + s.slice(1);
@@ -59,7 +61,11 @@ function pluralise(label: string): string {
 // win when the element has one; otherwise we fall back to the
 // articled kind.
 function describeOne(el: Element): string {
-  if (el.type !== 'arrow') {
+  // Tables + images don't carry a meaningful single label (a table's
+  // content is in `cells`, not `label`), so naming them by label
+  // produced nonsense like "Edited 'C'" after a cell edit. Name them
+  // by kind ("a Table" / "an Image") instead. Arrows already opt out.
+  if (el.type !== 'arrow' && el.type !== 'table' && el.type !== 'image') {
     const trimmed = ((el as BoxedElement).label ?? '').trim();
     if (trimmed) return `'${trimmed}'`;
   }
