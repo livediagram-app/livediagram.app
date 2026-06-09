@@ -381,22 +381,31 @@ export function EditorView() {
           // Three-tier resolution for the top-middle "Owner" badge:
           //   1. Self IS the owner -> always have name + colour.
           //   2. Owner is currently in the room -> use the live
-          //      presence row so the avatar matches what visitors
-          //      see in the TabBar.
+          //      presence row so the avatar (and its online dot)
+          //      matches what visitors see in the TabBar.
           //   3. Owner is offline -> fall back to the joined name
           //      + colour we got from the diagram fetch
           //      (api worker LEFT JOINs participants on owner_id).
           // Returning null only when the owner truly has no
           // participant record on the server.
           if (isOwner) return selfParticipant;
-          const live = livePresence.find((p) => p.id === diagramOwnerId);
-          if (live) return live;
           // The share endpoint redacts ownerId to '' for visitors (so an
-          // observer can't learn + claim a guest's owner-id), but it
-          // still returns ownerName/ownerColor. So key tier 3 off the
-          // NAME, not the (blanked) id, or viewers never get the badge.
-          // The id here is display-only (the badge reads name + colour),
-          // so a synthetic fallback is fine.
+          // observer can't learn + claim a guest's owner-id), so a
+          // visitor can't match the owner's live presence row by id.
+          // When we have the real id (owner opening their own link) match
+          // on it; otherwise fall back to the joined owner name + colour,
+          // which is the same identity the fetch already trusts. Without
+          // this, an online owner always resolved to the offline branch
+          // below and showed a red (offline) dot to viewers.
+          const live = diagramOwnerId
+            ? livePresence.find((p) => p.id === diagramOwnerId)
+            : livePresence.find(
+                (p) => p.name === diagramOwnerName && p.color === diagramOwnerColor,
+              );
+          if (live) return live;
+          // Owner not in the room: key the badge off the NAME, not the
+          // (blanked) id, or viewers never get the badge at all. The id
+          // here is display-only, so a synthetic fallback is fine.
           if (diagramOwnerName) {
             return {
               id: diagramOwnerId || 'owner',
@@ -620,23 +629,23 @@ export function EditorView() {
         onOpenNote={openNote}
         imageContext={imageContext}
         showTemplatePicker={
-          // Wait for the active tab's content to land before
-          // deciding whether to show the picker. Otherwise the
-          // empty-elements / templateChosen-unset placeholder
-          // briefly trips the gate after hydration, causing a
-          // "pick a template" flash before the real content
-          // pops in. `loadedTabIds.has(activeId)` flips true
-          // once the lazy fetch resolves.
-          //
-          // View-role visitors never see the picker: they can't
-          // commit a template anyway (every write goes through
-          // a 403), so the prompt would just be a dead-end UI.
-          !isReadOnly &&
-          ((hydrated &&
+          // The identity / join card (name entry) shows for EVERYONE
+          // including view-role visitors: it only writes their own
+          // participant row, so there's no 403, and they should set a
+          // name before others see them in presence.
+          identityOnlyScreenOpen ||
+          // The template-CHOOSING variant stays editor-only: a viewer
+          // can't commit a template (every write 403s), so it'd be a
+          // dead-end. Wait for the active tab's content to land first,
+          // or the empty-elements / templateChosen-unset placeholder
+          // briefly trips the gate after hydration and flashes "pick a
+          // template" before the real content pops in. `loadedTabIds
+          // .has(activeId)` flips true once the lazy fetch resolves.
+          (!isReadOnly &&
+            hydrated &&
             loadedTabIds.has(activeId) &&
             activeTab.elements.length === 0 &&
-            activeTab.templateChosen !== true) ||
-            identityOnlyScreenOpen)
+            activeTab.templateChosen !== true)
         }
         hydrated={hydrated}
         templatePickerMode={effectiveTemplatePickerMode}

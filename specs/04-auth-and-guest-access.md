@@ -76,6 +76,8 @@ Two welcome-modal rules follow from that:
 
 Guests see the legacy behaviour in both cases — first-load identity prompt, fully editable name, shuffle button present.
 
+The join prompt is **independent of share role**: both **edit-role and view-role** visitors get it. A viewer's display name is broadcast to everyone else (cursor label, the tab presence stack, comments), so they need a chance to set it before joining rather than appearing under a random default. The identity card only writes the visitor's **own** participant row (`PUT /api/participants/:id`, authorised on `owner === id`, not on diagram-edit rights), so confirming a name never hits a `403` even for a read-only viewer. The card's edit-only affordances (template grid, theme grid) don't render in identity mode, so there's nothing a viewer could trigger that they lack permission for.
+
 ## Guest → account migration
 
 When a guest signs up, the diagrams they built as a guest **migrate into their account** rather than being lost. They've already invested effort — losing it on sign-up would be the opposite of friction-free.

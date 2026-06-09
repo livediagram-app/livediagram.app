@@ -1007,17 +1007,16 @@ export function useEditorState() {
   // welcome modal — focus the user on the name input before they
   // start editing.
   //
-  // Excludes view-role visitors: the join card itself is suppressed for
-  // them (it can't commit anything — every write 403s — so EditorView
-  // gates `showTemplatePicker` on `!isReadOnly`). Without this `&&`, the
-  // card never renders for a viewer yet this gate stays true, leaving the
-  // chrome (notably the TabBar / footer) permanently hidden for them.
+  // View-role visitors get this too: their name is broadcast to other
+  // participants (cursor label, presence stack, comments), so they need
+  // a chance to set it before joining rather than appearing under a
+  // default. The identity card only writes the participant's OWN row
+  // (PUT /api/participants/:id, gated on owner === id, not diagram
+  // edit), so a viewer can confirm a name without any 403. EditorView
+  // lets the IDENTITY mode of the picker through for read-only while
+  // still blocking the template-choosing mode.
   const joinScreenOpen =
-    hydrated &&
-    loadedExistingDiagram &&
-    !nameConfirmed &&
-    templatePickerMode === 'identity' &&
-    !isReadOnly;
+    hydrated && loadedExistingDiagram && !nameConfirmed && templatePickerMode === 'identity';
   const identityOnlyScreenOpen = joinScreenOpen;
   // Combined gate for chrome-hide. Only the join-existing flow lives
   // on this route now; the historical new-diagram welcome lives on
