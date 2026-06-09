@@ -15,7 +15,7 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
-import { normalizeFolderOrder, type Element, type Tab } from '@livediagram/diagram';
+import { normalizeFolderOrder, tabFolderName, type Element, type Tab } from '@livediagram/diagram';
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
 import { parseImportedTab, pickTabFile, type ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
@@ -340,20 +340,38 @@ export function useTabActions(deps: TabActionsDeps) {
 
   const reorderTabs = (sourceId: string, targetId: string) => {
     if (sourceId === targetId) return;
-    const srcIdx = tabs.findIndex((t) => t.id === sourceId);
-    const tgtIdx = tabs.findIndex((t) => t.id === targetId);
-    if (srcIdx < 0 || tgtIdx < 0) return;
+    const srcIdx0 = tabs.findIndex((t) => t.id === sourceId);
+    const tgtIdx0 = tabs.findIndex((t) => t.id === targetId);
+    if (srcIdx0 < 0 || tgtIdx0 < 0) return;
+    // A drag ADOPTS the drop target's folder membership (spec/30): dropping
+    // a tab among a folder's pills joins that folder, dropping it among
+    // loose tabs makes it loose, and dropping onto the folder chip (which
+    // targets the run's first member) joins too. So one drag both reorders
+    // AND moves the tab in / out of a folder. (Closure values drive the
+    // telemetry / activity log below; the mutation itself recomputes from
+    // live state inside the commit.)
+    const srcFolder = tabFolderName(tabs[srcIdx0]!);
+    const targetFolder = tabFolderName(tabs[tgtIdx0]!);
     commitTabs((ts) => {
+      const sIdx = ts.findIndex((t) => t.id === sourceId);
+      const tIdx = ts.findIndex((t) => t.id === targetId);
+      if (sIdx < 0 || tIdx < 0) return ts;
+      const folder = tabFolderName(ts[tIdx]!);
       const next = [...ts];
-      const [moved] = next.splice(srcIdx, 1);
-      next.splice(tgtIdx, 0, moved!);
-      // Re-normalize so every folder stays one contiguous run
-      // (spec/30): dragging only reorders, it never changes folder
-      // membership, so a tab dropped outside its folder's run snaps
-      // back into it. No-op (same reference) for loose-only bars.
+      const [moved] = next.splice(sIdx, 1);
+      next.splice(tIdx, 0, { ...moved!, folder: folder ?? undefined });
+      // Re-normalize so every folder stays one contiguous run (spec/30).
       return normalizeFolderOrder(next);
     });
-    track('Tab', 'Reordered');
+    if (srcFolder !== targetFolder && targetFolder) {
+      emitTabMeta(sourceId, `Moved tab to folder '${targetFolder}'`);
+      track('Tab', 'Moved');
+    } else if (srcFolder !== targetFolder) {
+      emitTabMeta(sourceId, `Removed tab from folder '${srcFolder}'`);
+      track('Tab', 'Reordered');
+    } else {
+      track('Tab', 'Reordered');
+    }
   };
 
   const clearTabContent = async () => {

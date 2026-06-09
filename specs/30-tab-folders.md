@@ -32,17 +32,19 @@ To keep that invariant true after any reorder or membership change, the client *
 
 This groups every folder's tabs at the position of the folder's first member, preserves each tab's order within its folder, and interleaves loose tabs by position. Normalization is idempotent and preserves tab object identity for tabs whose content did not change (so the autosave content diff doesn't spuriously re-save bodies). The single implementation lives in `packages/diagram/src/tab-folders.ts` (`normalizeFolderOrder`, `groupTabsIntoRuns`, `folderNamesInDiagram`) and is consumed by the tab-bar renderer, the client save path, and the server route (defensive).
 
-Consequence of "menu-only membership" (below) plus normalization: dragging a tab out of its folder's run only reorders; normalization snaps it back into the run, membership unchanged. To reorder a folder relative to other tabs, drag any of its members.
+A drag both reorders AND sets membership: the dropped tab **adopts the drop target's folder** (see "Membership UX" below), then normalization re-groups the runs. So dragging never "snaps back" — it moves the tab to wherever it was dropped, in or out of a folder.
 
-## Membership UX (menu only)
+## Membership UX
 
-Folder membership changes only through the tab's right-click / ellipsis menu — a third "Organise in folder" view alongside the existing actions / copy-to views:
+Folder membership changes two ways:
+
+**1. Drag and drop.** Dropping a tab onto a folder's pills (or onto the folder chip, which targets the run's first member, so it works on a collapsed folder too) **joins** that folder; dropping it among loose tabs makes it **loose**; dropping it among a different folder's pills **moves** it there. The tab simply adopts the drop target's folder. `reorderTabs` performs the membership change in the same commit as the reorder.
+
+**2. The tab's right-click / ellipsis menu** — a third "Organise in folder" view alongside the existing actions / copy-to views, for precise / keyboard-free control:
 
 - **An existing folder name** in this diagram → move the active tab into it.
 - **New folder…** → inline text input; validates a trimmed, non-empty name that doesn't collide with an existing folder in this diagram (same name = same folder).
 - **Remove from folder** → shown only when the active tab is in a folder; makes it loose.
-
-Dragging tabs reorders only; it never changes membership.
 
 ## Tab bar rendering
 

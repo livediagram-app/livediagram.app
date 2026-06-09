@@ -101,9 +101,11 @@ export function TabFolderChip({
               e.preventDefault();
               setDragOver(false);
               const src = e.dataTransfer.getData('text/plain');
-              // Reorder relative to the folder's first member so the
-              // dropped tab lands next to the run (it does NOT join the
-              // folder — membership is menu-only).
+              // Drop onto the folder chip JOINS the folder (spec/30):
+              // onReorder adopts the target's folder, and the target is the
+              // run's first member, so the dropped tab lands at the head of
+              // this folder's run as a member. Works on a collapsed folder
+              // too (the chip is always a drop target).
               const firstMember = tabs[0];
               if (src && firstMember && src !== firstMember.id) onReorder(src, firstMember.id);
             }
