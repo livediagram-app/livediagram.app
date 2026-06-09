@@ -81,12 +81,19 @@ export type ShapeElement = {
   id: ElementId;
   type: 'shape';
   shape: ShapeKind;
-  // Registry key for the glyph when `shape === 'icon'` (e.g. 'server',
-  // 'database', 'user'). Ignored for every other shape kind. The valid
-  // keys + their SVG live in the live app's icon catalogue; an unknown
-  // key falls back to a placeholder glyph so a diagram authored against
-  // a newer catalogue still renders.
+  // Registry key for the glyph (e.g. 'server', 'database', 'user'). Two
+  // uses: when `shape === 'icon'` it IS the element (glyph above an
+  // optional caption); on any OTHER shape kind it's an inline icon shown
+  // beside the shape's text label (drag an icon onto a shape, or add one
+  // while a shape is selected). The valid keys + their SVG live in the
+  // live app's icon catalogue; an unknown key falls back to a placeholder
+  // glyph so a diagram authored against a newer catalogue still renders.
   iconId?: string;
+  // Where the inline icon sits relative to the shape's text label (only
+  // meaningful on a non-'icon' shape carrying an `iconId`). Defaults to
+  // 'left' when unset. Chosen by which side of the shape the icon was
+  // dropped on.
+  iconPosition?: 'left' | 'right' | 'above' | 'below';
   x: number;
   y: number;
   width: number;

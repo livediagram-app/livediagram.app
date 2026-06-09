@@ -301,6 +301,14 @@ export type CanvasProps = {
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   onOpenNote?: (elementId: string) => void;
+  // Drop a palette icon onto a shape: set its inline iconId and the
+  // position (which side of the text) derived from where it was dropped.
+  // Optional so read-only / pre-identity Canvas mounts can omit it.
+  onDropIcon?: (
+    elementId: string,
+    iconId: string,
+    position: 'left' | 'right' | 'above' | 'below',
+  ) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
   // welcome / new-diagram surface (where Canvas mounts before

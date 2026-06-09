@@ -10,6 +10,11 @@
 // one-file change with no schema migration; an unknown id renders the
 // PLACEHOLDER glyph rather than vanishing.
 
+// DataTransfer MIME for dragging a palette icon onto a shape. Shared by
+// the palette (drag source) and BoxedElementView (drop target) so the
+// type string can't drift. Value carried = the icon id.
+export const ICON_DND_MIME = 'application/x-livediagram-icon';
+
 export type IconPrim =
   | { t: 'path'; d: string }
   | { t: 'circle'; cx: number; cy: number; r: number }

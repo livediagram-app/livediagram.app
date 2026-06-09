@@ -407,6 +407,11 @@ type IconButtonProps = {
   // The shortcut itself is bound centrally in useEditorKeyboardShortcuts;
   // this prop is purely the visual reveal.
   shortcut?: string;
+  // Optional HTML5 drag source. Used by the icon tiles so an icon can be
+  // dragged onto a shape (the drop sets the shape's inline icon). When
+  // unset the button isn't draggable.
+  draggable?: boolean;
+  onDragStart?: (e: React.DragEvent) => void;
 };
 
 export function IconButton({
@@ -417,6 +422,8 @@ export function IconButton({
   disabled,
   active,
   shortcut,
+  draggable,
+  onDragStart,
 }: IconButtonProps) {
   const modHeld = useModKeyHeld();
   const showBadge = !disabled && !!shortcut && modHeld;
@@ -430,6 +437,8 @@ export function IconButton({
       aria-label={label}
       aria-pressed={active}
       disabled={disabled}
+      draggable={draggable}
+      onDragStart={onDragStart}
       className={`relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40 ${tone}`}
     >
       {children}

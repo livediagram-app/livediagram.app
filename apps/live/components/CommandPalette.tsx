@@ -26,7 +26,7 @@ import { type ThemeId } from '@/lib/themes';
 import { MovablePanel } from './MovablePanel';
 import { LaserIcon, PanIcon, SelectIcon } from './palette-icons';
 import { Tooltip } from './Tooltip';
-import { searchIcons } from '@/lib/icons';
+import { ICON_DND_MIME, searchIcons } from '@/lib/icons';
 import { IconPrims } from './icon-glyph';
 
 export type SelectedElementControls = {
@@ -855,8 +855,13 @@ export function CommandPalette({
             <IconButton
               key={icon.id}
               label={`Add ${icon.label}`}
-              description={`Drop a ${icon.label.toLowerCase()} icon.`}
+              description={`Click to add, or drag onto a shape to set its icon.`}
               onClick={() => addIcon(icon.id)}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData(ICON_DND_MIME, icon.id);
+                e.dataTransfer.effectAllowed = 'copy';
+              }}
             >
               <svg
                 width="18"

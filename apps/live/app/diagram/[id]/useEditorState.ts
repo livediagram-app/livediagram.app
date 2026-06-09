@@ -84,7 +84,7 @@ import {
   writeUserPreferences,
   type UserPreferences,
 } from '@/lib/user-preferences';
-import { track } from '@/lib/telemetry';
+import { track, titleCaseType } from '@/lib/telemetry';
 import { useActivityLogDebounce } from '@/hooks/useActivityLogDebounce';
 import { useActivityLogEmitter } from '@/hooks/useActivityLogEmitter';
 import { useEditorBroadcast } from '@/hooks/useEditorBroadcast';
@@ -1444,12 +1444,35 @@ export function useEditorState() {
     useElementCreation({
       editsBlocked,
       activeId,
+      activeTab,
+      selectedId,
       commitTabs,
       setSelectedId,
       setEditingId,
       addBoxed,
       beginDraw,
     });
+
+  // Drop a palette icon onto a shape (drag-and-drop): set its inline
+  // iconId + the side the icon landed on. History-aware via commit so
+  // it's undoable like any other element edit. Guarded for read-only /
+  // locked tabs and to regular shapes (the dedicated 'icon' shape has no
+  // inline-icon slot).
+  const dropIconOnElement = (
+    elementId: string,
+    iconId: string,
+    position: 'left' | 'right' | 'above' | 'below',
+  ) => {
+    if (editsBlocked) return;
+    commit((els) =>
+      els.map((e) =>
+        e.id === elementId && e.type === 'shape' && e.shape !== 'icon'
+          ? { ...e, iconId, iconPosition: position }
+          : e,
+      ),
+    );
+    track('Element', 'Added', titleCaseType('icon'));
+  };
 
   // Structural element operations (delete, marquee commit, group /
   // ungroup, and the duplicate family). They change the element set
@@ -1733,6 +1756,7 @@ export function useEditorState() {
     addArrow,
     addComment,
     addIcon,
+    dropIconOnElement,
     addImage,
     addImageFromGallery,
     addShape,

@@ -56,6 +56,7 @@ export function EditorView() {
     addImage,
     addImageFromGallery,
     addIcon,
+    dropIconOnElement,
     addShape,
     addSticky,
     addTable,
@@ -469,6 +470,7 @@ export function EditorView() {
         canRedo={canRedo && !activeTabLocked}
         onAddShape={addShape}
         onAddIcon={addIcon}
+        onDropIcon={isReadOnly ? undefined : dropIconOnElement}
         onAddTable={addTable}
         onAddText={addText}
         onAddSticky={addSticky}

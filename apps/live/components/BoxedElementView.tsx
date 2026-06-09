@@ -1,4 +1,9 @@
-import { memo, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  memo,
+  type DragEvent as ReactDragEvent,
+  type ReactNode,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import {
   activeCommentCount,
   BORDER_DASH_ARRAY,
@@ -15,6 +20,7 @@ import {
   type Anchor,
   type BoxedElement,
   type FreehandElement,
+  type ShapeElement,
   type TextSize,
 } from '@livediagram/diagram';
 import type { DragMode } from '@/lib/canvas';
@@ -25,6 +31,7 @@ import { isSvgRenderedShape, ShapeSvgOverlay } from './shape-svg-overlay';
 import { describeVariant } from './element-variant';
 import { BadgeStrip, RemoteSelectorsStrip } from './element-badges';
 import { IconGlyph } from './icon-glyph';
+import { ICON_DND_MIME } from '@/lib/icons';
 import { TableView } from './TableView';
 
 type BoxedElementViewProps = {
@@ -96,6 +103,10 @@ type BoxedElementViewProps = {
   // (who shouldn't see a clickable badge) can omit it. When omitted
   // the note badge does not render.
   onOpenNote?: (id: string) => void;
+  // Drop a dragged palette icon onto this shape. The view computes which
+  // side of the text the icon landed on and reports it. Omitted in
+  // read-only mode so visitors can't drop icons.
+  onDropIcon?: (id: string, iconId: string, position: 'left' | 'right' | 'above' | 'below') => void;
   // Right-click on the element. Receives the element id + the
   // cursor's screen-space coords so the caller can anchor a context
   // menu under it. The caller is also responsible for selecting the
@@ -154,6 +165,7 @@ function BoxedElementViewImpl({
   onFollowLink,
   onOpenComments,
   onOpenNote,
+  onDropIcon,
   imageContext,
   onContextSelect,
   remoteSelectors,
@@ -273,12 +285,59 @@ function BoxedElementViewImpl({
   const linked =
     element.link !== undefined && (element.link.kind === 'tab' || element.link.kind === 'diagram');
 
+  // The text label, computed once so the freehand branch, the plain
+  // shape branch, and the inline-icon layout below all share it.
+  const labelNode = renderLabel(
+    element,
+    label,
+    textSize,
+    alignX,
+    alignY,
+    PADDING_PX[element.padding ?? defaultPadding(element)],
+    isEditing,
+    (next) => onCommitLabel(element.id, next),
+    onCancelEdit,
+    editCursorAtEnd,
+    fontFamily,
+  );
+  // An inline icon sits beside the label on a regular shape (the
+  // dedicated 'icon' shape kind has its own glyph-above-caption render
+  // above and is excluded here).
+  const inlineIcon = element.type === 'shape' && element.shape !== 'icon' && element.iconId;
+
+  // Drag a palette icon onto a regular shape to drop it inside, on the
+  // side of the text nearest the cursor.
+  const acceptsIconDrop = !!onDropIcon && element.type === 'shape' && element.shape !== 'icon';
+  const handleIconDragOver = (e: ReactDragEvent) => {
+    if (!acceptsIconDrop || !e.dataTransfer.types.includes(ICON_DND_MIME)) return;
+    // preventDefault marks this element as a valid drop target.
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+  const handleIconDrop = (e: ReactDragEvent) => {
+    if (!acceptsIconDrop) return;
+    const iconId = e.dataTransfer.getData(ICON_DND_MIME);
+    if (!iconId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    // Pick the side whose axis the drop sits furthest along, normalised
+    // by half-extent so a wide-but-short box still reads top/bottom drops.
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
+    const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);
+    const position =
+      Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'above' : 'below';
+    onDropIcon!(element.id, iconId, position);
+  };
+
   return (
     <div
       data-element-id={element.id}
       onPointerDown={handleShapeDown}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
+      onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
+      onDrop={acceptsIconDrop ? handleIconDrop : undefined}
       className={`absolute origin-center animate-pop-in touch-none select-none ${variant.className} ${cursor}`}
       style={{
         left: element.x,
@@ -360,21 +419,7 @@ function BoxedElementViewImpl({
               there's no label AND we're not mid-edit, to avoid the
               empty placeholder taking up space and competing with
               the drawn stroke. */}
-          {isEditing || label.length > 0
-            ? renderLabel(
-                element,
-                label,
-                textSize,
-                alignX,
-                alignY,
-                PADDING_PX[element.padding ?? defaultPadding(element)],
-                isEditing,
-                (next) => onCommitLabel(element.id, next),
-                onCancelEdit,
-                editCursorAtEnd,
-                fontFamily,
-              )
-            : null}
+          {isEditing || label.length > 0 ? labelNode : null}
         </>
       ) : element.type === 'table' ? (
         <TableView
@@ -384,20 +429,15 @@ function BoxedElementViewImpl({
           onCommitTable={onCommitTable}
           fontFamily={fontFamily}
         />
+      ) : inlineIcon ? (
+        <ShapeInlineIconLayout
+          element={element}
+          position={element.iconPosition ?? 'left'}
+          iconStroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          label={labelNode}
+        />
       ) : (
-        renderLabel(
-          element,
-          label,
-          textSize,
-          alignX,
-          alignY,
-          PADDING_PX[element.padding ?? defaultPadding(element)],
-          isEditing,
-          (next) => onCommitLabel(element.id, next),
-          onCancelEdit,
-          editCursorAtEnd,
-          fontFamily,
-        )
+        labelNode
       )}
 
       {isLocked ? <LockBadge zoom={zoom} /> : null}
@@ -628,5 +668,49 @@ function FreehandSvg({
         />
       ) : null}
     </svg>
+  );
+}
+
+// Lays out an inline icon beside a shape's text label. The icon sits on
+// the side named by `position`; icon + label are centred together as a
+// group. Everything is pointer-events-none so a drag still grabs the
+// shape; the label's own editor re-enables pointer events when active.
+function ShapeInlineIconLayout({
+  element,
+  position,
+  iconStroke,
+  label,
+}: {
+  element: ShapeElement;
+  position: 'left' | 'right' | 'above' | 'below';
+  iconStroke: string;
+  label: ReactNode;
+}) {
+  // Icon box in element-space px: a fraction of the shorter side so it
+  // stays proportionate, clamped so it's neither a speck nor dominant.
+  const iconSize = Math.max(16, Math.min(Math.min(element.width, element.height) * 0.4, 56));
+  const isRow = position === 'left' || position === 'right';
+  const iconFirst = position === 'left' || position === 'above';
+  const iconBox = (
+    <div
+      className="pointer-events-none relative shrink-0"
+      style={{ width: iconSize, height: iconSize }}
+    >
+      <IconGlyph iconId={element.iconId} stroke={iconStroke} strokeWidth={2} hasLabel={false} />
+    </div>
+  );
+  // flex-1 + relative so the absolute-inset-0 label fills this sub-region
+  // (and centres / aligns within it per the element's text alignment).
+  const labelRegion = (
+    <div className="pointer-events-none relative min-h-0 min-w-0 flex-1">{label}</div>
+  );
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 flex items-center justify-center"
+      style={{ flexDirection: isRow ? 'row' : 'column', gap: Math.round(iconSize * 0.16) }}
+    >
+      {iconFirst ? iconBox : labelRegion}
+      {iconFirst ? labelRegion : iconBox}
+    </div>
   );
 }

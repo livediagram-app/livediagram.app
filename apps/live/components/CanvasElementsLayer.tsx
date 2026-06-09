@@ -73,6 +73,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onFollowLink,
     onOpenComments,
     onOpenNote,
+    onDropIcon,
     onShiftSelect,
     readOnly,
     remoteCursors,
@@ -168,6 +169,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onFollowLink={onFollowLink}
             onOpenComments={onOpenComments}
             onOpenNote={onOpenNote}
+            onDropIcon={onDropIcon}
             imageContext={imageContext}
             onContextSelect={handleElementContextSelect}
             fontFamily={resolveFontStack(element.font) ?? tabFontStack}

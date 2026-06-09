@@ -21,14 +21,27 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 export function useElementCreation(opts: {
   editsBlocked: boolean;
   activeId: string;
+  activeTab: Tab;
+  // The single-selected element id, so "add an icon" can drop it INSIDE
+  // a selected shape instead of creating a standalone icon element.
+  selectedId: string | null;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
   addBoxed: <T extends BoxedElement>(make: (x: number, y: number) => T) => void;
   beginDraw: (intent: PendingDraw) => void;
 }) {
-  const { editsBlocked, activeId, commitTabs, setSelectedId, setEditingId, addBoxed, beginDraw } =
-    opts;
+  const {
+    editsBlocked,
+    activeId,
+    activeTab,
+    selectedId,
+    commitTabs,
+    setSelectedId,
+    setEditingId,
+    addBoxed,
+    beginDraw,
+  } = opts;
 
   // Telemetry for these arming handlers fires on commit (see
   // useShapeDrawing.commitDraw), once the tap / drag actually lands the
@@ -43,9 +56,33 @@ export function useElementCreation(opts: {
   // not a box you size by dragging) and carries the chosen iconId.
   const addIcon = (iconId: string) => {
     if (editsBlocked) return;
+    // If a regular shape is selected, drop the icon INSIDE it (beside the
+    // label) rather than spawning a standalone icon element — the same
+    // "operate on the current selection" intent the size-inheritance in
+    // addBoxed already follows. The dedicated 'icon' shape is excluded
+    // (an icon-on-an-icon is meaningless; it just becomes a new icon).
+    const sel = selectedId ? activeTab.elements.find((e) => e.id === selectedId) : null;
+    if (sel && sel.type === 'shape' && sel.shape !== 'icon') {
+      commitTabs((ts) =>
+        ts.map((t) =>
+          t.id !== activeId
+            ? t
+            : {
+                ...t,
+                elements: t.elements.map((e) =>
+                  e.id === sel.id
+                    ? { ...sel, iconId, iconPosition: sel.iconPosition ?? 'left' }
+                    : e,
+                ),
+              },
+        ),
+      );
+      // Reuse Added/Icon — an icon was placed; `type` stays the kind,
+      // never the specific iconId, to keep telemetry free of content.
+      track('Element', 'Added', titleCaseType('icon'));
+      return;
+    }
     addBoxed((x, y) => ({ ...createShape('icon', x, y), iconId }));
-    // `type` stays the shape kind ('Icon'), never the specific iconId,
-    // to keep telemetry free of anything resembling user content.
     track('Element', 'Added', titleCaseType('icon'));
   };
 
