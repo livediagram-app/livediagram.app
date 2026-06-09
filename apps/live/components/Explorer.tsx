@@ -58,7 +58,9 @@ type ExplorerProps = {
   // Optional row-level actions. When provided, each row renders an
   // ellipsis menu that delegates to these handlers.
   onRenameCurrent?: (name: string) => void;
-  onDeleteDiagram?: (id: string) => void;
+  // `beforeRemove` runs after the delete is confirmed and before the row is
+  // pulled from the list, so the caller (Explorer) can slide it out first.
+  onDeleteDiagram?: (id: string, beforeRemove?: () => Promise<void> | void) => void;
   onDuplicateDiagram?: (id: string) => void;
   // Folder mutations. Optional so read-only surfaces can omit them.
   onCreateFolder?: (input: { name: string; parentId: string | null }) => Promise<FolderItem | void>;
@@ -181,23 +183,43 @@ export function Explorer({
   const [exitingDiagramIds, setExitingDiagramIds] = useState<Set<string>>(new Set());
   const wrappedDeleteDiagram = onDeleteDiagram
     ? (id: string) => {
-        setExitingDiagramIds((prev) => {
-          if (prev.has(id)) return prev;
-          const next = new Set(prev);
-          next.add(id);
-          return next;
-        });
-        window.setTimeout(() => {
-          onDeleteDiagram(id);
-          setExitingDiagramIds((prev) => {
-            if (!prev.has(id)) return prev;
-            const next = new Set(prev);
-            next.delete(id);
-            return next;
-          });
-        }, 220);
+        // Confirm FIRST (inside onDeleteDiagram), then — only once the user
+        // has confirmed — slide the row out for ~220ms before the parent
+        // removes it from the list. The animation runs as the `beforeRemove`
+        // hook, so a cancelled delete never animates the row.
+        void onDeleteDiagram(
+          id,
+          () =>
+            new Promise<void>((resolve) => {
+              setExitingDiagramIds((prev) => {
+                if (prev.has(id)) return prev;
+                const next = new Set(prev);
+                next.add(id);
+                return next;
+              });
+              window.setTimeout(resolve, 220);
+            }),
+        );
       }
     : undefined;
+
+  // Once a deleted diagram actually leaves the list, drop its id from the
+  // exiting set. Pruning here (rather than clearing on the timeout) avoids a
+  // one-frame flicker where the row would slide back in just before unmount,
+  // and keeps the set from growing across repeated deletes.
+  useEffect(() => {
+    setExitingDiagramIds((prev) => {
+      if (prev.size === 0) return prev;
+      const present = new Set(diagrams.map((d) => d.id));
+      let changed = false;
+      const next = new Set<string>();
+      for (const id of prev) {
+        if (present.has(id)) next.add(id);
+        else changed = true;
+      }
+      return changed ? next : prev;
+    });
+  }, [diagrams]);
 
   // (Previously: `if (hideOnMobile) return null;` — Explorer now
   // renders on mobile too, banner-collapsed by default. The panel

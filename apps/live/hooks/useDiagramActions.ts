@@ -78,7 +78,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
   // where they can pick another diagram or start a new one. Deleting any
   // *other* diagram just hits the API + refreshes the Explorer list. Not
   // undoable — the menu is an explicit action.
-  const deleteDiagram = async (id: string) => {
+  const deleteDiagram = async (id: string, beforeRemove?: () => Promise<void> | void) => {
     if (typeof window === 'undefined') return;
     const target = id === diagramId ? { name: diagramName } : diagramList.find((d) => d.id === id);
     const ok = await confirm({
@@ -94,6 +94,11 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
       window.location.assign(`${window.location.origin}/live/explorer`);
       return;
     }
+    // Let the caller play a row exit animation now that the delete is
+    // CONFIRMED, before the row is pulled from the list (Explorer slides it
+    // out ~220ms). Previously the caller animated before this confirm even
+    // showed, so a cancelled delete still flashed the row out.
+    await beforeRemove?.();
     // Optimistic local removal so the Recent row disappears the
     // moment the user clicks Delete. The previous shape was a
     // fire-and-forget apiDeleteDiagram followed by an immediate
