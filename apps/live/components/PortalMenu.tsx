@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal } from './Portal';
+import { Tooltip } from './Tooltip';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 
 type Placement = 'above' | 'below';
@@ -121,5 +122,67 @@ export function MenuItem({ icon, label, onClick, danger, disabled }: MenuItemPro
       </span>
       <span>{label}</span>
     </button>
+  );
+}
+
+// A small uppercase heading that labels a group of menu items, so a long
+// menu reads as a few scannable sections instead of one flat list.
+export function MenuSection({ label }: { label: string }) {
+  return (
+    <p className="px-3 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      {label}
+    </p>
+  );
+}
+
+// A hairline divider between menu groups.
+export function MenuDivider() {
+  return <div className="my-1 border-t border-slate-100 dark:border-slate-800" />;
+}
+
+// A compact icon-button row pinned to the top of a menu for the most
+// common quick actions (lock / rename / duplicate), keeping them one
+// glance away while the verbose actions move into labelled sections below.
+export function MenuToolbar({ children }: { children: ReactNode }) {
+  return <div className="flex items-center gap-0.5 px-2 pb-1 pt-0.5">{children}</div>;
+}
+
+type MenuToolButtonProps = {
+  icon: ReactNode;
+  // Tooltip title — also the accessible label, since the button is icon-only.
+  label: string;
+  description: string;
+  onClick: () => void;
+  disabled?: boolean;
+  // Highlight a toggle whose state is "on" (e.g. a locked tab).
+  active?: boolean;
+};
+
+export function MenuToolButton({
+  icon,
+  label,
+  description,
+  onClick,
+  disabled,
+  active,
+}: MenuToolButtonProps) {
+  const tone = disabled
+    ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
+    : active
+      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300'
+      : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800';
+  return (
+    <Tooltip title={label} description={description}>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={label}
+        aria-pressed={active}
+        className={`flex h-7 w-7 items-center justify-center rounded transition ${tone}`}
+      >
+        {icon}
+      </button>
+    </Tooltip>
   );
 }

@@ -12,7 +12,7 @@ import type { Participant } from '@/lib/identity';
 import { getTheme } from '@/lib/themes';
 import { PencilIcon, TrashIcon } from './explorer-icons';
 import { FileExportIcon, FileImportIcon } from './palette-icons';
-import { MenuItem } from './PortalMenu';
+import { MenuDivider, MenuItem, MenuSection, MenuToolbar, MenuToolButton } from './PortalMenu';
 import { TabFolderChip } from './TabFolderChip';
 import { TabPresenceStack } from './TabPresenceStack';
 import { Tooltip } from './Tooltip';
@@ -740,19 +740,32 @@ function PortalMenu({
       >
         {view === 'actions' ? (
           <>
-            <MenuItem
-              icon={<TabLockIcon />}
-              label={locked ? 'Unlock tab' : 'Lock tab'}
-              onClick={onToggleLock}
-            />
-            <MenuItem icon={<PencilIcon />} label="Rename" onClick={onRename} />
-            <MenuItem icon={<CopyIcon />} label="Duplicate" onClick={onDuplicate} />
-            <MenuItem
-              icon={<MoveIcon />}
-              label="Add to another diagram…"
-              onClick={() => setView('copyTo')}
-              disabled={otherDiagrams.length === 0}
-            />
+            {/* Quick actions: the verbs reached for most often, as a compact
+                icon row so they're one glance away. The rest of the menu
+                groups the verbose / destructive actions into sections. */}
+            <MenuToolbar>
+              <MenuToolButton
+                icon={<TabLockIcon />}
+                label={locked ? 'Unlock tab' : 'Lock tab'}
+                description={locked ? 'Make this tab editable again.' : 'Make this tab read-only.'}
+                onClick={onToggleLock}
+                active={locked}
+              />
+              <MenuToolButton
+                icon={<PencilIcon />}
+                label="Rename"
+                description="Rename this tab."
+                onClick={onRename}
+              />
+              <MenuToolButton
+                icon={<CopyIcon />}
+                label="Duplicate"
+                description="Create a copy of this tab in this diagram."
+                onClick={onDuplicate}
+              />
+            </MenuToolbar>
+            <MenuDivider />
+            <MenuSection label="Organise" />
             <MenuItem
               icon={<FolderMenuIcon />}
               label="Organise in folder…"
@@ -762,11 +775,13 @@ function PortalMenu({
               }}
             />
             <MenuItem
-              icon={<ClearIcon />}
-              label="Clear content"
-              onClick={onClearContent}
-              disabled={!canClearContent}
+              icon={<MoveIcon />}
+              label="Add to another diagram…"
+              onClick={() => setView('copyTo')}
+              disabled={otherDiagrams.length === 0}
             />
+            <MenuDivider />
+            <MenuSection label="Content" />
             <MenuItem
               icon={<FileImportIcon />}
               label="Import…"
@@ -774,6 +789,13 @@ function PortalMenu({
               disabled={locked}
             />
             <MenuItem icon={<FileExportIcon />} label="Export…" onClick={onExport} />
+            <MenuItem
+              icon={<ClearIcon />}
+              label="Clear content"
+              onClick={onClearContent}
+              disabled={!canClearContent}
+            />
+            <MenuDivider />
             <MenuItem
               icon={<TrashIcon />}
               label="Delete"
