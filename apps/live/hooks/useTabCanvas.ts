@@ -28,6 +28,23 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
+import { PATTERNS } from '@/components/palette-controls';
+
+// Human-readable names for the activity log, so an entry reads
+// "Changed default text size to Medium" rather than leaking the raw
+// internal code ("md"). These mirror the labels shown on the controls
+// themselves (TabSection tooltips for sizes, `PATTERNS` for patterns).
+const TEXT_SIZE_LABELS: Record<TextSize, string> = {
+  scale: 'Scale to fit',
+  sm: 'Small',
+  md: 'Medium',
+  lg: 'Large',
+};
+// Pattern display name from the single source of truth (`PATTERNS`),
+// falling back to the raw id only if a new pattern lands without a
+// label entry.
+const patternLabel = (pattern: BackgroundPattern): string =>
+  PATTERNS.find((p) => p.id === pattern)?.label ?? pattern;
 
 // Slider-edit debounce window for the canvas colour / opacity
 // telemetry. Spec/22's noise rule excludes "raw colour tweaks", and
@@ -111,7 +128,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   const setTabDefaultTextSize = (size: TextSize) => {
     if (editsBlocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, defaultTextSize: size } : t)));
-    emitTabMeta(activeId, `Changed default text size to ${size}`);
+    emitTabMeta(activeId, `Changed default text size to ${TEXT_SIZE_LABELS[size]}`);
     track('Tab', 'Changed', 'DefaultTextSize');
   };
 
@@ -120,7 +137,14 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundPattern: pattern } : t)),
     );
-    emitTabMeta(activeId, `Changed canvas pattern to ${pattern}`);
+    // 'blank' means no pattern at all, so name the effect rather than
+    // saying "Changed canvas pattern to Blank".
+    emitTabMeta(
+      activeId,
+      pattern === 'blank'
+        ? 'Removed canvas pattern'
+        : `Changed canvas pattern to ${patternLabel(pattern)}`,
+    );
     // Telemetry (spec/22): `type` is the pattern preset, never content.
     track('Canvas', 'Changed', titleCaseType(pattern));
   };
@@ -203,7 +227,10 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundOpacity: opacity } : t)),
     );
-    scheduleTabMetaLog('backgroundOpacity', `Changed opacity to ${Math.round(opacity * 100)}%`);
+    scheduleTabMetaLog(
+      'backgroundOpacity',
+      `Changed background opacity to ${Math.round(opacity * 100)}%`,
+    );
     scheduleCanvasTelemetry('backgroundOpacity', 'BackgroundOpacity');
   };
 

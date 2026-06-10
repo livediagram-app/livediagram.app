@@ -697,6 +697,104 @@ export function RevokeArt() {
   );
 }
 
+export function TeamsArt() {
+  const members = [
+    { c: SKY, who: 'You', role: 'Admin', cls: 'bg-brand-100 text-brand-700' },
+    { c: PINK, who: 'Jordan', role: 'Member', cls: 'bg-slate-200 text-slate-600' },
+    { c: '#8b5cf6', who: 'Alex', role: 'Member', cls: 'bg-slate-200 text-slate-600' },
+  ];
+  return (
+    <Frame>
+      <div className="flex h-full flex-col gap-1 px-3 py-2">
+        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700">
+          <TeamIcon /> Design team
+          <span className="ml-auto text-[7px] font-medium text-slate-400">3 people</span>
+        </div>
+        {members.map((m, i) => (
+          <div
+            key={m.who}
+            className="fa-pop flex items-center gap-1.5 rounded px-1 py-0.5 text-[8px]"
+            style={{ animationDelay: `${0.3 + i * 0.5}s` }}
+          >
+            <span
+              className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[6px] font-semibold text-white"
+              style={{ backgroundColor: m.c }}
+            >
+              {m.who[0]}
+            </span>
+            <span className="font-semibold text-slate-700">{m.who}</span>
+            <span className={'ml-auto rounded px-1.5 py-0.5 text-[7px] font-semibold ' + m.cls}>
+              {m.role}
+            </span>
+          </div>
+        ))}
+      </div>
+    </Frame>
+  );
+}
+
+function TeamIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke={BLUE_STROKE}
+      strokeWidth="1.5"
+    >
+      <circle cx="5.5" cy="5" r="2.2" />
+      <circle cx="11" cy="6" r="1.7" />
+      <path d="M1.5 13 a4 4 0 0 1 8 0 M10 13 a3.5 3.5 0 0 1 4.5 -3.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function ExpiryArt() {
+  return (
+    <Frame>
+      <div className="flex h-full flex-col gap-1.5 px-3 py-2">
+        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700">
+          <ClockIcon /> Link expiry
+        </div>
+        {/* an active link counting down */}
+        <div className="flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1">
+          <span className="font-mono text-[8px] text-slate-500">/d/9fk2…</span>
+          <span className="fa-pulse rounded bg-brand-100 px-1.5 py-0.5 text-[7px] font-semibold text-brand-700">
+            6d left
+          </span>
+        </div>
+        {/* a lapsed link, kept so it can be extended */}
+        <div className="flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1">
+          <span className="font-mono text-[8px] text-slate-400 line-through">/d/qp7x…</span>
+          <span
+            className="fa-pop rounded bg-slate-100 px-1.5 py-0.5 text-[7px] font-semibold text-slate-500"
+            style={{ animationDelay: '0.7s' }}
+          >
+            Extend
+          </span>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke={BLUE_STROKE}
+      strokeWidth="1.5"
+    >
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 4.5 L8 8 L10.5 9.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function RefreshArt() {
   return (
     <Frame canvas>

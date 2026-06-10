@@ -12,6 +12,7 @@ import {
   DarkModeArt,
   DepthArt,
   EasyStartArt,
+  ExpiryArt,
   FoldersArt,
   FontsArt,
   FormatPainterArt,
@@ -45,6 +46,7 @@ import {
   TabReorderArt,
   TablesArt,
   TabsArt,
+  TeamsArt,
   TemplatesArt,
   ThemesArt,
   UndoRedoArt,
@@ -99,7 +101,7 @@ export default function LandingPage() {
                 art: <MultiplayerArt />,
                 title: 'Multiplayer, no setup',
                 description:
-                  'Share one link and the whole team is on the canvas live, with cursors, presence, comments, and an activity log you can rewind. No seats, no admin console.',
+                  'Share one link and the whole team is on the canvas live, with cursors, presence, comments, and an activity log you can rewind. No seats to buy, no setup.',
               },
               {
                 art: <AnyDeviceArt />,
@@ -156,6 +158,12 @@ export default function LandingPage() {
                   'Create an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side. Any link also embeds read-only in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog.',
               },
               {
+                art: <TeamsArt />,
+                title: 'Teams with a shared library',
+                description:
+                  'Create a team, invite people by email, and everyone gets a shared folder of diagrams they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
+              },
+              {
                 art: <PresenceArt />,
                 title: 'Live presence',
                 description:
@@ -184,6 +192,12 @@ export default function LandingPage() {
                 title: 'Laser pointer for presenting',
                 description:
                   'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
+              },
+              {
+                art: <ExpiryArt />,
+                title: 'Links that expire on their own',
+                description:
+                  'Give a share link a lifetime when you create it: a week, a month, six months, or never. When it lapses the URL stops working on its own, no cleanup to remember, and you can extend it for another run or delete it for good.',
               },
               {
                 art: <RevokeArt />,

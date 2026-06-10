@@ -41,7 +41,15 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'How do share links work?',
-    a: 'From a diagram you own, create an editor link (full edit access) or a view-only link (look, do not touch). Anyone with the link can join. Revoke a link at any time and it stops working.',
+    a: 'From a diagram you own, create an editor link (full edit access) or a view-only link (look, do not touch). Anyone with the link can join. You can give a link an expiry when you create it, a week, a month, six months, or never, so it stops working on its own; extend it later if you need longer, or revoke it at any time and it stops working immediately.',
+  },
+  {
+    q: 'Can I set up a team with shared diagrams?',
+    a: 'Yes, once you sign in (for free). Create a team from the Explorer, invite people by their email address, and everyone gets a shared folder of diagrams that every member can open and edit. Teams have Admin and Member roles: admins manage who is in the team, everyone else just gets to work. The canvas itself still needs no account; teams simply add a shared home and proper membership on top.',
+  },
+  {
+    q: 'Can I embed a diagram in my docs or wiki?',
+    a: 'Yes. Any share link can be embedded as a read-only, live-updating iframe. Copy the embed snippet from the Share dialog and paste it into Notion, Confluence, a wiki, or any page that allows iframes, and it always shows the current state of the diagram.',
   },
   {
     q: 'What happens if two people edit the same thing at once?',
