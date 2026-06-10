@@ -155,6 +155,11 @@ export const ALTERNATIVES: Alternative[] = [
         them: 'Vast (AWS, UML, network…)',
       },
       {
+        label: 'Embed in docs and wikis',
+        us: 'Read-only iframe embed for any share link, live-updating',
+        them: 'Native Confluence / Jira apps',
+      },
+      {
         label: 'Best for',
         us: 'Collaborative diagrams + mindmaps',
         them: 'Formal / technical diagrams',
@@ -162,7 +167,7 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     themBest: [
       'Specialist libraries: AWS/Azure, UML, network, BPMN, and more.',
-      'Deep embedding in Confluence and Jira.',
+      'Deep native integration with Confluence and Jira (livediagram embeds are a generic iframe).',
       'Highly precise, formal technical diagrams.',
     ],
     usBest: [
@@ -190,7 +195,7 @@ export const ALTERNATIVES: Alternative[] = [
     themBest: [
       "You're already building a slide deck and just need a quick diagram inside it.",
       'Everyone in your org already lives in Google Workspace.',
-      'You want the diagram embedded in a presentation, not a standalone canvas.',
+      'You want the diagram living on a slide inside the deck itself (livediagram embeds target wikis and docs, not slide decks).',
     ],
     usBest: [
       'Arrows that stay connected to shapes and re-route as you move them.',

@@ -153,7 +153,7 @@ export default function LandingPage() {
                 art: <ShareLinksArt />,
                 title: 'Editor or view-only links',
                 description:
-                  'Create an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side.',
+                  'Create an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side. Any link also embeds read-only in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog.',
               },
               {
                 art: <PresenceArt />,
