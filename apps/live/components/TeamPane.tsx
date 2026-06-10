@@ -348,7 +348,7 @@ export function TeamPane({
             type="email"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
-            placeholder="Add people by email — no email is sent, they see the team on sign-in"
+            placeholder="Add people to the team by entering their email address, they will receive an invite to join."
             aria-label="Invite by email address"
             className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
           />

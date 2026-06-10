@@ -87,7 +87,7 @@ The right-pane team view is **one calm card**, not a stack of panels:
 - The member list: a deterministic-colour avatar per row, the person's **name** as the primary line — the caller's own row shows their account display name with a small "you" chip (never a bare "You"), other rows show the invite email's local part prettified ("anna.smith" → "Anna Smith") — and a muted secondary line (own email; "Invited — joins when they sign in" on pending rows, whose avatars render dimmed).
 - Roles: admins get a quiet inline role select per row; non-admins see a read-only role pill. Remove actions appear on row hover only.
 - **The last-admin rule shapes the affordances, not just the server**: the only Admin sees no Leave item, no remove control on their row, and a pinned "Admin" pill (with an explanatory tooltip) instead of a role select. The server's `409 last_admin` remains as the backstop for stale UIs.
-- Admins also get a slim invite-by-email footer row; the no-email-is-sent caveat lives in the placeholder, not a paragraph.
+- Admins also get a slim invite-by-email footer row. Placeholder copy: "Add people to the team by entering their email address, they will receive an invite to join." (The invite lands in their in-app Invites section; no transactional email until Resend ships.)
 
 The pane title row reads "Recent Diagrams" for the recent section (renamed from "Recent" in the same change as this spec).
 
