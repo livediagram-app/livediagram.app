@@ -24,7 +24,6 @@ vi.mock('../db', () => ({
   // need stub entries so the share.ts module can finish evaluating
   // its top-level imports.
   getDiagram: vi.fn(),
-  getDiagramByShareCode: vi.fn(),
   getDiagramSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
   getShareLink: vi.fn(),
   recordSharedAccess: vi.fn(),

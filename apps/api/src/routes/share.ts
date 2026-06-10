@@ -1,15 +1,9 @@
 // /api/share/<code> — resolve a share code to its diagram + role.
 
-import {
-  getDiagram,
-  getDiagramByShareCode,
-  getDiagramSharePassword,
-  getShareLink,
-  recordSharedAccess,
-} from '../db';
+import { getDiagram, getDiagramSharePassword, getShareLink, recordSharedAccess } from '../db';
 import { json, notFound } from '../responses';
 import { timingSafeEqual } from '../auth/timing-safe';
-import type { DiagramDTO, ShareRole } from '../types';
+import type { DiagramDTO } from '../types';
 import { sharePasswordOf, type RouteContext } from './context';
 
 // A share-link visitor never needs the owner's id, and exposing it here
@@ -62,15 +56,14 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
       }
       return json({ diagram: redactOwner(d, visitor), role: link.role });
     }
-    const d = await getDiagramByShareCode(env, code);
-    if (!d) return notFound();
-    const gate = await passwordGate(env, d.id, sharePasswordOf(request));
-    if (gate) return gate;
-    const visitor = resolveOwner();
-    if (visitor && visitor !== d.ownerId) {
-      await recordSharedAccess(env, visitor, d.id, 'edit' as ShareRole).catch(() => {});
-    }
-    return json({ diagram: redactOwner(d, visitor), role: 'edit' as ShareRole });
+    // No active link resolves this code: expired, revoked, or never
+    // existed. `getShareLink` (above) is the single authority — it
+    // filters on expiry and carries the link's real role. A defensive
+    // `diagrams.shareable` fallback used to live here, but it resolved
+    // ANY code on a still-shareable diagram regardless of the link's
+    // expiry or role and handed back a hardcoded 'edit' — an expiry +
+    // view->edit escalation. Removed: an unresolved code now 404s.
+    return notFound();
   }
   return notFound();
 }
