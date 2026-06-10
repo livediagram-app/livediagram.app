@@ -15,6 +15,7 @@ import {
 import { ensureGuestSelfId } from '@/lib/local-identity';
 import { track } from '@/lib/telemetry';
 import { useFolders } from '@/hooks/useFolders';
+import { useTeamLibrariesSweep } from '@/hooks/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/useTeams';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useDiagramListActions } from '@/hooks/useDiagramListActions';
@@ -94,6 +95,14 @@ export function useExplorerState() {
   >(null);
   const moveAnchorRef = useRef<HTMLElement | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  // Team libraries swept lazily (spec/35) for the three consumers:
+  // the search panel's Folders group, the move modal's team
+  // destinations, and the Recent list's team rows. Recent is the
+  // landing section, so signed-in members effectively sweep on
+  // arrival; guests (no teams) never fetch.
+  const { teamFolders, teamDiagrams } = useTeamLibrariesSweep(ownerId, teams, {
+    enabled: searchOpen || moveTarget?.kind === 'diagram' || selected.kind === 'recent',
+  });
   // Mobile section drawer: the sidebar is hidden below `sm`, so on a
   // phone this slides it in from a hamburger in the pane header.
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -341,10 +350,13 @@ export function useExplorerState() {
   const paneContent = useMemo<{
     showUnsortedRow: boolean;
     folders: Folder[];
-    diagrams: DiagramListItem[];
+    diagrams: (DiagramListItem & { team?: { id: string; name: string } })[];
   }>(() => {
     if (selected.kind === 'recent') {
-      const sorted = diagrams.slice().sort((a, b) => b.savedAt - a.savedAt);
+      // Recent spans the personal library AND every joined team's
+      // shared diagrams (spec/35); team rows carry their team for the
+      // "Team" badge + owner column.
+      const sorted = [...diagrams, ...teamDiagrams].sort((a, b) => b.savedAt - a.savedAt);
       return { showUnsortedRow: false, folders: [], diagrams: sorted.slice(0, RECENT_LIMIT) };
     }
     if (
@@ -370,7 +382,7 @@ export function useExplorerState() {
       folders: childrenByParent.get(selected.id) ?? [],
       diagrams: diagramsByFolder.get(selected.id) ?? [],
     };
-  }, [selected, diagrams, childrenByParent, diagramsByFolder, unsortedDiagrams]);
+  }, [selected, diagrams, teamDiagrams, childrenByParent, diagramsByFolder, unsortedDiagrams]);
 
   const paneTitle = useMemo(() => {
     if (selected.kind === 'recent') return 'Recent diagrams';
@@ -452,6 +464,8 @@ export function useExplorerState() {
     folders,
     shared,
     teams,
+    teamFolders,
+    teamDiagrams,
     invites,
     loading,
     folderById,

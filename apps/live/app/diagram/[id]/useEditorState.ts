@@ -96,7 +96,7 @@ import { useElementStyle } from '@/hooks/useElementStyle';
 import { useShapeDrawing } from '@/hooks/useShapeDrawing';
 import { useShareLinks } from '@/hooks/useShareLinks';
 import { useTabActions } from '@/hooks/useTabActions';
-import { useTeamFoldersForSearch } from '@/hooks/useTeamFoldersForSearch';
+import { useTeamLibrariesSweep } from '@/hooks/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/useTeams';
 import { useTabFolders } from '@/hooks/useTabFolders';
 import { useTabCanvas } from '@/hooks/useTabCanvas';
@@ -774,8 +774,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     enabled: dialogs.searchOpen && !!clerkUserId,
   });
   // Their libraries' folders too (spec/35): one sweep per team list,
-  // also search-open gated. See useTeamFoldersForSearch.
-  const teamFolders = useTeamFoldersForSearch(clerkUserId ?? null, teams, {
+  // also search-open gated. The editor only consumes the folders; the
+  // explorer additionally uses the swept diagrams for Recent.
+  const { teamFolders } = useTeamLibrariesSweep(clerkUserId ?? null, teams, {
     enabled: dialogs.searchOpen && !!clerkUserId,
   });
 

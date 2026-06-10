@@ -6,7 +6,6 @@ import { Brand } from '@livediagram/ui';
 import { AuthControls } from '@/components/AuthControls';
 import { TeamFormModal } from '@/components/TeamFormModal';
 import { MoveToFolderDialog } from '@/components/MoveToFolderDialog';
-import { useTeamFoldersForSearch } from '@/hooks/useTeamFoldersForSearch';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
@@ -44,11 +43,11 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
 
 function ShellChrome({ children }: { children: ReactNode }) {
   const {
-    ownerId,
     diagrams,
     folders,
     shared,
     teams,
+    teamFolders,
     go,
     mobileNavOpen,
     setMobileNavOpen,
@@ -64,13 +63,6 @@ function ShellChrome({ children }: { children: ReactNode }) {
     setTeamModalOpen,
     hookCreateTeam,
   } = useExplorer();
-
-  // Team-library folders (spec/35), fetched lazily for the two
-  // surfaces that list them: the search panel's Folders group and the
-  // move modal's team destinations. One sweep covers both.
-  const teamFolders = useTeamFoldersForSearch(ownerId, teams, {
-    enabled: searchOpen || moveTarget?.kind === 'diagram',
-  });
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-slate-50">

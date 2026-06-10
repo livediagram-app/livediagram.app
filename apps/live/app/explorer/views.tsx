@@ -27,7 +27,12 @@ import {
 
 // Diagram rows render the api client's DiagramListItem directly
 // (same rows the floating Explorer panel uses), so the two explorer
-// surfaces can't drift apart on what a list item carries.
+// surfaces can't drift apart on what a list item carries. Recent rows
+// may additionally carry the team a diagram lives in (spec/35): those
+// show a "Team" visibility badge + the team as owner, and hide the
+// personal row actions (rename / duplicate / delete / move are the
+// owner's, exercised on the team page or by the owner directly).
+export type PaneDiagram = DiagramListItem & { team?: { id: string; name: string } };
 
 // What the sidebar tree highlights and what the right pane shows.
 // "Special" nodes (`recent`, `all`, `shared`) are virtual buckets
@@ -191,9 +196,12 @@ export function ListView({
   onMoveDiagram,
   childrenCount,
   diagramsCount,
+  showOwner = false,
 }: {
   folders: Folder[];
-  diagrams: DiagramListItem[];
+  diagrams: PaneDiagram[];
+  // Adds the desktop Owner column (Recent: "You" vs the team name).
+  showOwner?: boolean;
   // True on the "All diagrams" view: the synthetic Unsorted row
   // renders at the very top so the root has the same "folder row
   // per child" feel as any non-root folder. The row is only
@@ -251,6 +259,7 @@ export function ListView({
           <DiagramRow
             key={d.id}
             diagram={d}
+            showOwner={showOwner}
             renaming={renamingDiagramId === d.id}
             onStartRename={() => onStartRenameDiagram(d.id)}
             onCommitRename={(name) => onCommitRenameDiagram(d.id, name)}
@@ -406,8 +415,9 @@ export function DiagramRow({
   onDuplicate,
   onDelete,
   onMove,
+  showOwner = false,
 }: {
-  diagram: DiagramListItem;
+  diagram: PaneDiagram;
   renaming: boolean;
   onStartRename: () => void;
   onCommitRename: (name: string) => void;
@@ -415,10 +425,16 @@ export function DiagramRow({
   onDuplicate: () => void;
   onDelete: () => void;
   onMove: (anchor: HTMLElement | null) => void;
+  // Adds the desktop Owner cell ("You", or the team name for
+  // team-library rows).
+  showOwner?: boolean;
 }) {
   useRelativeTimeTick();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
+  // Team rows are read-only here: rename / duplicate / delete / move
+  // are personal-library actions, managed on the team page (spec/35).
+  const isTeamRow = !!diagram.team;
 
   const titleNode = renaming ? (
     <InlineRenameInput
@@ -437,15 +453,46 @@ export function DiagramRow({
   );
 
   return (
-    <li className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50">
+    <li
+      className={
+        'group grid grid-cols-[1fr_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 ' +
+        (showOwner
+          ? 'sm:grid-cols-[1fr_110px_90px_140px_40px]'
+          : 'sm:grid-cols-[1fr_90px_140px_40px]')
+      }
+    >
       <span className="flex min-w-0 items-center gap-2">
         <span className="shrink-0 text-slate-400">
           <DiagramIcon />
         </span>
         {titleNode}
       </span>
+      {showOwner ? (
+        <span className="hidden truncate text-xs text-slate-500 sm:block">
+          {diagram.team?.name ?? 'You'}
+        </span>
+      ) : null}
       <span className="hidden sm:block">
-        {diagram.shareCode ? (
+        {isTeamRow ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30">
+            <svg
+              width="9"
+              height="9"
+              viewBox="0 0 9 9"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              aria-hidden
+            >
+              <circle cx="3.2" cy="3.2" r="1.4" />
+              <path d="M1.2 7.8c.3-1.4 1-2.1 2-2.1s1.7.7 2 2.1" />
+              <circle cx="6.6" cy="3.6" r="1.1" />
+              <path d="M6.3 5.7c.9.1 1.5.7 1.7 1.8" />
+            </svg>
+            Team
+          </span>
+        ) : diagram.shareCode ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
             <svg
               width="9"
@@ -488,7 +535,7 @@ export function DiagramRow({
       <span className="text-[11px] uppercase tracking-wider text-slate-400">
         {formatRelativeTime(Date.now() - diagram.savedAt)}
       </span>
-      {renaming ? (
+      {renaming || isTeamRow ? (
         <span />
       ) : (
         <button
@@ -609,8 +656,9 @@ export function SharedList({
   }
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+      <div className="grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 sm:grid-cols-[1fr_110px_60px_140px_40px]">
         <span>Name</span>
+        <span className="hidden sm:block">Owner</span>
         <span>Role</span>
         <span>Updated</span>
         <span aria-hidden></span>
@@ -619,7 +667,7 @@ export function SharedList({
         {shared.map((s) => (
           <li
             key={s.id}
-            className="group grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50"
+            className="group grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 sm:grid-cols-[1fr_110px_60px_140px_40px]"
           >
             <Link
               href={`/diagram/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
@@ -630,6 +678,9 @@ export function SharedList({
               </span>
               <span className="truncate">{s.name}</span>
             </Link>
+            <span className="hidden truncate text-xs text-slate-500 sm:block">
+              {s.ownerName || 'Unknown owner'}
+            </span>
             <span className="inline-flex w-fit items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200">
               {s.role === 'edit' ? 'Edit' : 'View'}
             </span>

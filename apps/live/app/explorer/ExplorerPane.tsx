@@ -134,6 +134,9 @@ export function ExplorerPane() {
           onMoveDiagram={openMovePickerForDiagram}
           childrenCount={(id) => childrenByParent.get(id)?.length ?? 0}
           diagramsCount={(id) => diagramsByFolder.get(id)?.length ?? 0}
+          // Owner column (desktop): Recent mixes personal + team rows
+          // (spec/35), so it's the one list where ownership varies.
+          showOwner={selected.kind === 'recent'}
         />
       )}
     </>
