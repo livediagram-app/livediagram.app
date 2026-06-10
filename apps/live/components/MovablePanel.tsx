@@ -345,13 +345,15 @@ export function MovablePanel({
     setCollapsed(false);
   }, [collapsible, expandSignal]);
 
-  // Outside-tap auto-close. Active only while the banner is
-  // expanded on mobile; the matchMedia gate skips the listener on
-  // desktop where the user is in control of when to close. Also
-  // disabled while the parent has locked the panel open — the
-  // outside-tap is most often a child portal-menu item (Rename,
-  // Delete) and treating that as "user wants to dismiss the
-  // panel" hides the rename input the same tap is about to mount.
+  // Outside-tap auto-close. Active only on actual mobile, where the
+  // small viewport makes tap-away-to-dismiss expected. On DESKTOP the
+  // user is in control of when to close — including the minimal-layout
+  // dock (forceDockMode): a desktop user clicking the canvas to work
+  // shouldn't lose their panel, so they toggle the dock button again
+  // to close it. Also disabled while the parent has locked the panel
+  // open — the outside-tap is most often a child portal-menu item
+  // (Rename, Delete) and treating that as "dismiss the panel" hides
+  // the rename input the same tap is about to mount.
   useClickOutside(
     ref,
     () => {
@@ -361,7 +363,7 @@ export function MovablePanel({
         setCollapsed(true);
       }
     },
-    dockActive &&
+    isMobile &&
       (dockControlledOpen ||
         (collapsible && !effectiveCollapsed && !lockOpen && mobileOpenOverride === undefined)),
     dockControlledOpen

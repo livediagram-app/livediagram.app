@@ -118,7 +118,14 @@ export function ScalingLabel({
           fontSize="20"
           fill="currentColor"
         >
-          {text}
+          {text.split('\n').map((line, i) => (
+            // One tspan per line so multi-line labels (Enter inserts a
+            // newline now) lay out as separate lines; getBBox below
+            // unions them, so the auto-fit still scales the whole block.
+            <tspan key={i} x="0" dy={i === 0 ? 0 : '1.2em'}>
+              {line || ' '}
+            </tspan>
+          ))}
         </text>
       </svg>
     </div>
@@ -159,7 +166,7 @@ export function FixedSizeLabel({
       }}
     >
       <div
-        className="w-full"
+        className="w-full whitespace-pre-wrap break-words"
         style={{ textAlign: TEXT_ALIGN[alignX], ...labelTextStyleCss(style ?? {}) }}
       >
         {text}
@@ -207,7 +214,7 @@ export function SingleLineLabelEditor({
   cursorAtEnd = false,
 }: SingleLineLabelEditorProps) {
   const [value, setValue] = useState(initial);
-  const ref = useRef<HTMLInputElement>(null);
+  const ref = useRef<HTMLTextAreaElement>(null);
   const valueRef = useRef(value);
   const onCommitRef = useRef(onCommit);
   const settled = useRef(false);
@@ -274,17 +281,20 @@ export function SingleLineLabelEditor({
       className="pointer-events-none absolute inset-0 flex overflow-hidden"
       style={{ alignItems: ALIGN_ITEMS[alignY], padding }}
     >
-      <input
+      <textarea
         ref={ref}
         value={value}
         placeholder={placeholder}
+        // rows track the line count so the box grows as the user adds
+        // lines (Enter inserts a newline now instead of committing) and
+        // the flex container keeps it vertically aligned.
+        rows={Math.max(1, value.split('\n').length)}
         onChange={(e) => setValue(e.target.value)}
         onBlur={handleCommit}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            handleCommit();
-          } else if (e.key === 'Escape') {
+          // Enter inserts a newline (textarea default); Escape cancels;
+          // committing happens on blur / clicking away.
+          if (e.key === 'Escape') {
             e.preventDefault();
             handleCancel();
           }
@@ -296,7 +306,7 @@ export function SingleLineLabelEditor({
           textAlign: TEXT_ALIGN[alignX],
           ...labelTextStyleCss(style ?? {}),
         }}
-        className={`pointer-events-auto w-full bg-transparent font-medium leading-tight outline-none ${textClassName}`}
+        className={`pointer-events-auto w-full resize-none overflow-hidden whitespace-pre-wrap break-words bg-transparent font-medium leading-tight outline-none ${textClassName}`}
       />
     </div>
   );
