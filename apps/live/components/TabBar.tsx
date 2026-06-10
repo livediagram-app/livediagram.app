@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { NameEditor } from './NameEditor';
 import { Portal } from './Portal';
 import { ConfirmPopover } from './ConfirmPopover';
 import {
@@ -199,13 +200,14 @@ export function TabBar({
         } ${isDragOver ? 'ring-2 ring-brand-400 ring-offset-1' : ''}`}
       >
         {isEditing ? (
-          <TabNameEditor
+          <NameEditor
             initial={tab.name}
             onCommit={(name) => {
               onRename(tab.id, name.trim() || tab.name);
               setEditingId(null);
             }}
             onCancel={() => setEditingId(null)}
+            className="w-32 rounded-md bg-white px-2 py-1 text-sm font-medium text-slate-800 outline-none ring-1 ring-brand-300 dark:bg-slate-800 dark:text-slate-100 dark:ring-brand-400"
           />
         ) : (
           <button
@@ -503,44 +505,6 @@ function SunIcon() {
       <circle cx="8" cy="8" r="3" />
       <path d="M8 1.5v1.5M8 13v1.5M1.5 8h1.5M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" />
     </svg>
-  );
-}
-
-function TabNameEditor({
-  initial,
-  onCommit,
-  onCancel,
-}: {
-  initial: string;
-  onCommit: (name: string) => void;
-  onCancel: () => void;
-}) {
-  const [value, setValue] = useState(initial);
-  const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const node = ref.current;
-    if (node) {
-      node.focus();
-      node.select();
-    }
-  }, []);
-  return (
-    <input
-      ref={ref}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={() => onCommit(value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          onCommit(value);
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          onCancel();
-        }
-      }}
-      className="w-32 rounded-md bg-white px-2 py-1 text-sm font-medium text-slate-800 outline-none ring-1 ring-brand-300 dark:bg-slate-800 dark:text-slate-100 dark:ring-brand-400"
-    />
   );
 }
 

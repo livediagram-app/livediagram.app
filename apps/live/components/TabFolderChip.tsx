@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { NameEditor } from './NameEditor';
 import type { Tab } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
@@ -146,7 +147,7 @@ export function TabFolderChip({
       }
     >
       {editing && !readOnly ? (
-        <FolderNameEditor
+        <NameEditor
           initial={name}
           onCommit={(next) => {
             const trimmed = next.trim();
@@ -154,6 +155,7 @@ export function TabFolderChip({
             setEditing(false);
           }}
           onCancel={() => setEditing(false)}
+          className="w-28 rounded-md bg-white px-2 py-1 text-xs font-semibold text-slate-800 outline-none ring-1 ring-brand-300 dark:bg-slate-800 dark:text-slate-100 dark:ring-brand-400"
         />
       ) : (
         <Tooltip
@@ -184,44 +186,6 @@ export function TabFolderChip({
         <TabPresenceStack participants={folderParticipants} selfId={selfId} selfRole={selfRole} />
       ) : null}
     </div>
-  );
-}
-
-function FolderNameEditor({
-  initial,
-  onCommit,
-  onCancel,
-}: {
-  initial: string;
-  onCommit: (name: string) => void;
-  onCancel: () => void;
-}) {
-  const [value, setValue] = useState(initial);
-  const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const node = ref.current;
-    if (node) {
-      node.focus();
-      node.select();
-    }
-  }, []);
-  return (
-    <input
-      ref={ref}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={() => onCommit(value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          onCommit(value);
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          onCancel();
-        }
-      }}
-      className="w-28 rounded-md bg-white px-2 py-1 text-xs font-semibold text-slate-800 outline-none ring-1 ring-brand-300 dark:bg-slate-800 dark:text-slate-100 dark:ring-brand-400"
-    />
   );
 }
 

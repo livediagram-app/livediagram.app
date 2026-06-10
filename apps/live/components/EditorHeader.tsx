@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { NameEditor } from './NameEditor';
 import { Brand } from '@livediagram/ui';
 import { AuthControls } from './AuthControls';
 import { Tooltip } from './Tooltip';
@@ -71,10 +72,11 @@ export function EditorHeader({
           <NameEditor
             initial={diagramName}
             onCommit={(v) => {
-              onRename(v);
+              onRename(v.trim() || diagramName);
               setEditing(false);
             }}
             onCancel={() => setEditing(false)}
+            className="rounded border border-slate-300 bg-white px-2 py-0.5 text-sm text-slate-800 outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
         ) : (
           <div className="flex items-center gap-1">
@@ -270,43 +272,5 @@ function ShareIcon() {
       <circle cx="12" cy="12.5" r="1.6" />
       <path d="M5.4 7.2l5.2-3M5.4 8.8l5.2 3" />
     </svg>
-  );
-}
-
-function NameEditor({
-  initial,
-  onCommit,
-  onCancel,
-}: {
-  initial: string;
-  onCommit: (name: string) => void;
-  onCancel: () => void;
-}) {
-  const [value, setValue] = useState(initial);
-  const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const node = ref.current;
-    if (node) {
-      node.focus();
-      node.select();
-    }
-  }, []);
-  return (
-    <input
-      ref={ref}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={() => onCommit(value.trim() || initial)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          onCommit(value.trim() || initial);
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          onCancel();
-        }
-      }}
-      className="rounded border border-slate-300 bg-white px-2 py-0.5 text-sm text-slate-800 outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-    />
   );
 }
