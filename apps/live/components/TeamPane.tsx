@@ -99,11 +99,44 @@ export function TeamPane({
   }
 
   if (failed || !detail) {
+    // The API 404/403s a team you're not a member of (we don't leak
+    // its existence). Surface a proper 404 card rather than a vague
+    // "couldn't load" line, with a way back to the user's own work.
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-        <p className="max-w-md text-sm text-slate-500">
-          This team could not be loaded. It may have been deleted, or you may no longer be a member.
-        </p>
+      <div className="flex items-center justify-center px-6 py-16">
+        <div className="flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9 9l6 6M9 15l6-6" />
+            </svg>
+          </div>
+          <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-rose-600">
+            404
+          </p>
+          <h1 className="mt-1 text-xl font-semibold text-slate-900">Team not found</h1>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            This team doesn&apos;t exist, or you&apos;re not a member of it. Ask an admin for an
+            invite, or head back to your own diagrams.
+          </p>
+          <button
+            type="button"
+            onClick={onLeftTeam}
+            className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
+          >
+            Back to your diagrams
+          </button>
+        </div>
       </div>
     );
   }
