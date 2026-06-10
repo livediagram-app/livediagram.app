@@ -204,7 +204,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     teams,
     teamFolders,
     teamDiagrams,
-    currentOwnerId,
     showTemplatePicker,
     tabAccordionsOpen,
     tabLocked,
@@ -739,7 +738,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           teams={teams}
           teamFolders={teamFolders}
           teamDiagrams={teamDiagrams}
-          currentOwnerId={currentOwnerId}
           onDismissShared={onDismissShared}
           onOpenFullExplorer={onOpenFullExplorer}
           currentDiagramId={currentDiagramId}

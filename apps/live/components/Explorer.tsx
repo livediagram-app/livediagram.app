@@ -41,10 +41,6 @@ type ExplorerProps = {
   teamFolders?: TeamFolderRow[];
   teamDiagrams?: TeamDiagramRow[];
   // The caller's resolved owner id. Team-diagram rows expose a hard
-  // Delete only when this matches the diagram's ownerId — the api
-  // restricts diagram DELETE to the owner (spec/35), so showing it to
-  // non-owners would just 403.
-  currentOwnerId?: string | null;
   // Dismiss a single Shared row — drops the shared_with reference
   // server-side so the row no longer surfaces. Optional so consumers
   // that haven't wired the api endpoint can omit it.
@@ -127,7 +123,6 @@ export function Explorer({
   teams = [],
   teamFolders = [],
   teamDiagrams = [],
-  currentOwnerId = null,
   onDismissShared,
   onOpenFullExplorer,
   defaultRecentOpen = false,
@@ -510,11 +505,10 @@ export function Explorer({
                     active
                     onOpen={() => onOpenDiagram(currentTeam.id)}
                     onRename={onRenameCurrent}
-                    // Hard delete is the owner's to make (spec/35); the
-                    // api 403s anyone else, so only surface it when the
-                    // viewer owns this team diagram.
+                    // Any joined member may delete a team diagram
+                    // (spec/35); the api enforces team membership.
                     onDelete={
-                      openDeleteConfirm && currentOwnerId && currentTeam.ownerId === currentOwnerId
+                      openDeleteConfirm
                         ? (anchor) => openDeleteConfirm(currentTeam.id, anchor)
                         : undefined
                     }
@@ -726,9 +720,8 @@ export function Explorer({
                     onOpenTeam={(teamId) =>
                       window.location.assign(`/live/explorer/team?id=${encodeURIComponent(teamId)}`)
                     }
-                    // Owner-only hard delete on team-library rows
-                    // (spec/35). TeamNode gates each row on ownerId.
-                    currentOwnerId={currentOwnerId}
+                    // Hard delete on team-library rows, any joined
+                    // member (spec/35); the api enforces membership.
                     onDeleteDiagram={openDeleteConfirm}
                   />
                 ))}

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 import type { DiagramSummary, Folder } from '@livediagram/api-schema';
 import { FolderRow, UnsortedRow } from '@/app/explorer/views';
-import { MenuFolderIcon, PlusIcon } from '@/app/explorer/icons';
+import { MenuFolderIcon, MenuTrashIcon, PlusIcon } from '@/app/explorer/icons';
 import { DiagramIcon, EllipsisIcon, MenuDuplicateIcon, MenuPencilIcon } from '@/app/explorer/icons';
 import { MenuItem, PortalMenu } from './PortalMenu';
 import { InlineRenameInput } from './InlineRenameInput';
@@ -286,6 +286,14 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
               }}
               onCancelRename={() => setRenamingDiagramId(null)}
               onDuplicate={() => void lib.duplicateDiagram(d.id)}
+              onDelete={async () => {
+                const ok = await confirm({
+                  title: 'Delete team diagram?',
+                  message: `"${d.name || 'This diagram'}" will be permanently deleted for the whole team. This can't be undone.`,
+                  confirmLabel: 'Delete',
+                });
+                if (ok) void lib.deleteDiagram(d.id);
+              }}
             />
           ))}
         </ul>
@@ -333,6 +341,7 @@ function TeamDiagramRow({
   onCommitRename,
   onCancelRename,
   onDuplicate,
+  onDelete,
 }: {
   diagram: DiagramSummary;
   renaming: boolean;
@@ -341,6 +350,7 @@ function TeamDiagramRow({
   onCommitRename: (name: string) => void;
   onCancelRename: () => void;
   onDuplicate: () => void;
+  onDelete: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -408,6 +418,15 @@ function TeamDiagramRow({
             label="Change Folder"
             onClick={() => {
               onMove(menuRef.current);
+              setMenuOpen(false);
+            }}
+          />
+          <MenuItem
+            icon={<MenuTrashIcon />}
+            label="Delete"
+            danger
+            onClick={() => {
+              onDelete();
               setMenuOpen(false);
             }}
           />

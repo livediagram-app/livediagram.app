@@ -873,7 +873,6 @@ export function TeamNode({
   folders,
   diagrams,
   currentDiagramId,
-  currentOwnerId,
   expanded,
   onToggleExpanded,
   onOpenTeam,
@@ -886,18 +885,15 @@ export function TeamNode({
   // This team's diagrams (carry folderId; null = the team's Unsorted).
   diagrams: DiagramListItem[];
   currentDiagramId: string | null;
-  // The viewer's owner id. A team-library row only exposes Delete when
-  // the viewer owns it (the api restricts diagram DELETE to the owner,
-  // spec/35); non-owners get the open-only row.
-  currentOwnerId?: string | null;
   expanded: Record<string, boolean>;
   onToggleExpanded: (id: string) => void;
   // The team NAME opens the full team page; folders + diagrams browse
   // inline in the panel (spec/35).
   onOpenTeam: (teamId: string) => void;
   onOpenDiagram: (id: string) => void;
-  // Owner-only hard delete on a team-library row. Anchored to the
-  // row's menu button so Explorer can pop its ConfirmPopover beside it.
+  // Hard delete on a team-library row, available to any joined member
+  // (spec/35). Anchored to the row's menu button so Explorer can pop
+  // its ConfirmPopover beside it.
   onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
 }) {
   const childrenByParent = useMemo(() => {
@@ -923,13 +919,13 @@ export function TeamNode({
   const rootFolders = childrenByParent.get(null) ?? [];
   // Diagrams loose at the team root (its synthetic Unsorted bucket).
   const rootDiagrams = diagramsByFolder.get(null) ?? [];
-  // Per-row owner-gated delete: only the diagram's owner sees it
-  // (spec/35 keeps hard delete with the owner). Shared by the root
-  // rows here and the nested TeamFolderNode rows.
+  // Delete is available to every joined member (spec/35): a team
+  // diagram is managed by the whole team, not just its owner. Any
+  // diagram shown in this team section means the viewer is a joined
+  // member, so the only gate is that a delete handler was wired.
+  // Shared by the root rows here and the nested TeamFolderNode rows.
   const deleteFor = (d: DiagramListItem) =>
-    onDeleteDiagram && currentOwnerId && d.ownerId === currentOwnerId
-      ? (anchor: HTMLElement | null) => onDeleteDiagram(d.id, anchor)
-      : undefined;
+    onDeleteDiagram ? (anchor: HTMLElement | null) => onDeleteDiagram(d.id, anchor) : undefined;
   const hasContent = rootFolders.length > 0 || rootDiagrams.length > 0;
   const isExpanded = expanded[team.id] ?? false;
   return (

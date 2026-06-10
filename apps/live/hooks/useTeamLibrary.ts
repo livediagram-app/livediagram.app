@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DiagramSummary, Folder } from '@livediagram/api-schema';
 import {
   apiCreateFolder,
+  apiDeleteDiagram,
   apiDeleteFolder,
   apiGetTeamLibrary,
   apiSaveDiagramMeta,
@@ -166,6 +167,18 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     [ownerId, refresh],
   );
 
+  // Hard-delete a team diagram. Any joined member may delete it
+  // (spec/35), gated server-side by the team-member delete check.
+  const deleteDiagram = useCallback(
+    async (diagramId: string) => {
+      if (!ownerId) return;
+      await apiDeleteDiagram(ownerId, diagramId).catch(() => {});
+      track('Diagram', 'Deleted');
+      await refresh();
+    },
+    [ownerId, refresh],
+  );
+
   // Rename a team diagram in place. Any joined member may edit it
   // (spec/35), gated server-side by canEditDiagram.
   const renameDiagram = useCallback(
@@ -212,6 +225,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     deleteFolder,
     moveDiagram,
     removeDiagramFromTeam,
+    deleteDiagram,
     renameDiagram,
     duplicateDiagram,
   };
