@@ -65,6 +65,10 @@ export function SelectionPopover({
   const ellipsisRef = useRef<HTMLButtonElement>(null);
   const ref = useRef<HTMLDivElement>(null);
   const [adjust, setAdjust] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  // Above/below flip guard: the geometry signature it last flipped
+  // for, and whether it has already flipped for that geometry.
+  const flipSigRef = useRef('');
+  const flippedRef = useRef(false);
   // Prefer above by default on desktop, below on mobile. Mobile
   // defaults to below because the Palette pins the top-right of
   // the viewport: an above-the-element popover near the top of
@@ -82,14 +86,35 @@ export function SelectionPopover({
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const rect = node.getBoundingClientRect();
-    if (placeAbove && rect.top < EDGE_MARGIN) {
-      setPlaceAbove(false);
-      return;
+    // The geometry that legitimately changes where the popover should
+    // sit. When it changes we earn a fresh above/below flip decision;
+    // for the SAME geometry we allow at most one flip so a popover
+    // that fits neither side can't ping-pong above<->below forever
+    // (that infinite synchronous re-render is what tripped React's
+    // "Maximum update depth exceeded" while panning a selection).
+    const sig = `${bounds.x},${bounds.y},${bounds.width},${bounds.height},${canvasOffset.x},${canvasOffset.y},${zoom}`;
+    if (flipSigRef.current !== sig) {
+      flipSigRef.current = sig;
+      flippedRef.current = false;
     }
-    if (!placeAbove && rect.bottom > window.innerHeight - EDGE_MARGIN) {
-      setPlaceAbove(true);
-      return;
+    const rect = node.getBoundingClientRect();
+    // Flip above<->below at most once per geometry (the guard), so a
+    // popover that fits neither side can't ping-pong forever — that
+    // infinite synchronous re-render is what tripped "Maximum update
+    // depth". `adjust` is intentionally NOT a dependency: this runs
+    // once per geometry change and applies a one-shot nudge, so it
+    // never re-enters on its own setAdjust.
+    if (!flippedRef.current) {
+      if (placeAbove && rect.top < EDGE_MARGIN) {
+        flippedRef.current = true;
+        setPlaceAbove(false);
+        return;
+      }
+      if (!placeAbove && rect.bottom > window.innerHeight - EDGE_MARGIN) {
+        flippedRef.current = true;
+        setPlaceAbove(true);
+        return;
+      }
     }
     let dx = 0;
     let dy = 0;

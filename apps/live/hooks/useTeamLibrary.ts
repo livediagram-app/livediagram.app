@@ -6,9 +6,11 @@ import {
   apiCreateFolder,
   apiDeleteFolder,
   apiGetTeamLibrary,
+  apiSaveDiagramMeta,
   apiSetDiagramFolder,
   apiUpdateFolder,
 } from '@/lib/api-client';
+import { duplicateDiagram as duplicateDiagramApi } from '@/lib/duplicate-diagram';
 import { track } from '@/lib/telemetry';
 
 // One team's shared library (spec/35): the folder tree + diagrams the
@@ -164,6 +166,36 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     [ownerId, refresh],
   );
 
+  // Rename a team diagram in place. Any joined member may edit it
+  // (spec/35), gated server-side by canEditDiagram.
+  const renameDiagram = useCallback(
+    async (diagramId: string, name: string) => {
+      if (!ownerId) return;
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      await apiSaveDiagramMeta(ownerId, { id: diagramId, name: trimmed }).catch(() => {});
+      track('Diagram', 'Renamed');
+      await refresh();
+    },
+    [ownerId, refresh],
+  );
+
+  // Duplicate a team diagram, keeping the copy IN the team alongside
+  // the original (same folder). duplicateDiagramApi mints a personal
+  // copy first; we then file it into this team + folder (spec/35).
+  const duplicateDiagram = useCallback(
+    async (diagramId: string) => {
+      if (!ownerId) return;
+      const sourceFolderId = diagrams.find((d) => d.id === diagramId)?.folderId ?? null;
+      const newId = await duplicateDiagramApi(ownerId, diagramId);
+      if (!newId) return;
+      await apiSetDiagramFolder(ownerId, newId, sourceFolderId, teamId).catch(() => {});
+      track('Diagram', 'Duplicated');
+      await refresh();
+    },
+    [ownerId, teamId, diagrams, refresh],
+  );
+
   return {
     folders,
     diagrams,
@@ -180,5 +212,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     deleteFolder,
     moveDiagram,
     removeDiagramFromTeam,
+    renameDiagram,
+    duplicateDiagram,
   };
 }

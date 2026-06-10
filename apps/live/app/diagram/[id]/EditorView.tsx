@@ -74,6 +74,7 @@ export function EditorView() {
     autoAlignTab,
     beginAnchorDrag,
     beginArrowCurveDrag,
+    beginArrowLabelDrag,
     beginArrowElbowDrag,
     beginArrowTranslate,
     beginDrag,
@@ -123,6 +124,7 @@ export function EditorView() {
     deleteTab,
     diagramId,
     diagramList,
+    setDiagramList,
     diagramListLoading,
     diagramName,
     diagramOwnerColor,
@@ -290,6 +292,7 @@ export function EditorView() {
     tabLoadErrors,
     tabs,
     teamFolders,
+    teamDiagrams,
     teams,
     toggleActiveTabLock,
     toggleZenMode,
@@ -348,6 +351,13 @@ export function EditorView() {
             const prev = diagramName.trim();
             const nextTrim = next.trim();
             setDiagramName(next);
+            // Keep the Explorer panel's row for THIS diagram in sync —
+            // autosave persists the name, but the in-memory list would
+            // otherwise show the old name until a reload re-fetched it.
+            if (nextTrim && diagramId)
+              setDiagramList((prev) =>
+                prev.map((d) => (d.id === diagramId ? { ...d, name: nextTrim } : d)),
+              );
             if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
           }}
         />
@@ -518,6 +528,9 @@ export function EditorView() {
         diagramList={diagramList}
         folders={folders}
         sharedDiagrams={sharedDiagrams}
+        teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+        teamFolders={teamFolders}
+        teamDiagrams={teamDiagrams}
         onDismissShared={dismissSharedDiagram}
         onOpenFullExplorer={() =>
           window.location.assign(`${window.location.origin}/live/explorer/recent`)
@@ -563,6 +576,10 @@ export function EditorView() {
           const prev = diagramName.trim();
           const nextTrim = next.trim();
           setDiagramName(next);
+          if (nextTrim && diagramId)
+            setDiagramList((prev) =>
+              prev.map((d) => (d.id === diagramId ? { ...d, name: nextTrim } : d)),
+            );
           if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
         }}
         onDeleteDiagram={deleteDiagram}
@@ -603,6 +620,7 @@ export function EditorView() {
         onBeginEndpointDrag={beginEndpointDrag}
         onBeginArrowTranslate={beginArrowTranslate}
         onBeginArrowCurveDrag={beginArrowCurveDrag}
+        onBeginArrowLabelDrag={beginArrowLabelDrag}
         onBeginArrowElbowDrag={beginArrowElbowDrag}
         onShiftSelect={toggleInMultiSelect}
         onBeginFormatPainter={beginFormatPainter}
@@ -806,6 +824,12 @@ export function EditorView() {
           }))}
           teams={teams.map((t) => ({ id: t.id, name: t.name }))}
           teamFolders={teamFolders}
+          teamDiagrams={teamDiagrams.map((d) => ({
+            id: d.id,
+            name: d.name,
+            teamId: d.team.id,
+            teamName: d.team.name,
+          }))}
           tabs={tabs}
           currentTabId={activeId}
           onSelectDiagram={(id) => {

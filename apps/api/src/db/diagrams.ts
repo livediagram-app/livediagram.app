@@ -163,13 +163,25 @@ export async function upsertDiagramMeta(
 
 // Placement write (spec/15 + spec/35): folder and team scope move
 // together in one UPDATE so a diagram can never point at a folder in
-// a scope it isn't in.
+// a scope it isn't in. `newOwnerId` transfers ownership in the same
+// write: a joined member moving a team diagram out into their own
+// personal library becomes its owner (spec/35), and folders are
+// owner-scoped so the row must follow them. Omit to keep the owner.
 export async function setDiagramFolder(
   env: Env,
   id: string,
   folderId: string | null,
   teamId: string | null = null,
+  newOwnerId?: string,
 ): Promise<void> {
+  if (newOwnerId !== undefined) {
+    await env.DB.prepare(
+      'UPDATE diagrams SET folder_id = ?, team_id = ?, owner_id = ? WHERE id = ?',
+    )
+      .bind(folderId, teamId, newOwnerId, id)
+      .run();
+    return;
+  }
   await env.DB.prepare('UPDATE diagrams SET folder_id = ?, team_id = ? WHERE id = ?')
     .bind(folderId, teamId, id)
     .run();

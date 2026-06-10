@@ -269,8 +269,8 @@ describe('buildSearchResults — shared diagrams + teams (spec/09 Search panel)'
   });
 });
 
-describe('buildSearchResults — team folders (spec/35)', () => {
-  it('appends team-library folders to the Folders group, tagged with their team', () => {
+describe('buildSearchResults — team library (spec/35)', () => {
+  it('keeps personal folders in "My Work" and team folders/diagrams in "Teams"', () => {
     const out = buildSearchResults({
       query: 'q3',
       diagrams: [],
@@ -279,26 +279,32 @@ describe('buildSearchResults — team folders (spec/35)', () => {
         { id: 'tf', path: 'Marketing / Q3', teamId: 'team1', teamName: 'Platform' },
         { id: 'tf2', path: 'Hiring', teamId: 'team1', teamName: 'Platform' },
       ],
+      teamDiagrams: [{ id: 'td', name: 'Q3 roadmap', teamId: 'team1', teamName: 'Platform' }],
     });
-    expect(out).toHaveLength(1);
-    const items = out[0]!.items;
-    expect(items).toHaveLength(2);
-    expect(items[0]).toMatchObject({ kind: 'folder', id: 'pf', name: 'Q3 planning' });
-    expect(items[1]).toMatchObject({
-      kind: 'folder',
-      id: 'tf',
-      name: 'Marketing / Q3',
-      team: { id: 'team1', name: 'Platform' },
-    });
+    // My Work (personal folder) + Teams (team folder + team diagram).
+    expect(out.map((g) => g.key)).toEqual(['folders', 'teams']);
+    const myWork = out.find((g) => g.key === 'folders')!;
+    expect(myWork.label).toBe('My Work');
+    expect(myWork.items).toEqual([{ kind: 'folder', id: 'pf', name: 'Q3 planning' }]);
+    const teamsGroup = out.find((g) => g.key === 'teams')!;
+    expect(teamsGroup.items).toEqual([
+      { kind: 'folder', id: 'tf', name: 'Marketing / Q3', team: { id: 'team1', name: 'Platform' } },
+      { kind: 'diagram', id: 'td', name: 'Q3 roadmap', team: { id: 'team1', name: 'Platform' } },
+    ]);
   });
 
-  it('matches team folders by team name too, so "platform" finds the team library', () => {
+  it('matches team folders + diagrams by team name too, so "platform" finds the library', () => {
     const out = buildSearchResults({
       query: 'platform',
       diagrams: [],
       folders: [],
       teamFolders: [{ id: 'tf', path: 'Hiring', teamId: 'team1', teamName: 'Platform' }],
+      teamDiagrams: [{ id: 'td', name: 'Roadmap', teamId: 'team1', teamName: 'Platform' }],
     });
-    expect(out[0]!.items[0]).toMatchObject({ kind: 'folder', id: 'tf' });
+    const teamsGroup = out.find((g) => g.key === 'teams')!;
+    expect(teamsGroup.items).toEqual([
+      { kind: 'folder', id: 'tf', name: 'Hiring', team: { id: 'team1', name: 'Platform' } },
+      { kind: 'diagram', id: 'td', name: 'Roadmap', team: { id: 'team1', name: 'Platform' } },
+    ]);
   });
 });

@@ -5,10 +5,10 @@ import { SignInIcon } from '@/components/AuthControls';
 import { Tooltip } from '@/components/Tooltip';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from './ExplorerContext';
+import { useMemo } from 'react';
 import {
   ClockIcon,
   FolderIcon,
-  HomeIcon,
   ImageIcon,
   InviteIcon,
   PlusIcon,
@@ -20,6 +20,8 @@ import {
   SidebarFolderSubtree,
   SidebarRow,
   SidebarSectionLabel,
+  TeamFolderSubtree,
+  type TeamFolderNode,
 } from './sidebar';
 
 // The Explorer's section tree (spec/15), shared by the desktop
@@ -46,10 +48,29 @@ export function ExplorerSidebar() {
     unsortedDiagrams,
     shared,
     teams,
+    teamFolders,
     invites,
     teamsEnabled,
+    recentCount,
+    createFolder,
     setTeamModalOpen,
   } = useExplorer();
+
+  // Per-team folder tree, indexed by parentId, for the expandable
+  // team subtrees (spec/35). Built from the lazy library sweep.
+  const teamTree = useMemo(() => {
+    const byTeam = new Map<string, Map<string | null, TeamFolderNode[]>>();
+    for (const f of teamFolders) {
+      const byParent = byTeam.get(f.teamId) ?? new Map<string | null, TeamFolderNode[]>();
+      const bucket = byParent.get(f.parentId) ?? [];
+      bucket.push({ id: f.id, name: f.name, parentId: f.parentId });
+      byParent.set(f.parentId, bucket);
+      byTeam.set(f.teamId, byParent);
+    }
+    for (const byParent of byTeam.values())
+      for (const bucket of byParent.values()) bucket.sort((a, b) => a.name.localeCompare(b.name));
+    return byTeam;
+  }, [teamFolders]);
 
   return (
     <>
@@ -73,43 +94,55 @@ export function ExplorerSidebar() {
         selected={selected.kind === 'recent'}
         onClick={() => go({ kind: 'recent' })}
         depth={0}
+        badge={recentCount > 0 ? recentCount : undefined}
       />
       <SidebarRow
         icon={<ShareIcon />}
-        label="Shared with me"
+        label="Shared with you"
         selected={selected.kind === 'shared'}
         onClick={() => go({ kind: 'shared' })}
         depth={0}
         badge={shared.length > 0 ? shared.length : undefined}
       />
 
-      <SidebarSectionLabel>My Work</SidebarSectionLabel>
-      <SidebarRow
-        icon={<HomeIcon />}
-        label="All diagrams"
-        selected={selected.kind === 'all'}
-        onClick={() => go({ kind: 'all' })}
-        depth={0}
-        hasChildren={rootFolders.length > 0}
-        expanded={true}
-        onToggleExpand={undefined}
-      />
-      {/* Unsorted is a synthetic folder backed by folder_id IS NULL —
-          always present at the top of the root level so loose diagrams
-          have somewhere obvious to land. */}
-      <SidebarRow
-        icon={<FolderIcon open={false} />}
-        label="Unsorted"
-        selected={selected.kind === 'unsorted'}
-        onClick={() => go({ kind: 'unsorted' })}
-        depth={1}
-        badge={unsortedDiagrams.length > 0 ? unsortedDiagrams.length : undefined}
-      />
+      {/* My Work lists the personal tree directly — Unsorted and the
+          root folders, no separate "All diagrams" parent row (spec/35).
+          The /explorer/all route still backs the breadcrumb. The plus
+          mirrors the Teams section: add a root-level folder. */}
+      <SidebarSectionLabel
+        action={
+          <Tooltip title="New folder" description="Add a root-level folder.">
+            <button
+              type="button"
+              onClick={() => void createFolder(null)}
+              aria-label="New folder"
+              className="-my-1 flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700"
+            >
+              <PlusIcon />
+            </button>
+          </Tooltip>
+        }
+      >
+        My Work
+      </SidebarSectionLabel>
+      {/* Unsorted is a synthetic folder backed by folder_id IS NULL.
+          Shown only when it actually holds loose diagrams — an empty
+          Unsorted row is just noise. */}
+      {unsortedDiagrams.length > 0 ? (
+        <SidebarRow
+          icon={<FolderIcon open={false} />}
+          label="Unsorted"
+          selected={selected.kind === 'unsorted'}
+          onClick={() => go({ kind: 'unsorted' })}
+          depth={0}
+          badge={unsortedDiagrams.length}
+        />
+      ) : null}
       {rootFolders.map((f) => (
         <SidebarFolderSubtree
           key={f.id}
           folder={f}
-          depth={1}
+          depth={0}
           expanded={expanded}
           onToggleExpand={toggleExpand}
           selected={selected}
@@ -152,17 +185,47 @@ export function ExplorerSidebar() {
           </SidebarSectionLabel>
           {teamsEnabled ? (
             <>
-              {teams.map((t) => (
-                <SidebarRow
-                  key={t.id}
-                  icon={<TeamIcon />}
-                  label={t.name}
-                  selected={selected.kind === 'team' && selected.id === t.id}
-                  onClick={() => go({ kind: 'team', id: t.id })}
-                  depth={0}
-                  badge={t.memberCount > 1 ? t.memberCount : undefined}
-                />
-              ))}
+              {teams.map((t) => {
+                const byParent = teamTree.get(t.id);
+                const rootFoldersOfTeam = byParent?.get(null) ?? [];
+                const hasFolders = rootFoldersOfTeam.length > 0;
+                const isOpen = expanded.has(t.id);
+                // Team folder click opens the team page AT that folder
+                // (full load: the team page reads the &folder param at
+                // mount, spec/35) — same as the search panel does.
+                const openTeamFolder = (folderId: string) =>
+                  window.location.assign(
+                    `/live/explorer/team?id=${encodeURIComponent(t.id)}&folder=${encodeURIComponent(folderId)}`,
+                  );
+                return (
+                  <div key={t.id}>
+                    <SidebarRow
+                      icon={<TeamIcon />}
+                      label={t.name}
+                      selected={selected.kind === 'team' && selected.id === t.id}
+                      onClick={() => go({ kind: 'team', id: t.id })}
+                      depth={0}
+                      badge={t.memberCount > 1 ? t.memberCount : undefined}
+                      hasChildren={hasFolders}
+                      expanded={isOpen}
+                      onToggleExpand={hasFolders ? () => toggleExpand(t.id) : undefined}
+                    />
+                    {isOpen
+                      ? rootFoldersOfTeam.map((f) => (
+                          <TeamFolderSubtree
+                            key={f.id}
+                            folder={f}
+                            depth={1}
+                            childrenByParent={byParent ?? new Map()}
+                            expanded={expanded}
+                            onToggleExpand={toggleExpand}
+                            onOpenFolder={openTeamFolder}
+                          />
+                        ))
+                      : null}
+                  </div>
+                );
+              })}
               {/* Badge always rendered, zero included — the user gets a
                   stable "is there anything waiting?" answer at a glance
                   rather than having to notice an absence. */}

@@ -201,6 +201,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     setPaletteBottomY,
     setTabAccordionsOpen,
     sharedDiagrams,
+    teams,
+    teamFolders,
+    teamDiagrams,
     showTemplatePicker,
     tabAccordionsOpen,
     tabLocked,
@@ -732,6 +735,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
           folders={folders}
           loading={diagramListLoading}
           shared={sharedDiagrams}
+          teams={teams}
+          teamFolders={teamFolders}
+          teamDiagrams={teamDiagrams}
           onDismissShared={onDismissShared}
           onOpenFullExplorer={onOpenFullExplorer}
           currentDiagramId={currentDiagramId}

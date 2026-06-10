@@ -5,6 +5,7 @@ import {
   angledElbow,
   arrowheadShapeOf,
   arrowheadSizeOf,
+  arrowLabelAnchor,
   arrowPathD,
   arrowPathMidpoint,
   arrowStyleOf,
@@ -67,6 +68,9 @@ type ArrowViewProps = {
   // handle lets the user drag the bend to a new position. Fires
   // only when the arrow is angled and the user grabs the elbow.
   onBeginElbowDrag?: (id: string, e: ReactPointerEvent) => void;
+  // Begin dragging the label along the line / to either side. Fires
+  // when the arrow is selected and the user grabs the label box.
+  onBeginLabelDrag?: (id: string, e: ReactPointerEvent) => void;
   // Resolved CSS font-family for the arrow's label (spec/28). Arrows
   // have no per-element font, so this is the tab default; undefined =
   // the editor default.
@@ -98,6 +102,7 @@ function ArrowViewImpl({
   onBeginTranslate,
   onBeginCurveDrag,
   onBeginElbowDrag,
+  onBeginLabelDrag,
   fontFamily,
 }: ArrowViewProps) {
   const isLocked = arrow.locked === true || tabLocked;
@@ -138,9 +143,26 @@ function ArrowViewImpl({
     style === 'angled' ? angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset) : null;
   const labelText = arrow.label ?? '';
   const showLabel = isEditing || labelText.length > 0;
-  const labelPos = showLabel
-    ? placeLabel(midpoint, labelText, elements, arrow.id)
-    : { x: midpoint.x, y: midpoint.y };
+  // When the user has dragged the label, anchor it to their chosen
+  // {t, offset} on the line; otherwise auto-place it around the
+  // midpoint dodging nearby boxes.
+  const labelPos = !showLabel
+    ? { x: midpoint.x, y: midpoint.y }
+    : arrow.labelOffset
+      ? arrowLabelAnchor(
+          style,
+          from,
+          to,
+          arrow.from,
+          arrow.to,
+          arrow.curveOffset,
+          arrow.elbowOffset,
+          arrow.labelOffset,
+        )
+      : placeLabel(midpoint, labelText, elements, arrow.id);
+  // The label box is draggable (and shows its dashed selection box)
+  // when the arrow is selected and editable.
+  const labelDraggable = isSelected && !isPaintMode && !readOnly && !isLocked && !isEditing;
 
   // Per-arrow stroke colour overrides the default; selection ring sits
   // on top in brand-600 regardless so the user can still tell what's
@@ -234,6 +256,9 @@ function ArrowViewImpl({
           isEditing={isEditing}
           cursorAtEnd={editCursorAtEnd}
           fontFamily={fontFamily}
+          draggable={labelDraggable && !!onBeginLabelDrag}
+          onStartDrag={(e) => onBeginLabelDrag?.(arrow.id, e)}
+          onEdit={() => onBeginEdit(arrow.id)}
           onCommit={(next) => onCommitLabel(arrow.id, next)}
           onCancel={onCancelEdit}
         />
@@ -444,6 +469,12 @@ type ArrowLabelProps = {
   cursorAtEnd?: boolean;
   // Resolved CSS font-family for the label text + editor (spec/28).
   fontFamily?: string;
+  // When true (arrow selected + editable) the label shows a dashed
+  // box + move cursor and can be dragged along / across the line.
+  draggable?: boolean;
+  onStartDrag?: (e: ReactPointerEvent) => void;
+  // Double-click the label to re-edit its text.
+  onEdit?: () => void;
   onCommit: (label: string) => void;
   onCancel: () => void;
 };
@@ -461,6 +492,9 @@ function ArrowLabel({
   isEditing,
   cursorAtEnd = false,
   fontFamily,
+  draggable = false,
+  onStartDrag,
+  onEdit,
   onCommit,
   onCancel,
 }: ArrowLabelProps) {
@@ -512,6 +546,9 @@ function ArrowLabel({
       </foreignObject>
     );
   }
+  // A touch of padding so the dashed box + drag area sit just outside
+  // the label background.
+  const pad = 2;
   return (
     <g>
       <rect
@@ -535,6 +572,42 @@ function ArrowLabel({
       >
         {text}
       </text>
+      {draggable ? (
+        <>
+          {/* Dashed box signals the label is draggable. */}
+          <rect
+            x={x - size.width / 2 - pad}
+            y={y - size.height / 2 - pad}
+            width={size.width + pad * 2}
+            height={size.height + pad * 2}
+            rx={5}
+            fill="none"
+            stroke={BRAND_600}
+            strokeWidth={1}
+            strokeDasharray="3 2"
+            style={{ pointerEvents: 'none' }}
+          />
+          {/* Transparent catcher on top: grabs the drag (slide the
+              label along / across the line) and double-click to edit. */}
+          <rect
+            x={x - size.width / 2 - pad}
+            y={y - size.height / 2 - pad}
+            width={size.width + pad * 2}
+            height={size.height + pad * 2}
+            rx={5}
+            fill="transparent"
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              onStartDrag?.(e);
+            }}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              onEdit?.();
+            }}
+            style={{ pointerEvents: 'all', cursor: 'move' }}
+          />
+        </>
+      ) : null}
     </g>
   );
 }

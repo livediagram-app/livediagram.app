@@ -214,13 +214,20 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   }
 
   // /api/diagrams/<id>/folder — placement (spec/15 + spec/35). Body:
-  // { folderId, teamId? }. Personal placement (teamId null) stays
-  // owner-only. Team placement rules:
-  //   - moving INTO a team (or between teams) is owner-only, and the
-  //     owner must be a joined member of the destination team;
-  //   - WITHIN the diagram's current team, any joined member may
-  //     re-folder it, or remove it from the team (teamId: null →
-  //     back to the OWNER's personal Unsorted).
+  // { folderId, teamId? }. A team diagram is managed by every joined
+  // member (spec/35), so the rules are by membership, not ownership:
+  //   - INTO a team (or between teams): caller must be a joined
+  //     member of the destination team; if the diagram is currently
+  //     personal, only its owner may file it into a team; if it's in
+  //     another team, the caller must be a joined member of that team
+  //     too.
+  //   - WITHIN the current team: any joined member may re-folder it.
+  //   - OUT of a team to personal: any joined member may move it into
+  //     THEIR OWN personal library; ownership transfers to the mover
+  //     (folders are owner-scoped, so the row follows). The owner
+  //     moving it out keeps ownership.
+  //   - A purely personal move (no team on either side) stays owner-
+  //     only.
   // Folder existence + scope match is validated before the write so
   // the diagram never points at a folder outside its scope.
   if (segments.length === 4 && segments[3] === 'folder') {
@@ -237,15 +244,24 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const caller = ctx.clerkUserId;
 
       if (teamId !== existing.teamId) {
-        // Changing scope. Into a team: owner-only + joined member of
-        // the destination. Out of a team (teamId null): owner, or any
-        // joined member of the CURRENT team.
+        // Changing scope.
         if (teamId !== null) {
-          if (!isOwner) return forbidden();
+          // Into a team / between teams: joined member of the
+          // destination. A personal diagram can only be filed in by
+          // its owner; a team diagram can be moved by any joined
+          // member of its current team.
           if (!caller) return forbidden();
-          const membership = await getMembership(env, teamId, caller);
-          if (membership?.status !== 'joined') return forbidden();
+          const dest = await getMembership(env, teamId, caller);
+          if (dest?.status !== 'joined') return forbidden();
+          if (existing.teamId === null) {
+            if (!isOwner) return forbidden();
+          } else {
+            const src = await getMembership(env, existing.teamId, caller);
+            if (src?.status !== 'joined') return forbidden();
+          }
         } else if (!isOwner) {
+          // Out of a team to personal: any joined member of the
+          // current team (it becomes the mover's personal diagram).
           if (!caller || !existing.teamId) return forbidden();
           const membership = await getMembership(env, existing.teamId, caller);
           if (membership?.status !== 'joined') return forbidden();
@@ -258,20 +274,24 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         if (membership?.status !== 'joined') return forbidden();
       }
 
+      // A non-owner moving a team diagram out to personal takes
+      // ownership (spec/35): the diagram lands in the mover's library.
+      const movingOutToPersonal = teamId === null && existing.teamId !== null;
+      const newOwnerId = movingOutToPersonal && !isOwner ? caller! : undefined;
+      // Whose personal folder a personal placement must belong to.
+      const personalOwner = newOwnerId ?? existing.ownerId;
+
       if (folderId !== null) {
         const folder = await getFolder(env, folderId);
         if (!folder) return notFound();
-        // Scope match: personal placement needs the owner's personal
+        // Scope match: personal placement needs that owner's personal
         // folder; team placement needs a folder of that team.
-        if (teamId === null && (folder.teamId !== null || folder.ownerId !== existing.ownerId)) {
+        if (teamId === null && (folder.teamId !== null || folder.ownerId !== personalOwner)) {
           return notFound();
         }
         if (teamId !== null && folder.teamId !== teamId) return notFound();
       }
-      // Removing from a team always lands in the owner's personal
-      // Unsorted (folderId forced null when leaving with a stale
-      // folder id would be a scope mismatch caught above).
-      await setDiagramFolder(env, id, folderId, teamId);
+      await setDiagramFolder(env, id, folderId, teamId, newOwnerId);
       return noContent();
     }
   }

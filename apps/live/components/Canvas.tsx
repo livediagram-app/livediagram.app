@@ -670,6 +670,23 @@ export function Canvas(props: CanvasProps) {
       tabIndex={-1}
       onPointerMove={handlePointerMoveCanvas}
       onPointerLeave={handlePointerLeaveCanvas}
+      onPointerDownCapture={(e) => {
+        // Middle-mouse drag pans from anywhere on the canvas — empty
+        // space OR over elements — regardless of the active tool. The
+        // capture phase runs before the element + background
+        // pointerdown handlers, so it wins over selection / drag.
+        // Mirrors Figma + the browser's own middle-drag scroll.
+        if (e.button !== 1) return;
+        e.preventDefault();
+        e.stopPropagation();
+        setPan({
+          startClientX: e.clientX,
+          startClientY: e.clientY,
+          startOffsetX: viewportOffset.x,
+          startOffsetY: viewportOffset.y,
+          movedRef: { current: false },
+        });
+      }}
       onContextMenu={(e) => {
         // BoxedElementView's onContextMenu calls e.stopPropagation()
         // for right-clicks on elements, so we only reach here for

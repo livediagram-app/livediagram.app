@@ -27,6 +27,7 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
     deleteDiagram: vi.fn(),
     getFolder: vi.fn(),
     setDiagramFolder: vi.fn(),
+    getMembership: vi.fn(),
     getTab: vi.fn(),
     listChangeLog: vi.fn(),
     insertChangeLogEntry: vi.fn(),
@@ -50,7 +51,7 @@ import { handleDiagrams } from './diagrams';
 function makeCtx(
   method: string,
   path: string,
-  opts: { owner?: string | null; body?: unknown } = {},
+  opts: { owner?: string | null; clerkUserId?: string | null; body?: unknown } = {},
 ): RouteContext {
   const url = new URL(`https://api.test${path}`);
   const segments = url.pathname.replace(/^\//, '').split('/');
@@ -65,7 +66,7 @@ function makeCtx(
     env: {} as Env,
     url,
     segments,
-    clerkUserId: null,
+    clerkUserId: opts.clerkUserId ?? null,
     clerkEmail: null,
     resolveOwner: () => owner,
   };
@@ -138,7 +139,40 @@ describe('handleDiagrams folder assignment (PUT /diagrams/:id/folder)', () => {
       makeCtx('PUT', '/api/diagrams/d1/folder', { body: { folderId: null } }),
     );
     expect(res.status).toBe(204);
-    expect(db.setDiagramFolder).toHaveBeenCalledWith({}, 'd1', null, null);
+    // 5th arg (newOwnerId) is undefined: a personal move keeps the owner.
+    expect(db.setDiagramFolder).toHaveBeenCalledWith({}, 'd1', null, null, undefined);
+  });
+
+  // spec/35: a team diagram belongs to every joined member, so any of
+  // them may move it out into their OWN personal library — and doing so
+  // transfers ownership to the mover (folders are owner-scoped).
+  it('transfers ownership when a joined member moves a team diagram out to their folder', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-2', 'team-1'));
+    db.getMembership.mockResolvedValue({ status: 'joined', role: 'member' });
+    db.getFolder.mockResolvedValue({ id: 'f1', teamId: null, ownerId: 'member-1' });
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/folder', {
+        owner: 'member-1',
+        clerkUserId: 'member-1',
+        body: { folderId: 'f1', teamId: null },
+      }),
+    );
+    expect(res.status).toBe(204);
+    expect(db.setDiagramFolder).toHaveBeenCalledWith({}, 'd1', 'f1', null, 'member-1');
+  });
+
+  it('403 when a non-member tries to move a team diagram out', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-2', 'team-1'));
+    db.getMembership.mockResolvedValue(undefined);
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/folder', {
+        owner: 'stranger',
+        clerkUserId: 'stranger',
+        body: { folderId: null, teamId: null },
+      }),
+    );
+    expect(res.status).toBe(403);
+    expect(db.setDiagramFolder).not.toHaveBeenCalled();
   });
 });
 

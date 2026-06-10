@@ -108,6 +108,156 @@ export function arrowPathMidpoint(
   return { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
 }
 
+// ---------------------------------------------------------------------
+// Label placement along the line (draggable arrow labels)
+// ---------------------------------------------------------------------
+
+type Pt = { x: number; y: number };
+
+// The arrow's centreline as a polyline of vertices in draw order:
+// straight = [from, to]; angled = [from, elbow, to]; curved = the
+// quadratic Bezier sampled into short chords (fine enough to place +
+// project a label against). Both the label anchor and the label-drag
+// projection read this so they agree on the same line.
+export function arrowCenterline(
+  style: ArrowStyle,
+  from: Pt,
+  to: Pt,
+  fromEp: Endpoint,
+  toEp: Endpoint,
+  curveOffset?: { dx: number; dy: number },
+  elbowOffset?: { dx: number; dy: number },
+): Pt[] {
+  if (style === 'curved') {
+    const c = curveControlPoint(from, to, curveOffset);
+    const N = 24;
+    const pts: Pt[] = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N;
+      const mt = 1 - t;
+      pts.push({
+        x: mt * mt * from.x + 2 * mt * t * c.x + t * t * to.x,
+        y: mt * mt * from.y + 2 * mt * t * c.y + t * t * to.y,
+      });
+    }
+    return pts;
+  }
+  if (style === 'angled') {
+    return [from, angledElbow(from, to, fromEp, toEp, elbowOffset), to];
+  }
+  return [from, to];
+}
+
+// Point + unit tangent at arc-length fraction `t` (0..1) along a
+// polyline centreline. Used to anchor the label.
+function polylineAt(pts: Pt[], t: number): { point: Pt; tangent: Pt } {
+  const segLens: number[] = [];
+  let total = 0;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const len = Math.hypot(pts[i + 1]!.x - pts[i]!.x, pts[i + 1]!.y - pts[i]!.y);
+    segLens.push(len);
+    total += len;
+  }
+  if (total < 1e-6 || segLens.length === 0) {
+    return { point: pts[0] ?? { x: 0, y: 0 }, tangent: { x: 1, y: 0 } };
+  }
+  let target = Math.max(0, Math.min(1, t)) * total;
+  for (let i = 0; i < segLens.length; i++) {
+    const len = segLens[i]!;
+    if (target <= len || i === segLens.length - 1) {
+      const a = pts[i]!;
+      const b = pts[i + 1]!;
+      const f = len > 1e-6 ? target / len : 0;
+      const tx = b.x - a.x;
+      const ty = b.y - a.y;
+      const tl = Math.hypot(tx, ty) || 1;
+      return {
+        point: { x: a.x + tx * f, y: a.y + ty * f },
+        tangent: { x: tx / tl, y: ty / tl },
+      };
+    }
+    target -= len;
+  }
+  // Unreachable (loop always returns on the last segment), but keeps
+  // the type checker happy without a non-null assertion dance.
+  return { point: pts[pts.length - 1]!, tangent: { x: 1, y: 0 } };
+}
+
+// Where a label sits given its stored placement. `t` is the position
+// along the line (0..1); `offset` is the signed perpendicular distance
+// from the line (positive = left of the travel direction, negative =
+// right) so the user can park the label on either side. Falls back to
+// the natural midpoint when no placement is stored.
+export function arrowLabelAnchor(
+  style: ArrowStyle,
+  from: Pt,
+  to: Pt,
+  fromEp: Endpoint,
+  toEp: Endpoint,
+  curveOffset: { dx: number; dy: number } | undefined,
+  elbowOffset: { dx: number; dy: number } | undefined,
+  labelOffset: { t: number; offset: number } | undefined,
+): Pt {
+  if (!labelOffset) {
+    return arrowPathMidpoint(style, from, to, fromEp, toEp, curveOffset, elbowOffset);
+  }
+  const pts = arrowCenterline(style, from, to, fromEp, toEp, curveOffset, elbowOffset);
+  const { point, tangent } = polylineAt(pts, labelOffset.t);
+  // Left-hand normal (rotate the tangent +90°).
+  const nx = -tangent.y;
+  const ny = tangent.x;
+  return { x: point.x + nx * labelOffset.offset, y: point.y + ny * labelOffset.offset };
+}
+
+// Project a dragged point onto the arrow, returning the placement
+// (`t` along the line + signed perpendicular `offset`) that anchors a
+// label nearest that point. Inverse of `arrowLabelAnchor`; drives the
+// label-drag gesture.
+export function projectToArrow(
+  style: ArrowStyle,
+  from: Pt,
+  to: Pt,
+  fromEp: Endpoint,
+  toEp: Endpoint,
+  curveOffset: { dx: number; dy: number } | undefined,
+  elbowOffset: { dx: number; dy: number } | undefined,
+  p: Pt,
+): { t: number; offset: number } {
+  const pts = arrowCenterline(style, from, to, fromEp, toEp, curveOffset, elbowOffset);
+  const segLens: number[] = [];
+  let total = 0;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const len = Math.hypot(pts[i + 1]!.x - pts[i]!.x, pts[i + 1]!.y - pts[i]!.y);
+    segLens.push(len);
+    total += len;
+  }
+  if (total < 1e-6) return { t: 0, offset: 0 };
+  let best = { dist: Infinity, t: 0, offset: 0 };
+  let acc = 0;
+  for (let i = 0; i < segLens.length; i++) {
+    const a = pts[i]!;
+    const b = pts[i + 1]!;
+    const len = segLens[i]!;
+    const vx = b.x - a.x;
+    const vy = b.y - a.y;
+    const wx = p.x - a.x;
+    const wy = p.y - a.y;
+    const f = len > 1e-6 ? Math.max(0, Math.min(1, (vx * wx + vy * wy) / (len * len))) : 0;
+    const projX = a.x + vx * f;
+    const projY = a.y + vy * f;
+    const dist = Math.hypot(p.x - projX, p.y - projY);
+    if (dist < best.dist) {
+      const along = acc + f * len;
+      // Sign from the cross product: w left of v (CCW) → positive,
+      // matching the left-hand normal in arrowLabelAnchor.
+      const cross = vx * wy - vy * wx;
+      best = { dist, t: along / total, offset: cross >= 0 ? dist : -dist };
+    }
+    acc += len;
+  }
+  return { t: best.t, offset: best.offset };
+}
+
 // Which leg of an angled arrow runs first. Pinned endpoints carry
 // an intrinsic direction (E/W anchors leave horizontally; N/S leave
 // vertically); free endpoints fall back to "travel along the longer

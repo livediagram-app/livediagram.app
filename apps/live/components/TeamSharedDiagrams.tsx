@@ -5,8 +5,9 @@ import { useRef, useState } from 'react';
 import type { DiagramSummary, Folder } from '@livediagram/api-schema';
 import { FolderRow, UnsortedRow } from '@/app/explorer/views';
 import { MenuFolderIcon, PlusIcon } from '@/app/explorer/icons';
-import { DiagramIcon, EllipsisIcon, MenuTrashIcon } from '@/app/explorer/icons';
+import { DiagramIcon, EllipsisIcon, MenuDuplicateIcon, MenuPencilIcon } from '@/app/explorer/icons';
 import { MenuItem, PortalMenu } from './PortalMenu';
+import { InlineRenameInput } from './InlineRenameInput';
 import { MoveToFolderDialog } from './MoveToFolderDialog';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useTeamLibrary } from '@/hooks/useTeamLibrary';
@@ -35,9 +36,14 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
     return folder ? { kind: 'folder', id: folder } : { kind: 'root' };
   });
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
+  const [renamingDiagramId, setRenamingDiagramId] = useState<string | null>(null);
   const [moveTarget, setMoveTarget] = useState<
     { kind: 'diagram'; id: string } | { kind: 'folder'; id: string } | null
   >(null);
+  // "+ Create" dropdown (mirrors the personal pane header): one compact
+  // button instead of two, so the breadcrumb keeps its room on mobile.
+  const [createOpen, setCreateOpen] = useState(false);
+  const createRef = useRef<HTMLButtonElement>(null);
   const confirm = useConfirm();
   useRelativeTimeTick();
 
@@ -57,8 +63,8 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
         : [];
 
   const crumbs: { label: string; onClick?: () => void }[] = (() => {
-    const root = { label: 'Shared diagrams', onClick: () => setSpot({ kind: 'root' }) };
-    if (spot.kind === 'root') return [{ label: 'Shared diagrams' }];
+    const root = { label: 'Team diagrams', onClick: () => setSpot({ kind: 'root' }) };
+    if (spot.kind === 'root') return [{ label: 'Team diagrams' }];
     if (spot.kind === 'unsorted') return [root, { label: 'Unsorted' }];
     const chain = lib.breadcrumb(spot.id);
     return [
@@ -98,10 +104,10 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
     },
   });
 
-  // Move-picker rows: every team folder by breadcrumb path, minus the
-  // moved folder's own subtree (cycle prevention, mirroring the
-  // personal picker).
-  const movePickerRows = (() => {
+  // Move-picker folder nodes: every team folder (the picker rebuilds
+  // the tree from parentId), minus the moved folder's own subtree
+  // (cycle prevention, mirroring the personal picker).
+  const movePickerFolders = (() => {
     if (!moveTarget) return [];
     const excluded = new Set<string>();
     if (moveTarget.kind === 'folder') {
@@ -119,14 +125,7 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
     }
     return lib.folders
       .filter((f) => !excluded.has(f.id))
-      .map((f) => ({
-        id: f.id,
-        path: lib
-          .breadcrumb(f.id)
-          .map((p) => p.name)
-          .join(' / '),
-      }))
-      .sort((a, b) => a.path.localeCompare(b.path));
+      .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId }));
   })();
 
   return (
@@ -169,37 +168,65 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
             );
           })}
         </nav>
-        <div className="flex shrink-0 items-center gap-2">
-          {/* New diagram lands directly in the team library, scoped to
-              the folder currently open (spec/35): /live/new applies the
-              team + folder placement after the create. Brand-filled,
-              mirroring the personal pane header's primary action. */}
+        <div className="shrink-0">
           <button
+            ref={createRef}
             type="button"
-            onClick={() =>
-              window.location.assign(
-                `/live/new?team=${encodeURIComponent(teamId)}${
-                  currentFolderId ? `&folder=${encodeURIComponent(currentFolderId)}` : ''
-                }`,
-              )
-            }
+            onClick={() => setCreateOpen((o) => !o)}
+            aria-haspopup="menu"
+            aria-expanded={createOpen}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-brand-500 px-2 py-1 text-[11px] font-medium text-white shadow-sm transition hover:bg-brand-600"
           >
             <PlusIcon />
-            New diagram
+            Create
+            <svg
+              width="9"
+              height="9"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+              className="-mr-0.5"
+            >
+              <path d="M4 6l4 4 4-4" />
+            </svg>
           </button>
-          <button
-            type="button"
-            onClick={() =>
-              void lib.createFolder(currentFolderId).then((created) => {
-                if (created) setRenamingFolderId(created.id);
-              })
-            }
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700"
-          >
-            <PlusIcon />
-            {spot.kind === 'folder' ? 'New subfolder' : 'New folder'}
-          </button>
+          {createOpen ? (
+            <PortalMenu
+              anchor={createRef.current}
+              placement="below"
+              onClose={() => setCreateOpen(false)}
+            >
+              {/* New diagram lands directly in the team library, scoped
+                  to the folder currently open (spec/35): /live/new
+                  applies the team + folder placement after the create. */}
+              <MenuItem
+                icon={<DiagramIcon />}
+                label="New diagram"
+                onClick={() => {
+                  setCreateOpen(false);
+                  window.location.assign(
+                    `/live/new?team=${encodeURIComponent(teamId)}${
+                      currentFolderId ? `&folder=${encodeURIComponent(currentFolderId)}` : ''
+                    }`,
+                  );
+                }}
+              />
+              <MenuItem
+                icon={<MenuFolderIcon />}
+                label={spot.kind === 'folder' ? 'New subfolder' : 'New folder'}
+                onClick={() => {
+                  setCreateOpen(false);
+                  void lib.createFolder(currentFolderId).then((created) => {
+                    if (created) setRenamingFolderId(created.id);
+                  });
+                }}
+              />
+            </PortalMenu>
+          ) : null}
         </div>
       </div>
 
@@ -218,7 +245,7 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
         !(spot.kind === 'root' && unsorted.length > 0) ? (
         <p className="px-4 py-8 text-center text-xs text-slate-500">
           {spot.kind === 'root'
-            ? 'Nothing shared yet. Move a diagram here from your personal explorer ("Move to folder…"), or create a folder to organise ahead.'
+            ? 'Nothing shared yet. Move a diagram here from your personal explorer, or create a folder to organise ahead.'
             : 'This folder is empty.'}
         </p>
       ) : (
@@ -248,17 +275,17 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
             <TeamDiagramRow
               key={d.id}
               diagram={d}
+              renaming={renamingDiagramId === d.id}
               onMove={() => {
                 setMoveTarget({ kind: 'diagram', id: d.id });
               }}
-              onRemoveFromTeam={async () => {
-                const ok = await confirm({
-                  title: 'Remove from team?',
-                  message: `"${d.name}" will leave the team's shared diagrams and return to its owner's personal Unsorted.`,
-                  confirmLabel: 'Remove',
-                });
-                if (ok) void lib.removeDiagramFromTeam(d.id);
+              onStartRename={() => setRenamingDiagramId(d.id)}
+              onCommitRename={(name) => {
+                setRenamingDiagramId(null);
+                void lib.renameDiagram(d.id, name);
               }}
+              onCancelRename={() => setRenamingDiagramId(null)}
+              onDuplicate={() => void lib.duplicateDiagram(d.id)}
             />
           ))}
         </ul>
@@ -277,14 +304,14 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
               : lib.folders.find((f) => f.id === moveTarget.id)?.name) || 'Untitled'
           }
           subjectKind={moveTarget.kind}
-          rootLabel="Unsorted"
-          folders={movePickerRows}
+          personalRootLabel="Unsorted"
+          personalFolders={movePickerFolders}
           currentFolderId={
             moveTarget.kind === 'diagram'
               ? (lib.diagrams.find((d) => d.id === moveTarget.id)?.folderId ?? null)
               : (lib.folders.find((f) => f.id === moveTarget.id)?.parentId ?? null)
           }
-          onPickFolder={(folderId) => {
+          onPick={({ folderId }) => {
             if (moveTarget.kind === 'diagram') void lib.moveDiagram(moveTarget.id, folderId);
             else void lib.moveFolder(moveTarget.id, folderId);
           }}
@@ -295,18 +322,25 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
   );
 }
 
-// One diagram row in the team library. Leaner than the personal
-// explorer's DiagramRow on purpose: rename / duplicate / delete stay
-// with the owner in their personal surfaces, so the team menu only
-// offers what every member may do — open, re-folder, remove from team.
+// One diagram row in the team library. A team diagram is managed by
+// every joined member (spec/35), so the menu offers the same actions
+// the personal + Recent surfaces do: rename, duplicate, change folder.
 function TeamDiagramRow({
   diagram,
+  renaming,
   onMove,
-  onRemoveFromTeam,
+  onStartRename,
+  onCommitRename,
+  onCancelRename,
+  onDuplicate,
 }: {
   diagram: DiagramSummary;
+  renaming: boolean;
   onMove: (anchor: HTMLElement | null) => void;
-  onRemoveFromTeam: () => void;
+  onStartRename: () => void;
+  onCommitRename: (name: string) => void;
+  onCancelRename: () => void;
+  onDuplicate: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -316,44 +350,64 @@ function TeamDiagramRow({
         <span className="shrink-0 text-slate-400">
           <DiagramIcon />
         </span>
-        <Link
-          href={`/diagram/${diagram.id}`}
-          className="truncate text-sm font-medium text-slate-900 transition hover:text-brand-700"
-        >
-          {diagram.name}
-        </Link>
+        {renaming ? (
+          <InlineRenameInput
+            initial={diagram.name}
+            onCommit={onCommitRename}
+            onCancel={onCancelRename}
+            className="rounded border border-brand-300 bg-white px-1 py-0 text-sm font-medium text-slate-900"
+          />
+        ) : (
+          <Link
+            href={`/diagram/${diagram.id}`}
+            className="truncate text-sm font-medium text-slate-900 transition hover:text-brand-700"
+          >
+            {diagram.name}
+          </Link>
+        )}
       </span>
       <span className="text-[11px] uppercase tracking-wider text-slate-400">
         {formatRelativeTime(Date.now() - diagram.savedAt)}
       </span>
-      <button
-        ref={menuRef}
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setMenuOpen((o) => !o);
-        }}
-        aria-label={`Menu for ${diagram.name}`}
-        className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
-      >
-        <EllipsisIcon />
-      </button>
+      {renaming ? (
+        <span />
+      ) : (
+        <button
+          ref={menuRef}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((o) => !o);
+          }}
+          aria-label={`Menu for ${diagram.name}`}
+          className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+        >
+          <EllipsisIcon />
+        </button>
+      )}
       {menuOpen ? (
         <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
           <MenuItem
-            icon={<MenuFolderIcon />}
-            label="Move to folder…"
+            icon={<MenuPencilIcon />}
+            label="Rename"
             onClick={() => {
-              onMove(menuRef.current);
+              onStartRename();
               setMenuOpen(false);
             }}
           />
           <MenuItem
-            icon={<MenuTrashIcon />}
-            label="Remove from team"
-            danger
+            icon={<MenuDuplicateIcon />}
+            label="Duplicate"
             onClick={() => {
-              onRemoveFromTeam();
+              onDuplicate();
+              setMenuOpen(false);
+            }}
+          />
+          <MenuItem
+            icon={<MenuFolderIcon />}
+            label="Change Folder"
+            onClick={() => {
+              onMove(menuRef.current);
               setMenuOpen(false);
             }}
           />

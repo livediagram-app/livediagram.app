@@ -19,6 +19,7 @@ import type { ArrowEnd, DragMode } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { TemplateKind } from '@/lib/templates';
 import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/useTeamLibrariesSweep';
 import type { CanvasTool } from './CommandPalette';
 
 export type CanvasProps = {
@@ -157,6 +158,13 @@ export type CanvasProps = {
   // omit it.
   sharedDiagrams?: SharedWithItem[];
   onDismissShared?: (diagramId: string) => void;
+  // Teams the signed-in user belongs to + their swept libraries
+  // (spec/35), forwarded to the floating Explorer panel for its Teams
+  // accordion, team rows in Recent, and the current team diagram.
+  // Empty by default so guest / legacy callers can omit them.
+  teams?: { id: string; name: string }[];
+  teamFolders?: TeamFolderRow[];
+  teamDiagrams?: TeamDiagramRow[];
   // Navigate to the standalone full-page Explorer. Forwarded into
   // the floating Explorer panel's header "expand" button.
   onOpenFullExplorer?: () => void;
@@ -244,6 +252,7 @@ export type CanvasProps = {
   onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
   onBeginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowElbowDrag: (arrowId: string, e: ReactPointerEvent) => void;
+  onBeginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
   onShiftSelect: (id: string) => void;
   onBeginFormatPainter: () => void;

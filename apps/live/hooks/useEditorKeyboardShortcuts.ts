@@ -125,6 +125,9 @@ type EditorKeyboardShortcutsDeps = {
   // while the mode is on.
   zenMode: boolean;
   onToggleZen: () => void;
+  // Cmd/Ctrl+. opens the global search panel. Allowed for view-role
+  // too (search only navigates, never mutates).
+  onOpenSearch: () => void;
   // Per-device disable flag. When false, every shortcut effect
   // below short-circuits before attaching its listener. The
   // checkbox lives in the keyboard-shortcuts modal; the storage
@@ -231,6 +234,15 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (key === '0') {
           e.preventDefault();
           live.onZoomReset();
+          return;
+        }
+        // Cmd/Ctrl+.: open the global search panel. Before the
+        // read-only gate — search only navigates. ('.' instead of 'T'
+        // because browsers reserve Cmd/Ctrl+T for "new tab" and won't
+        // let the page intercept it.)
+        if (key === '.') {
+          e.preventDefault();
+          live.onOpenSearch();
           return;
         }
         if (live.isReadOnly) return;

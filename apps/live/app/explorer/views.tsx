@@ -29,11 +29,16 @@ import {
 // Diagram rows render the api client's DiagramListItem directly
 // (same rows the floating Explorer panel uses), so the two explorer
 // surfaces can't drift apart on what a list item carries. Recent rows
-// may additionally carry the team a diagram lives in (spec/35): those
-// show a "Team" visibility badge + the team as owner, and hide the
-// personal row actions (rename / duplicate / delete / move are the
-// owner's, exercised on the team page or by the owner directly).
-export type PaneDiagram = DiagramListItem & { team?: { id: string; name: string } };
+// (spec/35) may additionally carry:
+//   - `team`: the team library the diagram lives in — a "Team"
+//     visibility badge + the team as owner, and a team-scoped menu.
+//   - `shared`: a diagram shared WITH the viewer (not theirs) — a
+//     "Shared" badge, the sharer as owner, a share-link title, and a
+//     "Dismiss" action. Mutually exclusive with `team`.
+export type PaneDiagram = DiagramListItem & {
+  team?: { id: string; name: string };
+  shared?: { ownerName: string | null; role: 'edit' | 'view'; shareCode: string };
+};
 
 // What the sidebar tree highlights and what the right pane shows.
 // "Special" nodes (`recent`, `all`, `shared`) are virtual buckets
@@ -64,6 +69,25 @@ function HamburgerIcon() {
       aria-hidden
     >
       <path d="M3 5h12M3 9h12M3 13h12" />
+    </svg>
+  );
+}
+
+function CaretDownIcon() {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="-mr-0.5"
+    >
+      <path d="M4 6l4 4 4-4" />
     </svg>
   );
 }
@@ -100,6 +124,12 @@ export function PaneHeader({
   // when there are actual parents to click back to.
   const showCrumbs = crumbs.length >= 2;
   const hasActions = Boolean(onCreateDiagram || onCreateFolder);
+  // A single "+ Create" dropdown (both desktop and mobile) replaces the
+  // standalone New-diagram / New-folder buttons: two shrink-0 buttons
+  // squeezed the folder-name title to nothing on a narrow phone, and
+  // one compact button keeps the title roomy on every screen.
+  const [createOpen, setCreateOpen] = useState(false);
+  const createRef = useRef<HTMLButtonElement>(null);
   return (
     <div className="mb-4">
       <div className="mb-2 flex items-center justify-between gap-3">
@@ -119,26 +149,46 @@ export function PaneHeader({
           </h1>
         </div>
         {hasActions ? (
-          <div className="flex shrink-0 items-center gap-2">
-            {onCreateDiagram ? (
-              <button
-                type="button"
-                onClick={onCreateDiagram}
-                className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
+          <div className="shrink-0">
+            <button
+              ref={createRef}
+              type="button"
+              onClick={() => setCreateOpen((o) => !o)}
+              aria-haspopup="menu"
+              aria-expanded={createOpen}
+              className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
+            >
+              <PlusIcon />
+              Create
+              <CaretDownIcon />
+            </button>
+            {createOpen ? (
+              <PortalMenu
+                anchor={createRef.current}
+                placement="below"
+                onClose={() => setCreateOpen(false)}
               >
-                <PlusIcon />
-                New diagram
-              </button>
-            ) : null}
-            {onCreateFolder ? (
-              <button
-                type="button"
-                onClick={onCreateFolder}
-                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700"
-              >
-                <PlusIcon />
-                {folderLabel ?? 'New folder'}
-              </button>
+                {onCreateDiagram ? (
+                  <MenuItem
+                    icon={<DiagramIcon />}
+                    label="New diagram"
+                    onClick={() => {
+                      onCreateDiagram();
+                      setCreateOpen(false);
+                    }}
+                  />
+                ) : null}
+                {onCreateFolder ? (
+                  <MenuItem
+                    icon={<MenuFolderIcon />}
+                    label={folderLabel ?? 'New folder'}
+                    onClick={() => {
+                      onCreateFolder();
+                      setCreateOpen(false);
+                    }}
+                  />
+                ) : null}
+              </PortalMenu>
             ) : null}
           </div>
         ) : null}
@@ -195,8 +245,7 @@ export function ListView({
   onDuplicateDiagram,
   onDeleteDiagram,
   onMoveDiagram,
-  onMoveTeamDiagram,
-  onRemoveFromTeam,
+  onDismissShared,
   childrenCount,
   diagramsCount,
   showOwner = false,
@@ -233,13 +282,8 @@ export function ListView({
   onDuplicateDiagram: (id: string) => void;
   onDeleteDiagram: (id: string) => void;
   onMoveDiagram: (id: string, anchor: HTMLElement | null) => void;
-  // Team-row actions (spec/35), used by Recent's team rows.
-  onMoveTeamDiagram?: (
-    id: string,
-    anchor: HTMLElement | null,
-    team: { id: string; name: string },
-  ) => void;
-  onRemoveFromTeam?: (id: string, name: string) => void;
+  // Shared-row action (spec/35), used by Recent's "shared with me" rows.
+  onDismissShared?: (id: string) => void;
   childrenCount: (id: string) => number;
   diagramsCount: (id: string) => number;
 }) {
@@ -285,14 +329,7 @@ export function ListView({
             onDuplicate={() => onDuplicateDiagram(d.id)}
             onDelete={() => onDeleteDiagram(d.id)}
             onMove={(anchor) => onMoveDiagram(d.id, anchor)}
-            onMoveWithinTeam={
-              d.team && onMoveTeamDiagram
-                ? (anchor) => onMoveTeamDiagram(d.id, anchor, d.team!)
-                : undefined
-            }
-            onRemoveFromTeam={
-              d.team && onRemoveFromTeam ? () => onRemoveFromTeam(d.id, d.name) : undefined
-            }
+            onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
           />
         ))}
       </ul>
@@ -441,8 +478,7 @@ export function DiagramRow({
   onDuplicate,
   onDelete,
   onMove,
-  onMoveWithinTeam,
-  onRemoveFromTeam,
+  onDismiss,
   showOwner = false,
 }: {
   diagram: PaneDiagram;
@@ -453,21 +489,23 @@ export function DiagramRow({
   onDuplicate: () => void;
   onDelete: () => void;
   onMove: (anchor: HTMLElement | null) => void;
-  // Team-row menu actions (spec/35). Personal rows ignore these; team
-  // rows swap the personal menu (rename / duplicate / delete / move,
-  // which are the owner's) for these member-valid ones.
-  onMoveWithinTeam?: (anchor: HTMLElement | null) => void;
-  onRemoveFromTeam?: () => void;
-  // Adds the desktop Owner cell ("You", or the team name for
-  // team-library rows).
+  // Shared-row menu action (spec/35): drop it from "Shared with me".
+  onDismiss?: () => void;
+  // Adds the desktop Owner cell ("You", the team name, or the sharer).
   showOwner?: boolean;
 }) {
   useRelativeTimeTick();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
-  // Team rows are read-only here: rename / duplicate / delete / move
-  // are personal-library actions, managed on the team page (spec/35).
+  // Team rows expose member-valid actions (move within the team /
+  // remove); shared rows are read-only bar "Dismiss" (spec/35).
   const isTeamRow = !!diagram.team;
+  const isSharedRow = !!diagram.shared;
+  // Shared diagrams open on the visitor URL (the owner-only path 404s
+  // for a non-owner); everything else opens on the owned path.
+  const href = diagram.shared
+    ? `/diagram/${diagram.id}?s=${encodeURIComponent(diagram.shared.shareCode)}`
+    : `/diagram/${diagram.id}`;
 
   const titleNode = renaming ? (
     <InlineRenameInput
@@ -478,7 +516,7 @@ export function DiagramRow({
     />
   ) : (
     <Link
-      href={`/diagram/${diagram.id}`}
+      href={href}
       className="truncate text-sm font-medium text-slate-900 transition hover:text-brand-700"
     >
       {diagram.name}
@@ -502,11 +540,33 @@ export function DiagramRow({
       </span>
       {showOwner ? (
         <span className="hidden truncate text-xs text-slate-500 sm:block">
-          {diagram.team?.name ?? 'You'}
+          {diagram.team?.name ??
+            diagram.shared?.ownerName ??
+            (isSharedRow ? 'Unknown owner' : 'You')}
         </span>
       ) : null}
       <span className="hidden sm:block">
-        {isTeamRow ? (
+        {isSharedRow ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
+            <svg
+              width="9"
+              height="9"
+              viewBox="0 0 9 9"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <circle cx="2" cy="4.5" r="1.4" />
+              <circle cx="7" cy="2" r="1.2" />
+              <circle cx="7" cy="7" r="1.2" />
+              <path d="M3.2 3.8L5.9 2.5M3.2 5.2L5.9 6.5" />
+            </svg>
+            Shared
+          </span>
+        ) : isTeamRow ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30">
             <svg
               width="9"
@@ -584,42 +644,33 @@ export function DiagramRow({
           <EllipsisIcon />
         </button>
       )}
-      {menuOpen && isTeamRow ? (
-        // Team rows get the member-valid actions (spec/35): re-folder
-        // within the team, remove from the team (back to its owner's
-        // personal Unsorted), or jump to the team page. Rename /
-        // duplicate / delete stay with the owner's personal surfaces.
+      {menuOpen && isSharedRow ? (
+        // Shared-with-me rows: open on the share link or dismiss from
+        // the list (spec/35). The diagram isn't the viewer's to rename
+        // / move / delete.
         <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
           <MenuItem
-            icon={<MenuFolderIcon />}
-            label="Move within team…"
+            icon={<DiagramIcon />}
+            label="Open"
             onClick={() => {
-              onMoveWithinTeam?.(menuRef.current);
-              setMenuOpen(false);
+              window.location.assign(`/live${href}`);
             }}
           />
           <MenuItem
-            icon={<TeamIcon />}
-            label="Open team page"
+            icon={<CloseIcon />}
+            label="Dismiss"
             onClick={() => {
-              window.location.assign(
-                `/live/explorer/team?id=${encodeURIComponent(diagram.team!.id)}${
-                  diagram.folderId ? `&folder=${encodeURIComponent(diagram.folderId)}` : ''
-                }`,
-              );
-            }}
-          />
-          <MenuItem
-            icon={<MenuTrashIcon />}
-            label="Remove from team"
-            onClick={() => {
-              onRemoveFromTeam?.();
+              onDismiss?.();
               setMenuOpen(false);
             }}
           />
         </PortalMenu>
       ) : null}
-      {menuOpen && !isTeamRow ? (
+      {menuOpen && !isSharedRow ? (
+        // One menu for owned + team rows (spec/35): a team diagram is
+        // managed by every joined member, so the full set applies.
+        // Team rows additionally get "Open Team" to jump to the
+        // library page at this diagram's folder.
         <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
           <MenuItem
             icon={<MenuPencilIcon />}
@@ -639,12 +690,25 @@ export function DiagramRow({
           />
           <MenuItem
             icon={<MenuFolderIcon />}
-            label="Move to folder…"
+            label="Change Folder"
             onClick={() => {
               onMove(menuRef.current);
               setMenuOpen(false);
             }}
           />
+          {isTeamRow ? (
+            <MenuItem
+              icon={<TeamIcon />}
+              label="Open Team"
+              onClick={() => {
+                window.location.assign(
+                  `/live/explorer/team?id=${encodeURIComponent(diagram.team!.id)}${
+                    diagram.folderId ? `&folder=${encodeURIComponent(diagram.folderId)}` : ''
+                  }`,
+                );
+              }}
+            />
+          ) : null}
           <MenuItem
             icon={<MenuTrashIcon />}
             label="Delete"
@@ -692,7 +756,7 @@ export function FolderMenuItems({
       />
       <MenuItem
         icon={<MenuFolderIcon />}
-        label="Move to folder…"
+        label="Change Folder"
         onClick={() => {
           actions.move();
           close();

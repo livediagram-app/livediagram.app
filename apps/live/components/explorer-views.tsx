@@ -15,7 +15,7 @@
 // owns the floating-panel shape (pill rows, drag source / drop
 // target, recursive tree). The two coexist by design.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 // Row data shapes come straight from the api client (the same rows
 // apiListDiagrams / useFolders / apiListSharedWith return) so the
 // panel and the /explorer route can't drift apart on what a list
@@ -738,7 +738,7 @@ export function DiagramRow({
           {onMoveRequest ? (
             <MenuItem
               icon={<FolderIcon />}
-              label="Move to folder…"
+              label="Change Folder"
               onClick={() => {
                 onMoveRequest(menuButtonRef.current);
                 setMenuOpen(false);
@@ -762,5 +762,230 @@ export function DiagramRow({
         </PortalMenu>
       ) : null}
     </div>
+  );
+}
+
+// --- Teams accordion nodes (spec/35) ---------------------------------
+// Mirror of FolderNode for the panel's Teams accordion: a team expands
+// to its folder tree AND the diagrams inside each folder, which open
+// in place (any joined member may open them). Folder management
+// (rename / move / delete / new) stays on the team page, so a click on
+// a folder NAME opens that page there; the nodes carry no menus or drop
+// targets. Folder ids are globally unique, so they share the panel's
+// one `expanded` record with the personal folder tree.
+
+type TeamFolderTreeNode = { id: string; name: string; parentId: string | null };
+
+function TeamFolderNode({
+  folder,
+  depth,
+  childrenByParent,
+  diagramsByFolder,
+  currentDiagramId,
+  expanded,
+  onToggleExpanded,
+  onOpenDiagram,
+}: {
+  folder: TeamFolderTreeNode;
+  depth: number;
+  childrenByParent: Map<string | null, TeamFolderTreeNode[]>;
+  diagramsByFolder: Map<string | null, DiagramListItem[]>;
+  currentDiagramId: string | null;
+  expanded: Record<string, boolean>;
+  onToggleExpanded: (id: string) => void;
+  onOpenDiagram: (id: string) => void;
+}) {
+  const kids = childrenByParent.get(folder.id) ?? [];
+  const diagramsHere = diagramsByFolder.get(folder.id) ?? [];
+  const hasContent = kids.length > 0 || diagramsHere.length > 0;
+  const isExpanded = expanded[folder.id] ?? false;
+  return (
+    <li>
+      <div
+        className="group flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800"
+        style={{ paddingLeft: 4 + depth * 12 }}
+      >
+        <button
+          type="button"
+          onClick={() => onToggleExpanded(folder.id)}
+          aria-label={isExpanded ? 'Collapse folder' : 'Expand folder'}
+          disabled={!hasContent}
+          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 disabled:opacity-0 dark:text-slate-500 dark:hover:text-slate-200"
+        >
+          {hasContent ? (
+            <span
+              className={`inline-block transition-transform ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+              aria-hidden
+            >
+              <ChevronIcon />
+            </span>
+          ) : null}
+        </button>
+        <span className="text-slate-400 dark:text-slate-500">
+          <FolderIcon />
+        </span>
+        <button
+          type="button"
+          onClick={() => onToggleExpanded(folder.id)}
+          className="min-w-0 flex-1 truncate text-left"
+        >
+          <span className="truncate">{folder.name}</span>
+        </button>
+      </div>
+      {isExpanded && hasContent ? (
+        <ul className="flex flex-col gap-0.5">
+          {kids.map((k) => (
+            <TeamFolderNode
+              key={k.id}
+              folder={k}
+              depth={depth + 1}
+              childrenByParent={childrenByParent}
+              diagramsByFolder={diagramsByFolder}
+              currentDiagramId={currentDiagramId}
+              expanded={expanded}
+              onToggleExpanded={onToggleExpanded}
+              onOpenDiagram={onOpenDiagram}
+            />
+          ))}
+          {diagramsHere.map((d) => (
+            <li key={d.id} style={{ paddingLeft: 4 + (depth + 1) * 12 }}>
+              <DiagramRow
+                item={d}
+                active={d.id === currentDiagramId}
+                onOpen={() => onOpenDiagram(d.id)}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
+export function TeamNode({
+  team,
+  folders,
+  diagrams,
+  currentDiagramId,
+  expanded,
+  onToggleExpanded,
+  onOpenTeam,
+  onOpenDiagram,
+}: {
+  team: { id: string; name: string };
+  // This team's folder rows (flat, with parentId).
+  folders: TeamFolderTreeNode[];
+  // This team's diagrams (carry folderId; null = the team's Unsorted).
+  diagrams: DiagramListItem[];
+  currentDiagramId: string | null;
+  expanded: Record<string, boolean>;
+  onToggleExpanded: (id: string) => void;
+  // The team NAME opens the full team page; folders + diagrams browse
+  // inline in the panel (spec/35).
+  onOpenTeam: (teamId: string) => void;
+  onOpenDiagram: (id: string) => void;
+}) {
+  const childrenByParent = useMemo(() => {
+    const map = new Map<string | null, TeamFolderTreeNode[]>();
+    for (const f of folders) {
+      const bucket = map.get(f.parentId) ?? [];
+      bucket.push(f);
+      map.set(f.parentId, bucket);
+    }
+    for (const bucket of map.values()) bucket.sort((a, b) => a.name.localeCompare(b.name));
+    return map;
+  }, [folders]);
+  const diagramsByFolder = useMemo(() => {
+    const map = new Map<string | null, DiagramListItem[]>();
+    for (const d of diagrams) {
+      const bucket = map.get(d.folderId) ?? [];
+      bucket.push(d);
+      map.set(d.folderId, bucket);
+    }
+    for (const bucket of map.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
+    return map;
+  }, [diagrams]);
+  const rootFolders = childrenByParent.get(null) ?? [];
+  // Diagrams loose at the team root (its synthetic Unsorted bucket).
+  const rootDiagrams = diagramsByFolder.get(null) ?? [];
+  const hasContent = rootFolders.length > 0 || rootDiagrams.length > 0;
+  const isExpanded = expanded[team.id] ?? false;
+  return (
+    <li>
+      <div className="group flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800">
+        <button
+          type="button"
+          onClick={() => onToggleExpanded(team.id)}
+          aria-label={isExpanded ? 'Collapse team' : 'Expand team'}
+          disabled={!hasContent}
+          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 disabled:opacity-0 dark:text-slate-500 dark:hover:text-slate-200"
+        >
+          {hasContent ? (
+            <span
+              className={`inline-block transition-transform ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+              aria-hidden
+            >
+              <ChevronIcon />
+            </span>
+          ) : null}
+        </button>
+        <span className="text-slate-400 dark:text-slate-500" aria-hidden>
+          <TeamGlyph />
+        </span>
+        <button
+          type="button"
+          onClick={() => onOpenTeam(team.id)}
+          className="min-w-0 flex-1 truncate text-left"
+        >
+          <span className="truncate">{team.name}</span>
+        </button>
+      </div>
+      {isExpanded && hasContent ? (
+        <ul className="flex flex-col gap-0.5">
+          {rootFolders.map((f) => (
+            <TeamFolderNode
+              key={f.id}
+              folder={f}
+              depth={1}
+              childrenByParent={childrenByParent}
+              diagramsByFolder={diagramsByFolder}
+              currentDiagramId={currentDiagramId}
+              expanded={expanded}
+              onToggleExpanded={onToggleExpanded}
+              onOpenDiagram={onOpenDiagram}
+            />
+          ))}
+          {rootDiagrams.map((d) => (
+            <li key={d.id} style={{ paddingLeft: 4 + 1 * 12 }}>
+              <DiagramRow
+                item={d}
+                active={d.id === currentDiagramId}
+                onOpen={() => onOpenDiagram(d.id)}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
+function TeamGlyph() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <circle cx="6" cy="6" r="2.2" />
+      <path d="M2.5 13c.5-2.3 1.7-3.5 3.5-3.5s3 1.2 3.5 3.5" />
+      <circle cx="11.5" cy="6.5" r="1.8" />
+      <path d="M11 9.6c1.6.1 2.6 1.2 3 3" />
+    </svg>
   );
 }

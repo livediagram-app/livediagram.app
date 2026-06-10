@@ -619,10 +619,18 @@ export type ArrowElement = {
   elbowOffset?: { dx: number; dy: number };
   // Optional label rendered next to the arrow's midpoint. Empty /
   // missing → no label is drawn. Double-click on the arrow opens an
-  // inline editor for this field. Placement is computed at render
-  // time to dodge nearby boxed elements (right → below → left →
-  // above of midpoint).
+  // inline editor for this field. When `labelOffset` is absent the
+  // placement is computed at render time to dodge nearby boxed
+  // elements (right → below → left → above of midpoint).
   label?: string;
+  // Optional user-chosen label placement: `t` is the position along
+  // the line (0..1 by arc length), `offset` the signed perpendicular
+  // distance from the line (positive = left of travel, negative =
+  // right) so the label can sit on either side. Set by dragging the
+  // label; absent → the auto midpoint placement above. Translates
+  // with the arrow because it's parameterised against the line, not
+  // stored as absolute coords.
+  labelOffset?: { t: number; offset: number };
 };
 
 // Named thickness presets exposed via the Palette. Storing the raw px

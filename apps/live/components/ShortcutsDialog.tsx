@@ -40,7 +40,7 @@ const SECTIONS: ShortcutSection[] = [
     heading: 'Tools',
     rows: [
       { keys: ['S'], label: 'Select tool' },
-      { keys: ['P'], label: 'Pan tool' },
+      { keys: ['P'], label: 'Hand tool' },
       { keys: ['L'], label: 'Laser pointer' },
       { keys: ['F'], label: 'Pencil (freehand)' },
       { keys: ['Z'], label: 'Zen mode (focus)' },
@@ -61,6 +61,7 @@ const SECTIONS: ShortcutSection[] = [
   {
     heading: 'Navigate & select',
     rows: [
+      { keys: ['⌘', '.'], label: 'Search' },
       { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
       { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
       { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },

@@ -775,14 +775,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // search panel. Fetched lazily the first time search opens so
   // guest sessions and non-searching sessions never pay the request;
   // guests can't have teams, so the gate also requires a Clerk id.
+  // Signed-in only (guests can't have teams). Loaded for the whole
+  // session, not just while search is open, because the floating
+  // Explorer panel now surfaces teams + their diagrams (a Teams
+  // accordion, team rows in Recent, the current team diagram —
+  // spec/35), so the data has to be present whenever the panel is.
   const { teams } = useTeams(clerkUserId ?? null, {
-    enabled: dialogs.searchOpen && !!clerkUserId,
+    enabled: !!clerkUserId,
   });
-  // Their libraries' folders too (spec/35): one sweep per team list,
-  // also search-open gated. The editor only consumes the folders; the
-  // explorer additionally uses the swept diagrams for Recent.
-  const { teamFolders } = useTeamLibrariesSweep(clerkUserId ?? null, teams, {
-    enabled: dialogs.searchOpen && !!clerkUserId,
+  // Their libraries (spec/35): one sweep per team. Feeds the search
+  // panel's folder group AND the floating Explorer panel (team folder
+  // tree + team diagrams in Recent + the current team diagram).
+  const { teamFolders, teamDiagrams } = useTeamLibrariesSweep(clerkUserId ?? null, teams, {
+    enabled: !!clerkUserId,
   });
 
   // Outbound realtime broadcasters (cursor + laser) and the local
@@ -1591,6 +1596,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginEndpointDrag,
     beginArrowCurveDrag,
     beginArrowElbowDrag,
+    beginArrowLabelDrag,
   } = useEditorDrag({
     activeTab,
     zoomRef,
@@ -1696,6 +1702,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onZoomReset: () => setViewportZoom(1),
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
+    onOpenSearch: () => dialogs.setSearchOpen(true),
     enabled: shortcutsEnabled,
   });
 
@@ -1725,6 +1732,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginAnchorDrag,
     beginArrowCurveDrag,
     beginArrowElbowDrag,
+    beginArrowLabelDrag,
     beginArrowTranslate,
     beginDrag,
     beginEdit,
@@ -1771,6 +1779,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     deleteTab,
     diagramId,
     diagramList,
+    setDiagramList,
     diagramListLoading,
     diagramName,
     diagramNotFound,
@@ -1924,6 +1933,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tabLoadErrors,
     tabs,
     teamFolders,
+    teamDiagrams,
     teams,
     toggleActiveTabLock,
     toggleZenMode,

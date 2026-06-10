@@ -154,6 +154,22 @@ export type DragState =
       grabDy: number;
     }
   | {
+      // Label drag: the user grabbed an arrow's text label and is
+      // sliding it along the line / to either side. We capture the
+      // pointer start in client coords + the label's anchor point at
+      // grab time so the move handler reconstructs the dragged point
+      // (anchor + pointer delta) and projects it back onto the line.
+      kind: 'arrow-label';
+      arrowId: string;
+      startClientX: number;
+      startClientY: number;
+      // The label's anchor point (canvas coords) when the drag began,
+      // so the new placement tracks `anchor + delta` projected onto
+      // the line — the label stays under the cursor.
+      startAnchorX: number;
+      startAnchorY: number;
+    }
+  | {
       // Rotate-handle drag: the user grabbed the rotate handle and is
       // spinning the element about its centre. Captured in CLIENT
       // (screen) coordinates — rotation is conformal under the uniform

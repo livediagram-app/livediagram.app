@@ -22,6 +22,7 @@ type SearchPanelFolder = { id: string; name: string };
 type SearchPanelShared = { id: string; name: string; shareCode: string };
 type SearchPanelTeam = { id: string; name: string };
 type SearchPanelTeamFolder = { id: string; path: string; teamId: string; teamName: string };
+type SearchPanelTeamDiagram = { id: string; name: string; teamId: string; teamName: string };
 
 type SearchPanelProps = {
   diagrams: SearchPanelDiagram[];
@@ -32,9 +33,12 @@ type SearchPanelProps = {
   // Teams the signed-in user belongs to (spec/32). Optional: guests
   // have none.
   teams?: SearchPanelTeam[];
-  // Team-library folders (spec/35), rendered in the Folders group
-  // with an "in <team>" suffix. Optional: guests have none.
+  // Team-library folders (spec/35), rendered in the Teams group with
+  // an "in <team>" suffix. Optional: guests have none.
   teamFolders?: SearchPanelTeamFolder[];
+  // Team-library diagrams (spec/35), also in the Teams group with an
+  // "in <team>" suffix. Optional: guests have none.
+  teamDiagrams?: SearchPanelTeamDiagram[];
   // When the user is inside a diagram editor these provide the
   // tab + element scope. Omitted on routes (e.g. the dashboard)
   // where only diagrams + folders should match.
@@ -69,6 +73,7 @@ export function SearchPanel({
   shared,
   teams,
   teamFolders,
+  teamDiagrams,
   tabs,
   currentTabId,
   onSelectDiagram,
@@ -108,10 +113,11 @@ export function SearchPanel({
         shared,
         teams,
         teamFolders,
+        teamDiagrams,
         tabs,
         currentTabId,
       }),
-    [query, diagrams, folders, shared, teams, teamFolders, tabs, currentTabId],
+    [query, diagrams, folders, shared, teams, teamFolders, teamDiagrams, tabs, currentTabId],
   );
 
   const flatItems = useMemo(() => groups.flatMap((g) => g.items), [groups]);
@@ -231,7 +237,7 @@ export function SearchPanel({
                             on {item.tabName}
                           </span>
                         ) : null}
-                        {item.kind === 'folder' && item.team ? (
+                        {(item.kind === 'folder' || item.kind === 'diagram') && item.team ? (
                           <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
                             in {item.team.name}
                           </span>

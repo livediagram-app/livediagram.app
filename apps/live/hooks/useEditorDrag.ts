@@ -27,9 +27,11 @@ import {
   distributionSnap,
   anchorPosition,
   angledElbow,
+  arrowLabelAnchor,
   arrowStyleOf,
   curveControlPoint,
   endpointPosition,
+  projectToArrow,
   isBoxed,
   rebindArrowAnchorsAfterMove,
   selectionMembers,
@@ -194,6 +196,7 @@ type EditorDragApi = {
   beginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
   beginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
   beginArrowElbowDrag: (arrowId: string, e: ReactPointerEvent) => void;
+  beginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;
 };
 
 export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
@@ -470,6 +473,40 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // beginArrowCurveDrag so the handle tracks the cursor cleanly.
       grabDx: currentElbow.x - baseElbow.x,
       grabDy: currentElbow.y - baseElbow.y,
+    });
+  };
+
+  // Label drag: the user grabbed an arrow's text label and is sliding
+  // it along the line / to either side. We capture the label's current
+  // anchor point so the move handler tracks `anchor + pointer delta`
+  // and projects it back onto the line into a {t, offset} placement.
+  const beginArrowLabelDrag = (arrowId: string, e: ReactPointerEvent) => {
+    const d = depsRef.current;
+    if (d.formatSourceId !== null || d.groupSourceId !== null) return;
+    const arrow = d.activeTab.elements.find((el) => el.id === arrowId);
+    if (!arrow || arrow.type !== 'arrow') return;
+    d.setSelectedId(arrowId);
+    if (arrow.locked === true || d.isReadOnly) return;
+    const from = endpointPosition(arrow.from, d.activeTab.elements);
+    const to = endpointPosition(arrow.to, d.activeTab.elements);
+    const anchor = arrowLabelAnchor(
+      arrowStyleOf(arrow),
+      from,
+      to,
+      arrow.from,
+      arrow.to,
+      arrow.curveOffset,
+      arrow.elbowOffset,
+      arrow.labelOffset,
+    );
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-label',
+      arrowId,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startAnchorX: anchor.x,
+      startAnchorY: anchor.y,
     });
   };
 
@@ -750,6 +787,34 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         return;
       }
 
+      if (drag.kind === 'arrow-label') {
+        // The dragged point is the label's grab-time anchor plus the
+        // pointer delta; project it onto the line to get the new
+        // {t, offset} placement (stays attached to the line, either
+        // side). Resolve endpoints fresh so it survives endpoint moves.
+        const arrow = activeTab.elements.find((el) => el.id === drag.arrowId);
+        if (!arrow || arrow.type !== 'arrow') return;
+        const from = endpointPosition(arrow.from, activeTab.elements);
+        const to = endpointPosition(arrow.to, activeTab.elements);
+        const point = { x: drag.startAnchorX + dx, y: drag.startAnchorY + dy };
+        const labelOffset = projectToArrow(
+          arrowStyleOf(arrow),
+          from,
+          to,
+          arrow.from,
+          arrow.to,
+          arrow.curveOffset,
+          arrow.elbowOffset,
+          point,
+        );
+        tick((els) =>
+          els.map((el) =>
+            el.id === drag.arrowId && el.type === 'arrow' ? { ...el, labelOffset } : el,
+          ),
+        );
+        return;
+      }
+
       if (drag.kind === 'arrow-translate') {
         // Shift both free endpoints by the same canvas delta from
         // their captured start positions. No anchor / angle snap:
@@ -881,5 +946,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     beginEndpointDrag,
     beginArrowCurveDrag,
     beginArrowElbowDrag,
+    beginArrowLabelDrag,
   };
 }

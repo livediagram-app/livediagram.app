@@ -56,10 +56,9 @@ function ShellChrome({ children }: { children: ReactNode }) {
     setSearchOpen,
     moveTarget,
     setMoveTarget,
-    movePickerRows,
-    moveDiagramToFolder,
-    moveDiagramToTeam,
-    moveTeamDiagramToFolder,
+    movePersonalFolders,
+    moveTeamDests,
+    moveDiagramTo,
     moveFolderToParent,
     teamModalOpen,
     setTeamModalOpen,
@@ -123,54 +122,52 @@ function ShellChrome({ children }: { children: ReactNode }) {
         <section className="min-w-0 flex-1">{children}</section>
       </main>
 
-      {/* Move-destination modal (spec/15), LinkPickerDialog-styled.
-          Team destinations (spec/35) are diagrams-only: folders stay
-          personal. A team pick lands in the team's Unsorted; organise
-          further on the team page. */}
-      {/* Team-scoped variant first (a Recent team row's "Move within
-          team"): destinations are that team's folders + its Unsorted
-          root, nothing personal. */}
-      {moveTarget && moveTarget.kind === 'diagram' && moveTarget.team ? (
-        <MoveToFolderDialog
-          subjectName={teamDiagrams.find((d) => d.id === moveTarget.id)?.name || 'Untitled'}
-          subjectKind="diagram"
-          rootLabel="Unsorted"
-          folders={teamFolders
-            .filter((f) => f.teamId === moveTarget.team!.id)
-            .map((f) => ({ id: f.id, path: f.path }))}
-          currentFolderId={teamDiagrams.find((d) => d.id === moveTarget.id)?.folderId ?? null}
-          onPickFolder={(folderId) => {
-            moveTeamDiagramToFolder(moveTarget.id, moveTarget.team!.id, folderId);
-          }}
-          onClose={() => setMoveTarget(null)}
-        />
-      ) : moveTarget ? (
-        <MoveToFolderDialog
-          subjectName={
-            (moveTarget.kind === 'diagram'
-              ? diagrams.find((d) => d.id === moveTarget.id)?.name
-              : folders.find((f) => f.id === moveTarget.id)?.name) || 'Untitled'
-          }
-          subjectKind={moveTarget.kind}
-          rootLabel="All diagrams"
-          folders={movePickerRows}
-          teams={moveTarget.kind === 'diagram' && teams.length > 0 ? teams : undefined}
-          teamFolders={moveTarget.kind === 'diagram' ? teamFolders : undefined}
-          currentFolderId={
-            moveTarget.kind === 'diagram'
-              ? (diagrams.find((d) => d.id === moveTarget.id)?.folderId ?? null)
-              : (folders.find((f) => f.id === moveTarget.id)?.parentId ?? null)
-          }
-          onPickFolder={(folderId) => {
-            if (moveTarget.kind === 'diagram') moveDiagramToFolder(moveTarget.id, folderId);
-            else moveFolderToParent(moveTarget.id, folderId);
-          }}
-          onPickTeam={(teamId, folderId) => {
-            moveDiagramToTeam(moveTarget.id, teamId, folderId);
-          }}
-          onClose={() => setMoveTarget(null)}
-        />
-      ) : null}
+      {/* Move-destination modal (spec/15 + spec/35): one ownership-
+          aware indented tree for every diagram (personal or team) and
+          for folder re-parenting. It shows "All diagrams" + the
+          personal folder tree, plus each team + its folder tree (for
+          diagram moves); `moveDiagramTo` routes the pick from the
+          subject's current placement. Folder moves are personal-only,
+          so they pass no teams. */}
+      {moveTarget
+        ? (() => {
+            const teamRow =
+              moveTarget.kind === 'diagram'
+                ? teamDiagrams.find((d) => d.id === moveTarget.id)
+                : undefined;
+            const personalRow =
+              moveTarget.kind === 'diagram'
+                ? diagrams.find((d) => d.id === moveTarget.id)
+                : undefined;
+            const folderRow =
+              moveTarget.kind === 'folder'
+                ? folders.find((f) => f.id === moveTarget.id)
+                : undefined;
+            const subjectName = teamRow?.name || personalRow?.name || folderRow?.name || 'Untitled';
+            const currentTeamId = teamRow?.team.id ?? null;
+            const currentFolderId =
+              moveTarget.kind === 'folder'
+                ? (folderRow?.parentId ?? null)
+                : (teamRow?.folderId ?? personalRow?.folderId ?? null);
+            return (
+              <MoveToFolderDialog
+                subjectName={subjectName}
+                subjectKind={moveTarget.kind}
+                personalRootLabel="My Work"
+                personalFolders={movePersonalFolders}
+                teams={moveTarget.kind === 'diagram' ? moveTeamDests : undefined}
+                currentTeamId={currentTeamId}
+                currentFolderId={currentFolderId}
+                onPick={(dest) => {
+                  if (moveTarget.kind === 'folder')
+                    moveFolderToParent(moveTarget.id, dest.folderId);
+                  else moveDiagramTo(moveTarget.id, dest);
+                }}
+                onClose={() => setMoveTarget(null)}
+              />
+            );
+          })()
+        : null}
       <TeamFormModal
         open={teamModalOpen}
         title="New team"
@@ -190,6 +187,12 @@ function ShellChrome({ children }: { children: ReactNode }) {
           shared={shared.map((s) => ({ id: s.id, name: s.name, shareCode: s.shareCode }))}
           teams={teams.map((t) => ({ id: t.id, name: t.name }))}
           teamFolders={teamFolders}
+          teamDiagrams={teamDiagrams.map((d) => ({
+            id: d.id,
+            name: d.name,
+            teamId: d.team.id,
+            teamName: d.team.name,
+          }))}
           onSelectDiagram={(id) => {
             window.location.assign(`/live/diagram/${id}`);
           }}

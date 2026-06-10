@@ -336,21 +336,11 @@ export function CommandPalette({
       onMoveTo={onMoveTo}
       collapsible
     >
-      {/* Canvas tool toggle (Pan / Select / Laser). Lives above the
+      {/* Canvas tool toggle (Select / Pan / Laser). Lives above the
           accordions as a permanent row because these are mode
-          switches, not element-add buttons. Pan is the default; Space
-          pans regardless of the active tool, mirroring Figma. */}
+          switches, not element-add buttons. Select is the default;
+          Space pans regardless of the active tool, mirroring Figma. */}
       <div className="flex items-center gap-1 px-2 pb-1.5 pt-1">
-        <Tooltip title="Pan" description="Drag to scroll. Space pans in Select mode too.">
-          <ToolButton
-            active={canvasTool === 'pan'}
-            label="Pan"
-            onClick={() => onSetCanvasTool('pan')}
-            shortcut="P"
-          >
-            <PanIcon />
-          </ToolButton>
-        </Tooltip>
         <Tooltip title="Select" description="Drag to marquee-select multiple elements.">
           <ToolButton
             active={canvasTool === 'select'}
@@ -359,6 +349,16 @@ export function CommandPalette({
             shortcut="S"
           >
             <SelectIcon />
+          </ToolButton>
+        </Tooltip>
+        <Tooltip title="Hand" description="Drag to scroll. Space pans in Select mode too.">
+          <ToolButton
+            active={canvasTool === 'pan'}
+            label="Hand"
+            onClick={() => onSetCanvasTool('pan')}
+            shortcut="P"
+          >
+            <PanIcon />
           </ToolButton>
         </Tooltip>
         <Tooltip

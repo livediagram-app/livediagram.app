@@ -116,6 +116,20 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
 
   useEffect(() => {
     if (!pan) return;
+    // Coalesce offset commits to one per animation frame. pointermove
+    // fires faster than React can paint, and committing viewportOffset
+    // synchronously on every event drove a re-render storm that, with
+    // the canvas's layout-effect-positioned overlays re-measuring each
+    // time, tripped React's "Maximum update depth exceeded". Writing
+    // the latest target to a ref and flushing it from a single rAF
+    // commits at most once per frame, OUTSIDE the pointermove handler's
+    // synchronous flush, which breaks the cascade and smooths panning.
+    let rafId: number | null = null;
+    let pending: { x: number; y: number } | null = null;
+    const flush = () => {
+      rafId = null;
+      if (pending) depsRef.current.setViewportOffset(pending);
+    };
     const onMove = (e: PointerEvent) => {
       const d = depsRef.current;
       // Pinch zoom is active — let the pinch hook own viewportOffset.
@@ -126,15 +140,20 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       const dx = (e.clientX - pan.startClientX) / d.viewportZoom;
       const dy = (e.clientY - pan.startClientY) / d.viewportZoom;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) pan.movedRef.current = true;
-      d.setViewportOffset({ x: pan.startOffsetX + dx, y: pan.startOffsetY + dy });
+      pending = { x: pan.startOffsetX + dx, y: pan.startOffsetY + dy };
+      if (rafId === null) rafId = requestAnimationFrame(flush);
     };
     const onUp = () => {
+      // Land on the final pointer position even if it arrived in the
+      // same frame as a pending rAF (which the cleanup cancels).
+      if (pending) depsRef.current.setViewportOffset(pending);
       if (!pan.movedRef.current) depsRef.current.onDeselect();
       setPan(null);
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
@@ -182,25 +201,26 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
         const hits = new Set<string>();
         for (const el of d.elements) {
           if (el.type === 'arrow') {
-            // Arrow AABB: bounds of the (from, to) segment. Good
-            // enough for marquee inclusion: connecting two
-            // selected shapes always intersects the marquee they
-            // sit inside, and lone arrows are caught when their
-            // bbox overlaps.
+            // Arrow AABB: bounds of the (from, to) segment. The whole
+            // bbox must sit INSIDE the marquee (containment), matching
+            // the boxed-element rule below so a partial sweep doesn't
+            // grab an arrow it only clipped.
             const from = endpointPosition(el.from, d.elements);
             const to = endpointPosition(el.to, d.elements);
             const aMinX = Math.min(from.x, to.x);
             const aMaxX = Math.max(from.x, to.x);
             const aMinY = Math.min(from.y, to.y);
             const aMaxY = Math.max(from.y, to.y);
-            if (aMinX < maxX && aMaxX > minX && aMinY < maxY && aMaxY > minY) {
+            if (aMinX >= minX && aMaxX <= maxX && aMinY >= minY && aMaxY <= maxY) {
               hits.add(el.id);
             }
             continue;
           }
           if (!isBoxed(el)) continue;
-          // Standard rect-rect intersection test (open intervals).
-          if (el.x < maxX && el.x + el.width > minX && el.y < maxY && el.y + el.height > minY) {
+          // Containment, not intersection: the element must be FULLY
+          // enclosed by the marquee to be selected (the user has to
+          // sweep right over it, not just clip an edge).
+          if (el.x >= minX && el.x + el.width <= maxX && el.y >= minY && el.y + el.height <= maxY) {
             hits.add(el.id);
           }
         }

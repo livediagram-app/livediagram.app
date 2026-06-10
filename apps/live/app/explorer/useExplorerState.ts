@@ -20,7 +20,7 @@ import { useTeams } from '@/hooks/useTeams';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useDiagramListActions } from '@/hooks/useDiagramListActions';
 import { explorerPathFor, selectedFromRoute } from './routes';
-import type { SelectedNode } from './views';
+import type { PaneDiagram, SelectedNode } from './views';
 
 // "Recent" cap. Big enough for "what was I just working on",
 // small enough that it doesn't drown the list view.
@@ -90,27 +90,34 @@ export function useExplorerState() {
   // so the picker can filter (a folder can't be moved into itself
   // or its descendants — the server cycle-checks but the picker
   // hides those rows up-front to make the rejection less surprising).
-  // `team` set on a diagram target = a team-library row (a Recent
-  // team row's "Move within team"): the modal scopes to that team's
-  // folders instead of the personal tree + team destinations.
+  // One modal serves every diagram, personal or team (spec/35): it
+  // shows the full destination tree and `moveDiagramTo` routes the
+  // pick from the subject's current placement.
   const [moveTarget, setMoveTarget] = useState<
-    | { kind: 'diagram'; id: string; team?: { id: string; name: string } }
-    | { kind: 'folder'; id: string }
-    | null
+    { kind: 'diagram'; id: string } | { kind: 'folder'; id: string } | null
   >(null);
   const moveAnchorRef = useRef<HTMLElement | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  // Team libraries swept lazily (spec/35) for the three consumers:
-  // the search panel's Folders group, the move modal's team
-  // destinations, and the Recent list's team rows. Recent is the
-  // landing section, so signed-in members effectively sweep on
-  // arrival; guests (no teams) never fetch.
+  // Which folder branches (and which teams) are open in the sidebar.
+  // Local state only; a fresh visit starts everything collapsed. Team
+  // ids live in the same set so a team's folder subtree expands the
+  // same way a personal folder does (one expand model, spec/35).
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set<string>());
+  // Team libraries swept lazily (spec/35) for the four consumers: the
+  // search panel's Folders group, the move modal's team destinations,
+  // the Recent list's team rows, and the sidebar's team subtrees.
+  // Recent is the landing section, so signed-in members effectively
+  // sweep on arrival; guests (no teams) never fetch.
   const {
     teamFolders,
     teamDiagrams,
     refresh: refreshTeamLibraries,
   } = useTeamLibrariesSweep(ownerId, teams, {
-    enabled: searchOpen || moveTarget?.kind === 'diagram' || selected.kind === 'recent',
+    enabled:
+      searchOpen ||
+      moveTarget?.kind === 'diagram' ||
+      selected.kind === 'recent' ||
+      teams.some((t) => expanded.has(t.id)),
   });
   // Mobile section drawer: the sidebar is hidden below `sm`, so on a
   // phone this slides it in from a hamburger in the pane header.
@@ -126,10 +133,6 @@ export function useExplorerState() {
     [router],
   );
   const confirm = useConfirm();
-  // Which folder branches are open in the sidebar. Local state only;
-  // a fresh visit starts with the root open and everything else
-  // collapsed (Windows Explorer pattern).
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set<string>());
 
   const refresh = useCallback(
     async (ownerId: string) => {
@@ -260,10 +263,10 @@ export function useExplorerState() {
   // hook wraps the rename to also clear its inline-rename state.
   const {
     renameDiagram: listRenameDiagram,
-    deleteDiagram,
+    deleteDiagram: listDeleteDiagram,
     deleteFolder: deleteFolderWithCascade,
     moveDiagramToFolder,
-    duplicateDiagram,
+    duplicateDiagram: listDuplicateDiagram,
     dismissSharedDiagram: dismissShared,
   } = useDiagramListActions({
     ownerId,
@@ -282,9 +285,28 @@ export function useExplorerState() {
     setSharedDiagrams: setShared,
   });
 
+  // Rename / delete / duplicate also re-sweep the team libraries:
+  // these actions are wired against the personal `diagrams` list, so a
+  // team diagram in Recent (which lives in the sweep, not `diagrams`)
+  // wouldn't otherwise repaint after the action lands (spec/35).
   const renameDiagram = (id: string, name: string) => {
     setRenamingDiagramId(null);
     listRenameDiagram(id, name);
+    refreshTeamLibraries();
+  };
+
+  const deleteDiagram = async (
+    id: string,
+    beforeRemove?: () => Promise<void> | void,
+    opts?: { skipConfirm?: boolean },
+  ) => {
+    await listDeleteDiagram(id, beforeRemove, opts);
+    refreshTeamLibraries();
+  };
+
+  const duplicateDiagram = async (id: string) => {
+    await listDuplicateDiagram(id);
+    refreshTeamLibraries();
   };
 
   // Send one of the caller's own diagrams into a team's shared
@@ -309,6 +331,39 @@ export function useExplorerState() {
     track('Team', 'Moved', 'Diagram');
   };
 
+  // Move a team-library diagram OUT of its team — either to the
+  // caller's personal library (toTeamId null; the server transfers
+  // ownership to the mover, spec/35) or on to another team
+  // (toTeamId set). Refreshes both the team sweep (the row leaves /
+  // moves) and the personal list (it lands there when going personal).
+  const moveTeamDiagramOut = (id: string, toTeamId: string | null, folderId: string | null) => {
+    if (!ownerId) return;
+    void apiSetDiagramFolder(ownerId, id, folderId, toTeamId)
+      .catch(() => {})
+      .then(() => {
+        refreshTeamLibraries();
+        void refresh(ownerId);
+      });
+    track('Team', toTeamId === null ? 'Removed' : 'Moved', 'Diagram');
+  };
+
+  // One entry point for the unified move picker (spec/35): route a
+  // pick to the right handler from the subject's CURRENT placement
+  // (personal vs which team) and its destination.
+  const moveDiagramTo = (id: string, dest: { teamId: string | null; folderId: string | null }) => {
+    const fromTeamId = teamDiagrams.find((d) => d.id === id)?.team.id ?? null;
+    if (fromTeamId === null) {
+      // Currently personal: file into a folder, or hand off to a team.
+      if (dest.teamId === null) moveDiagramToFolder(id, dest.folderId);
+      else moveDiagramToTeam(id, dest.teamId, dest.folderId);
+      return;
+    }
+    // Currently in a team: re-folder within it, or move it out
+    // (to personal, or on to another team).
+    if (dest.teamId === fromTeamId) moveTeamDiagramToFolder(id, fromTeamId, dest.folderId);
+    else moveTeamDiagramOut(id, dest.teamId, dest.folderId);
+  };
+
   // Remove a diagram from its team: back to its OWNER's personal
   // Unsorted (spec/35), whoever clicked. Refreshes both the team
   // sweep (the row leaves Recent's team set) and the personal list
@@ -327,13 +382,9 @@ export function useExplorerState() {
     void refresh(ownerId);
   };
 
-  const openMovePickerForDiagram = (
-    id: string,
-    anchor: HTMLElement | null,
-    team?: { id: string; name: string },
-  ) => {
+  const openMovePickerForDiagram = (id: string, anchor: HTMLElement | null) => {
     moveAnchorRef.current = anchor;
-    setMoveTarget(team ? { kind: 'diagram', id, team } : { kind: 'diagram', id });
+    setMoveTarget({ kind: 'diagram', id });
   };
 
   const openMovePickerForFolder = (id: string, anchor: HTMLElement | null) => {
@@ -341,24 +392,31 @@ export function useExplorerState() {
     setMoveTarget({ kind: 'folder', id });
   };
 
-  // Move picker rows: every folder by breadcrumb path. For a folder
-  // move we hide the target's own subtree so cycle-creating choices
-  // don't appear. Always-first option: "All diagrams" (= move to
-  // root / Unsorted depending on whether the target is a diagram or
-  // a folder).
-  const movePickerRows = useMemo(() => {
+  // Personal folder nodes for the move picker (it rebuilds the tree
+  // from parentId). For a folder move we hide the target's own subtree
+  // so cycle-creating choices don't appear.
+  const movePersonalFolders = useMemo(() => {
     const excluded =
       moveTarget?.kind === 'folder' ? descendantSet(moveTarget.id) : new Set<string>();
     return folders
       .filter((f) => !excluded.has(f.id))
-      .map((f) => ({
-        id: f.id,
-        path: breadcrumb(f.id)
-          .map((p) => p.name)
-          .join(' / '),
-      }))
-      .sort((a, b) => a.path.localeCompare(b.path));
-  }, [folders, moveTarget, breadcrumb, descendantSet]);
+      .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId }));
+  }, [folders, moveTarget, descendantSet]);
+
+  // Team destinations for the move picker (diagram moves only): each
+  // team with its folder tree, so a diagram can land in a team folder
+  // in one move. Folders carry parentId for the indented tree.
+  const moveTeamDests = useMemo(
+    () =>
+      teams.map((t) => ({
+        id: t.id,
+        name: t.name,
+        folders: teamFolders
+          .filter((f) => f.teamId === t.id)
+          .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
+      })),
+    [teams, teamFolders],
+  );
 
   // ---- Right-pane content --------------------------------------
   const diagramsByFolder = useMemo(() => {
@@ -392,13 +450,26 @@ export function useExplorerState() {
   const paneContent = useMemo<{
     showUnsortedRow: boolean;
     folders: Folder[];
-    diagrams: (DiagramListItem & { team?: { id: string; name: string } })[];
+    diagrams: PaneDiagram[];
   }>(() => {
     if (selected.kind === 'recent') {
-      // Recent spans the personal library AND every joined team's
-      // shared diagrams (spec/35); team rows carry their team for the
-      // "Team" badge + owner column.
-      const sorted = [...diagrams, ...teamDiagrams].sort((a, b) => b.savedAt - a.savedAt);
+      // Recent spans the personal library, every joined team's shared
+      // diagrams (spec/35), AND diagrams shared with you — interleaved
+      // by recency. Team rows carry their team (badge + owner column);
+      // shared rows carry the sharer + share code so the row links via
+      // the share link and shows the "Shared" badge.
+      const sharedRows: PaneDiagram[] = shared.map((s) => ({
+        id: s.id,
+        name: s.name,
+        folderId: null,
+        savedAt: s.savedAt,
+        shareCode: s.shareCode,
+        ownerId: '',
+        shared: { ownerName: s.ownerName, role: s.role, shareCode: s.shareCode },
+      }));
+      const sorted = [...diagrams, ...teamDiagrams, ...sharedRows].sort(
+        (a, b) => b.savedAt - a.savedAt,
+      );
       return { showUnsortedRow: false, folders: [], diagrams: sorted.slice(0, RECENT_LIMIT) };
     }
     if (
@@ -424,11 +495,26 @@ export function useExplorerState() {
       folders: childrenByParent.get(selected.id) ?? [],
       diagrams: diagramsByFolder.get(selected.id) ?? [],
     };
-  }, [selected, diagrams, teamDiagrams, childrenByParent, diagramsByFolder, unsortedDiagrams]);
+  }, [
+    selected,
+    diagrams,
+    teamDiagrams,
+    shared,
+    childrenByParent,
+    diagramsByFolder,
+    unsortedDiagrams,
+  ]);
+
+  // Count for the sidebar "Recent diagrams" badge (spec/35), mirroring
+  // "Shared with me": how many items the Recent list holds, capped.
+  const recentCount = useMemo(
+    () => Math.min(RECENT_LIMIT, diagrams.length + teamDiagrams.length + shared.length),
+    [diagrams, teamDiagrams, shared],
+  );
 
   const paneTitle = useMemo(() => {
     if (selected.kind === 'recent') return 'Recent diagrams';
-    if (selected.kind === 'shared') return 'Shared with me';
+    if (selected.kind === 'shared') return 'Shared with you';
     if (selected.kind === 'gallery') return 'Image gallery';
     if (selected.kind === 'team') {
       return teams.find((t) => t.id === selected.id)?.name ?? 'Team';
@@ -446,7 +532,7 @@ export function useExplorerState() {
   const paneCrumbs = useMemo<Crumb[]>(() => {
     const all: Crumb = { name: 'All diagrams', onClick: () => go({ kind: 'all' }) };
     if (selected.kind === 'recent') return [{ name: 'Recent diagrams' }];
-    if (selected.kind === 'shared') return [{ name: 'Shared with me' }];
+    if (selected.kind === 'shared') return [{ name: 'Shared with you' }];
     if (selected.kind === 'gallery') return [{ name: 'Image gallery' }];
     if (selected.kind === 'team') return [{ name: paneTitle }];
     if (selected.kind === 'invites') return [{ name: 'Invites' }];
@@ -516,6 +602,7 @@ export function useExplorerState() {
     diagramsByFolder,
     unsortedDiagrams,
     paneContent,
+    recentCount,
     paneTitle,
     paneCrumbs,
     // Sidebar state
@@ -539,13 +626,16 @@ export function useExplorerState() {
     moveDiagramToFolder,
     moveDiagramToTeam,
     moveTeamDiagramToFolder,
+    moveTeamDiagramOut,
+    moveDiagramTo,
     removeDiagramFromTeam,
     moveFolderToParent,
     openMovePickerForDiagram,
     moveTarget,
     setMoveTarget,
     moveAnchorRef,
-    movePickerRows,
+    movePersonalFolders,
+    moveTeamDests,
     dismissShared,
     // Teams
     hookCreateTeam,

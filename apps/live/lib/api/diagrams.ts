@@ -22,7 +22,7 @@ import {
 // fields widen the Pick rather than re-declaring the shape.
 export type DiagramListItem = Pick<
   DiagramSummary,
-  'id' | 'name' | 'folderId' | 'savedAt' | 'shareCode'
+  'id' | 'name' | 'folderId' | 'savedAt' | 'shareCode' | 'ownerId'
 >;
 
 // Deduped on `${ownerId}|${id}`: the editor mounts and React Strict

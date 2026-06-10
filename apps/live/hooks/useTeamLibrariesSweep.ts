@@ -13,7 +13,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Folder } from '@livediagram/api-schema';
 import { apiGetTeamLibrary, type DiagramListItem } from '@/lib/api-client';
 
-export type TeamFolderRow = { id: string; path: string; teamId: string; teamName: string };
+// `path` stays for the search panel's flat "Marketing / Q3" labels;
+// `name` + `parentId` let tree consumers (the sidebar + move modal)
+// rebuild the folder hierarchy with indentation instead of paths.
+export type TeamFolderRow = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  path: string;
+  teamId: string;
+  teamName: string;
+};
 export type TeamDiagramRow = DiagramListItem & { team: { id: string; name: string } };
 
 // Breadcrumb path per folder ("Marketing / Q3") from the flat
@@ -69,6 +79,8 @@ export function useTeamLibrariesSweep(
           return {
             folders: lib.folders.map((f) => ({
               id: f.id,
+              name: f.name,
+              parentId: f.parentId,
               path: paths.get(f.id) ?? f.name,
               teamId: team.id,
               teamName: team.name,
@@ -79,6 +91,7 @@ export function useTeamLibrariesSweep(
               folderId: d.folderId,
               savedAt: d.savedAt,
               shareCode: d.shareCode,
+              ownerId: d.ownerId,
               team: { id: team.id, name: team.name },
             })),
           };

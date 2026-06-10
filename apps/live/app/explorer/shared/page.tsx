@@ -5,7 +5,7 @@ import { ExplorerPane } from '../ExplorerPane';
 // The layout's ExplorerShell provides the chrome + state; this page
 // only pins the route and the tab title (spec/15, routes.ts).
 export const metadata: Metadata = {
-  title: 'Shared with me | livediagram',
+  title: 'Shared with you | livediagram',
 };
 
 export default function Page() {

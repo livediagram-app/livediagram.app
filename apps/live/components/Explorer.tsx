@@ -10,7 +10,15 @@ import { ConfirmPopover } from './ConfirmPopover';
 import { Tooltip } from './Tooltip';
 import { ExpandIcon, PlusIcon } from './explorer-icons';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
-import { AccordionHeader, DiagramRow, FolderNode, SharedRow, UnsortedNode } from './explorer-views';
+import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/useTeamLibrariesSweep';
+import {
+  AccordionHeader,
+  DiagramRow,
+  FolderNode,
+  SharedRow,
+  TeamNode,
+  UnsortedNode,
+} from './explorer-views';
 
 type ExplorerProps = {
   position: { x: number; y: number } | null;
@@ -25,6 +33,13 @@ type ExplorerProps = {
   // visitor entries). Empty array hides the section entirely so
   // pure-private users don't see an empty accordion.
   shared?: SharedWithItem[];
+  // Teams the signed-in user belongs to + their swept libraries
+  // (spec/35). Drive the Teams accordion, team rows in Recent, and the
+  // current-team-diagram row. Empty / omitted = no Teams section (the
+  // common guest / no-teams case).
+  teams?: { id: string; name: string }[];
+  teamFolders?: TeamFolderRow[];
+  teamDiagrams?: TeamDiagramRow[];
   // Dismiss a single Shared row — drops the shared_with reference
   // server-side so the row no longer surfaces. Optional so consumers
   // that haven't wired the api endpoint can omit it.
@@ -104,6 +119,9 @@ export function Explorer({
   onDeleteFolder,
   onMoveDiagramToFolder,
   shared = [],
+  teams = [],
+  teamFolders = [],
+  teamDiagrams = [],
   onDismissShared,
   onOpenFullExplorer,
   defaultRecentOpen = false,
@@ -138,7 +156,6 @@ export function Explorer({
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
-  const [sharedOpen, setSharedOpen] = useState(false);
   // Re-render every 30s so the "Updated X ago" strings stay fresh
   // while the panel is open. Cheap when the panel is minimised (this
   // function returns early below before the interval is set up).
@@ -162,9 +179,12 @@ export function Explorer({
     }
   }, [defaultRecentOpen]);
   const [foldersOpen, setFoldersOpen] = useState(false);
+  // Teams accordion (spec/35), collapsed by default like Folders.
+  const [teamsOpen, setTeamsOpen] = useState(false);
   // Expansion state for each folder node + Unsorted (keyed by
   // folder id, or the literal 'unsorted' for the synthetic bucket).
-  // Defaults to all collapsed so the panel stays compact on load.
+  // Team rows + team folders share this map too (ids are globally
+  // unique). Defaults to all collapsed so the panel stays compact.
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   // When set, the diagram row whose Move dialog is open. Stored here
   // (vs. in DiagramRow) so the modal doesn't nest inside row portals.
@@ -244,22 +264,73 @@ export function Explorer({
     () => (currentDiagramId ? (diagrams.find((d) => d.id === currentDiagramId) ?? null) : null),
     [diagrams, currentDiagramId],
   );
-  // When the open diagram is shared (not owned), it won't appear in
-  // `diagrams`. Fall back to the shared list so the Current Diagram
-  // section still renders for visitors.
+  // When the open diagram lives in a team library it won't be in
+  // `diagrams` (those are personal only). Fall back to the swept team
+  // diagrams so the Current Diagram section renders for team diagrams.
+  const currentTeam = useMemo(
+    () =>
+      !current && currentDiagramId
+        ? (teamDiagrams.find((d) => d.id === currentDiagramId) ?? null)
+        : null,
+    [current, teamDiagrams, currentDiagramId],
+  );
+  // When the open diagram is shared (not owned / not team), it won't
+  // appear in `diagrams` either. Fall back to the shared list so the
+  // Current Diagram section still renders for visitors.
   const currentShared = useMemo(
     () =>
-      !current && currentDiagramId ? (shared.find((s) => s.id === currentDiagramId) ?? null) : null,
-    [current, shared, currentDiagramId],
+      !current && !currentTeam && currentDiagramId
+        ? (shared.find((s) => s.id === currentDiagramId) ?? null)
+        : null,
+    [current, currentTeam, shared, currentDiagramId],
   );
   // Cap the recents list at 5 so the accordion stays compact.
   const RECENT_LIMIT = 5;
-  const allOthers = useMemo(
-    () =>
-      [...diagrams].filter((d) => d.id !== currentDiagramId).sort((a, b) => b.savedAt - a.savedAt),
-    [diagrams, currentDiagramId],
-  );
-  const recents = useMemo(() => allOthers.slice(0, RECENT_LIMIT), [allOthers]);
+  // Recent mirrors the /explorer page (spec/35): personal + team +
+  // shared diagrams, interleaved by recency, the current one excluded.
+  // Tagged so the render picks the right row component per source.
+  const recents = useMemo(() => {
+    type RecentEntry =
+      | {
+          kind: 'own' | 'team';
+          savedAt: number;
+          d: DiagramListItem & { team?: { id: string; name: string } };
+        }
+      | { kind: 'shared'; savedAt: number; s: SharedWithItem };
+    const own: RecentEntry[] = diagrams
+      .filter((d) => d.id !== currentDiagramId)
+      .map((d) => ({ kind: 'own', savedAt: d.savedAt, d }));
+    const team: RecentEntry[] = teamDiagrams
+      .filter((d) => d.id !== currentDiagramId)
+      .map((d) => ({ kind: 'team', savedAt: d.savedAt, d }));
+    const sharedEntries: RecentEntry[] = shared
+      .filter((s) => s.id !== currentDiagramId)
+      .map((s) => ({ kind: 'shared', savedAt: s.savedAt, s }));
+    return [...own, ...team, ...sharedEntries]
+      .sort((a, b) => b.savedAt - a.savedAt)
+      .slice(0, RECENT_LIMIT);
+  }, [diagrams, teamDiagrams, shared, currentDiagramId]);
+  // This team's folder rows, indexed by team, for the Teams accordion.
+  const foldersByTeam = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; parentId: string | null }[]>();
+    for (const f of teamFolders) {
+      const bucket = map.get(f.teamId) ?? [];
+      bucket.push({ id: f.id, name: f.name, parentId: f.parentId });
+      map.set(f.teamId, bucket);
+    }
+    return map;
+  }, [teamFolders]);
+  // This team's diagrams, indexed by team, so the Teams accordion can
+  // show the diagrams inside each team folder (spec/35).
+  const diagramsByTeam = useMemo(() => {
+    const map = new Map<string, DiagramListItem[]>();
+    for (const d of teamDiagrams) {
+      const bucket = map.get(d.team.id) ?? [];
+      bucket.push(d);
+      map.set(d.team.id, bucket);
+    }
+    return map;
+  }, [teamDiagrams]);
 
   // Folder tree: index folders by parentId so the recursive renderer
   // can ask for children by id without rescanning the full list.
@@ -284,22 +355,6 @@ export function Explorer({
     for (const bucket of map.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
     return map;
   }, [diagrams]);
-
-  // Flat list of every folder with its breadcrumb path. Used as the
-  // "Move to folder…" picker options. Built depth-first so children
-  // appear under their parents in the dropdown.
-  const folderPathPicker = useMemo(() => {
-    const list: { id: string; path: string }[] = [];
-    const walk = (parentId: string | null, prefix: string[]) => {
-      for (const f of foldersByParent.get(parentId) ?? []) {
-        const path = [...prefix, f.name];
-        list.push({ id: f.id, path: path.join(' / ') });
-        walk(f.id, path);
-      }
-    };
-    walk(null, []);
-    return list;
-  }, [foldersByParent]);
 
   const toggleFolder = (key: string) =>
     setExpandedFolders((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -369,7 +424,7 @@ export function Explorer({
           </button>
         ) : null}
 
-        {(current ?? currentShared) ? (
+        {(current ?? currentTeam ?? currentShared) ? (
           <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
             <p className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-white">
               Current Diagram
@@ -402,10 +457,19 @@ export function Explorer({
                     }
                   />
                 </li>
+              ) : currentTeam ? (
+                <li className="animate-slide-row-in overflow-hidden">
+                  <DiagramRow
+                    item={currentTeam}
+                    active
+                    onOpen={() => onOpenDiagram(currentTeam.id)}
+                    onRename={onRenameCurrent}
+                  />
+                </li>
               ) : currentShared ? (
                 <li className="animate-slide-row-in overflow-hidden">
                   <DiagramRow
-                    item={{ ...currentShared, folderId: null, shareCode: null }}
+                    item={{ ...currentShared, folderId: null, shareCode: null, ownerId: '' }}
                     active
                     onOpen={() => onOpenDiagram(currentShared.id, currentShared.shareCode)}
                   />
@@ -442,83 +506,64 @@ export function Explorer({
                 </ul>
               ) : (
                 <ul className="scrollbar-slim flex max-h-60 flex-col gap-0.5 overflow-y-auto">
-                  {recents.map((d) => (
-                    <li
-                      key={d.id}
-                      className={
-                        exitingDiagramIds.has(d.id)
-                          ? 'animate-slide-row-out overflow-hidden'
-                          : 'animate-slide-row-in overflow-hidden'
-                      }
-                    >
-                      <DiagramRow
-                        item={d}
+                  {recents.map((entry) =>
+                    entry.kind === 'shared' ? (
+                      // A diagram shared with you: opens on the share
+                      // link, dismissable — never the viewer's to
+                      // rename / move / delete.
+                      <SharedRow
+                        key={entry.s.id}
+                        item={entry.s}
                         active={false}
-                        draggable={!!onMoveDiagramToFolder}
-                        onOpen={() => onOpenDiagram(d.id)}
-                        onDelete={
-                          openDeleteConfirm
-                            ? (anchor) => openDeleteConfirm(d.id, anchor)
-                            : undefined
-                        }
-                        onDuplicate={
-                          onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined
-                        }
-                        onMoveRequest={
-                          onMoveDiagramToFolder ? () => openMovePicker(d.id) : undefined
-                        }
+                        onOpen={() => onOpenDiagram(entry.s.id, entry.s.shareCode)}
+                        onDismiss={onDismissShared ? () => onDismissShared(entry.s.id) : undefined}
                       />
-                    </li>
-                  ))}
+                    ) : (
+                      <li
+                        key={entry.d.id}
+                        className={
+                          exitingDiagramIds.has(entry.d.id)
+                            ? 'animate-slide-row-out overflow-hidden'
+                            : 'animate-slide-row-in overflow-hidden'
+                        }
+                      >
+                        <DiagramRow
+                          item={entry.d}
+                          active={false}
+                          // Team diagrams (spec/35) open for any joined
+                          // member; their rename / move / delete live
+                          // on the /explorer page + team page, so the
+                          // panel keeps team rows open-only.
+                          draggable={entry.kind === 'own' && !!onMoveDiagramToFolder}
+                          onOpen={() => onOpenDiagram(entry.d.id)}
+                          onDelete={
+                            entry.kind === 'own' && openDeleteConfirm
+                              ? (anchor) => openDeleteConfirm(entry.d.id, anchor)
+                              : undefined
+                          }
+                          onDuplicate={
+                            entry.kind === 'own' && onDuplicateDiagram
+                              ? () => onDuplicateDiagram(entry.d.id)
+                              : undefined
+                          }
+                          onMoveRequest={
+                            entry.kind === 'own' && onMoveDiagramToFolder
+                              ? () => openMovePicker(entry.d.id)
+                              : undefined
+                          }
+                        />
+                      </li>
+                    ),
+                  )}
                 </ul>
               )
             ) : null}
           </div>
         ) : null}
 
-        {/* Shared-with-you accordion. Only renders when the api has
-            surfaced at least one entry — empty state would just be
-            a noisy "Shared (0)" line on every user's first ever
-            session. Entries come from the shared_with table
-            (migration 0010) — bumped every time the visitor opens
-            a share link for a diagram they don't own. */}
-        {shared.length > 0 ? (
-          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 transition-colors hover:bg-slate-100 dark:bg-slate-800/50 dark:ring-slate-700/60 dark:hover:bg-slate-700/50">
-            <AccordionHeader
-              label="Shared with you"
-              badge={shared.length}
-              open={sharedOpen}
-              onToggle={() => setSharedOpen((v) => !v)}
-            />
-            {sharedOpen ? (
-              <ul className="flex flex-col gap-0.5">
-                {/* Cap at 5 most recent so the side panel stays
-                    compact; the full list lives on /live/explorer
-                    (linked from the "See all" row below). */}
-                {shared.slice(0, 5).map((s) => (
-                  <SharedRow
-                    key={s.id}
-                    item={s}
-                    active={s.id === currentDiagramId}
-                    onOpen={() => onOpenDiagram(s.id, s.shareCode)}
-                    onDismiss={onDismissShared ? () => onDismissShared(s.id) : undefined}
-                  />
-                ))}
-                {shared.length > 5 && onOpenFullExplorer ? (
-                  <li>
-                    <button
-                      type="button"
-                      onClick={onOpenFullExplorer}
-                      className="w-full rounded-md px-2 py-1 text-left text-[11px] font-medium text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
-                    >
-                      See all {shared.length} in the explorer
-                    </button>
-                  </li>
-                ) : null}
-              </ul>
-            ) : null}
-          </div>
-        ) : null}
+        {/* (The standalone "Shared with you" accordion was removed —
+            shared diagrams now interleave into Recent above, matching
+            the /explorer page, so a separate list was redundant.) */}
 
         {/* Folders section (spec/15). Hidden entirely when the
             owner has no diagrams AND no folders — an empty
@@ -530,7 +575,7 @@ export function Explorer({
         {diagrams.length === 0 && folders.length === 0 ? null : (
           <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 transition-colors hover:bg-slate-100 dark:bg-slate-800/50 dark:ring-slate-700/60 dark:hover:bg-slate-700/50">
             <AccordionHeader
-              label="Folders"
+              label="My Work"
               badge={folders.length}
               open={foldersOpen}
               onToggle={() => setFoldersOpen((v) => !v)}
@@ -600,6 +645,40 @@ export function Explorer({
           </div>
         )}
 
+        {/* Teams accordion (spec/35). Mirrors Folders: each team
+            expands to its folder tree; a click opens the full team
+            page (at that folder). Hidden entirely when the user is in
+            no teams (guests, solo users) so it isn't dead chrome. */}
+        {teams.length > 0 ? (
+          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 transition-colors hover:bg-slate-100 dark:bg-slate-800/50 dark:ring-slate-700/60 dark:hover:bg-slate-700/50">
+            <AccordionHeader
+              label="Teams"
+              badge={teams.length}
+              open={teamsOpen}
+              onToggle={() => setTeamsOpen((v) => !v)}
+            />
+            {teamsOpen ? (
+              <ul className="flex flex-col gap-0.5">
+                {teams.map((t) => (
+                  <TeamNode
+                    key={t.id}
+                    team={t}
+                    folders={foldersByTeam.get(t.id) ?? []}
+                    diagrams={diagramsByTeam.get(t.id) ?? []}
+                    currentDiagramId={currentDiagramId}
+                    expanded={expandedFolders}
+                    onToggleExpanded={toggleFolder}
+                    onOpenDiagram={(id) => onOpenDiagram(id)}
+                    onOpenTeam={(teamId) =>
+                      window.location.assign(`/live/explorer/team?id=${encodeURIComponent(teamId)}`)
+                    }
+                  />
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+
         {/* The sign-in prompt and the "Open Explorer" button share this
             slot: the prompt owns it for signed-out guests who haven't
             dismissed it, and hands it to the button (its `fallback`) once
@@ -628,10 +707,10 @@ export function Explorer({
         <MoveToFolderDialog
           subjectName={diagrams.find((d) => d.id === moveTargetDiagramId)?.name || 'Untitled'}
           subjectKind="diagram"
-          rootLabel="Unsorted"
-          folders={folderPathPicker}
+          personalRootLabel="Unsorted"
+          personalFolders={folders.map((f) => ({ id: f.id, name: f.name, parentId: f.parentId }))}
           currentFolderId={diagrams.find((d) => d.id === moveTargetDiagramId)?.folderId ?? null}
-          onPickFolder={(folderId) => {
+          onPick={({ folderId }) => {
             onMoveDiagramToFolder(moveTargetDiagramId, folderId);
           }}
           onClose={() => setMoveTargetDiagramId(null)}

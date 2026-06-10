@@ -61,6 +61,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginAnchorDrag,
     onBeginArrowCurveDrag,
     onBeginArrowElbowDrag,
+    onBeginArrowLabelDrag,
     onBeginArrowTranslate,
     onBeginDrag,
     onBeginEdit,
@@ -136,6 +137,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onBeginTranslate={onBeginArrowTranslate}
                 onBeginCurveDrag={onBeginArrowCurveDrag}
                 onBeginElbowDrag={onBeginArrowElbowDrag}
+                onBeginLabelDrag={onBeginArrowLabelDrag}
                 fontFamily={tabFontStack}
               />
             </svg>
