@@ -365,7 +365,9 @@ export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => vo
         ) : null}
       </button>
       <span className="hidden sm:block" />
-      <span className="text-[11px] uppercase tracking-wider text-slate-400">—</span>
+      {/* A folder has no visibility/owner of its own — leave the cell
+          blank rather than a bare dash that reads as a mystery value. */}
+      <span aria-hidden />
       <span aria-hidden />
     </li>
   );
