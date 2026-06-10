@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useEscape } from '@/hooks/useEscape';
+import { CloseIcon } from './CloseIcon';
 
 // Keyboard shortcut catalogue + per-device disable toggle. The
 // modal lists every shortcut the editor binds today and lets the
@@ -116,18 +117,7 @@ export function ShortcutsDialog({ enabled, onToggleEnabled, onClose }: Shortcuts
             aria-label="Close"
             className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              aria-hidden
-            >
-              <path d="M3.5 3.5l7 7M3.5 10.5l7-7" />
-            </svg>
+            <CloseIcon />
           </button>
         </div>
         <div className="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto px-5 py-1 dark:divide-slate-800">

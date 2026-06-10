@@ -29,6 +29,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
+import { CloseIcon } from './CloseIcon';
 import Link from 'next/link';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
@@ -71,14 +72,7 @@ function PromptShell({
         aria-label="Dismiss"
         className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
       >
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-          <path
-            d="M3 3l6 6M9 3l-6 6"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+        <CloseIcon size={12} />
       </button>
       {/* pr-5 keeps the title clear of the close button. */}
       <p className="pr-5 font-medium text-slate-800 dark:text-white">{title}</p>
