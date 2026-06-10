@@ -148,6 +148,7 @@ export function ImagePicker({
         <div
           ref={dialogRef}
           role="dialog"
+          aria-modal="true"
           aria-label="Image picker"
           className="flex w-[640px] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
         >

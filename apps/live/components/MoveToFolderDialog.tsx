@@ -187,7 +187,12 @@ export function MoveToFolderDialog({
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-6 backdrop-blur-sm dark:bg-slate-950/60"
       >
-        <div className="pointer-events-auto flex max-h-[80vh] w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Move to folder"
+          className="pointer-events-auto flex max-h-[80vh] w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900"
+        >
           <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 pb-3 pt-5 dark:border-slate-800">
             <div className="min-w-0">
               <h2 className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">

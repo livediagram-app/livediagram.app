@@ -101,7 +101,12 @@ export function ShortcutsDialog({ enabled, onToggleEnabled, onClose }: Shortcuts
       onPointerDown={(e) => e.stopPropagation()}
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
     >
-      <div className="pointer-events-auto flex w-[30rem] max-w-[92%] max-h-[90vh] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Keyboard shortcuts"
+        className="pointer-events-auto flex w-[30rem] max-w-[92%] max-h-[90vh] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+      >
         <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-100 px-5 pt-5 pb-3 dark:border-slate-800">
           <div>
             <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">

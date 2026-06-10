@@ -114,6 +114,9 @@ export function TemplatePicker({
       className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center"
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={isIdentity ? 'Confirm your name' : 'Start a new diagram'}
         className={`pointer-events-auto flex h-full w-full animate-fly-up-in flex-col bg-white dark:bg-slate-900 sm:h-auto sm:max-h-[90vh] ${isIdentity ? 'sm:w-[26rem]' : 'sm:w-[44rem]'} sm:max-w-[92%] sm:rounded-xl sm:border sm:border-slate-200 sm:shadow-2xl sm:shadow-slate-900/10 dark:sm:border-slate-800 dark:sm:shadow-black/40`}
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">

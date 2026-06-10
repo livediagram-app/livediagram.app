@@ -49,6 +49,7 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
       >
         <div
           role="dialog"
+          aria-modal="true"
           aria-label="Settings"
           className="flex max-h-[calc(100%-2rem)] w-[480px] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
         >
