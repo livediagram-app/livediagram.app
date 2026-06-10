@@ -98,6 +98,10 @@ export function rebindArrowAnchorsAfterMove(
   movingIds: ReadonlySet<ElementId> | Map<ElementId, unknown>,
 ): Element[] {
   const includes = (id: ElementId) => movingIds.has(id);
+  // Build the id index once so each affected arrow's from/to lookups
+  // are O(1) instead of two `find` scans of the whole list per arrow
+  // (this runs on every box-drag frame).
+  const byId = buildElementIndex(elements);
   return elements.map((el) => {
     if (el.type !== 'arrow') return el;
     const fromMoved = el.from.kind === 'pinned' && includes(el.from.elementId);
@@ -106,8 +110,8 @@ export function rebindArrowAnchorsAfterMove(
     if (el.from.kind !== 'pinned' || el.to.kind !== 'pinned') return el;
     const fromEnd = el.from;
     const toEnd = el.to;
-    const fromEl = elements.find((e) => e.id === fromEnd.elementId);
-    const toEl = elements.find((e) => e.id === toEnd.elementId);
+    const fromEl = byId.get(fromEnd.elementId);
+    const toEl = byId.get(toEnd.elementId);
     if (!fromEl || !isBoxed(fromEl) || !toEl || !isBoxed(toEl)) return el;
     const toCenter = { x: toEl.x + toEl.width / 2, y: toEl.y + toEl.height / 2 };
     const fromCenter = { x: fromEl.x + fromEl.width / 2, y: fromEl.y + fromEl.height / 2 };
@@ -144,9 +148,29 @@ export function bestAnchorTowards(element: BoxedElement, towards: Point): Anchor
   return best;
 }
 
-export function endpointPosition(endpoint: Endpoint, elements: Element[]): Point {
+// An id -> element lookup. Callers that resolve many endpoints over
+// the same element set (every arrow on a render, every arrow on a
+// marquee sweep) build this once and pass it instead of the raw
+// array, turning each endpoint resolution from an O(n) `find` into an
+// O(1) `get`.
+export type ElementIndex = ReadonlyMap<ElementId, Element>;
+
+export function buildElementIndex(elements: Element[]): Map<ElementId, Element> {
+  const index = new Map<ElementId, Element>();
+  for (const el of elements) index.set(el.id, el);
+  return index;
+}
+
+// Accepts either the raw element array or a prebuilt index. The array
+// overload stays for one-off resolutions (a single drag handle);
+// per-element loops should pass an index so the whole pass is O(n)
+// rather than O(n^2).
+export function endpointPosition(endpoint: Endpoint, elements: Element[] | ElementIndex): Point {
   if (endpoint.kind === 'free') return { x: endpoint.x, y: endpoint.y };
-  const target = elements.find((el) => el.id === endpoint.elementId);
+  const target =
+    elements instanceof Map
+      ? elements.get(endpoint.elementId)
+      : (elements as Element[]).find((el) => el.id === endpoint.elementId);
   if (!target || !isBoxed(target)) return { x: 0, y: 0 };
   return anchorPosition(target, endpoint.anchor);
 }
@@ -415,36 +439,64 @@ export function alignmentGuides(
     }
   };
 
-  for (const lineX of candidateXs) {
-    let start = candidateTop;
-    let end = candidateBottom;
-    let matched = false;
-    for (const el of elements) {
-      if (!isBoxed(el) || excludeIds.has(el.id)) continue;
-      const targetXs = [el.x, el.x + el.width / 2, el.x + el.width];
-      if (targetXs.some((tx) => Math.abs(tx - lineX) <= epsilon)) {
-        matched = true;
-        start = Math.min(start, el.y);
-        end = Math.max(end, el.y + el.height);
+  // One pass per axis (was one pass per candidate line, i.e. 3 + 3 =
+  // 6 full element scans). For each element we test all three
+  // candidate lines at once and accumulate that line's span. The
+  // record() order (x lines in candidate order, then y lines) and the
+  // min/max span accumulation are unchanged, so the output is
+  // identical, two scans instead of six.
+  const xStart = [candidateTop, candidateTop, candidateTop];
+  const xEnd = [candidateBottom, candidateBottom, candidateBottom];
+  const xMatched = [false, false, false];
+  for (const el of elements) {
+    if (!isBoxed(el) || excludeIds.has(el.id)) continue;
+    const e0 = el.x;
+    const e1 = el.x + el.width / 2;
+    const e2 = el.x + el.width;
+    const top = el.y;
+    const bottom = el.y + el.height;
+    for (let i = 0; i < 3; i++) {
+      const lineX = candidateXs[i]!;
+      if (
+        Math.abs(e0 - lineX) <= epsilon ||
+        Math.abs(e1 - lineX) <= epsilon ||
+        Math.abs(e2 - lineX) <= epsilon
+      ) {
+        xMatched[i] = true;
+        xStart[i] = Math.min(xStart[i]!, top);
+        xEnd[i] = Math.max(xEnd[i]!, bottom);
       }
     }
-    if (matched) record('x', lineX, start, end);
+  }
+  for (let i = 0; i < 3; i++) {
+    if (xMatched[i]) record('x', candidateXs[i]!, xStart[i]!, xEnd[i]!);
   }
 
-  for (const lineY of candidateYs) {
-    let start = candidateLeft;
-    let end = candidateRight;
-    let matched = false;
-    for (const el of elements) {
-      if (!isBoxed(el) || excludeIds.has(el.id)) continue;
-      const targetYs = [el.y, el.y + el.height / 2, el.y + el.height];
-      if (targetYs.some((ty) => Math.abs(ty - lineY) <= epsilon)) {
-        matched = true;
-        start = Math.min(start, el.x);
-        end = Math.max(end, el.x + el.width);
+  const yStart = [candidateLeft, candidateLeft, candidateLeft];
+  const yEnd = [candidateRight, candidateRight, candidateRight];
+  const yMatched = [false, false, false];
+  for (const el of elements) {
+    if (!isBoxed(el) || excludeIds.has(el.id)) continue;
+    const e0 = el.y;
+    const e1 = el.y + el.height / 2;
+    const e2 = el.y + el.height;
+    const left = el.x;
+    const right = el.x + el.width;
+    for (let i = 0; i < 3; i++) {
+      const lineY = candidateYs[i]!;
+      if (
+        Math.abs(e0 - lineY) <= epsilon ||
+        Math.abs(e1 - lineY) <= epsilon ||
+        Math.abs(e2 - lineY) <= epsilon
+      ) {
+        yMatched[i] = true;
+        yStart[i] = Math.min(yStart[i]!, left);
+        yEnd[i] = Math.max(yEnd[i]!, right);
       }
     }
-    if (matched) record('y', lineY, start, end);
+  }
+  for (let i = 0; i < 3; i++) {
+    if (yMatched[i]) record('y', candidateYs[i]!, yStart[i]!, yEnd[i]!);
   }
 
   return [...guides.values()];
@@ -585,14 +637,32 @@ export function snapToAnchor(
   elements: Element[],
   threshold: number,
 ): { elementId: ElementId; anchor: Anchor } | null {
-  let best: { elementId: ElementId; anchor: Anchor; dist: number } | null = null;
+  // Compare squared distances throughout (Math.hypot is markedly
+  // slower and we only need the ordering / the threshold test).
+  const thresholdSq = threshold * threshold;
+  let best: { elementId: ElementId; anchor: Anchor; distSq: number } | null = null;
   for (const el of elements) {
     if (!isBoxed(el)) continue;
+    // Bounding-radius pre-reject: every anchor (corner, edge-mid, or
+    // centre) sits within R = half the element's diagonal of its
+    // centre, for ANY rotation. So if the point is farther than
+    // R + threshold from the centre, no anchor can be in range — skip
+    // the 8-anchor inner loop entirely. Conservative, so it never
+    // changes the result, only avoids work on distant elements.
+    const cx = el.x + el.width / 2;
+    const cy = el.y + el.height / 2;
+    const radius = Math.hypot(el.width, el.height) / 2;
+    const reach = radius + threshold;
+    const dcx = cx - point.x;
+    const dcy = cy - point.y;
+    if (dcx * dcx + dcy * dcy > reach * reach) continue;
     for (const anchor of ALL_ANCHORS) {
       const pos = anchorPosition(el, anchor);
-      const dist = Math.hypot(pos.x - point.x, pos.y - point.y);
-      if (dist <= threshold && (best === null || dist < best.dist)) {
-        best = { elementId: el.id, anchor, dist };
+      const dx = pos.x - point.x;
+      const dy = pos.y - point.y;
+      const distSq = dx * dx + dy * dy;
+      if (distSq <= thresholdSq && (best === null || distSq < best.distSq)) {
+        best = { elementId: el.id, anchor, distSq };
       }
     }
   }

@@ -18,13 +18,16 @@ import {
   type ArrowElement,
   type ArrowheadShape,
   type ArrowheadSize,
-  type Element,
+  type ElementIndex,
 } from '@livediagram/diagram';
 import type { ArrowEnd } from '@/lib/canvas';
 
 type ArrowViewProps = {
   arrow: ArrowElement;
-  elements: Element[];
+  // Prebuilt id -> element index (one per Canvas render) so each
+  // arrow resolves its endpoints / label collisions with O(1) lookups
+  // instead of scanning the whole element array twice per arrow.
+  elementIndex: ElementIndex;
   isSelected: boolean;
   isPaintMode: boolean;
   isEditing: boolean;
@@ -82,12 +85,12 @@ const BRAND_600 = 'rgb(2 132 199)';
 // Wrapped in React.memo at the export below: with id-bearing
 // callbacks the parent passes a single stable function per kind
 // rather than recreating per-arrow closures every render, so
-// shallow prop equality on `arrow` + `elements` + the per-id
+// shallow prop equality on `arrow` + `elementIndex` + the per-id
 // selection flags lets ArrowView skip the work when only an
 // unrelated arrow / element changed.
 function ArrowViewImpl({
   arrow,
-  elements,
+  elementIndex,
   isSelected,
   isPaintMode,
   isEditing,
@@ -106,8 +109,8 @@ function ArrowViewImpl({
   fontFamily,
 }: ArrowViewProps) {
   const isLocked = arrow.locked === true || tabLocked;
-  const from = endpointPosition(arrow.from, elements);
-  const to = endpointPosition(arrow.to, elements);
+  const from = endpointPosition(arrow.from, elementIndex);
+  const to = endpointPosition(arrow.to, elementIndex);
   const markerUrl = `url(#${arrowheadMarkerId(arrowheadShapeOf(arrow), arrowheadSizeOf(arrow))})`;
   const style = arrowStyleOf(arrow);
   const pathD = arrowPathD(
@@ -159,7 +162,7 @@ function ArrowViewImpl({
           arrow.elbowOffset,
           arrow.labelOffset,
         )
-      : placeLabel(midpoint, labelText, elements, arrow.id);
+      : placeLabel(midpoint, labelText, elementIndex, arrow.id);
   // The label box is draggable (and shows its dashed selection box)
   // when the arrow is selected and editable.
   const labelDraggable = isSelected && !isPaintMode && !readOnly && !isLocked && !isEditing;
@@ -421,7 +424,7 @@ function labelSize(text: string): { width: number; height: number } {
 function placeLabel(
   midpoint: { x: number; y: number },
   text: string,
-  elements: Element[],
+  elements: ElementIndex,
   selfId: string,
 ): { x: number; y: number } {
   const size = labelSize(text);
@@ -442,10 +445,10 @@ function placeLabel(
 
 function collidesWithBoxed(
   rect: { x: number; y: number; width: number; height: number },
-  elements: Element[],
+  elements: ElementIndex,
   selfId: string,
 ): boolean {
-  for (const el of elements) {
+  for (const el of elements.values()) {
     if (el.id === selfId || !isBoxed(el)) continue;
     if (
       rect.x < el.x + el.width &&

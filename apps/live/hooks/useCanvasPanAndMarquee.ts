@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { endpointPosition, isBoxed, type Element } from '@livediagram/diagram';
+import { buildElementIndex, endpointPosition, isBoxed, type Element } from '@livediagram/diagram';
 
 // Pan + marquee gesture machinery lifted out of Canvas.tsx so the
 // component file stays focused on JSX + per-element wiring. The
@@ -199,14 +199,17 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
         const minY = Math.min(toCanvasY(m.startY), toCanvasY(m.currentY));
         const maxY = Math.max(toCanvasY(m.startY), toCanvasY(m.currentY));
         const hits = new Set<string>();
+        // Index once up front: resolving each arrow's endpoints inside
+        // the element loop would otherwise be O(elements^2) per sweep.
+        const byId = buildElementIndex(d.elements);
         for (const el of d.elements) {
           if (el.type === 'arrow') {
             // Arrow AABB: bounds of the (from, to) segment. The whole
             // bbox must sit INSIDE the marquee (containment), matching
             // the boxed-element rule below so a partial sweep doesn't
             // grab an arrow it only clipped.
-            const from = endpointPosition(el.from, d.elements);
-            const to = endpointPosition(el.to, d.elements);
+            const from = endpointPosition(el.from, byId);
+            const to = endpointPosition(el.to, byId);
             const aMinX = Math.min(from.x, to.x);
             const aMaxX = Math.max(from.x, to.x);
             const aMinY = Math.min(from.y, to.y);

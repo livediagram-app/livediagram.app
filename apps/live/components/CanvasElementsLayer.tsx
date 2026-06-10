@@ -1,4 +1,4 @@
-import { isBoxed } from '@livediagram/diagram';
+import { buildElementIndex, isBoxed } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { resolveFontStack } from '@/lib/fonts';
 import { ArrowDefs, ArrowView } from './ArrowView';
@@ -95,6 +95,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   } = props;
   // Resolved tab default font once; per-element falls back to it (spec/28).
   const tabFontStack = resolveFontStack(tabFont);
+  // One id -> element index per render, shared by every ArrowView so
+  // each resolves its endpoints / label collisions with O(1) lookups
+  // instead of scanning the whole element list twice per arrow.
+  const elementIndex = hasArrows ? buildElementIndex(elements) : null;
   return (
     <>
       {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
@@ -123,7 +127,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             >
               <ArrowView
                 arrow={element}
-                elements={elements}
+                elementIndex={elementIndex!}
                 isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
                 isPaintMode={isPaintMode || isGroupMode}
                 isEditing={element.id === editingId}
