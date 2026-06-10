@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   apiDeleteTeam,
   apiGetTeam,
@@ -13,26 +13,36 @@ import {
 } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
 import { useConfirm } from '@/hooks/useConfirm';
+import { colorForKey, initialsOf } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
+import { SignInIcon } from './AuthControls';
+import { PencilIcon, PlusIcon, RemoveIcon, TrashIcon } from './explorer-icons';
+import { MenuItem, PortalMenu } from './PortalMenu';
+import { Tooltip } from './Tooltip';
 import { TeamFormModal } from './TeamFormModal';
 
-// Right-pane team view for the Explorer (spec/32): organisation line,
-// member list with roles, and the admin management surface (invite by
-// email, role select, remove, edit, delete). Non-admins see the list
-// plus Leave. Self-contained: fetches its own detail per teamId and
-// reports list-shaped changes (rename / delete / leave / member count)
-// back up via the two callbacks so the sidebar stays in sync.
+// Right-pane team view for the Explorer (spec/32): one calm card —
+// header (organisation + member count + an overflow menu for the
+// rare actions), the member list with avatars and real names, and a
+// slim invite footer for admins. The last-admin rules are baked into
+// the affordances: the only Admin sees no Leave item, no remove
+// button on their row, and a pinned Admin pill instead of a role
+// select — the server's 409 guard stays as backstop, not as UX.
 
 export function TeamPane({
   ownerId,
   teamId,
   clerkUserId,
+  clerkDisplayName,
   onTeamsChanged,
   onLeftTeam,
 }: {
   ownerId: string;
   teamId: string;
   clerkUserId: string | null;
+  // The signed-in user's display name, so their own row reads as a
+  // person ("Thomas") rather than a placeholder ("You").
+  clerkDisplayName: string | null;
   // The sidebar list needs a refetch (rename, member count change).
   onTeamsChanged: () => void;
   // The caller is no longer a member (left or deleted the team) —
@@ -43,6 +53,8 @@ export function TeamPane({
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLButtonElement>(null);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteBusy, setInviteBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -75,9 +87,9 @@ export function TeamPane({
         <ul className="divide-y divide-slate-100">
           {Array.from({ length: 3 }).map((_, i) => (
             <li key={i} className="flex items-center gap-3 px-4 py-3">
-              <span className="h-4 w-4 animate-pulse rounded bg-slate-200" />
+              <span className="h-8 w-8 animate-pulse rounded-full bg-slate-200" />
               <span className="h-4 flex-1 animate-pulse rounded bg-slate-200" />
-              <span className="h-4 w-24 animate-pulse rounded bg-slate-200" />
+              <span className="h-4 w-16 animate-pulse rounded bg-slate-200" />
             </li>
           ))}
         </ul>
@@ -97,6 +109,13 @@ export function TeamPane({
 
   const { team, members, myRole } = detail;
   const isAdmin = myRole === 'admin';
+  const adminCount = members.filter((m) => m.role === 'admin').length;
+  const selfRow = members.find((m) => m.userId !== null && m.userId === clerkUserId) ?? null;
+  // The one rule the whole surface bends around: a team always keeps
+  // at least one Admin (spec/32). When that's you, leaving, removing
+  // your row, and demoting yourself all disappear as options.
+  const isLastAdmin = (m: TeamMember) => m.role === 'admin' && adminCount <= 1;
+  const canLeave = selfRow !== null && !isLastAdmin(selfRow);
 
   const submitEdit = async (values: { name: string; organisation: string | null }) => {
     setEditOpen(false);
@@ -159,11 +178,12 @@ export function TeamPane({
   };
 
   const removeMember = async (member: TeamMember, isSelf: boolean) => {
+    const label = isSelf ? null : memberName(member, false, null);
     const ok = await confirm({
       title: isSelf ? 'Leave team?' : 'Remove member?',
       message: isSelf
         ? `You will no longer be a member of "${team.name}".`
-        : `${member.email ?? 'This member'} will be removed from "${team.name}".`,
+        : `${label} will be removed from "${team.name}".`,
       confirmLabel: isSelf ? 'Leave' : 'Remove',
     });
     if (!ok) return;
@@ -181,165 +201,161 @@ export function TeamPane({
     await refresh();
   };
 
-  const selfRow = members.find((m) => m.userId !== null && m.userId === clerkUserId) ?? null;
+  const headline = [
+    team.organisation,
+    `${members.length} ${members.length === 1 ? 'member' : 'members'}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* ---------- Team summary + actions ---------- */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-        <div className="min-w-0">
-          <p className="truncate text-sm text-slate-600">
-            {team.organisation ? team.organisation : 'No organisation set'}
-          </p>
-          <p className="mt-0.5 text-xs text-slate-400">
-            {members.length} {members.length === 1 ? 'member' : 'members'} · you are{' '}
-            {isAdmin ? 'an Admin' : 'a Member'}
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          {isAdmin ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setEditOpen(true)}
-                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700"
-              >
-                Edit team
-              </button>
-              <button
-                type="button"
-                onClick={() => void deleteTeam()}
-                className="rounded-md border border-rose-200 bg-white px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:border-rose-300 hover:bg-rose-50"
-              >
-                Delete team
-              </button>
-            </>
-          ) : null}
-          {selfRow ? (
-            <button
-              type="button"
-              onClick={() => void removeMember(selfRow, true)}
-              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-rose-300 hover:text-rose-600"
-            >
-              Leave team
-            </button>
-          ) : null}
-        </div>
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      {/* ---------- Header: context line + overflow menu ---------- */}
+      <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-2.5">
+        <p className="min-w-0 truncate text-xs text-slate-500">{headline}</p>
+        <button
+          ref={menuRef}
+          type="button"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label="Team actions"
+          aria-expanded={menuOpen}
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+        >
+          <EllipsisIcon />
+        </button>
+        {menuOpen ? (
+          <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
+            {isAdmin ? (
+              <MenuItem
+                icon={<PencilIcon />}
+                label="Edit team"
+                onClick={() => {
+                  setEditOpen(true);
+                  setMenuOpen(false);
+                }}
+              />
+            ) : null}
+            {canLeave ? (
+              <MenuItem
+                icon={<SignInIcon />}
+                label="Leave team"
+                onClick={() => {
+                  setMenuOpen(false);
+                  if (selfRow) void removeMember(selfRow, true);
+                }}
+              />
+            ) : null}
+            {isAdmin ? (
+              <MenuItem
+                icon={<TrashIcon />}
+                label="Delete team"
+                danger
+                onClick={() => {
+                  setMenuOpen(false);
+                  void deleteTeam();
+                }}
+              />
+            ) : null}
+          </PortalMenu>
+        ) : null}
       </div>
 
-      {/* ---------- Invite (admins) ---------- */}
+      {/* ---------- Members ---------- */}
+      <ul className="divide-y divide-slate-100">
+        {members.map((m) => {
+          const isSelf = m.userId !== null && m.userId === clerkUserId;
+          const name = memberName(m, isSelf, clerkDisplayName);
+          const pending = m.userId === null;
+          const pinnedAdmin = isLastAdmin(m);
+          const removable = isAdmin && !isSelf && !pinnedAdmin;
+          return (
+            <li key={m.id} className="group flex items-center gap-3 px-4 py-2.5">
+              <span
+                aria-hidden
+                style={{ backgroundColor: colorForKey(m.email ?? m.userId ?? m.id) }}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${
+                  pending ? 'opacity-50' : ''
+                }`}
+              >
+                {initialsOf(name)}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-medium text-slate-900">{name}</span>
+                  {isSelf ? (
+                    <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[10px] font-medium text-slate-500 ring-1 ring-slate-200">
+                      you
+                    </span>
+                  ) : null}
+                </span>
+                <span className="block truncate text-xs text-slate-400">
+                  {pending ? 'Invited — joins when they sign in' : isSelf ? (m.email ?? '') : ''}
+                </span>
+              </span>
+              {isAdmin && !pinnedAdmin ? (
+                <select
+                  value={m.role}
+                  onChange={(e) => void changeRole(m, e.target.value as TeamRole)}
+                  aria-label={`Role for ${name}`}
+                  className="shrink-0 cursor-pointer rounded-md border border-transparent bg-transparent px-1.5 py-1 text-xs font-medium text-slate-600 outline-none transition hover:border-slate-200 hover:bg-white focus:border-brand-400"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="member">Member</option>
+                </select>
+              ) : (
+                <RolePill member={m} pinned={pinnedAdmin && isAdmin} />
+              )}
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                {removable ? (
+                  <button
+                    type="button"
+                    onClick={() => void removeMember(m, false)}
+                    aria-label={`Remove ${name}`}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:opacity-100 group-hover:opacity-100"
+                  >
+                    <RemoveIcon />
+                  </button>
+                ) : null}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* ---------- Notice + invite footer ---------- */}
+      {notice ? (
+        <p className="border-t border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+          {notice}
+        </p>
+      ) : null}
       {isAdmin ? (
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void invite();
           }}
-          className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+          className="flex items-center gap-2 border-t border-slate-200 bg-slate-50/40 px-4 py-2.5"
         >
+          <span className="shrink-0 text-slate-300">
+            <PlusIcon />
+          </span>
           <input
             type="email"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
-            placeholder="Invite by email address…"
-            className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            placeholder="Add people by email — no email is sent, they see the team on sign-in"
+            aria-label="Invite by email address"
+            className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
           />
           <button
             type="submit"
             disabled={!inviteEmail.trim() || inviteBusy}
-            className="rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="shrink-0 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Invite
           </button>
-          <p className="w-full text-xs text-slate-400">
-            They join as a Member right away and see the team once they sign in with that address.
-            No email is sent.
-          </p>
         </form>
       ) : null}
-
-      {notice ? (
-        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          {notice}
-        </p>
-      ) : null}
-
-      {/* ---------- Member list ---------- */}
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="grid grid-cols-[1fr_110px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-          <span>Member</span>
-          <span>Role</span>
-          <span aria-hidden></span>
-        </div>
-        <ul className="divide-y divide-slate-100">
-          {members.map((m) => {
-            const isSelf = m.userId !== null && m.userId === clerkUserId;
-            const label = isSelf ? 'You' : (m.email ?? 'Member');
-            const pending = m.userId === null;
-            return (
-              <li
-                key={m.id}
-                className="group grid grid-cols-[1fr_110px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <span className="truncate text-sm font-medium text-slate-900">{label}</span>
-                  {isSelf && m.email ? (
-                    <span className="truncate text-xs text-slate-400">{m.email}</span>
-                  ) : null}
-                  {pending ? (
-                    <span className="inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
-                      Invited
-                    </span>
-                  ) : null}
-                </span>
-                {isAdmin ? (
-                  <select
-                    value={m.role}
-                    onChange={(e) => void changeRole(m, e.target.value as TeamRole)}
-                    aria-label={`Role for ${label}`}
-                    className="w-fit rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-xs text-slate-700 outline-none transition focus:border-brand-400"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="member">Member</option>
-                  </select>
-                ) : (
-                  <span
-                    className={`inline-flex w-fit items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1 ${
-                      m.role === 'admin'
-                        ? 'bg-brand-50 text-brand-700 ring-brand-200'
-                        : 'bg-slate-100 text-slate-600 ring-slate-200'
-                    }`}
-                  >
-                    {m.role === 'admin' ? 'Admin' : 'Member'}
-                  </span>
-                )}
-                {isAdmin && !isSelf ? (
-                  <button
-                    type="button"
-                    onClick={() => void removeMember(m, false)}
-                    aria-label={`Remove ${label}`}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-700"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 12 12"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      aria-hidden
-                    >
-                      <path d="M2.5 2.5l7 7M9.5 2.5l-7 7" />
-                    </svg>
-                  </button>
-                ) : (
-                  <span aria-hidden />
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </div>
 
       <TeamFormModal
         open={editOpen}
@@ -350,5 +366,57 @@ export function TeamPane({
         onCancel={() => setEditOpen(false)}
       />
     </div>
+  );
+}
+
+// What a member row is called. Self rows use the account display name
+// so the list reads as people, not pronouns; everyone else is their
+// email's local part prettified ("anna.smith" → "Anna Smith") with
+// the full address only in the avatar tooltip territory (kept out of
+// the row to stay calm — the local part is the recognisable bit).
+function memberName(m: TeamMember, isSelf: boolean, clerkDisplayName: string | null): string {
+  if (isSelf && clerkDisplayName) return clerkDisplayName;
+  if (m.email) return prettifyEmailLocalPart(m.email);
+  return isSelf ? 'You' : 'Member';
+}
+
+function prettifyEmailLocalPart(email: string): string {
+  const local = email.split('@')[0] ?? email;
+  const words = local.split(/[._\-+]+/).filter(Boolean);
+  if (words.length === 0) return email;
+  return words.map((w) => w[0]!.toUpperCase() + w.slice(1)).join(' ');
+}
+
+function RolePill({ member, pinned }: { member: TeamMember; pinned: boolean }) {
+  const pill = (
+    <span
+      className={`inline-flex w-fit shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1 ${
+        member.role === 'admin'
+          ? 'bg-brand-50 text-brand-700 ring-brand-200'
+          : 'bg-slate-100 text-slate-600 ring-slate-200'
+      }`}
+    >
+      {member.role === 'admin' ? 'Admin' : 'Member'}
+    </span>
+  );
+  if (!pinned) return pill;
+  // The only Admin: explain why there's no role select here.
+  return (
+    <Tooltip
+      title="Last Admin"
+      description="A team always needs at least one Admin. Promote someone else before changing this role, removing this member, or leaving."
+    >
+      {pill}
+    </Tooltip>
+  );
+}
+
+function EllipsisIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+      <circle cx="3" cy="7" r="1.25" fill="currentColor" />
+      <circle cx="7" cy="7" r="1.25" fill="currentColor" />
+      <circle cx="11" cy="7" r="1.25" fill="currentColor" />
+    </svg>
   );
 }

@@ -684,6 +684,7 @@ export default function ExplorerPage() {
                 ownerId={ownerId}
                 teamId={selected.id}
                 clerkUserId={clerkUserId ?? null}
+                clerkDisplayName={clerkDisplayName}
                 onTeamsChanged={() => void refreshTeams()}
                 onLeftTeam={() => setSelected({ kind: 'recent' })}
               />

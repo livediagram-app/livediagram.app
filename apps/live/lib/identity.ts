@@ -109,6 +109,20 @@ export function randomColor(): string {
   return pick(COLORS);
 }
 
+// Deterministic palette pick for identities that have no persisted
+// colour of their own (e.g. team member rows, spec/32, which are
+// keyed by email rather than a participant record). Same key, same
+// colour, every render and every device — FNV-1a over the key, mapped
+// onto the curated palette above.
+export function colorForKey(key: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < key.length; i++) {
+    hash ^= key.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return COLORS[Math.abs(hash) % COLORS.length]!;
+}
+
 // Pick a colour from the palette that isn't in `taken`. When the
 // caller has a `preferred` colour (e.g. the participant's existing
 // persisted choice) and it's still free, return that — otherwise

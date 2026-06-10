@@ -70,7 +70,14 @@ In the Explorer sidebar, a **Teams** section sits under the Folders section (abo
 
 - One row per team the user is in; selecting it shows the team in the right pane.
 - A "New team" affordance opens a create modal (name + organisation); submitting creates the team with the user as Admin.
-- The right-pane team view shows the organisation line and the member list (name = email, "You" on the caller's row, "Invited" badge while pending). Admins additionally get: the invite-by-email field, a role select per member, remove-member actions, Edit team, and Delete team (confirm dialog). Non-admins get Leave team.
+
+The right-pane team view is **one calm card**, not a stack of panels:
+
+- A header line with the organisation and member count, plus an overflow (⋯) menu holding the rare actions: Edit team and Delete team (admins), Leave team (any member who isn't the last Admin).
+- The member list: a deterministic-colour avatar per row, the person's **name** as the primary line — the caller's own row shows their account display name with a small "you" chip (never a bare "You"), other rows show the invite email's local part prettified ("anna.smith" → "Anna Smith") — and a muted secondary line (own email; "Invited — joins when they sign in" on pending rows, whose avatars render dimmed).
+- Roles: admins get a quiet inline role select per row; non-admins see a read-only role pill. Remove actions appear on row hover only.
+- **The last-admin rule shapes the affordances, not just the server**: the only Admin sees no Leave item, no remove control on their row, and a pinned "Admin" pill (with an explanatory tooltip) instead of a role select. The server's `409 last_admin` remains as the backstop for stale UIs.
+- Admins also get a slim invite-by-email footer row; the no-email-is-sent caveat lives in the placeholder, not a paragraph.
 
 The pane title row reads "Recent Diagrams" for the recent section (renamed from "Recent" in the same change as this spec).
 
