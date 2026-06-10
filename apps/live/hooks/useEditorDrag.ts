@@ -380,11 +380,23 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     });
   };
 
-  const beginArrowTranslate = (arrowId: string, e: ReactPointerEvent) => {
+  // Shared opening for every arrow-handle drag: refuse to start while a
+  // format-painter or group-paste gesture is live, then resolve the
+  // target as a typed arrow. Returns the deps snapshot + arrow, or null
+  // when the drag shouldn't begin. The setSelectedId / locked / style
+  // guards stay per-handler because their order differs between gestures.
+  const resolveArrowDrag = (arrowId: string) => {
     const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null) return;
+    if (d.formatSourceId !== null || d.groupSourceId !== null) return null;
     const arrow = d.activeTab.elements.find((el) => el.id === arrowId);
-    if (!arrow || arrow.type !== 'arrow') return;
+    if (!arrow || arrow.type !== 'arrow') return null;
+    return { d, arrow };
+  };
+
+  const beginArrowTranslate = (arrowId: string, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
     if (arrow.locked === true || d.isReadOnly) return;
     if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
     d.setSelectedId(arrowId);
@@ -403,10 +415,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   };
 
   const beginEndpointDrag = (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => {
-    const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null) return;
-    const arrow = d.activeTab.elements.find((el) => el.id === arrowId);
-    if (!arrow || arrow.type !== 'arrow') return;
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
     d.setSelectedId(arrowId);
     if (arrow.locked === true || d.isReadOnly) return;
     const start = endpointPosition(end === 'from' ? arrow.from : arrow.to, d.activeTab.elements);
@@ -424,10 +435,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   };
 
   const beginArrowCurveDrag = (arrowId: string, e: ReactPointerEvent) => {
-    const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null) return;
-    const arrow = d.activeTab.elements.find((el) => el.id === arrowId);
-    if (!arrow || arrow.type !== 'arrow') return;
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
     if (arrowStyleOf(arrow) !== 'curved') return;
     d.setSelectedId(arrowId);
     if (arrow.locked === true || d.isReadOnly) return;
@@ -461,10 +471,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // cursor goes and the value is preserved when endpoints later
   // move.
   const beginArrowElbowDrag = (arrowId: string, e: ReactPointerEvent) => {
-    const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null) return;
-    const arrow = d.activeTab.elements.find((el) => el.id === arrowId);
-    if (!arrow || arrow.type !== 'arrow') return;
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
     if (arrowStyleOf(arrow) !== 'angled') return;
     d.setSelectedId(arrowId);
     if (arrow.locked === true || d.isReadOnly) return;
@@ -493,10 +502,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // anchor point so the move handler tracks `anchor + pointer delta`
   // and projects it back onto the line into a {t, offset} placement.
   const beginArrowLabelDrag = (arrowId: string, e: ReactPointerEvent) => {
-    const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null) return;
-    const arrow = d.activeTab.elements.find((el) => el.id === arrowId);
-    if (!arrow || arrow.type !== 'arrow') return;
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
     d.setSelectedId(arrowId);
     if (arrow.locked === true || d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
