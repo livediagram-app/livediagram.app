@@ -63,7 +63,7 @@ export function ChevronIcon({ open }: { open: boolean }) {
 
 export function FolderIcon({ open }: { open: boolean }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
       {open ? (
         <path d="M1.5 4.5a1.5 1.5 0 0 1 1.5-1.5h3.4a1 1 0 0 1 .77.37l1 1.24a1 1 0 0 0 .78.39h4.05A1.5 1.5 0 0 1 14.5 6.5H1.5v-2zm0 3h13l-.93 4.65a1.5 1.5 0 0 1-1.47 1.2H3.9a1.5 1.5 0 0 1-1.47-1.2L1.5 7.5z" />
       ) : (
