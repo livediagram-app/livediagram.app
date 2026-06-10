@@ -6,6 +6,7 @@ const { db } = vi.hoisted(() => ({
   db: {
     acceptTeamMember: vi.fn(),
     addTeamMember: vi.fn(),
+    claimInviteByToken: vi.fn(),
     listInvitesByUser: vi.fn(),
     connectInvitesByEmail: vi.fn(),
     countTeamAdmins: vi.fn(),
@@ -62,6 +63,7 @@ function member(overrides: Partial<TeamMember> = {}): TeamMember {
     email: 'me@example.com',
     role: 'admin',
     status: 'joined',
+    inviteToken: null,
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
@@ -111,6 +113,39 @@ describe('GET /api/teams/invites (spec/32 accept/decline)', () => {
 
   it('401 for the guest path', async () => {
     const res = await handleTeams(makeCtx('GET', '/api/teams/invites', { clerkUserId: null }));
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('POST /api/teams/invites/claim (spec/32 token invites)', () => {
+  it('claims a valid token and returns the team', async () => {
+    db.claimInviteByToken.mockResolvedValue({ teamId: 't1', alreadyMember: false });
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/invites/claim', { body: { token: 'tok123' } }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ teamId: 't1', alreadyMember: false });
+    expect(db.claimInviteByToken).toHaveBeenCalledWith({}, 'tok123', 'user-1');
+  });
+
+  it('404 when the token is unknown or spent', async () => {
+    db.claimInviteByToken.mockResolvedValue(null);
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/invites/claim', { body: { token: 'nope' } }),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it('400 when no token is supplied', async () => {
+    const res = await handleTeams(makeCtx('POST', '/api/teams/invites/claim', { body: {} }));
+    expect(res.status).toBe(400);
+    expect(db.claimInviteByToken).not.toHaveBeenCalled();
+  });
+
+  it('401 for the guest path', async () => {
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/invites/claim', { clerkUserId: null, body: { token: 'x' } }),
+    );
     expect(res.status).toBe(401);
   });
 });

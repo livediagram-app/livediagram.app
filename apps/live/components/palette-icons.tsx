@@ -358,23 +358,25 @@ export function FileExportIcon() {
 }
 
 export function PanIcon() {
+  // Open hand (four fingers + thumb): the classic pan/grab glyph.
+  // Each finger is a capsule; the palm curls in from the wrist so the
+  // silhouette still reads as a hand at the 13 px palette size.
   return (
     <svg
       width="13"
       height="13"
-      viewBox="0 0 16 16"
+      viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M8 14V7" />
-      <path d="M5 11V5a1.25 1.25 0 0 1 2.5 0v3" />
-      <path d="M7.5 8V4a1.25 1.25 0 0 1 2.5 0v4" />
-      <path d="M10 8V5a1.25 1.25 0 0 1 2.5 0v6a3.5 3.5 0 0 1-3.5 3.5H7" />
-      <path d="M5 11l-1-1.5" />
+      <path d="M18 11V6a2 2 0 0 0-4 0" />
+      <path d="M14 10V4a2 2 0 0 0-4 0v2" />
+      <path d="M10 10.5V6a2 2 0 0 0-4 0v8" />
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
     </svg>
   );
 }

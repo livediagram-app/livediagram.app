@@ -165,8 +165,21 @@ export type TeamMember = {
   email: string | null;
   role: TeamRole;
   status: TeamMemberStatus;
+  // Shareable claim token for a pending invite (spec/32). Lets the
+  // invitee join from a link without the verified-email auto-connect.
+  // Only ever populated on the admin's view of a pending row; the
+  // worker blanks it for non-admins so a token can't be re-shared.
+  inviteToken: string | null;
   createdAt: number;
   updatedAt: number;
+};
+
+// Result of POST /api/teams/invites/claim — the team the token
+// belonged to, and whether the caller was already a member (so the
+// client can route to the team page vs the Invites pane).
+export type TeamInviteClaim = {
+  teamId: string;
+  alreadyMember: boolean;
 };
 
 // One row of `GET /api/teams/invites`: the caller's own pending

@@ -353,6 +353,25 @@ export function TeamPane({
                 ) : (
                   <RolePill member={m} pinned={pinnedAdmin && isAdmin} />
                 )}
+                {/* Copy invite link (spec/32): the token-bearing URL the
+                    invitee opens to join, since invite emails aren't sent
+                    yet. Admin-only — the worker blanks the token for
+                    everyone else. */}
+                {isAdmin && pending && m.inviteToken ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void navigator.clipboard
+                        ?.writeText(
+                          `${window.location.origin}/live/explorer/invites?token=${m.inviteToken}`,
+                        )
+                        .then(() => setNotice('Invite link copied to your clipboard.'));
+                    }}
+                    className="shrink-0 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700"
+                  >
+                    Copy link
+                  </button>
+                ) : null}
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center">
                   {removable ? (
                     <button
