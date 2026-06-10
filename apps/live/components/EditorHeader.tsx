@@ -19,6 +19,9 @@ type EditorHeaderProps = {
   // via a share URL can't toggle sharing on their host's diagram.
   showShare: boolean;
   shareable: boolean;
+  // The diagram lives in a team's shared library (spec/35). Flips the
+  // title badge to "Team" when the diagram has no share links.
+  teamDiagram?: boolean;
   // Counterpart to showShare for visitors: when present we render a
   // "Make a copy" button that duplicates the diagram into the
   // visitor's own files (item #9 / spec/11). Optional so the owner
@@ -42,6 +45,7 @@ export function EditorHeader({
   hideTitle = false,
   showShare,
   shareable,
+  teamDiagram = false,
   onMakeCopy,
   copying = false,
   readOnly = false,
@@ -90,7 +94,7 @@ export function EditorHeader({
               </Tooltip>
             )}
             <span className="hidden sm:contents">
-              <SharedBadge shareable={shareable} />
+              <SharedBadge shareable={shareable} team={teamDiagram} />
             </span>
           </div>
         )}
@@ -143,26 +147,47 @@ export function EditorHeader({
 }
 
 // Small pill rendered to the right of the diagram name so the owner
-// can see at a glance whether the diagram is private or shared.
+// can see at a glance whether the diagram is private, shared, or in a
+// team library (spec/35). Share links win: a shared team diagram
+// reads "Shared" as normal; "Team" covers the team-but-unshared case
+// where "Private" would be a lie (every joined member can open it).
 // Hover surfaces the same description that lives on the Share
 // button. Hidden on visitor views where the share UI doesn't apply.
-function SharedBadge({ shareable }: { shareable: boolean }) {
+function SharedBadge({ shareable, team }: { shareable: boolean; team?: boolean }) {
+  const state: 'shared' | 'team' | 'private' = shareable ? 'shared' : team ? 'team' : 'private';
   return (
     <Tooltip
-      title={shareable ? 'Shared' : 'Private'}
-      description={shareable ? 'Anyone with a link can view.' : 'Only visible to you.'}
+      title={state === 'shared' ? 'Shared' : state === 'team' ? 'Team' : 'Private'}
+      description={
+        state === 'shared'
+          ? 'Anyone with a link can view.'
+          : state === 'team'
+            ? 'In a team library: every member of the team can open it.'
+            : 'Only visible to you.'
+      }
     >
       <span
         className={
-          shareable
+          state === 'shared'
             ? 'inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30'
-            : 'inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700'
+            : state === 'team'
+              ? 'inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30'
+              : 'inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700'
         }
       >
-        <span aria-hidden className={shareable ? 'text-emerald-500' : 'text-slate-400'}>
-          {shareable ? <SharedDotIcon /> : <PrivateDotIcon />}
+        <span
+          aria-hidden
+          className={
+            state === 'shared'
+              ? 'text-emerald-500'
+              : state === 'team'
+                ? 'text-brand-500'
+                : 'text-slate-400'
+          }
+        >
+          {state === 'private' ? <PrivateDotIcon /> : <SharedDotIcon />}
         </span>
-        {shareable ? 'Shared' : 'Private'}
+        {state === 'shared' ? 'Shared' : state === 'team' ? 'Team' : 'Private'}
       </span>
     </Tooltip>
   );

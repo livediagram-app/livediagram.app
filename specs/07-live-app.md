@@ -42,7 +42,7 @@ Three regions stacked vertically, filling the viewport:
 └────────────────────────────────────────────────────┘
 ```
 
-- **Header:** brand wordmark, diagram-name field (click to rename), and the Share button. The private/shared badge sits next to the title. (The full-page `/explorer` library is reached from the AuthControls menu, the mobile dock, and the **Explorer** link in the marketing site header — not from the editor header itself.)
+- **Header:** brand wordmark, diagram-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the diagram lives in a team library and has no share links, spec/35). (The full-page `/explorer` library is reached from the AuthControls menu, the mobile dock, and the **Explorer** link in the marketing site header — not from the editor header itself.)
 - **Canvas:** owns most of the viewport. See [09-canvas-and-command-palette.md](09-canvas-and-command-palette.md) for the full surface — shapes, arrows, marquee, multi-select, floating palettes, plus the activity / context panels.
 - **Tab bar:** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder.
 

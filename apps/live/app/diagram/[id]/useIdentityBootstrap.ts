@@ -61,6 +61,7 @@ export function useIdentityBootstrap(opts: {
     setDiagramOwnerId: SetState<string | null>;
     setDiagramOwnerName: SetState<string | null>;
     setDiagramShareable: SetState<boolean>;
+    setDiagramTeamId: SetState<string | null>;
     setDiagramShareCode: SetState<string | null>;
     setHydrated: SetState<boolean>;
     setIsOwner: SetState<boolean>;
@@ -106,6 +107,7 @@ export function useIdentityBootstrap(opts: {
     setDiagramOwnerName,
     setDiagramShareable,
     setDiagramShareCode,
+    setDiagramTeamId,
     setHydrated,
     setIsOwner,
     setLoadedExistingDiagram,
@@ -336,6 +338,7 @@ export function useIdentityBootstrap(opts: {
           setLoadedExistingDiagram(true);
           setDiagramId(fetched.id);
           setDiagramShareable(fetched.shareable);
+          setDiagramTeamId(fetched.teamId ?? null);
           setDiagramShareCode(fetched.shareCode);
           setIsOwner(session.isOwner);
           setDiagramOwnerId(fetched.ownerId);
@@ -467,6 +470,7 @@ export function useIdentityBootstrap(opts: {
           }
           setLoadedExistingDiagram(true);
           setDiagramShareable(fetched.shareable);
+          setDiagramTeamId(fetched.teamId ?? null);
           setDiagramShareCode(fetched.shareCode);
           setIsOwner(fetched.ownerId === self.id);
           setDiagramOwnerId(fetched.ownerId);

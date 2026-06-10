@@ -129,6 +129,7 @@ export function EditorView() {
     diagramOwnerId,
     diagramOwnerName,
     diagramShareable,
+    diagramTeamId,
     dismissSharedDiagram,
     duplicateConnectSelected,
     duplicateDiagram,
@@ -329,6 +330,7 @@ export function EditorView() {
           hideTitle={anyWelcomeOpen}
           showShare={isOwner && hydrated && !anyWelcomeOpen}
           shareable={diagramShareable}
+          teamDiagram={!!diagramTeamId}
           // Visitors see "Make a copy" instead of "Share": same slot,
           // different action. Hidden during the welcome flow so the
           // first-paint chrome stays minimal, and during hydration so

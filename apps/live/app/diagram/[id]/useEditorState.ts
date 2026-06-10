@@ -502,6 +502,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // after share / unshare. Drives whether realtime (WS room) is
   // active.
   const [diagramShareable, setDiagramShareable] = useState(false);
+  // Team library placement (spec/35): non-null when the diagram lives
+  // in a team's shared library. Drives the header badge's "Team"
+  // state (shareable still wins with "Shared").
+  const [diagramTeamId, setDiagramTeamId] = useState<string | null>(null);
   // The legacy single share code (back-compat fallback for older
   // diagrams that haven't been migrated to share_links yet, and for
   // visitor arrivals that came in via the legacy URL flow). Modern
@@ -665,6 +669,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setDiagramOwnerName,
       setDiagramShareable,
       setDiagramShareCode,
+      setDiagramTeamId,
       setHydrated,
       setIsOwner,
       setLoadedExistingDiagram,
@@ -1774,6 +1779,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     diagramOwnerId,
     diagramOwnerName,
     diagramShareable,
+    diagramTeamId,
     dismissSharedDiagram,
     duplicateConnectSelected,
     duplicateDiagram,
