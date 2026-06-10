@@ -625,36 +625,3 @@ export function MovablePanel({
     </div>
   );
 }
-
-// Round dock button rendered next to the zoom controls when a MovablePanel
-// is minimised. Same visual language as ZoomControls' IconButton but
-// pill-shaped so it reads as a distinct entry-point.
-export function DockButton({
-  label,
-  description,
-  icon,
-  onClick,
-}: {
-  label: string;
-  description: string;
-  icon: ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <Tooltip title={label} description={description}>
-      <button
-        type="button"
-        onPointerDown={(e) => e.stopPropagation()}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        onClick={onClick}
-        aria-label={label}
-        className="pointer-events-auto flex h-11 w-11 animate-pop-in items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-lg shadow-slate-900/5 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-      >
-        {icon}
-      </button>
-    </Tooltip>
-  );
-}

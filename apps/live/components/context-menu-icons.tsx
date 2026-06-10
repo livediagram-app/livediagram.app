@@ -10,24 +10,6 @@
 // each icon picks up the surrounding row's tone (default / danger
 // / disabled) without needing per-icon variants.
 
-export function DuplicateMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2.5" y="2.5" width="8" height="8" rx="1.5" />
-      <path d="M5.5 13.5h6a1.5 1.5 0 0 0 1.5-1.5v-6" />
-    </svg>
-  );
-}
-
 export function LayerUpIcon() {
   return (
     <svg

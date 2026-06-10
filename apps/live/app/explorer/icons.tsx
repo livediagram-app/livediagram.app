@@ -111,25 +111,6 @@ export function ClockIcon() {
   );
 }
 
-export function HomeIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2 7.5L8 3l6 4.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5z" />
-      <path d="M6.5 14V9.5h3V14" />
-    </svg>
-  );
-}
-
 export function ShareIcon() {
   return (
     <svg
