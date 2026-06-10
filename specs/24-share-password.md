@@ -102,11 +102,13 @@ moving piece while it is up.
 
 ## Share dialog (owner)
 
-The "Share this diagram" dialog gains a **Password** section, above the link
-list (it applies to all links). It is a plain `type="text"` input that always
+The "Share this diagram" dialog gains a **Password** row in its options band
+beneath the link list (see [spec/07 → Share dialog](07-live-app.md#share-dialog);
+it applies to all links). It is a plain `type="text"` input that always
 shows the current password in the clear (the owner asked to always see it),
 with **Save** and **Remove** actions and a one-line hint: anyone opening a
-share link must enter it. Setting / clearing calls `apiSetSharePassword`.
+share link must enter it (embed viewers are prompted inside the frame,
+spec/33). Setting / clearing calls `apiSetSharePassword`.
 
 ## Telemetry (spec/22)
 

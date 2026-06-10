@@ -88,6 +88,17 @@ The editor ships with a UI **light / dark mode** toggle, distinct from the per-t
 - The `@custom-variant dark (&:where(.dark, .dark *))` declaration in `packages/tailwind-config/theme.css` configures Tailwind v4's `dark:` variant to use the class selector rather than the media query.
 - **Surfaces covered:** body backdrop, TabBar, EditorHeader, the TemplatePicker modal (the welcome / "Quick Start" / "Pick a template" flow) and the `/live/new` backdrop. Template **preview tiles** keep a light backdrop in dark mode on purpose — they're illustrative mini-canvases whose SVG content is light, so a light tile keeps them legible. Panel chromes (`MovablePanel`) carry the toggle's effect on the outer frame; per-panel content (Palette, Context, Explorer, Activity) lights up incrementally as the `dark:` variants get added to each accordion / row. Until that's done, an open panel reads light over a dark backdrop — usable, not yet polished.
 
+## Share dialog
+
+The "Share this diagram" modal (`apps/live/components/ShareDialog.tsx`, opened from the header Share button, owner-only) follows the same dialog conventions as Settings / Shortcuts / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
+
+Its sections are ordered by frequency of use, top to bottom:
+
+1. **New link** — role toggle (Edit / View-only) + lifetime dropdown (spec/34) + Create. First because creating a link is the dialog's primary action; the first-run empty state points up at it.
+2. **Active links** — one card per live link: a first line with the role badge, the countdown chip for expiring links (spec/34), and the URL; a second line with the actions (Copy link, Embed per spec/33, revoke). Two lines so the URL keeps its space as badges and actions accumulate.
+3. **Inactive links** (spec/34) — only when non-empty: Expired badge, struck-through URL, Extend + Delete.
+4. **Options band** — the quieter, less-frequently-touched settings: the share **password** (spec/24; applies to every link, with a hint that covers the embed prompt too) and **your name** (the identity peers see on cursors and comments; locked to the Clerk display name when signed in).
+
 ## Destructive actions
 
 Every irreversible flow (delete a diagram, a folder, a tab, or an image gallery row) is gated by a branded confirmation. Two forms:

@@ -1,13 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Portal } from './Portal';
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
 import { buildEmbedSnippet } from '@/lib/embed';
 import type { ShareLink, ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { formatTimeLeftCompact, useRelativeTimeTick } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
-import { useClickOutside } from '@/hooks/useClickOutside';
 import { useEscape } from '@/hooks/useEscape';
 import { TrashIcon } from './explorer-icons';
 import { Tooltip } from './Tooltip';
@@ -47,12 +46,12 @@ const EXPIRY_LABELS: Record<Exclude<ShareLinkExpiry, 'never'>, string> = {
   sixMonths: '6 months',
 };
 
-// Share-diagram modal. Lists every active share link, lets the owner
-// create new ones with a role (Edit / View-only) and an optional
-// lifetime (spec/34), and revoke any link individually. Expired links
-// move to an Inactive section where they can be deleted or extended.
-// The identity card is always visible so the owner can see / edit the
-// name peers see on their cursor and comments.
+// Share-diagram modal. Layout per spec/07 ("Share dialog"): sections
+// ordered by frequency of use — the create row first (the dialog's
+// primary action), then the active link cards, the inactive (expired)
+// links when any exist (spec/34), and finally the quieter options
+// band: the share password (spec/24) and the owner's display name.
+// Backdrop + dark-mode treatment match Settings / Shortcuts / Export.
 export function ShareDialog({
   participant,
   links,
@@ -83,10 +82,8 @@ export function ShareDialog({
   // flips the button to "Saved" for a beat after a successful write.
   const [pw, setPw] = useState(sharePassword ?? '');
   const [pwSaved, setPwSaved] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
   useEscape(onClose);
-  useClickOutside(ref, onClose);
 
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
@@ -183,267 +180,59 @@ export function ShareDialog({
     }
   };
 
+  const sectionLabel =
+    'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+
   return (
     <Portal>
+      {/* Dimmed, blurred, click-to-close backdrop — the same overlay
+          treatment Settings / Shortcuts / Export use, so the editor's
+          modals read as one family. Pointer events stop here so the
+          canvas underneath never sees them. */}
       <div
         onPointerDown={(e) => e.stopPropagation()}
-        className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-slate-950/60"
       >
         <div
-          ref={ref}
           role="dialog"
           aria-modal="true"
-          className="pointer-events-auto flex w-[32rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10"
+          aria-label="Share this diagram"
+          className="flex max-h-[calc(100%-2rem)] w-[34rem] max-w-[calc(100%-2rem)] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
         >
-          <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4">
+          <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-4 pt-5 dark:border-slate-800">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Share this diagram</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Create one or more share links. Anyone with an editor link can join in real time; a
-                view-only link lets people watch without changing anything.
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Share this diagram
+              </h2>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                Anyone with an editor link joins in real time; a view-only link lets people watch
+                without changing anything.
               </p>
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <CloseIcon />
             </button>
           </div>
 
-          <div className="flex flex-col gap-5 px-6 py-5">
-            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
-              <div
-                role="img"
-                aria-label={`Your avatar colour: ${participant.color}`}
-                style={{ backgroundColor: participant.color }}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
-              >
-                {initialsOf(effectiveName)}
-              </div>
-              <div className="flex-1">
-                <label
-                  htmlFor="share-name"
-                  className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500"
-                >
-                  Your name
-                </label>
-                <input
-                  id="share-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={participant.name}
-                  readOnly={nameLocked}
-                  aria-readonly={nameLocked}
-                  className={
-                    nameLocked
-                      ? 'mt-0.5 w-full cursor-default bg-transparent text-sm text-slate-500 outline-none'
-                      : 'mt-0.5 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400'
-                  }
-                />
-              </div>
-              {nameLocked ? null : (
-                <Tooltip title="Shuffle name" description="Pick a different random name.">
-                  <button
-                    type="button"
-                    onClick={() => setName(randomName())}
-                    aria-label="Generate a different name"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  >
-                    <RefreshIcon />
-                  </button>
-                </Tooltip>
-              )}
-            </div>
-
+          <div className="flex flex-col gap-5 overflow-y-auto px-6 py-5">
+            {/* Primary action first: mint a link. The empty state below
+                points back up here. */}
             <div className="flex flex-col gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                Password
-              </p>
-              <p className="-mt-1 text-xs text-slate-500">
-                Optional. When set, anyone opening any share link must enter it before they can see
-                or edit the diagram. It is shown here in the clear so you can always read and change
-                it.
-              </p>
+              <p className={sectionLabel}>New link</p>
               <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={pw}
-                  onChange={(e) => setPw(e.target.value)}
-                  placeholder="No password"
-                  aria-label="Share password"
-                  autoComplete="off"
-                  spellCheck={false}
-                  className="flex-1 min-w-0 rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-sm text-slate-800 outline-none focus:border-brand-400"
-                />
-                <button
-                  type="button"
-                  onClick={savePassword}
-                  disabled={busy || pw === (sharePassword ?? '')}
-                  className="inline-flex items-center rounded-md bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
-                >
-                  {pwSaved ? 'Saved' : 'Save'}
-                </button>
-                {sharePassword ? (
-                  <button
-                    type="button"
-                    onClick={removePassword}
-                    disabled={busy}
-                    className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
-                  >
-                    Remove
-                  </button>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                Active share links
-              </p>
-              {activeLinks.length === 0 ? (
-                <p className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs text-slate-500">
-                  {links.length === 0 ? (
-                    <>
-                      No share links yet. Pick a role below and click <strong>Create</strong>.
-                    </>
-                  ) : (
-                    'No active share links. Extend an expired link below or create a new one.'
-                  )}
-                </p>
-              ) : (
-                <ul className="flex flex-col gap-1">
-                  {activeLinks.map((link) => (
-                    <li
-                      key={link.code}
-                      className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1.5"
-                    >
-                      <span
-                        className={
-                          link.role === 'edit'
-                            ? 'inline-flex items-center rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800'
-                            : 'inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700'
-                        }
-                      >
-                        {link.role === 'edit' ? 'Edit' : 'View'}
-                      </span>
-                      {link.expiresAt !== null ? (
-                        <Tooltip
-                          title="Expiring link"
-                          description={`Created with a ${
-                            link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]
-                          } lifetime. When it runs out the link stops working and moves to Inactive.`}
-                        >
-                          <span className="inline-flex shrink-0 items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
-                            {formatTimeLeftCompact(link.expiresAt - now)}
-                          </span>
-                        </Tooltip>
-                      ) : null}
-                      <input
-                        readOnly
-                        value={shareUrlFor(link.code)}
-                        onFocus={(e) => e.currentTarget.select()}
-                        className="flex-1 min-w-0 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-700 outline-none focus:border-brand-400"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => copy(link.code)}
-                        className="rounded-md bg-brand-500 px-2 py-1 text-[11px] font-medium text-white shadow-sm transition hover:bg-brand-600"
-                      >
-                        {copiedCode === link.code ? 'Copied' : 'Copy'}
-                      </button>
-                      <Tooltip
-                        title="Embed code"
-                        description="Copies an <iframe> snippet you can paste into wikis, Notion, and docs."
-                      >
-                        <button
-                          type="button"
-                          onClick={() => copyEmbed(link.code)}
-                          className="rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700"
-                        >
-                          {copiedCode === `embed:${link.code}` ? 'Copied' : 'Embed'}
-                        </button>
-                      </Tooltip>
-                      <button
-                        type="button"
-                        onClick={() => revoke(link.code)}
-                        disabled={busy}
-                        aria-label="Revoke link"
-                        className="rounded-md p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
-                      >
-                        <TrashIcon />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {links.length > 0 && sharePassword ? (
-                <p className="text-[11px] text-slate-500">
-                  This diagram has a share password: embed viewers will be asked for it inside the
-                  frame.
-                </p>
-              ) : null}
-            </div>
-
-            {/* Inactive (expired) links — spec/34. Only rendered when
-                there's something in it, so the dialog stays unchanged
-                for owners who never use expiry. */}
-            {inactiveLinks.length > 0 ? (
-              <div className="flex flex-col gap-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                  Inactive share links
-                </p>
-                <ul className="flex flex-col gap-1">
-                  {inactiveLinks.map((link) => (
-                    <li
-                      key={link.code}
-                      className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50/60 px-2 py-1.5"
-                    >
-                      <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-700 ring-1 ring-rose-200">
-                        Expired
-                      </span>
-                      <input
-                        readOnly
-                        value={shareUrlFor(link.code)}
-                        onFocus={(e) => e.currentTarget.select()}
-                        className="flex-1 min-w-0 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-400 line-through outline-none"
-                      />
-                      <Tooltip
-                        title={`Extend ${link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}`}
-                        description="Reactivates this link for another round of the lifetime chosen when it was created, counted from now."
-                      >
-                        <button
-                          type="button"
-                          onClick={() => extend(link.code)}
-                          disabled={busy}
-                          className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-50"
-                        >
-                          Extend {link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}
-                        </button>
-                      </Tooltip>
-                      <button
-                        type="button"
-                        onClick={() => revoke(link.code)}
-                        disabled={busy}
-                        aria-label="Delete expired link"
-                        className="rounded-md p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
-                      >
-                        <TrashIcon />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            <div className="flex flex-col gap-2 border-t border-slate-100 pt-4">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                Create new link
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="flex flex-1 items-stretch gap-1 rounded-md border border-slate-200 bg-slate-50 p-0.5">
+                <div className="flex flex-1 items-stretch gap-1 rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
                   <RoleButton
                     active={newRole === 'edit'}
                     onClick={() => setNewRole('edit')}
@@ -465,7 +254,7 @@ export function ShareDialog({
                     value={newExpiry}
                     onChange={(e) => setNewExpiry(e.target.value as ShareLinkExpiry)}
                     aria-label="Link lifetime"
-                    className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 outline-none transition focus:border-brand-400"
+                    className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                   >
                     <option value="never">Never expires</option>
                     <option value="week">Expires in 1 week</option>
@@ -484,13 +273,249 @@ export function ShareDialog({
                 </button>
               </div>
             </div>
+
+            <div className="flex flex-col gap-2">
+              <p className={sectionLabel}>
+                Active links{activeLinks.length > 0 ? ` (${activeLinks.length})` : ''}
+              </p>
+              {activeLinks.length === 0 ? (
+                <p className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400">
+                  {links.length === 0 ? (
+                    <>
+                      No share links yet. Pick a role above and click <strong>Create</strong>.
+                    </>
+                  ) : (
+                    'No active share links. Extend an expired link below or create a new one.'
+                  )}
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-1.5">
+                  {activeLinks.map((link) => (
+                    <li
+                      key={link.code}
+                      className="flex flex-col gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-2 dark:border-slate-700 dark:bg-slate-800/60"
+                    >
+                      {/* Line 1: what the link is + where it points. The
+                          URL gets the row's spare width so it stays
+                          readable as badges accumulate. */}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={
+                            link.role === 'edit'
+                              ? 'inline-flex shrink-0 items-center rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800 dark:bg-brand-500/20 dark:text-brand-200'
+                              : 'inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 dark:bg-slate-700 dark:text-slate-200'
+                          }
+                        >
+                          {link.role === 'edit' ? 'Edit' : 'View'}
+                        </span>
+                        {link.expiresAt !== null ? (
+                          <Tooltip
+                            title="Expiring link"
+                            description={`Created with a ${
+                              link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]
+                            } lifetime. When it runs out the link stops working and moves to Inactive.`}
+                          >
+                            <span className="inline-flex shrink-0 items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
+                              {formatTimeLeftCompact(link.expiresAt - now)}
+                            </span>
+                          </Tooltip>
+                        ) : null}
+                        <input
+                          readOnly
+                          value={shareUrlFor(link.code)}
+                          onFocus={(e) => e.currentTarget.select()}
+                          className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-700 outline-none focus:border-brand-400 dark:text-slate-300"
+                        />
+                      </div>
+                      {/* Line 2: actions. Copy is the everyday one and
+                          keeps the filled style; Embed (spec/33) stays a
+                          labelled button so it's discoverable; revoke
+                          sits apart at the far edge. */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => copy(link.code)}
+                          className="rounded-md bg-brand-500 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm transition hover:bg-brand-600"
+                        >
+                          {copiedCode === link.code ? 'Copied' : 'Copy link'}
+                        </button>
+                        <Tooltip
+                          title="Embed code"
+                          description="Copies an <iframe> snippet you can paste into wikis, Notion, and docs."
+                        >
+                          <button
+                            type="button"
+                            onClick={() => copyEmbed(link.code)}
+                            className="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-400 dark:hover:text-brand-300"
+                          >
+                            {copiedCode === `embed:${link.code}` ? 'Copied' : 'Embed'}
+                          </button>
+                        </Tooltip>
+                        <span className="flex-1" />
+                        <Tooltip
+                          title="Revoke link"
+                          description="The URL stops working immediately for everyone holding it."
+                        >
+                          <button
+                            type="button"
+                            onClick={() => revoke(link.code)}
+                            disabled={busy}
+                            aria-label="Revoke link"
+                            className="rounded-md p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                          >
+                            <TrashIcon />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Inactive (expired) links — spec/34. Only rendered when
+                there's something in it, so the dialog stays unchanged
+                for owners who never use expiry. */}
+            {inactiveLinks.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <p className={sectionLabel}>Inactive links ({inactiveLinks.length})</p>
+                <ul className="flex flex-col gap-1">
+                  {inactiveLinks.map((link) => (
+                    <li
+                      key={link.code}
+                      className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50/60 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800/40"
+                    >
+                      <span className="inline-flex shrink-0 items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/30">
+                        Expired
+                      </span>
+                      <input
+                        readOnly
+                        value={shareUrlFor(link.code)}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-400 line-through outline-none dark:text-slate-500"
+                      />
+                      <Tooltip
+                        title={`Extend ${link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}`}
+                        description="Reactivates this link for another round of the lifetime chosen when it was created, counted from now."
+                      >
+                        <button
+                          type="button"
+                          onClick={() => extend(link.code)}
+                          disabled={busy}
+                          className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-brand-400 dark:hover:text-brand-300"
+                        >
+                          Extend {link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}
+                        </button>
+                      </Tooltip>
+                      <button
+                        type="button"
+                        onClick={() => revoke(link.code)}
+                        disabled={busy}
+                        aria-label="Delete expired link"
+                        className="rounded-md p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {/* Options band: the quieter settings. Password applies to
+                every link (spec/24); the name is what peers see on
+                cursors and comments. Both are touched far less often
+                than the link actions above, so they sit last. */}
+            <div className="flex flex-col gap-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+              <div className="flex flex-col gap-1.5">
+                <p className={sectionLabel}>Password</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={pw}
+                    onChange={(e) => setPw(e.target.value)}
+                    placeholder="No password"
+                    aria-label="Share password"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-sm text-slate-800 outline-none focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={savePassword}
+                    disabled={busy || pw === (sharePassword ?? '')}
+                    className="inline-flex items-center rounded-md bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
+                  >
+                    {pwSaved ? 'Saved' : 'Save'}
+                  </button>
+                  {sharePassword ? (
+                    <button
+                      type="button"
+                      onClick={removePassword}
+                      disabled={busy}
+                      className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                    >
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Optional, applies to every link: anyone opening one must enter it first (embed
+                  viewers are prompted inside the frame). Shown in the clear so you can always read
+                  it.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <p className={sectionLabel}>Your name</p>
+                <div className="flex items-center gap-2.5">
+                  <div
+                    role="img"
+                    aria-label={`Your avatar colour: ${participant.color}`}
+                    style={{ backgroundColor: participant.color }}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                  >
+                    {initialsOf(effectiveName)}
+                  </div>
+                  <input
+                    id="share-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={participant.name}
+                    readOnly={nameLocked}
+                    aria-readonly={nameLocked}
+                    aria-label="Your name"
+                    className={
+                      nameLocked
+                        ? 'min-w-0 flex-1 cursor-default rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-slate-500 outline-none dark:text-slate-400'
+                        : 'min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'
+                    }
+                  />
+                  {nameLocked ? null : (
+                    <Tooltip title="Shuffle name" description="Pick a different random name.">
+                      <button
+                        type="button"
+                        onClick={() => setName(randomName())}
+                        aria-label="Generate a different name"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                      >
+                        <RefreshIcon />
+                      </button>
+                    </Tooltip>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  What collaborators see on your cursor and comments.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-3">
+          <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-3 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+              className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
               Done
             </button>
@@ -513,15 +538,15 @@ function RoleButton({
   onClick: () => void;
 }) {
   return (
-    <Tooltip title={label} description={description}>
+    <Tooltip title={label} description={description} block>
       <button
         type="button"
         onClick={onClick}
         aria-pressed={active}
         className={
           active
-            ? 'flex-1 rounded-sm bg-white px-2 py-1 text-xs font-semibold text-slate-800 shadow-sm'
-            : 'flex-1 rounded-sm px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-white/60 hover:text-slate-700'
+            ? 'w-full rounded-sm bg-white px-2 py-1 text-xs font-semibold text-slate-800 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+            : 'w-full rounded-sm px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-white/60 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-200'
         }
       >
         {label}
