@@ -21,10 +21,10 @@ type ShareDialogProps = {
   // Whether the owner has confirmed their name (drives the share button
   // behaviour but no longer hides the identity card).
   nameConfirmed: boolean;
-  // When non-null, the owner is signed in via Clerk and their
-  // display name is dictated by their account — the input
-  // becomes read-only and the shuffle button hides. Mirrors the
-  // welcome modal's lockedName treatment (spec/04).
+  // When non-null, the owner is signed in via Clerk and their display
+  // name is dictated by their account — there's nothing to edit, so
+  // the "Your name" row hides entirely (spec/07). Guests (null) get
+  // the editable name + shuffle row.
   lockedName?: string | null;
   onSaveName: (name: string) => Promise<void> | void;
   onCreateLink: (role: ShareRole, expiry: ShareLinkExpiry) => Promise<void> | void;
@@ -466,32 +466,29 @@ export function ShareDialog({
                 </p>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <p className={sectionLabel}>Your name</p>
-                <div className="flex items-center gap-2.5">
-                  <div
-                    role="img"
-                    aria-label={`Your avatar colour: ${participant.color}`}
-                    style={{ backgroundColor: participant.color }}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-                  >
-                    {initialsOf(effectiveName)}
-                  </div>
-                  <input
-                    id="share-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder={participant.name}
-                    readOnly={nameLocked}
-                    aria-readonly={nameLocked}
-                    aria-label="Your name"
-                    className={
-                      nameLocked
-                        ? 'min-w-0 flex-1 cursor-default rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-slate-500 outline-none dark:text-slate-400'
-                        : 'min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'
-                    }
-                  />
-                  {nameLocked ? null : (
+              {/* Guests only: signed-in users' display names come from
+                  their Clerk account, so there's nothing to edit here
+                  and the row hides entirely. */}
+              {nameLocked ? null : (
+                <div className="flex flex-col gap-1.5">
+                  <p className={sectionLabel}>Your name</p>
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      role="img"
+                      aria-label={`Your avatar colour: ${participant.color}`}
+                      style={{ backgroundColor: participant.color }}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                    >
+                      {initialsOf(effectiveName)}
+                    </div>
+                    <input
+                      id="share-name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder={participant.name}
+                      aria-label="Your name"
+                      className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    />
                     <Tooltip title="Shuffle name" description="Pick a different random name.">
                       <button
                         type="button"
@@ -502,12 +499,12 @@ export function ShareDialog({
                         <RefreshIcon />
                       </button>
                     </Tooltip>
-                  )}
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    What collaborators see on your cursor and comments.
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  What collaborators see on your cursor and comments.
-                </p>
-              </div>
+              )}
             </div>
           </div>
 

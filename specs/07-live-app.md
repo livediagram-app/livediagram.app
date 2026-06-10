@@ -97,7 +97,7 @@ Its sections are ordered by frequency of use, top to bottom:
 1. **New link** — role toggle (Edit / View-only) + lifetime dropdown (spec/34) + Create. First because creating a link is the dialog's primary action; the first-run empty state points up at it.
 2. **Active links** — one card per live link: a first line with the role badge, the countdown chip for expiring links (spec/34), and the URL; a second line with the actions (Copy link, Embed per spec/33, revoke). Two lines so the URL keeps its space as badges and actions accumulate.
 3. **Inactive links** (spec/34) — only when non-empty: Expired badge, struck-through URL, Extend + Delete.
-4. **Options band** — the quieter, less-frequently-touched settings: the share **password** (spec/24; applies to every link, with a hint that covers the embed prompt too) and **your name** (the identity peers see on cursors and comments; locked to the Clerk display name when signed in).
+4. **Options band** — the quieter, less-frequently-touched settings: the share **password** (spec/24; applies to every link, with a hint that covers the embed prompt too) and, for **guests only**, the **your name** row (the identity peers see on cursors and comments). Signed-in users' names come from their Clerk account, so the row hides entirely for them.
 
 ## Destructive actions
 
