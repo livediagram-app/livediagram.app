@@ -68,7 +68,7 @@ export function ConfirmDialog({
   const confirmTone =
     variant === 'danger'
       ? 'bg-rose-600 text-white hover:bg-rose-700 focus-visible:outline-rose-500'
-      : 'bg-brand-600 text-white hover:bg-brand-700 focus-visible:outline-brand-500';
+      : 'bg-brand-500 text-white hover:bg-brand-600 focus-visible:outline-brand-500';
 
   return (
     <Portal>
