@@ -458,6 +458,8 @@ The opt-in shape mirrors themes + canvas patterns: `TemplateDescriptor.extra?: b
 
 **Per-template canvas backdrop.** Each template ships with the background pattern that best suits its layout, applied on top of the chosen theme (which supplies only the colours) via `templateCanvasOverrides(kind)` in `apps/live/lib/templates.ts` (pinned by `templates.test.ts`). The pattern wins over the theme's default at creation time: alignment-heavy scaffolds (Flowchart, Org chart, SWOT, Gantt, Kanban, both wireframes) get the square **Graph** paper; clean radial / slide layouts (Venn, Flywheel, Pyramid, Slide deck) get a **Blank** canvas so the shapes carry the page; the **Logo design** sheet gets the **Checkerboard** design board; Timeline and User journey get horizontal **Lines**; the sticky-note / freeform boards (Retrospective, Fishbone, Live card) and Mind map pin an explicit dot **Grid** (so they keep it even under a blank-canvas theme). Mind map additionally softens `backgroundOpacity` to `0.8`. The Blank template carries no override and inherits the theme's pattern.
 
+When the in-editor (per-tab) picker applies its theme choice, the backdrop fields go through the **same `switchThemeBackdrop` preserve-customs rule as the Theme accordion**: a field adopts the chosen theme's value only when it's unset or still matches the previous theme's default, and is kept when it was deliberately set to something else. In particular, since the picker pre-selects the tab's current theme, confirming a template without changing the theme never resets the backdrop, so the canvas styling a fresh tab inherited from its source tab (see [Tabs → Selecting & adding](#selecting--adding)) survives the template step. The per-template pattern override above still wins at creation time.
+
 All template elements are inserted via the history hook (commit), so they're undoable in one step. The picker animates in via the global `fly-up-in` keyframe (see [Motion and animations](#motion-and-animations)).
 
 ### Theme section
@@ -807,7 +809,7 @@ The tab bar sits at the bottom of the editor. Each tab represents one canvas wit
 ### Selecting & adding
 
 - Click a tab to switch to it. Switching clears element selection, edit mode, and any active picker/group mode, AND **fit-to-screens** the new tab's content on load (so the user lands centred on whatever's there, not wherever the previous tab left the viewport). Subsequent edits on the same tab don't re-fit — the gate is per tab id.
-- The **+** button at the right of the bar adds a fresh empty tab and switches to it.
+- The **+** button at the right of the bar adds a fresh empty tab and switches to it. The new tab is **seeded from the active tab's visual context**: theme id, canvas backdrop (`backgroundColor`, `backgroundPattern`, `backgroundOpacity`, `patternColor`), font, and default text size all carry over, so a user mid-diagram doesn't land on a brand-default canvas. Each tab stays independently styleable after creation (restyling the new tab never affects the source). The seed survives the new tab's template picker too: picking a template under the unchanged theme keeps the inherited backdrop (see [Per-template canvas backdrop](#templates-section)), and Skip leaves it untouched.
 
 ### Tab pill styling
 

@@ -1,7 +1,13 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
-import { getTheme, recolourElementsForTheme, THEMES, type ThemeId } from '@/lib/themes';
+import {
+  getTheme,
+  recolourElementsForTheme,
+  switchThemeBackdrop,
+  THEMES,
+  type ThemeId,
+} from '@/lib/themes';
 import { templateCanvasOverrides, type TemplateKind } from '@/lib/templates';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
@@ -112,20 +118,28 @@ export function useTemplateFlow(opts: {
     // Apply the picker's theme choice at the same time as the
     // template scaffold so the user lands on a fully themed canvas
     // in one step instead of having to revisit the Theme accordion.
-    const patch: Partial<Tab> = {
-      elements,
-      templateChosen: true,
-      ...(theme && themeId
-        ? {
-            theme: themeId,
-            backgroundColor: theme.backgroundColor,
-            backgroundPattern: theme.backgroundPattern,
-            patternColor: theme.patternColor,
-          }
-        : {}),
-      ...templateCanvasOverrides(kind),
-    };
-    commitTabs((ts) => patchTab(ts, activeId, patch));
+    // The backdrop goes through the same switchThemeBackdrop
+    // preserve-customs rule as the Theme accordion (spec/09): a
+    // custom canvas colour / pattern, including one a fresh tab
+    // inherited from its source tab via the new-tab seed, survives
+    // confirming a template under the unchanged theme. Hard-coding
+    // the theme's defaults here used to reset the inherited backdrop
+    // even though the picker pre-selects the current theme. The
+    // per-template pattern override still wins at creation time.
+    const overrides = templateCanvasOverrides(kind);
+    commitTabs((ts) =>
+      ts.map((t) => {
+        if (t.id !== activeId) return t;
+        const backdrop = theme && themeId ? switchThemeBackdrop(t, getTheme(t.theme), theme) : null;
+        return {
+          ...t,
+          elements,
+          templateChosen: true,
+          ...(backdrop && themeId ? { theme: themeId, ...backdrop } : {}),
+          ...overrides,
+        };
+      }),
+    );
     // Auto-select when a template produces a single element (today: blank
     // diagram's seeded rectangle) so the user can immediately rename or edit
     // it. Multi-element templates leave the selection cleared.
