@@ -174,8 +174,10 @@ function AuthControlsDisabled() {
 
 // Door-with-arrow glyph — same 13px / 1.6 stroke convention as the
 // other header icons (ShareIcon in EditorHeader, etc.) so the
-// Sign-in pill reads as a peer of those buttons.
-function SignInIcon() {
+// Sign-in pill reads as a peer of those buttons. Exported because the
+// Explorer's "Sign in to use teams" sidebar link (spec/32) renders
+// the same glyph so the two sign-in affordances read as one action.
+export function SignInIcon() {
   return (
     <svg
       width="13"

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Brand } from '@livediagram/ui';
-import { AuthControls } from '@/components/AuthControls';
+import { AuthControls, SignInIcon } from '@/components/AuthControls';
 import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
 import {
   apiListDiagrams,
@@ -568,6 +568,9 @@ export default function ExplorerPage() {
               href="/sign-in/"
               className="flex w-full items-center gap-1.5 rounded-md py-1 pl-6 pr-1 text-left text-xs text-slate-500 transition hover:bg-slate-100 hover:text-brand-700"
             >
+              <span className="shrink-0 text-slate-400">
+                <SignInIcon />
+              </span>
               Sign in to use teams
             </Link>
           )}
