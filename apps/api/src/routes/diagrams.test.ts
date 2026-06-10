@@ -30,6 +30,11 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
     getTab: vi.fn(),
     listChangeLog: vi.fn(),
     insertChangeLogEntry: vi.fn(),
+    // Share-link create / extend surface (spec/34).
+    createShareLink: vi.fn(),
+    generateShareCode: vi.fn(() => 'CODE2345'),
+    getShareLinkIncludingExpired: vi.fn(),
+    extendShareLink: vi.fn(),
   },
   // gateRead / gateEdit (context.ts) forward to these; mocking the auth
   // module lets each case drive "allowed" / "denied" directly.
@@ -157,6 +162,74 @@ describe('handleDiagrams gated tab read (GET /diagrams/:id/tabs/:tabId)', () => 
     db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', elements: [] });
     const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/tabs/t1'));
     expect(res.status).toBe(200);
+  });
+});
+
+describe('handleDiagrams share-link expiry (spec/34)', () => {
+  const link = {
+    code: 'CODE2345',
+    diagramId: 'd1',
+    role: 'edit',
+    createdAt: 1,
+    expiry: 'week',
+    expiresAt: 2,
+  };
+
+  // The top-level beforeEach mockReset() wipes implementations, so the
+  // code generator gets re-pinned here for the create-path asserts.
+  beforeEach(() => {
+    db.generateShareCode.mockReturnValue('CODE2345');
+  });
+
+  it('POST /diagrams/:id/share forwards a valid expiry choice', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    db.createShareLink.mockResolvedValue(link);
+    const res = await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'edit', expiry: 'week' } }),
+    );
+    expect(res.status).toBe(201);
+    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'edit', 'week');
+  });
+
+  it('POST /diagrams/:id/share defaults unknown / missing expiry to never', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    db.createShareLink.mockResolvedValue({ ...link, expiry: 'never', expiresAt: null });
+    await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'view', expiry: 'fortnight' } }),
+    );
+    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'view', 'never');
+  });
+
+  it('extend re-arms an expiring link for the owner', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    db.getShareLinkIncludingExpired.mockResolvedValue(link);
+    db.extendShareLink.mockResolvedValue({ ...link, expiresAt: 99 });
+    const res = await handleDiagrams(makeCtx('POST', '/api/diagrams/d1/share/CODE2345/extend'));
+    expect(res.status).toBe(200);
+    expect(db.extendShareLink).toHaveBeenCalledWith({}, 'CODE2345');
+  });
+
+  it('extend 404s when the code belongs to a different diagram', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    db.getShareLinkIncludingExpired.mockResolvedValue({ ...link, diagramId: 'other' });
+    const res = await handleDiagrams(makeCtx('POST', '/api/diagrams/d1/share/CODE2345/extend'));
+    expect(res.status).toBe(404);
+    expect(db.extendShareLink).not.toHaveBeenCalled();
+  });
+
+  it('extend 400s on a never-expiring link (nothing to extend)', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    db.getShareLinkIncludingExpired.mockResolvedValue({ ...link, expiry: 'never' });
+    db.extendShareLink.mockResolvedValue(null);
+    const res = await handleDiagrams(makeCtx('POST', '/api/diagrams/d1/share/CODE2345/extend'));
+    expect(res.status).toBe(400);
+  });
+
+  it('extend 403s for a non-owner', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('someone-else'));
+    const res = await handleDiagrams(makeCtx('POST', '/api/diagrams/d1/share/CODE2345/extend'));
+    expect(res.status).toBe(403);
+    expect(db.extendShareLink).not.toHaveBeenCalled();
   });
 });
 

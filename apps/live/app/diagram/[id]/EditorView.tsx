@@ -143,6 +143,7 @@ export function EditorView() {
     exitGroupMode,
     explorerPosition,
     exportOpen,
+    extendShareLink,
     fitToScreen,
     folders,
     followLink,
@@ -374,6 +375,7 @@ export function EditorView() {
           onSaveName={updateParticipantName}
           onCreateLink={createShareLink}
           onRevokeLink={revokeShareLink}
+          onExtendLink={extendShareLink}
           onSetPassword={setDiagramSharePassword}
           onClose={() => setShareDialogOpen(false)}
         />

@@ -157,11 +157,33 @@ export type TeamMember = {
 
 export type ShareRole = 'edit' | 'view';
 
+// Lifetime chosen at link creation (spec/34). 'never' is the default
+// and the pre-expiry behaviour: the link works until revoked.
+export type ShareLinkExpiry = 'never' | 'week' | 'month' | 'sixMonths';
+
+// The fixed lifetimes in ms, shared by the api worker (computing
+// `expiresAt` at create/extend time) and the live editor (rendering
+// "6d left" countdowns) so the two sides can't disagree on what a
+// "month" is. Calendar-ish approximations on purpose: share-link
+// expiry is a security bound, not a billing period.
+export const SHARE_LINK_EXPIRY_MS: Record<Exclude<ShareLinkExpiry, 'never'>, number> = {
+  week: 7 * 24 * 60 * 60 * 1000,
+  month: 30 * 24 * 60 * 60 * 1000,
+  sixMonths: 183 * 24 * 60 * 60 * 1000,
+};
+
 export type ShareLink = {
   code: string;
   diagramId: string;
   role: ShareRole;
   createdAt: number;
+  // Expiry (spec/34). `expiry` is the duration chosen at creation —
+  // kept so Extend re-applies the same lifetime. `expiresAt` is the
+  // enforcement deadline (ms epoch); null = never expires. A link
+  // with `expiresAt` in the past is "inactive": it stops resolving /
+  // authorising but stays listed for the owner to delete or extend.
+  expiry: ShareLinkExpiry;
+  expiresAt: number | null;
 };
 
 // ---------------------------------------------------------------------

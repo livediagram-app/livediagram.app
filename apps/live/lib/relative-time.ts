@@ -26,6 +26,20 @@ export function formatRelativeTime(deltaMs: number): string {
   return `${days} days ago`;
 }
 
+// Forward-looking compact countdown ("6d left" / "3h left"), used by
+// the Share dialog's expiring-link rows (spec/34). Zero or negative
+// deltas read as 'expired' so a row that lapses while the dialog is
+// open degrades to the truth without a refetch.
+export function formatTimeLeftCompact(deltaMs: number): string {
+  if (deltaMs <= 0) return 'expired';
+  const minutes = Math.ceil(deltaMs / 60_000);
+  if (minutes < 60) return `${minutes}m left`;
+  const hours = Math.ceil(minutes / 60);
+  if (hours < 24) return `${hours}h left`;
+  const days = Math.ceil(hours / 24);
+  return `${days}d left`;
+}
+
 // Ultra-compact ("2m ago" / "3h ago" / "5d ago"), used in the comment
 // thread where each row is tiny. Coarser than the others on purpose: no
 // seconds and no "yesterday", since comment timestamps are usually

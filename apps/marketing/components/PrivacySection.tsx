@@ -43,7 +43,7 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'Private by default',
     description:
-      "A new diagram is visible only to you until you generate a share link. Share links are unguessable codes you choose to hand out, you can revoke them at any time, and revoking instantly disconnects anyone who's currently using it.",
+      'A new diagram is visible only to you until you generate a share link. Share links are unguessable codes you choose to hand out: protect them with a password, set them to expire automatically after a week, a month, or six months, or revoke them at any time, instantly disconnecting anyone currently using one.',
     art: <PrivateByDefaultArt />,
   },
   {

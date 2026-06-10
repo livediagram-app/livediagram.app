@@ -17,6 +17,8 @@ function row(over: Partial<ShareLinkRow> = {}): ShareLinkRow {
     diagram_id: 'diag-1',
     role: 'edit',
     created_at: 1717000000000,
+    expiry: null,
+    expires_at: null,
     ...over,
   };
 }
@@ -28,6 +30,25 @@ describe('rowToShareLink', () => {
     expect(dto.diagramId).toBe('diag-1');
     expect(dto.role).toBe('edit');
     expect(dto.createdAt).toBe(1717000000000);
+    expect(dto.expiry).toBe('never');
+    expect(dto.expiresAt).toBeNull();
+  });
+
+  it('maps the expiry columns through (spec/34)', () => {
+    const dto = rowToShareLink(row({ expiry: 'week', expires_at: 1717604800000 }));
+    expect(dto.expiry).toBe('week');
+    expect(dto.expiresAt).toBe(1717604800000);
+    expect(rowToShareLink(row({ expiry: 'month' })).expiry).toBe('month');
+    expect(rowToShareLink(row({ expiry: 'sixMonths' })).expiry).toBe('sixMonths');
+  });
+
+  it('normalises NULL / unrecognised expiry tokens to "never"', () => {
+    // Pre-0020 rows carry NULL in both columns; a corrupted token
+    // only changes what Extend re-applies — enforcement reads
+    // expires_at in SQL, never this field.
+    expect(rowToShareLink(row({ expiry: null })).expiry).toBe('never');
+    expect(rowToShareLink(row({ expiry: 'fortnight' })).expiry).toBe('never');
+    expect(rowToShareLink(row({ expiry: 'WEEK' })).expiry).toBe('never');
   });
 
   it('passes role "view" through unchanged', () => {

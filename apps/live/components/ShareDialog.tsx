@@ -4,7 +4,8 @@ import { useRef, useState } from 'react';
 import { Portal } from './Portal';
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
 import { buildEmbedSnippet } from '@/lib/embed';
-import type { ShareLink, ShareRole } from '@/lib/api-client';
+import type { ShareLink, ShareLinkExpiry, ShareRole } from '@/lib/api-client';
+import { formatTimeLeftCompact, useRelativeTimeTick } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useEscape } from '@/hooks/useEscape';
@@ -27,18 +28,31 @@ type ShareDialogProps = {
   // welcome modal's lockedName treatment (spec/04).
   lockedName?: string | null;
   onSaveName: (name: string) => Promise<void> | void;
-  onCreateLink: (role: ShareRole) => Promise<void> | void;
+  onCreateLink: (role: ShareRole, expiry: ShareLinkExpiry) => Promise<void> | void;
   onRevokeLink: (code: string) => Promise<void> | void;
+  // Re-arm an expiring link for another round of its creation-time
+  // duration (spec/34). Only rendered on inactive (expired) rows.
+  onExtendLink: (code: string) => Promise<void> | void;
   // Set (or clear, with null) the diagram's share password. Returns the
   // stored value so the field can reflect what now gates access.
   onSetPassword: (password: string | null) => Promise<string | null> | void;
   onClose: () => void;
 };
 
+// Human labels for the expiry choices (spec/34), shared by the create
+// dropdown and the inactive rows' Extend button.
+const EXPIRY_LABELS: Record<Exclude<ShareLinkExpiry, 'never'>, string> = {
+  week: '1 week',
+  month: '1 month',
+  sixMonths: '6 months',
+};
+
 // Share-diagram modal. Lists every active share link, lets the owner
-// create new ones with a role (Edit / View-only), and revoke any link
-// individually. The identity card is always visible so the owner can
-// see / edit the name peers see on their cursor and comments.
+// create new ones with a role (Edit / View-only) and an optional
+// lifetime (spec/34), and revoke any link individually. Expired links
+// move to an Inactive section where they can be deleted or extended.
+// The identity card is always visible so the owner can see / edit the
+// name peers see on their cursor and comments.
 export function ShareDialog({
   participant,
   links,
@@ -49,6 +63,7 @@ export function ShareDialog({
   onSaveName,
   onCreateLink,
   onRevokeLink,
+  onExtendLink,
   onSetPassword,
   onClose,
 }: ShareDialogProps) {
@@ -60,6 +75,9 @@ export function ShareDialog({
   const [busy, setBusy] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [newRole, setNewRole] = useState<ShareRole>('edit');
+  // Lifetime for the next link (spec/34). Never = the pre-expiry
+  // default: the link works until revoked.
+  const [newExpiry, setNewExpiry] = useState<ShareLinkExpiry>('never');
   // Password field (spec/24). Kept in the clear (type="text") so the
   // owner can always read it. Seeded from the saved value; `pwSaved`
   // flips the button to "Saved" for a beat after a successful write.
@@ -74,11 +92,19 @@ export function ShareDialog({
   const effectiveName = trimmedName || participant.name;
   void nameConfirmed;
 
+  // Periodic re-render so the countdown chips stay honest and a link
+  // that lapses while the dialog is open migrates to Inactive without
+  // a refetch (same tick the Explorer's "Updated" column uses).
+  useRelativeTimeTick();
+  const now = Date.now();
+  const activeLinks = links.filter((l) => l.expiresAt === null || l.expiresAt > now);
+  const inactiveLinks = links.filter((l) => l.expiresAt !== null && l.expiresAt <= now);
+
   const create = async () => {
     setBusy(true);
     try {
       if (effectiveName !== participant.name) await onSaveName(effectiveName);
-      await onCreateLink(newRole);
+      await onCreateLink(newRole, newExpiry);
     } finally {
       setBusy(false);
     }
@@ -88,6 +114,15 @@ export function ShareDialog({
     setBusy(true);
     try {
       await onRevokeLink(code);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const extend = async (code: string) => {
+    setBusy(true);
+    try {
+      await onExtendLink(code);
     } finally {
       setBusy(false);
     }
@@ -268,13 +303,19 @@ export function ShareDialog({
               <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 Active share links
               </p>
-              {links.length === 0 ? (
+              {activeLinks.length === 0 ? (
                 <p className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs text-slate-500">
-                  No share links yet. Pick a role below and click <strong>Create</strong>.
+                  {links.length === 0 ? (
+                    <>
+                      No share links yet. Pick a role below and click <strong>Create</strong>.
+                    </>
+                  ) : (
+                    'No active share links. Extend an expired link below or create a new one.'
+                  )}
                 </p>
               ) : (
                 <ul className="flex flex-col gap-1">
-                  {links.map((link) => (
+                  {activeLinks.map((link) => (
                     <li
                       key={link.code}
                       className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1.5"
@@ -288,6 +329,18 @@ export function ShareDialog({
                       >
                         {link.role === 'edit' ? 'Edit' : 'View'}
                       </span>
+                      {link.expiresAt !== null ? (
+                        <Tooltip
+                          title="Expiring link"
+                          description={`Created with a ${
+                            link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]
+                          } lifetime. When it runs out the link stops working and moves to Inactive.`}
+                        >
+                          <span className="inline-flex shrink-0 items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
+                            {formatTimeLeftCompact(link.expiresAt - now)}
+                          </span>
+                        </Tooltip>
+                      ) : null}
                       <input
                         readOnly
                         value={shareUrlFor(link.code)}
@@ -334,6 +387,57 @@ export function ShareDialog({
               ) : null}
             </div>
 
+            {/* Inactive (expired) links — spec/34. Only rendered when
+                there's something in it, so the dialog stays unchanged
+                for owners who never use expiry. */}
+            {inactiveLinks.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                  Inactive share links
+                </p>
+                <ul className="flex flex-col gap-1">
+                  {inactiveLinks.map((link) => (
+                    <li
+                      key={link.code}
+                      className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50/60 px-2 py-1.5"
+                    >
+                      <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-700 ring-1 ring-rose-200">
+                        Expired
+                      </span>
+                      <input
+                        readOnly
+                        value={shareUrlFor(link.code)}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="flex-1 min-w-0 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-400 line-through outline-none"
+                      />
+                      <Tooltip
+                        title={`Extend ${link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}`}
+                        description="Reactivates this link for another round of the lifetime chosen when it was created, counted from now."
+                      >
+                        <button
+                          type="button"
+                          onClick={() => extend(link.code)}
+                          disabled={busy}
+                          className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-50"
+                        >
+                          Extend {link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}
+                        </button>
+                      </Tooltip>
+                      <button
+                        type="button"
+                        onClick={() => revoke(link.code)}
+                        disabled={busy}
+                        aria-label="Delete expired link"
+                        className="rounded-md p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
             <div className="flex flex-col gap-2 border-t border-slate-100 pt-4">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 Create new link
@@ -353,6 +457,22 @@ export function ShareDialog({
                     description="Read-only — visitors can look but not edit."
                   />
                 </div>
+                <Tooltip
+                  title="Link lifetime"
+                  description="The link stops working after this long and moves to Inactive, where you can extend or delete it. Never keeps it working until you revoke it."
+                >
+                  <select
+                    value={newExpiry}
+                    onChange={(e) => setNewExpiry(e.target.value as ShareLinkExpiry)}
+                    aria-label="Link lifetime"
+                    className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 outline-none transition focus:border-brand-400"
+                  >
+                    <option value="never">Never expires</option>
+                    <option value="week">Expires in 1 week</option>
+                    <option value="month">Expires in 1 month</option>
+                    <option value="sixMonths">Expires in 6 months</option>
+                  </select>
+                </Tooltip>
                 <button
                   type="button"
                   onClick={create}

@@ -1189,6 +1189,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     updateParticipantName,
     createShareLink,
+    extendShareLink,
     revokeShareLink,
     setDiagramSharePassword,
     shareUrlFor,
@@ -1765,6 +1766,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     embedMode,
     exitFormatPainter,
     exitGroupMode,
+    extendShareLink,
     fitToScreen,
     folders,
     followLink,

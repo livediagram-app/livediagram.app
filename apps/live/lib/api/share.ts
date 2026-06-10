@@ -1,6 +1,6 @@
 // Share-link + share-password calls (spec/24): resolve a share code to
 // a diagram, list/create/delete links, and set the diagram password.
-import type { ShareLink, ShareRole } from '@livediagram/api-schema';
+import type { ShareLink, ShareLinkExpiry, ShareRole } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import {
   API_BASE,
@@ -91,13 +91,29 @@ export async function apiCreateShareLink(
   ownerId: string,
   id: string,
   role: ShareRole,
+  expiry: ShareLinkExpiry = 'never',
 ): Promise<ShareLink> {
   const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ role }),
+    body: JSON.stringify({ role, expiry }),
   });
   const { link } = await expectOk<ShareLinkResponse>(res, 'create share link');
+  return link;
+}
+
+// Re-arm an expiring link for another round of its creation-time
+// duration (spec/34). Returns the updated link with its new deadline.
+export async function apiExtendShareLink(
+  ownerId: string,
+  id: string,
+  code: string,
+): Promise<ShareLink> {
+  const res = await fetch(`${API_BASE}/diagrams/${id}/share/${code}/extend`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId),
+  });
+  const { link } = await expectOk<ShareLinkResponse>(res, 'extend share link');
   return link;
 }
 

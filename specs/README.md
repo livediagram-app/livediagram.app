@@ -42,6 +42,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 31  | [Presentation mode](31-presentation-mode.md)                       | Step through a tab as a progressive-reveal slideshow with notes    |
 | 32  | [Teams](32-teams.md)                                               | Teams with Admin/Member roles, email invites, Explorer section     |
 | 33  | [Read-only embeds](33-embeds.md)                                   | Iframe-able `/live/embed` share view + Copy-embed-code in Share    |
+| 34  | [Share-link expiry](34-share-link-expiry.md)                       | Optional link lifetime (week/month/6 months); Inactive section     |
 
 ## Workflow
 

@@ -1,14 +1,18 @@
-import type { ShareLink as ShareLinkDTO } from '@livediagram/api-schema';
+import type { ShareLink as ShareLinkDTO, ShareLinkExpiry } from '@livediagram/api-schema';
 
-// share_links row shape as read from D1 (migration 0003). `role`
-// arrives as a free-form string here, but the wire-format DTO is
-// the narrow union 'edit' | 'view'. The mapper below normalises.
+// share_links row shape as read from D1 (migration 0003 + the expiry
+// columns from 0020). `role` arrives as a free-form string here, but
+// the wire-format DTO is the narrow union 'edit' | 'view'. The mapper
+// below normalises. `expiry` / `expires_at` are NULL on every
+// pre-0020 row (= never expires).
 
 export type ShareLinkRow = {
   code: string;
   diagram_id: string;
   role: string;
   created_at: number;
+  expiry: string | null;
+  expires_at: number | null;
 };
 
 // Pure mapper from D1 row to wire-format DTO. Pulled out of db.ts
@@ -38,5 +42,16 @@ export function rowToShareLink(row: ShareLinkRow): ShareLinkDTO {
     diagramId: row.diagram_id,
     role: row.role === 'view' ? 'view' : 'edit',
     createdAt: row.created_at,
+    expiry: normaliseExpiry(row.expiry),
+    expiresAt: row.expires_at ?? null,
   };
+}
+
+// Same defensive posture as the role check, opposite bias: an
+// unrecognised expiry token normalises to 'never', which only
+// affects what the Extend button re-applies (enforcement reads
+// `expires_at` directly in SQL, so a corrupted token can't make an
+// expired link live again).
+function normaliseExpiry(value: string | null): ShareLinkExpiry {
+  return value === 'week' || value === 'month' || value === 'sixMonths' ? value : 'never';
 }

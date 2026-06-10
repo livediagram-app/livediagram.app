@@ -10,9 +10,11 @@ import type { Dispatch, SetStateAction } from 'react';
 import {
   apiCreateShareLink,
   apiDeleteShareLink,
+  apiExtendShareLink,
   apiSaveSelf,
   apiSetSharePassword,
   type ShareLink,
+  type ShareLinkExpiry,
   type ShareRole,
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
@@ -64,20 +66,45 @@ export function useShareLinks(deps: ShareLinksDeps) {
   };
 
   // Create a new share link for the current diagram with the given
-  // role. The editor route always has a real diagramId by the time
-  // the Share dialog is open — the welcome / mint-id flow now lives
-  // on /live/new (spec/14) — so this just calls the API directly.
-  const createShareLink = async (role: ShareRole) => {
+  // role and lifetime (spec/34; 'never' = works until revoked). The
+  // editor route always has a real diagramId by the time the Share
+  // dialog is open — the welcome / mint-id flow now lives on
+  // /live/new (spec/14) — so this just calls the API directly.
+  const createShareLink = async (role: ShareRole, expiry: ShareLinkExpiry = 'never') => {
     if (!diagramId) return;
     confirmName();
     try {
-      const link = await apiCreateShareLink(selfParticipant.id, diagramId, role);
+      const link = await apiCreateShareLink(selfParticipant.id, diagramId, role, expiry);
       setShareLinks((prev) => [...prev, link]);
       setDiagramShareable(true);
       setDiagramShareCode((prev) => prev ?? link.code);
       // Telemetry (spec/22): a share link was created. `type` is the
-      // role (Edit / View) — a preset, never user content.
+      // role (Edit / View) — a preset, never user content. A chosen
+      // lifetime emits a second preset alongside (spec/34).
       track('Diagram', 'Shared', role === 'edit' ? 'Edit' : 'View');
+      if (expiry !== 'never') {
+        const expiryType = {
+          week: 'ExpiryWeek',
+          month: 'ExpiryMonth',
+          sixMonths: 'ExpirySixMonths',
+        }[expiry];
+        track('Diagram', 'Shared', expiryType);
+      }
+    } catch {
+      // Network glitch — leave state alone. A real app would toast.
+    }
+  };
+
+  // Re-arm an expired (or active) expiring link for another round of
+  // its creation-time duration (spec/34). The server computes the new
+  // deadline; the returned link replaces the stale row in state so the
+  // dialog's Active / Inactive split updates immediately.
+  const extendShareLink = async (code: string) => {
+    if (!diagramId) return;
+    try {
+      const link = await apiExtendShareLink(selfParticipant.id, diagramId, code);
+      setShareLinks((prev) => prev.map((l) => (l.code === code ? link : l)));
+      track('Diagram', 'Shared', 'Extended');
     } catch {
       // Network glitch — leave state alone. A real app would toast.
     }
@@ -133,6 +160,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
   return {
     updateParticipantName,
     createShareLink,
+    extendShareLink,
     revokeShareLink,
     setDiagramSharePassword,
     shareUrlFor,

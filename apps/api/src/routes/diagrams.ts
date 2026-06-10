@@ -21,12 +21,14 @@ import {
   deleteShareLink,
   deleteTabRow,
   diagramsContainingTab,
+  extendShareLink,
   generateShareCode,
   getDiagram,
   getDiagramSharePassword,
   getFolder,
   getParticipant,
   getShareLink,
+  getShareLinkIncludingExpired,
   getTab,
   insertChangeLogEntry,
   linkTabToDiagram,
@@ -42,6 +44,7 @@ import {
   upsertTab,
 } from '../db';
 import { badRequest, forbidden, json, noContent, notFound } from '../responses';
+import type { ShareLinkExpiry } from '@livediagram/api-schema';
 import type { ChangeLogEntryDTO, DiagramDTO, ShareRole } from '../types';
 import {
   gateEdit,
@@ -470,10 +473,19 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       return json({ links, password });
     }
     if (request.method === 'POST') {
-      const body = (await request.json().catch(() => ({}))) as { role?: ShareRole };
+      const body = (await request.json().catch(() => ({}))) as {
+        role?: ShareRole;
+        expiry?: ShareLinkExpiry;
+      };
       const role: ShareRole = body.role === 'view' ? 'view' : 'edit';
+      // Expiry (spec/34): unknown / missing value falls back to the
+      // pre-expiry behaviour, a link that works until revoked.
+      const expiry: ShareLinkExpiry =
+        body.expiry === 'week' || body.expiry === 'month' || body.expiry === 'sixMonths'
+          ? body.expiry
+          : 'never';
       const code = generateShareCode();
-      const link = await createShareLink(env, id, code, role);
+      const link = await createShareLink(env, id, code, role, expiry);
       return json({ link }, { status: 201 });
     }
     if (request.method === 'DELETE') {
@@ -528,6 +540,26 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         })
         .catch(() => {});
       return noContent();
+    }
+  }
+
+  // /api/diagrams/<id>/share/<code>/extend — re-arm an expiring link
+  // for another round of its creation-time duration (spec/34).
+  // Owner-only; works whether the link is currently active or expired
+  // (extending an active link pushes the deadline out from now); 400
+  // on a never-expiring link (nothing to extend).
+  if (segments.length === 6 && segments[3] === 'share' && segments[5] === 'extend') {
+    const id = segments[2]!;
+    const code = segments[4]!;
+    const access = await requireOwnedDiagram(ctx, id);
+    if (access instanceof Response) return access;
+
+    if (request.method === 'POST') {
+      const existing = await getShareLinkIncludingExpired(env, code);
+      if (!existing || existing.diagramId !== id) return notFound();
+      const link = await extendShareLink(env, code);
+      if (!link) return badRequest('link never expires');
+      return json({ link });
     }
   }
 
