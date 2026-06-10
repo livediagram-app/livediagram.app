@@ -342,17 +342,19 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
     const start = anchorPosition(element, anchor);
-    // New arrows inherit the tab's theme stroke colour so they
-    // visually belong with the rest of the diagram. Falls back to
-    // the built-in arrow default when the theme has no override
-    // (Brand).
+    // A connector drawn FROM a shape inherits that shape's stroke so it
+    // visually belongs with it — and so it respects whatever theme the
+    // shape already carries (the tab's `theme` field can lag a recolour,
+    // which is why these arrows were coming out black). Falls back to
+    // the tab theme's element stroke, then the built-in arrow default.
     const theme = getTheme(d.activeTab.theme);
+    const inheritedStroke = element.strokeColor ?? theme.elementStroke ?? undefined;
     const arrow: ArrowElement = {
       id: crypto.randomUUID(),
       type: 'arrow',
       from: { kind: 'pinned', elementId, anchor },
       to: { kind: 'free', x: start.x, y: start.y },
-      ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
+      ...(inheritedStroke ? { strokeColor: inheritedStroke } : {}),
     };
     d.commit((els) => [...els, arrow]);
     d.setSelectedId(arrow.id);

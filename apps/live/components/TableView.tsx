@@ -217,6 +217,7 @@ export function TableView({
   element,
   isSelected,
   readOnly,
+  tabSummaries,
   onCommitTable,
   onLinkCell,
   onFollowLink,
@@ -225,6 +226,9 @@ export function TableView({
   element: TableElement;
   isSelected: boolean;
   readOnly: boolean;
+  // This diagram's tabs (id + name), so a linked cell's tooltip can
+  // name the tab/element it points at (spec/09).
+  tabSummaries: { id: string; name: string }[];
   // Resolved CSS font-family for the table's text (spec/28). Set on the
   // grid root so every cell + the cell editor inherit it.
   fontFamily?: string;
@@ -755,7 +759,7 @@ export function TableView({
                       Clicking it follows the link (works in view + edit
                       sessions) without selecting / editing the cell. */}
                   {cs?.link && !isEditingCell ? (
-                    <Tooltip title="Follow link" description={describeLink(cs.link)}>
+                    <Tooltip title="Follow link" description={describeLink(cs.link, tabSummaries)}>
                       <button
                         type="button"
                         onPointerDown={(e) => e.stopPropagation()}

@@ -88,6 +88,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     showUnionResize,
     tabFont,
     tabLocked,
+    tabSummaries,
     unionResizeBounds,
     unionResizePrimaryId,
     viewportZoom,
@@ -160,6 +161,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             zoom={viewportZoom}
             badgeColor={badgeColor}
             tabLocked={tabLocked}
+            tabSummaries={tabSummaries}
             readOnly={readOnly}
             onBeginDrag={onBeginDrag}
             onBeginRotate={onBeginRotate}

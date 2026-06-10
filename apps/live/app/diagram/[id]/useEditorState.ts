@@ -178,6 +178,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redo: redoHistory,
   } = useDiagramHistory(initialTabs);
 
+  // Stable id + name projection of the tabs for link-badge tooltips
+  // (spec/09): keyed on a signature so it only changes when a tab is
+  // added / removed / renamed, NOT on every element edit, keeping the
+  // memoised element views from re-rendering as the user types.
+  const tabSig = tabs.map((t) => `${t.id} ${t.name}`).join('');
+  const tabSummaries = useMemo(
+    () => tabs.map((t) => ({ id: t.id, name: t.name })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tabSig],
+  );
+
   const [activeId, setActiveId] = useState<string>(() => initialTabs[0]!.id);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -1932,6 +1943,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tabAccordionsOpen,
     tabLoadErrors,
     tabs,
+    tabSummaries,
     teamFolders,
     teamDiagrams,
     teams,

@@ -291,6 +291,7 @@ export function EditorView() {
     tabAccordionsOpen,
     tabLoadErrors,
     tabs,
+    tabSummaries,
     teamFolders,
     teamDiagrams,
     teams,
@@ -397,6 +398,7 @@ export function EditorView() {
       ) : null}
       <Canvas
         tabName={activeTab.name}
+        tabSummaries={tabSummaries}
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
         ownerParticipant={(() => {

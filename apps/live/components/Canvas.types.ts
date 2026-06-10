@@ -153,6 +153,10 @@ export type CanvasProps = {
   onMoveExplorer: (x: number, y: number) => void;
   onResetExplorer: () => void;
   diagramList: DiagramListItem[];
+  // Lightweight id + name of this diagram's tabs, so a link badge's
+  // tooltip can name the tab/element a link points at (spec/09). Kept
+  // minimal + memoised by the caller so element edits don't churn it.
+  tabSummaries: { id: string; name: string }[];
   folders: Folder[];
   // Shared-with-you list. Empty by default so legacy callers can
   // omit it.

@@ -124,6 +124,9 @@ type BoxedElementViewProps = {
   // True when the tab as a whole is locked. Shows the LockBadge on
   // every element regardless of its own per-element lock state.
   tabLocked: boolean;
+  // This diagram's tabs (id + name), so a link badge's tooltip can
+  // name the tab/element it points at (spec/09). Stable reference.
+  tabSummaries: { id: string; name: string }[];
   // True for view-role share visitors (session read-only). Shape / text
   // editing is blocked upstream in the editing handlers, but the table
   // edits in-component (TableView's own cell double-click + menus), so it
@@ -177,6 +180,7 @@ function BoxedElementViewImpl({
   remoteSelectors,
   badgeColor,
   tabLocked,
+  tabSummaries,
   readOnly,
   fontFamily,
 }: BoxedElementViewProps) {
@@ -484,6 +488,7 @@ function BoxedElementViewImpl({
           element={element}
           isSelected={isSelected}
           readOnly={isLocked || readOnly}
+          tabSummaries={tabSummaries}
           onCommitTable={onCommitTable}
           onLinkCell={onLinkCell}
           onFollowLink={onFollowLink}
@@ -529,7 +534,7 @@ function BoxedElementViewImpl({
         <BadgeStrip
           zoom={zoom}
           linked={linked}
-          linkLabel={element.link ? describeLink(element.link) : undefined}
+          linkLabel={element.link ? describeLink(element.link, tabSummaries) : undefined}
           commentCount={commentCount}
           hasNote={!!element.note && !!onOpenNote}
           badgeColor={badgeColor}
