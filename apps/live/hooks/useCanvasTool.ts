@@ -6,10 +6,18 @@
 
 import { useState } from 'react';
 import type { CanvasTool } from '@/components/CommandPalette';
+import { isMobileViewportSync } from '@/lib/responsive';
 import { track } from '@/lib/telemetry';
 
 export function useCanvasTool() {
-  const [canvasTool, setCanvasTool] = useState<CanvasTool>('select');
+  // Default to Hand (pan) on a touch / mobile viewport, Select on
+  // desktop: on a small touchscreen a drag-on-empty far more often
+  // means "scroll the canvas" than "marquee-select", and pinch-zoom
+  // pairs naturally with panning. Lazy initial read is safe during the
+  // static-export render (see isMobileViewportSync).
+  const [canvasTool, setCanvasTool] = useState<CanvasTool>(() =>
+    isMobileViewportSync() ? 'pan' : 'select',
+  );
   // User-facing tool picker (palette buttons + keyboard). Wraps the raw
   // setter to emit telemetry when the user enters laser (presenter)
   // mode, a distinct feature. Pan / select switches stay untracked
