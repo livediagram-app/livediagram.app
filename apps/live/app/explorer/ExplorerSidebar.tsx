@@ -25,9 +25,9 @@ import {
 // The Explorer's section tree (spec/15), shared by the desktop
 // sidebar and the mobile drawer in ExplorerShell. Every navigation
 // goes through `go` (a route push) so picking a section on a phone
-// also closes the drawer; search closes it too. Layout: the two
-// personal lists (Recent diagrams, Shared with me) sit unlabelled at
-// the top, then the Folders tree, Teams (spec/32), and the Library.
+// also closes the drawer; search closes it too. Layout: the "Quick
+// find" section (Recent diagrams, Shared with me) at the top, then
+// the My Work tree, Teams (spec/32), and the Library.
 export function ExplorerSidebar() {
   const {
     clerkDisplayName,
@@ -66,6 +66,7 @@ export function ExplorerSidebar() {
         <span className="flex-1 truncate">Search...</span>
       </button>
       <div className="my-4 h-px bg-slate-100" aria-hidden />
+      <SidebarSectionLabel>Quick find</SidebarSectionLabel>
       <SidebarRow
         icon={<ClockIcon />}
         label="Recent diagrams"

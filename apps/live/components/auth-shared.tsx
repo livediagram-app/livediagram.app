@@ -86,7 +86,7 @@ export function AuthDisabledNotice() {
   return (
     <AuthCard subtitle="Sign-in isn't enabled on this deployment" error="">
       <p className="text-sm leading-relaxed text-slate-600">
-        This livediagram instance is running in <strong>guest-only</strong> mode — the canvas works
+        This livediagram instance is running in <strong>guest-only</strong> mode: the canvas works
         without an account. To enable sign-in, set{' '}
         <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY

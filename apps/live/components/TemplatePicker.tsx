@@ -129,7 +129,7 @@ export function TemplatePicker({
                 ? 'Pick a template and a theme to start with.'
                 : isIdentity
                   ? nameLocked
-                    ? 'This is the name from your account — others will see it on this diagram.'
+                    ? 'This is the name from your account; others will see it on this diagram.'
                     : 'Pick the name people will see while you collaborate on this diagram.'
                   : 'Pick a template and theme to apply to this tab.'}
             </p>

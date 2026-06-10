@@ -47,7 +47,7 @@ export function parseImportedTab(text: string): ImportResult {
     };
   }
   if (typeof env.schemaVersion !== 'number') {
-    return { ok: false, error: 'Missing schemaVersion — refusing to guess.' };
+    return { ok: false, error: 'Missing schemaVersion; refusing to guess.' };
   }
   if (env.schemaVersion > TAB_SCHEMA_VERSION) {
     return {

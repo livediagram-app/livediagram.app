@@ -129,7 +129,7 @@ export function ActivityPanel({
             </ul>
           ) : entries.length === 0 ? (
             <p className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400">
-              No edits yet — start drawing.
+              No edits yet. Start drawing.
             </p>
           ) : (
             <ul className="flex flex-col gap-0.5">
@@ -189,7 +189,7 @@ function SaveStatusBadge({ status }: { status: SaveStatus; savedAt: number | nul
   }
   if (status === 'error') {
     return (
-      <Tooltip title="Not saved" description="Couldn't save — check network.">
+      <Tooltip title="Not saved" description="Couldn't save. Check your network.">
         <span
           role="status"
           className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-rose-700 ring-1 ring-rose-200"

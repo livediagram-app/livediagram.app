@@ -638,7 +638,7 @@ export function SelectedElementSection({
             </Tooltip>
             <Tooltip
               title="No pointers"
-              description="No arrowhead on either end — a plain connector / line."
+              description="No arrowhead on either end: a plain connector / line."
             >
               <SizeButton
                 active={selection.arrowEnds === 'none'}
@@ -666,7 +666,7 @@ export function SelectedElementSection({
                   <Tooltip
                     key={id}
                     title={label}
-                    description={`Marker size ${ARROWHEAD_SIZE_PX[id]} — independent of line thickness.`}
+                    description={`Marker size ${ARROWHEAD_SIZE_PX[id]}, independent of line thickness.`}
                   >
                     <SizeButton
                       active={selection.arrowheadSize === id}
@@ -723,12 +723,12 @@ const ARROWHEAD_SHAPE_LABEL: Record<ArrowheadShape, string> = {
 // picker doubles as a hint for what each head is used for.
 const ARROWHEAD_SHAPE_DESC: Record<ArrowheadShape, string> = {
   triangle: 'The classic filled arrowhead.',
-  'triangle-hollow': 'A hollow triangle — UML inheritance / "is a".',
-  line: 'An open V with no fill — dependency / flow.',
+  'triangle-hollow': 'A hollow triangle: UML inheritance / "is a".',
+  line: 'An open V with no fill: dependency / flow.',
   circle: 'A filled dot terminator.',
   'circle-hollow': 'A hollow dot terminator.',
-  diamond: 'A filled diamond — UML composition.',
-  'diamond-hollow': 'A hollow diamond — UML aggregation.',
+  diamond: 'A filled diamond: UML composition.',
+  'diamond-hollow': 'A hollow diamond: UML aggregation.',
 };
 
 const SHAPE_LABEL: Record<ShapeKind, string> = {

@@ -31,7 +31,7 @@ export function RemoteSelectorsStrip({
         >
           <Tooltip
             title={`Locked to ${p.name}`}
-            description="Selected by them — you can't edit it right now."
+            description="Selected by them; you can't edit it right now."
           >
             <div
               aria-label={`Locked to ${p.name}`}

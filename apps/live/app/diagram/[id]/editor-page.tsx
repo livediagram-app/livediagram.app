@@ -57,7 +57,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
         <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">
           <ApiErrorPage
             onRetry={() => window.location.reload()}
-            message="We couldn’t load this diagram — the server didn’t respond. Check your connection and try again."
+            message="We couldn’t load this diagram: the server didn’t respond. Check your connection and try again."
           />
         </main>
       );
@@ -75,7 +75,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
         <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
           <ApiErrorPage
             onRetry={() => window.location.reload()}
-            message="We couldn’t load this diagram — the server didn’t respond. Check your connection and try again."
+            message="We couldn’t load this diagram: the server didn’t respond. Check your connection and try again."
           />
           <Explorer
             position={explorerPosition}

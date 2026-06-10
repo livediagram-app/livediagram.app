@@ -33,7 +33,7 @@ export function TabLoadOverlay({
         <ApiErrorPage
           onRetry={onRetry}
           title="Couldn’t load this tab"
-          message="We couldn’t reach the server to load this tab’s contents. Your work is safe — check your connection and try again."
+          message="We couldn’t reach the server to load this tab’s contents. Your work is safe. Check your connection and try again."
           retryLabel="Retry"
         />
       </div>

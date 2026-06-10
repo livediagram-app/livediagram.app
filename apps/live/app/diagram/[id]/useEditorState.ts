@@ -626,7 +626,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // layer dedupes a streak of retries while one is still on screen.
   useEffect(() => {
     if (saveStatus === 'error') {
-      toast.error('Couldn’t save your changes — check your connection.');
+      toast.error('Couldn’t save your changes. Check your connection.');
     }
   }, [saveStatus, toast]);
 

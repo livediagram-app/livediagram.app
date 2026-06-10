@@ -279,13 +279,13 @@ export function ShareDialog({
                     active={newRole === 'edit'}
                     onClick={() => setNewRole('edit')}
                     label="Edit"
-                    description="Full read / write access — visitors can change anything."
+                    description="Full read / write access: visitors can change anything."
                   />
                   <RoleButton
                     active={newRole === 'view'}
                     onClick={() => setNewRole('view')}
                     label="View only"
-                    description="Read-only — visitors can look but not edit."
+                    description="Read-only: visitors can look but not edit."
                   />
                 </div>
                 <Tooltip

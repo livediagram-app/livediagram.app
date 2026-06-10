@@ -231,7 +231,7 @@ export const PATTERNS: PatternEntry[] = [
     id: 'confetti',
     label: 'Confetti',
     shortLabel: 'Confetti',
-    description: 'Multi-colour dots — pattern colour ignored.',
+    description: 'Multi-colour dots; pattern colour ignored.',
     icon: BackgroundConfettiIcon,
   },
   {
@@ -252,7 +252,7 @@ export const PATTERNS: PatternEntry[] = [
     id: 'waves',
     label: 'Waves',
     shortLabel: 'Waves',
-    description: 'Gentle sinusoidal lines — softest of the textures.',
+    description: 'Gentle sinusoidal lines, softest of the textures.',
     extra: true,
     icon: BackgroundWavesIcon,
   },

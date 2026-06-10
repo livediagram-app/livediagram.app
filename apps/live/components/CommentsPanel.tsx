@@ -154,7 +154,7 @@ export function commentRowsFromElements(elements: BoxedElement[]): CommentRow[] 
     let label: string;
     if (el.type === 'table') {
       const firstCell = el.cells.flat().find((c) => c.trim().length > 0);
-      label = firstCell ? `Table — ${firstCell.trim()}` : 'Table';
+      label = firstCell ? `Table: ${firstCell.trim()}` : 'Table';
     } else {
       label = labelSource && labelSource.trim().length > 0 ? labelSource.trim() : 'Untitled';
     }

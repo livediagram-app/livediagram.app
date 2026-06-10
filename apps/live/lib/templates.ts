@@ -110,7 +110,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'pyramid',
     title: 'Pyramid',
-    description: 'Four stacked tiers — foundation at the bottom, peak on top.',
+    description: 'Four stacked tiers: foundation at the bottom, peak on top.',
     extra: true,
   },
   {

@@ -89,7 +89,7 @@ export function TabSection({
         <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
         <Tooltip
           title="Reset elements to theme"
-          description="Recolour every shape, text and arrow on this tab to the active theme's defaults — including elements you've hand-coloured."
+          description="Recolour every shape, text and arrow on this tab to the active theme's defaults, including elements you've hand-coloured."
         >
           <button
             type="button"
