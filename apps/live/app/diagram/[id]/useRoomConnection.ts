@@ -21,8 +21,11 @@ export function useRoomConnection(opts: {
   hydrated: boolean;
   diagramId: string | null;
   diagramShareable: boolean;
+  // The diagram's team (spec/35), null for a personal diagram. A team
+  // diagram is a live room for its members even without a share link,
+  // so presence opens for it the same way a shared diagram does.
+  diagramTeamId: string | null;
   selfParticipant: Participant;
-  isOwner: boolean;
   sessionShareCode: string | null;
   lastSeenRef: MutableRefObject<Map<string, number>>;
   selfParticipantRef: MutableRefObject<Participant>;
@@ -46,8 +49,8 @@ export function useRoomConnection(opts: {
     hydrated,
     diagramId,
     diagramShareable,
+    diagramTeamId,
     selfParticipant,
-    isOwner,
     sessionShareCode,
     lastSeenRef,
     selfParticipantRef,
@@ -66,9 +69,12 @@ export function useRoomConnection(opts: {
   } = opts;
 
   useEffect(() => {
-    if (!hydrated || !diagramId || !diagramShareable) {
+    // Open the realtime room for a shared diagram OR a team diagram
+    // (spec/35): team members collaborate live on a team diagram with
+    // no share link, so presence must work there too.
+    if (!hydrated || !diagramId || (!diagramShareable && !diagramTeamId)) {
       // Make sure any state from a previous shared session is cleared
-      // when we transition back to private (revoke share).
+      // when we transition back to private (revoke share / leave team).
       setLivePresence([]);
       setRemoteSelections(new Map());
       return;
@@ -278,7 +284,12 @@ export function useRoomConnection(opts: {
         // stamps it into the participant row via X-Verified-Role so
         // peers see a trustworthy Viewer / Editor badge.
         shareCode: sessionShareCode,
-        ownerId: isOwner ? selfParticipant.id : null,
+        // Always send our own id as `o`: the worker checks it against
+        // the diagram's owner AND (for a team diagram) team membership
+        // to resolve the edit role, so a joined member is admitted to
+        // the room without a share link. A share-link visitor's id just
+        // won't match either, and their role comes from the code.
+        ownerId: selfParticipant.id,
       },
     );
     roomRef.current = room;
@@ -290,5 +301,5 @@ export function useRoomConnection(opts: {
     // changes don't warrant a reconnect. Deliberately omitted from
     // the dep list.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, diagramShareable]);
+  }, [hydrated, diagramId, diagramShareable, diagramTeamId]);
 }

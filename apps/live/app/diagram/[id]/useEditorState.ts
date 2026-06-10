@@ -717,8 +717,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hydrated,
     diagramId,
     diagramShareable,
+    diagramTeamId,
     selfParticipant,
-    isOwner,
     sessionShareCode,
     lastSeenRef,
     selfParticipantRef,
@@ -742,18 +742,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // before hydration; peers learn the initial selection state via
   // their own `select` ops when they happen, not from a snapshot.
   useEffect(() => {
-    if (!hydrated || !diagramId || !diagramShareable) return;
+    if (!hydrated || !diagramId || (!diagramShareable && !diagramTeamId)) return;
     roomRef.current?.send({ kind: 'op', op: { kind: 'select', elementId: selectedId } });
-  }, [hydrated, diagramId, diagramShareable, selectedId]);
+  }, [hydrated, diagramId, diagramShareable, diagramTeamId, selectedId]);
 
   // Broadcast the currently active tab so peers can show our avatar
   // on the TabBar entry we're focused on. Fires both on initial room
   // connect (when the dependencies first satisfy) and on every local
   // tab switch.
   useEffect(() => {
-    if (!hydrated || !diagramId || !diagramShareable) return;
+    if (!hydrated || !diagramId || (!diagramShareable && !diagramTeamId)) return;
     roomRef.current?.send({ kind: 'op', op: { kind: 'tab-focus', tabId: activeId } });
-  }, [hydrated, diagramId, diagramShareable, activeId]);
+  }, [hydrated, diagramId, diagramShareable, diagramTeamId, activeId]);
 
   // Latest tabs mirrored to a ref so timer-driven callbacks (e.g.
   // the opacity debounce below) can read the post-debounce state
@@ -810,6 +810,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hydrated,
     diagramId,
     diagramShareable,
+    diagramTeamId,
     activeId,
     canvasTool,
   });
@@ -885,6 +886,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     lockedByOther,
   } = usePresenceRows({
     diagramShareable,
+    diagramTeamId,
     activeId,
     selfParticipant,
     tabs,

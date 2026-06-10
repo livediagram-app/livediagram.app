@@ -17,6 +17,7 @@ import {
 
 type PresenceRowsDeps = {
   diagramShareable: boolean;
+  diagramTeamId: string | null;
   activeId: string;
   selfParticipant: Participant;
   tabs: Tab[];
@@ -33,6 +34,7 @@ type PresenceRowsDeps = {
 export function usePresenceRows(deps: PresenceRowsDeps) {
   const {
     diagramShareable,
+    diagramTeamId,
     activeId,
     selfParticipant,
     tabs,
@@ -73,6 +75,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   // 30s tick drives the periodic refresh).
   const participantsByTab = buildParticipantsByTab({
     diagramShareable,
+    diagramTeamId,
     activeId,
     selfParticipant,
     tabs,

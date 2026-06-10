@@ -23,6 +23,7 @@ describe('buildParticipantsByTab', () => {
     activeId: 't1',
     selfParticipant: self,
     tabs: [{ id: 't1' }, { id: 't2' }],
+    diagramTeamId: null,
     now: 1000,
   };
 
@@ -36,6 +37,19 @@ describe('buildParticipantsByTab', () => {
       lastSeen: new Map(),
     });
     expect(m.size).toBe(0);
+  });
+
+  it('shows presence for a team diagram even when not shared (spec/35)', () => {
+    const m = buildParticipantsByTab({
+      ...common,
+      diagramShareable: false,
+      diagramTeamId: 'team-1',
+      remoteTabFocus: new Map(),
+      livePresence: [self],
+      livePresenceById: byId(self),
+      lastSeen: new Map(),
+    });
+    expect(m.size).toBeGreaterThan(0);
   });
 
   it('always puts self online on the active tab when shared', () => {

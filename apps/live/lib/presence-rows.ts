@@ -20,6 +20,9 @@ export type RemoteSelector = { id: string; name: string; color: string };
 // private (unshared) diagrams.
 export function buildParticipantsByTab(input: {
   diagramShareable: boolean;
+  // A team diagram (spec/35) is collaborative for its members even
+  // with no share link, so tab presence shows there too.
+  diagramTeamId: string | null;
   activeId: string;
   selfParticipant: Participant;
   tabs: { id: string }[];
@@ -31,6 +34,7 @@ export function buildParticipantsByTab(input: {
 }): Map<string, Participant[]> {
   const {
     diagramShareable,
+    diagramTeamId,
     activeId,
     selfParticipant,
     tabs,
@@ -41,7 +45,7 @@ export function buildParticipantsByTab(input: {
     now,
   } = input;
   const map = new Map<string, Participant[]>();
-  if (!diagramShareable) return map;
+  if (!diagramShareable && !diagramTeamId) return map;
   map.set(activeId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
   const defaultTabId = tabs[0]?.id ?? activeId;
   const tabFocus = new Map<string, string>(remoteTabFocus);

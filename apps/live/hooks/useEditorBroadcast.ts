@@ -32,6 +32,10 @@ type EditorBroadcastDeps = {
   hydrated: boolean;
   diagramId: string | null;
   diagramShareable: boolean;
+  // The diagram's team (spec/35), null for a personal diagram. A team
+  // diagram is a live room for its members even without a share link,
+  // so cursor / laser ops broadcast for it too.
+  diagramTeamId: string | null;
   // Which tab is currently active. Stamped on every cursor / laser
   // op so peers can filter trails by tab (a laser drawn on Tab 1
   // doesn't show on Tab 2).
@@ -76,7 +80,8 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   }, [deps.canvasTool, deps.activeId]);
 
   const broadcastCursor = (pos: { x: number; y: number } | null) => {
-    if (!deps.hydrated || !deps.diagramId || !deps.diagramShareable) return;
+    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+      return;
     const now = performance.now();
     if (pos && now - lastCursorSentRef.current < BROADCAST_THROTTLE_MS) return;
     lastCursorSentRef.current = now;
@@ -103,7 +108,8 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     if (now - lastLaserSentRef.current < BROADCAST_THROTTLE_MS) return;
     lastLaserSentRef.current = now;
     setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
-    if (!deps.hydrated || !deps.diagramId || !deps.diagramShareable) return;
+    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+      return;
     deps.roomRef.current?.send({
       kind: 'op',
       op: { kind: 'laser', tabId: deps.activeId, x, y },
