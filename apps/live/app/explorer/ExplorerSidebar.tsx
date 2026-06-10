@@ -84,7 +84,7 @@ export function ExplorerSidebar() {
         className="mt-2 flex w-full items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-2 text-left text-xs text-slate-500 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
       >
         <SearchSidebarIcon />
-        <span className="flex-1 truncate">Search...</span>
+        <span className="flex-1 truncate">Search…</span>
       </button>
       <div className="my-4 h-px bg-slate-100" aria-hidden />
       <SidebarSectionLabel>Quick find</SidebarSectionLabel>

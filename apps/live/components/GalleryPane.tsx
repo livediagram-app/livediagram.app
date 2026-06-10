@@ -107,7 +107,7 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
         {galleryError ? (
           <p className="rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{galleryError}</p>
         ) : !gallery ? (
-          <p className="text-xs text-slate-500">Loading...</p>
+          <p className="text-xs text-slate-500">Loading…</p>
         ) : gallery.length === 0 ? (
           <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-6 text-center text-xs text-slate-500">
             No images yet. Drop one above and it&apos;ll show up here.

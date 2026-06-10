@@ -148,7 +148,7 @@ export function NotePopover({ elementId, initial, onCommit, onClose, readOnly }:
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKey}
               rows={5}
-              placeholder="Add a note for this element..."
+              placeholder="Add a note for this element…"
               className="resize-y rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
             <div className="flex items-center justify-between gap-2">
