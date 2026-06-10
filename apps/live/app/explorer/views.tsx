@@ -471,7 +471,7 @@ export function FolderRow({
   );
 }
 
-export function DiagramRow({
+function DiagramRow({
   diagram,
   renaming,
   onStartRename,
