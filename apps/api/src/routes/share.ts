@@ -24,13 +24,9 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
   if (!(segments[1] === 'share' && segments.length === 3)) return notFound();
   const code = segments[2]!;
   if (request.method === 'GET') {
-    // Primary: resolve through share_links so the code's role
-    // (edit vs view) is carried back to the visitor.
-    // Defensive fallback: a second share_links lookup gated on
-    // diagrams.shareable so a code on a revoked-then-rewritten
-    // diagram still 404s. Both legs query share_links — the
-    // legacy diagrams.share_code column was dropped in
-    // migration 0008.
+    // Resolve through share_links (the single authority): it filters on
+    // expiry and carries the code's real role (edit vs view) back to the
+    // visitor. A null result = expired / revoked / unknown → 404 below.
     const link = await getShareLink(env, code);
     if (link) {
       const d = await getDiagram(env, link.diagramId);
