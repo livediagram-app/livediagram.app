@@ -10,8 +10,7 @@ import type { Env } from '../types';
 import { getParticipant } from './participants';
 
 const TEAM_COLS = 'id, name, organisation, created_at, updated_at';
-const MEMBER_COLS =
-  'id, team_id, user_id, email, role, status, invite_token, created_at, updated_at';
+const MEMBER_COLS = 'id, team_id, user_id, email, role, status, created_at, updated_at';
 
 // Joined-members subquery used everywhere a member count surfaces:
 // pending invites are not members, so they never inflate the number.
@@ -32,7 +31,6 @@ type MemberRow = {
   email: string | null;
   role: string;
   status: string | null;
-  invite_token: string | null;
   created_at: number;
   updated_at: number;
 };
@@ -61,7 +59,6 @@ function rowToMember(row: MemberRow): TeamMember {
     // Filled in by listTeamMembers via the participants join; the bare
     // row mapping leaves it null.
     name: null,
-    inviteToken: row.invite_token ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -250,14 +247,11 @@ export async function addTeamMember(
 ): Promise<TeamMember> {
   const now = Date.now();
   const id = crypto.randomUUID();
-  // Two UUIDs = 244 bits of randomness, hyphens stripped: an
-  // unguessable bearer token for the invite link (spec/32).
-  const inviteToken = (crypto.randomUUID() + crypto.randomUUID()).replace(/-/g, '');
   await env.DB.prepare(
-    `INSERT INTO team_members (id, team_id, user_id, email, role, status, invite_token, created_at, updated_at)
-     VALUES (?, ?, NULL, ?, 'member', 'invited', ?, ?, ?)`,
+    `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
+     VALUES (?, ?, NULL, ?, 'member', 'invited', ?, ?)`,
   )
-    .bind(id, m.teamId, m.email, inviteToken, now, now)
+    .bind(id, m.teamId, m.email, now, now)
     .run();
   return {
     id,
@@ -267,43 +261,9 @@ export async function addTeamMember(
     role: 'member',
     status: 'invited',
     name: null,
-    inviteToken,
     createdAt: now,
     updatedAt: now,
   };
-}
-
-// Claim a pending invite from its shared token (spec/32): connect the
-// invite row to the signed-in caller so it surfaces in their Invites
-// pane to accept. Independent of the verified-email auto-connect, so
-// it works regardless of the Clerk session-token config. Returns the
-// team id (+ whether the caller was already a member) so the client
-// can route; null when the token is unknown, already claimed by
-// someone else, or no longer pending.
-export async function claimInviteByToken(
-  env: Env,
-  token: string,
-  userId: string,
-): Promise<{ teamId: string; alreadyMember: boolean } | null> {
-  const row = await env.DB.prepare(
-    `SELECT id, team_id, user_id FROM team_members
-     WHERE invite_token = ? AND status = 'invited'`,
-  )
-    .bind(token)
-    .first<{ id: string; team_id: string; user_id: string | null }>();
-  if (!row) return null;
-  // Already connected to a different person — the token is spent.
-  if (row.user_id && row.user_id !== userId) return null;
-  // If the caller already has a row on this team (joined, or an invite
-  // connected another way), don't connect a second one.
-  const existing = await getMembership(env, row.team_id, userId);
-  if (existing) return { teamId: row.team_id, alreadyMember: existing.status === 'joined' };
-  await env.DB.prepare(
-    'UPDATE team_members SET user_id = ?, updated_at = ? WHERE id = ? AND user_id IS NULL',
-  )
-    .bind(userId, Date.now(), row.id)
-    .run();
-  return { teamId: row.team_id, alreadyMember: false };
 }
 
 export async function updateTeamMemberRole(

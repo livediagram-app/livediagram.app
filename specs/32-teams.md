@@ -11,9 +11,8 @@ Multi-user team permissions have been "still ahead" since spec/02. This is the f
 Two D1 tables, owned by the api worker (migration `0019_teams.sql`):
 
 - **`teams`**: `id`, `name`, `organisation` (free text, nullable), `created_at`, `updated_at`. No owner column: ownership is expressed through the Admin role in the link table, so a team survives its creator leaving.
-- **`team_members`** (the link table): `id`, `team_id`, `user_id` (nullable), `email` (nullable), `role` (`'admin' | 'member'`), `status` (`'invited' | 'joined'`, migration `0021`), `invite_token` (nullable, migration `0023`), `created_at`, `updated_at`.
+- **`team_members`** (the link table): `id`, `team_id`, `user_id` (nullable), `email` (nullable), `role` (`'admin' | 'member'`), `status` (`'invited' | 'joined'`, migration `0021`), `created_at`, `updated_at`. (Migration `0023` added an `invite_token` column for a shareable-link flow that was later dropped in favour of email matching; the column is retained but unused.)
   - `user_id` is a Clerk user id. Null on a pending invite that hasn't connected yet.
-  - `invite_token` is an unguessable claim token set on invite creation (null on joined / creator rows); it backs the shareable invite link (see below).
   - `email` is the lowercased invite address. Unique per team. May be null only on the creator's row when the deployment's JWT carries no email claim.
   - One of `user_id` / `email` is always set.
   - `status` is the accept/decline handshake state. Creator rows are born `joined`; invite rows are born `invited`. Rows that pre-date migration 0021 were backfilled `joined` (they joined under the old auto-join rules) except never-connected invites, which stayed `invited`.
@@ -38,11 +37,8 @@ The header is consulted **only** for invite matching, never for ownership / writ
 
 Membership is a two-step handshake: being invited does not make someone a member until they accept.
 
-- An Admin invites by email address. That creates a `team_members` row: `role = 'member'`, `email = <lowercased address>`, `user_id = NULL`, **`status = 'invited'`**, and an unguessable **`invite_token`** (migration `0023`). **No email is sent in v1** (Resend hasn't shipped); the inviter shares the invite link out of band.
-- A pending invite connects to the person in **two independent ways**, whichever happens first:
-  - **Token link (primary)**: the Admin copies an invite link (`/live/explorer/invites?token=<invite_token>`) from the member list and shares it. Opening it while signed in `POST`s the token to `/api/teams/invites/claim`, which connects the invite to the caller. Signed-out, the page carries the token through sign-in first. The token is the bearer credential, so it works regardless of the Clerk session-token config — `invite_token` is admin-only in the member list (the worker blanks it for everyone else so it can't be re-shared).
-  - **Lazy email claim (fallback)**: on every authenticated `GET /api/teams` and `GET /api/teams/invites`, the worker connects pending invites (`user_id = <sub> WHERE email = <jwt email> AND user_id IS NULL`) — needs the verified `email` claim (below).
-  - Either way, connecting fills in who the person is, it does **not** accept for them; `status` stays `invited`.
+- An Admin invites by email address. That creates a `team_members` row: `role = 'member'`, `email = <lowercased address>`, `user_id = NULL`, **`status = 'invited'`**. **No email is sent in v1** (Resend hasn't shipped); the inviter tells the person out of band.
+- **Lazy email claim**: on every authenticated `GET /api/teams` and `GET /api/teams/invites`, the worker connects pending invites (`user_id = <sub> WHERE email = <caller's verified email> AND user_id IS NULL`) using the email resolved per the section above, so an invitee just opens the Invites page and sees invites sent to the address they're signed in with. Connecting fills in who the person is, it does **not** accept for them; `status` stays `invited`.
 - The invitee sees the invite in the Explorer's **Invites** section (below, with team name, organisation, and member count) and chooses:
   - **Accept** → `status` flips to `joined`; the team moves into their Teams list and their row in the team reads as a normal member.
   - **Decline** → the member row is deleted; they were never a member. An Admin may re-invite the same address later.
@@ -71,7 +67,6 @@ All under `/api/teams`, Clerk Bearer required, handled by `apps/api/src/routes/t
 
 - `GET /api/teams` — lazy-claims invites (above), then lists teams the caller has **joined**, each with `myRole` and `memberCount`.
 - `GET /api/teams/invites` — lazy-claims, then lists the caller's pending invites (member id + team summary + joined-member count). The Explorer's Invites badge is this list's length.
-- `POST /api/teams/invites/claim` `{token}` — connects the pending invite with that `invite_token` to the signed-in caller (the token link path); returns `{teamId, alreadyMember}`. `404` for an unknown / already-spent token. No email claim required.
 - `POST /api/teams/:id/members/:memberId/accept` — own row only; flips `status` from `invited` to `joined`. Declining is the existing `DELETE` on the own member row.
 - `POST /api/teams` `{id, name, organisation?}` — creates the team plus the caller's Admin member row.
 - `GET /api/teams/:id` — team + full member list + `myRole`. Members only.

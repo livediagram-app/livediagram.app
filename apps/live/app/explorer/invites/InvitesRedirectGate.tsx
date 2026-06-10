@@ -1,53 +1,28 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { apiClaimTeamInvite } from '@/lib/api-client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from '../ExplorerContext';
 import { ExplorerPane } from '../ExplorerPane';
 
-// Invites are team-only (spec/32). Two jobs:
-//   - Signed-out visitor: bounce to sign-in with a `redirect_url` back
-//     here (carrying any `?token=` so the claim resumes post-auth).
-//   - Signed-in visitor arriving with `?token=` (an invite link): claim
-//     it server-side, drop the param, and refresh so the new pending
-//     invite shows. Token-based, so it works regardless of the Clerk
-//     session-token email claim.
-// Clerk-disabled (self-host) deploys have no teams, so we leave the
-// pane be there.
+// Invites are team-only (spec/32), so a signed-out visitor has nothing
+// to see here. Once auth has settled, bounce them to sign-in with a
+// `redirect_url` back to this page so they land on their invites after
+// signing in or registering. Signed-in invitees see their pending
+// invites automatically — the worker connects invites by the verified
+// email the app forwards (no link to claim). Clerk-disabled (self-host)
+// deploys have no teams, so we leave the pane be there.
 export function InvitesRedirectGate() {
-  const { authLoaded, clerkUserId, ownerId, refreshTeams } = useExplorer();
+  const { authLoaded, clerkUserId } = useExplorer();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
   const signedOut = authLoaded && !clerkUserId && clerkEnabled;
 
   useEffect(() => {
-    if (!signedOut) return;
-    // Preserve the invite token through sign-in so the claim resumes.
-    const back = token
-      ? `/live/explorer/invites?token=${encodeURIComponent(token)}`
-      : '/live/explorer/invites';
-    router.replace(`/sign-in/?redirect_url=${encodeURIComponent(back)}`);
-  }, [signedOut, token, router]);
-
-  const claimedRef = useRef(false);
-  useEffect(() => {
-    if (!authLoaded || !clerkUserId || !ownerId || !token || claimedRef.current) return;
-    claimedRef.current = true;
-    void apiClaimTeamInvite(ownerId, token).then((res) => {
-      void refreshTeams();
-      // Already a member → send them to the team; otherwise just drop
-      // the token from the URL (a fresh pending invite now in the pane,
-      // or an invalid token that simply leaves the list unchanged).
-      if (res?.alreadyMember) {
-        router.replace(`/explorer/team?id=${encodeURIComponent(res.teamId)}`);
-      } else {
-        router.replace('/explorer/invites');
-      }
-    });
-  }, [authLoaded, clerkUserId, ownerId, token, router, refreshTeams]);
+    if (signedOut) {
+      router.replace('/sign-in/?redirect_url=/live/explorer/invites');
+    }
+  }, [signedOut, router]);
 
   // Hold the pane back while we redirect so the invites UI doesn't
   // flash for a guest before the bounce lands.

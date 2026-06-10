@@ -11,7 +11,6 @@ import type {
   Folder,
   Team,
   TeamInvite,
-  TeamInviteClaim,
   TeamListItem,
   TeamMember,
   TeamRole,
@@ -44,23 +43,6 @@ async function _apiListTeamInvites(ownerId: string): Promise<TeamInvite[]> {
   return invites;
 }
 export const apiListTeamInvites = dedupeInFlight(_apiListTeamInvites, (ownerId) => ownerId);
-
-// Claim a pending invite from its shared token (spec/32). Connects the
-// invite to the signed-in caller so it surfaces in their Invites pane.
-// Returns null when the token is unknown / spent (a 404), so the UI
-// can message "invite link not valid" without treating it as an error.
-export async function apiClaimTeamInvite(
-  ownerId: string,
-  token: string,
-): Promise<TeamInviteClaim | null> {
-  const res = await fetch(`${API_BASE}/teams/invites/claim`, {
-    method: 'POST',
-    headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ token }),
-  });
-  if (res.status === 404) return null;
-  return expectOk<TeamInviteClaim>(res, 'claim team invite');
-}
 
 // The invitee's yes: flips their own member row from invited to
 // joined. Declining is apiRemoveTeamMember on the same row.

@@ -9,7 +9,6 @@ import type { TeamRole } from '@livediagram/api-schema';
 import {
   acceptTeamMember,
   addTeamMember,
-  claimInviteByToken,
   connectInvitesByEmail,
   countTeamAdmins,
   createTeam,
@@ -93,22 +92,6 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     return notFound();
   }
 
-  // /api/teams/invites/claim — claim a pending invite from its shared
-  // token (spec/32). Token-based, so it works regardless of whether
-  // the deployment configured the verified-email claim. The token is
-  // the bearer credential; the caller just has to be signed in.
-  if (segments.length === 4 && segments[2] === 'invites' && segments[3] === 'claim') {
-    if (request.method === 'POST') {
-      const body = (await request.json().catch(() => null)) as { token?: string } | null;
-      const token = body?.token?.trim();
-      if (!token) return badRequest('missing token');
-      const result = await claimInviteByToken(env, token, clerkUserId);
-      if (!result) return notFound();
-      return json(result);
-    }
-    return notFound();
-  }
-
   // Everything below is team-scoped: resolve the team and the
   // caller's membership once. Non-members get 404 (not 403) so a
   // team id can't be probed for existence. An 'invited' membership
@@ -144,10 +127,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3) {
     if (request.method === 'GET') {
       const members = await listTeamMembers(env, teamId);
-      // Invite tokens are admin-only (they let the holder join); blank
-      // them for everyone else so a member can't lift + re-share one.
-      const safeMembers = isAdmin ? members : members.map((m) => ({ ...m, inviteToken: null }));
-      return json({ team, members: safeMembers, myRole: me.role });
+      return json({ team, members, myRole: me.role });
     }
     if (request.method === 'PUT') {
       if (!isAdmin) return adminRequired();
