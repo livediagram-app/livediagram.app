@@ -235,8 +235,16 @@ export function ListView({
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+      <div
+        className={
+          'grid grid-cols-[1fr_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 ' +
+          (showOwner
+            ? 'sm:grid-cols-[1fr_110px_90px_140px_40px]'
+            : 'sm:grid-cols-[1fr_90px_140px_40px]')
+        }
+      >
         <span>Name</span>
+        {showOwner ? <span className="hidden sm:block">Owner</span> : null}
         <span className="hidden sm:block">Visibility</span>
         <span>Updated</span>
         <span aria-hidden></span>
