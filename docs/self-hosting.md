@@ -77,7 +77,15 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
      Paste the JWKS URL when prompted.
 
-4. **Recommended when Clerk is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into a Clerk account. Without it, anyone who observed a guest's id (it appears in shared-diagram DTOs / presence) could claim that guest's data at sign-up. Generate and set:
+4. **For Teams (spec/32) — add the email claim to the session token.** Invite auto-connection matches pending invites against the verified `email` claim in the Clerk JWT, which the default session token doesn't carry. In the Clerk dashboard, customise the session token (Sessions → Customize session token) to include:
+
+   ```json
+   { "email": "{{user.primary_email_address}}" }
+   ```
+
+   Without it, teams still work (create / roles / member management), but an invited address only connects when an admin re-invites after the claim is configured; the worker never trusts a client-supplied email.
+
+5. **Recommended when Clerk is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into a Clerk account. Without it, anyone who observed a guest's id (it appears in shared-diagram DTOs / presence) could claim that guest's data at sign-up. Generate and set:
 
    ```sh
    openssl rand -hex 32 | pnpm --filter @livediagram/api exec wrangler secret put GUEST_ID_HMAC_SECRET

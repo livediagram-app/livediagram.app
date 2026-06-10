@@ -31,14 +31,16 @@ import {
 
 // What the sidebar tree highlights and what the right pane shows.
 // "Special" nodes (`recent`, `all`, `shared`) are virtual buckets
-// with no folder row behind them; `folder` is a real owned folder.
+// with no folder row behind them; `folder` is a real owned folder and
+// `team` a team the signed-in user belongs to (spec/32).
 export type SelectedNode =
   | { kind: 'recent' }
   | { kind: 'all' }
   | { kind: 'unsorted' }
   | { kind: 'shared' }
   | { kind: 'gallery' }
-  | { kind: 'folder'; id: string };
+  | { kind: 'folder'; id: string }
+  | { kind: 'team'; id: string };
 
 // ---------- Right pane primitives ---------------------------------
 

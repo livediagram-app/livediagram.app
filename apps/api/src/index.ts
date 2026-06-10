@@ -1,4 +1,4 @@
-import { getClerkUserId } from './auth/clerk';
+import { getClerkIdentity } from './auth/clerk';
 import { deleteOldChangeLogEntries, deleteOldEvents } from './db';
 import { DiagramRoom } from './diagram-room';
 import { CORS_HEADERS, json, notFound, rateLimited } from './responses';
@@ -15,6 +15,7 @@ import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
+import { handleTeams } from './routes/teams';
 import { handleShared } from './routes/shared';
 import { handleTelemetry } from './routes/telemetry';
 import type { Env } from './types';
@@ -49,7 +50,11 @@ export default {
     // `ownerOf(request)`, so a signed-in user's diagrams come back
     // under their Clerk userId and guests keep working via the
     // legacy `X-Owner-Id` header.
-    const clerkUserId = await getClerkUserId(env, request);
+    const clerkIdentity = await getClerkIdentity(env, request);
+    const clerkUserId = clerkIdentity?.userId ?? null;
+    // Verified email claim (spec/32) — null unless the deployment's
+    // Clerk JWT template carries it. Only teams consumes it.
+    const clerkEmail = clerkIdentity?.email ?? null;
     const resolveOwner = (): string | null => clerkUserId ?? request.headers.get('X-Owner-Id');
 
     // Per-owner write rate limit. Gates POST / PUT / DELETE at a
@@ -85,7 +90,15 @@ export default {
     // notFound() for sub-paths / methods it doesn't recognise, so an
     // unmatched resource OR an unmatched sub-route both fall through
     // to the final notFound() (preserving the original behaviour).
-    const ctx: RouteContext = { request, env, url, segments, clerkUserId, resolveOwner };
+    const ctx: RouteContext = {
+      request,
+      env,
+      url,
+      segments,
+      clerkUserId,
+      clerkEmail,
+      resolveOwner,
+    };
     try {
       switch (segments[1]) {
         case 'capabilities':
@@ -106,6 +119,8 @@ export default {
           return await handleDiagrams(ctx);
         case 'folders':
           return await handleFolders(ctx);
+        case 'teams':
+          return await handleTeams(ctx);
         case 'account':
           return await handleAccount(ctx);
         case 'preferences':

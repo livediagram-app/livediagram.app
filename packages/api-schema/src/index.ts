@@ -111,6 +111,47 @@ export type Folder = {
 };
 
 // ---------------------------------------------------------------------
+// Teams (spec/32)
+// ---------------------------------------------------------------------
+
+export type TeamRole = 'admin' | 'member';
+
+// A team row. No owner column: ownership is expressed through the
+// Admin role on the member link rows, so a team survives its creator
+// leaving. `organisation` is free text (spec/32), not a foreign key.
+export type Team = {
+  id: string;
+  name: string;
+  organisation: string | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
+// `GET /api/teams` list projection: the team plus the caller's own
+// role (drives which management controls the UI shows) and a member
+// count for the sidebar badge, both joined server-side so the list
+// doesn't need N member fetches.
+export type TeamListItem = Team & {
+  myRole: TeamRole;
+  memberCount: number;
+};
+
+// One member link row. `userId` is the Clerk user id, null while the
+// invite is pending (the address hasn't signed in yet — spec/32's
+// lazy claim fills it in). `email` is the lowercased invite address;
+// null only on a creator row minted when the deployment's JWT carries
+// no email claim. One of the two is always set.
+export type TeamMember = {
+  id: string;
+  teamId: string;
+  userId: string | null;
+  email: string | null;
+  role: TeamRole;
+  createdAt: number;
+  updatedAt: number;
+};
+
+// ---------------------------------------------------------------------
 // Share links (spec/04, spec/11)
 // ---------------------------------------------------------------------
 
@@ -343,6 +384,7 @@ export const TELEMETRY_CATEGORIES = [
   'Folder',
   'Session',
   'AI',
+  'Team',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 

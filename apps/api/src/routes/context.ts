@@ -18,10 +18,15 @@ export type RouteContext = {
   // Path split on '/', leading slash stripped: `['api', '<resource>', ...]`.
   segments: string[];
   // The verified Clerk userId, or null. Routes that must be
-  // Clerk-only (account deletion, guest->authed migration) read this
-  // directly rather than through `resolveOwner` so there's no
-  // X-Owner-Id fallback.
+  // Clerk-only (account deletion, guest->authed migration, teams)
+  // read this directly rather than through `resolveOwner` so there's
+  // no X-Owner-Id fallback.
   clerkUserId: string | null;
+  // The verified `email` claim from the Clerk JWT (spec/32), or null
+  // when Clerk is off, the caller is a guest, or the deployment's JWT
+  // template doesn't carry the claim. Never read from a header — it
+  // drives teams' invite auto-connection so it must be unforgeable.
+  clerkEmail: string | null;
   // Hybrid identity (spec/04): the verified Clerk userId, else the
   // legacy X-Owner-Id header, else null. Resolved once in `fetch`.
   resolveOwner: () => string | null;

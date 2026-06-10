@@ -61,6 +61,23 @@ export function rateLimited(): Response {
   return json({ error: 'rate-limited' }, { status: 429 });
 }
 
+// Clerk-only surfaces (teams, spec/32). Unlike missingAuth() below —
+// which names both identity sources because either is acceptable —
+// this is for endpoints where the guest X-Owner-Id path is
+// structurally insufficient (membership is keyed by Clerk user id +
+// verified email), so the only fix is signing in. 401 rather than 400
+// so the client can branch to its "sign in to use teams" surface.
+export function signInRequired(): Response {
+  return json({ error: 'sign_in_required' }, { status: 401 });
+}
+
+// A write that collides with existing state (duplicate invite email,
+// demoting the last admin, folder-move cycle). The body's `error`
+// token tells the client which rule fired.
+export function conflict(reason: string): Response {
+  return json({ error: reason }, { status: 409 });
+}
+
 // Returned whenever `resolveOwner()` yields null on a mutation /
 // owner-scoped read. Owner can be null for two reasons under hybrid
 // auth (spec/04):

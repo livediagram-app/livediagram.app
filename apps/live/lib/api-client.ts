@@ -15,6 +15,10 @@ export type {
   ImageSummary,
   ShareLink,
   ShareRole,
+  Team,
+  TeamListItem,
+  TeamMember,
+  TeamRole,
 } from '@livediagram/api-schema';
 
 // Core plumbing the app uses directly (base URL, identity headers,
@@ -37,6 +41,7 @@ export * from './api/tabs';
 export * from './api/share';
 export * from './api/change-log';
 export * from './api/folders';
+export * from './api/teams';
 export * from './api/self';
 export * from './api/room';
 export * from './api/images';

@@ -36,7 +36,15 @@ function makeCtx(
     headers: { 'Content-Type': 'application/json' },
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
   });
-  return { request, env: {} as Env, url, segments, clerkUserId: null, resolveOwner: () => owner };
+  return {
+    request,
+    env: {} as Env,
+    url,
+    segments,
+    clerkUserId: null,
+    clerkEmail: null,
+    resolveOwner: () => owner,
+  };
 }
 
 beforeEach(() => {

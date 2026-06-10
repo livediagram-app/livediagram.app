@@ -12,9 +12,13 @@ import {
   type Folder,
   type SharedWithItem,
 } from '@/lib/api-client';
+import Link from 'next/link';
+import { clerkEnabled } from '@/lib/clerk-config';
 import { ensureGuestSelfId } from '@/lib/local-identity';
 import { track } from '@/lib/telemetry';
 import { useFolders } from '@/hooks/useFolders';
+import { useTeams } from '@/hooks/useTeams';
+import { TeamFormModal } from '@/components/TeamFormModal';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useDiagramListActions } from '@/hooks/useDiagramListActions';
 import dynamic from 'next/dynamic';
@@ -28,6 +32,10 @@ const SearchPanel = dynamic(() => import('@/components/SearchPanel').then((m) =>
 // picks the Image Gallery sidebar item, so the upload + delete +
 // usage view doesn't sit in the default explorer chunk.
 const GalleryPane = dynamic(() => import('@/components/GalleryPane').then((m) => m.GalleryPane));
+// Lazy-load TeamPane (spec/32) for the same reason: only mounted when
+// a team is selected in the sidebar, so the member-management view
+// stays out of the default explorer chunk.
+const TeamPane = dynamic(() => import('@/components/TeamPane').then((m) => m.TeamPane));
 import {
   ClockIcon,
   CloseIcon,
@@ -35,7 +43,9 @@ import {
   HomeIcon,
   ImageIcon,
   MenuFolderIcon,
+  PlusIcon,
   ShareIcon,
+  TeamIcon,
 } from './icons';
 import {
   SearchSidebarIcon,
@@ -73,7 +83,7 @@ const SIDEBAR_WIDTH = 256;
 // folder's contents. Subfolders nest in both panes; selecting a
 // folder in the tree or double-clicking a folder row drills in.
 export default function ExplorerPage() {
-  const { authLoaded, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
+  const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
   // signed-in user is keyed by Clerk userId, a guest is keyed by the
   // localStorage UUID (minted on first visit). Null until Clerk has
@@ -91,6 +101,16 @@ export default function ExplorerPage() {
     refresh: refreshFolders,
   } = useFolders(ownerId, { autoLoad: false });
   const [shared, setShared] = useState<SharedWithItem[]>([]);
+  // Teams (spec/32): signed-in only. Guests get a sign-in prompt in
+  // the sidebar section instead of rows; Clerk-disabled self-host
+  // deployments hide the section entirely.
+  const teamsEnabled = Boolean(isSignedIn && clerkUserId);
+  const {
+    teams,
+    createTeam: hookCreateTeam,
+    refresh: refreshTeams,
+  } = useTeams(ownerId, { enabled: teamsEnabled });
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   // Folder id mid-rename so the tree / list row swaps to an input
   // until the user commits or escapes.
@@ -355,7 +375,7 @@ export default function ExplorerPage() {
     if (selected.kind === 'shared') {
       return { showUnsortedRow: false, folders: [], diagrams: [] };
     }
-    if (selected.kind === 'gallery') {
+    if (selected.kind === 'gallery' || selected.kind === 'team') {
       return { showUnsortedRow: false, folders: [], diagrams: [] };
     }
     if (selected.kind === 'unsorted') {
@@ -376,13 +396,16 @@ export default function ExplorerPage() {
   }, [selected, diagrams, childrenByParent, diagramsByFolder, unsortedDiagrams]);
 
   const paneTitle = useMemo(() => {
-    if (selected.kind === 'recent') return 'Recent';
+    if (selected.kind === 'recent') return 'Recent Diagrams';
     if (selected.kind === 'shared') return 'Shared with me';
     if (selected.kind === 'gallery') return 'Image Gallery';
+    if (selected.kind === 'team') {
+      return teams.find((t) => t.id === selected.id)?.name ?? 'Team';
+    }
     if (selected.kind === 'all') return 'All diagrams';
     if (selected.kind === 'unsorted') return 'Unsorted';
     return folderById.get(selected.id)?.name ?? 'Folder';
-  }, [selected, folderById]);
+  }, [selected, folderById, teams]);
 
   // Breadcrumb segments for the pane header. Each segment carries
   // an optional onClick — the leaf (current selection) is plain
@@ -390,9 +413,10 @@ export default function ExplorerPage() {
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {
     const all: Crumb = { name: 'All diagrams', onClick: () => setSelected({ kind: 'all' }) };
-    if (selected.kind === 'recent') return [{ name: 'Recent' }];
+    if (selected.kind === 'recent') return [{ name: 'Recent Diagrams' }];
     if (selected.kind === 'shared') return [{ name: 'Shared with me' }];
     if (selected.kind === 'gallery') return [{ name: 'Image Gallery' }];
+    if (selected.kind === 'team') return [{ name: paneTitle }];
     if (selected.kind === 'all') return [{ name: 'All diagrams' }];
     if (selected.kind === 'unsorted') return [all, { name: 'Unsorted' }];
     const chain = breadcrumb(selected.id);
@@ -405,7 +429,7 @@ export default function ExplorerPage() {
       { name: chain[chain.length - 1]?.name ?? 'Folder' },
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, folderById]);
+  }, [selected, folderById, paneTitle]);
 
   // Wait for Clerk to settle so a signed-in user never momentarily
   // reads the localStorage guest id and refreshes against the wrong
@@ -461,7 +485,7 @@ export default function ExplorerPage() {
       <div className="my-4 h-px bg-slate-100" aria-hidden />
       <SidebarRow
         icon={<ClockIcon />}
-        label="Recent"
+        label="Recent Diagrams"
         selected={selected.kind === 'recent'}
         onClick={() => go({ kind: 'recent' })}
         depth={0}
@@ -505,6 +529,50 @@ export default function ExplorerPage() {
           folderActions={folderActions}
         />
       ))}
+
+      {/* Teams (spec/32): signed-in only. Guests see a sign-in nudge
+          instead of rows; when Clerk isn't part of the deployment the
+          section disappears entirely (teams can't exist without it). */}
+      {clerkEnabled ? (
+        <>
+          <SidebarSectionLabel>Teams</SidebarSectionLabel>
+          {teamsEnabled ? (
+            <>
+              {teams.map((t) => (
+                <SidebarRow
+                  key={t.id}
+                  icon={<TeamIcon />}
+                  label={t.name}
+                  selected={selected.kind === 'team' && selected.id === t.id}
+                  onClick={() => go({ kind: 'team', id: t.id })}
+                  depth={0}
+                  badge={t.memberCount > 1 ? t.memberCount : undefined}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  setTeamModalOpen(true);
+                  setMobileNavOpen(false);
+                }}
+                className="flex w-full items-center gap-1.5 rounded-md py-1 pl-6 pr-1 text-left text-xs text-slate-500 transition hover:bg-slate-100 hover:text-brand-700"
+              >
+                <span className="shrink-0 text-slate-400">
+                  <PlusIcon />
+                </span>
+                New team
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/sign-in/"
+              className="flex w-full items-center gap-1.5 rounded-md py-1 pl-6 pr-1 text-left text-xs text-slate-500 transition hover:bg-slate-100 hover:text-brand-700"
+            >
+              Sign in to use teams
+            </Link>
+          )}
+        </>
+      ) : null}
 
       <SidebarSectionLabel>Library</SidebarSectionLabel>
       <SidebarRow
@@ -587,7 +655,7 @@ export default function ExplorerPage() {
             crumbs={paneCrumbs}
             onOpenNav={() => setMobileNavOpen(true)}
             onCreateDiagram={
-              selected.kind === 'shared' || selected.kind === 'gallery'
+              selected.kind === 'shared' || selected.kind === 'gallery' || selected.kind === 'team'
                 ? undefined
                 : () =>
                     window.location.assign(
@@ -597,6 +665,7 @@ export default function ExplorerPage() {
             onCreateFolder={
               selected.kind === 'shared' ||
               selected.kind === 'gallery' ||
+              selected.kind === 'team' ||
               selected.kind === 'recent'
                 ? undefined
                 : () => createFolder(selected.kind === 'folder' ? selected.id : null)
@@ -606,6 +675,16 @@ export default function ExplorerPage() {
 
           {loading ? (
             <SkeletonRows />
+          ) : selected.kind === 'team' ? (
+            ownerId ? (
+              <TeamPane
+                ownerId={ownerId}
+                teamId={selected.id}
+                clerkUserId={clerkUserId ?? null}
+                onTeamsChanged={() => void refreshTeams()}
+                onLeftTeam={() => setSelected({ kind: 'recent' })}
+              />
+            ) : null
           ) : selected.kind === 'gallery' ? (
             ownerId ? (
               <GalleryPane ownerId={ownerId} />
@@ -671,6 +750,18 @@ export default function ExplorerPage() {
           ))}
         </PortalMenu>
       ) : null}
+      <TeamFormModal
+        open={teamModalOpen}
+        title="New team"
+        submitLabel="Create team"
+        onSubmit={(values) => {
+          setTeamModalOpen(false);
+          void hookCreateTeam(values).then((team) => {
+            if (team) setSelected({ kind: 'team', id: team.id });
+          });
+        }}
+        onCancel={() => setTeamModalOpen(false)}
+      />
       {searchOpen ? (
         <SearchPanel
           diagrams={diagrams.map((d) => ({ id: d.id, name: d.name }))}

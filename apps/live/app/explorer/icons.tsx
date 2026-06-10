@@ -171,6 +171,27 @@ export function ImageIcon() {
   );
 }
 
+export function TeamIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="5.5" cy="6" r="2.2" />
+      <path d="M1.8 13.2c.5-2.1 1.9-3.2 3.7-3.2s3.2 1.1 3.7 3.2" />
+      <circle cx="11.5" cy="5" r="1.8" />
+      <path d="M10.4 9.3c.35-.1.72-.15 1.1-.15 1.6 0 2.8 1 3.2 2.85" />
+    </svg>
+  );
+}
+
 export function EllipsisIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>

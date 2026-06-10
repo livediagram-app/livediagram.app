@@ -57,6 +57,7 @@ function makeCtx(opts: {
     url: new URL(request.url),
     segments: ['api', 'ai'],
     clerkUserId: opts.clerkUserId ?? null,
+    clerkEmail: null,
     resolveOwner: () => opts.clerkUserId ?? 'owner-anon',
   };
 }

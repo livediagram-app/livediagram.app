@@ -46,7 +46,15 @@ function makeCtx(
     IMAGES: opts.images === undefined ? imagesBinding() : opts.images,
   } as unknown as Env;
   const request = new Request(url, { method, headers: { 'Content-Type': 'application/json' } });
-  return { request, env, url, segments, clerkUserId: null, resolveOwner: () => owner };
+  return {
+    request,
+    env,
+    url,
+    segments,
+    clerkUserId: null,
+    clerkEmail: null,
+    resolveOwner: () => owner,
+  };
 }
 
 beforeEach(() => {
