@@ -439,7 +439,7 @@ export function IconButton({
       disabled={disabled}
       draggable={draggable}
       onDragStart={onDragStart}
-      className={`relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40 ${tone}`}
+      className={`relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`}
     >
       {children}
       {showBadge ? (

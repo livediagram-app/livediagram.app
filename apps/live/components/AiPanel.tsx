@@ -238,7 +238,7 @@ export function AiPanelContent({
                 setPrompt(s);
                 void handleSend(s);
               }}
-              className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-brand-500/50 dark:hover:text-brand-400"
+              className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-brand-500/50 dark:hover:text-brand-400"
             >
               {s}
             </button>
@@ -319,7 +319,7 @@ export function AiPanelContent({
           onClick={() => void handleSend()}
           disabled={isLoading || ownerId === 'self'}
           aria-label="Send"
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 py-1.5 text-[12px] font-medium text-white transition hover:bg-brand-600 disabled:opacity-40"
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 py-1.5 text-[12px] font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
         >
           {isLoading ? <Spinner small /> : <SendIcon />}
           {isLoading ? 'Thinking…' : 'Send'}

@@ -223,7 +223,7 @@ export function CommentThreadPopover({
                 type="button"
                 onClick={submit}
                 disabled={!draft.trim()}
-                className="rounded bg-brand-500 px-3 py-1 text-[11px] font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded bg-brand-500 px-3 py-1 text-[11px] font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Comment
               </button>

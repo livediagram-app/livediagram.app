@@ -200,7 +200,7 @@ export function LinkPickerDialog({
                 type="button"
                 onClick={saveUrl}
                 disabled={!urlInput.trim()}
-                className="mt-1 self-start rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+                className="mt-1 self-start rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Save link
               </button>

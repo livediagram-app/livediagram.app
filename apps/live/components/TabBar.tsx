@@ -837,7 +837,7 @@ function PortalMenu({
                 type="submit"
                 aria-label="Create folder"
                 disabled={!newFolder.trim()}
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-40 dark:text-slate-300 dark:hover:bg-slate-700"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
               >
                 +
               </button>
