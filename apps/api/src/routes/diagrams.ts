@@ -26,6 +26,7 @@ import {
   getDiagram,
   getDiagramSharePassword,
   getFolder,
+  getMembership,
   getParticipant,
   getShareLink,
   getShareLinkIncludingExpired,
@@ -81,6 +82,9 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         shareable: body.shareable ?? false,
         shareCode: body.shareCode ?? null,
         folderId: body.folderId ?? null,
+        // Diagrams are always created personal; they move into a
+        // team library via PUT /folder afterwards (spec/35).
+        teamId: null,
         savedAt: now,
         createdAt: body.createdAt ?? now,
       });
@@ -132,7 +136,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // Anyone with the diagram id could previously rewrite it.
       // We now gate on canEditDiagram so only the owner or an
       // edit-role share visitor can touch metadata.
-      const allowed = existing ? await gateEdit(ctx, id, ownerId) : true; // create-on-first-write keeps the prior behaviour
+      const allowed = existing ? await gateEdit(ctx, id, ownerId, existing.teamId) : true; // create-on-first-write keeps the prior behaviour
       if (!allowed) return forbidden();
       await upsertDiagramMeta(env, {
         id,
@@ -141,6 +145,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         shareable: existing?.shareable ?? false,
         shareCode: existing?.shareCode ?? null,
         folderId: existing?.folderId ?? null,
+        teamId: existing?.teamId ?? null,
         savedAt: now,
         createdAt: existing?.createdAt ?? now,
       });
@@ -191,7 +196,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // (view-role visitors can fork their own copy, so this
       // is a read check, not an edit check). The third leg is
       // copy-specific so it stays inline.
-      let allowed = await gateRead(ctx, id, source.ownerId);
+      let allowed = await gateRead(ctx, id, source.ownerId, source.teamId);
       if (!allowed) {
         const sharedRows = await listSharedWith(env, owner);
         if (sharedRows.some((s) => s.id === id)) allowed = true;
@@ -208,22 +213,65 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  // /api/diagrams/<id>/folder — owner-only assignment to a folder
-  // (or null for Unsorted). See spec/15. Folder existence + owner
-  // match is validated before the write so we don't leave the
-  // diagram pointing at a folder it can't see.
+  // /api/diagrams/<id>/folder — placement (spec/15 + spec/35). Body:
+  // { folderId, teamId? }. Personal placement (teamId null) stays
+  // owner-only. Team placement rules:
+  //   - moving INTO a team (or between teams) is owner-only, and the
+  //     owner must be a joined member of the destination team;
+  //   - WITHIN the diagram's current team, any joined member may
+  //     re-folder it, or remove it from the team (teamId: null →
+  //     back to the OWNER's personal Unsorted).
+  // Folder existence + scope match is validated before the write so
+  // the diagram never points at a folder outside its scope.
   if (segments.length === 4 && segments[3] === 'folder') {
     const id = segments[2]!;
-    const existing = await requireOwnedDiagram(ctx, id);
-    if (existing instanceof Response) return existing;
     if (request.method === 'PUT') {
-      const body = (await request.json()) as { folderId?: string | null };
+      const owner = requireOwner(ctx);
+      if (owner instanceof Response) return owner;
+      const existing = await getDiagram(env, id);
+      if (!existing) return notFound();
+      const body = (await request.json()) as { folderId?: string | null; teamId?: string | null };
       const folderId = body.folderId ?? null;
+      const teamId = body.teamId !== undefined ? body.teamId : existing.teamId;
+      const isOwner = existing.ownerId === owner;
+      const caller = ctx.clerkUserId;
+
+      if (teamId !== existing.teamId) {
+        // Changing scope. Into a team: owner-only + joined member of
+        // the destination. Out of a team (teamId null): owner, or any
+        // joined member of the CURRENT team.
+        if (teamId !== null) {
+          if (!isOwner) return forbidden();
+          if (!caller) return forbidden();
+          const membership = await getMembership(env, teamId, caller);
+          if (membership?.status !== 'joined') return forbidden();
+        } else if (!isOwner) {
+          if (!caller || !existing.teamId) return forbidden();
+          const membership = await getMembership(env, existing.teamId, caller);
+          if (membership?.status !== 'joined') return forbidden();
+        }
+      } else if (!isOwner) {
+        // Same scope, non-owner: only legal inside a team the caller
+        // has joined (re-foldering a teammate's diagram).
+        if (!caller || !existing.teamId) return forbidden();
+        const membership = await getMembership(env, existing.teamId, caller);
+        if (membership?.status !== 'joined') return forbidden();
+      }
+
       if (folderId !== null) {
         const folder = await getFolder(env, folderId);
-        if (!folder || folder.ownerId !== existing.ownerId) return notFound();
+        if (!folder) return notFound();
+        // Scope match: personal placement needs the owner's personal
+        // folder; team placement needs a folder of that team.
+        if (teamId === null && (folder.teamId !== null || folder.ownerId !== existing.ownerId)) {
+          return notFound();
+        }
+        if (teamId !== null && folder.teamId !== teamId) return notFound();
       }
-      await setDiagramFolder(env, id, folderId);
+      // Removing from a team always lands in the owner's personal
+      // Unsorted (folderId forced null when leaving with a stale
+      // folder id would be a scope mismatch caught above).
+      await setDiagramFolder(env, id, folderId, teamId);
       return noContent();
     }
   }
@@ -248,7 +296,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (!existing) return notFound();
 
     if (request.method === 'GET') {
-      const allowed = await gateRead(ctx, id, existing.ownerId);
+      const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId);
       if (!allowed) return forbidden();
       const tab = await getTab(env, id, tabId);
       if (!tab) return notFound();
@@ -265,7 +313,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     }
 
     // Writes below: owner or edit-role share visitor only.
-    const allowed = await gateEdit(ctx, id, existing.ownerId);
+    const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId);
     if (!allowed) return forbidden();
     if (request.method === 'PUT') {
       const body = (await request.json()) as Tab;
@@ -323,7 +371,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (owner instanceof Response) return owner;
     const existing = await getDiagram(env, id);
     if (!existing) return notFound();
-    const allowed = await gateRead(ctx, id, existing.ownerId);
+    const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId);
     if (!allowed) return forbidden();
     let body: { elementId?: unknown; text?: unknown };
     try {
@@ -392,7 +440,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (owner instanceof Response) return owner;
     const existing = await getDiagram(env, id);
     if (!existing) return notFound();
-    const allowed = await gateRead(ctx, id, existing.ownerId);
+    const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId);
     if (!allowed) return forbidden();
     const tab = await getTab(env, id, tabId);
     if (!tab) return notFound();
@@ -592,6 +640,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       if (code) {
         const link = await getShareLink(env, code);
         if (link && link.diagramId === id) role = link.role;
+      }
+      // Team diagrams (spec/35): a claimed id that is a JOINED member
+      // of the diagram's team gets edit, same trust level as the
+      // owner-id match above (WS upgrades can't carry the Bearer).
+      if (!role && diagram?.teamId && claimedOwnerId) {
+        const membership = await getMembership(env, diagram.teamId, claimedOwnerId);
+        if (membership?.status === 'joined') role = 'edit';
       }
     }
     // Refuse the upgrade unless the caller is the owner or holds a valid

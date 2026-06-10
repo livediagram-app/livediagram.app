@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { SignInIcon } from '@/components/AuthControls';
+import { Tooltip } from '@/components/Tooltip';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from './ExplorerContext';
 import {
@@ -81,7 +82,7 @@ export function ExplorerSidebar() {
         badge={shared.length > 0 ? shared.length : undefined}
       />
 
-      <SidebarSectionLabel>Folders</SidebarSectionLabel>
+      <SidebarSectionLabel>My Work</SidebarSectionLabel>
       <SidebarRow
         icon={<HomeIcon />}
         label="All diagrams"
@@ -125,7 +126,29 @@ export function ExplorerSidebar() {
           section disappears entirely (teams can't exist without it). */}
       {clerkEnabled ? (
         <>
-          <SidebarSectionLabel>Teams</SidebarSectionLabel>
+          {/* New-team lives as a plus on the section label (not a row
+              of its own) with a desktop tooltip. */}
+          <SidebarSectionLabel
+            action={
+              teamsEnabled ? (
+                <Tooltip title="New team" description="Create a team and invite people by email.">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTeamModalOpen(true);
+                      setMobileNavOpen(false);
+                    }}
+                    aria-label="New team"
+                    className="-my-1 flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700"
+                  >
+                    <PlusIcon />
+                  </button>
+                </Tooltip>
+              ) : undefined
+            }
+          >
+            Teams
+          </SidebarSectionLabel>
           {teamsEnabled ? (
             <>
               {teams.map((t) => (
@@ -139,19 +162,6 @@ export function ExplorerSidebar() {
                   badge={t.memberCount > 1 ? t.memberCount : undefined}
                 />
               ))}
-              <button
-                type="button"
-                onClick={() => {
-                  setTeamModalOpen(true);
-                  setMobileNavOpen(false);
-                }}
-                className="flex w-full items-center gap-1.5 rounded-md py-1 pl-7 pr-1 text-left text-xs text-slate-500 transition hover:bg-slate-100 hover:text-brand-700"
-              >
-                <span className="shrink-0 text-slate-400">
-                  <PlusIcon />
-                </span>
-                New team
-              </button>
               {/* Badge always rendered, zero included — the user gets a
                   stable "is there anything waiting?" answer at a glance
                   rather than having to notice an absence. */}

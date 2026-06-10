@@ -164,3 +164,107 @@ describe('buildSearchResults', () => {
     });
   });
 });
+
+describe('buildSearchResults — table cells (spec/09 Search panel)', () => {
+  const table = (id: string, cells: string[][]): Element =>
+    ({ id, type: 'table', x: 0, y: 0, width: 200, height: 100, cells }) as Element;
+
+  it('matches a table by its cell text and surfaces the matching cell as the label', () => {
+    const t = tab('t1', 'Tab', [
+      table('tbl', [
+        ['Owner', 'Status'],
+        ['Sasha', 'Blocked on review'],
+      ]),
+    ]);
+    const out = buildSearchResults({ query: 'blocked', diagrams: [], folders: [], tabs: [t] });
+    const elementGroup = out.find((g) => g.key === 'elements')!;
+    expect(elementGroup.items[0]).toMatchObject({
+      kind: 'element',
+      elementId: 'tbl',
+      label: 'Blocked on review',
+      type: 'table',
+    });
+  });
+
+  it('skips tables whose cells are all empty (nothing matchable)', () => {
+    const t = tab('t1', 'Tab', [
+      table('tbl', [
+        ['', ' '],
+        ['', ''],
+      ]),
+    ]);
+    const out = buildSearchResults({ query: '', diagrams: [], folders: [], tabs: [t] });
+    expect(out.find((g) => g.key === 'elements')).toBeUndefined();
+  });
+
+  it('surfaces a table on the empty query via its first non-empty cell, like labelled elements', () => {
+    const t = tab('t1', 'Tab', [table('tbl', [['', 'First cell with text']])]);
+    const out = buildSearchResults({ query: '', diagrams: [], folders: [], tabs: [t] });
+    const elementGroup = out.find((g) => g.key === 'elements')!;
+    expect(elementGroup.items[0]).toMatchObject({
+      elementId: 'tbl',
+      label: 'First cell with text',
+    });
+  });
+});
+
+describe('buildSearchResults — shared diagrams + teams (spec/09 Search panel)', () => {
+  it('matches "Shared with you" rows by name and carries the share code for navigation', () => {
+    const out = buildSearchResults({
+      query: 'road',
+      diagrams: [],
+      folders: [],
+      shared: [
+        { id: 'd1', name: 'Roadmap 2026', shareCode: 'CODE1' },
+        { id: 'd2', name: 'Other', shareCode: 'CODE2' },
+      ],
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0]!.key).toBe('shared');
+    expect(out[0]!.items[0]).toMatchObject({
+      kind: 'shared',
+      id: 'd1',
+      name: 'Roadmap 2026',
+      shareCode: 'CODE1',
+    });
+  });
+
+  it('matches teams by name', () => {
+    const out = buildSearchResults({
+      query: 'platform',
+      diagrams: [],
+      folders: [],
+      teams: [
+        { id: 'team1', name: 'Platform' },
+        { id: 'team2', name: 'Design' },
+      ],
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0]!.key).toBe('teams');
+    expect(out[0]!.items[0]).toMatchObject({ kind: 'team', id: 'team1', name: 'Platform' });
+  });
+
+  it('keeps the section order: diagrams, shared, folders, teams, tabs, elements', () => {
+    const out = buildSearchResults({
+      query: '',
+      diagrams: [{ id: 'd1', name: 'A' }],
+      folders: [{ id: 'f1', name: 'B' }],
+      shared: [{ id: 's1', name: 'C', shareCode: 'X' }],
+      teams: [{ id: 't1', name: 'D' }],
+      tabs: [tab('tab1', 'E', [shape('e1', 'F')])],
+    });
+    expect(out.map((g) => g.key)).toEqual([
+      'diagrams',
+      'shared',
+      'folders',
+      'teams',
+      'tabs',
+      'elements',
+    ]);
+  });
+
+  it('omits shared + teams groups entirely when the inputs are absent (guest case)', () => {
+    const out = buildSearchResults({ query: '', diagrams: [], folders: [{ id: 'f1', name: 'F' }] });
+    expect(out.map((g) => g.key)).toEqual(['folders']);
+  });
+});

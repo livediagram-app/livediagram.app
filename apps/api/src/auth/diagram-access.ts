@@ -12,6 +12,11 @@
 //   The diagram-id match on the link prevents a stale code for a
 //   different diagram leaking write access through.
 //
+//   Both additionally allow a JOINED member of the diagram's team
+//   (spec/35): a team's shared library grants edit to its members,
+//   checked against the verified caller identity. Invited (not yet
+//   accepted) members get nothing, consistent with spec/32.
+//
 //   canReadDiagram: owner, OR ANY valid share code (view or edit)
 //   that maps to this diagram. Reads must be open to view-role
 //   visitors: a view-only share link exists precisely so
@@ -21,7 +26,7 @@
 //   the image route applies (a share code for the diagram,
 //   regardless of role).
 
-import { getDiagramSharePassword, getShareLink } from '../db';
+import { getDiagramSharePassword, getMembership, getShareLink } from '../db';
 import type { Env } from '../types';
 import { timingSafeEqual } from './timing-safe';
 
@@ -41,6 +46,19 @@ async function sharePasswordOk(
   return provided != null && (await timingSafeEqual(provided, required));
 }
 
+// Joined-member check for team diagrams (spec/35). `owner` here is
+// the resolved caller identity (Clerk userId or guest id); guest ids
+// never match a membership row, so the guest path stays unaffected.
+async function isJoinedTeamMember(
+  env: Env,
+  teamId: string | null,
+  caller: string | null,
+): Promise<boolean> {
+  if (!teamId || !caller) return false;
+  const membership = await getMembership(env, teamId, caller);
+  return membership?.status === 'joined';
+}
+
 export async function canEditDiagram(
   env: Env,
   diagramId: string,
@@ -48,8 +66,10 @@ export async function canEditDiagram(
   shareCode: string | null,
   ownerId: string,
   sharePassword: string | null = null,
+  teamId: string | null = null,
 ): Promise<boolean> {
   if (owner && owner === ownerId) return true;
+  if (await isJoinedTeamMember(env, teamId, owner)) return true;
   if (!shareCode) return false;
   const link = await getShareLink(env, shareCode);
   if (!link) return false;
@@ -65,8 +85,10 @@ export async function canReadDiagram(
   shareCode: string | null,
   ownerId: string,
   sharePassword: string | null = null,
+  teamId: string | null = null,
 ): Promise<boolean> {
   if (owner && owner === ownerId) return true;
+  if (await isJoinedTeamMember(env, teamId, owner)) return true;
   if (!shareCode) return false;
   const link = await getShareLink(env, shareCode);
   if (!link || link.diagramId !== diagramId) return false;

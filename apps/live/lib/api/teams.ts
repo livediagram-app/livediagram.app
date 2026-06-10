@@ -6,7 +6,15 @@
 // guard) return discriminated results instead of throwing, because the
 // UI has to message them ("Already on this team") rather than treat
 // them as transport failures.
-import type { Team, TeamInvite, TeamListItem, TeamMember, TeamRole } from '@livediagram/api-schema';
+import type {
+  DiagramSummary,
+  Folder,
+  Team,
+  TeamInvite,
+  TeamListItem,
+  TeamMember,
+  TeamRole,
+} from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import { API_BASE, apiDelete, apiHeaders, expectOk } from './core';
 
@@ -15,6 +23,7 @@ export type TeamResponse = { team: Team };
 export type TeamDetailResponse = { team: Team; members: TeamMember[]; myRole: TeamRole };
 export type TeamMemberResponse = { member: TeamMember };
 export type TeamInvitesResponse = { invites: TeamInvite[] };
+export type TeamLibraryResponse = { folders: Folder[]; diagrams: DiagramSummary[] };
 
 // Same dedupe rationale as apiListFolders: the sidebar list is
 // fetched once per surface, and concurrent mounts must not fan out
@@ -48,6 +57,18 @@ export async function apiAcceptTeamInvite(
   });
   const { member } = await expectOk<TeamMemberResponse>(res, 'accept team invite');
   return member;
+}
+
+// The team's shared library (spec/35): folder tree + diagrams in one
+// call, joined members only.
+export async function apiGetTeamLibrary(
+  ownerId: string,
+  teamId: string,
+): Promise<TeamLibraryResponse> {
+  const res = await fetch(`${API_BASE}/teams/${teamId}/library`, {
+    headers: await apiHeaders(ownerId),
+  });
+  return expectOk<TeamLibraryResponse>(res, 'load team library');
 }
 
 export async function apiCreateTeam(

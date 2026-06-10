@@ -58,6 +58,7 @@ export function gateRead(
   ctx: RouteContext,
   diagramId: string,
   diagramOwnerId: string,
+  diagramTeamId: string | null = null,
 ): Promise<boolean> {
   return canReadDiagram(
     ctx.env,
@@ -66,6 +67,7 @@ export function gateRead(
     shareCodeOf(ctx.request),
     diagramOwnerId,
     sharePasswordOf(ctx.request),
+    diagramTeamId,
   );
 }
 
@@ -73,6 +75,7 @@ export function gateEdit(
   ctx: RouteContext,
   diagramId: string,
   diagramOwnerId: string,
+  diagramTeamId: string | null = null,
 ): Promise<boolean> {
   return canEditDiagram(
     ctx.env,
@@ -81,6 +84,7 @@ export function gateEdit(
     shareCodeOf(ctx.request),
     diagramOwnerId,
     sharePasswordOf(ctx.request),
+    diagramTeamId,
   );
 }
 
@@ -136,7 +140,12 @@ export async function requireDiagramAccess(
   if (!owner) return missingAuth();
   const existing = await getDiagram(ctx.env, diagramId);
   if (!existing) return notFound();
-  const allowed = await (mode === 'edit' ? gateEdit : gateRead)(ctx, diagramId, existing.ownerId);
+  const allowed = await (mode === 'edit' ? gateEdit : gateRead)(
+    ctx,
+    diagramId,
+    existing.ownerId,
+    existing.teamId,
+  );
   if (!allowed) return forbidden();
   return existing;
 }

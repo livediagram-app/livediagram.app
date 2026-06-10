@@ -6,10 +6,11 @@ import { Brand } from '@livediagram/ui';
 import { AuthControls } from '@/components/AuthControls';
 import { TeamFormModal } from '@/components/TeamFormModal';
 import { MenuItem, PortalMenu } from '@/components/PortalMenu';
+import { MenuSection } from '@/components/PortalMenu';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
-import { CloseIcon, MenuFolderIcon } from './icons';
+import { CloseIcon, MenuFolderIcon, TeamIcon } from './icons';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
 // gated on `searchOpen`, never default-rendered, and dropping ~375
@@ -45,6 +46,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
   const {
     diagrams,
     folders,
+    shared,
+    teams,
     go,
     mobileNavOpen,
     setMobileNavOpen,
@@ -55,6 +58,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     moveAnchorRef,
     movePickerRows,
     moveDiagramToFolder,
+    moveDiagramToTeam,
     moveFolderToParent,
     teamModalOpen,
     setTeamModalOpen,
@@ -145,6 +149,25 @@ function ShellChrome({ children }: { children: ReactNode }) {
               }}
             />
           ))}
+          {/* Team destinations (spec/35): diagrams only — folders
+              stay personal. Lands in the team's Unsorted; organise
+              further on the team page. */}
+          {moveTarget.kind === 'diagram' && teams.length > 0 ? (
+            <>
+              <MenuSection label="Teams" />
+              {teams.map((t) => (
+                <MenuItem
+                  key={t.id}
+                  icon={<TeamIcon />}
+                  label={t.name}
+                  onClick={() => {
+                    moveDiagramToTeam(moveTarget.id, t.id);
+                    setMoveTarget(null);
+                  }}
+                />
+              ))}
+            </>
+          ) : null}
         </PortalMenu>
       ) : null}
       <TeamFormModal
@@ -163,11 +186,21 @@ function ShellChrome({ children }: { children: ReactNode }) {
         <SearchPanel
           diagrams={diagrams.map((d) => ({ id: d.id, name: d.name }))}
           folders={folders.map((f) => ({ id: f.id, name: f.name }))}
+          shared={shared.map((s) => ({ id: s.id, name: s.name, shareCode: s.shareCode }))}
+          teams={teams.map((t) => ({ id: t.id, name: t.name }))}
           onSelectDiagram={(id) => {
             window.location.assign(`/live/diagram/${id}`);
           }}
+          onSelectShared={(id, shareCode) => {
+            // Non-owners can only open the diagram on the visitor URL.
+            window.location.assign(`/live/diagram/${id}?s=${encodeURIComponent(shareCode)}`);
+          }}
           onSelectFolder={(id) => {
             go({ kind: 'folder', id });
+            setSearchOpen(false);
+          }}
+          onSelectTeam={(id) => {
+            go({ kind: 'team', id });
             setSearchOpen(false);
           }}
           onClose={() => setSearchOpen(false)}

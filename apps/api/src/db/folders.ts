@@ -1,15 +1,28 @@
-// folders — owner-scoped, self-referential tree. See spec/15-folders.md.
+// folders — self-referential tree, personal (owner-scoped, spec/15)
+// or team-scoped (spec/35) via the nullable team_id column.
 
 import { rowToFolder, type FolderRow } from '../folder-row';
 import type { Env, FolderDTO } from '../types';
 
-const FOLDER_COLS = 'id, owner_id, parent_id, name, created_at, updated_at';
+const FOLDER_COLS = 'id, owner_id, parent_id, team_id, name, created_at, updated_at';
 
+// Personal tree only: team folders never bleed into the owner's
+// Explorer sidebar (they render on the team page instead — spec/35).
 export async function listFoldersByOwner(env: Env, ownerId: string): Promise<FolderDTO[]> {
   const result = await env.DB.prepare(
-    `SELECT ${FOLDER_COLS} FROM folders WHERE owner_id = ? ORDER BY name ASC`,
+    `SELECT ${FOLDER_COLS} FROM folders WHERE owner_id = ? AND team_id IS NULL ORDER BY name ASC`,
   )
     .bind(ownerId)
+    .all<FolderRow>();
+  return (result.results ?? []).map(rowToFolder);
+}
+
+// One team's shared folder tree (spec/35).
+export async function listFoldersByTeam(env: Env, teamId: string): Promise<FolderDTO[]> {
+  const result = await env.DB.prepare(
+    `SELECT ${FOLDER_COLS} FROM folders WHERE team_id = ? ORDER BY name ASC`,
+  )
+    .bind(teamId)
     .all<FolderRow>();
   return (result.results ?? []).map(rowToFolder);
 }
@@ -23,19 +36,21 @@ export async function getFolder(env: Env, id: string): Promise<FolderDTO | null>
 
 export async function createFolder(
   env: Env,
-  f: { id: string; ownerId: string; parentId: string | null; name: string },
+  f: { id: string; ownerId: string; parentId: string | null; name: string; teamId?: string | null },
 ): Promise<FolderDTO> {
   const now = Date.now();
+  const teamId = f.teamId ?? null;
   await env.DB.prepare(
-    `INSERT INTO folders (id, owner_id, parent_id, name, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO folders (id, owner_id, parent_id, team_id, name, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(f.id, f.ownerId, f.parentId, f.name, now, now)
+    .bind(f.id, f.ownerId, f.parentId, teamId, f.name, now, now)
     .run();
   return {
     id: f.id,
     ownerId: f.ownerId,
     parentId: f.parentId,
+    teamId,
     name: f.name,
     createdAt: now,
     updatedAt: now,

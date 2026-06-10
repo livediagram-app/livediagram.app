@@ -254,7 +254,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
           // future tightening of the share-code check (e.g.
           // explicit expiry, IP throttling) lands once and
           // both routes follow.
-          const diagramReadable = await gateRead(ctx, d, diagram.ownerId);
+          const diagramReadable = await gateRead(ctx, d, diagram.ownerId, diagram.teamId);
           if (diagramReadable) {
             allowed = await diagramReferencesImage(env, d, imageId);
           }

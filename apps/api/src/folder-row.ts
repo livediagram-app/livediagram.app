@@ -11,6 +11,7 @@ export type FolderRow = {
   id: string;
   owner_id: string;
   parent_id: string | null;
+  team_id: string | null;
   name: string;
   created_at: number;
   updated_at: number;
@@ -31,6 +32,10 @@ export function rowToFolder(row: FolderRow): FolderDTO {
     id: row.id,
     ownerId: row.owner_id,
     parentId: row.parent_id,
+    // Team scope (spec/35): drives which authorisation rule the
+    // folder routes apply (membership vs ownership), so it matters
+    // as much as owner_id below.
+    teamId: row.team_id ?? null,
     name: row.name,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

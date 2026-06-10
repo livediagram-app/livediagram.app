@@ -41,20 +41,26 @@ export function SearchSidebarIcon() {
 export function SidebarSectionLabel({
   children,
   first,
+  action,
 }: {
   children: React.ReactNode;
   // `first` skips the inter-section gap on the topmost label so the
   // sidebar box has matching breathing room above the first label and
   // below the last row. Without this the top reads as too padded.
   first?: boolean;
+  // Optional right-aligned control on the label row (e.g. the Teams
+  // section's new-team plus, spec/32) so section-level actions don't
+  // need their own row.
+  action?: React.ReactNode;
 }) {
   return (
     <div
-      className={`px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${
+      className={`flex items-center justify-between px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${
         first ? '' : 'mt-5 pt-1'
       }`}
     >
-      {children}
+      <span>{children}</span>
+      {action ?? null}
     </div>
   );
 }

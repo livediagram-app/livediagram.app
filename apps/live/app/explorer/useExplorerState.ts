@@ -6,6 +6,7 @@ import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
 import {
   apiListDiagrams,
   apiListSharedWith,
+  apiSetDiagramFolder,
   apiUpdateFolder,
   type DiagramListItem,
   type Folder,
@@ -268,6 +269,16 @@ export function useExplorerState() {
     listRenameDiagram(id, name);
   };
 
+  // Send one of the caller's own diagrams into a team's shared
+  // library (spec/35) — it lands in the team's Unsorted and leaves
+  // the personal lists, so the local row is dropped optimistically.
+  const moveDiagramToTeam = (id: string, teamId: string) => {
+    if (!ownerId) return;
+    void apiSetDiagramFolder(ownerId, id, null, teamId).catch(() => {});
+    setDiagrams((prev) => prev.filter((d) => d.id !== id));
+    track('Team', 'Added', 'Diagram');
+  };
+
   const openMovePickerForDiagram = (id: string, anchor: HTMLElement | null) => {
     moveAnchorRef.current = anchor;
     setMoveTarget({ kind: 'diagram', id });
@@ -469,6 +480,7 @@ export function useExplorerState() {
     deleteDiagram,
     duplicateDiagram,
     moveDiagramToFolder,
+    moveDiagramToTeam,
     moveFolderToParent,
     openMovePickerForDiagram,
     moveTarget,

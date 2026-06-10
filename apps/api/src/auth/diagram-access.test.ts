@@ -17,9 +17,15 @@ const getShareLinkMock = vi.fn<(env: Env, code: string) => Promise<ShareLink | n
 // Share password (spec/24). Defaults to "no password" so every legacy
 // case below is unaffected; the password-specific cases set it.
 const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
+// Team membership (spec/35). Defaults to "not a member" so every
+// pre-team case is unaffected; the team cases set it.
+const getMembershipMock =
+  vi.fn<(env: Env, teamId: string, userId: string) => Promise<{ status: string } | null>>();
 vi.mock('../db', () => ({
   getShareLink: (env: Env, code: string) => getShareLinkMock(env, code),
   getDiagramSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  getMembership: (env: Env, teamId: string, userId: string) =>
+    getMembershipMock(env, teamId, userId),
 }));
 
 // Import AFTER the mock declaration so the helpers pick up the
@@ -32,6 +38,8 @@ const FAKE_ENV = {} as Env;
 beforeEach(() => {
   getShareLinkMock.mockReset();
   getSharePasswordMock.mockReset();
+  getMembershipMock.mockReset();
+  getMembershipMock.mockResolvedValue(null);
   // Default: the diagram has no share password, so the password gate
   // is a no-op and the link/role checks behave exactly as before.
   getSharePasswordMock.mockResolvedValue(null);
@@ -268,5 +276,62 @@ describe('share password gate (spec/24)', () => {
     const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', 'owner-a', null, 'owner-a', null);
     expect(allowed).toBe(true);
     expect(getSharePasswordMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('team-library access (spec/35)', () => {
+  it('grants edit to a JOINED member of the diagram team', async () => {
+    getMembershipMock.mockResolvedValue({ status: 'joined' });
+    const allowed = await canEditDiagram(
+      FAKE_ENV,
+      'diag-1',
+      'user-1',
+      null,
+      'owner-a',
+      null,
+      'team-1',
+    );
+    expect(allowed).toBe(true);
+    expect(getMembershipMock).toHaveBeenCalledWith(FAKE_ENV, 'team-1', 'user-1');
+  });
+
+  it('grants read to a JOINED member of the diagram team', async () => {
+    getMembershipMock.mockResolvedValue({ status: 'joined' });
+    const allowed = await canReadDiagram(
+      FAKE_ENV,
+      'diag-1',
+      'user-1',
+      null,
+      'owner-a',
+      null,
+      'team-1',
+    );
+    expect(allowed).toBe(true);
+  });
+
+  it('denies an INVITED (un-accepted) member', async () => {
+    getMembershipMock.mockResolvedValue({ status: 'invited' });
+    const allowed = await canEditDiagram(
+      FAKE_ENV,
+      'diag-1',
+      'user-1',
+      null,
+      'owner-a',
+      null,
+      'team-1',
+    );
+    expect(allowed).toBe(false);
+  });
+
+  it('denies a non-member, and never consults membership when the diagram has no team', async () => {
+    getMembershipMock.mockResolvedValue(null);
+    expect(
+      await canEditDiagram(FAKE_ENV, 'diag-1', 'user-2', null, 'owner-a', null, 'team-1'),
+    ).toBe(false);
+    getMembershipMock.mockClear();
+    expect(await canEditDiagram(FAKE_ENV, 'diag-1', 'user-2', null, 'owner-a', null, null)).toBe(
+      false,
+    );
+    expect(getMembershipMock).not.toHaveBeenCalled();
   });
 });

@@ -50,7 +50,7 @@ Every Explorer section is its own page under `/live/explorer` (the chrome — he
 | Invites (spec/32) | `/explorer/invites`          |
 | Image gallery     | `/explorer/images`           |
 
-`/live/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/diagram/<id>` placeholder-rewrite workaround (spec/14) is deliberately kept single-purpose. Sidebar labels are sentence case ("Recent diagrams", "Image gallery").
+`/live/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/diagram/<id>` placeholder-rewrite workaround (spec/14) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"); the personal tree's section header reads "My Work" (contrasting with team libraries, spec/35).
 
 Out of scope (V1):
 

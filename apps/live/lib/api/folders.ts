@@ -26,7 +26,7 @@ export const apiListFolders = dedupeInFlight(_apiListFolders, (ownerId) => owner
 
 export async function apiCreateFolder(
   ownerId: string,
-  input: { id: string; name: string; parentId?: string | null },
+  input: { id: string; name: string; parentId?: string | null; teamId?: string | null },
 ): Promise<Folder> {
   const res = await fetch(`${API_BASE}/folders`, {
     method: 'POST',
@@ -35,6 +35,9 @@ export async function apiCreateFolder(
       id: input.id,
       name: input.name,
       parentId: input.parentId ?? null,
+      // Team scope (spec/35): non-null creates a folder in that
+      // team's shared library instead of the personal tree.
+      teamId: input.teamId ?? null,
     }),
   });
   const { folder } = await expectOk<FolderResponse>(res, 'create folder');
@@ -59,15 +62,19 @@ export async function apiDeleteFolder(ownerId: string, id: string): Promise<void
   return apiDelete(`${API_BASE}/folders/${id}`, ownerId, { action: 'delete folder' });
 }
 
+// Placement write (spec/15 + spec/35). `teamId` undefined = keep the
+// diagram's current scope (the server defaults to it); null = the
+// owner's personal tree; a team id = that team's shared library.
 export async function apiSetDiagramFolder(
   ownerId: string,
   diagramId: string,
   folderId: string | null,
+  teamId?: string | null,
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/folder`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ folderId }),
+    body: JSON.stringify(teamId === undefined ? { folderId } : { folderId, teamId }),
   });
   await expectOkVoid(res, 'set folder');
 }

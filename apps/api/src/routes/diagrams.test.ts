@@ -72,8 +72,8 @@ function makeCtx(
 }
 
 // Minimal DiagramDTO good enough for the authz branches under test.
-function fakeDiagram(ownerId: string): DiagramDTO {
-  return { id: 'd1', ownerId, name: 'Doc', tabs: [] } as unknown as DiagramDTO;
+function fakeDiagram(ownerId: string, teamId: string | null = null): DiagramDTO {
+  return { id: 'd1', ownerId, teamId, name: 'Doc', tabs: [] } as unknown as DiagramDTO;
 }
 
 beforeEach(() => {
@@ -138,7 +138,7 @@ describe('handleDiagrams folder assignment (PUT /diagrams/:id/folder)', () => {
       makeCtx('PUT', '/api/diagrams/d1/folder', { body: { folderId: null } }),
     );
     expect(res.status).toBe(204);
-    expect(db.setDiagramFolder).toHaveBeenCalledWith({}, 'd1', null);
+    expect(db.setDiagramFolder).toHaveBeenCalledWith({}, 'd1', null, null);
   });
 });
 

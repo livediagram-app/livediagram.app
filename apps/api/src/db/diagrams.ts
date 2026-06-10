@@ -12,6 +12,7 @@ type DiagramRow = {
   name: string;
   shareable: number;
   folder_id: string | null;
+  team_id: string | null;
   saved_at: number;
   created_at: number;
   // Derived via subquery in the SELECT; first (oldest) share_links
@@ -57,6 +58,7 @@ async function rowToDiagram(env: Env, row: DiagramRow): Promise<DiagramDTO> {
     shareable: row.shareable === 1,
     shareCode: row.share_code,
     folderId: row.folder_id,
+    teamId: row.team_id ?? null,
     savedAt: row.saved_at,
     createdAt: row.created_at,
     ownerName: ownerParticipant?.name ?? null,
@@ -70,7 +72,7 @@ async function rowToDiagram(env: Env, row: DiagramRow): Promise<DiagramDTO> {
 // minted for the diagram.
 const SHARE_CODE_EXPR =
   '(SELECT code FROM share_links WHERE share_links.diagram_id = diagrams.id ORDER BY created_at ASC LIMIT 1) AS share_code';
-const DIAGRAM_COLS = `id, owner_id, name, shareable, folder_id, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+const DIAGRAM_COLS = `id, owner_id, name, shareable, folder_id, team_id, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 const DIAGRAM_SUMMARY_COLS = DIAGRAM_COLS;
 
 export async function getDiagram(env: Env, id: string): Promise<DiagramDTO | null> {
@@ -96,22 +98,40 @@ export async function getDiagramByShareCode(env: Env, code: string): Promise<Dia
   return row ? rowToDiagram(env, row) : null;
 }
 
-export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<DiagramSummary[]> {
-  const result = await env.DB.prepare(
-    `SELECT ${DIAGRAM_SUMMARY_COLS} FROM diagrams WHERE owner_id = ? ORDER BY saved_at DESC`,
-  )
-    .bind(ownerId)
-    .all<SummaryRow>();
-  return (result.results ?? []).map((row) => ({
+function rowToSummary(row: SummaryRow): DiagramSummary {
+  return {
     id: row.id,
     ownerId: row.owner_id,
     name: row.name,
     shareable: row.shareable === 1,
     shareCode: row.share_code,
     folderId: row.folder_id,
+    teamId: row.team_id ?? null,
     savedAt: row.saved_at,
     createdAt: row.created_at,
-  }));
+  };
+}
+
+// Personal library only (spec/35): a diagram moved into a team's
+// shared library leaves the owner's personal lists and renders on
+// the team page instead.
+export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<DiagramSummary[]> {
+  const result = await env.DB.prepare(
+    `SELECT ${DIAGRAM_SUMMARY_COLS} FROM diagrams WHERE owner_id = ? AND team_id IS NULL ORDER BY saved_at DESC`,
+  )
+    .bind(ownerId)
+    .all<SummaryRow>();
+  return (result.results ?? []).map(rowToSummary);
+}
+
+// One team's shared library (spec/35), any owner.
+export async function listDiagramsByTeam(env: Env, teamId: string): Promise<DiagramSummary[]> {
+  const result = await env.DB.prepare(
+    `SELECT ${DIAGRAM_SUMMARY_COLS} FROM diagrams WHERE team_id = ? ORDER BY saved_at DESC`,
+  )
+    .bind(teamId)
+    .all<SummaryRow>();
+  return (result.results ?? []).map(rowToSummary);
 }
 
 // Metadata upsert only — diagram name, sharing state, owner id, and
@@ -141,12 +161,18 @@ export async function upsertDiagramMeta(
     .run();
 }
 
+// Placement write (spec/15 + spec/35): folder and team scope move
+// together in one UPDATE so a diagram can never point at a folder in
+// a scope it isn't in.
 export async function setDiagramFolder(
   env: Env,
   id: string,
   folderId: string | null,
+  teamId: string | null = null,
 ): Promise<void> {
-  await env.DB.prepare('UPDATE diagrams SET folder_id = ? WHERE id = ?').bind(folderId, id).run();
+  await env.DB.prepare('UPDATE diagrams SET folder_id = ?, team_id = ? WHERE id = ?')
+    .bind(folderId, teamId, id)
+    .run();
 }
 
 // Toggle the shareable flag on a diagram. The actual codes live in

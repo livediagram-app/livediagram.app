@@ -38,6 +38,11 @@ export type Diagram = {
   // Folder placement. null means the diagram is in the conceptual
   // Unsorted bucket. See spec/15.
   folderId: string | null;
+  // Team library placement (spec/35). null = the owner's personal
+  // tree; non-null = this team's shared library (where folderId then
+  // refers to one of THAT team's folders, or null for the team's
+  // Unsorted). Joined members of the team get edit access.
+  teamId: string | null;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the
@@ -59,6 +64,8 @@ export type DiagramSummary = {
   shareable: boolean;
   shareCode: string | null;
   folderId: string | null;
+  // Team library placement (spec/35) — see Diagram.teamId.
+  teamId: string | null;
   savedAt: number;
   createdAt: number;
 };
@@ -100,11 +107,15 @@ export type TabRecord = Tab & {
 // ---------------------------------------------------------------------
 
 // A folder row. `parentId === null` means the folder lives at the
-// tree root.
+// tree root. `teamId` (spec/35): null = a personal folder gated on
+// `ownerId`; non-null = a folder in that team's shared library,
+// gated on joined membership (ownerId then records the creator for
+// audit only).
 export type Folder = {
   id: string;
   ownerId: string;
   parentId: string | null;
+  teamId: string | null;
   name: string;
   createdAt: number;
   updatedAt: number;

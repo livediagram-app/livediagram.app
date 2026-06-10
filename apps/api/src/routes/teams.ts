@@ -16,6 +16,8 @@ import {
   getMembership,
   getTeam,
   getTeamMember,
+  listDiagramsByTeam,
+  listFoldersByTeam,
   listInvitesByUser,
   listTeamMembers,
   listTeamsByUser,
@@ -104,6 +106,22 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   // Admin verbs need an accepted admin row: a pending invite that was
   // pre-promoted to admin manages nothing until they join.
   const isAdmin = me.role === 'admin' && me.status === 'joined';
+
+  // /api/teams/<id>/library — the team's shared folder tree +
+  // diagrams (spec/35). Any membership row passes the gate above,
+  // but the library is for JOINED members only — an invitee deciding
+  // on an invite sees the team's shape, not its content.
+  if (segments.length === 4 && segments[3] === 'library') {
+    if (request.method === 'GET') {
+      if (me.status !== 'joined') return json({ error: 'forbidden' }, { status: 403 });
+      const [folders, diagrams] = await Promise.all([
+        listFoldersByTeam(env, teamId),
+        listDiagramsByTeam(env, teamId),
+      ]);
+      return json({ folders, diagrams });
+    }
+    return notFound();
+  }
 
   // /api/teams/<id> — read / update / delete
   if (segments.length === 3) {

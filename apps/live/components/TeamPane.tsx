@@ -20,6 +20,7 @@ import { PencilIcon, PlusIcon, RemoveIcon, TrashIcon } from './explorer-icons';
 import { MenuItem, PortalMenu } from './PortalMenu';
 import { Tooltip } from './Tooltip';
 import { TeamFormModal } from './TeamFormModal';
+import { TeamSharedDiagrams } from './TeamSharedDiagrams';
 
 // Right-pane team view for the Explorer (spec/32): one calm card —
 // header (organisation + member count + an overflow menu for the
@@ -212,155 +213,169 @@ export function TeamPane({
     .join(' · ');
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      {/* ---------- Header: context line + overflow menu ---------- */}
-      <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-2.5">
-        <p className="min-w-0 truncate text-xs text-slate-500">{headline}</p>
-        <button
-          ref={menuRef}
-          type="button"
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-label="Team actions"
-          aria-expanded={menuOpen}
-          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
-        >
-          <EllipsisIcon />
-        </button>
-        {menuOpen ? (
-          <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
-            {isAdmin ? (
-              <MenuItem
-                icon={<PencilIcon />}
-                label="Edit team"
-                onClick={() => {
-                  setEditOpen(true);
-                  setMenuOpen(false);
-                }}
-              />
-            ) : null}
-            {canLeave ? (
-              <MenuItem
-                icon={<SignInIcon />}
-                label="Leave team"
-                onClick={() => {
-                  setMenuOpen(false);
-                  if (selfRow) void removeMember(selfRow, true);
-                }}
-              />
-            ) : null}
-            {isAdmin ? (
-              <MenuItem
-                icon={<TrashIcon />}
-                label="Delete team"
-                danger
-                onClick={() => {
-                  setMenuOpen(false);
-                  void deleteTeam();
-                }}
-              />
-            ) : null}
-          </PortalMenu>
+    <div className="flex flex-col gap-4">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        {/* ---------- Header: context line + overflow menu ---------- */}
+        <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-2.5">
+          <p className="min-w-0 truncate text-xs text-slate-500">{headline}</p>
+          <button
+            ref={menuRef}
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Team actions"
+            aria-expanded={menuOpen}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+          >
+            <EllipsisIcon />
+          </button>
+          {menuOpen ? (
+            <PortalMenu
+              anchor={menuRef.current}
+              placement="below"
+              onClose={() => setMenuOpen(false)}
+            >
+              {isAdmin ? (
+                <MenuItem
+                  icon={<PencilIcon />}
+                  label="Edit team"
+                  onClick={() => {
+                    setEditOpen(true);
+                    setMenuOpen(false);
+                  }}
+                />
+              ) : null}
+              {canLeave ? (
+                <MenuItem
+                  icon={<SignInIcon />}
+                  label="Leave team"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    if (selfRow) void removeMember(selfRow, true);
+                  }}
+                />
+              ) : null}
+              {isAdmin ? (
+                <MenuItem
+                  icon={<TrashIcon />}
+                  label="Delete team"
+                  danger
+                  onClick={() => {
+                    setMenuOpen(false);
+                    void deleteTeam();
+                  }}
+                />
+              ) : null}
+            </PortalMenu>
+          ) : null}
+        </div>
+
+        {/* ---------- Members ---------- */}
+        <ul className="divide-y divide-slate-100">
+          {members.map((m) => {
+            const isSelf = m.userId !== null && m.userId === clerkUserId;
+            const name = memberName(m, isSelf, clerkDisplayName);
+            // Pending = hasn't accepted (spec/32 handshake), regardless
+            // of whether the lazy claim has identified them yet.
+            const pending = m.status === 'invited';
+            const pinnedAdmin = isLastAdmin(m);
+            const removable = isAdmin && !isSelf && !pinnedAdmin;
+            return (
+              <li key={m.id} className="group flex items-center gap-3 px-4 py-2.5">
+                <span
+                  aria-hidden
+                  style={{ backgroundColor: colorForKey(m.email ?? m.userId ?? m.id) }}
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${
+                    pending ? 'opacity-50' : ''
+                  }`}
+                >
+                  {initialsOf(name)}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-1.5">
+                    <span className="truncate text-sm font-medium text-slate-900">{name}</span>
+                    {isSelf ? (
+                      <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[10px] font-medium text-slate-500 ring-1 ring-slate-200">
+                        you
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="block truncate text-xs text-slate-400">
+                    {pending
+                      ? 'Invited — waiting for them to accept'
+                      : isSelf
+                        ? (m.email ?? '')
+                        : ''}
+                  </span>
+                </span>
+                {isAdmin && !pinnedAdmin ? (
+                  <select
+                    value={m.role}
+                    onChange={(e) => void changeRole(m, e.target.value as TeamRole)}
+                    aria-label={`Role for ${name}`}
+                    className="shrink-0 cursor-pointer rounded-md border border-transparent bg-transparent px-1.5 py-1 text-xs font-medium text-slate-600 outline-none transition hover:border-slate-200 hover:bg-white focus:border-brand-400"
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="member">Member</option>
+                  </select>
+                ) : (
+                  <RolePill member={m} pinned={pinnedAdmin && isAdmin} />
+                )}
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                  {removable ? (
+                    <button
+                      type="button"
+                      onClick={() => void removeMember(m, false)}
+                      aria-label={`Remove ${name}`}
+                      className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:opacity-100 group-hover:opacity-100"
+                    >
+                      <RemoveIcon />
+                    </button>
+                  ) : null}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* ---------- Notice + invite footer ---------- */}
+        {notice ? (
+          <p className="border-t border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+            {notice}
+          </p>
+        ) : null}
+        {isAdmin ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void invite();
+            }}
+            className="flex items-center gap-2 border-t border-slate-200 bg-slate-50/40 px-4 py-2.5"
+          >
+            <span className="shrink-0 text-slate-300">
+              <PlusIcon />
+            </span>
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="Add people to the team by entering their email address, they will receive an invite to join."
+              aria-label="Invite by email address"
+              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+            />
+            <button
+              type="submit"
+              disabled={!inviteEmail.trim() || inviteBusy}
+              className="shrink-0 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Invite
+            </button>
+          </form>
         ) : null}
       </div>
 
-      {/* ---------- Members ---------- */}
-      <ul className="divide-y divide-slate-100">
-        {members.map((m) => {
-          const isSelf = m.userId !== null && m.userId === clerkUserId;
-          const name = memberName(m, isSelf, clerkDisplayName);
-          // Pending = hasn't accepted (spec/32 handshake), regardless
-          // of whether the lazy claim has identified them yet.
-          const pending = m.status === 'invited';
-          const pinnedAdmin = isLastAdmin(m);
-          const removable = isAdmin && !isSelf && !pinnedAdmin;
-          return (
-            <li key={m.id} className="group flex items-center gap-3 px-4 py-2.5">
-              <span
-                aria-hidden
-                style={{ backgroundColor: colorForKey(m.email ?? m.userId ?? m.id) }}
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${
-                  pending ? 'opacity-50' : ''
-                }`}
-              >
-                {initialsOf(name)}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-1.5">
-                  <span className="truncate text-sm font-medium text-slate-900">{name}</span>
-                  {isSelf ? (
-                    <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[10px] font-medium text-slate-500 ring-1 ring-slate-200">
-                      you
-                    </span>
-                  ) : null}
-                </span>
-                <span className="block truncate text-xs text-slate-400">
-                  {pending ? 'Invited — waiting for them to accept' : isSelf ? (m.email ?? '') : ''}
-                </span>
-              </span>
-              {isAdmin && !pinnedAdmin ? (
-                <select
-                  value={m.role}
-                  onChange={(e) => void changeRole(m, e.target.value as TeamRole)}
-                  aria-label={`Role for ${name}`}
-                  className="shrink-0 cursor-pointer rounded-md border border-transparent bg-transparent px-1.5 py-1 text-xs font-medium text-slate-600 outline-none transition hover:border-slate-200 hover:bg-white focus:border-brand-400"
-                >
-                  <option value="admin">Admin</option>
-                  <option value="member">Member</option>
-                </select>
-              ) : (
-                <RolePill member={m} pinned={pinnedAdmin && isAdmin} />
-              )}
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center">
-                {removable ? (
-                  <button
-                    type="button"
-                    onClick={() => void removeMember(m, false)}
-                    aria-label={`Remove ${name}`}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:opacity-100 group-hover:opacity-100"
-                  >
-                    <RemoveIcon />
-                  </button>
-                ) : null}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-
-      {/* ---------- Notice + invite footer ---------- */}
-      {notice ? (
-        <p className="border-t border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-          {notice}
-        </p>
-      ) : null}
-      {isAdmin ? (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            void invite();
-          }}
-          className="flex items-center gap-2 border-t border-slate-200 bg-slate-50/40 px-4 py-2.5"
-        >
-          <span className="shrink-0 text-slate-300">
-            <PlusIcon />
-          </span>
-          <input
-            type="email"
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            placeholder="Add people to the team by entering their email address, they will receive an invite to join."
-            aria-label="Invite by email address"
-            className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-          />
-          <button
-            type="submit"
-            disabled={!inviteEmail.trim() || inviteBusy}
-            className="shrink-0 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Invite
-          </button>
-        </form>
-      ) : null}
+      {/* ---------- Shared diagrams (spec/35): the team's folder
+          tree + diagrams, managed by every joined member. ---------- */}
+      <TeamSharedDiagrams ownerId={ownerId} teamId={teamId} />
 
       <TeamFormModal
         open={editOpen}
