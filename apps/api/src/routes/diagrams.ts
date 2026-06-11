@@ -46,7 +46,7 @@ import {
   upsertDiagramMeta,
   upsertTab,
 } from '../db';
-import { badRequest, forbidden, json, noContent, notFound } from '../responses';
+import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
 import type { ShareLinkExpiry } from '@livediagram/api-schema';
 import type { ChangeLogEntryDTO, DiagramDTO, ShareRole } from '../types';
 import {
@@ -348,6 +348,25 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       }
       // Find the existing order index; append if new.
       const existingTab = await getTab(env, id, tabId);
+      // Data-loss backstop (spec/13). Refuse to blank a tab that
+      // currently holds content unless the client explicitly marks the
+      // empty write intentional via `X-Allow-Empty: 1`. The live editor
+      // sets that header only when it had the tab's content
+      // authoritatively loaded — so a real reset-canvas / delete-all (on
+      // the active, loaded tab) passes, while the lazy-load wipe (a
+      // never-opened placeholder PUT carrying no such header) is rejected
+      // and the stored row survives. Independent of the client-side
+      // autosave guard — belt and suspenders, and it also protects older
+      // clients that predate that guard. A legitimately-empty incoming
+      // tab over an already-empty (or new) row is untouched by this.
+      if (
+        body.elements.length === 0 &&
+        existingTab &&
+        existingTab.elements.length > 0 &&
+        request.headers.get('X-Allow-Empty') !== '1'
+      ) {
+        return conflict('empty_tab_overwrite_blocked');
+      }
       const orderIndex = existingTab?.orderIndex ?? existing.tabs.length; // tabs[] is already summaries
       // Rewrite the author fields on any newly-added comment to
       // match the resolved owner's participant record. Without

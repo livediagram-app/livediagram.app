@@ -52,15 +52,25 @@ export const apiLoadTab = dedupeInFlight(
 
 // Upsert a single tab. The active edit path — autosave hits this
 // instead of shipping every tab on every keystroke.
+//
+// `allowEmpty` opts into overwriting a tab whose stored row has content
+// with an empty one. The server refuses that by default (spec/13
+// data-loss backstop) so a never-loaded placeholder PUT can't wipe a
+// real row. The caller sets it only when the tab's content was
+// authoritatively loaded — i.e. a genuine reset-canvas / delete-all,
+// never an unfetched placeholder. Forwarded as `X-Allow-Empty: 1`.
 export async function apiSaveTab(
   ownerId: string,
   diagramId: string,
   tab: Tab,
   shareCode: string | null = null,
+  opts: { allowEmpty?: boolean } = {},
 ): Promise<void> {
+  const headers = new Headers(await apiHeaders(ownerId, { share: shareCode, body: true }));
+  if (opts.allowEmpty) headers.set('X-Allow-Empty', '1');
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tab.id}`, {
     method: 'PUT',
-    headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
+    headers,
     body: JSON.stringify(stripUiTabFields(tab)),
   });
   await expectOkVoid(res, 'save tab');

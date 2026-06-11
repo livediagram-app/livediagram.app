@@ -85,9 +85,15 @@ export function useAutosave(opts: {
         const { templateChosen: _tc, folder: _f, ...persistable } = t;
         void _tc;
         void _f;
+        // Authorise an empty-body overwrite only for a loaded tab (a real
+        // reset / delete-all) — mirrors the debounced path so the server
+        // data-loss backstop (spec/13) can't be tripped by a placeholder.
+        const tabHeaders = loadedTabIdsRef.current.has(t.id)
+          ? { ...headers, 'X-Allow-Empty': '1' }
+          : headers;
         fetch(`${apiBase}/diagrams/${diagramId}/tabs/${t.id}`, {
           method: 'PUT',
-          headers,
+          headers: tabHeaders,
           body: JSON.stringify(persistable),
           keepalive: true,
         }).catch(() => {});
@@ -140,7 +146,13 @@ export function useAutosave(opts: {
       const writes: Promise<unknown>[] = [];
       for (const t of changedTabs) {
         writes.push(
-          apiSaveTab(selfId, diagramId, t, sessionShareCode).then(() => {
+          apiSaveTab(selfId, diagramId, t, sessionShareCode, {
+            // A loaded tab's content is authoritative, so an empty body is
+            // an intentional clear (reset-canvas / delete-all) the server
+            // backstop should accept; an unloaded placeholder is never in
+            // the set, so it can't authorise its own wipe (spec/13).
+            allowEmpty: loadedTabIdsRef.current.has(t.id),
+          }).then(() => {
             roomRef.current?.send({
               kind: 'op',
               op: { kind: 'tab', tabId: t.id, tab: t },

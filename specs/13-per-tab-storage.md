@@ -162,6 +162,24 @@ Reorders and renames still flow through the diagram-level meta `PUT`
 safe. The guard lives in `computeTabSaveDiff`, the one autosave decision
 kernel both the debounced save and the `beforeunload` flush share.
 
+### Server backstop: refuse to blank a tab that has content
+
+The client guards above are necessary but live in the editor; a future
+client regression, or an older deployed client, could still `PUT` an
+empty body over a populated row. So `PUT /api/diagrams/:id/tabs/:tabId`
+enforces the invariant server-side too: if the incoming `elements` is
+empty AND the stored row currently has elements, the write is **rejected
+with 409** unless the request carries `X-Allow-Empty: 1`.
+
+A legitimate **reset-canvas / delete-all** is performed on the active tab,
+which is necessarily loaded (editing an unloaded tab is blocked), so the
+editor sets `X-Allow-Empty: 1` for any tab in the loaded set — those
+clears pass. The lazy-load wipe (a never-opened placeholder) is not in the
+loaded set, so it carries no header and the backstop preserves the stored
+row. An empty write over an already-empty / brand-new row, and any
+non-empty write, are unaffected. This is intentionally independent of the
+client guard — belt and suspenders against the most destructive failure.
+
 ## Cutover (historical)
 
 How this rolled out, recorded here so future schema changes can repeat the pattern:

@@ -22,7 +22,7 @@ export const CORS_HEADERS = {
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too.
   'Access-Control-Allow-Headers':
-    'Authorization, Content-Type, X-Owner-Id, X-Owner-Email, X-Share-Code, X-Share-Password, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name',
+    'Authorization, Content-Type, X-Owner-Id, X-Owner-Email, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name',
   'Access-Control-Max-Age': '86400',
 };
 

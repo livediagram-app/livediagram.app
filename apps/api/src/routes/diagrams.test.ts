@@ -29,6 +29,8 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
     setDiagramFolder: vi.fn(),
     getMembership: vi.fn(),
     getTab: vi.fn(),
+    upsertTab: vi.fn(),
+    getParticipant: vi.fn(),
     listChangeLog: vi.fn(),
     insertChangeLogEntry: vi.fn(),
     // Share-link create / extend surface (spec/34).
@@ -51,14 +53,19 @@ import { handleDiagrams } from './diagrams';
 function makeCtx(
   method: string,
   path: string,
-  opts: { owner?: string | null; clerkUserId?: string | null; body?: unknown } = {},
+  opts: {
+    owner?: string | null;
+    clerkUserId?: string | null;
+    body?: unknown;
+    headers?: Record<string, string>;
+  } = {},
 ): RouteContext {
   const url = new URL(`https://api.test${path}`);
   const segments = url.pathname.replace(/^\//, '').split('/');
   const owner = opts.owner === undefined ? 'owner-1' : opts.owner;
   const request = new Request(url, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
   });
   return {
@@ -264,6 +271,59 @@ describe('handleDiagrams share-link expiry (spec/34)', () => {
     const res = await handleDiagrams(makeCtx('POST', '/api/diagrams/d1/share/CODE2345/extend'));
     expect(res.status).toBe(403);
     expect(db.extendShareLink).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleDiagrams tab-content data-loss backstop (PUT /diagrams/:id/tabs/:tabId)', () => {
+  const tabBody = (elements: unknown[]) => ({ id: 't1', name: 'Tab', elements });
+
+  beforeEach(() => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canEditDiagram.mockResolvedValue(true);
+    db.getParticipant.mockResolvedValue(null); // skip comment-author rewrite
+    db.upsertTab.mockResolvedValue(undefined);
+  });
+
+  it('409s and does NOT write when an empty body would blank a tab that has content', async () => {
+    // The wipe shape: a never-loaded placeholder PUTs `{ elements: [] }`
+    // over a real row, with no X-Allow-Empty header.
+    db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [{ id: 'e' }] });
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: tabBody([]) }),
+    );
+    expect(res.status).toBe(409);
+    expect(db.upsertTab).not.toHaveBeenCalled();
+  });
+
+  it('allows the empty write when the client marks it intentional (X-Allow-Empty: 1)', async () => {
+    // A real reset-canvas / delete-all on the loaded tab sends the header.
+    db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [{ id: 'e' }] });
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', {
+        body: tabBody([]),
+        headers: { 'X-Allow-Empty': '1' },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(db.upsertTab).toHaveBeenCalled();
+  });
+
+  it('allows an empty write over an already-empty (or new) row — nothing to lose', async () => {
+    db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [] });
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: tabBody([]) }),
+    );
+    expect(res.status).toBe(200);
+    expect(db.upsertTab).toHaveBeenCalled();
+  });
+
+  it('allows a non-empty write over a tab with content (the normal save path)', async () => {
+    db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [{ id: 'e' }] });
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: tabBody([{ id: 'e2' }]) }),
+    );
+    expect(res.status).toBe(200);
+    expect(db.upsertTab).toHaveBeenCalled();
   });
 });
 
