@@ -952,7 +952,12 @@ export function TeamNode({
         </span>
         <button
           type="button"
-          onClick={() => onOpenTeam(team.id)}
+          // Clicking the team name expands it inline (like a folder),
+          // rather than navigating to the team page. An empty team has
+          // nothing to expand, so it falls back to opening the page (so
+          // you can still reach it to add a first diagram).
+          onClick={() => (hasContent ? onToggleExpanded(team.id) : onOpenTeam(team.id))}
+          aria-expanded={hasContent ? isExpanded : undefined}
           className="min-w-0 flex-1 truncate text-left"
         >
           <span className="truncate">{team.name}</span>
