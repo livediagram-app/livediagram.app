@@ -8,18 +8,26 @@ const { db } = vi.hoisted(() => ({
     addTeamMember: vi.fn(),
     listInvitesByUser: vi.fn(),
     connectInvitesByEmail: vi.fn(),
+    countJoinedMembers: vi.fn(),
     countTeamAdmins: vi.fn(),
     createTeam: vi.fn(),
     deleteTeam: vi.fn(),
     getMembership: vi.fn(),
     getTeam: vi.fn(),
+    getTeamByInviteToken: vi.fn(),
+    getTeamInviteLink: vi.fn(),
     getTeamMember: vi.fn(),
+    joinTeamByInviteToken: vi.fn(),
     listTeamMembers: vi.fn(),
     listTeamsByUser: vi.fn(),
     removeTeamMember: vi.fn(),
+    setTeamInviteLink: vi.fn(),
     teamHasEmail: vi.fn(),
     updateTeam: vi.fn(),
     updateTeamMemberRole: vi.fn(),
+    // The route imports this constant from '../db'; the mock replaces
+    // the whole module, so provide it as a value (one week in ms).
+    TEAM_INVITE_LINK_TTL_MS: 7 * 24 * 60 * 60 * 1000,
   },
 }));
 vi.mock('../db', () => db);
@@ -70,7 +78,8 @@ function member(overrides: Partial<TeamMember> = {}): TeamMember {
 }
 
 beforeEach(() => {
-  for (const fn of Object.values(db)) fn.mockReset();
+  // `db` also holds a non-fn constant (TEAM_INVITE_LINK_TTL_MS) now.
+  for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
 });
 
 describe('handleTeams Clerk-only gate (spec/32)', () => {
@@ -145,6 +154,110 @@ describe('POST /api/teams/:id/members/:memberId/accept', () => {
     const res = await handleTeams(makeCtx('POST', '/api/teams/t1/members/m1/accept'));
     expect(res.status).toBe(200);
     expect(db.acceptTeamMember).not.toHaveBeenCalled();
+  });
+});
+
+describe('shareable invite link (spec/32)', () => {
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+  });
+
+  it('admin turns the link on: mints a token + 1-week expiry, 201', async () => {
+    db.getMembership.mockResolvedValue(member()); // admin, joined
+    const res = await handleTeams(makeCtx('POST', '/api/teams/t1/invite-link'));
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { inviteLink: { token: string; expiresAt: number } };
+    expect(body.inviteLink.token).toBeTruthy();
+    expect(body.inviteLink.expiresAt).toBeGreaterThan(Date.now());
+    expect(db.setTeamInviteLink).toHaveBeenCalledWith(
+      {},
+      't1',
+      body.inviteLink.token,
+      body.inviteLink.expiresAt,
+    );
+  });
+
+  it('a member cannot turn the link on (403)', async () => {
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    const res = await handleTeams(makeCtx('POST', '/api/teams/t1/invite-link'));
+    expect(res.status).toBe(403);
+    expect(db.setTeamInviteLink).not.toHaveBeenCalled();
+  });
+
+  it('admin turns the link off (DELETE clears the token, 204)', async () => {
+    db.getMembership.mockResolvedValue(member());
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/invite-link'));
+    expect(res.status).toBe(204);
+    expect(db.setTeamInviteLink).toHaveBeenCalledWith({}, 't1', null, null);
+  });
+
+  it('resolves a valid token to its team — guest-accessible (above the sign-in gate)', async () => {
+    db.getTeamByInviteToken.mockResolvedValue(team);
+    db.countJoinedMembers.mockResolvedValue(3);
+    const res = await handleTeams(
+      makeCtx('GET', '/api/teams/invite-link/tok-123', { clerkUserId: null }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ team, memberCount: 3, alreadyMember: false });
+    expect(db.getTeamByInviteToken).toHaveBeenCalledWith({}, 'tok-123');
+  });
+
+  it('resolve reports alreadyMember for a signed-in member', async () => {
+    db.getTeamByInviteToken.mockResolvedValue(team);
+    db.countJoinedMembers.mockResolvedValue(2);
+    db.getMembership.mockResolvedValue(member());
+    const res = await handleTeams(makeCtx('GET', '/api/teams/invite-link/tok-123'));
+    expect(await res.json()).toMatchObject({ alreadyMember: true });
+  });
+
+  it('404 on an unknown / expired token', async () => {
+    db.getTeamByInviteToken.mockResolvedValue(null);
+    const res = await handleTeams(
+      makeCtx('GET', '/api/teams/invite-link/nope', { clerkUserId: null }),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it('join: a signed-in caller joins via the token', async () => {
+    db.joinTeamByInviteToken.mockResolvedValue({ teamId: 't1', alreadyMember: false });
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/invite-link/tok-123/join', { clerkEmail: 'me@example.com' }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ teamId: 't1', alreadyMember: false });
+    expect(db.joinTeamByInviteToken).toHaveBeenCalledWith(
+      {},
+      'tok-123',
+      'user-1',
+      'me@example.com',
+    );
+  });
+
+  it('join requires sign-in (guest 401, no db write)', async () => {
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/invite-link/tok-123/join', { clerkUserId: null }),
+    );
+    expect(res.status).toBe(401);
+    expect(db.joinTeamByInviteToken).not.toHaveBeenCalled();
+  });
+
+  it('join 404s an invalid / expired token', async () => {
+    db.joinTeamByInviteToken.mockResolvedValue(null);
+    const res = await handleTeams(makeCtx('POST', '/api/teams/invite-link/bad/join'));
+    expect(res.status).toBe(404);
+  });
+
+  it('team detail carries inviteLink for an admin, null for a member', async () => {
+    db.listTeamMembers.mockResolvedValue([member()]);
+    db.getTeamInviteLink.mockResolvedValue({ token: 'tok-1', expiresAt: 999 });
+
+    db.getMembership.mockResolvedValue(member()); // admin
+    const adminRes = await handleTeams(makeCtx('GET', '/api/teams/t1'));
+    expect(await adminRes.json()).toMatchObject({ inviteLink: { token: 'tok-1' } });
+
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    const memberRes = await handleTeams(makeCtx('GET', '/api/teams/t1'));
+    expect(await memberRes.json()).toMatchObject({ inviteLink: null });
   });
 });
 

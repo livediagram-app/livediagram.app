@@ -45,6 +45,17 @@ Membership is a two-step handshake: being invited does not make someone a member
 - An `invited` row grants no membership: `GET /api/teams` lists `joined` rows only, and `memberCount` counts `joined` rows only. The invitee may read the team's detail (to decide), accept, or decline — nothing else.
 - Duplicate invite of an email already on the team (any status): `409 conflict`.
 
+## Shareable invite link
+
+A second way in, alongside per-address invites: a **shareable link** an admin actively turns on. Anyone signed in who opens it can join the team as a member. It's deliberately not on by default — the admin generates it — and it **expires after one week**.
+
+- **Data**: one regenerable token lives on the team itself (migration `0025`: `teams.invite_link_token` + `teams.invite_link_expires_at`, both nullable). NULL token = the link is off. This is distinct from the per-member `team_members` rows; it's a team-level credential. (The unused per-member `invite_token` column from migration `0023` is unrelated and stays dormant.)
+- **Turn on / off (admin only)**: `POST /api/teams/:id/invite-link` mints a fresh token and sets the expiry to now + 7 days (regenerating while on rotates the token and resets the week); `DELETE /api/teams/:id/invite-link` turns it off. The team detail (`GET /api/teams/:id`) carries the current `inviteLink: { token, expiresAt } | null` **for admins only** (null for members, and null once expired).
+- **Resolve (open)**: `GET /api/teams/invite-link/:token` returns `{ team, memberCount, alreadyMember }` when the token is on and unexpired, else `404`. This one endpoint sits **above** the sign-in gate — a token holder must see _what_ they're joining before they sign in, and the token is the credential, so naming the team to whoever holds it is fine. `alreadyMember` is computed against the caller's verified id when present, else false.
+- **Join (signed-in)**: `POST /api/teams/invite-link/:token/join` adds the caller as a **joined** member and returns `{ teamId, alreadyMember }`. Idempotent: an existing membership is a no-op, and a pending email invite for the caller is accepted in place rather than duplicated. Guests get `401` (teams are Clerk-only); an invalid/expired token `404`s.
+- **The landing page** is the top-level `/join?token=<token>` route (outside the Explorer chrome, see [spec/08](08-router-app.md)), so the signed-out flow renders its own card instead of being bounced by the explorer's auth gate. It resolves the token, then shows: **Join / Decline** to a signed-in non-member (Join → the team page; Decline → back to their diagrams); "already a member" with an Open-team link; or, to a signed-out visitor, why an account is needed plus **Sign in** / **Create an account** links whose `redirect_url` carries the same `/join?token=…` URL, so auth returns them here to finish joining. An off / expired / unknown token shows an "invite link isn't valid" card.
+- **Explorer UI**: the team detail page's admin invite footer gains an **"Invite by link"** button (with a green "On" dot when active) opening a modal (`TeamInviteLinkDialog`) that turns the link on, copies the URL, shows the expiry, and turns it off.
+
 ## Roles and permissions
 
 Two roles: `admin`, `member`. The creating user becomes the team's first Admin.
@@ -53,6 +64,7 @@ Two roles: `admin`, `member`. The creating user becomes the team's first Admin.
 | ---------------------------------- | ----- | ------ |
 | See team + member list             | ✓     | ✓      |
 | Invite by email                    | ✓     |        |
+| Turn the invite link on / off      | ✓     |        |
 | Change a member's role             | ✓     |        |
 | Edit team (name, organisation)     | ✓     |        |
 | Remove a member / cancel an invite | ✓     |        |
@@ -75,6 +87,9 @@ All under `/api/teams`, Clerk Bearer required, handled by `apps/api/src/routes/t
 - `POST /api/teams/:id/members` `{email}` — Admin only; creates the pending invite row.
 - `PUT /api/teams/:id/members/:memberId` `{role}` — Admin only; last-admin guard.
 - `DELETE /api/teams/:id/members/:memberId` — Admin, or the member's own row (leave); last-admin guard.
+- `POST /api/teams/:id/invite-link` / `DELETE /api/teams/:id/invite-link` — Admin only; turn the shareable invite link on (mint + 1-week expiry) / off (see "Shareable invite link").
+- `GET /api/teams/invite-link/:token` — resolve a join token to its team; the one open (guest-readable) team endpoint.
+- `POST /api/teams/invite-link/:token/join` — signed-in; join via the link.
 
 Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`) live in `@livediagram/api-schema`.
 
@@ -89,7 +104,7 @@ In the Explorer sidebar, a **Teams** section sits under the Folders section (abo
 The right-pane team view is **one calm card**, not a stack of panels:
 
 - A header line with the organisation and member count, plus an overflow (⋯) menu holding the rare actions: Edit team and Delete team (admins), Leave team (any member who isn't the last Admin).
-- The member list: a deterministic-colour avatar per row, the person's **name** as the primary line — the caller's own row shows their account display name with a small "you" chip (never a bare "You"), other rows show the invite email's local part prettified ("anna.smith" → "Anna Smith") — and a muted secondary line (own email; "Invited — joins when they sign in" on pending rows, whose avatars render dimmed).
+- The member list: a deterministic-colour avatar per row, the person's **name** as the primary line — the caller's own row shows their account display name with a small "you" chip (never a bare "You"), other rows show their resolved display name or the invite email's local part prettified ("anna.smith" → "Anna Smith") — and the member's **email address** on a muted secondary line beneath the name (truncated for long addresses so the row stays tidy on mobile). Pending rows carry an amber **"Invited"** pill next to the name and render their avatar dimmed.
 - Roles: admins get a quiet inline role select per row; non-admins see a read-only role pill. Remove actions appear on row hover only.
 - **The last-admin rule shapes the affordances, not just the server**: the only Admin sees no Leave item, no remove control on their row, and a pinned "Admin" pill (with an explanatory tooltip) instead of a role select. The server's `409 last_admin` remains as the backstop for stale UIs.
 - Admins also get a slim invite-by-email footer row. Placeholder copy: "Add your team by email address, they will receive an invite." (The invite lands in their in-app Invites section; no transactional email until Resend ships.)

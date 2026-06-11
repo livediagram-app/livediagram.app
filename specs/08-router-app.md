@@ -8,13 +8,13 @@ A small Cloudflare Worker that fronts the apex domain (`livediagram.app`) and ro
 
 ## Routing table
 
-| Path                                                                                                                      | Forwards to                      |
-| ------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `/api`, `/api/*`                                                                                                          | api worker (`apps/api`)          |
-| `/telemetry`, `/telemetry/*`                                                                                              | telemetry app (`apps/telemetry`) |
-| `/live/*` (the live app's `_next` assets only)                                                                            | live app (`apps/live`), stripped |
-| live page routes: `/diagram/*`, `/explorer/*`, `/new`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is    |
-| everything else                                                                                                           | marketing app (`apps/marketing`) |
+| Path                                                                                                                               | Forwards to                      |
+| ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `/api`, `/api/*`                                                                                                                   | api worker (`apps/api`)          |
+| `/telemetry`, `/telemetry/*`                                                                                                       | telemetry app (`apps/telemetry`) |
+| `/live/*` (the live app's `_next` assets only)                                                                                     | live app (`apps/live`), stripped |
+| live page routes: `/diagram/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is    |
+| everything else                                                                                                                    | marketing app (`apps/marketing`) |
 
 The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS` in the source) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
 
@@ -33,6 +33,7 @@ const LIVE_ROUTE_SEGMENTS = new Set([
   'embed',
   'explorer',
   'get-started',
+  'join',
   'new',
   'sign-in',
   'sso-callback',

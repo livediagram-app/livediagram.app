@@ -20,6 +20,7 @@ import { PencilIcon, PlusIcon, RemoveIcon, TrashIcon } from './explorer-icons';
 import { MenuItem, PortalMenu } from './PortalMenu';
 import { Tooltip } from './Tooltip';
 import { TeamFormModal } from './TeamFormModal';
+import { TeamInviteLinkDialog } from './TeamInviteLinkDialog';
 import { TeamSharedDiagrams } from './TeamSharedDiagrams';
 
 // Right-pane team view for the Explorer (spec/32): one calm card —
@@ -54,6 +55,7 @@ export function TeamPane({
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [linkOpen, setLinkOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -331,14 +333,24 @@ export function TeamPane({
                         you
                       </span>
                     ) : null}
+                    {pending ? (
+                      <span className="shrink-0 rounded-full bg-amber-100 px-1.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
+                        Invited
+                      </span>
+                    ) : null}
                   </span>
-                  <span className="block truncate text-xs text-slate-400">
-                    {pending
-                      ? 'Invited, waiting for them to accept'
-                      : isSelf
-                        ? (m.email ?? '')
-                        : ''}
-                  </span>
+                  {/* Email under the name for every member (spec/32) — the
+                      recognisable identifier alongside the display name.
+                      `truncate` keeps long addresses from breaking the row
+                      layout on mobile. Pending rows that somehow carry no
+                      address fall back to the waiting hint. */}
+                  {m.email ? (
+                    <span className="block truncate text-xs text-slate-500">{m.email}</span>
+                  ) : pending ? (
+                    <span className="block truncate text-xs text-slate-400">
+                      Waiting for them to accept
+                    </span>
+                  ) : null}
                 </span>
                 {isAdmin && !pinnedAdmin ? (
                   <select
@@ -377,32 +389,50 @@ export function TeamPane({
           </p>
         ) : null}
         {isAdmin ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void invite();
-            }}
-            className="flex items-center gap-2 border-t border-slate-200 bg-slate-50/40 px-4 py-2.5"
-          >
-            <span className="shrink-0 text-slate-300">
-              <PlusIcon />
-            </span>
-            <input
-              type="email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="Add your team by email address, they will receive an invite."
-              aria-label="Invite by email address"
-              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-            />
-            <button
-              type="submit"
-              disabled={!inviteEmail.trim() || inviteBusy}
-              className="shrink-0 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+          <>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void invite();
+              }}
+              className="flex items-center gap-2 border-t border-slate-200 bg-slate-50/40 px-4 py-2.5"
             >
-              Invite
+              <span className="shrink-0 text-slate-300">
+                <PlusIcon />
+              </span>
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="Add your team by email address, they will receive an invite."
+                aria-label="Invite by email address"
+                className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              />
+              <button
+                type="submit"
+                disabled={!inviteEmail.trim() || inviteBusy}
+                className="shrink-0 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Invite
+              </button>
+            </form>
+            {/* Shareable join link (spec/32): an alternative to per-address
+                invites. A dot indicates the link is currently on. */}
+            <button
+              type="button"
+              onClick={() => setLinkOpen(true)}
+              className="flex w-full items-center gap-2 border-t border-slate-200 px-4 py-2.5 text-left text-sm font-medium text-brand-600 transition hover:bg-brand-50/60"
+            >
+              <LinkIcon />
+              <span className="flex-1">Invite by link</span>
+              {detail.inviteLink ? (
+                <span className="inline-flex items-center gap-1 text-xs font-normal text-emerald-600">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
+                  On
+                </span>
+              ) : null}
             </button>
-          </form>
+          </>
         ) : null}
       </div>
 
@@ -420,6 +450,15 @@ export function TeamPane({
         initial={{ name: team.name, organisation: team.organisation }}
         onSubmit={(values) => void submitEdit(values)}
         onCancel={() => setEditOpen(false)}
+      />
+
+      <TeamInviteLinkDialog
+        open={linkOpen}
+        onClose={() => setLinkOpen(false)}
+        ownerId={ownerId}
+        teamId={teamId}
+        inviteLink={detail.inviteLink}
+        onInviteLinkChange={(link) => setDetail((d) => (d ? { ...d, inviteLink: link } : d))}
       />
     </div>
   );
@@ -477,6 +516,20 @@ function EllipsisIcon() {
       <circle cx="3" cy="7" r="1.25" fill="currentColor" />
       <circle cx="7" cy="7" r="1.25" fill="currentColor" />
       <circle cx="11" cy="7" r="1.25" fill="currentColor" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 5.93M14 11a5 5 0 0 0-7.07 0L5.5 12.4a5 5 0 0 0 7.07 7.07L13.9 18.2"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

@@ -11,6 +11,9 @@ import type {
   Folder,
   Team,
   TeamInvite,
+  TeamInviteLink,
+  TeamInviteLinkInfo,
+  TeamInviteLinkJoin,
   TeamListItem,
   TeamMember,
   TeamRole,
@@ -20,7 +23,14 @@ import { API_BASE, apiDelete, apiHeaders, expectOk } from './core';
 
 type TeamsResponse = { teams: TeamListItem[] };
 type TeamResponse = { team: Team };
-export type TeamDetailResponse = { team: Team; members: TeamMember[]; myRole: TeamRole };
+export type TeamDetailResponse = {
+  team: Team;
+  members: TeamMember[];
+  myRole: TeamRole;
+  // The shareable invite link, admin-only and null when off / expired
+  // (spec/32). Non-admins always receive null.
+  inviteLink: TeamInviteLink | null;
+};
 type TeamMemberResponse = { member: TeamMember };
 type TeamInvitesResponse = { invites: TeamInvite[] };
 export type TeamLibraryResponse = { folders: Folder[]; diagrams: DiagramSummary[] };
@@ -161,4 +171,57 @@ export async function apiRemoveTeamMember(
   if (res.status === 409) return { ok: false, reason: 'last_admin' };
   if (!res.ok && res.status !== 404) throw new Error(`remove team member failed: ${res.status}`);
   return { ok: true };
+}
+
+// --- Shareable invite link (spec/32) ----------------------------------
+
+// Admin: turn the link on (or rotate it), getting back the fresh token
+// + its 1-week expiry.
+export async function apiGenerateTeamInviteLink(
+  ownerId: string,
+  teamId: string,
+): Promise<TeamInviteLink> {
+  const res = await fetch(`${API_BASE}/teams/${teamId}/invite-link`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId),
+  });
+  const { inviteLink } = await expectOk<{ inviteLink: TeamInviteLink }>(
+    res,
+    'generate team invite link',
+  );
+  return inviteLink;
+}
+
+// Admin: turn the link off.
+export async function apiRevokeTeamInviteLink(ownerId: string, teamId: string): Promise<void> {
+  return apiDelete(`${API_BASE}/teams/${teamId}/invite-link`, ownerId, {
+    action: 'revoke team invite link',
+  });
+}
+
+// Resolve a join token to its team (the /join landing). Guest-callable.
+// Null when the token is unknown / turned off / expired.
+export async function apiResolveTeamInviteLink(
+  ownerId: string,
+  token: string,
+): Promise<TeamInviteLinkInfo | null> {
+  const res = await fetch(`${API_BASE}/teams/invite-link/${encodeURIComponent(token)}`, {
+    headers: await apiHeaders(ownerId),
+  });
+  if (res.status === 404) return null;
+  return expectOk<TeamInviteLinkInfo>(res, 'resolve team invite link');
+}
+
+// Join via the link (signed-in only on the server). Null when the token
+// is no longer valid by the time the user clicks Join.
+export async function apiJoinTeamByInviteLink(
+  ownerId: string,
+  token: string,
+): Promise<TeamInviteLinkJoin | null> {
+  const res = await fetch(`${API_BASE}/teams/invite-link/${encodeURIComponent(token)}/join`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId),
+  });
+  if (res.status === 404) return null;
+  return expectOk<TeamInviteLinkJoin>(res, 'join team by invite link');
 }

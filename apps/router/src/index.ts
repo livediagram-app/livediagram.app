@@ -24,6 +24,7 @@ const LIVE_ROUTE_SEGMENTS = new Set([
   'embed',
   'explorer',
   'get-started',
+  'join',
   'new',
   'sign-in',
   'sso-callback',

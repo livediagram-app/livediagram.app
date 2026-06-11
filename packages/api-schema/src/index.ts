@@ -184,6 +184,28 @@ export type TeamInvite = {
   invitedAt: number;
 };
 
+// The team's shareable invite link (spec/32): an admin turns it on, it
+// expires after a week, and anyone signed in who opens it can join.
+// Null in the team detail when off / expired. Admin-only.
+export type TeamInviteLink = {
+  token: string;
+  expiresAt: number;
+};
+
+// What a join token resolves to (the /join landing reads this to show
+// "Join <team>?"), plus whether the caller is already a member.
+export type TeamInviteLinkInfo = {
+  team: Team;
+  memberCount: number;
+  alreadyMember: boolean;
+};
+
+// Result of joining via an invite link.
+export type TeamInviteLinkJoin = {
+  teamId: string;
+  alreadyMember: boolean;
+};
+
 // ---------------------------------------------------------------------
 // Share links (spec/04, spec/11)
 // ---------------------------------------------------------------------

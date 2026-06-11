@@ -239,6 +239,97 @@ export async function deleteTeam(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM teams WHERE id = ?').bind(id).run();
 }
 
+// --- Shareable team invite link (spec/32) -----------------------------
+
+// One week — the fixed lifetime of an invite link from when it's turned on.
+export const TEAM_INVITE_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Turn the link on (token + expiry) or off (both null). Regenerating
+// while it's on rotates the token and resets the week.
+export async function setTeamInviteLink(
+  env: Env,
+  teamId: string,
+  token: string | null,
+  expiresAt: number | null,
+): Promise<void> {
+  await env.DB.prepare(
+    'UPDATE teams SET invite_link_token = ?, invite_link_expires_at = ?, updated_at = ? WHERE id = ?',
+  )
+    .bind(token, expiresAt, Date.now(), teamId)
+    .run();
+}
+
+// The team's current link (admin view). Null when off OR expired — an
+// expired link reads as off so the admin sees they need to turn it on.
+export async function getTeamInviteLink(
+  env: Env,
+  teamId: string,
+): Promise<{ token: string; expiresAt: number } | null> {
+  const row = await env.DB.prepare(
+    'SELECT invite_link_token, invite_link_expires_at FROM teams WHERE id = ?',
+  )
+    .bind(teamId)
+    .first<{ invite_link_token: string | null; invite_link_expires_at: number | null }>();
+  if (!row?.invite_link_token || !row.invite_link_expires_at) return null;
+  if (row.invite_link_expires_at <= Date.now()) return null;
+  return { token: row.invite_link_token, expiresAt: row.invite_link_expires_at };
+}
+
+// Resolve a join token to its team, ONLY when the link is on and
+// unexpired. Null = unknown / turned-off / expired token.
+export async function getTeamByInviteToken(env: Env, token: string): Promise<Team | null> {
+  const row = await env.DB.prepare(
+    `SELECT ${TEAM_COLS} FROM teams
+     WHERE invite_link_token = ? AND invite_link_expires_at > ?`,
+  )
+    .bind(token, Date.now())
+    .first<TeamRow>();
+  return row ? rowToTeam(row) : null;
+}
+
+// Join the caller to the team behind a valid invite token (spec/32).
+// Idempotent: an existing joined member is a no-op; a pending email
+// invite for the caller is accepted in place rather than duplicated.
+// Returns null when the token is invalid / expired.
+export async function joinTeamByInviteToken(
+  env: Env,
+  token: string,
+  userId: string,
+  callerEmail: string | null,
+): Promise<{ teamId: string; alreadyMember: boolean } | null> {
+  const team = await getTeamByInviteToken(env, token);
+  if (!team) return null;
+  // Already on the team (any prior row keyed to this user): accept a
+  // pending invite, else no-op.
+  const existing = await getMembership(env, team.id, userId);
+  if (existing) {
+    if (existing.status === 'invited') await acceptTeamMember(env, existing.id);
+    return { teamId: team.id, alreadyMember: existing.status === 'joined' };
+  }
+  // Connect + accept a pending email invite for this user first, so a
+  // link-join doesn't duplicate a row an admin already added by email.
+  if (callerEmail) {
+    await connectInvitesByEmail(env, userId, callerEmail);
+    const connected = await getMembership(env, team.id, userId);
+    if (connected) {
+      if (connected.status === 'invited') await acceptTeamMember(env, connected.id);
+      return { teamId: team.id, alreadyMember: connected.status === 'joined' };
+    }
+  }
+  // Fresh join. Carry the caller's email for display only when it isn't
+  // already taken on the team (the UNIQUE(team_id, email) gate), else null.
+  const emailForRow =
+    callerEmail && !(await teamHasEmail(env, team.id, callerEmail)) ? callerEmail : null;
+  const now = Date.now();
+  await env.DB.prepare(
+    `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, 'member', 'joined', ?, ?)`,
+  )
+    .bind(crypto.randomUUID(), team.id, userId, emailForRow, now, now)
+    .run();
+  return { teamId: team.id, alreadyMember: false };
+}
+
 // True when the address already has a row (pending or connected) on
 // this team — the duplicate-invite gate.
 export async function teamHasEmail(env: Env, teamId: string, email: string): Promise<boolean> {
@@ -296,6 +387,17 @@ export async function removeTeamMember(env: Env, memberId: string): Promise<void
 export async function countTeamAdmins(env: Env, teamId: string): Promise<number> {
   const row = await env.DB.prepare(
     `SELECT COUNT(*) AS n FROM team_members WHERE team_id = ? AND role = 'admin' AND status = 'joined'`,
+  )
+    .bind(teamId)
+    .first<{ n: number }>();
+  return row?.n ?? 0;
+}
+
+// Joined-member count for a team (the public "N members" number the
+// invite-link landing shows). Excludes pending invites.
+export async function countJoinedMembers(env: Env, teamId: string): Promise<number> {
+  const row = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM team_members WHERE team_id = ? AND status = 'joined'`,
   )
     .bind(teamId)
     .first<{ n: number }>();

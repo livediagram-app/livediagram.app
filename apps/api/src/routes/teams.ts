@@ -10,19 +10,25 @@ import {
   acceptTeamMember,
   addTeamMember,
   connectInvitesByEmail,
+  countJoinedMembers,
   countTeamAdmins,
   createTeam,
   deleteTeam,
   getMembership,
   getTeam,
+  getTeamByInviteToken,
+  getTeamInviteLink,
   getTeamMember,
+  joinTeamByInviteToken,
   listDiagramsByTeam,
   listFoldersByTeam,
   listInvitesByUser,
   listTeamMembers,
   listTeamsByUser,
   removeTeamMember,
+  setTeamInviteLink,
   teamHasEmail,
+  TEAM_INVITE_LINK_TTL_MS,
   updateTeam,
   updateTeamMemberRole,
 } from '../db';
@@ -44,7 +50,34 @@ function normaliseEmail(raw: string): string {
 export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, clerkUserId, clerkEmail } = ctx;
   if (segments[1] !== 'teams') return notFound();
+
+  // /api/teams/invite-link/<token> — RESOLVE a shareable join link
+  // (spec/32). Guest-accessible (sits ABOVE the sign-in gate): a token
+  // holder must see WHAT team they're joining before they sign in. The
+  // token is the credential, so returning the team name to anyone who
+  // has it is fine. The join POST needs a verified user — it's below
+  // the gate.
+  if (request.method === 'GET' && segments.length === 4 && segments[2] === 'invite-link') {
+    const team = await getTeamByInviteToken(env, segments[3]!);
+    if (!team) return notFound();
+    const memberCount = await countJoinedMembers(env, team.id);
+    const alreadyMember = clerkUserId
+      ? (await getMembership(env, team.id, clerkUserId)) !== null
+      : false;
+    return json({ team, memberCount, alreadyMember });
+  }
+
   if (!clerkUserId) return signInRequired();
+
+  // /api/teams/invite-link/<token>/join — JOIN via the link (spec/32).
+  // Signed-in only (above). Adds the caller as a joined member; the db
+  // helper de-dupes against an existing membership / pending invite.
+  if (segments.length === 5 && segments[2] === 'invite-link' && segments[4] === 'join') {
+    if (request.method !== 'POST') return notFound();
+    const result = await joinTeamByInviteToken(env, segments[3]!, clerkUserId, clerkEmail);
+    if (!result) return notFound();
+    return json(result);
+  }
 
   // /api/teams — list / create
   if (segments.length === 2) {
@@ -127,7 +160,10 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3) {
     if (request.method === 'GET') {
       const members = await listTeamMembers(env, teamId);
-      return json({ team, members, myRole: me.role });
+      // The invite link is an admin-only management surface (spec/32),
+      // so only admins get its token in the detail payload.
+      const inviteLink = isAdmin ? await getTeamInviteLink(env, teamId) : null;
+      return json({ team, members, myRole: me.role, inviteLink });
     }
     if (request.method === 'PUT') {
       if (!isAdmin) return adminRequired();
@@ -157,6 +193,24 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (request.method === 'DELETE') {
       if (!isAdmin) return adminRequired();
       await deleteTeam(env, teamId);
+      return noContent();
+    }
+    return notFound();
+  }
+
+  // /api/teams/<id>/invite-link — admin turns the shareable join link
+  // on (POST: generate / rotate, fixed 1-week expiry) or off (DELETE).
+  // Admin-only management surface (spec/32).
+  if (segments.length === 4 && segments[3] === 'invite-link') {
+    if (!isAdmin) return adminRequired();
+    if (request.method === 'POST') {
+      const token = crypto.randomUUID();
+      const expiresAt = Date.now() + TEAM_INVITE_LINK_TTL_MS;
+      await setTeamInviteLink(env, teamId, token, expiresAt);
+      return json({ inviteLink: { token, expiresAt } }, { status: 201 });
+    }
+    if (request.method === 'DELETE') {
+      await setTeamInviteLink(env, teamId, null, null);
       return noContent();
     }
     return notFound();
