@@ -181,6 +181,16 @@ Missing key === undefined === default behaviour. Concretely:
   `.reduce-motion` to `<html>` (via `useReduceMotion`), collapsing every
   decorative animation + transition to ~instant for motion-sensitive
   users who want it on regardless of their OS setting.
+- `notificationsEnabled` undefined / true → notifications on (the
+  default). Setting it to `false` suppresses the success + info toasts
+  the editor shows for consequential, otherwise-silent actions (a
+  diagram moved to a folder, duplicated, or deleted from a long list; a
+  tab linked into another diagram). **Error toasts are never gated by
+  this** — a failure the user would otherwise never see still surfaces,
+  so turning notifications off quiets the chatter without hiding
+  breakage. The gate is read fresh on each toast push (a synchronous
+  `readUserPreferences()` call in `hooks/useToast.tsx`), so a flip
+  applies immediately with no subscription.
 
 Empty (or missing entirely) localStorage entry, AND no row in
 `user_preferences` for this owner, is therefore the "everything
@@ -203,13 +213,15 @@ behaviour is friction the tool's banner already solves.
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
   Toggles are organised into collapsible groups (Canvas, Interface,
-  Accessibility, AI, Privacy) so the growing list stays scannable; only
+  Notifications, Accessibility, AI, Privacy) so the growing list stays scannable; only
   the first group (Canvas) is open by default and the rest start
   collapsed, so the dialog opens compact and the user expands what they
   need. The Canvas group holds `autoRebindArrows` and `alignmentGuides`
   (element add is now a single always-on tap-or-drag gesture with no
   setting — see [spec/09](09-canvas-and-command-palette.md)). The Interface group holds `minimalPanels`, whose
   description notes the dock layout is always on for mobile. The
+  Notifications group holds `notificationsEnabled`, whose description
+  notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is
   always respected and this only adds a user-forced override.
 - **Per-tool surfaces**: today only the pencil's ModeBanner (a

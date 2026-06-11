@@ -66,6 +66,15 @@ export type UserPreferences = {
   // syncs across their devices. Missing / undefined / false === full
   // motion (subject to the OS setting), the default.
   reduceMotion?: boolean;
+  // Toast notifications (spec/20). When `false`, the editor suppresses
+  // the confirmation / status toasts (success + info tones) it shows
+  // for consequential, otherwise-silent actions (a diagram moved to a
+  // folder, a tab linked, etc.). ERROR toasts are NOT gated by this:
+  // a failure the user would otherwise never see still surfaces, so
+  // turning notifications off quiets the chatter without hiding
+  // breakage. Missing / undefined / true === notifications on, the
+  // default. See hooks/useToast.tsx.
+  notificationsEnabled?: boolean;
 };
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';

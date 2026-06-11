@@ -19,6 +19,7 @@ import { useTeamLibrariesSweep } from '@/hooks/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/useTeams';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useDiagramListActions } from '@/hooks/useDiagramListActions';
+import { useToast } from '@/hooks/useToast';
 import { explorerPathFor, selectedFromRoute } from './routes';
 import type { PaneDiagram, SelectedNode } from './views';
 
@@ -139,6 +140,7 @@ export function useExplorerState() {
     [router],
   );
   const confirm = useConfirm();
+  const toast = useToast();
 
   const refresh = useCallback(
     async (ownerId: string) => {
@@ -279,6 +281,7 @@ export function useExplorerState() {
     diagramList: diagrams,
     setDiagramList: setDiagrams,
     confirm,
+    toast,
     deleteFolderFromHook: deleteFolder,
     // Stay on the library after a duplicate; just refresh the list
     // so the copy's row appears.

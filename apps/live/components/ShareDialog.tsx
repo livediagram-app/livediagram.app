@@ -9,6 +9,7 @@ import type { ShareLink, ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { formatTimeLeftCompact, useRelativeTimeTick } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useEscape } from '@/hooks/useEscape';
+import { useToast } from '@/hooks/useToast';
 import { TrashIcon } from './explorer-icons';
 import { Tooltip } from './Tooltip';
 
@@ -72,6 +73,7 @@ export function ShareDialog({
   // that value — even if the participant record was originally
   // created under a guest alias.
   const [name, setName] = useState(lockedName ?? participant.name);
+  const toast = useToast();
   const nameLocked = !!lockedName;
   const [busy, setBusy] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -160,8 +162,10 @@ export function ShareDialog({
       window.setTimeout(() => setCopiedCode(null), 1500);
       track('UI', 'Copied', 'ShareLink');
     } catch {
-      // Browsers without clipboard permission silently no-op; the
-      // user can still select the input.
+      // Browsers without clipboard permission can't write; tell the
+      // user so the dead button isn't a mystery (the link field stays
+      // selectable for a manual copy).
+      toast.error('Could not copy the link. Select it to copy manually.');
     }
   };
 
@@ -178,7 +182,8 @@ export function ShareDialog({
       window.setTimeout(() => setCopiedCode(null), 1500);
       track('UI', 'Copied', 'EmbedCode');
     } catch {
-      // Same silent no-op as the URL copy above.
+      // Same failure surface as the URL copy above.
+      toast.error('Could not copy the embed code. Select it to copy manually.');
     }
   };
 

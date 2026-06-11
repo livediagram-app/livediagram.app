@@ -20,6 +20,7 @@ import {
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/useConfirm';
+import type { useToast } from '@/hooks/useToast';
 
 type DiagramListActionsDeps = {
   // The resolved owner id. Null / placeholder while identity is still
@@ -29,6 +30,13 @@ type DiagramListActionsDeps = {
   diagramList: DiagramListItem[];
   setDiagramList: Dispatch<SetStateAction<DiagramListItem[]>>;
   confirm: ReturnType<typeof useConfirm>;
+  // Confirmation / error toasts for the consequential list actions
+  // (delete, move-to-folder, duplicate) whose result is otherwise
+  // silent or off-screen. Single-sourced here so all three surfaces
+  // (editor panel, /explorer, /new) get the same feedback. Success
+  // toasts respect the user's "Show notifications" preference;
+  // errors always surface (see useToast).
+  toast: ReturnType<typeof useToast>;
   // useFolders' delete. deleteFolder below chains the diagram-side
   // re-bucket cascade in front of it so rows visibly fall to
   // Unsorted instead of waiting for the next list refresh. Only
@@ -56,6 +64,7 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
     diagramList,
     setDiagramList,
     confirm,
+    toast,
     deleteFolderFromHook,
     currentDiagram = null,
     afterDuplicate,
@@ -132,6 +141,9 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
     await beforeRemove?.();
     setDiagramList((prev) => prev.filter((d) => d.id !== id));
     void apiDeleteDiagram(ownerId, id).catch(() => {});
+    // The row is gone but on a long / scrolled list its disappearance
+    // can be easy to miss, and the action is destructive — confirm it.
+    toast.success('Diagram deleted');
   };
 
   // Delete a folder (spec/15): confirm, re-bucket its direct
@@ -158,6 +170,9 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
     setDiagramList((prev) => prev.map((d) => (d.id === id ? { ...d, folderId } : d)));
     void apiSetDiagramFolder(ownerId, id, folderId).catch(() => {});
     track('Diagram', 'Moved');
+    // The row leaves the current view (it's now under the target
+    // folder / Unsorted), so confirm where it went.
+    toast.success(folderId ? 'Moved to folder' : 'Moved to Unsorted');
   };
 
   // Duplicate a diagram into a brand-new one (new tab ids, preserved
@@ -170,7 +185,13 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
     const newId = await duplicate(ownerId, id);
     if (newId) {
       track('Diagram', 'Duplicated');
+      // Surfaces that stay put (the pages) get a confirmation; the
+      // editor's afterDuplicate navigates to the copy, so its own
+      // open is the feedback and this toast is simply preempted.
+      toast.success('Diagram duplicated');
       await afterDuplicate(newId);
+    } else {
+      toast.error("Couldn't duplicate that diagram. Try again.");
     }
   };
 

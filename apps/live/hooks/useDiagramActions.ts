@@ -16,6 +16,7 @@ import { apiCopyDiagram, type DiagramListItem, type SharedWithItem } from '@/lib
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/useConfirm';
 import { useDiagramListActions } from '@/hooks/useDiagramListActions';
+import { useToast } from '@/hooks/useToast';
 
 type DiagramActionsDeps = {
   diagramId: string | null;
@@ -54,6 +55,8 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
     sessionShareCode,
   } = deps;
 
+  const toast = useToast();
+
   const {
     openDiagram,
     deleteDiagram,
@@ -66,6 +69,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
     diagramList,
     setDiagramList,
     confirm,
+    toast,
     deleteFolderFromHook: hookDeleteFolder,
     currentDiagram: diagramId ? { id: diagramId, name: diagramName } : null,
     // Open the freshly created copy. Navigation reloads the editor

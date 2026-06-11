@@ -11,14 +11,25 @@ import {
 } from 'react';
 import { Portal } from '@/components/Portal';
 import { CloseIcon } from '@/components/CloseIcon';
+import { readUserPreferences } from '@/lib/user-preferences';
 
-// Lightweight toast surface. Used to make previously-silent async
-// failures visible (linkTab, copy diagram, upload errors that
-// happen in the background). NOT used for autosave: autosave has
-// its own dedicated header pill, and toasting every flaky network
-// blip would shred the editing flow.
+// Lightweight toast surface. Two jobs: (1) make previously-silent async
+// failures visible (linkTab, copy diagram, clipboard + upload errors
+// that happen in the background), and (2) confirm consequential,
+// otherwise-silent actions (a diagram moved to a folder, duplicated,
+// deleted from a long list). NOT used for autosave (it has its own
+// header pill) nor for anything already visible on screen (adding an
+// element, a copy button that flips to "Copied" inline) — toasting
+// those would just be noise.
 //
-// Provider renders a stack of toasts at the bottom-right via a
+// The "Show notifications" preference (spec/20) gates the success +
+// info tones: when it's off, those become no-ops. ERROR toasts ignore
+// the preference and always show, so quieting the chatter never hides
+// an actual failure. The gate is read per-push (a cheap synchronous
+// localStorage read) so flipping the setting takes effect immediately,
+// with no subscription to manage.
+//
+// Provider renders a stack of toasts at the bottom-centre via a
 // portal so the toasts float above every other modal / dialog
 // (z-index above ConfirmDialog's z-50, see globals.css). The hook
 // returns an imperative `toast.error(msg) / toast.success(msg) /
@@ -64,6 +75,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const push = useCallback((message: string, tone: ToastTone) => {
+    // Errors always surface; success / info are gated on the
+    // "Show notifications" preference (default on). Read fresh per
+    // push so a Settings flip applies without a subscription.
+    if (tone !== 'error' && readUserPreferences().notificationsEnabled === false) return;
     setToasts((prev) => {
       // Dedupe same-tone same-message toasts so a tight retry
       // loop doesn't stack visual duplicates. The existing entry

@@ -19,6 +19,7 @@ import {
 } from '@/lib/api-client';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useDiagramListActions } from '@/hooks/useDiagramListActions';
+import { useToast } from '@/hooks/useToast';
 import { useFolders } from '@/hooks/useFolders';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
@@ -225,6 +226,7 @@ export default function NewDiagramPage() {
   // /explorer), so the optimistic updates, API calls, telemetry, and
   // confirm copy stay single-sourced.
   const confirm = useConfirm();
+  const toast = useToast();
   const {
     openDiagram,
     deleteDiagram,
@@ -237,6 +239,7 @@ export default function NewDiagramPage() {
     diagramList,
     setDiagramList,
     confirm,
+    toast,
     deleteFolderFromHook: hookDeleteFolder,
     // Stay on the welcome flow after a duplicate; just refresh the
     // list so the copy's row appears.

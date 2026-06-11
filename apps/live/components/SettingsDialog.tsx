@@ -23,6 +23,7 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
   const minimalPanels = settings.minimalPanels === true;
   const alignmentGuides = settings.alignmentGuides !== false;
   const reduceMotion = settings.reduceMotion === true;
+  const notificationsOn = settings.notificationsEnabled !== false;
 
   // Single-open accordion: the title of the one expanded group (or null).
   // Opening one collapses the rest. Starts on Canvas so the dialog lands
@@ -93,6 +94,17 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
                 onChange={(v) => {
                   track('UI', 'Toggled', v ? 'MinimalPanelsOn' : 'MinimalPanelsOff');
                   onChange({ ...settings, minimalPanels: v });
+                }}
+              />
+            </SettingsGroup>
+            <SettingsGroup {...groupProps('Notifications')}>
+              <ToggleRow
+                label="Show notifications"
+                description="Shows a brief confirmation when you do something whose result isn't on screen, like moving a diagram to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor."
+                checked={notificationsOn}
+                onChange={(v) => {
+                  track('UI', 'Toggled', v ? 'NotificationsOn' : 'NotificationsOff');
+                  onChange({ ...settings, notificationsEnabled: v });
                 }}
               />
             </SettingsGroup>
