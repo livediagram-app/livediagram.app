@@ -30,7 +30,7 @@ marketing/      off-site copy + media for listings and promotion (see specs/23)
 | App              | What runs there                                                                                                                                       | Cloudflare worker name  |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | `apps/marketing` | The landing site at `/`. Pure static HTML built with `next export`. Hero, feature grid, FAQ, legal, comparison pages.                                 | `livediagram-marketing` |
-| `apps/live`      | The editor at `/live/*`. Next.js static export plus a tiny path-rewrite worker that maps every `/diagram/<id>` to the same statically-built page.     | `livediagram-live`      |
+| `apps/live`      | The editor at clean routes (`/diagram/*`, `/explorer/*`, `/new`, `/join`, ...; only its `_next` assets keep a `/live` prefix). Next.js static export plus a tiny path-rewrite worker that maps every `/diagram/<id>` to the same statically-built page. | `livediagram-live`      |
 | `apps/telemetry` | A read-only dashboard at `/telemetry` that renders aggregate anonymous events from the api's D1 table.                                                | `livediagram-telemetry` |
 | `apps/api`       | The REST + WebSocket worker at `/api/*`. Holds the D1 binding and the per-diagram Durable Object realtime room. Plus the `change_log` retention cron. | `livediagram-api`       |
 | `apps/router`    | A worker that holds no business logic, only `MARKETING` / `LIVE` / `TELEMETRY` / `API` service bindings that forward by path prefix.                  | `livediagram-router`    |
