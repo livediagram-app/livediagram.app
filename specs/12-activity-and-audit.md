@@ -90,7 +90,7 @@ View-role visitors fail the auth check.
 The bulk tab-cascade DELETE stays owner-only — destructive bulk
 ops shouldn't ride a visitor's share code.
 
-- `GET    /api/diagrams/:id/log` → `{ entries: ChangeLogEntry[] }` newest-first, capped at 30 (server-side `CHANGE_LOG_LIST_LIMIT` in `apps/api/src/db/change-log.ts`). (owner or edit visitor)
+- `GET    /api/diagrams/:id/log` → `{ entries: ChangeLogEntry[] }` newest-first, capped at 30 (`CHANGE_LOG_LIST_LIMIT`, defined in `@livediagram/api-schema` and applied server-side in `apps/api/src/db/change-log.ts`). (owner or edit visitor)
 - `POST   /api/diagrams/:id/log` → append. Body: the new entry. (owner or edit visitor)
 - `DELETE /api/diagrams/:id/log/:entryId` → drop one entry (revert / undo). (owner or edit visitor)
 - `DELETE /api/diagrams/:id/log/tab/:tabId` → drop entries for one tab. (owner only)
