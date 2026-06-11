@@ -123,7 +123,7 @@ export function TemplatePicker({
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
               {isWelcome
-                ? 'Quick Start'
+                ? 'New Diagram'
                 : isIdentity
                   ? diagramName && diagramName.trim()
                     ? `Welcome to '${diagramName.trim()}'`

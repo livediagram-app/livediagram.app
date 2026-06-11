@@ -144,9 +144,11 @@ export function PaneHeader({
               <HamburgerIcon />
             </button>
           ) : null}
-          <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight text-slate-900">
-            {title}
-          </h1>
+          {title ? (
+            <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight text-slate-900">
+              {title}
+            </h1>
+          ) : null}
         </div>
         {hasActions ? (
           <div className="shrink-0">

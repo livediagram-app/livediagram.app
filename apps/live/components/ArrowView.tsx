@@ -550,20 +550,12 @@ function ArrowLabel({
     );
   }
   // A touch of padding so the dashed box + drag area sit just outside
-  // the label background.
+  // the label text.
   const pad = 2;
   return (
     <g>
-      <rect
-        x={x - size.width / 2}
-        y={y - size.height / 2}
-        width={size.width}
-        height={size.height}
-        rx={4}
-        fill="white"
-        fillOpacity={0.85}
-        style={{ pointerEvents: 'none' }}
-      />
+      {/* The label sits directly on the canvas with a transparent
+          background — no fill plate behind the text. */}
       <text
         x={x}
         y={y}

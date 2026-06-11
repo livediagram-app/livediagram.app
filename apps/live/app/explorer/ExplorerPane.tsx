@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 import { useExplorer } from './ExplorerContext';
 import { EmptyPane, ListView, PaneHeader, SharedList, SkeletonRows } from './views';
 
@@ -51,11 +52,21 @@ export function ExplorerPane() {
     refreshTeams,
   } = useExplorer();
 
+  // A team you're not a member of 404s in TeamPane (it doesn't leak the
+  // name). When that happens, drop the title/breadcrumb above it — there
+  // is no team to name. Reset on every navigation so a real team's title
+  // isn't suppressed by a stale 404 from the last one.
+  const [teamNotFound, setTeamNotFound] = useState(false);
+  useEffect(() => {
+    setTeamNotFound(false);
+  }, [selected]);
+  const hideTeamTitle = selected.kind === 'team' && teamNotFound;
+
   return (
     <>
       <PaneHeader
-        title={paneTitle}
-        crumbs={paneCrumbs}
+        title={hideTeamTitle ? '' : paneTitle}
+        crumbs={hideTeamTitle ? [] : paneCrumbs}
         onOpenNav={() => setMobileNavOpen(true)}
         onCreateDiagram={
           selected.kind === 'shared' ||
@@ -101,6 +112,7 @@ export function ExplorerPane() {
             clerkDisplayName={clerkDisplayName}
             onTeamsChanged={() => void refreshTeams()}
             onLeftTeam={() => go({ kind: 'recent' })}
+            onLoadResult={(found) => setTeamNotFound(!found)}
           />
         ) : null
       ) : selected.kind === 'gallery' ? (

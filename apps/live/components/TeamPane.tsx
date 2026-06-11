@@ -38,6 +38,7 @@ export function TeamPane({
   clerkDisplayName,
   onTeamsChanged,
   onLeftTeam,
+  onLoadResult,
 }: {
   ownerId: string;
   teamId: string;
@@ -50,6 +51,9 @@ export function TeamPane({
   // The caller is no longer a member (left or deleted the team) —
   // the page bounces selection off the now-dead team node.
   onLeftTeam: () => void;
+  // Whether the team loaded (true) or 404'd (false). The pane header
+  // uses this to drop the team title on a 404 — there's no team to name.
+  onLoadResult?: (found: boolean) => void;
 }) {
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,12 +72,14 @@ export function TeamPane({
       const d = await apiGetTeam(ownerId, teamId);
       setDetail(d);
       setFailed(false);
+      onLoadResult?.(true);
     } catch {
       setFailed(true);
+      onLoadResult?.(false);
     } finally {
       setLoading(false);
     }
-  }, [ownerId, teamId]);
+  }, [ownerId, teamId, onLoadResult]);
 
   useEffect(() => {
     setDetail(null);
