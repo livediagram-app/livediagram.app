@@ -1,13 +1,17 @@
 // Lazy sweep of every joined team's shared library (spec/35), one
-// fetch per team, consumed by three surfaces:
+// fetch per team, consumed by four surfaces:
+//   - the explorer sidebar's team subtrees (a team renders as a
+//     collapsible folder tree on every route — it needs each team's
+//     folders to decide whether to show the expand chevron),
 //   - the search panel's Folders group (team folders, spec/09),
 //   - the move modal's team destinations,
 //   - the explorer's Recent list (team diagrams ride alongside the
 //     personal ones, badged "Team").
-// Runs only while `enabled` (search open / move modal open / Recent
-// selected) so sessions that touch none of those never pay the
-// requests. Best-effort: a team whose fetch fails contributes no rows
-// this round; the sweep re-arms when the team list changes.
+// The caller passes `enabled` (today: any signed-in member with at
+// least one team, because the sidebar always needs the data); guests
+// and teamless sessions short-circuit below and never pay the requests.
+// Best-effort: a team whose fetch fails contributes no rows this round;
+// the sweep re-arms when the team list changes.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Folder } from '@livediagram/api-schema';

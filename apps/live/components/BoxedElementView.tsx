@@ -796,15 +796,25 @@ function ShapeInlineIconLayout({
 }) {
   if (isEditing) return editor;
 
-  // Icon box in element-space px: a fraction of the shorter side so it
-  // stays proportionate, clamped so it's neither a speck nor dominant.
-  const iconSize = Math.max(16, Math.min(Math.min(element.width, element.height) * 0.32, 48));
   const isRow = position === 'left' || position === 'right';
   const iconFirst = position === 'left' || position === 'above';
   const fontSize =
     textSize === 'scale'
       ? Math.max(12, Math.min(element.height * 0.26, 26))
       : INLINE_FONT_PX[textSize];
+  // Element-proportional size: a fraction of the shorter side, clamped so
+  // it's neither a speck nor dominant. Used as the ceiling (and as the
+  // size itself for an icon with no label — nothing to scale against).
+  const elementIconSize = Math.max(
+    16,
+    Math.min(Math.min(element.width, element.height) * 0.32, 48),
+  );
+  // With a label, tie the glyph to the label's font size so small text
+  // gets a small icon instead of a 48px glyph dwarfing it; still capped by
+  // the element-proportional size so it can't overflow a small shape.
+  const iconSize = label.trim()
+    ? Math.max(16, Math.min(fontSize * 1.6, elementIconSize))
+    : elementIconSize;
 
   const iconBox = (
     <div

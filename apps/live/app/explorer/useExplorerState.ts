@@ -113,11 +113,17 @@ export function useExplorerState() {
     teamDiagrams,
     refresh: refreshTeamLibraries,
   } = useTeamLibrariesSweep(ownerId, teams, {
-    enabled:
-      searchOpen ||
-      moveTarget?.kind === 'diagram' ||
-      selected.kind === 'recent' ||
-      teams.some((t) => expanded.has(t.id)),
+    // The sidebar renders every team as a collapsible folder tree on
+    // EVERY explorer route (spec/35), so it needs each team's folders to
+    // know whether to show the expand chevron — not just on Recent /
+    // search / move. Gating on the route (e.g. `selected.kind === 'recent'`)
+    // meant a hard navigation onto a team folder (which the sidebar opens
+    // via window.location.assign → /explorer/team) landed with the sweep
+    // off, so the team showed no folders and couldn't be expanded. The
+    // hook no-ops for guests / teamless sessions and dedupes per team set,
+    // so enabling whenever a team exists is one cheap sweep — and it
+    // subsumes the old search / move / recent / expanded conditions.
+    enabled: teams.length > 0,
   });
   // Mobile section drawer: the sidebar is hidden below `sm`, so on a
   // phone this slides it in from a hamburger in the pane header.
