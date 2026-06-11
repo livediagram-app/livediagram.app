@@ -149,6 +149,13 @@ type EditorDragDeps = {
   tick: (mapper: (els: Element[]) => Element[]) => void;
   commit: (mapper: (els: Element[]) => Element[]) => void;
   markCheckpoint: () => void;
+  // Debounced activity-log emitter (see useActivityLogDebounce). Called
+  // on every mutating tick of an edit gesture; the per-key 500ms window
+  // collapses the whole drag into ONE entry that diffs pre-gesture vs
+  // final state. A continuous move/resize never flushes mid-drag (each
+  // tick resets the timer), so the panel gets one "Moved a Square", not
+  // one row per frame.
+  scheduleElementChangeLog: (key: string) => void;
   // A standalone icon shape was dragged + released over another (non-
   // icon) shape: fold it INTO that shape as an inline icon on the named
   // side, removing the standalone element (spec/09). Omitted when icon
@@ -233,6 +240,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // pointer-down pushed a no-op snapshot (and cleared the redo stack) on
   // every click, evicting real states under the 3-deep HISTORY_LIMIT.
   const checkpointPendingRef = useRef(false);
+  // True for the duration of a gesture that edits EXISTING elements
+  // (move / resize / rotate / arrow-handle), gating the activity-log
+  // emit. Set when the armed checkpoint is flushed on the first real
+  // tick; reset on pointer-up. Stays false for arrow creation-on-drag
+  // (beginAnchorDrag), which never arms a checkpoint because it already
+  // logged an "Added" entry via `commit` — so we don't double-log it.
+  const logGestureRef = useRef(false);
   const scheduleGuides = (align: AlignmentGuide[], dist: DistributionGuide[] = []) => {
     if (guideRafRef.current !== null) cancelAnimationFrame(guideRafRef.current);
     guideRafRef.current = requestAnimationFrame(() => {
@@ -562,8 +576,17 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         if (checkpointPendingRef.current) {
           depsRef.current.markCheckpoint();
           checkpointPendingRef.current = false;
+          // A checkpoint was armed → this is an edit of existing
+          // elements, so it earns an activity-log entry. (Arrow
+          // creation-on-drag never arms one; it stays out.)
+          logGestureRef.current = true;
         }
         depsRef.current.tick(mapper);
+        // Re-arm the 500ms debounce on every mutating tick so the entry
+        // lands once, after the gesture settles, diffing pre-gesture vs
+        // final state. One shared key per drag → distinct gestures stay
+        // distinct unless they overlap the window.
+        if (logGestureRef.current) depsRef.current.scheduleElementChangeLog('element-drag');
       };
       // Screen-pixel delta into canvas-coord delta (invert the
       // current zoom).
@@ -944,6 +967,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // Disarm any checkpoint the gesture never used (a click that
       // selected without moving), so it can't attach to a later one.
       checkpointPendingRef.current = false;
+      // Close the log gesture so the next drag starts clean. The
+      // pending debounce timer (if any) still flushes the entry; this
+      // only stops a later gesture from inheriting this one's "log it"
+      // flag. (Cancelling the flush isn't wanted — that's the entry.)
+      logGestureRef.current = false;
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);

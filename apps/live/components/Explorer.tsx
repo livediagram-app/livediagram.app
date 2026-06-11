@@ -723,7 +723,7 @@ function ExplorerImpl({
                     onToggleExpanded={toggleFolder}
                     onOpenDiagram={(id) => onOpenDiagram(id)}
                     onOpenTeam={(teamId) =>
-                      window.location.assign(`/live/explorer/team?id=${encodeURIComponent(teamId)}`)
+                      window.location.assign(`/explorer/team?id=${encodeURIComponent(teamId)}`)
                     }
                     // Hard delete on team-library rows, any joined
                     // member (spec/35); the api enforces membership.

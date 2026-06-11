@@ -1,7 +1,7 @@
 'use client';
 
-// Pieces shared between the sign-in (`/live/sign-in/`) and sign-up
-// (`/live/get-started/`) pages. Without this, both pages held identical
+// Pieces shared between the sign-in (`/sign-in/`) and sign-up
+// (`/get-started/`) pages. Without this, both pages held identical
 // copies of the 6-digit code input, the Google glyph SVG, the
 // "Redirecting…" interstitial, and the Clerk error-message parser —
 // roughly 100 lines of literal copy-paste. CLAUDE.md's reuse rule is
@@ -95,7 +95,7 @@ export function AuthDisabledNotice() {
       </p>
       <div className="mt-6 flex justify-center">
         <a
-          href="/live/"
+          href="/"
           className="inline-flex items-center rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
         >
           Continue as guest
@@ -216,71 +216,60 @@ export function messageOf(err: unknown, fallback: string): string {
 // Post-auth destination resolution
 //
 // Both sign-in and sign-up accept Clerk's protected-page bounce as
-// `?redirect_url=/live/<path>`. After verification the user should
-// land back where they came from. See spec/04 "Routes". Validation
-// rules:
+// `?redirect_url=/<path>`. After verification the user should land back
+// where they came from. Routes are now clean (no `/live` prefix — the
+// router selects the live app by route, spec/08), so destinations are
+// plain same-origin paths. Validation rules:
 //
-//   - Must start with `/live` so an attacker can't craft an open
-//     redirect to a different origin via the query param.
-//   - Must NOT start with `/live/sign-in` or `/live/get-started`
-//     (loop guard: bouncing back to the auth page after sign-in
-//     would land in a redirect cycle).
-//   - The `/live` prefix is stripped because `router.push` already
-//     respects the basePath, so passing the full path would land on
-//     `/live/live/<...>`.
-//   - Anything missing, unsafe, or pointing back at auth falls
-//     through to POST_AUTH_DEFAULT (`/`).
+//   - Must be a same-origin absolute PATH: starts with a single `/`,
+//     NOT `//` or `/\` — those are protocol-relative / backslash
+//     open-redirect tricks that browsers resolve to a foreign origin.
+//   - Must NOT start with `/sign-in` or `/get-started` (loop guard:
+//     bouncing back to the auth page after sign-in would cycle).
+//   - Anything missing, unsafe, or pointing back at auth falls through
+//     to the supplied default.
 // ---------------------------------------------------------------------
 
-export const POST_AUTH_DEFAULT = '/';
+// Sign-up / generic default: the welcome + create-new flow (`/new` used
+// to be where bare `/live` redirected). NOT `/` — that's the marketing
+// home now, not the app.
+export const POST_AUTH_DEFAULT = '/new';
 
-// Sign-in default (router.push form, so no `/live` prefix — basePath adds
-// it). A returning user with no `?redirect_url` lands on their Explorer
-// ("here's all your stuff") rather than the new-diagram welcome flow that
-// suits a fresh sign-up. See spec/04. The OAuth form derives `/live/explorer/recent`.
+// Sign-in default: a returning user with no `?redirect_url` lands on
+// their Explorer ("here's all your stuff") rather than the new-diagram
+// welcome flow that suits a fresh sign-up. See spec/04.
 export const POST_AUTH_SIGNIN_DEFAULT = '/explorer/recent';
 
-// Default Clerk OAuth completion URL: the full editor-home path.
-// Clerk's authenticateWithRedirect navigates the browser directly,
-// so basePath isn't applied automatically and the /live prefix has
-// to stay on. resolvePostAuthDestination's default is for
-// router.push, which DOES apply basePath, so this is the same
-// destination shape-shifted for the OAuth round-trip.
-const POST_AUTH_OAUTH_DEFAULT = '/live/';
+// A redirect_url is safe iff it's a same-origin absolute path that
+// isn't an auth page. The `//` / `/\` rejection is the open-redirect
+// guard the old `/live`-prefix check used to provide implicitly.
+function isSafeInternalPath(p: string | null | undefined): p is string {
+  return (
+    !!p &&
+    p.startsWith('/') &&
+    !p.startsWith('//') &&
+    !p.startsWith('/\\') &&
+    !p.toLowerCase().startsWith('/sign-in') &&
+    !p.toLowerCase().startsWith('/get-started')
+  );
+}
 
 export function resolvePostAuthDestination(
   searchParams: { get: (key: string) => string | null },
-  // Where to land when there's no safe `?redirect_url`. Sign-up uses the
-  // default (`/` -> the welcome flow); sign-in passes
-  // POST_AUTH_SIGNIN_DEFAULT (`/explorer`). A valid redirect_url always
-  // wins over this so a protected-page bounce still returns where it came.
   defaultDest: string = POST_AUTH_DEFAULT,
 ): string {
   const redirect = searchParams.get('redirect_url');
-  const safe =
-    redirect?.startsWith('/live') &&
-    !redirect.toLowerCase().startsWith('/live/sign-in') &&
-    !redirect.toLowerCase().startsWith('/live/get-started');
-  if (safe && redirect) {
-    const stripped = redirect.replace(/^\/live/, '');
-    return stripped.length > 0 ? stripped : '/';
-  }
-  return defaultDest;
+  return isSafeInternalPath(redirect) ? redirect : defaultDest;
 }
 
-// OAuth-flavoured form of resolvePostAuthDestination. Shares the
-// validation rules (so a malicious or loop-creating redirect_url
-// is rejected in both flows) but returns the path with the /live
-// prefix intact, ready to feed to Clerk's
-// authenticateWithRedirect({ redirectUrlComplete }). Composes on
-// top of resolvePostAuthDestination so the two helpers can't drift.
+// OAuth form: Clerk's authenticateWithRedirect navigates the browser
+// directly. With clean routing the completion URL is the SAME path as
+// the router.push form (there's no basePath to add any more), so this
+// just composes on top of resolvePostAuthDestination — the two helpers
+// can't drift.
 export function resolveOAuthCompleteUrl(
   searchParams: { get: (key: string) => string | null },
   defaultDest: string = POST_AUTH_DEFAULT,
 ): string {
-  const dest = resolvePostAuthDestination(searchParams, defaultDest);
-  // `/` is the only destination that needs the explicit OAuth form
-  // (`/live/`); every other (incl. `/explorer`) is just `/live` + path.
-  if (dest === POST_AUTH_DEFAULT) return POST_AUTH_OAUTH_DEFAULT;
-  return `/live${dest}`;
+  return resolvePostAuthDestination(searchParams, defaultDest);
 }

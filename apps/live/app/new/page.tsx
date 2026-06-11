@@ -217,7 +217,7 @@ export default function NewDiagramPage() {
     } else if (targetFolderId) {
       await apiSetDiagramFolder(self.id, diagramId, targetFolderId).catch(() => {});
     }
-    window.location.assign(`/live/diagram/${diagramId}`);
+    window.location.assign(`/diagram/${diagramId}`);
   };
 
   // Explorer-row mutations come from the shared useDiagramListActions
@@ -336,7 +336,7 @@ export default function NewDiagramPage() {
           // Open to guests too: the standalone page is not gated (it
           // keys off the per-browser id for signed-out visitors, see
           // app/explorer/page.tsx), so the button surfaces for everyone.
-          onOpenFullExplorer={() => window.location.assign('/live/explorer/recent')}
+          onOpenFullExplorer={() => window.location.assign('/explorer/recent')}
           currentDiagramId={null}
           onMoveTo={(x, y) => setExplorerPosition({ x, y })}
           onReset={() => setExplorerPosition(null)}

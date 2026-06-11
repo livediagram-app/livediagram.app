@@ -36,7 +36,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Editor (live app)',
     description:
-      'The diagram editor at https://livediagram.app/live. Static export served by a Cloudflare Worker.',
+      'The diagram editor at https://livediagram.app/new. Static export served by a Cloudflare Worker.',
   },
   {
     name: 'API',

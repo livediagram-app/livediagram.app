@@ -85,7 +85,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
             shared={sharedDiagrams}
             onDismissShared={dismissSharedDiagram}
             onOpenFullExplorer={() =>
-              window.location.assign(`${window.location.origin}/live/explorer/recent`)
+              window.location.assign(`${window.location.origin}/explorer/recent`)
             }
             currentDiagramId={null}
             onMoveTo={(x, y) => setExplorerPosition({ x, y })}
@@ -113,7 +113,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
         <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">
           <NotFound
             onCreateNew={() => {
-              window.open(`${window.location.origin}/live/new`, '_blank', 'noopener');
+              window.open(`${window.location.origin}/new`, '_blank', 'noopener');
             }}
           />
         </main>
@@ -132,7 +132,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
         <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
           <NotFound
             onCreateNew={() => {
-              window.location.assign(`${window.location.origin}/live/new`);
+              window.location.assign(`${window.location.origin}/new`);
             }}
           />
           <Explorer
@@ -143,7 +143,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
             shared={sharedDiagrams}
             onDismissShared={dismissSharedDiagram}
             onOpenFullExplorer={() =>
-              window.location.assign(`${window.location.origin}/live/explorer/recent`)
+              window.location.assign(`${window.location.origin}/explorer/recent`)
             }
             currentDiagramId={null}
             onMoveTo={(x, y) => setExplorerPosition({ x, y })}

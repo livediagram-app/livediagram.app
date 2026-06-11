@@ -1597,6 +1597,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeTab,
     markCheckpoint,
     tick,
+    scheduleElementChangeLog,
     autoRebindArrowsRef,
   });
 
@@ -1637,6 +1638,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tick,
     commit,
     markCheckpoint,
+    scheduleElementChangeLog,
     onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
     autoRebindArrowsRef,
     alignmentGuidesRef,

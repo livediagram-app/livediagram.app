@@ -65,7 +65,7 @@ export function ExplorerPane() {
             ? undefined
             : () =>
                 window.location.assign(
-                  selected.kind === 'folder' ? `/live/new?folder=${selected.id}` : '/live/new',
+                  selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new',
                 )
         }
         onCreateFolder={

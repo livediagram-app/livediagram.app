@@ -20,7 +20,7 @@ export function InvitesRedirectGate() {
 
   useEffect(() => {
     if (signedOut) {
-      router.replace('/sign-in/?redirect_url=/live/explorer/invites');
+      router.replace('/sign-in/?redirect_url=/explorer/invites');
     }
   }, [signedOut, router]);
 

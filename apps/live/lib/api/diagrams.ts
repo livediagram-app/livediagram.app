@@ -111,7 +111,7 @@ export type SharedWithItem = {
   role: 'edit' | 'view';
   // Still-live share code for the same role the visitor was
   // granted. Client uses it to build the editor URL
-  // (`/live/diagram/<id>?s=<code>`) — without it the link would
+  // (`/diagram/<id>?s=<code>`) — without it the link would
   // land on the owner-only diagram path and 404. Server-side
   // filtering drops rows whose share was revoked entirely.
   shareCode: string;

@@ -35,6 +35,11 @@ type NudgeDeps = {
   // press of a burst takes a checkpoint, subsequent presses tick.
   markCheckpoint: () => void;
   tick: (mapElements: (els: Element[]) => Element[]) => void;
+  // Debounced activity-log emitter (see useActivityLogDebounce). Called
+  // on every press; the 500ms per-key window matches the burst window,
+  // so a run of arrow-key presses collapses into ONE "Moved X" entry
+  // rather than one per keystroke.
+  scheduleElementChangeLog: (key: string) => void;
   // Mutable mirror of the autoRebindArrows preference, kept in sync
   // with userPreferences upstream. Read through the ref so a flip
   // in Settings applies on the next press without re-mounting any
@@ -103,5 +108,9 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
         ? rebindArrowAnchorsAfterMove(moved, movedBoxedIds)
         : moved;
     });
+    // Log the burst as one entry: the first press captures the
+    // pre-nudge snapshot, each press resets the 500ms window, and the
+    // single flush diffs against the settled position → "Moved X".
+    deps.scheduleElementChangeLog('element-nudge');
   };
 }

@@ -40,9 +40,9 @@ export function ClerkProvider({ children }: { children: ReactNode }) {
   return (
     <Clerk
       publishableKey={clerkPublishableKey}
-      signInUrl="/live/sign-in/"
-      signUpUrl="/live/get-started/"
-      afterSignOutUrl="/live/"
+      signInUrl="/sign-in/"
+      signUpUrl="/get-started/"
+      afterSignOutUrl="/"
     >
       {children}
     </Clerk>

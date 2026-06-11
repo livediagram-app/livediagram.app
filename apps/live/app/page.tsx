@@ -3,7 +3,7 @@
 import { useLayoutEffect } from 'react';
 
 // Hard cutover (spec/14): `/live` no longer hosts the editor. The
-// canonical owner URL is `/live/diagram/<id>`; `/live/new` owns the
+// canonical owner URL is `/diagram/<id>`; `/new` owns the
 // welcome / create-new flow. Anyone landing on bare `/live` gets
 // redirected to `/new` so they start in the right place.
 //
@@ -16,10 +16,10 @@ export default function LiveIndex() {
     const url = new URL(window.location.href);
     const shareCode = url.searchParams.get('s');
     if (shareCode) {
-      window.location.replace(`${window.location.origin}/live/diagram/shared?s=${shareCode}`);
+      window.location.replace(`${window.location.origin}/diagram/shared?s=${shareCode}`);
       return;
     }
-    window.location.replace(`${window.location.origin}/live/new`);
+    window.location.replace(`${window.location.origin}/new`);
   }, []);
   return null;
 }

@@ -655,7 +655,7 @@ function DiagramRow({
             icon={<DiagramIcon />}
             label="Open"
             onClick={() => {
-              window.location.assign(`/live${href}`);
+              window.location.assign(href);
             }}
           />
           <MenuItem
@@ -704,7 +704,7 @@ function DiagramRow({
               label="Open Team"
               onClick={() => {
                 window.location.assign(
-                  `/live/explorer/team?id=${encodeURIComponent(diagram.team!.id)}${
+                  `/explorer/team?id=${encodeURIComponent(diagram.team!.id)}${
                     diagram.folderId ? `&folder=${encodeURIComponent(diagram.folderId)}` : ''
                   }`,
                 );

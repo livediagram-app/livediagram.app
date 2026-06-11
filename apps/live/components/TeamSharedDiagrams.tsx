@@ -209,7 +209,7 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
                 onClick={() => {
                   setCreateOpen(false);
                   window.location.assign(
-                    `/live/new?team=${encodeURIComponent(teamId)}${
+                    `/new?team=${encodeURIComponent(teamId)}${
                       currentFolderId ? `&folder=${encodeURIComponent(currentFolderId)}` : ''
                     }`,
                   );

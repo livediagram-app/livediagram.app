@@ -567,7 +567,7 @@ export function EditorView() {
         currentOwnerId={selfParticipant?.id ?? null}
         onDismissShared={dismissSharedDiagram}
         onOpenFullExplorer={() =>
-          window.location.assign(`${window.location.origin}/live/explorer/recent`)
+          window.location.assign(`${window.location.origin}/explorer/recent`)
         }
         diagramListLoading={diagramListLoading}
         changeLog={activeTabChangeLog}
@@ -876,12 +876,12 @@ export function EditorView() {
           }}
           onSelectTeam={(id) => {
             window.location.assign(
-              `${window.location.origin}/live/explorer/team?id=${encodeURIComponent(id)}`,
+              `${window.location.origin}/explorer/team?id=${encodeURIComponent(id)}`,
             );
           }}
           onSelectTeamFolder={(teamId, folderId) => {
             window.location.assign(
-              `${window.location.origin}/live/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
+              `${window.location.origin}/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
             );
           }}
           onSelectTab={(tabId) => {

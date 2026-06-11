@@ -155,7 +155,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // path; the editor page reads the code there. Router stitches /live
   // onto the app's hostname so this URL always resolves end-to-end.
   const shareUrlFor = (code: string) =>
-    typeof window === 'undefined' ? '' : `${window.location.origin}/live/diagram/shared?s=${code}`;
+    typeof window === 'undefined' ? '' : `${window.location.origin}/diagram/shared?s=${code}`;
 
   return {
     updateParticipantName,

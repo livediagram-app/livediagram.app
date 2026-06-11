@@ -192,7 +192,7 @@ function GalleryCard({
           {usage.map((d) => (
             <li key={d.id} className="truncate text-[11px]">
               <a
-                href={`/live/diagram/${encodeURIComponent(d.id)}`}
+                href={`/diagram/${encodeURIComponent(d.id)}`}
                 className="text-brand-700 transition hover:text-brand-800 hover:underline"
               >
                 {d.name || 'Untitled diagram'}

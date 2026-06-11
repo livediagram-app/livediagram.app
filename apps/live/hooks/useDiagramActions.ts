@@ -81,7 +81,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
   // The current diagram is already autosaved so nothing is lost.
   const newDiagram = () => {
     if (typeof window === 'undefined') return;
-    window.location.assign(`${window.location.origin}/live/new`);
+    window.location.assign(`${window.location.origin}/new`);
   };
 
   // Visitor action: duplicate the currently-open shared diagram
@@ -100,7 +100,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
       // A visitor cloning someone else's shared diagram into their own
       // account; a distinct signal from duplicating your own (type 'Copy').
       track('Diagram', 'Duplicated', 'Copy');
-      window.location.assign(`${window.location.origin}/live/diagram/${copy.id}`);
+      window.location.assign(`${window.location.origin}/diagram/${copy.id}`);
     } catch {
       // Network / auth glitch; let the user try again. Leave the
       // header button enabled by clearing the loading flag.

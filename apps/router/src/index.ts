@@ -12,6 +12,33 @@ const LIVE_PATH = '/live';
 const API_PATH = '/api';
 const TELEMETRY_PATH = '/telemetry';
 
+// The live app's top-level page route segments. These serve at CLEAN
+// URLs (no `/live` prefix) — the live worker's `out/` files are already
+// `/live`-free — so the router forwards them to the live worker AS-IS,
+// no strip. Marketing owns every other first segment (`/`,
+// `/alternatives`, `/faq`, ...) and there's no overlap with this set.
+// `/live/*` still exists ONLY for the bundled `_next` assets (the live
+// app's prod `assetPrefix`), which ARE stripped — see isLivePath.
+const LIVE_ROUTE_SEGMENTS = new Set([
+  'diagram',
+  'embed',
+  'explorer',
+  'get-started',
+  'new',
+  'sign-in',
+  'sso-callback',
+]);
+
+// Root-served live assets that don't ride the `assetPrefix` (Next's
+// metadata icon). Routed to the live worker by exact path.
+const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
+
+function isLivePageRoute(pathname: string): boolean {
+  if (LIVE_ROOT_ASSETS.has(pathname)) return true;
+  const first = pathname.split('/')[1] ?? '';
+  return LIVE_ROUTE_SEGMENTS.has(first);
+}
+
 function isLivePath(pathname: string): boolean {
   return pathname === LIVE_PATH || pathname.startsWith(`${LIVE_PATH}/`);
 }
@@ -50,13 +77,22 @@ export default {
     if (isApiPath(url.pathname)) {
       return env.API.fetch(request);
     }
+    // `/live/*` is now ONLY the live app's `_next` assets (its prod
+    // `assetPrefix`). Strip the prefix and forward — the worker serves
+    // them from `out/_next`.
     if (isLivePath(url.pathname)) {
       return forwardStripped(request, url, LIVE_PATH, env.LIVE);
     }
     if (isTelemetryPath(url.pathname)) {
       // The public transparency dashboard (spec/22), a basePath:'/telemetry'
-      // static app — same prefix-strip as the live app.
+      // static app — same prefix-strip as the live app's assets.
       return forwardStripped(request, url, TELEMETRY_PATH, env.TELEMETRY);
+    }
+    // Clean live-app page routes (/diagram, /explorer, /new, ...) and
+    // its root-served icon: forwarded AS-IS (no strip — the worker's
+    // files are already `/live`-free).
+    if (isLivePageRoute(url.pathname)) {
+      return env.LIVE.fetch(request);
     }
     return env.MARKETING.fetch(request);
   },

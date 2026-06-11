@@ -194,11 +194,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
             teamName: d.team.name,
           }))}
           onSelectDiagram={(id) => {
-            window.location.assign(`/live/diagram/${id}`);
+            window.location.assign(`/diagram/${id}`);
           }}
           onSelectShared={(id, shareCode) => {
             // Non-owners can only open the diagram on the visitor URL.
-            window.location.assign(`/live/diagram/${id}?s=${encodeURIComponent(shareCode)}`);
+            window.location.assign(`/diagram/${id}?s=${encodeURIComponent(shareCode)}`);
           }}
           onSelectFolder={(id) => {
             go({ kind: 'folder', id });
@@ -212,7 +212,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
             // Full load rather than go(): the team page reads the
             // folder deep-link param at mount (spec/35).
             window.location.assign(
-              `/live/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
+              `/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
             );
           }}
           onClose={() => setSearchOpen(false)}

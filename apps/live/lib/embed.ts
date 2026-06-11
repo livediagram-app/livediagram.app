@@ -5,7 +5,7 @@
 // The embed route reads the share code client-side from `?s=`, the
 // same query form the share view uses (spec/33 "URL shape").
 export function embedUrlFor(origin: string, code: string): string {
-  return `${origin}/live/embed?s=${encodeURIComponent(code)}`;
+  return `${origin}/embed?s=${encodeURIComponent(code)}`;
 }
 
 // Default size picked for docs / wiki columns: wide enough that a

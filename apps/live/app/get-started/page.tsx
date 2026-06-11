@@ -69,7 +69,7 @@ function GetStartedContent() {
     try {
       await clerkSignUp.authenticateWithRedirect({
         strategy: 'oauth_google',
-        redirectUrl: '/live/sso-callback',
+        redirectUrl: '/sso-callback',
         // Honour ?redirect_url so an OAuth sign-up from a protected
         // page lands back where it came from, matching the email-code
         // path. See spec/04 "Routes" + auth-shared.tsx.

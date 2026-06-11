@@ -157,7 +157,7 @@ function AuthControlsEnabled() {
             // on the marketing site at `/` (router worker serves the
             // marketing app there). signOut's redirectUrl goes
             // through window.location, so the basePath '/live' is
-            // NOT applied: '/' is the real root, not '/live/'.
+            // NOT applied: '/' is the real root, not '/'.
             await signOut({ redirectUrl: '/' });
           }}
         />

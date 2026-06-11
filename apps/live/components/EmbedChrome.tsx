@@ -40,7 +40,7 @@ type EmbedChromeProps = {
 };
 
 export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChromeProps) {
-  const openUrl = shareCode ? `/live/diagram/shared?s=${encodeURIComponent(shareCode)}` : '/live';
+  const openUrl = shareCode ? `/diagram/shared?s=${encodeURIComponent(shareCode)}` : '/new';
   return (
     <div
       className="pointer-events-none fixed bottom-3 left-3 z-30 flex max-w-[calc(100vw-8rem)] items-center gap-2"

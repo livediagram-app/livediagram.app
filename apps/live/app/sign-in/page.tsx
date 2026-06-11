@@ -77,7 +77,7 @@ function SignInContent() {
     try {
       await clerkSignIn.authenticateWithRedirect({
         strategy: 'oauth_google',
-        redirectUrl: '/live/sso-callback',
+        redirectUrl: '/sso-callback',
         // Honour ?redirect_url so an OAuth sign-in from a protected
         // page lands back where it came from, same as the email-code
         // path does. See spec/04 "Routes" + auth-shared.tsx.
@@ -124,8 +124,8 @@ function SignInContent() {
       // find your account" / "form_identifier_not_found" / "is invalid")
       // so we match any of the known forms. Routing uses bare paths
       // (no `/live` prefix) because Next.js prepends the basePath
-      // automatically — `/live/get-started` would yield
-      // `/live/live/get-started` which the static-export 404 handler
+      // automatically — `/get-started` would yield
+      // `/live/get-started` which the static-export 404 handler
       // catches and routes into the editor, ultimately landing the
       // user on /live/new with no sign-up form in sight.
       const lower = msg.toLowerCase();

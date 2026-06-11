@@ -106,6 +106,28 @@ ops shouldn't ride a visitor's share code.
    - Optimistically appends it to the in-memory log so the panel
      updates immediately.
 
+   **Continuous gestures coalesce into one entry.** A pointer drag
+   (move / resize / rotate a box, drag an arrow endpoint / curve /
+   elbow / label) and a keyboard-nudge burst (a run of arrow-key
+   presses) each produce a single entry, not one per frame or per
+   keystroke — matching the non-goal "the unit is one undoable
+   commit". The mechanism is the per-key debounce in
+   `useActivityLogDebounce` (`scheduleElementChangeLog`, 500ms
+   window): the first tick of the gesture snapshots the pre-gesture
+   elements as `before`, every subsequent tick resets the window, and
+   the single flush after the gesture settles diffs `before` against
+   the final state. So a drag yields one `Moved a Square` and a held
+   arrow-key yields one `Moved 'API'`. The same debounce already backs
+   the colour / opacity sliders. These entries are revertable like any
+   other element diff.
+
+   One exception: drawing an arrow by pulling from a shape anchor
+   (`beginAnchorDrag`) logs only the `Added an Arrow` entry from its
+   creation `commit`; the endpoint drag that immediately follows is
+   suppressed (the gesture never arms a history checkpoint, which is
+   what gates the drag-log), so a freshly drawn arrow is one entry,
+   not an add + a move.
+
 2. `useDiagramHistory.undo` / `redo` are paired with the activity log:
    - **Undo** removes the most recently emitted entry from the panel
      and DELETEs it from D1. The popped entry is held in a redo stack

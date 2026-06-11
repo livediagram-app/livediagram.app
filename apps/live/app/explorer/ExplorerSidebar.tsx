@@ -195,7 +195,7 @@ export function ExplorerSidebar() {
                 // mount, spec/35) — same as the search panel does.
                 const openTeamFolder = (folderId: string) =>
                   window.location.assign(
-                    `/live/explorer/team?id=${encodeURIComponent(t.id)}&folder=${encodeURIComponent(folderId)}`,
+                    `/explorer/team?id=${encodeURIComponent(t.id)}&folder=${encodeURIComponent(folderId)}`,
                   );
                 return (
                   <div key={t.id}>

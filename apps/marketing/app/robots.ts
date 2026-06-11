@@ -27,7 +27,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/live/', '/api/'],
+      disallow: ['/', '/api/'],
     },
     sitemap: 'https://livediagram.app/sitemap.xml',
   };

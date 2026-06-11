@@ -73,8 +73,8 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
     if (typeof window === 'undefined') return;
     if (id === currentDiagram?.id) return;
     const url = shareCode
-      ? `${window.location.origin}/live/diagram/${id}?s=${encodeURIComponent(shareCode)}`
-      : `${window.location.origin}/live/diagram/${id}`;
+      ? `${window.location.origin}/diagram/${id}?s=${encodeURIComponent(shareCode)}`
+      : `${window.location.origin}/diagram/${id}`;
     window.location.assign(url);
   };
 
@@ -126,7 +126,7 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
     track('Diagram', 'Deleted');
     if (id === currentDiagram?.id) {
       void apiDeleteDiagram(ownerId, id).catch(() => {});
-      window.location.assign(`${window.location.origin}/live/explorer`);
+      window.location.assign(`${window.location.origin}/explorer`);
       return;
     }
     await beforeRemove?.();

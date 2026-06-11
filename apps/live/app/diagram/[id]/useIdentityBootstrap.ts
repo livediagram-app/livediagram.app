@@ -137,7 +137,7 @@ export function useIdentityBootstrap(opts: {
     // the welcome modal is gated on `hydrated` so it doesn't flash the
     // Guest placeholder name into the input.
     //
-    // Path scheme (spec/14): `/live/diagram/<id>` is the owner URL.
+    // Path scheme (spec/14): `/diagram/<id>` is the owner URL.
     // The static export ships a single placeholder file at
     // `out/diagram/placeholder/index.html`; the live worker rewrites
     // `/diagram/<anything>` → that file so the browser receives the
@@ -157,7 +157,7 @@ export function useIdentityBootstrap(opts: {
     // No path id and no share code → the user landed on the placeholder
     // route directly. Hand off to /live/new for the welcome flow.
     if (!initialId && !initialShareCode) {
-      window.location.assign(`${window.location.origin}/live/new`);
+      window.location.assign(`${window.location.origin}/new`);
       return;
     }
     void (async () => {

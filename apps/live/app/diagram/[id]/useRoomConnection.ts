@@ -270,7 +270,7 @@ export function useRoomConnection(opts: {
           // revoked their own outbound link to a different visitor
           // keeps their session.
           if (sessionShareCodeRef.current && sessionShareCodeRef.current === op.code) {
-            window.location.assign('/live/');
+            window.location.assign('/');
           }
         }
       },

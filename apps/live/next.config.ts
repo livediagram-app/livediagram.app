@@ -25,7 +25,14 @@ const distDir = process.env.NEXT_DISTDIR ?? '.next';
 const nextConfig: NextConfig = {
   ...(isProdBuild ? { output: 'export' } : {}),
   distDir,
-  basePath: '/live',
+  // Pages serve at clean root paths (/diagram, /explorer, /new, ...);
+  // the router selects the live app by route (spec/08), so there's no
+  // `/live` basePath in the URL any more. Only the bundled `_next`
+  // assets keep a `/live` prefix in PROD so they don't collide with
+  // marketing's `/_next` — the router strips `/live` before forwarding,
+  // so the worker still serves them from `out/_next`. Dev runs
+  // standalone (no router in front) with clean asset paths.
+  ...(isProdBuild ? { assetPrefix: '/live' } : {}),
   images: {
     unoptimized: true,
   },

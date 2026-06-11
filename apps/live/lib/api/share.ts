@@ -16,7 +16,7 @@ import {
 } from './core';
 
 // Resolve a share code to a full diagram + the role granted by that
-// code. Visitors landing on `/live/diagram/shared?s=<code>` use
+// code. Visitors landing on `/diagram/shared?s=<code>` use
 // this; revoked codes return 404 from the API. Deduped by `${code}|
 // ${ownerId}` so Strict Mode's double-invoke doesn't fire two share
 // lookups for the same visitor, while a different visitor on the
