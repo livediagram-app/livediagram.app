@@ -162,6 +162,42 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
     expect(diff.orderChanged).toBe(false);
   });
 
+  it('does NOT persist an unloaded, empty tab whose reference was bumped (data-loss guard)', () => {
+    // The wipe bug: a background tab the user never opened is a lazy
+    // placeholder (empty elements). A folder move / reorder bumps its
+    // object reference, the identity diff flags it "changed", and without
+    // the guard the autosave PUTs the empty body over the real server row.
+    const a = tab('a'); // loaded + edited
+    const b = tab('b'); // never opened: empty placeholder
+    const aEdited = { ...a, elements: [...a.elements] };
+    const bBumped = { ...b }; // new reference, still empty, still unloaded
+    const loaded = new Set(['a']);
+    const diff = computeTabSaveDiff([a, b], [aEdited, bBumped], 'Doc', 'Doc', loaded);
+    expect(diff.changedTabs.map((t) => t.id)).toEqual(['a']);
+    expect(diff.hasChanges).toBe(true);
+  });
+
+  it('still persists an unloaded tab that actually carries elements (peer-delivered content)', () => {
+    // The guard keys on "do we have authoritative content?", not merely
+    // "is it in the loaded set" — a tab a realtime peer handed us has real
+    // elements and must still save even before our own fetch records it.
+    const a = tab('a');
+    const peer = tab('p', 'p', [
+      {
+        id: 'e',
+        type: 'shape',
+        shape: 'square',
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      } as Tab['elements'][number],
+    ]);
+    const peerEdited = { ...peer, elements: [...peer.elements] };
+    const diff = computeTabSaveDiff([a, peer], [a, peerEdited], 'Doc', 'Doc', new Set(['a']));
+    expect(diff.changedTabs.map((t) => t.id)).toEqual(['p']);
+  });
+
   it('combines edits, deletes, reorders, and a rename in one diff', () => {
     const a = tab('a');
     const b = tab('b');

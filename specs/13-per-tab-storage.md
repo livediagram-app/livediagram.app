@@ -124,6 +124,31 @@ never flashes a loader and drops straight into the per-tab template
 picker. A tab whose elements a realtime peer already delivered likewise
 renders immediately rather than showing a spinner over real content.
 
+### Autosave guard: never persist an unloaded tab
+
+The loading overlay above protects the **active** tab. A separate, subtler
+wipe path hits **background** tabs and the overlay does nothing for it:
+
+A many-tab diagram hydrates every non-active tab as an empty placeholder
+(no `elements` until opened). The autosave diff (`computeTabSaveDiff`) is
+identity-based — it persists any tab whose object reference changed since
+the last save. So a **non-content** operation that re-maps the tab array —
+filing tabs into a folder, reordering, a bulk tab edit — bumps the
+reference of tabs the user never opened, the diff flags those empty
+placeholders as "changed", and the per-tab `PUT` overwrites their real
+server rows with `{ elements: [] }`. (Observed in production: filing four
+tabs into a folder wiped the two that hadn't been opened that session.)
+
+Invariant: **a tab is eligible for a content write only when its content
+is authoritative in memory** — it is in the loaded set (`markTabLoaded`:
+hydration's active tab, a fetched tab, or a locally-created one) OR it
+already carries elements (peer-delivered). An unloaded, still-empty
+placeholder is never persisted, no matter what bumped its reference.
+Reorders and renames still flow through the diagram-level meta `PUT`
+(which never touches tab bodies), so organising background tabs stays
+safe. The guard lives in `computeTabSaveDiff`, the one autosave decision
+kernel both the debounced save and the `beforeunload` flush share.
+
 ## Cutover (historical)
 
 How this rolled out, recorded here so future schema changes can repeat the pattern:

@@ -627,6 +627,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     sessionShareCode,
     lastSavedTabsRef,
     lastSavedNameRef,
+    loadedTabIdsRef,
     remoteUpdateRef,
     roomRef,
     setSaveStatus,

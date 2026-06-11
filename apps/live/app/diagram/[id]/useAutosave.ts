@@ -32,6 +32,10 @@ export function useAutosave(opts: {
   sessionShareCode: string | null;
   lastSavedTabsRef: MutableRefObject<Tab[]>;
   lastSavedNameRef: MutableRefObject<string>;
+  // The set of tabs whose content is authoritative in memory (hydrated /
+  // fetched / locally-created). Gates the content-write diff so a never-
+  // opened placeholder can't be PUT back as empty — see computeTabSaveDiff.
+  loadedTabIdsRef: MutableRefObject<Set<string>>;
   remoteUpdateRef: MutableRefObject<boolean>;
   roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
   setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
@@ -48,6 +52,7 @@ export function useAutosave(opts: {
     sessionShareCode,
     lastSavedTabsRef,
     lastSavedNameRef,
+    loadedTabIdsRef,
     remoteUpdateRef,
     roomRef,
     setSaveStatus,
@@ -63,6 +68,7 @@ export function useAutosave(opts: {
         tabs,
         lastSavedNameRef.current,
         diagramName,
+        loadedTabIdsRef.current,
       );
       if (!hasChanges) return;
       const apiBase = '/api';
@@ -126,6 +132,7 @@ export function useAutosave(opts: {
         tabs,
         lastSavedNameRef.current,
         diagramName,
+        loadedTabIdsRef.current,
       );
       if (!hasChanges) return;
 
