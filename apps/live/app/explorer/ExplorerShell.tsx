@@ -6,6 +6,9 @@ import { Brand } from '@livediagram/ui';
 import { AuthControls } from '@/components/AuthControls';
 import { TeamFormModal } from '@/components/TeamFormModal';
 import { MoveToFolderDialog } from '@/components/MoveToFolderDialog';
+import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/SignInBanner';
+import { clerkEnabled } from '@/lib/clerk-config';
+import { useDismissibleBanner } from '@/hooks/useDismissibleBanner';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
@@ -63,7 +66,17 @@ function ShellChrome({ children }: { children: ReactNode }) {
     teamModalOpen,
     setTeamModalOpen,
     hookCreateTeam,
+    clerkUserId,
   } = useExplorer();
+
+  // Guest sign-in nudge (spec/36): only when Clerk is actually wired
+  // up for this deployment, the visitor isn't signed in (a guest owner
+  // id doesn't count), and they haven't dismissed it. When shown, the
+  // pane reserves extra bottom space so the last row clears the
+  // floating card.
+  const { dismissed: bannerDismissed, dismiss: dismissBanner } =
+    useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
+  const showSignInBanner = clerkEnabled && !clerkUserId && !bannerDismissed;
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-slate-50">
@@ -75,7 +88,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
         <AuthControls />
       </header>
 
-      <main className="mx-auto flex w-full max-w-7xl flex-1 gap-6 px-4 pb-16 pt-6 sm:px-6">
+      <main
+        className={`mx-auto flex w-full max-w-7xl flex-1 gap-6 px-4 pt-6 sm:px-6 ${
+          showSignInBanner ? 'pb-44 sm:pb-28' : 'pb-16'
+        }`}
+      >
         {/* ---------- Sidebar tree ---------- */}
         {/* Hidden on mobile: at 375px the 256px sidebar swallows
             the right pane entirely. Users on a phone navigate via
@@ -218,6 +235,10 @@ function ShellChrome({ children }: { children: ReactNode }) {
           onClose={() => setSearchOpen(false)}
         />
       ) : null}
+
+      {/* Guest sign-in encouragement (spec/36): Explorer only, never
+          the editor. Dismissal persists per device. */}
+      {showSignInBanner ? <SignInBanner onDismiss={dismissBanner} /> : null}
     </div>
   );
 }

@@ -11,8 +11,17 @@ import { Canvas } from '@/components/Canvas';
 import { EditorHeader } from '@/components/EditorHeader';
 import { EmbedChrome } from '@/components/EmbedChrome';
 import { TabBar } from '@/components/TabBar';
+import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/SignInBanner';
+import { clerkEnabled } from '@/lib/clerk-config';
+import { useDismissibleBanner } from '@/hooks/useDismissibleBanner';
+import { useDelayedReveal } from '@/hooks/useDelayedReveal';
 import { deriveTabLoadState } from './editor-page-helpers';
 import { useEditorContext } from './EditorContext';
+
+// How long a guest edits before the sign-in nudge appears (spec/36).
+// Long enough that it never greets someone the instant they open a
+// diagram; short enough to catch an invested session.
+const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 
 const EditorContextMenu = dynamic(() =>
   import('@/components/EditorContextMenu').then((m) => m.EditorContextMenu),
@@ -315,6 +324,17 @@ export function EditorView() {
     viewportZoom,
     writeUserPreferences,
   } = ctx;
+  // Guest sign-in nudge (spec/36): the same banner the Explorer shows,
+  // but on the editor it waits ~5 minutes into the session before
+  // appearing so it never interrupts someone the moment they open a
+  // diagram. Hidden in embed (read-only iframe) and zen mode. zenMode
+  // is deliberately kept OUT of the timer's `enabled` so toggling zen
+  // doesn't restart the countdown; it only hides the card at render.
+  const { dismissed: signInDismissed, dismiss: dismissSignIn } =
+    useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
+  const signInTimerEnabled = clerkEnabled && !clerkUserId && !embedMode && !signInDismissed;
+  const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
+  const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
   // Stable references for the two list-shaped props the Explorer +
   // Activity panels take, so those (React.memo'd) panels don't
   // re-render on every drag frame just because the editor re-rendered.
@@ -1105,6 +1125,12 @@ export function EditorView() {
           }}
           onClose={closeImagePicker}
         />
+      ) : null}
+
+      {/* Guest sign-in nudge (spec/36), delayed ~5 min. Lifted above
+          the 48px tab bar (pb-16) and over the canvas chrome (z-40). */}
+      {showSignInBanner ? (
+        <SignInBanner onDismiss={dismissSignIn} placementClassName="bottom-0 z-40 pb-16" />
       ) : null}
     </div>
   );

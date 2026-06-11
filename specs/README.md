@@ -44,6 +44,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 33  | [Read-only embeds](33-embeds.md)                                   | Iframe-able `/embed` share view + Copy-embed-code in Share                                      |
 | 34  | [Share-link expiry](34-share-link-expiry.md)                       | Optional link lifetime (week/month/6 months); Inactive section                                  |
 | 35  | [Team shared diagrams](35-team-shared-diagrams.md)                 | Per-team folder tree + diagrams every joined member can manage                                  |
+| 36  | [Sign-in encouragement](36-sign-in-encouragement.md)               | Dismissible guest banner (Explorer + delayed in-editor) + "why sign in" modal                   |
 
 ## Workflow
 
