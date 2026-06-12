@@ -250,6 +250,11 @@ export function buildSequenceDiagram(cx: number, cy: number): Element[] {
     elements.push({
       ...createArrow(centerXFor(msg.from), y, centerXFor(msg.to), y),
       label: msg.label,
+      // Lift the label clear of the line (default centres it ON the
+      // arrow). The perpendicular direction flips with the arrow's
+      // direction, so a negative offset reads as "above" for the
+      // rightward requests and a positive one for the leftward replies.
+      labelOffset: { t: 0.5, offset: msg.reply ? 18 : -18 },
       ...(msg.reply ? { strokeStyle: 'dashed' as const } : {}),
     });
   });
