@@ -70,6 +70,12 @@ import {
 // force a redundant re-render of the whole editor tree on top of the
 // per-frame `tick`. Returning the previous reference from the setState
 // updater lets React skip the render entirely (Object.is bail-out).
+// Stable empty exclude-set for arrow-endpoint alignment: an arrow isn't a
+// boxed element so it's never an alignment TARGET, and we want it to line
+// up against every boxed element. Module-level so the per-frame snap /
+// guide calls don't allocate a fresh Set each tick.
+const NO_ALIGN_EXCLUDE: Set<string> = new Set();
+
 function sameGuides(a: AlignmentGuide[], b: AlignmentGuide[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
@@ -879,52 +885,102 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // otherwise free + optional 45-degree angle snap from the
       // other endpoint.
       const cursor = { x: drag.startCanvasX + dx, y: drag.startCanvasY + dy };
-      tick((els) => {
-        // Element anchor wins over angle snap: pinning to another
-        // shape is the strongest constraint and the most desirable
-        // outcome when both are plausible.
-        const anchorSnap = snapToAnchor(cursor, els, SNAP_THRESHOLD);
-        let endpoint: Endpoint;
-        if (anchorSnap) {
-          endpoint = {
-            kind: 'pinned',
-            elementId: anchorSnap.elementId,
-            anchor: anchorSnap.anchor,
-          };
-        } else {
-          // Angle snap: lock the arrow to 45-degree increments from
-          // its other endpoint when the cursor is within ~5 degrees
-          // of one. Keeps right-angle connectors easy to draw
-          // without fighting the cursor at oblique angles.
-          const arrow = els.find((e) => e.id === drag.arrowId && e.type === 'arrow') as
-            | ArrowElement
-            | undefined;
-          let resolved = cursor;
-          if (arrow) {
-            const otherKey = drag.end === 'from' ? 'to' : 'from';
-            const other = endpointPosition(arrow[otherKey], els);
-            const ax = cursor.x - other.x;
-            const ay = cursor.y - other.y;
-            const len = Math.hypot(ax, ay);
-            if (len > 0) {
-              const angle = Math.atan2(ay, ax);
-              const STEP = Math.PI / 4;
-              const THRESH = (5 * Math.PI) / 180;
-              const nearest = Math.round(angle / STEP) * STEP;
-              if (Math.abs(angle - nearest) <= THRESH) {
-                resolved = {
-                  x: other.x + Math.cos(nearest) * len,
-                  y: other.y + Math.sin(nearest) * len,
-                };
-              }
+      const els0 = depsRef.current.activeTab.elements;
+      // Element anchor wins over angle / alignment snap: pinning to
+      // another shape is the strongest constraint and the most desirable
+      // outcome when both are plausible.
+      const anchorSnap = snapToAnchor(cursor, els0, SNAP_THRESHOLD);
+      let endpoint: Endpoint;
+      if (anchorSnap) {
+        endpoint = { kind: 'pinned', elementId: anchorSnap.elementId, anchor: anchorSnap.anchor };
+        scheduleGuides([]);
+      } else {
+        // Angle snap: lock the arrow to 45-degree increments from its
+        // other endpoint when the cursor is within ~5 degrees of one.
+        // Keeps right-angle connectors easy to draw without fighting the
+        // cursor at oblique angles.
+        const arrow = els0.find((e) => e.id === drag.arrowId && e.type === 'arrow') as
+          | ArrowElement
+          | undefined;
+        let resolved = cursor;
+        let angleLocked = false;
+        let other: { x: number; y: number } | null = null;
+        if (arrow) {
+          const otherKey = drag.end === 'from' ? 'to' : 'from';
+          other = endpointPosition(arrow[otherKey], els0);
+          const ax = cursor.x - other.x;
+          const ay = cursor.y - other.y;
+          const len = Math.hypot(ax, ay);
+          if (len > 0) {
+            const angle = Math.atan2(ay, ax);
+            const STEP = Math.PI / 4;
+            const THRESH = (5 * Math.PI) / 180;
+            const nearest = Math.round(angle / STEP) * STEP;
+            if (Math.abs(angle - nearest) <= THRESH) {
+              resolved = {
+                x: other.x + Math.cos(nearest) * len,
+                y: other.y + Math.sin(nearest) * len,
+              };
+              angleLocked = true;
             }
           }
-          endpoint = { kind: 'free', x: resolved.x, y: resolved.y };
         }
-        return els.map((el) =>
+        // Alignment snapping for the free endpoint (skipped once the 45°
+        // angle lock already constrains it): nudge the point to line up
+        // with nearby boxed elements' edges / centres AND with the arrow's
+        // OTHER endpoint (so it clicks into a perfectly horizontal /
+        // vertical line), showing the same faint guides a boxed move does.
+        const guidesOn = depsRef.current.alignmentGuidesRef.current ?? true;
+        if (!angleLocked) {
+          const boxSnap = snapToAlignment(
+            { x: resolved.x, y: resolved.y, width: 0, height: 0 },
+            els0,
+            NO_ALIGN_EXCLUDE,
+            ALIGN_SNAP_THRESHOLD,
+          );
+          resolved = { x: resolved.x + boxSnap.dx, y: resolved.y + boxSnap.dy };
+          const extraGuides: AlignmentGuide[] = [];
+          // Endpoint-to-other-endpoint alignment fills the axes the box
+          // snap didn't claim, so a near-straight arrow latches truly
+          // straight with a guide spanning the two ends.
+          if (other) {
+            if (!boxSnap.snappedX && Math.abs(resolved.x - other.x) <= ALIGN_SNAP_THRESHOLD) {
+              resolved = { x: other.x, y: resolved.y };
+              extraGuides.push({
+                axis: 'x',
+                position: other.x,
+                start: Math.min(other.y, resolved.y),
+                end: Math.max(other.y, resolved.y),
+              });
+            }
+            if (!boxSnap.snappedY && Math.abs(resolved.y - other.y) <= ALIGN_SNAP_THRESHOLD) {
+              resolved = { x: resolved.x, y: other.y };
+              extraGuides.push({
+                axis: 'y',
+                position: other.y,
+                start: Math.min(other.x, resolved.x),
+                end: Math.max(other.x, resolved.x),
+              });
+            }
+          }
+          const boxGuides = guidesOn
+            ? alignmentGuides(
+                { x: resolved.x, y: resolved.y, width: 0, height: 0 },
+                els0,
+                NO_ALIGN_EXCLUDE,
+              )
+            : [];
+          scheduleGuides(guidesOn ? [...boxGuides, ...extraGuides] : []);
+        } else {
+          scheduleGuides([]);
+        }
+        endpoint = { kind: 'free', x: resolved.x, y: resolved.y };
+      }
+      tick((els) =>
+        els.map((el) =>
           el.id === drag.arrowId && el.type === 'arrow' ? { ...el, [drag.end]: endpoint } : el,
-        );
-      });
+        ),
+      );
     };
     const onUp = (e: PointerEvent) => {
       const d = depsRef.current;

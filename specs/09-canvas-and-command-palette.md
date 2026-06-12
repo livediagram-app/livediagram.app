@@ -264,8 +264,10 @@ Snapping during the drag continues to consider all eight anchors of every shape 
 
 - **Click an arrow** to select it. Selection treatment: thicker brand-tinted stroke, and visible endpoint handles (small circles at each end).
 - **Drag an endpoint handle** to move that endpoint. While dragging:
-  - If the cursor is within **~24 px** of any shape's anchor, the endpoint **snaps** to that anchor (becomes pinned).
-  - Otherwise the endpoint stays free at the cursor position.
+  - If the cursor is within **~24 px** of any shape's anchor, the endpoint **snaps** to that anchor (becomes pinned). The anchor pin wins over the snaps below.
+  - Otherwise the endpoint stays free, with two layers of snapping to make straight / aligned arrows easy (same machinery the move/draw flows use, gated by the same "alignment guides" preference):
+    - **45° angle lock** — within ~5° of a 45° increment from the _other_ endpoint, the line locks to that angle (horizontal / vertical / diagonal).
+    - **Alignment guides** — when not angle-locked, the free endpoint nudges to line up with nearby boxed elements' edges / centres (via `snapToAlignment`) **and** with the arrow's other endpoint (so a near-straight arrow latches truly horizontal / vertical), drawing the same faint guide lines a boxed-element move shows. The same applies while drawing a new arrow (the draw is just an endpoint drag). Guides clear on release.
 - **Drag the middle control handle** to bend the arrow:
   - **Curved arrows** show a small white square (the `CurveHandle`) on the Bezier control point. Drag it to change the bow direction and magnitude; the stored `curveOffset` is a delta from the chord midpoint so the curve survives endpoint moves (the midpoint shifts with the endpoints, the user's chosen offset stays).
   - **Angled arrows** show the same handle on the elbow vertex. Drag it to move the right-angle bend somewhere other than the default auto-corner. The stored `elbowOffset` is a delta from the auto-elbow (`(to.x, from.y)` or `(from.x, to.y)` depending on the direction heuristic) so the bend survives endpoint moves the same way the curve does.
