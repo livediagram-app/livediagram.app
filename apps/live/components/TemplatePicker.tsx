@@ -4,10 +4,10 @@ import { useEscape } from '@/hooks/useEscape';
 import type { Participant } from '@/lib/identity';
 import { initialsOf, randomName } from '@/lib/identity';
 import { shufflePinned } from '@/lib/shuffle';
-import type { TemplateKind } from '@/lib/templates';
+import type { TemplateCategory, TemplateKind } from '@/lib/templates';
 import { TEMPLATE_CATEGORIES, TEMPLATES, templateCategory } from '@/lib/templates';
 import { THEME_CATEGORIES, THEMES, type ThemeId, themeCategory } from '@/lib/themes';
-import { TemplatePreview } from './template-preview';
+import { CategoryCard, TemplateCard } from './template-picker-cards';
 import { ThemeSwatch } from './ThemeSwatch';
 import { Tooltip } from './Tooltip';
 
@@ -81,6 +81,10 @@ export function TemplatePicker({
   // Free-text filter for the template grid (title / description / kind /
   // category label). Empty = show the whole catalogue.
   const [templateQuery, setTemplateQuery] = useState('');
+  // Which category the user has drilled into on the overview, or null
+  // for the top-level overview (Blank quick-pick + a card per category).
+  // A non-empty search query overrides this and shows flat results.
+  const [openCategory, setOpenCategory] = useState<TemplateCategory | null>(null);
   const [themeId, setThemeId] = useState<ThemeId>(currentThemeId);
   // Rotate which templates + themes greet the user on each open so
   // people keep discovering options beyond the usual first rows, but
@@ -104,6 +108,13 @@ export function TemplatePicker({
         );
       })
     : templates;
+  // Blank is pulled out of the category grouping and shown as a dedicated
+  // "start from scratch" card on the overview; `categoryTemplates` returns
+  // a category's templates with Blank excluded (it keeps the shuffled
+  // order so the preview collages rotate on each open).
+  const blankTemplate = TEMPLATES.find((t) => t.kind === 'blank');
+  const categoryTemplates = (category: TemplateCategory) =>
+    templates.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === category);
 
   return (
     <div
@@ -218,69 +229,88 @@ export function TemplatePicker({
                   className="w-44 max-w-[55%] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-500"
                 />
               </div>
-              {/* Category sections inside a height-capped scroll area, so
-                  the full catalogue stays one tidy, bounded block instead
-                  of stretching the modal as more templates land. Sections
-                  render in TEMPLATE_CATEGORIES order; empties are skipped
-                  (so an active search collapses to just the hits). */}
+              {/* Two-level browse inside a height-capped scroll area:
+                  the overview shows a Blank quick-pick + a card per
+                  category; clicking a category drills into its templates
+                  (with a Back affordance). A non-empty search query
+                  overrides both and shows flat results across the whole
+                  catalogue. Blank is special-cased out of the category
+                  grouping — it's a "start from scratch", not a category
+                  template — and lives only on the overview row. */}
               <div className="mt-2 max-h-[19rem] overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-slate-700">
-                {filteredTemplates.length === 0 ? (
-                  <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
-                    No templates match “{templateQuery.trim()}”.
-                  </p>
-                ) : null}
-                {TEMPLATE_CATEGORIES.map((cat) => {
-                  const items = filteredTemplates.filter(
-                    (t) => templateCategory(t.kind) === cat.id,
-                  );
-                  if (items.length === 0) return null;
-                  return (
-                    <div key={cat.id} className="mb-3 last:mb-0">
-                      <p className="px-0.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        {cat.label}
-                      </p>
-                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        {items.map((t) => {
-                          const active = templateKind === t.kind;
-                          return (
-                            <button
-                              key={t.kind}
-                              type="button"
-                              onClick={() => setTemplateKind(t.kind)}
-                              // Double-click is a "commit shortcut" — same
-                              // as selecting the template then clicking the
-                              // primary Create button. Picks up whichever
-                              // theme + name are entered; saves a click for
-                              // users who know what they want.
-                              onDoubleClick={() => onPick(t.kind, effectiveName, themeId)}
-                              aria-pressed={active}
-                              className={
-                                active
-                                  ? 'flex flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left dark:border-brand-500 dark:bg-brand-500/15'
-                                  : 'flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
-                              }
-                            >
-                              {/* Preview tiles are illustrative mini-canvases
-                                  (light SVG), so the tile keeps a light
-                                  backdrop in dark mode to stay legible. */}
-                              <div className="flex h-14 w-full items-center justify-center rounded-md bg-slate-50 dark:bg-slate-200">
-                                <TemplatePreview kind={t.kind} />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                                  {t.title}
-                                </p>
-                                <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-                                  {t.description}
-                                </p>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
+                {templateFilter ? (
+                  filteredTemplates.length === 0 ? (
+                    <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
+                      No templates match “{templateQuery.trim()}”.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {filteredTemplates.map((t) => (
+                        <TemplateCard
+                          key={t.kind}
+                          template={t}
+                          active={templateKind === t.kind}
+                          onSelect={() => setTemplateKind(t.kind)}
+                          onCommit={() => onPick(t.kind, effectiveName, themeId)}
+                        />
+                      ))}
                     </div>
-                  );
-                })}
+                  )
+                ) : openCategory ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setOpenCategory(null)}
+                      className="mb-2 inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs font-medium text-brand-700 transition hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                        <path
+                          d="M7.5 2.5 4 6l3.5 3.5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      All templates
+                    </button>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {categoryTemplates(openCategory).map((t) => (
+                        <TemplateCard
+                          key={t.kind}
+                          template={t}
+                          active={templateKind === t.kind}
+                          onSelect={() => setTemplateKind(t.kind)}
+                          onCommit={() => onPick(t.kind, effectiveName, themeId)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {blankTemplate ? (
+                      <TemplateCard
+                        template={blankTemplate}
+                        active={templateKind === 'blank'}
+                        onSelect={() => setTemplateKind('blank')}
+                        onCommit={() => onPick('blank', effectiveName, themeId)}
+                      />
+                    ) : null}
+                    {TEMPLATE_CATEGORIES.map((cat) => {
+                      const items = categoryTemplates(cat.id);
+                      if (items.length === 0) return null;
+                      return (
+                        <CategoryCard
+                          key={cat.id}
+                          label={cat.label}
+                          count={items.length}
+                          previews={items.map((t) => t.kind)}
+                          onOpen={() => setOpenCategory(cat.id)}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </>
           ) : null}
