@@ -16,10 +16,13 @@
 // Detection order:
 //
 //   1. Open polyline + first/last endpoints far apart -> Line
-//   2. Closed polyline:
-//        a. Most polygon area falls on the bounding-box edges -> Rectangle
-//        b. Most polygon area falls on the diamond edges      -> Diamond
-//        c. Polygon area close to the inscribed ellipse area  -> Circle
+//   2. Closed polyline, scored against each idealised outline; the
+//      highest-confidence match that clears its threshold wins:
+//        a. bounding-box edges        -> Rectangle
+//        b. diamond (edge-midpoint) edges -> Diamond
+//        c. upward-triangle edges     -> Triangle
+//        d. point-up 5-pointed star edges -> Star
+//        e. inscribed ellipse         -> Circle
 //
 // Each branch returns a confidence in [0, 1]. The caller's threshold
 // (today 0.40 in commitFreehand) leans hard toward "convert it":
@@ -31,7 +34,7 @@
 // detector's internal reject points. Previous values: 0.72 (too
 // strict), 0.55 (still too strict per user feedback).
 
-export type RecognisedShapeKind = 'square' | 'circle' | 'diamond' | 'line';
+export type RecognisedShapeKind = 'square' | 'circle' | 'diamond' | 'triangle' | 'star' | 'line';
 
 export type RecognisedShape = {
   kind: RecognisedShapeKind;
@@ -232,6 +235,55 @@ function recogniseDiamond(points: Point[], bbox: ReturnType<typeof aabb>): Recog
   return { kind: 'diamond', bbox, confidence };
 }
 
+function recogniseTriangle(points: Point[], bbox: ReturnType<typeof aabb>): RecognisedShape | null {
+  // Upward triangle: apex at the top-centre, base spanning the two
+  // bottom corners — matching the 'triangle' shape's geometry. Scored
+  // like rectangle / diamond: mean distance from every freehand sample
+  // to the nearest of the three edges.
+  const apex: Point = { x: bbox.x + bbox.width / 2, y: bbox.y };
+  const bl: Point = { x: bbox.x, y: bbox.y + bbox.height };
+  const br: Point = { x: bbox.x + bbox.width, y: bbox.y + bbox.height };
+  const edges: [Point, Point][] = [
+    [apex, br],
+    [br, bl],
+    [bl, apex],
+  ];
+  const meanDist = meanEdgeDistance(points, edges);
+  const longerSide = Math.max(bbox.width, bbox.height);
+  if (longerSide === 0) return null;
+  const error = meanDist / longerSide;
+  if (error > 0.08) return null;
+  return { kind: 'triangle', bbox, confidence: Math.max(0, 1 - error / 0.08) };
+}
+
+function recogniseStar(points: Point[], bbox: ReturnType<typeof aabb>): RecognisedShape | null {
+  // Point-up 5-pointed star fit to the bbox: outer vertices on the
+  // bbox-radius ellipse, inner vertices at ~0.4 of that. Scored by mean
+  // distance to the nearest of the ten edges, so a circle (no notches)
+  // and a triangle (no inner points) both fall away.
+  if (bbox.width < MIN_SIZE || bbox.height < MIN_SIZE) return null;
+  const cx = bbox.x + bbox.width / 2;
+  const cy = bbox.y + bbox.height / 2;
+  const rx = bbox.width / 2;
+  const ry = bbox.height / 2;
+  const innerRatio = 0.4;
+  const verts: Point[] = [];
+  for (let i = 0; i < 10; i++) {
+    const ang = ((-90 + i * 36) * Math.PI) / 180;
+    const r = i % 2 === 0 ? 1 : innerRatio;
+    verts.push({ x: cx + Math.cos(ang) * rx * r, y: cy + Math.sin(ang) * ry * r });
+  }
+  const edges: [Point, Point][] = [];
+  for (let i = 0; i < 10; i++) edges.push([verts[i]!, verts[(i + 1) % 10]!]);
+  const meanDist = meanEdgeDistance(points, edges);
+  const longerSide = Math.max(bbox.width, bbox.height);
+  if (longerSide === 0) return null;
+  const error = meanDist / longerSide;
+  // Stars are hard to draw cleanly, so the tolerance is the widest.
+  if (error > 0.1) return null;
+  return { kind: 'star', bbox, confidence: Math.max(0, 1 - error / 0.1) };
+}
+
 function recogniseCircle(points: Point[], bbox: ReturnType<typeof aabb>): RecognisedShape | null {
   // Score by mean distance from each freehand sample to the inscribed
   // ellipse boundary. A perfect circle / oval has every sample on the
@@ -282,6 +334,10 @@ export function recogniseShape(points: Point[]): RecognisedShape | null {
   if (rect) candidates.push(rect);
   const diamond = recogniseDiamond(points, bbox);
   if (diamond) candidates.push(diamond);
+  const triangle = recogniseTriangle(points, bbox);
+  if (triangle) candidates.push(triangle);
+  const star = recogniseStar(points, bbox);
+  if (star) candidates.push(star);
   const circle = recogniseCircle(points, bbox);
   if (circle) candidates.push(circle);
   if (candidates.length === 0) return null;

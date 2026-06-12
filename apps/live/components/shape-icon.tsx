@@ -254,5 +254,81 @@ export function ShapeIcon({ kind }: { kind: ShapeKind }) {
           <rect x="3" y="2" width="10" height="12" rx="1" />
         </svg>
       );
+    case 'triangle':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <polygon points="8,2.5 14,13.5 2,13.5" />
+        </svg>
+      );
+    case 'trapezoid':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <polygon points="4,3.5 12,3.5 15,12.5 1,12.5" />
+        </svg>
+      );
+    case 'star':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <polygon points="8,1.5 9.5,5.9 14.2,6 10.5,8.8 11.8,13.3 8,10.6 4.2,13.3 5.5,8.8 1.8,6 6.5,5.9" />
+        </svg>
+      );
+    case 'speech-bubble':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M3 2.5 H13 a1.5 1.5 0 0 1 1.5 1.5 V9 a1.5 1.5 0 0 1 -1.5 1.5 H6.5 L4 14 L5 11.5 H3 a1.5 1.5 0 0 1 -1.5 -1.5 V4 a1.5 1.5 0 0 1 1.5 -1.5 Z" />
+        </svg>
+      );
+    case 'smartwatch':
+      return (
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <rect x="5" y="3.5" width="6" height="9" rx="2" />
+          <path d="M6.5 3.5 V1.5 M9.5 3.5 V1.5 M6.5 12.5 V14.5 M9.5 12.5 V14.5 M11 7 H12.3" />
+        </svg>
+      );
   }
 }

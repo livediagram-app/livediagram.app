@@ -119,11 +119,16 @@ export function SelectedElementSection({
                 'stadium',
                 'actor',
                 'cloud',
+                'triangle',
+                'trapezoid',
+                'star',
+                'speech-bubble',
                 'browser',
                 'monitor',
                 'laptop',
                 'phone',
                 'tablet',
+                'smartwatch',
               ] as const
             ).map((kind) => (
               <Tooltip
@@ -742,15 +747,21 @@ const SHAPE_LABEL: Record<ShapeKind, string> = {
   stadium: 'Stadium',
   actor: 'User',
   cloud: 'Cloud',
+  triangle: 'Triangle',
+  trapezoid: 'Trapezoid',
+  star: 'Star',
+  'speech-bubble': 'Speech bubble',
   browser: 'Web browser',
   monitor: 'Computer monitor',
   laptop: 'Laptop',
   phone: 'Phone',
   tablet: 'Tablet',
-  // Not offered in the morph grid (an icon needs a chosen glyph, added
-  // via the Icons picker); present here only so the label map stays
-  // exhaustive over ShapeKind.
+  smartwatch: 'Smartwatch',
+  // Not offered in the morph grid (an icon needs a chosen glyph added via
+  // the Icons picker; a frame is a transparent container, not a box you
+  // morph into); present here only so the label map stays exhaustive.
   icon: 'Icon',
+  frame: 'Frame',
 };
 
 // Border-accordion labels + glyphs. Three rows: stroke strength,

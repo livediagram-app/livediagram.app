@@ -555,13 +555,80 @@ export function CommandPalette({
                     <path d="M5.5 13.5 C3.2 13.5 2 11.7 3.4 10.2 C2.4 8.7 4 7 5.5 7.7 C6 5.4 9.4 5.2 9.9 7.6 C11.9 6.7 13.5 8.6 12.2 10.2 C13.5 11.2 12.6 13.5 10.8 13.5 Z" />
                   </svg>
                 </IconButton>
+                <IconButton
+                  label="Add triangle"
+                  description="Triangle. A basic shape."
+                  onClick={() => addShape('triangle')}
+                  active={pendingShapeKind === 'triangle'}
+                >
+                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+                    <polygon
+                      points="9,3 16,15 2,15"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </IconButton>
+                <IconButton
+                  label="Add trapezoid"
+                  description="Trapezoid. Flowchart manual operation."
+                  onClick={() => addShape('trapezoid')}
+                  active={pendingShapeKind === 'trapezoid'}
+                >
+                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+                    <polygon
+                      points="5,4 13,4 16,15 2,15"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </IconButton>
+                <IconButton
+                  label="Add star"
+                  description="Star. Highlight or rating."
+                  onClick={() => addShape('star')}
+                  active={pendingShapeKind === 'star'}
+                >
+                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+                    <polygon
+                      points="9,1.5 10.8,6.6 16.1,6.7 11.9,9.9 13.4,15.1 9,12 4.6,15.1 6.1,9.9 1.9,6.7 7.2,6.6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </IconButton>
+                <IconButton
+                  label="Add speech bubble"
+                  description="Speech bubble. A callout with a tail."
+                  onClick={() => addShape('speech-bubble')}
+                  active={pendingShapeKind === 'speech-bubble'}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M4 3 H14 a2 2 0 0 1 2 2 V10 a2 2 0 0 1 -2 2 H7 L4.5 15.5 L5.5 12 H4 a2 2 0 0 1 -2 -2 V5 a2 2 0 0 1 2 -2 Z" />
+                  </svg>
+                </IconButton>
               </div>
             ),
           },
           {
             id: 'tools',
             label: 'Tools',
-            description: 'Text, pencil, arrow, sticky note, table, image, and user.',
+            description: 'Text, pencil, arrow, sticky note, table, image, user, and frame.',
             icon: (
               <svg
                 width="18"
@@ -745,13 +812,34 @@ export function CommandPalette({
                     <path d="M9 11.5 L12 15.5" />
                   </svg>
                 </IconButton>
+                <IconButton
+                  label="Add frame"
+                  description="Frame. A titled container you draw around a cluster of elements."
+                  onClick={() => addShape('frame')}
+                  active={pendingShapeKind === 'frame'}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <rect x="2.5" y="4" width="13" height="10.5" />
+                    <path d="M2.5 6.8 H8.5" />
+                  </svg>
+                </IconButton>
               </div>
             ),
           },
           {
             id: 'devices',
             label: 'Devices',
-            description: 'Wireframing device frames: browser, monitor, laptop, phone, tablet.',
+            description:
+              'Wireframing device frames: browser, monitor, laptop, phone, tablet, smartwatch.',
             icon: (
               <svg
                 width="18"
@@ -871,6 +959,26 @@ export function CommandPalette({
                       aria-hidden
                     >
                       <rect x="3" y="2" width="12" height="14" rx="1.2" />
+                    </svg>
+                  </IconButton>
+                  <IconButton
+                    label="Add smartwatch"
+                    description="Smartwatch. A wrist-device frame for watch-app wireframes."
+                    onClick={() => addShape('smartwatch')}
+                    active={pendingShapeKind === 'smartwatch'}
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <rect x="5.5" y="4" width="7" height="10" rx="2.2" />
+                      <path d="M7 4 V1.8 M11 4 V1.8 M7 14 V16.2 M11 14 V16.2 M12.5 8 H14" />
                     </svg>
                   </IconButton>
                 </div>

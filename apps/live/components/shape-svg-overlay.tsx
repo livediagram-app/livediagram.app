@@ -128,6 +128,36 @@ export function ShapeSvgOverlay({
           {...common}
         />
       ) : null}
+      {shape === 'triangle' ? <polygon points="50,2 98,98 2,98" {...common} /> : null}
+      {shape === 'trapezoid' ? <polygon points="22,4 78,4 98,96 2,96" {...common} /> : null}
+      {shape === 'star' ? (
+        <polygon points="50,2 61,35 96,35 68,56 78,89 50,69 22,89 32,56 4,35 39,35" {...common} />
+      ) : null}
+      {shape === 'speech-bubble' ? (
+        // Rounded body across the top, with a tail dropping from the
+        // bottom-left. The label centres in the body (the tail sits below).
+        <path
+          d="M 8 0 L 92 0 A 8 8 0 0 1 100 8 L 100 58 A 8 8 0 0 1 92 66 L 42 66 L 26 94 L 32 66 L 8 66 A 8 8 0 0 1 0 58 L 0 8 A 8 8 0 0 1 8 0 Z"
+          {...common}
+        />
+      ) : null}
+      {shape === 'frame' ? (
+        // Section container: outline ONLY (no fill, so the elements drawn
+        // inside show through) with the label in the top-left corner.
+        // Sharp corners avoid the stretched-rx warp the browser frame note
+        // describes below.
+        <rect
+          x={1}
+          y={1}
+          width={98}
+          height={98}
+          fill="none"
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          vectorEffect="non-scaling-stroke"
+        />
+      ) : null}
       {/* Browser is NOT drawn here: it is a CSS-rendered rounded
           rectangle (see isSvgRenderedShape) so its corner radius is a
           real pixel radius and the border-radius control applies. The
@@ -183,6 +213,27 @@ export function ShapeSvgOverlay({
             width={90}
             height={88}
             rx={3}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={0.8}
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+      ) : null}
+      {/* Smartwatch: a rounded square face with a strap above + below and
+          a crown button on the right edge, plus an inset screen bezel. */}
+      {shape === 'smartwatch' ? (
+        <g>
+          <rect x={36} y={0} width={28} height={20} {...common} />
+          <rect x={36} y={80} width={28} height={20} {...common} />
+          <rect x={76} y={43} width={7} height={14} rx={2} {...common} />
+          <rect x={22} y={14} width={56} height={72} rx={14} {...common} />
+          <rect
+            x={29}
+            y={21}
+            width={42}
+            height={58}
+            rx={9}
             fill="none"
             stroke={stroke}
             strokeWidth={0.8}

@@ -94,6 +94,57 @@ function jitter(points: { x: number; y: number }[], amount: number): { x: number
   return points.map((p) => ({ x: p.x + next() * amount * 2, y: p.y + next() * amount * 2 }));
 }
 
+function trianglePoints(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  samplesPerSide = 14,
+): { x: number; y: number }[] {
+  const corners = [
+    { x: x + w / 2, y }, // apex
+    { x: x + w, y: y + h }, // bottom-right
+    { x, y: y + h }, // bottom-left
+  ];
+  const pts: { x: number; y: number }[] = [];
+  for (let c = 0; c < corners.length; c++) {
+    const a = corners[c]!;
+    const b = corners[(c + 1) % corners.length]!;
+    for (let i = 0; i < samplesPerSide; i++) {
+      const t = i / samplesPerSide;
+      pts.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+    }
+  }
+  pts.push(corners[0]!);
+  return pts;
+}
+
+function starPoints(
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  perEdge = 6,
+): { x: number; y: number }[] {
+  const verts: { x: number; y: number }[] = [];
+  for (let i = 0; i < 10; i++) {
+    const ang = ((-90 + i * 36) * Math.PI) / 180;
+    const r = i % 2 === 0 ? 1 : 0.4;
+    verts.push({ x: cx + Math.cos(ang) * rx * r, y: cy + Math.sin(ang) * ry * r });
+  }
+  const pts: { x: number; y: number }[] = [];
+  for (let i = 0; i < 10; i++) {
+    const a = verts[i]!;
+    const b = verts[(i + 1) % 10]!;
+    for (let j = 0; j < perEdge; j++) {
+      const t = j / perEdge;
+      pts.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+    }
+  }
+  pts.push(verts[0]!);
+  return pts;
+}
+
 describe('recogniseShape', () => {
   it('returns null for too few points', () => {
     expect(recogniseShape([])).toBeNull();
@@ -148,6 +199,34 @@ describe('recogniseShape', () => {
     expect(result).not.toBeNull();
     expect(result!.kind).toBe('diamond');
     expect(result!.confidence).toBeGreaterThan(0.8);
+  });
+
+  it('recognises a clean upward triangle', () => {
+    const result = recogniseShape(trianglePoints(10, 10, 120, 100));
+    expect(result).not.toBeNull();
+    expect(result!.kind).toBe('triangle');
+    expect(result!.confidence).toBeGreaterThan(0.8);
+  });
+
+  it('recognises a triangle with hand-drawn jitter', () => {
+    const result = recogniseShape(jitter(trianglePoints(0, 0, 140, 120), 3));
+    expect(result).not.toBeNull();
+    expect(result!.kind).toBe('triangle');
+  });
+
+  it('recognises a clean 5-pointed star', () => {
+    const result = recogniseShape(starPoints(60, 60, 50, 50));
+    expect(result).not.toBeNull();
+    expect(result!.kind).toBe('star');
+    // A point-up star's bbox centre sits below its geometric centre, so
+    // the bbox-fit idealised star is slightly offset and a "clean" star
+    // tops out around 0.68 — still comfortably over the caller's 0.40
+    // commit threshold.
+    expect(result!.confidence).toBeGreaterThan(0.6);
+  });
+
+  it('does not mistake a clean square for a triangle or star', () => {
+    expect(recogniseShape(rectanglePoints(0, 0, 100, 100))!.kind).toBe('square');
   });
 
   it('recognises a long straight line as a line kind, carrying its endpoints', () => {

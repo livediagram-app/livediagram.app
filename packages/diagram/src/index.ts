@@ -63,12 +63,21 @@ export type ShapeKind =
   | 'stadium'
   | 'actor'
   | 'cloud'
+  | 'triangle'
+  | 'trapezoid'
+  | 'star'
+  // Speech bubble / callout: a rounded body with a tail at the bottom-left.
+  | 'speech-bubble'
+  // Frame / section: a transparent outlined container with its label in the
+  // top-left, drawn around a cluster of elements. See spec/09.
+  | 'frame'
   // UI device frames (wireframing). See spec/09 "Devices" accordion.
   | 'browser'
   | 'monitor'
   | 'laptop'
   | 'phone'
   | 'tablet'
+  | 'smartwatch'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a
@@ -631,6 +640,21 @@ export type ArrowElement = {
   // with the arrow because it's parameterised against the line, not
   // stored as absolute coords.
   labelOffset?: { t: number; offset: number };
+  // Optional label-text formatting, mirroring the boxed-element fields so
+  // an arrow's label can be sized / styled / coloured / fonted from the
+  // Selected Element panel's Text accordion. All optional: absent → the
+  // label renders at the default small (12px) size in the arrow's stroke
+  // colour. Alignment + padding don't apply (the label sits at the
+  // midpoint), so those fields are intentionally omitted.
+  textSize?: TextSize;
+  textBold?: boolean;
+  textItalic?: boolean;
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
+  // Label colour, independent of `strokeColor` (the line). Falls back to
+  // the stroke colour when unset so the label matches the line by default.
+  textColor?: string;
+  font?: string;
 };
 
 // Named thickness presets exposed via the Palette. Storing the raw px
