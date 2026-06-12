@@ -30,6 +30,7 @@ export function ShapeSvgOverlay({
   stroke,
   strokeWidth = 2,
   strokeDasharray,
+  aspect = 1.6,
 }: {
   shape: ShapeKind;
   fill: string;
@@ -38,6 +39,12 @@ export function ShapeSvgOverlay({
   // SVG dasharray string when the user picked a dashed / dotted
   // border style; undefined for solid (the default, omits the attr).
   strokeDasharray?: string;
+  // Element width / height. The svg uses preserveAspectRatio="none",
+  // so a fixed viewBox inset renders unevenly once the box is
+  // stretched. The laptop bezel reads this to keep its margin even in
+  // screen pixels on all four sides (see LaptopGlyph). Defaults to a
+  // typical landscape ratio for callers that don't pass it.
+  aspect?: number;
 }) {
   if (shape === 'actor') {
     // UML actor: an open circle head (the fill colour tints it) over a
@@ -132,46 +139,18 @@ export function ShapeSvgOverlay({
           <path d="M 32 88 L 68 88 L 76 99 L 24 99 Z" {...common} />
         </g>
       ) : null}
-      {/* Laptop: an open clamshell. A lid panel with an inset display
-          bezel sits above a keyboard deck, joined by a hinge bar so
-          the two read as one device (rather than two stacked shapes),
-          with a trackpad on the deck. The deck flares wider toward the
-          front edge for a touch of perspective. */}
+      {/* Laptop: an open clamshell — see LaptopGlyph. Rendered via a
+          helper because the keyboard is a generated key grid and the
+          bezel inset is aspect-aware, which is more than a couple of
+          inline elements. */}
       {shape === 'laptop' ? (
-        <g>
-          {/* Lid / screen panel. */}
-          <rect x={8} y={2} width={84} height={64} rx={4} {...common} />
-          {/* Display bezel: an inset outline so the screen reads as a
-              framed panel (matches the phone / tablet inner line).
-              Stroke-only so content layered on top still shows. */}
-          <rect
-            x={12}
-            y={5}
-            width={76}
-            height={58}
-            rx={2}
-            fill="none"
-            stroke={stroke}
-            strokeWidth={0.8}
-            vectorEffect="non-scaling-stroke"
-          />
-          {/* Hinge bar bridging the lid and the keyboard deck. */}
-          <rect x={4} y={66} width={92} height={6} rx={2} {...common} />
-          {/* Keyboard deck: a shallow trapezoid, wider at the front. */}
-          <path d="M 6 72 L 94 72 L 100 96 L 0 96 Z" {...common} />
-          {/* Trackpad. */}
-          <rect
-            x={42}
-            y={80}
-            width={16}
-            height={9}
-            rx={1}
-            fill="none"
-            stroke={stroke}
-            strokeWidth={0.8}
-            vectorEffect="non-scaling-stroke"
-          />
-        </g>
+        <LaptopGlyph
+          fill={fill}
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          aspect={aspect}
+        />
       ) : null}
       {/* Phone: tall pill silhouette. Heavily rounded corners are the
           single most recognisable tell of "phone" at this scale; an
@@ -212,5 +191,99 @@ export function ShapeSvgOverlay({
         </g>
       ) : null}
     </svg>
+  );
+}
+
+// Open-clamshell laptop: a lid with an even display bezel, a slim
+// hinge no wider than the lid, a keyboard deck (shallow trapezoid),
+// a full key grid, a spacebar and a trackpad. Drawn in the same
+// stretched 0..100 viewBox as the other shapes.
+function LaptopGlyph({
+  fill,
+  stroke,
+  strokeWidth,
+  strokeDasharray,
+  aspect,
+}: {
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  strokeDasharray?: string;
+  aspect: number;
+}) {
+  // Filled panels (lid / hinge / deck) carry the user's fill + dash;
+  // the detail outlines (bezel / keys / trackpad) stay solid + thin,
+  // matching the chrome inside the phone / tablet / browser frames.
+  const main = {
+    fill,
+    stroke,
+    strokeWidth,
+    strokeDasharray,
+    vectorEffect: 'non-scaling-stroke' as const,
+    strokeLinejoin: 'round' as const,
+  };
+  const detail = {
+    fill: 'none',
+    stroke,
+    strokeWidth: 0.8,
+    vectorEffect: 'non-scaling-stroke' as const,
+    strokeLinejoin: 'round' as const,
+  };
+
+  // Lid + an EVEN display bezel. preserveAspectRatio="none" stretches
+  // the 0..100 box to the element, so equal viewBox insets land
+  // uneven; scaling the horizontal inset by 1/aspect (= H/W) makes the
+  // bezel margin even in screen pixels on all four sides at any size.
+  const lid = { x: 8, y: 2, w: 84, h: 60 };
+  const insetY = 3;
+  const insetX = Math.max(1, Math.min(8, insetY / aspect));
+
+  // Keyboard key grid, in a rectangle that fits inside the trapezoid
+  // deck at every row. Generated rather than hand-placed so "all the
+  // keys" stays a one-line change.
+  const kb = { left: 20, right: 80, top: 69, bottom: 84 };
+  const cols = 12;
+  const rows = 4;
+  const cellW = (kb.right - kb.left) / cols;
+  const cellH = (kb.bottom - kb.top) / rows;
+  const gapX = cellW * 0.2;
+  const gapY = cellH * 0.22;
+
+  return (
+    <g>
+      {/* Lid / screen panel. */}
+      <rect x={lid.x} y={lid.y} width={lid.w} height={lid.h} rx={4} {...main} />
+      {/* Even display bezel (outline only, so screen content shows). */}
+      <rect
+        x={lid.x + insetX}
+        y={lid.y + insetY}
+        width={lid.w - insetX * 2}
+        height={lid.h - insetY * 2}
+        rx={2}
+        {...detail}
+      />
+      {/* Slim hinge, set in from the lid edges so it never overhangs. */}
+      <rect x={lid.x + 2} y={lid.y + lid.h} width={lid.w - 4} height={3} rx={1.5} {...main} />
+      {/* Keyboard deck: a shallow trapezoid with a slight front flare. */}
+      <path d="M 14 66 L 86 66 L 94 96 L 6 96 Z" {...main} />
+      {/* Keys. */}
+      {Array.from({ length: rows }).flatMap((_, r) =>
+        Array.from({ length: cols }).map((__, c) => (
+          <rect
+            key={`key-${r}-${c}`}
+            x={kb.left + c * cellW + gapX / 2}
+            y={kb.top + r * cellH + gapY / 2}
+            width={cellW - gapX}
+            height={cellH - gapY}
+            rx={0.6}
+            {...detail}
+          />
+        )),
+      )}
+      {/* Spacebar. */}
+      <rect x={38} y={85.5} width={24} height={3} rx={0.8} {...detail} />
+      {/* Trackpad. */}
+      <rect x={43} y={90} width={14} height={4} rx={1} {...detail} />
+    </g>
   );
 }

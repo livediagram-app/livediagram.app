@@ -444,6 +444,7 @@ function BoxedElementViewImpl({
           strokeDasharray={
             BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
           }
+          aspect={element.height > 0 ? element.width / element.height : 1}
         />
       ) : null}
       {/* Browser-only HTML chrome overlay. SVG handles only the

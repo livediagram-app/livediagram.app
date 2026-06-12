@@ -622,6 +622,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                     stroke="rgb(14, 165, 233)"
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
+                    aspect={heightPx > 0 ? widthPx / heightPx : 1}
                   />
                 ) : (
                   <div
