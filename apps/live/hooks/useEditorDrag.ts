@@ -57,6 +57,7 @@ import {
   SNAP_THRESHOLD,
   unionOfBounds,
   unionResizeMember,
+  withFrameContents,
   type ArrowEnd,
   type DragMode,
   type DragState,
@@ -308,11 +309,18 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     // whole set scales together (members reposition + resize
     // proportionally around the corner opposite the drag handle). A
     // bare single-element drag falls through to the singleton set.
-    const ids = d.multiSelectedIds.has(elementId)
+    const baseIds = d.multiSelectedIds.has(elementId)
       ? d.multiSelectedIds
       : element.groupId
         ? new Set(selectionMembers(d.activeTab.elements, elementId))
         : new Set<string>([elementId]);
+
+    // Frame sections (spec/09): MOVING a frame carries everything inside
+    // it. Expand the move set with every boxed element whose centre lies
+    // within a frame being moved (pinned arrows between them follow via
+    // the rebind pass). Resizing is deliberately excluded — a frame
+    // resize re-sizes the section outline and leaves its contents put.
+    const ids = mode === 'move' ? withFrameContents(d.activeTab.elements, baseIds) : baseIds;
 
     const startBounds = new Map<string, ShapeBounds>();
     for (const el of d.activeTab.elements) {

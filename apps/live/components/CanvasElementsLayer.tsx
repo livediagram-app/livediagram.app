@@ -99,6 +99,15 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // each resolves its endpoints / label collisions with O(1) lookups
   // instead of scanning the whole element list twice per arrow.
   const elementIndex = hasArrows ? buildElementIndex(elements) : null;
+  // Frames are section backdrops: always render them FIRST (lowest in the
+  // paint + DOM order) so their contents sit on top and stay clickable.
+  // Otherwise a frame painted over its contents would swallow the clicks
+  // meant for the elements inside it (spec/09). Stable partition — frames
+  // keep their relative order, then everything else keeps theirs.
+  const isFrame = (el: (typeof elements)[number]) => el.type === 'shape' && el.shape === 'frame';
+  const ordered = elements.some(isFrame)
+    ? [...elements.filter(isFrame), ...elements.filter((el) => !isFrame(el))]
+    : elements;
   return (
     <>
       {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
@@ -117,7 +126,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-      {elements.map((element) => {
+      {ordered.map((element) => {
         if (element.type === 'arrow') {
           return (
             <svg

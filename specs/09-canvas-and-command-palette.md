@@ -199,6 +199,13 @@ The palette is laid out top-to-bottom as: canvas-tool toggle (Select / Hand / La
 
 The **Tools tab** also carries a **Frame** (`frame`): a 360×260 transparent outlined container with its label in the top-left, drawn around a cluster of elements (a FigJam-style section). Its body is rendered fill-less so the elements inside show through.
 
+**Frames behave as sections**, not decorations:
+
+- **Drops at the back of the z-order** (front of the `elements` array, in `commitDraw`). Its contents therefore paint on top and stay individually selectable / draggable; clicking an _element_ inside hits that element (it's above the frame), while clicking _empty space_ inside the frame — or its border / title — grabs the frame itself.
+- **Dragging the frame moves everything inside it.** The move set is expanded with every boxed element whose centre lies within the frame at grab time (`withFrameContents` in `apps/live/lib/canvas.ts`); pinned arrows between members follow via the normal post-move anchor rebind. Membership is recomputed on each grab, so an element is "in" the section simply by sitting inside it — there's no explicit parenting to manage.
+- **Resizing the frame leaves its contents in place** — only the outline grows / shrinks, so you size the section around the elements rather than scaling them.
+- The frame does **not** show the quick-connect **+** buttons (it's a backdrop, not a node to chain from), and it isn't a morph target.
+
 **Devices tab** (UI-device frames for wireframing). Each renders as the device's silhouette so users can drop them on the canvas as containers and arrange interface elements inside:
 
 - **Web browser** — adds a 240×160 browser window (tab strip + URL bar + viewport).

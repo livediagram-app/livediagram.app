@@ -224,8 +224,13 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
     } as typeof base;
     // Append so new elements default to the FRONT of z-order (see
-    // addBoxed's note for the rationale).
-    commit((els) => [...els, sized]);
+    // addBoxed's note for the rationale). A FRAME is the exception: it's a
+    // section backdrop, so it drops at the BACK (front of the array) — its
+    // contents then paint on top and stay clickable, and an empty spot
+    // inside the frame grabs the frame itself to move the whole section
+    // (spec/09).
+    const isFrame = sized.type === 'shape' && sized.shape === 'frame';
+    commit((els) => (isFrame ? [sized, ...els] : [...els, sized]));
     setSelectedId(sized.id);
     // A freshly added text element drops straight into typing mode
     // (matches the double-click-to-add-text path in useElementCreation):

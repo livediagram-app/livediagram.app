@@ -122,6 +122,12 @@ export function deriveCanvasSelection(input: {
     // connector to a grid is an unlikely flow, and they clash with the
     // table's own in-cell controls).
     selected.type !== 'table' &&
+    // Annotation markers + frame sections don't get the quick-connect
+    // pluses either: a marker is a note, not a node to chain from, and a
+    // frame is a backdrop you draw around things (its pluses would float
+    // far out around the whole section). See spec/38 + spec/09.
+    selected.type !== 'annotation' &&
+    !(selected.type === 'shape' && selected.shape === 'frame') &&
     editingId !== selected.id &&
     !isPaintMode &&
     !isGroupMode &&
@@ -310,7 +316,11 @@ export function deriveSelectedElementFields(
           ? (selected.font ?? null)
           : null,
     hasText:
-      selected.type === 'table'
+      // Tables + frames always expose Text controls: a table's cells and a
+      // frame's title are integral, so you can set size / alignment / font
+      // before there's any text (other shapes only reveal Text once they
+      // carry a label — see spec/09 + spec/38).
+      selected.type === 'table' || (selected.type === 'shape' && selected.shape === 'frame')
         ? true
         : isBoxed(selected) && selected.type !== 'image'
           ? (selected.label?.trim().length ?? 0) > 0

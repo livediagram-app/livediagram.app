@@ -1,4 +1,10 @@
-import { isBoxed, type ArrowElement, type BoxedElement, type Element } from '@livediagram/diagram';
+import {
+  isBoxed,
+  type ArrowElement,
+  type BoxedElement,
+  type Element,
+  type ShapeElement,
+} from '@livediagram/diagram';
 
 // Size a newly-added boxed element. It inherits the currently-selected
 // boxed element's width / height (so adding elements one after another
@@ -24,6 +30,32 @@ export function inheritedSizeFor(
     height = side;
   }
   return { width, height };
+}
+
+// Frame "section" membership (spec/09): the ids in `ids` plus every boxed
+// element whose CENTRE lies inside any frame in `ids`. Used to expand a
+// frame's move set so dragging the frame carries everything sitting inside
+// it (pinned arrows between members follow via the post-move rebind). A
+// no-op (returns `ids` unchanged) when none of the ids are frames, so a
+// normal drag pays nothing. Centre-point containment (not full-bounds) so a
+// shape straddling the frame edge still counts as "in" when most of it is.
+export function withFrameContents(elements: Element[], ids: Set<string>): Set<string> {
+  const frames = elements.filter(
+    (el): el is ShapeElement => ids.has(el.id) && el.type === 'shape' && el.shape === 'frame',
+  );
+  if (frames.length === 0) return ids;
+  const expanded = new Set(ids);
+  for (const f of frames) {
+    for (const el of elements) {
+      if (expanded.has(el.id) || !isBoxed(el)) continue;
+      const cx = el.x + el.width / 2;
+      const cy = el.y + el.height / 2;
+      if (cx >= f.x && cx <= f.x + f.width && cy >= f.y && cy <= f.y + f.height) {
+        expanded.add(el.id);
+      }
+    }
+  }
+  return expanded;
 }
 
 // One of the gestures a `BoxedElementView` can be in mid-drag. `move`

@@ -1,4 +1,9 @@
-import { createAnnotation, createShape, type ArrowElement } from '@livediagram/diagram';
+import {
+  createAnnotation,
+  createShape,
+  type ArrowElement,
+  type Element,
+} from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
 import {
   arrowReferencesAny,
@@ -9,6 +14,7 @@ import {
   snapRotation,
   unionOfBounds,
   unionResizeMember,
+  withFrameContents,
   type ShapeBounds,
 } from './canvas';
 
@@ -119,6 +125,27 @@ describe('inheritedSizeFor', () => {
     // A marker added while a big shape is selected must NOT balloon.
     expect(inheritedSizeFor(marker, bigSelected)).toEqual({ width: 44, height: 44 });
     expect(inheritedSizeFor(marker, null)).toEqual({ width: 44, height: 44 });
+  });
+});
+
+describe('withFrameContents', () => {
+  const frame: Element = { ...createShape('frame', 100, 100), width: 200, height: 200 };
+  // Centre at (150,150): inside the 100..300 frame box.
+  const inside: Element = { ...createShape('square', 130, 130), width: 40, height: 40 };
+  // Centre at (500,500): outside.
+  const outside: Element = { ...createShape('square', 480, 480), width: 40, height: 40 };
+  const elements = [frame, inside, outside];
+
+  it('expands a frame move set with the elements whose centre is inside it', () => {
+    const out = withFrameContents(elements, new Set([frame.id]));
+    expect(out.has(frame.id)).toBe(true);
+    expect(out.has(inside.id)).toBe(true);
+    expect(out.has(outside.id)).toBe(false);
+  });
+
+  it('returns the same set untouched when no id is a frame (cheap no-op)', () => {
+    const ids = new Set([inside.id]);
+    expect(withFrameContents(elements, ids)).toBe(ids);
   });
 });
 
