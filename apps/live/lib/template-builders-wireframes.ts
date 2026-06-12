@@ -12,189 +12,125 @@
 
 import { createPinnedArrow, createShape, type Element } from '@livediagram/diagram';
 
-// Mobile wireframe: three phone frames in a row, each labelled with a
-// screen name. Starter for the typical user-flow exercise: figure out
-// the screens you need, then draw them. Phones are 100×190 here (a
-// touch wider than the create-default 90×170 so the labels read
-// comfortably). Spacing leaves enough room between them for arrow
-// flow between screens once the user adds connectors.
+// Mobile wireframe: three fully-sketched phone screens side by side —
+// Login, Feed, Profile — a user-flow starter for mobile UI work. Each
+// frame is a 304x686 phone shape (roughly 2x the create-default so the
+// screen content reads comfortably) carrying a status strip, a
+// screen-specific body, and a shared bottom tab bar, so the user lands
+// on a recognisable app shell rather than three empty device frames.
+// Colours are left to the theme (recolourElementsForTheme handles the
+// fills): every inner box adopts the theme's element fill and is
+// delineated by its border, so the wireframe reads correctly under
+// light / dark / multi-colour themes alike. The geometry mirrors a
+// hand-built reference, re-centred on the supplied canvas point and
+// rounded to clean offsets.
 export function buildMobileWireframe(cx: number, cy: number): Element[] {
-  const elements: Element[] = [];
-  const phoneW = 160;
-  const phoneH = 320;
-  const gap = 80;
-  const screenCount = 3;
-  const totalW = screenCount * phoneW + (screenCount - 1) * gap;
+  const phoneW = 304;
+  const phoneH = 686;
+  const gap = 40;
+  const screens = ['Login', 'Feed', 'Profile'] as const;
+  const totalW = screens.length * phoneW + (screens.length - 1) * gap;
   const startX = cx - totalW / 2;
   const phoneY = cy - phoneH / 2;
-  const screenInsetX = 12;
-  const screenInsetTop = 26;
-  const screenInsetBottom = 22;
-  const innerW = phoneW - screenInsetX * 2;
 
-  // Per-screen scaffold: status strip + header band + a stack of
-  // screen-specific content blocks + a bottom tab bar. Drops users
-  // into a recognisable mobile UI shell rather than three empty
-  // device frames.
-  const buildScreen = (
-    label: 'Login' | 'Feed' | 'Profile',
+  // Two recurring widths: the status strip + tab bar span the wide
+  // `barW`, while inputs / rows / feed cards use the slightly narrower
+  // `fieldW`. Insets are derived so both centre cleanly in the frame.
+  const barW = 252;
+  const barInset = (phoneW - barW) / 2;
+  const fieldW = 224;
+  const fieldInset = (phoneW - fieldW) / 2;
+
+  // Local element helpers keep the per-screen layout readable instead
+  // of repeating the createShape spread for all ~14 boxes per screen.
+  // `box` defaults to centred small text; pass `left` for a left-rail
+  // label, `label` for the placeholder copy.
+  const box = (
     x: number,
-  ): { phone: Element; inner: Element[] } => {
-    const phone = {
+    y: number,
+    w: number,
+    h: number,
+    opts: { label?: string; left?: boolean } = {},
+  ): Element => ({
+    ...createShape('square', x, y),
+    width: w,
+    height: h,
+    textSize: 'sm',
+    ...(opts.label !== undefined ? { label: opts.label } : {}),
+    ...(opts.left ? { textAlignX: 'left' as const } : {}),
+  });
+  const dot = (x: number, y: number, w: number, h: number): Element => ({
+    ...createShape('circle', x, y),
+    width: w,
+    height: h,
+  });
+  const pill = (x: number, y: number, w: number, h: number, label: string): Element => ({
+    ...createShape('stadium', x, y),
+    width: w,
+    height: h,
+    textSize: 'sm',
+    label,
+  });
+
+  const buildScreen = (label: (typeof screens)[number], x: number): Element[] => {
+    const phone: Element = {
       ...createShape('phone', x, phoneY),
       width: phoneW,
       height: phoneH,
       label,
-      textSize: 'sm' as const,
-      textAlignY: 'top' as const,
+      textSize: 'sm',
+      textAlignY: 'top',
     };
     const inner: Element[] = [];
-    const innerX = x + screenInsetX;
-    const screenTop = phoneY + screenInsetTop;
-    const tabBarH = 28;
-    const tabBarY = phoneY + phoneH - screenInsetBottom - tabBarH;
 
-    // Status strip across the top of the screen area.
-    inner.push({
-      ...createShape('square', innerX, screenTop),
-      width: innerW,
-      height: 10,
-    });
+    // Status strip across the top of the screen area (all screens).
+    inner.push(box(x + barInset, phoneY + 82, barW, 20));
 
     if (label === 'Login') {
-      // Logo + headline, two input fields, a primary button, a
-      // small "forgot password" text strip beneath.
-      inner.push({
-        ...createShape('circle', innerX + innerW / 2 - 18, screenTop + 30),
-        width: 36,
-        height: 36,
-      });
-      inner.push({
-        ...createShape('square', innerX + 16, screenTop + 80),
-        width: innerW - 32,
-        height: 16,
-        label: 'Welcome back',
-        textSize: 'sm',
-      });
-      inner.push({
-        ...createShape('square', innerX + 8, screenTop + 116),
-        width: innerW - 16,
-        height: 26,
-        label: 'Email',
-        textSize: 'sm',
-        textAlignX: 'left',
-      });
-      inner.push({
-        ...createShape('square', innerX + 8, screenTop + 152),
-        width: innerW - 16,
-        height: 26,
-        label: 'Password',
-        textSize: 'sm',
-        textAlignX: 'left',
-      });
-      inner.push({
-        ...createShape('stadium', innerX + 8, screenTop + 196),
-        width: innerW - 16,
-        height: 30,
-        label: 'Sign in',
-        textSize: 'sm',
-      });
-      inner.push({
-        ...createShape('square', innerX + innerW / 2 - 50, screenTop + 236),
-        width: 100,
-        height: 14,
-        label: 'Forgot password?',
-        textSize: 'sm',
-      });
+      // Logo, welcome headline, two input fields, a primary button, a
+      // small "forgot password" strip beneath.
+      inner.push(dot(x + (phoneW - 67) / 2, phoneY + 130, 67, 70));
+      inner.push(box(x + (phoneW - 193) / 2, phoneY + 217, 193, 31, { label: 'Welcome back' }));
+      inner.push(box(x + fieldInset, phoneY + 276, fieldW, 50, { label: 'Email', left: true }));
+      inner.push(box(x + fieldInset, phoneY + 346, fieldW, 50, { label: 'Password', left: true }));
+      inner.push(pill(x + fieldInset, phoneY + 421, fieldW, 58, 'Sign in'));
+      inner.push(box(x + (phoneW - 186) / 2, phoneY + 499, 186, 27, { label: 'Forgot password?' }));
     } else if (label === 'Feed') {
-      // Title strip + three stacked content cards. Each card has
-      // a thumbnail dot + two strip rows underneath. Reads as the
-      // skeleton of a content list.
-      inner.push({
-        ...createShape('square', innerX + 8, screenTop + 18),
-        width: innerW - 16,
-        height: 20,
-        label: 'Feed',
-        textSize: 'sm',
-        textAlignX: 'left',
-      });
+      // Title strip + three content cards, each an avatar dot + two
+      // text lines — the skeleton of a feed list.
+      inner.push(box(x + fieldInset, phoneY + 117, fieldW, 39, { label: 'Feed', left: true }));
       [0, 1, 2].forEach((row) => {
-        const cardY = screenTop + 48 + row * 72;
-        inner.push({
-          ...createShape('square', innerX + 8, cardY),
-          width: innerW - 16,
-          height: 60,
-        });
-        inner.push({
-          ...createShape('circle', innerX + 14, cardY + 8),
-          width: 18,
-          height: 18,
-        });
-        inner.push({
-          ...createShape('square', innerX + 38, cardY + 12),
-          width: innerW - 56,
-          height: 6,
-        });
-        inner.push({
-          ...createShape('square', innerX + 38, cardY + 24),
-          width: innerW - 70,
-          height: 6,
-        });
+        const cardY = phoneY + 165 + row * 130;
+        inner.push(box(x + fieldInset, cardY, fieldW, 116));
+        inner.push(dot(x + fieldInset + 11, cardY + 15, 33, 35));
+        inner.push(box(x + fieldInset + 56, cardY + 23, 148, 20));
+        inner.push(box(x + fieldInset + 56, cardY + 46, 122, 20));
       });
     } else {
-      // Profile: avatar + name + bio + three settings rows.
-      inner.push({
-        ...createShape('circle', innerX + innerW / 2 - 26, screenTop + 30),
-        width: 52,
-        height: 52,
-      });
-      inner.push({
-        ...createShape('square', innerX + 24, screenTop + 92),
-        width: innerW - 48,
-        height: 16,
-        label: 'Alex Rivera',
-        textSize: 'sm',
-      });
-      inner.push({
-        ...createShape('square', innerX + 16, screenTop + 116),
-        width: innerW - 32,
-        height: 10,
-      });
-      ['Account', 'Notifications', 'Privacy'].forEach((row, i) => {
-        inner.push({
-          ...createShape('square', innerX + 8, screenTop + 146 + i * 38),
-          width: innerW - 16,
-          height: 32,
-          label: row,
-          textSize: 'sm',
-          textAlignX: 'left',
-        });
+      // Profile: avatar + name + bio strip + three settings rows.
+      inner.push(dot(x + (phoneW - 96) / 2, phoneY + 120, 96, 101));
+      inner.push(box(x + (phoneW - 163) / 2, phoneY + 240, 163, 31, { label: 'Alex Rivera' }));
+      inner.push(box(x + (phoneW - 193) / 2, phoneY + 286, 193, 20));
+      ['Account', 'Notifications', 'Privacy'].forEach((rowLabel, i) => {
+        inner.push(
+          box(x + fieldInset, phoneY + 325 + i * 74, fieldW, 62, { label: rowLabel, left: true }),
+        );
       });
     }
 
-    // Bottom tab bar with three pill-shaped tabs.
-    inner.push({
-      ...createShape('square', innerX, tabBarY),
-      width: innerW,
-      height: tabBarH,
-    });
+    // Bottom tab bar with three evenly-spaced icons (all screens).
+    inner.push(box(x + barInset, phoneY + 554, barW, 54));
     [0, 1, 2].forEach((i) => {
-      inner.push({
-        ...createShape('circle', innerX + 14 + i * (innerW / 3), tabBarY + 7),
-        width: 14,
-        height: 14,
-      });
+      inner.push(dot(x + barInset + 25 + i * 84, phoneY + 568, 26, 27));
     });
 
-    return { phone, inner };
+    return [phone, ...inner];
   };
 
-  (['Login', 'Feed', 'Profile'] as const).forEach((label, i) => {
-    const x = startX + i * (phoneW + gap);
-    const { phone, inner } = buildScreen(label, x);
-    elements.push(phone, ...inner);
+  const elements: Element[] = [];
+  screens.forEach((label, i) => {
+    elements.push(...buildScreen(label, startX + i * (phoneW + gap)));
   });
-
   return elements;
 }
 
