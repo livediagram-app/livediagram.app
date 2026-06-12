@@ -96,6 +96,7 @@ export function ToolButton({
   onClick,
   children,
   shortcut,
+  segmented = false,
 }: {
   active: boolean;
   label: string;
@@ -106,13 +107,17 @@ export function ToolButton({
   // so the cheat sheet reads consistently across tool buttons and
   // shape buttons.
   shortcut?: string;
+  // When true the button is one cell of a joined segmented control
+  // (e.g. the Select / Hand / Laser mode switch): it drops its own
+  // rounding + shadow so it sits flush against its neighbours, and the
+  // active fill bleeds edge-to-edge inside the group's shared border.
+  segmented?: boolean;
 }) {
   const modHeld = useModKeyHeld();
   const showBadge = !!shortcut && modHeld;
-  const base =
-    'relative flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition';
+  const base = `relative flex flex-1 items-center justify-center gap-1 px-2 py-1 text-[11px] font-medium transition ${segmented ? '' : 'rounded-md'}`;
   const tone = active
-    ? 'bg-brand-500 text-white shadow-sm'
+    ? `bg-brand-500 text-white ${segmented ? '' : 'shadow-sm'}`
     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
   return (
     <button type="button" onClick={onClick} className={`${base} ${tone}`} aria-pressed={active}>

@@ -190,6 +190,18 @@ export function supportsBorder(element: Element): element is ShapeElement | Free
   return element.type === 'shape' || element.type === 'freehand';
 }
 
+// Whether a shape can carry an INLINE icon beside its label — i.e. whether
+// dropping a palette icon on it (or adding one while it's selected) folds
+// the glyph INTO it. Regular shapes only: the dedicated `icon` shape IS a
+// glyph, and a `frame` is a section container you place elements INSIDE,
+// not decorate (spec/09 + spec/38). An icon dropped on those becomes a
+// standalone `icon` element instead of attaching. One predicate so all
+// three fold paths (palette drag-drop, add-while-selected, drag an
+// existing icon onto a shape) agree.
+export function acceptsInlineIcon(element: Element): element is ShapeElement {
+  return element.type === 'shape' && element.shape !== 'icon' && element.shape !== 'frame';
+}
+
 // Whether an element exposes a user-adjustable corner radius. Only the
 // free-corner rectangles qualify: the plain square and the browser
 // frame, both of which render as a CSS rounded rectangle so a real

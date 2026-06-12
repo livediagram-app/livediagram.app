@@ -1,5 +1,6 @@
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import {
+  acceptsInlineIcon,
   bestAnchorTowards,
   createAnnotation,
   createShape,
@@ -65,10 +66,12 @@ export function useElementCreation(opts: {
     // If a regular shape is selected, drop the icon INSIDE it (beside the
     // label) rather than spawning a standalone icon element — the same
     // "operate on the current selection" intent the size-inheritance in
-    // addBoxed already follows. The dedicated 'icon' shape is excluded
-    // (an icon-on-an-icon is meaningless; it just becomes a new icon).
+    // addBoxed already follows. `acceptsInlineIcon` excludes the dedicated
+    // 'icon' shape (an icon-on-an-icon is meaningless) AND frames (a frame
+    // is a container — an icon dropped with a frame selected becomes a
+    // standalone element you place inside it, see spec/38).
     const sel = selectedId ? activeTab.elements.find((e) => e.id === selectedId) : null;
-    if (sel && sel.type === 'shape' && sel.shape !== 'icon') {
+    if (sel && acceptsInlineIcon(sel)) {
       commitTabs((ts) =>
         ts.map((t) =>
           t.id !== activeId

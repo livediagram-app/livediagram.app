@@ -92,34 +92,39 @@ export function PaletteTabBar({
       onPointerOver={previewOver}
       onPointerLeave={previewLeave}
     >
-      <div
-        className="flex items-center gap-1 border-b border-slate-100 px-2 py-1.5 dark:border-slate-800"
-        role="tablist"
-        aria-label="Palette categories"
-      >
-        {tabs.map((tab) => {
-          // Highlight follows the *shown* tab so the lit icon always
-          // matches the panel below, including during a hover preview.
-          const isShown = tab.id === shownId;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              data-tab-id={tab.id}
-              aria-selected={tab.id === activeId}
-              aria-label={tab.label}
-              onClick={() => select(tab.id)}
-              className={
-                isShown
-                  ? 'flex h-9 w-9 items-center justify-center rounded-md bg-brand-500 text-white shadow-sm transition'
-                  : 'flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-white'
-              }
-            >
-              {tab.icon}
-            </button>
-          );
-        })}
+      <div className="border-b border-slate-100 px-2 py-1.5 dark:border-slate-800">
+        {/* Joined segmented control: the categories are mutually exclusive
+            (one panel open at a time), so the tabs sit flush in one
+            bordered group with dividers rather than separate buttons. */}
+        <div
+          className="flex items-stretch divide-x divide-slate-200 overflow-hidden rounded-lg border border-slate-200 dark:divide-slate-700 dark:border-slate-700"
+          role="tablist"
+          aria-label="Palette categories"
+        >
+          {tabs.map((tab) => {
+            // Highlight follows the *shown* tab so the lit icon always
+            // matches the panel below, including during a hover preview.
+            const isShown = tab.id === shownId;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                data-tab-id={tab.id}
+                aria-selected={tab.id === activeId}
+                aria-label={tab.label}
+                onClick={() => select(tab.id)}
+                className={
+                  isShown
+                    ? 'flex h-9 flex-1 items-center justify-center bg-brand-500 text-white transition'
+                    : 'flex h-9 flex-1 items-center justify-center text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-white'
+                }
+              >
+                {tab.icon}
+              </button>
+            );
+          })}
+        </div>
       </div>
       <div
         className={`overflow-hidden${animate ? ' transition-[height] duration-200 ease-out' : ''}`}

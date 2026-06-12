@@ -23,6 +23,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
+  acceptsInlineIcon,
   alignmentGuides,
   distributionSnap,
   anchorPosition,
@@ -1010,10 +1011,12 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             const host = node.closest('[data-element-id]');
             const id = host?.getAttribute('data-element-id');
             if (!id || id === drag.primaryId) continue;
-            // First real element beneath the icon. Convert only if it's a
-            // non-icon shape; otherwise leave the icon as a plain move.
+            // First real element beneath the icon. Fold in only if it's a
+            // shape that hosts inline icons (regular shapes — not an icon or
+            // a frame); otherwise leave the icon as a plain move, so an icon
+            // dropped on a frame lands inside it as a standalone element.
             const target = d.activeTab.elements.find((el) => el.id === id);
-            if (target && target.type === 'shape' && target.shape !== 'icon' && host) {
+            if (target && acceptsInlineIcon(target) && host) {
               const rect = host.getBoundingClientRect();
               const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
               const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);

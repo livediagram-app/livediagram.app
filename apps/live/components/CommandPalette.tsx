@@ -336,40 +336,49 @@ export function CommandPalette({
           accordions as a permanent row because these are mode
           switches, not element-add buttons. Select is the default;
           Space pans regardless of the active tool, mirroring Figma. */}
-      <div className="flex items-center gap-1 px-2 pb-1.5 pt-1">
-        <Tooltip title="Select" description="Drag to marquee-select multiple elements.">
-          <ToolButton
-            active={canvasTool === 'select'}
-            label="Select"
-            onClick={() => onSetCanvasTool('select')}
-            shortcut="S"
+      <div className="px-2 pb-1.5 pt-1">
+        {/* Joined segmented control: Select / Hand / Laser are mutually
+            exclusive modes, so they sit flush in one bordered group with
+            dividers (not separate pills) to signal "pick one". */}
+        <div className="flex items-stretch divide-x divide-slate-200 overflow-hidden rounded-lg border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
+          <Tooltip block title="Select" description="Drag to marquee-select multiple elements.">
+            <ToolButton
+              segmented
+              active={canvasTool === 'select'}
+              label="Select"
+              onClick={() => onSetCanvasTool('select')}
+              shortcut="S"
+            >
+              <SelectIcon />
+            </ToolButton>
+          </Tooltip>
+          <Tooltip block title="Hand" description="Drag to scroll. Space pans in Select mode too.">
+            <ToolButton
+              segmented
+              active={canvasTool === 'pan'}
+              label="Hand"
+              onClick={() => onSetCanvasTool('pan')}
+              shortcut="P"
+            >
+              <PanIcon />
+            </ToolButton>
+          </Tooltip>
+          <Tooltip
+            block
+            title="Laser"
+            description="Presenter pointer. Move the mouse to draw a glowing trail visible to other participants in your colour."
           >
-            <SelectIcon />
-          </ToolButton>
-        </Tooltip>
-        <Tooltip title="Hand" description="Drag to scroll. Space pans in Select mode too.">
-          <ToolButton
-            active={canvasTool === 'pan'}
-            label="Hand"
-            onClick={() => onSetCanvasTool('pan')}
-            shortcut="P"
-          >
-            <PanIcon />
-          </ToolButton>
-        </Tooltip>
-        <Tooltip
-          title="Laser"
-          description="Presenter pointer. Move the mouse to draw a glowing trail visible to other participants in your colour."
-        >
-          <ToolButton
-            active={canvasTool === 'laser'}
-            label="Laser"
-            onClick={() => onSetCanvasTool('laser')}
-            shortcut="L"
-          >
-            <LaserIcon />
-          </ToolButton>
-        </Tooltip>
+            <ToolButton
+              segmented
+              active={canvasTool === 'laser'}
+              label="Laser"
+              onClick={() => onSetCanvasTool('laser')}
+              shortcut="L"
+            >
+              <LaserIcon />
+            </ToolButton>
+          </Tooltip>
+        </div>
       </div>
       {/* Category tab bar. Shapes is the first tab and open by default
           (the most common entry point on every fresh canvas); Tools,
