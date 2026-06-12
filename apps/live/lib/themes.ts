@@ -368,17 +368,17 @@ export const THEMES: ThemeDefinition[] = [
 // grid. The mapping lives beside the catalogue so a new theme slots into
 // a section with a one-line edit; the picker renders sections in
 // THEME_CATEGORIES order and skips empties.
-export type ThemeCategory = 'cool' | 'warm' | 'neutral' | 'multicolour';
+export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour';
 
 export const THEME_CATEGORIES: { id: ThemeCategory; label: string }[] = [
   { id: 'cool', label: 'Cool' },
   { id: 'warm', label: 'Warm' },
-  { id: 'neutral', label: 'Neutral' },
+  { id: 'dark', label: 'Dark' },
   { id: 'multicolour', label: 'Multi-colour' },
 ];
 
 const THEME_CATEGORY: Record<ThemeId, ThemeCategory> = {
-  // Cool: blues / greens / purples.
+  // Cool: blues / greens / purples, plus the greyscale Mono.
   brand: 'cool',
   forest: 'cool',
   ocean: 'cool',
@@ -386,8 +386,8 @@ const THEME_CATEGORY: Record<ThemeId, ThemeCategory> = {
   lavender: 'cool',
   indigo: 'cool',
   pine: 'cool',
-  midnight: 'cool',
   steel: 'cool',
+  mono: 'cool',
   // Warm: reds / oranges / pinks / earthy browns.
   slate: 'warm', // legacy id, now the Pink theme
   sunset: 'warm',
@@ -396,9 +396,9 @@ const THEME_CATEGORY: Record<ThemeId, ThemeCategory> = {
   sand: 'warm',
   mocha: 'warm',
   olive: 'warm',
-  // Neutral: greyscale.
-  mono: 'neutral',
-  charcoal: 'neutral',
+  // Dark: dark-backdrop themes.
+  midnight: 'dark',
+  charcoal: 'dark',
   // Multi-colour "rainbow" themes (spec/29).
   rainbow: 'multicolour',
   pastel: 'multicolour',
