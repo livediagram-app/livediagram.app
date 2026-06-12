@@ -395,7 +395,14 @@ export function CommandPalette({
               </svg>
             ),
             content: (
-              <div className="flex flex-wrap items-center gap-0.5 sm:gap-1">
+              // Six-column grid (matching the Icons catalogue) so the fixed
+              // 36px tiles pack into even, full rows. flex-wrap left a few px
+              // short of a sixth tile, so the last shape dropped to its own
+              // row with dead space on the right; the grid divides the width
+              // into six equal cells and centres each tile. overflow-x-hidden
+              // absorbs the few-px slack when six fixed tiles slightly exceed
+              // the cell width, exactly as the Icons grid does.
+              <div className="grid grid-cols-6 justify-items-center gap-1 overflow-x-hidden">
                 <IconButton
                   label="Add square"
                   description="Drop a new square shape on the canvas."
@@ -860,8 +867,11 @@ export function CommandPalette({
               <>
                 {/* Wireframing primitives. Each renders as the device's
             silhouette so the user can drop it as a container and
-            arrange interface elements inside. See spec/09 "Devices". */}
-                <div className="flex flex-wrap items-center gap-1">
+            arrange interface elements inside. See spec/09 "Devices".
+            Six-column grid (like Icons / Shapes) so all six device tiles
+            sit on one full row instead of flex-wrap pushing the smartwatch
+            onto its own line with a gap on the right. */}
+                <div className="grid grid-cols-6 justify-items-center gap-1 overflow-x-hidden">
                   <IconButton
                     label="Add web browser"
                     description="Browser window. Wireframe a web page or a web-app screen."
