@@ -173,8 +173,10 @@ export const TEMPLATES: TemplateDescriptor[] = [
 // theme's default dot grid:
 //   - graph paper for alignment-heavy scaffolds (flow / org / SWOT /
 //     Gantt / kanban / wireframes) where boxes snap to a square grid,
-//   - a blank canvas for clean radial / slide layouts (Venn, flywheel,
-//     pyramid, slide deck) where the shapes should carry the page,
+//   - a blank canvas for clean radial layouts (Venn, flywheel,
+//     pyramid) where the shapes should carry the page,
+//   - a crosshatch backdrop for the slide deck, so the slide frames
+//     read as cards lifted off a textured surface,
 //   - a checkerboard "design board" for the logo lockup sheet,
 //   - horizontal rules for the time-ordered timeline / journey,
 //   - the dot grid (explicit, so it survives even a blank-canvas theme)
@@ -191,7 +193,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   venn: 'blank',
   flywheel: 'blank',
   pyramid: 'blank',
-  'slide-deck': 'blank',
+  'slide-deck': 'crosshatch',
   'logo-design': 'checkerboard',
   timeline: 'lines',
   journey: 'lines',

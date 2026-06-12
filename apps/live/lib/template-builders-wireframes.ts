@@ -137,319 +137,183 @@ export function buildMobileWireframe(cx: number, cy: number): Element[] {
   return elements;
 }
 
-// Laptop wireframe: a wide laptop frame with three internal
-// placeholder rectangles sketched as a header + sidebar + content
-// area. The laptop's silhouette comes from the device shape itself;
-// the inner rectangles are plain squares so the user can rename
-// each region without fighting the device's chrome geometry.
+// Laptop wireframe: a desktop dashboard sketched inside the laptop
+// device's display — a top nav bar (logo, nav pills, avatar), a left
+// sidebar of nav rows, and three stat cards. Geometry mirrors a
+// hand-built reference: the device frame is 1209x833 and the content
+// fills its display bezel, then the whole thing is re-centred on the
+// supplied canvas point. Colours are left to the theme
+// (recolourElementsForTheme); only the structural border-radius /
+// stroke-width hints are pinned so the chrome reads.
 export function buildLaptopWireframe(cx: number, cy: number): Element[] {
-  const elements: Element[] = [];
-  const laptopW = 720;
-  const laptopH = 440;
+  const laptopW = 1209;
+  const laptopH = 833;
   const laptopX = cx - laptopW / 2;
   const laptopY = cy - laptopH / 2;
-  elements.push({
-    ...createShape('laptop', laptopX, laptopY),
-    width: laptopW,
-    height: laptopH,
-  });
-  // Screen area sits in the top ~46% of the laptop's bounding box
-  // (the keyboard base lives below). Inset by 30px on each side so
-  // the UI doesn't bleed into the bezel.
-  const screenTop = laptopY + 20;
-  const screenLeft = laptopX + 80;
-  const screenW = laptopW - 160;
-  const screenH = laptopH * 0.46 - 24;
-  const headerH = 38;
-  const sidebarW = 110;
-  const innerGap = 8;
-  const contentLeft = screenLeft + sidebarW + innerGap;
-  const contentTop = screenTop + headerH + innerGap;
-  const contentW = screenW - sidebarW - innerGap;
-  const contentH = screenH - headerH - innerGap;
 
-  // Header strip: logo (square) on the left, three nav pills in the
-  // middle, an avatar (circle) on the right.
-  elements.push({
-    ...createShape('square', screenLeft, screenTop),
-    width: screenW,
-    height: headerH,
+  // Offsets below are relative to the device frame's top-left.
+  type BoxOpts = {
+    label?: string;
+    size?: 'sm' | 'md';
+    left?: boolean;
+    rounded?: boolean;
+    thin?: boolean;
+  };
+  const box = (rx: number, ry: number, w: number, h: number, o: BoxOpts = {}): Element => ({
+    ...createShape('square', laptopX + rx, laptopY + ry),
+    width: w,
+    height: h,
+    textSize: o.size ?? 'md',
+    ...(o.label !== undefined ? { label: o.label } : {}),
+    ...(o.left ? { textAlignX: 'left' as const } : {}),
+    ...(o.rounded ? { borderRadius: 'md' as const } : {}),
+    ...(o.thin ? { strokeWidth: 'thin' as const } : {}),
   });
-  elements.push({
-    ...createShape('square', screenLeft + 10, screenTop + 10),
-    width: 60,
-    height: 18,
-    label: 'Logo',
+  const pill = (rx: number, ry: number, w: number, h: number, label: string): Element => ({
+    ...createShape('stadium', laptopX + rx, laptopY + ry),
+    width: w,
+    height: h,
     textSize: 'sm',
+    label,
   });
-  ['Home', 'Projects', 'Reports'].forEach((label, i) => {
-    elements.push({
-      ...createShape('stadium', screenLeft + 90 + i * 70, screenTop + 8),
-      width: 60,
-      height: 22,
-      label,
-      textSize: 'sm',
-    });
-  });
-  elements.push({
-    ...createShape('circle', screenLeft + screenW - 32, screenTop + 7),
-    width: 24,
-    height: 24,
+  const dot = (rx: number, ry: number, w: number, h: number): Element => ({
+    ...createShape('circle', laptopX + rx, laptopY + ry),
+    width: w,
+    height: h,
   });
 
-  // Sidebar: section title strip + a vertical stack of nav rows.
-  elements.push({
-    ...createShape('square', screenLeft, screenTop + headerH + innerGap),
-    width: sidebarW,
-    height: contentH,
-  });
-  const navItems = ['Overview', 'Customers', 'Pipeline', 'Reports', 'Settings'];
-  navItems.forEach((label, i) => {
-    elements.push({
-      ...createShape('square', screenLeft + 8, screenTop + headerH + innerGap + 12 + i * 26),
-      width: sidebarW - 16,
-      height: 20,
-      label,
-      textSize: 'sm',
-      textAlignX: 'left',
-    });
+  const elements: Element[] = [
+    { ...createShape('laptop', laptopX, laptopY), width: laptopW, height: laptopH },
+  ];
+
+  // Top nav bar + its chrome (logo, three nav pills, avatar).
+  elements.push(box(122, 42, 965, 75, { rounded: true, thin: true }));
+  elements.push(box(150, 63, 85, 35, { label: 'Logo', size: 'sm' }));
+  elements.push(pill(263, 59, 85, 43, 'Home'));
+  elements.push(pill(362, 59, 85, 43, 'Projects'));
+  elements.push(pill(462, 59, 85, 43, 'Reports'));
+  elements.push(dot(1024, 58, 42, 42));
+
+  // Left sidebar + nav rows.
+  elements.push(box(124, 131, 192, 362, { thin: true }));
+  ['Overview', 'Customers', 'Pipeline', 'Reports', 'Settings'].forEach((label, i) => {
+    elements.push(box(135, 163 + i * 52, 164, 40, { label, size: 'sm', left: true }));
   });
 
-  // Main content area: page title, three stat cards in a row, and a
-  // wider data card beneath.
-  elements.push({
-    ...createShape('square', contentLeft + 12, contentTop + 10),
-    width: 220,
-    height: 22,
-    label: 'Dashboard',
-    textSize: 'sm',
-    textAlignX: 'left',
-  });
-  const cardGap = 10;
-  const cardW = (contentW - 24 - cardGap * 2) / 3;
-  const cardH = 70;
-  ['Active users', 'Revenue', 'Conversion'].forEach((label, i) => {
-    const cardX = contentLeft + 12 + i * (cardW + cardGap);
-    const cardY = contentTop + 44;
-    elements.push({
-      ...createShape('square', cardX, cardY),
-      width: cardW,
-      height: cardH,
-    });
-    elements.push({
-      ...createShape('square', cardX + 10, cardY + 10),
-      width: cardW - 20,
-      height: 12,
-      label,
-      textSize: 'sm',
-      textAlignX: 'left',
-    });
-    elements.push({
-      ...createShape('square', cardX + 10, cardY + 30),
-      width: cardW - 20,
-      height: 22,
-      label: '0',
-      textSize: 'md',
-      textAlignX: 'left',
-    });
-  });
-  // Wider data row card.
-  const tableY = contentTop + 124;
-  const tableH = contentTop + contentH - tableY - 12;
-  if (tableH > 24) {
-    elements.push({
-      ...createShape('square', contentLeft + 12, tableY),
-      width: contentW - 24,
-      height: tableH,
-      label: 'Recent activity',
-      textSize: 'sm',
-      textAlignY: 'top',
-    });
+  // Three stat cards: container + metric label + value.
+  const cards: { cardX: number; labelX: number; label: string }[] = [
+    { cardX: 332, labelX: 346, label: 'Active users' },
+    { cardX: 533, labelX: 547, label: 'Revenue' },
+    { cardX: 735, labelX: 749, label: 'Conversion' },
+  ];
+  for (const c of cards) {
+    elements.push(box(c.cardX, 134, 187, 140));
+    elements.push(box(c.labelX, 154, 159, 24, { label: c.label, size: 'sm', left: true }));
+    elements.push(box(c.labelX, 195, 159, 44, { label: '0', size: 'md', left: true }));
   }
+
   return elements;
 }
 
-// Slide deck: four monitor frames in a 2 by 2 grid, each labelled
-// like a PowerPoint slide ("Title", "Agenda", etc.). The monitor
-// silhouette (rounded screen + stand) reads as a presentation slide
-// at a glance and the natural aspect ratio matches typical slide
-// proportions. Easy to extend (delete a slide, duplicate one).
+// Slide deck: four slides in a 2x2 grid, each a framed square with a
+// stadium heading band and slide-specific content — a title slide, a
+// numbered agenda, three feature cards, and a next-steps checklist —
+// wired by arrows in a TL -> TR -> BR -> BL loop. Geometry mirrors a
+// hand-built reference (562x400 slides), re-centred on the supplied
+// canvas point. Colours are left to the theme.
 export function buildSlideDeck(cx: number, cy: number): Element[] {
-  const elements: Element[] = [];
-  const slideW = 380;
-  const slideH = 280;
-  const gap = 90;
-  const totalW = 2 * slideW + gap;
-  const totalH = 2 * slideH + gap;
+  const slideW = 562;
+  const slideH = 400;
+  const hGap = 44;
+  const vGap = 41;
+  const totalW = 2 * slideW + hGap;
+  const totalH = 2 * slideH + vGap;
   const startX = cx - totalW / 2;
   const startY = cy - totalH / 2;
+  const tl = { x: startX, y: startY };
+  const tr = { x: startX + slideW + hGap, y: startY };
+  const bl = { x: startX, y: startY + slideH + vGap };
+  const br = { x: startX + slideW + hGap, y: startY + slideH + vGap };
 
-  // Each slide is a plain rectangle the user can resize / restyle.
-  // Inside, a heading band sits at the top, then slide-specific
-  // content (bullet rows, agenda items, a chart placeholder, an
-  // action list). Arrows between the slides describe the deck's
-  // reading order.
-  type SlideKind = 'title' | 'agenda' | 'content' | 'actions';
-  type Slide = {
-    kind: SlideKind;
-    heading: string;
-    bullets: string[];
-  };
-  const slides: Slide[] = [
-    {
-      kind: 'title',
-      heading: 'Q3 Roadmap',
-      bullets: ['Team kick-off · 6 Aug', 'Hosted by Alex Rivera'],
-    },
-    {
-      kind: 'agenda',
-      heading: 'Agenda',
-      bullets: ['Where we landed in Q2', 'Three Q3 bets', 'Risks + dependencies', 'Open questions'],
-    },
-    {
-      kind: 'content',
-      heading: 'Three Q3 bets',
-      bullets: ['Self-serve onboarding', 'Realtime collaboration', 'Pricing experiment'],
-    },
-    {
-      kind: 'actions',
-      heading: 'Next steps',
-      bullets: [
-        'Lock scope by Friday',
-        'Eng + design pairing',
-        'Weekly review on Tuesdays',
-        'Send recap by EOD',
-      ],
-    },
-  ];
-
-  const slideElements = slides.map((slide, i) => {
-    const col = i % 2;
-    const row = Math.floor(i / 2);
-    const slideX = startX + col * (slideW + gap);
-    const slideY = startY + row * (slideH + gap);
-    // The outer slide frame: a plain square (no device shape) so the
-    // user can adjust the chrome to taste. textAlignY = top keeps any
-    // future label they add anchored at the top of the slide.
-    const frame = {
-      ...createShape('square', slideX, slideY),
-      width: slideW,
-      height: slideH,
-      textAlignY: 'top' as const,
-    };
-    elements.push(frame);
-
-    // Heading band: a stadium-shaped accent strip at the top of each
-    // slide so the slide title reads as a hero block. Sits inset by
-    // 16px on each side so it doesn't crowd the slide edges.
-    const headingH = 44;
-    elements.push({
-      ...createShape('stadium', slideX + 16, slideY + 16),
-      width: slideW - 32,
-      height: headingH,
-      label: slide.heading,
-      textSize: 'md',
-    });
-
-    if (slide.kind === 'title') {
-      // Subtitle row + a tag pill at the bottom for the speaker.
-      elements.push({
-        ...createShape('square', slideX + 24, slideY + 16 + headingH + 18),
-        width: slideW - 48,
-        height: 30,
-        label: slide.bullets[0]!,
-        textSize: 'sm',
-        textAlignX: 'left',
-      });
-      elements.push({
-        ...createShape('stadium', slideX + 24, slideY + slideH - 50),
-        width: 200,
-        height: 28,
-        label: slide.bullets[1]!,
-        textSize: 'sm',
-      });
-    } else if (slide.kind === 'content') {
-      // Three feature cards in a row beneath the heading.
-      const cardGap = 12;
-      const cardCount = slide.bullets.length;
-      const cardW = (slideW - 32 - cardGap * (cardCount - 1)) / cardCount;
-      const cardY = slideY + 16 + headingH + 22;
-      const cardH = slideH - (16 + headingH + 22) - 32;
-      slide.bullets.forEach((bullet, j) => {
-        const bx = slideX + 16 + j * (cardW + cardGap);
-        elements.push({
-          ...createShape('square', bx, cardY),
-          width: cardW,
-          height: cardH,
-        });
-        elements.push({
-          ...createShape('circle', bx + cardW / 2 - 16, cardY + 18),
-          width: 32,
-          height: 32,
-        });
-        elements.push({
-          ...createShape('square', bx + 10, cardY + cardH - 60),
-          width: cardW - 20,
-          height: 38,
-          label: bullet,
-          textSize: 'sm',
-        });
-      });
-    } else {
-      // Agenda + actions both render as a stack of bullet rows.
-      // Agenda uses square rows ("read more like a numbered list").
-      // Actions uses stadiums ("read like to-do pills").
-      const rowH = 28;
-      const rowGap = 10;
-      const rowsTop = slideY + 16 + headingH + 22;
-      const rowsLeft = slideX + 28;
-      const rowsW = slideW - 56;
-      slide.bullets.forEach((bullet, j) => {
-        const rowY = rowsTop + j * (rowH + rowGap);
-        if (slide.kind === 'agenda') {
-          // Small index square (1 / 2 / 3 / ...) followed by the row.
-          elements.push({
-            ...createShape('square', rowsLeft, rowY),
-            width: 28,
-            height: rowH,
-            label: `${j + 1}`,
-            textSize: 'sm',
-          });
-          elements.push({
-            ...createShape('square', rowsLeft + 36, rowY),
-            width: rowsW - 36,
-            height: rowH,
-            label: bullet,
-            textSize: 'sm',
-            textAlignX: 'left',
-          });
-        } else {
-          // Actions: checkbox circle + a stadium row.
-          elements.push({
-            ...createShape('circle', rowsLeft, rowY + 4),
-            width: rowH - 8,
-            height: rowH - 8,
-          });
-          elements.push({
-            ...createShape('stadium', rowsLeft + 32, rowY),
-            width: rowsW - 32,
-            height: rowH,
-            label: bullet,
-            textSize: 'sm',
-            textAlignX: 'left',
-          });
-        }
-      });
-    }
-    return frame;
+  const elements: Element[] = [];
+  type Origin = { x: number; y: number };
+  type Kind = 'square' | 'stadium' | 'circle';
+  type Opts = { label?: string; size?: 'sm' | 'md'; left?: boolean };
+  // Element at an offset from a slide's top-left. textSize defaults to
+  // 'sm'; pass size for the headings / cards.
+  const at = (
+    o: Origin,
+    kind: Kind,
+    rx: number,
+    ry: number,
+    w: number,
+    h: number,
+    opts: Opts = {},
+  ): Element => ({
+    ...createShape(kind, o.x + rx, o.y + ry),
+    width: w,
+    height: h,
+    textSize: opts.size ?? 'sm',
+    ...(opts.label !== undefined ? { label: opts.label } : {}),
+    ...(opts.left ? { textAlignX: 'left' as const } : {}),
   });
 
-  // Connecting arrows: 1→2 (top row), 2→3 (right column, top to
-  // bottom), 3→4 (bottom row). Anchored to each frame's nearest face
-  // so the arrows visibly chain the slides in reading order.
-  elements.push(createPinnedArrow(slideElements[0]!.id, 'e', slideElements[1]!.id, 'w'));
-  elements.push(createPinnedArrow(slideElements[1]!.id, 's', slideElements[3]!.id, 'n'));
-  elements.push(createPinnedArrow(slideElements[3]!.id, 'w', slideElements[2]!.id, 'e'));
+  // Frames first, so content layers on top and the ids are available
+  // to pin the connector arrows.
+  const fTL = at(tl, 'square', 0, 0, slideW, slideH);
+  const fTR = at(tr, 'square', 0, 0, slideW, slideH);
+  const fBL = at(bl, 'square', 0, 0, slideW, slideH);
+  const fBR = at(br, 'square', 0, 0, slideW, slideH);
+  elements.push(fTL, fTR, fBL, fBR);
+
+  // Heading band on every slide.
+  elements.push(at(tl, 'stadium', 24, 23, 515, 63, { label: 'Q3 Roadmap', size: 'md' }));
+  elements.push(at(tr, 'stadium', 24, 23, 515, 63, { label: 'Agenda', size: 'md' }));
+  elements.push(at(bl, 'stadium', 24, 23, 515, 63, { label: 'Three Q3 bets', size: 'md' }));
+  elements.push(at(br, 'stadium', 24, 23, 515, 63, { label: 'Next steps', size: 'md' }));
+
+  // TL — title slide: subtitle + speaker tag.
+  elements.push(at(tl, 'square', 36, 111, 491, 43, { label: 'Team kick-off · 6 Aug', left: true }));
+  elements.push(at(tl, 'stadium', 36, 329, 296, 40, { label: 'Hosted by Alex Rivera' }));
+
+  // TR — agenda: numbered rows.
+  const agenda = [
+    'Where we landed in Q2',
+    'Three Q3 bets',
+    'Risks + dependencies',
+    'Open questions',
+  ];
+  const rowY = [117, 172, 226, 280];
+  agenda.forEach((label, i) => {
+    elements.push(at(tr, 'square', 41, rowY[i]!, 41, 40, { label: `${i + 1}` }));
+    elements.push(at(tr, 'square', 95, rowY[i]!, 426, 40, { label, left: true }));
+  });
+
+  // BL — three feature cards (icon dot + label).
+  const bets = ['Self-serve onboarding', 'Realtime collaboration', 'Pricing experiment'];
+  const cardX = [24, 201, 379];
+  bets.forEach((label, i) => {
+    elements.push(at(bl, 'square', cardX[i]!, 117, 160, 237, { size: 'md' }));
+    elements.push(at(bl, 'circle', cardX[i]! + 56, 143, 47, 46, { size: 'md' }));
+    elements.push(at(bl, 'square', cardX[i]! + 14, 269, 130, 54, { label }));
+  });
+
+  // BR — next steps: checkbox + action pill per row.
+  const actions = [
+    'Lock scope by Friday',
+    'Eng + design pairing',
+    'Weekly review on Tuesdays',
+    'Send recap by EOD',
+  ];
+  actions.forEach((label, i) => {
+    elements.push(at(br, 'circle', 41, rowY[i]! + 6, 30, 29, { size: 'md' }));
+    elements.push(at(br, 'stadium', 89, rowY[i]!, 432, 40, { label, left: true }));
+  });
+
+  // Connector arrows in the deck's reading order (TL -> TR -> BR -> BL).
+  elements.push(createPinnedArrow(fTL.id, 'e', fTR.id, 'w'));
+  elements.push(createPinnedArrow(fTR.id, 's', fBR.id, 'n'));
+  elements.push(createPinnedArrow(fBR.id, 'w', fBL.id, 'e'));
 
   return elements;
 }

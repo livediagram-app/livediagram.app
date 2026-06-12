@@ -95,10 +95,13 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('mobile-wireframe')).toEqual({ backgroundPattern: 'graph' });
   });
 
-  it('gives clean radial / slide layouts a blank backdrop', () => {
+  it('gives clean radial layouts a blank backdrop', () => {
     expect(templateCanvasOverrides('venn')).toEqual({ backgroundPattern: 'blank' });
     expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
-    expect(templateCanvasOverrides('slide-deck')).toEqual({ backgroundPattern: 'blank' });
+  });
+
+  it('gives the slide deck a crosshatch backdrop', () => {
+    expect(templateCanvasOverrides('slide-deck')).toEqual({ backgroundPattern: 'crosshatch' });
   });
 
   it('gives the logo sheet a checkerboard design board and timelines ruled lines', () => {
@@ -224,16 +227,17 @@ describe('wireframe templates', () => {
     const labels = tab.elements
       .map((el) => ('label' in el ? el.label : undefined))
       .filter((l): l is string => Boolean(l));
-    // Top-level chrome: brand logo, primary nav, dashboard heading.
+    // Top-level chrome: brand logo + primary nav pills.
     expect(labels).toContain('Logo');
     expect(labels).toContain('Home');
-    expect(labels).toContain('Dashboard');
+    expect(labels).toContain('Projects');
     // Sidebar nav rows.
     expect(labels).toContain('Overview');
     expect(labels).toContain('Settings');
     // Stat cards.
     expect(labels).toContain('Active users');
     expect(labels).toContain('Revenue');
+    expect(labels).toContain('Conversion');
   });
 
   it('slide-deck drops four content-rich slides connected in reading order', () => {
