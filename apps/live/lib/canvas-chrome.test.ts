@@ -4,34 +4,42 @@ import { canvasCursorClass, computeDockAnchor } from './canvas-chrome';
 describe('computeDockAnchor', () => {
   const canvas = { left: 0, top: 0, width: 1000 };
   const popover = 256;
+  const rightAligned = 1000 - 256 - 8; // 736
 
-  it('centres the popover under a mid-canvas button', () => {
-    const a = computeDockAnchor({ left: 480, bottom: 40, width: 40 }, canvas, popover);
-    // button centre = 500; left = 500 - 128 = 372; arrow points back to centre.
-    expect(a.left).toBe(372);
-    expect(a.top).toBe(40);
-    expect(a.arrowOffset).toBe(128);
+  it('right-aligns to the dock edge, so every button opens in the same spot', () => {
+    // The leftmost (Explorer) and a rightmost dock button land at the SAME
+    // left — they used to disagree (Explorer drifted toward the centre).
+    const leftBtn = computeDockAnchor({ left: 760, bottom: 40, width: 40 }, canvas, popover);
+    const rightBtn = computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover);
+    expect(leftBtn.left).toBe(rightAligned);
+    expect(rightBtn.left).toBe(rightAligned);
+    expect(leftBtn.top).toBe(40);
   });
 
-  it('clamps to 8px from the left edge and keeps the arrow on the button', () => {
-    const a = computeDockAnchor({ left: 0, bottom: 30, width: 40 }, canvas, popover);
-    expect(a.left).toBe(8); // would be 20-128 = -108, clamped to 8
-    expect(a.arrowOffset).toBe(12); // centre 20 - left 8
+  it('points the arrow up at the tapped button', () => {
+    const a = computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover);
+    expect(a.arrowOffset).toBe(920 - rightAligned); // button centre 920
   });
 
-  it('clamps to 8px from the right edge', () => {
-    const a = computeDockAnchor({ left: 960, bottom: 30, width: 40 }, canvas, popover);
-    // centre 980; max left = 1000 - 256 - 8 = 736
-    expect(a.left).toBe(736);
-    expect(a.arrowOffset).toBe(980 - 736);
+  it('clamps the arrow to stay on the popover', () => {
+    // A far-left button would push the arrow off the popover's left edge.
+    const a = computeDockAnchor({ left: 100, bottom: 30, width: 40 }, canvas, popover);
+    expect(a.left).toBe(rightAligned);
+    expect(a.arrowOffset).toBe(14);
+  });
+
+  it('clamps to 8px from the left edge on a canvas narrower than the popover', () => {
+    const narrow = { left: 0, top: 0, width: 200 };
+    const a = computeDockAnchor({ left: 150, bottom: 30, width: 40 }, narrow, popover);
+    expect(a.left).toBe(8); // 200 - 256 - 8 = -64, clamped to 8
   });
 
   it('subtracts the canvas offset so the anchor is canvas-relative', () => {
     const offsetCanvas = { left: 100, top: 50, width: 1000 };
-    const a = computeDockAnchor({ left: 580, bottom: 90, width: 40 }, offsetCanvas, popover);
+    const a = computeDockAnchor({ left: 880, bottom: 90, width: 40 }, offsetCanvas, popover);
     expect(a.top).toBe(40); // 90 - 50
-    // centre = 580 + 20 - 100 = 500; left = 372
-    expect(a.left).toBe(372);
+    expect(a.left).toBe(rightAligned); // width - popover - 8, offset-independent
+    expect(a.arrowOffset).toBe(800 - rightAligned); // centre 880 + 20 - 100 = 800
   });
 });
 

@@ -3,11 +3,14 @@
 // cursor-class decision. Both are referentially transparent — geometry
 // / flags in, value out — with no React or DOM dependency.
 
-// Where a mobile dock popover should open, in canvas-relative px. The
-// popover is centred under its dock button but clamped to stay 8px
-// inside the canvas on both sides; `arrowOffset` is where the little
-// pointer triangle sits relative to the popover's left edge so it keeps
-// pointing at the button even after clamping.
+// Where a dock popover should open, in canvas-relative px. The dock lives
+// at the top-right, so every popover RIGHT-ALIGNS to the dock's right edge
+// (8px inside the canvas) and opens in the same right-tucked spot
+// regardless of which button was tapped. (Centring under each button left
+// the leftmost Explorer popover drifting toward the centre while the
+// rightmost panels sat flush right — they no longer disagree.) `arrowOffset`
+// keeps the pointer triangle aimed at the tapped button, clamped to stay on
+// the popover.
 export function computeDockAnchor(
   btnRect: { left: number; bottom: number; width: number },
   canvasRect: { left: number; top: number; width: number },
@@ -15,11 +18,9 @@ export function computeDockAnchor(
 ): { left: number; top: number; arrowOffset: number } {
   const centerX = btnRect.left + btnRect.width / 2 - canvasRect.left;
   const bottomY = btnRect.bottom - canvasRect.top;
-  const clampedLeft = Math.max(
-    8,
-    Math.min(centerX - popoverWidth / 2, canvasRect.width - popoverWidth - 8),
-  );
-  return { left: clampedLeft, top: bottomY, arrowOffset: centerX - clampedLeft };
+  const left = Math.max(8, canvasRect.width - popoverWidth - 8);
+  const arrowOffset = Math.max(14, Math.min(popoverWidth - 14, centerX - left));
+  return { left, top: bottomY, arrowOffset };
 }
 
 // The Tailwind cursor class for the canvas surface, resolved from the
