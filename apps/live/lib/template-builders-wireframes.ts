@@ -80,6 +80,9 @@ export function buildMobileWireframe(cx: number, cy: number): Element[] {
       label,
       textSize: 'sm',
       textAlignY: 'top',
+      // Large padding pushes the screen-name label clear of the
+      // device's top bezel / notch so it reads as a screen title.
+      padding: 'lg',
     };
     const inner: Element[] = [];
 
