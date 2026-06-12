@@ -319,24 +319,20 @@ describe('board templates', () => {
     expect(stickies.length).toBeGreaterThan(0);
   });
 
-  it('kanban drops five lanes from Backlog to Done under a sprint-board heading', () => {
+  it('kanban drops four lanes from Todo to Done under a sprint title', () => {
     const tab = buildTemplatedTab('kanban', 'brand', 'tab-1', 'kanban');
     const labels = tab.elements
       .map((el) => ('label' in el ? el.label : undefined))
       .filter((l): l is string => Boolean(l));
-    expect(labels).toContain('Sprint board');
-    // Lane headers (with the dot + ticket count suffix). The
-    // assertion looks for the prefix to stay tolerant of the
-    // count suffix wobbling.
-    for (const lane of ['Backlog', 'To do', 'In progress', 'Review', 'Done']) {
-      expect(labels.some((l) => l.startsWith(lane))).toBe(true);
+    // Bold sprint title spanning the board.
+    expect(labels.some((l) => l.startsWith('Sprint 12'))).toBe(true);
+    // Lane headers.
+    for (const lane of ['Todo List', 'In Progress', 'Under Review', 'Done']) {
+      expect(labels).toContain(lane);
     }
-    // Priority chips on the cards. These are framework signal:
-    // the kanban ships with assigned priorities so the user sees
-    // the convention.
-    expect(labels.some((l) => l.includes('High priority'))).toBe(true);
-    expect(labels).toContain('Medium');
-    expect(labels).toContain('Low');
+    // Six cards per lane, each carrying a ticket line and a priority chip.
+    expect(labels.filter((l) => l.startsWith('TICKET-')).length).toBe(24);
+    expect(labels.filter((l) => l === 'High priority').length).toBe(24);
   });
 
   it('swot drops a 2x2 grid with the four classic quadrants around a subject centre', () => {

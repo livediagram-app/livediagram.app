@@ -86,175 +86,93 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
   return elements;
 }
 
-// Five-column Kanban board (Backlog / To do / In progress / Review /
-// Done) with realistic ticket-shaped cards in each lane. Each card is
-// two stacked elements: a header square holding the ticket title and a
-// narrower chip square below it carrying a priority tint (rose = high,
-// amber = medium, sky = low). The chip is a separate element rather
-// than a single label so users can edit/recolour priority without
-// retyping the title — closer to how teams actually wrangle a board.
-//
-// The board title above the columns gives the diagram an anchor and
-// also acts as natural "rename me" affordance the first time a user
-// opens the template.
+// Four-column Kanban board (Todo List / In Progress / Under Review /
+// Done) under a bold sprint title. Each lane is a tall container with a
+// centred header and a stack of six cards; each card is a body square
+// with the ticket description on top and a "priority" chip strip glued
+// across its lower edge (a separate element so the priority can be
+// edited / recoloured without retyping the ticket). Geometry mirrors a
+// hand-built reference (505x835 lanes, 457x112 cards), re-centred on the
+// supplied canvas point. Colours are left to the theme
+// (recolourElementsForTheme); cards read via their borders + the chip.
 export function buildKanban(cx: number, cy: number): Element[] {
-  const containerW = 360;
-  const containerSpacing = 400;
-  const cardW = 310;
-  const cardTitleH = 80;
-  const cardChipH = 28;
-  const cardBlockH = cardTitleH + cardChipH;
-  const headerH = 64;
-  const topPadding = 24;
-  const headerGap = 24;
-  const cardGap = 18;
-  const cardsPerCol = 4;
-  const containerH =
-    topPadding + headerH + headerGap + cardsPerCol * cardBlockH + (cardsPerCol - 1) * cardGap + 24;
+  const colW = 505;
+  const colH = 835;
+  const colGap = 23;
+  const colPitch = colW + colGap;
+  const columns = ['Todo List', 'In Progress', 'Under Review', 'Done'];
+  const boardW = columns.length * colW + (columns.length - 1) * colGap;
 
-  type Priority = 'high' | 'med' | 'low';
-  const priorityStyle: Record<Priority, { fill: string; stroke: string; label: string }> = {
-    high: { fill: '#fee2e2', stroke: '#fca5a5', label: 'High priority' },
-    med: { fill: '#fef3c7', stroke: '#fcd34d', label: 'Medium' },
-    low: { fill: '#e0e7ff', stroke: '#a5b4fc', label: 'Low' },
-  };
+  const titleH = 64;
+  const titleGap = 46;
+  const totalH = titleH + titleGap + colH;
+  const startX = cx - boardW / 2;
+  const startY = cy - totalH / 2;
+  const columnsTop = startY + titleH + titleGap;
 
-  const columns: {
-    label: string;
-    fill: string;
-    stroke: string;
-    cards: { title: string; priority: Priority }[];
-  }[] = [
-    {
-      label: 'Backlog',
-      fill: '#f1f5f9',
-      stroke: '#cbd5e1',
-      cards: [
-        { title: 'Research competitors', priority: 'low' },
-        { title: 'Define MVP scope', priority: 'high' },
-        { title: 'Draft landing copy', priority: 'med' },
-        { title: 'User interviews', priority: 'med' },
-      ],
-    },
-    {
-      label: 'To do',
-      fill: '#e2e8f0',
-      stroke: '#94a3b8',
-      cards: [
-        { title: 'Build auth flow', priority: 'high' },
-        { title: 'Wire payments', priority: 'high' },
-        { title: 'Design dashboard', priority: 'med' },
-        { title: 'Set up CI pipeline', priority: 'low' },
-      ],
-    },
-    {
-      label: 'In progress',
-      fill: '#dbeafe',
-      stroke: '#93c5fd',
-      cards: [
-        { title: 'Editor toolbar', priority: 'high' },
-        { title: 'Drag and drop reorder', priority: 'med' },
-        { title: 'Save endpoint', priority: 'high' },
-        { title: 'Theme picker', priority: 'low' },
-      ],
-    },
-    {
-      label: 'Review',
-      fill: '#f3e8ff',
-      stroke: '#c4b5fd',
-      cards: [
-        { title: 'Export to PNG', priority: 'med' },
-        { title: 'Share dialog', priority: 'med' },
-        { title: 'Templates panel', priority: 'low' },
-        { title: 'Settings page', priority: 'low' },
-      ],
-    },
-    {
-      label: 'Done',
-      fill: '#dcfce7',
-      stroke: '#86efac',
-      cards: [
-        { title: 'Repo bootstrap', priority: 'low' },
-        { title: 'Brand palette', priority: 'low' },
-        { title: 'Static landing', priority: 'med' },
-        { title: 'MIT license', priority: 'low' },
-      ],
-    },
-  ];
-
-  // Centre the 5-column block on cx by offsetting from the middle column.
-  const middleIndex = (columns.length - 1) / 2;
-  const titleH = 56;
-  const titleGap = 28;
-  const containerY = cy - containerH / 2 + titleH / 2 + titleGap / 2;
-  const boardTitleY = containerY - titleH - titleGap;
+  const cardsPerColumn = 6;
+  const firstCardTop = 71; // relative to the column top
+  const cardPitch = 125;
+  const cardBodyH = 112;
+  const ticket = 'TICKET-001: Investigate and implement a solution while measuring the outcome';
 
   const elements: Element[] = [];
 
-  // Board title spans roughly the full board width so it visually
-  // anchors the columns underneath rather than floating loose.
-  const boardTitleW = columns.length * containerSpacing - (containerSpacing - containerW);
+  // Board title across the full width of the lanes.
   elements.push({
-    ...createText(cx - boardTitleW / 2, boardTitleY),
-    width: boardTitleW,
+    ...createText(startX, startY),
+    width: boardW,
     height: titleH,
-    label: 'Sprint board',
+    label: 'Sprint 12 · September 2027',
     textSize: 'lg',
-    textAlignX: 'center',
+    textBold: true,
   });
 
-  columns.forEach((col, i) => {
-    const centerX = cx + (i - middleIndex) * containerSpacing;
-    const containerX = centerX - containerW / 2;
-
+  columns.forEach((header, ci) => {
+    const colX = startX + ci * colPitch;
+    // Lane container.
     elements.push({
-      ...createShape('square', containerX, containerY),
-      width: containerW,
-      height: containerH,
-      fillColor: col.fill,
-      strokeColor: col.stroke,
+      ...createShape('square', colX, columnsTop),
+      width: colW,
+      height: colH,
       textSize: 'md',
     });
-
-    const innerX = centerX - cardW / 2;
-    const headerY = containerY + topPadding;
+    // Lane header.
     elements.push({
-      ...createText(innerX, headerY),
-      width: cardW,
-      height: headerH,
-      label: `${col.label} · ${col.cards.length}`,
+      ...createText(colX, columnsTop + 5),
+      width: colW,
+      height: 64,
+      label: header,
       textSize: 'lg',
       textAlignX: 'center',
     });
-
-    col.cards.forEach((card, j) => {
-      const blockY = headerY + headerH + headerGap + j * (cardBlockH + cardGap);
-      const priority = priorityStyle[card.priority];
-
-      // Card title (white card body)
+    // Cards: body + ticket text + priority chip.
+    for (let i = 0; i < cardsPerColumn; i++) {
+      const cardTop = columnsTop + firstCardTop + i * cardPitch;
       elements.push({
-        ...createShape('square', innerX, blockY),
-        width: cardW,
-        height: cardTitleH,
-        label: card.title,
-        fillColor: '#ffffff',
-        strokeColor: '#e2e8f0',
+        ...createShape('square', colX + 24, cardTop),
+        width: 457,
+        height: cardBodyH,
         textSize: 'md',
       });
-
-      // Priority chip glued to the card's bottom edge — a thinner
-      // strip so the title still dominates visually.
       elements.push({
-        ...createShape('square', innerX, blockY + cardTitleH),
-        width: cardW,
-        height: cardChipH,
-        label: priority.label,
-        fillColor: priority.fill,
-        strokeColor: priority.stroke,
+        ...createText(colX + 32, cardTop + 6),
+        width: 441,
+        height: 64,
+        label: ticket,
+        textSize: 'sm',
+        textAlignX: 'left',
+      });
+      elements.push({
+        ...createShape('square', colX + 30, cardTop + 76),
+        width: 445,
+        height: 28,
+        label: 'High priority',
         textSize: 'sm',
       });
-    });
+    }
   });
+
   return elements;
 }
 
