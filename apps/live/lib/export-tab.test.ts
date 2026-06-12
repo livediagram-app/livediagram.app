@@ -4,6 +4,7 @@ import {
   TAB_SCHEMA_VERSION,
   exportTabAsJson,
   exportTabAsMarkdown,
+  exportTabAsSvg,
   type ExportedTabEnvelope,
 } from './export-tab';
 import { parseImportedTab } from './import-tab';
@@ -202,3 +203,42 @@ describe('exportTabAsMarkdown', () => {
 function blobType(blob: Blob): string {
   return blob.type;
 }
+
+describe('exportTabAsSvg', () => {
+  it('produces an image/svg+xml blob with a viewBox + background', async () => {
+    const blob = exportTabAsSvg(tab({ elements: [shape('a')], backgroundColor: '#fff7ed' }));
+    expect(blobType(blob)).toBe('image/svg+xml');
+    const svg = await text(blob);
+    expect(svg).toContain('<svg');
+    expect(svg).toContain('viewBox=');
+    expect(svg).toContain('fill="#fff7ed"'); // background rect
+    expect(svg).toContain('</svg>');
+  });
+
+  it('renders a circle shape as an ellipse and a square as a rect', async () => {
+    const svg = await text(
+      exportTabAsSvg(tab({ elements: [shape('c', { shape: 'circle' }), shape('s', { x: 200 })] })),
+    );
+    expect(svg).toContain('<ellipse');
+    expect(svg).toContain('<rect'); // the square (plus the bg rect)
+  });
+
+  it('draws an arrow as a line with an arrowhead and escapes the label', async () => {
+    const svg = await text(
+      exportTabAsSvg(
+        tab({
+          elements: [
+            shape('a'),
+            shape('b', { x: 300 }),
+            pinnedArrow('arr', 'a', 'b', 'A & B <ok>'),
+          ],
+        }),
+      ),
+    );
+    expect(svg).toContain('<line');
+    expect(svg).toContain('<polygon'); // arrowhead
+    // Label is XML-escaped, never raw.
+    expect(svg).toContain('A &amp; B &lt;ok&gt;');
+    expect(svg).not.toContain('A & B <ok>');
+  });
+});

@@ -8,6 +8,7 @@ import {
   exportTabAsMarkdown,
   exportTabAsPdf,
   exportTabAsPng,
+  exportTabAsSvg,
 } from '@/lib/export-tab';
 import { track } from '@/lib/telemetry';
 
@@ -17,6 +18,7 @@ const EXPORT_LABEL: Record<Format, string> = {
   markdown: 'Markdown',
   pdf: 'PDF',
   png: 'PNG',
+  svg: 'SVG',
   file: 'JSON',
 };
 
@@ -32,7 +34,7 @@ type ExportTabDialogProps = {
   scope?: 'tab' | 'selection';
 };
 
-type Format = 'markdown' | 'pdf' | 'png' | 'file';
+type Format = 'markdown' | 'pdf' | 'png' | 'svg' | 'file';
 
 // Welcome-style overlay: four export options laid out as a card grid,
 // matching the visual language of the TemplatePicker. One per format.
@@ -64,6 +66,8 @@ export function ExportTabDialog({
         downloadBlob(exportTabAsMarkdown(tab), `${baseName}.md`);
       } else if (format === 'png') {
         downloadBlob(await exportTabAsPng(tab), `${baseName}.png`);
+      } else if (format === 'svg') {
+        downloadBlob(exportTabAsSvg(tab), `${baseName}.svg`);
       } else if (format === 'pdf') {
         downloadBlob(await exportTabAsPdf(tab), `${baseName}.pdf`);
       }
@@ -131,6 +135,13 @@ export function ExportTabDialog({
               description="A high-resolution image of this tab, for slides or screenshots."
               busy={busyFormat === 'png'}
               onClick={() => void handle('png')}
+            />
+            <ExportCard
+              kind="svg"
+              title="SVG"
+              description="A scalable vector image of this tab, crisp at any size and editable in design tools."
+              busy={busyFormat === 'svg'}
+              onClick={() => void handle('svg')}
             />
             <ExportCard
               kind="file"
@@ -249,6 +260,32 @@ function FormatIcon({ kind }: { kind: Format }) {
           />
           <circle cx="9" cy="9" r="2.5" fill="rgb(251 191 36)" />
           <path d="M2 18l8-8 6 6 4-4 10 8" stroke="rgb(59 130 246)" strokeWidth="1.5" fill="none" />
+        </svg>
+      );
+    case 'svg':
+      return (
+        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="20"
+            rx="2"
+            fill="rgb(220 252 231)"
+            stroke="rgb(134 239 172)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="16"
+            y="15"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="600"
+            fill="rgb(21 128 61)"
+          >
+            SVG
+          </text>
         </svg>
       );
     case 'file':

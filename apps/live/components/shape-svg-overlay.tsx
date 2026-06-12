@@ -134,10 +134,15 @@ export function ShapeSvgOverlay({
         <polygon points="50,2 61,35 96,35 68,56 78,89 50,69 22,89 32,56 4,35 39,35" {...common} />
       ) : null}
       {shape === 'speech-bubble' ? (
-        // Rounded body across the top, with a tail dropping from the
-        // bottom-left. The label centres in the body (the tail sits below).
+        // The rounded body fills the WHOLE box (0..100) so the label —
+        // centred in the element box by default — lands dead-centre in the
+        // bubble. The tail hangs just BELOW the box (y > 100), which the
+        // overlay's overflow-visible lets through; keeping it out of the
+        // box is what frees the body to be vertically centred. Previously
+        // the body only filled the top ~66% (tail inside), which pushed
+        // the centred label low against the tail.
         <path
-          d="M 8 0 L 92 0 A 8 8 0 0 1 100 8 L 100 58 A 8 8 0 0 1 92 66 L 42 66 L 26 94 L 32 66 L 8 66 A 8 8 0 0 1 0 58 L 0 8 A 8 8 0 0 1 8 0 Z"
+          d="M 8 0 L 92 0 A 8 8 0 0 1 100 8 L 100 92 A 8 8 0 0 1 92 100 L 44 100 L 26 120 L 34 100 L 8 100 A 8 8 0 0 1 0 92 L 0 8 A 8 8 0 0 1 8 0 Z"
           {...common}
         />
       ) : null}

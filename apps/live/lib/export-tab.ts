@@ -376,6 +376,184 @@ function drawArrowhead(
 }
 
 // ---------------------------------------------------------------------
+// SVG — vector counterpart of the canvas renderer. Same coverage as the
+// PNG / PDF path (rect / ellipse / diamond / text / sticky / image
+// placeholder / arrows) so the three visual exports stay consistent;
+// the difference is vector output that scales without pixelation and
+// stays editable in design tools. Synchronous (string assembly), so it
+// returns a Blob directly rather than a Promise.
+// ---------------------------------------------------------------------
+
+// Round to 2dp so the markup stays compact without visible drift.
+function r2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+// XML-escape for both text nodes and attribute values.
+function xmlEscape(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function fontSizeFor(textSize: BoxedElement['textSize']): number {
+  return textSize === 'lg' ? 20 : textSize === 'sm' ? 12 : textSize === 'scale' ? 18 : 14;
+}
+
+function svgLabel(
+  text: string,
+  x: number,
+  y: number,
+  anchor: 'start' | 'middle' | 'end',
+  color: string,
+  fontSize: number,
+  bold: boolean,
+  italic: boolean,
+): string {
+  return (
+    `<text x="${r2(x)}" y="${r2(y)}" font-family="system-ui, sans-serif" font-size="${fontSize}"` +
+    ` font-weight="${bold ? 600 : 400}"${italic ? ' font-style="italic"' : ''}` +
+    ` fill="${xmlEscape(color)}" text-anchor="${anchor}" dominant-baseline="central">${xmlEscape(text)}</text>`
+  );
+}
+
+function svgBoxed(el: BoxedElement): string {
+  const op = el.opacity ?? 1;
+  const opAttr = op !== 1 ? ` opacity="${r2(op)}"` : '';
+  // Image: dashed placeholder rect + alt-text label (same as the canvas
+  // renderer — a static export can't embed the bitmap synchronously).
+  if (el.type === 'image') {
+    return (
+      `<g${opAttr}>` +
+      `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
+      ` fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4"/>` +
+      svgLabel(
+        el.alt ?? 'Image',
+        el.x + el.width / 2,
+        el.y + el.height / 2,
+        'middle',
+        '#64748b',
+        12,
+        true,
+        false,
+      ) +
+      `</g>`
+    );
+  }
+  const fill = el.fillColor ?? (el.type === 'sticky' ? '#fef3c7' : '#ffffff');
+  const stroke = el.strokeColor ?? '#0f172a';
+  let shape = '';
+  if (el.type === 'shape' && el.shape === 'circle') {
+    shape = `<ellipse cx="${r2(el.x + el.width / 2)}" cy="${r2(el.y + el.height / 2)}" rx="${r2(el.width / 2)}" ry="${r2(el.height / 2)}" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
+  } else if (el.type === 'shape' && el.shape === 'diamond') {
+    const cx = el.x + el.width / 2;
+    const cy = el.y + el.height / 2;
+    shape = `<polygon points="${r2(cx)},${r2(el.y)} ${r2(el.x + el.width)},${r2(cy)} ${r2(cx)},${r2(el.y + el.height)} ${r2(el.x)},${r2(cy)}" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  } else if (el.type !== 'text') {
+    // Default rounded rectangle (square, sticky, and every other shape —
+    // matching the canvas renderer's "faithful overview" simplification).
+    shape = `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
+  }
+  let labelStr = '';
+  if (el.label) {
+    const anchor =
+      el.textAlignX === 'right' ? 'end' : el.textAlignX === 'left' ? 'start' : 'middle';
+    const tx =
+      el.textAlignX === 'right'
+        ? el.x + el.width - 8
+        : el.textAlignX === 'left'
+          ? el.x + 8
+          : el.x + el.width / 2;
+    labelStr = svgLabel(
+      el.label,
+      tx,
+      el.y + el.height / 2,
+      anchor,
+      el.textColor ?? '#0f172a',
+      fontSizeFor(el.textSize),
+      !!el.textBold,
+      !!el.textItalic,
+    );
+  }
+  return `<g${opAttr}>${shape}${labelStr}</g>`;
+}
+
+function svgArrowhead(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  color: string,
+): string {
+  const angle = Math.atan2(to.y - from.y, to.x - from.x);
+  const size = 8;
+  const p1 = `${r2(to.x)},${r2(to.y)}`;
+  const p2 = `${r2(to.x - size * Math.cos(angle - Math.PI / 6))},${r2(to.y - size * Math.sin(angle - Math.PI / 6))}`;
+  const p3 = `${r2(to.x - size * Math.cos(angle + Math.PI / 6))},${r2(to.y - size * Math.sin(angle + Math.PI / 6))}`;
+  return `<polygon points="${p1} ${p2} ${p3}" fill="${xmlEscape(color)}"/>`;
+}
+
+function svgArrow(arrow: ArrowElement, elements: Element[]): string {
+  const from = endpointPoint(arrow.from, elements);
+  const to = endpointPoint(arrow.to, elements);
+  const stroke = arrow.strokeColor ?? '#64748b';
+  const lw = arrow.strokeWidth ?? 2;
+  const op = arrow.opacity ?? 1;
+  const opAttr = op !== 1 ? ` opacity="${r2(op)}"` : '';
+  const parts = [`<g${opAttr}>`];
+  parts.push(
+    `<line x1="${r2(from.x)}" y1="${r2(from.y)}" x2="${r2(to.x)}" y2="${r2(to.y)}" stroke="${xmlEscape(stroke)}" stroke-width="${lw}"/>`,
+  );
+  const ends = arrow.arrowEnds ?? 'to';
+  if (ends === 'to' || ends === 'both') parts.push(svgArrowhead(from, to, stroke));
+  if (ends === 'from' || ends === 'both') parts.push(svgArrowhead(to, from, stroke));
+  if (arrow.label) {
+    parts.push(
+      svgLabel(
+        arrow.label,
+        (from.x + to.x) / 2,
+        (from.y + to.y) / 2 - 6,
+        'middle',
+        '#0f172a',
+        12,
+        false,
+        false,
+      ),
+    );
+  }
+  parts.push('</g>');
+  return parts.join('');
+}
+
+function renderTabToSvg(tab: Tab): string {
+  const bounds = contentBounds(tab.elements);
+  const vbX = bounds.x - EXPORT_PADDING;
+  const vbY = bounds.y - EXPORT_PADDING;
+  const vbW = bounds.w + EXPORT_PADDING * 2;
+  const vbH = bounds.h + EXPORT_PADDING * 2;
+  const parts: string[] = [];
+  parts.push(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
+  );
+  parts.push(
+    `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(tab.backgroundColor ?? EXPORT_BG)}"/>`,
+  );
+  // Boxed elements first, then arrows on top (same z-order as the canvas).
+  for (const el of tab.elements) {
+    if (el.type !== 'arrow') parts.push(svgBoxed(el));
+  }
+  for (const el of tab.elements) {
+    if (el.type === 'arrow') parts.push(svgArrow(el, tab.elements));
+  }
+  parts.push('</svg>');
+  return parts.join('\n');
+}
+
+export function exportTabAsSvg(tab: Tab): Blob {
+  return new Blob([renderTabToSvg(tab)], { type: 'image/svg+xml' });
+}
+
+// ---------------------------------------------------------------------
 // PNG
 // ---------------------------------------------------------------------
 

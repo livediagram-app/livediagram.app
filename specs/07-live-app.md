@@ -147,4 +147,4 @@ The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pi
 - **Transactional email** (Resend) for share notifications and account flows. The api worker has no outbound email path today.
 - **Multi-user team permissions beyond share links**: today a diagram is either private or shared via a per-link role. No teams, no per-user grants.
 
-(The previous "Auth UI" and "Export" bullets are now shipped: Clerk auth landed per [spec/04](04-auth-and-guest-access.md), and the active tab can be exported as JSON / Markdown / PNG / PDF via the `ExportTabDialog`.)
+(The previous "Auth UI" and "Export" bullets are now shipped: Clerk auth landed per [spec/04](04-auth-and-guest-access.md), and the active tab can be exported as JSON / Markdown / PNG / SVG / PDF via the `ExportTabDialog`.)
