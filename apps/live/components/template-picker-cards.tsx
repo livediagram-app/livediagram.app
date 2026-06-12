@@ -59,12 +59,16 @@ export function CategoryCard({
   description,
   count,
   previews,
+  selected,
   onOpen,
 }: {
   label: string;
   description: string;
   count: number;
   previews: TemplateKind[];
+  // True when the currently-selected template lives in this category, so
+  // the card reads as "your selection is in here" on the overview.
+  selected: boolean;
   onOpen: () => void;
 }) {
   return (
@@ -72,7 +76,12 @@ export function CategoryCard({
       type="button"
       onClick={onOpen}
       aria-label={`Browse ${label} templates`}
-      className="flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
+      aria-pressed={selected}
+      className={
+        selected
+          ? 'flex flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left dark:border-brand-500 dark:bg-brand-500/15'
+          : 'flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
+      }
     >
       <div className="grid h-14 w-full grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-md bg-slate-50 p-1 dark:bg-slate-200">
         {previews.slice(0, 4).map((kind) => (

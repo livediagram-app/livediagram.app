@@ -336,6 +336,9 @@ export function TemplatePicker({
                           description={cat.description}
                           count={items.length}
                           previews={items.map((t) => t.kind)}
+                          selected={
+                            templateKind !== 'blank' && templateCategory(templateKind) === cat.id
+                          }
                           onOpen={() => setOpenCategory(cat.id)}
                         />
                       );
@@ -392,7 +395,7 @@ export function TemplatePicker({
                     </div>
                   </>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                     {brandTheme ? (
                       <ThemeCard
                         theme={brandTheme}
@@ -429,7 +432,7 @@ export function TemplatePicker({
               ? 'You can change these later from the Palette.'
               : isIdentity
                 ? 'Other participants will see this name on your cursor and comments.'
-                : 'Existing content on this tab will be replaced.'}
+                : ''}
           </p>
           {/* No Skip button on the welcome / new-diagram screen — Create is
               the only forward action, and the header X still dismisses to a
