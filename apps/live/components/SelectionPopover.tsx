@@ -36,10 +36,11 @@ type SelectionPopoverProps = {
   // when read-only, so the toolbar can sit closer to the element
   // without overlapping anything.
   compact?: boolean;
-  // Force the toolbar below the element regardless of the usual
-  // above/below fit logic. Set when the top quick-connect ring is open
-  // so the toolbar doesn't cover its pop-out menu (spec/09).
-  forceBelow?: boolean;
+  // Force the toolbar to the side OPPOSITE the named edge, regardless of
+  // the usual above/below fit logic. Set to the open quick-connect ring's
+  // vertical side ('above' / 'below') so the toolbar doesn't cover its
+  // pop-out menu (spec/09); null leaves placement to the fit logic.
+  avoidVertical?: 'above' | 'below' | null;
 };
 
 // Default gap: leave room for the plus duplicate button between
@@ -65,7 +66,7 @@ export function SelectionPopover({
   onOpenComments,
   onOpenContextMenu,
   compact = false,
-  forceBelow = false,
+  avoidVertical = null,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -84,8 +85,10 @@ export function SelectionPopover({
   // starting placement per device class.
   const [placeAbove, setPlaceAbove] = useState(() => !isMobileViewportSync());
 
-  // forceBelow overrides the fit-based placement (top ring open).
-  const effectiveAbove = forceBelow ? false : placeAbove;
+  // avoidVertical overrides the fit-based placement (a ring is open on
+  // that side): sit on the opposite side. 'above' → below, 'below' → above.
+  const effectiveAbove =
+    avoidVertical === 'above' ? false : avoidVertical === 'below' ? true : placeAbove;
   const visualGap = (compact ? GAP_COMPACT : GAP_DEFAULT) / zoom;
   const baseTop = effectiveAbove ? bounds.y - visualGap : bounds.y + bounds.height + visualGap;
   const baseLeft = bounds.x + bounds.width / 2;
@@ -111,9 +114,9 @@ export function SelectionPopover({
     // depth". `adjust` is intentionally NOT a dependency: this runs
     // once per geometry change and applies a one-shot nudge, so it
     // never re-enters on its own setAdjust.
-    // Skip the fit-based flip while forced below: the placement is fixed,
-    // and measuring against the forced position would flip-flop the state.
-    if (!forceBelow && !flippedRef.current) {
+    // Skip the fit-based flip while a side is forced: the placement is
+    // fixed, and measuring against the forced position would flip-flop.
+    if (!avoidVertical && !flippedRef.current) {
       if (placeAbove && rect.top < EDGE_MARGIN) {
         flippedRef.current = true;
         setPlaceAbove(false);
@@ -143,7 +146,7 @@ export function SelectionPopover({
     canvasOffset.x,
     canvasOffset.y,
     placeAbove,
-    forceBelow,
+    avoidVertical,
   ]);
 
   return (

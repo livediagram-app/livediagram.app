@@ -81,7 +81,7 @@ export type ArrowEnd = 'from' | 'to';
 // quick-action targets, and which action the radial ring fired. 'duplicate'
 // clones the source; the shape kinds spawn a fresh element matching it.
 export type QuickConnectDirection = 'right' | 'below' | 'left' | 'above';
-export type QuickConnectKind = 'duplicate' | 'square' | 'diamond' | 'circle';
+export type QuickConnectKind = 'duplicate' | 'square' | 'circle';
 
 export const SNAP_THRESHOLD = 24;
 // Pixel range within which a dragged element's edges/centres snap to

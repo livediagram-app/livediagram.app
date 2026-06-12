@@ -77,6 +77,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCommitTable,
     onSpawnConnect,
     onStartArrow,
+    onStartPencil,
     onFollowLink,
     onOpenComments,
     onOpenNote,
@@ -176,6 +177,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             isPaintMode={isPaintMode || isGroupMode}
             showHandles={showHandles(element.id)}
             showAnchors={showAnchorsFor(element.id)}
+            suppressRotate={quickRingOpen !== null}
             zoom={viewportZoom}
             badgeColor={badgeColor}
             tabLocked={tabLocked}
@@ -256,6 +258,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               onClose={() => setQuickRingOpen(null)}
               onSpawn={(kind) => onSpawnConnect(placement, kind)}
               onArrowPointerDown={(e) => onStartArrow(placement, e)}
+              onPencil={onStartPencil}
             />
           ))
         : null}

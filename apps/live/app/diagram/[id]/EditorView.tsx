@@ -798,6 +798,7 @@ export function EditorView() {
         onToggleAspectLock={toggleAspectLockSelected}
         onSpawnConnect={spawnConnectSelected}
         onStartArrow={handleStartArrow}
+        onStartPencil={beginFreehand}
         onToggleLockSelected={toggleLockSelected}
         onDeleteSelected={deleteSelected}
         onDuplicateSelected={duplicateSelected}

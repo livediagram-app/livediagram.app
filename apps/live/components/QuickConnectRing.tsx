@@ -31,6 +31,8 @@ type Props = {
   // Start the Arrow action from this side. The parent decides drag
   // (desktop) vs tap-target (mobile) from the pointer type.
   onArrowPointerDown: (e: ReactPointerEvent) => void;
+  // Enter freehand (pencil) draw mode.
+  onPencil: () => void;
 };
 
 // The plus trigger stays in the shared floating-control family (matching
@@ -43,7 +45,7 @@ const OPTION_ICON_SIZE = 20;
 // Distance (screen px) from the plus centre out to each ring option.
 const RING_RADIUS = 70;
 // Angular spread of the five options, centred on the outward direction.
-const RING_SPREAD = 140;
+const RING_SPREAD = 126;
 // How long the exit transition runs before the options unmount.
 const EXIT_MS = 200;
 
@@ -56,7 +58,7 @@ const OUTWARD: Record<QuickConnectDirection, { x: number; y: number; angle: numb
 };
 
 type Option = {
-  kind: QuickConnectKind | 'arrow';
+  kind: QuickConnectKind | 'arrow' | 'pencil';
   label: string;
   description: string;
   icon: ReactNode;
@@ -83,10 +85,10 @@ const OPTIONS: Option[] = [
     icon: <SquareIcon />,
   },
   {
-    kind: 'diamond',
-    label: 'Diamond',
-    description: 'Add a connected diamond.',
-    icon: <DiamondIcon />,
+    kind: 'pencil',
+    label: 'Pencil',
+    description: 'Draw a freehand sketch.',
+    icon: <PencilIcon />,
   },
   {
     kind: 'circle',
@@ -106,6 +108,7 @@ export function QuickConnectRing({
   onClose,
   onSpawn,
   onArrowPointerDown,
+  onPencil,
 }: Props) {
   // `rendered` keeps the options mounted through the exit transition;
   // `active` drives the per-option fade/scale (off → on for enter, on →
@@ -210,7 +213,8 @@ export function QuickConnectRing({
                     }}
                     onClick={() => {
                       if (isArrow) return;
-                      onSpawn(option.kind as QuickConnectKind);
+                      if (option.kind === 'pencil') onPencil();
+                      else onSpawn(option.kind as QuickConnectKind);
                       onClose();
                     }}
                   >
@@ -267,10 +271,11 @@ function SquareIcon() {
   );
 }
 
-function DiamondIcon() {
+function PencilIcon() {
   return (
     <svg {...iconProps()}>
-      <path d="M8 2.5 13.5 8 8 13.5 2.5 8z" />
+      <path d="M11.5 2.5 13.5 4.5 5.5 12.5 3 13 3.5 10.5z" />
+      <path d="M10 4 12 6" />
     </svg>
   );
 }

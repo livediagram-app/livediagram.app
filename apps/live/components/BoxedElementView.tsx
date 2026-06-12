@@ -62,6 +62,9 @@ type BoxedElementViewProps = {
   isPaintMode: boolean;
   showHandles: boolean;
   showAnchors: boolean;
+  // Hide the rotate handle (e.g. while a quick-connect ring is open, whose
+  // top option would otherwise clash with the handle above the element).
+  suppressRotate?: boolean;
   zoom: number;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
   onBeginRotate: (
@@ -166,6 +169,7 @@ function BoxedElementViewImpl({
   isPaintMode,
   showHandles,
   showAnchors,
+  suppressRotate = false,
   zoom,
   onBeginDrag,
   onBeginRotate,
@@ -601,7 +605,7 @@ function BoxedElementViewImpl({
             <ResizeHandles elementId={element.id} zoom={zoom} onBeginDrag={onBeginDrag} />
           ) : null}
 
-          {showHandles && !isAnnotation ? (
+          {showHandles && !isAnnotation && !suppressRotate ? (
             <RotateHandle elementId={element.id} zoom={zoom} onBeginRotate={onBeginRotate} />
           ) : null}
 

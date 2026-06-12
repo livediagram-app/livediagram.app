@@ -394,11 +394,12 @@ export type CanvasProps = {
   onSetPatternColor: (color: string) => void;
   onToggleAspectLock: () => void;
   // Quick add + connect (spec/09). The radial ring on each element edge
-  // either spawns a connected element (Duplicate / Square / Diamond /
-  // Circle) or starts an arrow from that side (drag on desktop, tap-target
-  // on mobile — the handler branches on the pointer type).
+  // spawns a connected element (Duplicate / Square / Circle), starts an
+  // arrow from that side (drag on desktop, tap-target on mobile — the
+  // handler branches on the pointer type), or enters freehand draw.
   onSpawnConnect: (direction: QuickConnectDirection, kind: QuickConnectKind) => void;
   onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
+  onStartPencil: () => void;
   onToggleLockSelected: () => void;
   onDeleteSelected: () => void;
   // Duplicate the selected element. Surfaced as a one-click button in

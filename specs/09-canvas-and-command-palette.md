@@ -623,19 +623,19 @@ When a **boxed element** (shape, text, sticky note) is selected and not in edit/
 
 Each plus is a **click trigger** for a **radial quick-action ring**, not an instant action. **Clicking / tapping** a plus animates a ring of five options in around the button (staggered fade + scale), fanning **outward** from the element so it never overlaps the shape; closing animates them back out. While open the plus becomes an **×**. The ring closes when the plus (×) is clicked again, when another plus is opened (only one ring is open at a time), or on any pointer-down outside a ring. There is **no hover-to-open** — the trigger is a deliberate click so it doesn't fire while the pointer just passes over the element. The plus no longer performs a one-click duplicate; every action is chosen from the ring. Each option carries a tooltip.
 
-Opening the **top** ring would collide with the selection toolbar (which normally sits above the element), so while the top ring is open the toolbar is forced **below** the element.
+A ring open on the **same side as the selection toolbar** would collide with it (the toolbar sits above the element on desktop, below on mobile), so while a top **or** bottom ring is open the toolbar is forced to the **opposite** side. The element's **rotate handle** is also hidden while any ring is open (its handle above the element would clash with the ring).
 
 All five options act on the **clicked side** (the side's anchor is `e` / `s` / `w` / `n`):
 
 1. **Duplicate** — clones the selected element to that side (same size, content, style, locked state; fresh id) and connects the two with a pinned arrow between the adjacent anchors (`e ↔ w`, `s ↔ n`). This is the former one-click behaviour, now the first ring option.
 2. **Arrow** — starts a new arrow pinned at that side's anchor. It begins on **pointer-down** so it's a single press-drag gesture. **Desktop:** press-and-drag the free endpoint to its target (snaps to an element anchor, or drops free on empty canvas) — the existing anchor-drag flow. **Mobile:** the press arms a "pick target" mode; the next tap on an element (or empty canvas) sets the endpoint, and a tap elsewhere cancels.
 3. **Square** — adds a new square to that side, connected by a pinned arrow.
-4. **Diamond** — adds a new diamond to that side, connected by a pinned arrow.
+4. **Pencil** — enters freehand (pencil) draw mode (spec/09 "Pencil"); not a connected element.
 5. **Circle** — adds a new circle to that side, connected by a pinned arrow.
 
-For options 3–5 the new shape **matches the source**: same width/height and inherited theme styling (fill / stroke / text colours, border width / style / radius, font, opacity), carrying no label, so a chain of connected nodes stays visually uniform. Placement reuses the duplicate's overlap-avoidance stepping (step further in the chosen direction until the new box clears existing elements). The newly added element is selected afterward so the user can keep building outward; the Arrow option selects the new arrow instead. Open ring state is owned by the Canvas (not the individual plus) so the single-open rule and the toolbar dodge can be coordinated.
+For the **shape** options (Square / Circle) the new shape **matches the source**: same width/height and inherited theme styling (fill / stroke / text colours, border width / style / radius, font, opacity), carrying no label, so a chain of connected nodes stays visually uniform. Placement reuses the duplicate's overlap-avoidance stepping (step further in the chosen direction until the new box clears existing elements). The newly added element is selected afterward so the user can keep building outward; the Arrow option selects the new arrow instead. Open ring state is owned by the Canvas (not the individual plus) so the single-open rule and the toolbar dodge can be coordinated.
 
-Each chosen option emits telemetry (the quick-connect buttons previously emitted nothing): Duplicate → `track('Element', 'Duplicated', <kind>)`; Square / Diamond / Circle → `track('Element', 'Added', <Square|Diamond|Circle>)`; Arrow → `track('Element', 'Added', 'Arrow')`.
+Each chosen option emits telemetry (the quick-connect buttons previously emitted nothing): Duplicate → `track('Element', 'Duplicated', <kind>)`; Square / Circle → `track('Element', 'Added', <Square|Circle>)`; Arrow / Pencil fire their existing creation events (`'Arrow'`, freehand on commit).
 
 The plus buttons are hidden while the element is being edited or while format-painter / group mode is active. They are also single-element only: a marquee multi-selection or a multi-member group hides them (there's no one shape to duplicate-and-connect from). Not shown for arrows, tables, annotation markers, or frame sections.
 

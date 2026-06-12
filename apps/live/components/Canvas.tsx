@@ -984,9 +984,12 @@ export function Canvas(props: CanvasProps) {
             bounds={selectionBounds}
             canvasOffset={viewportOffset}
             zoom={viewportZoom}
-            // When the top (above) quick-connect ring is open, force the
-            // toolbar below the element so it doesn't cover the pop-out.
-            forceBelow={quickRingOpen === 'above'}
+            // When a quick-connect ring is open on the toolbar's side
+            // (top on desktop, bottom on mobile), flip the toolbar to the
+            // opposite side so it doesn't cover the pop-out menu.
+            avoidVertical={
+              quickRingOpen === 'above' || quickRingOpen === 'below' ? quickRingOpen : null
+            }
             // In view-only mode we mount the popover with just
             // `onOpenComments`: visitors should be able to read +
             // post comments on a diagram they don't own, but no
