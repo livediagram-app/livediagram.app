@@ -346,8 +346,13 @@ export function createPinnedArrow(
 // - Boxed elements get fresh ids and a position offset of (dx, dy).
 // - Arrows whose both endpoints are pinned to ids inside the set get fresh
 //   ids with endpoints remapped to the duplicates.
-// - If more than one boxed element is duplicated, the copies share a new
-//   `groupId` so they form a sibling group.
+// - Grouping is PRESERVED, not invented: each distinct source `groupId`
+//   is remapped to a fresh one, so a duplicated group stays a (distinct)
+//   group while loose elements stay loose. A new group left with only one
+//   member (e.g. a marquee that caught part of a group) is dropped, so we
+//   never mint a lone group. (Previously every multi-element duplication
+//   was forced into one shared group, which surprised users pasting a
+//   loose marquee selection — see useClipboard.)
 //
 // Returns the new elements plus a map of old → new ids so callers can wire
 // extra arrows (e.g. a connector from the original to the duplicate).
@@ -367,10 +372,37 @@ export function duplicateGroupedElements(
     newBoxed.push({ ...el, id: newId, x: el.x + dx, y: el.y + dy });
   }
 
-  const sharedGroupId = newBoxed.length > 1 ? crypto.randomUUID() : undefined;
-  const finalBoxed: Element[] = newBoxed.map((el) =>
-    sharedGroupId ? { ...el, groupId: sharedGroupId } : el,
-  );
+  // Remap each distinct source groupId to a fresh one so copied groups
+  // stay grouped (and distinct from the originals) without welding loose
+  // elements together. newBoxed already carries the source groupId via
+  // the spread above.
+  const groupIdMap = new Map<string, string>();
+  const remapped: BoxedElement[] = newBoxed.map((el) => {
+    if (el.groupId === undefined) return el;
+    let next = groupIdMap.get(el.groupId);
+    if (next === undefined) {
+      next = crypto.randomUUID();
+      groupIdMap.set(el.groupId, next);
+    }
+    return { ...el, groupId: next };
+  });
+  // Drop any new group that ended up with a single member — a group of
+  // one is degenerate (happens when only part of a source group was in
+  // the duplicated set).
+  const groupCounts = new Map<string, number>();
+  for (const el of remapped) {
+    if (el.groupId !== undefined) {
+      groupCounts.set(el.groupId, (groupCounts.get(el.groupId) ?? 0) + 1);
+    }
+  }
+  const finalBoxed: Element[] = remapped.map((el) => {
+    if (el.groupId !== undefined && (groupCounts.get(el.groupId) ?? 0) < 2) {
+      const lone = { ...el };
+      delete lone.groupId;
+      return lone;
+    }
+    return el;
+  });
 
   const newArrows: ArrowElement[] = [];
   for (const el of elements) {

@@ -111,12 +111,46 @@ describe('duplicateGroupedElements', () => {
     expect(dup.id).not.toBe('a');
   });
 
-  it('puts multiple duplicates into one shared new group', () => {
+  it('does NOT group loose (ungrouped) duplicates — they stay loose', () => {
+    // Two elements with no shared groupId (e.g. a marquee multi-select
+    // that was copied + pasted) must not be welded into a new group.
     const els = [shape('a'), shape('b', { x: 100 })];
     const { newElements } = duplicateGroupedElements(els, new Set(['a', 'b']), 0, 0);
     const groups = newElements.map((e) => (e as ShapeElement).groupId);
+    expect(groups[0]).toBeUndefined();
+    expect(groups[1]).toBeUndefined();
+  });
+
+  it('preserves a source group as a fresh, distinct group', () => {
+    const els = [shape('a', { groupId: 'g1' }), shape('b', { x: 100, groupId: 'g1' })];
+    const { newElements } = duplicateGroupedElements(els, new Set(['a', 'b']), 0, 0);
+    const groups = newElements.map((e) => (e as ShapeElement).groupId);
     expect(groups[0]).toBeDefined();
-    expect(groups[0]).toBe(groups[1]);
+    expect(groups[0]).toBe(groups[1]); // copies share one group
+    expect(groups[0]).not.toBe('g1'); // but a NEW group, not the source's
+  });
+
+  it('keeps two distinct source groups distinct in the copies', () => {
+    const els = [
+      shape('a', { groupId: 'g1' }),
+      shape('b', { x: 100, groupId: 'g1' }),
+      shape('c', { x: 200, groupId: 'g2' }),
+      shape('d', { x: 300, groupId: 'g2' }),
+    ];
+    const { newElements } = duplicateGroupedElements(els, new Set(['a', 'b', 'c', 'd']), 0, 0);
+    const g = newElements.map((e) => (e as ShapeElement).groupId);
+    expect(g[0]).toBe(g[1]);
+    expect(g[2]).toBe(g[3]);
+    expect(g[0]).not.toBe(g[2]); // two groups in, two groups out
+  });
+
+  it('drops a lone group member (only part of a group duplicated)', () => {
+    const els = [shape('a', { groupId: 'g1' }), shape('b', { x: 100, groupId: 'g1' })];
+    // Only 'a' is in the duplicated set → its copy would be a group of
+    // one, so the groupId is dropped.
+    const { newElements } = duplicateGroupedElements(els, new Set(['a']), 0, 0);
+    expect(newElements).toHaveLength(1);
+    expect((newElements[0] as ShapeElement).groupId).toBeUndefined();
   });
 
   it('does not group a single duplicated element', () => {
