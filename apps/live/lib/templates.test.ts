@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplatedTab } from './template-builders';
-import { TEMPLATES, templateCanvasOverrides, type TemplateKind } from './templates';
+import {
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  templateCanvasOverrides,
+  templateCategory,
+  type TemplateKind,
+} from './templates';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome
@@ -62,6 +68,13 @@ describe('TEMPLATES catalogue', () => {
   it('has no duplicate kinds (guards against accidental copy-paste in the catalogue)', () => {
     const kinds = TEMPLATES.map((t) => t.kind);
     expect(new Set(kinds).size).toBe(kinds.length);
+  });
+
+  it('assigns every template to a known category (the picker groups templates by category)', () => {
+    const known = new Set(TEMPLATE_CATEGORIES.map((c) => c.id));
+    for (const t of TEMPLATES) {
+      expect(known.has(templateCategory(t.kind))).toBe(true);
+    }
   });
 
   it('lists every TemplateKind member exactly once', () => {
