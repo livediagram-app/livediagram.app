@@ -468,7 +468,7 @@ export function SelectedElementSection({
           </div>
           <p className="mt-3 text-[10px] font-medium text-slate-500 dark:text-slate-300">Pattern</p>
           <div className="mt-1 grid grid-cols-3 gap-1">
-            {(['solid', 'dashed', 'dotted'] as const).map((value) => (
+            {BORDER_STYLE_ORDER.map((value) => (
               <Tooltip
                 key={value}
                 block
@@ -587,7 +587,7 @@ export function SelectedElementSection({
                 Line pattern
               </p>
               <div className="mt-1 grid grid-cols-3 gap-1">
-                {(['solid', 'dashed', 'dotted'] as const).map((value) => (
+                {BORDER_STYLE_ORDER.map((value) => (
                   <Tooltip
                     key={value}
                     block
@@ -782,7 +782,20 @@ const BORDER_STYLE_LABEL: Record<BorderStyle, string> = {
   solid: 'Solid',
   dashed: 'Dashed',
   dotted: 'Dotted',
+  'dash-dot': 'Dash-dot',
+  'long-dash': 'Long dash',
+  'dash-dot-dot': 'Dash-dot-dot',
 };
+
+// Shared display order for the border/line pattern pickers.
+const BORDER_STYLE_ORDER: readonly BorderStyle[] = [
+  'solid',
+  'dashed',
+  'dotted',
+  'dash-dot',
+  'long-dash',
+  'dash-dot-dot',
+];
 
 const BORDER_RADIUS_LABEL: Record<BorderRadius, string> = {
   none: 'None',

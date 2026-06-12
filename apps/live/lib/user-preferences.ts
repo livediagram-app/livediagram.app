@@ -20,7 +20,7 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-saf
 
 export type UserPreferences = {
   // When `false`, the editor skips the auto arrow-rebind pass on
-  // move (spec/19's `rebindArrowAnchorsAfterMove` in
+  // move (spec/20's `rebindArrowAnchorsAfterMove` in
   // packages/diagram). Missing / undefined === auto-rebind on.
   autoRebindArrows?: boolean;
   // When `false`, `track()` in lib/telemetry is a no-op (the user

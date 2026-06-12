@@ -60,8 +60,20 @@ export function BorderStrokeIcon({ value }: { value: BorderStroke }) {
   );
 }
 
+// Icon-scale dash patterns (tuned for an 18px line at strokeWidth 2),
+// not the renderer's user-unit BORDER_DASH_ARRAY.
+const BORDER_ICON_DASH: Record<BorderStyle, string | undefined> = {
+  solid: undefined,
+  dashed: '4 3',
+  // round linecap (below) turns the ~0-length segment into a true dot
+  dotted: '0.5 3',
+  'long-dash': '9 4',
+  'dash-dot': '5 2.5 0.5 2.5',
+  'dash-dot-dot': '5 2.5 0.5 2.5 0.5 2.5',
+};
+
 export function BorderStyleIcon({ value }: { value: BorderStyle }) {
-  const dash = value === 'solid' ? undefined : value === 'dashed' ? '4 3' : '1.5 2.5';
+  const dash = BORDER_ICON_DASH[value];
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
       <line

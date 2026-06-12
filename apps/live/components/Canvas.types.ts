@@ -15,7 +15,7 @@ import type {
   TextSize,
 } from '@livediagram/diagram';
 import type { ImageSummary } from '@livediagram/api-schema';
-import type { ArrowEnd, DragMode } from '@/lib/canvas';
+import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { TemplateKind } from '@/lib/templates';
 import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
@@ -393,7 +393,12 @@ export type CanvasProps = {
   onAddImageFromGallery?: (image: ImageSummary) => void;
   onSetPatternColor: (color: string) => void;
   onToggleAspectLock: () => void;
-  onDuplicateConnect: (direction: 'right' | 'below' | 'left' | 'above') => void;
+  // Quick add + connect (spec/09). The radial ring on each element edge
+  // either spawns a connected element (Duplicate / Square / Diamond /
+  // Circle) or starts an arrow from that side (drag on desktop, tap-target
+  // on mobile — the handler branches on the pointer type).
+  onSpawnConnect: (direction: QuickConnectDirection, kind: QuickConnectKind) => void;
+  onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
   onToggleLockSelected: () => void;
   onDeleteSelected: () => void;
   // Duplicate the selected element. Surfaced as a one-click button in

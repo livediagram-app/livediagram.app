@@ -11,6 +11,7 @@
 
 import {
   createPinnedArrow,
+  createShape,
   duplicateGroupedElements,
   isBoxed,
   ungroup,
@@ -19,10 +20,31 @@ import {
   type ArrowElement,
   type BoxedElement,
   type Element,
+  type ShapeElement,
   type Tab,
 } from '@livediagram/diagram';
-import { arrowReferencesAny } from '@/lib/canvas';
-import { track } from '@/lib/telemetry';
+import {
+  arrowReferencesAny,
+  type QuickConnectDirection,
+  type QuickConnectKind,
+} from '@/lib/canvas';
+import { paintableBoxedFields } from '@/lib/format-painter';
+import { track, titleCaseType } from '@/lib/telemetry';
+
+// A fresh shape for a quick-connect spawn: the chosen kind at the
+// stepped-out position, sized + styled to match the source so a chain of
+// connected nodes reads uniformly. Reuses the format-painter's projection
+// so "match the source" copies the same styling surface the painter does
+// (size, colours, border presets, font, opacity) without re-listing it.
+function connectedShapeFrom(
+  kind: Exclude<QuickConnectKind, 'duplicate'>,
+  source: BoxedElement,
+  dx: number,
+  dy: number,
+): ShapeElement {
+  const base = createShape(kind, source.x + dx, source.y + dy);
+  return { ...base, ...paintableBoxedFields(source) } as ShapeElement;
+}
 
 type EditorSelectionActionsDeps = {
   // The active selection resolved to ids (single selection expands to
@@ -289,7 +311,11 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     }
   };
 
-  const duplicateConnectSelected = (direction: 'right' | 'below' | 'left' | 'above') => {
+  // Quick add + connect (spec/09): from the selected element, add a new
+  // element to `direction` and link it with a pinned arrow. `kind` decides
+  // what's added — 'duplicate' clones the source (group-aware), the shape
+  // kinds spawn a fresh shape matching the source's size + styling.
+  const spawnConnectSelected = (direction: QuickConnectDirection, kind: QuickConnectKind) => {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
     if (!source || !isBoxed(source)) return;
@@ -308,10 +334,10 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       x: direction === 'right' ? w : direction === 'left' ? -w : 0,
       y: direction === 'below' ? h : direction === 'above' ? -h : 0,
     };
-    // Step further in the same direction until the duplicate's bounding box
-    // doesn't overlap any existing element. Keeps long chains of duplicates
-    // properly spaced even if the user clicks faster than the selection
-    // visually catches up.
+    // Step further in the same direction until the new element's bounding
+    // box doesn't overlap any existing element. Keeps long chains properly
+    // spaced even if the user clicks faster than the selection visually
+    // catches up.
     let dx = step.x;
     let dy = step.y;
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -334,20 +360,39 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       dx += step.x;
       dy += step.y;
     }
-    const { newElements, idMap } = duplicateGroupedElements(activeTab.elements, ids, dx, dy);
-    const sourceCopyId = idMap.get(source.id);
-    if (!sourceCopyId) return;
-    // Connector arrow goes between adjacent edges of source and its copy.
-    const anchors: Record<typeof direction, [Anchor, Anchor]> = {
+    // Connector arrow runs between the adjacent edges of source and target.
+    const anchors: Record<QuickConnectDirection, [Anchor, Anchor]> = {
       right: ['e', 'w'],
       left: ['w', 'e'],
       below: ['s', 'n'],
       above: ['n', 's'],
     };
     const [fromAnchor, toAnchor] = anchors[direction];
-    const connector = createPinnedArrow(source.id, fromAnchor, sourceCopyId, toAnchor);
-    commit((els) => [...els, ...newElements, connector]);
-    setSelectedId(sourceCopyId);
+
+    if (kind === 'duplicate') {
+      const { newElements, idMap } = duplicateGroupedElements(activeTab.elements, ids, dx, dy);
+      const sourceCopyId = idMap.get(source.id);
+      if (!sourceCopyId) return;
+      const connector = createPinnedArrow(source.id, fromAnchor, sourceCopyId, toAnchor);
+      commit((els) => [...els, ...newElements, connector]);
+      setSelectedId(sourceCopyId);
+      track(
+        'Element',
+        'Duplicated',
+        titleCaseType(source.type === 'shape' ? source.shape : source.type),
+      );
+      return;
+    }
+
+    // Fresh shape (square / diamond / circle) matching the source's size +
+    // styling, so a chain of connected nodes reads uniformly. Built from
+    // the source's own box (the plus only shows for a single element, so
+    // baseBounds is that element's bounds).
+    const shape = connectedShapeFrom(kind, source, dx, dy);
+    const connector = createPinnedArrow(source.id, fromAnchor, shape.id, toAnchor);
+    commit((els) => [...els, shape, connector]);
+    setSelectedId(shape.id);
+    track('Element', 'Added', titleCaseType(kind));
   };
 
   const ungroupSelected = () => {
@@ -367,7 +412,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     duplicateMultiSelected,
     deleteMultiSelected,
     duplicateSelected,
-    duplicateConnectSelected,
+    spawnConnectSelected,
     ungroupSelected,
   };
 }

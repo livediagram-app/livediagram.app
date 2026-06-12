@@ -6,8 +6,10 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import {
+  acceptsInlineIcon,
   activeCommentCount,
   BORDER_DASH_ARRAY,
+  BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
   catmullRomToBezierPath,
   DEFAULT_BORDER_STROKE,
@@ -29,6 +31,8 @@ import { renderLabel } from './element-labels';
 import { LockBadge, ResizeHandles, RotateHandle } from './element-parts';
 import { ImageElementView } from './ImageElementView';
 import { isSvgRenderedShape, ShapeSvgOverlay } from './shape-svg-overlay';
+import { BoxBorderOverlay } from './BoxBorderOverlay';
+import { isCssNativeBorderStyle } from './border-css';
 import { describeVariant } from './element-variant';
 import { BadgeStrip, RemoteSelectorsStrip } from './element-badges';
 import { AnnotationGlyph, AnnotationHoverNote } from './AnnotationMarker';
@@ -327,7 +331,7 @@ function BoxedElementViewImpl({
   // side of the text nearest the cursor. `dropSide` drives the live
   // preview band so the user sees WHERE the icon will land before
   // releasing (null = not currently a drag target).
-  const acceptsIconDrop = !!onDropIcon && element.type === 'shape' && element.shape !== 'icon';
+  const acceptsIconDrop = !!onDropIcon && acceptsInlineIcon(element);
   const [dropSide, setDropSide] = useState<'left' | 'right' | 'above' | 'below' | null>(null);
   // Which side a point sits nearest, normalised by half-extent so a
   // wide-but-short box still reads top / bottom correctly.
@@ -454,6 +458,25 @@ function BoxedElementViewImpl({
             BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
           }
           aspect={element.height > 0 ? element.width / element.height : 1}
+        />
+      ) : null}
+      {/* CSS-rendered shapes (square / circle / stadium / browser) paint
+          their border via the wrapper's CSS `border`, which can't draw the
+          composite dash patterns. When one of those is picked, stroke the
+          outline here instead (element-variant drops the CSS border to
+          match). Solid / dashed / dotted stay on the cheaper CSS path. */}
+      {element.type === 'shape' &&
+      !isSvgRenderedShape(element.shape) &&
+      !remoteBorderColor &&
+      !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
+        <BoxBorderOverlay
+          shape={element.shape}
+          width={element.width}
+          height={element.height}
+          stroke={element.strokeColor ?? defaultStrokeColor(element)}
+          strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
+          dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
+          radiusPx={element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : 8}
         />
       ) : null}
       {/* Browser-only HTML chrome overlay. SVG handles only the

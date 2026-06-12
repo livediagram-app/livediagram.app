@@ -168,7 +168,7 @@ export type ShapeElement = {
 // match the Pointer accordion's pattern (Line thickness /
 // Arrowhead size / etc).
 export type BorderStroke = 'none' | 'thin' | 'medium' | 'thick' | 'extra-thick';
-export type BorderStyle = 'solid' | 'dashed' | 'dotted';
+export type BorderStyle = 'solid' | 'dashed' | 'dotted' | 'dash-dot' | 'long-dash' | 'dash-dot-dot';
 export type BorderRadius = 'none' | 'sm' | 'md' | 'lg';
 
 export const BORDER_STROKE_PX: Record<BorderStroke, number> = {
@@ -184,14 +184,21 @@ export const BORDER_STROKE_PX: Record<BorderStroke, number> = {
 // so old diagrams render exactly the same.
 export const DEFAULT_BORDER_STROKE: BorderStroke = 'medium';
 
-// Dash patterns in user units, expanded by the renderer with the
-// active stroke width so dashes scale with thickness. 'solid' maps
-// to no dasharray (omit the attribute) so the default solid stroke
-// path stays the same.
+// SVG `stroke-dasharray` values in absolute user units, applied
+// directly by the renderer (shapes + arrows). 'solid' maps to no
+// dasharray (omit the attribute) so the default solid stroke path
+// stays the same.
 export const BORDER_DASH_ARRAY: Record<BorderStyle, string | null> = {
   solid: null,
-  dashed: '6 4',
-  dotted: '1 3',
+  // Tuned so each pattern reads as distinct at a glance: short even
+  // dashes vs tiny dots vs clearly-longer dashes vs the dash/dot
+  // composites (whose dash segment is longer than plain `dashed` so
+  // the two never look alike).
+  dashed: '6 5',
+  dotted: '1 4',
+  'long-dash': '18 7',
+  'dash-dot': '10 5 1 5',
+  'dash-dot-dot': '10 5 1 5 1 5',
 };
 
 export const DEFAULT_BORDER_STYLE: BorderStyle = 'solid';

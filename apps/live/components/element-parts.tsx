@@ -7,7 +7,7 @@ import {
   FLOATING_CONTROL_CLASS,
   FLOATING_CONTROL_GAP,
   FLOATING_CONTROL_HOVER_CLASS,
-} from './PlusButton';
+} from './floating-controls';
 
 // --- Lock badge ------------------------------------------------------------
 

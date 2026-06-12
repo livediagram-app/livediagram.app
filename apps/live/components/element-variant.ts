@@ -8,6 +8,7 @@ import {
   defaultStrokeColor,
   type BoxedElement,
 } from '@livediagram/diagram';
+import { isCssNativeBorderStyle } from './border-css';
 import { isSvgRenderedShape } from './shape-svg-overlay';
 
 // The wrapper className + inline style for a boxed element, derived purely
@@ -59,8 +60,13 @@ export function describeVariant(
       const userRadius =
         element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : null;
       const strokePx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
-      const dashStyle = (element.strokeStyle ??
-        DEFAULT_BORDER_STYLE) as CSSProperties['borderStyle'];
+      const style = element.strokeStyle ?? DEFAULT_BORDER_STYLE;
+      // The composite dash patterns can't be drawn by a CSS border, so
+      // BoxedElementView strokes them with an SVG overlay (BoxBorderOverlay)
+      // instead. Here we drop the CSS border for those so the two don't
+      // double up. Remote-selection highlights are always a solid border,
+      // so they keep the CSS path regardless of the picked pattern.
+      const useSvgBorder = !remoteBorderColor && !isCssNativeBorderStyle(style);
       return {
         // Drop the border-2 class so we can drive border width from
         // the user's strokeWidth pick instead of a fixed 2px.
@@ -69,8 +75,13 @@ export function describeVariant(
           borderRadius: fixedRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),
           backgroundColor: element.fillColor ?? defaultFillColor(element),
           borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
-          borderWidth: remoteBorderColor ? remoteBorderWidth : strokePx,
-          borderStyle: dashStyle,
+          borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,
+          borderStyle: useSvgBorder
+            ? 'none'
+            : remoteBorderColor
+              ? 'solid'
+              : // Guarded by useSvgBorder above: only CSS-native styles reach here.
+                (style as CSSProperties['borderStyle']),
         },
       };
     }

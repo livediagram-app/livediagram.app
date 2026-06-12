@@ -1,8 +1,14 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, isBoxed } from '@livediagram/diagram';
+import { useMemo, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_PATTERN_COLOR,
+  isBoxed,
+  type Anchor,
+} from '@livediagram/diagram';
+import type { QuickConnectDirection } from '@/lib/canvas';
 import { track } from '@/lib/telemetry';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import { apiAddComment, apiDeleteComment } from '@/lib/api-client';
@@ -144,7 +150,7 @@ export function EditorView() {
     diagramShareable,
     diagramTeamId,
     dismissSharedDiagram,
-    duplicateConnectSelected,
+    spawnConnectSelected,
     duplicateDiagram,
     duplicateMultiSelected,
     duplicateSelected,
@@ -353,6 +359,21 @@ export function EditorView() {
   // gates editsBlocked there, so the pointer overlay and the edit lock
   // can't disagree); consumed here for the overlay.
   const tabLoadState = activeTabLoadState;
+  // Quick add + connect Arrow option (spec/09). Desktop (mouse / pen):
+  // start a drag from the picked side's anchor — the existing anchor-drag
+  // makes a pinned→free arrow the user drags to its target. Touch: there's
+  // no hover-drag, so arm the click-to-connect gesture (the next shape tap
+  // sets the other end), reusing addArrow's connect-from-selection path.
+  const handleStartArrow = (direction: QuickConnectDirection, e: ReactPointerEvent) => {
+    if (selectedId === null) return;
+    if (e.pointerType === 'touch') {
+      addArrow();
+      return;
+    }
+    const anchor: Anchor =
+      direction === 'right' ? 'e' : direction === 'left' ? 'w' : direction === 'below' ? 's' : 'n';
+    beginAnchorDrag(selectedId, anchor, e);
+  };
   return (
     <div className="flex h-dvh flex-col">
       {/* Arrow click-to-connect hint (spec/09): shown while the gesture
@@ -775,7 +796,8 @@ export function EditorView() {
         onSetBackgroundOpacity={setBackgroundOpacity}
         onSetPatternColor={setPatternColor}
         onToggleAspectLock={toggleAspectLockSelected}
-        onDuplicateConnect={duplicateConnectSelected}
+        onSpawnConnect={spawnConnectSelected}
+        onStartArrow={handleStartArrow}
         onToggleLockSelected={toggleLockSelected}
         onDeleteSelected={deleteSelected}
         onDuplicateSelected={duplicateSelected}
@@ -1055,6 +1077,8 @@ export function EditorView() {
           onAutoAlign={autoAlignTab}
           onAddShape={addShape}
           onAddSticky={addSticky}
+          onDrawPencil={beginFreehand}
+          onAddAnnotation={addAnnotation}
         />
       ) : null}
       {linkPickerOpenForId !== null && !isReadOnly ? (

@@ -181,6 +181,24 @@ export function Canvas(props: CanvasProps) {
   // Editor pane on first paint and slides when Editor expands /
   // collapses.
   const [contextBottomY, setContextBottomY] = useState<number>(0);
+  // Which quick-connect ring (if any) is currently open, lifted here so
+  // only one opens at a time and the selection toolbar can dodge the
+  // top ring (see SelectionPopover forceBelow below). Reset whenever the
+  // selection changes, and closed by any pointerdown outside a ring.
+  const [quickRingOpen, setQuickRingOpen] = useState<'right' | 'below' | 'left' | 'above' | null>(
+    null,
+  );
+  useEffect(() => {
+    setQuickRingOpen(null);
+  }, [selectedId]);
+  useEffect(() => {
+    if (!quickRingOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!(e.target as HTMLElement)?.closest?.('[data-quick-ring]')) setQuickRingOpen(null);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [quickRingOpen]);
   // Mobile dock state + toggle (compact button row replacing the four
   // full-width collapse banners on mobile). See useCanvasMobileDock; the
   // popover anchor math is the tested computeDockAnchor.
@@ -937,6 +955,8 @@ export function Canvas(props: CanvasProps) {
           isGroupMode={isGroupMode}
           handleArrowSelect={handleArrowSelect}
           handleElementContextSelect={handleElementContextSelect}
+          quickRingOpen={quickRingOpen}
+          setQuickRingOpen={setQuickRingOpen}
         />
       </div>
 
@@ -964,6 +984,9 @@ export function Canvas(props: CanvasProps) {
             bounds={selectionBounds}
             canvasOffset={viewportOffset}
             zoom={viewportZoom}
+            // When the top (above) quick-connect ring is open, force the
+            // toolbar below the element so it doesn't cover the pop-out.
+            forceBelow={quickRingOpen === 'above'}
             // In view-only mode we mount the popover with just
             // `onOpenComments`: visitors should be able to read +
             // post comments on a diagram they don't own, but no

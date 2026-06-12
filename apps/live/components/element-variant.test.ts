@@ -56,6 +56,26 @@ describe('describeVariant — per-type body styling', () => {
     ).toBe('9999px');
   });
 
+  it('a CSS-native pattern (solid/dashed/dotted) stays on the CSS border', () => {
+    const { style } = describeVariant(shape({ strokeStyle: 'dashed' }), false, false, null);
+    expect(style.borderStyle).toBe('dashed');
+    expect(style.borderWidth).not.toBe(0);
+  });
+
+  it('a composite pattern drops the CSS border so the SVG overlay can draw it', () => {
+    for (const strokeStyle of ['dash-dot', 'long-dash', 'dash-dot-dot']) {
+      const { style } = describeVariant(shape({ strokeStyle }), false, false, null);
+      expect(style.borderStyle).toBe('none');
+      expect(style.borderWidth).toBe(0);
+    }
+  });
+
+  it('a remote selection keeps a solid CSS border even for a composite pattern', () => {
+    const { style } = describeVariant(shape({ strokeStyle: 'dash-dot' }), false, false, '#ff0000');
+    expect(style.borderStyle).toBe('solid');
+    expect(style.borderWidth).toBe(3);
+  });
+
   it('a sticky has a real border + fill', () => {
     const { className, style } = describeVariant(
       make('sticky', { fillColor: '#ffd' }),

@@ -1441,7 +1441,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     duplicateMultiSelected,
     deleteMultiSelected,
     duplicateSelected,
-    duplicateConnectSelected,
+    spawnConnectSelected,
     ungroupSelected,
   } = useElementSelectionActions({
     currentSelectionIds,
@@ -1793,7 +1793,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     diagramShareable,
     diagramTeamId,
     dismissSharedDiagram,
-    duplicateConnectSelected,
+    spawnConnectSelected,
     duplicateDiagram,
     duplicateMultiSelected,
     duplicateSelected,

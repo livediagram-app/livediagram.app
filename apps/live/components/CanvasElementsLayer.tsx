@@ -1,12 +1,12 @@
 import { buildElementIndex, isBoxed } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { framesFirst } from '@/lib/canvas';
+import { framesFirst, type QuickConnectDirection } from '@/lib/canvas';
 import { resolveFontStack } from '@/lib/fonts';
 import { ArrowDefs, ArrowView } from './ArrowView';
 import { BoxedElementView } from './BoxedElementView';
 import { LaserOverlay } from './LaserOverlay';
 import { UnionResizeHandles } from './element-parts';
-import { PlusButton } from './PlusButton';
+import { QuickConnectRing } from './QuickConnectRing';
 import { RemoteCursor } from './RemoteCursor';
 import type { CanvasProps } from './Canvas.types';
 
@@ -35,6 +35,10 @@ type ElementsExtras = {
   isGroupMode: boolean;
   handleArrowSelect: (id: string, e: ReactPointerEvent) => void;
   handleElementContextSelect: (id: string, sx: number, sy: number) => void;
+  // Which quick-connect ring is open (lifted to Canvas so only one opens
+  // at a time and the toolbar can dodge the top ring). null = all closed.
+  quickRingOpen: QuickConnectDirection | null;
+  setQuickRingOpen: (placement: QuickConnectDirection | null) => void;
 };
 
 export type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
@@ -71,7 +75,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCancelEdit,
     onCommitLabel,
     onCommitTable,
-    onDuplicateConnect,
+    onSpawnConnect,
+    onStartArrow,
     onFollowLink,
     onOpenComments,
     onOpenNote,
@@ -93,6 +98,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     unionResizeBounds,
     unionResizePrimaryId,
     viewportZoom,
+    quickRingOpen,
+    setQuickRingOpen,
   } = props;
   // Resolved tab default font once; per-element falls back to it (spec/28).
   const tabFontStack = resolveFontStack(tabFont);
@@ -213,38 +220,45 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         />
       ) : null}
 
-      {showPlus && selectionBounds ? (
-        <>
-          <PlusButton
-            x={selectionBounds.x + selectionBounds.width}
-            y={selectionBounds.y + selectionBounds.height / 2}
-            placement="right"
-            zoom={viewportZoom}
-            onClick={() => onDuplicateConnect('right')}
-          />
-          <PlusButton
-            x={selectionBounds.x + selectionBounds.width / 2}
-            y={selectionBounds.y + selectionBounds.height}
-            placement="below"
-            zoom={viewportZoom}
-            onClick={() => onDuplicateConnect('below')}
-          />
-          <PlusButton
-            x={selectionBounds.x}
-            y={selectionBounds.y + selectionBounds.height / 2}
-            placement="left"
-            zoom={viewportZoom}
-            onClick={() => onDuplicateConnect('left')}
-          />
-          <PlusButton
-            x={selectionBounds.x + selectionBounds.width / 2}
-            y={selectionBounds.y}
-            placement="above"
-            zoom={viewportZoom}
-            onClick={() => onDuplicateConnect('above')}
-          />
-        </>
-      ) : null}
+      {showPlus && selectionBounds
+        ? (
+            [
+              {
+                placement: 'right' as const,
+                x: selectionBounds.x + selectionBounds.width,
+                y: selectionBounds.y + selectionBounds.height / 2,
+              },
+              {
+                placement: 'below' as const,
+                x: selectionBounds.x + selectionBounds.width / 2,
+                y: selectionBounds.y + selectionBounds.height,
+              },
+              {
+                placement: 'left' as const,
+                x: selectionBounds.x,
+                y: selectionBounds.y + selectionBounds.height / 2,
+              },
+              {
+                placement: 'above' as const,
+                x: selectionBounds.x + selectionBounds.width / 2,
+                y: selectionBounds.y,
+              },
+            ] as const
+          ).map(({ placement, x, y }) => (
+            <QuickConnectRing
+              key={placement}
+              x={x}
+              y={y}
+              placement={placement}
+              zoom={viewportZoom}
+              open={quickRingOpen === placement}
+              onToggle={() => setQuickRingOpen(quickRingOpen === placement ? null : placement)}
+              onClose={() => setQuickRingOpen(null)}
+              onSpawn={(kind) => onSpawnConnect(placement, kind)}
+              onArrowPointerDown={(e) => onStartArrow(placement, e)}
+            />
+          ))
+        : null}
     </>
   );
 }

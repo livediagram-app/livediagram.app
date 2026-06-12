@@ -15,15 +15,16 @@
 import { isBoxed, type Element, type ShapeKind } from '@livediagram/diagram';
 import { ContextMenu, ContextMenuDivider } from '@/components/ContextMenu';
 import {
+  AnnotationMenuIcon,
   AutoAlignIcon,
   CanvasMenuIcon,
-  CircleMenuIcon,
   CommentMenuIcon,
   LayerDownIcon,
   LayerUpIcon,
   LinkMenuIcon,
   NoteMenuIcon,
   PaletteMenuIcon,
+  PencilMenuIcon,
   SquareMenuIcon,
   StickyMenuIcon,
 } from '@/components/context-menu-icons';
@@ -55,6 +56,8 @@ type EditorContextMenuProps = {
   onAutoAlign: () => void;
   onAddShape: (kind: ShapeKind) => void;
   onAddSticky: () => void;
+  onDrawPencil: () => void;
+  onAddAnnotation: () => void;
 };
 
 export function EditorContextMenu(props: EditorContextMenuProps) {
@@ -167,18 +170,27 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         }}
       />
       <MenuItem
-        icon={<CircleMenuIcon />}
-        label="Add circle"
-        onClick={() => {
-          props.onAddShape('circle');
-          onClose();
-        }}
-      />
-      <MenuItem
         icon={<StickyMenuIcon />}
         label="Add sticky"
         onClick={() => {
           props.onAddSticky();
+          onClose();
+        }}
+      />
+      <ContextMenuDivider />
+      <MenuItem
+        icon={<PencilMenuIcon />}
+        label="Draw pencil"
+        onClick={() => {
+          props.onDrawPencil();
+          onClose();
+        }}
+      />
+      <MenuItem
+        icon={<AnnotationMenuIcon />}
+        label="Add annotation"
+        onClick={() => {
+          props.onAddAnnotation();
           onClose();
         }}
       />

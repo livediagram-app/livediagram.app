@@ -16,6 +16,7 @@ import {
   DEFAULT_BORDER_STROKE,
   type BorderRadius,
   type BorderStroke,
+  type BorderStyle,
 } from './index';
 
 describe('BORDER_STROKE_PX lookup', () => {
@@ -48,11 +49,12 @@ describe('BORDER_DASH_ARRAY lookup', () => {
     expect(BORDER_DASH_ARRAY.solid).toBeNull();
   });
 
-  it('maps "dashed" and "dotted" to SVG dasharray strings', () => {
-    expect(typeof BORDER_DASH_ARRAY.dashed).toBe('string');
-    expect(typeof BORDER_DASH_ARRAY.dotted).toBe('string');
-    expect(BORDER_DASH_ARRAY.dashed).toMatch(/^\d+(\.\d+)?( \d+(\.\d+)?)+$/);
-    expect(BORDER_DASH_ARRAY.dotted).toMatch(/^\d+(\.\d+)?( \d+(\.\d+)?)+$/);
+  it('maps every non-solid style to a valid SVG dasharray string', () => {
+    const dashed: BorderStyle[] = ['dashed', 'dotted', 'long-dash', 'dash-dot', 'dash-dot-dot'];
+    for (const style of dashed) {
+      expect(typeof BORDER_DASH_ARRAY[style]).toBe('string');
+      expect(BORDER_DASH_ARRAY[style]).toMatch(/^\d+(\.\d+)?( \d+(\.\d+)?)+$/);
+    }
   });
 });
 

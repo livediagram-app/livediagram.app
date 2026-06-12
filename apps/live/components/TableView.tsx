@@ -20,6 +20,7 @@ import {
 } from '@livediagram/diagram';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { track } from '@/lib/telemetry';
+import { nearestCssBorderStyle } from './border-css';
 import { Tooltip } from './Tooltip';
 import { describeLink } from '@/lib/link-label';
 
@@ -349,8 +350,13 @@ export function TableView({
   // Grid line width + pattern from the Border accordion (default thin
   // solid). 'none' (0px) hides the grid lines entirely.
   const borderW = BORDER_STROKE_PX[element.strokeWidth ?? 'thin'];
+  // Cell borders are CSS, which can't draw the composite dash patterns,
+  // so map to the nearest CSS border-style (long-dash/dash-dot degrade to
+  // dashed, dash-dot-dot to dotted) rather than rendering nothing.
   const gridBorder =
-    borderW > 0 ? `${borderW}px ${element.strokeStyle ?? 'solid'} ${stroke}` : undefined;
+    borderW > 0
+      ? `${borderW}px ${nearestCssBorderStyle(element.strokeStyle ?? 'solid')} ${stroke}`
+      : undefined;
   // 'scale' fits the text to the table: font tracks the row height so
   // it grows / shrinks as the table is resized. Fixed presets use a
   // constant px.
