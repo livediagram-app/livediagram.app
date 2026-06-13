@@ -161,10 +161,7 @@ export function TopCenterChrome({
             // across devices.
             extras={
               pendingDraw.type === 'freehand' ? (
-                <RecogniseShapesToggle
-                  on={recogniseShapes}
-                  onToggle={onToggleRecogniseShapes}
-                />
+                <RecogniseShapesToggle on={recogniseShapes} onToggle={onToggleRecogniseShapes} />
               ) : undefined
             }
           />
