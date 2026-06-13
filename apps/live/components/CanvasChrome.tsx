@@ -294,14 +294,21 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // reopen the palette so they can pick the next thing without re-tapping.
   const reopenPaletteAfterDrawRef = useRef(false);
   const prevPendingDrawRef = useRef(pendingDraw);
+  // Keep the latest opener in a ref so the transition effect can stay keyed
+  // on pendingDraw without re-running every render.
+  const openDockPanelRef = useRef(handleDockButtonClick);
+  openDockPanelRef.current = handleDockButtonClick;
   useEffect(() => {
     const prev = prevPendingDrawRef.current;
     prevPendingDrawRef.current = pendingDraw;
     if (prev && !pendingDraw && reopenPaletteAfterDrawRef.current) {
       reopenPaletteAfterDrawRef.current = false;
-      if (minimalPanels || isMobileViewportSync()) setActiveMobilePanel('palette');
+      // Reopen via the dock handler so the popover anchor is recomputed
+      // from the dock button (the same path a manual tap takes) — setting
+      // the panel alone would reopen it at a stale/missing position.
+      if (minimalPanels || isMobileViewportSync()) openDockPanelRef.current('palette');
     }
-  }, [pendingDraw, minimalPanels, setActiveMobilePanel]);
+  }, [pendingDraw, minimalPanels]);
   // Zen / focus mode (spec/26): hide all floating chrome. `chromeHidden`
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
