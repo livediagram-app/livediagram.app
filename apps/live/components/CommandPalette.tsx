@@ -1133,8 +1133,6 @@ export function CommandPalette({
                   <div className="shrink-0">
                     <PaletteDropdown
                       ariaLabel="Filter icons by category"
-                      tooltipTitle="Filter by category"
-                      tooltipDescription="Show only one icon category."
                       value={iconCategory}
                       onChange={setIconCategory}
                       align="right"
