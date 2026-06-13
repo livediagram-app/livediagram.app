@@ -1,5 +1,4 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { isMobileViewportSync } from '@/lib/responsive';
 import { Tooltip } from './Tooltip';
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -69,15 +68,10 @@ export function SelectionPopover({
   // for, and whether it has already flipped for that geometry.
   const flipSigRef = useRef('');
   const flippedRef = useRef(false);
-  // Prefer above by default on desktop, below on mobile. Mobile
-  // defaults to below because the Palette pins the top-right of
-  // the viewport: an above-the-element popover near the top of
-  // the canvas would land underneath it. The layoutEffect below
-  // still flips to "below" on desktop if there's no room above
-  // (and equivalently flips to "above" on mobile if there's no
-  // room below). The initial value just picks the better-odds
-  // starting placement per device class.
-  const [placeAbove, setPlaceAbove] = useState(() => !isMobileViewportSync());
+  // Prefer above by default (desktop + mobile alike). The layoutEffect
+  // below still flips to "below" when there's no room above, so it stays
+  // on-screen near the top edge regardless of device.
+  const [placeAbove, setPlaceAbove] = useState(true);
 
   const visualGap = (compact ? GAP_COMPACT : GAP_DEFAULT) / zoom;
   const baseTop = placeAbove ? bounds.y - visualGap : bounds.y + bounds.height + visualGap;

@@ -1,12 +1,13 @@
-import { useEffect, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { Tooltip } from './Tooltip';
-import {
-  FLOATING_CONTROL_CLASS,
-  FLOATING_CONTROL_GAP,
-  FLOATING_CONTROL_HOVER_CLASS,
-  FLOATING_CONTROL_SIZE,
-} from './floating-controls';
+import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from './floating-controls';
 
 // Quick add + connect (spec/09). One of these floats on each edge of the
 // selected element. The plus is a click *trigger*: clicking it unfolds a
@@ -40,8 +41,9 @@ type Props = {
 // control (flush sub-buttons, dividers) that unfolds out of the plus.
 const SIZE = FLOATING_CONTROL_SIZE;
 const GAP = FLOATING_CONTROL_GAP;
-const OPTION_SIZE = 34;
-const OPTION_ICON_SIZE = 19;
+// Match the selection toolbar's buttons (h-8 = 32px) + icons (16px).
+const OPTION_SIZE = 32;
+const OPTION_ICON_SIZE = 16;
 // Gap (screen px) between the plus and the near edge of the control.
 const MENU_GAP = 8;
 // How long the exit transition runs before the control unmounts.
@@ -57,33 +59,38 @@ const OUTWARD: Record<QuickConnectDirection, { x: number; y: number }> = {
   above: { x: 0, y: -1 },
 };
 
-// Per-side placement of the single horizontal control: where it sits
-// relative to the plus centre (0,0), the edge it unfolds from, and a `base`
-// transform (a centring translate for the top / bottom sides) folded into
-// both the collapsed and open transforms.
+// Per-side placement of the control: top / bottom run HORIZONTAL (a row
+// centred over the plus), left / right run VERTICAL (a column centred
+// beside it). `pos` is relative to the plus centre (0,0); `base` carries the
+// centring translate, folded into both the collapsed + open transforms; the
+// control unfolds out of the plus from `origin`.
 const MENU: Record<
   QuickConnectDirection,
-  { pos: React.CSSProperties; origin: string; base: string; collapsed: string }
+  { col: boolean; pos: React.CSSProperties; origin: string; base: string; collapsed: string }
 > = {
   right: {
-    pos: { left: NEAR, top: -OPTION_SIZE / 2 },
+    col: true,
+    pos: { left: NEAR, top: 0 },
     origin: 'left center',
-    base: '',
+    base: 'translateY(-50%)',
     collapsed: 'scaleX(0)',
   },
   left: {
-    pos: { right: NEAR, top: -OPTION_SIZE / 2 },
+    col: true,
+    pos: { right: NEAR, top: 0 },
     origin: 'right center',
-    base: '',
+    base: 'translateY(-50%)',
     collapsed: 'scaleX(0)',
   },
   below: {
+    col: false,
     pos: { top: NEAR, left: 0 },
     origin: 'center top',
     base: 'translateX(-50%)',
     collapsed: 'scaleY(0)',
   },
   above: {
+    col: false,
     pos: { bottom: NEAR, left: 0 },
     origin: 'center bottom',
     base: 'translateX(-50%)',
@@ -177,12 +184,13 @@ export function QuickConnectRing({
       className="pointer-events-none absolute z-20"
       style={{ left: cx, top: cy, transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
     >
-      {/* The plus trigger, centred at (cx, cy). Click toggles the ring. */}
+      {/* The plus trigger, centred at (cx, cy). Click toggles the ring.
+          Styled to match the selection toolbar (white, slate, soft shadow). */}
       <button
         type="button"
         aria-label="Quick add and connect"
         aria-expanded={open}
-        className={`pointer-events-auto absolute flex items-center justify-center ${FLOATING_CONTROL_CLASS} ${FLOATING_CONTROL_HOVER_CLASS}`}
+        className="pointer-events-auto absolute flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-lg shadow-slate-900/10 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:shadow-slate-950/40 dark:hover:bg-slate-800 dark:hover:text-white"
         style={{
           left: 0,
           top: 0,
@@ -207,12 +215,15 @@ export function QuickConnectRing({
         </svg>
       </button>
 
-      {/* One horizontal segmented control: flush sub-buttons with dividers,
-          rounded ends, a single border + shadow — clearly one control. It
-          unfolds out of the plus (scales from the plus-side edge) on open. */}
+      {/* One control of sub-buttons, styled like the selection toolbar
+          (white, slate, soft shadow, thin inset dividers). Horizontal row on
+          top / bottom, vertical column on the sides. Unfolds out of the
+          plus (scales from the plus-side edge) on open. */}
       {rendered ? (
         <div
-          className="pointer-events-auto absolute flex divide-x divide-brand-100 overflow-hidden rounded-2xl border border-brand-200 bg-white shadow-md dark:divide-slate-700 dark:border-brand-500/50 dark:bg-slate-900"
+          className={`pointer-events-auto absolute flex items-center rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 ${
+            menu.col ? 'flex-col' : 'flex-row'
+          }`}
           style={{
             ...menu.pos,
             transformOrigin: menu.origin,
@@ -221,35 +232,45 @@ export function QuickConnectRing({
             transition: 'transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1), opacity 140ms ease',
           }}
         >
-          {OPTIONS.map((option) => {
+          {OPTIONS.map((option, i) => {
             const isArrow = option.kind === 'arrow';
             return (
-              <Tooltip key={option.kind} title={option.label} description={option.description}>
-                <button
-                  type="button"
-                  aria-label={option.label}
-                  className="flex shrink-0 items-center justify-center text-brand-600 transition hover:bg-brand-50 hover:text-brand-700 dark:text-brand-200 dark:hover:bg-slate-800 dark:hover:text-brand-100"
-                  style={{ width: OPTION_SIZE, height: OPTION_SIZE }}
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    // Arrow starts on pointer-down so it's a single press-drag
-                    // gesture: a desktop drag from this anchor, or (on touch)
-                    // arming the tap-target connect.
-                    if (isArrow) {
-                      onArrowPointerDown(e);
+              <Fragment key={option.kind}>
+                {i > 0 ? (
+                  <div
+                    aria-hidden
+                    className={`shrink-0 bg-slate-200 dark:bg-slate-700 ${
+                      menu.col ? 'my-0.5 h-px w-6' : 'mx-0.5 h-6 w-px'
+                    }`}
+                  />
+                ) : null}
+                <Tooltip title={option.label} description={option.description}>
+                  <button
+                    type="button"
+                    aria-label={option.label}
+                    className="flex shrink-0 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                    style={{ width: OPTION_SIZE, height: OPTION_SIZE }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      // Arrow starts on pointer-down so it's a single press-drag
+                      // gesture: a desktop drag from this anchor, or (on touch)
+                      // arming the tap-target connect.
+                      if (isArrow) {
+                        onArrowPointerDown(e);
+                        onClose();
+                      }
+                    }}
+                    onClick={() => {
+                      if (isArrow) return;
+                      if (option.kind === 'pencil') onPencil();
+                      else onSpawn(option.kind as QuickConnectKind);
                       onClose();
-                    }
-                  }}
-                  onClick={() => {
-                    if (isArrow) return;
-                    if (option.kind === 'pencil') onPencil();
-                    else onSpawn(option.kind as QuickConnectKind);
-                    onClose();
-                  }}
-                >
-                  {option.icon}
-                </button>
-              </Tooltip>
+                    }}
+                  >
+                    {option.icon}
+                  </button>
+                </Tooltip>
+              </Fragment>
             );
           })}
         </div>
@@ -267,7 +288,7 @@ function iconProps() {
     viewBox: '0 0 16 16',
     fill: 'none',
     stroke: 'currentColor',
-    strokeWidth: 1.7,
+    strokeWidth: 1.5,
     strokeLinejoin: 'round' as const,
     strokeLinecap: 'round' as const,
     'aria-hidden': true,
