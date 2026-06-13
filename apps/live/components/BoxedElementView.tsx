@@ -89,6 +89,14 @@ type BoxedElementViewProps = {
   // identities.
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string, runs?: TextRun[]) => void;
+  // Whole-element alignment + padding setters, surfaced in the rich-text
+  // edit toolbar (spec/09). They operate on the current selection (= the
+  // editing element). Optional so read-only paths can omit them.
+  onSetTextAlign?: (
+    x: import('@livediagram/diagram').TextAlignX,
+    y: import('@livediagram/diagram').TextAlignY,
+  ) => void;
+  onSetPadding?: (padding: import('@livediagram/diagram').Padding) => void;
   onCommitTable: (
     id: string,
     patch: Partial<
@@ -192,6 +200,8 @@ function BoxedElementViewImpl({
   onShiftSelect,
   onBeginEdit,
   onCommitLabel,
+  onSetTextAlign,
+  onSetPadding,
   onCommitTable,
   onCancelEdit,
   onFollowLink,
@@ -373,6 +383,8 @@ function BoxedElementViewImpl({
     editCursorAtEnd,
     zoom,
     fontFamily,
+    onSetTextAlign,
+    onSetPadding,
   );
   // An inline icon sits beside the label on a regular shape (the
   // dedicated 'icon' shape kind has its own glyph-above-caption render

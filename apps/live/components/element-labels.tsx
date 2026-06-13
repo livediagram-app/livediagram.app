@@ -17,6 +17,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import {
   hasRichFormatting,
   type BoxedElement,
+  type Padding,
   type TextAlignX,
   type TextAlignY,
   type TextRun,
@@ -271,6 +272,10 @@ export function renderLabel(
   // on-screen size inside the world transform.
   zoom: number,
   fontFamily?: string,
+  // Whole-element alignment + padding setters surfaced in the edit toolbar
+  // (spec/09). Operate on the current selection = the editing element.
+  onSetAlign?: (x: TextAlignX, y: TextAlignY) => void,
+  onSetPadding?: (padding: Padding) => void,
 ) {
   const isSticky = element.type === 'sticky';
   // Shape elements don't carry a placeholder during edit. The user
@@ -317,6 +322,8 @@ export function renderLabel(
         textClassName={textClass}
         onCommit={onCommitLabel}
         onCancel={onCancelEdit}
+        onSetAlign={onSetAlign}
+        onSetPadding={onSetPadding}
       />
     );
   }

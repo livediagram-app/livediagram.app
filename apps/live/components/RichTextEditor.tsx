@@ -18,11 +18,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   applyFormatToRange,
+  defaultPadding,
   normalizeRuns,
   runsFromPlainText,
   runsPlainText,
   toggleFormatInRange,
   type BoxedElement,
+  type Padding,
   type RunBoolKey,
   type RunPatch,
   type TextAlignX,
@@ -68,6 +70,10 @@ type Props = {
   textClassName?: string;
   onCommit: (label: string, runs: TextRun[]) => void;
   onCancel: () => void;
+  // Whole-element controls surfaced in the edit toolbar (they operate on the
+  // current selection = the editing element, same as the side panel).
+  onSetAlign?: (x: TextAlignX, y: TextAlignY) => void;
+  onSetPadding?: (padding: Padding) => void;
 };
 
 // Apply a React.CSSProperties object onto a live DOM style declaration,
@@ -172,6 +178,8 @@ export function RichTextEditor({
   textClassName = '',
   onCommit,
   onCancel,
+  onSetAlign,
+  onSetPadding,
 }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarWrapRef = useRef<HTMLDivElement>(null);
@@ -475,9 +483,14 @@ export function RichTextEditor({
       >
         <RichTextToolbar
           active={active}
+          alignX={alignX}
+          alignY={alignY}
+          padding={element.padding ?? defaultPadding(element)}
           onToggle={onToggle}
           onSize={(size) => onPatch({ size })}
           onColor={(color) => onPatch({ color })}
+          onSetAlign={(x, y) => onSetAlign?.(x, y)}
+          onSetPadding={(p) => onSetPadding?.(p)}
         />
       </div>
     </div>

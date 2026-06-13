@@ -73,6 +73,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginRotate,
     onCancelEdit,
     onCommitLabel,
+    onSetTextAlign,
+    onSetPadding,
     onCommitTable,
     onSpawnConnect,
     onStartArrow,
@@ -202,6 +204,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onRetractVote={readOnly ? undefined : onRetractVote}
             onBeginEdit={onBeginEdit}
             onCommitLabel={onCommitLabel}
+            onSetTextAlign={readOnly ? undefined : onSetTextAlign}
+            onSetPadding={readOnly ? undefined : onSetPadding}
             onCommitTable={onCommitTable}
             onCancelEdit={onCancelEdit}
             onFollowLink={onFollowLink}
