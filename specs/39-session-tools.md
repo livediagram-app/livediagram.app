@@ -39,10 +39,15 @@ live counts but can't control or vote. No extra gating code.
   `timerDisplayMs(timer, now)`. Pausing freezes the value into `frozenMs`;
   resuming re-anchors. Minor cross-client clock skew is acceptable for a
   workshop timer (out of scope: a server-authoritative clock).
-- A floating **`TimerWidget`** pill (top-centre, `CanvasChrome`) shows the
-  live clock, ticking ~4×/sec while running; it flashes when a countdown hits
-  0:00. Edit-role sees inline pause/resume + reset; view-role sees a read-only
-  clock.
+- A floating **`TimerWidget`** pill shows the live clock, ticking ~4×/sec
+  while running; it flashes when a countdown hits 0:00. Edit-role sees inline
+  pause/resume + reset; view-role sees a read-only clock. It renders inside the
+  shared **`TopCenterStack`** (`TopCenter.tsx`), which lays out every top-centre
+  pill — owner/role badge, mode banners, multi-selection toolbar, timer, vote —
+  as one centred, non-overlapping column. The timer shares a wrapping row with
+  the active mode banner / selection toolbar, so when one is visible the timer
+  sits **alongside** it on desktop and **wraps underneath** on mobile rather
+  than stacking on top of it.
 
 ## Voting (dot-voting)
 
@@ -61,7 +66,8 @@ live counts but can't control or vote. No extra gating code.
   Non-votable elements still select normally so the board stays editable.
   Counts are **live** — every element with dots shows a tally pill (brand-filled
   when it holds your dots; click it to retract one). A floating **`VoteBanner`**
-  tells each participant how many dots they have left.
+  (the same `TopCenterStack`, stacked below the timer row) tells each
+  participant how many dots they have left.
 - **End vote** closes casting (tallies stay). **Show results** sets
   `revealed`, ringing the top element(s) (`voteWinners`); the pill flags joint
   winners by comparing to the tab-wide max (`voteMax`). **Clear** removes the

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { TopCenterBanner } from './TopCenter';
 
 type ModeBannerProps = {
   icon: ReactNode;
@@ -24,9 +25,10 @@ export function ModeBanner({
   extras,
 }: ModeBannerProps) {
   return (
-    <div
+    <TopCenterBanner
+      tone="brand"
+      className="gap-3 py-1.5 pl-3 pr-1.5 text-sm"
       onPointerDown={(e) => e.stopPropagation()}
-      className="pointer-events-auto absolute left-1/2 top-4 z-30 flex -translate-x-1/2 animate-fade-in items-center gap-3 rounded-full border border-brand-200 bg-brand-50 py-1.5 pl-3 pr-1.5 text-sm text-brand-800 shadow-md"
     >
       <span className="flex items-center gap-2">
         {icon}
@@ -40,6 +42,6 @@ export function ModeBanner({
       >
         {actionLabel}
       </button>
-    </div>
+    </TopCenterBanner>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { timerDisplayMs, timerDone, type TabTimer } from '@livediagram/diagram';
+import { TopCenterBanner } from './TopCenter';
 
 // Floating session-timer pill (spec/39). Renders the active tab's
 // countdown / stopwatch, ticking LOCALLY off the timer's absolute anchor
@@ -41,13 +42,9 @@ export function TimerWidget({
     'flex h-6 w-6 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800';
 
   return (
-    <div
-      className={
-        'pointer-events-auto absolute left-1/2 top-4 z-30 flex -translate-x-1/2 animate-fade-in items-center gap-2 rounded-full border py-1 pl-3 pr-1.5 shadow-md ' +
-        (done
-          ? 'animate-pulse border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200'
-          : 'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100')
-      }
+    <TopCenterBanner
+      tone={done ? 'danger' : 'neutral'}
+      className={'gap-2 py-1 pl-3 pr-1.5' + (done ? ' animate-pulse' : '')}
     >
       <span className="select-none text-[10px] font-medium uppercase tracking-wide opacity-70">
         {timer.mode === 'countdown' ? 'Timer' : 'Stopwatch'}
@@ -69,7 +66,7 @@ export function TimerWidget({
           </button>
         </div>
       ) : null}
-    </div>
+    </TopCenterBanner>
   );
 }
 

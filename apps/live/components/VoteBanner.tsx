@@ -1,6 +1,7 @@
 'use client';
 
 import { votesSpentBy, type TabVote } from '@livediagram/diagram';
+import { TopCenterBanner } from './TopCenter';
 
 // Floating dot-voting status banner (spec/39). While a vote is open it
 // tells each participant how many of their dots remain; once ended it
@@ -18,9 +19,9 @@ export function VoteBanner({ vote, selfId }: { vote: TabVote; selfId: string }) 
       : 'Voting ended.';
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-16 z-30 flex -translate-x-1/2 animate-fade-in items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[11px] font-medium text-brand-800 shadow-md dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-100">
+    <TopCenterBanner tone="brand" className="gap-2 px-3 py-1 text-[11px] font-medium">
       <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-brand-500" />
       {message}
-    </div>
+    </TopCenterBanner>
   );
 }
