@@ -110,12 +110,17 @@ function computeActiveFormat(
   range: { start: number; end: number } | null,
   el: BoxedElement,
 ): ActiveFormat {
+  // A run with no size override inherits the element's textSize; reflect
+  // that as the active size so the toolbar highlights the current size by
+  // default (only 'scale' has no toolbar equivalent => no highlight).
+  const sizeFallback =
+    el.textSize === 'sm' || el.textSize === 'md' || el.textSize === 'lg' ? el.textSize : null;
   const empty: ActiveFormat = {
     bold: BOOL_DEFAULT.bold(el),
     italic: BOOL_DEFAULT.italic(el),
     underline: BOOL_DEFAULT.underline(el),
     strikethrough: BOOL_DEFAULT.strikethrough(el),
-    size: null,
+    size: sizeFallback,
     color: el.textColor ?? null,
   };
   if (!range) return empty;
@@ -146,7 +151,7 @@ function computeActiveFormat(
     italic: allBool('italic'),
     underline: allBool('underline'),
     strikethrough: allBool('strikethrough'),
-    size: uniform((r) => r.size, null),
+    size: uniform((r) => r.size, sizeFallback),
     color: uniform((r) => r.color, el.textColor ?? null),
   };
 }
