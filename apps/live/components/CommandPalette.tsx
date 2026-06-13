@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IconButton, ToolButton } from './palette-controls';
 export {
   SelectedElementSection,
@@ -172,6 +172,20 @@ export type TabSectionControls = {
   // True when the active tab has at least one boxed element. When
   // false the button is disabled, the action would be a no-op.
   canAutoAlign?: boolean;
+  // Live session tools (spec/39). `timer` / `vote` are the active tab's
+  // current state (undefined when none is running); the handlers are the
+  // facilitator controls. Dot CASTING is a canvas interaction, not here.
+  timer?: import('@livediagram/diagram').TabTimer;
+  vote?: import('@livediagram/diagram').TabVote;
+  onStartTimer: (mode: import('@livediagram/diagram').TimerMode, durationMs?: number) => void;
+  onPauseTimer: () => void;
+  onResumeTimer: () => void;
+  onResetTimer: () => void;
+  onClearTimer: () => void;
+  onStartVote: (votesPerPerson: number) => void;
+  onEndVote: () => void;
+  onRevealVote: () => void;
+  onClearVote: () => void;
 };
 
 export type CanvasTool = 'pan' | 'select' | 'laser';
@@ -318,9 +332,24 @@ export function CommandPalette({
   // Icon-picker search query (Icons tab). Filters the catalogue
   // by label / keyword as the user types.
   const [iconQuery, setIconQuery] = useState('');
-  // Theme-chip filter ('all' = no category narrowing). Combines with the
-  // search box: search runs WITHIN the selected category.
+  // Category filter ('all' = no narrowing). Combines with the search box:
+  // search runs WITHIN the selected category. Picked from a dropdown beside
+  // the search box (replacing the old chip row).
   const [iconCategory, setIconCategory] = useState<string>('all');
+  const [iconFilterOpen, setIconFilterOpen] = useState(false);
+  const iconFilterRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!iconFilterOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (iconFilterRef.current && !iconFilterRef.current.contains(e.target as Node)) {
+        setIconFilterOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [iconFilterOpen]);
+  const iconFilters = [{ id: 'all', label: 'All' }, ...ICON_CATEGORIES];
+  const iconCategoryLabel = iconFilters.find((c) => c.id === iconCategory)?.label ?? 'All';
   const iconResults = (
     iconCategory === 'all' ? ICON_CATALOG : iconsInCategory(iconCategory)
   ).filter((i) => {
@@ -1105,57 +1134,130 @@ export function CommandPalette({
                 {/* Searchable catalogue of single-colour glyphs. Clicking one
             drops it at the viewport centre as an 'icon' shape tinted
             by the element's stroke colour. See spec/09 "Icons". */}
-                <div className="relative mb-2">
-                  <input
-                    type="text"
-                    value={iconQuery}
-                    onChange={(e) => setIconQuery(e.target.value)}
-                    placeholder="Search icons"
-                    aria-label="Search icons"
-                    className="w-full rounded-md border border-slate-200 bg-white py-1 pl-2 pr-7 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                  />
-                  {iconQuery ? (
-                    <Tooltip title="Clear search" description="Clear the icon search query.">
+                <div className="relative mb-2 flex items-center gap-1.5">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={iconQuery}
+                      onChange={(e) => setIconQuery(e.target.value)}
+                      placeholder="Search icons"
+                      aria-label="Search icons"
+                      className="w-full rounded-md border border-slate-200 bg-white py-1 pl-2 pr-7 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    />
+                    {iconQuery ? (
+                      <Tooltip title="Clear search" description="Clear the icon search query.">
+                        <button
+                          type="button"
+                          onClick={() => setIconQuery('')}
+                          aria-label="Clear icon search"
+                          className="absolute right-1 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+                        >
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 12 12"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            aria-hidden
+                          >
+                            <path d="M3 3 L9 9 M9 3 L3 9" />
+                          </svg>
+                        </button>
+                      </Tooltip>
+                    ) : null}
+                  </div>
+                  {/* Category filter dropdown (replaces the chip row): pick one
+                      category to narrow the grid; "All" clears it. */}
+                  <div className="relative shrink-0" ref={iconFilterRef}>
+                    <Tooltip title="Filter by category" description="Show only one icon category.">
                       <button
                         type="button"
-                        onClick={() => setIconQuery('')}
-                        aria-label="Clear icon search"
-                        className="absolute right-1 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+                        onClick={() => setIconFilterOpen((o) => !o)}
+                        aria-haspopup="listbox"
+                        aria-expanded={iconFilterOpen}
+                        aria-label="Filter icons by category"
+                        className={`flex h-[26px] max-w-[7.5rem] items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition ${
+                          iconCategory !== 'all'
+                            ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
+                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                        }`}
                       >
                         <svg
                           width="12"
                           height="12"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden
+                          className="shrink-0"
+                        >
+                          <path d="M2 4h12M4.5 8h7M7 12h2" />
+                        </svg>
+                        <span className="truncate">{iconCategoryLabel}</span>
+                        <svg
+                          width="10"
+                          height="10"
                           viewBox="0 0 12 12"
                           fill="none"
                           stroke="currentColor"
                           strokeWidth="1.5"
                           strokeLinecap="round"
+                          strokeLinejoin="round"
                           aria-hidden
+                          className="shrink-0"
                         >
-                          <path d="M3 3 L9 9 M9 3 L3 9" />
+                          <path d="M3 4.5 6 7.5 9 4.5" />
                         </svg>
                       </button>
                     </Tooltip>
-                  ) : null}
-                </div>
-                {/* Theme chips: narrow the grid to a category. "All" clears the
-            filter. Search runs within the chosen category. */}
-                <div className="mb-2 flex flex-wrap gap-1">
-                  {[{ id: 'all', label: 'All' }, ...ICON_CATEGORIES].map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setIconCategory(cat.id)}
-                      aria-pressed={iconCategory === cat.id}
-                      className={
-                        iconCategory === cat.id
-                          ? 'rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
-                          : 'rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-                      }
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
+                    {iconFilterOpen ? (
+                      <div
+                        role="listbox"
+                        className="absolute right-0 z-30 mt-1 max-h-56 w-40 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
+                      >
+                        {iconFilters.map((cat) => (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            role="option"
+                            aria-selected={iconCategory === cat.id}
+                            onClick={() => {
+                              setIconCategory(cat.id);
+                              setIconFilterOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between gap-2 px-2.5 py-1 text-left text-[11px] ${
+                              iconCategory === cat.id
+                                ? 'bg-brand-50 font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-200'
+                                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                            }`}
+                          >
+                            <span className="truncate">{cat.label}</span>
+                            {iconCategory === cat.id ? (
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 12 12"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.75"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden
+                                className="shrink-0"
+                              >
+                                <path d="M2.5 6.5 5 9l4.5-5.5" />
+                              </svg>
+                            ) : null}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
                 {/* overflow-x-hidden: a vertical scrollbar narrows the row
                     enough that six fixed-width tiles overflow by a few px,
@@ -1163,7 +1265,7 @@ export function CommandPalette({
                     horizontal scrollbar (CSS resolves the other axis to
                     auto). justify-items-center keeps the slack symmetric so
                     nothing visible clips. */}
-                <div className="grid max-h-44 grid-cols-5 justify-items-center gap-1 overflow-y-auto overflow-x-hidden">
+                <div className="grid max-h-72 grid-cols-5 justify-items-center gap-1 overflow-y-auto overflow-x-hidden">
                   {iconResults.map((icon) => (
                     <IconButton
                       key={icon.id}
