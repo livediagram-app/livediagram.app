@@ -126,24 +126,9 @@ export function PaletteDropdown({
     };
   }, [open, align]);
 
-  // Hover-open: opening on pointer-enter and closing on leave. The close is
-  // deferred a beat so the gap between the trigger and the menu doesn't snap
-  // it shut as the cursor crosses into the list, and so moving from the
-  // trigger into the portalled menu (not a DOM descendant) doesn't close it.
-  // Click still toggles it for touch / keyboard, where there is no hover.
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cancelClose = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
-  const scheduleClose = () => {
-    cancelClose();
-    closeTimer.current = setTimeout(() => setOpen(false), 150);
-  };
-  useEffect(() => () => cancelClose(), []);
-
+  // Click-only: the dropdown opens on click and closes on click / outside
+  // pointer-down (see the effect above). No hover-open — hovering across a
+  // dropdown must never change the open category underneath the pointer.
   const selected = options.find((o) => o.id === value) ?? options[0];
   const shape =
     variant === 'flush' ? 'rounded-none border-0 px-2.5 py-1.5' : 'h-[26px] rounded-md border px-2';
@@ -180,15 +165,7 @@ export function PaletteDropdown({
     </button>
   );
   return (
-    <div
-      className="relative min-w-0"
-      ref={triggerRef}
-      onMouseEnter={() => {
-        cancelClose();
-        setOpen(true);
-      }}
-      onMouseLeave={scheduleClose}
-    >
+    <div className="relative min-w-0" ref={triggerRef}>
       {tooltipTitle ? (
         <Tooltip title={tooltipTitle} description={tooltipDescription ?? ''}>
           {trigger}
@@ -202,8 +179,6 @@ export function PaletteDropdown({
             ref={menuRef}
             role="listbox"
             data-palette-dropdown-menu
-            onMouseEnter={cancelClose}
-            onMouseLeave={scheduleClose}
             className={`fixed z-50 max-h-56 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}
             style={{ left: coords?.left, right: coords?.right, top: coords?.top ?? -9999 }}
           >

@@ -82,7 +82,12 @@ export function useElementLinks(deps: ElementLinksDeps) {
             el.type === 'link-card' &&
             el.link?.kind === 'url' &&
             el.link.url === url
-              ? { ...el, meta }
+              ? // Key the cached meta to the REQUESTED url (the one on the
+                // element's link), not the server's final post-redirect url —
+                // otherwise a redirect (trailing slash / https / www, which is
+                // most URLs) makes meta.url !== link.url and LinkCardView
+                // discards the preview, so the card looks like it lost its link.
+                { ...el, meta: { ...meta, url } }
               : el,
           ),
         );

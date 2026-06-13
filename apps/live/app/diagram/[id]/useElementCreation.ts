@@ -8,7 +8,6 @@ import {
   createTable,
   createText,
   isBoxed,
-  type Anchor,
   type ArrowElement,
   type BoxedElement,
   type ShapeKind,
@@ -171,18 +170,10 @@ export function useElementCreation(opts: {
     if (!from || !to || !isBoxed(from) || !isBoxed(to)) return;
     const fromCenter = { x: from.x + from.width / 2, y: from.y + from.height / 2 };
     const toCenter = { x: to.x + to.width / 2, y: to.y + to.height / 2 };
-    // Faces already used by other arrows on each endpoint, so the new
-    // connector lands on a free face instead of stacking onto an existing
-    // one (mirrors the distribution rebindArrowAnchorsAfterMove does on move).
-    const facesTakenOn = (elementId: string): Set<Anchor> => {
-      const taken = new Set<Anchor>();
-      for (const e of activeTab.elements) {
-        if (e.type !== 'arrow') continue;
-        if (e.from.kind === 'pinned' && e.from.elementId === elementId) taken.add(e.from.anchor);
-        if (e.to.kind === 'pinned' && e.to.elementId === elementId) taken.add(e.to.anchor);
-      }
-      return taken;
-    };
+    // Pick the geometrically-best face on each endpoint, facing the other
+    // element. We deliberately DON'T avoid faces other arrows already use:
+    // sharing a start/end point is allowed, and steering off the natural
+    // face just to dodge an occupied one produced visibly worse connectors.
     const theme = getTheme(activeTab.theme);
     const stroke = from.strokeColor ?? theme.elementStroke ?? undefined;
     const arrow: ArrowElement = {
@@ -191,12 +182,12 @@ export function useElementCreation(opts: {
       from: {
         kind: 'pinned',
         elementId: fromId,
-        anchor: bestAnchorTowards(from, toCenter, undefined, facesTakenOn(fromId)),
+        anchor: bestAnchorTowards(from, toCenter),
       },
       to: {
         kind: 'pinned',
         elementId: toId,
-        anchor: bestAnchorTowards(to, fromCenter, undefined, facesTakenOn(toId)),
+        anchor: bestAnchorTowards(to, fromCenter),
       },
       ...(stroke ? { strokeColor: stroke } : {}),
     };
