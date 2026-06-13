@@ -14,6 +14,8 @@
 
 import { useState } from 'react';
 import { type Element, type ElementLink, type Tab } from '@livediagram/diagram';
+import { apiUnfurl } from '@/lib/api-client';
+import { track } from '@/lib/telemetry';
 
 type ElementLinksDeps = {
   // The active selection resolved to ids. The link writers no-op on an
@@ -67,6 +69,26 @@ export function useElementLinks(deps: ElementLinksDeps) {
         return { ...el, link };
       }),
     );
+    // Link-card unfurl (spec/40): when a URL lands on a link-card, fetch its
+    // preview ONCE here (the setter) and cache it on the element; peers get
+    // it via the normal tab sync. Fails soft — the card shows the bare URL.
+    if (link?.kind === 'url') {
+      const url = link.url;
+      void apiUnfurl(url).then((meta) => {
+        if (!meta) return;
+        commit((els) =>
+          els.map((el) =>
+            ids.has(el.id) &&
+            el.type === 'link-card' &&
+            el.link?.kind === 'url' &&
+            el.link.url === url
+              ? { ...el, meta }
+              : el,
+          ),
+        );
+        track('Element', 'Changed', 'LinkUnfurled');
+      });
+    }
   };
 
   const followLink = (link: ElementLink) => {

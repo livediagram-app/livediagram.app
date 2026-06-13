@@ -80,6 +80,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onFollowLink,
     onOpenComments,
     onOpenNote,
+    onEditLink,
     onDropIcon,
     onLinkCell,
     onShiftSelect,
@@ -206,6 +207,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onFollowLink={onFollowLink}
             onOpenComments={onOpenComments}
             onOpenNote={onOpenNote}
+            onEditLink={onEditLink}
             onDropIcon={onDropIcon}
             onLinkCell={onLinkCell}
             imageContext={imageContext}

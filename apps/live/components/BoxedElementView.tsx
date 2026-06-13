@@ -36,6 +36,7 @@ import { isCssNativeBorderStyle } from './border-css';
 import { describeVariant } from './element-variant';
 import { BadgeStrip, RemoteSelectorsStrip } from './element-badges';
 import { AnnotationGlyph, AnnotationHoverNote } from './AnnotationMarker';
+import { LinkCardView } from './LinkCardView';
 import { IconGlyph } from './icon-glyph';
 import { ICON_DND_MIME } from '@/lib/icons';
 import { describeLink } from '@/lib/link-label';
@@ -112,6 +113,9 @@ type BoxedElementViewProps = {
   // (who shouldn't see a clickable badge) can omit it. When omitted
   // the note badge does not render.
   onOpenNote?: (id: string) => void;
+  // Open the link picker for a link-card element (spec/40), on double-click.
+  // Omitted for read-only viewers.
+  onEditLink?: (id: string) => void;
   // Live dot-vote (spec/39). `vote` is the active tab's vote session
   // (undefined when none). `selfId` is the local participant (for "my
   // dots"); `voteMax` is the highest dot count on the tab (for the
@@ -190,6 +194,7 @@ function BoxedElementViewImpl({
   onFollowLink,
   onOpenComments,
   onOpenNote,
+  onEditLink,
   vote,
   selfId,
   voteMax,
@@ -299,6 +304,12 @@ function BoxedElementViewImpl({
     // Tables edit per-cell (TableView handles the cell double-click),
     // so the element-level label editor never applies.
     if (element.type === 'table') return;
+    // A link card has no inline label — double-click opens the link picker
+    // to set / change its URL (spec/40).
+    if (element.type === 'link-card') {
+      onEditLink?.(element.id);
+      return;
+    }
     // Don't gate on isPaintMode here (the page-level beginEdit decides whether
     // edit can start; it rejects during format painter, and exits group mode).
     onBeginEdit(element.id);
@@ -529,6 +540,8 @@ function BoxedElementViewImpl({
         <AnnotationGlyph
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
         />
+      ) : element.type === 'link-card' ? (
+        <LinkCardView element={element} />
       ) : element.type === 'image' && imageContext ? (
         <ImageElementView
           element={element}

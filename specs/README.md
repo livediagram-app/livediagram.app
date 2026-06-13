@@ -48,6 +48,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 37  | [API documentation (OpenAPI)](37-api-documentation.md)             | Proposal: generated OpenAPI 3.1 doc at `/api/openapi.json`, drift-tested                        |
 | 38  | [Annotations](38-annotations.md)                                   | Palette marker (themed circle + note glyph): hover to read its note, click to edit              |
 | 39  | [Session tools (timer + voting)](39-session-tools.md)              | Per-tab facilitator countdown/stopwatch + live dot-voting, synced to every participant          |
+| 40  | [Link cards](40-link-cards.md)                                     | Bookmark element: URL via the element link, server-side unfurl for title/favicon/OG image       |
 
 ## Workflow
 

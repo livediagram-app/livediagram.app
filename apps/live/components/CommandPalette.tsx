@@ -208,6 +208,8 @@ type CommandPaletteProps = {
   onAddTable: () => void;
   // Drop a note marker (annotation) at the viewport centre. See spec/38.
   onAddAnnotation: () => void;
+  // Drop a link-card / bookmark at the viewport centre. See spec/40.
+  onAddLinkCard: () => void;
   // Spawn an image placeholder + open the picker. Optional so
   // deployments without R2 (or view-role visitors) can omit it; the
   // Image palette entry hides when the handler is missing. See
@@ -263,6 +265,7 @@ export function CommandPalette({
   onAddSticky,
   onAddTable,
   onAddAnnotation,
+  onAddLinkCard,
   onAddImage,
   onAddArrow,
   onBeginFreehand,
@@ -305,6 +308,10 @@ export function CommandPalette({
   };
   const addAnnotation = () => {
     onAddAnnotation();
+    onMobileClose?.();
+  };
+  const addLinkCard = () => {
+    onAddLinkCard();
     onMobileClose?.();
   };
   const addArrow = () => {
@@ -898,6 +905,26 @@ export function CommandPalette({
                     <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
                     <path d="M6.5 9.75h11" />
                     <path d="M6.5 12.5h7" />
+                  </svg>
+                </IconButton>
+                <IconButton
+                  label="Add link card"
+                  description="Link card. A bookmark preview with the page's title, favicon, and image."
+                  onClick={addLinkCard}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5" />
+                    <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5" />
                   </svg>
                 </IconButton>
               </div>

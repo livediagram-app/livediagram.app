@@ -79,6 +79,7 @@ export function EditorView() {
     addSticky,
     addTable,
     addAnnotation,
+    addLinkCard,
     dropPaletteItem,
     addTab,
     addText,
@@ -594,6 +595,7 @@ export function EditorView() {
         onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
         onAddTable={addTable}
         onAddAnnotation={addAnnotation}
+        onAddLinkCard={addLinkCard}
         onAddText={addText}
         onAddSticky={addSticky}
         onAddImage={addImage}
@@ -766,6 +768,7 @@ export function EditorView() {
         onFollowLink={followLink}
         onOpenComments={openComments}
         onOpenNote={openNote}
+        onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
         imageContext={imageContext}
         showTemplatePicker={
           // The identity / join card (name entry) shows for EVERYONE

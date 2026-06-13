@@ -227,6 +227,7 @@ The **Tools tab** also carries a **Frame** (`frame`): a 360×260 transparent out
 - **Arrow** ("Add arrow") — drops / draws a plain straight connector, OR, with a shape selected, arms click-to-connect (see [Adding an arrow](#adding-an-arrow)).
 - **Sticky note** — adds a sticky-note element (see [Sticky note element](#sticky-note-element)).
 - **Annotation** — drops a note marker (a fixed-size themed circle + note glyph) at the viewport centre: hover to read its note above everything, click to edit it. See [spec/38](38-annotations.md).
+- **Link card** — drops a rectangular bookmark; double-click to set its URL (the normal link picker), and the worker unfurls a preview (favicon / title / site / image). See [spec/40](40-link-cards.md).
 
 ### Placement on add
 

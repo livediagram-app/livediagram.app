@@ -152,6 +152,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onAddIcon,
     onAddTable,
     onAddAnnotation,
+    onAddLinkCard,
     onAddSticky,
     onAddText,
     onBeginFreehand,
@@ -808,6 +809,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           onAddIcon={onAddIcon}
           onAddTable={onAddTable}
           onAddAnnotation={onAddAnnotation}
+          onAddLinkCard={onAddLinkCard}
           onAddText={onAddText}
           onAddSticky={onAddSticky}
           onAddImage={onAddImage}

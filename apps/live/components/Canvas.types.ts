@@ -102,6 +102,7 @@ export type CanvasProps = {
   onAddIcon: (iconId: string) => void;
   onAddTable: () => void;
   onAddAnnotation: () => void;
+  onAddLinkCard: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Spawn an empty image placeholder + open the picker. Optional so
@@ -315,6 +316,9 @@ export type CanvasProps = {
   // Open the link picker for a specific table cell. Optional so read-
   // only / pre-identity Canvas mounts can omit it.
   onLinkCell?: (tableId: string, r: number, c: number) => void;
+  // Open the link picker for a link-card element (spec/40), on double-click.
+  // Omitted for read-only viewers.
+  onEditLink?: (id: string) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
   // welcome / new-diagram surface (where Canvas mounts before

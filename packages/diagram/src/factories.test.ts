@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createLinkCard,
   activeCommentCount,
   createAnnotation,
   createArrow,
@@ -77,6 +78,14 @@ describe('boxed-element factories', () => {
     expect(a.id).toMatch(/[0-9a-f-]{36}/);
     // It must count as boxed so it flows through selection / drag / layering.
     expect(isBoxed(a)).toBe(true);
+  });
+
+  it('createLinkCard is a 280x120 boxed bookmark with no link/meta yet (spec/40)', () => {
+    const c = createLinkCard(3, 4);
+    expect(c).toMatchObject({ type: 'link-card', x: 3, y: 4, width: 280, height: 120 });
+    expect(c.link).toBeUndefined();
+    expect(c.meta).toBeUndefined();
+    expect(isBoxed(c)).toBe(true);
   });
 
   it('factories mint distinct ids on each call', () => {

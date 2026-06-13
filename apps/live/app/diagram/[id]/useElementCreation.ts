@@ -3,6 +3,7 @@ import {
   acceptsInlineIcon,
   bestAnchorTowards,
   createAnnotation,
+  createLinkCard,
   createShape,
   createTable,
   createText,
@@ -118,6 +119,15 @@ export function useElementCreation(opts: {
     track('Element', 'Added', titleCaseType('annotation'));
   };
 
+  // A link-card / bookmark (spec/40) dropped at the viewport centre. The card
+  // starts empty ("double-click to add a link"); double-clicking opens the
+  // link picker, and setting a URL unfurls a preview.
+  const addLinkCard = () => {
+    if (editsBlocked) return;
+    addBoxed((x, y) => createLinkCard(x, y));
+    track('Element', 'Added', 'LinkCard');
+  };
+
   const addText = () => {
     if (editsBlocked) return;
     beginDraw({ type: 'text' });
@@ -227,6 +237,7 @@ export function useElementCreation(opts: {
     addIcon,
     addTable,
     addAnnotation,
+    addLinkCard,
     dropPaletteItem,
     addText,
     addSticky,
