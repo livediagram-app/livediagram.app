@@ -1,4 +1,10 @@
-import { type BackgroundPattern, type TextAlignX, type TextAlignY } from '@livediagram/diagram';
+import {
+  type BackgroundPattern,
+  type ShapeKind,
+  type TextAlignX,
+  type TextAlignY,
+} from '@livediagram/diagram';
+import { PALETTE_DND_MIME } from '@/lib/icons';
 import {
   BackgroundBlankIcon,
   BackgroundBricksIcon,
@@ -429,6 +435,9 @@ type IconButtonProps = {
   // Override the caption text (default is derived from `label`). Used where
   // the derived name is too long for the tile, e.g. "Bubble".
   caption?: string;
+  // Makes the tile draggable to place this shape kind on the canvas (drag
+  // alternative to click-to-add). Wires the palette DnD payload.
+  dragKind?: ShapeKind;
 };
 
 export function IconButton({
@@ -444,7 +453,17 @@ export function IconButton({
   hideTooltip,
   hideCaption,
   caption: captionOverride,
+  dragKind,
 }: IconButtonProps) {
+  // A dragKind tile is draggable and carries the palette DnD payload; an
+  // explicit draggable/onDragStart (the icon grid) is used otherwise.
+  const effectiveDraggable = dragKind ? true : draggable;
+  const effectiveDragStart = dragKind
+    ? (e: React.DragEvent) => {
+        e.dataTransfer.setData(PALETTE_DND_MIME, dragKind);
+        e.dataTransfer.effectAllowed = 'copy';
+      }
+    : onDragStart;
   const modHeld = useModKeyHeld();
   const showBadge = !disabled && !!shortcut && modHeld;
   const tone = active
@@ -466,8 +485,8 @@ export function IconButton({
       aria-label={label}
       aria-pressed={active}
       disabled={disabled}
-      draggable={draggable}
-      onDragStart={onDragStart}
+      draggable={effectiveDraggable}
+      onDragStart={effectiveDragStart}
       className={
         hideCaption
           ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`

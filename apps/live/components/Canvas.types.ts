@@ -398,6 +398,9 @@ export type CanvasProps = {
   // arrow from that side (drag on desktop, tap-target on mobile — the
   // handler branches on the pointer type), or enters freehand draw.
   onSpawnConnect: (direction: QuickConnectDirection, kind: QuickConnectKind) => void;
+  // Drag-from-palette drop: a palette tile dropped on the canvas places that
+  // element kind centred on the drop point (iconId set for icon tiles).
+  onDropPalette?: (kind: ShapeKind, canvasX: number, canvasY: number, iconId?: string) => void;
   onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
   onStartPencil: () => void;
   onToggleLockSelected: () => void;

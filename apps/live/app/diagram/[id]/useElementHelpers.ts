@@ -56,13 +56,36 @@ export function useElementHelpers(opts: {
   } = opts;
 
   const addBoxed = <T extends BoxedElement>(make: (x: number, y: number) => T) => {
+    placeBoxed(make, getViewportCenter());
+  };
+
+  // Drag-from-palette drop: same as addBoxed but centred on an explicit
+  // canvas point (the drop position) instead of the viewport centre. Size
+  // inheritance is skipped — a dropped element uses its own default size.
+  const addBoxedAt = <T extends BoxedElement>(
+    canvasX: number,
+    canvasY: number,
+    make: (x: number, y: number) => T,
+  ) => {
+    placeBoxed(make, { x: canvasX, y: canvasY }, /* inheritSize */ false);
+  };
+
+  const placeBoxed = <T extends BoxedElement>(
+    make: (x: number, y: number) => T,
+    centre: { x: number; y: number },
+    inheritSize = true,
+  ) => {
     if (editsBlocked) return;
     const base = make(0, 0);
     // Inherit the selected element's size (shared with the combined add
     // gesture's tap branch via inheritedSizeFor); circles + diamonds stay
-    // square so an inherited non-square size doesn't squash them.
-    const sel = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
-    const { width, height } = inheritedSizeFor(base, sel);
+    // square so an inherited non-square size doesn't squash them. A
+    // drag-drop (inheritSize=false) keeps the element's own default size.
+    const sel =
+      inheritSize && selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
+    const { width, height } = inheritSize
+      ? inheritedSizeFor(base, sel)
+      : { width: base.width, height: base.height };
     // Derive colours from the active tab's backdrop + theme. The
     // two-pass projection (background-derived then theme-override)
     // lives in lib/themes.ts so the rule is testable in isolation
@@ -73,7 +96,6 @@ export function useElementHelpers(opts: {
       patternColor: activeTab.patternColor,
       theme: activeTab.theme,
     });
-    const centre = getViewportCenter();
     const el: T = {
       ...base,
       ...colours,
@@ -177,6 +199,7 @@ export function useElementHelpers(opts: {
 
   return {
     addBoxed,
+    addBoxedAt,
     memberIdsOf,
     currentSelectionIds,
     selectionPrimary,

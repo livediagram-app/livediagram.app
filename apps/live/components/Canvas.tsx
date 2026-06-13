@@ -12,7 +12,9 @@ import {
   snapResizeBounds,
   snapToAlignment,
   supportsColours,
+  type ShapeKind,
 } from '@livediagram/diagram';
+import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 import { deriveCanvasSelection, deriveSelectedElementFields } from '@/lib/canvas-selection';
@@ -713,6 +715,28 @@ export function Canvas(props: CanvasProps) {
       tabIndex={-1}
       onPointerMove={handlePointerMoveCanvas}
       onPointerLeave={handlePointerLeaveCanvas}
+      onDragOver={(e) => {
+        // Allow dropping palette tiles (shapes / devices / icons).
+        if (
+          e.dataTransfer.types.includes(PALETTE_DND_MIME) ||
+          e.dataTransfer.types.includes(ICON_DND_MIME)
+        ) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+        }
+      }}
+      onDrop={(e) => {
+        const shapeKind = e.dataTransfer.getData(PALETTE_DND_MIME);
+        const iconId = e.dataTransfer.getData(ICON_DND_MIME);
+        if (!shapeKind && !iconId) return;
+        e.preventDefault();
+        const rect = e.currentTarget.getBoundingClientRect();
+        // Canvas transform is scale(z) translate(o): invert to canvas coords.
+        const cx = (e.clientX - rect.left) / viewportZoom - viewportOffset.x;
+        const cy = (e.clientY - rect.top) / viewportZoom - viewportOffset.y;
+        if (iconId) props.onDropPalette?.('icon', cx, cy, iconId);
+        else props.onDropPalette?.(shapeKind as ShapeKind, cx, cy);
+      }}
       onPointerDownCapture={(e) => {
         // Pointer-downs that land on a floating panel (palette, context
         // panel, ...) are UI interactions, not canvas gestures. The

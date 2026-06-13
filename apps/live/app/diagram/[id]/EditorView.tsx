@@ -79,6 +79,7 @@ export function EditorView() {
     addSticky,
     addTable,
     addAnnotation,
+    dropPaletteItem,
     addTab,
     addText,
     aiCapable,
@@ -802,6 +803,7 @@ export function EditorView() {
         onSetBackgroundOpacity={setBackgroundOpacity}
         onSetPatternColor={setPatternColor}
         onToggleAspectLock={toggleAspectLockSelected}
+        onDropPalette={dropPaletteItem}
         onSpawnConnect={spawnConnectSelected}
         onStartArrow={handleStartArrow}
         onStartPencil={beginFreehand}

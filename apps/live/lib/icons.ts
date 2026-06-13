@@ -15,6 +15,10 @@
 // type string can't drift. Value carried = the icon id.
 export const ICON_DND_MIME = 'application/x-livediagram-icon';
 
+// Drag-from-palette MIME: a palette tile dragged onto the canvas drops a new
+// element at that point. Value carried = the ShapeKind (shapes + devices).
+export const PALETTE_DND_MIME = 'application/x-livediagram-palette';
+
 export type IconPrim =
   | { t: 'path'; d: string }
   | { t: 'circle'; cx: number; cy: number; r: number }

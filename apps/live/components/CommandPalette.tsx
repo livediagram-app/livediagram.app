@@ -436,6 +436,7 @@ export function CommandPalette({
                   label="Add square"
                   description="Drop a new square shape on the canvas."
                   onClick={() => addShape('square')}
+                  dragKind="square"
                   active={pendingShapeKind === 'square'}
                   shortcut="R"
                 >
@@ -456,6 +457,7 @@ export function CommandPalette({
                   label="Add circle"
                   description="Drop a new circle shape on the canvas."
                   onClick={() => addShape('circle')}
+                  dragKind="circle"
                   active={pendingShapeKind === 'circle'}
                   shortcut="O"
                 >
@@ -467,6 +469,7 @@ export function CommandPalette({
                   label="Add diamond"
                   description="Diamond. Decision node."
                   onClick={() => addShape('diamond')}
+                  dragKind="diamond"
                   active={pendingShapeKind === 'diamond'}
                   shortcut="D"
                 >
@@ -484,6 +487,7 @@ export function CommandPalette({
                   label="Add cylinder"
                   description="Cylinder. Flowchart database / storage."
                   onClick={() => addShape('cylinder')}
+                  dragKind="cylinder"
                   active={pendingShapeKind === 'cylinder'}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -509,6 +513,7 @@ export function CommandPalette({
                   label="Add parallelogram"
                   description="Parallelogram. Flowchart input / output."
                   onClick={() => addShape('parallelogram')}
+                  dragKind="parallelogram"
                   active={pendingShapeKind === 'parallelogram'}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -525,6 +530,7 @@ export function CommandPalette({
                   label="Add hexagon"
                   description="Hexagon. Preparation / milestone."
                   onClick={() => addShape('hexagon')}
+                  dragKind="hexagon"
                   active={pendingShapeKind === 'hexagon'}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -541,6 +547,7 @@ export function CommandPalette({
                   label="Add document"
                   description="Document shape. Flowchart output."
                   onClick={() => addShape('document')}
+                  dragKind="document"
                   active={pendingShapeKind === 'document'}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -557,6 +564,7 @@ export function CommandPalette({
                   label="Add stadium"
                   description="Stadium shape. Flowchart Start / End."
                   onClick={() => addShape('stadium')}
+                  dragKind="stadium"
                   active={pendingShapeKind === 'stadium'}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -576,6 +584,7 @@ export function CommandPalette({
                   label="Add cloud"
                   description="Cloud. Networking / architecture."
                   onClick={() => addShape('cloud')}
+                  dragKind="cloud"
                   active={pendingShapeKind === 'cloud'}
                 >
                   <svg
@@ -595,6 +604,7 @@ export function CommandPalette({
                   label="Add triangle"
                   description="Triangle. A basic shape."
                   onClick={() => addShape('triangle')}
+                  dragKind="triangle"
                   active={pendingShapeKind === 'triangle'}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -611,6 +621,7 @@ export function CommandPalette({
                   label="Add trapezoid"
                   description="Trapezoid. Flowchart manual operation."
                   onClick={() => addShape('trapezoid')}
+                  dragKind="trapezoid"
                   active={pendingShapeKind === 'trapezoid'}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -627,6 +638,7 @@ export function CommandPalette({
                   label="Add star"
                   description="Star. Highlight or rating."
                   onClick={() => addShape('star')}
+                  dragKind="star"
                   active={pendingShapeKind === 'star'}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
@@ -644,6 +656,7 @@ export function CommandPalette({
                   caption="Bubble"
                   description="Speech bubble. A callout with a tail."
                   onClick={() => addShape('speech-bubble')}
+                  dragKind="speech-bubble"
                   active={pendingShapeKind === 'speech-bubble'}
                 >
                   <svg
@@ -835,6 +848,7 @@ export function CommandPalette({
                   label="Add user"
                   description="User / actor. Use-case and architecture diagrams."
                   onClick={() => addShape('actor')}
+                  dragKind="actor"
                   active={pendingShapeKind === 'actor'}
                 >
                   <svg
@@ -859,6 +873,7 @@ export function CommandPalette({
                   label="Add frame"
                   description="Frame. A titled container you draw around a cluster of elements."
                   onClick={() => addShape('frame')}
+                  dragKind="frame"
                   active={pendingShapeKind === 'frame'}
                 >
                   <svg
@@ -934,6 +949,7 @@ export function CommandPalette({
                     caption="Browser"
                     description="Browser window. Wireframe a web page or a web-app screen."
                     onClick={() => addShape('browser')}
+                    dragKind="browser"
                     active={pendingShapeKind === 'browser'}
                   >
                     <svg
@@ -955,6 +971,7 @@ export function CommandPalette({
                     caption="Monitor"
                     description="Desktop monitor with stand. Wireframe a desktop app."
                     onClick={() => addShape('monitor')}
+                    dragKind="monitor"
                     active={pendingShapeKind === 'monitor'}
                   >
                     <svg
@@ -976,6 +993,7 @@ export function CommandPalette({
                     label="Add laptop"
                     description="Laptop. Screen plus keyboard base."
                     onClick={() => addShape('laptop')}
+                    dragKind="laptop"
                     active={pendingShapeKind === 'laptop'}
                   >
                     <svg
@@ -996,6 +1014,7 @@ export function CommandPalette({
                     label="Add phone"
                     description="Phone. Wireframe a mobile screen."
                     onClick={() => addShape('phone')}
+                    dragKind="phone"
                     active={pendingShapeKind === 'phone'}
                   >
                     <svg
@@ -1015,6 +1034,7 @@ export function CommandPalette({
                     label="Add tablet"
                     description="Tablet. Larger than a phone, smaller than a laptop screen."
                     onClick={() => addShape('tablet')}
+                    dragKind="tablet"
                     active={pendingShapeKind === 'tablet'}
                   >
                     <svg
@@ -1035,6 +1055,7 @@ export function CommandPalette({
                     caption="Watch"
                     description="Smartwatch. A wrist-device frame for watch-app wireframes."
                     onClick={() => addShape('smartwatch')}
+                    dragKind="smartwatch"
                     active={pendingShapeKind === 'smartwatch'}
                   >
                     <svg

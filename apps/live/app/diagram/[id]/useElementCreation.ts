@@ -36,6 +36,11 @@ export function useElementCreation(opts: {
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
   addBoxed: <T extends BoxedElement>(make: (x: number, y: number) => T) => void;
+  addBoxedAt: <T extends BoxedElement>(
+    canvasX: number,
+    canvasY: number,
+    make: (x: number, y: number) => T,
+  ) => void;
   beginDraw: (intent: PendingDraw) => void;
 }) {
   const {
@@ -47,6 +52,7 @@ export function useElementCreation(opts: {
     setSelectedId,
     setEditingId,
     addBoxed,
+    addBoxedAt,
     beginDraw,
   } = opts;
 
@@ -193,6 +199,16 @@ export function useElementCreation(opts: {
     track('Element', 'Added', 'Arrow');
   };
 
+  // Drag-from-palette drop (spec/09): place the dragged kind centred on the
+  // drop point. Shapes / devices use createShape; an icon carries iconId.
+  const dropPaletteItem = (kind: ShapeKind, canvasX: number, canvasY: number, iconId?: string) => {
+    if (editsBlocked) return;
+    addBoxedAt(canvasX, canvasY, (x, y) =>
+      iconId ? { ...createShape('icon', x, y), iconId } : createShape(kind, x, y),
+    );
+    track('Element', 'Added', titleCaseType(iconId ? 'icon' : kind));
+  };
+
   const handleCanvasDoubleClick = (x: number, y: number) => {
     const TEXT_W = 160;
     const TEXT_H = 48;
@@ -211,6 +227,7 @@ export function useElementCreation(opts: {
     addIcon,
     addTable,
     addAnnotation,
+    dropPaletteItem,
     addText,
     addSticky,
     addArrow,

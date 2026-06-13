@@ -100,6 +100,7 @@ import { useTeamLibrariesSweep } from '@/hooks/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/useTeams';
 import { useTabFolders } from '@/hooks/useTabFolders';
 import { useTabCanvas } from '@/hooks/useTabCanvas';
+import { useTabSession } from '@/hooks/useTabSession';
 import { useEditorKeyboardShortcuts } from '@/hooks/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/useEditorViewport';
 import { useCanvasPinchZoom } from '@/hooks/useCanvasPinchZoom';
@@ -1071,6 +1072,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Selection + placement + format/group helpers. See useElementHelpers.
   const {
     addBoxed,
+    addBoxedAt,
     memberIdsOf,
     currentSelectionIds,
     selectionPrimary,
@@ -1280,6 +1282,30 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scheduleTabMetaLog,
   });
 
+  // Live session tools (spec/39): facilitator timer + dot-voting handlers.
+  // State lives on the tab (`activeTab.timer` / `activeTab.vote`), so the
+  // UI reads it straight off the tab; these are just the mutators.
+  const {
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+    resetTimer,
+    clearTimer,
+    startVote,
+    endVote,
+    revealVote,
+    clearVote,
+    castVote,
+    retractVote,
+  } = useTabSession({
+    editsBlocked,
+    activeId,
+    activeTab,
+    commitTabs,
+    emitTabMeta,
+    selfId: selfParticipant.id,
+  });
+
   // Image domain (picker state, recent-images list, placement + fill
   // handlers). Lives in its own hook so the page no longer carries
   // that state or its six handlers — see useEditorImages + spec/19.
@@ -1340,6 +1366,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addIcon,
     addTable,
     addAnnotation,
+    dropPaletteItem,
     addText,
     addSticky,
     addArrow,
@@ -1356,6 +1383,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelectedId,
     setEditingId,
     addBoxed,
+    addBoxedAt,
     beginDraw,
   });
 
@@ -1725,6 +1753,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addSticky,
     addTable,
     addAnnotation,
+    dropPaletteItem,
     addTab,
     addText,
     aiCapable,
