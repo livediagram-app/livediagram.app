@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { IconButton, ToolButton } from './palette-controls';
+import { useState } from 'react';
+import { IconButton } from './palette-controls';
 export {
   SelectedElementSection,
   ALL_SELECTED_ACCORDIONS_CLOSED,
@@ -25,6 +25,7 @@ import type {
 import { type ThemeId } from '@/lib/themes';
 import { MovablePanel } from './MovablePanel';
 import { PaletteTabBar } from './PaletteTabBar';
+import { PaletteDropdown } from './PaletteDropdown';
 import { LaserIcon, PanIcon, SelectIcon } from './palette-icons';
 import { Tooltip } from './Tooltip';
 import { ICON_CATALOG, ICON_CATEGORIES, ICON_DND_MIME, iconsInCategory } from '@/lib/icons';
@@ -336,20 +337,7 @@ export function CommandPalette({
   // search runs WITHIN the selected category. Picked from a dropdown beside
   // the search box (replacing the old chip row).
   const [iconCategory, setIconCategory] = useState<string>('all');
-  const [iconFilterOpen, setIconFilterOpen] = useState(false);
-  const iconFilterRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!iconFilterOpen) return;
-    const onDown = (e: PointerEvent) => {
-      if (iconFilterRef.current && !iconFilterRef.current.contains(e.target as Node)) {
-        setIconFilterOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
-  }, [iconFilterOpen]);
   const iconFilters = [{ id: 'all', label: 'All' }, ...ICON_CATEGORIES];
-  const iconCategoryLabel = iconFilters.find((c) => c.id === iconCategory)?.label ?? 'All';
   const iconResults = (
     iconCategory === 'all' ? ICON_CATALOG : iconsInCategory(iconCategory)
   ).filter((i) => {
@@ -372,62 +360,34 @@ export function CommandPalette({
       onReset={onReset}
       onMoveTo={onMoveTo}
       collapsible
+      // The category / canvas-tool dropdowns portal their menus to
+      // <body>, so a mobile tap on a menu option lands outside the panel
+      // DOM; without this it would trip the outside-tap auto-collapse and
+      // shut the palette mid-selection.
+      outsideExceptSelector="[data-palette-dropdown-menu]"
     >
-      {/* Canvas tool toggle (Select / Pan / Laser). Lives above the
-          accordions as a permanent row because these are mode
-          switches, not element-add buttons. Select is the default;
-          Space pans regardless of the active tool, mirroring Figma. */}
-      <div className="px-2 pb-1.5 pt-1">
-        {/* Joined segmented control: Select / Hand / Laser are mutually
-            exclusive modes, so they sit flush in one bordered group with
-            dividers (not separate pills) to signal "pick one". */}
-        <div className="flex items-stretch divide-x divide-slate-200 overflow-hidden rounded-lg border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
-          <Tooltip block title="Select" description="Drag to marquee-select multiple elements.">
-            <ToolButton
-              segmented
-              active={canvasTool === 'select'}
-              label="Select"
-              onClick={() => onSetCanvasTool('select')}
-              shortcut="S"
-            >
-              <SelectIcon />
-            </ToolButton>
-          </Tooltip>
-          <Tooltip block title="Hand" description="Drag to scroll. Space pans in Select mode too.">
-            <ToolButton
-              segmented
-              active={canvasTool === 'pan'}
-              label="Hand"
-              onClick={() => onSetCanvasTool('pan')}
-              shortcut="P"
-            >
-              <PanIcon />
-            </ToolButton>
-          </Tooltip>
-          <Tooltip
-            block
-            title="Laser"
-            description="Presenter pointer. Move the mouse to draw a glowing trail visible to other participants in your colour."
-          >
-            <ToolButton
-              segmented
-              active={canvasTool === 'laser'}
-              label="Laser"
-              onClick={() => onSetCanvasTool('laser')}
-              shortcut="L"
-            >
-              <LaserIcon />
-            </ToolButton>
-          </Tooltip>
-        </div>
-      </div>
-      {/* Category tab bar. Shapes is the first tab and open by default
-          (the most common entry point on every fresh canvas); Tools,
-          Devices, and Icons are situational. Ordered by frequency /
-          familiarity: primitive geometry first, then flowchart shapes. */}
+      {/* Header band: canvas-tool picker (Select / Hand / Laser) on the
+          left, category picker on the right. The tool dropdown is a mode
+          switch, not an element-add control, so it stays a permanent
+          fixture; Select is the default and Space pans regardless of the
+          active tool, mirroring Figma. Shapes is the default category
+          (the most common entry point on every fresh canvas). */}
       <PaletteTabBar
         defaultOpenId="shapes"
         storageKey="livediagram:palette-category"
+        leading={
+          <PaletteDropdown
+            ariaLabel="Canvas tool"
+            value={canvasTool}
+            variant="flush"
+            onChange={(id) => onSetCanvasTool(id as CanvasTool)}
+            options={[
+              { id: 'select', label: 'Select', shortcut: 'S', icon: <SelectIcon /> },
+              { id: 'pan', label: 'Hand', shortcut: 'P', icon: <PanIcon /> },
+              { id: 'laser', label: 'Laser', shortcut: 'L', icon: <LaserIcon /> },
+            ]}
+          />
+        }
         tabs={[
           {
             id: 'shapes',
@@ -1170,20 +1130,17 @@ export function CommandPalette({
                   </div>
                   {/* Category filter dropdown (replaces the chip row): pick one
                       category to narrow the grid; "All" clears it. */}
-                  <div className="relative shrink-0" ref={iconFilterRef}>
-                    <Tooltip title="Filter by category" description="Show only one icon category.">
-                      <button
-                        type="button"
-                        onClick={() => setIconFilterOpen((o) => !o)}
-                        aria-haspopup="listbox"
-                        aria-expanded={iconFilterOpen}
-                        aria-label="Filter icons by category"
-                        className={`flex h-[26px] max-w-[7.5rem] items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition ${
-                          iconCategory !== 'all'
-                            ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
-                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-                        }`}
-                      >
+                  <div className="shrink-0">
+                    <PaletteDropdown
+                      ariaLabel="Filter icons by category"
+                      tooltipTitle="Filter by category"
+                      tooltipDescription="Show only one icon category."
+                      value={iconCategory}
+                      onChange={setIconCategory}
+                      align="right"
+                      accent={iconCategory !== 'all'}
+                      options={iconFilters}
+                      triggerLeading={
                         <svg
                           width="12"
                           height="12"
@@ -1198,65 +1155,8 @@ export function CommandPalette({
                         >
                           <path d="M2 4h12M4.5 8h7M7 12h2" />
                         </svg>
-                        <span className="truncate">{iconCategoryLabel}</span>
-                        <svg
-                          width="10"
-                          height="10"
-                          viewBox="0 0 12 12"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden
-                          className="shrink-0"
-                        >
-                          <path d="M3 4.5 6 7.5 9 4.5" />
-                        </svg>
-                      </button>
-                    </Tooltip>
-                    {iconFilterOpen ? (
-                      <div
-                        role="listbox"
-                        className="absolute right-0 z-30 mt-1 max-h-56 w-40 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
-                      >
-                        {iconFilters.map((cat) => (
-                          <button
-                            key={cat.id}
-                            type="button"
-                            role="option"
-                            aria-selected={iconCategory === cat.id}
-                            onClick={() => {
-                              setIconCategory(cat.id);
-                              setIconFilterOpen(false);
-                            }}
-                            className={`flex w-full items-center justify-between gap-2 px-2.5 py-1 text-left text-[11px] ${
-                              iconCategory === cat.id
-                                ? 'bg-brand-50 font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-200'
-                                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                            }`}
-                          >
-                            <span className="truncate">{cat.label}</span>
-                            {iconCategory === cat.id ? (
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 12 12"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.75"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden
-                                className="shrink-0"
-                              >
-                                <path d="M2.5 6.5 5 9l4.5-5.5" />
-                              </svg>
-                            ) : null}
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
+                      }
+                    />
                   </div>
                 </div>
                 {/* overflow-x-hidden: a vertical scrollbar narrows the row

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import { PaletteDropdown } from './PaletteDropdown';
 
 export type PaletteTab = {
   id: string;
@@ -9,55 +10,46 @@ export type PaletteTab = {
   content: React.ReactNode;
 };
 
-// Replaces the old stack of Tools / Devices / Icons accordions with a
-// single icon tab bar: clicking a tab expands its panel below, clicking
-// the active tab again collapses it, and clicking another switches. One
-// activeId makes the tabs mutually exclusive by construction, so the
-// palette stays compact however many categories we add — a new category
-// is just another entry in the `tabs` array the caller passes.
+// Renders the palette's category switcher as a single right-hand dropdown
+// (Shapes / Tools / Devices / Icons) sitting in a header band, with an
+// optional `leading` slot on the left for the canvas-tool picker. Picking a
+// category swaps the panel below; one activeId keeps the categories
+// mutually exclusive, so adding a category is just another entry in the
+// `tabs` array the caller passes.
 export function PaletteTabBar({
   tabs,
-  defaultOpenId = null,
+  leading,
+  defaultOpenId,
   storageKey,
 }: {
   tabs: PaletteTab[];
-  // Tab to expand on first render. `null` (the default) opens the
-  // palette with every panel collapsed; pass an id to have that
-  // category open by default (Shapes, the most common entry point).
-  defaultOpenId?: string | null;
-  // When set, the chosen category is remembered in localStorage under
-  // this key so it survives the palette being closed + reopened (the
-  // mobile / minimal dock unmounts the popover) and page reloads. An
-  // empty stored value means "collapsed"; a stale id (category removed)
-  // falls back to `defaultOpenId`.
+  // Control rendered at the left of the header band (the canvas-tool
+  // dropdown). The category dropdown always sits on the right.
+  leading?: React.ReactNode;
+  // Category shown on first render. Defaults to the first tab so the panel
+  // is never blank.
+  defaultOpenId?: string;
+  // When set, the chosen category is remembered in localStorage under this
+  // key so it survives the palette being closed + reopened (the mobile /
+  // minimal dock unmounts the popover) and page reloads. A stale id
+  // (category removed) falls back to the default.
   storageKey?: string;
 }) {
-  // Committed tab — changed ONLY by click (no hover preview). Clicking the
-  // open tab collapses it; clicking another switches. One active tab at a
-  // time keeps the categories mutually exclusive. Seeded from the
-  // remembered category when `storageKey` is set so reopening the palette
-  // lands back where the user left off.
-  const [activeId, setActiveId] = useState<string | null>(() => {
-    if (!storageKey) return defaultOpenId;
+  const fallbackId = defaultOpenId ?? tabs[0]?.id ?? '';
+  // Selected category — always set (the dropdown has no "collapsed" state).
+  // Seeded from the remembered category when `storageKey` is set so
+  // reopening the palette lands back where the user left off.
+  const [activeId, setActiveId] = useState<string>(() => {
+    if (!storageKey) return fallbackId;
     const saved = readLocalStorageSafe(storageKey);
-    if (saved === null) return defaultOpenId; // never chosen yet
-    if (saved === '') return null; // explicitly collapsed
-    return tabs.some((t) => t.id === saved) ? saved : defaultOpenId; // guard stale id
+    if (saved && tabs.some((t) => t.id === saved)) return saved; // guard stale id
+    return fallbackId;
   });
-  // Persist the choice (empty string = collapsed) so the next mount restores it.
+  // Persist the choice so the next mount restores it.
   useEffect(() => {
-    if (storageKey) writeLocalStorageSafe(storageKey, activeId ?? '');
+    if (storageKey) writeLocalStorageSafe(storageKey, activeId);
   }, [storageKey, activeId]);
-  // Kept so the panel's content stays mounted through the collapse
-  // animation: `activeId` drops to null the instant the user closes a tab
-  // (driving the height -> 0 transition), while `displayedId` holds the
-  // last shown tab so its content doesn't blank out mid-animation.
-  const [displayedId, setDisplayedId] = useState<string | null>(defaultOpenId);
-  useEffect(() => {
-    if (activeId) setDisplayedId(activeId);
-  }, [activeId]);
-  const select = (id: string) => setActiveId((cur) => (cur === id ? null : id));
-  const displayed = tabs.find((t) => t.id === (activeId ?? displayedId)) ?? null;
+  const displayed = tabs.find((t) => t.id === activeId) ?? null;
 
   // Soft category-change animation. The panel's height is driven off the
   // measured content height and eased, so switching from a short
@@ -84,40 +76,23 @@ export function PaletteTabBar({
 
   return (
     <div>
-      {/* Categories stretch edge-to-edge: no side padding and no rounding,
-          but a top + bottom border so the row reads as a distinct band. */}
-      <div
-        className="flex items-stretch divide-x divide-slate-200 border-y border-slate-200 dark:divide-slate-700 dark:border-slate-700"
-        role="tablist"
-        aria-label="Palette categories"
-      >
-        {tabs.map((tab) => {
-          // Highlight the active (clicked) tab so the lit icon matches
-          // the panel below.
-          const isShown = tab.id === activeId;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={tab.id === activeId}
-              aria-label={tab.label}
-              onClick={() => select(tab.id)}
-              className={
-                isShown
-                  ? 'flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 bg-brand-500 text-white transition'
-                  : 'flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-white'
-              }
-            >
-              {tab.icon}
-              <span className="text-[10px] font-medium leading-none">{tab.label}</span>
-            </button>
-          );
-        })}
+      {/* Header band: the canvas-tool picker (left) and the category
+          picker (right) on one row, flush to the top and sides, set off
+          from the panel below by a bottom border. */}
+      <div className="flex items-stretch justify-between border-b border-slate-200 dark:border-slate-700">
+        {leading ?? <span />}
+        <PaletteDropdown
+          ariaLabel="Palette category"
+          value={activeId}
+          align="right"
+          variant="flush"
+          onChange={setActiveId}
+          options={tabs.map((tab) => ({ id: tab.id, label: tab.label, icon: tab.icon }))}
+        />
       </div>
       <div
         className={`overflow-hidden${animate ? ' transition-[height] duration-200 ease-out' : ''}`}
-        style={{ height: activeId ? (height ?? undefined) : 0 }}
+        style={{ height: height ?? undefined }}
       >
         <div ref={contentRef} className="px-3 pb-3 pt-3">
           <div key={displayed?.id ?? 'empty'} className="animate-fade-in">
