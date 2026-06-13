@@ -42,12 +42,13 @@ live counts but can't control or vote. No extra gating code.
 - A floating **`TimerWidget`** pill shows the live clock, ticking ~4×/sec
   while running; it flashes when a countdown hits 0:00. Edit-role sees inline
   pause/resume + reset; view-role sees a read-only clock. It renders inside the
-  shared **`TopCenterStack`** (`TopCenter.tsx`), which lays out every top-centre
-  pill — owner/role badge, mode banners, multi-selection toolbar, timer, vote —
-  as one centred, non-overlapping column. The timer shares a wrapping row with
-  the active mode banner / selection toolbar, so when one is visible the timer
-  sits **alongside** it on desktop and **wraps underneath** on mobile rather
-  than stacking on top of it.
+  shared **`TopCenterStack`** (`TopCenter.tsx`), which lays out every floating
+  top pill — owner/role badge, mode banners, multi-selection toolbar, timer,
+  vote — as one non-overlapping column. The stack centres at the top from `sm:`
+  up but anchors to the top **left** on mobile, so it clears the mobile dock
+  buttons (Explorer / Palette / Editor) at the top right. The timer shares a row
+  with the active mode banner / selection toolbar: it sits to the **right** of
+  it on desktop and **underneath** it on mobile rather than stacking on top.
 
 ## Voting (dot-voting)
 

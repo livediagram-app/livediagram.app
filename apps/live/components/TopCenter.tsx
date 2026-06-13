@@ -29,12 +29,15 @@ const TONE_CLASS: Record<BannerTone, string> = {
 };
 
 // The positioned container: pinned to the top centre, above the canvas,
-// laying its children out as a centred column of rows that never overlap.
-// `pointer-events-none` so the gaps between pills stay click-through; each
-// pill re-enables pointer events for itself.
+// laying its children out as a column of rows that never overlap. On
+// mobile it anchors to the top LEFT (`left-3`, left-aligned) so it clears
+// the mobile dock buttons that sit at the top right; from `sm:` up it
+// centres (`sm:left-1/2 -translate-x-1/2`). `pointer-events-none` so the
+// gaps between pills stay click-through; each pill re-enables pointer
+// events for itself.
 export function TopCenterStack({ children }: { children: ReactNode }) {
   return (
-    <div className="pointer-events-none absolute left-1/2 top-3 z-30 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-col items-center gap-2">
+    <div className="pointer-events-none absolute left-3 top-3 z-30 flex max-w-[calc(100%-1.5rem)] flex-col items-start gap-2 sm:left-1/2 sm:-translate-x-1/2 sm:items-center">
       {children}
     </div>
   );
