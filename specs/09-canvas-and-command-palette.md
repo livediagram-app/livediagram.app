@@ -837,6 +837,28 @@ type TextSize = 'scale' | 'sm' | 'md' | 'lg';
 type BoxedElement = ... & { textSize?: TextSize };  // defaults to 'scale'
 ```
 
+## Rich text labels (per-range formatting)
+
+The Text accordion + Colours swatch above format the **whole** label. On top of that, a label can carry **per-range** formatting — bold / italic / underline / strikethrough / size / colour applied to a **selection** of the text rather than the whole element. Scope: **shape / text / sticky** labels (the in-place editor). Arrow labels + table cells keep whole-element formatting only.
+
+**Editor + toolbar.** Editing a label (double-click, Space, type-to-edit) opens a `contentEditable` editor (`RichTextEditor`, replacing the old `<textarea>`s) with a **floating toolbar** above the element: Bold / Italic / Underline / Strikethrough toggles, a size segment (S / M / L), and a colour swatch. The toolbar applies to the current selection, or — on a collapsed caret — the surrounding word (no-op in whitespace). It counter-scales `1/zoom` so it stays a constant on-screen size, and flips below the element near the top edge. Toolbar buttons `preventDefault` on mousedown so clicking one never drops the editor's text selection; the native colour input is the one control that takes focus, and the editor re-focuses + restores the selection after the colour applies.
+
+**Runs-as-delta model.** Per-range formatting is stored as `richText?: TextRun[]` on the element — each run is a slice of text plus only the attributes that **differ** from the whole-element `text*` fields:
+
+```ts
+type TextRun = {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  size?: 'sm' | 'md' | 'lg'; // per-run size; no 'scale'
+  color?: string; // hex
+};
+```
+
+An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`, `run.color ?? el.textColor`, `run.size ?? el.textSize`), so the existing whole-element controls keep working as the base layer untouched, and an explicit per-range override wins over a later whole-element toggle (same precedence as table `cellStyles`). `element.label` is always kept equal to the runs' concatenated plain text, so search, auto-rename, markdown export, and every legacy reader work unchanged. When `richText` is absent (or a single override-free run) the label renders via the legacy whole-element path; applying any per-run override opts the label out of `scale` SVG auto-fit into fixed-px rendering (mixing per-run sizes with whole-element auto-fit is contradictory). The pure runs algebra (`runsPlainText` / `normalizeRuns` / `applyFormatToRange` / `toggleFormatInRange`) lives in `packages/diagram/src/rich-text.ts`; the DOM ↔ offset mapping in `apps/live/components/rich-text-dom.ts`. The field is additive + optional, so it syncs to peers + persists with no backend change, and visual exports (PNG / SVG) render the runs span-by-span on one baseline.
+
 ## Quick text drop
 
 **Double-clicking the empty canvas** (anywhere not on an element, palette, or popover) drops a new **text element** at the click point and **immediately enters edit mode** on it. The text is centred on the cursor position. Press Enter to commit or Escape to cancel — Escape will leave an empty text element in place, which the user can then delete.

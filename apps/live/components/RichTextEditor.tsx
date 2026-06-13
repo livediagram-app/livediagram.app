@@ -423,6 +423,12 @@ export function RichTextEditor({
           size despite the canvas world transform; flip below near the top. */}
       <div
         ref={toolbarWrapRef}
+        // Stop pointer events reaching the canvas — otherwise a click on a
+        // toolbar button reads as a click-off the editing element and the
+        // canvas commits + exits edit mode (the same guard the editable div
+        // carries). Button mousedown additionally preventDefaults to keep
+        // the text selection; this just keeps the canvas out of it.
+        onPointerDown={(e) => e.stopPropagation()}
         className={`pointer-events-auto absolute left-1/2 z-50 ${
           placeBelow ? 'top-full mt-1' : 'bottom-full mb-1'
         }`}
