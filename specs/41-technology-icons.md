@@ -42,6 +42,7 @@ brand renderer, otherwise the stroke-tinted line renderer.
 type TechIconDef = {
   id: string; // e.g. 'aws-s3', 'azure-functions', 'k8s'
   label: string; // 'S3', 'Azure Functions', 'Kubernetes'
+  short?: string; // short palette caption where `label` would truncate ('VM')
   provider: TechProvider; // 'aws' | 'azure' | 'generic'
   keywords: string; // extra search terms
   color: string; // tile fill — the service / brand colour
@@ -77,9 +78,17 @@ adding `TechIconDef` entries.
 
 A new tab in `PaletteTabBar` (`CommandPalette.tsx`), alongside Shapes / Tools /
 Devices / Icons. It mirrors the Icons tab: a search box plus a **provider**
-filter dropdown (All / AWS / Azure / Generic) over a grid of coloured
-thumbnails. Clicking a tile adds the icon at the viewport centre; dragging a
-tile onto the canvas drops it at the pointer.
+filter dropdown (All / AWS / Azure / Generic). Clicking a tile adds the icon at
+the viewport centre; dragging a tile onto the canvas drops it at the pointer.
+
+Unlike the line-art Icons grid (5 across, no captions — a labelled line icon's
+shape reads on its own), the Technology grid is **4 across with a caption under
+each tile**: the brand glyphs aren't self-explanatory at thumbnail size, so the
+name sits beneath each one. A handful of long names carry a `short` caption
+(`Virtual Machine` → `VM`, `Virtual Network` → `VNet`, `Load Balancer` →
+`Load Bal.`, `Blob Storage` → `Blob`, `SQL Database` → `SQL DB`, `Elasticsearch`
+→ `Elastic`) so they don't truncate to an ambiguous prefix; the full `label` is
+still used for search, the aria-label, and the on-canvas element.
 
 Unlike the Icons tab, a Technology tile is **always a standalone element** — it
 never drops _inside_ a selected shape as an inline icon (a coloured brand tile

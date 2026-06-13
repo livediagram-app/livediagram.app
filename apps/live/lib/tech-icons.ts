@@ -31,6 +31,12 @@ export type TechProvider = 'aws' | 'azure' | 'generic';
 export type TechIconDef = {
   id: string;
   label: string;
+  // Optional shorter caption for the palette tile, where a long label
+  // would truncate (and e.g. "Virtual Machine" / "Virtual Network" would
+  // clip to the same ambiguous prefix). The full `label` is still used for
+  // search, the aria-label, and the on-canvas element. Omit when `label`
+  // already fits.
+  short?: string;
   provider: TechProvider;
   // Extra search terms beyond the label (so "object storage" finds S3).
   keywords: string;
@@ -187,6 +193,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
   {
     id: 'azure-vm',
     label: 'Virtual Machine',
+    short: 'VM',
     provider: 'azure',
     keywords: 'microsoft compute server vm instance',
     color: '#0078D4',
@@ -195,6 +202,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
   {
     id: 'azure-blob',
     label: 'Blob Storage',
+    short: 'Blob',
     provider: 'azure',
     keywords: 'microsoft storage object container',
     color: '#0078D4',
@@ -220,6 +228,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
   {
     id: 'azure-sql',
     label: 'SQL Database',
+    short: 'SQL DB',
     provider: 'azure',
     keywords: 'microsoft database relational sql',
     color: '#0078D4',
@@ -246,6 +255,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
   {
     id: 'azure-vnet',
     label: 'Virtual Network',
+    short: 'VNet',
     provider: 'azure',
     keywords: 'microsoft network vnet subnet',
     color: '#0078D4',
@@ -255,6 +265,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
   {
     id: 'azure-loadbalancer',
     label: 'Load Balancer',
+    short: 'Load Bal.',
     provider: 'azure',
     keywords: 'microsoft load balancer distribute traffic',
     color: '#0078D4',
@@ -371,6 +382,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
   {
     id: 'elasticsearch',
     label: 'Elasticsearch',
+    short: 'Elastic',
     provider: 'generic',
     keywords: 'search index lucene elk log',
     color: '#00BFB3',

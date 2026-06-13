@@ -1348,14 +1348,18 @@ export function CommandPalette({
                     />
                   </div>
                 </div>
-                <div className="grid max-h-72 grid-cols-5 justify-items-center gap-1 overflow-y-auto overflow-x-hidden">
+                {/* Four per row (one fewer than the line-art Icons grid) so
+                    each tile has room for a caption — the brand glyphs aren't
+                    self-explanatory the way a labelled line icon's shape is,
+                    so the name sits beneath each one. */}
+                <div className="grid max-h-72 grid-cols-4 justify-items-stretch gap-1 overflow-y-auto overflow-x-hidden">
                   {techResults.map((icon) => (
                     <IconButton
                       key={icon.id}
                       label={`Add ${icon.label}`}
+                      caption={icon.short ?? icon.label}
                       description="Click to add, or drag onto the canvas."
                       hideTooltip
-                      hideCaption
                       onClick={() => addTechIcon(icon.id)}
                       draggable
                       onDragStart={(e) => {
@@ -1363,13 +1367,13 @@ export function CommandPalette({
                         e.dataTransfer.effectAllowed = 'copy';
                       }}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
+                      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
                         <TechIconArt iconId={icon.id} />
                       </svg>
                     </IconButton>
                   ))}
                   {techResults.length === 0 ? (
-                    <p className="col-span-5 px-1 py-2 text-center text-[11px] text-slate-400">
+                    <p className="col-span-4 px-1 py-2 text-center text-[11px] text-slate-400">
                       No technology icons match “{techQuery}”.
                     </p>
                   ) : null}
