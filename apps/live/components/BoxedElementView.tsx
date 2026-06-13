@@ -347,8 +347,11 @@ function BoxedElementViewImpl({
   // Both 'tab' and 'diagram' kinds get the "linked" badge; the
   // follow-handler dispatches off the kind via the parent's
   // onFollowLink callback. 'element' kind is the spec'd
-  // jump-and-focus that isn't surfaced in the UI yet.
+  // jump-and-focus that isn't surfaced in the UI yet. A link-card is
+  // EXCLUDED: the card itself is the link (its bottom half follows it),
+  // so the corner badge would be redundant.
   const linked =
+    element.type !== 'link-card' &&
     element.link !== undefined &&
     (element.link.kind === 'tab' || element.link.kind === 'diagram' || element.link.kind === 'url');
 
@@ -541,7 +544,11 @@ function BoxedElementViewImpl({
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
         />
       ) : element.type === 'link-card' ? (
-        <LinkCardView element={element} />
+        <LinkCardView
+          element={element}
+          tabs={tabSummaries}
+          onFollow={element.link ? () => onFollowLink(element.link!) : undefined}
+        />
       ) : element.type === 'image' && imageContext ? (
         <ImageElementView
           element={element}
