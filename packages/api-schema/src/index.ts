@@ -508,6 +508,12 @@ export const TELEMETRY_ACTIONS = [
   'SignedIn',
   'SignedUp',
   'SignedOut',
+  // Live session tools (spec/39): a timer / vote started or ended, vote
+  // results revealed, and a dot cast on an element.
+  'Started',
+  'Ended',
+  'Revealed',
+  'Voted',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 
