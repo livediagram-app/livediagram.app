@@ -9,6 +9,11 @@
 // down via `export * from './session'`.
 import type { TabTimer, TabVote } from './session';
 
+// Per-range label formatting runs (spec/09). Type-only import so the
+// index <-> rich-text relationship stays erasable; the runtime helpers +
+// this type are re-exported lower down via `export * from './rich-text'`.
+import type { TextRun } from './rich-text';
+
 // Documentary type aliases for ids that internal helpers thread
 // around. Not exported because no caller outside this package
 // imports them by name (they all just use plain `string`); keeping
@@ -167,6 +172,11 @@ export type ShapeElement = {
   // editor-page.tsx) so persisted JSON stays clean.
   note?: string;
   padding?: Padding;
+  // Per-range label formatting (spec/09): runs storing only the deltas
+  // over the whole-element text* fields above. Absent, empty, or a single
+  // override-free run => the legacy whole-element render. `label` is
+  // always kept === runsPlainText(richText). See rich-text.ts.
+  richText?: TextRun[];
 };
 
 // Border styling presets. Keep these as small unions so the
@@ -266,6 +276,8 @@ export type TextElement = {
   // editor-page.tsx) so persisted JSON stays clean.
   note?: string;
   padding?: Padding;
+  // Per-range label formatting (spec/09); see ShapeElement.richText.
+  richText?: TextRun[];
 };
 
 // --- Tables ----------------------------------------------------------------
@@ -411,6 +423,8 @@ export type StickyElement = {
   // editor-page.tsx) so persisted JSON stays clean.
   note?: string;
   padding?: Padding;
+  // Per-range label formatting (spec/09); see ShapeElement.richText.
+  richText?: TextRun[];
 };
 
 // --- Images ---------------------------------------------------------------
@@ -1016,6 +1030,10 @@ export function isBoxed(element: Element): element is BoxedElement {
 // --- Re-exported resource modules -----------------------------------------
 export * from './arrow-path';
 export * from './colors';
+
+// Per-range label formatting (spec/09): the runs-as-delta model + pure
+// helpers shared by the canvas renderer and the contentEditable editor.
+export * from './rich-text';
 
 export * from './factories';
 export * from './table';

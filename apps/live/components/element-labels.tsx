@@ -14,7 +14,15 @@
 // BoxedElementView is split here in the same change.
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { BoxedElement, TextAlignX, TextAlignY, TextSize } from '@livediagram/diagram';
+import {
+  hasRichFormatting,
+  type BoxedElement,
+  type RunSize,
+  type TextAlignX,
+  type TextAlignY,
+  type TextRun,
+  type TextSize,
+} from '@livediagram/diagram';
 
 const ALIGN_ITEMS: Record<TextAlignY, 'flex-start' | 'center' | 'flex-end'> = {
   top: 'flex-start',
@@ -371,6 +379,93 @@ function MultilineLabel({
   );
 }
 
+// --- Per-range rich label (spec/09) ---------------------------------------
+
+// Per-run sm/md/lg map to the same px table the element's base size uses,
+// so a run's size override reads consistently against its neighbours.
+const MULTI_RUN_PX: Record<RunSize, number> = {
+  sm: MULTI_FONT_PX.sm,
+  md: MULTI_FONT_PX.md,
+  lg: MULTI_FONT_PX.lg,
+};
+
+// Resolve one run ⊕ the element's whole-element defaults into a span
+// style. Boolean attrs inherit the element field when the run leaves them
+// unset (runs are deltas). Colour + size are only emitted when the run
+// overrides them — otherwise the span inherits the wrapper's base font and
+// the element's resolved text colour (set as `color`/currentColor on the
+// parent element view, same as the legacy label path).
+function effectiveRunStyle(
+  run: TextRun,
+  el: BoxedElement,
+  runSizePx: Record<RunSize, number>,
+): React.CSSProperties {
+  const css = labelTextStyleCss({
+    bold: run.bold ?? el.textBold,
+    italic: run.italic ?? el.textItalic,
+    underline: run.underline ?? el.textUnderline,
+    strikethrough: run.strikethrough ?? el.textStrikethrough,
+    // fontFamily is applied once on the wrapper, not per span.
+  });
+  if (run.color) css.color = run.color;
+  if (run.size) css.fontSize = `${runSizePx[run.size]}px`;
+  return css;
+}
+
+// Display renderer for a label carrying per-range formatting. Mirrors the
+// FixedSizeLabel / MultilineLabel wrapper (alignment + padding + base font
+// + family) and lays the runs out as styled <span>s. Applying any per-run
+// override opts the label out of SVG auto-fit (`scale`) into fixed-px
+// rendering — mixing per-run sizes with whole-element auto-fit is
+// contradictory; see spec/09.
+function RichLabel({
+  runs,
+  element,
+  textSize,
+  alignX,
+  alignY,
+  padding,
+  fontFamily,
+  multiline,
+  className = '',
+}: {
+  runs: TextRun[];
+  element: BoxedElement;
+  textSize: TextSize;
+  alignX: TextAlignX;
+  alignY: TextAlignY;
+  padding: number;
+  fontFamily?: string;
+  multiline: boolean;
+  className?: string;
+}) {
+  const basePx = multiline
+    ? MULTI_FONT_PX[textSize]
+    : textSize === 'scale'
+      ? 16
+      : FIXED_FONT_PX[textSize];
+  const runSizePx = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
+  return (
+    <div
+      className={`pointer-events-none absolute inset-0 flex overflow-hidden ${
+        multiline ? '' : 'font-medium leading-tight'
+      } ${className}`}
+      style={{ fontSize: `${basePx}px`, alignItems: ALIGN_ITEMS[alignY], padding }}
+    >
+      <div
+        className="w-full whitespace-pre-wrap break-words"
+        style={{ textAlign: TEXT_ALIGN[alignX], fontFamily }}
+      >
+        {runs.map((run, i) => (
+          <span key={i} style={effectiveRunStyle(run, element, runSizePx)}>
+            {run.text}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 type MultilineLabelEditorProps = {
   initial: string;
   placeholder: string;
@@ -519,6 +614,27 @@ export function renderLabel(
         onCancel={onCancelEdit}
         textClassName={textClass}
         cursorAtEnd={editCursorAtEnd}
+      />
+    );
+  }
+
+  // Per-range formatting (spec/09): once a label carries non-trivial
+  // runs, render them as styled spans regardless of size (the `scale`
+  // auto-fit opt-out). Empty / single override-free runs fall through to
+  // the legacy whole-element renderers below.
+  const richText = (element as { richText?: TextRun[] }).richText;
+  if (hasRichFormatting(richText)) {
+    return (
+      <RichLabel
+        runs={richText!}
+        element={element}
+        textSize={textSize}
+        alignX={alignX}
+        alignY={alignY}
+        padding={padding}
+        fontFamily={fontFamily}
+        multiline={isSticky}
+        className={isSticky ? 'text-amber-950' : ''}
       />
     );
   }

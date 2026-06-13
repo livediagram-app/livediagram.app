@@ -11,11 +11,13 @@
 
 import {
   endpointPosition,
+  hasRichFormatting,
   isBoxed,
   type ArrowElement,
   type BoxedElement,
   type Element,
   type Tab,
+  type TextRun,
 } from '@livediagram/diagram';
 import { framesFirst } from './canvas';
 
@@ -208,6 +210,11 @@ const EXPORT_IMAGE_FILL = '#f1f5f9'; // slate-100 placeholder body
 const EXPORT_IMAGE_STROKE = '#94a3b8'; // slate-400 placeholder dashes
 const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
 
+// One resolved span of a rich label (run ⊕ element defaults). Underline /
+// strikethrough are intentionally absent — neither visual exporter draws
+// them today, so runs match (not exceed) that fidelity.
+type ExportRun = { text: string; color: string; size: number; bold: boolean; italic: boolean };
+
 type ExportLabel = {
   text: string;
   x: number;
@@ -217,6 +224,10 @@ type ExportLabel = {
   size: number;
   bold: boolean;
   italic: boolean;
+  // Present when the element carries per-range formatting; both renderers
+  // lay these out on one baseline from the anchor point. The single
+  // text/color/size/bold/italic fields above stay populated as a fallback.
+  runs?: ExportRun[];
 };
 
 // `image` is a dashed placeholder (a static export can't embed the
@@ -265,6 +276,18 @@ function describeBoxedExport(el: BoxedElement): BoxedExport {
         : el.type === 'text'
           ? { kind: 'none' }
           : { kind: 'rect', fill, stroke };
+  const baseColor = el.textColor ?? EXPORT_INK;
+  const baseSize = fontSizeFor(el.textSize);
+  const richText = (el as { richText?: TextRun[] }).richText;
+  const runs: ExportRun[] | undefined = hasRichFormatting(richText)
+    ? richText!.map((run) => ({
+        text: run.text,
+        color: run.color ?? baseColor,
+        size: run.size ? fontSizeFor(run.size) : baseSize,
+        bold: run.bold ?? !!el.textBold,
+        italic: run.italic ?? !!el.textItalic,
+      }))
+    : undefined;
   const label: ExportLabel | null = el.label
     ? {
         text: el.label,
@@ -276,10 +299,11 @@ function describeBoxedExport(el: BoxedElement): BoxedExport {
               : el.x + el.width / 2,
         y: el.y + el.height / 2,
         anchor: el.textAlignX === 'right' ? 'end' : el.textAlignX === 'left' ? 'start' : 'middle',
-        color: el.textColor ?? EXPORT_INK,
-        size: fontSizeFor(el.textSize),
+        color: baseColor,
+        size: baseSize,
         bold: !!el.textBold,
         italic: !!el.textItalic,
+        runs,
       }
     : null;
   return { opacity, shape, label };
@@ -326,11 +350,38 @@ function drawBoxed(ctx: CanvasRenderingContext2D, el: BoxedElement): void {
     ctx.stroke();
   }
   if (label) {
-    ctx.fillStyle = label.color;
-    ctx.font = `${label.bold ? '600' : '400'} ${label.italic ? 'italic ' : ''}${label.size}px system-ui, sans-serif`;
     ctx.textBaseline = 'middle';
-    ctx.textAlign = label.anchor === 'end' ? 'right' : label.anchor === 'start' ? 'left' : 'center';
-    ctx.fillText(label.text, label.x, label.y);
+    if (label.runs) {
+      // Per-range label: lay the spans on one baseline from the anchor
+      // point. Measure each span first (font must be set before measure),
+      // sum the widths, then derive the start x from the anchor.
+      const fontFor = (r: ExportRun) =>
+        `${r.bold ? '600' : '400'} ${r.italic ? 'italic ' : ''}${r.size}px system-ui, sans-serif`;
+      let total = 0;
+      for (const run of label.runs) {
+        ctx.font = fontFor(run);
+        total += ctx.measureText(run.text).width;
+      }
+      let x =
+        label.anchor === 'start'
+          ? label.x
+          : label.anchor === 'end'
+            ? label.x - total
+            : label.x - total / 2;
+      ctx.textAlign = 'left';
+      for (const run of label.runs) {
+        ctx.font = fontFor(run);
+        ctx.fillStyle = run.color;
+        ctx.fillText(run.text, x, label.y);
+        x += ctx.measureText(run.text).width;
+      }
+    } else {
+      ctx.fillStyle = label.color;
+      ctx.font = `${label.bold ? '600' : '400'} ${label.italic ? 'italic ' : ''}${label.size}px system-ui, sans-serif`;
+      ctx.textAlign =
+        label.anchor === 'end' ? 'right' : label.anchor === 'start' ? 'left' : 'center';
+      ctx.fillText(label.text, label.x, label.y);
+    }
   }
   ctx.restore();
 }
@@ -452,6 +503,29 @@ function svgLabel(
   );
 }
 
+// Per-range label as one anchored <text> with a <tspan> per run; the
+// parent text-anchor positions the whole block and the tspans flow
+// left-to-right from there (SVG advances each tspan automatically).
+function svgRichLabel(
+  runs: ExportRun[],
+  x: number,
+  y: number,
+  anchor: 'start' | 'middle' | 'end',
+): string {
+  const spans = runs
+    .map(
+      (r) =>
+        `<tspan fill="${xmlEscape(r.color)}" font-size="${r.size}"` +
+        ` font-weight="${r.bold ? 600 : 400}"${r.italic ? ' font-style="italic"' : ''}>` +
+        `${xmlEscape(r.text)}</tspan>`,
+    )
+    .join('');
+  return (
+    `<text x="${r2(x)}" y="${r2(y)}" font-family="system-ui, sans-serif"` +
+    ` text-anchor="${anchor}" dominant-baseline="central">${spans}</text>`
+  );
+}
+
 function svgBoxed(el: BoxedElement): string {
   const { opacity, shape, label } = describeBoxedExport(el);
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
@@ -470,18 +544,20 @@ function svgBoxed(el: BoxedElement): string {
   } else if (shape.kind === 'rect') {
     shapeStr = `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
   }
-  const labelStr = label
-    ? svgLabel(
-        label.text,
-        label.x,
-        label.y,
-        label.anchor,
-        label.color,
-        label.size,
-        label.bold,
-        label.italic,
-      )
-    : '';
+  const labelStr = !label
+    ? ''
+    : label.runs
+      ? svgRichLabel(label.runs, label.x, label.y, label.anchor)
+      : svgLabel(
+          label.text,
+          label.x,
+          label.y,
+          label.anchor,
+          label.color,
+          label.size,
+          label.bold,
+          label.italic,
+        );
   return `<g${opAttr}>${shapeStr}${labelStr}</g>`;
 }
 
