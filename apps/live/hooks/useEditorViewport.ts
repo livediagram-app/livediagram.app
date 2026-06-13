@@ -36,6 +36,13 @@ const VIEW_MARGIN_TOP = 96;
 const VIEW_MARGIN_BOTTOM = 88;
 const VIEW_MARGIN_SIDE = 20;
 
+// When a new element is too big to fit the visible band at the current
+// zoom, scrollIntoView zooms OUT (never in) so the WHOLE element shows.
+// FIT_SAFETY leaves a sliver of padding inside the margins; MIN_FIT_ZOOM
+// floors how far out we'll go for a very large element.
+const FIT_SAFETY = 0.95;
+const MIN_FIT_ZOOM = 0.2;
+
 type EditorViewportApi = {
   // Pan offset in canvas-coords. The canvas wrapper applies
   // `translate(viewportOffset.x, viewportOffset.y) scale(zoom)`.
@@ -93,41 +100,69 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     return computeViewportCenter(rect, viewportOffset);
   }, [viewportOffset]);
 
-  // Smoothly pan so an element (plus toolbar room) is fully on-screen.
-  // No-op if it already is. Used by the mobile new-element scroll below.
+  // Smoothly bring an element (plus toolbar room) fully on-screen. If it
+  // already fits the visible band, just pan the minimum to pull any
+  // off-screen edge in. If it's too big to fit at the current zoom, zoom
+  // OUT (never in) just enough that the WHOLE element shows, then centre
+  // it. No-op if nothing needs to move. Used by the mobile new-element
+  // scroll below.
   const scrollIntoView = useCallback((bx: number, by: number, bw: number, bh: number) => {
     const rect = canvasMainRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const zoom = zoomRef.current;
-    // Canvas transform is `scale(z) translate(o)`, so a canvas point p
-    // renders at rect.origin + z*(p + offset).
-    const off = viewportOffsetRef.current;
-    const sl = rect.left + zoom * (bx + off.x);
-    const st = rect.top + zoom * (by + off.y);
-    const sr = sl + zoom * bw;
-    const sb = st + zoom * bh;
+    const z0 = zoomRef.current;
+    const off0 = viewportOffsetRef.current;
+    // Visible band (screen px) we keep the element within.
     const visLeft = rect.left + VIEW_MARGIN_SIDE;
     const visRight = rect.right - VIEW_MARGIN_SIDE;
     const visTop = rect.top + VIEW_MARGIN_TOP;
     const visBottom = rect.bottom - VIEW_MARGIN_BOTTOM;
-    let dxs = 0;
-    let dys = 0;
-    if (sl < visLeft) dxs = visLeft - sl;
-    else if (sr > visRight) dxs = visRight - sr;
-    if (st < visTop) dys = visTop - st;
-    else if (sb > visBottom) dys = visBottom - sb;
-    if (dxs === 0 && dys === 0) return;
-    const start = off;
-    const target = { x: off.x + dxs / zoom, y: off.y + dys / zoom };
+    const visW = Math.max(1, visRight - visLeft);
+    const visH = Math.max(1, visBottom - visTop);
+
+    // Zoom out to fit only when the element overflows the band at z0.
+    const overflows = bw * z0 > visW || bh * z0 > visH;
+    const z1 = overflows
+      ? Math.max(MIN_FIT_ZOOM, Math.min(z0, Math.min(visW / bw, visH / bh) * FIT_SAFETY))
+      : z0;
+
+    let target: { x: number; y: number };
+    if (z1 === z0) {
+      // Fits at the current zoom: minimal pan. Canvas transform is
+      // `scale(z) translate(o)`, so canvas point p renders at
+      // rect.origin + z*(p + offset).
+      const sl = rect.left + z0 * (bx + off0.x);
+      const st = rect.top + z0 * (by + off0.y);
+      const sr = sl + z0 * bw;
+      const sb = st + z0 * bh;
+      let dxs = 0;
+      let dys = 0;
+      if (sl < visLeft) dxs = visLeft - sl;
+      else if (sr > visRight) dxs = visRight - sr;
+      if (st < visTop) dys = visTop - st;
+      else if (sb > visBottom) dys = visBottom - sb;
+      if (dxs === 0 && dys === 0) return;
+      target = { x: off0.x + dxs / z0, y: off0.y + dys / z0 };
+    } else {
+      // Zoomed to fit: centre the element in the band so all of it shows.
+      const ecx = bx + bw / 2;
+      const ecy = by + bh / 2;
+      target = {
+        x: ((visLeft + visRight) / 2 - rect.left) / z1 - ecx,
+        y: ((visTop + visBottom) / 2 - rect.top) / z1 - ecy,
+      };
+    }
+
+    const startOff = off0;
     const t0 = performance.now();
     const DUR = 280;
     const step = (now: number) => {
       const k = Math.min(1, (now - t0) / DUR);
       const e = 1 - Math.pow(1 - k, 3); // ease-out cubic
       setViewportOffset({
-        x: start.x + (target.x - start.x) * e,
-        y: start.y + (target.y - start.y) * e,
+        x: startOff.x + (target.x - startOff.x) * e,
+        y: startOff.y + (target.y - startOff.y) * e,
       });
+      if (z1 !== z0) setViewportZoom(z0 + (z1 - z0) * e);
       if (k < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
