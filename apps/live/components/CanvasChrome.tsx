@@ -27,6 +27,8 @@ const MultiSelectionToolbar = dynamic(() =>
   import('./MultiSelectionToolbar').then((m) => m.MultiSelectionToolbar),
 );
 import { ModeBanner } from './ModeBanner';
+import { TimerWidget } from './TimerWidget';
+import { VoteBanner } from './VoteBanner';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
 // is gated on `showTemplatePicker`, which is false for the common
@@ -223,6 +225,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
     saveStatus,
     selectionScope,
     selfParticipant,
+    tabTimer,
+    tabVote,
+    onPauseTimer,
+    onResumeTimer,
+    onResetTimer,
     snapGuides,
     distGuides,
     setActiveDockAnchor,
@@ -437,6 +444,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
           onExport={onExportMultiSelected}
         />
       ) : null}
+
+      {/* Session tools (spec/39): the live timer pill + voting status
+          banner, driven by the active tab's timer / vote state. */}
+      {tabTimer ? (
+        <TimerWidget
+          timer={tabTimer}
+          readOnly={readOnly}
+          onPause={onPauseTimer}
+          onResume={onResumeTimer}
+          onReset={onResetTimer}
+        />
+      ) : null}
+      {tabVote ? <VoteBanner vote={tabVote} selfId={selfParticipant.id} /> : null}
 
       {/* Alignment guides. While a move / resize snap is in effect,
           draw a faint line along each edge / centre the dragged element

@@ -7,6 +7,7 @@ import {
 } from 'react';
 import {
   acceptsInlineIcon,
+  isVotable,
   activeCommentCount,
   BORDER_DASH_ARRAY,
   BORDER_RADIUS_PX,
@@ -111,6 +112,16 @@ type BoxedElementViewProps = {
   // (who shouldn't see a clickable badge) can omit it. When omitted
   // the note badge does not render.
   onOpenNote?: (id: string) => void;
+  // Live dot-vote (spec/39). `vote` is the active tab's vote session
+  // (undefined when none). `selfId` is the local participant (for "my
+  // dots"); `voteMax` is the highest dot count on the tab (for the
+  // winner highlight once revealed). cast/retract are omitted for
+  // read-only viewers, who watch but can't vote.
+  vote?: import('@livediagram/diagram').TabVote;
+  selfId?: string;
+  voteMax?: number;
+  onCastVote?: (id: string) => void;
+  onRetractVote?: (id: string) => void;
   // Drop a dragged palette icon onto this shape. The view computes which
   // side of the text the icon landed on and reports it. Omitted in
   // read-only mode so visitors can't drop icons.
@@ -179,6 +190,11 @@ function BoxedElementViewImpl({
   onFollowLink,
   onOpenComments,
   onOpenNote,
+  vote,
+  selfId,
+  voteMax,
+  onCastVote,
+  onRetractVote,
   onDropIcon,
   onLinkCell,
   imageContext,
@@ -218,6 +234,15 @@ function BoxedElementViewImpl({
   const isAnnotation = element.type === 'annotation';
   const [hovering, setHovering] = useState(false);
 
+  // Dot-vote tally for this element (spec/39): total dots, how many are
+  // mine (clicking the pill retracts one), and whether it's a revealed
+  // winner. The pill only shows once at least one dot has landed.
+  const voteTotal = vote ? (vote.votes[element.id]?.length ?? 0) : 0;
+  const myVotes =
+    vote && selfId ? (vote.votes[element.id]?.filter((id) => id === selfId).length ?? 0) : 0;
+  const showVotePill = !!vote && voteTotal > 0 && isVotable(element);
+  const isVoteWinner = !!vote?.revealed && voteTotal > 0 && voteTotal === (voteMax ?? 0);
+
   const handleShapeDown = (e: ReactPointerEvent) => {
     if (isEditing) return;
     // Remotely locked: swallow the press so it neither starts a drag /
@@ -228,6 +253,14 @@ function BoxedElementViewImpl({
       return;
     }
     e.stopPropagation();
+    // Dot-voting (spec/39): while a vote is open, pressing a votable
+    // element casts one of your dots instead of selecting / dragging it.
+    // Non-votable elements (text / frame / arrow / …) still select, so
+    // the facilitator can keep arranging the board.
+    if (vote?.active && onCastVote && isVotable(element)) {
+      onCastVote(element.id);
+      return;
+    }
     // Shift modifier turns the down-event into a selection toggle
     // (add or remove this element from the marquee multi-selection)
     // instead of starting a drag. Matches the convention every
@@ -584,6 +617,40 @@ function BoxedElementViewImpl({
           onOpenComments={() => onOpenComments(element.id)}
           onOpenNote={onOpenNote ? () => onOpenNote(element.id) : undefined}
         />
+      ) : null}
+
+      {/* Dot-vote tally pill (spec/39): live count, brand-filled when it
+          holds your dots (click to retract one), amber-ringed if it's a
+          revealed winner. */}
+      {isVoteWinner ? (
+        <div
+          className="pointer-events-none absolute inset-0 ring-2 ring-amber-400"
+          style={{ borderRadius: 'inherit' }}
+        />
+      ) : null}
+      {showVotePill ? (
+        <div
+          className="absolute -bottom-1 -right-1 origin-bottom-right"
+          style={{ transform: `scale(${1 / zoom})` }}
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (myVotes > 0) onRetractVote?.(element.id);
+            }}
+            title={myVotes > 0 ? 'Click to remove one of your dots' : `${voteTotal} votes`}
+            aria-label={`${voteTotal} votes`}
+            className={
+              'pointer-events-auto flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold shadow-sm ' +
+              (myVotes > 0
+                ? 'bg-brand-500 text-white'
+                : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100')
+            }
+          >
+            {voteTotal}
+          </button>
+        </div>
       ) : null}
 
       {showHandles || showAnchors ? (

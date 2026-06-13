@@ -83,6 +83,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onDropIcon,
     onLinkCell,
     onShiftSelect,
+    tabVote,
+    selfParticipant,
+    onCastVote,
+    onRetractVote,
     readOnly,
     remoteCursors,
     remoteSelectionsByElement,
@@ -103,6 +107,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   } = props;
   // Resolved tab default font once; per-element falls back to it (spec/28).
   const tabFontStack = resolveFontStack(tabFont);
+  // Highest dot count on the tab (spec/39), computed once so each element's
+  // vote pill can flag itself a winner once results are revealed.
+  const voteMax = tabVote
+    ? Object.values(tabVote.votes).reduce((m, ids) => Math.max(m, ids.length), 0)
+    : 0;
   // One id -> element index per render, shared by every ArrowView so
   // each resolves its endpoints / label collisions with O(1) lookups
   // instead of scanning the whole element list twice per arrow.
@@ -185,6 +194,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onBeginDrag={onBeginDrag}
             onBeginRotate={onBeginRotate}
             onShiftSelect={onShiftSelect}
+            vote={tabVote}
+            selfId={selfParticipant.id}
+            voteMax={voteMax}
+            onCastVote={readOnly ? undefined : onCastVote}
+            onRetractVote={readOnly ? undefined : onRetractVote}
             onBeginEdit={onBeginEdit}
             onCommitLabel={onCommitLabel}
             onCommitTable={onCommitTable}
