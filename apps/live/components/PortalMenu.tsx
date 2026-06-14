@@ -95,7 +95,7 @@ export function MenuItem({ icon, label, onClick, danger, disabled }: MenuItemPro
   const base =
     'flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition';
   const tone = disabled
-    ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
+    ? 'cursor-not-allowed text-slate-300 dark:text-slate-400'
     : danger
       ? 'cursor-pointer text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
       : 'cursor-pointer text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
@@ -104,10 +104,10 @@ export function MenuItem({ icon, label, onClick, danger, disabled }: MenuItemPro
       <span
         className={
           disabled
-            ? 'text-slate-300 dark:text-slate-600'
+            ? 'text-slate-300 dark:text-slate-400'
             : danger
               ? 'text-rose-600 dark:text-rose-300'
-              : 'text-slate-400 dark:text-slate-500'
+              : 'text-slate-400 dark:text-slate-400'
         }
       >
         {icon}
@@ -121,7 +121,7 @@ export function MenuItem({ icon, label, onClick, danger, disabled }: MenuItemPro
 // menu reads as a few scannable sections instead of one flat list.
 export function MenuSection({ label }: { label: string }) {
   return (
-    <p className="px-3 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+    <p className="px-3 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
       {label}
     </p>
   );
@@ -163,7 +163,7 @@ export function MenuAccordionSection({
         onClick={onToggle}
         onMouseDown={preserveFocus ? (e) => e.preventDefault() : undefined}
         aria-expanded={open}
-        className="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
+        className="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
       >
         <span className="flex items-center gap-2">
           {icon}
@@ -227,7 +227,7 @@ export function MenuToolButton({
   danger,
 }: MenuToolButtonProps) {
   const tone = disabled
-    ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
+    ? 'cursor-not-allowed text-slate-300 dark:text-slate-400'
     : active
       ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300'
       : danger
@@ -296,7 +296,7 @@ export function MenuTile({
             ? 'text-rose-500 dark:text-rose-300'
             : active
               ? ''
-              : 'text-slate-400 dark:text-slate-500'
+              : 'text-slate-400 dark:text-slate-400'
         }
       >
         {icon}

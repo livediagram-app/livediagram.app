@@ -190,7 +190,7 @@ function Card({ children }: { children: React.ReactNode }) {
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+    <p className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">
       {children}
     </p>
   );

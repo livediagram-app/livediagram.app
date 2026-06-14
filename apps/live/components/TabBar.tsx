@@ -334,7 +334,7 @@ export function TabBar({
       className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900"
     >
       <span
-        className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:flex dark:text-slate-500"
+        className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:flex dark:text-slate-400"
         aria-hidden
       >
         <TabsLabelIcon />
@@ -977,7 +977,7 @@ function PortalMenu({
               <BackIcon />
               Back
             </button>
-            <p className="px-2 pb-1 text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="px-2 pb-1 text-[10px] text-slate-400 dark:text-slate-400">
               Pick a destination diagram
             </p>
             <div className="max-h-56 overflow-y-auto">
@@ -1001,7 +1001,7 @@ function PortalMenu({
               <BackIcon />
               Back
             </button>
-            <p className="px-2 pb-1 text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="px-2 pb-1 text-[10px] text-slate-400 dark:text-slate-400">
               Add this tab to a folder
             </p>
             {/* New-folder inline input: Enter (or the + button) commits.

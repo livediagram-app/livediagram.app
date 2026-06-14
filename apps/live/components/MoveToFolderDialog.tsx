@@ -208,7 +208,7 @@ export function MoveToFolderDialog({
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <CloseIcon />
             </button>
@@ -227,7 +227,7 @@ export function MoveToFolderDialog({
 
           <div className="flex-1 overflow-y-auto px-2 py-2">
             {empty ? (
-              <p className="px-1 py-8 text-center text-xs text-slate-400 dark:text-slate-500">
+              <p className="px-1 py-8 text-center text-xs text-slate-400 dark:text-slate-400">
                 No destination matches.
               </p>
             ) : (
@@ -321,11 +321,11 @@ function DestinationRow({
         disabled={isCurrent}
         className={
           isCurrent
-            ? 'flex min-w-0 flex-1 cursor-default items-center gap-2 py-1.5 text-left text-sm text-slate-400 dark:text-slate-500'
+            ? 'flex min-w-0 flex-1 cursor-default items-center gap-2 py-1.5 text-left text-sm text-slate-400 dark:text-slate-400'
             : 'flex min-w-0 flex-1 items-center gap-2 py-1.5 text-left text-sm text-slate-700 transition group-hover:text-brand-800 dark:text-slate-200 dark:group-hover:text-brand-100'
         }
       >
-        <span className="shrink-0 text-slate-400 dark:text-slate-500" aria-hidden>
+        <span className="shrink-0 text-slate-400 dark:text-slate-400" aria-hidden>
           {icon}
         </span>
         <span className="min-w-0 flex-1 truncate">{label}</span>

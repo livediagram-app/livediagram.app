@@ -113,7 +113,7 @@ export function LinkPickerDialog({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <CloseIcon />
           </button>
@@ -162,7 +162,7 @@ export function LinkPickerDialog({
             recentDiagrams.length === 0 ? (
               <div className="flex flex-col items-center gap-1 py-10 text-center">
                 <DiagramGlyph muted />
-                <p className="text-xs text-slate-400 dark:text-slate-500">No other diagrams yet.</p>
+                <p className="text-xs text-slate-400 dark:text-slate-400">No other diagrams yet.</p>
               </div>
             ) : (
               <ul className="flex flex-col gap-1">
@@ -199,7 +199,7 @@ export function LinkPickerDialog({
                 }}
                 className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
-              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+              <p className="text-[11px] text-slate-400 dark:text-slate-400">
                 Opens in a new tab. We&apos;ll add https:// if you leave off the scheme.
               </p>
               <button
@@ -295,7 +295,7 @@ function DiagramGlyph({ muted }: { muted?: boolean }) {
       strokeWidth="1.4"
       strokeLinejoin="round"
       aria-hidden
-      className={muted ? 'text-slate-300 dark:text-slate-600' : undefined}
+      className={muted ? 'text-slate-300 dark:text-slate-400' : undefined}
     >
       <rect x="2" y="2.5" width="5" height="4" rx="1" />
       <rect x="9" y="9.5" width="5" height="4" rx="1" />

@@ -160,7 +160,7 @@ export function CommentThreadPopover({
               type="button"
               aria-label="Close comments"
               onClick={onClose}
-              className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <CloseIcon size={12} />
             </button>
@@ -218,7 +218,7 @@ export function CommentThreadPopover({
               className="w-full resize-none rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
             <div className="mt-1 flex items-center justify-between">
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">⌘↵ to send</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-400">⌘↵ to send</p>
               <button
                 type="button"
                 onClick={submit}
@@ -260,7 +260,7 @@ function CommentRow({
           <span className="truncate font-semibold text-slate-800 dark:text-slate-100">
             {comment.authorName}
           </span>
-          <span className="text-slate-400 dark:text-slate-500">
+          <span className="text-slate-400 dark:text-slate-400">
             {formatRelativeTimeCompact(Date.now() - comment.createdAt)}
           </span>
         </div>
@@ -273,7 +273,7 @@ function CommentRow({
           type="button"
           aria-label="Delete comment"
           onClick={onDelete}
-          className="self-start rounded p-0.5 text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 group-hover:opacity-100 dark:text-slate-500 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
+          className="self-start rounded p-0.5 text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 group-hover:opacity-100 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
         >
           <TrashIcon />
         </button>

@@ -168,7 +168,7 @@ export function FolderNode({
           onClick={() => onToggleExpanded(folder.id)}
           aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Collapse folder' : 'Expand folder'}
-          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200"
+          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
         >
           <span
             className={`inline-block transition-transform ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
@@ -177,7 +177,7 @@ export function FolderNode({
             <ChevronIcon />
           </span>
         </button>
-        <span className="text-slate-400 dark:text-slate-500">
+        <span className="text-slate-400 dark:text-slate-400">
           <FolderIcon />
         </span>
         {editing ? (
@@ -209,7 +209,7 @@ export function FolderNode({
             }}
             aria-label="Folder menu"
             aria-expanded={menuOpen}
-            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 opacity-100 transition hover:bg-slate-200/70 hover:text-slate-700 sm:opacity-0 sm:group-hover:opacity-100 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${
+            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 opacity-100 transition hover:bg-slate-200/70 hover:text-slate-700 sm:opacity-0 sm:group-hover:opacity-100 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${
               menuOpen ? 'opacity-100' : ''
             }`}
           >
@@ -379,7 +379,7 @@ export function UnsortedNode({
           onClick={() => onToggleExpanded('unsorted')}
           aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Collapse Unsorted' : 'Expand Unsorted'}
-          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200"
+          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
         >
           <span
             className={`inline-block transition-transform ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
@@ -388,7 +388,7 @@ export function UnsortedNode({
             <ChevronIcon />
           </span>
         </button>
-        <span className="text-slate-400 dark:text-slate-500">
+        <span className="text-slate-400 dark:text-slate-400">
           <UnsortedIcon />
         </span>
         <button
@@ -465,7 +465,7 @@ export function SharedRow({
       >
         <span
           className={
-            active ? 'text-brand-500 dark:text-brand-300' : 'text-slate-400 dark:text-slate-500'
+            active ? 'text-brand-500 dark:text-brand-300' : 'text-slate-400 dark:text-slate-400'
           }
         >
           <SharedDiagramIcon />
@@ -630,7 +630,7 @@ export function DiagramRow({
             {item.shareCode ? (
               <Tooltip title="Has a share link" description="A share link exists for this diagram.">
                 <span
-                  className={`shrink-0 ${active ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400 dark:text-slate-500'}`}
+                  className={`shrink-0 ${active ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400 dark:text-slate-400'}`}
                 >
                   <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden>
                     <path
@@ -709,7 +709,7 @@ export function DiagramRow({
           }}
           aria-label="Diagram menu"
           aria-expanded={menuOpen}
-          className={`mr-1 flex w-6 shrink-0 items-center justify-center self-center rounded text-slate-400 opacity-100 transition hover:bg-slate-200/70 hover:text-slate-700 sm:opacity-0 sm:group-hover:opacity-100 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${
+          className={`mr-1 flex w-6 shrink-0 items-center justify-center self-center rounded text-slate-400 opacity-100 transition hover:bg-slate-200/70 hover:text-slate-700 sm:opacity-0 sm:group-hover:opacity-100 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${
             menuOpen ? 'opacity-100' : ''
           }`}
         >
@@ -835,7 +835,7 @@ function TeamFolderNode({
           onClick={() => onToggleExpanded(folder.id)}
           aria-label={isExpanded ? 'Collapse folder' : 'Expand folder'}
           disabled={!hasContent}
-          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 disabled:opacity-0 dark:text-slate-500 dark:hover:text-slate-200"
+          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 disabled:opacity-0 dark:text-slate-400 dark:hover:text-slate-200"
         >
           {hasContent ? (
             <span
@@ -846,7 +846,7 @@ function TeamFolderNode({
             </span>
           ) : null}
         </button>
-        <span className="text-slate-400 dark:text-slate-500">
+        <span className="text-slate-400 dark:text-slate-400">
           <FolderIcon />
         </span>
         <button
@@ -957,7 +957,7 @@ export function TeamNode({
           onClick={() => onToggleExpanded(team.id)}
           aria-label={isExpanded ? 'Collapse team' : 'Expand team'}
           disabled={!hasContent}
-          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 disabled:opacity-0 dark:text-slate-500 dark:hover:text-slate-200"
+          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 disabled:opacity-0 dark:text-slate-400 dark:hover:text-slate-200"
         >
           {hasContent ? (
             <span
@@ -968,7 +968,7 @@ export function TeamNode({
             </span>
           ) : null}
         </button>
-        <span className="text-slate-400 dark:text-slate-500" aria-hidden>
+        <span className="text-slate-400 dark:text-slate-400" aria-hidden>
           <TeamGlyph />
         </span>
         <button

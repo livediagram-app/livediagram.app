@@ -195,7 +195,7 @@ function ShortcutSection({
         onClick={onToggle}
         className="flex w-full items-center justify-between py-2 text-left"
       >
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
           {section.heading}
         </span>
         <ChevronIcon open={open} />
@@ -244,7 +244,7 @@ function ChevronIcon({ open }: { open: boolean }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
-      className={`text-slate-400 transition-transform duration-150 dark:text-slate-500 ${open ? 'rotate-180' : ''}`}
+      className={`text-slate-400 transition-transform duration-150 dark:text-slate-400 ${open ? 'rotate-180' : ''}`}
     >
       <path d="M2 4l4 4 4-4" />
     </svg>

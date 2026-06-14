@@ -111,7 +111,7 @@ export function CommentsPanel({
               <p className="line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                 {row.latestText}
               </p>
-              <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500">
+              <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-400">
                 <span className="truncate">{row.latestAuthorName}</span>
                 <span className="flex items-center gap-1">
                   {row.resolved ? (

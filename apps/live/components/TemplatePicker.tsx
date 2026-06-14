@@ -155,7 +155,7 @@ export function TemplatePicker({
             type="button"
             onClick={onSkip}
             aria-label="Close"
-            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <CloseIcon />
           </button>
@@ -204,7 +204,7 @@ export function TemplatePicker({
                     type="button"
                     onClick={() => setName(randomName())}
                     aria-label="Generate a different name"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                   >
                     <RefreshIcon />
                   </button>
@@ -246,7 +246,7 @@ export function TemplatePicker({
               >
                 {templateFilter ? (
                   filteredTemplates.length === 0 ? (
-                    <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
+                    <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-slate-400">
                       No templates match “{templateQuery.trim()}”.
                     </p>
                   ) : (

@@ -440,7 +440,7 @@ export function ShareDialog({
                         readOnly
                         value={shareUrlFor(link.code)}
                         onFocus={(e) => e.currentTarget.select()}
-                        className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-400 line-through outline-none dark:text-slate-500"
+                        className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-400 line-through outline-none dark:text-slate-400"
                       />
                       <Tooltip
                         title={`Extend ${link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}`}

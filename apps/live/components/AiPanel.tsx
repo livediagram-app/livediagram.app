@@ -273,7 +273,7 @@ export function AiPanelContent({
               ) : (
                 <>
                   {summary && <p className="text-slate-600 dark:text-slate-300">{summary}</p>}
-                  <p className="text-slate-400 dark:text-slate-500">Press ⌘Z to undo.</p>
+                  <p className="text-slate-400 dark:text-slate-400">Press ⌘Z to undo.</p>
                 </>
               )}
             </div>
@@ -284,7 +284,7 @@ export function AiPanelContent({
       {/* History indicator */}
       {history.length > 0 && (
         <div className="flex items-center justify-between gap-2 px-2 pb-1 pt-0.5">
-          <span className="text-[10px] text-slate-400 dark:text-slate-500">
+          <span className="text-[10px] text-slate-400 dark:text-slate-400">
             {Math.floor(history.length / 2)} prior exchange{history.length > 2 ? 's' : ''} in
             context
           </span>
@@ -299,7 +299,7 @@ export function AiPanelContent({
       )}
 
       {/* Context hint */}
-      <p className="px-3 pb-0.5 pt-0.5 text-[10px] text-slate-400 dark:text-slate-600">
+      <p className="px-3 pb-0.5 pt-0.5 text-[10px] text-slate-400 dark:text-slate-400">
         Context: {contextLabel}
       </p>
 

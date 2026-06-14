@@ -67,7 +67,7 @@ export function LinkCardView({
 
   if (!link) {
     return (
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 text-center text-[12px] font-medium text-slate-400 dark:text-slate-500">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 text-center text-[12px] font-medium text-slate-400 dark:text-slate-400">
         Add a link — double-click
       </div>
     );
@@ -103,12 +103,12 @@ export function LinkCardView({
         >
           {title}
         </p>
-        <p className="truncate text-[10px] text-slate-400 dark:text-slate-500">{destination}</p>
+        <p className="truncate text-[10px] text-slate-400 dark:text-slate-400">{destination}</p>
       </div>
       {onFollow ? (
         // Right-arrow affordance: nudges right on hover so the row reads as a
         // "go to link" hotspot.
-        <span className="pointer-events-none shrink-0 self-center text-slate-400 transition-transform duration-150 group-hover:translate-x-1 dark:text-slate-500">
+        <span className="pointer-events-none shrink-0 self-center text-slate-400 transition-transform duration-150 group-hover:translate-x-1 dark:text-slate-400">
           <svg
             width="16"
             height="16"
@@ -142,7 +142,7 @@ export function LinkCardView({
       ) : (
         // No OG image unfurled: a neutral placeholder banner so the card keeps
         // its image-on-top shape instead of collapsing the layout.
-        <div className="flex min-h-0 flex-1 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-300 dark:from-slate-800 dark:to-slate-700 dark:text-slate-600">
+        <div className="flex min-h-0 flex-1 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-300 dark:from-slate-800 dark:to-slate-700 dark:text-slate-400">
           <svg
             width="28"
             height="28"
@@ -184,7 +184,7 @@ export function LinkCardView({
 // row never collapses to a bare label.
 function LinkGlyph({ kind }: { kind: NonNullable<LinkCardElement['link']>['kind'] }) {
   return (
-    <span className="flex h-4 w-4 shrink-0 items-center justify-center text-slate-400 dark:text-slate-500">
+    <span className="flex h-4 w-4 shrink-0 items-center justify-center text-slate-400 dark:text-slate-400">
       <svg
         width="13"
         height="13"

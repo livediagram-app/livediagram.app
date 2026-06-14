@@ -182,7 +182,7 @@ export function CanvasThemeDialog({
                 <div className="flex flex-col gap-1.5">
                   <p className="text-xs font-medium text-slate-700 dark:text-slate-200">Font</p>
                   <FontSelect value={font} ariaLabel="Tab font" onChange={onSetTabFont} />
-                  <p className="text-[11px] leading-snug text-slate-400 dark:text-slate-500">
+                  <p className="text-[11px] leading-snug text-slate-400 dark:text-slate-400">
                     The default for every element on this tab; individual elements can override it.
                   </p>
                 </div>

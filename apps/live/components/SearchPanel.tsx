@@ -195,7 +195,7 @@ export function SearchPanel({
     >
       <div className="flex w-[34rem] max-w-full animate-fly-up-in flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
         <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-          <span className="text-slate-400 dark:text-slate-500" aria-hidden>
+          <span className="text-slate-400 dark:text-slate-400" aria-hidden>
             <SearchIcon />
           </span>
           <input
@@ -259,17 +259,17 @@ export function SearchPanel({
                           {item.kind === 'element' ? item.label : item.name}
                         </span>
                         {item.kind === 'element' ? (
-                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
+                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
                             on {item.tabName}
                           </span>
                         ) : null}
                         {(item.kind === 'folder' || item.kind === 'diagram') && item.team ? (
-                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
+                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
                             in {item.team.name}
                           </span>
                         ) : null}
                         {item.kind === 'tab' && item.isCurrent ? (
-                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
+                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
                             current
                           </span>
                         ) : null}
