@@ -130,8 +130,11 @@ export function PaletteDropdown({
   // pointer-down (see the effect above). No hover-open — hovering across a
   // dropdown must never change the open category underneath the pointer.
   const selected = options.find((o) => o.id === value) ?? options[0];
+  // 'flush' triggers (the palette's tool + category pickers) get roomier
+  // padding than the bordered filter dropdowns so they're a bigger, easier
+  // hit target at the top of the panel.
   const shape =
-    variant === 'flush' ? 'rounded-none border-0 px-2.5 py-1.5' : 'h-[26px] rounded-md border px-2';
+    variant === 'flush' ? 'rounded-none border-0 px-3 py-2.5' : 'h-[26px] rounded-md border px-2';
   const trigger = (
     <button
       type="button"
