@@ -1174,6 +1174,12 @@ export function EditorView() {
           onAddSticky={addSticky}
           onDrawPencil={beginFreehand}
           onAddAnnotation={addAnnotation}
+          timerActive={!!activeTab.timer}
+          voteActive={!!activeTab.vote}
+          onStartTimer={startTimer}
+          onClearTimer={clearTimer}
+          onStartVote={startVote}
+          onEndVote={endVote}
         />
       ) : null}
       {linkPickerOpenForId !== null && !isReadOnly ? (

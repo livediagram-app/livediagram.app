@@ -112,6 +112,13 @@ type EditorContextMenuProps = {
   onAddSticky: () => void;
   onDrawPencil: () => void;
   onAddAnnotation: () => void;
+  // Session tools (spec/39) for the canvas menu's Session category.
+  timerActive: boolean;
+  voteActive: boolean;
+  onStartTimer: (mode: 'countdown' | 'stopwatch', durationMs?: number) => void;
+  onClearTimer: () => void;
+  onStartVote: (votesPerPerson: number) => void;
+  onEndVote: () => void;
 };
 
 export function EditorContextMenu(props: EditorContextMenuProps) {
@@ -477,7 +484,94 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           }}
         />
       </MenuAccordionSection>
+      {/* Session — timer + voting facilitator tools (spec/39). */}
+      <MenuAccordionSection title="Session" icon={<SessionGlyph />} {...sectionProps('session')}>
+        {props.timerActive ? (
+          <MenuItem
+            icon={<TimerGlyph />}
+            label="Stop timer"
+            onClick={() => {
+              props.onClearTimer();
+              onClose();
+            }}
+          />
+        ) : (
+          <>
+            <MenuItem
+              icon={<TimerGlyph />}
+              label="Start countdown (5 min)"
+              onClick={() => {
+                props.onStartTimer('countdown', 5 * 60_000);
+                onClose();
+              }}
+            />
+            <MenuItem
+              icon={<TimerGlyph />}
+              label="Start stopwatch"
+              onClick={() => {
+                props.onStartTimer('stopwatch');
+                onClose();
+              }}
+            />
+          </>
+        )}
+        {props.voteActive ? (
+          <MenuItem
+            icon={<VoteGlyph />}
+            label="End voting"
+            onClick={() => {
+              props.onEndVote();
+              onClose();
+            }}
+          />
+        ) : (
+          <MenuItem
+            icon={<VoteGlyph />}
+            label="Start voting"
+            onClick={() => {
+              props.onStartVote(3);
+              onClose();
+            }}
+          />
+        )}
+      </MenuAccordionSection>
     </ContextMenu>
+  );
+}
+
+// Clock face — the Session category glyph.
+function SessionGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="8" cy="8.5" r="5.5" />
+      <path d="M8 5.5V8.5L10 10M8 2.5V1" />
+    </svg>
+  );
+}
+
+// A timer glyph (reuses the clock face) for the timer rows.
+function TimerGlyph() {
+  return <SessionGlyph />;
+}
+
+// Three dots — the voting glyph.
+function VoteGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <circle cx="4.5" cy="8" r="1.6" />
+      <circle cx="8" cy="8" r="1.6" />
+      <circle cx="11.5" cy="8" r="1.6" />
+    </svg>
   );
 }
 
