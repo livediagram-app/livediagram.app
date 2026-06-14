@@ -74,7 +74,6 @@ import {
 } from '@/components/context-menu-icons';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/PortalMenu';
 import { ShapeIcon } from '@/components/shape-icon';
-import { isTechIconId } from '@/lib/tech-icons';
 
 // A curated subset of the most common shapes offered for in-place morphing
 // in the context menu's Shape category (the full set lived in the old panel).
@@ -303,12 +302,12 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     if (!target) return null;
     const boxed = isBoxed(target);
     const isIcon = target.type === 'shape' && target.shape === 'icon';
-    // Tech / architecture icons render as their own multi-colour art, so only
-    // the Text colour applies (no fill / stroke colour).
-    const isTechIcon = isIcon && isTechIconId((target as { iconId?: string }).iconId);
-    // Border controls apply to shapes / freehand / tables (not icons),
-    // gated by the shared supportsBorderControls predicate + effective values.
-    const borderable = supportsBorderControls(target) && !isIcon;
+    // Border + colour controls apply to shapes / freehand / tables, including
+    // standalone icons — their wrapper paints fillColor as the box background
+    // and strokeColor as the border just like a square (the icon glyph sits on
+    // top). A brand icon's glyph stays fixed-colour, but its box background /
+    // border are the user's to set, so we offer the same controls.
+    const borderable = supportsBorderControls(target);
     const borderStrokeVal: BorderStroke =
       (target as { strokeWidth?: BorderStroke }).strokeWidth ??
       (target.type === 'table' ? 'thin' : 'medium');
@@ -618,7 +617,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           ) : null}
         </MenuAccordionSection>
         {/* Colours — text / background / border swatches. Boxed elements that
-            support colours (excludes images); tech icons get Text only. */}
+            support colours (excludes images). Icons included: Text tints a
+            line-art glyph, Background / Border paint the icon's box. */}
         {boxed && supportsColours(target) ? (
           <>
             <MenuAccordionSection
@@ -636,7 +636,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                 {...colorProps('text')}
                 presets={props.presetColors}
               />
-              {!isTechIcon && defaultFillColor(target as BoxedElement) !== 'transparent' ? (
+              {defaultFillColor(target as BoxedElement) !== 'transparent' ? (
                 <ColourRow
                   label="Background"
                   value={
@@ -648,7 +648,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                   presets={props.presetColors}
                 />
               ) : null}
-              {!isTechIcon && defaultStrokeColor(target as BoxedElement) !== 'transparent' ? (
+              {defaultStrokeColor(target as BoxedElement) !== 'transparent' ? (
                 <ColourRow
                   label="Border"
                   value={
