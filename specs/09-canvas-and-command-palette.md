@@ -65,7 +65,7 @@ Defaults:
 - **Shape, Text:** `center` / `middle`.
 - **Sticky note:** `left` / `top` (natural for multi-line notes).
 
-Selectable from the [Selected Element](#selected-element-section) section of the palette as a **3 × 3 grid** of small icon buttons — each cell represents one combination of horizontal and vertical alignment. The currently active cell is visibly highlighted.
+Selectable from the element's edit-text toolbar (and the right-click context menu) as a **3 × 3 grid** of small icon buttons — each cell represents one combination of horizontal and vertical alignment. The currently active cell is visibly highlighted.
 
 Behaviour per label renderer:
 
@@ -98,7 +98,7 @@ Defaults follow the design system per type:
 
 Setting a colour applies to every member of the current selection that supports it (group-aware).
 
-The **Text colour** picker lives inside the **Text** accordion of the Selected Element section; **Background** and **Border** live inside the **Colours** accordion (shown only for shapes/sticky).
+The **Text colour** picker lives in the element's right-click context menu under **Colours**, alongside **Background** and **Border** (shown only for elements that support them).
 
 Arrows don't expose any colour pickers yet.
 
@@ -387,7 +387,7 @@ Twenty-one shape kinds (plus `icon`), all rendered as absolutely positioned elem
 | `hexagon`       | SVG overlay drawing `polygon points="25,0 75,0 100,50 75,100 25,100 0,50"` (flat-top). Preparation / labelled milestone.         | Free        |
 | `document`      | SVG overlay drawing a rectangle with a wavy bottom edge (two cubic curves). Output document in flowcharts.                       | Free        |
 
-Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop shadow. Same colours for every kind — only the geometry differs. Fill / stroke colours can be overridden per element via the Selected Element palette section.
+Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop shadow. Same colours for every kind — only the geometry differs. Fill / stroke colours can be overridden per element via the element's right-click context menu (Colours category).
 
 Square and circle render purely via CSS (`border-radius` + `background-color` on the wrapper `div`). Every other kind renders its geometry through an **inner SVG overlay** with `viewBox="0 0 100 100"` and `preserveAspectRatio="none"`, so it stretches with the element's box. The wrapper carries no border or background for those — only the selection ring. Anchor dots and resize handles still attach to the wrapper's bounding box (`n / e / s / w` midpoints), not to the geometry, so on slanted or curved shapes the anchor sits next to the visual edge rather than on it. That's acceptable for now and matches how the diamond already behaves.
 
@@ -583,7 +583,7 @@ State + destructive:
 - **Lock / Unlock** — toggles the element's locked state. Icon flips between an open and closed padlock.
 - **Delete** — removes the selected element from the active tab and clears selection. Trash icon. Disabled when the element (or its tab) is locked.
 
-Bring to Front, Send to Back, **Lock aspect ratio**, and the colour swatches all live in the palette's [Selected Element](#selected-element-section) accordions — they were in the popover at one point and got moved out so the floating widget stays compact.
+Bring to Front, Send to Back, **Lock aspect ratio**, and the colour swatches all live in the element's right-click context menu (Layer + Colours categories) — they were in the popover at one point and got moved out so the floating widget stays compact.
 
 For **boxed elements** (shapes, text, sticky notes), a separate **plus button** appears just outside the element's right edge while it's selected — see [Quick add + connect](#quick-add--connect).
 
@@ -835,7 +835,7 @@ Each boxed element carries a `textSize` setting controlling how its label render
 | `'md'`    | Fixed medium font.                                                                                                                               |
 | `'lg'`    | Fixed large font.                                                                                                                                |
 
-Selectable from the [Selected Element](#selected-element-section) section of the palette. When set to a fixed size, content is centered and wraps on its newlines (and, for stickies, soft-wraps). Resizing the element does not change the font — only `scale` reacts to box size.
+Selectable from the element's edit-text toolbar (and the right-click context menu). When set to a fixed size, content is centered and wraps on its newlines (and, for stickies, soft-wraps). Resizing the element does not change the font — only `scale` reacts to box size.
 
 ```ts
 type TextSize = 'scale' | 'sm' | 'md' | 'lg';
@@ -870,7 +870,7 @@ An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`
 
 ## Auto-select on add
 
-Every palette `Add ...` button auto-selects the newly created element. The selection popover, the plus buttons, and (if applicable) the Selected Element palette section appear immediately, ready for the next action.
+Every palette `Add ...` button auto-selects the newly created element. The selection popover and the plus buttons appear immediately, and the element's right-click context menu is one click away, ready for the next action.
 
 ## Editor header
 
