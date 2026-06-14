@@ -371,48 +371,9 @@ export function TabBar({
           </button>
         </Tooltip>
       ) : null}
-      {onOpenCanvasMenu ? (
-        <span className="hidden sm:contents">
-          <Tooltip
-            title="Canvas menu"
-            description="Theme, background, add elements, session tools."
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                const r = e.currentTarget.getBoundingClientRect();
-                // Anchor at the button's top-left; the menu's viewport clamp
-                // pulls it up + left so it sits above the footer.
-                onOpenCanvasMenu(r.left, r.top);
-              }}
-              aria-label="Canvas menu"
-              className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-            >
-              <CanvasGlyph />
-            </button>
-          </Tooltip>
-        </span>
-      ) : null}
-      {onOpenShortcuts ? (
-        <span className="hidden sm:contents">
-          <Tooltip
-            title="Keyboard shortcuts"
-            description="See every shortcut. Toggle them off if they get in the way."
-          >
-            <button
-              type="button"
-              onClick={onOpenShortcuts}
-              aria-label="Keyboard shortcuts"
-              className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-            >
-              <KeyboardIcon />
-            </button>
-          </Tooltip>
-        </span>
-      ) : null}
       {onToggleMinimalPanels ? (
         // Desktop only: minimal mode is forced on mobile, so the toggle is
-        // moot there. Sits just left of Settings.
+        // moot there.
         <span className="hidden sm:contents">
           <Tooltip
             title={minimalPanels ? 'Normal panels' : 'Minimal panels'}
@@ -434,6 +395,45 @@ export function TabBar({
               }`}
             >
               <PanelLayoutIcon />
+            </button>
+          </Tooltip>
+        </span>
+      ) : null}
+      {onOpenShortcuts ? (
+        <span className="hidden sm:contents">
+          <Tooltip
+            title="Keyboard shortcuts"
+            description="See every shortcut. Toggle them off if they get in the way."
+          >
+            <button
+              type="button"
+              onClick={onOpenShortcuts}
+              aria-label="Keyboard shortcuts"
+              className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            >
+              <KeyboardIcon />
+            </button>
+          </Tooltip>
+        </span>
+      ) : null}
+      {onOpenCanvasMenu ? (
+        <span className="hidden sm:contents">
+          <Tooltip
+            title="Canvas menu"
+            description="Theme, background, add elements, session tools."
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                // Anchor the menu's BOTTOM edge at the button's top (openUp),
+                // so it opens above the footer rather than over it.
+                onOpenCanvasMenu(r.left, r.top);
+              }}
+              aria-label="Canvas menu"
+              className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            >
+              <CanvasGlyph />
             </button>
           </Tooltip>
         </span>
@@ -800,6 +800,8 @@ function PortalMenu({
   const sectionProps = (id: string) => ({
     open: openSection === id,
     onToggle: () => setOpenSection((s) => (s === id ? null : id)),
+    // Desktop: hovering a category switches to it automatically.
+    onHoverOpen: () => setOpenSection(id),
   });
   // Delete confirmation: an inline popover anchored to the Delete row
   // (rather than the jarring full-screen modal). Rendered inside this

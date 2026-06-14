@@ -97,7 +97,7 @@ export function PaletteTabBar({
         className={`overflow-hidden${animate ? ' transition-[height] duration-200 ease-out' : ''}`}
         style={{ height: height ?? undefined }}
       >
-        <div ref={contentRef} className="px-3 pb-3 pt-3">
+        <div ref={contentRef} className="px-2 pb-2.5 pt-2.5">
           <div key={displayed?.id ?? 'empty'} className="animate-fade-in">
             {displayed?.content}
           </div>

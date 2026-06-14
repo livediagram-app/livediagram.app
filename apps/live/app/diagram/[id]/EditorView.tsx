@@ -933,7 +933,9 @@ export function EditorView() {
             void loadAllTabs();
           }}
           onOpenCanvasMenu={
-            isReadOnly ? undefined : (x, y) => setContextMenu({ mode: 'canvas', x, y })
+            isReadOnly
+              ? undefined
+              : (x, y) => setContextMenu({ mode: 'canvas', x, y, openUp: true })
           }
         />
       )}

@@ -1293,11 +1293,11 @@ export function CommandPalette({
                     />
                   </div>
                 </div>
-                {/* Four per row (one fewer than the line-art Icons grid) so
-                    each tile has room for a caption — the brand glyphs aren't
-                    self-explanatory the way a labelled line icon's shape is,
-                    so the name sits beneath each one. */}
-                <div className="grid max-h-72 grid-cols-4 justify-items-stretch gap-1 overflow-y-auto overflow-x-hidden">
+                {/* Three per row (two fewer than the line-art Icons grid) so
+                    each tile is big enough to read the brand glyph + caption —
+                    the brand glyphs aren't self-explanatory the way a labelled
+                    line icon's shape is, so the name sits beneath each one. */}
+                <div className="grid max-h-72 grid-cols-3 justify-items-stretch gap-1 overflow-y-auto overflow-x-hidden">
                   {techResults.map((icon) => (
                     <IconButton
                       key={icon.id}

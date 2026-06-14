@@ -226,6 +226,8 @@ function OverflowMenu({
   const catProps = (id: string) => ({
     open: openCat === id,
     onToggle: () => setOpenCat((c) => (c === id ? null : id)),
+    // Desktop: hovering a category switches to it automatically.
+    onHoverOpen: () => setOpenCat(id),
     preserveFocus: true,
   });
   return (

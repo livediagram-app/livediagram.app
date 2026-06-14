@@ -19,9 +19,19 @@ type ContextMenuProps = {
   // Drop the menu's vertical padding (and clip children to the rounded
   // corners) so edge-to-edge category sections sit flush top + bottom.
   flush?: boolean;
+  // Grow UPWARD from `position.y` (its bottom edge sits at y) instead of
+  // downward. Used when the trigger is at the bottom of the screen (the
+  // footer canvas-menu button) so the menu opens above it, not over it.
+  anchorBottom?: boolean;
 };
 
-export function ContextMenu({ position, onClose, children, flush = false }: ContextMenuProps) {
+export function ContextMenu({
+  position,
+  onClose,
+  children,
+  flush = false,
+  anchorBottom = false,
+}: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
 
@@ -82,6 +92,7 @@ export function ContextMenu({ position, onClose, children, flush = false }: Cont
         style={{
           left: position.x + adjust.x,
           top: position.y + adjust.y,
+          transform: anchorBottom ? 'translateY(-100%)' : undefined,
         }}
       >
         {children}

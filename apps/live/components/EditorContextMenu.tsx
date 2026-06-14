@@ -97,7 +97,9 @@ export type EditorContextMenuState =
   // A whole multi-selection or group was right-clicked — actions apply to
   // everything selected.
   | { mode: 'multi'; x: number; y: number }
-  | { mode: 'canvas'; x: number; y: number };
+  // `openUp` grows the menu upward from y (for the footer canvas-menu button,
+  // so it opens above the footer rather than over it).
+  | { mode: 'canvas'; x: number; y: number; openUp?: boolean };
 
 type EditorContextMenuProps = {
   menu: EditorContextMenuState;
@@ -208,6 +210,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   const sectionProps = (id: string) => ({
     open: openSection === id,
     onToggle: () => setOpenSection((s) => (s === id ? null : id)),
+    // Desktop: hovering a category switches to it automatically.
+    onHoverOpen: () => setOpenSection(id),
   });
   // Which colour row's inline palette is open (text / background / border) —
   // at most one, toggled by re-clicking the row so it never sticks open.
@@ -769,7 +773,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   const totalVotesCast = vote ? Object.values(vote.votes).reduce((n, ids) => n + ids.length, 0) : 0;
 
   return (
-    <ContextMenu position={position} onClose={onClose} flush>
+    <ContextMenu position={position} onClose={onClose} flush anchorBottom={menu.openUp}>
       {/* Canvas — theme / background / tidy. */}
       <MenuAccordionSection title="Canvas" icon={<CanvasMenuIcon />} {...sectionProps('canvas')}>
         <MenuTileGrid cols={3}>
