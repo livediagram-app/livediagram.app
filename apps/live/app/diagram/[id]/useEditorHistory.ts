@@ -73,7 +73,6 @@ export function useEditorHistory(opts: {
     setSelectedId,
     setMultiSelectedIds,
     setEditingId,
-    setTabAccordionsOpen,
     setChangeLog,
     setFormatSourceId,
     setGroupSourceId,
@@ -97,33 +96,13 @@ export function useEditorHistory(opts: {
       setEditingId(null);
       return;
     }
-    // Tab-meta entries (theme / background tweaks) have no element
-    // ids. Crude string-match on the summary picks the right
-    // accordion; we own the summary text so this stays stable.
-    const lower = entry.summary.toLowerCase();
-    if (lower.includes('theme')) {
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-      requestEditorOpen();
-      setTabAccordionsOpen({
-        text: false,
-        theme: true,
-        canvas: false,
-        cleanup: false,
-        session: false,
-      });
-    } else if (lower.includes('canvas') || lower.includes('pattern') || lower.includes('opacity')) {
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-      requestEditorOpen();
-      setTabAccordionsOpen({
-        text: false,
-        theme: false,
-        canvas: true,
-        cleanup: false,
-        session: false,
-      });
-    }
+    // Tab-meta entries (theme / background tweaks) have no element ids.
+    // Theme + Canvas now live in the Tab Appearance modal rather than the
+    // tab-editor accordions, so there's no accordion to expand here; just
+    // clear any selection and surface the editor panel.
+    setSelectedId(null);
+    setMultiSelectedIds(new Set());
+    requestEditorOpen();
   };
 
   // Drop every audit entry for the currently active tab. The diagram

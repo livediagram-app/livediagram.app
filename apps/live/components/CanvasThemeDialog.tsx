@@ -1,26 +1,30 @@
 'use client';
 
 // The right-click "Change Canvas" / "Change Theme" dialog (spec/42). One
-// modal, two tabs: Canvas (pattern + colours + opacity) and Theme (the
-// category-browse picker). Opens on whichever tab the menu item picked;
-// the user can switch freely. Every control applies live to the active
-// tab via its callback — there's no Apply/Cancel, closing just dismisses.
+// modal, three tabs: Canvas (pattern + colours + opacity), Theme (the
+// category-browse picker) and Font (the tab's default font + new-element
+// size). Opens on whichever tab the menu item picked; the user can switch
+// freely. Every control applies live to the active tab via its callback —
+// there's no Apply/Cancel, closing just dismisses.
 //
-// Both tabs render shared components (CanvasStyleControls,
-// ThemeCategoryBrowser) so they're identical to the palette accordion and
-// the New-diagram picker respectively. Follows the standard modal
-// contract (Portal + backdrop + Escape) used by SettingsDialog.
+// The tabs render shared components (CanvasStyleControls,
+// ThemeCategoryBrowser, FontSelect) so they're identical to the palette
+// accordion and the New-diagram picker respectively. Follows the standard
+// modal contract (Portal + backdrop + Escape) used by SettingsDialog.
 
-import type { BackgroundPattern } from '@livediagram/diagram';
+import type { BackgroundPattern, TextSize } from '@livediagram/diagram';
 import type { ThemeId } from '@/lib/themes';
 import { useEscape } from '@/hooks/useEscape';
 import { CanvasStyleControls } from './CanvasStyleControls';
 import { CloseIcon } from './CloseIcon';
+import { FontSelect } from './FontSelect';
+import { SizeButton } from './palette-controls';
+import { DotsIcon, ResetIcon, ScaleIcon } from './palette-icons';
 import { Portal } from './Portal';
-import { ResetIcon } from './palette-icons';
 import { ThemeCategoryBrowser } from './ThemeCategoryBrowser';
+import { Tooltip } from './Tooltip';
 
-export type CanvasThemeTab = 'canvas' | 'theme';
+export type CanvasThemeTab = 'canvas' | 'theme' | 'font';
 
 type CanvasThemeDialogProps = {
   tab: CanvasThemeTab;
@@ -38,6 +42,12 @@ type CanvasThemeDialogProps = {
   themeId: ThemeId;
   onSetTheme: (id: ThemeId) => void;
   onResetElementsToTheme: () => void;
+  // Font (spec/28): the tab's default font + the size seeded onto new
+  // palette elements. `null` font = the editor default.
+  font: string | null;
+  onSetTabFont: (font: string | null) => void;
+  defaultTextSize: TextSize | undefined;
+  onSetTabDefaultTextSize: (size: TextSize) => void;
   onClose: () => void;
 };
 
@@ -55,6 +65,10 @@ export function CanvasThemeDialog({
   themeId,
   onSetTheme,
   onResetElementsToTheme,
+  font,
+  onSetTabFont,
+  defaultTextSize,
+  onSetTabDefaultTextSize,
   onClose,
 }: CanvasThemeDialogProps) {
   useEscape(onClose);
@@ -100,6 +114,9 @@ export function CanvasThemeDialog({
               <TabButton active={tab === 'theme'} onClick={() => onTabChange('theme')}>
                 Theme
               </TabButton>
+              <TabButton active={tab === 'font'} onClick={() => onTabChange('font')}>
+                Font
+              </TabButton>
             </div>
           </div>
 
@@ -117,7 +134,7 @@ export function CanvasThemeDialog({
                 patternColumns={7}
                 showAllPatterns
               />
-            ) : (
+            ) : tab === 'theme' ? (
               <>
                 <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                   Sets the canvas backdrop and recolours every element on this tab to match the
@@ -143,6 +160,63 @@ export function CanvasThemeDialog({
                   </button>
                 </div>
               </>
+            ) : (
+              // Font: the tab's default font + the size seeded onto new
+              // palette elements (spec/28), moved here from the tab editor.
+              <div className="flex max-w-sm flex-col gap-1">
+                <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300">Font</p>
+                <FontSelect value={font} ariaLabel="Tab font" onChange={onSetTabFont} />
+                <p className="text-[11px] leading-snug text-slate-400 dark:text-slate-500">
+                  The default for every element on this tab; individual elements can override it.
+                </p>
+                <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                    Default size for new elements
+                  </p>
+                  {/* Same controls as the element editor's Text > Size row so
+                      the two read identically. */}
+                  <div className="grid grid-cols-4 gap-1">
+                    <Tooltip
+                      title="Scale"
+                      description="Auto-fit each new element's label to its size."
+                    >
+                      <SizeButton
+                        active={(defaultTextSize ?? 'md') === 'scale'}
+                        onClick={() => onSetTabDefaultTextSize('scale')}
+                      >
+                        <ScaleIcon />
+                      </SizeButton>
+                    </Tooltip>
+                    <Tooltip title="Small" description="New elements start at the small font size.">
+                      <SizeButton
+                        active={(defaultTextSize ?? 'md') === 'sm'}
+                        onClick={() => onSetTabDefaultTextSize('sm')}
+                      >
+                        <DotsIcon count={1} />
+                      </SizeButton>
+                    </Tooltip>
+                    <Tooltip
+                      title="Medium"
+                      description="New elements start at the medium font size."
+                    >
+                      <SizeButton
+                        active={(defaultTextSize ?? 'md') === 'md'}
+                        onClick={() => onSetTabDefaultTextSize('md')}
+                      >
+                        <DotsIcon count={2} />
+                      </SizeButton>
+                    </Tooltip>
+                    <Tooltip title="Large" description="New elements start at the large font size.">
+                      <SizeButton
+                        active={(defaultTextSize ?? 'md') === 'lg'}
+                        onClick={() => onSetTabDefaultTextSize('lg')}
+                      >
+                        <DotsIcon count={3} />
+                      </SizeButton>
+                    </Tooltip>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>

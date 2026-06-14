@@ -214,16 +214,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // only requestEditorOpen is consumed internally, off the slice object.
   const panelLayout = usePanelLayout();
   const dialogs = useEditorDialogs();
-  // Tab-section accordion state lifted here so the Activity row
-  // click handler can pop the matching accordion (e.g. clicking a
-  // "Changed theme to X" entry opens the Theme accordion).
-  const [tabAccordionsOpen, setTabAccordionsOpen] = useState<{
-    text: boolean;
-    theme: boolean;
-    canvas: boolean;
-    cleanup: boolean;
-    session: boolean;
-  }>({ text: false, theme: false, canvas: false, cleanup: false, session: false });
+  // Tab-section accordion state lifted here. Only the Session accordion
+  // remains (Theme / Canvas / Font moved to the Tab Appearance modal,
+  // Auto-align to the context menu).
+  const [tabAccordionsOpen, setTabAccordionsOpen] = useState<{ session: boolean }>({
+    session: false,
+  });
   // Canvas tool (Pan / Select / Laser). See useCanvasTool: the raw
   // setter serves internal auto-switches, the tracked selectCanvasTool
   // serves the user-facing pickers.
@@ -1243,20 +1239,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setTemplatePickerMode,
   });
 
-  // Open one of the Tab section accordions inside the Editor panel,
-  // popping the panel back if it was minimised. Both context-menu
-  // actions ("Change Theme", "Change Canvas") route here rather than
-  const openTabAccordion = (which: 'text' | 'theme' | 'canvas') => {
-    panelLayout.requestEditorOpen();
-    setTabAccordionsOpen({
-      text: which === 'text',
-      theme: which === 'theme',
-      canvas: which === 'canvas',
-      cleanup: false,
-      session: false,
-    });
-  };
-
   // Debounced activity-log emitters (see hooks/useActivityLogDebounce
   // for the per-key slot machinery + the 500 ms window rationale).
   // `scheduleTabMetaLog` handles canvas-pattern / background-colour /
@@ -1921,7 +1903,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openComments,
     openDiagram,
     openNote,
-    openTabAccordion,
     openTemplatePicker,
     participantsByTab,
     pendingDraw,

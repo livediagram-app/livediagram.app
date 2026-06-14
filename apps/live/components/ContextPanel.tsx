@@ -132,10 +132,6 @@ export function ContextPanel({
   // Local fallback for the tab-section accordion when the caller
   // doesn't lift state. Same mutual-exclusion shape.
   const [localTabOpen, setLocalTabOpen] = useState<TabAccordionState>({
-    text: false,
-    theme: false,
-    canvas: false,
-    cleanup: false,
     session: false,
   });
   const tabOpen = tabAccordionsOpen ?? localTabOpen;
@@ -157,7 +153,7 @@ export function ContextPanel({
     if (showingSelected) {
       setSelectedAccordionsOpen(ALL_SELECTED_ACCORDIONS_CLOSED);
     } else {
-      setTabOpen({ text: false, theme: false, canvas: false, cleanup: false, session: false });
+      setTabOpen({ session: false });
     }
   }, [showingSelected, setTabOpen]);
 

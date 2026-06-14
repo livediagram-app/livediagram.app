@@ -1074,6 +1074,10 @@ export function EditorView() {
           themeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
           onSetTheme={setTheme}
           onResetElementsToTheme={resetElementsToTheme}
+          font={activeTab.font ?? null}
+          onSetTabFont={setTabFont}
+          defaultTextSize={activeTab.defaultTextSize}
+          onSetTabDefaultTextSize={setTabDefaultTextSize}
           onClose={() => setCanvasThemeTab(null)}
         />
       ) : null}
