@@ -262,6 +262,7 @@ export function EditorView() {
     setArrowStrokeStyleSelected,
     setArrowStyleSelected,
     setArrowThicknessSelected,
+    setShapeKindSelected,
     setBackgroundColor,
     setBackgroundOpacity,
     setBackgroundPattern,
@@ -1148,6 +1149,7 @@ export function EditorView() {
           onSetArrowEnds={setArrowEndsSelected}
           onSetArrowheadSize={setArrowheadSizeSelected}
           onSetArrowheadShape={setArrowheadShapeSelected}
+          onSetShapeKind={setShapeKindSelected}
           onToggleTableHeaderRow={setTableHeaderRowSelected}
           onToggleTableHeaderColumn={setTableHeaderColumnSelected}
           onToggleTableZebra={setTableZebraSelected}

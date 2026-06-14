@@ -73,7 +73,21 @@ import {
   StickyMenuIcon,
 } from '@/components/context-menu-icons';
 import { MenuAccordionSection } from '@/components/PortalMenu';
+import { ShapeIcon } from '@/components/shape-icon';
 import { isTechIconId } from '@/lib/tech-icons';
+
+// A curated subset of the most common shapes offered for in-place morphing
+// in the context menu's Shape category (the full set lived in the old panel).
+const COMMON_SHAPES: ShapeKind[] = [
+  'square',
+  'circle',
+  'diamond',
+  'stadium',
+  'parallelogram',
+  'hexagon',
+  'triangle',
+  'cylinder',
+];
 
 // Cursor position + which menu to show. `element` carries the clicked
 // element id; `canvas` is the empty-canvas right-click. Exported so
@@ -131,6 +145,8 @@ type EditorContextMenuProps = {
   onSetArrowEnds: (v: ArrowEnds) => void;
   onSetArrowheadSize: (v: ArrowheadSize) => void;
   onSetArrowheadShape: (v: ArrowheadShape) => void;
+  // Morph a shape element to another kind in place (preserving size/colour).
+  onSetShapeKind: (kind: ShapeKind) => void;
   // Table structure toggles (header row / column, zebra), mirroring the
   // panel's Table accordion.
   onToggleTableHeaderRow: () => void;
@@ -295,8 +311,27 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       target.type === 'shape' && target.shape !== 'icon' && target.iconId !== undefined;
     const hasImage = target.type === 'image' && target.imageId != null;
     const hasLink = target.link != null;
+    // Regular shapes (not the dedicated icon glyph, not a frame container)
+    // can morph to another common kind in place.
+    const morphable = target.type === 'shape' && !isIcon && target.shape !== 'frame';
     return (
       <ContextMenu position={position} onClose={onClose} flush>
+        {/* Shape — morph to another common kind, preserving size + colour. */}
+        {morphable ? (
+          <MenuAccordionSection title="Shape" icon={<SquareMenuIcon />} {...sectionProps('shape')}>
+            <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
+              {COMMON_SHAPES.map((kind) => (
+                <SizeButton
+                  key={kind}
+                  active={target.type === 'shape' && target.shape === kind}
+                  onClick={() => props.onSetShapeKind(kind)}
+                >
+                  <ShapeIcon kind={kind} />
+                </SizeButton>
+              ))}
+            </div>
+          </MenuAccordionSection>
+        ) : null}
         {/* Link — set / change / remove a link-card's destination (spec/40). */}
         {target.type === 'link-card' ? (
           <MenuAccordionSection title="Link" icon={<LinkMenuIcon />} {...sectionProps('link')}>
