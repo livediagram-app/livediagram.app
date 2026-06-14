@@ -595,6 +595,14 @@ export function Canvas(props: CanvasProps) {
       onPointerMove={handlePointerMoveCanvas}
       onPointerLeave={handlePointerLeaveCanvas}
       onDragOver={(e) => {
+        // A drag back over a floating panel (the Palette itself) is a
+        // "changed my mind" — show no-drop and don't let the drop below
+        // add anything. The dragover events still bubble here from the
+        // panel, so check the target, not just the MIME type.
+        if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) {
+          e.dataTransfer.dropEffect = 'none';
+          return;
+        }
         // Allow dropping palette tiles (shapes / devices / icons).
         if (
           e.dataTransfer.types.includes(PALETTE_DND_MIME) ||
@@ -606,6 +614,11 @@ export function Canvas(props: CanvasProps) {
         }
       }}
       onDrop={(e) => {
+        // Dropped back onto a floating panel (the Palette) — cancel: the
+        // drop event bubbles up from the panel to this canvas handler, so
+        // without this guard a drop over the Palette would still add an
+        // element behind it.
+        if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
         const shapeKind = e.dataTransfer.getData(PALETTE_DND_MIME);
         // A line-art icon and a tech (brand) icon both drop as an 'icon'
         // shape carrying the id; dropPaletteItem picks the telemetry type.
