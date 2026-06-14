@@ -20,12 +20,22 @@ import {
   supportsBorderControls,
   supportsBorderRadius,
   unionBoxedBounds,
+  type ArrowEnds,
+  type ArrowheadShape,
+  type ArrowheadSize,
+  type ArrowStyle,
+  type ArrowThickness,
+  type BorderRadius,
   type BorderStroke,
   type BorderStyle,
   type Element,
+  type Padding,
+  type ShapeKind,
+  type TextAlignX,
+  type TextAlignY,
+  type TextSize,
 } from '@livediagram/diagram';
 import { isTechIconId } from '@/lib/tech-icons';
-import type { SelectedElementControls } from '@/components/CommandPalette';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -199,42 +209,43 @@ export function deriveCanvasSelection(input: {
   };
 }
 
-// Field subset of SelectedElementControls: the per-element control VALUES
-// (no on* handlers) that deriveSelectedElementFields below projects, gated
-// by element type.
-export type SelectedElementFields = Pick<
-  SelectedElementControls,
-  | 'textSize'
-  | 'textAlignX'
-  | 'textAlignY'
-  | 'textColor'
-  | 'fillColor'
-  | 'strokeColor'
-  | 'opacity'
-  | 'padding'
-  | 'textBold'
-  | 'textItalic'
-  | 'textUnderline'
-  | 'textStrikethrough'
-  | 'font'
-  | 'hasText'
-  | 'arrowEnds'
-  | 'arrowThickness'
-  | 'arrowheadSize'
-  | 'arrowheadShape'
-  | 'arrowStyle'
-  | 'arrowStrokeStyle'
-  | 'shapeKind'
-  | 'aspectLocked'
-  | 'borderStroke'
-  | 'borderStyle'
-  | 'borderRadius'
-  | 'tableHeaderRow'
-  | 'tableHeaderColumn'
-  | 'tableZebra'
-  | 'tableHeaderFill'
-  | 'tableHeaderTextColor'
->;
+// The per-element control VALUES (no on* handlers) that
+// deriveSelectedElementFields below projects, gated by element type. The
+// editor reads these to render the selected element's context menu /
+// popover; nullable fields are null when they don't apply to the
+// selection's type.
+export type SelectedElementFields = {
+  textSize: TextSize | null;
+  textAlignX: TextAlignX | null;
+  textAlignY: TextAlignY | null;
+  textColor: string | null;
+  fillColor: string | null;
+  strokeColor: string | null;
+  opacity: number;
+  padding: Padding | null;
+  textBold: boolean | null;
+  textItalic: boolean | null;
+  textUnderline: boolean | null;
+  textStrikethrough: boolean | null;
+  font: string | null;
+  hasText: boolean;
+  arrowEnds: ArrowEnds | null;
+  arrowThickness: ArrowThickness | null;
+  arrowheadSize: ArrowheadSize | null;
+  arrowheadShape: ArrowheadShape | null;
+  arrowStyle: ArrowStyle | null;
+  arrowStrokeStyle: BorderStyle | null;
+  shapeKind: ShapeKind | null;
+  aspectLocked: boolean | null;
+  borderStroke: BorderStroke | null;
+  borderStyle: BorderStyle | null;
+  borderRadius: BorderRadius | null;
+  tableHeaderRow: boolean | null;
+  tableHeaderColumn: boolean | null;
+  tableZebra: boolean | null;
+  tableHeaderFill: string | null;
+  tableHeaderTextColor: string | null;
+};
 
 // Which per-element control values to surface for the selected element,
 // gated by element type: images (boxed but text/colour-less) null out the

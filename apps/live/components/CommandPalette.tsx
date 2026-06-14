@@ -1,20 +1,6 @@
 import { useState } from 'react';
 import { IconButton } from './palette-controls';
-import type {
-  ArrowEnds,
-  ArrowheadShape,
-  ArrowheadSize,
-  ArrowStyle,
-  ArrowThickness,
-  BorderRadius,
-  BorderStroke,
-  BorderStyle,
-  Padding,
-  ShapeKind,
-  TextAlignX,
-  TextAlignY,
-  TextSize,
-} from '@livediagram/diagram';
+import type { ShapeKind } from '@livediagram/diagram';
 import { MovablePanel } from './MovablePanel';
 import { PaletteTabBar } from './PaletteTabBar';
 import { PaletteDropdown } from './PaletteDropdown';
@@ -29,110 +15,6 @@ import {
 } from '@/lib/tech-icons';
 import { IconPrims } from './icon-glyph';
 import { TechIconArt } from './tech-icon-glyph';
-
-export type SelectedElementControls = {
-  textSize: TextSize | null;
-  textAlignX: TextAlignX | null;
-  textAlignY: TextAlignY | null;
-  textColor: string | null;
-  fillColor: string | null;
-  strokeColor: string | null;
-  opacity: number;
-  onBringToFront: () => void;
-  onSendToBack: () => void;
-  onSetTextSize: (size: TextSize) => void;
-  onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  onSetTextColor: (color: string) => void;
-  onSetFillColor: (color: string) => void;
-  onSetStrokeColor: (color: string) => void;
-  onSetOpacity: (opacity: number) => void;
-  onResetColors: () => void;
-  padding: Padding | null;
-  onSetPadding: (padding: Padding) => void;
-  // Inline label styling. `null` for elements without a label (e.g.
-  // arrows). The Text accordion renders a row of toggle buttons that
-  // flip these booleans independently — any combination works.
-  textBold: boolean | null;
-  textItalic: boolean | null;
-  textUnderline: boolean | null;
-  textStrikethrough: boolean | null;
-  onToggleTextBold: () => void;
-  onToggleTextItalic: () => void;
-  onToggleTextUnderline: () => void;
-  onToggleTextStrikethrough: () => void;
-  // Font (spec/28): the element's font id, `null` when it uses the tab
-  // default / has no text. `onSetFont(null)` clears the override so the
-  // element falls back to the tab's font.
-  font: string | null;
-  onSetFont: (font: string | null) => void;
-  // Whether the selected element currently has non-empty label text.
-  // The Text accordion is hidden entirely when false: size / style /
-  // alignment / padding only matter once the element has a label, and
-  // you add one by double-clicking the element, not from this panel.
-  hasText: boolean;
-  // Non-null only when an arrow is selected. Drives the Pointer
-  // accordion that lets the user choose which end(s) of the arrow
-  // get an arrowhead.
-  arrowEnds: ArrowEnds | null;
-  onSetArrowEnds: (ends: ArrowEnds) => void;
-  // Same gate as arrowEnds: drives the thickness row inside the
-  // Pointer accordion. Snapped to the nearest preset for display so
-  // arrows authored before the field existed still highlight one.
-  arrowThickness: ArrowThickness | null;
-  onSetArrowThickness: (thickness: ArrowThickness) => void;
-  // Independent arrowhead size — separated from the line thickness so
-  // users can pair a thin line with a chunky head (or vice versa).
-  arrowheadSize: ArrowheadSize | null;
-  onSetArrowheadSize: (size: ArrowheadSize) => void;
-  // Arrowhead head shape (filled / hollow triangle, open V, dot,
-  // diamond...). Null unless an arrow with at least one head is
-  // selected. Pairs with the UML-style connectors.
-  arrowheadShape: ArrowheadShape | null;
-  onSetArrowheadShape: (shape: ArrowheadShape) => void;
-  // Path geometry: straight (default), curved (bezier bow), or angled
-  // (axis-aligned right-angle elbow). Null when the selection isn't
-  // an arrow.
-  arrowStyle: ArrowStyle | null;
-  onSetArrowStyle: (style: ArrowStyle) => void;
-  // Line pattern (solid / dashed / dotted) on the arrow stroke.
-  // Shares the BorderStyle union with the shape Border accordion's
-  // pattern row so the same icon set lights up either way.
-  arrowStrokeStyle: BorderStyle | null;
-  onSetArrowStrokeStyle: (style: BorderStyle) => void;
-  // Non-null only when a shape element is selected. Drives the Shape
-  // accordion's morph-into-this-kind grid.
-  shapeKind: ShapeKind | null;
-  onSetShapeKind: (kind: ShapeKind) => void;
-  // Whether the selected boxed element's width/height ratio is
-  // locked during resize. `null` when the selection is something
-  // that doesn't support aspect-lock (e.g. arrows).
-  aspectLocked: boolean | null;
-  onToggleAspectLock: () => void;
-  // Border presets. Non-null only when a shape is selected (text
-  // elements have no border and stickies have a fixed peeled-corner
-  // visual). The Border accordion renders three icon-button rows:
-  // strength, pattern, radius.
-  borderStroke: BorderStroke | null;
-  borderStyle: BorderStyle | null;
-  borderRadius: BorderRadius | null;
-  onSetBorderStroke: (value: BorderStroke) => void;
-  onSetBorderStyle: (value: BorderStyle) => void;
-  onSetBorderRadius: (value: BorderRadius) => void;
-  // Non-null only when a table is selected. Drive the Table
-  // accordion's header-row / header-column toggles (combinable).
-  tableHeaderRow: boolean | null;
-  tableHeaderColumn: boolean | null;
-  tableZebra: boolean | null;
-  onToggleTableHeaderRow: () => void;
-  onToggleTableHeaderColumn: () => void;
-  onToggleTableZebra: () => void;
-  // Header-band colours for a selected table (effective colour
-  // shown in the swatch; null for non-tables).
-  tableHeaderFill: string | null;
-  tableHeaderTextColor: string | null;
-  onSetTableHeaderFill: (color: string) => void;
-  onSetTableHeaderTextColor: (color: string) => void;
-};
 
 export type CanvasTool = 'pan' | 'select' | 'laser' | 'eraser';
 
