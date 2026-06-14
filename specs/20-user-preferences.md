@@ -120,7 +120,7 @@ type UserPreferences = {
   // OPENAI_API_KEY is configured). See spec/25.
   aiAssistanceEnabled?: boolean;
 
-  // When true, the floating Explorer / Palette / Editor / AI panels
+  // When true, the floating Explorer / Palette / AI panels
   // are replaced by a compact dock of buttons that open each panel
   // as a popover on click — the "minimal panel layout". Defaults to
   // false (floating panels) on desktop. The dock layout is ALWAYS

@@ -35,7 +35,7 @@ export type CanvasSelection = {
   // singly selected.
   memberIds: Set<string>;
   // First element (in z-order) of an active marquee multi-selection,
-  // promoted so the Editor panel can read shared properties from it.
+  // promoted so the selection chrome can read shared properties from it.
   multiPrimaryId: string | null;
   // The primary selected element: the single selection, else the multi
   // primary. Null when nothing is selected.

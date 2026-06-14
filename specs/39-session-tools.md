@@ -46,7 +46,7 @@ live counts but can't control or vote. No extra gating code.
   top pill — owner/role badge, mode banners, multi-selection toolbar, timer,
   vote — as one non-overlapping column. The stack centres at the top from `sm:`
   up but anchors to the top **left** on mobile, so it clears the mobile dock
-  buttons (Explorer / Palette / Editor) at the top right. The timer shares a row
+  buttons (Explorer / Palette) at the top right. The timer shares a row
   with the active mode banner / selection toolbar: it sits to the **right** of
   it on desktop and **underneath** it on mobile rather than stacking on top.
 

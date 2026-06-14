@@ -29,11 +29,11 @@ The header has a **collapse button** to the right of the `PALETTE` label. Clicki
 - **Mobile** (touch viewports below the `sm:` breakpoint, 640 px): the palette does not render at its corner. It opens instead from the **mobile dock** (a top-right button row, see spec/07 "Mobile chrome") as a popover anchored to the Palette button; tapping the button again, or adding a shape / tool, closes the popover. The banner-collapse described here is the desktop mechanism.
 - **Desktop** (`sm:` and up): the palette starts expanded. The collapse button toggles to banner mode. There is no outside-tap auto-close on desktop, the user is in control of when to re-open.
 
-On desktop the Palette and Editor (ContextPanel) collapse to a banner in place via the `MovablePanel` `collapsible` prop. On mobile they (and the Explorer) are reached from the top-right mobile dock instead (spec/07 "Mobile chrome"); the old bottom-of-canvas dock button next to the zoom controls is retired. Activity still docks via its own minimise path, see that section.
+On desktop the Palette collapses to a banner in place via the `MovablePanel` `collapsible` prop. On mobile it (and the Explorer) is reached from the top-right mobile dock instead (spec/07 "Mobile chrome"); the old bottom-of-canvas dock button next to the zoom controls is retired. Activity still docks via its own minimise path, see that section.
 
 ### Minimal panel layout (desktop opt-in)
 
-Desktop users can opt into the mobile-style dock via the **"Minimal panel layout"** preference (`minimalPanels`, spec/20, Settings → Interface). When on, the floating Explorer / Palette / Editor / AI panels are replaced on desktop by the same top-right button dock and popover behaviour mobile already uses: each button opens its panel as a popover with an arrow pointing at the button, click-outside or a second click closes it, and adding a shape / tool auto-closes the Palette popover. Implemented by the `MovablePanel` `forceDockMode` prop, which extends the existing mobile dock code path to desktop (the dock is `sm:hidden` by default but shown at all widths when `minimalPanels` is set). Defaults off; mobile is always docked regardless of the flag.
+Desktop users can opt into the mobile-style dock via the **"Minimal panel layout"** preference (`minimalPanels`, spec/20, Settings → Interface). When on, the floating Explorer / Palette / AI panels are replaced on desktop by the same top-right button dock and popover behaviour mobile already uses: each button opens its panel as a popover with an arrow pointing at the button, click-outside or a second click closes it, and adding a shape / tool auto-closes the Palette popover. Implemented by the `MovablePanel` `forceDockMode` prop, which extends the existing mobile dock code path to desktop (the dock is `sm:hidden` by default but shown at all widths when `minimalPanels` is set). Defaults off; mobile is always docked regardless of the flag.
 
 ## Explorer panel
 
@@ -51,7 +51,7 @@ Sections, top to bottom:
 
 Diagram rows — in **Recent Diagrams** and inside folders — show a small chain-link glyph (the shared `SharedDiagramIcon`) beside the name when the diagram has an active share link (`shareCode` non-null, carried through from the `/api/diagrams` summary), with a "Has a share link" tooltip, so an owner can tell at a glance which of their diagrams are shared. The glyph is suppressed on the row for the currently-open diagram, whose share state already shows in the Current Diagram section.
 
-On desktop, collapsing the Explorer banner-collapses it in place via the shared `MovablePanel` `collapsible` prop (same as the Palette and Editor's ContextPanel). On mobile the Explorer is instead opened from the top-right mobile dock (spec/07 "Mobile chrome"), so it is no longer hidden on phones; the old bottom-of-canvas dock button is retired. Activity still docks via its own minimise path, see that section.
+On desktop, collapsing the Explorer banner-collapses it in place via the shared `MovablePanel` `collapsible` prop (same as the Palette). On mobile the Explorer is instead opened from the top-right mobile dock (spec/07 "Mobile chrome"), so it is no longer hidden on phones; the old bottom-of-canvas dock button is retired. Activity still docks via its own minimise path, see that section.
 
 ## Text alignment
 
