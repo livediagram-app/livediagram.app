@@ -527,7 +527,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                 type="button"
                 onClick={props.onToggleAspectLock}
                 aria-pressed={!!(target as { aspectLocked?: boolean }).aspectLocked}
-                className="flex w-full items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+                className="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 <span className="flex items-center gap-2">
                   <span className="text-slate-400 dark:text-slate-500">
@@ -591,7 +591,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                     props.onResetColors();
                     onClose();
                   }}
-                  className="inline-flex w-full items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
+                  className="inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
                 >
                   Reset to theme
                 </button>
@@ -1019,7 +1019,7 @@ function ColourRow({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+        className="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
       >
         <span>{label}</span>
         <span
@@ -1036,7 +1036,7 @@ function ColourRow({
               type="button"
               aria-label={c}
               onClick={() => onChange(c)}
-              className={`h-5 w-5 rounded border transition ${
+              className={`h-5 w-5 cursor-pointer rounded border transition ${
                 value.toLowerCase() === c.toLowerCase()
                   ? 'border-brand-500 ring-1 ring-brand-400'
                   : 'border-slate-300 hover:scale-110 dark:border-slate-600'
@@ -1293,7 +1293,7 @@ function MenuTile({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={active}
-      className={`flex flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`flex cursor-pointer flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition disabled:cursor-not-allowed disabled:opacity-40 ${
         danger
           ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
           : active
@@ -1336,7 +1336,7 @@ function MenuToggleRow({
       type="button"
       onClick={onToggle}
       aria-pressed={checked}
-      className="flex w-full items-center justify-between gap-3 px-3 py-1.5 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
+      className="flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
     >
       <span className="flex flex-col">
         <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{label}</span>

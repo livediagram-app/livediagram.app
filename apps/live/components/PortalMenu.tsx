@@ -97,8 +97,8 @@ export function MenuItem({ icon, label, onClick, danger, disabled }: MenuItemPro
   const tone = disabled
     ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
     : danger
-      ? 'text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
-      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
+      ? 'cursor-pointer text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
+      : 'cursor-pointer text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
   return (
     <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${tone}`}>
       <span
@@ -163,7 +163,7 @@ export function MenuAccordionSection({
         onClick={onToggle}
         onMouseDown={preserveFocus ? (e) => e.preventDefault() : undefined}
         aria-expanded={open}
-        className="flex w-full items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
+        className="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
       >
         <span className="flex items-center gap-2">
           {icon}
