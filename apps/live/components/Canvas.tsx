@@ -32,12 +32,8 @@ import { type SelectedElementControls } from './CommandPalette';
 // dependencies keeps the editor's initial chunk lean.
 import { useCanvasPanAndMarquee } from '@/hooks/useCanvasPanAndMarquee';
 import { getTheme } from '@/lib/themes';
-// Lazy-load MultiSelectionToolbar: only mounts when the user has
-// drag-marquee'd two or more elements. Most sessions never trigger
-// it (single-element edits dominate), so deferring the 172-line
-// toolbar + its icon set keeps the editor's initial chunk lean.
-// Same pattern as the editor's other gated modals (NotePopover,
-// TabLinkPicker, etc.).
+import { FloatingToolbar } from './FloatingToolbar';
+import { MultiSelectionToolbar } from './MultiSelectionToolbar';
 import { SelectionPopover } from './SelectionPopover';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
@@ -1101,6 +1097,40 @@ export function Canvas(props: CanvasProps) {
             }
             compact={readOnly}
           />
+        </div>
+      ) : null}
+
+      {/* Marquee multi-selection toolbar — floats over the selection's union
+          bounds (above, or below when there's no room) instead of pinning to
+          the top of the screen, mirroring the single-selection popover. Rides
+          the same canvas-transform sibling wrapper so it counter-scales with
+          zoom. Gated on a true marquee multi-selection (2+), never in
+          view-only. */}
+      {!readOnly && multiSelectedIds.size >= 2 && showUnionResize && unionResizeBounds ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-40 origin-center"
+          style={{
+            transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+          }}
+        >
+          <FloatingToolbar
+            bounds={unionResizeBounds}
+            canvasOffset={viewportOffset}
+            zoom={viewportZoom}
+            title={`Selected Elements (${multiSelectedIds.size})`}
+          >
+            <MultiSelectionToolbar
+              anyLocked={elements.some((el) => multiSelectedIds.has(el.id) && el.locked === true)}
+              allLocked={elements
+                .filter((el) => multiSelectedIds.has(el.id))
+                .every((el) => el.locked === true)}
+              onDuplicate={props.onDuplicateMultiSelected}
+              onDelete={props.onDeleteMultiSelected}
+              onGroup={props.onGroupMultiSelected}
+              onToggleLock={props.onToggleLockMultiSelected}
+              onExport={props.onExportMultiSelected}
+            />
+          </FloatingToolbar>
         </div>
       ) : null}
 

@@ -1,4 +1,3 @@
-import dynamic from 'next/dynamic';
 import { drawBannerMessage } from '@/lib/draw-mode';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from './Canvas.types';
@@ -9,17 +8,10 @@ import { Tooltip } from './Tooltip';
 import { TopCenterRow, TopCenterStack } from './TopCenter';
 import { VoteBanner } from './VoteBanner';
 
-// Lazy-load MultiSelectionToolbar: only mounts when the user has
-// drag-marquee'd two or more elements. Most sessions never trigger it
-// (single-element edits dominate), so deferring the toolbar + its icon
-// set keeps the editor's initial chunk lean.
-const MultiSelectionToolbar = dynamic(() =>
-  import('./MultiSelectionToolbar').then((m) => m.MultiSelectionToolbar),
-);
-
 // Everything that floats at the top of the canvas: the owner / role
-// badge, the active editor-mode banner, the multi-selection toolbar, the
-// session timer and the vote banner. Extracted from CanvasChrome so the
+// badge, the active editor-mode banner, the session timer and the vote
+// banner. (The multi-selection toolbar now floats over the selection
+// itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
 // chrome shell stays lean — this is one cohesive concern (the top-centre
 // stack and its non-overlap layout) with its own props.
 type TopCenterChromeProps = Pick<
@@ -29,13 +21,6 @@ type TopCenterChromeProps = Pick<
   | 'ownerParticipant'
   | 'selfParticipant'
   | 'readOnly'
-  | 'elements'
-  | 'multiSelectedIds'
-  | 'onDuplicateMultiSelected'
-  | 'onDeleteMultiSelected'
-  | 'onGroupMultiSelected'
-  | 'onToggleLockMultiSelected'
-  | 'onExportMultiSelected'
   | 'pendingDraw'
   | 'onCancelDraw'
   | 'recogniseShapes'
@@ -59,13 +44,6 @@ export function TopCenterChrome({
   ownerParticipant,
   selfParticipant,
   readOnly,
-  elements,
-  multiSelectedIds,
-  onDuplicateMultiSelected,
-  onDeleteMultiSelected,
-  onGroupMultiSelected,
-  onToggleLockMultiSelected,
-  onExportMultiSelected,
   pendingDraw,
   onCancelDraw,
   recogniseShapes,
@@ -112,22 +90,9 @@ export function TopCenterChrome({
           (sm:flex-row) and stacks UNDERNEATH it on mobile (flex-col).
           `empty:hidden` collapses the row (and its stack gap) when nothing
           in it is active. */}
+      {/* The multi-selection toolbar used to sit here; it now floats over the
+          selection (Canvas + FloatingToolbar). */}
       <TopCenterRow className="flex-col sm:flex-row empty:hidden">
-        {multiSelectedIds.size >= 2 && !readOnly ? (
-          <MultiSelectionToolbar
-            count={multiSelectedIds.size}
-            anyLocked={elements.some((el) => multiSelectedIds.has(el.id) && el.locked === true)}
-            allLocked={elements
-              .filter((el) => multiSelectedIds.has(el.id))
-              .every((el) => el.locked === true)}
-            onDuplicate={onDuplicateMultiSelected}
-            onDelete={onDeleteMultiSelected}
-            onGroup={onGroupMultiSelected}
-            onToggleLock={onToggleLockMultiSelected}
-            onExport={onExportMultiSelected}
-          />
-        ) : null}
-
         {isPaintMode ? (
           <ModeBanner
             icon={<PaintIcon />}

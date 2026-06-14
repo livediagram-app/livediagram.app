@@ -1,8 +1,6 @@
-import { TopCenterBanner } from './TopCenter';
 import { Tooltip } from './Tooltip';
 
 type MultiSelectionToolbarProps = {
-  count: number;
   // True if at least one member of the multi-selection is locked. The
   // Lock button toggles them all to the inverse state — if anything is
   // unlocked, the click locks everything; otherwise it unlocks.
@@ -18,13 +16,10 @@ type MultiSelectionToolbarProps = {
   onExport: () => void;
 };
 
-// Floating action toolbar shown at the top-middle of the canvas while a
-// marquee multi-selection is active. Same visual language as ModeBanner
-// (centred pill, brand colours) but lives in its own component because it
-// hosts real actions rather than a status + cancel button. Animates in
-// via the shared `fade-in` keyframe.
+// The marquee multi-selection action buttons. Rendered bare (no shell) so the
+// caller can host them in a FloatingToolbar that floats over the selection
+// with a title; the shell + count live there.
 export function MultiSelectionToolbar({
-  count,
   anyLocked,
   allLocked,
   onDuplicate,
@@ -34,20 +29,7 @@ export function MultiSelectionToolbar({
   onExport,
 }: MultiSelectionToolbarProps) {
   return (
-    <TopCenterBanner
-      tone="neutral"
-      className="gap-1 py-1 pl-3 pr-1"
-      onPointerDown={(e) => e.stopPropagation()}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-    >
-      <span className="select-none pr-1 text-xs font-medium text-slate-700 dark:text-slate-200">
-        Selection
-        <span className="ml-1 font-normal text-slate-400 dark:text-slate-500">({count})</span>
-      </span>
-      <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+    <>
       <Tooltip title="Duplicate" description="Duplicate selected (arrows skipped).">
         <button
           type="button"
@@ -117,7 +99,7 @@ export function MultiSelectionToolbar({
           <TrashIcon />
         </button>
       </Tooltip>
-    </TopCenterBanner>
+    </>
   );
 }
 
