@@ -32,7 +32,7 @@ import { getTheme, recolourElementsForTheme } from './themes';
 
 export type MarkdownNode = { label: string; children: MarkdownNode[] };
 type MarkdownTable = { headers: string[]; rows: string[][] };
-export type ParsedMarkdown = { roots: MarkdownNode[]; tables: MarkdownTable[] };
+type ParsedMarkdown = { roots: MarkdownNode[]; tables: MarkdownTable[] };
 
 // Strip inline Markdown / HTML so a node label reads as plain text.
 // Order matters: images before links (both use `[]()`), emphasis after
@@ -191,7 +191,7 @@ function depthTextSize(depth: number): TextSize {
   return depth === 0 ? 'lg' : depth === 1 ? 'md' : 'sm';
 }
 
-export type OutlineLayout = {
+type OutlineLayout = {
   elements: Element[];
   // Bounding box of the laid-out tree, for stacking tables beneath it.
   bounds: { minX: number; minY: number; maxX: number; maxY: number };
@@ -275,7 +275,7 @@ function buildTableElement(table: MarkdownTable, x: number, y: number): TableEle
 // Build
 // ---------------------------------------------------------------------
 
-export type MarkdownImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
+type MarkdownImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 
 export function buildTabFromMarkdown(
   markdown: string,
