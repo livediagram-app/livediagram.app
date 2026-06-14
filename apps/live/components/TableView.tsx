@@ -1000,11 +1000,13 @@ export function TableView({
             <div
               data-table-ui
               onPointerDown={(e) => e.stopPropagation()}
-              className="pointer-events-auto absolute left-1/2 top-0 z-40 flex -translate-x-1/2 -translate-y-[calc(100%+4px)] items-center animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-0.5 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
+              className="pointer-events-auto absolute bottom-0 left-1/2 z-40 flex -translate-x-1/2 translate-y-[calc(100%+4px)] items-center animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-0.5 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
             >
-              {/* Title line, above the bar (it always sits above the cell),
-                  matching the other floating toolbars' captions. */}
-              <span className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 shadow-sm ring-1 ring-slate-200 dark:bg-slate-700 dark:text-white dark:ring-0">
+              {/* Title line, below the bar — the cell toolbar always sits below
+                  its cell (so it never clashes with the element toolbar, which
+                  floats above the selection), so the caption sits on the far
+                  side, beneath the bar. */}
+              <span className="pointer-events-none absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 shadow-sm ring-1 ring-slate-200 dark:bg-slate-700 dark:text-white dark:ring-0">
                 Selected Cell
               </span>
               {(() => {

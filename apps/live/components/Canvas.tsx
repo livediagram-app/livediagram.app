@@ -8,6 +8,7 @@ import {
 } from 'react';
 import {
   defaultTextAlign,
+  elementKindLabel,
   isBoxed,
   snapResizeBounds,
   snapToAlignment,
@@ -1063,7 +1064,13 @@ export function Canvas(props: CanvasProps) {
             bounds={selectionBounds}
             canvasOffset={viewportOffset}
             zoom={viewportZoom}
-            title={selectionScope === 'group' ? 'Selected Group' : 'Selected Element'}
+            title={
+              selectionScope === 'group'
+                ? 'Selected Group'
+                : selected
+                  ? `Selected ${elementKindLabel(selected)}`
+                  : 'Selected Element'
+            }
             // In view-only mode we mount the popover with just
             // `onOpenComments`: visitors should be able to read +
             // post comments on a diagram they don't own, but no

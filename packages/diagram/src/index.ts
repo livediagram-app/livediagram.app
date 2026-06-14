@@ -1038,6 +1038,10 @@ export * from './rich-text';
 export * from './factories';
 export * from './table';
 
+// Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
+// used by selection captions and any surface that names what's selected.
+export * from './element-kind-label';
+
 export * from './geometry';
 
 export * from './groups';
