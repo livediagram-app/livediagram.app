@@ -1179,6 +1179,8 @@ export function EditorView() {
           onClose={closeContextMenu}
           onLinkElement={openLinkPicker}
           onRemoveIcon={removeIconFromElement}
+          onOpenImagePicker={(id) => imageContext?.onOpenPicker?.(id)}
+          onRemoveImage={removeImageFromElement}
           onSetIconPosition={dropIconOnElement}
           onBringToFront={bringSelectedToFront}
           onSendToBack={sendSelectedToBack}

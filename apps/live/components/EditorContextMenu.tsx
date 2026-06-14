@@ -87,6 +87,10 @@ type EditorContextMenuProps = {
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
   onRemoveIcon: (elementId: string) => void;
+  // Image element actions (spec/19): open the picker (select / change) and
+  // clear the picked image back to a placeholder.
+  onOpenImagePicker: (elementId: string) => void;
+  onRemoveImage: (elementId: string) => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
   // Toggle aspect-ratio lock + set opacity on the clicked element (boxed
@@ -264,8 +268,45 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // shape is its own glyph and excluded.
     const hasInlineIcon =
       target.type === 'shape' && target.shape !== 'icon' && target.iconId !== undefined;
+    const hasImage = target.type === 'image' && target.imageId != null;
     return (
       <ContextMenu position={position} onClose={onClose} flush>
+        {/* Image — pick / change / clear the bitmap (spec/19). */}
+        {target.type === 'image' ? (
+          <MenuAccordionSection title="Image" icon={<ImageGlyph />} {...sectionProps('image')}>
+            {hasImage ? (
+              <MenuTileGrid cols={2}>
+                <MenuTile
+                  icon={<ImageGlyph />}
+                  label="Change Image"
+                  onClick={() => {
+                    props.onOpenImagePicker(target.id);
+                    onClose();
+                  }}
+                />
+                <MenuTile
+                  icon={<RemoveIconGlyph />}
+                  label="Remove Image"
+                  onClick={() => {
+                    props.onRemoveImage(target.id);
+                    onClose();
+                  }}
+                />
+              </MenuTileGrid>
+            ) : (
+              <div className="px-2 py-1.5">
+                <MenuTile
+                  icon={<ImageGlyph />}
+                  label="Select Image"
+                  onClick={() => {
+                    props.onOpenImagePicker(target.id);
+                    onClose();
+                  }}
+                />
+              </div>
+            )}
+          </MenuAccordionSection>
+        ) : null}
         {/* Icon — re-place or remove a shape's inline icon. */}
         {hasInlineIcon ? (
           <MenuAccordionSection title="Icon" icon={<IconCategoryGlyph />} {...sectionProps('icon')}>
@@ -998,6 +1039,26 @@ function BorderButton({
     <SizeButton active={active} onClick={onClick}>
       {children}
     </SizeButton>
+  );
+}
+
+// Picture glyph — the "Image" section.
+function ImageGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
+      <circle cx="6" cy="6.5" r="1" />
+      <path d="M3 12l3-3 2.5 2.5L11 8l2 2" />
+    </svg>
   );
 }
 
