@@ -1144,6 +1144,9 @@ export function EditorView() {
           onSendToBack={sendSelectedToBack}
           onToggleAspectLock={toggleAspectLockSelected}
           onSetOpacity={setOpacitySelected}
+          onSetTextColor={setTextColorSelected}
+          onSetFillColor={setFillColorSelected}
+          onSetStrokeColor={setStrokeColorSelected}
           onOpenNote={openNote}
           onOpenComments={openComments}
           onChangeTheme={() => {

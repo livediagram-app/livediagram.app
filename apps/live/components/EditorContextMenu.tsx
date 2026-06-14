@@ -13,9 +13,17 @@
 // handlers; this component only decides which items to show.
 
 import { useState, type ReactNode } from 'react';
-import { isBoxed, type Element, type ShapeKind } from '@livediagram/diagram';
+import {
+  defaultFillColor,
+  defaultStrokeColor,
+  defaultTextColor,
+  isBoxed,
+  type BoxedElement,
+  type Element,
+  type ShapeKind,
+} from '@livediagram/diagram';
 import { ContextMenu, ContextMenuDivider } from '@/components/ContextMenu';
-import { ToggleSwitch } from '@/components/palette-controls';
+import { ColorSwatch, ToggleSwitch } from '@/components/palette-controls';
 import {
   AnnotationMenuIcon,
   AutoAlignIcon,
@@ -55,6 +63,9 @@ type EditorContextMenuProps = {
   // only). Read the current values off the target below.
   onToggleAspectLock: () => void;
   onSetOpacity: (opacity: number) => void;
+  onSetTextColor: (color: string) => void;
+  onSetFillColor: (color: string) => void;
+  onSetStrokeColor: (color: string) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   onChangeTheme: () => void;
@@ -69,6 +80,13 @@ type EditorContextMenuProps = {
 export function EditorContextMenu(props: EditorContextMenuProps) {
   const { menu, elements, onClose } = props;
   const position = { x: menu.x, y: menu.y };
+  // Which collapsible section is open in the element menu — at most one at a
+  // time (null = all collapsed). An accordion the user can only open one of.
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const sectionProps = (id: string) => ({
+    open: openSection === id,
+    onToggle: () => setOpenSection((s) => (s === id ? null : id)),
+  });
 
   if (menu.mode === 'element') {
     const target = elements.find((el) => el.id === menu.elementId);
@@ -104,7 +122,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         <ContextMenuDivider />
         {/* Layer — a collapsible section grouping front/back + opacity +
             (for boxed elements) the aspect-ratio lock. */}
-        <MenuAccordionSection title="Layer">
+        <MenuAccordionSection title="Layer" {...sectionProps('layer')}>
           <div className="flex gap-1 px-2 py-0.5">
             <MenuRowButton
               icon={<LayerUpIcon />}
@@ -146,8 +164,41 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </div>
           ) : null}
         </MenuAccordionSection>
+        {/* Colours — text / background / border swatches (boxed elements). */}
+        {boxed ? (
+          <MenuAccordionSection title="Colours" {...sectionProps('colours')}>
+            <ColourRow
+              label="Text"
+              value={
+                (target as { textColor?: string }).textColor ??
+                defaultTextColor(target as BoxedElement)
+              }
+              onChange={props.onSetTextColor}
+            />
+            {defaultFillColor(target as BoxedElement) !== 'transparent' ? (
+              <ColourRow
+                label="Background"
+                value={
+                  (target as { fillColor?: string }).fillColor ??
+                  defaultFillColor(target as BoxedElement)
+                }
+                onChange={props.onSetFillColor}
+              />
+            ) : null}
+            {defaultStrokeColor(target as BoxedElement) !== 'transparent' ? (
+              <ColourRow
+                label="Border"
+                value={
+                  (target as { strokeColor?: string }).strokeColor ??
+                  defaultStrokeColor(target as BoxedElement)
+                }
+                onChange={props.onSetStrokeColor}
+              />
+            ) : null}
+          </MenuAccordionSection>
+        ) : null}
         {/* Collaborate — notes + comments grouped under one collapsible header. */}
-        <MenuAccordionSection title="Collaborate">
+        <MenuAccordionSection title="Collaborate" {...sectionProps('collaborate')}>
           {boxed ? (
             <MenuItem
               icon={<NoteMenuIcon />}
@@ -237,17 +288,27 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
 }
 
 // A collapsible section inside the context menu: an uppercase header (with
-// a chevron) that toggles its content. Toggling doesn't close the menu (the
-// header isn't a MenuItem; the click stays inside the menu, so the
-// outside-click guard leaves it open). Collapsed by default to keep the menu
-// compact.
-function MenuAccordionSection({ title, children }: { title: string; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
+// a chevron) that toggles its content. Controlled by the parent so only one
+// section is open at a time. Toggling doesn't close the menu (the header
+// isn't a MenuItem; the click stays inside the menu, so the outside-click
+// guard leaves it open). The content height animates via the grid-rows
+// 0fr<->1fr trick (no fixed height needed).
+function MenuAccordionSection({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
   return (
     <div>
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={onToggle}
         aria-expanded={open}
         className="flex w-full items-center justify-between px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
       >
@@ -262,12 +323,36 @@ function MenuAccordionSection({ title, children }: { title: string; children: Re
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden
-          className={`transition-transform ${open ? '' : '-rotate-90'}`}
+          className={`transition-transform duration-200 ${open ? '' : '-rotate-90'}`}
         >
           <path d="M3 4.5 6 7.5 9 4.5" />
         </svg>
       </button>
-      {open ? children : null}
+      <div
+        className={`grid transition-all duration-200 ease-out ${
+          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        }`}
+      >
+        <div className="overflow-hidden">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// One labelled colour swatch row inside the Colours section. Thin wrapper so
+// the swatch sits with menu padding; ColorSwatch carries the native picker.
+function ColourRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (color: string) => void;
+}) {
+  return (
+    <div className="px-1">
+      <ColorSwatch label={label} value={value} onChange={onChange} />
     </div>
   );
 }
