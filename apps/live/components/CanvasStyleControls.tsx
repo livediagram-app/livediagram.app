@@ -25,6 +25,7 @@ export function CanvasStyleControls({
   onSetPatternColor,
   onSetBackgroundOpacity,
   patternColumns = 4,
+  showAllPatterns = false,
 }: {
   backgroundPattern: BackgroundPattern;
   backgroundColor: string;
@@ -38,10 +39,16 @@ export function CanvasStyleControls({
   // dialog passes 7 so the tiles aren't marooned with empty gutters.
   // Discrete values keep the class names static for Tailwind.
   patternColumns?: 4 | 7;
+  // Render every pattern at once with no "Show more" toggle. The narrow
+  // accordion keeps the toggle (compact for first-time users); the wide
+  // dialog has the room to show them all.
+  showAllPatterns?: boolean;
 }) {
   // Auto-expands when the active pattern sits behind the toggle so the
-  // current selection is always visible.
+  // current selection is always visible. Still called unconditionally
+  // (hooks rule) even when showAllPatterns bypasses its visible list.
   const patternsList = useShowMoreList(PATTERNS, (p) => p.id === backgroundPattern);
+  const visiblePatterns = showAllPatterns ? PATTERNS : patternsList.visible;
   const patternGridClass =
     patternColumns === 7
       ? 'mt-1 grid grid-cols-4 gap-1 sm:grid-cols-7'
@@ -51,7 +58,7 @@ export function CanvasStyleControls({
     <>
       <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">Pattern</p>
       <div className={patternGridClass}>
-        {patternsList.visible.map((p) => (
+        {visiblePatterns.map((p) => (
           <Tooltip key={p.id} title={p.label} description={p.description}>
             <PatternButton
               active={backgroundPattern === p.id}
@@ -63,7 +70,7 @@ export function CanvasStyleControls({
           </Tooltip>
         ))}
       </div>
-      {patternsList.hasMore && !patternsList.showAll ? (
+      {!showAllPatterns && patternsList.hasMore && !patternsList.showAll ? (
         <ShowMoreButton label="Show more patterns" onClick={patternsList.reveal} />
       ) : null}
       <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">

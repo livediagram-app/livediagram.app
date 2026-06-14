@@ -75,12 +75,12 @@ export function CanvasThemeDialog({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Change canvas and theme"
+          aria-label="Tab appearance"
           className="flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
         >
           <header className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
             <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-              Canvas &amp; theme
+              Tab Appearance
             </h2>
             <button
               type="button"
@@ -115,6 +115,7 @@ export function CanvasThemeDialog({
                 onSetPatternColor={onSetPatternColor}
                 onSetBackgroundOpacity={onSetBackgroundOpacity}
                 patternColumns={7}
+                showAllPatterns
               />
             ) : (
               <>

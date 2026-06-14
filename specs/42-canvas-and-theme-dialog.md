@@ -11,7 +11,7 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 - The empty-canvas right-click menu (`EditorContextMenu`, canvas mode) keeps its **Change Theme** and **Change Canvas** items. Picking either now opens **one** dialog (`CanvasThemeDialog`) on the matching tab:
   - **Change Canvas** → opens on the **Canvas** tab.
   - **Change Theme** → opens on the **Theme** tab.
-- The dialog has two tabs, **Canvas** and **Theme**, switchable from a tab strip in its header. Opening on one tab does not prevent switching to the other.
+- The dialog is titled **Tab Appearance** and has two tabs, **Canvas** and **Theme**, switchable from a tab strip below its header (a title + close row, consistent with the other editor dialogs). Opening on one tab does not prevent switching to the other.
 - Every control applies **live** to the active tab (same setters as the accordions), so the canvas updates behind the dialog as the user clicks. There is no Apply/Cancel: the dialog is an editor, not a wizard. Closing (the X, Escape, or a backdrop click) just dismisses it; nothing is rolled back.
 - The dialog is only reachable when the tab is editable. It is not offered on read-only / embed views (the right-click menu itself is suppressed there).
 
@@ -19,7 +19,7 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 
 The canvas-style controls, identical to the palette's **Canvas** accordion (and sharing the exact component, `CanvasStyleControls`, so the two can never drift):
 
-- **Pattern** — the 4-column pattern grid with the "Show more patterns" toggle ([spec/09](09-canvas-and-command-palette.md) lists the fourteen patterns).
+- **Pattern** — the pattern grid. The dialog has room to show **all fourteen** patterns at once (a 7-wide grid, no "Show more" toggle); the narrow palette accordion keeps the 4-wide grid with the toggle. ([spec/09](09-canvas-and-command-palette.md) lists the patterns.)
 - **Colours** — Canvas colour + Pattern colour swatches.
 - **Opacity** — the pattern-opacity slider with its percentage readout.
 
