@@ -3,10 +3,10 @@
 // small service topology), ER diagram (entity tables wired by
 // relationship arrows), and sequence diagram (participant lifelines
 // with request / response messages). They share a building-block
-// vocabulary the rest of the catalogue already ships — cylinders for
-// datastores, the table element for entities, dashed arrows for
-// lifelines / returns — so they slot into the same recolour + theme
-// pipeline as every other template.
+// vocabulary the rest of the catalogue already ships — full-colour
+// Technology icons (spec/41) for the infrastructure nodes, the table
+// element for entities, dashed arrows for lifelines / returns — so they
+// slot into the same recolour + theme pipeline as every other template.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. Sizing constants live inline so each template is
@@ -23,47 +23,45 @@ import {
 
 // A small but complete request path: a client hitting an API gateway
 // that fans out to two services, which in turn read a database and a
-// cache. Boxes carry an inline glyph (globe / server / lock) so the
-// roles read at a glance; the two datastores use the cylinder shape so
-// they're unmistakable. Colours are left to the theme — the topology
-// reads from the labels, icons and arrows.
+// cache. Each infrastructure node is a full-colour Technology icon tile
+// (spec/41) — Nginx gateway, Docker / Kubernetes services, PostgreSQL
+// database, Redis cache — chosen from the vendor-neutral "Generic" set
+// so the starter reads on any stack rather than pinning one cloud. The
+// caller (the user) hitting the system is a stroke-tinted line glyph
+// (there's no brand mark for "a browser"), so it adopts the theme like
+// the rest of the catalogue while the branded tiles carry their own
+// fixed colours. Labels caption each tile (icon on top, role beneath —
+// the architecture-diagram convention createShape('icon') bakes in);
+// pinned arrows wire the flow.
 export function buildSystemArchitecture(cx: number, cy: number): Element[] {
-  const boxW = 200;
-  const boxH = 92;
-  const svcW = 184;
-  const dbW = 132;
-  const dbH = 152;
-  const colGap = 150; // half-distance between the two side-by-side columns
+  const tile = 128; // square side for every node tile (icons are aspect-locked)
+  const colGap = 170; // half-distance between the two side-by-side columns
 
   // Vertical bands, top to bottom: client → gateway → services → data.
-  const clientY = cy - 300;
-  const gatewayY = cy - 150;
+  const clientY = cy - 320;
+  const gatewayY = cy - 170;
   const serviceY = cy + 0;
-  const dataY = cy + 200;
+  const dataY = cy + 190;
 
-  const boxed = (
-    centerX: number,
-    centerY: number,
-    w: number,
-    h: number,
-    label: string,
-    shape: 'square' | 'cylinder',
-    iconId?: string,
-  ): Element => ({
-    ...createShape(shape, centerX - w / 2, centerY - h / 2),
-    width: w,
-    height: h,
+  // An icon tile centred on (centerX, centerY): the glyph fills the box
+  // with the role label captioned beneath. `iconId` keys the tech-icon
+  // registry for branded tiles (rendered coloured) or the line-art
+  // catalogue for the client glyph (stroke-tinted by the theme).
+  const node = (centerX: number, centerY: number, label: string, iconId: string): Element => ({
+    ...createShape('icon', centerX - tile / 2, centerY - tile / 2),
+    width: tile,
+    height: tile,
     label,
-    textSize: 'md',
-    ...(iconId ? { iconId, iconPosition: 'left' as const } : {}),
+    iconId,
+    textSize: 'sm',
   });
 
-  const client = boxed(cx, clientY, boxW, boxH, 'Client', 'square', 'globe');
-  const gateway = boxed(cx, gatewayY, boxW, boxH, 'API Gateway', 'square', 'server');
-  const auth = boxed(cx - colGap, serviceY, svcW, boxH, 'Auth Service', 'square', 'lock');
-  const app = boxed(cx + colGap, serviceY, svcW, boxH, 'App Service', 'square', 'server');
-  const db = boxed(cx - colGap, dataY, dbW, dbH, 'Database', 'cylinder');
-  const cache = boxed(cx + colGap, dataY, dbW, dbH, 'Cache', 'cylinder');
+  const client = node(cx, clientY, 'Client', 'globe');
+  const gateway = node(cx, gatewayY, 'API Gateway', 'nginx');
+  const auth = node(cx - colGap, serviceY, 'Auth Service', 'docker');
+  const app = node(cx + colGap, serviceY, 'App Service', 'k8s');
+  const db = node(cx - colGap, dataY, 'Database', 'postgres');
+  const cache = node(cx + colGap, dataY, 'Cache', 'redis');
 
   const arrows = [
     createPinnedArrow(client.id, 's', gateway.id, 'n'),

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/diagram';
 import type { TemplateKind } from './templates';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
+import { isTechIconId } from './tech-icons';
 
 // `buildTemplate` is the dispatch that turns a TemplateKind into the
 // starting elements when the user picks a template (spec/09's
@@ -188,5 +189,26 @@ describe('gantt milestone bars survive theming', () => {
       .map((el) => (el as Extract<Element, { type: 'shape' }>).fillColor);
     expect(barFills.length).toBe(6);
     expect(new Set(barFills).size).toBe(6);
+  });
+});
+
+describe('system architecture uses full-colour technology icons', () => {
+  // The infrastructure nodes are Technology icon tiles (spec/41): a
+  // shape==='icon' element whose iconId resolves in the tech-icon
+  // registry renders as a branded colour tile rather than a stroke-tinted
+  // glyph. A regression that reverted the nodes to plain boxes / line
+  // glyphs would drop every tech iconId, so assert the branded set holds.
+  it('emits the gateway / service / datastore nodes as branded tiles', () => {
+    const els = buildTemplate('system-architecture', 0, 0);
+    const techIds = els
+      .filter(
+        (el): el is Extract<Element, { type: 'shape' }> =>
+          el.type === 'shape' && el.shape === 'icon',
+      )
+      .map((el) => el.iconId)
+      .filter((id): id is string => isTechIconId(id));
+    // Gateway (nginx), two services (docker / k8s), database (postgres),
+    // cache (redis) — the client glyph (globe) is line-art, not branded.
+    expect(new Set(techIds)).toEqual(new Set(['nginx', 'docker', 'k8s', 'postgres', 'redis']));
   });
 });
