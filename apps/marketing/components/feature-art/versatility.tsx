@@ -1081,17 +1081,18 @@ export function LinkCardArt() {
   );
 }
 
-// Technology icons: full-colour cloud + brand tiles (AWS, Azure, GCP,
-// Cloudflare, Firebase…) for architecture diagrams, a brand highlight
-// cycling across them like the real Technology picker.
+// Technology icons: full-colour cloud + brand tiles (AWS, Azure,
+// Cloudflare, Firebase, plus a vendor-neutral set) for architecture
+// diagrams, a brand highlight cycling across them like the real
+// Technology picker.
 export function TechIconsArt() {
   const tiles = [
     { label: 'AWS', bg: '#ff9900' },
     { label: 'Azure', bg: '#0078d4' },
-    { label: 'GCP', bg: '#4285f4' },
     { label: 'CF', bg: '#f38020' },
     { label: 'Fire', bg: '#ffa000' },
     { label: 'K8s', bg: '#326ce5' },
+    { label: 'Docker', bg: '#2496ed' },
   ];
   return (
     <Frame>

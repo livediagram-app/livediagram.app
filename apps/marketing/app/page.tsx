@@ -431,7 +431,7 @@ export default function LandingPage() {
                 art: <TechIconsArt />,
                 title: 'Full-colour technology icons',
                 description:
-                  'Build cloud architecture diagrams with brand-accurate icons for AWS, Azure, Google Cloud, Cloudflare, and Firebase, spanning compute, storage, databases, and networking. Search the Technology picker, drop one in, and it lands labelled with its product name.',
+                  'Build cloud architecture diagrams with brand-accurate icons for AWS, Azure, Cloudflare, and Firebase, plus a vendor-neutral set (Kubernetes, Docker, PostgreSQL, Redis and more), spanning compute, storage, databases, and networking. Search the Technology picker, drop one in, and it lands labelled with its product name.',
               },
               {
                 art: <ArrowsArt />,
