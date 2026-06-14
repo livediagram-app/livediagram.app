@@ -618,7 +618,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
-    if (arrowStyleOf(arrow) !== 'curved' || !arrow.curvePoints?.[index]) return;
+    // Any arrow carrying an explicit point at `index` can have it dragged —
+    // curved (smooth spline) or angled (polyline bend) alike. The point's
+    // existence is the gate; the style no longer is.
+    if (!arrow.curvePoints?.[index]) return;
     d.setSelectedId(arrowId);
     if (arrow.locked === true || d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
