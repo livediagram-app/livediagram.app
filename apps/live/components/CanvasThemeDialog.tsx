@@ -22,7 +22,6 @@ import { SizeButton } from './palette-controls';
 import { DotsIcon, ResetIcon, ScaleIcon } from './palette-icons';
 import { Portal } from './Portal';
 import { ThemeCategoryBrowser } from './ThemeCategoryBrowser';
-import { Tooltip } from './Tooltip';
 
 export type CanvasThemeTab = 'canvas' | 'theme' | 'font';
 
@@ -92,35 +91,50 @@ export function CanvasThemeDialog({
           aria-label="Tab appearance"
           className="flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
         >
-          <header className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-              Tab Appearance
-            </h2>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            >
-              <CloseIcon size={16} strokeWidth={1.6} />
-            </button>
-          </header>
-
-          <div className="border-b border-slate-200 px-4 py-2 dark:border-slate-800">
-            <div className="inline-flex items-center gap-1 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800">
-              <TabButton active={tab === 'canvas'} onClick={() => onTabChange('canvas')}>
-                Canvas
+          {/* Header + the full-width tab bar live in one band so the modal
+              reads as a single unit rather than two stacked divider rows. */}
+          <div className="flex flex-col gap-3 border-b border-slate-200 px-4 pb-3 pt-3 dark:border-slate-800">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                Tab Appearance
+              </h2>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              >
+                <CloseIcon size={16} strokeWidth={1.6} />
+              </button>
+            </div>
+            <div className="flex w-full gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+              <TabButton
+                active={tab === 'canvas'}
+                onClick={() => onTabChange('canvas')}
+                icon={<BackgroundTabIcon />}
+              >
+                Background
               </TabButton>
-              <TabButton active={tab === 'theme'} onClick={() => onTabChange('theme')}>
+              <TabButton
+                active={tab === 'theme'}
+                onClick={() => onTabChange('theme')}
+                icon={<ThemeTabIcon />}
+              >
                 Theme
               </TabButton>
-              <TabButton active={tab === 'font'} onClick={() => onTabChange('font')}>
+              <TabButton
+                active={tab === 'font'}
+                onClick={() => onTabChange('font')}
+                icon={<FontTabIcon />}
+              >
                 Font
               </TabButton>
             </div>
           </div>
 
-          <div className="overflow-y-auto px-5 py-4">
+          {/* Fixed min-height so switching to the short Font tab doesn't
+              collapse the modal and make it jump around. */}
+          <div className="min-h-[20rem] overflow-y-auto px-5 py-4">
             {tab === 'canvas' ? (
               <CanvasStyleControls
                 backgroundPattern={backgroundPattern}
@@ -162,58 +176,42 @@ export function CanvasThemeDialog({
               </>
             ) : (
               // Font: the tab's default font + the size seeded onto new
-              // palette elements (spec/28), moved here from the tab editor.
-              <div className="flex max-w-sm flex-col gap-1">
-                <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300">Font</p>
-                <FontSelect value={font} ariaLabel="Tab font" onChange={onSetTabFont} />
-                <p className="text-[11px] leading-snug text-slate-400 dark:text-slate-500">
-                  The default for every element on this tab; individual elements can override it.
-                </p>
-                <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
-                  <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
+              // palette elements (spec/28). Centred in a comfortable column so
+              // it fills the modal intentionally rather than hugging the left.
+              <div className="mx-auto flex max-w-md flex-col gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-xs font-medium text-slate-700 dark:text-slate-200">Font</p>
+                  <FontSelect value={font} ariaLabel="Tab font" onChange={onSetTabFont} />
+                  <p className="text-[11px] leading-snug text-slate-400 dark:text-slate-500">
+                    The default for every element on this tab; individual elements can override it.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-xs font-medium text-slate-700 dark:text-slate-200">
                     Default size for new elements
                   </p>
-                  {/* Same controls as the element editor's Text > Size row so
-                      the two read identically. */}
-                  <div className="grid grid-cols-4 gap-1">
-                    <Tooltip
-                      title="Scale"
-                      description="Auto-fit each new element's label to its size."
-                    >
+                  {/* Same Scale / S / M / L control as the element editor, with
+                      visible labels since there's room here. */}
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {(
+                      [
+                        ['scale', 'Scale', <ScaleIcon key="s" />],
+                        ['sm', 'Small', <DotsIcon key="1" count={1} />],
+                        ['md', 'Medium', <DotsIcon key="2" count={2} />],
+                        ['lg', 'Large', <DotsIcon key="3" count={3} />],
+                      ] as const
+                    ).map(([size, label, glyph]) => (
                       <SizeButton
-                        active={(defaultTextSize ?? 'md') === 'scale'}
-                        onClick={() => onSetTabDefaultTextSize('scale')}
+                        key={size}
+                        active={(defaultTextSize ?? 'md') === size}
+                        onClick={() => onSetTabDefaultTextSize(size)}
                       >
-                        <ScaleIcon />
+                        <span className="flex flex-col items-center gap-1 py-0.5">
+                          {glyph}
+                          <span className="text-[10px] font-medium">{label}</span>
+                        </span>
                       </SizeButton>
-                    </Tooltip>
-                    <Tooltip title="Small" description="New elements start at the small font size.">
-                      <SizeButton
-                        active={(defaultTextSize ?? 'md') === 'sm'}
-                        onClick={() => onSetTabDefaultTextSize('sm')}
-                      >
-                        <DotsIcon count={1} />
-                      </SizeButton>
-                    </Tooltip>
-                    <Tooltip
-                      title="Medium"
-                      description="New elements start at the medium font size."
-                    >
-                      <SizeButton
-                        active={(defaultTextSize ?? 'md') === 'md'}
-                        onClick={() => onSetTabDefaultTextSize('md')}
-                      >
-                        <DotsIcon count={2} />
-                      </SizeButton>
-                    </Tooltip>
-                    <Tooltip title="Large" description="New elements start at the large font size.">
-                      <SizeButton
-                        active={(defaultTextSize ?? 'md') === 'lg'}
-                        onClick={() => onSetTabDefaultTextSize('lg')}
-                      >
-                        <DotsIcon count={3} />
-                      </SizeButton>
-                    </Tooltip>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -228,10 +226,12 @@ export function CanvasThemeDialog({
 function TabButton({
   active,
   onClick,
+  icon,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  icon: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -240,12 +240,68 @@ function TabButton({
       onClick={onClick}
       aria-pressed={active}
       className={
-        active
-          ? 'rounded-md bg-white px-3 py-1 text-xs font-semibold text-slate-800 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-          : 'rounded-md px-3 py-1 text-xs font-medium text-slate-500 transition hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+        'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ' +
+        (active
+          ? 'bg-white font-semibold text-slate-800 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100')
       }
     >
+      <span className={active ? 'text-brand-500 dark:text-brand-300' : ''}>{icon}</span>
       {children}
     </button>
+  );
+}
+
+// Compact 14px glyphs for the tab bar.
+function BackgroundTabIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      aria-hidden
+    >
+      <rect x="2.5" y="2.5" width="11" height="11" rx="2" />
+      <circle cx="6" cy="6" r="0.6" fill="currentColor" stroke="none" />
+      <circle cx="10" cy="6" r="0.6" fill="currentColor" stroke="none" />
+      <circle cx="6" cy="10" r="0.6" fill="currentColor" stroke="none" />
+      <circle cx="10" cy="10" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+function ThemeTabIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      aria-hidden
+    >
+      <path d="M8 2.5a5.5 5.5 0 1 0 0 11c.9 0 1.3-.7 1.3-1.3 0-.7-.6-1-.6-1.6 0-.5.4-.9 1-.9h1.1A2.7 2.7 0 0 0 13.5 7 5.5 5.5 0 0 0 8 2.5z" />
+      <circle cx="5.5" cy="7" r="0.7" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="5.2" r="0.7" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+function FontTabIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <text
+        x="8"
+        y="12"
+        textAnchor="middle"
+        fontSize="12"
+        fontWeight="600"
+        fontFamily="Georgia, serif"
+      >
+        A
+      </text>
+    </svg>
   );
 }
