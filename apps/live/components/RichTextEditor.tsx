@@ -371,15 +371,16 @@ export function RichTextEditor({
     onCancel();
   };
 
-  // Resolve the range to format: the live selection, or the surrounding
-  // word when the caret is collapsed. Returns null to no-op.
+  // Resolve the range to format: the live selection, or — when the caret is
+  // collapsed (nothing selected) — the WHOLE text, so a format applied with
+  // no selection affects everything. Returns null to no-op.
   const targetRange = (): { start: number; end: number } | null => {
     const el = editorRef.current;
     if (!el) return null;
     const sel = domSelectionToOffsets(el) ?? selectionRef.current;
     if (!sel) return null;
     if (sel.start !== sel.end) return sel;
-    return wordRangeAt(runsPlainText(runsRef.current), sel.start);
+    return { start: 0, end: runsPlainText(runsRef.current).length };
   };
 
   const applyAndRepaint = (next: TextRun[], range: { start: number; end: number }) => {
