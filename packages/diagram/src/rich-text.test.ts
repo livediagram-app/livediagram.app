@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyFormatToRange,
+  applyListStyle,
   hasRichFormatting,
   normalizeRuns,
   runsFromPlainText,
   runsPlainText,
   setRunsPlainText,
+  stripListPrefixes,
   toggleFormatInRange,
   type TextRun,
 } from './rich-text';
@@ -157,5 +159,37 @@ describe('hasRichFormatting', () => {
   it('is true for any override', () => {
     expect(hasRichFormatting([{ text: 'x', bold: true }])).toBe(true);
     expect(hasRichFormatting([{ text: 'a' }, { text: 'b', color: '#fff' }])).toBe(true);
+  });
+});
+
+describe('applyListStyle / stripListPrefixes', () => {
+  it('bullets every non-empty line', () => {
+    const runs = applyListStyle(runsFromPlainText('a\nb'), 'bullet');
+    expect(runsPlainText(runs)).toBe('• a\n• b');
+  });
+
+  it('numbers lines sequentially, skipping blank lines', () => {
+    const runs = applyListStyle(runsFromPlainText('a\n\nb'), 'numbered');
+    expect(runsPlainText(runs)).toBe('1. a\n\n2. b');
+  });
+
+  it('renumbers / re-markers on re-apply rather than stacking', () => {
+    const once = applyListStyle(runsFromPlainText('a\nb\nc'), 'numbered');
+    const bulleted = applyListStyle(once, 'bullet');
+    expect(runsPlainText(bulleted)).toBe('• a\n• b\n• c');
+  });
+
+  it("'none' strips existing markers", () => {
+    const bulleted = applyListStyle(runsFromPlainText('a\nb'), 'bullet');
+    expect(runsPlainText(applyListStyle(bulleted, 'none'))).toBe('a\nb');
+    expect(runsPlainText(stripListPrefixes(bulleted))).toBe('a\nb');
+  });
+
+  it('preserves run formatting on the line body (marker stays unformatted)', () => {
+    const runs = applyListStyle([{ text: 'a\n' }, { text: 'b', bold: true }], 'bullet');
+    expect(runsPlainText(runs)).toBe('• a\n• b');
+    // The bold "b" survives as its own run; no marker run is bold.
+    expect(runs.some((r) => r.text === 'b' && r.bold === true)).toBe(true);
+    expect(runs.every((r) => !r.text.includes('•') || r.bold === undefined)).toBe(true);
   });
 });

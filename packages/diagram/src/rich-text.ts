@@ -239,6 +239,84 @@ export function setRunsPlainText(runs: TextRun[], newText: string): TextRun[] {
   return normalizeRuns([...head, ...mid, ...tail]);
 }
 
+// --- Lists (line-prefix markers) -------------------------------------------
+//
+// A list is rendered as literal line-prefix TEXT ("• " for bullets, "1. " for
+// numbered) rather than a block-level model — it rides the existing runs /
+// label / export paths with zero new fields. `applyListStyle` is a one-shot
+// transform that prepends a marker to every non-empty line (renumbering as it
+// goes) while preserving each character's run formatting; the marker itself is
+// an unformatted run. Re-applying first strips any existing markers, so
+// switching styles or renumbering after an edit stays clean.
+
+export type ListStyle = 'bullet' | 'numbered' | 'none';
+
+const BULLET_PREFIX = '• ';
+// A leading list marker on a line: a bullet "• " or a number "12. ".
+const LINE_PREFIX_RE = /^(?:• |\d+\. )/;
+
+type RunChar = { ch: string; attrs: Omit<TextRun, 'text'> };
+
+function toChars(runs: TextRun[]): RunChar[] {
+  const out: RunChar[] = [];
+  for (const run of runs) {
+    const attrs = attrsOf(run);
+    for (const ch of run.text) out.push({ ch, attrs });
+  }
+  return out;
+}
+
+function fromChars(chars: RunChar[]): TextRun[] {
+  return normalizeRuns(chars.map((c) => ({ text: c.ch, ...c.attrs })));
+}
+
+// Apply `fn` to each line's characters (split on '\n', which is re-inserted
+// between lines as a plain run), preserving every other character's run attrs.
+function mapLines(
+  runs: TextRun[],
+  fn: (lineChars: RunChar[], index: number) => RunChar[],
+): TextRun[] {
+  const lines: RunChar[][] = [[]];
+  for (const c of toChars(runs)) {
+    if (c.ch === '\n') lines.push([]);
+    else lines[lines.length - 1]!.push(c);
+  }
+  const out: RunChar[] = [];
+  lines.forEach((lineChars, i) => {
+    if (i > 0) out.push({ ch: '\n', attrs: {} });
+    out.push(...fn(lineChars, i));
+  });
+  return fromChars(out);
+}
+
+/** Strip a leading bullet / number marker from every line, keeping formatting. */
+export function stripListPrefixes(runs: TextRun[]): TextRun[] {
+  return mapLines(runs, (lineChars) => {
+    const m = lineChars
+      .map((c) => c.ch)
+      .join('')
+      .match(LINE_PREFIX_RE);
+    return m ? lineChars.slice(m[0].length) : lineChars;
+  });
+}
+
+/**
+ * Turn the text into a bulleted / numbered list (or strip markers for
+ * 'none'). Prepends a marker to every non-empty line, renumbering 'numbered'
+ * sequentially; existing markers are stripped first so the result is clean.
+ */
+export function applyListStyle(runs: TextRun[], style: ListStyle): TextRun[] {
+  const base = stripListPrefixes(runs);
+  if (style === 'none') return base;
+  let n = 0;
+  return mapLines(base, (lineChars) => {
+    if (lineChars.length === 0) return lineChars;
+    const prefix = style === 'bullet' ? BULLET_PREFIX : `${++n}. `;
+    const prefixChars: RunChar[] = [...prefix].map((ch) => ({ ch, attrs: {} }));
+    return [...prefixChars, ...lineChars];
+  });
+}
+
 // The run that contains character `offset` (clamped). Empty runs → a
 // blank run so callers always get attrs to inherit.
 function runAtOffset(runs: TextRun[], offset: number): TextRun {

@@ -18,12 +18,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   applyFormatToRange,
+  applyListStyle,
   defaultPadding,
   normalizeRuns,
   runsFromPlainText,
   runsPlainText,
   toggleFormatInRange,
   type BoxedElement,
+  type ListStyle,
   type Padding,
   type RunBoolKey,
   type RunPatch,
@@ -422,6 +424,17 @@ export function RichTextEditor({
     onPatch({ size });
   };
 
+  // Bullet / numbered list: a whole-text transform (prepends line markers,
+  // renumbering), so it ignores the selection range. Caret lands at the end.
+  const applyList = (style: ListStyle) => {
+    const next = applyListStyle(runsRef.current, style);
+    runsRef.current = next;
+    const len = runsPlainText(next).length;
+    pendingSelectionRef.current = { start: len, end: len };
+    setVersion((v) => v + 1);
+    track('Element', 'Changed', 'TextFormat');
+  };
+
   return (
     <div
       className="pointer-events-none absolute inset-0 flex overflow-visible"
@@ -534,6 +547,7 @@ export function RichTextEditor({
           padding={element.padding ?? defaultPadding(element)}
           currentFont={currentFont}
           onToggle={onToggle}
+          onApplyList={applyList}
           onSize={chooseSize}
           onColor={(color) => onPatch({ color })}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}

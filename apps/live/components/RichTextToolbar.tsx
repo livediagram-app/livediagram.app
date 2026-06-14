@@ -20,7 +20,14 @@ import {
 import { Tooltip } from './Tooltip';
 import { MenuAccordionSection } from './PortalMenu';
 import { FONTS, resolveFontStack } from '@/lib/fonts';
-import type { Padding, RunBoolKey, RunSize, TextAlignX, TextAlignY } from '@livediagram/diagram';
+import type {
+  ListStyle,
+  Padding,
+  RunBoolKey,
+  RunSize,
+  TextAlignX,
+  TextAlignY,
+} from '@livediagram/diagram';
 
 // Size key that includes 'scale' (whole-element auto-fit) alongside the
 // per-run sizes.
@@ -65,6 +72,74 @@ function EllipsisIcon() {
       <circle cx="4" cy="8" r="1.4" fill="currentColor" />
       <circle cx="8" cy="8" r="1.4" fill="currentColor" />
       <circle cx="12" cy="8" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+// Bulleted-list glyph: three dots + lines.
+function BulletListIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <circle cx="3" cy="4" r="1" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="8" r="1" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="12" r="1" fill="currentColor" stroke="none" />
+      <path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
+    </svg>
+  );
+}
+
+// Numbered-list glyph: 1/2/3 + lines.
+function NumberedListIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
+      <text x="1.5" y="5.5" fontSize="5" fill="currentColor" stroke="none">
+        1
+      </text>
+      <text x="1.5" y="9.5" fontSize="5" fill="currentColor" stroke="none">
+        2
+      </text>
+      <text x="1.5" y="13.5" fontSize="5" fill="currentColor" stroke="none">
+        3
+      </text>
+    </svg>
+  );
+}
+
+// "Remove list" glyph: lines with a slash.
+function NoListIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
+      <path d="M2.5 13.5l11-11" />
     </svg>
   );
 }
@@ -124,6 +199,7 @@ function OverflowMenu({
   currentFont,
   padding,
   onToggle,
+  onApplyList,
   onSetFont,
   onSetPadding,
 }: {
@@ -131,6 +207,7 @@ function OverflowMenu({
   currentFont: string | null;
   padding: Padding;
   onToggle: (key: RunBoolKey) => void;
+  onApplyList: (style: ListStyle) => void;
   onSetFont: (font: string | null) => void;
   onSetPadding: (padding: Padding) => void;
 }) {
@@ -186,6 +263,45 @@ function OverflowMenu({
             >
               <StrikethroughIcon />
               <span className="flex-1">Strikethrough</span>
+            </button>
+            <button
+              type="button"
+              role="option"
+              onMouseDown={noFocusSteal}
+              onClick={() => {
+                onApplyList('bullet');
+                close();
+              }}
+              className={optionClass(false)}
+            >
+              <BulletListIcon />
+              <span className="flex-1">Bullet list</span>
+            </button>
+            <button
+              type="button"
+              role="option"
+              onMouseDown={noFocusSteal}
+              onClick={() => {
+                onApplyList('numbered');
+                close();
+              }}
+              className={optionClass(false)}
+            >
+              <NumberedListIcon />
+              <span className="flex-1">Numbered list</span>
+            </button>
+            <button
+              type="button"
+              role="option"
+              onMouseDown={noFocusSteal}
+              onClick={() => {
+                onApplyList('none');
+                close();
+              }}
+              className={optionClass(false)}
+            >
+              <NoListIcon />
+              <span className="flex-1">Remove list</span>
             </button>
           </MenuAccordionSection>
           <MenuAccordionSection title="Font" icon={<FontGlyph />} {...catProps('font')}>
@@ -309,6 +425,7 @@ export function RichTextToolbar({
   padding,
   currentFont,
   onToggle,
+  onApplyList,
   onSize,
   onColor,
   onSetAlign,
@@ -321,6 +438,7 @@ export function RichTextToolbar({
   padding: Padding;
   currentFont: string | null;
   onToggle: (key: RunBoolKey) => void;
+  onApplyList: (style: ListStyle) => void;
   onSize: (size: SizeKey) => void;
   onColor: (color: string) => void;
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
@@ -355,6 +473,7 @@ export function RichTextToolbar({
           Padding, grouped into collapsible category sections. */}
       <OverflowMenu
         active={active}
+        onApplyList={onApplyList}
         currentFont={currentFont}
         padding={padding}
         onToggle={onToggle}
