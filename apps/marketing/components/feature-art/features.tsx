@@ -688,3 +688,30 @@ function MiniEditorMock({ dark }: { dark: boolean }) {
     </div>
   );
 }
+
+// Live session tools: a facilitator timer counting down plus dot-votes
+// landing on a card, synced to everyone in the room (spec/39).
+export function SessionToolsArt() {
+  return (
+    <Frame canvas>
+      <div className="flex h-full flex-col items-center justify-center gap-2">
+        <div className="fa-pulse flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-2.5 py-1 shadow-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+          <span className="text-[9px] font-semibold tabular-nums text-slate-700">2:30</span>
+        </div>
+        <div className="rounded-[3px] border border-sky-600/40 bg-sky-50 px-3 py-1.5">
+          <span className="text-[8px] font-medium text-sky-900">Ship the redesign</span>
+          <div className="mt-1 flex gap-1">
+            {[0, 1, 2, 3].map((i) => (
+              <span
+                key={i}
+                className="fa-pop h-2 w-2 rounded-full bg-brand-500"
+                style={{ animationDelay: `${i * 0.35}s` }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </Frame>
+  );
+}

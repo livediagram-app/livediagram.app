@@ -1,6 +1,6 @@
 // Feature illustrations — versatility + AI / rotation / layout scenes.
 // Split from FeatureArt.tsx; see ./shared for Frame + color constants.
-import { BLUE_FILL, BLUE_STROKE, Frame, SKY } from './shared';
+import { BLUE_FILL, BLUE_STROKE, Frame, PINK, SKY } from './shared';
 
 /* ──────────────── Section: versatility (shapes / notes / borders /
  * backdrops). Breadth-of-canvas cards, same vocabulary + shared fa-*
@@ -1014,4 +1014,107 @@ function IconGlyph({ kind }: { kind: string }) {
       );
   }
   return null;
+}
+
+// Rich text in labels: inline bold / italic / colour runs plus the
+// miniature B / I / U toolbar from the edit-text controls.
+export function RichTextArt() {
+  const tools = [
+    { k: 'B', weight: 700, italic: false, underline: false },
+    { k: 'I', weight: 500, italic: true, underline: false },
+    { k: 'U', weight: 500, italic: false, underline: true },
+  ];
+  return (
+    <Frame>
+      <div className="flex h-full flex-col justify-center gap-2 px-3">
+        <div className="flex w-max items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1 py-0.5 shadow-sm">
+          {tools.map((t, i) => (
+            <span
+              key={t.k}
+              className="relative flex h-4 w-4 items-center justify-center rounded text-[9px] text-slate-700"
+              style={{
+                fontWeight: t.weight,
+                fontStyle: t.italic ? 'italic' : 'normal',
+                textDecoration: t.underline ? 'underline' : 'none',
+              }}
+            >
+              {t.k}
+              {i === 0 && (
+                <span className="fa-hl pointer-events-none absolute inset-0 rounded ring-2 ring-brand-500" />
+              )}
+            </span>
+          ))}
+        </div>
+        <p className="text-[10px] leading-relaxed text-slate-700">
+          A <span className="font-bold text-slate-900">bold</span> claim, an{' '}
+          <span className="italic">italic</span> aside, and a{' '}
+          <span className="font-semibold" style={{ color: PINK }}>
+            splash
+          </span>{' '}
+          of colour.
+        </p>
+      </div>
+    </Frame>
+  );
+}
+
+// Link card: paste a URL and it unfurls into a bookmark with a preview
+// image, favicon, title and host.
+export function LinkCardArt() {
+  return (
+    <Frame canvas>
+      <div className="flex h-full items-center justify-center">
+        <div className="fa-pop w-[122px] overflow-hidden rounded-[4px] border border-slate-300 bg-white shadow-sm">
+          <div className="h-8 bg-gradient-to-br from-sky-200 to-brand-300" />
+          <div className="flex items-center gap-1.5 px-2 py-1.5">
+            <span className="h-4 w-4 shrink-0 rounded-[2px] bg-brand-500" />
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-[8px] font-semibold text-slate-800">
+                Design review
+              </span>
+              <span className="truncate text-[7px] text-slate-400">livediagram.app</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
+// Technology icons: full-colour cloud + brand tiles (AWS, Azure, GCP,
+// Cloudflare, Firebase…) for architecture diagrams, a brand highlight
+// cycling across them like the real Technology picker.
+export function TechIconsArt() {
+  const tiles = [
+    { label: 'AWS', bg: '#ff9900' },
+    { label: 'Azure', bg: '#0078d4' },
+    { label: 'GCP', bg: '#4285f4' },
+    { label: 'CF', bg: '#f38020' },
+    { label: 'Fire', bg: '#ffa000' },
+    { label: 'K8s', bg: '#326ce5' },
+  ];
+  return (
+    <Frame>
+      <div className="flex h-full flex-col justify-center gap-1.5 px-3">
+        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+          Technology
+        </p>
+        <div className="grid grid-cols-3 gap-1.5">
+          {tiles.map((t, i) => (
+            <span
+              key={t.label}
+              className="relative flex h-7 items-center justify-center rounded text-[8px] font-bold text-white shadow-sm"
+              style={{ backgroundColor: t.bg }}
+            >
+              {t.label}
+              <span
+                className="fa-hl pointer-events-none absolute inset-0 rounded ring-2 ring-brand-500"
+                style={{ animationDelay: `${i * 0.6}s` }}
+              />
+            </span>
+          ))}
+        </div>
+      </div>
+    </Frame>
+  );
 }

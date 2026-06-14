@@ -20,6 +20,7 @@ import {
   IconsArt,
   ImagesArt,
   LaserArt,
+  LinkCardArt,
   NotesArt,
   LockArt,
   MarkdownImportArt,
@@ -34,9 +35,11 @@ import {
   RealtimeArt,
   RefreshArt,
   RevokeArt,
+  RichTextArt,
   RotateArt,
   SearchArt,
   SelectionGlowArt,
+  SessionToolsArt,
   ShapesArt,
   ShareLinksArt,
   ShortcutsArt,
@@ -46,6 +49,7 @@ import {
   TabReorderArt,
   TablesArt,
   TabsArt,
+  TechIconsArt,
   TeamsArt,
   TemplatesArt,
   ThemesArt,
@@ -111,15 +115,15 @@ export default function LandingPage() {
               },
               {
                 art: <TemplatesArt />,
-                title: 'Nineteen starter templates',
+                title: 'Twenty-four starter templates',
                 description:
-                  'Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline, Gantt chart, plus Venn, User journey, Fishbone, Pyramid, Flywheel, Logo design, Live card, and Mobile / Laptop / Slide-deck wireframes. Pick one, edit it, or start blank.',
+                  'Blank, mind map, org chart, retrospective, flowchart, Kanban, SWOT and timeline to start, plus Gantt, Venn, user journey, fishbone, pyramid, flywheel, prioritization matrix, comparison table, ER / sequence / system-architecture diagrams, logo design, a live card, and mobile / laptop / slide-deck wireframes. Pick one, edit it, or start blank.',
               },
               {
                 art: <ThemesArt />,
-                title: 'Twenty-one preset themes',
+                title: 'Twenty-six preset themes',
                 description:
-                  'Brand, Slate, Forest, Sunset, Ocean, Crimson, Midnight and a dozen more — plus multi-colour Rainbow themes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow.',
+                  'Basic, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more — plus multi-colour Rainbow, Pastel, Tropical, Autumn, and Jewel themes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow.',
               },
               {
                 art: <FontsArt />,
@@ -194,6 +198,12 @@ export default function LandingPage() {
                   'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
               },
               {
+                art: <SessionToolsArt />,
+                title: 'Run the session: timer + voting',
+                description:
+                  'Facilitate live from the canvas. Start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time. Perfect for retros, workshops, and timeboxed planning.',
+              },
+              {
                 art: <ExpiryArt />,
                 title: 'Links that expire on their own',
                 description:
@@ -222,7 +232,7 @@ export default function LandingPage() {
                 art: <MarqueeArt />,
                 title: 'Multi-select with marquee',
                 description:
-                  'Switch to the Select tool, drag a box, and act on everything inside at once: move, duplicate, or delete in one step, one Cmd-Z.',
+                  'Switch to the Select tool, drag a box, and act on everything inside at once: move, duplicate, or delete in one step, one Cmd-Z. Or grab the eraser and wipe out whatever you drag across, the whole sweep undone in a single step.',
               },
               {
                 art: <GroupArt />,
@@ -388,6 +398,18 @@ export default function LandingPage() {
                   'Drag, drop, or paste a PNG, JPEG, WebP, or GIF straight onto the canvas. Resize and arrange it like any other element. Everything you add lands in your own gallery, ready to reuse in any diagram without uploading twice.',
               },
               {
+                art: <LinkCardArt />,
+                title: 'Link cards that unfurl',
+                description:
+                  'Drop a bookmark and paste a URL: it unfurls into a tidy card with the page title, favicon, and preview image. Click through any time. Turn a reference, a doc, or a related diagram into a card your whole team can follow.',
+              },
+              {
+                art: <RichTextArt />,
+                title: 'Rich text in any label',
+                description:
+                  'Style text right where you type it: bold, italic, underline, and strikethrough, with per-word colours and sizes and bullet or numbered lists. Select a run and a floating toolbar formats just that part, so a label reads exactly how you mean it.',
+              },
+              {
                 art: <TablesArt />,
                 title: 'Tables, fully editable',
                 description:
@@ -397,13 +419,19 @@ export default function LandingPage() {
                 art: <ShapesArt />,
                 title: 'A shape for everything',
                 description:
-                  'Ten core shapes plus browser, monitor, laptop, phone, and tablet frames. Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next.',
+                  'Fourteen core shapes — flowchart blocks plus an actor, cloud, triangle, star, and speech bubble — a section frame that carries whatever you draw inside it, and six device frames (browser, monitor, laptop, phone, tablet, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next.',
               },
               {
                 art: <IconsArt />,
                 title: 'A library of icons',
                 description:
                   'Reach past boxes and arrows: drop a clean single-colour icon, servers, databases, clouds, users, and more, from the icon picker. Each one recolours with the theme and styles like any other shape, so an architecture diagram reads at a glance.',
+              },
+              {
+                art: <TechIconsArt />,
+                title: 'Full-colour technology icons',
+                description:
+                  'Build cloud architecture diagrams with brand-accurate icons for AWS, Azure, Google Cloud, Cloudflare, and Firebase, spanning compute, storage, databases, and networking. Search the Technology picker, drop one in, and it lands labelled with its product name.',
               },
               {
                 art: <ArrowsArt />,
@@ -445,7 +473,7 @@ export default function LandingPage() {
                 art: <CanvasBackdropArt />,
                 title: 'Set the canvas backdrop',
                 description:
-                  'Switch the canvas background between thirteen backdrops, from grid and lines to crosshatch, waves, isometric, and engineering, or none at all. Each theme and template picks a fitting default.',
+                  'Switch the canvas background between fourteen backdrops, from grid and lines to crosshatch, waves, isometric, and engineering, or none at all. Each theme and template picks a fitting default.',
               },
             ]}
           />
