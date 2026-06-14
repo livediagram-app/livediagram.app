@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Tooltip } from './Tooltip';
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -47,7 +48,6 @@ type SelectionPopoverProps = {
 // 16 px since there's no plus button to clear.
 const GAP_DEFAULT = 48;
 const GAP_COMPACT = 16;
-const EDGE_MARGIN = 8;
 
 export function SelectionPopover({
   bounds,

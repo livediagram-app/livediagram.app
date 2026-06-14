@@ -16,14 +16,17 @@
 // - Returns the new adjust unconditionally; the caller compares
 //   against its previous state to avoid setState-loops.
 
-const DEFAULT_MARGIN = 8;
+// The px gap floating UI keeps from the viewport edge. Shared by the clamp
+// below and by the popovers / menus / toolbars that run their own edge-aware
+// positioning, so the inset is defined once instead of copied per component.
+export const VIEWPORT_EDGE_MARGIN = 8;
 
 export type ViewportAdjust = { x: number; y: number };
 
 export function clampToViewport(
   rect: DOMRect,
   prevAdjust: ViewportAdjust,
-  margin = DEFAULT_MARGIN,
+  margin = VIEWPORT_EDGE_MARGIN,
 ): ViewportAdjust {
   // "Natural" rect edges: where the box would sit with no clamp.
   const naturalLeft = rect.left - prevAdjust.x;

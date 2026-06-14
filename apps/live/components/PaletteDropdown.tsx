@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Portal } from './Portal';
 import { Tooltip } from './Tooltip';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 export type PaletteDropdownOption = {
   id: string;
@@ -18,8 +19,6 @@ export type PaletteDropdownOption = {
 // the 13px tool glyphs and the 18px category glyphs render at one size.
 const ICON_WRAP =
   'flex h-[14px] w-[14px] shrink-0 items-center justify-center [&>svg]:h-[14px] [&>svg]:w-[14px]';
-
-const EDGE = 8; // keep the menu this far from the viewport edge
 
 // A compact select-style dropdown for the palette: a bordered trigger that
 // shows the current option (icon + label + chevron) and a listbox popover

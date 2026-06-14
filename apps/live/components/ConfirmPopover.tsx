@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Portal } from './Portal';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 // A small confirmation popover anchored beside a trigger element, with an
 // arrow pointing back at it. The lightweight alternative to the full-
@@ -14,7 +15,6 @@ import { Portal } from './Portal';
 const WIDTH = 224;
 const GAP = 10; // space between the anchor and the popover
 const ARROW = 7; // half the arrow's visual size
-const EDGE = 8;
 
 type ConfirmPopoverProps = {
   anchor: HTMLElement;

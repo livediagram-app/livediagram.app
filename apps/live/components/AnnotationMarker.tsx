@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useState } from 'react';
 import { Portal } from './Portal';
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
 // The fixed note glyph inside an annotation marker (spec/38). A small
 // speech bubble with text lines, tinted by the marker's stroke colour.
@@ -31,7 +32,6 @@ export function AnnotationGlyph({ stroke }: { stroke: string }) {
 }
 
 const GAP = 10;
-const EDGE_MARGIN = 8;
 const MAX_W = 280;
 
 // Read-only note preview that floats ABOVE every canvas element when an

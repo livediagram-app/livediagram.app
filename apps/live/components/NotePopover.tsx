@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Portal } from './Portal';
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
 // Per-element note popover. Distinct from CommentThreadPopover:
 // notes are a SINGLE plain-text paragraph (no author, no thread,
@@ -21,7 +22,6 @@ import { Portal } from './Portal';
 
 const WIDTH = 288; // matches the dialog's w-72 (18rem). Used for the right-edge flip.
 const GAP = 12;
-const EDGE_MARGIN = 8;
 
 type NotePopoverProps = {
   // Stable element id. The popover queries the DOM for the matching

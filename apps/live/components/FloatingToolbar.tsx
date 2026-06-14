@@ -1,9 +1,9 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
 const GAP = 14; // canvas-space gap between the toolbar and the selection
-const EDGE = 8; // keep this far from the viewport edge
 
 // A toolbar that floats above (or below, when there's no room) a selection's
 // bounding box and counter-scales so it stays a constant on-screen size under

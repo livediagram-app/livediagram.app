@@ -10,6 +10,7 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import { useEscape } from '@/hooks/useEscape';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { formatRelativeTimeCompact } from '@/lib/relative-time';
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying
@@ -43,7 +44,6 @@ type CommentThreadPopoverProps = {
 
 const WIDTH = 288;
 const GAP = 12;
-const EDGE_MARGIN = 8;
 
 // Portal-rendered comments panel anchored to the right edge of the element.
 // Lets the user read existing comments, post a reply, delete individual
