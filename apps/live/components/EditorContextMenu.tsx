@@ -12,6 +12,7 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
+import type { ReactNode } from 'react';
 import { isBoxed, type Element, type ShapeKind } from '@livediagram/diagram';
 import { ContextMenu, ContextMenuDivider } from '@/components/ContextMenu';
 import {
@@ -49,6 +50,10 @@ type EditorContextMenuProps = {
   onRemoveIcon: (elementId: string) => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
+  // Toggle aspect-ratio lock + set opacity on the clicked element (boxed
+  // only). Read the current values off the target below.
+  onToggleAspectLock: () => void;
+  onSetOpacity: (opacity: number) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   onChangeTheme: () => void;
@@ -94,22 +99,48 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           />
         ) : null}
         <ContextMenuDivider />
-        <MenuItem
-          icon={<LayerUpIcon />}
-          label="Bring to front"
-          onClick={() => {
-            props.onBringToFront();
-            onClose();
-          }}
-        />
-        <MenuItem
-          icon={<LayerDownIcon />}
-          label="Send to back"
-          onClick={() => {
-            props.onSendToBack();
-            onClose();
-          }}
-        />
+        {/* Layer order — Front / Back share one row. */}
+        <div className="flex gap-1 px-2 py-0.5">
+          <MenuRowButton
+            icon={<LayerUpIcon />}
+            label="Front"
+            onClick={() => {
+              props.onBringToFront();
+              onClose();
+            }}
+          />
+          <MenuRowButton
+            icon={<LayerDownIcon />}
+            label="Back"
+            onClick={() => {
+              props.onSendToBack();
+              onClose();
+            }}
+          />
+        </div>
+        {boxed ? (
+          <>
+            <ContextMenuDivider />
+            <MenuItem
+              icon={<AspectLockMenuIcon />}
+              label={
+                (target as { aspectLocked?: boolean }).aspectLocked
+                  ? 'Unlock aspect ratio'
+                  : 'Lock aspect ratio'
+              }
+              onClick={() => {
+                props.onToggleAspectLock();
+                onClose();
+              }}
+            />
+            {/* Opacity slider — a non-closing row (dragging stays inside the
+                menu, so the outside-click guard leaves it open). */}
+            <OpacityRow
+              value={(target as { opacity?: number }).opacity ?? 1}
+              onChange={props.onSetOpacity}
+            />
+          </>
+        ) : null}
         <ContextMenuDivider />
         {boxed ? (
           <MenuItem
@@ -195,6 +226,75 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         }}
       />
     </ContextMenu>
+  );
+}
+
+// A compact menu button used where two actions share one row (Front /
+// Back). Mirrors MenuItem's tone but centres its icon + label and flexes
+// to fill half the row.
+function MenuRowButton({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-1 items-center justify-center gap-1.5 rounded px-2 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+    >
+      <span className="text-slate-400 dark:text-slate-500">{icon}</span>
+      {label}
+    </button>
+  );
+}
+
+// Opacity slider row inside the context menu. Doesn't close the menu on
+// interaction (it isn't a MenuItem): dragging fires pointer events inside
+// the menu, so the ContextMenu's outside-click guard keeps it open.
+function OpacityRow({ value, onChange }: { value: number; onChange: (opacity: number) => void }) {
+  const pct = Math.round(value * 100);
+  return (
+    <div className="px-3 py-1.5">
+      <div className="mb-1 flex items-center justify-between text-[10px] font-medium text-slate-500 dark:text-slate-400">
+        <span>Opacity</span>
+        <span>{pct}%</span>
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        value={pct}
+        onChange={(e) => onChange(Number(e.target.value) / 100)}
+        aria-label="Opacity"
+        className="w-full accent-brand-500"
+      />
+    </div>
+  );
+}
+
+// Rectangle with corner ticks — "lock aspect ratio". 12x12 stroke style of
+// the shared context-menu icons.
+function AspectLockMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
+      <path d="M5 8.5v2.5h2.5M11 7.5V5H8.5" />
+    </svg>
   );
 }
 

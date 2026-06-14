@@ -1120,6 +1120,8 @@ export function EditorView() {
           onRemoveIcon={removeIconFromElement}
           onBringToFront={bringSelectedToFront}
           onSendToBack={sendSelectedToBack}
+          onToggleAspectLock={toggleAspectLockSelected}
+          onSetOpacity={setOpacitySelected}
           onOpenNote={openNote}
           onOpenComments={openComments}
           onChangeTheme={() => openTabAccordion('theme')}

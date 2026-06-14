@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Tooltip } from './Tooltip';
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -12,14 +12,6 @@ type SelectionPopoverProps = {
   // lock toggle; when omitted the lock button is suppressed.
   locked?: boolean;
   onToggleLock?: () => void;
-  // Lock aspect ratio (boxed elements). Optional; the button shows only
-  // when provided (omitted for arrows / read-only).
-  aspectLocked?: boolean;
-  onToggleAspectLock?: () => void;
-  // Element opacity 0..1 + setter. When provided, an opacity dropdown with
-  // a slider appears in the toolbar.
-  opacity?: number;
-  onSetOpacity?: (opacity: number) => void;
   onDelete?: () => void;
   onCopyFormat?: () => void;
   // Duplicate the selected element. Sits next to Copy formatting as a
@@ -28,10 +20,6 @@ type SelectionPopoverProps = {
   onDuplicate?: () => void;
   onGroup?: () => void;
   onUngroup?: () => void;
-  // Layer order — surfaced as a compact Front / Back pair on the toolbar
-  // (they were context-menu-only). Omitted in read-only mode.
-  onBringToFront?: () => void;
-  onSendToBack?: () => void;
   // Open the comment thread. The toolbar shows the Comment button
   // whenever this is passed, regardless of any other props, which
   // is how view-role visitors get the comments-only toolbar (no
@@ -64,17 +52,11 @@ export function SelectionPopover({
   zoom,
   locked = false,
   onToggleLock,
-  aspectLocked = false,
-  onToggleAspectLock,
-  opacity = 1,
-  onSetOpacity,
   onDelete,
   onCopyFormat,
   onDuplicate,
   onGroup,
   onUngroup,
-  onBringToFront,
-  onSendToBack,
   onOpenComments,
   onOpenContextMenu,
   compact = false,
@@ -206,34 +188,6 @@ export function SelectionPopover({
         </>
       ) : null}
 
-      {onBringToFront && onSendToBack ? (
-        <>
-          <div className="flex items-center gap-0.5">
-            <Tooltip title="Bring to front" description="Move this element above the others.">
-              <button
-                type="button"
-                onClick={onBringToFront}
-                aria-label="Bring to front"
-                className="flex h-8 items-center rounded-md px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              >
-                Front
-              </button>
-            </Tooltip>
-            <Tooltip title="Send to back" description="Move this element below the others.">
-              <button
-                type="button"
-                onClick={onSendToBack}
-                aria-label="Send to back"
-                className="flex h-8 items-center rounded-md px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              >
-                Back
-              </button>
-            </Tooltip>
-          </div>
-          <Divider />
-        </>
-      ) : null}
-
       {/* Comment stays on the toolbar (it's the only edit-adjacent
           action a view-role visitor gets, so it has to be reachable
           without right-clicking on a comment badge). For an editor
@@ -267,27 +221,6 @@ export function SelectionPopover({
           <GroupIcon />
         </PopoverButton>
       ) : null}
-      {onToggleAspectLock ? (
-        <Tooltip
-          title={aspectLocked ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
-          description="Keep width and height in proportion when resizing."
-        >
-          <button
-            type="button"
-            onClick={onToggleAspectLock}
-            aria-label={aspectLocked ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
-            aria-pressed={aspectLocked}
-            className={
-              aspectLocked
-                ? 'flex h-8 w-8 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-            }
-          >
-            <AspectLockIcon />
-          </button>
-        </Tooltip>
-      ) : null}
-      {onSetOpacity ? <OpacityControl value={opacity} onChange={onSetOpacity} /> : null}
       {onToggleLock ? (
         <Tooltip
           title={locked ? 'Unlock' : 'Lock'}
@@ -343,99 +276,6 @@ export function SelectionPopover({
 
 function Divider() {
   return <div aria-hidden className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />;
-}
-
-// Opacity as a dropdown holding a slider (the toolbar is too tight for an
-// inline slider). The parent popover already stops pointerdown reaching the
-// canvas, so dragging the slider is safe; this just adds open/close +
-// outside-click.
-function OpacityControl({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (opacity: number) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('pointerdown', onDown, true);
-    return () => document.removeEventListener('pointerdown', onDown, true);
-  }, [open]);
-  const pct = Math.round(value * 100);
-  return (
-    <div className="relative" ref={rootRef}>
-      <Tooltip title="Opacity" description="Fade this element in or out.">
-        <button
-          type="button"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-label="Opacity"
-          onClick={() => setOpen((o) => !o)}
-          className={
-            open
-              ? 'flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
-              : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-          }
-        >
-          <OpacityIcon />
-        </button>
-      </Tooltip>
-      {open ? (
-        <div className="absolute left-1/2 top-full z-30 mt-1 w-44 -translate-x-1/2 rounded-md border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-          <div className="mb-1 flex items-center justify-between text-[10px] font-medium text-slate-500 dark:text-slate-400">
-            <span>Opacity</span>
-            <span>{pct}%</span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={pct}
-            onChange={(e) => onChange(Number(e.target.value) / 100)}
-            aria-label="Opacity"
-            className="w-full accent-brand-500"
-          />
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function AspectLockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <rect
-        x="2.5"
-        y="2.5"
-        width="11"
-        height="11"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-      <path
-        d="M5 8.5v2.5h2.5M11 7.5V5H8.5"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function OpacityIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor" />
-    </svg>
-  );
 }
 
 function PopoverButton({
