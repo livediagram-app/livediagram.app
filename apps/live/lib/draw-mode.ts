@@ -9,7 +9,10 @@ import type { ShapeKind } from '@livediagram/diagram';
 // image, etc.) and the editor's commit handler can mint the right
 // element type from the same gesture.
 export type PendingDraw =
-  | { type: 'shape'; kind: ShapeKind }
+  // `iconId` (+ seed `label`) ride the shape intent for the `icon` kind, so a
+  // palette icon / tech icon draws to size exactly like a shape (tap to drop,
+  // drag to size) instead of dropping at a fixed size.
+  | { type: 'shape'; kind: ShapeKind; iconId?: string; label?: string }
   | { type: 'text' }
   | { type: 'sticky' }
   | { type: 'image' }

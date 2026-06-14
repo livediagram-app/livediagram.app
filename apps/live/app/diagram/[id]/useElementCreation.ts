@@ -98,8 +98,10 @@ export function useElementCreation(opts: {
       track('Element', 'Added', titleCaseType('icon'));
       return;
     }
-    addBoxed((x, y) => ({ ...createShape('icon', x, y), iconId }));
-    track('Element', 'Added', titleCaseType('icon'));
+    // Standalone icon: arm a draw-to-size gesture (tap to drop, drag to
+    // size) just like a shape, carrying the glyph id. Telemetry fires on
+    // commit (see useShapeDrawing.commitDraw).
+    beginDraw({ type: 'shape', kind: 'icon', iconId });
   };
 
   // Technology (brand) icon (spec/41). Reuses the 'icon' shape kind but is
@@ -112,9 +114,10 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     // Seed the label with the catalogue name (e.g. "S3", "EKS") so the icon
     // lands self-describing; the user can clear / rename it like any label.
+    // Arm a draw-to-size gesture (tap to drop, drag to size) like a shape;
+    // telemetry fires on commit (see useShapeDrawing.commitDraw).
     const label = getTechIcon(iconId)?.label ?? '';
-    addBoxed((x, y) => ({ ...createShape('icon', x, y), iconId, label }));
-    track('Element', 'Added', 'TechIcon');
+    beginDraw({ type: 'shape', kind: 'icon', iconId, label });
   };
 
   // A 3x3 table dropped at the viewport centre (no draw-to-size:

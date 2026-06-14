@@ -36,6 +36,7 @@ import {
 } from '@livediagram/diagram';
 import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
+import { isTechIconId } from '@/lib/tech-icons';
 import type { PendingDraw } from '@/lib/draw-mode';
 
 // Stroke for a new arrow when the active theme has no explicit
@@ -222,6 +223,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       width,
       height,
       ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
+      // Icon draw intent: carry the chosen glyph id + seed label onto the
+      // freshly-drawn 'icon' shape (so palette icons / tech icons draw to
+      // size like any shape, see draw-mode.ts).
+      ...(intent.type === 'shape' && intent.iconId
+        ? { iconId: intent.iconId, ...(intent.label ? { label: intent.label } : {}) }
+        : {}),
     } as typeof base;
     // Append so new elements default to the FRONT of z-order (see
     // addBoxed's note for the rationale). Frames don't need special-casing
@@ -239,7 +246,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setPendingDraw(null);
     const label =
       intent.type === 'shape'
-        ? titleCaseType(intent.kind)
+        ? // Tech (brand) icons report as TechIcon, matching the click-to-add
+          // path; line-art icons + plain shapes use the kind.
+          intent.iconId && isTechIconId(intent.iconId)
+          ? 'TechIcon'
+          : titleCaseType(intent.kind)
         : intent.type === 'text'
           ? 'Text'
           : intent.type === 'sticky'
