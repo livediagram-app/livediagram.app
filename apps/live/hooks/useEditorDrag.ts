@@ -554,6 +554,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       startClientY: e.clientY,
       startCanvasX: start.x,
       startCanvasY: start.y,
+      // Repositioning an existing endpoint is a manual correction: if it
+      // lands on an anchor, mark it `manual` so auto-rebind leaves it.
+      reposition: true,
     });
   };
 
@@ -1065,7 +1068,14 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       const anchorSnap = snapToAnchor(cursor, els0, SNAP_THRESHOLD);
       let endpoint: Endpoint;
       if (anchorSnap) {
-        endpoint = { kind: 'pinned', elementId: anchorSnap.elementId, anchor: anchorSnap.anchor };
+        endpoint = {
+          kind: 'pinned',
+          elementId: anchorSnap.elementId,
+          anchor: anchorSnap.anchor,
+          // A hand-repositioned endpoint that lands on an anchor is a manual
+          // override; auto-rebind then leaves this end's face alone.
+          ...(drag.reposition ? { manual: true } : {}),
+        };
         scheduleGuides([]);
       } else {
         // Angle snap: lock the arrow to 45-degree increments from its

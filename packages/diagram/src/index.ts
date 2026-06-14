@@ -681,7 +681,11 @@ export const ALL_ANCHORS: Anchor[] = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'
 
 export type Endpoint =
   | { kind: 'free'; x: number; y: number }
-  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor };
+  // `manual` marks an anchor the user set by hand (dragging the endpoint
+  // onto that face). The auto-rebind that re-chooses faces as boxes move
+  // (`rebindArrowAnchorsAfterMove`) leaves a manual endpoint fixed, so a
+  // deliberate correction sticks. Absent === auto-managed (the default).
+  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor; manual?: boolean };
 
 // Cross-tab link on any element. `tab` jumps to another tab on the same
 // diagram; `diagram` navigates to a different diagram entirely (with

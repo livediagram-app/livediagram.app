@@ -198,21 +198,31 @@ export function rebindArrowAnchorsAfterMove(
     const fromEl = byId.get(el.from.elementId);
     const toEl = byId.get(el.to.elementId);
     if (!fromEl || !isBoxed(fromEl) || !toEl || !isBoxed(toEl)) continue;
+    // A manual endpoint (the user dragged it onto that face) is excluded
+    // from auto re-anchoring — it keeps its face; only the other end moves.
+    // If BOTH ends are manual there's nothing to re-anchor.
+    const fromManual = el.from.manual === true;
+    const toManual = el.to.manual === true;
+    if (fromManual && toManual) continue;
     reassigning.add(el.id);
-    plans.push({
-      arrowId: el.id,
-      end: 'from',
-      elementId: fromEl.id,
-      current: el.from.anchor,
-      ...rankAnchorsTowards(fromEl, centreOf(toEl)),
-    });
-    plans.push({
-      arrowId: el.id,
-      end: 'to',
-      elementId: toEl.id,
-      current: el.to.anchor,
-      ...rankAnchorsTowards(toEl, centreOf(fromEl)),
-    });
+    if (!fromManual) {
+      plans.push({
+        arrowId: el.id,
+        end: 'from',
+        elementId: fromEl.id,
+        current: el.from.anchor,
+        ...rankAnchorsTowards(fromEl, centreOf(toEl)),
+      });
+    }
+    if (!toManual) {
+      plans.push({
+        arrowId: el.id,
+        end: 'to',
+        elementId: toEl.id,
+        current: el.to.anchor,
+        ...rankAnchorsTowards(toEl, centreOf(fromEl)),
+      });
+    }
   }
   if (plans.length === 0) return elements;
 
@@ -226,9 +236,17 @@ export function rebindArrowAnchorsAfterMove(
     set.add(anchor);
   };
   for (const el of elements) {
-    if (el.type !== 'arrow' || reassigning.has(el.id)) continue;
-    if (el.from.kind === 'pinned') reserve(el.from.elementId, el.from.anchor);
-    if (el.to.kind === 'pinned') reserve(el.to.elementId, el.to.anchor);
+    if (el.type !== 'arrow') continue;
+    // Reserve faces held by arrows we are NOT re-anchoring this pass, PLUS
+    // any manual end of an arrow we ARE re-anchoring (its face is fixed, so
+    // the re-anchored ends route around it rather than stacking onto it).
+    const skip = reassigning.has(el.id);
+    if (el.from.kind === 'pinned' && (!skip || el.from.manual === true)) {
+      reserve(el.from.elementId, el.from.anchor);
+    }
+    if (el.to.kind === 'pinned' && (!skip || el.to.manual === true)) {
+      reserve(el.to.elementId, el.to.anchor);
+    }
   }
 
   // Greedy per element: most-committed endpoint claims its best face first,

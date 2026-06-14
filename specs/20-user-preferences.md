@@ -157,6 +157,14 @@ Missing key === undefined === default behaviour. Concretely:
 - `autoRebindArrows` undefined → arrows rebind (the default
   behaviour). Setting it to `false` is the only state that
   changes behaviour.
+  - Per-endpoint override: dragging an arrow's endpoint onto an
+    anchor by hand marks that endpoint `manual` (a flag on the
+    pinned `Endpoint` in `packages/diagram`). `rebindArrowAnchorsAfterMove`
+    leaves a manual endpoint's face fixed even when auto-rebind is
+    on, so a deliberate correction sticks; the other (auto) end of
+    the same arrow still re-anchors. This is independent of the
+    global `autoRebindArrows` toggle — it's a local opt-out for one
+    endpoint, not a preference.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
 - `recogniseShapes` undefined → raw-sketch pencil (the default).

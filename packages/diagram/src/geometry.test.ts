@@ -267,6 +267,36 @@ describe('rebindArrowAnchorsAfterMove', () => {
     expect(out[2]).toEqual(els[2]);
   });
 
+  it('leaves a manual endpoint fixed and only re-anchors the auto end', () => {
+    // b moves above a, which would normally flip the arrow to n (from) /
+    // s (to). With `from` marked manual, its face must stay 'e'; only the
+    // auto `to` end re-anchors.
+    const manualFrom: ArrowElement = {
+      id: 'arr',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e', manual: true },
+      to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
+    };
+    const els: Element[] = [a(), b({ x: 90, y: -300 }), manualFrom];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['b']));
+    const next = out[2] as ArrowElement;
+    expect(next.from.kind === 'pinned' && next.from.anchor).toBe('e');
+    expect(next.from.kind === 'pinned' && next.from.manual).toBe(true);
+    expect(next.to.kind === 'pinned' && next.to.anchor).toBe('s');
+  });
+
+  it('leaves an arrow untouched when both ends are manual', () => {
+    const bothManual: ArrowElement = {
+      id: 'arr',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e', manual: true },
+      to: { kind: 'pinned', elementId: 'b', anchor: 'w', manual: true },
+    };
+    const els: Element[] = [a(), b({ x: 90, y: -300 }), bothManual];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['b']));
+    expect(out[2]).toEqual(bothManual);
+  });
+
   it('leaves arrows with a free endpoint untouched (only the pinned end would change, which jitters under drag)', () => {
     const mixed: ArrowElement = {
       id: 'arr2',

@@ -188,6 +188,11 @@ export type DragState =
       // is anchored to the element's anchor (not the far-out ring button).
       pressClientX?: number;
       pressClientY?: number;
+      // True when the user is repositioning an EXISTING arrow's endpoint
+      // (a deliberate manual correction), as opposed to drawing a new
+      // arrow. A reposition that lands on an anchor marks the endpoint
+      // `manual` so auto-rebind leaves it alone thereafter (spec/20).
+      reposition?: boolean;
     }
   | {
       // Whole-arrow translation. Only fires for arrows with both
