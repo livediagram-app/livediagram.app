@@ -122,7 +122,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         <ContextMenuDivider />
         {/* Layer — a collapsible section grouping front/back + opacity +
             (for boxed elements) the aspect-ratio lock. */}
-        <MenuAccordionSection title="Layer" {...sectionProps('layer')}>
+        <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
           <div className="flex gap-1 px-2 py-0.5">
             <MenuRowButton
               icon={<LayerUpIcon />}
@@ -166,7 +166,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         </MenuAccordionSection>
         {/* Colours — text / background / border swatches (boxed elements). */}
         {boxed ? (
-          <MenuAccordionSection title="Colours" {...sectionProps('colours')}>
+          <MenuAccordionSection
+            title="Colours"
+            icon={<PaletteMenuIcon />}
+            {...sectionProps('colours')}
+          >
             <ColourRow
               label="Text"
               value={
@@ -198,7 +202,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           </MenuAccordionSection>
         ) : null}
         {/* Collaborate — notes + comments grouped under one collapsible header. */}
-        <MenuAccordionSection title="Collaborate" {...sectionProps('collaborate')}>
+        <MenuAccordionSection
+          title="Collaborate"
+          icon={<CommentMenuIcon />}
+          {...sectionProps('collaborate')}
+        >
           {boxed ? (
             <MenuItem
               icon={<NoteMenuIcon />}
@@ -295,11 +303,13 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
 // 0fr<->1fr trick (no fixed height needed).
 function MenuAccordionSection({
   title,
+  icon,
   open,
   onToggle,
   children,
 }: {
   title: string;
+  icon: ReactNode;
   open: boolean;
   onToggle: () => void;
   children: ReactNode;
@@ -310,9 +320,12 @@ function MenuAccordionSection({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center justify-between px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+        className="flex w-full items-center justify-between px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
       >
-        <span>{title}</span>
+        <span className="flex items-center gap-2">
+          {icon}
+          {title}
+        </span>
         <svg
           width="10"
           height="10"
@@ -402,6 +415,27 @@ function OpacityRow({ value, onChange }: { value: number; onChange: (opacity: nu
         className="w-full accent-brand-500"
       />
     </div>
+  );
+}
+
+// Stacked diamonds — the "Layer" section glyph. 12x12 stroke style of the
+// shared context-menu icons.
+function LayersGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2 14 5.5 8 9 2 5.5z" />
+      <path d="m3.5 8 4.5 2.6L12.5 8M3.5 11l4.5 2.6L12.5 11" />
+    </svg>
   );
 }
 
