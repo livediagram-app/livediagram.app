@@ -1,10 +1,11 @@
 // The floating WYSIWYG toolbar shown above an element while its label is
-// being edited (spec/09). Per-range bold / italic / underline / strikethrough
-// / size / colour, plus the whole-element alignment + padding as dropdowns.
-// Rendered by RichTextEditor (which owns the selection + apply handlers);
-// this component is presentation + the critical focus-preservation detail.
+// being edited (spec/09). Per-range bold / italic / underline (+ strikethrough
+// under the ⋯ menu) / size / colour, plus whole-element alignment + padding as
+// dropdowns. Rendered by RichTextEditor (which owns the selection + apply
+// handlers); this component is presentation + the focus-preservation detail.
 
 import { useEffect, useRef, useState } from 'react';
+import { AlignmentGrid } from './palette-controls';
 import {
   AlignIcon,
   BoldIcon,
@@ -15,6 +16,7 @@ import {
   StrikethroughIcon,
   UnderlineIcon,
 } from './palette-icons';
+import { Tooltip } from './Tooltip';
 import type { Padding, RunBoolKey, RunSize, TextAlignX, TextAlignY } from '@livediagram/diagram';
 
 // The resolved formatting of the current selection: each boolean is true
@@ -44,15 +46,20 @@ const PADDINGS: { key: Padding; label: string }[] = [
   { key: 'lg', label: 'Large' },
 ];
 
-// Full 3×3 alignment grid, top→bottom then left→right.
-const ALIGN_CELLS: { x: TextAlignX; y: TextAlignY }[] = (
-  ['top', 'middle', 'bottom'] as const
-).flatMap((y) => (['left', 'center', 'right'] as const).map((x) => ({ x, y })));
-
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar
 // bug). Shared by every button so the editor never blurs mid-format.
 const noFocusSteal = (e: React.MouseEvent) => e.preventDefault();
+
+function EllipsisIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
+      <circle cx="4" cy="8" r="1.4" fill="currentColor" />
+      <circle cx="8" cy="8" r="1.4" fill="currentColor" />
+      <circle cx="12" cy="8" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
 
 function btnClass(active: boolean): string {
   return `flex h-7 min-w-[28px] items-center justify-center rounded px-1.5 text-xs font-semibold transition ${
@@ -89,15 +96,17 @@ const optionClass = (selected: boolean) =>
 // toolbar wrapper, where the editor's focus + canvas-propagation guards
 // already apply. Closes on an option click (the menu's bubble handler) or an
 // outside pointerdown (capture phase, so it fires before the wrapper stops
-// propagation). The trigger preventDefaults mousedown so the editor keeps
-// its selection while the menu is open.
+// propagation). The trigger preventDefaults mousedown so the editor keeps its
+// selection while the menu is open.
 function ToolbarDropdown({
   label,
+  description,
   trigger,
   menuClassName = 'min-w-[8rem]',
   children,
 }: {
   label: string;
+  description: string;
   trigger: React.ReactNode;
   menuClassName?: string;
   children: React.ReactNode;
@@ -114,22 +123,24 @@ function ToolbarDropdown({
   }, [open]);
   return (
     <div className="relative" ref={rootRef}>
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={label}
-        onMouseDown={noFocusSteal}
-        onClick={() => setOpen((o) => !o)}
-        className={`flex h-7 items-center gap-1 rounded px-1.5 text-xs font-medium transition ${
-          open
-            ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
-            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-        }`}
-      >
-        {trigger}
-        {CHEVRON}
-      </button>
+      <Tooltip title={label} description={description}>
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-label={label}
+          onMouseDown={noFocusSteal}
+          onClick={() => setOpen((o) => !o)}
+          className={`flex h-7 items-center gap-1 rounded px-1.5 text-xs font-medium transition ${
+            open
+              ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
+              : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+          }`}
+        >
+          {trigger}
+          {CHEVRON}
+        </button>
+      </Tooltip>
       {open ? (
         <div
           role="listbox"
@@ -166,45 +177,62 @@ export function RichTextToolbar({
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
   onSetPadding: (padding: Padding) => void;
 }) {
-  // The colour <input> is the ONE control that must take focus to open the
-  // OS picker, so it omits the preventDefault the other buttons carry — the
-  // editor skips its commit-on-blur while a toolbar interaction is in flight
-  // and re-focuses + restores the selection after the colour applies.
-  const toggles: { key: RunBoolKey; label: string; icon: React.ReactNode }[] = [
-    { key: 'bold', label: 'Bold', icon: <BoldIcon /> },
-    { key: 'italic', label: 'Italic', icon: <ItalicIcon /> },
-    { key: 'underline', label: 'Underline', icon: <UnderlineIcon /> },
-    { key: 'strikethrough', label: 'Strikethrough', icon: <StrikethroughIcon /> },
-  ];
+  const toggles: { key: RunBoolKey; label: string; description: string; icon: React.ReactNode }[] =
+    [
+      { key: 'bold', label: 'Bold', description: 'Bold the selected text.', icon: <BoldIcon /> },
+      {
+        key: 'italic',
+        label: 'Italic',
+        description: 'Italicise the selected text.',
+        icon: <ItalicIcon />,
+      },
+      {
+        key: 'underline',
+        label: 'Underline',
+        description: 'Underline the selected text.',
+        icon: <UnderlineIcon />,
+      },
+    ];
   const currentSize = SIZES.find((s) => s.key === active.size) ?? null;
-  const currentPad = PADDINGS.find((p) => p.key === padding) ?? PADDINGS[2];
   const divider = <span className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />;
 
   return (
     <div className="flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white px-1 py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-      {toggles.map((t) => (
+      {/* ⋯ overflow menu (left) — holds the less-common Strikethrough. */}
+      <ToolbarDropdown label="More" description="More text options." trigger={<EllipsisIcon />}>
         <button
-          key={t.key}
           type="button"
-          aria-label={t.label}
-          aria-pressed={active[t.key]}
+          role="option"
+          aria-selected={active.strikethrough}
           onMouseDown={noFocusSteal}
-          onClick={() => onToggle(t.key)}
-          className={btnClass(active[t.key])}
+          onClick={() => onToggle('strikethrough')}
+          className={optionClass(active.strikethrough)}
         >
-          {t.icon}
+          <StrikethroughIcon />
+          <span className="flex-1">Strikethrough</span>
         </button>
+      </ToolbarDropdown>
+      {divider}
+      {toggles.map((t) => (
+        <Tooltip key={t.key} title={t.label} description={t.description}>
+          <button
+            type="button"
+            aria-label={t.label}
+            aria-pressed={active[t.key]}
+            onMouseDown={noFocusSteal}
+            onClick={() => onToggle(t.key)}
+            className={btnClass(active[t.key])}
+          >
+            {t.icon}
+          </button>
+        </Tooltip>
       ))}
       {divider}
-      {/* Size */}
+      {/* Size — icon-only trigger; labels live in the menu. */}
       <ToolbarDropdown
         label="Text size"
-        trigger={
-          <>
-            <DotsIcon count={currentSize?.dots ?? 2} />
-            <span>{currentSize?.label ?? 'Size'}</span>
-          </>
-        }
+        description="Size of the selected text."
+        trigger={<DotsIcon count={currentSize?.dots ?? 2} />}
       >
         {SIZES.map((s) => (
           <button
@@ -222,46 +250,22 @@ export function RichTextToolbar({
         ))}
       </ToolbarDropdown>
       {divider}
-      {/* Alignment — a 3×3 grid in the menu, matching the panel. */}
+      {/* Alignment — the panel's 3×3 grid, reused. */}
       <ToolbarDropdown
-        label="Text alignment"
-        menuClassName="min-w-0 p-1"
+        label="Alignment"
+        description="Align the label inside the element."
+        menuClassName="w-28 p-1.5"
         trigger={<AlignIcon x={alignX} y={alignY} />}
       >
-        <div className="grid grid-cols-3 gap-1">
-          {ALIGN_CELLS.map(({ x, y }) => {
-            const selected = alignX === x && alignY === y;
-            return (
-              <button
-                key={`${y}-${x}`}
-                type="button"
-                role="option"
-                aria-selected={selected}
-                aria-label={`Align ${y} ${x}`}
-                onMouseDown={noFocusSteal}
-                onClick={() => onSetAlign(x, y)}
-                className={`flex h-7 w-7 items-center justify-center rounded ${
-                  selected
-                    ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
-                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
-                }`}
-              >
-                <AlignIcon x={x} y={y} />
-              </button>
-            );
-          })}
-        </div>
+        <AlignmentGrid alignX={alignX} alignY={alignY} onChange={onSetAlign} />
       </ToolbarDropdown>
       {divider}
-      {/* Padding */}
+      {/* Padding — icon-only trigger; menu options are "Padding: …". */}
       <ToolbarDropdown
         label="Padding"
-        trigger={
-          <>
-            {padding === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={padding} />}
-            <span>{currentPad?.label ?? 'Padding'}</span>
-          </>
-        }
+        description="Space between the label and the element edge."
+        menuClassName="min-w-[10rem]"
+        trigger={padding === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={padding} />}
       >
         {PADDINGS.map((p) => (
           <button
@@ -274,28 +278,30 @@ export function RichTextToolbar({
             className={optionClass(padding === p.key)}
           >
             {p.key === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={p.key} />}
-            <span className="flex-1">{p.label}</span>
+            <span className="flex-1">Padding: {p.label}</span>
           </button>
         ))}
       </ToolbarDropdown>
       {divider}
-      <label
-        className="flex h-7 cursor-pointer items-center rounded px-1 transition hover:bg-slate-100 dark:hover:bg-slate-800"
-        aria-label="Text color"
-      >
-        <span
-          className="h-4 w-4 rounded border border-slate-300 dark:border-slate-600"
-          style={{ backgroundColor: active.color ?? '#0f172a' }}
-          aria-hidden
-        />
-        <input
-          type="color"
-          value={active.color ?? '#0f172a'}
-          onChange={(e) => onColor(e.target.value)}
+      <Tooltip title="Text colour" description="Colour the selected text.">
+        <label
+          className="flex h-7 cursor-pointer items-center rounded px-1 transition hover:bg-slate-100 dark:hover:bg-slate-800"
           aria-label="Text color"
-          className="absolute h-0 w-0 opacity-0"
-        />
-      </label>
+        >
+          <span
+            className="h-4 w-4 rounded border border-slate-300 dark:border-slate-600"
+            style={{ backgroundColor: active.color ?? '#0f172a' }}
+            aria-hidden
+          />
+          <input
+            type="color"
+            value={active.color ?? '#0f172a'}
+            onChange={(e) => onColor(e.target.value)}
+            aria-label="Text color"
+            className="absolute h-0 w-0 opacity-0"
+          />
+        </label>
+      </Tooltip>
     </div>
   );
 }
