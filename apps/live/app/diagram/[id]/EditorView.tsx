@@ -1204,6 +1204,7 @@ export function EditorView() {
           selectionCount={ctxMemberIds.length}
           selectionIsGroup={ctxIsGroup}
           selectionLocked={ctxSelectionLocked}
+          tabName={activeTab.name}
           selectionElements={ctxMemberIds
             .map((id) => activeTab.elements.find((e) => e.id === id))
             .filter((e): e is NonNullable<typeof e> => e != null)}
