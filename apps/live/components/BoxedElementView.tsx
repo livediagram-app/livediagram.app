@@ -717,11 +717,12 @@ function BoxedElementViewImpl({
         // point of not raising z on select). pointer-events-none keeps the
         // body draggable; every handle re-enables pointer events on itself.
         <div className="pointer-events-none absolute inset-0" style={{ zIndex: 30 }}>
-          {/* Annotations are a fixed marker size (spec/38): no resize or
-              rotate handles. They keep the arrow anchors below. Corner
-              handles show even when rotated — the resize math projects the
-              drag into the element's local frame (useEditorDrag). */}
-          {showHandles && !isAnnotation ? (
+          {/* Annotations resize too (aspect-locked by default so the marker
+              stays round); they just keep rotation off — a tilted note marker
+              reads as a mistake. Corner handles show even when rotated — the
+              resize math projects the drag into the element's local frame
+              (useEditorDrag). */}
+          {showHandles ? (
             <ResizeHandles
               elementId={element.id}
               zoom={zoom}

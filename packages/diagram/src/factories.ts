@@ -155,7 +155,8 @@ export function createSticky(x: number, y: number): StickyElement {
 export const ANNOTATION_SIZE = 44;
 
 // A note marker dropped at (x, y). The note text starts empty — the user
-// clicks the marker to add it.
+// clicks the marker to add it. Aspect-locked by default so resizing keeps
+// the marker round (spec/38).
 export function createAnnotation(x: number, y: number): AnnotationElement {
   return {
     id: crypto.randomUUID(),
@@ -164,6 +165,7 @@ export function createAnnotation(x: number, y: number): AnnotationElement {
     y,
     width: ANNOTATION_SIZE,
     height: ANNOTATION_SIZE,
+    aspectLocked: true,
   };
 }
 

@@ -74,6 +74,8 @@ describe('boxed-element factories', () => {
   it('createAnnotation is a 44x44 boxed marker with no note yet (spec/38)', () => {
     const a = createAnnotation(7, 8);
     expect(a).toMatchObject({ type: 'annotation', x: 7, y: 8, width: 44, height: 44 });
+    // Aspect-locked by default so resizing keeps the marker round.
+    expect(a.aspectLocked).toBe(true);
     expect(a.note).toBeUndefined();
     expect(a.id).toMatch(/[0-9a-f-]{36}/);
     // It must count as boxed so it flows through selection / drag / layering.
