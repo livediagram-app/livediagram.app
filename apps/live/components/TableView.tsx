@@ -223,6 +223,7 @@ export function TableView({
   onLinkCell,
   onFollowLink,
   fontFamily,
+  zoom,
 }: {
   element: TableElement;
   isSelected: boolean;
@@ -246,9 +247,17 @@ export function TableView({
   onLinkCell?: (tableId: string, r: number, c: number) => void;
   // Follow a cell's link when its badge is clicked (tab / diagram / url).
   onFollowLink?: (link: ElementLink) => void;
+  // Canvas zoom, so the floating UI (per-cell toolbar + column / row header
+  // controls) can counter-scale (1/zoom) and stay a fixed on-screen size like
+  // every other toolbar, instead of ballooning / shrinking with the table.
+  zoom: number;
 }) {
   const rows = element.cells.length;
   const cols = element.cells[0]?.length ?? 0;
+  // Counter-scale factor so floating chrome stays a fixed on-screen size
+  // under canvas zoom (applied with a transform-origin anchored to the edge
+  // each control hangs from).
+  const invScale = 1 / zoom;
   const [editing, setEditing] = useState<{ r: number; c: number } | null>(null);
   const [menu, setMenu] = useState<{ axis: 'col' | 'row'; index: number } | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
@@ -872,6 +881,7 @@ export function TableView({
                   {colOn ? (
                     <div
                       className="pointer-events-auto relative"
+                      style={{ transform: `scale(${invScale})`, transformOrigin: 'top center' }}
                       onMouseEnter={() => setHoveredCol(c)}
                       onMouseLeave={() => setHoveredCol(null)}
                     >
@@ -935,8 +945,12 @@ export function TableView({
             return (
               <div
                 key={`row-${r}`}
-                className="pointer-events-auto absolute left-0.5 -translate-y-1/2"
-                style={{ top: `${((r + 0.5) / rows) * 100}%` }}
+                className="pointer-events-auto absolute left-0.5"
+                style={{
+                  top: `${((r + 0.5) / rows) * 100}%`,
+                  transform: `translateY(-50%) scale(${invScale})`,
+                  transformOrigin: 'left center',
+                }}
                 onMouseEnter={() => setHoveredRow(r)}
                 onMouseLeave={() => setHoveredRow(null)}
               >
@@ -1000,7 +1014,11 @@ export function TableView({
             <div
               data-table-ui
               onPointerDown={(e) => e.stopPropagation()}
-              className="pointer-events-auto absolute bottom-0 left-1/2 z-40 flex -translate-x-1/2 translate-y-[calc(100%+4px)] items-center animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-0.5 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
+              className="pointer-events-auto absolute bottom-0 left-1/2 z-40 flex items-center animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-0.5 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
+              style={{
+                transform: `translate(-50%, calc(100% + 4px)) scale(${invScale})`,
+                transformOrigin: 'top center',
+              }}
             >
               {/* Title line, below the bar — the cell toolbar always sits below
                   its cell (so it never clashes with the element toolbar, which

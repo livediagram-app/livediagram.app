@@ -618,6 +618,7 @@ function BoxedElementViewImpl({
           onLinkCell={onLinkCell}
           onFollowLink={onFollowLink}
           fontFamily={fontFamily}
+          zoom={zoom}
         />
       ) : inlineIcon ? (
         <ShapeInlineIconLayout
