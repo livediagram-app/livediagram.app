@@ -29,6 +29,9 @@ type SelectionPopoverProps = {
   // would open, anchored under the ellipsis button. Surfaces the
   // full action list on touch devices that can't right-click.
   onOpenContextMenu?: (screenX: number, screenY: number) => void;
+  // Small caption above (or below) the toolbar naming what's selected
+  // ("Selected Element" / "Selected Group").
+  title?: string;
   // Tighter gap between the popover and the element edge. Set
   // by the view-role caller because the plus duplicate button
   // (which sits in this gap for editor sessions) doesn't render
@@ -60,6 +63,7 @@ export function SelectionPopover({
   onOpenComments,
   onOpenContextMenu,
   compact = false,
+  title,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -141,6 +145,15 @@ export function SelectionPopover({
         transformOrigin: placeAbove ? 'center bottom' : 'center top',
       }}
     >
+      {title ? (
+        <span
+          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm dark:bg-slate-700 ${
+            placeAbove ? 'bottom-full mb-1' : 'top-full mt-1'
+          }`}
+        >
+          {title}
+        </span>
+      ) : null}
       {onOpenContextMenu ? (
         <>
           <Tooltip title="More" description="Open the element menu.">

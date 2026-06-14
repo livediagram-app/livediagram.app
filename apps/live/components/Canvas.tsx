@@ -1067,6 +1067,7 @@ export function Canvas(props: CanvasProps) {
             bounds={selectionBounds}
             canvasOffset={viewportOffset}
             zoom={viewportZoom}
+            title={selectionScope === 'group' ? 'Selected Group' : 'Selected Element'}
             // In view-only mode we mount the popover with just
             // `onOpenComments`: visitors should be able to read +
             // post comments on a diagram they don't own, but no
