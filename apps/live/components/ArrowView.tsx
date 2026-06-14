@@ -160,21 +160,21 @@ function ArrowViewImpl({
   // visual midpoint, since dragging the control point is what
   // actually changes the curve shape (the midpoint is a derived
   // by-product of the control point at t=0.5).
-  // Multi-bend control points (absolute) when the curve has them; the single
-  // bow handle (curveControl) is used only for a curve with no explicit points.
+  // Multi-bend control points (absolute), for curved (smooth spline) OR
+  // angled (polyline) arrows that carry explicit points. The single bow /
+  // elbow handles below are used only when there are no explicit points.
   const curveAnchors =
-    style === 'curved' && arrow.curvePoints && arrow.curvePoints.length > 0
+    (style === 'curved' || style === 'angled') && arrow.curvePoints && arrow.curvePoints.length > 0
       ? curveAnchorPoints(from, to, arrow.curvePoints)
       : null;
   const curveControl =
     style === 'curved' && !curveAnchors ? curveControlPoint(from, to, arrow.curveOffset) : null;
-  // Elbow point for angled arrows. Same draggable affordance as the
-  // curve handle: drag to move the bend. The handle sits exactly on
-  // the elbow (the midpoint helper already returns this point for
-  // angled arrows, but we recompute here to keep the symmetry with
-  // curveControl explicit at the call site).
+  // Single elbow handle for an angled arrow with no explicit points; the
+  // per-point handles take over once the user adds a bend.
   const elbowPoint =
-    style === 'angled' ? angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset) : null;
+    style === 'angled' && !curveAnchors
+      ? angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset)
+      : null;
   const labelText = arrow.label ?? '';
   const showLabel = isEditing || labelText.length > 0;
   // When the user has dragged the label, anchor it to their chosen

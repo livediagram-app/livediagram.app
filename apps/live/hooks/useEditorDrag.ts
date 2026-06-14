@@ -653,18 +653,26 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const to = endpointPosition(arrow.to, els);
     const mx = (from.x + to.x) / 2;
     const my = (from.y + to.y) / 2;
-    const wasCurved = arrowStyleOf(arrow) === 'curved';
-    // Seed: keep an existing multi-bend; preserve a single bow by seeding it
-    // as a point; start empty for a straight / angled arrow being curved.
+    const currentStyle = arrowStyleOf(arrow);
+    // Preserve the arrow's style: an angled arrow gains another bend (stays a
+    // polyline), a curved arrow gains a smooth control point. Only a straight
+    // arrow has no bend concept, so it becomes a curve. Seed from the existing
+    // single bend (bow / elbow) so adding a point doesn't reset the shape.
     const seeded =
       arrow.curvePoints && arrow.curvePoints.length > 0
         ? arrow.curvePoints.slice()
-        : wasCurved
+        : currentStyle === 'curved'
           ? (() => {
               const c = curveControlPoint(from, to, arrow.curveOffset);
               return [{ dx: c.x - mx, dy: c.y - my }];
             })()
-          : [];
+          : currentStyle === 'angled'
+            ? (() => {
+                const elb = angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset);
+                return [{ dx: elb.x - mx, dy: elb.y - my }];
+              })()
+            : [];
+    const nextStyle = currentStyle === 'straight' ? 'curved' : currentStyle;
     const anchors = [from, ...curveAnchorPoints(from, to, seeded), to];
     // Nearest segment of the anchor polyline → insert index in `seeded`.
     let best = 0;
@@ -681,7 +689,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     d.commit((all) =>
       all.map((el) =>
         el.id === arrowId && el.type === 'arrow'
-          ? { ...el, arrowStyle: 'curved', curvePoints: next }
+          ? { ...el, arrowStyle: nextStyle, curvePoints: next }
           : el,
       ),
     );

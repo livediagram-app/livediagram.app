@@ -131,6 +131,13 @@ export function arrowPathD(
     const c = curveControlPoint(from, to, curveOffset);
     return `M ${from.x} ${from.y} Q ${c.x} ${c.y} ${to.x} ${to.y}`;
   }
+  // Angled: multi-bend renders as a straight polyline through the control
+  // points (so adding a bend keeps the angled look rather than smoothing it);
+  // the single-elbow case keeps the auto right-angle corner.
+  if (curvePoints && curvePoints.length > 0) {
+    const anchors = curveAnchorPoints(from, to, curvePoints);
+    return `M ${from.x} ${from.y} ${anchors.map((a) => `L ${a.x} ${a.y}`).join(' ')} L ${to.x} ${to.y}`;
+  }
   const elbow = angledElbow(from, to, fromEp, toEp, elbowOffset);
   return `M ${from.x} ${from.y} L ${elbow.x} ${elbow.y} L ${to.x} ${to.y}`;
 }
@@ -172,6 +179,9 @@ export function arrowPathMidpoint(
   curvePoints?: { dx: number; dy: number }[],
 ): { x: number; y: number } {
   if (style === 'angled') {
+    if (curvePoints && curvePoints.length > 0) {
+      return polylineAt([from, ...curveAnchorPoints(from, to, curvePoints), to], 0.5).point;
+    }
     return angledElbow(from, to, fromEp, toEp, elbowOffset);
   }
   if (style === 'curved' && curvePoints && curvePoints.length > 0) {
@@ -230,6 +240,9 @@ export function arrowCenterline(
     return pts;
   }
   if (style === 'angled') {
+    if (curvePoints && curvePoints.length > 0) {
+      return [from, ...curveAnchorPoints(from, to, curvePoints), to];
+    }
     return [from, angledElbow(from, to, fromEp, toEp, elbowOffset), to];
   }
   return [from, to];

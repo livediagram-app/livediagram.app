@@ -195,4 +195,21 @@ describe('angledElbow', () => {
     expect(d).toContain('10 20');
     expect(d.endsWith('30 5')).toBe(true);
   });
+
+  it('angled with curve points renders a straight polyline through them (stays angled)', () => {
+    const d = arrowPathD(
+      'angled',
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      free(0, 0),
+      free(100, 0),
+      undefined,
+      undefined,
+      [{ dx: 0, dy: -20 }],
+    );
+    // chord midpoint (50,0); anchor at (50,-20). Polyline, no curve commands.
+    expect(d).toBe('M 0 0 L 50 -20 L 100 0');
+    expect(d.includes('C')).toBe(false);
+    expect(d.includes('Q')).toBe(false);
+  });
 });
