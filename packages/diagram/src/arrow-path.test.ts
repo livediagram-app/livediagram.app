@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  catmullRomPathD,
   angledElbow,
   arrowPathD,
   arrowPathMidpoint,
@@ -160,5 +161,38 @@ describe('angledElbow', () => {
       { dx: 30, dy: 20 },
     );
     expect(mid).toEqual({ x: 130, y: 20 });
+  });
+
+  it('threads a smooth spline through multiple curve points (passes through each)', () => {
+    const d = arrowPathD(
+      'curved',
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      free(0, 0),
+      free(100, 0),
+      undefined,
+      undefined,
+      [
+        { dx: -20, dy: -30 },
+        { dx: 20, dy: 30 },
+      ],
+    );
+    // chord midpoint is (50,0); anchors land at (30,-30) and (70,30).
+    expect(d.startsWith('M 0 0')).toBe(true);
+    expect(d).toContain('30 -30');
+    expect(d).toContain('70 30');
+    expect(d.endsWith('100 0')).toBe(true);
+  });
+
+  it('catmullRomPathD passes through every input point', () => {
+    const d = catmullRomPathD([
+      { x: 0, y: 0 },
+      { x: 10, y: 20 },
+      { x: 30, y: 5 },
+    ]);
+    expect(d.startsWith('M 0 0')).toBe(true);
+    // each cubic segment ends at the next point
+    expect(d).toContain('10 20');
+    expect(d.endsWith('30 5')).toBe(true);
   });
 });

@@ -16,6 +16,7 @@ import {
   arrowPathMidpoint,
   arrowStyleOf,
   BORDER_DASH_ARRAY,
+  curveAnchorPoints,
   curveControlPoint,
   DEFAULT_BORDER_STYLE,
   defaultArrowStrokeColor,
@@ -77,6 +78,11 @@ type ArrowViewProps = {
   // selected user grabs the curve handle. Receives the original
   // pointer event so the caller can hook up move/up listeners.
   onBeginCurveDrag?: (id: string, e: ReactPointerEvent) => void;
+  // Drag one control point of a multi-bend curve (curvePoints[index]).
+  onBeginCurvePointDrag?: (id: string, index: number, e: ReactPointerEvent) => void;
+  // Click the curved line (when selected) to add a control point at the
+  // clicked canvas position.
+  onAddCurvePoint?: (id: string, canvasX: number, canvasY: number) => void;
   // Same shape as curve drag, but for angled arrows: the elbow
   // handle lets the user drag the bend to a new position. Fires
   // only when the arrow is angled and the user grabs the elbow.
@@ -115,6 +121,8 @@ function ArrowViewImpl({
   onCancelEdit,
   onBeginTranslate,
   onBeginCurveDrag,
+  onBeginCurvePointDrag,
+  onAddCurvePoint,
   onBeginElbowDrag,
   onBeginLabelDrag,
   fontFamily,
@@ -135,6 +143,7 @@ function ArrowViewImpl({
     arrow.to,
     arrow.curveOffset,
     arrow.elbowOffset,
+    arrow.curvePoints,
   );
   const midpoint = arrowPathMidpoint(
     style,
@@ -144,13 +153,21 @@ function ArrowViewImpl({
     arrow.to,
     arrow.curveOffset,
     arrow.elbowOffset,
+    arrow.curvePoints,
   );
   // Bezier control point (only meaningful for curved arrows). The
   // curve drag handle sits exactly on this point, not on the
   // visual midpoint, since dragging the control point is what
   // actually changes the curve shape (the midpoint is a derived
   // by-product of the control point at t=0.5).
-  const curveControl = style === 'curved' ? curveControlPoint(from, to, arrow.curveOffset) : null;
+  // Multi-bend control points (absolute) when the curve has them; the single
+  // bow handle (curveControl) is used only for a curve with no explicit points.
+  const curveAnchors =
+    style === 'curved' && arrow.curvePoints && arrow.curvePoints.length > 0
+      ? curveAnchorPoints(from, to, arrow.curvePoints)
+      : null;
+  const curveControl =
+    style === 'curved' && !curveAnchors ? curveControlPoint(from, to, arrow.curveOffset) : null;
   // Elbow point for angled arrows. Same draggable affordance as the
   // curve handle: drag to move the bend. The handle sits exactly on
   // the elbow (the midpoint helper already returns this point for
@@ -175,6 +192,7 @@ function ArrowViewImpl({
           arrow.curveOffset,
           arrow.elbowOffset,
           arrow.labelOffset,
+          arrow.curvePoints,
         )
       : placeLabel(midpoint, labelText, elementIndex, arrow.id, arrowLabelFontSize(arrow.textSize));
   // The label box is draggable (and shows its dashed selection box)
@@ -265,6 +283,22 @@ function ArrowViewImpl({
           if (isLocked || isPaintMode) return;
           onBeginEdit(arrow.id);
         }}
+        onClick={(e) => {
+          // Single click on an already-selected curved arrow adds a control
+          // point at the click (e.detail === 1 skips the clicks of a
+          // double-click-to-edit). The first selecting click is a no-op here
+          // because this render's isSelected is still false at that point.
+          if (e.detail !== 1 || style !== 'curved' || !isSelected || isLocked) return;
+          if (!onAddCurvePoint) return;
+          const svg = (e.currentTarget as SVGPathElement).ownerSVGElement;
+          const ctm = svg?.getScreenCTM();
+          if (!svg || !ctm) return;
+          const pt = svg.createSVGPoint();
+          pt.x = e.clientX;
+          pt.y = e.clientY;
+          const c = pt.matrixTransform(ctm.inverse());
+          onAddCurvePoint(arrow.id, c.x, c.y);
+        }}
         style={{
           pointerEvents: 'stroke',
           cursor:
@@ -334,6 +368,21 @@ function ArrowViewImpl({
               }}
             />
           ) : null}
+          {curveAnchors && onBeginCurvePointDrag
+            ? curveAnchors.map((a, i) => (
+                <CurveHandle
+                  key={i}
+                  cx={a.x}
+                  cy={a.y}
+                  disabled={isLocked}
+                  onPointerDown={(e) => {
+                    if (isLocked) return;
+                    e.stopPropagation();
+                    onBeginCurvePointDrag(arrow.id, i, e);
+                  }}
+                />
+              ))
+            : null}
           {elbowPoint && onBeginElbowDrag ? (
             // Angled-arrow elbow handle. Same affordance as the
             // curve handle (white square, brand-600 outline) so the

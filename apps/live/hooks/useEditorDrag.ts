@@ -30,6 +30,7 @@ import {
   angledElbow,
   arrowLabelAnchor,
   arrowStyleOf,
+  curveAnchorPoints,
   curveControlPoint,
   endpointPosition,
   projectToArrow,
@@ -107,6 +108,24 @@ function sameDistGuides(a: DistributionGuide[], b: DistributionGuide[]): boolean
     }
   }
   return true;
+}
+
+// Distance from point p to segment a-b (canvas coords). Used to pick which
+// segment of a multi-bend curve a click lands on so a new control point is
+// inserted in the right place.
+function distToSegment(
+  p: { x: number; y: number },
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): number {
+  const vx = b.x - a.x;
+  const vy = b.y - a.y;
+  const lenSq = vx * vx + vy * vy;
+  const t =
+    lenSq < 1e-9 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * vx + (p.y - a.y) * vy) / lenSq));
+  const cx = a.x + t * vx;
+  const cy = a.y + t * vy;
+  return Math.hypot(p.x - cx, p.y - cy);
 }
 
 // Screen-pixel distance the pointer must travel before a body drag
@@ -239,6 +258,8 @@ type EditorDragApi = {
   beginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
   beginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
   beginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
+  beginArrowCurvePointDrag: (arrowId: string, index: number, e: ReactPointerEvent) => void;
+  addCurvePoint: (arrowId: string, canvasX: number, canvasY: number) => void;
   beginArrowElbowDrag: (arrowId: string, e: ReactPointerEvent) => void;
   beginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;
 };
@@ -589,6 +610,76 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     });
   };
 
+  // Drag one control point of a multi-bend curve (curvePoints[index]). Same
+  // gesture as beginArrowCurveDrag but anchored to that point + tagged with
+  // its index so the tick writes back into the array slot.
+  const beginArrowCurvePointDrag = (arrowId: string, index: number, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    if (arrowStyleOf(arrow) !== 'curved' || !arrow.curvePoints?.[index]) return;
+    d.setSelectedId(arrowId);
+    if (arrow.locked === true || d.isReadOnly) return;
+    const from = endpointPosition(arrow.from, d.activeTab.elements);
+    const to = endpointPosition(arrow.to, d.activeTab.elements);
+    const anchor = curveAnchorPoints(from, to, arrow.curvePoints)[index]!;
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-curve',
+      arrowId,
+      pointIndex: index,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startMidX: (from.x + to.x) / 2,
+      startMidY: (from.y + to.y) / 2,
+      grabDx: anchor.x - (from.x + to.x) / 2,
+      grabDy: anchor.y - (from.y + to.y) / 2,
+    });
+  };
+
+  // Insert a new control point at a clicked canvas position, so clicking the
+  // curve adds a bend. Seeds curvePoints from the current single bow (so the
+  // existing shape is kept) and inserts the new point into the nearest
+  // segment of the from -> points -> to polyline.
+  const addCurvePoint = (arrowId: string, canvasX: number, canvasY: number) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    if (arrowStyleOf(arrow) !== 'curved' || arrow.locked === true || d.isReadOnly) return;
+    const els = d.activeTab.elements;
+    const from = endpointPosition(arrow.from, els);
+    const to = endpointPosition(arrow.to, els);
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    // Seed from the existing curve so adding a bend doesn't reset the shape.
+    const seeded =
+      arrow.curvePoints && arrow.curvePoints.length > 0
+        ? arrow.curvePoints.slice()
+        : (() => {
+            const c = curveControlPoint(from, to, arrow.curveOffset);
+            return [{ dx: c.x - mx, dy: c.y - my }];
+          })();
+    const anchors = [from, ...curveAnchorPoints(from, to, seeded), to];
+    // Nearest segment of the anchor polyline → insert index in `seeded`.
+    let best = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < anchors.length - 1; i++) {
+      const dist = distToSegment({ x: canvasX, y: canvasY }, anchors[i]!, anchors[i + 1]!);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
+    }
+    const next = seeded.slice();
+    next.splice(best, 0, { dx: canvasX - mx, dy: canvasY - my });
+    d.commit((all) =>
+      all.map((el) =>
+        el.id === arrowId && el.type === 'arrow' ? { ...el, curvePoints: next } : el,
+      ),
+    );
+    d.setSelectedId(arrowId);
+  };
+
   // Elbow-handle drag for angled arrows. Same gesture shape as
   // beginArrowCurveDrag but stores the auto-elbow (the corner the
   // angled-arrow renderer would draw without offset) as the
@@ -644,6 +735,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       arrow.curveOffset,
       arrow.elbowOffset,
       arrow.labelOffset,
+      arrow.curvePoints,
     );
     checkpointPendingRef.current = true;
     setDrag({
@@ -981,12 +1073,20 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         const controlY = drag.startMidY + drag.grabDy + dy;
         const offsetDx = controlX - drag.startMidX;
         const offsetDy = controlY - drag.startMidY;
+        const pointIndex = drag.pointIndex;
         tick((els) =>
-          els.map((el) =>
-            el.id === drag.arrowId && el.type === 'arrow'
-              ? { ...el, curveOffset: { dx: offsetDx, dy: offsetDy } }
-              : el,
-          ),
+          els.map((el) => {
+            if (el.id !== drag.arrowId || el.type !== 'arrow') return el;
+            // Multi-bend: write the dragged control point's slot; otherwise
+            // the legacy single bow.
+            if (pointIndex != null && el.curvePoints) {
+              const next = el.curvePoints.slice();
+              if (!next[pointIndex]) return el;
+              next[pointIndex] = { dx: offsetDx, dy: offsetDy };
+              return { ...el, curvePoints: next };
+            }
+            return { ...el, curveOffset: { dx: offsetDx, dy: offsetDy } };
+          }),
         );
         return;
       }
@@ -1031,6 +1131,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           arrow.curveOffset,
           arrow.elbowOffset,
           point,
+          arrow.curvePoints,
         );
         tick((els) =>
           els.map((el) =>
@@ -1286,6 +1387,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     beginArrowTranslate,
     beginEndpointDrag,
     beginArrowCurveDrag,
+    beginArrowCurvePointDrag,
+    addCurvePoint,
     beginArrowElbowDrag,
     beginArrowLabelDrag,
   };

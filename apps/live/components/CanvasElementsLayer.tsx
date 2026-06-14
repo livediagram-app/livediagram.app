@@ -64,6 +64,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     memberIds,
     multiSelectedIds,
     onBeginArrowCurveDrag,
+    onBeginArrowCurvePointDrag,
+    onAddCurvePoint,
     onBeginArrowElbowDrag,
     onBeginArrowLabelDrag,
     onBeginArrowTranslate,
@@ -169,6 +171,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onCancelEdit={onCancelEdit}
                 onBeginTranslate={onBeginArrowTranslate}
                 onBeginCurveDrag={onBeginArrowCurveDrag}
+                onBeginCurvePointDrag={onBeginArrowCurvePointDrag}
+                onAddCurvePoint={onAddCurvePoint}
                 onBeginElbowDrag={onBeginArrowElbowDrag}
                 onBeginLabelDrag={onBeginArrowLabelDrag}
                 fontFamily={tabFontStack}

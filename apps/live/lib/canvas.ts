@@ -230,6 +230,10 @@ export type DragState =
       // so the handle stays exactly under the cursor.
       grabDx: number;
       grabDy: number;
+      // Index into the arrow's `curvePoints` when dragging a specific
+      // control point of a multi-bend curve. Undefined = the legacy single
+      // `curveOffset` bow handle.
+      pointIndex?: number;
     }
   | {
       // Elbow-handle drag: same shape as arrow-curve but for angled

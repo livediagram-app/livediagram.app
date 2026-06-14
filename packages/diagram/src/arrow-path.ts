@@ -24,6 +24,78 @@ export function curveControlPoint(
   return { x: mx + nx * offset, y: my + ny * offset };
 }
 
+// The absolute control points a multi-bend curve threads through, resolved
+// from the chord-midpoint-relative `curvePoints` deltas (so the whole curve
+// translates with the arrow when an endpoint moves, like `curveOffset`).
+export function curveAnchorPoints(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  curvePoints: { dx: number; dy: number }[],
+): { x: number; y: number }[] {
+  const mx = (from.x + to.x) / 2;
+  const my = (from.y + to.y) / 2;
+  return curvePoints.map((p) => ({ x: mx + p.dx, y: my + p.dy }));
+}
+
+// Smooth path through every point (a uniform Catmull-Rom spline expressed as
+// cubic Beziers, ends clamped). Passes THROUGH each point, so dragging a
+// control point moves the curve onto it. Used for multi-bend curves; the
+// single-bow case keeps its quadratic for an unchanged look.
+export function catmullRomPathD(points: { x: number; y: number }[]): string {
+  if (points.length < 2) return '';
+  if (points.length === 2)
+    return `M ${points[0]!.x} ${points[0]!.y} L ${points[1]!.x} ${points[1]!.y}`;
+  const p = points;
+  let d = `M ${p[0]!.x} ${p[0]!.y}`;
+  for (let i = 0; i < p.length - 1; i++) {
+    const p0 = p[i - 1] ?? p[i]!;
+    const p1 = p[i]!;
+    const p2 = p[i + 1]!;
+    const p3 = p[i + 2] ?? p2;
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x} ${c1y} ${c2x} ${c2y} ${p2.x} ${p2.y}`;
+  }
+  return d;
+}
+
+// Sample a Catmull-Rom spline (through `points`) into a fine polyline, for
+// label placement + hit projection on multi-bend curves.
+function sampleCatmullRom(points: { x: number; y: number }[], perSeg = 12): Pt[] {
+  if (points.length < 3) return points.slice();
+  const p = points;
+  const out: Pt[] = [{ x: p[0]!.x, y: p[0]!.y }];
+  for (let i = 0; i < p.length - 1; i++) {
+    const p0 = p[i - 1] ?? p[i]!;
+    const p1 = p[i]!;
+    const p2 = p[i + 1]!;
+    const p3 = p[i + 2] ?? p2;
+    for (let s = 1; s <= perSeg; s++) {
+      const t = s / perSeg;
+      const t2 = t * t;
+      const t3 = t2 * t;
+      // Uniform Catmull-Rom basis.
+      out.push({
+        x:
+          0.5 *
+          (2 * p1.x +
+            (-p0.x + p2.x) * t +
+            (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
+            (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
+        y:
+          0.5 *
+          (2 * p1.y +
+            (-p0.y + p2.y) * t +
+            (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
+            (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3),
+      });
+    }
+  }
+  return out;
+}
+
 // Build the SVG `d` attribute for an arrow at the given resolved
 // endpoint positions. Pure geometry (no DOM dependency) so the
 // editor's `<ArrowView>` and any future export / embedded-viewer
@@ -44,9 +116,14 @@ export function arrowPathD(
   toEp: Endpoint,
   curveOffset?: { dx: number; dy: number },
   elbowOffset?: { dx: number; dy: number },
+  curvePoints?: { dx: number; dy: number }[],
 ): string {
   if (style === 'straight') return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
   if (style === 'curved') {
+    // Multi-bend: a smooth spline through from -> control points -> to.
+    if (curvePoints && curvePoints.length > 0) {
+      return catmullRomPathD([from, ...curveAnchorPoints(from, to, curvePoints), to]);
+    }
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const len = Math.hypot(dx, dy);
@@ -92,9 +169,15 @@ export function arrowPathMidpoint(
   toEp: Endpoint,
   curveOffset?: { dx: number; dy: number },
   elbowOffset?: { dx: number; dy: number },
+  curvePoints?: { dx: number; dy: number }[],
 ): { x: number; y: number } {
   if (style === 'angled') {
     return angledElbow(from, to, fromEp, toEp, elbowOffset);
+  }
+  if (style === 'curved' && curvePoints && curvePoints.length > 0) {
+    // Arc-length midpoint of the sampled spline.
+    const samples = sampleCatmullRom([from, ...curveAnchorPoints(from, to, curvePoints), to]);
+    return polylineAt(samples, 0.5).point;
   }
   if (style === 'curved') {
     const c = curveControlPoint(from, to, curveOffset);
@@ -127,7 +210,11 @@ export function arrowCenterline(
   toEp: Endpoint,
   curveOffset?: { dx: number; dy: number },
   elbowOffset?: { dx: number; dy: number },
+  curvePoints?: { dx: number; dy: number }[],
 ): Pt[] {
+  if (style === 'curved' && curvePoints && curvePoints.length > 0) {
+    return sampleCatmullRom([from, ...curveAnchorPoints(from, to, curvePoints), to]);
+  }
   if (style === 'curved') {
     const c = curveControlPoint(from, to, curveOffset);
     const N = 24;
@@ -197,11 +284,12 @@ export function arrowLabelAnchor(
   curveOffset: { dx: number; dy: number } | undefined,
   elbowOffset: { dx: number; dy: number } | undefined,
   labelOffset: { t: number; offset: number } | undefined,
+  curvePoints?: { dx: number; dy: number }[],
 ): Pt {
   if (!labelOffset) {
-    return arrowPathMidpoint(style, from, to, fromEp, toEp, curveOffset, elbowOffset);
+    return arrowPathMidpoint(style, from, to, fromEp, toEp, curveOffset, elbowOffset, curvePoints);
   }
-  const pts = arrowCenterline(style, from, to, fromEp, toEp, curveOffset, elbowOffset);
+  const pts = arrowCenterline(style, from, to, fromEp, toEp, curveOffset, elbowOffset, curvePoints);
   const { point, tangent } = polylineAt(pts, labelOffset.t);
   // Left-hand normal (rotate the tangent +90°).
   const nx = -tangent.y;
@@ -222,8 +310,9 @@ export function projectToArrow(
   curveOffset: { dx: number; dy: number } | undefined,
   elbowOffset: { dx: number; dy: number } | undefined,
   p: Pt,
+  curvePoints?: { dx: number; dy: number }[],
 ): { t: number; offset: number } {
-  const pts = arrowCenterline(style, from, to, fromEp, toEp, curveOffset, elbowOffset);
+  const pts = arrowCenterline(style, from, to, fromEp, toEp, curveOffset, elbowOffset, curvePoints);
   const segLens: number[] = [];
   let total = 0;
   for (let i = 0; i < pts.length - 1; i++) {

@@ -1619,6 +1619,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginArrowTranslate,
     beginEndpointDrag,
     beginArrowCurveDrag,
+    beginArrowCurvePointDrag,
+    addCurvePoint,
     beginArrowElbowDrag,
     beginArrowLabelDrag,
   } = useEditorDrag({
@@ -1780,6 +1782,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     retractVote,
     beginAnchorDrag,
     beginArrowCurveDrag,
+    beginArrowCurvePointDrag,
+    addCurvePoint,
     beginArrowElbowDrag,
     beginArrowLabelDrag,
     beginArrowTranslate,

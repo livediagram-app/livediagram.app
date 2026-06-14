@@ -758,6 +758,16 @@ export type ArrowElement = {
   // render unchanged. Setting it back to undefined "resets" the
   // curve to its default shape.
   curveOffset?: { dx: number; dy: number };
+  // Optional extra control points for a multi-bend curve (spec/09). Each is
+  // a delta from the chord midpoint (canvas coords), like `curveOffset`, so
+  // the whole curve translates with the arrow when an endpoint moves. When
+  // present (and `arrowStyle === 'curved'`) the curve is a smooth spline
+  // through from -> these points -> to, letting the user click the line to
+  // add bends rather than being stuck with a single bow. Absent or empty =
+  // the single-control-point behaviour above. `curveOffset` is treated as
+  // the first point when this is absent, so existing curved arrows are
+  // unchanged.
+  curvePoints?: { dx: number; dy: number }[];
   // Optional override for the angled-arrow elbow position. Stored
   // as a delta from the auto-computed elbow (the right-angle corner
   // a default angled arrow draws at `(to.x, from.y)` or `(from.x,

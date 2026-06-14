@@ -109,6 +109,8 @@ export function EditorView() {
     retractVote,
     beginAnchorDrag,
     beginArrowCurveDrag,
+    beginArrowCurvePointDrag,
+    addCurvePoint,
     beginArrowLabelDrag,
     beginArrowElbowDrag,
     beginArrowTranslate,
@@ -765,6 +767,8 @@ export function EditorView() {
         onBeginEndpointDrag={beginEndpointDrag}
         onBeginArrowTranslate={beginArrowTranslate}
         onBeginArrowCurveDrag={beginArrowCurveDrag}
+        onBeginArrowCurvePointDrag={beginArrowCurvePointDrag}
+        onAddCurvePoint={addCurvePoint}
         onBeginArrowLabelDrag={beginArrowLabelDrag}
         onBeginArrowElbowDrag={beginArrowElbowDrag}
         onShiftSelect={toggleInMultiSelect}
