@@ -94,9 +94,7 @@ export function LinkCardView({
   ) : null;
 
   return (
-    <div
-      className={`pointer-events-none absolute inset-0 flex flex-col overflow-hidden ${showImage ? '' : 'justify-center'}`}
-    >
+    <div className="pointer-events-none absolute inset-0 flex flex-col overflow-hidden">
       {showImage ? (
         <div className="min-h-0 flex-1 overflow-hidden bg-slate-100 dark:bg-slate-800">
           <img
@@ -107,7 +105,26 @@ export function LinkCardView({
             className="h-full w-full object-cover"
           />
         </div>
-      ) : null}
+      ) : (
+        // No OG image unfurled: a neutral placeholder banner so the card keeps
+        // its image-on-top shape instead of collapsing the layout.
+        <div className="flex min-h-0 flex-1 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-300 dark:from-slate-800 dark:to-slate-700 dark:text-slate-600">
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+          </svg>
+        </div>
+      )}
       <div className="flex shrink-0 items-center gap-2 px-2.5 py-2">
         {url && meta?.favicon && favOk ? (
           <img

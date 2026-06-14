@@ -53,11 +53,18 @@ export function TechIconGlyph({
   iconId: string | undefined;
   hasLabel?: boolean;
 }) {
+  // With a label, pin the art to the TOP ~62% band (leaving the bottom for the
+  // bottom-aligned label) rather than letterboxing a tall viewBox across the
+  // whole box — the latter scaled the icon only by height, so widening the
+  // element left the icon the same size. A percentage-height band scales with
+  // the element in both axes.
   return (
     <svg
-      className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-      viewBox={hasLabel ? '0 0 24 40' : '0 0 24 24'}
-      preserveAspectRatio="xMidYMin meet"
+      className={`pointer-events-none absolute overflow-visible ${
+        hasLabel ? 'inset-x-0 top-[6%] h-[58%] w-full' : 'inset-0 h-full w-full'
+      }`}
+      viewBox="0 0 24 24"
+      preserveAspectRatio="xMidYMid meet"
       aria-hidden
     >
       <TechIconArt iconId={iconId} />
