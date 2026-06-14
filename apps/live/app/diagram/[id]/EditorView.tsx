@@ -731,7 +731,14 @@ export function EditorView() {
             : (id, sx, sy) => setContextMenu({ mode: 'element', elementId: id, x: sx, y: sy })
         }
         onMultiContextMenu={
-          isReadOnly ? undefined : (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })
+          isReadOnly
+            ? undefined
+            : (sx, sy) =>
+                // Toggle: the ⋯ button (and a repeat right-click) closes an
+                // already-open multi menu instead of reopening it.
+                setContextMenu((cur) =>
+                  cur && cur.mode === 'multi' ? null : { mode: 'multi', x: sx, y: sy },
+                )
         }
         onOpenElementContextMenu={
           isReadOnly

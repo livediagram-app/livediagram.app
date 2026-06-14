@@ -14,6 +14,9 @@ type MultiSelectionToolbarProps = {
   onToggleLock: () => void;
   // Opens the Export dialog scoped to just the selected elements.
   onExport: () => void;
+  // Opens the selection-wide context menu (anchored under the ⋯ button).
+  // Omitted for view-role, where there's no context menu.
+  onOpenContextMenu?: (screenX: number, screenY: number) => void;
 };
 
 // The marquee multi-selection action buttons. Rendered bare (no shell) so the
@@ -27,9 +30,29 @@ export function MultiSelectionToolbar({
   onGroup,
   onToggleLock,
   onExport,
+  onOpenContextMenu,
 }: MultiSelectionToolbarProps) {
   return (
     <>
+      {onOpenContextMenu ? (
+        <>
+          <Tooltip title="More" description="Open the selection menu.">
+            <button
+              type="button"
+              data-context-menu-trigger
+              onClick={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                onOpenContextMenu(r.left, r.bottom);
+              }}
+              aria-label="More actions"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            >
+              <EllipsisIcon />
+            </button>
+          </Tooltip>
+          <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+        </>
+      ) : null}
       <Tooltip title="Duplicate" description="Duplicate selected (arrows skipped).">
         <button
           type="button"
@@ -100,6 +123,16 @@ export function MultiSelectionToolbar({
         </button>
       </Tooltip>
     </>
+  );
+}
+
+function EllipsisIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <circle cx="3.5" cy="8" r="1.3" fill="currentColor" />
+      <circle cx="8" cy="8" r="1.3" fill="currentColor" />
+      <circle cx="12.5" cy="8" r="1.3" fill="currentColor" />
+    </svg>
   );
 }
 
