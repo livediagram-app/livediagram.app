@@ -101,24 +101,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             }}
           />
         ) : null}
-        {boxed ? (
-          // Lock aspect ratio — iOS-style switch, matching the panel.
-          <div className="flex items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
-            <span className="flex items-center gap-2">
-              <span className="text-slate-400 dark:text-slate-500">
-                <AspectLockMenuIcon />
-              </span>
-              Lock aspect ratio
-            </span>
-            <ToggleSwitch
-              checked={!!(target as { aspectLocked?: boolean }).aspectLocked}
-              onChange={props.onToggleAspectLock}
-              label="Lock aspect ratio"
-            />
-          </div>
-        ) : null}
         <ContextMenuDivider />
-        {/* Layer — a collapsible section grouping front/back + opacity. */}
+        {/* Layer — a collapsible section grouping front/back + opacity +
+            (for boxed elements) the aspect-ratio lock. */}
         <MenuAccordionSection title="Layer">
           <div className="flex gap-1 px-2 py-0.5">
             <MenuRowButton
@@ -144,6 +129,22 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             value={(target as { opacity?: number }).opacity ?? 1}
             onChange={props.onSetOpacity}
           />
+          {boxed ? (
+            // Lock aspect ratio — iOS-style switch, matching the panel.
+            <div className="flex items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
+              <span className="flex items-center gap-2">
+                <span className="text-slate-400 dark:text-slate-500">
+                  <AspectLockMenuIcon />
+                </span>
+                Lock aspect ratio
+              </span>
+              <ToggleSwitch
+                checked={!!(target as { aspectLocked?: boolean }).aspectLocked}
+                onChange={props.onToggleAspectLock}
+                label="Lock aspect ratio"
+              />
+            </div>
+          ) : null}
         </MenuAccordionSection>
         {/* Collaborate — notes + comments grouped under one collapsible header. */}
         <MenuAccordionSection title="Collaborate">
