@@ -59,7 +59,13 @@ export function ContextMenu({
   useEffect(() => {
     const onMouse = (e: MouseEvent) => {
       if (!ref.current) return;
-      if (e.target instanceof Node && !ref.current.contains(e.target)) onClose();
+      if (!(e.target instanceof Node) || ref.current.contains(e.target)) return;
+      // A mousedown on the button that OPENED this menu must not trip the
+      // outside-close, or the button's own click would just reopen it. The
+      // trigger marks itself with data-context-menu-trigger and toggles the
+      // menu in its onClick instead. Clicks anywhere else close as usual.
+      if (e.target instanceof Element && e.target.closest('[data-context-menu-trigger]')) return;
+      onClose();
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();

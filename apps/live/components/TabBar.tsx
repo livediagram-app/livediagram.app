@@ -424,6 +424,7 @@ export function TabBar({
           >
             <button
               type="button"
+              data-context-menu-trigger
               onClick={(e) => {
                 const r = e.currentTarget.getBoundingClientRect();
                 // Anchor the menu's BOTTOM edge at the button's top (openUp),

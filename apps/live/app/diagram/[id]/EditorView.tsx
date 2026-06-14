@@ -729,7 +729,15 @@ export function EditorView() {
         onOpenElementContextMenu={
           isReadOnly
             ? undefined
-            : (id, sx, sy) => setContextMenu({ mode: 'element', elementId: id, x: sx, y: sy })
+            : (id, sx, sy) =>
+                // Ellipsis is a toggle: clicking it while its menu is already
+                // open for this element closes it (the ContextMenu ignores the
+                // trigger's mousedown so this onClick gets to decide).
+                setContextMenu((cur) =>
+                  cur && cur.mode === 'element' && cur.elementId === id
+                    ? null
+                    : { mode: 'element', elementId: id, x: sx, y: sy },
+                )
         }
         onCanvasContextMenu={
           isReadOnly ? undefined : (sx, sy) => setContextMenu({ mode: 'canvas', x: sx, y: sy })
@@ -936,7 +944,11 @@ export function EditorView() {
           onOpenCanvasMenu={
             isReadOnly
               ? undefined
-              : (x, y) => setContextMenu({ mode: 'canvas', x, y, openUp: true })
+              : (x, y) =>
+                  // Footer canvas-menu button toggles: a second click closes it.
+                  setContextMenu((cur) =>
+                    cur && cur.mode === 'canvas' ? null : { mode: 'canvas', x, y, openUp: true },
+                  )
           }
         />
       )}

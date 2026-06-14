@@ -160,6 +160,7 @@ export function SelectionPopover({
             <button
               ref={ellipsisRef}
               type="button"
+              data-context-menu-trigger
               onClick={() => {
                 const rect = ellipsisRef.current?.getBoundingClientRect();
                 if (!rect) return;
