@@ -96,6 +96,7 @@ export function Canvas(props: CanvasProps) {
     onSelect,
     onCanvasContextMenu,
     onElementContextMenu,
+    onMultiContextMenu,
     onShiftSelect,
     onBeginFormatPainter,
     onBeginGroup,
@@ -418,10 +419,26 @@ export function Canvas(props: CanvasProps) {
   // `onElementContextMenu` itself changes upstream.
   const handleElementContextSelect = useCallback(
     (id: string, sx: number, sy: number) => {
+      // Right-clicking a member of an active multi-selection keeps the whole
+      // selection and opens a selection-wide menu. Right-clicking a grouped
+      // element selects the group (which expands to all members) and opens
+      // the same menu. Otherwise it's a single element.
+      const inMarquee = multiSelectedIds.size > 1 && multiSelectedIds.has(id);
+      const el = elements.find((e) => e.id === id);
+      const grouped = !!el && isBoxed(el) && !!el.groupId;
+      if (inMarquee && onMultiContextMenu) {
+        onMultiContextMenu(sx, sy);
+        return;
+      }
+      if (grouped && onMultiContextMenu) {
+        onSelect(id);
+        onMultiContextMenu(sx, sy);
+        return;
+      }
       onSelect(id);
       onElementContextMenu?.(id, sx, sy);
     },
-    [onSelect, onElementContextMenu],
+    [onSelect, onElementContextMenu, onMultiContextMenu, elements, multiSelectedIds],
   );
 
   // Stable wrapper for the arrow click flow. Same rationale as

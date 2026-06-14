@@ -6,6 +6,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
   isBoxed,
+  selectionMembers,
   type Anchor,
 } from '@livediagram/diagram';
 import type { QuickConnectDirection } from '@/lib/canvas';
@@ -353,6 +354,24 @@ export function EditorView() {
     viewportZoom,
     writeUserPreferences,
   } = ctx;
+  // Selection-context-menu wiring (right-click a multi-selection or group):
+  // resolve the member set, whether it's a group vs a marquee multi, count,
+  // and lock state, then route the actions to the multi- or group-aware
+  // handlers accordingly.
+  const ctxMultiActive = multiSelectedIds.size > 0;
+  const ctxSelectedEl = selectedId
+    ? (activeTab.elements.find((e) => e.id === selectedId) ?? null)
+    : null;
+  const ctxIsGroup =
+    !ctxMultiActive && !!ctxSelectedEl && isBoxed(ctxSelectedEl) && !!ctxSelectedEl.groupId;
+  const ctxMemberIds = ctxMultiActive
+    ? [...multiSelectedIds]
+    : ctxSelectedEl
+      ? selectionMembers(activeTab.elements, ctxSelectedEl.id)
+      : [];
+  const ctxSelectionLocked =
+    ctxMemberIds.length > 0 &&
+    ctxMemberIds.every((id) => activeTab.elements.find((e) => e.id === id)?.locked === true);
   // Guest sign-in nudge (spec/36): the same banner the Explorer shows,
   // but on the editor it waits ~5 minutes into the session before
   // appearing so it never interrupts someone the moment they open a
@@ -718,6 +737,9 @@ export function EditorView() {
           isReadOnly
             ? undefined
             : (id, sx, sy) => setContextMenu({ mode: 'element', elementId: id, x: sx, y: sy })
+        }
+        onMultiContextMenu={
+          isReadOnly ? undefined : (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })
         }
         onOpenElementContextMenu={
           isReadOnly
@@ -1182,6 +1204,18 @@ export function EditorView() {
           onAddSticky={addSticky}
           onDrawPencil={beginFreehand}
           onAddAnnotation={addAnnotation}
+          selectionCount={ctxMemberIds.length}
+          selectionIsGroup={ctxIsGroup}
+          selectionLocked={ctxSelectionLocked}
+          onDuplicateSelection={ctxMultiActive ? duplicateMultiSelected : duplicateSelected}
+          onDeleteSelection={ctxMultiActive ? deleteMultiSelected : deleteSelected}
+          onToggleLockSelection={ctxMultiActive ? toggleLockMultiSelected : toggleLockSelected}
+          onExportSelection={() => {
+            setExportScope('selection');
+            setExportOpen(true);
+          }}
+          onGroupSelection={groupMultiSelected}
+          onUngroupSelection={ungroupSelected}
           timerActive={!!activeTab.timer}
           voteActive={!!activeTab.vote}
           onStartTimer={startTimer}

@@ -36,11 +36,13 @@ import {
   BorderStrokeIcon,
   BorderStyleIcon,
   DotsIcon,
+  FileExportIcon,
   ItalicIcon,
   ScaleIcon,
   StrikethroughIcon,
   UnderlineIcon,
 } from '@/components/palette-icons';
+import { TrashIcon } from '@/components/explorer-icons';
 import {
   AnnotationMenuIcon,
   AutoAlignIcon,
@@ -62,6 +64,9 @@ import { MenuAccordionSection, MenuItem } from '@/components/PortalMenu';
 // the page can type its own context-menu state against it.
 export type EditorContextMenuState =
   | { mode: 'element'; elementId: string; x: number; y: number }
+  // A whole multi-selection or group was right-clicked — actions apply to
+  // everything selected.
+  | { mode: 'multi'; x: number; y: number }
   | { mode: 'canvas'; x: number; y: number };
 
 type EditorContextMenuProps = {
@@ -112,6 +117,18 @@ type EditorContextMenuProps = {
   onAddSticky: () => void;
   onDrawPencil: () => void;
   onAddAnnotation: () => void;
+  // Whole-selection actions for the 'multi' menu (a marquee multi-selection
+  // or a group). The page wires these to the right handlers (multi vs group)
+  // + reports the count, group state, and lock state.
+  selectionCount: number;
+  selectionIsGroup: boolean;
+  selectionLocked: boolean;
+  onDuplicateSelection: () => void;
+  onDeleteSelection: () => void;
+  onToggleLockSelection: () => void;
+  onExportSelection: () => void;
+  onGroupSelection: () => void;
+  onUngroupSelection: () => void;
   // Session tools (spec/39) for the canvas menu's Session category.
   timerActive: boolean;
   voteActive: boolean;
@@ -138,6 +155,68 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     open: openColor === id,
     onToggle: () => setOpenColor((c) => (c === id ? null : id)),
   });
+
+  if (menu.mode === 'multi') {
+    const noun = props.selectionIsGroup ? 'group' : `${props.selectionCount} elements`;
+    return (
+      <ContextMenu position={position} onClose={onClose}>
+        <MenuItem
+          icon={<DuplicateMenuIcon />}
+          label="Duplicate"
+          onClick={() => {
+            props.onDuplicateSelection();
+            onClose();
+          }}
+        />
+        {props.selectionIsGroup ? (
+          <MenuItem
+            icon={<UngroupMenuIcon />}
+            label="Ungroup"
+            onClick={() => {
+              props.onUngroupSelection();
+              onClose();
+            }}
+          />
+        ) : (
+          <MenuItem
+            icon={<GroupMenuIcon />}
+            label="Group"
+            onClick={() => {
+              props.onGroupSelection();
+              onClose();
+            }}
+          />
+        )}
+        <MenuItem
+          icon={<LockMenuIcon />}
+          label={props.selectionLocked ? 'Unlock' : 'Lock'}
+          onClick={() => {
+            props.onToggleLockSelection();
+            onClose();
+          }}
+        />
+        <MenuItem
+          icon={<FileExportIcon />}
+          label="Export selection"
+          onClick={() => {
+            props.onExportSelection();
+            onClose();
+          }}
+        />
+        <ContextMenuDivider />
+        <MenuItem
+          icon={<TrashIcon />}
+          label={`Delete ${noun}`}
+          danger
+          disabled={props.selectionLocked}
+          onClick={() => {
+            props.onDeleteSelection();
+            onClose();
+          }}
+        />
+      </ContextMenu>
+    );
+  }
 
   if (menu.mode === 'element') {
     const target = elements.find((el) => el.id === menu.elementId);
@@ -927,6 +1006,78 @@ function TextToggle({
     >
       {children}
     </button>
+  );
+}
+
+// Glyphs for the multi-selection menu (12px, context-menu stroke style).
+function DuplicateMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="2.5" width="8" height="8" rx="1.5" />
+      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" fill="white" />
+    </svg>
+  );
+}
+function GroupMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2" y="2" width="6" height="6" rx="1" />
+      <rect x="8" y="8" width="6" height="6" rx="1" />
+    </svg>
+  );
+}
+function UngroupMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      strokeDasharray="2.5 2"
+      aria-hidden
+    >
+      <rect x="2" y="2" width="6" height="6" rx="1" />
+      <rect x="8" y="8" width="6" height="6" rx="1" />
+    </svg>
+  );
+}
+function LockMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
+      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
+    </svg>
   );
 }
 

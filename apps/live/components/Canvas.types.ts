@@ -246,6 +246,9 @@ export type CanvasProps = {
   // own context handler — the canvas selects the element and the
   // page opens an element context menu.
   onElementContextMenu?: (id: string, screenX: number, screenY: number) => void;
+  // Right-click on a multi-selection or group: open a selection-wide menu
+  // (the page sets a 'multi' context-menu mode).
+  onMultiContextMenu?: (screenX: number, screenY: number) => void;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
   onBeginRotate: (
     id: string,
