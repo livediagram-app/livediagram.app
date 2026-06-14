@@ -204,6 +204,8 @@ export function EditorView() {
     laserTrailRows,
     linkActiveTabTo,
     linkPickerOpenForId,
+    linkPickerInitialMode,
+    openLinkPicker,
     livePresence,
     loadAllTabs,
     loadedTabIds,
@@ -1138,8 +1140,9 @@ export function EditorView() {
           menu={contextMenu}
           elements={activeTab.elements}
           onClose={closeContextMenu}
-          onLinkElement={setLinkPickerOpenForId}
+          onLinkElement={openLinkPicker}
           onRemoveIcon={removeIconFromElement}
+          onSetIconPosition={dropIconOnElement}
           onBringToFront={bringSelectedToFront}
           onSendToBack={sendSelectedToBack}
           onToggleAspectLock={toggleAspectLockSelected}
@@ -1147,6 +1150,10 @@ export function EditorView() {
           onSetTextColor={setTextColorSelected}
           onSetFillColor={setFillColorSelected}
           onSetStrokeColor={setStrokeColorSelected}
+          onSetBorderStroke={setBorderStrokeSelected}
+          onSetBorderStyle={setBorderStyleSelected}
+          onSetBorderRadius={setBorderRadiusSelected}
+          onResetColors={resetColorsSelected}
           onOpenNote={openNote}
           onOpenComments={openComments}
           onChangeTheme={() => {
@@ -1170,6 +1177,7 @@ export function EditorView() {
           currentLink={activeTab.elements.find((e) => e.id === linkPickerOpenForId)?.link ?? null}
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           currentTabId={activeId}
+          initialMode={linkPickerInitialMode ?? undefined}
           recentDiagrams={diagramList
             .filter((d) => d.id !== diagramId)
             .slice(0, 8)

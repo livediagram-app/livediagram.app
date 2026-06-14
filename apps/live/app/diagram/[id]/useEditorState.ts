@@ -1546,18 +1546,24 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Element link picker state + the link read/write/follow handlers.
   // See useElementLinks.
-  const { linkPickerOpenForId, setLinkPickerOpenForId, applyElementLink, followLink } =
-    useElementLinks({
-      currentSelectionIds,
-      commit,
-      tabs,
-      setActiveId,
-      setSelectedId,
-      setEditingId,
-      setFormatSourceId,
-      setGroupSourceId,
-      openDiagram,
-    });
+  const {
+    linkPickerOpenForId,
+    setLinkPickerOpenForId,
+    linkPickerInitialMode,
+    openLinkPicker,
+    applyElementLink,
+    followLink,
+  } = useElementLinks({
+    currentSelectionIds,
+    commit,
+    tabs,
+    setActiveId,
+    setSelectedId,
+    setEditingId,
+    setFormatSourceId,
+    setGroupSourceId,
+    openDiagram,
+  });
 
   // Selection-editing handlers (format/group modes, label edit, type-to-
   // edit, single + shift-click select). See useSelectionEditing.
@@ -1880,6 +1886,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     laserTrailRows,
     linkActiveTabTo,
     linkPickerOpenForId,
+    linkPickerInitialMode,
+    openLinkPicker,
     applyElementLink,
     cellLinkPickerOpenFor,
     setCellLinkPickerOpenFor,

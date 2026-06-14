@@ -1180,14 +1180,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           }
         }
       }
-      // A plain click (no engage) on an annotation marker opens its note
-      // editor (spec/38). Same travel test as the icon-fold above; runs
-      // before setDrag(null) so we still have the gesture's start coords.
-      if (drag?.kind === 'boxed' && drag.mode === 'move' && d.onAnnotationClicked) {
-        const moved = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) > 4;
-        const dragged = d.activeTab.elements.find((el) => el.id === drag.primaryId);
-        if (!moved && dragged?.type === 'annotation') d.onAnnotationClicked(dragged.id);
-      }
+      // Annotations open their note on DOUBLE-click now (handled in
+      // BoxedElementView), so a plain click just selects — no note-open here.
       setDrag(null);
       scheduleGuides([]);
       // Disarm any checkpoint the gesture never used (a click that

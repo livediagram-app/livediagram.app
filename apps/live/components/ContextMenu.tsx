@@ -16,9 +16,12 @@ type ContextMenuProps = {
   position: { x: number; y: number };
   onClose: () => void;
   children: ReactNode;
+  // Drop the menu's vertical padding (and clip children to the rounded
+  // corners) so edge-to-edge category sections sit flush top + bottom.
+  flush?: boolean;
 };
 
-export function ContextMenu({ position, onClose, children }: ContextMenuProps) {
+export function ContextMenu({ position, onClose, children, flush = false }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
 
@@ -60,7 +63,9 @@ export function ContextMenu({ position, onClose, children }: ContextMenuProps) {
         role="menu"
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.preventDefault()}
-        className="fixed z-50 flex w-48 animate-fade-in flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        className={`fixed z-50 flex w-52 animate-fade-in flex-col rounded-md border border-slate-200 bg-white text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${
+          flush ? 'overflow-hidden' : 'py-1'
+        }`}
         style={{
           left: position.x + adjust.x,
           top: position.y + adjust.y,

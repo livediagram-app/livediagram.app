@@ -52,6 +52,17 @@ export function useElementLinks(deps: ElementLinksDeps) {
   // right-click context menu can open it without reaching across
   // components. Holds the element id whose link is being edited.
   const [linkPickerOpenForId, setLinkPickerOpenForId] = useState<string | null>(null);
+  // Which tab the link modal should open on (webpage / tab / diagram), set by
+  // the context menu's split Link entries. null = let the dialog pick its own
+  // default (the existing link's kind, else webpage).
+  const [linkPickerInitialMode, setLinkPickerInitialMode] = useState<
+    'url' | 'tab' | 'diagram' | null
+  >(null);
+  // Open the link picker for an element, optionally pre-selecting a mode.
+  const openLinkPicker = (elementId: string, mode?: 'url' | 'tab' | 'diagram') => {
+    setLinkPickerInitialMode(mode ?? null);
+    setLinkPickerOpenForId(elementId);
+  };
 
   // Apply a chosen link to the current selection, or remove it when
   // null. One entry point for every kind (tab / diagram / element /
@@ -124,6 +135,8 @@ export function useElementLinks(deps: ElementLinksDeps) {
   return {
     linkPickerOpenForId,
     setLinkPickerOpenForId,
+    linkPickerInitialMode,
+    openLinkPicker,
     applyElementLink,
     followLink,
   };

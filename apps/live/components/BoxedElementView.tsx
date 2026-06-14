@@ -327,6 +327,12 @@ function BoxedElementViewImpl({
       onEditLink?.(element.id);
       return;
     }
+    // An annotation has no inline label either — double-click opens its note
+    // editor (spec/38). A single click just selects it now.
+    if (isAnnotation) {
+      onOpenNote?.(element.id);
+      return;
+    }
     // Don't gate on isPaintMode here (the page-level beginEdit decides whether
     // edit can start; it rejects during format painter, and exits group mode).
     onBeginEdit(element.id);

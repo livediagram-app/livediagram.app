@@ -18,12 +18,18 @@ import {
   defaultStrokeColor,
   defaultTextColor,
   isBoxed,
+  supportsBorder,
+  supportsBorderRadius,
+  type BorderRadius,
+  type BorderStroke,
+  type BorderStyle,
   type BoxedElement,
   type Element,
   type ShapeKind,
 } from '@livediagram/diagram';
 import { ContextMenu, ContextMenuDivider } from '@/components/ContextMenu';
-import { ColorSwatch, ToggleSwitch } from '@/components/palette-controls';
+import { SizeButton, ToggleSwitch } from '@/components/palette-controls';
+import { BorderRadiusIcon, BorderStrokeIcon, BorderStyleIcon } from '@/components/palette-icons';
 import {
   AnnotationMenuIcon,
   AutoAlignIcon,
@@ -53,7 +59,9 @@ type EditorContextMenuProps = {
   // (for the element menu) and read its link / note state.
   elements: Element[];
   onClose: () => void;
-  onLinkElement: (elementId: string) => void;
+  // Open the link picker for the element, optionally pre-selecting a mode
+  // (webpage / tab / diagram) so the modal lands on the right tab.
+  onLinkElement: (elementId: string, mode?: 'url' | 'tab' | 'diagram') => void;
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
   onRemoveIcon: (elementId: string) => void;
@@ -66,6 +74,17 @@ type EditorContextMenuProps = {
   onSetTextColor: (color: string) => void;
   onSetFillColor: (color: string) => void;
   onSetStrokeColor: (color: string) => void;
+  onSetBorderStroke: (value: BorderStroke) => void;
+  onSetBorderStyle: (value: BorderStyle) => void;
+  onSetBorderRadius: (value: BorderRadius) => void;
+  onResetColors: () => void;
+  // Re-place a shape's inline icon (reuses the drop handler: same iconId,
+  // new side).
+  onSetIconPosition: (
+    elementId: string,
+    iconId: string,
+    position: 'left' | 'right' | 'above' | 'below',
+  ) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   onChangeTheme: () => void;
@@ -92,34 +111,88 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     const target = elements.find((el) => el.id === menu.elementId);
     if (!target) return null;
     const boxed = isBoxed(target);
+    const isIcon = target.type === 'shape' && target.shape === 'icon';
+    // Border controls apply to shapes / freehand / tables (not icons),
+    // mirroring the panel's Border accordion gating + effective values.
+    const borderable = (supportsBorder(target) || target.type === 'table') && !isIcon;
+    const borderStrokeVal: BorderStroke =
+      (target as { strokeWidth?: BorderStroke }).strokeWidth ??
+      (target.type === 'table' ? 'thin' : 'medium');
+    const borderStyleVal: BorderStyle =
+      (target as { strokeStyle?: BorderStyle }).strokeStyle ?? 'solid';
+    const borderRadiusVal: BorderRadius =
+      (target as { borderRadius?: BorderRadius }).borderRadius ?? 'sm';
     // A regular shape carrying an inline icon (drag-an-icon-onto-it
     // feature, spec/09) gets a "Remove icon" entry; the dedicated 'icon'
     // shape is its own glyph and excluded.
     const hasInlineIcon =
       target.type === 'shape' && target.shape !== 'icon' && target.iconId !== undefined;
     return (
-      <ContextMenu position={position} onClose={onClose}>
-        {/* Single actions first; collapsible sections always sit at the
-            bottom so the menu's top stays a stable list of direct items. */}
-        <MenuItem
-          icon={<LinkMenuIcon />}
-          label={target.link ? 'Edit link' : 'Create link'}
-          onClick={() => {
-            props.onLinkElement(target.id);
-            onClose();
-          }}
-        />
-        {hasInlineIcon ? (
-          <MenuItem
-            icon={<RemoveIconGlyph />}
-            label="Remove icon"
-            onClick={() => {
-              props.onRemoveIcon(target.id);
-              onClose();
-            }}
-          />
+      <ContextMenu position={position} onClose={onClose} flush>
+        {/* Links — webpage / tab / diagram. Arrows can't be linked. */}
+        {boxed ? (
+          <MenuAccordionSection title="Links" icon={<LinkMenuIcon />} {...sectionProps('links')}>
+            <MenuItem
+              icon={<LinkMenuIcon />}
+              label="Link to webpage"
+              onClick={() => {
+                props.onLinkElement(target.id, 'url');
+                onClose();
+              }}
+            />
+            <MenuItem
+              icon={<LinkMenuIcon />}
+              label="Link to tab"
+              onClick={() => {
+                props.onLinkElement(target.id, 'tab');
+                onClose();
+              }}
+            />
+            <MenuItem
+              icon={<LinkMenuIcon />}
+              label="Link to diagram"
+              onClick={() => {
+                props.onLinkElement(target.id, 'diagram');
+                onClose();
+              }}
+            />
+          </MenuAccordionSection>
         ) : null}
-        <ContextMenuDivider />
+        {/* Icon — re-place or remove a shape's inline icon. */}
+        {hasInlineIcon ? (
+          <MenuAccordionSection title="Icon" icon={<IconCategoryGlyph />} {...sectionProps('icon')}>
+            <div className="grid grid-cols-2 gap-1 px-2 py-1.5">
+              {ICON_POSITIONS.map((p) => {
+                const current = (target as { iconPosition?: string }).iconPosition ?? 'left';
+                const iconId = (target as { iconId?: string }).iconId ?? '';
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    aria-pressed={current === p.key}
+                    onClick={() => props.onSetIconPosition(target.id, iconId, p.key)}
+                    className={`rounded px-2 py-1 text-xs font-medium transition ${
+                      current === p.key
+                        ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+                        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+            <ContextMenuDivider />
+            <MenuItem
+              icon={<RemoveIconGlyph />}
+              label="Remove icon"
+              onClick={() => {
+                props.onRemoveIcon(target.id);
+                onClose();
+              }}
+            />
+          </MenuAccordionSection>
+        ) : null}
         {/* Layer — a collapsible section grouping front/back + opacity +
             (for boxed elements) the aspect-ratio lock. */}
         <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
@@ -141,6 +214,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               }}
             />
           </div>
+          <ContextMenuDivider />
           {/* Opacity slider — a non-closing row (dragging stays inside the
               menu, so the outside-click guard leaves it open). */}
           <OpacityRow
@@ -148,58 +222,119 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             onChange={props.onSetOpacity}
           />
           {boxed ? (
-            // Lock aspect ratio — iOS-style switch, matching the panel.
-            <div className="flex items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
-              <span className="flex items-center gap-2">
-                <span className="text-slate-400 dark:text-slate-500">
-                  <AspectLockMenuIcon />
+            <>
+              <ContextMenuDivider />
+              {/* Lock aspect ratio — iOS-style switch, matching the panel. */}
+              <div className="flex items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
+                <span className="flex items-center gap-2">
+                  <span className="text-slate-400 dark:text-slate-500">
+                    <AspectLockMenuIcon />
+                  </span>
+                  Lock aspect ratio
                 </span>
-                Lock aspect ratio
-              </span>
-              <ToggleSwitch
-                checked={!!(target as { aspectLocked?: boolean }).aspectLocked}
-                onChange={props.onToggleAspectLock}
-                label="Lock aspect ratio"
-              />
-            </div>
+                <ToggleSwitch
+                  checked={!!(target as { aspectLocked?: boolean }).aspectLocked}
+                  onChange={props.onToggleAspectLock}
+                  label="Lock aspect ratio"
+                />
+              </div>
+            </>
           ) : null}
         </MenuAccordionSection>
         {/* Colours — text / background / border swatches (boxed elements). */}
         {boxed ? (
-          <MenuAccordionSection
-            title="Colours"
-            icon={<PaletteMenuIcon />}
-            {...sectionProps('colours')}
-          >
-            <ColourRow
-              label="Text"
-              value={
-                (target as { textColor?: string }).textColor ??
-                defaultTextColor(target as BoxedElement)
-              }
-              onChange={props.onSetTextColor}
-            />
-            {defaultFillColor(target as BoxedElement) !== 'transparent' ? (
+          <>
+            <MenuAccordionSection
+              title="Colours"
+              icon={<PaletteMenuIcon />}
+              {...sectionProps('colours')}
+            >
               <ColourRow
-                label="Background"
+                label="Text"
                 value={
-                  (target as { fillColor?: string }).fillColor ??
-                  defaultFillColor(target as BoxedElement)
+                  (target as { textColor?: string }).textColor ??
+                  defaultTextColor(target as BoxedElement)
                 }
-                onChange={props.onSetFillColor}
+                onChange={props.onSetTextColor}
               />
-            ) : null}
-            {defaultStrokeColor(target as BoxedElement) !== 'transparent' ? (
-              <ColourRow
-                label="Border"
-                value={
-                  (target as { strokeColor?: string }).strokeColor ??
-                  defaultStrokeColor(target as BoxedElement)
-                }
-                onChange={props.onSetStrokeColor}
-              />
-            ) : null}
-          </MenuAccordionSection>
+              {defaultFillColor(target as BoxedElement) !== 'transparent' ? (
+                <ColourRow
+                  label="Background"
+                  value={
+                    (target as { fillColor?: string }).fillColor ??
+                    defaultFillColor(target as BoxedElement)
+                  }
+                  onChange={props.onSetFillColor}
+                />
+              ) : null}
+              {defaultStrokeColor(target as BoxedElement) !== 'transparent' ? (
+                <ColourRow
+                  label="Border"
+                  value={
+                    (target as { strokeColor?: string }).strokeColor ??
+                    defaultStrokeColor(target as BoxedElement)
+                  }
+                  onChange={props.onSetStrokeColor}
+                />
+              ) : null}
+              <div className="px-2 pb-1 pt-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    props.onResetColors();
+                    onClose();
+                  }}
+                  className="inline-flex w-full items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
+                >
+                  Reset to theme
+                </button>
+              </div>
+            </MenuAccordionSection>
+          </>
+        ) : null}
+        {/* Border — strength / pattern / radius, same options as the panel. */}
+        {borderable ? (
+          <>
+            <MenuAccordionSection title="Border" icon={<BorderGlyph />} {...sectionProps('border')}>
+              <div className="px-2 py-1">
+                <BorderGrid label="Strength" cols={5}>
+                  {BORDER_STROKES.map((v) => (
+                    <BorderButton
+                      key={v}
+                      active={borderStrokeVal === v}
+                      onClick={() => props.onSetBorderStroke(v)}
+                    >
+                      <BorderStrokeIcon value={v} />
+                    </BorderButton>
+                  ))}
+                </BorderGrid>
+                <BorderGrid label="Pattern" cols={3}>
+                  {BORDER_STYLES.map((v) => (
+                    <BorderButton
+                      key={v}
+                      active={borderStyleVal === v}
+                      onClick={() => props.onSetBorderStyle(v)}
+                    >
+                      <BorderStyleIcon value={v} />
+                    </BorderButton>
+                  ))}
+                </BorderGrid>
+                {supportsBorderRadius(target) ? (
+                  <BorderGrid label="Radius" cols={4}>
+                    {BORDER_RADII.map((v) => (
+                      <BorderButton
+                        key={v}
+                        active={borderRadiusVal === v}
+                        onClick={() => props.onSetBorderRadius(v)}
+                      >
+                        <BorderRadiusIcon value={v} />
+                      </BorderButton>
+                    ))}
+                  </BorderGrid>
+                ) : null}
+              </div>
+            </MenuAccordionSection>
+          </>
         ) : null}
         {/* Collaborate — notes + comments grouped under one collapsible header. */}
         <MenuAccordionSection
@@ -315,12 +450,15 @@ function MenuAccordionSection({
   children: ReactNode;
 }) {
   return (
-    <div>
+    // border-t on the wrapper (not a margin'd divider) so headers butt up to
+    // the separator with no gap; `first:border-t-0` drops the stray line at
+    // the very top of the menu.
+    <div className="border-t border-slate-100 first:border-t-0 dark:border-slate-800">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center justify-between px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
+        className="flex w-full items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
       >
         <span className="flex items-center gap-2">
           {icon}
@@ -346,14 +484,27 @@ function MenuAccordionSection({
           open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         }`}
       >
-        <div className="overflow-hidden">{children}</div>
+        {/* Faint tint on the expanded content so a category's body reads as
+            distinct from the menu / headers around it. The clipped wrapper
+            stays padding-free (padding wouldn't collapse with the 0fr grid
+            trick); top/bottom breathing room lives on the inner div, which is
+            fully clipped when collapsed. */}
+        <div className="overflow-hidden bg-slate-50/70 dark:bg-slate-800/30">
+          <div className="py-1.5">{children}</div>
+        </div>
       </div>
     </div>
   );
 }
 
-// One labelled colour swatch row inside the Colours section. Thin wrapper so
-// the swatch sits with menu padding; ColorSwatch carries the native picker.
+// 6-hex or fall back to white for the native colour input (it can't take
+// 'transparent' or named colours).
+function hexish(color: string): string {
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? color : '#ffffff';
+}
+
+// One labelled colour row inside the Colours section: the label on the left,
+// the colour shown as a square on the RIGHT, with the native picker behind it.
 function ColourRow({
   label,
   value,
@@ -364,9 +515,98 @@ function ColourRow({
   onChange: (color: string) => void;
 }) {
   return (
-    <div className="px-1">
-      <ColorSwatch label={label} value={value} onChange={onChange} />
+    <label
+      className="flex cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      aria-label={`${label} colour`}
+    >
+      <span>{label}</span>
+      <span
+        className="h-4 w-4 rounded border border-slate-300 dark:border-slate-600"
+        style={{ backgroundColor: hexish(value) }}
+        aria-hidden
+      />
+      <input
+        type="color"
+        value={hexish(value)}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={`${label} colour`}
+        className="absolute h-0 w-0 opacity-0"
+      />
+    </label>
+  );
+}
+
+const BORDER_STROKES: readonly BorderStroke[] = ['none', 'thin', 'medium', 'thick', 'extra-thick'];
+const BORDER_STYLES: readonly BorderStyle[] = [
+  'solid',
+  'dashed',
+  'dotted',
+  'dash-dot',
+  'long-dash',
+  'dash-dot-dot',
+];
+const BORDER_RADII: readonly BorderRadius[] = ['none', 'sm', 'md', 'lg'];
+
+const ICON_POSITIONS: { key: 'left' | 'above' | 'right' | 'below'; label: string }[] = [
+  { key: 'left', label: 'Left' },
+  { key: 'above', label: 'Top' },
+  { key: 'right', label: 'Right' },
+  { key: 'below', label: 'Bottom' },
+];
+
+// One labelled button grid in the Border section. Literal column classes so
+// Tailwind keeps them.
+function BorderGrid({
+  label,
+  cols,
+  children,
+}: {
+  label: string;
+  cols: 3 | 4 | 5;
+  children: ReactNode;
+}) {
+  const colClass = cols === 5 ? 'grid-cols-5' : cols === 4 ? 'grid-cols-4' : 'grid-cols-3';
+  return (
+    <div className="mb-1.5 last:mb-0">
+      <p className="px-1 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <div className={`grid gap-1 ${colClass}`}>{children}</div>
     </div>
+  );
+}
+
+// Border preset button — SizeButton with the menu's active tone.
+function BorderButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <SizeButton active={active} onClick={onClick}>
+      {children}
+    </SizeButton>
+  );
+}
+
+// Rounded-square outline — the "Border" section glyph.
+function BorderGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden
+    >
+      <rect x="2.5" y="2.5" width="11" height="11" rx="2.5" />
+    </svg>
   );
 }
 
@@ -401,19 +641,21 @@ function OpacityRow({ value, onChange }: { value: number; onChange: (opacity: nu
   const pct = Math.round(value * 100);
   return (
     <div className="px-3 py-1.5">
-      <div className="mb-1 flex items-center justify-between text-[10px] font-medium text-slate-500 dark:text-slate-400">
-        <span>Opacity</span>
-        <span>{pct}%</span>
+      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Opacity</p>
+      <div className="mt-1 flex items-center gap-2">
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={pct}
+          onChange={(e) => onChange(Number(e.target.value) / 100)}
+          aria-label="Opacity"
+          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
+        />
+        <span className="w-10 text-right text-xs font-medium text-slate-700 dark:text-slate-200">
+          {pct}%
+        </span>
       </div>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        value={pct}
-        onChange={(e) => onChange(Number(e.target.value) / 100)}
-        aria-label="Opacity"
-        className="w-full accent-brand-500"
-      />
     </div>
   );
 }
@@ -456,6 +698,25 @@ function AspectLockMenuIcon() {
     >
       <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
       <path d="M5 8.5v2.5h2.5M11 7.5V5H8.5" />
+    </svg>
+  );
+}
+
+// A star — the "Icon" category glyph (the un-slashed sibling of
+// RemoveIconGlyph).
+function IconCategoryGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
     </svg>
   );
 }

@@ -79,11 +79,13 @@ function FontGlyph() {
   );
 }
 
+// Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same
+// active + hover tones) so the two toolbars read as one system.
 function btnClass(active: boolean): string {
-  return `flex h-7 min-w-[28px] items-center justify-center rounded px-1.5 text-xs font-semibold transition ${
+  return `flex h-8 w-8 items-center justify-center rounded-md transition ${
     active
-      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
-      : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
   }`;
 }
 
@@ -110,6 +112,50 @@ const optionClass = (selected: boolean) =>
       : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
   }`;
 
+// A submenu row inside the ⋯ menu: a labelled header that reveals its options
+// in a flyout to the right on hover. Used by Font + Padding so the overflow
+// menu stays a tidy list of expandable categories.
+function MenuFlyout({
+  icon,
+  label,
+  children,
+  menuClassName = 'min-w-[8rem]',
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+  menuClassName?: string;
+}) {
+  return (
+    <div className="group relative">
+      <div className={`${optionClass(false)} cursor-default justify-between`}>
+        <span className="flex items-center gap-2">
+          {icon}
+          {label}
+        </span>
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 12 12"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M4.5 3 7.5 6 4.5 9" />
+        </svg>
+      </div>
+      <div
+        className={`invisible absolute left-full top-0 z-10 ml-0.5 max-h-64 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 opacity-0 shadow-lg transition-opacity group-hover:visible group-hover:opacity-100 dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // A compact dropdown kept INLINE (not portalled) so it stays inside the
 // toolbar wrapper, where the editor's focus + canvas-propagation guards
 // already apply. Closes on an option click (the menu's bubble handler) or an
@@ -121,12 +167,14 @@ function ToolbarDropdown({
   description,
   trigger,
   menuClassName = 'min-w-[8rem]',
+  hideChevron = false,
   children,
 }: {
   label: string;
   description: string;
   trigger: React.ReactNode;
   menuClassName?: string;
+  hideChevron?: boolean;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -149,14 +197,14 @@ function ToolbarDropdown({
           aria-label={label}
           onMouseDown={noFocusSteal}
           onClick={() => setOpen((o) => !o)}
-          className={`flex h-7 items-center gap-1 rounded px-1.5 text-xs font-medium transition ${
+          className={`flex h-8 items-center gap-0.5 rounded-md px-1.5 transition ${
             open
               ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
-              : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
           }`}
         >
           {trigger}
-          {CHEVRON}
+          {hideChevron ? null : CHEVRON}
         </button>
       </Tooltip>
       {open ? (
@@ -216,12 +264,21 @@ export function RichTextToolbar({
       },
     ];
   const currentSize = SIZES.find((s) => s.key === active.size) ?? null;
-  const divider = <span className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />;
+  // Same spacer the element toolbar's Divider uses, so both read alike.
+  const divider = (
+    <span className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" aria-hidden />
+  );
 
   return (
-    <div className="flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white px-1 py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-      {/* ⋯ overflow menu (left) — holds the less-common Strikethrough. */}
-      <ToolbarDropdown label="More" description="More text options." trigger={<EllipsisIcon />}>
+    <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">
+      {/* ⋯ overflow menu (left) — holds the less-common Strikethrough. The
+          ⋯ already signals a menu, so no chevron. */}
+      <ToolbarDropdown
+        label="More"
+        description="More text options."
+        hideChevron
+        trigger={<EllipsisIcon />}
+      >
         <button
           type="button"
           role="option"
@@ -233,44 +290,44 @@ export function RichTextToolbar({
           <StrikethroughIcon />
           <span className="flex-1">Strikethrough</span>
         </button>
-        {/* Font — hover the row to reveal a flyout list of the fonts. */}
-        <div className="group relative">
-          <div className={`${optionClass(false)} cursor-default justify-between`}>
-            <span className="flex items-center gap-2">
-              <FontGlyph />
-              Font
-            </span>
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 12 12"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
+        {/* Font — hover to reveal the font list. */}
+        <MenuFlyout icon={<FontGlyph />} label="Font">
+          {FONTS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              role="option"
+              aria-selected={currentFont === f.id}
+              onMouseDown={noFocusSteal}
+              onClick={() => onSetFont(f.id)}
+              style={{ fontFamily: resolveFontStack(f.id) }}
+              className={optionClass(currentFont === f.id)}
             >
-              <path d="M4.5 3 7.5 6 4.5 9" />
-            </svg>
-          </div>
-          <div className="invisible absolute left-full top-0 z-10 ml-0.5 max-h-64 min-w-[8rem] overflow-y-auto rounded-md border border-slate-200 bg-white py-1 opacity-0 shadow-lg transition-opacity group-hover:visible group-hover:opacity-100 dark:border-slate-700 dark:bg-slate-900">
-            {FONTS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                role="option"
-                aria-selected={currentFont === f.id}
-                onMouseDown={noFocusSteal}
-                onClick={() => onSetFont(f.id)}
-                style={{ fontFamily: resolveFontStack(f.id) }}
-                className={optionClass(currentFont === f.id)}
-              >
-                <span className="flex-1">{f.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+              <span className="flex-1">{f.label}</span>
+            </button>
+          ))}
+        </MenuFlyout>
+        {/* Padding — hover to reveal the spacing options. */}
+        <MenuFlyout
+          icon={padding === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={padding} />}
+          label="Padding"
+          menuClassName="min-w-[8rem]"
+        >
+          {PADDINGS.map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              role="option"
+              aria-selected={padding === p.key}
+              onMouseDown={noFocusSteal}
+              onClick={() => onSetPadding(p.key)}
+              className={optionClass(padding === p.key)}
+            >
+              {p.key === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={p.key} />}
+              <span className="flex-1">{p.label}</span>
+            </button>
+          ))}
+        </MenuFlyout>
       </ToolbarDropdown>
       {divider}
       {toggles.map((t) => (
@@ -320,32 +377,9 @@ export function RichTextToolbar({
         <AlignmentGrid alignX={alignX} alignY={alignY} onChange={onSetAlign} />
       </ToolbarDropdown>
       {divider}
-      {/* Padding — icon-only trigger; menu options are "Padding: …". */}
-      <ToolbarDropdown
-        label="Padding"
-        description="Space between the label and the element edge."
-        menuClassName="min-w-[10rem]"
-        trigger={padding === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={padding} />}
-      >
-        {PADDINGS.map((p) => (
-          <button
-            key={p.key}
-            type="button"
-            role="option"
-            aria-selected={padding === p.key}
-            onMouseDown={noFocusSteal}
-            onClick={() => onSetPadding(p.key)}
-            className={optionClass(padding === p.key)}
-          >
-            {p.key === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={p.key} />}
-            <span className="flex-1">Padding: {p.label}</span>
-          </button>
-        ))}
-      </ToolbarDropdown>
-      {divider}
       <Tooltip title="Text colour" description="Colour the selected text.">
         <label
-          className="flex h-7 cursor-pointer items-center rounded px-1 transition hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           aria-label="Text color"
         >
           <span

@@ -26,6 +26,10 @@ type LinkPickerDialogProps = {
   currentTabId: string;
   // The caller's other diagrams (newest first), for the Diagram mode.
   recentDiagrams: LinkTarget[];
+  // Pre-select a mode (the context menu's split Link entries open the modal
+  // straight onto webpage / tab / diagram). Falls back to the current link's
+  // kind, then 'url', when unset.
+  initialMode?: 'tab' | 'diagram' | 'url';
   onCommit: (link: ElementLink | null) => void;
   onClose: () => void;
 };
@@ -52,18 +56,20 @@ export function LinkPickerDialog({
   tabs,
   currentTabId,
   recentDiagrams,
+  initialMode,
   onCommit,
   onClose,
 }: LinkPickerDialogProps) {
   useEscape(onClose);
-  // External URL is the default; when editing an existing link, open on
-  // that link's own mode instead.
+  // A caller-requested mode wins; otherwise open on the existing link's mode,
+  // else External URL.
   const [mode, setMode] = useState<Mode>(
-    currentLink?.kind === 'diagram'
-      ? 'diagram'
-      : currentLink?.kind === 'tab' || currentLink?.kind === 'element'
-        ? 'tab'
-        : 'url',
+    initialMode ??
+      (currentLink?.kind === 'diagram'
+        ? 'diagram'
+        : currentLink?.kind === 'tab' || currentLink?.kind === 'element'
+          ? 'tab'
+          : 'url'),
   );
   const [urlInput, setUrlInput] = useState(currentLink?.kind === 'url' ? currentLink.url : '');
 
