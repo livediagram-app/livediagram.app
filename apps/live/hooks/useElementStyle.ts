@@ -311,7 +311,19 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     commit((els) =>
-      els.map((el) => (ids.has(el.id) && el.type === 'arrow' ? { ...el, arrowStyle: style } : el)),
+      els.map((el) => {
+        if (!(ids.has(el.id) && el.type === 'arrow')) return el;
+        // Start the arrow from the new style's clean default shape. The
+        // multi-bend control points are shared by the curved (spline) and
+        // angled (polyline) renderers, so carried across a style switch they
+        // draw a stray polyline whose final segment no longer ends at the
+        // element (the arrowhead detaches into a stray bend). Drop them on an
+        // explicit style change; adding/moving a point keeps the style as
+        // before. The single-bow / single-elbow offsets are each style-local,
+        // so they can stay harmlessly.
+        const { curvePoints: _drop, ...rest } = el;
+        return { ...rest, arrowStyle: style };
+      }),
     );
     track('Element', 'Changed', 'ArrowStyle');
   };
