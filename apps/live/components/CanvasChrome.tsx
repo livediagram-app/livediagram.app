@@ -350,8 +350,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ) : (
               <>
                 <p className="mt-3 text-xs leading-relaxed text-slate-600">
-                  Click an element in the Palette to start building your diagram, double-click
-                  anywhere to drop text, or connect elements by dragging from their anchor dots.
+                  Add your first element from the Palette or choose a template to get started fast.
                 </p>
                 <button
                   type="button"
