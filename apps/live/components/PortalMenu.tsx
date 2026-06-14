@@ -117,21 +117,6 @@ export function MenuItem({ icon, label, onClick, danger, disabled }: MenuItemPro
   );
 }
 
-// A small uppercase heading that labels a group of menu items, so a long
-// menu reads as a few scannable sections instead of one flat list.
-export function MenuSection({ label }: { label: string }) {
-  return (
-    <p className="px-3 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
-      {label}
-    </p>
-  );
-}
-
-// A hairline divider between menu groups.
-export function MenuDivider() {
-  return <div className="my-1 border-t border-slate-100 dark:border-slate-800" />;
-}
-
 // A collapsible category inside a menu: an uppercase header (icon + chevron)
 // that toggles its content. Controlled by the parent so only one section is
 // open at a time. The border-t (with `first:border-t-0`) butts the header up

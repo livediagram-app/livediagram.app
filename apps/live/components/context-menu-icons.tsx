@@ -120,22 +120,6 @@ export function SquareMenuIcon() {
   );
 }
 
-export function CircleMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      aria-hidden
-    >
-      <circle cx="8" cy="8" r="5" />
-    </svg>
-  );
-}
-
 export function StickyMenuIcon() {
   return (
     <svg
