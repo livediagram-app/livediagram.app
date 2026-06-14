@@ -1486,9 +1486,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // from its capture-phase pointerdown. See useCanvasEraser.
   const { beginErase } = useCanvasEraser({
     editsBlocked,
+    activeId,
     activeTab,
     tick,
     markCheckpoint,
+    emitChange,
     setSelectedId,
     setEditingId,
   });

@@ -227,6 +227,10 @@ function ArrowViewImpl({
       />
 
       <path
+        // The wide transparent hit band. Carries data-element-id so DOM
+        // hit-testing (the eraser's elementsFromPoint, spec/09) resolves an
+        // arrow the same way it resolves a boxed element's wrapper.
+        data-element-id={arrow.id}
         d={pathD}
         fill="none"
         stroke="transparent"
