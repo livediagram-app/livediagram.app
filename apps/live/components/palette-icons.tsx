@@ -307,28 +307,6 @@ export function ArrowEndsIcon({ ends }: { ends: ArrowEnds }) {
   );
 }
 
-export function AutoAlignIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      {/* Two rectangles snapped to a common edge, the icon language
-          for "align" used by most drawing tools. */}
-      <rect x="2.5" y="3" width="5" height="4" rx="0.6" />
-      <rect x="2.5" y="9" width="9" height="4" rx="0.6" />
-      <path d="M2.5 14.5h11" />
-    </svg>
-  );
-}
-
 export function FileImportIcon() {
   return (
     <svg
@@ -595,42 +573,6 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
         strokeWidth="1"
       />
       <rect x={ix} y={iy} width="5" height="3" rx="0.5" fill="currentColor" />
-    </svg>
-  );
-}
-
-export function BringToFrontIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2.5" y="2.5" width="7" height="7" rx="1" />
-      <rect x="6.5" y="6.5" width="7" height="7" rx="1" fill="currentColor" fillOpacity="0.18" />
-    </svg>
-  );
-}
-
-export function SendToBackIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2.5" y="2.5" width="7" height="7" rx="1" fill="currentColor" fillOpacity="0.18" />
-      <rect x="6.5" y="6.5" width="7" height="7" rx="1" />
     </svg>
   );
 }

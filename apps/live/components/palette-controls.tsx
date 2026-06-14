@@ -75,72 +75,6 @@ export function Accordion({
   );
 }
 
-export function LabelButton({
-  label,
-  onClick,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-    >
-      <span className="text-slate-500 dark:text-slate-400">{children}</span>
-      {label}
-    </button>
-  );
-}
-
-export function ToolButton({
-  active,
-  label,
-  onClick,
-  children,
-  shortcut,
-  segmented = false,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-  // Single-key shortcut letter rendered as a corner badge while
-  // Cmd/Ctrl is held. Same visual treatment as IconButton's badge
-  // so the cheat sheet reads consistently across tool buttons and
-  // shape buttons.
-  shortcut?: string;
-  // When true the button is one cell of a joined segmented control
-  // (e.g. the Select / Hand / Laser mode switch): it drops its own
-  // rounding + shadow so it sits flush against its neighbours, and the
-  // active fill bleeds edge-to-edge inside the group's shared border.
-  segmented?: boolean;
-}) {
-  const modHeld = useModKeyHeld();
-  const showBadge = !!shortcut && modHeld;
-  const base = `relative flex flex-1 items-center justify-center gap-1.5 px-2.5 py-2 text-xs font-medium transition ${segmented ? '' : 'rounded-md'}`;
-  const tone = active
-    ? `bg-brand-500 text-white ${segmented ? '' : 'shadow-sm'}`
-    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
-  return (
-    <button type="button" onClick={onClick} className={`${base} ${tone}`} aria-pressed={active}>
-      {children}
-      <span>{label}</span>
-      {showBadge ? (
-        <kbd
-          aria-hidden
-          className="pointer-events-none absolute right-0.5 top-0.5 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-[3px] border border-slate-300 bg-white px-0.5 text-[8px] font-semibold uppercase leading-none text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
-        >
-          {shortcut}
-        </kbd>
-      ) : null}
-    </button>
-  );
-}
-
 export function SizeButton({
   active,
   onClick,
@@ -410,8 +344,7 @@ type IconButtonProps = {
   // size mode so the user sees which shape is queued for the next
   // canvas drag (the cursor + the banner already say it, but a
   // highlighted palette button closes the loop for the
-  // "where did I click?" question). Same brand-50 fill as the
-  // canvas-tool ToolButton's active state for visual consistency.
+  // "where did I click?" question).
   active?: boolean;
   // Single-key shortcut letter (e.g. "R"). Renders a corner badge
   // whenever the user is holding Cmd/Ctrl, so the palette becomes a
