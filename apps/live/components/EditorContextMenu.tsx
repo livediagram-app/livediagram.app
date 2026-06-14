@@ -18,8 +18,9 @@ import {
   defaultStrokeColor,
   defaultTextColor,
   isBoxed,
-  supportsBorder,
+  supportsBorderControls,
   supportsBorderRadius,
+  supportsColours,
   timerDisplayMs,
   type BorderRadius,
   type BorderStroke,
@@ -62,6 +63,7 @@ import {
   StickyMenuIcon,
 } from '@/components/context-menu-icons';
 import { MenuAccordionSection } from '@/components/PortalMenu';
+import { isTechIconId } from '@/lib/tech-icons';
 
 // Cursor position + which menu to show. `element` carries the clicked
 // element id; `canvas` is the empty-canvas right-click. Exported so
@@ -244,9 +246,12 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     if (!target) return null;
     const boxed = isBoxed(target);
     const isIcon = target.type === 'shape' && target.shape === 'icon';
+    // Tech / architecture icons render as their own multi-colour art, so only
+    // the Text colour applies (no fill / stroke colour).
+    const isTechIcon = isIcon && isTechIconId((target as { iconId?: string }).iconId);
     // Border controls apply to shapes / freehand / tables (not icons),
     // mirroring the panel's Border accordion gating + effective values.
-    const borderable = (supportsBorder(target) || target.type === 'table') && !isIcon;
+    const borderable = supportsBorderControls(target) && !isIcon;
     const borderStrokeVal: BorderStroke =
       (target as { strokeWidth?: BorderStroke }).strokeWidth ??
       (target.type === 'table' ? 'thin' : 'medium');
@@ -390,8 +395,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </>
           ) : null}
         </MenuAccordionSection>
-        {/* Colours — text / background / border swatches (boxed elements). */}
-        {boxed ? (
+        {/* Colours — text / background / border swatches. Boxed elements that
+            support colours (excludes images); tech icons get Text only. */}
+        {boxed && supportsColours(target) ? (
           <>
             <MenuAccordionSection
               title="Colours"
@@ -407,7 +413,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                 onChange={props.onSetTextColor}
                 {...colorProps('text')}
               />
-              {defaultFillColor(target as BoxedElement) !== 'transparent' ? (
+              {!isTechIcon && defaultFillColor(target as BoxedElement) !== 'transparent' ? (
                 <ColourRow
                   label="Background"
                   value={
@@ -418,7 +424,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                   {...colorProps('background')}
                 />
               ) : null}
-              {defaultStrokeColor(target as BoxedElement) !== 'transparent' ? (
+              {!isTechIcon && defaultStrokeColor(target as BoxedElement) !== 'transparent' ? (
                 <ColourRow
                   label="Border"
                   value={

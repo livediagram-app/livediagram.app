@@ -17,11 +17,14 @@ import {
   elementBounds,
   isBoxed,
   selectionMembers,
-  supportsBorder,
+  supportsBorderControls,
   supportsBorderRadius,
   unionBoxedBounds,
+  type BorderStroke,
+  type BorderStyle,
   type Element,
 } from '@livediagram/diagram';
+import { isTechIconId } from '@/lib/tech-icons';
 import type { SelectedElementControls } from '@/components/CommandPalette';
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -251,6 +254,10 @@ export function deriveSelectedElementFields(
   // (strength / pattern / radius don't apply to a single-stroke mark).
   // They keep Colours (the stroke colour tints the glyph) + Text.
   const isIcon = selected.type === 'shape' && selected.shape === 'icon';
+  // Technology / architecture icons (a catalogue glyph, not tinted line art):
+  // they render as their own multi-colour art, so only the Text colour
+  // applies — no fill (background) or stroke (border) colour.
+  const isTechIcon = isIcon && isTechIconId((selected as { iconId?: string }).iconId);
   return {
     textSize:
       isBoxed(selected) && selected.type !== 'image'
@@ -276,13 +283,14 @@ export function deriveSelectedElementFields(
       selectionSupportsColours && isBoxed(selected) && !isIcon
         ? (selected.fillColor ?? defaultFillColor(selected))
         : null,
-    strokeColor: selectionSupportsColours
-      ? isBoxed(selected)
-        ? (selected.strokeColor ?? defaultStrokeColor(selected))
-        : selected.type === 'arrow'
-          ? (selected.strokeColor ?? 'rgb(51 65 85)') /* slate-700 = default arrow */
-          : null
-      : null,
+    strokeColor:
+      selectionSupportsColours && !isTechIcon
+        ? isBoxed(selected)
+          ? (selected.strokeColor ?? defaultStrokeColor(selected))
+          : selected.type === 'arrow'
+            ? (selected.strokeColor ?? 'rgb(51 65 85)') /* slate-700 = default arrow */
+            : null
+        : null,
     opacity: selected.opacity ?? 1,
     padding: isBoxed(selected) ? (selected.padding ?? defaultPadding(selected)) : null,
     textBold:
@@ -336,12 +344,13 @@ export function deriveSelectedElementFields(
     shapeKind: selected.type === 'shape' && !isIcon ? selected.shape : null,
     aspectLocked: isBoxed(selected) ? (selected.aspectLocked ?? false) : null,
     borderStroke:
-      (supportsBorder(selected) || selected.type === 'table') && !isIcon
-        ? (selected.strokeWidth ?? (selected.type === 'table' ? 'thin' : 'medium'))
+      supportsBorderControls(selected) && !isIcon
+        ? ((selected as { strokeWidth?: BorderStroke }).strokeWidth ??
+          (selected.type === 'table' ? 'thin' : 'medium'))
         : null,
     borderStyle:
-      (supportsBorder(selected) || selected.type === 'table') && !isIcon
-        ? (selected.strokeStyle ?? 'solid')
+      supportsBorderControls(selected) && !isIcon
+        ? ((selected as { strokeStyle?: BorderStyle }).strokeStyle ?? 'solid')
         : null,
     borderRadius: supportsBorderRadius(selected) ? (selected.borderRadius ?? 'sm') : null,
     tableHeaderRow: selected.type === 'table' ? (selected.headerRow ?? false) : null,

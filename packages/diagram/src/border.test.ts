@@ -14,10 +14,33 @@ import {
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
+  supportsBorderControls,
   type BorderRadius,
   type BorderStroke,
   type BorderStyle,
+  type Element,
 } from './index';
+
+const shape = (kind: string) => ({ type: 'shape', shape: kind }) as unknown as Element;
+const ofType = (type: string) => ({ type }) as unknown as Element;
+
+describe('supportsBorderControls', () => {
+  it('includes shapes, freehand and tables', () => {
+    expect(supportsBorderControls(shape('square'))).toBe(true);
+    expect(supportsBorderControls(ofType('freehand'))).toBe(true);
+    expect(supportsBorderControls(ofType('table'))).toBe(true);
+  });
+
+  it('excludes the actor (a stick figure with no enclosing outline)', () => {
+    expect(supportsBorderControls(shape('actor'))).toBe(false);
+  });
+
+  it('excludes elements that carry no stroke (text, arrow, image)', () => {
+    expect(supportsBorderControls(ofType('text'))).toBe(false);
+    expect(supportsBorderControls(ofType('arrow'))).toBe(false);
+    expect(supportsBorderControls(ofType('image'))).toBe(false);
+  });
+});
 
 describe('BORDER_STROKE_PX lookup', () => {
   it('maps every BorderStroke preset to a numeric pixel width', () => {

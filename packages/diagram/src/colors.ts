@@ -199,6 +199,17 @@ export function supportsBorder(element: Element): element is ShapeElement | Free
   return element.type === 'shape' || element.type === 'freehand';
 }
 
+// Whether the element exposes the Border CONTROLS (strength / pattern /
+// radius) in the editor UI — distinct from supportsBorder, which also gates
+// stroke-field writes + type narrowing. A boolean visibility gate: it adds
+// tables (which carry borders) and drops the `actor`, a stick figure with no
+// enclosing outline for which a border is meaningless.
+export function supportsBorderControls(element: Element): boolean {
+  if (element.type === 'table') return true;
+  if (!supportsBorder(element)) return false;
+  return !(element.type === 'shape' && element.shape === 'actor');
+}
+
 // Whether a shape can carry an INLINE icon beside its label — i.e. whether
 // dropping a palette icon on it (or adding one while it's selected) folds
 // the glyph INTO it. Regular shapes only: the dedicated `icon` shape IS a
