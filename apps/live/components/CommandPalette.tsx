@@ -240,8 +240,8 @@ type CommandPaletteProps = {
     | null;
   // Optional callback fired with the palette's current bounding box
   // whenever it changes (via MovablePanel's ResizeObserver). Canvas
-  // wires this up so the ContextPanel can stack dynamically below
-  // the palette as accordions open / close.
+  // wires this up so the Comments + AI panels can stack below the
+  // palette as it changes height.
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
   // Mobile-only top override (the palette banner sits below the
   // Explorer banner so signed-out users can switch diagrams without
@@ -338,9 +338,10 @@ export function CommandPalette({
     onAddImage?.();
     onMobileClose?.();
   };
-  // The Selected Element / Current Tab sections moved out into the
-  // ContextPanel (bottom-right, above zoom). The palette now hosts
-  // the canvas-tool toggle row at the top, then a single category tab
+  // Per-element + tab formatting now lives in the right-click context
+  // menus (element / canvas / tab) and the Tab Appearance modal, not in a
+  // side panel. The palette now hosts the canvas-tool toggle row at the
+  // top, then a single category tab
   // bar: Shapes (open by default — the most common entry point on
   // every fresh canvas), Tools, Devices, Icons (with more categories
   // to come). Clicking a tab expands its panel; clicking it again

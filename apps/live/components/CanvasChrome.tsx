@@ -4,9 +4,8 @@ import { CommandPalette } from './CommandPalette';
 import { isSvgRenderedShape, ShapeSvgOverlay } from './shape-svg-overlay';
 import { ActivityIcon, ActivityPanel, RedoIcon, UndoIcon } from './ActivityPanel';
 // Lazy-load CommentsPanel: only mounts when the active tab has at
-// least one element with comments AND the ContextPanel has reported
-// its bottom edge (so we don't paint the panel at the legacy fallback
-// position). Most diagrams never accumulate comments, so deferring
+// least one element with comments. It stacks below the Palette (the
+// top-right panel). Most diagrams never accumulate comments, so deferring
 // the 164-line panel + its formatRelativeTimeShort + useRelativeTimeTick
 // dependencies keeps the editor's initial chunk lean.
 const CommentsPanel = dynamic(() => import('./CommentsPanel').then((m) => m.CommentsPanel));
@@ -695,17 +694,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
           is already tight, the per-element comment popover stays
           available for viewing / replying, and a floating cheat
           sheet of threads would crowd the surface that's already
-          banner-collapsing the Palette + Editor. Wrapped in
-          `hidden sm:contents` so the MovablePanel beneath gets
-          `display: none` on phones without changing its props.
-          Mount is also gated on contextBottomY > 0 so the panel
-          waits until the Editor pane above has reported its size:
-          mounting before that would let MovablePanel fall back to
-          its static top-[15rem], landing the panel BEHIND the
-          Editor pane (Editor renders later in the DOM and wins
-          z-order) instead of stacking cleanly under it. Suppressed
-          entirely under minimalPanels: the per-element comment popover
-          stays available for viewing / replying. */}
+          banner-collapsing the Palette. Wrapped in `hidden sm:contents`
+          so the MovablePanel beneath gets `display: none` on phones
+          without changing its props. It stacks below the Palette
+          (paletteBottomY) when the Palette is in its default corner.
+          Suppressed entirely under minimalPanels: the per-element
+          comment popover stays available for viewing / replying. */}
       {!chromeHidden && !minimalPanels && commentRows.length > 0 ? (
         <div className="hidden sm:contents">
           <CommentsPanel
@@ -823,8 +817,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
       {/* Bottom dock. Order, left → right: Zoom controls, History
           controls, and a minimised Activity dock when applicable.
-          The Palette + Editor are banner-collapsed in place (spec/09)
-          so they're not in the dock cluster; the Explorer is hidden
+          The Palette is banner-collapsed in place (spec/09)
+          so it's not in the dock cluster; the Explorer is hidden
           on mobile entirely (spec/07) and uses banner-collapse on
           desktop, so it's also not in the dock cluster. */}
       <div className="pointer-events-none absolute bottom-4 right-4 z-10 flex items-center gap-2">

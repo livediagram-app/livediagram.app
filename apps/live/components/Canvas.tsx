@@ -22,12 +22,6 @@ import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useCanvasMobileDock } from '@/hooks/useCanvasMobileDock';
 import { drawIntentCursor } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
-// Lazy-load CommentsPanel: only mounts when the active tab has at
-// least one element with comments AND the ContextPanel has reported
-// its bottom edge (so we don't paint the panel at the legacy fallback
-// position). Most diagrams never accumulate comments, so deferring
-// the 164-line panel + its formatRelativeTimeShort + useRelativeTimeTick
-// dependencies keeps the editor's initial chunk lean.
 import { useCanvasPanAndMarquee } from '@/hooks/useCanvasPanAndMarquee';
 import { getTheme } from '@/lib/themes';
 import { FloatingToolbar } from './FloatingToolbar';
@@ -110,11 +104,10 @@ export function Canvas(props: CanvasProps) {
   // Pan tracking. viewportOffset is owned by the page (so element placement
   // can reason about the visible viewport); we just read/write through props.
   // Palette's bottom-Y (offsetTop + offsetHeight in offsetParent
-  // coords). The ContextPanel uses this to stack dynamically below
-  // the Palette as accordions open / close and as the banner
-  // collapses; MovablePanel publishes it via onSize. The bottom-Y
-  // (vs height alone) makes the alignment robust to the upper
-  // panel's own top-utility class, the editor lands at
+  // coords). The Comments + AI panels use this to stack below the
+  // Palette as it changes height; MovablePanel publishes it via onSize.
+  // The bottom-Y (vs height alone) makes the alignment robust to the
+  // Palette's own top-utility class, so the stacked panel lands at
   // paletteBottomY + 16 regardless of whether the palette pins to
   // top-2 (mobile) or top-4 (desktop).
   const [paletteBottomY, setPaletteBottomY] = useState<number>(0);
@@ -123,10 +116,6 @@ export function Canvas(props: CanvasProps) {
   // above the Palette without overlapping. Desktop ignores it (the
   // Explorer pins to top-left there, not as a banner).
   const [explorerBottomY, setExplorerBottomY] = useState<number>(0);
-  // ContextPanel's measured bottom edge. Drives the CommentsPanel's
-  // top-right-stacked positioning so it lands directly under the
-  // Editor pane on first paint and slides when Editor expands /
-  // collapses.
   // Which quick-connect ring (if any) is currently open, lifted here so
   // only one opens at a time and the selection toolbar can dodge the
   // top ring (see SelectionPopover forceBelow below). Reset whenever the

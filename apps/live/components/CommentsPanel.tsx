@@ -34,9 +34,9 @@ type CommentsPanelProps = {
   // all when the list is empty, so the panel itself can assume
   // there's content to render.
   rows: CommentRow[];
-  // ContextPanel's reported bottom Y. Drives top-right-stacked
-  // positioning so the panel sits directly under the Editor pane
-  // and slides with it as Editor expands / collapses.
+  // The Palette's reported bottom Y. Drives top-right-stacked
+  // positioning so the panel sits directly under the Palette and
+  // slides with it as the Palette changes height.
   stackBelowY?: number;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
@@ -79,7 +79,7 @@ export function CommentsPanel({
       onMoveTo={onMoveTo}
       collapsible
       // Default collapsed: an open Comments panel would compete with
-      // the always-visible Editor pane right above it. Users open
+      // the Palette right above it. Users open
       // the panel deliberately when they want to scan comments;
       // until then it banner-collapses to its title row so the
       // canvas stays as roomy as possible.

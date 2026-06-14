@@ -48,14 +48,14 @@ type MovablePanelProps = {
   // AND defaultCorner is 'top-right-stacked', the panel's top is
   // computed as `stackBelowY + 16` (16 = gap-4) instead of the
   // hardcoded top-[15rem]. This lets the caller stack a panel
-  // dynamically beneath another resizable panel (the Editor /
-  // ContextPanel sitting below the Palette, which now changes height
-  // as accordions open / close). User drags break out of stacking
+  // dynamically beneath another resizable panel (the Comments / AI
+  // panels sitting below the Palette, which changes height as it
+  // collapses / expands). User drags break out of stacking
   // (position becomes non-null and explicit left/top win).
   stackBelowY?: number;
   // Optional ResizeObserver-driven callback fired with the panel's
   // current bounding box when it mounts and every time its size
-  // changes. The Palette uses this so the ContextPanel can stack
+  // changes. The Palette uses this so the Comments / AI panels can stack
   // beneath it; `bottomY` is the absolute offset (in offsetParent
   // coords) of the panel's bottom edge, so the consumer can hand it
   // back as `stackBelowY` and the panel above and below align
@@ -98,7 +98,7 @@ type MovablePanelProps = {
   // collapsible panels start collapsed only on mobile, expanded on
   // desktop. Used by panels that should default out of the way (the
   // Comments panel ships closed so it doesn't compete with the
-  // always-visible Editor pane above it).
+  // Palette above it).
   defaultCollapsed?: boolean;
   // Counter the parent bumps whenever it wants to force the banner
   // open (e.g. navigating to a theme accordion from an Activity row).
@@ -253,7 +253,7 @@ export function MovablePanel({
   }, [position, stackBelowY, defaultCorner]);
 
   // Publish the panel's bounding box upward whenever it changes
-  // (the Palette uses this so the ContextPanel can stack below).
+  // (the Palette uses this so the Comments / AI panels can stack below).
   // Cheap when no caller subscribes: the observer just never fires
   // a callback if `onSize` is undefined.
   useEffect(() => {
