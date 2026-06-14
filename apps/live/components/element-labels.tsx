@@ -276,6 +276,10 @@ export function renderLabel(
   // (spec/09). Operate on the current selection = the editing element.
   onSetAlign?: (x: TextAlignX, y: TextAlignY) => void,
   onSetPadding?: (padding: Padding) => void,
+  // Whole-element font + size setters (the toolbar's Font submenu + the
+  // Scale size option).
+  onSetFont?: (font: string | null) => void,
+  onSetTextSize?: (size: TextSize) => void,
 ) {
   const isSticky = element.type === 'sticky';
   // Shape elements don't carry a placeholder during edit. The user
@@ -324,6 +328,9 @@ export function renderLabel(
         onCancel={onCancelEdit}
         onSetAlign={onSetAlign}
         onSetPadding={onSetPadding}
+        onSetFont={onSetFont}
+        onSetTextSize={onSetTextSize}
+        currentFont={(element as { font?: string }).font ?? null}
       />
     );
   }

@@ -13,11 +13,17 @@ import {
   ItalicIcon,
   NonePaddingIcon,
   PaddingIcon,
+  ScaleIcon,
   StrikethroughIcon,
   UnderlineIcon,
 } from './palette-icons';
 import { Tooltip } from './Tooltip';
+import { FONTS, resolveFontStack } from '@/lib/fonts';
 import type { Padding, RunBoolKey, RunSize, TextAlignX, TextAlignY } from '@livediagram/diagram';
+
+// Size key that includes 'scale' (whole-element auto-fit) alongside the
+// per-run sizes.
+type SizeKey = RunSize | 'scale';
 
 // The resolved formatting of the current selection: each boolean is true
 // when EVERY character in the selection is effectively-on; size/color are
@@ -27,16 +33,17 @@ export type ActiveFormat = {
   italic: boolean;
   underline: boolean;
   strikethrough: boolean;
-  size: RunSize | null;
+  size: SizeKey | null;
   color: string | null;
 };
 
-// Same dot glyphs the Selected Element panel's text-size control uses
-// (1 / 2 / 3 dots = small / medium / large), so the two surfaces match.
-const SIZES: { key: RunSize; label: string; dots: 1 | 2 | 3 }[] = [
-  { key: 'sm', label: 'Small', dots: 1 },
-  { key: 'md', label: 'Medium', dots: 2 },
-  { key: 'lg', label: 'Large', dots: 3 },
+// Mirrors the Selected Element panel's text-size control: a Scale (auto-fit)
+// option + the 1/2/3-dot small / medium / large glyphs.
+const SIZES: { key: SizeKey; label: string; icon: React.ReactNode }[] = [
+  { key: 'scale', label: 'Scale', icon: <ScaleIcon /> },
+  { key: 'sm', label: 'Small', icon: <DotsIcon count={1} /> },
+  { key: 'md', label: 'Medium', icon: <DotsIcon count={2} /> },
+  { key: 'lg', label: 'Large', icon: <DotsIcon count={3} /> },
 ];
 
 const PADDINGS: { key: Padding; label: string }[] = [
@@ -57,6 +64,17 @@ function EllipsisIcon() {
       <circle cx="4" cy="8" r="1.4" fill="currentColor" />
       <circle cx="8" cy="8" r="1.4" fill="currentColor" />
       <circle cx="12" cy="8" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+// A serif "A" — the font/typeface glyph for the Font submenu row.
+function FontGlyph() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden fill="currentColor">
+      <text x="8" y="12" textAnchor="middle" fontSize="12" fontFamily="Georgia, serif">
+        A
+      </text>
     </svg>
   );
 }
@@ -161,21 +179,25 @@ export function RichTextToolbar({
   alignX,
   alignY,
   padding,
+  currentFont,
   onToggle,
   onSize,
   onColor,
   onSetAlign,
   onSetPadding,
+  onSetFont,
 }: {
   active: ActiveFormat;
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: Padding;
+  currentFont: string | null;
   onToggle: (key: RunBoolKey) => void;
-  onSize: (size: RunSize) => void;
+  onSize: (size: SizeKey) => void;
   onColor: (color: string) => void;
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
   onSetPadding: (padding: Padding) => void;
+  onSetFont: (font: string | null) => void;
 }) {
   const toggles: { key: RunBoolKey; label: string; description: string; icon: React.ReactNode }[] =
     [
@@ -211,6 +233,44 @@ export function RichTextToolbar({
           <StrikethroughIcon />
           <span className="flex-1">Strikethrough</span>
         </button>
+        {/* Font — hover the row to reveal a flyout list of the fonts. */}
+        <div className="group relative">
+          <div className={`${optionClass(false)} cursor-default justify-between`}>
+            <span className="flex items-center gap-2">
+              <FontGlyph />
+              Font
+            </span>
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M4.5 3 7.5 6 4.5 9" />
+            </svg>
+          </div>
+          <div className="invisible absolute left-full top-0 z-10 ml-0.5 max-h-64 min-w-[8rem] overflow-y-auto rounded-md border border-slate-200 bg-white py-1 opacity-0 shadow-lg transition-opacity group-hover:visible group-hover:opacity-100 dark:border-slate-700 dark:bg-slate-900">
+            {FONTS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                role="option"
+                aria-selected={currentFont === f.id}
+                onMouseDown={noFocusSteal}
+                onClick={() => onSetFont(f.id)}
+                style={{ fontFamily: resolveFontStack(f.id) }}
+                className={optionClass(currentFont === f.id)}
+              >
+                <span className="flex-1">{f.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </ToolbarDropdown>
       {divider}
       {toggles.map((t) => (
@@ -232,7 +292,7 @@ export function RichTextToolbar({
       <ToolbarDropdown
         label="Text size"
         description="Size of the selected text."
-        trigger={<DotsIcon count={currentSize?.dots ?? 2} />}
+        trigger={currentSize?.icon ?? <DotsIcon count={2} />}
       >
         {SIZES.map((s) => (
           <button
@@ -244,7 +304,7 @@ export function RichTextToolbar({
             onClick={() => onSize(s.key)}
             className={optionClass(active.size === s.key)}
           >
-            <DotsIcon count={s.dots} />
+            {s.icon}
             <span className="flex-1">{s.label}</span>
           </button>
         ))}

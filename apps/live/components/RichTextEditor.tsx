@@ -27,6 +27,7 @@ import {
   type Padding,
   type RunBoolKey,
   type RunPatch,
+  type RunSize,
   type TextAlignX,
   type TextAlignY,
   type TextRun,
@@ -74,6 +75,9 @@ type Props = {
   // current selection = the editing element, same as the side panel).
   onSetAlign?: (x: TextAlignX, y: TextAlignY) => void;
   onSetPadding?: (padding: Padding) => void;
+  onSetFont?: (font: string | null) => void;
+  onSetTextSize?: (size: TextSize) => void;
+  currentFont?: string | null;
 };
 
 // Apply a React.CSSProperties object onto a live DOM style declaration,
@@ -118,9 +122,8 @@ function computeActiveFormat(
 ): ActiveFormat {
   // A run with no size override inherits the element's textSize; reflect
   // that as the active size so the toolbar highlights the current size by
-  // default (only 'scale' has no toolbar equivalent => no highlight).
-  const sizeFallback =
-    el.textSize === 'sm' || el.textSize === 'md' || el.textSize === 'lg' ? el.textSize : null;
+  // default ('scale' is a first-class option now).
+  const sizeFallback: RunSize | 'scale' = el.textSize ?? 'scale';
   const empty: ActiveFormat = {
     bold: BOOL_DEFAULT.bold(el),
     italic: BOOL_DEFAULT.italic(el),
@@ -152,12 +155,16 @@ function computeActiveFormat(
     const vals = covered.map((r) => pick(r) ?? fallback);
     return vals.every((v) => v === vals[0]) ? (vals[0] as T | null) : null;
   };
+  // Size resolves to each run's override or the element default ('scale'
+  // included), uniform across the selection or null when mixed.
+  const sizeVals = covered.map((r): RunSize | 'scale' => r.size ?? sizeFallback);
+  const size = sizeVals.every((v) => v === sizeVals[0]) ? (sizeVals[0] ?? null) : null;
   return {
     bold: allBool('bold'),
     italic: allBool('italic'),
     underline: allBool('underline'),
     strikethrough: allBool('strikethrough'),
-    size: uniform((r) => r.size, sizeFallback),
+    size,
     color: uniform((r) => r.color, el.textColor ?? null),
   };
 }
@@ -180,6 +187,9 @@ export function RichTextEditor({
   onCancel,
   onSetAlign,
   onSetPadding,
+  onSetFont,
+  onSetTextSize,
+  currentFont = null,
 }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarWrapRef = useRef<HTMLDivElement>(null);
@@ -299,13 +309,15 @@ export function RichTextEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Flip the toolbar below the element when it would clip the top edge.
+  // Flip the toolbar below the element when there isn't room above it. Measure
+  // the EDITOR (a fixed reference), not the toolbar — the toolbar moves when
+  // it flips, which would otherwise ping-pong. ~52px clears the toolbar +
+  // its gap.
   useLayoutEffect(() => {
     const measure = () => {
-      const wrap = toolbarWrapRef.current;
-      if (!wrap) return;
-      const rect = wrap.getBoundingClientRect();
-      setPlaceBelow(rect.top < 8);
+      const el = editorRef.current;
+      if (!el) return;
+      setPlaceBelow(el.getBoundingClientRect().top < 52);
     };
     measure();
     window.addEventListener('scroll', measure, true);
@@ -384,6 +396,22 @@ export function RichTextEditor({
     const range = targetRange();
     if (!range) return;
     applyAndRepaint(applyFormatToRange(runsRef.current, range.start, range.end, patch), range);
+  };
+
+  // Size dropdown: sm/md/lg are per-range; 'scale' is whole-element auto-fit
+  // (no per-run meaning), so it clears every run's size override and sets the
+  // element back to 'scale'.
+  const chooseSize = (size: RunSize | 'scale') => {
+    if (size === 'scale') {
+      const len = runsPlainText(runsRef.current).length;
+      runsRef.current = applyFormatToRange(runsRef.current, 0, len, { size: undefined });
+      pendingSelectionRef.current = selectionRef.current ?? { start: 0, end: len };
+      setVersion((v) => v + 1);
+      onSetTextSize?.('scale');
+      track('Element', 'Changed', 'TextFormat');
+      return;
+    }
+    onPatch({ size });
   };
 
   return (
@@ -474,7 +502,7 @@ export function RichTextEditor({
           e.stopPropagation();
         }}
         className={`pointer-events-auto absolute left-1/2 z-50 ${
-          placeBelow ? 'top-full mt-1' : 'bottom-full mb-1'
+          placeBelow ? 'top-full mt-2.5' : 'bottom-full mb-2.5'
         }`}
         style={{
           transform: `translateX(-50%) scale(${1 / zoom})`,
@@ -486,11 +514,13 @@ export function RichTextEditor({
           alignX={alignX}
           alignY={alignY}
           padding={element.padding ?? defaultPadding(element)}
+          currentFont={currentFont}
           onToggle={onToggle}
-          onSize={(size) => onPatch({ size })}
+          onSize={chooseSize}
           onColor={(color) => onPatch({ color })}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}
           onSetPadding={(p) => onSetPadding?.(p)}
+          onSetFont={(f) => onSetFont?.(f)}
         />
       </div>
     </div>

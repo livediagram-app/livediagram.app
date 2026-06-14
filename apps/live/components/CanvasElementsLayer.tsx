@@ -75,6 +75,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCommitLabel,
     onSetTextAlign,
     onSetPadding,
+    onSetFont,
+    onSetTextSize,
     onCommitTable,
     onSpawnConnect,
     onStartArrow,
@@ -206,6 +208,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onCommitLabel={onCommitLabel}
             onSetTextAlign={readOnly ? undefined : onSetTextAlign}
             onSetPadding={readOnly ? undefined : onSetPadding}
+            onSetFont={readOnly ? undefined : onSetFont}
+            onSetTextSize={readOnly ? undefined : onSetTextSize}
             onCommitTable={onCommitTable}
             onCancelEdit={onCancelEdit}
             onFollowLink={onFollowLink}

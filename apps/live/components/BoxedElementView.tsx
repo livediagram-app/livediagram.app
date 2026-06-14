@@ -97,6 +97,8 @@ type BoxedElementViewProps = {
     y: import('@livediagram/diagram').TextAlignY,
   ) => void;
   onSetPadding?: (padding: import('@livediagram/diagram').Padding) => void;
+  onSetFont?: (font: string | null) => void;
+  onSetTextSize?: (size: TextSize) => void;
   onCommitTable: (
     id: string,
     patch: Partial<
@@ -202,6 +204,8 @@ function BoxedElementViewImpl({
   onCommitLabel,
   onSetTextAlign,
   onSetPadding,
+  onSetFont,
+  onSetTextSize,
   onCommitTable,
   onCancelEdit,
   onFollowLink,
@@ -385,6 +389,8 @@ function BoxedElementViewImpl({
     fontFamily,
     onSetTextAlign,
     onSetPadding,
+    onSetFont,
+    onSetTextSize,
   );
   // An inline icon sits beside the label on a regular shape (the
   // dedicated 'icon' shape kind has its own glyph-above-caption render
