@@ -1,4 +1,10 @@
-import { memo, useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  memo,
+  useEffect,
+  useRef,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import {
   ARROWHEAD_SHAPES,
   ARROWHEAD_SIZE_PX,
@@ -282,6 +288,8 @@ function ArrowViewImpl({
           onEdit={() => onBeginEdit(arrow.id)}
           onCommit={(next) => onCommitLabel(arrow.id, next)}
           onCancel={onCancelEdit}
+          onSelect={(e) => onSelect(arrow.id, e)}
+          onContextMenu={(e) => onContextSelect(arrow.id, e.clientX, e.clientY)}
         />
       ) : null}
 
@@ -523,6 +531,11 @@ type ArrowLabelProps = {
   onEdit?: () => void;
   onCommit: (label: string) => void;
   onCancel: () => void;
+  // Left-click the label to select the arrow (when it isn't draggable yet),
+  // and right-click to open the arrow's context menu — without these the
+  // click falls through to the canvas.
+  onSelect?: (e: ReactPointerEvent) => void;
+  onContextMenu?: (e: ReactMouseEvent) => void;
 };
 
 // The label lives inside the per-arrow SVG so it stays in canvas
@@ -548,6 +561,8 @@ function ArrowLabel({
   onEdit,
   onCommit,
   onCancel,
+  onSelect,
+  onContextMenu,
 }: ArrowLabelProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
@@ -624,42 +639,48 @@ function ArrowLabel({
       >
         {text}
       </text>
+      {/* Dashed box signals the label is draggable (only when selected). */}
       {draggable ? (
-        <>
-          {/* Dashed box signals the label is draggable. */}
-          <rect
-            x={x - size.width / 2 - pad}
-            y={y - size.height / 2 - pad}
-            width={size.width + pad * 2}
-            height={size.height + pad * 2}
-            rx={5}
-            fill="none"
-            stroke={BRAND_600}
-            strokeWidth={1}
-            strokeDasharray="3 2"
-            style={{ pointerEvents: 'none' }}
-          />
-          {/* Transparent catcher on top: grabs the drag (slide the
-              label along / across the line) and double-click to edit. */}
-          <rect
-            x={x - size.width / 2 - pad}
-            y={y - size.height / 2 - pad}
-            width={size.width + pad * 2}
-            height={size.height + pad * 2}
-            rx={5}
-            fill="transparent"
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              onStartDrag?.(e);
-            }}
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              onEdit?.();
-            }}
-            style={{ pointerEvents: 'all', cursor: 'move' }}
-          />
-        </>
+        <rect
+          x={x - size.width / 2 - pad}
+          y={y - size.height / 2 - pad}
+          width={size.width + pad * 2}
+          height={size.height + pad * 2}
+          rx={5}
+          fill="none"
+          stroke={BRAND_600}
+          strokeWidth={1}
+          strokeDasharray="3 2"
+          style={{ pointerEvents: 'none' }}
+        />
       ) : null}
+      {/* Transparent catcher, always on: when draggable it grabs the drag
+          (slide the label along / across the line); otherwise a press selects
+          the arrow. Double-click edits, right-click opens the arrow menu — so
+          a click on the label never falls through to the canvas. */}
+      <rect
+        x={x - size.width / 2 - pad}
+        y={y - size.height / 2 - pad}
+        width={size.width + pad * 2}
+        height={size.height + pad * 2}
+        rx={5}
+        fill="transparent"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          if (draggable && onStartDrag) onStartDrag(e);
+          else onSelect?.(e);
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          onEdit?.();
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onContextMenu?.(e);
+        }}
+        style={{ pointerEvents: 'all', cursor: draggable ? 'move' : 'pointer' }}
+      />
     </g>
   );
 }
