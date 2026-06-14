@@ -1054,6 +1054,14 @@ export function Canvas(props: CanvasProps) {
             onGroup={!readOnly && selectedIsBoxed && !selectedIsGrouped ? onBeginGroup : undefined}
             onUngroup={!readOnly && selectedIsGrouped ? onUngroup : undefined}
             onToggleLock={readOnly ? undefined : onToggleLockSelected}
+            onBringToFront={readOnly || !selected ? undefined : onBringToFront}
+            onSendToBack={readOnly || !selected ? undefined : onSendToBack}
+            aspectLocked={
+              selectedIsBoxed ? !!(selected as { aspectLocked?: boolean }).aspectLocked : false
+            }
+            onToggleAspectLock={readOnly || !selectedIsBoxed ? undefined : onToggleAspectLock}
+            opacity={(selected as { opacity?: number } | null)?.opacity ?? 1}
+            onSetOpacity={readOnly || !selected ? undefined : onSetOpacity}
             onDelete={readOnly ? undefined : onDeleteSelected}
             // Comment button is VIEW-ROLE ONLY now. Editors reach
             // comments via the right-click / ellipsis context menu (which
