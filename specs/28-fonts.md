@@ -27,10 +27,11 @@ self-host that opts out). The editor never depends on the fonts loading.
 
 ## Two levels
 
-- **Per element** — a Font dropdown at the top of the **Text accordion**
-  (Editor panel). Sets `Element.font`. "Tab default" clears the override.
-- **Per tab** — a **Text** accordion in the Current Tab panel (below
-  Canvas), holding:
+- **Per element** — a Font option in the inline edit-text toolbar's `⋯`
+  menu (and, for arrows, the right-click context menu's Text category).
+  Sets `Element.font`. "Tab default" clears the override.
+- **Per tab** — the **Font** tab of the Tab Appearance modal (spec/42),
+  holding:
   - **Font** — sets `Tab.font`: the default for **every** text element on
     the tab that hasn't set its own. "Default" clears it.
   - **Default size for new elements** — sets `Tab.defaultTextSize`, which
