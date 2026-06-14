@@ -199,9 +199,9 @@ export function deriveCanvasSelection(input: {
   };
 }
 
-// Field subset of SelectedElementControls — the value props the Editor
-// panel reads, NOT the on* handlers (the Canvas bundles those in around
-// this result).
+// Field subset of SelectedElementControls: the per-element control VALUES
+// (no on* handlers) that deriveSelectedElementFields below projects, gated
+// by element type.
 export type SelectedElementFields = Pick<
   SelectedElementControls,
   | 'textSize'
@@ -236,11 +236,10 @@ export type SelectedElementFields = Pick<
   | 'tableHeaderTextColor'
 >;
 
-// Which Editor-panel control values to surface for the selected element,
+// Which per-element control values to surface for the selected element,
 // gated by element type: images (boxed but text/colour-less) null out the
 // text + colour fields, arrows expose the arrow fields, shapes expose
-// shapeKind + borderRadius. Pure — the Canvas merges the matching on*
-// handlers around this projection. `selectionSupportsColours` and
+// shapeKind + borderRadius. Pure. `selectionSupportsColours` and
 // `selectedDefaultAlign` are precomputed by the caller (supportsColours /
 // defaultTextAlign of the selection).
 export function deriveSelectedElementFields(
@@ -249,8 +248,8 @@ export function deriveSelectedElementFields(
   selectedDefaultAlign: ReturnType<typeof defaultTextAlign> | null,
 ): SelectedElementFields {
   // Icons are a curated line-art glyph, not a box: they hide the Shape
-  // accordion (no morph grid / aspect / padding — you pick a glyph from
-  // the Icons picker, not by morphing) and the Border accordion
+  // controls (no morph grid / aspect / padding — you pick a glyph from
+  // the Icons picker, not by morphing) and the Border controls
   // (strength / pattern / radius don't apply to a single-stroke mark).
   // They keep Colours (the stroke colour tints the glyph) + Text.
   const isIcon = selected.type === 'shape' && selected.shape === 'icon';
