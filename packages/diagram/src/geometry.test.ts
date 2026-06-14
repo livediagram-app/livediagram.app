@@ -257,6 +257,16 @@ describe('rebindArrowAnchorsAfterMove', () => {
     expect(next.to.kind === 'pinned' && next.to.anchor).toBe('s');
   });
 
+  it('leaves a both-ends-moving arrow untouched (frame / group move translates it rigidly)', () => {
+    // Moving BOTH a and b together (a frame section or group drag) — even
+    // into a layout where the faces would otherwise flip — must not
+    // re-anchor: the arrow translated rigidly with its endpoints, so its
+    // relative geometry is unchanged and the faces should stay put.
+    const els: Element[] = [a(), b({ x: 90, y: -300 }), arrow()];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['a', 'b']));
+    expect(out[2]).toEqual(els[2]);
+  });
+
   it('leaves arrows with a free endpoint untouched (only the pinned end would change, which jitters under drag)', () => {
     const mixed: ArrowElement = {
       id: 'arr2',

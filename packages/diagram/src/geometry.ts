@@ -188,7 +188,13 @@ export function rebindArrowAnchorsAfterMove(
   for (const el of elements) {
     if (el.type !== 'arrow') continue;
     if (el.from.kind !== 'pinned' || el.to.kind !== 'pinned') continue;
-    if (!includes(el.from.elementId) && !includes(el.to.elementId)) continue;
+    // Re-anchor only arrows that SPAN the moving boundary (exactly one end
+    // pinned to a moved box). When BOTH ends moved together — a frame
+    // section, group, or multi-select drag — the arrow translates rigidly
+    // with its endpoints and its relative geometry is unchanged, so
+    // re-choosing its faces would needlessly reflow it. When NEITHER moved
+    // it's irrelevant. Both cases skip.
+    if (includes(el.from.elementId) === includes(el.to.elementId)) continue;
     const fromEl = byId.get(el.from.elementId);
     const toEl = byId.get(el.to.elementId);
     if (!fromEl || !isBoxed(fromEl) || !toEl || !isBoxed(toEl)) continue;
