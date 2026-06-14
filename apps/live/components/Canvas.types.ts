@@ -15,7 +15,6 @@ import type {
   TextRun,
   TextSize,
 } from '@livediagram/diagram';
-import type { ImageSummary } from '@livediagram/api-schema';
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { TemplateKind } from '@/lib/templates';
@@ -41,10 +40,9 @@ export type CanvasProps = {
   tabBackgroundOpacity: number;
   tabPatternColor: string;
   // The active tab's default font id (spec/28). Elements without their
-  // own `font` render in this; undefined = the editor default.
+  // own `font` render in this; undefined = the editor default. Used by
+  // the inline label editor (CanvasElementsLayer) for font inheritance.
   tabFont?: string;
-  // The active tab's default text size for new palette elements (spec/28).
-  tabDefaultTextSize?: import('@livediagram/diagram').TextSize;
   mainRef: Ref<HTMLElement>;
   viewportOffset: { x: number; y: number };
   setViewportOffset: (offset: { x: number; y: number }) => void;
@@ -245,6 +243,12 @@ export type CanvasProps = {
   onBeginAnchorDrag: (id: string, anchor: Anchor, e: ReactPointerEvent) => void;
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string, runs?: TextRun[]) => void;
+  // Inline label-editor (rich-text) controls, threaded through
+  // CanvasElementsLayer to the in-place editor on the selected element.
+  onSetTextSize: (size: TextSize) => void;
+  onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
+  onSetFont: (font: string | null) => void;
+  onSetPadding: (padding: import('@livediagram/diagram').Padding) => void;
   // Single combined table commit (cells + the parallel colWidths /
   // rowHeights / cellStyles arrays) applied in ONE commit, so structural
   // ops can't drop a side array or clobber each other off a stale base.
@@ -269,36 +273,6 @@ export type CanvasProps = {
   onBeginGroup: () => void;
   onCancelGroup: () => void;
   onUngroup: () => void;
-  onBringToFront: () => void;
-  onSendToBack: () => void;
-  onSetTextSize: (size: TextSize) => void;
-  onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  onToggleTextBold: () => void;
-  onToggleTextItalic: () => void;
-  onToggleTextUnderline: () => void;
-  onToggleTextStrikethrough: () => void;
-  onSetFont: (font: string | null) => void;
-  onSetFillColor: (color: string) => void;
-  onSetStrokeColor: (color: string) => void;
-  onSetTextColor: (color: string) => void;
-  onSetOpacity: (opacity: number) => void;
-  onResetColors: () => void;
-  onSetPadding: (padding: import('@livediagram/diagram').Padding) => void;
-  onSetArrowEnds: (ends: import('@livediagram/diagram').ArrowEnds) => void;
-  onSetArrowThickness: (thickness: import('@livediagram/diagram').ArrowThickness) => void;
-  onSetArrowheadSize: (size: import('@livediagram/diagram').ArrowheadSize) => void;
-  onSetArrowheadShape: (shape: import('@livediagram/diagram').ArrowheadShape) => void;
-  onToggleTableHeaderRow: () => void;
-  onToggleTableHeaderColumn: () => void;
-  onToggleTableZebra: () => void;
-  onSetTableHeaderFill: (color: string) => void;
-  onSetTableHeaderTextColor: (color: string) => void;
-  onSetArrowStyle: (style: import('@livediagram/diagram').ArrowStyle) => void;
-  onSetArrowStrokeStyle: (style: import('@livediagram/diagram').BorderStyle) => void;
-  onSetShapeKind: (kind: ShapeKind) => void;
-  onSetBorderStroke: (value: import('@livediagram/diagram').BorderStroke) => void;
-  onSetBorderStyle: (value: import('@livediagram/diagram').BorderStyle) => void;
-  onSetBorderRadius: (value: import('@livediagram/diagram').BorderRadius) => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   onOpenNote?: (elementId: string) => void;
@@ -356,26 +330,14 @@ export type CanvasProps = {
   onSkipTemplatePicker: () => void;
   onOpenTemplatePicker: () => void;
   tabThemeId: import('@/lib/themes').ThemeId;
-  onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
-  onSetBackgroundColor: (color: string) => void;
-  onSetBackgroundOpacity: (opacity: number) => void;
-  onSetTheme: (id: import('@/lib/themes').ThemeId) => void;
   // Set the active tab's default font (spec/28); null clears it.
-  onSetTabFont: (font: string | null) => void;
   // Set the active tab's default text size for new palette elements.
-  onSetTabDefaultTextSize: (size: import('@livediagram/diagram').TextSize) => void;
-  onResetElementsToTheme: () => void;
   // File I/O for the current tab — moved here so the Current Tab
   // section (right-hand inspector) houses them next to theme +
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
-  onExportTab?: () => void;
-  onImportTab?: () => void;
-  importError?: string | null;
   // "Auto align" cleanup pass on the current tab's elements. See
   // CommandPalette's Cleanup accordion + lib/auto-align.ts.
-  onAutoAlign?: () => void;
-  canAutoAlign?: boolean;
   // Live session tools (spec/39): the active tab's timer / vote state +
   // the facilitator controls (Tab Settings) and the per-element dot
   // cast/retract used by the canvas vote interaction. State is read off
@@ -404,12 +366,6 @@ export type CanvasProps = {
   };
   // Recent-images list for the Current Tab "Images" accordion (spec/19).
   // Forwarded through to TabSection unchanged.
-  recentImages?: ImageSummary[];
-  imageOwnerId?: string;
-  imageDiagramId?: string;
-  imageShareCode?: string | null;
-  onAddImageFromGallery?: (image: ImageSummary) => void;
-  onSetPatternColor: (color: string) => void;
   onToggleAspectLock: () => void;
   // Quick add + connect (spec/09). The radial ring on each element edge
   // spawns a connected element (Duplicate / Square / Circle), starts an

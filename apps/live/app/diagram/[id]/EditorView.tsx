@@ -75,7 +75,6 @@ export function EditorView() {
     addArrow,
     addComment,
     addImage,
-    addImageFromGallery,
     addIcon,
     addTechIcon,
     dropIconOnElement,
@@ -194,7 +193,6 @@ export function EditorView() {
     identityOnlyScreenOpen,
     imageContext,
     imagePickerOpenFor,
-    importError,
     importIntoActiveTab,
     importOpen,
     setImportOpen,
@@ -261,8 +259,6 @@ export function EditorView() {
     setTableHeaderRowSelected,
     setTableHeaderColumnSelected,
     setTableZebraSelected,
-    setTableHeaderFillSelected,
-    setTableHeaderTextColorSelected,
     setArrowStrokeStyleSelected,
     setArrowStyleSelected,
     setArrowThicknessSelected,
@@ -299,7 +295,6 @@ export function EditorView() {
     setSearchOpen,
     setSelectedId,
     setSettingsOpen,
-    setShapeKindSelected,
     setShareDialogOpen,
     canvasThemeTab,
     setCanvasThemeTab,
@@ -563,7 +558,6 @@ export function EditorView() {
         tabBackgroundOpacity={activeTab.backgroundOpacity ?? 1}
         tabPatternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
         tabFont={activeTab.font}
-        tabDefaultTextSize={activeTab.defaultTextSize}
         mainRef={canvasMainRef}
         isPinchingRef={isPinchingRef}
         viewportZoom={viewportZoom}
@@ -756,36 +750,10 @@ export function EditorView() {
         onBeginGroup={beginGroup}
         onCancelGroup={exitGroupMode}
         onUngroup={ungroupSelected}
-        onBringToFront={bringSelectedToFront}
-        onSendToBack={sendSelectedToBack}
         onSetTextSize={setTextSizeSelected}
         onSetTextAlign={setTextAlignSelected}
-        onToggleTextBold={() => toggleTextStyleSelected('textBold')}
-        onToggleTextItalic={() => toggleTextStyleSelected('textItalic')}
-        onToggleTextUnderline={() => toggleTextStyleSelected('textUnderline')}
-        onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
         onSetFont={setFontSelected}
-        onSetFillColor={setFillColorSelected}
-        onSetStrokeColor={setStrokeColorSelected}
-        onSetTextColor={setTextColorSelected}
-        onSetOpacity={setOpacitySelected}
-        onResetColors={resetColorsSelected}
         onSetPadding={setPaddingSelected}
-        onSetArrowEnds={setArrowEndsSelected}
-        onSetArrowThickness={setArrowThicknessSelected}
-        onSetArrowheadSize={setArrowheadSizeSelected}
-        onSetArrowheadShape={setArrowheadShapeSelected}
-        onToggleTableHeaderRow={setTableHeaderRowSelected}
-        onToggleTableHeaderColumn={setTableHeaderColumnSelected}
-        onToggleTableZebra={setTableZebraSelected}
-        onSetTableHeaderFill={setTableHeaderFillSelected}
-        onSetTableHeaderTextColor={setTableHeaderTextColorSelected}
-        onSetArrowStyle={setArrowStyleSelected}
-        onSetArrowStrokeStyle={setArrowStrokeStyleSelected}
-        onSetShapeKind={setShapeKindSelected}
-        onSetBorderStroke={setBorderStrokeSelected}
-        onSetBorderStyle={setBorderStyleSelected}
-        onSetBorderRadius={setBorderRadiusSelected}
         onFollowLink={followLink}
         onOpenComments={openComments}
         onOpenNote={openNote}
@@ -823,13 +791,6 @@ export function EditorView() {
         onSkipTemplatePicker={skipTemplatePicker}
         onOpenTemplatePicker={openTemplatePicker}
         tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
-        onSetTheme={setTheme}
-        onSetTabFont={setTabFont}
-        onSetTabDefaultTextSize={setTabDefaultTextSize}
-        onResetElementsToTheme={resetElementsToTheme}
-        importError={importError}
-        onAutoAlign={hydrated && !anyWelcomeOpen && !isReadOnly ? autoAlignTab : undefined}
-        canAutoAlign={activeTab.elements.length > 0 && !activeTabLocked}
         tabTimer={activeTab.timer}
         tabVote={activeTab.vote}
         onStartTimer={startTimer}
@@ -843,13 +804,6 @@ export function EditorView() {
         onClearVote={clearVote}
         onCastVote={castVote}
         onRetractVote={retractVote}
-        imageDiagramId={!isReadOnly && diagramId ? diagramId : undefined}
-        imageShareCode={sessionShareCode}
-        onAddImageFromGallery={!isReadOnly && diagramId ? addImageFromGallery : undefined}
-        onSetBackgroundPattern={setBackgroundPattern}
-        onSetBackgroundColor={setBackgroundColor}
-        onSetBackgroundOpacity={setBackgroundOpacity}
-        onSetPatternColor={setPatternColor}
         onToggleAspectLock={toggleAspectLockSelected}
         onDropPalette={dropPaletteItem}
         onSpawnConnect={spawnConnectSelected}
