@@ -284,11 +284,12 @@ function ArrowViewImpl({
           onBeginEdit(arrow.id);
         }}
         onClick={(e) => {
-          // Single click on an already-selected curved arrow adds a control
-          // point at the click (e.detail === 1 skips the clicks of a
-          // double-click-to-edit). The first selecting click is a no-op here
+          // Single click on an already-selected arrow adds a control point at
+          // the click, bending the line there (a straight / angled arrow is
+          // turned into a smooth curve). e.detail === 1 skips the clicks of a
+          // double-click-to-edit; the first selecting click is a no-op here
           // because this render's isSelected is still false at that point.
-          if (e.detail !== 1 || style !== 'curved' || !isSelected || isLocked) return;
+          if (e.detail !== 1 || !isSelected || isLocked) return;
           if (!onAddCurvePoint) return;
           const svg = (e.currentTarget as SVGPathElement).ownerSVGElement;
           const ctm = svg?.getScreenCTM();

@@ -637,28 +637,34 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     });
   };
 
-  // Insert a new control point at a clicked canvas position, so clicking the
-  // curve adds a bend. Seeds curvePoints from the current single bow (so the
-  // existing shape is kept) and inserts the new point into the nearest
-  // segment of the from -> points -> to polyline.
+  // Insert a control point at a clicked canvas position, so clicking an
+  // arrow's line adds a bend. Works on ANY arrow style: a straight or angled
+  // arrow is switched to a smooth curve at the same time (the user clicked
+  // the line to bend it). A curve with an existing bow keeps its shape (the
+  // bow is seeded as a point first). The new point lands in the nearest
+  // segment of the from -> points -> to polyline so it inserts where clicked.
   const addCurvePoint = (arrowId: string, canvasX: number, canvasY: number) => {
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
-    if (arrowStyleOf(arrow) !== 'curved' || arrow.locked === true || d.isReadOnly) return;
+    if (arrow.locked === true || d.isReadOnly) return;
     const els = d.activeTab.elements;
     const from = endpointPosition(arrow.from, els);
     const to = endpointPosition(arrow.to, els);
     const mx = (from.x + to.x) / 2;
     const my = (from.y + to.y) / 2;
-    // Seed from the existing curve so adding a bend doesn't reset the shape.
+    const wasCurved = arrowStyleOf(arrow) === 'curved';
+    // Seed: keep an existing multi-bend; preserve a single bow by seeding it
+    // as a point; start empty for a straight / angled arrow being curved.
     const seeded =
       arrow.curvePoints && arrow.curvePoints.length > 0
         ? arrow.curvePoints.slice()
-        : (() => {
-            const c = curveControlPoint(from, to, arrow.curveOffset);
-            return [{ dx: c.x - mx, dy: c.y - my }];
-          })();
+        : wasCurved
+          ? (() => {
+              const c = curveControlPoint(from, to, arrow.curveOffset);
+              return [{ dx: c.x - mx, dy: c.y - my }];
+            })()
+          : [];
     const anchors = [from, ...curveAnchorPoints(from, to, seeded), to];
     // Nearest segment of the anchor polyline → insert index in `seeded`.
     let best = 0;
@@ -674,7 +680,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     next.splice(best, 0, { dx: canvasX - mx, dy: canvasY - my });
     d.commit((all) =>
       all.map((el) =>
-        el.id === arrowId && el.type === 'arrow' ? { ...el, curvePoints: next } : el,
+        el.id === arrowId && el.type === 'arrow'
+          ? { ...el, arrowStyle: 'curved', curvePoints: next }
+          : el,
       ),
     );
     d.setSelectedId(arrowId);
