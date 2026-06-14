@@ -1144,7 +1144,9 @@ export function CommandPalette({
                 {/* Searchable catalogue of single-colour glyphs. Clicking one
             drops it at the viewport centre as an 'icon' shape tinted
             by the element's stroke colour. See spec/09 "Icons". */}
-                <div className="relative mb-2 flex items-center gap-1.5">
+                {/* Filter dropdown sits LEFT of the search (flex-row-reverse) so
+                    it doesn't stack under the category picker at the top-right. */}
+                <div className="relative mb-2 flex flex-row-reverse items-center gap-1.5">
                   <div className="relative flex-1">
                     <input
                       type="text"
@@ -1185,7 +1187,7 @@ export function CommandPalette({
                       ariaLabel="Filter icons by category"
                       value={iconCategory}
                       onChange={setIconCategory}
-                      align="right"
+                      align="left"
                       accent={iconCategory !== 'all'}
                       options={iconFilters}
                       triggerLeading={
@@ -1282,7 +1284,9 @@ export function CommandPalette({
                     at the viewport centre as a standalone 'icon' shape with
                     fixed brand colours; dragging drops it at the pointer. See
                     spec/41. */}
-                <div className="relative mb-2 flex items-center gap-1.5">
+                {/* Filter dropdown sits LEFT of the search (flex-row-reverse) so
+                    it doesn't stack under the category picker at the top-right. */}
+                <div className="relative mb-2 flex flex-row-reverse items-center gap-1.5">
                   <div className="relative flex-1">
                     <input
                       type="text"
@@ -1326,7 +1330,7 @@ export function CommandPalette({
                       ariaLabel="Filter technology icons by provider"
                       value={techProvider}
                       onChange={(id) => setTechProvider(id as TechProvider | 'all')}
-                      align="right"
+                      align="left"
                       accent={techProvider !== 'all'}
                       options={techFilters}
                       triggerLeading={

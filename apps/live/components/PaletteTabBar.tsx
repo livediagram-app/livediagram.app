@@ -75,7 +75,10 @@ export function PaletteTabBar({
   }, []);
 
   return (
-    <div>
+    // -mt-1 cancels the MovablePanel body's pt-1 so the tab band sits flush
+    // under the panel title bar (the header band is meant to be flush to the
+    // top — the shared panel padding otherwise leaves a dead gap above it).
+    <div className="-mt-1">
       {/* Header band: the canvas-tool picker (left) and the category
           picker (right) on one row, flush to the top and sides, set off
           from the panel below by a bottom border. */}
