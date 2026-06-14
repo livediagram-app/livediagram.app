@@ -1205,6 +1205,9 @@ export function EditorView() {
           onSetArrowEnds={setArrowEndsSelected}
           onSetArrowheadSize={setArrowheadSizeSelected}
           onSetArrowheadShape={setArrowheadShapeSelected}
+          onToggleTableHeaderRow={setTableHeaderRowSelected}
+          onToggleTableHeaderColumn={setTableHeaderColumnSelected}
+          onToggleTableZebra={setTableZebraSelected}
           onOpenNote={openNote}
           onOpenComments={openComments}
           onChangeTheme={() => {

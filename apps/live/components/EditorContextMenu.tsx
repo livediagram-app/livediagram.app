@@ -131,6 +131,11 @@ type EditorContextMenuProps = {
   onSetArrowEnds: (v: ArrowEnds) => void;
   onSetArrowheadSize: (v: ArrowheadSize) => void;
   onSetArrowheadShape: (v: ArrowheadShape) => void;
+  // Table structure toggles (header row / column, zebra), mirroring the
+  // panel's Table accordion.
+  onToggleTableHeaderRow: () => void;
+  onToggleTableHeaderColumn: () => void;
+  onToggleTableZebra: () => void;
   // Re-place a shape's inline icon (reuses the drop handler: same iconId,
   // new side).
   onSetIconPosition: (
@@ -427,10 +432,16 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </MenuAccordionSection>
           </>
         ) : null}
-        {/* Text — whole-element label formatting for a labelled arrow (boxed
-            elements format via the inline rich-text toolbar instead). */}
-        {target.type === 'arrow' && target.label ? (
+        {/* Text — whole-element label formatting for a labelled arrow, or
+            every cell of a table (other boxed elements format via the inline
+            rich-text toolbar instead). */}
+        {(target.type === 'arrow' && target.label) || target.type === 'table' ? (
           <MenuAccordionSection title="Text" icon={<TextGlyph />} {...sectionProps('text')}>
+            {target.type === 'table' ? (
+              <p className="px-3 pt-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                Applies to every cell.
+              </p>
+            ) : null}
             <div className="flex gap-1 px-2 py-1.5">
               <TextToggle active={!!target.textBold} label="Bold" onClick={props.onToggleTextBold}>
                 <BoldIcon />
@@ -631,6 +642,32 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               </div>
             </MenuAccordionSection>
           </>
+        ) : null}
+        {/* Table — header row / column + zebra, mirroring the panel's Table
+            accordion. */}
+        {target.type === 'table' ? (
+          <MenuAccordionSection title="Table" icon={<TableGlyph />} {...sectionProps('table')}>
+            <MenuToggleRow
+              label="Header row"
+              description="Style the first row as a header."
+              checked={target.headerRow ?? false}
+              onToggle={props.onToggleTableHeaderRow}
+            />
+            <ContextMenuDivider />
+            <MenuToggleRow
+              label="Header column"
+              description="Style the first column as a header."
+              checked={target.headerColumn ?? false}
+              onToggle={props.onToggleTableHeaderColumn}
+            />
+            <ContextMenuDivider />
+            <MenuToggleRow
+              label="Zebra striping"
+              description="Tint alternate body rows."
+              checked={target.zebra ?? false}
+              onToggle={props.onToggleTableZebra}
+            />
+          </MenuAccordionSection>
         ) : null}
         {/* Collaborate — link / note / comments. Boxed-only: arrows can't be
             linked, noted, or commented on. */}
@@ -1174,6 +1211,25 @@ function PointerGlyph() {
   );
 }
 
+// Grid glyph — the "Table" section.
+function TableGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
+      <path d="M2.5 6.5h11M6.5 6.5V13M2.5 9.8h11" />
+    </svg>
+  );
+}
+
 // Picture glyph — the "Image" section.
 function ImageGlyph() {
   return (
@@ -1257,6 +1313,38 @@ function MenuTile({
         {icon}
       </span>
       <span>{label}</span>
+    </button>
+  );
+}
+
+// A full-width row whose whole surface toggles an iOS-style switch (the
+// switch is presentational so we don't nest a button in a button). Shared by
+// the Layer aspect-lock row + the Table header/zebra toggles.
+function MenuToggleRow({
+  label,
+  description,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={checked}
+      className="flex w-full items-center justify-between gap-3 px-3 py-1.5 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
+    >
+      <span className="flex flex-col">
+        <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{label}</span>
+        {description ? (
+          <span className="text-[10px] text-slate-500 dark:text-slate-400">{description}</span>
+        ) : null}
+      </span>
+      <ToggleSwitch presentational checked={checked} label={label} />
     </button>
   );
 }
