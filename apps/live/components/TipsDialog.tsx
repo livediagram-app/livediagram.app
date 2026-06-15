@@ -73,10 +73,20 @@ const TIPS: Tip[] = [
 
 export function TipsDialog({ onClose }: { onClose: () => void }) {
   const [index, setIndex] = useState(0);
+  // Which way the last navigation went (1 = forward, -1 = back), so the
+  // entering card slides in from the matching side.
+  const [dir, setDir] = useState(1);
   const last = TIPS.length - 1;
   const tip = TIPS[index]!;
 
-  const go = (next: number) => setIndex((i) => Math.max(0, Math.min(last, next ?? i)));
+  const step = (delta: 1 | -1) => {
+    setDir(delta);
+    setIndex((i) => Math.max(0, Math.min(last, i + delta)));
+  };
+  const goTo = (target: number) => {
+    setDir(target >= index ? 1 : -1);
+    setIndex(Math.max(0, Math.min(last, target)));
+  };
 
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef);
@@ -85,11 +95,14 @@ export function TipsDialog({ onClose }: { onClose: () => void }) {
   // Left / Right arrow keys step between cards.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') setIndex((i) => Math.min(last, i + 1));
-      else if (e.key === 'ArrowLeft') setIndex((i) => Math.max(0, i - 1));
+      if (e.key === 'ArrowRight') step(1);
+      else if (e.key === 'ArrowLeft') step(-1);
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
+    // step is stable enough (only reads setState); re-binding per render is fine
+    // but unnecessary, so bind once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [last]);
 
   // Horizontal swipe (touch / pointer drag past a slop threshold).
@@ -101,8 +114,8 @@ export function TipsDialog({ onClose }: { onClose: () => void }) {
     if (swipeStart.current === null) return;
     const dx = e.clientX - swipeStart.current;
     swipeStart.current = null;
-    if (dx <= -40) setIndex((i) => Math.min(last, i + 1));
-    else if (dx >= 40) setIndex((i) => Math.max(0, i - 1));
+    if (dx <= -40) step(1);
+    else if (dx >= 40) step(-1);
   };
 
   return (
@@ -145,7 +158,7 @@ export function TipsDialog({ onClose }: { onClose: () => void }) {
         >
           <div
             key={index}
-            className="flex animate-fade-in flex-col items-center"
+            className={`flex flex-col items-center ${dir > 0 ? 'animate-tip-next' : 'animate-tip-prev'}`}
             aria-live="polite"
           >
             <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-brand-50 to-brand-100 text-brand-600 ring-1 ring-brand-200/70 dark:from-brand-500/15 dark:to-brand-500/5 dark:text-brand-300 dark:ring-brand-500/25">
@@ -173,7 +186,7 @@ export function TipsDialog({ onClose }: { onClose: () => void }) {
               type="button"
               aria-label={`Go to tip ${i + 1}: ${t.title}`}
               aria-current={i === index}
-              onClick={() => go(i)}
+              onClick={() => goTo(i)}
               className={`h-1.5 rounded-full transition-all ${
                 i === index
                   ? 'w-5 bg-brand-500 dark:bg-brand-400'
@@ -186,7 +199,7 @@ export function TipsDialog({ onClose }: { onClose: () => void }) {
         <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-3 dark:border-slate-800">
           <button
             type="button"
-            onClick={() => setIndex((i) => Math.max(0, i - 1))}
+            onClick={() => step(-1)}
             disabled={index === 0}
             className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0 dark:text-slate-300 dark:hover:bg-slate-800"
           >
@@ -207,7 +220,7 @@ export function TipsDialog({ onClose }: { onClose: () => void }) {
           ) : (
             <button
               type="button"
-              onClick={() => setIndex((i) => Math.min(last, i + 1))}
+              onClick={() => step(1)}
               className="flex items-center gap-1 rounded-md bg-brand-500 px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-600"
             >
               Next

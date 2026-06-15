@@ -118,6 +118,9 @@
   --animate-slide-row-in: slide-row-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-row-out: slide-row-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
   --animate-slide-in-left: slide-in-left 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Tips carousel (spec/43): gentle directional slide as cards advance. */
+  --animate-tip-next: tip-next 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-tip-prev: tip-prev 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes pop-in {
@@ -159,6 +162,28 @@
   from {
     transform: translateX(-100%);
     opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes tip-next {
+  from {
+    transform: translateX(28px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes tip-prev {
+  from {
+    transform: translateX(-28px);
+    opacity: 0;
   }
   to {
     transform: translateX(0);
