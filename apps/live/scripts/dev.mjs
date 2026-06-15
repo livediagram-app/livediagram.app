@@ -18,10 +18,12 @@
 
 import { execSync, spawn } from 'node:child_process';
 import { rmSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 const appRoot = resolve(__dirname, '..');
 const PORT = 3002;
 
@@ -86,10 +88,19 @@ clearCache();
 // class of failure. Opt back into webpack only when something
 // Turbopack genuinely doesn't support.
 const useWebpack = process.argv.includes('--webpack');
-const nextArgs = ['next', 'dev', '-p', String(PORT)];
-if (!useWebpack) nextArgs.splice(2, 0, '--turbopack');
+// `dev` must stay first — it's the next subcommand; a flag before it is
+// parsed as the project directory.
+const nextArgs = ['dev', '-p', String(PORT)];
+if (!useWebpack) nextArgs.splice(1, 0, '--turbopack');
 
-const child = spawn('pnpm', nextArgs, {
+// Spawn the locally-installed next CLI with the current Node binary
+// rather than shelling out to `pnpm next`. `spawn('pnpm', ...)` ENOENTs
+// on Windows (libuv won't resolve the `pnpm.cmd` shim for a bare command
+// without a shell, and corepack users have no `pnpm` on PATH at all), and
+// going straight through node is package-manager- and PATH-agnostic, so
+// the dev server starts identically on every OS.
+const nextBin = require.resolve('next/dist/bin/next');
+const child = spawn(process.execPath, [nextBin, ...nextArgs], {
   stdio: 'inherit',
   cwd: appRoot,
   env: { ...process.env, NEXT_DISTDIR: DEV_DIST_DIR },

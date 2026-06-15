@@ -608,7 +608,9 @@ The **Fit-to-screen** control (in the bottom-right `ZoomControls`) centres the v
 
 On **mobile**, adding a new element smoothly brings the **whole** element into view (`scrollIntoView` in `useEditorViewport.ts`, gated to the freshly added + selected element so moves / remote changes don't trigger it). If it already fits the visible band — the canvas minus margins for the selection toolbar above and the tab bar / dock below — it just pans the minimum to pull any off-screen edge in; if it's too big to fit at the current zoom (e.g. a wide table or large image at the 60% mobile zoom), it zooms **out** just enough that the entire element shows (floored at `MIN_FIT_ZOOM`) and centres it. Desktop never auto-scrolls on add.
 
-On desktop the viewport also zooms on **Ctrl- or Cmd-scroll** (mouse wheel) and on a **trackpad pinch**, focused on the cursor (`useCanvasPinchZoom`). The handler runs in the capture phase and only acts while the pointer is over the canvas, so it pre-empts the browser's own page zoom there while leaving Ctrl/Cmd-scroll elsewhere (address bar, DevTools) untouched. A plain wheel with no modifier is left to the browser.
+On desktop the viewport also zooms on **Ctrl- or Cmd-scroll** (mouse wheel) and on a **trackpad pinch**, focused on the cursor (`useCanvasPinchZoom`). The handler runs in the capture phase and only acts while the pointer is over the canvas, so it pre-empts the browser's own page zoom there while leaving Ctrl/Cmd-scroll elsewhere (address bar, DevTools) untouched.
+
+A **plain wheel with no modifier pans** the canvas (same `useCanvasPinchZoom` handler): a laptop **two-finger trackpad drag** arrives as modifier-free wheel events, so it scrolls the canvas in both axes (content follows the fingers), matching Figma / Excalidraw. Offset commits are coalesced to one per animation frame and accumulate across the events within a frame (mirroring the pointer-pan flush in `useCanvasPanAndMarquee`), so a fast drag stays smooth and loses no delta. It only acts while the pointer is over the canvas, so a wheel elsewhere keeps normal browser scrolling.
 
 ### Touch (iOS / iPad)
 
