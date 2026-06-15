@@ -23,6 +23,7 @@ import { useCanvasMobileDock } from '@/hooks/useCanvasMobileDock';
 import { drawIntentCursor } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { useCanvasPanAndMarquee } from '@/hooks/useCanvasPanAndMarquee';
+import { useLongPress } from '@/hooks/useLongPress';
 import { getTheme } from '@/lib/themes';
 import { FloatingToolbar } from './FloatingToolbar';
 import { MultiSelectionToolbar } from './MultiSelectionToolbar';
@@ -95,6 +96,12 @@ export function Canvas(props: CanvasProps) {
     tabLoadState,
     onRetryTabLoad,
   } = props;
+
+  // Touch has no right-click, so a press-and-hold on the empty canvas opens
+  // the tab / canvas context menu (the same one desktop reaches via
+  // right-click). Element presses stopPropagation in their own pointerdown,
+  // so this only arms for the bare canvas. Movement (pan / marquee) cancels it.
+  const canvasLongPress = useLongPress((x, y) => onCanvasContextMenu?.(x, y));
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -696,6 +703,10 @@ export function Canvas(props: CanvasProps) {
         onCanvasContextMenu?.(e.clientX, e.clientY);
       }}
       onPointerDown={(e) => {
+        // Touch press-and-hold on the empty canvas opens the context menu
+        // (touch has no right-click). Armed before the marquee / pan logic;
+        // a finger that moves cancels it, so it never fights a drag.
+        canvasLongPress.onPointerDown(e);
         // Primary button only. A right- (or middle-) click must fall
         // through to onContextMenu untouched: it opens the menu, and if
         // we also armed a marquee here the matching pointerup would fire
