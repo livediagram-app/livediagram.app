@@ -7,7 +7,6 @@ import {
   folderNamesInDiagram,
   groupTabsIntoRuns,
   tabFolderName,
-  type ShapeKind,
   type Tab,
   type TabTimer,
   type TabVote,
@@ -42,15 +41,7 @@ import {
   MenuToolbar,
   MenuToolButton,
 } from './PortalMenu';
-import {
-  AnnotationMenuIcon,
-  AutoAlignIcon,
-  CanvasMenuIcon,
-  PaletteMenuIcon,
-  PencilMenuIcon,
-  SquareMenuIcon,
-  StickyMenuIcon,
-} from './context-menu-icons';
+import { AutoAlignIcon, CanvasMenuIcon, PaletteMenuIcon } from './context-menu-icons';
 import { SessionToolsSection } from './SessionToolsSection';
 import { TabFolderChip } from './TabFolderChip';
 import { TabPresenceStack } from './TabPresenceStack';
@@ -67,18 +58,13 @@ function tabAccent(tab: Tab): string {
   return getTheme(tab.theme).elementStroke ?? DEFAULT_TAB_ACCENT;
 }
 
-// Canvas-scoped actions folded into the tab menu when it opens from a canvas
-// right-click (or the footer canvas-menu button): change theme / background,
-// tidy the layout, or drop a fresh element. Absent when the menu opens from a
-// tab pill, so those tabs keep the pure tab-management surface.
+// Canvas-scoped actions folded into the unified tab / canvas menu: change
+// theme / background, and tidy the layout. (Add-element actions used to live
+// here too but were removed — the palette + quick-connect cover adding.)
 export type CanvasMenuActions = {
   onChangeTheme: () => void;
   onChangeCanvas: () => void;
   onAutoAlign: () => void;
-  onAddShape: (kind: ShapeKind) => void;
-  onAddSticky: () => void;
-  onDrawPencil: () => void;
-  onAddAnnotation: () => void;
 };
 
 // Where the canvas right-click / footer-button menu should open. `openUp`
@@ -957,85 +943,43 @@ function PortalMenu({
                 />
               </MenuTileGrid>
             </MenuAccordionSection>
-            {/* Canvas + Add sections. Rendered whenever canvas actions are
-                available, which is now both entry points (canvas right-click
-                AND the active tab's ellipsis menu) so the two are one unified
-                menu rather than separate tab-only / canvas-only menus. */}
+            {/* Canvas section (theme / background / auto-align). Rendered
+                whenever canvas actions are available, which is now both entry
+                points (canvas right-click AND the active tab's ellipsis menu)
+                so the two are one unified menu. */}
             {canvas ? (
-              <>
-                <MenuAccordionSection
-                  title="Canvas"
-                  icon={<CanvasMenuIcon />}
-                  {...sectionProps('canvas')}
-                >
-                  <MenuTileGrid cols={3}>
-                    <MenuTile
-                      icon={<PaletteMenuIcon />}
-                      label="Change Theme"
-                      onClick={() => {
-                        canvas.onChangeTheme();
-                        onClose();
-                      }}
-                    />
-                    <MenuTile
-                      icon={<CanvasMenuIcon />}
-                      label="Change Canvas"
-                      onClick={() => {
-                        canvas.onChangeCanvas();
-                        onClose();
-                      }}
-                    />
-                    <MenuTile
-                      icon={<AutoAlignIcon />}
-                      label="Auto-align"
-                      onClick={() => {
-                        canvas.onAutoAlign();
-                        onClose();
-                      }}
-                    />
-                  </MenuTileGrid>
-                </MenuAccordionSection>
-                <MenuAccordionSection
-                  title="Add"
-                  icon={<SquareMenuIcon />}
-                  {...sectionProps('add')}
-                >
-                  <MenuTileGrid cols={2}>
-                    <MenuTile
-                      icon={<SquareMenuIcon />}
-                      label="Square"
-                      onClick={() => {
-                        canvas.onAddShape('square');
-                        onClose();
-                      }}
-                    />
-                    <MenuTile
-                      icon={<StickyMenuIcon />}
-                      label="Sticky"
-                      onClick={() => {
-                        canvas.onAddSticky();
-                        onClose();
-                      }}
-                    />
-                    <MenuTile
-                      icon={<PencilMenuIcon />}
-                      label="Pencil"
-                      onClick={() => {
-                        canvas.onDrawPencil();
-                        onClose();
-                      }}
-                    />
-                    <MenuTile
-                      icon={<AnnotationMenuIcon />}
-                      label="Annotation"
-                      onClick={() => {
-                        canvas.onAddAnnotation();
-                        onClose();
-                      }}
-                    />
-                  </MenuTileGrid>
-                </MenuAccordionSection>
-              </>
+              <MenuAccordionSection
+                title="Canvas"
+                icon={<CanvasMenuIcon />}
+                {...sectionProps('canvas')}
+              >
+                <MenuTileGrid cols={3}>
+                  <MenuTile
+                    icon={<PaletteMenuIcon />}
+                    label="Change Theme"
+                    onClick={() => {
+                      canvas.onChangeTheme();
+                      onClose();
+                    }}
+                  />
+                  <MenuTile
+                    icon={<CanvasMenuIcon />}
+                    label="Change Canvas"
+                    onClick={() => {
+                      canvas.onChangeCanvas();
+                      onClose();
+                    }}
+                  />
+                  <MenuTile
+                    icon={<AutoAlignIcon />}
+                    label="Auto-align"
+                    onClick={() => {
+                      canvas.onAutoAlign();
+                      onClose();
+                    }}
+                  />
+                </MenuTileGrid>
+              </MenuAccordionSection>
             ) : null}
             <MenuAccordionSection
               title="Session"

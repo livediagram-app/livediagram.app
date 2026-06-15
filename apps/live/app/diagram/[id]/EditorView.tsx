@@ -969,10 +969,6 @@ export function EditorView() {
               track('UI', 'Opened', 'CanvasStyle');
             },
             onAutoAlign: autoAlignTab,
-            onAddShape: addShape,
-            onAddSticky: addSticky,
-            onDrawPencil: beginFreehand,
-            onAddAnnotation: addAnnotation,
           }}
         />
       )}
