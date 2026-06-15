@@ -261,9 +261,15 @@ The welcome screen is a **two-step wizard** rather than one long page:
 The wizard renders **immediately** with no identity spinner: step 1 is static
 template data, so there's nothing to wait for. Identity resolves in the
 background and the picker is keyed on the resolved id so the participant name
-isn't the placeholder. Only the welcome flow is a wizard; the in-editor "Browse
-templates" (templates mode) and the visitor identity prompt keep their
-single-page layout.
+isn't the placeholder. (The template-order shuffle moved to a mount effect, off
+the lazy `useState` initializer, so the statically-prerendered HTML matches
+hydration.)
+
+The in-editor **"Browse templates"** flow (templates mode, opened on an empty
+tab) uses the **same two-step wizard**, with mode-appropriate controls: its
+far-left escape is **Cancel** (not Open Existing), it has no Skip, and its
+primary action is **Apply** (not Create Diagram). Only the visitor identity
+prompt stays a single-section, non-wizard surface.
 
 A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
 the card: thick multi-colour curved lines that slowly flow along their paths via
