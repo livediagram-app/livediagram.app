@@ -234,3 +234,164 @@ export function AutoAlignIcon() {
     </svg>
   );
 }
+
+// A small arrow pointing in `dir` (one up-arrow path, rotated). Used by the
+// inline-icon placement picker's cross of direction cells.
+export function DirArrow({ dir }: { dir: 'up' | 'down' | 'left' | 'right' }) {
+  const rot = { up: 0, right: 90, down: 180, left: 270 }[dir];
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      style={{ transform: `rotate(${rot}deg)` }}
+    >
+      <path d="M6 2.5V9.5M3 5.5 6 2.5 9 5.5" />
+    </svg>
+  );
+}
+
+// Orientation preview for the Rotation category: a small square with a
+// marker on its top edge, rotated by `deg` about its centre. The tilt shows
+// at a glance which way the element will end up facing.
+export function RotationGlyph({ deg }: { deg: number }) {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <g transform={`rotate(${deg} 8 8)`}>
+        <rect x="3.5" y="3.5" width="9" height="9" rx="1.5" />
+        {/* Filled tab centred on the top edge marks "up". */}
+        <circle cx="8" cy="3.5" r="1.3" fill="currentColor" stroke="none" />
+      </g>
+    </svg>
+  );
+}
+
+// Diagonal stroke — the "Line" section glyph.
+export function LineGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M3 13L13 3" />
+    </svg>
+  );
+}
+
+// Arrow → glyph — the "Pointer" section.
+export function PointerGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2.5 8h10M9 4.5 12.5 8 9 11.5" />
+    </svg>
+  );
+}
+
+// Grid glyph — the "Table" section.
+export function TableGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
+      <path d="M2.5 6.5h11M6.5 6.5V13M2.5 9.8h11" />
+    </svg>
+  );
+}
+
+// Picture glyph — the "Image" section.
+export function ImageGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
+      <circle cx="6" cy="6.5" r="1" />
+      <path d="M3 12l3-3 2.5 2.5L11 8l2 2" />
+    </svg>
+  );
+}
+
+// Rounded-square outline — the "Border" section glyph.
+export function BorderGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden
+    >
+      <rect x="2.5" y="2.5" width="11" height="11" rx="2.5" />
+    </svg>
+  );
+}
+
+// Stacked diamonds — the "Layer" section glyph. 12x12 stroke style of the
+// shared context-menu icons.
+export function LayersGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2 14 5.5 8 9 2 5.5z" />
+      <path d="m3.5 8 4.5 2.6L12.5 8M3.5 11l4.5 2.6L12.5 11" />
+    </svg>
+  );
+}
