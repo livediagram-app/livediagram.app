@@ -21,7 +21,9 @@ import {
 // Default size per shape kind. Uniform 120 for square / circle / diamond,
 // natural aspect ratios for the flowchart-vocabulary shapes (cylinder
 // taller than wide, parallelogram + hexagon + document wider than tall).
-const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: number }> = {
+// Exported so the editor can offer "reset to default aspect ratio" — the
+// width:height proportion here is each shape's canonical look.
+export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: number }> = {
   square: { width: 120, height: 120 },
   circle: { width: 120, height: 120 },
   diamond: { width: 120, height: 120 },

@@ -37,6 +37,19 @@ export function ThemeSwatch({
             className={`${stripeH} flex-1 rounded-[1px]`}
           />
         ))
+      ) : theme.shapeColors ? (
+        // Per-shape theme (UML): stripe its shape-kind strokes so the card
+        // previews the colour coding rather than one neutral dot. Cap at
+        // six so the thumbnail stays legible.
+        Object.values(theme.shapeColors)
+          .slice(0, 6)
+          .map((entry, i) => (
+            <span
+              key={i}
+              style={{ backgroundColor: entry.stroke ?? theme.elementStroke ?? '#334155' }}
+              className={`${stripeH} flex-1 rounded-[1px]`}
+            />
+          ))
       ) : (
         // Border / fill colours come from the theme's element-stroke
         // (or pattern colour when the theme is the brand default).

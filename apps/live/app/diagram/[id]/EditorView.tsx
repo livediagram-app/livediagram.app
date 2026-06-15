@@ -267,6 +267,7 @@ export function EditorView() {
     setArrowStyleSelected,
     setArrowThicknessSelected,
     setShapeKindSelected,
+    resetAspectRatioSelected,
     setRotationSelected,
     setBackgroundColor,
     setBackgroundOpacity,
@@ -1031,6 +1032,7 @@ export function EditorView() {
                   else addTechIcon(add.iconId);
                 }
           }
+          onCreateTab={isReadOnly ? undefined : addTab}
           onClose={() => setSearchOpen(false)}
         />
       ) : null}
@@ -1198,6 +1200,7 @@ export function EditorView() {
           onSetArrowheadSize={setArrowheadSizeSelected}
           onSetArrowheadShape={setArrowheadShapeSelected}
           onSetShapeKind={setShapeKindSelected}
+          onResetAspectRatio={resetAspectRatioSelected}
           onSetRotation={setRotationSelected}
           presetColors={themePresetColors(getTheme(activeTab.theme))}
           onToggleTableHeaderRow={setTableHeaderRowSelected}

@@ -27,9 +27,17 @@ The canvas-style controls, identical to the palette's **Canvas** accordion (and 
 
 The two-level **category browse** lifted from the New-diagram theme picker (`ThemeCategoryBrowser`, shared with [spec/14](14-new-diagram-route.md) so the two stay identical):
 
-- Overview shows a **Basic** quick-pick plus a card per [`THEME_CATEGORIES`](14-new-diagram-route.md) bucket (Cool / Warm / Dark / Multi-colour). Clicking a category drills into its themes with an "All themes" back affordance.
+- Overview shows a **Basic** quick-pick plus a card per [`THEME_CATEGORIES`](14-new-diagram-route.md) bucket (Cool / Warm / Dark / Multi-colour / Formal). Clicking a category drills into its themes with an "All themes" back affordance.
 - Clicking a theme applies it live; double-clicking applies and closes the dialog.
 - A **Reset elements to theme** action (same as the accordion) recolours every element on the tab to the active theme's defaults.
+
+### Formal themes / per-shape colours
+
+Most themes paint every shape the same fill / stroke / text. A **Formal** theme instead colours each shape **kind** by its conventional meaning, so a diagram reads as a standard notation at a glance.
+
+- **UML** is the first Formal theme. Each `ShapeKind` carries its own colours: a decision **diamond** is amber, a datastore **cylinder** is purple, a start/end **stadium** is green, a process **square** is blue, and so on. Kinds without a specific colour fall back to the theme's crisp dark-on-light box. The canvas is plain white so the colour coding (not the backdrop) carries the meaning.
+- Mechanically, a theme may define `shapeColors?: Partial<Record<ShapeKind, { fill?; stroke?; text? }>>`. These win over the single `elementFill` / `-Stroke` / `-Text` for that kind; unset fields fall through. Resolution flows through the same `elementThemeView` synthetic-theme path the multi-colour ([spec/29](29-multicolour-themes.md)) branch colours use, so every theme transform (apply to new shapes, recolour a scaffold, switch themes, reset to theme) is shape-aware through one code path. A theme can in principle combine `shapeColors` with a `palette`, but in practice per-shape (UML) and per-branch (rainbow) themes are distinct.
+- The theme card preview (`ThemeSwatch`) stripes a per-shape theme's kind colours, like it does a multi-colour palette, so the card reads as colourful rather than as one neutral dot.
 
 ## Telemetry
 

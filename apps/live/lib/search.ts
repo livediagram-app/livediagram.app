@@ -85,6 +85,13 @@ export type PaletteAdd =
   | { type: 'icon'; iconId: string }
   | { type: 'tech'; iconId: string };
 type PaletteItem = { kind: 'palette'; id: string; name: string; add: PaletteAdd };
+// A synthetic action result — performing it changes the diagram rather
+// than navigating somewhere. Modelled like a palette item (an intent the
+// panel hands back to the editor) but for whole-diagram actions. Today
+// the only action is creating a new tab, offered inside a diagram when
+// the query looks like "tab" / "new"; the union + `action` discriminator
+// leave room for more without reshaping callers.
+type ActionItem = { kind: 'action'; id: string; name: string; action: 'create-tab' };
 
 export type SearchResultItem =
   | DiagramItem
@@ -93,13 +100,20 @@ export type SearchResultItem =
   | TeamItem
   | TabItem
   | ElementItem
-  | PaletteItem;
+  | PaletteItem
+  | ActionItem;
 
 export type SearchGroup = {
-  key: 'diagrams' | 'shared' | 'folders' | 'teams' | 'tabs' | 'elements' | 'palette';
+  key: 'diagrams' | 'shared' | 'folders' | 'teams' | 'tabs' | 'elements' | 'palette' | 'actions';
   label: string;
   items: SearchResultItem[];
 };
+
+// Keywords that surface the "Create new tab" action. The user told us
+// they'd reach for "tab" or "new"; the rest are near-synonyms so the
+// action is forgiving to find without polluting unrelated queries (a
+// search for "database" matches none of these).
+const CREATE_TAB_KEYWORDS = 'new tab create add page sheet board';
 
 // A searchable palette entry the editor passes in (shapes / icons / tech
 // icons). `keywords` widens matching beyond the visible name (so "database"
@@ -286,6 +300,19 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     }
     if (elementMatches.length > 0) {
       groups.push({ key: 'elements', label: 'Elements', items: elementMatches });
+    }
+
+    // "Create new tab" action. Only inside a diagram (we're in the
+    // `tabs` branch) and only on a query that looks like it (so it never
+    // steals the empty-query "show everything" list). Last group + last
+    // match priority, so navigating to an existing tab by name still
+    // wins the default Enter; the user arrows down to create.
+    if (q && matches(q, CREATE_TAB_KEYWORDS)) {
+      groups.push({
+        key: 'actions',
+        label: 'Actions',
+        items: [{ kind: 'action', id: 'create-tab', name: 'Create new tab', action: 'create-tab' }],
+      });
     }
   }
 

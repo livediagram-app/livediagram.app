@@ -22,6 +22,7 @@ import {
   bringManyToFront,
   isBoxed,
   sendManyToBack,
+  SHAPE_DEFAULT_SIZE,
   supportsBorder,
   type ArrowEnds,
   type ArrowheadShape,
@@ -372,6 +373,29 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Changed', 'ShapeMorph');
   };
 
+  // Reset the selected shape to its kind's default aspect ratio. The
+  // proportion comes from SHAPE_DEFAULT_SIZE (the canonical look each
+  // shape ships with); we keep the element's current visual area so it
+  // doesn't jump in size, just snaps the width:height back to default,
+  // and recentre about the old centre so it doesn't drift.
+  const resetAspectRatioSelected = () => {
+    if (!selectedId) return;
+    commit((els) =>
+      els.map((el) => {
+        if (el.id !== selectedId || el.type !== 'shape') return el;
+        const def = SHAPE_DEFAULT_SIZE[el.shape];
+        const ratio = def.width / def.height;
+        const area = el.width * el.height;
+        const height = Math.round(Math.sqrt(area / ratio));
+        const width = Math.round(height * ratio);
+        const cx = el.x + el.width / 2;
+        const cy = el.y + el.height / 2;
+        return { ...el, width, height, x: cx - width / 2, y: cy - height / 2 };
+      }),
+    );
+    track('Element', 'Changed', 'AspectRatioReset');
+  };
+
   // Set the selected element's rotation to a fixed angle (degrees clockwise
   // about its centre), normalised to 0..359. Drives the context menu's
   // Rotation category — the freeform rotate handle still covers arbitrary
@@ -535,6 +559,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
     setShapeKindSelected,
+    resetAspectRatioSelected,
     setRotationSelected,
     setBorderStrokeSelected,
     setBorderStyleSelected,

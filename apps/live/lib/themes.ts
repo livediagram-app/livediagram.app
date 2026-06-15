@@ -3,9 +3,12 @@ import {
   DEFAULT_PATTERN_COLOR,
   deriveShapeColours,
   deriveTextColorForBg,
+  shade,
+  tint,
   type BackgroundPattern,
   type BoxedElement,
   type Element,
+  type ShapeKind,
 } from '@livediagram/diagram';
 import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
 
@@ -49,7 +52,10 @@ export type ThemeId =
   | 'pastel'
   | 'tropical'
   | 'autumn'
-  | 'jewel';
+  | 'jewel'
+  // Formal: standard notations. UML paints each shape kind its
+  // conventional colour (spec/42).
+  | 'uml';
 
 // One branch colour for a multi-colour theme: the fill / stroke / text
 // triple a single limb of the hierarchy is painted with. Unlike the
@@ -61,6 +67,12 @@ type ThemePaletteEntry = {
   stroke: string;
   text: string;
 };
+
+// A per-shape-kind colour override (see `ThemeDefinition.shapeColors`).
+// Each field is optional: an unset one falls through to the theme's
+// element-level colour, so a theme can recolour just the fill of one
+// kind without restating its stroke / text.
+export type ShapeColourOverride = { fill?: string; stroke?: string; text?: string };
 
 export type ThemeDefinition = {
   id: ThemeId;
@@ -82,6 +94,17 @@ export type ThemeDefinition = {
   // single-colour themes, which keep painting via elementFill/Stroke/Text.
   palette?: ThemePaletteEntry[];
   rootColor?: ThemePaletteEntry;
+  // Per-shape-kind colour overrides (spec/42 "Formal themes / UML"). When
+  // a theme assigns a kind its own colours — e.g. UML paints a decision
+  // diamond, a datastore cylinder and a process box differently — these
+  // win over the single elementFill / -Stroke / -Text for that kind.
+  // Kinds left unset fall through to the element-level fields. Only shape
+  // elements carry a `shape` kind, so this never touches text / arrows /
+  // tables. Resolved through `elementThemeView` (like the palette branch
+  // colours), so every theme transform stays shape-aware with no second
+  // code path. A theme can combine this with a palette, but in practice
+  // per-shape themes (UML) and per-branch themes (rainbow) are distinct.
+  shapeColors?: Partial<Record<ShapeKind, ShapeColourOverride>>;
   // True for themes that sit behind the picker's "Show more" toggle —
   // both in the welcome / template picker AND in the Current Tab theme
   // grid. The default twelve render in the first batch; extras unlock
@@ -454,6 +477,52 @@ export const THEMES: ThemeDefinition[] = [
     ],
     extra: true,
   },
+  {
+    // UML (spec/42): a formal-notation theme. Instead of one colour for
+    // every shape, each shape KIND gets its conventional fill / stroke /
+    // text so a diagram reads as UML at a glance — a decision diamond is
+    // amber, a datastore cylinder is purple, a terminator is green, and
+    // so on. The base element colours are the classic crisp dark-on-light
+    // box for any kind without an override; the canvas is plain white so
+    // the colour coding carries the meaning, not the backdrop.
+    id: 'uml',
+    label: 'UML',
+    backgroundColor: '#ffffff',
+    backgroundPattern: 'blank',
+    patternColor: '#e2e8f0',
+    elementFill: '#f8fafc',
+    elementStroke: '#334155',
+    elementText: '#0f172a',
+    shapeColors: {
+      // Class / object / process box — UML's primary blue.
+      square: { fill: '#dbeafe', stroke: '#2563eb', text: '#1e3a8a' },
+      // Decision / guard — amber, the universal "branch here".
+      diamond: { fill: '#fef3c7', stroke: '#d97706', text: '#92400e' },
+      // Start / end terminator — green "go".
+      stadium: { fill: '#dcfce7', stroke: '#16a34a', text: '#14532d' },
+      // Initial / final state node — rose.
+      circle: { fill: '#ffe4e6', stroke: '#e11d48', text: '#881337' },
+      // Datastore / database — purple.
+      cylinder: { fill: '#ede9fe', stroke: '#7c3aed', text: '#4c1d95' },
+      // Input / output data — teal.
+      parallelogram: { fill: '#ccfbf1', stroke: '#0d9488', text: '#134e4a' },
+      // Preparation — orange.
+      hexagon: { fill: '#ffedd5', stroke: '#ea580c', text: '#7c2d12' },
+      // Document / artefact — neutral slate.
+      document: { fill: '#f1f5f9', stroke: '#475569', text: '#1e293b' },
+      // Merge / extension — indigo.
+      triangle: { fill: '#e0e7ff', stroke: '#4f46e5', text: '#312e81' },
+      // Manual operation — lime.
+      trapezoid: { fill: '#ecfccb', stroke: '#65a30d', text: '#365314' },
+      // System / boundary — sky.
+      cloud: { fill: '#e0f2fe', stroke: '#0284c7', text: '#075985' },
+      // Annotation / emphasis — yellow.
+      star: { fill: '#fef9c3', stroke: '#ca8a04', text: '#713f12' },
+    },
+    // Behind "Show more" in the flat grids; always visible in its own
+    // Formal category in the theme browser.
+    extra: true,
+  },
 ];
 
 // Picker grouping, mirroring the template catalogue's categories. Themes
@@ -462,13 +531,14 @@ export const THEMES: ThemeDefinition[] = [
 // grid. The mapping lives beside the catalogue so a new theme slots into
 // a section with a one-line edit; the picker renders sections in
 // THEME_CATEGORIES order and skips empties.
-export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour';
+export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour' | 'formal';
 
 export const THEME_CATEGORIES: { id: ThemeCategory; label: string; description: string }[] = [
   { id: 'cool', label: 'Cool', description: 'Blues, greens and purples.' },
   { id: 'warm', label: 'Warm', description: 'Reds, oranges and earthy tones.' },
   { id: 'dark', label: 'Dark', description: 'Dark-backdrop themes.' },
   { id: 'multicolour', label: 'Multi-colour', description: 'A different hue per branch.' },
+  { id: 'formal', label: 'Formal', description: 'Standard notations like UML.' },
 ];
 
 const THEME_CATEGORY: Record<ThemeId, ThemeCategory> = {
@@ -502,6 +572,8 @@ const THEME_CATEGORY: Record<ThemeId, ThemeCategory> = {
   tropical: 'multicolour',
   autumn: 'multicolour',
   jewel: 'multicolour',
+  // Formal notations.
+  uml: 'formal',
 };
 
 export function themeCategory(id: ThemeId): ThemeCategory {
@@ -595,11 +667,22 @@ export function recolourElementForTheme(el: Element, theme: ThemeDefinition): El
   return { ...el, ...patch } as Element;
 }
 
+// Design-system defaults used when a theme defers its element colours
+// (null = "use the built-in shape colours", e.g. the Basic theme). They
+// mirror defaultFillColor / defaultStrokeColor / defaultTextColor for
+// shapes (brand-50 / brand-500 / brand-800) so even a deferring theme
+// yields an on-brand ramp rather than only neutrals.
+const DEFAULT_SHAPE_FILL = '#f0f9ff';
+const DEFAULT_SHAPE_STROKE = '#0ea5e9';
+const DEFAULT_SHAPE_TEXT = '#075985';
+
 // Preset colour swatches that relate to a theme — used by the context-menu
 // colour pickers so the offered presets match the active theme rather than a
-// fixed rainbow. Leads with the theme's own element colours (and every branch
-// hue for multi-colour themes), then pads with neutrals so there's always a
-// usable spread. Deduped (case-insensitive), capped for a tidy grid.
+// fixed rainbow. The accent hue (and, for multi-colour themes, every branch
+// hue) is spun into a light → base → dark RAMP so the user has several
+// on-theme versions of the same colour one click away, not just the single
+// theme colour. Pads with a neutral ramp so there's always a usable spread.
+// Deduped (case-insensitive), capped for a tidy (free-wrapping) grid.
 export function themePresetColors(theme: ThemeDefinition): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
@@ -610,18 +693,41 @@ export function themePresetColors(theme: ThemeDefinition): string[] {
     seen.add(key);
     out.push(c);
   };
-  push(theme.elementText);
-  push(theme.elementStroke);
-  push(theme.elementFill);
-  for (const entry of theme.palette ?? []) {
-    push(entry.stroke);
-    push(entry.fill);
+  // A hue → 4-step ramp (two tints, base, one shade): lighter versions
+  // suit fills, the base + shade suit strokes / text.
+  const ramp = (hex: string) => {
+    push(tint(hex, 0.6));
+    push(tint(hex, 0.3));
+    push(hex);
+    push(shade(hex, 0.3));
+  };
+
+  const stroke = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
+  const fill = theme.elementFill ?? DEFAULT_SHAPE_FILL;
+  const text = theme.elementText ?? DEFAULT_SHAPE_TEXT;
+
+  if (theme.palette && theme.palette.length > 0) {
+    // Multi-colour theme: lead with a tint + base for each branch hue so
+    // every branch colour is reachable in two intensities.
+    for (const entry of theme.palette) {
+      push(tint(entry.stroke, 0.5));
+      push(entry.stroke);
+    }
+    push(text);
+  } else {
+    // Single-accent theme: a full ramp of the accent, then fill + text.
+    ramp(stroke);
+    push(fill);
+    push(text);
   }
-  // Neutrals that are always useful (dark ink, slate, white).
-  push('#0f172a');
-  push('#64748b');
+
+  // Neutral ramp — always useful (white → light grey → slate → ink).
   push('#ffffff');
-  return out.slice(0, 12);
+  push('#e2e8f0');
+  push('#94a3b8');
+  push('#475569');
+  push('#0f172a');
+  return out.slice(0, 20);
 }
 
 // Soft theme switch: change the diagram's theme but preserve every
@@ -777,21 +883,41 @@ function branchEntryFor(
 }
 
 // A per-element theme view: the same theme, but with its single-colour
-// element fields swapped for this element's branch colours. Identity for
-// single-colour themes (no palette).
+// element fields swapped for this element's branch colours (palette
+// themes) and/or its shape kind's colours (per-shape themes like UML).
+// Identity for a plain single-colour theme. Folding both rewrites here
+// means every transform (recolour / switch / reset) is branch- AND
+// shape-aware through one code path.
 function elementThemeView(
   theme: ThemeDefinition,
   el: Element,
   branches: Map<string, number> | null,
 ): ThemeDefinition {
-  if (!theme.palette || !branches) return theme;
-  const entry = branchEntryFor(theme, el, branches);
-  return {
-    ...theme,
-    elementFill: entry.fill,
-    elementStroke: entry.stroke,
-    elementText: entry.text,
-  };
+  let view = theme;
+  if (theme.palette && branches) {
+    const entry = branchEntryFor(theme, el, branches);
+    view = {
+      ...view,
+      elementFill: entry.fill,
+      elementStroke: entry.stroke,
+      elementText: entry.text,
+    };
+  }
+  // Per-shape overrides win over the branch / base colours: a UML
+  // diamond stays amber even if it sits on a coloured branch. Unset
+  // fields fall through to whatever the view resolved above.
+  if (theme.shapeColors && el.type === 'shape') {
+    const c = theme.shapeColors[el.shape];
+    if (c) {
+      view = {
+        ...view,
+        elementFill: c.fill ?? view.elementFill,
+        elementStroke: c.stroke ?? view.elementStroke,
+        elementText: c.text ?? view.elementText,
+      };
+    }
+  }
+  return view;
 }
 
 // Graph-aware counterpart to `recolourElementForTheme`: paints a fresh
@@ -892,10 +1018,18 @@ export function deriveNewBoxedColours(
   // Theme overrides win. Sticky stays untouched (returns colours
   // empty for that branch).
   const theme = getTheme(tab.theme);
+  // Per-shape themes (UML) paint a shape KIND its own colours; fall
+  // through to the theme's element colours for kinds without an
+  // override. Only shapes carry a `shape` kind.
+  const shapeOverride =
+    base.type === 'shape' && theme.shapeColors ? theme.shapeColors[base.shape] : undefined;
+  const elementFill = shapeOverride?.fill ?? theme.elementFill;
+  const elementStroke = shapeOverride?.stroke ?? theme.elementStroke;
+  const elementText = shapeOverride?.text ?? theme.elementText;
   if (base.type === 'shape' || base.type === 'annotation') {
-    if (theme.elementFill) colours.fillColor = theme.elementFill;
-    if (theme.elementStroke) colours.strokeColor = theme.elementStroke;
-    if (theme.elementText) colours.textColor = theme.elementText;
+    if (elementFill) colours.fillColor = elementFill;
+    if (elementStroke) colours.strokeColor = elementStroke;
+    if (elementText) colours.textColor = elementText;
   } else if (base.type === 'text') {
     if (theme.elementText) colours.textColor = theme.elementText;
   } else if (base.type === 'table') {

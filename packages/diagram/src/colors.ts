@@ -63,6 +63,21 @@ function darken(rgb: RGB, amount: number): RGB {
   return { r: rgb.r * (1 - amount), g: rgb.g * (1 - amount), b: rgb.b * (1 - amount) };
 }
 
+// Hex-level tint (mix toward white) / shade (toward black) by `amount`
+// in 0..1. Used to spin a single theme hue into a light → base → dark
+// ramp for the colour-picker presets so the user has several on-theme
+// versions to apply without opening the full swatch. Failsafe: returns
+// the input unchanged on unparseable hex.
+export function tint(hex: string, amount: number): string {
+  const rgb = hexToRgb(hex);
+  return rgb ? rgbToHex(mixWithWhite(rgb, amount)) : hex;
+}
+
+export function shade(hex: string, amount: number): string {
+  const rgb = hexToRgb(hex);
+  return rgb ? rgbToHex(darken(rgb, amount)) : hex;
+}
+
 export function isLightColor(hex: string): boolean {
   const rgb = hexToRgb(hex);
   if (!rgb) return true;

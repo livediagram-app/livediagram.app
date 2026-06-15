@@ -344,3 +344,44 @@ describe('buildSearchResults — team library (spec/35)', () => {
     expect(out.find((g) => g.key === 'palette')).toBeUndefined();
   });
 });
+
+describe('buildSearchResults — create-tab action', () => {
+  const inDiagram = (query: string) =>
+    buildSearchResults({ query, diagrams: [], folders: [], tabs: [tab('t1', 'Overview')] });
+
+  it('surfaces a "Create new tab" action when the query looks like "tab"', () => {
+    const out = inDiagram('tab');
+    const actions = out.find((g) => g.key === 'actions')!;
+    expect(actions.items).toEqual([
+      { kind: 'action', id: 'create-tab', name: 'Create new tab', action: 'create-tab' },
+    ]);
+  });
+
+  it('also matches the "new" keyword', () => {
+    expect(inDiagram('new').find((g) => g.key === 'actions')).toBeDefined();
+  });
+
+  it('does not surface the action for unrelated queries', () => {
+    expect(inDiagram('database').find((g) => g.key === 'actions')).toBeUndefined();
+  });
+
+  it('does not surface the action on an empty query', () => {
+    expect(inDiagram('').find((g) => g.key === 'actions')).toBeUndefined();
+  });
+
+  it('is not offered outside a diagram (no tabs scope)', () => {
+    const out = buildSearchResults({ query: 'tab', diagrams: [], folders: [] });
+    expect(out.find((g) => g.key === 'actions')).toBeUndefined();
+  });
+
+  it('ranks below an existing tab match so navigation keeps the default Enter', () => {
+    const out = buildSearchResults({
+      query: 'tab',
+      diagrams: [],
+      folders: [],
+      tabs: [tab('t1', 'Tab notes')],
+    });
+    const keys = out.map((g) => g.key);
+    expect(keys.indexOf('tabs')).toBeLessThan(keys.indexOf('actions'));
+  });
+});

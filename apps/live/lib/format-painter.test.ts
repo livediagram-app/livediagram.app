@@ -50,6 +50,13 @@ const fullyStyledArrow: ArrowElement = {
   arrowheadSize: 'large',
   arrowheadShape: 'triangle-hollow',
   arrowStyle: 'curved',
+  textColor: '#222222',
+  textSize: 'lg',
+  textBold: true,
+  textItalic: true,
+  textUnderline: true,
+  textStrikethrough: true,
+  font: 'caveat',
   label: 'Arrow label',
   locked: true,
 };
@@ -113,10 +120,49 @@ describe('paintableBoxedFields', () => {
     // Spreading onto a target should be a width / height update only.
     expect(Object.keys(out).sort()).toEqual(['height', 'width']);
   });
+
+  it('collapses a uniform richText label into whole-label text formatting', () => {
+    // Select-all-bold stores the formatting in a single attributed run,
+    // not the element-level flag — the painter must still carry it.
+    const richSource: BoxedElement = {
+      id: 's',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      label: 'Hello world',
+      richText: [{ text: 'Hello world', bold: true, color: '#ff0000', size: 'lg' }],
+    };
+    const out = paintableBoxedFields(richSource);
+    expect(out.textBold).toBe(true);
+    expect(out.textColor).toBe('#ff0000');
+    expect(out.textSize).toBe('lg');
+    // richText itself is bound to the source's characters, never painted.
+    expect(out).not.toHaveProperty('richText');
+  });
+
+  it('does not paint an attribute the richText runs disagree on', () => {
+    const mixedSource: BoxedElement = {
+      id: 's',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      label: 'Hi there',
+      // Only the first run is bold — there's no single whole-label value.
+      richText: [{ text: 'Hi ', bold: true }, { text: 'there' }],
+    };
+    const out = paintableBoxedFields(mixedSource);
+    expect(out).not.toHaveProperty('textBold');
+  });
 });
 
 describe('paintableArrowFields', () => {
-  it('carries stroke, width, pattern, opacity and arrowEnds from the source arrow', () => {
+  it('carries stroke, width, pattern, opacity, arrowEnds and label text styling from the source arrow', () => {
     const out = paintableArrowFields(fullyStyledArrow);
     expect(out).toEqual({
       strokeColor: '#0ea5e9',
@@ -127,6 +173,13 @@ describe('paintableArrowFields', () => {
       arrowheadSize: 'large',
       arrowheadShape: 'triangle-hollow',
       arrowStyle: 'curved',
+      textColor: '#222222',
+      textSize: 'lg',
+      textBold: true,
+      textItalic: true,
+      textUnderline: true,
+      textStrikethrough: true,
+      font: 'caveat',
     });
   });
 

@@ -48,15 +48,15 @@ describe('THEMES catalogue', () => {
   // copy. If the catalogue drifts from this the spec stops being
   // accurate. The extras include the multi-colour themes from spec/29.
   // Mirrors the equivalent assertions in templates.test.ts.
-  it('lists exactly 26 themes (matches spec/16)', () => {
-    expect(THEMES).toHaveLength(26);
+  it('lists exactly 27 themes (matches spec/16)', () => {
+    expect(THEMES).toHaveLength(27);
   });
 
-  it('splits cleanly into 12 default + 14 extra (retained as catalogue metadata)', () => {
+  it('splits cleanly into 12 default + 15 extra (retained as catalogue metadata)', () => {
     const defaults = THEMES.filter((t) => !t.extra);
     const extras = THEMES.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
-    expect(extras).toHaveLength(14);
+    expect(extras).toHaveLength(15);
   });
 
   it('leads with the brand theme (the un-themed default is the most common pick)', () => {
@@ -69,6 +69,44 @@ describe('THEMES catalogue', () => {
     for (const t of THEMES) {
       expect(known.has(themeCategory(t.id))).toBe(true);
     }
+  });
+});
+
+describe('UML theme (per-shape colours, spec/41)', () => {
+  const uml = getTheme('uml');
+
+  it('sits in the Formal category', () => {
+    expect(themeCategory('uml')).toBe('formal');
+    expect(THEME_CATEGORIES.some((c) => c.id === 'formal')).toBe(true);
+  });
+
+  it('paints a new diamond its decision colour, not the base element colour', () => {
+    const diamond = createShape('diamond', 0, 0);
+    const colours = deriveNewBoxedColours(diamond, { theme: 'uml' });
+    expect(colours.fillColor).toBe(uml.shapeColors!.diamond!.fill);
+    expect(colours.strokeColor).toBe(uml.shapeColors!.diamond!.stroke);
+    expect(colours.textColor).toBe(uml.shapeColors!.diamond!.text);
+  });
+
+  it('paints a cylinder its datastore colour, distinct from the diamond', () => {
+    const cyl = deriveNewBoxedColours(createShape('cylinder', 0, 0), { theme: 'uml' });
+    expect(cyl.strokeColor).toBe(uml.shapeColors!.cylinder!.stroke);
+    expect(cyl.strokeColor).not.toBe(uml.shapeColors!.diamond!.stroke);
+  });
+
+  it('falls back to the base element colour for a kind with no override', () => {
+    // No `actor` override, so it should take the theme's element stroke.
+    const actor = deriveNewBoxedColours(createShape('actor', 0, 0), { theme: 'uml' });
+    expect(actor.strokeColor).toBe(uml.elementStroke);
+  });
+
+  it('recolours existing shapes per-kind when applied to a scaffold', () => {
+    const out = recolourElementsForTheme(
+      [createShape('diamond', 0, 0), createShape('cylinder', 0, 0)],
+      uml,
+    ) as ShapeElement[];
+    expect(out[0]!.strokeColor).toBe(uml.shapeColors!.diamond!.stroke);
+    expect(out[1]!.strokeColor).toBe(uml.shapeColors!.cylinder!.stroke);
   });
 });
 

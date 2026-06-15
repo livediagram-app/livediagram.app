@@ -38,6 +38,19 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  // Favicon set: the SVG mark (app/icon.svg) plus a raster PNG fallback
+  // for browsers that ignore SVG favicons (older Safari would otherwise
+  // show a blank tab), and the opaque iOS tile from app/apple-icon.tsx.
+  // The PNGs already ship in public/. NB: declaring `icons` explicitly
+  // overrides Next's file-based auto-discovery, so the apple tile must
+  // be listed here too or its <link> stops being emitted.
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/livediagram-icon-256.png', type: 'image/png', sizes: '256x256' },
+    ],
+    apple: '/apple-icon',
+  },
 };
 
 // Mobile chrome + colour-scheme signal. Brand-500 tints Android

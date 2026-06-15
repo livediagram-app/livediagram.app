@@ -20,6 +20,7 @@ import type {
   BorderStroke,
   BorderStyle,
   BoxedElement,
+  TextRun,
 } from '@livediagram/diagram';
 
 // Strip undefined keys so a `{ ...target, ...projection }` spread
@@ -29,6 +30,27 @@ import type {
 // with the entries-typing dance.
 function stripUndefined<T extends object>(o: Partial<T>): Partial<T> {
   return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+// The inline editor stores "select all + bold" as a single attributed
+// `richText` run, not the element-level `textBold` flag (see
+// hasRichFormatting / commitLabel) — so a label that LOOKS uniformly
+// bold carries its formatting in the runs, leaving the element-level
+// text fields unset. The painter copies element-level fields, so
+// without this it would silently drop that formatting. We collapse the
+// runs: an attribute every run agrees on becomes the painted
+// whole-label value; a partially-styled label (runs disagree) has no
+// single value to paint, so that attribute falls back to the
+// element-level field. richText itself is NOT painted — its runs are
+// bound to the source's characters, not the target's.
+function uniformRunValue<K extends keyof TextRun>(
+  runs: TextRun[] | undefined,
+  key: K,
+): TextRun[K] | undefined {
+  if (!runs || runs.length === 0) return undefined;
+  const first = runs[0]?.[key];
+  if (first === undefined) return undefined;
+  return runs.every((r) => r[key] === first) ? first : undefined;
 }
 
 // Boxed (shape / text / sticky) painter projection. Carries every
@@ -60,7 +82,11 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     strokeStyle?: BorderStyle;
     borderRadius?: BorderRadius;
     font?: string;
+    richText?: TextRun[];
   };
+  // Effective whole-label formatting: a uniform richText run wins over
+  // the (often unset) element-level flag, otherwise the element field.
+  const rt = ext.richText;
   return stripUndefined<BoxedElement>({
     width: source.width,
     height: source.height,
@@ -68,14 +94,14 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     opacity: source.opacity,
     fillColor: source.fillColor,
     strokeColor: source.strokeColor,
-    textColor: source.textColor,
-    textSize: source.textSize,
+    textColor: uniformRunValue(rt, 'color') ?? source.textColor,
+    textSize: uniformRunValue(rt, 'size') ?? source.textSize,
     textAlignX: source.textAlignX,
     textAlignY: source.textAlignY,
-    textBold: source.textBold,
-    textItalic: source.textItalic,
-    textUnderline: source.textUnderline,
-    textStrikethrough: source.textStrikethrough,
+    textBold: uniformRunValue(rt, 'bold') ?? source.textBold,
+    textItalic: uniformRunValue(rt, 'italic') ?? source.textItalic,
+    textUnderline: uniformRunValue(rt, 'underline') ?? source.textUnderline,
+    textStrikethrough: uniformRunValue(rt, 'strikethrough') ?? source.textStrikethrough,
     font: ext.font,
     padding: source.padding,
     // Border presets (shape / table). Carried so painting a styled
@@ -87,9 +113,10 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
   });
 }
 
-// Arrow painter projection. Arrows don't carry text styling or
-// aspect locks, just stroke + opacity + arrowhead shape +
-// line-pattern preset.
+// Arrow painter projection. Arrows carry stroke + opacity + arrowhead
+// shape + line-pattern preset, plus label text styling (arrow labels
+// store formatting element-level only — commitLabel drops richText for
+// arrows — so the flags below capture the whole label look).
 export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement> {
   return stripUndefined<ArrowElement>({
     strokeColor: source.strokeColor,
@@ -102,5 +129,15 @@ export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement
     arrowheadSize: source.arrowheadSize,
     arrowheadShape: source.arrowheadShape,
     arrowStyle: source.arrowStyle,
+    // Label text styling (spec/09). Arrows don't carry alignment /
+    // padding (the label rides the line), but do carry the same text
+    // switches + size + colour + font as boxed labels.
+    textColor: source.textColor,
+    textSize: source.textSize,
+    textBold: source.textBold,
+    textItalic: source.textItalic,
+    textUnderline: source.textUnderline,
+    textStrikethrough: source.textStrikethrough,
+    font: source.font,
   });
 }
