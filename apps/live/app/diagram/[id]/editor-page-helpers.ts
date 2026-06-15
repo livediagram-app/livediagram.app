@@ -1,7 +1,13 @@
 // Pure Tab helpers lifted out of editor-page.tsx to slim the page
 // component. No React, no editor state — just shape transforms on
 // Tab[] used by the diagram-hydration + autosave paths.
-import type { Element, Tab } from '@livediagram/diagram';
+import {
+  autoLayoutElements,
+  isBoxed,
+  isLayoutCandidate,
+  type Element,
+  type Tab,
+} from '@livediagram/diagram';
 import { autoAlignElements } from '@/lib/auto-align';
 
 export function createTab(name: string): Tab {
@@ -263,5 +269,27 @@ export function mergeAiElements(
       : mode === 'clean'
         ? ({ ...el, ...(modById.get(el.id) as Element) } as Element)
         : (modById.get(el.id) as Element);
-  return autoAlignElements([...existingEls.map(merge), ...deduped]);
+
+  // When Generate produced a whole new connected diagram (≥3 linked nodes),
+  // re-lay-it-out deterministically (spec/25): the model decides structure,
+  // we own the geometry — uniform sizes, layered placement, clean arrow
+  // anchors. Placed in free space below existing content so it doesn't land
+  // on top of the user's work. Small additive edits keep the model's
+  // placement (isLayoutCandidate is false), and Clean is left untouched.
+  const placed =
+    mode === 'generate' && isLayoutCandidate(deduped)
+      ? autoLayoutElements(deduped, freePlacement(existingEls))
+      : deduped;
+
+  return autoAlignElements([...existingEls.map(merge), ...placed]);
+}
+
+// Top-left for a freshly generated diagram: below the existing content (left
+// edges aligned) with a gap, or a sensible corner on an empty canvas.
+function freePlacement(existing: Element[]): { originX: number; originY: number } {
+  const boxed = existing.filter(isBoxed);
+  if (boxed.length === 0) return { originX: 120, originY: 100 };
+  const minX = Math.min(...boxed.map((b) => b.x));
+  const maxY = Math.max(...boxed.map((b) => b.y + b.height));
+  return { originX: minX, originY: maxY + 120 };
 }

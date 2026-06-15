@@ -104,6 +104,16 @@ Response for **every mode**: `Content-Type: text/event-stream`, OpenAI SSE forma
 
 **Client-side normalisation.** As elements are parsed out of the stream (`extractElementsFromBuffer`, `apps/live/lib/api/ai.ts`), each shape is normalised so the result renders consistently: a shape with no `textSize` (or `"scale"`) is pinned to `"md"`. Without this the canvas default for an unset size is `'scale'` (auto-fit), so a generated node with no explicit size balloons its label to fill the box while sized siblings stay small — the classic "inconsistent font sizes" output. The model's explicit `sm`/`md`/`lg` hierarchy is preserved; only missing / `scale` sizes are rewritten. The system prompt is also strict that every shape must carry an explicit `textSize` (never omit, never `scale`) and that siblings at the same tier share one size, but the normalisation is the safety net regardless of what the model returns.
 
+## Deterministic auto-layout (Generate)
+
+The model decides diagram **structure** (which nodes, which edges) well but geometry poorly: scattered box sizes, mis-anchored arrows, uneven spacing. So when **Generate** produces a whole new connected diagram, the client re-derives the geometry deterministically rather than trusting the model's coordinates. `autoLayoutElements` (`packages/diagram/src/auto-layout.ts`, pure + unit-tested) does three things:
+
+1. **Uniform per-tier sizing.** Peers — same shape kind at the same text level — are snapped to one size (the tier's max dimension, clamped); circles / diamonds are squared. No more one node twice the size of its siblings.
+2. **Layered (Sugiyama-lite) layout.** The pinned arrows form a graph; nodes are ranked by longest-path from the sources and placed in evenly-spaced, centred ranks. Direction (top-to-bottom vs left-to-right) is auto-detected from the model's rough positioning unless forced. Cycles are broken by ignoring back edges; disconnected sub-diagrams are laid out independently and arranged side by side.
+3. **Re-anchored straight arrows.** Each arrow's faces are chosen from the final relative positions of its endpoints (target below → `s`→`n`, to the right → `e`→`w`, ...) and the style set to `straight`, so connectors point the right way and don't wander.
+
+The pass runs inside `mergeAiElements` (`editor-page-helpers.ts`) and is gated by `isLayoutCandidate`: it only fires for a freshly generated diagram of **≥3 connected nodes**, placed in free space below existing content. Small additive edits ("add a step") and **Clean** keep the model's placement — re-flowing a diagram the user has already arranged would be destructive. This makes generated output visually consistent regardless of the model's geometry; a follow-up could offer the same pass as an explicit "tidy layout" command and route orthogonal arrows around skip-rank edges.
+
 Error responses follow the standard worker envelope:
 `{ "error": "ai_not_configured" | "ai_error" | "ai_parse_error" | "off_topic" | ... }`
 

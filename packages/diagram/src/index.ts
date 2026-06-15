@@ -880,6 +880,9 @@ export * from './rich-text';
 export * from './factories';
 export * from './table';
 
+// Deterministic auto-layout for AI-generated diagrams (spec/25).
+export * from './auto-layout';
+
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
 // used by selection captions and any surface that names what's selected.
 export * from './element-kind-label';
