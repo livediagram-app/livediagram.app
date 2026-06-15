@@ -40,7 +40,7 @@ export function Section({
   );
 }
 
-type FeatureProps = {
+export type FeatureProps = {
   title: string;
   description: string;
   /** Optional animated mini-illustration rendered above the text. */
