@@ -305,15 +305,49 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     if (!source || !isBoxed(source)) return;
     const ids = memberIdsOf(selectedId);
     const groupBounds = unionBoxedBounds(activeTab.elements, ids);
-    const gap = 40;
-    const w = (groupBounds?.width ?? source.width) + gap;
-    const h = (groupBounds?.height ?? source.height) + gap;
     const baseBounds = groupBounds ?? {
       x: source.x,
       y: source.y,
       width: source.width,
       height: source.height,
     };
+    // Match the gap to the nearest in-line neighbour so a duplicated chain
+    // keeps the same spacing as existing siblings, instead of always using a
+    // fixed gap the user then has to nudge into line. "In-line" = an element
+    // whose perpendicular extent overlaps the source's (the same row when
+    // duplicating left/right, the same column when up/down); the gap is the
+    // edge-to-edge distance to the nearest such element on either side. Falls
+    // back to DEFAULT_GAP when the source stands alone in that direction.
+    const DEFAULT_GAP = 40;
+    const horizontal = direction === 'right' || direction === 'left';
+    let nearestGap: number | null = null;
+    for (const el of activeTab.elements) {
+      if (!isBoxed(el) || ids.has(el.id)) continue;
+      if (horizontal) {
+        const sharesRow = !(
+          baseBounds.y + baseBounds.height <= el.y || el.y + el.height <= baseBounds.y
+        );
+        if (!sharesRow) continue;
+        const g =
+          el.x >= baseBounds.x + baseBounds.width
+            ? el.x - (baseBounds.x + baseBounds.width)
+            : baseBounds.x - (el.x + el.width);
+        if (g >= 0 && (nearestGap === null || g < nearestGap)) nearestGap = g;
+      } else {
+        const sharesCol = !(
+          baseBounds.x + baseBounds.width <= el.x || el.x + el.width <= baseBounds.x
+        );
+        if (!sharesCol) continue;
+        const g =
+          el.y >= baseBounds.y + baseBounds.height
+            ? el.y - (baseBounds.y + baseBounds.height)
+            : baseBounds.y - (el.y + el.height);
+        if (g >= 0 && (nearestGap === null || g < nearestGap)) nearestGap = g;
+      }
+    }
+    const gap = nearestGap ?? DEFAULT_GAP;
+    const w = baseBounds.width + gap;
+    const h = baseBounds.height + gap;
     const step = {
       x: direction === 'right' ? w : direction === 'left' ? -w : 0,
       y: direction === 'below' ? h : direction === 'above' ? -h : 0,
