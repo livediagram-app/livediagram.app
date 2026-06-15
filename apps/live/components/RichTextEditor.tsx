@@ -72,6 +72,12 @@ type Props = {
   cursorAtEnd: boolean;
   zoom: number;
   textClassName?: string;
+  // When true, the editor lays out as a flex CHILD (it fills the slot it's
+  // given) instead of an `absolute inset-0` fill of the whole element, and
+  // drops its own padding (the surrounding layout owns the inset). Used by
+  // the inline-icon shape layout so the icon stays visible beside the editor
+  // while typing; positioning + padding are handled by that flex group.
+  inline?: boolean;
   onCommit: (label: string, runs: TextRun[]) => void;
   onCancel: () => void;
   // Whole-element controls surfaced in the edit toolbar (they operate on the
@@ -193,6 +199,7 @@ export function RichTextEditor({
   onSetFont,
   onSetTextSize,
   currentFont = null,
+  inline = false,
 }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarWrapRef = useRef<HTMLDivElement>(null);
@@ -441,8 +448,10 @@ export function RichTextEditor({
 
   return (
     <div
-      className="pointer-events-none absolute inset-0 flex overflow-visible"
-      style={{ alignItems: ALIGN_ITEMS[alignY], padding }}
+      className={`pointer-events-none flex overflow-visible ${
+        inline ? 'relative min-w-0 flex-1 self-stretch' : 'absolute inset-0'
+      }`}
+      style={{ alignItems: ALIGN_ITEMS[alignY], padding: inline ? 0 : padding }}
     >
       <div
         ref={editorRef}

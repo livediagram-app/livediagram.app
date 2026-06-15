@@ -280,6 +280,10 @@ export function renderLabel(
   // Scale size option).
   onSetFont?: (font: string | null) => void,
   onSetTextSize?: (size: TextSize) => void,
+  // When the element carries an inline icon, the editor renders as a flex
+  // child (not a full-box fill) so the icon stays visible beside it while
+  // typing; the inline-icon layout owns positioning + padding.
+  inlineIcon = false,
 ) {
   const isSticky = element.type === 'sticky';
   // Shape elements don't carry a placeholder during edit. The user
@@ -331,6 +335,7 @@ export function renderLabel(
         onSetFont={onSetFont}
         onSetTextSize={onSetTextSize}
         currentFont={(element as { font?: string }).font ?? null}
+        inline={inlineIcon}
       />
     );
   }

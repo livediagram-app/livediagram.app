@@ -387,6 +387,11 @@ function BoxedElementViewImpl({
     element.link !== undefined &&
     (element.link.kind === 'tab' || element.link.kind === 'diagram' || element.link.kind === 'url');
 
+  // An inline icon sits beside the label on a regular shape (the
+  // dedicated 'icon' shape kind has its own glyph-above-caption render
+  // above and is excluded here). Computed before the label so the editor
+  // can render as a flex child (keeping the icon visible while typing).
+  const inlineIcon = element.type === 'shape' && element.shape !== 'icon' && element.iconId;
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -406,11 +411,8 @@ function BoxedElementViewImpl({
     onSetPadding,
     onSetFont,
     onSetTextSize,
+    !!inlineIcon,
   );
-  // An inline icon sits beside the label on a regular shape (the
-  // dedicated 'icon' shape kind has its own glyph-above-caption render
-  // above and is excluded here).
-  const inlineIcon = element.type === 'shape' && element.shape !== 'icon' && element.iconId;
 
   // Drag a palette icon onto a regular shape to drop it inside, on the
   // side of the text nearest the cursor. `dropSide` drives the live
@@ -937,8 +939,6 @@ function ShapeInlineIconLayout({
   draggableIcon?: boolean;
   onIconPointerDown?: (e: ReactPointerEvent) => void;
 }) {
-  if (isEditing) return editor;
-
   const isRow = position === 'left' || position === 'right';
   const iconFirst = position === 'left' || position === 'above';
   const fontSize =
@@ -1012,6 +1012,11 @@ function ShapeInlineIconLayout({
   // old fixed 8px inset so the Text category's padding preset applies here too.
   const xFlex = X_ALIGN_FLEX[alignX];
   const yFlex = ALIGN_ITEMS[alignY];
+  // While editing, the editor (rendered as a flex child via `inline`) takes
+  // the text slot so the icon stays visible beside it as the user types and
+  // both honour the element's alignment. On commit it swaps back to the
+  // static `text`.
+  const slot = isEditing ? editor : text;
   return (
     <div
       className="pointer-events-none absolute inset-0 flex"
@@ -1025,8 +1030,8 @@ function ShapeInlineIconLayout({
         gap: isRow ? Math.max(8, Math.round(iconSize * 0.32)) : Math.round(iconSize * 0.2),
       }}
     >
-      {iconFirst ? iconBox : text}
-      {iconFirst ? text : iconBox}
+      {iconFirst ? iconBox : slot}
+      {iconFirst ? slot : iconBox}
     </div>
   );
 }
