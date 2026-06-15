@@ -69,7 +69,7 @@ type ChromeExtras = {
   handleResetZoom: () => void;
 };
 
-export type CanvasChromeProps = CanvasProps & ChromeExtras;
+type CanvasChromeProps = CanvasProps & ChromeExtras;
 
 // The floating chrome layer of the canvas: empty-state prompt, template
 // picker, multi-select toolbar, mode banners, mobile dock, Explorer, the

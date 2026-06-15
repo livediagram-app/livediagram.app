@@ -41,7 +41,7 @@ type ElementsExtras = {
   setQuickRingOpen: (placement: QuickConnectDirection | null) => void;
 };
 
-export type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
+type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 
 // The element-rendering layer of the canvas: the shared arrow defs, every
 // element (arrows + boxed views interleaved in z-order), remote cursors,

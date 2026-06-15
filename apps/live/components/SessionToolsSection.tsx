@@ -26,7 +26,7 @@ function fmtClock(ms: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-export type SessionToolsProps = {
+type SessionToolsProps = {
   timer: TabTimer | null;
   vote: TabVote | null;
   onStartTimer: (mode: TimerMode, durationMs?: number) => void;
