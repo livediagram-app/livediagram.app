@@ -15,6 +15,20 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'livediagram',
   description: 'Build diagrams and mindmaps. Multiplayer canvas.',
+  // PWA install affordances. The editor is what users add to their home
+  // screen, but only its app/icon.svg favicon was linked, so an installed
+  // editor PWA showed no icon. livediagram.app is one origin (the router
+  // stitches the apps by path), and the marketing worker already serves the
+  // origin's web manifest at /manifest.webmanifest and the opaque iOS tile at
+  // /apple-icon (both carrying the brand icon, see spec/16). Reference those
+  // absolute paths so installing from the editor picks up the same icon + name
+  // on Android (manifest) and iOS (apple-touch-icon). They are literal hrefs,
+  // so Next leaves them un-prefixed by the `/live` assetPrefix and the router
+  // resolves them to the marketing worker.
+  manifest: '/manifest.webmanifest',
+  icons: {
+    apple: '/apple-icon',
+  },
   robots: {
     index: false,
     follow: false,
