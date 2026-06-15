@@ -22,6 +22,7 @@ import { isMobileViewportSync } from '@/lib/responsive';
 import { track } from '@/lib/telemetry';
 import { nearestCssBorderStyle } from './border-css';
 import { Tooltip } from './Tooltip';
+import { AlignIcon, ArrowIcon, CellLinkIcon, Chevron, TrashIcon } from './table-icons';
 import { describeLink } from '@/lib/link-label';
 
 // Cell font size per preset (element-space px; the canvas zoom scales
@@ -41,90 +42,6 @@ export function gridTrackTemplate(count: number, sizes?: (number | null)[]): str
     const s = sizes?.[i];
     return s != null ? `${s}px` : 'minmax(0, 1fr)';
   }).join(' ');
-}
-
-function ArrowIcon({ dir }: { dir: 'left' | 'right' | 'up' | 'down' }) {
-  const d = {
-    left: 'M11 7H3M3 7l3-3M3 7l3 3',
-    right: 'M3 7h8M11 7l-3-3M11 7l-3 3',
-    up: 'M7 11V3M7 3l3 3M7 3l-3 3',
-    down: 'M7 3v8M7 11l-3-3M7 11l3-3',
-  }[dir];
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path
-        d={d}
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function Chevron() {
-  return (
-    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden>
-      <path
-        d="M1.5 3l2.5 2.5L6.5 3"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function AlignIcon({ dir }: { dir: 'left' | 'center' | 'right' }) {
-  const lines =
-    dir === 'left'
-      ? ['M2 4h10', 'M2 7h6', 'M2 10h8']
-      : dir === 'right'
-        ? ['M2 4h10', 'M6 7h6', 'M4 10h8']
-        : ['M2 4h10', 'M4 7h6', 'M3 10h8'];
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      {lines.map((d, i) => (
-        <path key={i} d={d} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-      ))}
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path
-        d="M3 4h8M5.5 4V2.8h3V4M4 4l.4 7.2h5.2L10 4"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CellLinkIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M7 4.5l1.5-1.5a3.25 3.25 0 0 1 4.6 4.6L11 9.5" />
-      <path d="M9 11.5l-1.5 1.5a3.25 3.25 0 0 1-4.6-4.6L5 7" />
-      <line x1="6" y1="10" x2="10" y2="6" />
-    </svg>
-  );
 }
 
 // Small "⋯" trigger that sits inside the table's top / left edge. Tapping
