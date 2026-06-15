@@ -953,19 +953,10 @@ export function EditorView() {
             // and fire-and-forget: results refresh as tabs land.
             void loadAllTabs();
           }}
-          onOpenCanvasMenu={
-            isReadOnly
-              ? undefined
-              : (x, y) =>
-                  // Footer canvas-menu button toggles: a second click closes it.
-                  setContextMenu((cur) =>
-                    cur && cur.mode === 'canvas' ? null : { mode: 'canvas', x, y, openUp: true },
-                  )
-          }
-          // Canvas right-click + footer button open the active tab's menu with
-          // the canvas sections folded in, rendered by the TabBar so it reuses
-          // every tab handler. Element / multi context menus stay on
-          // EditorContextMenu below.
+          // Canvas right-click (desktop) + long-press (touch) open the active
+          // tab's menu with the canvas sections folded in, rendered by the
+          // TabBar so it reuses every tab handler. Element / multi context
+          // menus stay on EditorContextMenu below.
           canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
           onCloseCanvasMenu={closeContextMenu}
           canvasActions={{

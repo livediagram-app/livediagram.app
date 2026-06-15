@@ -21,7 +21,6 @@ import { PencilIcon, TrashIcon } from './explorer-icons';
 import { FileExportIcon, FileImportIcon } from './palette-icons';
 import {
   BackIcon,
-  CanvasGlyph,
   ClearIcon,
   CopyIcon,
   DiagramIcon,
@@ -98,10 +97,6 @@ type TabBarProps = {
   // Optional callback that pops the global search panel. The
   // button sits to the LEFT of the dark-mode toggle.
   onOpenSearch?: () => void;
-  // Optional callback that opens the canvas context menu at a screen point.
-  // The trigger sits just right of Search (desktop only — touch users reach
-  // it by long-pressing the canvas).
-  onOpenCanvasMenu?: (x: number, y: number) => void;
   // When set, the active tab's menu opens at this point as the canvas
   // right-click / footer-button menu — the same tab menu with the canvas
   // sections (`canvasActions`) folded in. The page owns the open/close state
@@ -221,7 +216,6 @@ export function TabBar({
   selfRole,
   onOpenShortcuts,
   onOpenSettings,
-  onOpenCanvasMenu,
   onOpenSearch,
   canvasMenu,
   onCloseCanvasMenu,
@@ -471,29 +465,6 @@ export function TabBar({
                 className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
               >
                 <KeyboardIcon />
-              </button>
-            </Tooltip>
-          </span>
-        ) : null}
-        {onOpenCanvasMenu ? (
-          <span className="hidden sm:contents">
-            <Tooltip
-              title="Canvas menu"
-              description="Theme, background, add elements, session tools."
-            >
-              <button
-                type="button"
-                data-context-menu-trigger
-                onClick={(e) => {
-                  const r = e.currentTarget.getBoundingClientRect();
-                  // Anchor the menu's BOTTOM edge at the button's top (openUp),
-                  // so it opens above the footer rather than over it.
-                  onOpenCanvasMenu(r.left, r.top);
-                }}
-                aria-label="Canvas menu"
-                className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              >
-                <CanvasGlyph />
               </button>
             </Tooltip>
           </span>

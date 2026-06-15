@@ -216,27 +216,6 @@ export function SearchGlyph() {
   );
 }
 
-// Dotted-canvas glyph for the canvas-menu trigger.
-export function CanvasGlyph() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden
-    >
-      <rect x="2.5" y="2.5" width="11" height="11" rx="2" />
-      <circle cx="6" cy="6" r="0.6" fill="currentColor" stroke="none" />
-      <circle cx="10" cy="6" r="0.6" fill="currentColor" stroke="none" />
-      <circle cx="6" cy="10" r="0.6" fill="currentColor" stroke="none" />
-      <circle cx="10" cy="10" r="0.6" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
 // Keyboard - the shortcuts-dialog button.
 export function KeyboardIcon() {
   return (
