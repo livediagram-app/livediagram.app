@@ -92,7 +92,7 @@ export function ContextMenu({
         role="menu"
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.preventDefault()}
-        className={`fixed z-50 flex w-52 animate-fade-in flex-col rounded-md border border-slate-200 bg-white text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${
+        className={`fixed z-50 flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${
           flush ? 'overflow-hidden' : 'py-1'
         }`}
         style={{

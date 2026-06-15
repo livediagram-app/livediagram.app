@@ -388,6 +388,7 @@ export function TabBar({
             open={menuFor === tab.id}
             onToggle={() => setMenuFor(menuFor === tab.id ? null : tab.id)}
             onClose={() => setMenuFor(null)}
+            canvas={canvasActions}
             {...tabMenuProps(tab, () => setMenuFor(null))}
           />
         ) : null}
@@ -567,6 +568,7 @@ function EllipsisMenuButton({
   open,
   onToggle,
   onClose,
+  canvas,
   canDelete,
   canClearContent,
   locked,
@@ -598,6 +600,10 @@ function EllipsisMenuButton({
   open: boolean;
   onToggle: () => void;
   onClose: () => void;
+  // The active tab's canvas actions (theme / background / add element). Passed
+  // so the tab ellipsis menu renders the SAME Canvas + Add sections as the
+  // canvas right-click menu, i.e. one unified menu rather than two.
+  canvas?: CanvasMenuActions;
   canDelete: boolean;
   canClearContent: boolean;
   locked: boolean;
@@ -648,6 +654,7 @@ function EllipsisMenuButton({
         <PortalMenu
           anchor={buttonRef.current}
           onClose={onClose}
+          canvas={canvas}
           onRename={onRename}
           onDuplicate={onDuplicate}
           onClearContent={onClearContent}
@@ -846,7 +853,7 @@ function PortalMenu({
         ref={ref}
         role="menu"
         onContextMenu={(e) => e.preventDefault()}
-        className={`fixed z-50 flex ${view === 'actions' && !canvas ? 'w-44' : 'w-56'} flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
+        className="fixed z-50 flex w-56 flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         style={{
           // adjust nudges the box back on-screen when it would overflow an edge.
           // Anchor mode pins the menu's right edge to the ellipsis button and
@@ -950,9 +957,10 @@ function PortalMenu({
                 />
               </MenuTileGrid>
             </MenuAccordionSection>
-            {/* Canvas + Add only render when this is the canvas right-click
-                menu (canvasActions passed). Tab pills omit them, keeping the
-                ellipsis menu purely about tab management. */}
+            {/* Canvas + Add sections. Rendered whenever canvas actions are
+                available, which is now both entry points (canvas right-click
+                AND the active tab's ellipsis menu) so the two are one unified
+                menu rather than separate tab-only / canvas-only menus. */}
             {canvas ? (
               <>
                 <MenuAccordionSection
