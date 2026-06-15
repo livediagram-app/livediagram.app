@@ -1,7 +1,7 @@
 // Shared building blocks used by all boxed element views (shape, text, sticky).
 // Kept here to avoid duplication across the three view components.
 
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import type { DragMode } from '@/lib/canvas';
 import { FLOATING_CONTROL_CLASS, FLOATING_CONTROL_HOVER_CLASS } from './floating-controls';
 
@@ -166,5 +166,53 @@ export function UnionResizeHandles({
         />
       ))}
     </div>
+  );
+}
+
+// --- Edge-midpoint resize handle -------------------------------------------
+
+const ANCHOR_STYLE: Record<'n' | 'e' | 's' | 'w', CSSProperties> = {
+  n: { top: 0, left: '50%' },
+  e: { top: '50%', left: '100%' },
+  s: { top: '100%', left: '50%' },
+  w: { top: '50%', left: 0 },
+};
+
+// Edge-midpoint handle: a single-axis resize grip (arrows are drawn from
+// the quick-connect menu now, so these no longer start a connector). N / S
+// resize height, E / W resize width — a small bar oriented along the edge.
+export function EdgeResizeHandle({
+  anchor,
+  elementId,
+  zoom,
+  rotation = 0,
+  onBeginDrag,
+}: {
+  anchor: 'n' | 'e' | 's' | 'w';
+  elementId: string;
+  zoom: number;
+  rotation?: number;
+  onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+}) {
+  const vertical = anchor === 'n' || anchor === 's';
+  return (
+    <div
+      role="button"
+      aria-label={`Resize ${vertical ? 'height' : 'width'}`}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        onBeginDrag(elementId, `resize-${anchor}`, e);
+      }}
+      style={{
+        ...ANCHOR_STYLE[anchor],
+        // Counter-scale so the grip stays the same on-screen size at any zoom.
+        transform: `translate(-50%, -50%) scale(${1 / zoom})`,
+        // Rotation-aware cursor so it points the right way once turned.
+        cursor: resizeCursor(anchor, rotation),
+      }}
+      className={`pointer-events-auto absolute rounded-full border border-brand-400 bg-white opacity-80 shadow-sm transition hover:opacity-100 dark:border-brand-300 dark:bg-slate-900 ${
+        vertical ? 'h-1.5 w-4' : 'h-4 w-1.5'
+      }`}
+    />
   );
 }
