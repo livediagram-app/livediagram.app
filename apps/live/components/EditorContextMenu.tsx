@@ -48,13 +48,11 @@ import {
   BorderStrokeIcon,
   BorderStyleIcon,
   DotsIcon,
-  FileExportIcon,
   ItalicIcon,
   ScaleIcon,
   StrikethroughIcon,
   UnderlineIcon,
 } from '@/components/palette-icons';
-import { TrashIcon } from '@/components/explorer-icons';
 import {
   BorderGlyph,
   CommentMenuIcon,
@@ -172,23 +170,12 @@ type EditorContextMenuProps = {
   ) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
-  // Whole-selection actions for the 'multi' menu (a marquee multi-selection
-  // or a group). The page wires these to the right handlers (multi vs group)
-  // + reports the count, group state, and lock state.
-  selectionCount: number;
-  selectionIsGroup: boolean;
-  selectionLocked: boolean;
-  // The actual selected elements (multi-selection / group members), so the
-  // multi menu can surface the formatting categories that match their types
-  // (Colours / Text / Border for boxed, Line + Pointer for arrows). The
-  // format setters above already apply to the whole selection.
+  // The selected elements (multi-selection / group members), so the 'multi'
+  // menu can surface the formatting categories that match their types (Colours
+  // / Text / Border for boxed, Line + Pointer for arrows). The format setters
+  // above apply to the whole selection. Duplicate / Group / Lock / Export /
+  // Delete are NOT here — the selection toolbar carries those.
   selectionElements: Element[];
-  onDuplicateSelection: () => void;
-  onDeleteSelection: () => void;
-  onToggleLockSelection: () => void;
-  onExportSelection: () => void;
-  onGroupSelection: () => void;
-  onUngroupSelection: () => void;
 };
 
 export function EditorContextMenu(props: EditorContextMenuProps) {
@@ -213,67 +200,18 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   // (mirrors the old tab editor's Session accordion).
 
   if (menu.mode === 'multi') {
-    const noun = props.selectionIsGroup ? 'group' : `${props.selectionCount} elements`;
+    // The selection toolbar (SelectionPopover / MultiSelectionToolbar) already
+    // carries Duplicate / Group / Lock / Export / Delete, so this menu is
+    // purely the type-aware formatting categories its ellipsis opens. A
+    // selection with nothing formattable (e.g. only images) shows no menu
+    // rather than an empty box.
+    const selectionFormattable =
+      props.selectionElements.some((el) => supportsColours(el)) ||
+      props.selectionElements.some((el) => supportsBorderControls(el)) ||
+      props.selectionElements.some((el) => el.type === 'arrow');
+    if (!selectionFormattable) return null;
     return (
       <ContextMenu position={position} onClose={onClose} flush>
-        <MenuTileGrid cols={2}>
-          <MenuTile
-            icon={<DuplicateMenuIcon />}
-            label="Duplicate"
-            onClick={() => {
-              props.onDuplicateSelection();
-              onClose();
-            }}
-          />
-          {props.selectionIsGroup ? (
-            <MenuTile
-              icon={<UngroupMenuIcon />}
-              label="Ungroup"
-              onClick={() => {
-                props.onUngroupSelection();
-                onClose();
-              }}
-            />
-          ) : (
-            <MenuTile
-              icon={<GroupMenuIcon />}
-              label="Group"
-              onClick={() => {
-                props.onGroupSelection();
-                onClose();
-              }}
-            />
-          )}
-          <MenuTile
-            icon={<LockMenuIcon />}
-            label={props.selectionLocked ? 'Unlock' : 'Lock'}
-            onClick={() => {
-              props.onToggleLockSelection();
-              onClose();
-            }}
-          />
-          <MenuTile
-            icon={<FileExportIcon />}
-            label="Export"
-            onClick={() => {
-              props.onExportSelection();
-              onClose();
-            }}
-          />
-        </MenuTileGrid>
-        <ContextMenuDivider />
-        <div className="px-2 py-1.5">
-          <MenuTile
-            icon={<TrashIcon />}
-            label={`Delete ${noun}`}
-            danger
-            disabled={props.selectionLocked}
-            onClick={() => {
-              props.onDeleteSelection();
-              onClose();
-            }}
-          />
-        </div>
         {(() => {
           // Type-aware formatting for the whole selection: only the categories
           // that match the selected element types show, and each control
@@ -1230,77 +1168,6 @@ function TextToggle({
 }
 
 // Glyphs for the multi-selection menu (12px, context-menu stroke style).
-function DuplicateMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2.5" y="2.5" width="8" height="8" rx="1.5" />
-      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" fill="white" />
-    </svg>
-  );
-}
-function GroupMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2" y="2" width="6" height="6" rx="1" />
-      <rect x="8" y="8" width="6" height="6" rx="1" />
-    </svg>
-  );
-}
-function UngroupMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      strokeDasharray="2.5 2"
-      aria-hidden
-    >
-      <rect x="2" y="2" width="6" height="6" rx="1" />
-      <rect x="8" y="8" width="6" height="6" rx="1" />
-    </svg>
-  );
-}
-function LockMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
-      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
-    </svg>
-  );
-}
-
 // A star — the "Icon" category glyph (the un-slashed sibling of
 // RemoveIconGlyph).
 function IconCategoryGlyph() {

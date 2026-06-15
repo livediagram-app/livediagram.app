@@ -360,16 +360,11 @@ export function EditorView() {
   const ctxSelectedEl = selectedId
     ? (activeTab.elements.find((e) => e.id === selectedId) ?? null)
     : null;
-  const ctxIsGroup =
-    !ctxMultiActive && !!ctxSelectedEl && isBoxed(ctxSelectedEl) && !!ctxSelectedEl.groupId;
   const ctxMemberIds = ctxMultiActive
     ? [...multiSelectedIds]
     : ctxSelectedEl
       ? selectionMembers(activeTab.elements, ctxSelectedEl.id)
       : [];
-  const ctxSelectionLocked =
-    ctxMemberIds.length > 0 &&
-    ctxMemberIds.every((id) => activeTab.elements.find((e) => e.id === id)?.locked === true);
   // Guest sign-in nudge (spec/36): the same banner the Explorer shows,
   // but on the editor it waits ~5 minutes into the session before
   // appearing so it never interrupts someone the moment they open a
@@ -1210,21 +1205,9 @@ export function EditorView() {
           onToggleTableZebra={setTableZebraSelected}
           onOpenNote={openNote}
           onOpenComments={openComments}
-          selectionCount={ctxMemberIds.length}
-          selectionIsGroup={ctxIsGroup}
-          selectionLocked={ctxSelectionLocked}
           selectionElements={ctxMemberIds
             .map((id) => activeTab.elements.find((e) => e.id === id))
             .filter((e): e is NonNullable<typeof e> => e != null)}
-          onDuplicateSelection={ctxMultiActive ? duplicateMultiSelected : duplicateSelected}
-          onDeleteSelection={ctxMultiActive ? deleteMultiSelected : deleteSelected}
-          onToggleLockSelection={ctxMultiActive ? toggleLockMultiSelected : toggleLockSelected}
-          onExportSelection={() => {
-            setExportScope('selection');
-            setExportOpen(true);
-          }}
-          onGroupSelection={groupMultiSelected}
-          onUngroupSelection={ungroupSelected}
         />
       ) : null}
       {linkPickerOpenForId !== null && !isReadOnly ? (
