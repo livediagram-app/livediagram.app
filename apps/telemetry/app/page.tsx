@@ -205,6 +205,7 @@ function eventExplanation(category: string, action: string, type: string | null)
   if (category === 'UI' && action === 'Opened' && type) {
     if (type === 'Settings') return 'Someone opened the Settings dialog.';
     if (type === 'Shortcuts') return 'Someone opened the keyboard-shortcuts dialog.';
+    if (type === 'Tips') return 'Someone opened the Tips carousel.';
     if (type === 'Share') return 'Someone opened the Share dialog.';
     if (type === 'Activity') return 'Someone expanded the Activity panel.';
   }
@@ -319,6 +320,7 @@ function EventIcon({
   if (t === 'Light') return <SunGlyph />;
   if (t === 'Settings') return <GearGlyph />;
   if (t === 'Shortcuts') return <KeyboardGlyph />;
+  if (t === 'Tips') return <SparkGlyph />;
   if (t === 'Share') return <ShareGlyph />;
   if (t === 'Activity') return <ActivityGlyph />;
   if (t === 'Welcome') return <SparkGlyph />;

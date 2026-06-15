@@ -236,6 +236,26 @@ export function KeyboardIcon() {
   );
 }
 
+// Lightbulb - the Tips button (spec/43).
+export function TipsIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M7 13.5a5 5 0 1 1 6 0 2.5 2.5 0 0 0-1 2v.5H8V15.5a2.5 2.5 0 0 0-1-2z" />
+      <path d="M8 18.5h4" />
+    </svg>
+  );
+}
+
 export function GearIcon() {
   // Sliders silhouette (two horizontal sliders with a knob on each)
   // instead of the cog that previously sat here. The cog's 8 spokes

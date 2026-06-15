@@ -52,6 +52,7 @@ const ImagePicker = dynamic(() => import('@/components/ImagePicker').then((m) =>
 const ShortcutsDialog = dynamic(() =>
   import('@/components/ShortcutsDialog').then((m) => m.ShortcutsDialog),
 );
+const TipsDialog = dynamic(() => import('@/components/TipsDialog').then((m) => m.TipsDialog));
 const SettingsDialog = dynamic(() =>
   import('@/components/SettingsDialog').then((m) => m.SettingsDialog),
 );
@@ -305,6 +306,7 @@ export function EditorView() {
     setCanvasThemeTab,
     setShortcutsEnabled,
     setShortcutsOpen,
+    setTipsOpen,
     setStrokeColorSelected,
     setTextAlignSelected,
     setFontSelected,
@@ -324,6 +326,7 @@ export function EditorView() {
     shareUrlFor,
     shortcutsEnabled,
     shortcutsOpen,
+    tipsOpen,
     skipTemplatePicker,
     snapGuides,
     distGuides,
@@ -938,6 +941,10 @@ export function EditorView() {
             setShortcutsOpen(true);
             track('UI', 'Opened', 'Shortcuts');
           }}
+          onOpenTips={() => {
+            setTipsOpen(true);
+            track('UI', 'Opened', 'Tips');
+          }}
           onOpenSettings={() => {
             // Preferences are user-scoped, not diagram-scoped, so
             // view-role visitors can still flip them for their own
@@ -1039,6 +1046,7 @@ export function EditorView() {
           onClose={() => setShortcutsOpen(false)}
         />
       ) : null}
+      {tipsOpen ? <TipsDialog onClose={() => setTipsOpen(false)} /> : null}
       {settingsOpen ? (
         <SettingsDialog
           settings={userPreferences}

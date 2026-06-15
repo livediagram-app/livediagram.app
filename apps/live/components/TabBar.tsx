@@ -33,6 +33,7 @@ import {
   SessionTabIcon,
   TabLockIcon,
   TabsLabelIcon,
+  TipsIcon,
 } from './tab-bar-icons';
 import {
   MenuAccordionSection,
@@ -94,6 +95,9 @@ type TabBarProps = {
   // Optional callback that pops the global search panel. The
   // button sits to the LEFT of the dark-mode toggle.
   onOpenSearch?: () => void;
+  // Optional callback that pops the Tips carousel (spec/43). The lightbulb
+  // button sits just right of keyboard shortcuts; shown on every viewport.
+  onOpenTips?: () => void;
   // When set, the active tab's menu opens at this point as the canvas
   // right-click / footer-button menu — the same tab menu with the canvas
   // sections (`canvasActions`) folded in. The page owns the open/close state
@@ -214,6 +218,7 @@ export function TabBar({
   onOpenShortcuts,
   onOpenSettings,
   onOpenSearch,
+  onOpenTips,
   canvasMenu,
   onCloseCanvasMenu,
   canvasActions,
@@ -466,6 +471,18 @@ export function TabBar({
               </button>
             </Tooltip>
           </span>
+        ) : null}
+        {onOpenTips ? (
+          <Tooltip title="Tips" description="A quick tour of features that are easy to miss.">
+            <button
+              type="button"
+              onClick={onOpenTips}
+              aria-label="Tips"
+              className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            >
+              <TipsIcon />
+            </button>
+          </Tooltip>
         ) : null}
         {onOpenSettings ? (
           // Settings stays visible on mobile too: it's where users go
