@@ -17,6 +17,7 @@ import {
   themeCategory,
   recolourElementForTheme,
   recolourElementsForTheme,
+  resetArrowsToTheme,
   resetThemeElement,
   resetThemeElementsToTheme,
   switchThemeBackdrop,
@@ -632,6 +633,48 @@ describe('resetThemeElement', () => {
   it('leaves sticky notes alone so the iconic amber palette survives a reset', () => {
     const sNote: StickyElement = { id: 'n', type: 'sticky', x: 0, y: 0, width: 200, height: 200 };
     expect(resetThemeElement(sNote, theme)).toEqual(sNote);
+  });
+});
+
+describe('resetArrowsToTheme (spec/42: arrows always track the theme)', () => {
+  const theme: ThemeDefinition = {
+    id: 'slate',
+    label: 'Slate',
+    backgroundColor: '#f1f5f9',
+    backgroundPattern: 'grid',
+    patternColor: '#cbd5e1',
+    elementFill: '#e2e8f0',
+    elementStroke: '#475569',
+    elementText: '#0f172a',
+  };
+
+  it('overwrites a hand-coloured arrow stroke with the theme stroke', () => {
+    const arrow: ArrowElement = {
+      id: 'a',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 10, y: 10 },
+      strokeColor: '#ff00ff', // user override
+    };
+    const [out] = resetArrowsToTheme([arrow], theme) as ArrowElement[];
+    expect(out!.strokeColor).toBe(theme.elementStroke);
+  });
+
+  it('leaves non-arrow elements untouched, including their custom colours', () => {
+    const shape: ShapeElement = {
+      id: 's',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      fillColor: '#ff00ff',
+      strokeColor: '#00ff00',
+      textColor: '#0000ff',
+    };
+    const [out] = resetArrowsToTheme([shape], theme) as ShapeElement[];
+    expect(out).toBe(shape); // referentially unchanged
   });
 });
 

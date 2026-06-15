@@ -15,6 +15,7 @@ import { useRef } from 'react';
 import { autoAlignElements } from '@/lib/auto-align';
 import {
   getTheme,
+  resetArrowsToTheme,
   resetThemeElementsToTheme,
   switchThemeBackdrop,
   switchThemeElements,
@@ -181,7 +182,14 @@ export function useTabCanvas(deps: TabCanvasDeps) {
         // and kept when the user has set it to something else). The
         // graph-aware wrapper additionally rainbows the branches when
         // either side is a multi-colour theme (spec/29).
-        const elements = switchThemeElements(t.elements, prevTheme, theme);
+        // Arrows are the exception to preserve-customs: they ALWAYS snap
+        // to the new theme's stroke (resetArrowsToTheme), so a theme pick
+        // re-tints every connector instead of leaving hand-coloured ones
+        // on the old hue. Shapes / text keep their customisations.
+        const elements = resetArrowsToTheme(
+          switchThemeElements(t.elements, prevTheme, theme),
+          theme,
+        );
         // Backdrop follows the same preserve-customs rule as the
         // elements: a deliberately-chosen pattern / colour survives a
         // theme change instead of being reset to the theme's backdrop.

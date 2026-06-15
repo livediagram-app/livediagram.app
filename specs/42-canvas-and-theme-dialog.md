@@ -27,9 +27,18 @@ The canvas-style controls, identical to the palette's **Canvas** accordion (and 
 
 The two-level **category browse** lifted from the New-diagram theme picker (`ThemeCategoryBrowser`, shared with [spec/14](14-new-diagram-route.md) so the two stay identical):
 
-- Overview shows a **Basic** quick-pick plus a card per [`THEME_CATEGORIES`](14-new-diagram-route.md) bucket (Cool / Warm / Dark / Multi-colour / Formal). Clicking a category drills into its themes with an "All themes" back affordance.
+- Overview shows a **Basic** quick-pick plus a card per [`THEME_CATEGORIES`](14-new-diagram-route.md) bucket (Cool / Warm / Dark / Multi-colour / Formal), plus a **Custom** category for the owner's saved themes ([spec/44](44-custom-themes.md)). Clicking a category drills into its themes with an "All themes" back affordance.
 - Clicking a theme applies it live; double-clicking applies and closes the dialog.
 - A **Reset elements to theme** action (same as the accordion) recolours every element on the tab to the active theme's defaults.
+
+**Arrows always track the theme.** Picking a theme keeps the per-field
+preserve-customs rule for shapes / text (a colour the user hand-set survives the
+switch), but **arrows are the one exception**: every arrow's stroke is always
+reset to the new theme's stroke, even if it was custom-coloured. A theme switch
+that left hand-coloured connectors on the old hue read as broken, so
+`setTheme` runs `resetArrowsToTheme` on top of `switchThemeElements`. It's
+palette-aware (each arrow snaps to its branch's stroke), reusing the same
+per-element resolution every theme transform uses.
 
 ### Formal themes / per-shape colours
 

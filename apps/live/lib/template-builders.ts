@@ -20,7 +20,7 @@ import {
   type Element,
   type Tab,
 } from '@livediagram/diagram';
-import { getTheme, recolourElementsForTheme, type ThemeId } from './themes';
+import { getTheme, recolourElementsForTheme } from './themes';
 import { templateCanvasOverrides, type TemplateKind } from './templates';
 import {
   buildLaptopWireframe,
@@ -45,7 +45,9 @@ import { buildComparisonTable } from './template-builders-table';
 
 export function buildTemplatedTab(
   kind: TemplateKind,
-  themeId: ThemeId,
+  // string, not ThemeId: may be a custom `custom:<uuid>` id (spec/44),
+  // which getTheme resolves via the custom-theme registry.
+  themeId: string,
   tabId: string,
   tabName: string,
 ): Tab {

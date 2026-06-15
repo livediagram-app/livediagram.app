@@ -1,13 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
-import {
-  getTheme,
-  recolourElementsForTheme,
-  switchThemeBackdrop,
-  THEMES,
-  type ThemeId,
-} from '@/lib/themes';
+import { getTheme, recolourElementsForTheme, switchThemeBackdrop, THEMES } from '@/lib/themes';
+import { isCustomThemeId } from '@/lib/custom-theme-registry';
 import { templateCanvasOverrides, type TemplateKind } from '@/lib/templates';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
@@ -61,7 +56,7 @@ export function useTemplateFlow(opts: {
     setTemplatePickerMode('welcome');
   };
 
-  const chooseTemplate = async (kind: TemplateKind, name?: string, themeId?: ThemeId) => {
+  const chooseTemplate = async (kind: TemplateKind, name?: string, themeId?: string) => {
     // Identity-only mode: the visitor is joining an existing diagram.
     // No template scaffold, no theme application — just commit the name
     // and dismiss the modal.
@@ -79,9 +74,12 @@ export function useTemplateFlow(opts: {
     // its symmetric "create with a chosen theme" event.
     track('Template', 'Used', titleCaseType(kind));
     if (themeId) {
-      const themeLabel =
-        THEMES.find((t) => t.id === themeId)?.label ??
-        themeId.charAt(0).toUpperCase() + themeId.slice(1);
+      // `type` stays a preset, never user content: a custom theme reports
+      // the fixed 'Custom' rather than its name (spec/22, /44).
+      const themeLabel = isCustomThemeId(themeId)
+        ? 'Custom'
+        : (THEMES.find((t) => t.id === themeId)?.label ??
+          themeId.charAt(0).toUpperCase() + themeId.slice(1));
       track('Theme', 'Changed', themeLabel);
     }
     // Templates flow: applying a template / theme to an existing tab.

@@ -13,19 +13,13 @@
 // New-diagram picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
-import { useState } from 'react';
 import type { BackgroundPattern } from '@livediagram/diagram';
-import type { ThemeId } from '@/lib/themes';
-import { isCustomThemeId, materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useEscape } from '@/hooks/useEscape';
-import { useCustomThemes } from './CustomThemeProvider';
 import { CanvasStyleControls } from './CanvasStyleControls';
 import { CloseIcon } from './CloseIcon';
-import { CustomThemeBuilder, type CustomThemeDraft } from './CustomThemeBuilder';
+import { CustomThemePicker } from './CustomThemePicker';
 import { ResetIcon } from './palette-icons';
 import { Portal } from './Portal';
-import { ThemeCategoryBrowser } from './ThemeCategoryBrowser';
-import { ThemeSwatch } from './ThemeSwatch';
 
 export type CanvasThemeTab = 'canvas' | 'theme';
 
@@ -66,30 +60,6 @@ export function CanvasThemeDialog({
   onClose,
 }: CanvasThemeDialogProps) {
   useEscape(onClose);
-  const { themes: customThemes, createTheme, updateTheme, deleteTheme } = useCustomThemes();
-  // null = browsing; 'new' = building a fresh theme; an id = editing it.
-  const [building, setBuilding] = useState<null | 'new' | string>(null);
-  const [saving, setSaving] = useState(false);
-
-  const editingTheme =
-    typeof building === 'string' ? customThemes.find((t) => t.id === building) : undefined;
-
-  const handleSave = async (draft: CustomThemeDraft) => {
-    setSaving(true);
-    try {
-      if (building === 'new') {
-        const created = await createTheme(draft.name, draft.definition);
-        if (created) onSetTheme(created.id);
-      } else if (editingTheme) {
-        await updateTheme(editingTheme.id, draft);
-        // Re-apply so the live tab repaints with the edited definition.
-        onSetTheme(editingTheme.id);
-      }
-      setBuilding(null);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <Portal>
@@ -160,177 +130,38 @@ export function CanvasThemeDialog({
                 patternColumns={7}
                 showAllPatterns
               />
-            ) : building !== null ? (
-              <CustomThemeBuilder
-                initial={
-                  editingTheme
-                    ? { name: editingTheme.name, definition: editingTheme.definition }
-                    : undefined
-                }
-                saving={saving}
-                onSave={handleSave}
-                onCancel={() => setBuilding(null)}
-              />
             ) : (
-              <>
-                <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-                  Sets the canvas backdrop and recolours every element on this tab to match the
-                  theme (sticky notes keep their amber palette).
-                </p>
-                {/* My themes (spec/44): the owner's saved custom themes plus
-                    a New-theme card that opens the builder. */}
-                <div className="mt-3">
-                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    My themes
+              <CustomThemePicker
+                themeId={themeId}
+                onSelect={onSetTheme}
+                onCommit={(id) => {
+                  onSetTheme(id);
+                  onClose();
+                }}
+                info={
+                  <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+                    Sets the canvas backdrop and recolours every element on this tab to match the
+                    theme (sticky notes keep their amber palette).
                   </p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {customThemes.map((t) => (
-                      <CustomThemeCard
-                        key={t.id}
-                        theme={t}
-                        active={themeId === t.id}
-                        onApply={() => onSetTheme(t.id)}
-                        onEdit={() => setBuilding(t.id)}
-                        onDelete={() => {
-                          if (themeId === t.id) onSetTheme('brand');
-                          deleteTheme(t.id);
-                        }}
-                      />
-                    ))}
-                    <NewThemeCard onClick={() => setBuilding('new')} />
+                }
+                footer={
+                  <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={onResetElementsToTheme}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+                    >
+                      <ResetIcon />
+                      Reset elements to theme
+                    </button>
                   </div>
-                </div>
-                <ThemeCategoryBrowser
-                  // A custom theme is highlighted in the row above, not in
-                  // the built-in grid, so the browser sees 'brand' then.
-                  themeId={isCustomThemeId(themeId) ? 'brand' : (themeId as ThemeId)}
-                  onSelect={onSetTheme}
-                  onCommit={(id) => {
-                    onSetTheme(id);
-                    onClose();
-                  }}
-                  className="mt-4"
-                />
-                <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={onResetElementsToTheme}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
-                  >
-                    <ResetIcon />
-                    Reset elements to theme
-                  </button>
-                </div>
-              </>
+                }
+              />
             )}
           </div>
         </div>
       </div>
     </Portal>
-  );
-}
-
-// A saved custom theme: its swatch preview + name, click to apply, with
-// hover Edit / Delete affordances.
-function CustomThemeCard({
-  theme,
-  active,
-  onApply,
-  onEdit,
-  onDelete,
-}: {
-  theme: import('@livediagram/api-schema').CustomTheme;
-  active: boolean;
-  onApply: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
-  return (
-    <div
-      className={
-        'group relative flex flex-col gap-1 rounded-lg border p-1.5 text-left transition ' +
-        (active
-          ? 'border-brand-400 ring-1 ring-brand-300 dark:border-brand-500'
-          : 'border-slate-200 hover:border-brand-300 dark:border-slate-700 dark:hover:border-brand-500/60')
-      }
-    >
-      <button
-        type="button"
-        onClick={onApply}
-        className="flex flex-col gap-1"
-        aria-label={theme.name}
-      >
-        <ThemeSwatch theme={materialiseCustomTheme(theme)} size="md" />
-        <span className="truncate text-[11px] font-medium text-slate-700 dark:text-slate-200">
-          {theme.name}
-        </span>
-      </button>
-      <div className="absolute right-1 top-1 flex gap-0.5 opacity-0 transition group-hover:opacity-100">
-        <button
-          type="button"
-          onClick={onEdit}
-          aria-label={`Edit ${theme.name}`}
-          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-600 dark:bg-slate-800/90 dark:text-slate-300"
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            aria-hidden
-          >
-            <path d="M11.5 2.5l2 2L6 12l-3 1 1-3z" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          onClick={onDelete}
-          aria-label={`Delete ${theme.name}`}
-          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-rose-600 dark:bg-slate-800/90 dark:text-slate-300"
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            aria-hidden
-          >
-            <path
-              d="M3.5 4.5h9M6.5 4.5V3h3v1.5M5 4.5l.5 8h5l.5-8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function NewThemeCard({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex min-h-[3.75rem] flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-brand-500/60 dark:hover:text-brand-300"
-    >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        aria-hidden
-      >
-        <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
-      </svg>
-      <span className="text-[11px] font-medium">New theme</span>
-    </button>
   );
 }
 

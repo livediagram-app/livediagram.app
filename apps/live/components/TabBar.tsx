@@ -6,7 +6,10 @@ import { ConfirmPopover } from './ConfirmPopover';
 import {
   folderNamesInDiagram,
   groupTabsIntoRuns,
+  isLightColor,
+  shade,
   tabFolderName,
+  tint,
   type Tab,
   type TabTimer,
   type TabVote,
@@ -61,6 +64,21 @@ import { Tooltip } from './Tooltip';
 const DEFAULT_TAB_ACCENT = 'rgb(2 132 199)';
 function tabAccent(tab: Tab): string {
   return getTheme(tab.theme).elementStroke ?? DEFAULT_TAB_ACCENT;
+}
+
+// The raw accent is a theme's element stroke, which can vanish against the
+// bar's surface (white in light mode, slate-900 in dark): a custom theme's
+// white stroke is invisible on the light bar, a near-black one on the dark
+// bar. Keep the accent's hue but push it into the legible half for the
+// current surface — darken a too-light accent on the light bar, lighten a
+// too-dark one on the dark bar. Reuses the diagram package's
+// tint/shade/isLightColor (same perceived-brightness threshold the canvas
+// uses). isLightColor/tint/shade only parse `#rrggbb`, so the non-hex
+// DEFAULT_TAB_ACCENT falls through untouched — it already reads on both.
+function legibleTabAccent(tab: Tab, isDark: boolean): string {
+  const raw = tabAccent(tab);
+  if (isDark) return isLightColor(raw) ? raw : tint(raw, 0.6);
+  return isLightColor(raw) ? shade(raw, 0.6) : raw;
 }
 
 // Canvas-scoped actions folded into the unified tab / canvas menu: change
@@ -227,6 +245,11 @@ export function TabBar({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  // Drives the per-tab accent's legibility guard: the bar is white in
+  // light mode, slate-900 in dark, so a stroke that reads on one can
+  // vanish on the other.
+  const { mode } = useUiMode();
+  const isDark = mode === 'dark';
 
   // Distinct folder names in this diagram, for the "Add to Folder"
   // menu's pick list (spec/30).
@@ -352,8 +375,8 @@ export function TabBar({
               }
         }
         style={{
-          color: tabAccent(tab),
-          ...(isActive ? { backgroundColor: `${tabAccent(tab)}1a` } : {}),
+          color: legibleTabAccent(tab, isDark),
+          ...(isActive ? { backgroundColor: `${legibleTabAccent(tab, isDark)}1a` } : {}),
         }}
         className={`relative flex shrink-0 items-center gap-1 rounded-md px-2 transition ${
           isActive ? '' : 'hover:bg-slate-100'

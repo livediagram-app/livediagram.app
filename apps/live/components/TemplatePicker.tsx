@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CloseIcon } from './CloseIcon';
 import { useEscape } from '@/hooks/useEscape';
 import type { Participant } from '@/lib/identity';
@@ -6,10 +6,9 @@ import { initialsOf, randomName } from '@/lib/identity';
 import { shufflePinned } from '@/lib/shuffle';
 import type { TemplateCategory, TemplateKind } from '@/lib/templates';
 import { TEMPLATE_CATEGORIES, TEMPLATES, templateCategory } from '@/lib/templates';
-import { type ThemeId } from '@/lib/themes';
 import { AnimatedHeightBox } from './AnimatedHeightBox';
+import { CustomThemePicker } from './CustomThemePicker';
 import { CategoryCard, TemplateCard } from './template-picker-cards';
-import { ThemeCategoryBrowser } from './ThemeCategoryBrowser';
 import { Tooltip } from './Tooltip';
 
 type TemplatePickerProps = {
@@ -25,8 +24,9 @@ type TemplatePickerProps = {
   // in welcome mode and hidden in templates-only mode.
   participant: Participant;
   // Theme currently applied to the active tab — used as the initial /
-  // only theme in templates-only mode.
-  currentThemeId: ThemeId;
+  // only theme in templates-only mode. A string, not ThemeId, because it
+  // can be a custom `custom:<uuid>` id (spec/44).
+  currentThemeId: string;
   // Name of the diagram being joined. Used by the 'identity' mode to
   // greet visitors with the actual diagram name ("Welcome to 'API
   // sketch'") instead of the generic "Welcome to this diagram".
@@ -37,20 +37,27 @@ type TemplatePickerProps = {
   // different identity on someone else's diagram. Has no effect in
   // 'welcome' / 'templates' modes (no identity row to lock).
   lockedName?: string | null;
-  onPick: (kind: TemplateKind, name: string, themeId: ThemeId) => void;
+  onPick: (kind: TemplateKind, name: string, themeId: string) => void;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
-  // the header (all modes) or the Cancel button (non-welcome modes only —
-  // the welcome screen has no Skip/Cancel, just Create + the header X).
+  // the header (all modes) or the Cancel button (non-welcome modes only:
+  // the welcome wizard offers Skip instead, which commits Blank + Basic).
   onSkip: () => void;
+  // True while the host is committing the pick (the new-diagram POST can
+  // take a moment). Drives the primary button's spinner + disabled state
+  // so the user gets feedback and can't double-submit.
+  busy?: boolean;
+  // When provided (welcome flow), a bottom-left "Open Existing Diagram"
+  // button navigates away to the Explorer, so this screen can stay focused
+  // on creating without rendering an Explorer panel of its own.
+  onOpenExisting?: () => void;
 };
 
-// The "Start a new diagram" modal — now also the welcome screen. Lets the
-// user adjust their display name (pre-filled with a generated one), pick a
-// template AND a theme, then explicitly confirms with a Create button.
-// Multi-step pick-then-confirm replaced the previous one-click flow so
-// users can preview their choices before committing.
+// The "Start a new diagram" modal, also the welcome screen. In welcome
+// mode it's a two-step wizard (template, then theme); other modes keep a
+// single page. Picking is confirmed explicitly (Create / Apply / Join) so
+// users can review their choices before committing.
 export function TemplatePicker({
   mode,
   participant,
@@ -59,6 +66,8 @@ export function TemplatePicker({
   lockedName,
   onPick,
   onSkip,
+  busy = false,
+  onOpenExisting,
 }: TemplatePickerProps) {
   useEscape(onSkip);
   const isWelcome = mode === 'welcome';
@@ -80,8 +89,16 @@ export function TemplatePicker({
   const nameLocked = !!lockedName;
   const [templateKind, setTemplateKind] = useState<TemplateKind>('blank');
   // Free-text filter for the template grid (title / description / kind /
-  // category label). Empty = show the whole catalogue.
+  // category label). Empty = show the whole catalogue. The input updates
+  // `templateQuery` instantly (responsive caret), but filtering reads a
+  // debounced copy so a fast typist doesn't thrash the grid (and the
+  // height-animated container) on every keystroke.
   const [templateQuery, setTemplateQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedQuery(templateQuery), 180);
+    return () => clearTimeout(id);
+  }, [templateQuery]);
   // Which category the user has drilled into on the overview, or null
   // for the top-level overview (Blank quick-pick + a card per category).
   // A non-empty search query overrides this and shows flat results.
@@ -89,7 +106,14 @@ export function TemplatePicker({
   // Initial theme is whatever the caller hands us: the /new flow passes
   // 'brand' (so Basic is pre-selected for a fresh diagram), while a new
   // tab copying an existing one passes that tab's theme.
-  const [themeId, setThemeId] = useState<ThemeId>(currentThemeId);
+  const [themeId, setThemeId] = useState<string>(currentThemeId);
+  // Welcome mode is a two-step wizard: pick a template, then a theme
+  // (spec/14). Other modes keep the single-page layout. `themeBuilding`
+  // tracks whether the theme step's custom-theme builder is open, so the
+  // wizard hides its own Back / Create footer while the builder owns the
+  // surface (the builder has its own Save / Cancel).
+  const [step, setStep] = useState<'template' | 'theme'>('template');
+  const [themeBuilding, setThemeBuilding] = useState(false);
   // Rotate which templates greet the user on each open so people keep
   // discovering options beyond the usual first rows, but always pin Blank
   // first. Shuffled once per mount via lazy useState so clicking around
@@ -101,7 +125,7 @@ export function TemplatePicker({
   // Keyword filter over the shuffled catalogue. Matches title /
   // description / kind / category label so "design", "uml", "wireframe"
   // etc. all narrow the grid; empty query passes everything through.
-  const templateFilter = templateQuery.trim().toLowerCase();
+  const templateFilter = debouncedQuery.trim().toLowerCase();
   const filteredTemplates = templateFilter
     ? templates.filter((t) => {
         const catLabel =
@@ -119,6 +143,23 @@ export function TemplatePicker({
   const categoryTemplates = (category: TemplateCategory) =>
     templates.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === category);
 
+  // Section visibility. In the welcome wizard only the active step's
+  // section shows; every other mode keeps both (template + theme) on one
+  // page. Identity mode shows neither.
+  const showTemplateSection = showTemplates && (!isWelcome || step === 'template');
+  const showThemeSection = showThemes && (!isWelcome || step === 'theme');
+  // Skip the wizard entirely: the documented shortcut is Blank template +
+  // Basic theme (spec/14), committed straight away.
+  const skipToDefaults = () => onPick('blank', effectiveName, 'brand');
+  // Double-clicking a template: in the welcome wizard, advance to the
+  // theme step (the user still needs to choose a theme) rather than
+  // committing the whole wizard. In templates mode it commits, as before.
+  const onTemplateCommit = (kind: TemplateKind) => {
+    setTemplateKind(kind);
+    if (isWelcome) setStep('theme');
+    else onPick(kind, effectiveName, themeId);
+  };
+
   return (
     <div
       onPointerDown={(e) => e.stopPropagation()}
@@ -130,38 +171,45 @@ export function TemplatePicker({
         aria-label={isIdentity ? 'Confirm your name' : 'Start a new diagram'}
         className={`pointer-events-auto flex h-full w-full animate-fly-up-in flex-col bg-white dark:bg-slate-900 sm:h-auto sm:max-h-[90vh] ${isIdentity ? 'sm:w-[26rem]' : 'sm:w-[44rem]'} sm:max-w-[92%] sm:rounded-xl sm:border sm:border-slate-200 sm:shadow-2xl sm:shadow-slate-900/10 dark:sm:border-slate-800 dark:sm:shadow-black/40`}
       >
-        <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              {isWelcome
-                ? 'New Diagram'
-                : isIdentity
-                  ? diagramName && diagramName.trim()
-                    ? `Welcome to '${diagramName.trim()}'`
-                    : 'Welcome to this diagram'
-                  : 'Pick a template'}
-            </h2>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              {isWelcome
-                ? 'Pick a template and a theme to start with.'
-                : isIdentity
-                  ? nameLocked
-                    ? 'This is the name from your account; others will see it on this diagram.'
-                    : 'Pick the name people will see while you collaborate on this diagram.'
-                  : 'Pick a template and theme to apply to this tab.'}
-            </p>
+        <div className="flex flex-col gap-4 border-b border-slate-100 px-6 pt-6 pb-5 dark:border-slate-800">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                {isWelcome
+                  ? 'New Diagram'
+                  : isIdentity
+                    ? diagramName && diagramName.trim()
+                      ? `Welcome to '${diagramName.trim()}'`
+                      : 'Welcome to this diagram'
+                    : 'Pick a template'}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                {isWelcome
+                  ? step === 'template'
+                    ? 'Choose a template to start from.'
+                    : 'Pick a theme, or build your own.'
+                  : isIdentity
+                    ? nameLocked
+                      ? 'This is the name from your account; others will see it on this diagram.'
+                      : 'Pick the name people will see while you collaborate on this diagram.'
+                    : 'Pick a template and theme to apply to this tab.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onSkip}
+              aria-label="Close"
+              className="-mr-2 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <CloseIcon />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onSkip}
-            aria-label="Close"
-            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon />
-          </button>
+          {/* Step indicator: a modern two-segment progress rail so the
+              wizard reads as 1 of 2 at a glance. Welcome mode only. */}
+          {isWelcome ? <WizardSteps step={step} onStep={setStep} /> : null}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-6 pt-5 pb-8">
           {/* Identity row — first-run welcome + join-existing-diagram flows. */}
           {showIdentity ? (
             <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
@@ -215,7 +263,7 @@ export function TemplatePicker({
 
           {/* Template grid. 4 columns at wide widths so the picker uses the
               modal width instead of stretching cards vertically. */}
-          {showTemplates ? (
+          {showTemplateSection ? (
             <>
               <div
                 className={`flex items-center justify-between gap-3 ${showIdentity ? 'mt-5' : ''}`}
@@ -257,7 +305,7 @@ export function TemplatePicker({
                           template={t}
                           active={templateKind === t.kind}
                           onSelect={() => setTemplateKind(t.kind)}
-                          onCommit={() => onPick(t.kind, effectiveName, themeId)}
+                          onCommit={() => onTemplateCommit(t.kind)}
                         />
                       ))}
                     </div>
@@ -287,7 +335,7 @@ export function TemplatePicker({
                           template={t}
                           active={templateKind === t.kind}
                           onSelect={() => setTemplateKind(t.kind)}
-                          onCommit={() => onPick(t.kind, effectiveName, themeId)}
+                          onCommit={() => onTemplateCommit(t.kind)}
                         />
                       ))}
                     </div>
@@ -299,7 +347,7 @@ export function TemplatePicker({
                         template={blankTemplate}
                         active={templateKind === 'blank'}
                         onSelect={() => setTemplateKind('blank')}
-                        onCommit={() => onPick('blank', effectiveName, themeId)}
+                        onCommit={() => onTemplateCommit('blank')}
                       />
                     ) : null}
                     {TEMPLATE_CATEGORIES.map((cat) => {
@@ -325,38 +373,100 @@ export function TemplatePicker({
             </>
           ) : null}
 
-          {/* Theme picker — two-level browse mirroring the template grid:
-              a Brand quick-pick + a card per colour-temperament category;
-              clicking a category drills into its themes (with a Back
-              affordance). Only in flows that pick a theme; identity-only
-              mode skips it. */}
-          {showThemes ? (
+          {/* Theme picker: a two-level browse (Basic quick-pick, a card per
+              colour-temperament category, plus a Custom category for the
+              owner's saved themes). Reuses the exact picker the right-click
+              Tab Appearance dialog renders (spec/42, /44) so the two can't
+              drift. Shown as step 2 of the welcome wizard, or stacked under
+              the template grid in templates mode. */}
+          {showThemeSection ? (
             <>
-              <p className="mt-5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Select a theme
-              </p>
-              <ThemeCategoryBrowser
+              {!isWelcome ? (
+                <p className="mt-5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Select a theme
+                </p>
+              ) : null}
+              <CustomThemePicker
                 themeId={themeId}
                 onSelect={setThemeId}
                 onCommit={(id) => onPick(templateKind, effectiveName, id)}
-                className="mt-2"
+                onBuildingChange={isWelcome ? setThemeBuilding : undefined}
+                browserClassName={isWelcome ? 'mt-1' : 'mt-2'}
               />
             </>
           ) : null}
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
-          <p className="mr-auto text-[11px] text-slate-500 dark:text-slate-400">
-            {isWelcome
-              ? 'You can change these later from the Palette.'
-              : isIdentity
+        {/* Footer. The welcome wizard swaps its controls per step (Skip /
+            Next on the template step, Back / Create on the theme step) and
+            hides entirely while the theme step's builder is open, since the
+            builder carries its own Save / Cancel. Other modes keep the flat
+            Cancel + Apply / Join row. */}
+        {isWelcome ? (
+          themeBuilding ? null : (
+            <div className="flex items-center gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+              {/* Escape hatch on the far left: jump to the Explorer to open
+                  an existing diagram instead of creating one. */}
+              {onOpenExisting ? (
+                <button
+                  type="button"
+                  onClick={onOpenExisting}
+                  className="mr-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                >
+                  <FolderOpenIcon />
+                  Open Existing Diagram
+                </button>
+              ) : null}
+              {/* Back, Skip and the primary Next / Create action cluster on
+                  the right. */}
+              {step === 'theme' ? (
+                <button
+                  type="button"
+                  onClick={() => setStep('template')}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                >
+                  <ArrowLeftIcon />
+                  Back
+                </button>
+              ) : null}
+              {/* Skip the wizard: Blank template, Basic theme (spec/14). */}
+              <button
+                type="button"
+                onClick={skipToDefaults}
+                disabled={busy}
+                className="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                Skip
+              </button>
+              {step === 'template' ? (
+                <button
+                  type="button"
+                  onClick={() => setStep('theme')}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
+                >
+                  Next
+                  <ArrowRightIcon />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onPick(templateKind, effectiveName, themeId)}
+                  disabled={busy}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {busy ? <Spinner /> : <SparkleIcon />}
+                  {busy ? 'Creating…' : 'Create Diagram'}
+                </button>
+              )}
+            </div>
+          )
+        ) : (
+          <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+            <p className="mr-auto text-[11px] text-slate-500 dark:text-slate-400">
+              {isIdentity
                 ? 'Other participants will see this name on your cursor and comments.'
                 : ''}
-          </p>
-          {/* No Skip button on the welcome / new-diagram screen — Create is
-              the only forward action, and the header X still dismisses to a
-              blank canvas. Other modes keep their Cancel escape. */}
-          {!isWelcome ? (
+            </p>
             <button
               type="button"
               onClick={onSkip}
@@ -364,18 +474,165 @@ export function TemplatePicker({
             >
               Cancel
             </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => onPick(templateKind, effectiveName, themeId)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
-          >
-            <SparkleIcon />
-            {isWelcome ? 'Create' : isIdentity ? 'Join' : 'Apply'}
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => onPick(templateKind, effectiveName, themeId)}
+              className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
+            >
+              <SparkleIcon />
+              {isIdentity ? 'Join' : 'Apply'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+// Two-segment progress rail for the welcome wizard. Step 1 is clickable
+// (acts as Back) once the user has advanced to the theme step.
+function WizardSteps({
+  step,
+  onStep,
+}: {
+  step: 'template' | 'theme';
+  onStep: (s: 'template' | 'theme') => void;
+}) {
+  const onTheme = step === 'theme';
+  return (
+    <div className="flex items-center gap-3">
+      <StepChip
+        n={1}
+        label="Template"
+        state={onTheme ? 'done' : 'active'}
+        onClick={() => onStep('template')}
+      />
+      <div
+        className={`h-0.5 flex-1 rounded-full transition-colors ${
+          onTheme ? 'bg-brand-400 dark:bg-brand-500' : 'bg-slate-200 dark:bg-slate-700'
+        }`}
+      />
+      <StepChip
+        n={2}
+        label="Theme"
+        state={onTheme ? 'active' : 'upcoming'}
+        onClick={() => onStep('theme')}
+      />
+    </div>
+  );
+}
+
+function StepChip({
+  n,
+  label,
+  state,
+  onClick,
+}: {
+  n: number;
+  label: string;
+  state: 'active' | 'done' | 'upcoming';
+  onClick?: () => void;
+}) {
+  const lit = state === 'active' || state === 'done';
+  const circle = lit
+    ? 'bg-brand-500 text-white shadow-sm shadow-brand-500/30'
+    : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
+  const text = lit ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500';
+  const inner = (
+    <>
+      <span
+        className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${circle}`}
+      >
+        {state === 'done' ? (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+            <path
+              d="M2.5 6.2 5 8.5l4.5-5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : (
+          n
+        )}
+      </span>
+      <span className={`text-xs font-medium transition-colors ${text}`}>{label}</span>
+    </>
+  );
+  return onClick ? (
+    <button type="button" onClick={onClick} className="flex items-center gap-2">
+      {inner}
+    </button>
+  ) : (
+    <div className="flex items-center gap-2">{inner}</div>
+  );
+}
+
+function ArrowRightIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M3.5 8h9M9 4.5 12.5 8 9 11.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ArrowLeftIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M12.5 8h-9M7 4.5 3.5 8 7 11.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function FolderOpenIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.3l1.2 1.5h5.5A1.5 1.5 0 0 1 14 6" />
+      <path d="M2 6h11.2a1 1 0 0 1 .97 1.24l-1 4A1 1 0 0 1 12.2 12H3.3a1 1 0 0 1-.98-.8L1.3 6.2A1 1 0 0 1 2.28 5H2z" />
+    </svg>
+  );
+}
+
+// Inline spinner for the Create Diagram button while the host commits.
+function Spinner() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      className="animate-spin"
+      aria-hidden
+    >
+      <circle cx="8" cy="8" r="6" strokeOpacity="0.25" />
+      <path d="M14 8a6 6 0 0 0-6-6" />
+    </svg>
   );
 }
 

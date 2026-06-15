@@ -319,7 +319,9 @@ export type CanvasProps = {
   onChooseTemplate: (
     kind: TemplateKind,
     name: string,
-    themeId: import('@/lib/themes').ThemeId,
+    // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
+    // theme id (spec/44).
+    themeId: string,
   ) => void;
   onSkipTemplatePicker: () => void;
   onOpenTemplatePicker: () => void;

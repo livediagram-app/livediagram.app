@@ -534,6 +534,46 @@ export const THEMES: ThemeDefinition[] = [
 // THEME_CATEGORIES order and skips empties.
 export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour' | 'formal';
 
+// Short, user-facing blurb per built-in theme, shown under the label on
+// the picker's theme cards (spec/14). A `Record<ThemeId, string>` so the
+// compiler forces every theme to carry one: add a ThemeId without a line
+// here and the build fails, which is how this can't drift from THEMES.
+// Custom themes have no entry (their card shows just the saved name).
+const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
+  brand: 'The plain, un-themed default.',
+  slate: 'Soft pinks on a blush canvas.',
+  forest: 'Deep greens on a leafy canvas.',
+  sunset: 'Warm oranges and burnt amber.',
+  lavender: 'Gentle purples on pale violet.',
+  mono: 'Crisp black on white, no grid.',
+  ocean: 'Cool cyans on a sea-glass canvas.',
+  sky: 'Bright blues on a clear canvas.',
+  midnight: 'Light slate on deep navy.',
+  cream: 'Golden tones on warm ivory.',
+  rose: 'Rich reds on a soft pink canvas.',
+  sand: 'Neutral stone and warm greys.',
+  olive: 'Muted greens on a pale lime canvas.',
+  indigo: 'Deep indigo on a cool canvas.',
+  pine: 'Light foliage on forest green.',
+  steel: 'Cool greys with a slate edge.',
+  mocha: 'Coffee browns on warm cream.',
+  charcoal: 'Neutral greys on near-black.',
+  plum: 'Soft violets on deep plum.',
+  abyss: 'Aqua tones on deep teal.',
+  espresso: 'Warm tan on dark-roast brown.',
+  rainbow: 'A different hue per branch.',
+  pastel: 'Soft multi-colour, a hue per branch.',
+  tropical: 'Bright, summery hues per branch.',
+  autumn: 'Warm reds, golds and browns.',
+  jewel: 'Rich, saturated gem tones.',
+  uml: 'Standard notation, each shape its colour.',
+};
+
+// The blurb for a theme id, or undefined for an unknown / custom id.
+export function themeDescription(id: string): string | undefined {
+  return (THEME_DESCRIPTIONS as Record<string, string>)[id];
+}
+
 export const THEME_CATEGORIES: { id: ThemeCategory; label: string; description: string }[] = [
   { id: 'cool', label: 'Cool', description: 'Blues, greens and purples.' },
   { id: 'warm', label: 'Warm', description: 'Reds, oranges and earthy tones.' },
@@ -965,6 +1005,21 @@ export function switchThemeElements(
 export function resetThemeElementsToTheme(elements: Element[], theme: ThemeDefinition): Element[] {
   const branches = theme.palette ? assignBranches(elements) : null;
   return elements.map((el) => resetThemeElement(el, elementThemeView(theme, el, branches)));
+}
+
+// Force every ARROW back to the theme's stroke, overwriting any
+// per-arrow custom colour, while leaving non-arrow elements untouched.
+// Picking a theme runs the preserve-customs `switchThemeElements` for
+// shapes/text/etc., then this on top so connectors ALWAYS track the
+// theme rather than drifting once a user has hand-coloured one (a tidy
+// recolour reads as broken if the lines stay the old hue). Palette-aware:
+// each arrow snaps to its branch's stroke via the same per-element view
+// every other transform uses, so there's no parallel colour path.
+export function resetArrowsToTheme(elements: Element[], theme: ThemeDefinition): Element[] {
+  const branches = theme.palette ? assignBranches(elements) : null;
+  return elements.map((el) =>
+    el.type === 'arrow' ? resetThemeElement(el, elementThemeView(theme, el, branches)) : el,
+  );
 }
 
 // Colour projection for a NEWLY-added boxed element, given the

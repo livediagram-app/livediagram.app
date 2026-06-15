@@ -235,6 +235,60 @@ count-based mode of `hooks/useShowMoreList.ts`. The per-tab Current Tab
 theme/pattern grids (`components/TabSection.tsx`) keep their stable,
 flag-gated order — only the new-diagram / template picker shuffles.
 
+## Two-step wizard
+
+The welcome screen is a **two-step wizard** rather than one long page:
+
+- **Step 1: Template.** The template browse (search, categories, drill-in).
+  Footer: **Skip** and **Next**. Double-clicking a template card advances to
+  step 2 (it does not commit the whole wizard, so the user still picks a theme).
+- **Step 2: Theme.** The theme browse (below). Footer: **Back** (left arrow),
+  **Skip**, and **Create Diagram**.
+- A **two-segment progress rail** at the top shows the current step; clicking
+  either segment ("1 Template" / "2 Theme") jumps straight to that step.
+- **Skip** (either step) commits the documented defaults straight away: the
+  **Blank** template and the **Basic** theme. (This is why the welcome screen now
+  has a Skip control where it previously had none.) The header **X** still
+  dismisses.
+- A bottom-left **Open Existing Diagram** button navigates to `/explorer`. The
+  `/new` route therefore does **not** render an Explorer panel of its own (it
+  used to float one as the escape hatch); the button is the single, unambiguous
+  way out, which is less confusing.
+- The **Create Diagram** button shows an inline spinner and disables while the
+  create POST is in flight (`busy` prop, fed from the page's `submitting`
+  state), so a slow network gives feedback and can't double-submit.
+
+The wizard renders **immediately** with no identity spinner: step 1 is static
+template data, so there's nothing to wait for. Identity resolves in the
+background and the picker is keyed on the resolved id so the participant name
+isn't the placeholder. Only the welcome flow is a wizard; the in-editor "Browse
+templates" (templates mode) and the visitor identity prompt keep their
+single-page layout.
+
+A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
+the card: thick multi-colour curved lines that slowly flow along their paths via
+animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
+`pointer-events-none` / `aria-hidden`, and stands down under
+`prefers-reduced-motion`.
+
+## Custom themes in the picker
+
+The theme step shows the owner's **custom themes** ([spec/44](44-custom-themes.md))
+as a **Custom** category in the browse, alongside the built-in colour categories.
+Its drill-in lists the saved themes (apply / edit / delete) plus a **+ New theme**
+card that opens the builder in place. This is the same `CustomThemePicker` the
+right-click Tab Appearance dialog renders, so the two surfaces (and the
+create/edit flow) stay identical. The `/new` route mounts a `CustomThemeProvider`
+so the saved themes load here. The chosen theme (built-in or `custom:<uuid>`)
+flows through the unchanged create path; the theme-id types along it (`onPick`,
+`commitNewDiagram`, `buildTemplatedTab`) are `string` rather than `ThemeId` to
+carry the custom id.
+
+Inside a category drill-in, each built-in theme card shows a short **description**
+under its label (now that the theme step has room), sourced from an exhaustive
+`Record<ThemeId, string>` (`themeDescription`) so the compiler forces every theme
+to carry one. Custom theme cards show just the saved name.
+
 ## API impact
 
 - No new endpoints. `POST /api/diagrams` already accepts an

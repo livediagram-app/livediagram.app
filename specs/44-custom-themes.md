@@ -86,8 +86,8 @@ A React context (`CustomThemeProvider`) tracks the list reactively so the picker
 
 The Theme tab of the Tab Appearance dialog ([spec/42](42-canvas-and-theme-dialog.md)) gains:
 
-- A **My themes** row at the top of the overview (above the built-in category cards): the owner's saved custom themes as cards, plus a **+ New theme** card.
-- **+ New theme** (or **Edit** on a saved card) opens the **theme builder** in place of the category grid, with a `← Back` affordance.
+- A **Custom** category in the theme browse, sitting alongside the built-in colour categories. Its drill-in lists the owner's saved themes as cards (apply / edit / delete) plus a **+ New theme** card, with a short explainer line. (This replaced an earlier "My themes" row: presenting custom themes as just another category keeps the browse uniform.)
+- **+ New theme** (or **Edit** on a saved card) opens the **theme builder** in place of the category grid, with a `Back` affordance.
 
 The builder is **fast by default, deep on demand**:
 
@@ -104,6 +104,20 @@ The Explorer ([spec/15](15-folders.md)) gains a **Themes** entry under its **Lib
 - Route `/explorer/themes`; sidebar row with a palette glyph; `SelectedNode` gains `{ kind: 'themes' }`.
 - The pane lists the owner's custom themes as cards (each a `ThemeSwatch` preview + name + element count), with **New theme**, **Edit** (opens the same builder, presented as a standalone modal here), **Duplicate**, and **Delete** (confirm) actions.
 - Deleting a theme that a diagram still references is safe: `getTheme` falls back to the default, so the diagram keeps rendering (it just loses the custom look). No cascading rewrite.
+
+## New-diagram / template picker
+
+The New-diagram theme picker ([spec/14](14-new-diagram-route.md)) shows the same
+**Custom** category and **+ New theme** builder as the Tab Appearance Theme tab,
+so a user can apply (or author) one of their saved themes at the moment they
+start a diagram. Both surfaces render one shared `CustomThemePicker` (which owns
+the builder state and wires the custom category into `ThemeCategoryBrowser`), so
+they can't drift. The `/new` route mounts its own `CustomThemeProvider`
+(owner-scoped to the resolved self id) so the registry is populated there too;
+the editor and Explorer already mount one. The chosen id (built-in or
+`custom:<uuid>`) rides the existing template-create path (`onPick`,
+`buildTemplatedTab`, `Tab.theme`), all widened from `ThemeId` to `string` for the
+custom case.
 
 ## Telemetry
 
