@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { EditorHeader } from '@/components/EditorHeader';
 import { Explorer } from '@/components/Explorer';
@@ -25,6 +25,12 @@ const LOAD_ERROR_MESSAGE =
 // flag. The /live/embed route passes it; the /diagram route doesn't.
 export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   const state = useEditorState({ embed });
+  // Tab title reflects the diagram: "<name> | livediagram" (falls back to
+  // Untitled when the diagram has no name yet). Updates as the user renames.
+  useEffect(() => {
+    const name = state.diagramName?.trim();
+    document.title = `${name || 'Untitled diagram'} | livediagram`;
+  }, [state.diagramName]);
   const {
     diagramNotFound,
     loadError,

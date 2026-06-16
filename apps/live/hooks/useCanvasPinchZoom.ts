@@ -149,9 +149,18 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       if (!canvasEl || !canvasEl.contains(e.target as Node)) return;
       // Floating panels (palette, etc.) render over the canvas but own
       // their own scroll — don't hijack their wheel to pan/zoom the canvas
-      // (the canvas pointer handlers guard the same way). Without this, the
-      // pan-on-wheel behaviour swallowed panel scrolling entirely.
+      // (the canvas pointer handlers guard the same way).
       if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
+      // Belt-and-braces: also bail if the cursor is over ANY element that
+      // can scroll on its own (a panel's icon list, a dropdown, a menu),
+      // so the wheel scrolls THAT rather than panning the canvas behind it.
+      for (let node = e.target as Element | null; node && node !== canvasEl; ) {
+        if (node.scrollHeight > node.clientHeight) {
+          const oy = getComputedStyle(node).overflowY;
+          if (oy === 'auto' || oy === 'scroll') return;
+        }
+        node = node.parentElement;
+      }
       // Ctrl covers trackpad pinch (synthesised ctrlKey) and the Windows /
       // Linux zoom modifier; Cmd (metaKey) is the Mac mouse-wheel modifier.
       if (e.ctrlKey || e.metaKey) {
