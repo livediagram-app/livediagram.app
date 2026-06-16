@@ -120,61 +120,6 @@ export function SquareMenuIcon() {
   );
 }
 
-export function StickyMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M3 3h10v7l-3 3H3z" />
-      <path d="M13 10h-3v3" />
-    </svg>
-  );
-}
-
-export function PencilMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M11.5 2.5 13.5 4.5 5.5 12.5 3 13 3.5 10.5z" />
-      <path d="M10 4 12 6" />
-    </svg>
-  );
-}
-
-export function AnnotationMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M3 3h10v7H7l-3 3v-3H3z" />
-    </svg>
-  );
-}
-
 export function PaletteMenuIcon() {
   return (
     <svg
