@@ -103,7 +103,6 @@ export function CustomThemeBuilder({
   // don't auto-derive over them. When creating, derive until touched.
   const [textTouched, setTextTouched] = useState(!!initial);
   const [patternColorTouched, setPatternColorTouched] = useState(!!initial);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [patternOpen, setPatternOpen] = useState(false);
   const [shapesOpen, setShapesOpen] = useState(false);
   // Format-painter clipboard.
@@ -198,7 +197,7 @@ export function CustomThemeBuilder({
           (the whole point) reads at a glance. */}
       <div className="flex flex-col gap-1.5">
         <FieldLabel>Base colours</FieldLabel>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <ColorTile
             label="Background"
             value={def.backgroundColor}
@@ -217,15 +216,6 @@ export function CustomThemeBuilder({
             onChange={setStroke}
             painter={painter}
           />
-        </div>
-      </div>
-
-      <ExpandRow
-        label="Customise details"
-        open={detailsOpen}
-        onToggle={() => setDetailsOpen((o) => !o)}
-      >
-        <div className="grid grid-cols-2 gap-2">
           <ColorTile
             label="Text"
             value={def.elementText ?? FALLBACK_TEXT}
@@ -236,7 +226,7 @@ export function CustomThemeBuilder({
             painter={painter}
           />
         </div>
-      </ExpandRow>
+      </div>
 
       <ExpandRow label="Pattern" open={patternOpen} onToggle={() => setPatternOpen((o) => !o)}>
         <div className="grid grid-cols-2 gap-2">
