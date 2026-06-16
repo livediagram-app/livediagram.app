@@ -326,7 +326,7 @@ export function TemplatePicker({
                     onChange={(e) => setTemplateQuery(e.target.value)}
                     placeholder="Search templates"
                     aria-label="Search templates"
-                    className="w-44 max-w-[55%] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-500"
+                    className="w-72 max-w-[70%] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-500"
                   />
                 </div>
                 {/* Two-level browse inside a height-capped scroll area:
@@ -475,18 +475,11 @@ export function TemplatePicker({
                 Cancel
               </button>
             )}
-            {/* Right cluster: Back, then (welcome only) Skip, then the
-                primary Next / commit action. */}
-            {step === 'theme' ? (
-              <button
-                type="button"
-                onClick={() => goToStep('template')}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-              >
-                <ArrowLeftIcon />
-                Back
-              </button>
-            ) : null}
+            {/* Right cluster: (welcome only) Skip, then the primary Next /
+                commit action. Going BACK to the template step is driven by
+                the step rail at the top (clicking "1 Template") — a footer
+                Back button here read ambiguously against the category
+                "All templates / All themes" bar, so it's gone. */}
             {isWelcome && step === 'template' ? (
               /* Skip the wizard: Blank template, Basic theme (spec/14).
                  Only on the first (template) step — once the user has
@@ -538,8 +531,14 @@ function WizardSteps({
   onStep: (s: 'template' | 'theme') => void;
 }) {
   const onTheme = step === 'theme';
+  // A compact, left-aligned stepper. The old version stretched a
+  // full-width hairline between the two chips, leaving an awkward expanse
+  // of empty rule across the header; this keeps the chips together at the
+  // left with a short connector so it reads as a tidy "1 → 2" pair.
+  // The active chip's pill has a negative left margin so its text still
+  // lines up flush with the title above it.
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center justify-start gap-1.5 -ml-2.5">
       <StepChip
         n={1}
         label="Template"
@@ -547,7 +546,7 @@ function WizardSteps({
         onClick={() => onStep('template')}
       />
       <div
-        className={`h-0.5 flex-1 rounded-full transition-colors ${
+        className={`h-0.5 w-8 rounded-full transition-colors ${
           onTheme ? 'bg-brand-400 dark:bg-brand-500' : 'bg-slate-200 dark:bg-slate-700'
         }`}
       />
@@ -577,6 +576,13 @@ function StepChip({
     ? 'bg-brand-500 text-white shadow-sm shadow-brand-500/30'
     : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
   const text = lit ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500';
+  // The current step sits in a soft brand pill so "you are here" reads at
+  // a glance; the other chips stay flush (matching padding keeps the row
+  // from shifting as the active step moves).
+  const pill =
+    state === 'active'
+      ? 'rounded-full bg-brand-50 dark:bg-brand-500/15'
+      : 'rounded-full bg-transparent';
   const inner = (
     <>
       <span
@@ -600,11 +606,15 @@ function StepChip({
     </>
   );
   return onClick ? (
-    <button type="button" onClick={onClick} className="flex items-center gap-2">
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-2 px-2.5 py-1 transition-colors ${pill}`}
+    >
       {inner}
     </button>
   ) : (
-    <div className="flex items-center gap-2">{inner}</div>
+    <div className={`flex items-center gap-2 px-2.5 py-1 ${pill}`}>{inner}</div>
   );
 }
 
@@ -613,20 +623,6 @@ function ArrowRightIcon() {
     <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
       <path
         d="M3.5 8h9M9 4.5 12.5 8 9 11.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ArrowLeftIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M12.5 8h-9M7 4.5 3.5 8 7 11.5"
         stroke="currentColor"
         strokeWidth="1.6"
         strokeLinecap="round"

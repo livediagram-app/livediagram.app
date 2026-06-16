@@ -28,7 +28,9 @@ import {
   type ThemeId,
   themeCategory,
 } from '@/lib/themes';
+import { useUiMode } from '@/hooks/useUiMode';
 import { AnimatedHeightBox } from './AnimatedHeightBox';
+import { ToggleSwitch } from './palette-controls';
 import {
   CustomThemeCard,
   NewThemeCard,
@@ -126,6 +128,7 @@ export function ThemeCategoryBrowser({
               />
             ))}
           </div>
+          <ModeSwitchRow category={openCategory} />
         </>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -176,6 +179,43 @@ export function ThemeCategoryBrowser({
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return <BackBar label="All themes" onClick={onClick} />;
+}
+
+// A full-width iOS-style switch prompting the user to match the editor's
+// light / dark chrome to the category they're browsing — dark mode for
+// the Dark themes, light mode for the light-backdrop ones (spec/07
+// covers the UI mode). Only shown when that mode ISN'T already active
+// (and never for the colour-agnostic Custom bucket), so it reads as a
+// helpful one-tap nudge rather than a persistent control.
+function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
+  const { mode, toggle } = useUiMode();
+  const target: 'light' | 'dark' | null =
+    category === 'custom' ? null : category === 'dark' ? 'dark' : 'light';
+  if (!target || mode === target) return null;
+  const label = target === 'dark' ? 'Turn on Dark mode' : 'Turn on Light mode';
+  const hint =
+    target === 'dark'
+      ? 'Match the editor chrome to these dark themes.'
+      : 'Switch the editor chrome back to light.';
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className="mt-3 flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80"
+    >
+      <span className="min-w-0 flex-1">
+        <span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">
+          {label}
+        </span>
+        <span className="block text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+          {hint}
+        </span>
+      </span>
+      {/* The row owns the click, so the switch is presentational. It's
+          always off here (we only render when the target isn't active). */}
+      <ToggleSwitch presentational checked={false} label={label} />
+    </button>
+  );
 }
 
 // A full-width "go back to the overview" bar. Far more obvious than a
