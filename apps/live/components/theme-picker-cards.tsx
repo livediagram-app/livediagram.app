@@ -43,7 +43,7 @@ export function ThemeCard({
           {theme.label}
         </p>
         {description ? (
-          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
             {description}
           </p>
         ) : null}
@@ -91,7 +91,7 @@ export function ThemeQuickPickCard({
       </div>
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">{label}</p>
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
           {description}
         </p>
       </div>
@@ -193,7 +193,7 @@ export function NewThemeCard({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[3.75rem] flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-brand-500/60 dark:hover:text-brand-300"
+      className="flex min-h-[3.75rem] flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-brand-300"
     >
       <svg
         width="16"
@@ -266,11 +266,11 @@ export function ThemeCategoryCard({
           <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
             {label}
           </p>
-          <span className="shrink-0 text-[11px] font-medium text-slate-400 dark:text-slate-400">
+          <span className="shrink-0 text-[11px] font-medium text-slate-400 dark:text-slate-300">
             {count}
           </span>
         </div>
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
           {description}
         </p>
       </div>

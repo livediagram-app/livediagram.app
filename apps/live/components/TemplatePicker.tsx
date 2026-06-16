@@ -214,7 +214,7 @@ export function TemplatePicker({
                       : 'Welcome to this diagram'
                     : 'Pick a template'}
               </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
                 {isWizard
                   ? step === 'template'
                     ? 'Choose a template to start from.'
@@ -361,7 +361,14 @@ export function TemplatePicker({
                     )
                   ) : openCategory ? (
                     <>
-                      <BackBar label="All templates" onClick={() => setOpenCategory(null)} />
+                      <BackBar
+                        label="All templates"
+                        current={
+                          TEMPLATE_CATEGORIES.find((c) => c.id === openCategory)?.label ??
+                          openCategory
+                        }
+                        onClick={() => setOpenCategory(null)}
+                      />
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                         {categoryTemplates(openCategory).map((t) => (
                           <TemplateCard

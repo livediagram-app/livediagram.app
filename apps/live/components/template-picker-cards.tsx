@@ -42,7 +42,7 @@ export function TemplateCard({
         <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
           {template.title}
         </p>
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
           {template.description}
         </p>
       </div>
@@ -98,11 +98,11 @@ export function CategoryCard({
           <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
             {label}
           </p>
-          <span className="shrink-0 text-[11px] font-medium text-slate-400 dark:text-slate-400">
+          <span className="shrink-0 text-[11px] font-medium text-slate-400 dark:text-slate-300">
             {count}
           </span>
         </div>
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
           {description}
         </p>
       </div>

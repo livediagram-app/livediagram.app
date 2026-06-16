@@ -77,7 +77,7 @@ export function ThemeSwatch({
   return (
     <span
       aria-hidden
-      className={`block ${boxH} w-full overflow-hidden rounded-md border border-slate-200 dark:border-slate-700`}
+      className={`block ${boxH} w-full overflow-hidden rounded-md border border-slate-200 dark:border-slate-600`}
     >
       <svg
         viewBox="0 0 100 64"
@@ -111,7 +111,7 @@ export function ThemeSwatch({
 
         {/* Faint dot grid (skipped for blank backdrops). */}
         {showPattern ? (
-          <g fill={theme.patternColor} opacity="0.45">
+          <g fill={theme.patternColor} opacity="0.55">
             {[10, 22, 34, 46, 58, 70, 82, 94].map((x) =>
               [10, 22, 34, 46, 58].map((y) => <circle key={`${x}-${y}`} cx={x} cy={y} r="0.7" />),
             )}
@@ -144,8 +144,8 @@ export function ThemeSwatch({
             strokeWidth="1.6"
           />
           <rect x="13" y="21" width="23" height="4" rx="2" fill={c0.stroke} />
-          <rect x="13" y="30" width="28" height="3" rx="1.5" fill={c0.text} opacity="0.5" />
-          <rect x="13" y="37" width="19" height="3" rx="1.5" fill={c0.text} opacity="0.5" />
+          <rect x="13" y="30" width="28" height="3" rx="1.5" fill={c0.text} opacity="0.7" />
+          <rect x="13" y="37" width="19" height="3" rx="1.5" fill={c0.text} opacity="0.7" />
         </g>
 
         {/* Node 2: a pill / stadium (top right). */}

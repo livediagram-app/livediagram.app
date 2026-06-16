@@ -89,7 +89,7 @@ export function ThemeCategoryBrowser({
     <AnimatedHeightBox viewKey={openCategory ?? 'overview'} className={className}>
       {openCategory === 'custom' ? (
         <>
-          <BackButton onClick={() => setOpenCategory(null)} />
+          <BackButton current="Custom" onClick={() => setOpenCategory(null)} />
           <p className="mb-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
             Build your own theme: your saved themes appear here and apply to any diagram, just like
             a built-in one.
@@ -116,7 +116,10 @@ export function ThemeCategoryBrowser({
         </>
       ) : openCategory ? (
         <>
-          <BackButton onClick={() => setOpenCategory(null)} />
+          <BackButton
+            current={THEME_CATEGORIES.find((c) => c.id === openCategory)?.label ?? openCategory}
+            onClick={() => setOpenCategory(null)}
+          />
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {themeCategoryThemes(openCategory).map((t) => (
               <ThemeCard
@@ -177,8 +180,8 @@ export function ThemeCategoryBrowser({
   );
 }
 
-function BackButton({ onClick }: { onClick: () => void }) {
-  return <BackBar label="All themes" onClick={onClick} />;
+function BackButton({ current, onClick }: { current?: string; onClick: () => void }) {
+  return <BackBar label="All themes" current={current} onClick={onClick} />;
 }
 
 // A full-width iOS-style switch prompting the user to match the editor's
@@ -221,14 +224,24 @@ function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
 // A full-width "go back to the overview" bar. Far more obvious than a
 // small pill in the corner — the whole row is the target. Shared shape
 // with the template picker's back bar so the two browses match.
-export function BackBar({ label, onClick }: { label: string; onClick: () => void }) {
+export function BackBar({
+  label,
+  current,
+  onClick,
+}: {
+  label: string;
+  // The category the user has drilled into, shown as a chip on the right
+  // so it's clear which group they're in (and which their selection is).
+  current?: string;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group mb-3 flex w-full items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80 dark:hover:text-brand-200"
+      className="group mb-3 flex w-full items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/50 hover:text-brand-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80 dark:hover:text-brand-200"
     >
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition group-hover:bg-brand-100 group-hover:text-brand-700 dark:bg-slate-700 dark:text-slate-300 dark:group-hover:bg-brand-500/25 dark:group-hover:text-brand-200">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition group-hover:bg-brand-100 group-hover:text-brand-700 dark:bg-slate-700 dark:text-slate-200 dark:group-hover:bg-brand-500/25 dark:group-hover:text-brand-200">
         <svg
           width="13"
           height="13"
@@ -247,6 +260,11 @@ export function BackBar({ label, onClick }: { label: string; onClick: () => void
         </svg>
       </span>
       {label}
+      {current ? (
+        <span className="ml-auto rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
+          {current}
+        </span>
+      ) : null}
     </button>
   );
 }
