@@ -20,6 +20,7 @@ import { EditorHeader } from '@/components/EditorHeader';
 import { EmbedChrome } from '@/components/EmbedChrome';
 import { TabBar } from '@/components/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/SignInBanner';
+import { ThemeModeBanner } from '@/components/ThemeModeBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/useDismissibleBanner';
 import { useDelayedReveal } from '@/hooks/useDelayedReveal';
@@ -1302,6 +1303,13 @@ export function EditorView() {
       {showSignInBanner ? (
         <SignInBanner onDismiss={dismissSignIn} placementClassName="bottom-0 z-40 pb-16" />
       ) : null}
+      {/* Offer to match the editor chrome to the active tab's theme
+          (dark theme -> dark mode, light theme -> light mode). Hidden in
+          zen / embed like the other floating prompts, and yields the
+          bottom-centre slot to the sign-in banner when that's showing. */}
+      {zenMode || embedMode || showSignInBanner ? null : (
+        <ThemeModeBanner themeId={activeTab.theme} />
+      )}
     </div>
   );
 }
