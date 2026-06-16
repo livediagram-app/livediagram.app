@@ -25,6 +25,7 @@ import {
   THEME_CATEGORIES,
   THEMES,
   type ThemeCategory,
+  type ThemeDefinition,
   type ThemeId,
   themeCategory,
 } from '@/lib/themes';
@@ -54,6 +55,7 @@ export function ThemeCategoryBrowser({
   onNewCustomTheme,
   onEditCustomTheme,
   onDeleteCustomTheme,
+  onCopyTheme,
 }: {
   // The currently-selected theme: a built-in ThemeId or a custom
   // `custom:<uuid>` id, so it's widened to string.
@@ -69,6 +71,9 @@ export function ThemeCategoryBrowser({
   onNewCustomTheme?: () => void;
   onEditCustomTheme?: (id: string) => void;
   onDeleteCustomTheme?: (id: string) => void;
+  // Copy a built-in theme into the builder as a new custom theme (spec/44).
+  // When set, built-in theme cards show a "Copy" affordance.
+  onCopyTheme?: (theme: ThemeDefinition) => void;
 }) {
   const customEnabled = !!onNewCustomTheme;
   const custom = customThemes ?? [];
@@ -135,6 +140,7 @@ export function ThemeCategoryBrowser({
                 active={themeId === t.id}
                 onSelect={() => onSelect(t.id)}
                 onCommit={() => commit(t.id)}
+                onCopy={onCopyTheme ? () => onCopyTheme(t) : undefined}
               />
             ))}
           </div>

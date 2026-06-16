@@ -12,7 +12,7 @@
 // cycle): themes.ts calls lookupCustomTheme(); this file only borrows
 // the type.
 
-import type { CustomTheme } from '@livediagram/api-schema';
+import type { CustomTheme, CustomThemeDefinition } from '@livediagram/api-schema';
 import type { ThemeDefinition } from './themes';
 
 const registry = new Map<string, ThemeDefinition>();
@@ -27,6 +27,25 @@ export function materialiseCustomTheme(t: CustomTheme): ThemeDefinition {
     id: t.id as ThemeDefinition['id'],
     label: t.name,
     ...t.definition,
+  };
+}
+
+// Inverse of materialiseCustomTheme: a built-in (or any) ThemeDefinition
+// stripped to its editable CustomThemeDefinition payload (drops id /
+// label / extra). Used by the "Copy" affordance on built-in themes to
+// seed the builder with an existing theme's options.
+export function customDefinitionFromTheme(theme: ThemeDefinition): CustomThemeDefinition {
+  return {
+    backgroundColor: theme.backgroundColor,
+    backgroundPattern: theme.backgroundPattern,
+    patternColor: theme.patternColor,
+    backgroundOpacity: theme.backgroundOpacity,
+    elementFill: theme.elementFill,
+    elementStroke: theme.elementStroke,
+    elementText: theme.elementText,
+    palette: theme.palette,
+    rootColor: theme.rootColor,
+    shapeColors: theme.shapeColors,
   };
 }
 

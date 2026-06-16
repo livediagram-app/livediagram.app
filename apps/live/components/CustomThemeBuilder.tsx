@@ -16,6 +16,8 @@ import { useState } from 'react';
 import {
   deriveTextColorForBg,
   elementKindLabel,
+  isLightColor,
+  shade,
   tint,
   type BackgroundPattern,
   type ShapeKind,
@@ -52,6 +54,14 @@ const FALLBACK_FILL = '#dbeafe';
 const FALLBACK_STROKE = '#2563eb';
 const FALLBACK_TEXT = '#0f172a';
 
+// The pattern colour is derived from the BACKGROUND base colour (there's
+// no separate control): a subtle darker shade on a light backdrop, a
+// lighter tint on a dark one, so the grid / lines read against it without
+// the user picking a colour.
+function derivePatternColor(background: string): string {
+  return isLightColor(background) ? shade(background, 0.16) : tint(background, 0.22);
+}
+
 function resolved(
   def: CustomThemeDefinition,
   kind: ShapeKind,
@@ -74,36 +84,46 @@ type Painter = {
 
 export function CustomThemeBuilder({
   initial,
+  seed,
   onSave,
   onCancel,
   saving,
   error,
+  variant = 'inline',
 }: {
-  // Provided when editing an existing theme; omitted when creating.
+  // Provided when EDITING an existing theme; omitted when creating.
   initial?: CustomThemeDraft;
+  // Prefill values for a NEW theme (e.g. "Copy" of a built-in theme) —
+  // seeds the draft but stays in create mode (Save creates a new theme).
+  seed?: CustomThemeDraft;
   onSave: (draft: CustomThemeDraft) => void;
   onCancel: () => void;
   saving?: boolean;
   // Set when a save attempt failed (kept open so work isn't lost).
   error?: string | null;
+  // 'inline' (default): rendered in place of the theme browse, so it gets
+  // the shared BackBar to return. 'modal': hosted in its own dialog (the
+  // Explorer Themes pane), which owns the header — so no BackBar here.
+  variant?: 'inline' | 'modal';
 }) {
-  const [name, setName] = useState(initial?.name ?? '');
+  const isEdit = !!initial;
+  const source = initial ?? seed;
+  const [name, setName] = useState(source?.name ?? '');
   const [def, setDef] = useState<CustomThemeDefinition>(
-    initial?.definition ?? {
+    source?.definition ?? {
       backgroundColor: '#ffffff',
       backgroundPattern: 'grid',
-      patternColor: '#cbd5e1',
+      patternColor: derivePatternColor('#ffffff'),
       backgroundOpacity: 1,
       elementFill: FALLBACK_FILL,
       elementStroke: FALLBACK_STROKE,
       elementText: '#1e3a8a',
     },
   );
-  // When editing, the text + pattern colours are already deliberate, so
-  // don't auto-derive over them. When creating, derive until touched.
-  const [textTouched, setTextTouched] = useState(!!initial);
-  const [patternColorTouched, setPatternColorTouched] = useState(!!initial);
-  const [patternOpen, setPatternOpen] = useState(false);
+  // Seeded values (edit or copy) are deliberate, so don't auto-derive
+  // the text colour over them. A blank new theme derives until touched.
+  const [textTouched, setTextTouched] = useState(!!source);
+  const [patternOpen, setPatternOpen] = useState(true);
   const [shapesOpen, setShapesOpen] = useState(false);
   // Format-painter clipboard.
   const [copied, setCopied] = useState<string | null>(null);
@@ -115,18 +135,18 @@ export function CustomThemeBuilder({
 
   const patch = (p: Partial<CustomThemeDefinition>) => setDef((d) => ({ ...d, ...p }));
 
-  // Editing a base colour re-derives the not-yet-touched dependents so
-  // three clicks yield a coherent theme.
+  // The background drives the (auto-derived) pattern colour — there's no
+  // separate pattern-colour control.
+  const setBackground = (background: string) =>
+    patch({ backgroundColor: background, patternColor: derivePatternColor(background) });
+  // Editing a base colour re-derives the not-yet-touched text colour so
+  // a couple of clicks yield a coherent, readable theme.
   const setFill = (fill: string) =>
     patch({
       elementFill: fill,
       ...(textTouched ? {} : { elementText: deriveTextColorForBg(fill) }),
     });
-  const setStroke = (stroke: string) =>
-    patch({
-      elementStroke: stroke,
-      ...(patternColorTouched ? {} : { patternColor: tint(stroke, 0.6) }),
-    });
+  const setStroke = (stroke: string) => patch({ elementStroke: stroke });
 
   // Per-shape override write: an unset (empty) value clears that channel
   // so the kind falls back to the base element colour.
@@ -158,8 +178,11 @@ export function CustomThemeBuilder({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Same back affordance as the template / theme-category browse. */}
-      <BackBar label="Back" current={initial ? 'Edit theme' : 'New theme'} onClick={onCancel} />
+      {/* Inline (in the theme browse): the shared BackBar returns. In a
+          modal host (Explorer) the dialog owns the header, so no bar. */}
+      {variant === 'inline' ? (
+        <BackBar label="Back" current={isEdit ? 'Edit theme' : 'New theme'} onClick={onCancel} />
+      ) : null}
 
       {/* Live preview — the in-progress theme as a real diagram scene,
           with the chosen pattern rendered edge to edge. */}
@@ -206,7 +229,7 @@ export function CustomThemeBuilder({
           <ColorTile
             label="Background"
             value={def.backgroundColor}
-            onChange={(c) => patch({ backgroundColor: c })}
+            onChange={setBackground}
             painter={painter}
           />
           <ColorTile
@@ -234,18 +257,10 @@ export function CustomThemeBuilder({
       </div>
 
       <ExpandRow label="Pattern" open={patternOpen} onToggle={() => setPatternOpen((o) => !o)}>
-        <div className="grid grid-cols-2 gap-2">
-          <ColorTile
-            label="Pattern colour"
-            value={def.patternColor}
-            onChange={(c) => {
-              setPatternColorTouched(true);
-              patch({ patternColor: c });
-            }}
-            painter={painter}
-          />
-        </div>
-        <FieldLabel className="mb-1 mt-3">Style</FieldLabel>
+        <p className="mb-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
+          The pattern tints automatically from your background colour.
+        </p>
+        <FieldLabel className="mb-1">Style</FieldLabel>
         <div className="grid grid-cols-4 gap-1 sm:grid-cols-7">
           {PATTERNS.map((p) => (
             <PatternButton
@@ -290,55 +305,63 @@ export function CustomThemeBuilder({
         <p className="mb-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
           Give a shape kind its own colours (like UML). Leave a kind unset to use the base colours.
         </p>
-        {/* Column headers so the three swatches per row are legible. */}
-        <div className="mb-1 flex items-center gap-2 pl-[6.5rem] text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
-          <span className="w-6 text-center">Fill</span>
-          <span className="w-6 text-center">Line</span>
-          <span className="w-6 text-center">Text</span>
-        </div>
-        <div className="flex flex-col gap-1.5">
+        {/* A grid of cards (not one long list) so the row uses the full
+            width; each card shows a large shape preview + its three
+            colour dots. */}
+        <div className="grid grid-cols-2 gap-2">
           {PER_SHAPE_KINDS.map((kind) => {
             const o = def.shapeColors?.[kind];
             const r = resolved(def, kind);
             return (
-              <div key={kind} className="flex items-center gap-2">
-                <span
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded border"
-                  style={{ backgroundColor: r.fill, borderColor: r.stroke, color: r.stroke }}
-                >
-                  <ShapeIcon kind={kind} />
-                </span>
-                <span className="w-[4.5rem] shrink-0 truncate text-xs text-slate-600 dark:text-slate-300">
-                  {elementKindLabel({ type: 'shape', shape: kind } as Parameters<
-                    typeof elementKindLabel
-                  >[0])}
-                </span>
-                <ColorDot
-                  label={`${kind} fill`}
-                  value={r.fill}
-                  onChange={(v) => setShapeColour(kind, 'fill', v)}
-                  painter={painter}
-                />
-                <ColorDot
-                  label={`${kind} stroke`}
-                  value={r.stroke}
-                  onChange={(v) => setShapeColour(kind, 'stroke', v)}
-                  painter={painter}
-                />
-                <ColorDot
-                  label={`${kind} text`}
-                  value={r.text}
-                  onChange={(v) => setShapeColour(kind, 'text', v)}
-                  painter={painter}
-                />
-                <button
-                  type="button"
-                  onClick={() => clearShape(kind)}
-                  disabled={!o}
-                  className="ml-auto text-[10px] font-medium text-slate-400 underline-offset-2 transition hover:text-slate-600 hover:underline disabled:invisible dark:text-slate-500 dark:hover:text-slate-300"
-                >
-                  reset
-                </button>
+              <div
+                key={kind}
+                className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-800"
+              >
+                <div className="flex items-center gap-2">
+                  {/* Bigger preview so the shape is easy to read. */}
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border [&_svg]:h-6 [&_svg]:w-6"
+                    style={{ backgroundColor: r.fill, borderColor: r.stroke, color: r.stroke }}
+                  >
+                    <ShapeIcon kind={kind} />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-xs font-medium text-slate-700 dark:text-slate-200">
+                    {elementKindLabel({ type: 'shape', shape: kind } as Parameters<
+                      typeof elementKindLabel
+                    >[0])}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => clearShape(kind)}
+                    disabled={!o}
+                    className="text-[10px] font-medium text-slate-400 underline-offset-2 transition hover:text-slate-600 hover:underline disabled:invisible dark:text-slate-500 dark:hover:text-slate-300"
+                  >
+                    reset
+                  </button>
+                </div>
+                <div className="flex items-center justify-around">
+                  <DotField
+                    caption="Fill"
+                    label={`${kind} fill`}
+                    value={r.fill}
+                    onChange={(v) => setShapeColour(kind, 'fill', v)}
+                    painter={painter}
+                  />
+                  <DotField
+                    caption="Line"
+                    label={`${kind} stroke`}
+                    value={r.stroke}
+                    onChange={(v) => setShapeColour(kind, 'stroke', v)}
+                    painter={painter}
+                  />
+                  <DotField
+                    caption="Text"
+                    label={`${kind} text`}
+                    value={r.text}
+                    onChange={(v) => setShapeColour(kind, 'text', v)}
+                    painter={painter}
+                  />
+                </div>
               </div>
             );
           })}
@@ -365,7 +388,7 @@ export function CustomThemeBuilder({
           onClick={() => onSave({ name: name.trim() || 'My theme', definition: def })}
           className="rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 disabled:opacity-60"
         >
-          {saving ? 'Saving…' : initial ? 'Save changes' : 'Save theme'}
+          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Save theme'}
         </button>
       </div>
     </div>
@@ -492,6 +515,31 @@ function ColorDot({
           className="absolute inset-0 bg-brand-500/15 ring-1 ring-inset ring-brand-400/70"
         />
       ) : null}
+    </span>
+  );
+}
+
+// A per-shape colour dot with a caption beneath (Fill / Line / Text), so
+// the three swatches in a shape card are labelled.
+function DotField({
+  caption,
+  label,
+  value,
+  onChange,
+  painter,
+}: {
+  caption: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  painter: Painter;
+}) {
+  return (
+    <span className="flex flex-col items-center gap-1">
+      <ColorDot label={label} value={value} onChange={onChange} painter={painter} />
+      <span className="text-[9px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+        {caption}
+      </span>
     </span>
   );
 }

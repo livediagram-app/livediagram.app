@@ -13,6 +13,9 @@
 // dialog) or stage the choice until Create (the new-diagram wizard).
 
 import { useEffect, useState, type ReactNode } from 'react';
+import { customDefinitionFromTheme } from '@/lib/custom-theme-registry';
+import { type ThemeDefinition } from '@/lib/themes';
+import { useConfirm } from '@/hooks/useConfirm';
 import { useCustomThemes } from './CustomThemeProvider';
 import { CustomThemeBuilder, type CustomThemeDraft } from './CustomThemeBuilder';
 import { ThemeCategoryBrowser } from './ThemeCategoryBrowser';
@@ -43,8 +46,11 @@ export function CustomThemePicker({
   browserClassName?: string;
 }) {
   const { themes: customThemes, createTheme, updateTheme, deleteTheme } = useCustomThemes();
+  const confirm = useConfirm();
   // null = browsing; 'new' = building a fresh theme; an id = editing it.
   const [building, setBuilding] = useState<null | 'new' | string>(null);
+  // Prefill draft for a copied built-in theme (used only while building 'new').
+  const [copySeed, setCopySeed] = useState<CustomThemeDraft | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   // Once the user has been in the builder, returning to the browse should
@@ -61,8 +67,38 @@ export function CustomThemePicker({
 
   const openBuilder = (target: 'new' | string) => {
     setSaveError(null);
+    setCopySeed(null);
     setReturnToCustom(true);
     setBuilding(target);
+  };
+
+  // "Copy" a built-in theme: open the builder as a new theme seeded with
+  // that theme's options so the user can tweak it (spec/44).
+  const copyTheme = (theme: ThemeDefinition) => {
+    setSaveError(null);
+    setReturnToCustom(true);
+    setCopySeed({ name: `${theme.label} copy`, definition: customDefinitionFromTheme(theme) });
+    setBuilding('new');
+  };
+
+  const closeBuilder = () => {
+    setBuilding(null);
+    setCopySeed(null);
+  };
+
+  const confirmDelete = async (id: string) => {
+    const theme = customThemes.find((t) => t.id === id);
+    if (
+      await confirm({
+        title: `Delete "${theme?.name ?? 'theme'}"?`,
+        message: 'Diagrams using it fall back to the default theme. This cannot be undone.',
+        confirmLabel: 'Delete',
+        variant: 'danger',
+      })
+    ) {
+      if (themeId === id) onSelect('brand');
+      deleteTheme(id);
+    }
   };
 
   const handleSave = async (draft: CustomThemeDraft) => {
@@ -90,7 +126,7 @@ export function CustomThemePicker({
         // Re-select so a live host repaints with the edited definition.
         onSelect(editingTheme.id);
       }
-      setBuilding(null);
+      closeBuilder();
     } finally {
       setSaving(false);
     }
@@ -104,10 +140,11 @@ export function CustomThemePicker({
             ? { name: editingTheme.name, definition: editingTheme.definition }
             : undefined
         }
+        seed={copySeed ?? undefined}
         saving={saving}
         error={saveError}
         onSave={handleSave}
-        onCancel={() => setBuilding(null)}
+        onCancel={closeBuilder}
       />
     );
   }
@@ -124,7 +161,8 @@ export function CustomThemePicker({
         initialCategory={returnToCustom ? 'custom' : undefined}
         onNewCustomTheme={() => openBuilder('new')}
         onEditCustomTheme={(id) => openBuilder(id)}
-        onDeleteCustomTheme={deleteTheme}
+        onDeleteCustomTheme={confirmDelete}
+        onCopyTheme={copyTheme}
       />
       {footer}
     </>

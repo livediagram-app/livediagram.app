@@ -16,39 +16,77 @@ export function ThemeCard({
   active,
   onSelect,
   onCommit,
+  // When provided, a hover "Copy" button (top-right) opens the theme
+  // builder seeded with this theme's options (spec/44).
+  onCopy,
 }: {
   theme: ThemeDefinition;
   active: boolean;
   onSelect: () => void;
   onCommit: () => void;
+  onCopy?: () => void;
 }) {
   const description = themeDescription(theme.id);
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      onDoubleClick={onCommit}
-      aria-pressed={active}
+    <div
       className={
-        active
-          ? 'flex flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left dark:border-brand-500 dark:bg-brand-500/15'
-          : 'flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
+        'group relative flex flex-col rounded-lg border text-left transition ' +
+        (active
+          ? 'border-2 border-brand-400 bg-brand-50 dark:border-brand-500 dark:bg-brand-500/15'
+          : 'border-slate-200 bg-white hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10')
       }
     >
-      <div className="w-full">
-        <ThemeSwatch theme={theme} size="md" />
-      </div>
-      <div className="min-w-0">
-        <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-          {theme.label}
-        </p>
-        {description ? (
-          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
-            {description}
+      <button
+        type="button"
+        onClick={onSelect}
+        onDoubleClick={onCommit}
+        aria-pressed={active}
+        className="flex flex-col items-start gap-1.5 p-2 text-left"
+      >
+        <div className="w-full">
+          <ThemeSwatch theme={theme} size="md" />
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+            {theme.label}
           </p>
-        ) : null}
-      </div>
-    </button>
+          {description ? (
+            <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
+              {description}
+            </p>
+          ) : null}
+        </div>
+      </button>
+      {onCopy ? (
+        <button
+          type="button"
+          onClick={onCopy}
+          aria-label={`Copy ${theme.label} to a new theme`}
+          title="Copy to a new theme"
+          className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-white/90 px-1.5 py-1 text-[10px] font-semibold text-slate-600 opacity-0 shadow-sm transition hover:text-brand-600 focus:opacity-100 group-hover:opacity-100 dark:bg-slate-900/85 dark:text-slate-200"
+        >
+          <CopyGlyph />
+          Copy
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function CopyGlyph() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden
+    >
+      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
+      <path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" />
+    </svg>
   );
 }
 
