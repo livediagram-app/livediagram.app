@@ -20,7 +20,7 @@ The unit of value is the team, not the individual. See [spec/00](../specs/00-pur
 - **Multi-select**: marquee drag, shift-click, format painter, groups.
 - **Rotation**: free-rotate any boxed element about its centre via a dedicated handle; the angle round-trips through copy / paste / duplicate / save (spec/09).
 - **Templates**: seventeen starters (Blank, Mind map, Flowchart, Kanban, SWOT, Retrospective, Org chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey, Logo design, plus three UI wireframes).
-- **Themes**: eighteen presets that recolour the canvas, every shape, every arrow in one click.
+- **Themes**: twenty-seven presets (including the multi-colour palettes from spec/29) that recolour the canvas, every shape, every arrow in one click, plus a custom-theme builder that saves owner-scoped themes to the database (spec/44).
 - **Multiplayer**: live presence, cursors, selection rings, comments, laser-pointer broadcast via per-diagram Durable Object rooms.
 - **Audit log**: every change recorded per-tab; one-click revert on any entry, even after later edits.
 - **Tabs**: every diagram is a stack of tabs (link across them; copy a tab into another diagram).
@@ -30,13 +30,13 @@ The unit of value is the team, not the individual. See [spec/00](../specs/00-pur
 - **Hybrid auth**: guests get everything (full persistence keyed to a per-browser id); signed-in users (Clerk) get cross-device sync and account self-delete.
 - **Export / import**: active tab to Markdown / PDF / PNG / JSON file; import the JSON envelope back as a new tab.
 - **"Shared with you" Explorer accordion**: visitors can make their own copy of a shared diagram.
+- **Teams**: create teams with Admin / Member roles and email invites in the Explorer, plus a per-team shared library of diagrams. See [spec/32](../specs/32-teams.md) and [spec/35](../specs/35-team-shared-diagrams.md).
 - **AI assistance** (optional): an in-editor panel (Build / Ask / Review / Clean) that adds or edits elements from a prompt, answers questions about the active tab, and reviews structure. Off by default; needs an `OPENAI_API_KEY` on the api worker plus per-user opt-in in Settings, and is hidden entirely on forks that don't configure a key. See [spec/25](../specs/25-ai-assistance.md).
 - **Telemetry**: anonymous first-party product events stored in D1; public dashboard at `/telemetry`. No third-party analytics; no identifiers crossing the wire. Off in OSS forks unless the worker is configured for it. See [spec/22](../specs/22-telemetry.md).
 
 ## What's still ahead
 
 - **Transactional email** (Resend) for share notifications and account flows.
-- **Team workspaces** (today a diagram belongs to one identity; teams are post-launch).
 - **Operational transform / CRDT** (today's realtime is last-writer-wins; concurrent edits to the same field collapse to whoever wrote most recently).
 
 ## Open source

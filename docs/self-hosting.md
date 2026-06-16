@@ -6,14 +6,14 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 ## What you'll provision on Cloudflare
 
-| Resource                             | Used by          | Why                                                                                                                              |
-| ------------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Workers paid plan**                | All five workers | Durable Objects (per-diagram realtime room) need the paid plan.                                                                  |
-| **D1 database**                      | `apps/api`       | Diagrams, tabs, comments, folders, share links, shared-with index, change log, image metadata, user preferences, telemetry rows. |
-| **Durable Object namespace**         | `apps/api`       | One stateful room per diagram for realtime presence + ops.                                                                       |
-| **R2 bucket** (optional)             | `apps/api`       | Image uploads. The api degrades to `503 images-unavailable` without it.                                                          |
-| **Rate Limiter bindings** (optional) | `apps/api`       | Per-owner write throttle + per-IP telemetry throttle.                                                                            |
-| **Custom domain**                    | `apps/router`    | The router worker serves your hostname; downstream workers don't need their own domain.                                          |
+| Resource                             | Used by          | Why                                                                                                                                                                                |
+| ------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Workers paid plan**                | All five workers | Durable Objects (per-diagram realtime room) need the paid plan.                                                                                                                    |
+| **D1 database**                      | `apps/api`       | Diagrams, tabs, comments, folders, share links, shared-with index, change log, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows. |
+| **Durable Object namespace**         | `apps/api`       | One stateful room per diagram for realtime presence + ops.                                                                                                                         |
+| **R2 bucket** (optional)             | `apps/api`       | Image uploads. The api degrades to `503 images-unavailable` without it.                                                                                                            |
+| **Rate Limiter bindings** (optional) | `apps/api`       | Per-owner write throttle + per-IP telemetry throttle.                                                                                                                              |
+| **Custom domain**                    | `apps/router`    | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                            |
 
 What you do NOT need:
 
@@ -35,8 +35,10 @@ What you do NOT need:
 3. **Apply migrations to the new D1**:
 
    ```sh
-   pnpm --filter @livediagram/api exec wrangler d1 migrations apply DB --remote --yes
+   pnpm --filter @livediagram/api db:migrate:remote
    ```
+
+   (this runs `wrangler d1 migrations apply livediagram --remote` — note it takes the database **name**, `livediagram`, not the binding name `DB`).
 
    This creates every table the worker expects. The same command runs in the deploy workflow on every release, so you only need it once for the first deploy.
 
