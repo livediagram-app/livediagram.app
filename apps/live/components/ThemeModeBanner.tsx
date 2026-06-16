@@ -34,15 +34,12 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
   const toDark = target === 'dark';
   const title = toDark ? 'This tab uses a dark theme' : 'This tab uses a light theme';
   const sub = toDark
-    ? 'Switch the editor to dark mode to match it.'
-    : 'Switch the editor to light mode to match it.';
+    ? 'Switch the editor to dark mode to match.'
+    : 'Switch the editor to light mode to match.';
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-16">
       <div className="pointer-events-auto flex w-full max-w-md animate-fly-up-in items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/40">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
-          {toDark ? <MoonIcon /> : <SunIcon />}
-        </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</p>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-300">{sub}</p>
@@ -50,9 +47,10 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
         <button
           type="button"
           onClick={toggle}
-          className="shrink-0 rounded-lg bg-brand-500 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
+          aria-label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm transition hover:bg-brand-600"
         >
-          {toDark ? 'Dark mode' : 'Light mode'}
+          {toDark ? <MoonIcon /> : <SunIcon />}
         </button>
         <button
           type="button"

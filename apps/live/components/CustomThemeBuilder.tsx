@@ -5,11 +5,12 @@
 // sane defaults for everything else are derived, then expands to the
 // granular controls (text colour, pattern, per-shape colours). A live
 // preview at the top renders the in-progress theme as a real mini
-// diagram (the shared ThemeSwatch scene) so the user sees the result as
-// they build. Shared by the Tab Appearance Theme tab and the Explorer
-// Themes pane, so the two entry points can't drift. Purely a form: it
-// owns a draft and hands the finished { name, definition } back via
-// onSave.
+// diagram (the shared ThemeSwatch scene, with the actual pattern edge to
+// edge) so the user sees the result as they build. A built-in format
+// painter copies a colour from one box and pastes it into others.
+// Shared by the Tab Appearance Theme tab and the Explorer Themes pane,
+// so the two entry points can't drift. Purely a form: it owns a draft
+// and hands the finished { name, definition } back via onSave.
 
 import { useState } from 'react';
 import {
@@ -23,6 +24,7 @@ import type { CustomThemeDefinition } from '@livediagram/api-schema';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { hexish, PATTERNS, PatternButton } from './palette-controls';
 import { ShapeIcon } from './shape-icon';
+import { BackBar } from './ThemeCategoryBrowser';
 import { ThemeSwatch } from './ThemeSwatch';
 
 // The shape kinds offered in the per-shape editor: the flowchart /
@@ -62,17 +64,28 @@ function resolved(
   };
 }
 
+// The format painter's clipboard: a copied colour the user can paste
+// into any other colour box. Threaded to every ColorField.
+type Painter = {
+  copied: string | null;
+  copy: (value: string) => void;
+  clear: () => void;
+};
+
 export function CustomThemeBuilder({
   initial,
   onSave,
   onCancel,
   saving,
+  error,
 }: {
   // Provided when editing an existing theme; omitted when creating.
   initial?: CustomThemeDraft;
   onSave: (draft: CustomThemeDraft) => void;
   onCancel: () => void;
   saving?: boolean;
+  // Set when a save attempt failed (kept open so work isn't lost).
+  error?: string | null;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
   const [def, setDef] = useState<CustomThemeDefinition>(
@@ -91,6 +104,13 @@ export function CustomThemeBuilder({
   const [patternColorTouched, setPatternColorTouched] = useState(!!initial);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [shapesOpen, setShapesOpen] = useState(false);
+  // Format-painter clipboard.
+  const [copied, setCopied] = useState<string | null>(null);
+  const painter: Painter = {
+    copied,
+    copy: (value) => setCopied(value),
+    clear: () => setCopied(null),
+  };
 
   const patch = (p: Partial<CustomThemeDefinition>) => setDef((d) => ({ ...d, ...p }));
 
@@ -137,30 +157,30 @@ export function CustomThemeBuilder({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-            <path
-              d="M7.5 2.5 4 6l3.5 3.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Back
-        </button>
-        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-          {initial ? 'Edit theme' : 'New theme'}
-        </span>
-      </div>
+      {/* Same back affordance as the template / theme-category browse. */}
+      <BackBar label="Back" current={initial ? 'Edit theme' : 'New theme'} onClick={onCancel} />
 
-      {/* Live preview — the in-progress theme as a real diagram scene. */}
-      <ThemeSwatch theme={previewTheme} heightClass="h-24" />
+      {/* Live preview — the in-progress theme as a real diagram scene,
+          with the chosen pattern rendered edge to edge. */}
+      <ThemeSwatch theme={previewTheme} heightClass="h-24" realPattern />
+
+      {/* Format-painter hint: visible while a colour is on the clipboard. */}
+      {copied ? (
+        <div className="flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-xs text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-100">
+          <span
+            className="h-4 w-4 shrink-0 rounded border border-black/10 dark:border-white/20"
+            style={{ backgroundColor: copied }}
+          />
+          <span className="flex-1">Copied colour — click any box to paste it.</span>
+          <button
+            type="button"
+            onClick={() => setCopied(null)}
+            className="font-medium underline-offset-2 hover:underline"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : null}
 
       <label className="flex flex-col gap-1">
         <FieldLabel>Name</FieldLabel>
@@ -181,18 +201,25 @@ export function CustomThemeBuilder({
             label="Background"
             value={def.backgroundColor}
             onChange={(c) => patch({ backgroundColor: c })}
+            painter={painter}
           />
-          <ColorTile label="Fill" value={def.elementFill ?? FALLBACK_FILL} onChange={setFill} />
+          <ColorTile
+            label="Fill"
+            value={def.elementFill ?? FALLBACK_FILL}
+            onChange={setFill}
+            painter={painter}
+          />
           <ColorTile
             label="Stroke"
             value={def.elementStroke ?? FALLBACK_STROKE}
             onChange={setStroke}
+            painter={painter}
           />
         </div>
       </div>
 
       <ExpandRow
-        label="Customize details"
+        label="Customise details"
         open={detailsOpen}
         onToggle={() => setDetailsOpen((o) => !o)}
       >
@@ -204,6 +231,7 @@ export function CustomThemeBuilder({
               setTextTouched(true);
               patch({ elementText: c });
             }}
+            painter={painter}
           />
           <ColorTile
             label="Pattern colour"
@@ -212,6 +240,7 @@ export function CustomThemeBuilder({
               setPatternColorTouched(true);
               patch({ patternColor: c });
             }}
+            painter={painter}
           />
         </div>
         <FieldLabel className="mb-1 mt-3">Pattern</FieldLabel>
@@ -261,20 +290,23 @@ export function CustomThemeBuilder({
                     typeof elementKindLabel
                   >[0])}
                 </span>
-                <ShapeColorDot
+                <ColorDot
                   label={`${kind} fill`}
                   value={r.fill}
                   onChange={(v) => setShapeColour(kind, 'fill', v)}
+                  painter={painter}
                 />
-                <ShapeColorDot
+                <ColorDot
                   label={`${kind} stroke`}
                   value={r.stroke}
                   onChange={(v) => setShapeColour(kind, 'stroke', v)}
+                  painter={painter}
                 />
-                <ShapeColorDot
+                <ColorDot
                   label={`${kind} text`}
                   value={r.text}
                   onChange={(v) => setShapeColour(kind, 'text', v)}
+                  painter={painter}
                 />
                 <button
                   type="button"
@@ -289,6 +321,12 @@ export function CustomThemeBuilder({
           })}
         </div>
       </ExpandRow>
+
+      {error ? (
+        <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200">
+          {error}
+        </p>
+      ) : null}
 
       <div className="flex justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
         <button
@@ -328,16 +366,20 @@ function FieldLabel({
 }
 
 // A base-colour tile: a large colour block (the whole point) with a
-// label beneath, the native colour input layered invisibly on top.
+// label beneath, the native colour input layered invisibly on top, plus
+// the format-painter copy button / paste overlay.
 function ColorTile({
   label,
   value,
   onChange,
+  painter,
 }: {
   label: string;
   value: string;
   onChange: (color: string) => void;
+  painter: Painter;
 }) {
+  const pasting = painter.copied !== null;
   return (
     <label className="flex cursor-pointer flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-1.5 transition hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60">
       <span
@@ -351,6 +393,35 @@ function ColorTile({
           aria-label={label}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
+        {/* Copy this colour (format painter). Sits above the input. */}
+        {!pasting ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              painter.copy(value);
+            }}
+            aria-label={`Copy ${label} colour`}
+            className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-white/85 text-slate-600 shadow-sm transition hover:text-brand-600 dark:bg-slate-900/80 dark:text-slate-200"
+          >
+            <CopyIcon />
+          </button>
+        ) : (
+          // Paste overlay: covers the input so a click applies the copied
+          // colour instead of opening the native picker.
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              onChange(painter.copied!);
+              painter.clear();
+            }}
+            aria-label={`Paste colour into ${label}`}
+            className="absolute inset-0 flex items-center justify-center bg-brand-500/10 ring-1 ring-inset ring-brand-400/60 transition hover:bg-brand-500/20"
+          >
+            <PasteGlyph />
+          </button>
+        )}
       </span>
       <span className="text-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
         {label}
@@ -360,16 +431,20 @@ function ColorTile({
 }
 
 // A compact per-shape colour input: a small colour square with the
-// native picker layered on top.
-function ShapeColorDot({
+// native picker layered on top, and the same paste-target behaviour as
+// the tiles when a colour is on the painter clipboard.
+function ColorDot({
   label,
   value,
   onChange,
+  painter,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  painter: Painter;
 }) {
+  const pasting = painter.copied !== null;
   return (
     <span
       className="relative h-6 w-6 shrink-0 overflow-hidden rounded border border-slate-300 dark:border-slate-600"
@@ -382,7 +457,54 @@ function ShapeColorDot({
         onChange={(e) => onChange(e.target.value)}
         className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
       />
+      {pasting ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            onChange(painter.copied!);
+            painter.clear();
+          }}
+          aria-label={`Paste colour into ${label}`}
+          className="absolute inset-0 bg-brand-500/15 ring-1 ring-inset ring-brand-400/70"
+        />
+      ) : null}
     </span>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg
+      width="9"
+      height="9"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden
+    >
+      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
+      <path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" />
+    </svg>
+  );
+}
+
+function PasteGlyph() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className="text-brand-700 dark:text-brand-200"
+      aria-hidden
+    >
+      <path d="M3 3l4 4M3 7V3h4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 13h6M10 10v6" strokeLinecap="round" />
+    </svg>
   );
 }
 

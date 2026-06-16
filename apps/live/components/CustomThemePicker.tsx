@@ -46,6 +46,11 @@ export function CustomThemePicker({
   // null = browsing; 'new' = building a fresh theme; an id = editing it.
   const [building, setBuilding] = useState<null | 'new' | string>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  // Once the user has been in the builder, returning to the browse should
+  // land back on the Custom category (where New / Edit live) rather than
+  // the default overview — true whether they saved or cancelled.
+  const [returnToCustom, setReturnToCustom] = useState(false);
 
   useEffect(() => {
     onBuildingChange?.(building !== null);
@@ -54,14 +59,34 @@ export function CustomThemePicker({
   const editingTheme =
     typeof building === 'string' ? customThemes.find((t) => t.id === building) : undefined;
 
+  const openBuilder = (target: 'new' | string) => {
+    setSaveError(null);
+    setReturnToCustom(true);
+    setBuilding(target);
+  };
+
   const handleSave = async (draft: CustomThemeDraft) => {
     setSaving(true);
+    setSaveError(null);
     try {
       if (building === 'new') {
         const created = await createTheme(draft.name, draft.definition);
-        if (created) onSelect(created.id);
+        // Persist FAILED (no owner yet / network): keep the builder open
+        // so the user doesn't lose their work, and surface why — closing
+        // silently here is what read as "Save did nothing".
+        if (!created) {
+          setSaveError("Couldn't save the theme. Check your connection and try again.");
+          return;
+        }
+        // Select it so returning to the browse lands on the Custom
+        // category with the new theme highlighted.
+        onSelect(created.id);
       } else if (editingTheme) {
-        await updateTheme(editingTheme.id, draft);
+        const updated = await updateTheme(editingTheme.id, draft);
+        if (!updated) {
+          setSaveError("Couldn't save your changes. Check your connection and try again.");
+          return;
+        }
         // Re-select so a live host repaints with the edited definition.
         onSelect(editingTheme.id);
       }
@@ -80,6 +105,7 @@ export function CustomThemePicker({
             : undefined
         }
         saving={saving}
+        error={saveError}
         onSave={handleSave}
         onCancel={() => setBuilding(null)}
       />
@@ -95,8 +121,9 @@ export function CustomThemePicker({
         onCommit={onCommit}
         className={browserClassName}
         customThemes={customThemes}
-        onNewCustomTheme={() => setBuilding('new')}
-        onEditCustomTheme={(id) => setBuilding(id)}
+        initialCategory={returnToCustom ? 'custom' : undefined}
+        onNewCustomTheme={() => openBuilder('new')}
+        onEditCustomTheme={(id) => openBuilder(id)}
         onDeleteCustomTheme={deleteTheme}
       />
       {footer}

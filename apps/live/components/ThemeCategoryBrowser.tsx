@@ -50,6 +50,7 @@ export function ThemeCategoryBrowser({
   // Custom themes (spec/44). Passing `onNewCustomTheme` turns on the
   // Custom category; `customThemes` is the owner's saved list.
   customThemes,
+  initialCategory,
   onNewCustomTheme,
   onEditCustomTheme,
   onDeleteCustomTheme,
@@ -61,6 +62,10 @@ export function ThemeCategoryBrowser({
   onCommit?: (id: string) => void;
   className?: string;
   customThemes?: CustomTheme[];
+  // Force the drill-in to open on a specific category on mount, overriding
+  // the theme-derived default. Used to return to the Custom category after
+  // the builder closes even when no custom theme ended up selected.
+  initialCategory?: ThemeCategory | 'custom';
   onNewCustomTheme?: () => void;
   onEditCustomTheme?: (id: string) => void;
   onDeleteCustomTheme?: (id: string) => void;
@@ -69,10 +74,12 @@ export function ThemeCategoryBrowser({
   const custom = customThemes ?? [];
   const themeIsCustom = isCustomThemeId(themeId);
 
-  // Drill-in state: null is the overview. Open the active theme's
-  // category on mount so it lands highlighted rather than buried: the
-  // Custom bucket for a custom theme, its colour category otherwise.
+  // Drill-in state: null is the overview. An explicit `initialCategory`
+  // wins; otherwise open the active theme's category on mount so it lands
+  // highlighted rather than buried (Custom bucket for a custom theme, its
+  // colour category otherwise).
   const [openCategory, setOpenCategory] = useState<OpenCategory>(() => {
+    if (initialCategory) return initialCategory;
     if (themeIsCustom) return customEnabled ? 'custom' : null;
     return themeId !== 'brand' ? themeCategory(themeId as ThemeId) : null;
   });

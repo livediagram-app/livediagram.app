@@ -1,6 +1,7 @@
 'use client';
 
 import { useId } from 'react';
+import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import type { ThemeDefinition } from '@/lib/themes';
 
 // The preview inside a theme card. Rather than a flat colour dot, it
@@ -56,6 +57,7 @@ export function ThemeSwatch({
   theme,
   size = 'sm',
   heightClass,
+  realPattern = false,
 }: {
   theme: ThemeDefinition;
   // 'sm' compact palette grid, 'md' welcome picker, 'lg' the Explorer
@@ -63,11 +65,28 @@ export function ThemeSwatch({
   // the Basic quick-pick match the category sampler exactly).
   size?: 'sm' | 'md' | 'lg';
   heightClass?: string;
+  // Render the theme's ACTUAL background pattern (grid / graph / dots /
+  // waves / ...) edge-to-edge via the real canvas renderer, instead of
+  // the lightweight faint-dot hint. Opt-in (the builder's big preview
+  // uses it); the tiny card samplers keep the cheap hint.
+  realPattern?: boolean;
 }) {
   const boxH = heightClass ?? (size === 'lg' ? 'h-28' : size === 'md' ? 'h-20' : 'h-9');
   const [c0, c1, c2] = nodeColours(theme);
   const connector = theme.rootColor?.stroke ?? baseTri(theme).stroke;
-  const showPattern = theme.backgroundPattern !== 'blank';
+  // The faint SVG dot hint only renders when NOT showing the real
+  // pattern (and never for a blank backdrop).
+  const showHint = !realPattern && theme.backgroundPattern !== 'blank';
+  // The real edge-to-edge pattern lives on the container (the canvas
+  // renderer's CSS background); the SVG then sits transparent on top.
+  const containerStyle = realPattern
+    ? tabBackgroundStyle(
+        theme.backgroundPattern,
+        { x: 0, y: 0 },
+        theme.backgroundColor,
+        theme.patternColor,
+      )
+    : undefined;
   // Unique per instance so multiple inline SVGs don't share (and clobber)
   // the same filter / marker ids.
   const uid = useId().replace(/:/g, '');
@@ -77,13 +96,14 @@ export function ThemeSwatch({
   return (
     <span
       aria-hidden
+      style={containerStyle}
       className={`block ${boxH} w-full overflow-hidden rounded-md border border-slate-200 dark:border-slate-600`}
     >
       <svg
         viewBox="0 0 100 64"
         preserveAspectRatio="xMidYMid meet"
         className="h-full w-full"
-        style={{ backgroundColor: theme.backgroundColor }}
+        style={realPattern ? undefined : { backgroundColor: theme.backgroundColor }}
         role="img"
       >
         <defs>
@@ -109,8 +129,9 @@ export function ThemeSwatch({
           </marker>
         </defs>
 
-        {/* Faint dot grid (skipped for blank backdrops). */}
-        {showPattern ? (
+        {/* Faint dot grid hint (skipped when the real pattern renders, and
+            for blank backdrops). */}
+        {showHint ? (
           <g fill={theme.patternColor} opacity="0.55">
             {[10, 22, 34, 46, 58, 70, 82, 94].map((x) =>
               [10, 22, 34, 46, 58].map((y) => <circle key={`${x}-${y}`} cx={x} cy={y} r="0.7" />),

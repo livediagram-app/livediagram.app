@@ -187,26 +187,32 @@ export function CustomThemeCard({
 }
 
 // The "+ New theme" tile in the Custom category drill-in: opens the
-// theme builder.
+// theme builder. Laid out like CustomThemeCard (a swatch-height block +
+// a label beneath) so it sits consistently in the grid with the saved
+// theme tiles, just dashed + a plus where the swatch would be.
 export function NewThemeCard({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[3.75rem] flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-brand-300"
+      className="group flex flex-col gap-1 rounded-md border border-dashed border-slate-300 p-1.5 text-left transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        aria-hidden
-      >
-        <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
-      </svg>
-      <span className="text-[10px] font-medium">New theme</span>
+      <span className="flex h-20 w-full items-center justify-center rounded-md bg-slate-50 text-slate-400 transition group-hover:text-brand-500 dark:bg-slate-800/60 dark:text-slate-500 dark:group-hover:text-brand-300">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          aria-hidden
+        >
+          <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
+        </svg>
+      </span>
+      <span className="w-full truncate text-center text-[10px] font-medium text-slate-600 dark:text-slate-300">
+        New theme
+      </span>
     </button>
   );
 }
