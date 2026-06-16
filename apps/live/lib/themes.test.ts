@@ -7,7 +7,7 @@ import type {
   TableElement,
   TextElement,
 } from '@livediagram/diagram';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { createPinnedArrow, createShape } from '@livediagram/diagram';
 import {
   THEMES,
@@ -20,11 +20,17 @@ import {
   resetArrowsToTheme,
   resetThemeElement,
   resetThemeElementsToTheme,
+  resolveTheme,
   switchThemeBackdrop,
   switchThemeElement,
   switchThemeElements,
   type ThemeDefinition,
 } from './themes';
+import {
+  clearCustomThemeRegistry,
+  registerCustomTheme,
+  unregisterCustomTheme,
+} from './custom-theme-registry';
 
 describe('THEMES catalogue', () => {
   it('has a unique id per theme', () => {
@@ -127,6 +133,37 @@ describe('getTheme', () => {
 
   it('returns the exact catalogue object (referential, not a copy)', () => {
     expect(getTheme('forest')).toBe(THEMES.find((t) => t.id === 'forest'));
+  });
+});
+
+describe('resolveTheme (distinguishes unknown from the default)', () => {
+  afterEach(() => clearCustomThemeRegistry());
+
+  it('resolves a built-in id to its catalogue object', () => {
+    expect(resolveTheme('slate')).toBe(THEMES.find((t) => t.id === 'slate'));
+  });
+
+  it('returns undefined for an unknown id (unlike getTheme, which falls back)', () => {
+    expect(resolveTheme('does-not-exist')).toBeUndefined();
+    expect(getTheme('does-not-exist').id).toBe('brand');
+  });
+
+  it('returns undefined for undefined', () => {
+    expect(resolveTheme(undefined)).toBeUndefined();
+  });
+
+  it('resolves a registered custom theme, then returns undefined once deleted', () => {
+    const id = 'custom:test-1';
+    registerCustomTheme({
+      id,
+      name: 'Mine',
+      definition: { backgroundColor: '#fff', elementFill: '#abc', elementStroke: '#123' },
+    } as Parameters<typeof registerCustomTheme>[0]);
+    expect(resolveTheme(id)?.label).toBe('Mine');
+    // A deleted custom theme is "unknown" again — the signal setTheme uses
+    // to hard-reset instead of diffing against the wrong baseline (spec/44).
+    unregisterCustomTheme(id);
+    expect(resolveTheme(id)).toBeUndefined();
   });
 });
 

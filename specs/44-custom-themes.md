@@ -67,21 +67,32 @@ The `definition` is the **themable payload only** — it omits `id` / `label` (t
 
 ## Making custom themes resolvable (`getTheme`)
 
-`getTheme(id)` is synchronous and called all over the render path, so custom themes must resolve without an async hop. A module-level **registry** (`apps/live/lib/custom-theme-registry.ts`) holds `Map<id, ThemeDefinition>`; `getTheme` consults it first, then falls back to the built-in `THEMES`:
+`getTheme(id)` is synchronous and called all over the render path, so custom themes must resolve without an async hop. A module-level **registry** (`apps/live/lib/custom-theme-registry.ts`) holds `Map<id, ThemeDefinition>`. Resolution is split in two so callers can tell "the default theme" apart from "an id that names nothing":
 
 ```ts
-export function getTheme(id: string | undefined): ThemeDefinition {
+// undefined when the id names nothing we know — a deleted custom theme,
+// or one whose owner-scoped fetch hasn't landed yet.
+export function resolveTheme(id: string | undefined): ThemeDefinition | undefined {
   if (id) {
     const custom = getCustomTheme(id);
     if (custom) return custom;
   }
-  return THEMES.find((t) => t.id === id) ?? THEMES[0]!;
+  return THEMES.find((t) => t.id === id);
+}
+
+// Render path: always returns something.
+export function getTheme(id: string | undefined): ThemeDefinition {
+  return resolveTheme(id) ?? THEMES[0]!;
 }
 ```
+
+The split matters for **switching away from a deleted theme**. `setTheme` preserves user-customised element colours by diffing each field against the _previous_ theme's value. If the previous theme was a deleted custom one, diffing against `getTheme`'s default fallback would mistake the dead theme's colours for user overrides and silently recolour nothing — the tab reads as stuck. So `setTheme` uses `resolveTheme`: when the previous id is unresolvable it **hard-resets** every element to the newly-picked theme instead of preserve-customs.
 
 A custom theme is materialised into a full `ThemeDefinition` (id = the `custom:` id, label = the saved name, plus the stored `definition` fields). The editor **fetches the owner's custom themes once on boot** (a `useCustomThemeRegistry(ownerId)` hook composed in `useEditorState`, fired after identity resolves) and registers them before the first tab render. Fetch failure is silent — diagrams fall back to built-ins. Because every existing `getTheme` caller is unchanged, custom themes flow through `recolourElementsForTheme` / `switchThemeElements` / `deriveNewBoxedColours` exactly like built-ins, including per-shape colours.
 
 A React context (`CustomThemeProvider`) tracks the list reactively so the picker and Explorer update the instant a theme is created / edited / deleted in-session (it also writes through to the registry).
+
+**Deleting an applied theme reverts the diagram.** When a custom theme is deleted, the provider invokes an `onThemeDeleted(id)` callback (supplied by the editor only — Explorer / new-diagram have no open diagram to repaint). The editor's handler (`resetTabsUsingTheme` in `useTabCanvas`) walks every tab in the open diagram and hard-resets any still pointing at the dead id back to the default theme — backdrop and element colours — so the deletion is visible immediately rather than stranding the old colours on a now-dead id. A diagram opened _later_ with a since-deleted theme id isn't auto-reverted (a non-owner viewing a shared diagram must never have their tab's theme silently rewritten); it renders via `getTheme`'s default fallback, and the next theme pick hard-resets it through the `resolveTheme` path above.
 
 ## Building a theme — Tab Appearance
 

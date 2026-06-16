@@ -59,9 +59,17 @@ export function useCustomThemes(): CustomThemeContextValue {
 
 export function CustomThemeProvider({
   ownerId,
+  onThemeDeleted,
   children,
 }: {
   ownerId: string | null;
+  // Called synchronously when a theme is deleted, with its id, BEFORE the
+  // delete is persisted. The editor uses it to revert any tab in the open
+  // diagram that was using the now-dead `custom:<uuid>` id back to the
+  // default theme, so the deletion is reflected on the canvas immediately
+  // (spec/44). Surfaces other than the editor (Explorer, new-diagram) omit
+  // it — they have no open diagram to repaint.
+  onThemeDeleted?: (id: string) => void;
   children: ReactNode;
 }) {
   const [themes, setThemes] = useState<CustomTheme[]>([]);
@@ -132,12 +140,17 @@ export function CustomThemeProvider({
   const deleteTheme = useCallback(
     (id: string) => {
       if (!ownerId) return;
+      // Repaint affected tabs BEFORE unregistering: resetTabsUsingTheme
+      // does a hard reset to the default theme, so it doesn't depend on
+      // the dead id still resolving — but keeping this order means the
+      // registry and the canvas never disagree mid-delete.
+      onThemeDeleted?.(id);
       setThemes((prev) => prev.filter((t) => t.id !== id));
       unregisterCustomTheme(id);
       void apiDeleteCustomTheme(ownerId, id).catch(() => {});
       track('Theme', 'Deleted', 'Custom');
     },
-    [ownerId],
+    [ownerId, onThemeDeleted],
   );
 
   return (

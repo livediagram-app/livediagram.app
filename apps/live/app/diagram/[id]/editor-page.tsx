@@ -154,7 +154,10 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
           user's id (Clerk or guest self id) so the theme picker /
           builder share one source of truth and getTheme resolves saved
           themes referenced by this diagram's tabs. */}
-      <CustomThemeProvider ownerId={state.selfParticipant?.id ?? null}>
+      <CustomThemeProvider
+        ownerId={state.selfParticipant?.id ?? null}
+        onThemeDeleted={state.resetTabsUsingTheme}
+      >
         <EditorView />
       </CustomThemeProvider>
     </EditorContext.Provider>
