@@ -12,7 +12,7 @@
 // so the two entry points can't drift. Purely a form: it owns a draft
 // and hands the finished { name, definition } back via onSave.
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import {
   deriveTextColorForBg,
   elementKindLabel,
@@ -318,10 +318,19 @@ export function CustomThemeBuilder({
                 className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-800"
               >
                 <div className="flex items-center gap-2">
-                  {/* Bigger preview so the shape is easy to read. */}
+                  {/* Preview the shape sitting on the THEME background: the
+                      chip backdrop is the theme's background, and only the
+                      shape's interior takes the fill (stroke = currentColor).
+                      The CSS var overrides the icon paths' fill="none". */}
                   <span
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border [&_svg]:h-6 [&_svg]:w-6"
-                    style={{ backgroundColor: r.fill, borderColor: r.stroke, color: r.stroke }}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-slate-200 dark:border-slate-700 [&_svg]:h-6 [&_svg]:w-6 [&_svg_*]:[fill:var(--shape-fill)]"
+                    style={
+                      {
+                        backgroundColor: def.backgroundColor,
+                        color: r.stroke,
+                        '--shape-fill': r.fill,
+                      } as CSSProperties
+                    }
                   >
                     <ShapeIcon kind={kind} />
                   </span>

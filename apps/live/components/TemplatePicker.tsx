@@ -212,7 +212,9 @@ export function TemplatePicker({
                     ? diagramName && diagramName.trim()
                       ? `Welcome to '${diagramName.trim()}'`
                       : 'Welcome to this diagram'
-                    : 'Pick a template'}
+                    : step === 'theme'
+                      ? 'Pick a theme'
+                      : 'Pick a template'}
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
                 {isWizard
