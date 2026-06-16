@@ -163,7 +163,12 @@ export function CustomThemeBuilder({
 
       {/* Live preview — the in-progress theme as a real diagram scene,
           with the chosen pattern rendered edge to edge. */}
-      <ThemeSwatch theme={previewTheme} heightClass="h-24" realPattern />
+      <div className="relative">
+        <ThemeSwatch theme={previewTheme} heightClass="h-24" realPattern />
+        <span className="pointer-events-none absolute right-2 top-2 rounded-md bg-slate-900/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+          Illustration
+        </span>
+      </div>
 
       {/* Format-painter hint: visible while a colour is on the clipboard. */}
       {copied ? (
@@ -197,7 +202,7 @@ export function CustomThemeBuilder({
           (the whole point) reads at a glance. */}
       <div className="flex flex-col gap-1.5">
         <FieldLabel>Base colours</FieldLabel>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <ColorTile
             label="Background"
             value={def.backgroundColor}
@@ -399,9 +404,9 @@ function ColorTile({
 }) {
   const pasting = painter.copied !== null;
   return (
-    <label className="flex cursor-pointer flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-1.5 transition hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60">
+    <label className="flex cursor-pointer flex-col gap-1 rounded-lg border border-slate-200 bg-white p-1 transition hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60">
       <span
-        className="relative block h-9 w-full overflow-hidden rounded-md border border-black/5 dark:border-white/10"
+        className="relative block h-7 w-full overflow-hidden rounded border border-black/5 dark:border-white/10"
         style={{ backgroundColor: value }}
       >
         <input
@@ -441,7 +446,7 @@ function ColorTile({
           </button>
         )}
       </span>
-      <span className="text-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
+      <span className="w-full truncate text-center text-[10px] font-medium text-slate-600 dark:text-slate-300">
         {label}
       </span>
     </label>
