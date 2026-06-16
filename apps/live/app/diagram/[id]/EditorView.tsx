@@ -758,7 +758,18 @@ export function EditorView() {
                 )
         }
         onCanvasContextMenu={
-          isReadOnly ? undefined : (sx, sy) => setContextMenu({ mode: 'canvas', x: sx, y: sy })
+          isReadOnly
+            ? undefined
+            : (sx, sy) =>
+                setContextMenu({
+                  mode: 'canvas',
+                  x: sx,
+                  y: sy,
+                  // Open upward when the click is in the bottom fifth of the
+                  // viewport so the canvas menu's categories don't run
+                  // off-screen (matching the tab menu).
+                  openUp: typeof window !== 'undefined' && sy > window.innerHeight * 0.8,
+                })
         }
         onBeginDrag={beginDrag}
         onBeginEdit={beginEdit}

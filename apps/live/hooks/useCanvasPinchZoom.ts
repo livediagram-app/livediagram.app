@@ -147,6 +147,11 @@ export function useCanvasPinchZoom(deps: Deps): Api {
     const onWheel = (e: WheelEvent) => {
       const canvasEl = depsRef.current.canvasMainRef.current;
       if (!canvasEl || !canvasEl.contains(e.target as Node)) return;
+      // Floating panels (palette, etc.) render over the canvas but own
+      // their own scroll — don't hijack their wheel to pan/zoom the canvas
+      // (the canvas pointer handlers guard the same way). Without this, the
+      // pan-on-wheel behaviour swallowed panel scrolling entirely.
+      if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
       // Ctrl covers trackpad pinch (synthesised ctrlKey) and the Windows /
       // Linux zoom modifier; Cmd (metaKey) is the Mac mouse-wheel modifier.
       if (e.ctrlKey || e.metaKey) {

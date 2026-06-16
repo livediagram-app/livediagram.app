@@ -184,6 +184,10 @@ type EditorContextMenuProps = {
 export function EditorContextMenu(props: EditorContextMenuProps) {
   const { menu, elements, onClose } = props;
   const position = { x: menu.x, y: menu.y };
+  // Grow UPWARD when the menu is opened in the bottom fifth of the
+  // viewport, so the tall collapsible-category menu opens above the
+  // cursor instead of running off-screen — matching the tab menu.
+  const anchorBottom = typeof window !== 'undefined' && menu.y > window.innerHeight * 0.8;
   // Which collapsible section is open in the element menu — at most one at a
   // time (null = all collapsed). An accordion the user can only open one of.
   const [openSection, setOpenSection] = useState<string | null>(null);
@@ -214,7 +218,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       props.selectionElements.some((el) => el.type === 'arrow');
     if (!selectionFormattable) return null;
     return (
-      <ContextMenu position={position} onClose={onClose} flush>
+      <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
         {(() => {
           // Type-aware formatting for the whole selection: only the categories
           // that match the selected element types show, and each control
@@ -410,7 +414,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // can morph to another common kind in place.
     const morphable = target.type === 'shape' && !isIcon && target.shape !== 'frame';
     return (
-      <ContextMenu position={position} onClose={onClose} flush>
+      <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
         {/* Shape — morph to another common kind, preserving size + colour. */}
         {morphable ? (
           <MenuAccordionSection title="Shape" icon={<SquareMenuIcon />} {...sectionProps('shape')}>
