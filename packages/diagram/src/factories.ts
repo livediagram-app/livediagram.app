@@ -161,7 +161,7 @@ export function createSticky(x: number, y: number): StickyElement {
 // Fixed marker size for an annotation (see specs/38). It never resizes, so
 // this is its size for life; `inheritedSizeFor` keeps it at this regardless
 // of the current selection.
-export const ANNOTATION_SIZE = 44;
+const ANNOTATION_SIZE = 44;
 
 // A note marker dropped at (x, y). The note text starts empty — the user
 // clicks the marker to add it. Aspect-locked by default so resizing keeps
