@@ -545,11 +545,16 @@ function WizardSteps({
         state={onTheme ? 'done' : 'active'}
         onClick={() => onStep('template')}
       />
-      <div
-        className={`h-0.5 w-8 rounded-full transition-colors ${
-          onTheme ? 'bg-brand-400 dark:bg-brand-500' : 'bg-slate-200 dark:bg-slate-700'
-        }`}
-      />
+      {/* A mini progress track between the chips: the brand fill grows
+          from 0 to full as you advance to step 2, so the connector reads
+          as progress rather than a static rule. */}
+      <div className="h-1.5 w-12 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+        <div
+          className={`h-full rounded-full bg-brand-500 transition-[width] duration-300 ease-out ${
+            onTheme ? 'w-full' : 'w-0'
+          }`}
+        />
+      </div>
       <StepChip
         n={2}
         label="Theme"
