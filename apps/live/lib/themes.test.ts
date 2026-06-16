@@ -283,7 +283,19 @@ describe('switchThemeBackdrop', () => {
       backgroundColor: next.backgroundColor,
       backgroundPattern: next.backgroundPattern,
       patternColor: next.patternColor,
+      // Unset theme opacity resolves to fully opaque.
+      backgroundOpacity: 1,
     });
+  });
+
+  it('adopts the new theme pattern opacity, and preserves a custom one', () => {
+    const fadedNext: ThemeDefinition = { ...next, backgroundOpacity: 0.4 };
+    // Unset on the tab → adopt the new theme's opacity.
+    expect(switchThemeBackdrop({}, prev, fadedNext).backgroundOpacity).toBe(0.4);
+    // A custom tab opacity (differs from prev's implicit 1) survives.
+    expect(switchThemeBackdrop({ backgroundOpacity: 0.7 }, prev, fadedNext).backgroundOpacity).toBe(
+      0.7,
+    );
   });
 
   it('adopts the new theme backdrop when fields still match the previous theme', () => {

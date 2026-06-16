@@ -85,6 +85,7 @@ export function ThemeSwatch({
         { x: 0, y: 0 },
         theme.backgroundColor,
         theme.patternColor,
+        theme.backgroundOpacity ?? 1,
       )
     : undefined;
   // Unique per instance so multiple inline SVGs don't share (and clobber)

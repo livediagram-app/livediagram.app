@@ -93,6 +93,7 @@ export function CustomThemeBuilder({
       backgroundColor: '#ffffff',
       backgroundPattern: 'grid',
       patternColor: '#cbd5e1',
+      backgroundOpacity: 1,
       elementFill: FALLBACK_FILL,
       elementStroke: FALLBACK_STROKE,
       elementText: '#1e3a8a',
@@ -103,6 +104,7 @@ export function CustomThemeBuilder({
   const [textTouched, setTextTouched] = useState(!!initial);
   const [patternColorTouched, setPatternColorTouched] = useState(!!initial);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [patternOpen, setPatternOpen] = useState(false);
   const [shapesOpen, setShapesOpen] = useState(false);
   // Format-painter clipboard.
   const [copied, setCopied] = useState<string | null>(null);
@@ -233,6 +235,11 @@ export function CustomThemeBuilder({
             }}
             painter={painter}
           />
+        </div>
+      </ExpandRow>
+
+      <ExpandRow label="Pattern" open={patternOpen} onToggle={() => setPatternOpen((o) => !o)}>
+        <div className="grid grid-cols-2 gap-2">
           <ColorTile
             label="Pattern colour"
             value={def.patternColor}
@@ -243,7 +250,7 @@ export function CustomThemeBuilder({
             painter={painter}
           />
         </div>
-        <FieldLabel className="mb-1 mt-3">Pattern</FieldLabel>
+        <FieldLabel className="mb-1 mt-3">Style</FieldLabel>
         <div className="grid grid-cols-4 gap-1 sm:grid-cols-7">
           {PATTERNS.map((p) => (
             <PatternButton
@@ -255,6 +262,27 @@ export function CustomThemeBuilder({
               <p.icon />
             </PatternButton>
           ))}
+        </div>
+        {/* Pattern opacity — fades the pattern over the backdrop, mirroring
+            the canvas Opacity slider (it writes the theme's backgroundOpacity,
+            applied to the tab when the theme is picked). */}
+        <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
+          <div className="flex items-center justify-between">
+            <FieldLabel>Opacity</FieldLabel>
+            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
+              {Math.round((def.backgroundOpacity ?? 1) * 100)}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={def.backgroundOpacity ?? 1}
+            onChange={(e) => patch({ backgroundOpacity: parseFloat(e.target.value) })}
+            aria-label="Pattern opacity"
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
+          />
         </div>
       </ExpandRow>
 

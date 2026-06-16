@@ -82,6 +82,10 @@ export type ThemeDefinition = {
   backgroundColor: string;
   backgroundPattern: BackgroundPattern;
   patternColor: string;
+  // Pattern opacity 0..1. Absent = fully opaque; carried so a (custom)
+  // theme can ship a faded pattern (spec/44). Applied to the tab on theme
+  // switch via switchThemeBackdrop.
+  backgroundOpacity?: number;
   // Defaults for newly added boxed elements. `null` means "fall through
   // to the type-default" — used by the brand theme so it stays identical
   // to the un-themed default.
@@ -849,6 +853,7 @@ export type TabBackdrop = {
   backgroundColor?: string;
   backgroundPattern?: BackgroundPattern;
   patternColor?: string;
+  backgroundOpacity?: number;
 };
 
 export function switchThemeBackdrop(
@@ -856,6 +861,11 @@ export function switchThemeBackdrop(
   prev: ThemeDefinition,
   next: ThemeDefinition,
 ): Required<TabBackdrop> {
+  // Pattern opacity follows the same preserve-customs rule, treating an
+  // unset theme opacity as fully opaque (1).
+  const prevOpacity = prev.backgroundOpacity ?? 1;
+  const nextOpacity = next.backgroundOpacity ?? 1;
+  const currentOpacity = current.backgroundOpacity ?? 1;
   return {
     backgroundColor:
       current.backgroundColor === undefined || current.backgroundColor === prev.backgroundColor
@@ -870,6 +880,7 @@ export function switchThemeBackdrop(
       current.patternColor === undefined || current.patternColor === prev.patternColor
         ? next.patternColor
         : current.patternColor,
+    backgroundOpacity: currentOpacity === prevOpacity ? nextOpacity : currentOpacity,
   };
 }
 

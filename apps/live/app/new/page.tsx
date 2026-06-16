@@ -113,6 +113,9 @@ export default function NewDiagramPage() {
           backgroundColor: getTheme(themeId).backgroundColor,
           backgroundPattern: getTheme(themeId).backgroundPattern,
           patternColor: getTheme(themeId).patternColor,
+          ...(getTheme(themeId).backgroundOpacity != null
+            ? { backgroundOpacity: getTheme(themeId).backgroundOpacity }
+            : {}),
           templateChosen: true,
         };
     try {

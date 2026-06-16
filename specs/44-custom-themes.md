@@ -44,6 +44,7 @@ export type CustomThemeDefinition = {
   backgroundColor: string;
   backgroundPattern: BackgroundPattern;
   patternColor: string;
+  backgroundOpacity?: number; // pattern opacity 0..1; absent = opaque
   elementFill: string | null;
   elementStroke: string | null;
   elementText: string | null;

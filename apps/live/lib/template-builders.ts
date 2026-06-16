@@ -65,6 +65,7 @@ export function buildTemplatedTab(
     backgroundColor: theme.backgroundColor,
     backgroundPattern: theme.backgroundPattern,
     patternColor: theme.patternColor,
+    ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
     templateChosen: true,
     ...templateCanvasOverrides(kind),
   };

@@ -137,6 +137,9 @@ export type CustomThemeDefinition = {
   backgroundColor: string;
   backgroundPattern: BackgroundPattern;
   patternColor: string;
+  // Pattern opacity 0..1 (the canvas pattern-opacity slider). Optional;
+  // absent / undefined means fully opaque.
+  backgroundOpacity?: number;
   elementFill: string | null;
   elementStroke: string | null;
   elementText: string | null;
