@@ -332,7 +332,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
       : snapGuides;
   return (
     <>
-      {hydrated && elements.length === 0 && !showTemplatePicker && !chromeHidden ? (
+      {/* Hidden while a draw / placement tool is armed (pendingDraw): the
+          user is mid-gesture to add an element, so the "empty canvas"
+          welcome card would just be in the way / read as stale. */}
+      {hydrated && elements.length === 0 && !pendingDraw && !showTemplatePicker && !chromeHidden ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="pointer-events-none flex max-w-sm animate-fly-up-in flex-col items-center rounded-xl border border-slate-200 bg-white px-6 py-5 text-center shadow-md">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-500">

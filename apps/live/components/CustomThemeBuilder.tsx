@@ -1,12 +1,15 @@
 'use client';
 
 // The custom-theme builder (spec/44). Fast by default, deep on demand:
-// it opens on three base colours (Base / Fill / Stroke) from which sane
-// defaults for everything else are derived, then expands to the granular
-// controls (text colour, pattern, per-shape colours). Shared by the Tab
-// Appearance Theme tab and the Explorer Themes pane, so the two entry
-// points can't drift. Purely a form: it owns a draft, and hands the
-// finished { name, definition } back via onSave.
+// it opens on three base colours (Background / Fill / Stroke) from which
+// sane defaults for everything else are derived, then expands to the
+// granular controls (text colour, pattern, per-shape colours). A live
+// preview at the top renders the in-progress theme as a real mini
+// diagram (the shared ThemeSwatch scene) so the user sees the result as
+// they build. Shared by the Tab Appearance Theme tab and the Explorer
+// Themes pane, so the two entry points can't drift. Purely a form: it
+// owns a draft and hands the finished { name, definition } back via
+// onSave.
 
 import { useState } from 'react';
 import {
@@ -17,8 +20,10 @@ import {
   type ShapeKind,
 } from '@livediagram/diagram';
 import type { CustomThemeDefinition } from '@livediagram/api-schema';
-import { ColorSwatch, PATTERNS, PatternButton } from './palette-controls';
+import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
+import { hexish, PATTERNS, PatternButton } from './palette-controls';
 import { ShapeIcon } from './shape-icon';
+import { ThemeSwatch } from './ThemeSwatch';
 
 // The shape kinds offered in the per-shape editor: the flowchart /
 // diagram vocabulary where a per-kind colour is meaningful. Device
@@ -43,6 +48,7 @@ export type CustomThemeDraft = { name: string; definition: CustomThemeDefinition
 
 const FALLBACK_FILL = '#dbeafe';
 const FALLBACK_STROKE = '#2563eb';
+const FALLBACK_TEXT = '#0f172a';
 
 function resolved(
   def: CustomThemeDefinition,
@@ -52,7 +58,7 @@ function resolved(
   return {
     fill: o?.fill ?? def.elementFill ?? FALLBACK_FILL,
     stroke: o?.stroke ?? def.elementStroke ?? FALLBACK_STROKE,
-    text: o?.text ?? def.elementText ?? '#0f172a',
+    text: o?.text ?? def.elementText ?? FALLBACK_TEXT,
   };
 }
 
@@ -117,8 +123,20 @@ export function CustomThemeBuilder({
       return { ...d, shapeColors: Object.keys(next).length ? next : undefined };
     });
 
+  const customCount = def.shapeColors ? Object.keys(def.shapeColors).length : 0;
+  // Materialise the draft so the live preview reuses the exact ThemeSwatch
+  // scene the picker cards show.
+  const previewTheme = materialiseCustomTheme({
+    id: 'custom:preview',
+    ownerId: '',
+    name: name || 'Preview',
+    definition: def,
+    createdAt: 0,
+    updatedAt: 0,
+  });
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -141,10 +159,11 @@ export function CustomThemeBuilder({
         </span>
       </div>
 
-      <ThemePreview def={def} />
+      {/* Live preview — the in-progress theme as a real diagram scene. */}
+      <ThemeSwatch theme={previewTheme} heightClass="h-24" />
 
       <label className="flex flex-col gap-1">
-        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Name</span>
+        <FieldLabel>Name</FieldLabel>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -153,19 +172,18 @@ export function CustomThemeBuilder({
         />
       </label>
 
-      {/* Three base colours — the fast path. */}
-      <div>
-        <p className="mb-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-          Base colours
-        </p>
-        <div className="flex flex-wrap gap-1 rounded-lg border border-slate-100 p-1 dark:border-slate-800">
-          <ColorSwatch
-            label="Base"
+      {/* Three base colours — the fast path. Larger tiles so the colour
+          (the whole point) reads at a glance. */}
+      <div className="flex flex-col gap-1.5">
+        <FieldLabel>Base colours</FieldLabel>
+        <div className="grid grid-cols-3 gap-2">
+          <ColorTile
+            label="Background"
             value={def.backgroundColor}
             onChange={(c) => patch({ backgroundColor: c })}
           />
-          <ColorSwatch label="Fill" value={def.elementFill ?? FALLBACK_FILL} onChange={setFill} />
-          <ColorSwatch
+          <ColorTile label="Fill" value={def.elementFill ?? FALLBACK_FILL} onChange={setFill} />
+          <ColorTile
             label="Stroke"
             value={def.elementStroke ?? FALLBACK_STROKE}
             onChange={setStroke}
@@ -178,16 +196,16 @@ export function CustomThemeBuilder({
         open={detailsOpen}
         onToggle={() => setDetailsOpen((o) => !o)}
       >
-        <div className="flex flex-wrap gap-1">
-          <ColorSwatch
+        <div className="grid grid-cols-2 gap-2">
+          <ColorTile
             label="Text"
-            value={def.elementText ?? '#0f172a'}
+            value={def.elementText ?? FALLBACK_TEXT}
             onChange={(c) => {
               setTextTouched(true);
               patch({ elementText: c });
             }}
           />
-          <ColorSwatch
+          <ColorTile
             label="Pattern colour"
             value={def.patternColor}
             onChange={(c) => {
@@ -196,9 +214,7 @@ export function CustomThemeBuilder({
             }}
           />
         </div>
-        <p className="mb-1 mt-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-          Pattern
-        </p>
+        <FieldLabel className="mb-1 mt-3">Pattern</FieldLabel>
         <div className="grid grid-cols-4 gap-1 sm:grid-cols-7">
           {PATTERNS.map((p) => (
             <PatternButton
@@ -215,12 +231,19 @@ export function CustomThemeBuilder({
 
       <ExpandRow
         label="Per-shape colours"
+        badge={customCount > 0 ? String(customCount) : undefined}
         open={shapesOpen}
         onToggle={() => setShapesOpen((o) => !o)}
       >
-        <p className="mb-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        <p className="mb-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
           Give a shape kind its own colours (like UML). Leave a kind unset to use the base colours.
         </p>
+        {/* Column headers so the three swatches per row are legible. */}
+        <div className="mb-1 flex items-center gap-2 pl-[6.5rem] text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+          <span className="w-6 text-center">Fill</span>
+          <span className="w-6 text-center">Line</span>
+          <span className="w-6 text-center">Text</span>
+        </div>
         <div className="flex flex-col gap-1.5">
           {PER_SHAPE_KINDS.map((kind) => {
             const o = def.shapeColors?.[kind];
@@ -228,46 +251,39 @@ export function CustomThemeBuilder({
             return (
               <div key={kind} className="flex items-center gap-2">
                 <span
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-                  style={{ backgroundColor: r.fill, color: r.stroke }}
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded border"
+                  style={{ backgroundColor: r.fill, borderColor: r.stroke, color: r.stroke }}
                 >
                   <ShapeIcon kind={kind} />
                 </span>
-                <span className="w-24 shrink-0 truncate text-xs text-slate-600 dark:text-slate-300">
+                <span className="w-[4.5rem] shrink-0 truncate text-xs text-slate-600 dark:text-slate-300">
                   {elementKindLabel({ type: 'shape', shape: kind } as Parameters<
                     typeof elementKindLabel
                   >[0])}
                 </span>
-                <input
-                  type="color"
-                  aria-label={`${kind} fill`}
+                <ShapeColorDot
+                  label={`${kind} fill`}
                   value={r.fill}
-                  onChange={(e) => setShapeColour(kind, 'fill', e.target.value)}
-                  className="h-6 w-6 cursor-pointer rounded border border-slate-300 dark:border-slate-600"
+                  onChange={(v) => setShapeColour(kind, 'fill', v)}
                 />
-                <input
-                  type="color"
-                  aria-label={`${kind} stroke`}
+                <ShapeColorDot
+                  label={`${kind} stroke`}
                   value={r.stroke}
-                  onChange={(e) => setShapeColour(kind, 'stroke', e.target.value)}
-                  className="h-6 w-6 cursor-pointer rounded border border-slate-300 dark:border-slate-600"
+                  onChange={(v) => setShapeColour(kind, 'stroke', v)}
                 />
-                <input
-                  type="color"
-                  aria-label={`${kind} text`}
+                <ShapeColorDot
+                  label={`${kind} text`}
                   value={r.text}
-                  onChange={(e) => setShapeColour(kind, 'text', e.target.value)}
-                  className="h-6 w-6 cursor-pointer rounded border border-slate-300 dark:border-slate-600"
+                  onChange={(v) => setShapeColour(kind, 'text', v)}
                 />
-                {o ? (
-                  <button
-                    type="button"
-                    onClick={() => clearShape(kind)}
-                    className="text-[10px] font-medium text-slate-400 underline-offset-2 hover:text-slate-600 hover:underline dark:hover:text-slate-200"
-                  >
-                    reset
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  onClick={() => clearShape(kind)}
+                  disabled={!o}
+                  className="ml-auto text-[10px] font-medium text-slate-400 underline-offset-2 transition hover:text-slate-600 hover:underline disabled:invisible dark:text-slate-500 dark:hover:text-slate-300"
+                >
+                  reset
+                </button>
               </div>
             );
           })}
@@ -295,39 +311,90 @@ export function CustomThemeBuilder({
   );
 }
 
-// Compact live preview: the backdrop colour with a few sample shapes
-// rendered in their resolved colours, so the user sees the theme before
-// saving.
-function ThemePreview({ def }: { def: CustomThemeDefinition }) {
-  const sample: ShapeKind[] = ['square', 'diamond', 'cylinder', 'stadium'];
+function FieldLabel({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div
-      className="flex items-center gap-2 rounded-lg border border-slate-200 p-3 dark:border-slate-700"
-      style={{ backgroundColor: def.backgroundColor }}
+    <span
+      className={`text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${className}`}
     >
-      {sample.map((kind) => {
-        const r = resolved(def, kind);
-        return (
-          <span
-            key={kind}
-            className="flex h-9 w-9 items-center justify-center rounded-md border-2"
-            style={{ backgroundColor: r.fill, borderColor: r.stroke, color: r.stroke }}
-          >
-            <ShapeIcon kind={kind} />
-          </span>
-        );
-      })}
-    </div>
+      {children}
+    </span>
+  );
+}
+
+// A base-colour tile: a large colour block (the whole point) with a
+// label beneath, the native colour input layered invisibly on top.
+function ColorTile({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (color: string) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-1.5 transition hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60">
+      <span
+        className="relative block h-9 w-full overflow-hidden rounded-md border border-black/5 dark:border-white/10"
+        style={{ backgroundColor: value }}
+      >
+        <input
+          type="color"
+          value={hexish(value)}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        />
+      </span>
+      <span className="text-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
+        {label}
+      </span>
+    </label>
+  );
+}
+
+// A compact per-shape colour input: a small colour square with the
+// native picker layered on top.
+function ShapeColorDot({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <span
+      className="relative h-6 w-6 shrink-0 overflow-hidden rounded border border-slate-300 dark:border-slate-600"
+      style={{ backgroundColor: value }}
+    >
+      <input
+        type="color"
+        aria-label={label}
+        value={hexish(value)}
+        onChange={(e) => onChange(e.target.value)}
+        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+      />
+    </span>
   );
 }
 
 function ExpandRow({
   label,
+  badge,
   open,
   onToggle,
   children,
 }: {
   label: string;
+  badge?: string;
   open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
@@ -340,7 +407,14 @@ function ExpandRow({
         aria-expanded={open}
         className="flex w-full items-center justify-between px-2.5 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/60"
       >
-        <span>{label}</span>
+        <span className="flex items-center gap-2">
+          {label}
+          {badge ? (
+            <span className="rounded-full bg-brand-100 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200">
+              {badge}
+            </span>
+          ) : null}
+        </span>
         <svg
           width="12"
           height="12"
