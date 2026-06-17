@@ -1156,10 +1156,10 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }) {
             strokeWidth="0.5"
           />
           {[
-            { y: 13, bx: 26, fill: 'rgb(189 200 214)' },
-            { y: 21, bx: 34, fill: 'rgb(214 189 207)' },
-            { y: 29, bx: 44, fill: 'rgb(210 214 189)' },
-            { y: 37, bx: 53, fill: 'rgb(190 189 214)' },
+            { y: 13, bx: 25, bw: 10, fill: 'rgb(79 134 198)' },
+            { y: 21, bx: 30, bw: 14, fill: 'rgb(125 107 176)' },
+            { y: 29, bx: 40, bw: 18, fill: 'rgb(201 138 59)' },
+            { y: 37, bx: 52, bw: 14, fill: 'rgb(106 155 94)' },
           ].map((r) => (
             <g key={r.y}>
               <rect
@@ -1173,7 +1173,7 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }) {
                 strokeWidth="0.4"
               />
               <rect x="4.5" y={r.y + 1} width="17" height="4" rx="0.5" fill="rgb(148 163 184)" />
-              <rect x={r.bx} y={r.y + 1} width="14" height="4" rx="1" fill={r.fill} />
+              <rect x={r.bx} y={r.y + 1} width={r.bw} height="4" rx="1" fill={r.fill} />
             </g>
           ))}
         </svg>

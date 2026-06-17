@@ -23,77 +23,83 @@ const TRACK_FILL = '#e2e8f0';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Per-milestone row: the track's vertical position, the label, and the
-// duration bar (offset + width + fill). Offsets are relative to the
-// chart centre; the bar fills cascade through soft pastels so adjacent
-// tasks stay distinguishable.
+// Month grid geometry, declared up front so the milestone bars can snap to
+// real month columns rather than carrying hand-tuned offsets. Each month
+// column is MONTH.dx wide starting at MONTH.x0 (chart-centre relative).
+const HEADER = { x: -295, y: -239, w: 1086, h: 59 };
+const MONTH = { y: -230, x0: -287, dx: 89, w: 89, h: 38 };
+
+// A believable product-launch plan: real phase names with durations that
+// overlap and cascade the way a delivery plan actually does (build phases
+// run long and in parallel, QA tails the build, launch closes it out).
+// `start`/`months` index the month grid so every bar lines up with the
+// header; widths vary by phase length instead of a uniform block. Fills are
+// medium-saturation and distinct so adjacent tasks stay legible (the bars
+// carry no text, so contrast is against the light track).
 const ROWS: {
   trackY: number;
   label: string;
   labelY: number;
-  barX: number;
+  start: number; // first month column (0 = Jan)
+  months: number; // phase length in months → bar width
   barY: number;
-  barW: number;
   fill: string;
 }[] = [
   {
     trackY: -175,
-    label: 'Milestone One',
+    label: 'Research & discovery',
     labelY: -171,
-    barX: -207,
+    start: 0,
+    months: 2,
     barY: -170,
-    barW: 275,
-    fill: '#bdc8d6',
+    fill: '#4f86c6',
   },
   {
     trackY: -105,
-    label: 'Milestone Two',
+    label: 'Design & prototyping',
     labelY: -101,
-    barX: -107,
+    start: 1,
+    months: 3,
     barY: -100,
-    barW: 275,
-    fill: '#d6bdcf',
+    fill: '#7d6bb0',
   },
   {
     trackY: -35,
-    label: 'Milestone Three',
+    label: 'Frontend build',
     labelY: -32,
-    barX: 63,
+    start: 3,
+    months: 4,
     barY: -30,
-    barW: 275,
-    fill: '#d2d6bd',
+    fill: '#c98a3b',
   },
   {
     trackY: 36,
-    label: 'Milestone Four',
+    label: 'Backend & API',
     labelY: 40,
-    barX: 243,
+    start: 4,
+    months: 4,
     barY: 41,
-    barW: 275,
-    fill: '#d6bdbd',
+    fill: '#6a9b5e',
   },
   {
     trackY: 106,
-    label: 'Milestone Five',
+    label: 'QA & testing',
     labelY: 110,
-    barX: 413,
+    start: 7,
+    months: 3,
     barY: 113,
-    barW: 275,
-    fill: '#bebdd6',
+    fill: '#b5605f',
   },
   {
     trackY: 176,
-    label: 'Milestone Six',
+    label: 'Launch & marketing',
     labelY: 181,
-    barX: 503,
+    start: 9,
+    months: 3,
     barY: 182,
-    barW: 275,
-    fill: '#bdd2d6',
+    fill: '#4a9c97',
   },
 ];
-
-const HEADER = { x: -295, y: -239, w: 1086, h: 59 };
-const MONTH = { y: -230, x0: -287, dx: 89, w: 89, h: 38 };
 const TRACK = { x: -790, w: 1580, h: 62 };
 const LABEL = { x: -790, w: 495, h: 59 };
 const BAR_H = 47;
@@ -149,7 +155,9 @@ export function buildGanttChart(cx: number, cy: number): Element[] {
       textAlignY: 'middle',
       padding: 'md',
     });
-    elements.push(rect(cx + r.barX, cy + r.barY, r.barW, BAR_H, r.fill, true));
+    const barX = MONTH.x0 + r.start * MONTH.dx;
+    const barW = r.months * MONTH.dx;
+    elements.push(rect(cx + barX, cy + r.barY, barW, BAR_H, r.fill, true));
   }
 
   return elements;

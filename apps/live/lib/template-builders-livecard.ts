@@ -35,10 +35,10 @@ const ROW = {
   txtH: 150,
 };
 const ROWS: { slotY: number; innerY: number; label: string }[] = [
-  { slotY: -443, innerY: -427, label: 'Message One' },
-  { slotY: -246, innerY: -228, label: 'Message Two' },
-  { slotY: -47, innerY: -28, label: 'Message Three' },
-  { slotY: 156, innerY: 175, label: 'Message Four' },
+  { slotY: -443, innerY: -427, label: 'Happy birthday, Sandra! Hope it is a great one.' },
+  { slotY: -246, innerY: -228, label: 'Wishing you all the best this year!' },
+  { slotY: -47, innerY: -28, label: 'So lucky to work with you. Enjoy your day!' },
+  { slotY: 156, innerY: 175, label: 'Have a wonderful birthday and a relaxing weekend.' },
 ];
 
 function panel(x: number, y: number, w: number, h: number): Element {

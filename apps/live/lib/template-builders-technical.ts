@@ -38,10 +38,12 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
   const colGap = 170; // half-distance between the two side-by-side columns
 
   // Vertical bands, top to bottom: client → gateway → services → data.
-  const clientY = cy - 320;
-  const gatewayY = cy - 170;
-  const serviceY = cy + 0;
-  const dataY = cy + 190;
+  // Evenly spaced (~190px pitch) so each tile's caption clears the tile
+  // below it — captions render beneath the icon, so tight bands collide.
+  const clientY = cy - 345;
+  const gatewayY = cy - 155;
+  const serviceY = cy + 35;
+  const dataY = cy + 225;
 
   // An icon tile centred on (centerX, centerY): the glyph fills the box
   // with the role label captioned beneath. `iconId` keys the tech-icon

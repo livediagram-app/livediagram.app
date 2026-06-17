@@ -269,8 +269,10 @@ export function buildSlideDeck(cx: number, cy: number): Element[] {
   // Heading band on every slide.
   elements.push(at(tl, 'stadium', 24, 23, 515, 63, { label: 'Q3 Roadmap', size: 'md' }));
   elements.push(at(tr, 'stadium', 24, 23, 515, 63, { label: 'Agenda', size: 'md' }));
-  elements.push(at(bl, 'stadium', 24, 23, 515, 63, { label: 'Three Q3 bets', size: 'md' }));
-  elements.push(at(br, 'stadium', 24, 23, 515, 63, { label: 'Next steps', size: 'md' }));
+  // BR/BL carry the third/fourth slides so the TL -> TR -> BR -> BL snake
+  // visits them in presentation order (bets before next steps).
+  elements.push(at(br, 'stadium', 24, 23, 515, 63, { label: 'Three Q3 bets', size: 'md' }));
+  elements.push(at(bl, 'stadium', 24, 23, 515, 63, { label: 'Next steps', size: 'md' }));
 
   // TL — title slide: subtitle + speaker tag.
   elements.push(at(tl, 'square', 36, 111, 491, 43, { label: 'Team kick-off · 6 Aug', left: true }));
@@ -289,16 +291,16 @@ export function buildSlideDeck(cx: number, cy: number): Element[] {
     elements.push(at(tr, 'square', 95, rowY[i]!, 426, 40, { label, left: true }));
   });
 
-  // BL — three feature cards (icon dot + label).
+  // BR — three feature cards (icon dot + label).
   const bets = ['Self-serve onboarding', 'Realtime collaboration', 'Pricing experiment'];
   const cardX = [24, 201, 379];
   bets.forEach((label, i) => {
-    elements.push(at(bl, 'square', cardX[i]!, 117, 160, 237, { size: 'md' }));
-    elements.push(at(bl, 'circle', cardX[i]! + 56, 143, 47, 46, { size: 'md' }));
-    elements.push(at(bl, 'square', cardX[i]! + 14, 269, 130, 54, { label }));
+    elements.push(at(br, 'square', cardX[i]!, 117, 160, 237, { size: 'md' }));
+    elements.push(at(br, 'circle', cardX[i]! + 56, 143, 47, 46, { size: 'md' }));
+    elements.push(at(br, 'square', cardX[i]! + 14, 269, 130, 54, { label }));
   });
 
-  // BR — next steps: checkbox + action pill per row.
+  // BL — next steps: checkbox + action pill per row.
   const actions = [
     'Lock scope by Friday',
     'Eng + design pairing',
@@ -306,8 +308,8 @@ export function buildSlideDeck(cx: number, cy: number): Element[] {
     'Send recap by EOD',
   ];
   actions.forEach((label, i) => {
-    elements.push(at(br, 'circle', 41, rowY[i]! + 6, 30, 29, { size: 'md' }));
-    elements.push(at(br, 'stadium', 89, rowY[i]!, 432, 40, { label, left: true }));
+    elements.push(at(bl, 'circle', 41, rowY[i]! + 6, 30, 29, { size: 'md' }));
+    elements.push(at(bl, 'stadium', 89, rowY[i]!, 432, 40, { label, left: true }));
   });
 
   // Connector arrows in the deck's reading order (TL -> TR -> BR -> BL).

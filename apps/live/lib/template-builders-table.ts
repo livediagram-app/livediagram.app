@@ -10,10 +10,11 @@ export function buildComparisonTable(cx: number, cy: number): Element[] {
     ['Price', 'Free', '$12 / mo', 'Custom'],
     ['Users', '1', '10', 'Unlimited'],
     ['Storage', '1 GB', '50 GB', '1 TB'],
+    ['Analytics', 'No', 'Standard', 'Advanced'],
     ['Support', 'Community', 'Email', '24/7 priority'],
   ];
-  const width = 520;
-  const height = 240;
+  const width = 560;
+  const height = 360;
   return [
     {
       ...createTable(cx - width / 2, cy - height / 2),
