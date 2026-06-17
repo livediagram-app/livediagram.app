@@ -161,7 +161,15 @@ export function UnionResizeHandles({
             e.stopPropagation();
             onBeginDrag(primaryId, `resize-${pos}`, e);
           }}
-          style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
+          style={{
+            transform: `scale(${1 / zoom})`,
+            transformOrigin: 'center',
+            // Match the single-selection ResizeHandles: a resize cursor on
+            // the grip, so it wins over the canvas mode cursor (crosshair in
+            // select, grab in pan). The union box is never rotated, so the
+            // base angle alone picks the diagonal (rotation = 0).
+            cursor: resizeCursor(pos, 0),
+          }}
           className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-brand-600 bg-white dark:border-brand-300 dark:bg-slate-900 ${positionClasses[pos]} ${HIT_PAD_CLASSES}`}
         />
       ))}
