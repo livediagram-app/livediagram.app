@@ -286,6 +286,14 @@ function buildSwimlane(cx: number, cy: number): Element[] {
     { ...createPinnedArrow(order.id, 's', review.id, 'n') },
     { ...createPinnedArrow(review.id, 'e', approve.id, 'w') },
     { ...createPinnedArrow(approve.id, 's', ship.id, 'n'), label: 'Yes' },
+    // A rejected order loops back up to Review for rework, so the decision
+    // reads as a real two-way branch rather than a dead end.
+    {
+      ...createPinnedArrow(approve.id, 'n', review.id, 'n'),
+      label: 'No',
+      arrowStyle: 'curved' as const,
+      curveOffset: { dx: 0, dy: -60 },
+    },
   ];
   return [...lanes, ...arrows, order, review, approve, ship];
 }

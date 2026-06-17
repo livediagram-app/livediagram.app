@@ -381,6 +381,22 @@ export function buildSwot(cx: number, cy: number): Element[] {
     });
   }
 
+  // Centre pill naming the subject under analysis. It sits in the cross-gap
+  // where the four quadrants meet (their inner corners are empty, since the
+  // bullets hug each quadrant's top-left), tying every quadrant back to one
+  // thing. Pushed last so it layers above the quadrant fills.
+  const subjectW = 248;
+  const subjectH = 58;
+  elements.push({
+    ...createShape('stadium', cx - subjectW / 2, cy - subjectH / 2),
+    width: subjectW,
+    height: subjectH,
+    label: 'Our business',
+    textSize: 'md',
+    textBold: true,
+    textAlignX: 'center',
+  });
+
   return elements;
 }
 
