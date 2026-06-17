@@ -1388,7 +1388,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addBoxed,
     addBoxedAt,
     addBoxedGroup,
-    openImagePickerFor,
     beginDraw,
   });
 

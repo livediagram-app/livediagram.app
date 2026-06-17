@@ -267,19 +267,25 @@ export function createAvatar(cx: number, cy: number): ImageElement {
   };
 }
 
-// Hero (spec/09): a large image with a title + supporting line over a tinted
-// overlay, as a composite GROUP (image + overlay + title + body sharing one
-// groupId). The overlay is the theme accent at half opacity so the hero
-// follows the tab theme while keeping the white text legible; `accent` is
-// supplied by the caller (theme -> colour mapping stays in the app). Returned
-// in paint order: image, then overlay, then text on top.
+// Hero (spec/09): a large image with a title + supporting line on a themed
+// caption card, as a composite GROUP (image + card + title + body sharing one
+// groupId). The card is the theme accent (the hero follows the tab theme),
+// inset near the bottom rather than covering the whole image — so the image
+// stays double-clickable to set / change it (the picker is no longer opened
+// automatically). `accent` is supplied by the caller (theme -> colour mapping
+// stays in the app). Returned in paint order: image, then card, then text.
 export const HERO_WIDTH = 520;
 export const HERO_HEIGHT = 300;
 export function createHero(cx: number, cy: number, accent: string): BoxedElement[] {
   const groupId: ElementId = crypto.randomUUID();
   const left = cx - HERO_WIDTH / 2;
   const top = cy - HERO_HEIGHT / 2;
-  const inset = 36;
+  const cardMargin = 22;
+  const cardHeight = 96;
+  const cardLeft = left + cardMargin;
+  const cardWidth = HERO_WIDTH - cardMargin * 2;
+  const cardTop = top + HERO_HEIGHT - cardMargin - cardHeight;
+  const textInset = 20;
   const image: ImageElement = {
     ...createImage(left, top),
     width: HERO_WIDTH,
@@ -288,21 +294,23 @@ export function createHero(cx: number, cy: number, accent: string): BoxedElement
     objectFit: 'cover',
     groupId,
   };
-  const overlay: ShapeElement = {
-    ...createShape('square', left, top),
-    width: HERO_WIDTH,
-    height: HERO_HEIGHT,
+  // Caption card: accent at high opacity so the white text reads regardless of
+  // the photo behind it, but inset so the image is reachable above / around it.
+  const card: ShapeElement = {
+    ...createShape('square', cardLeft, cardTop),
+    width: cardWidth,
+    height: cardHeight,
     fillColor: accent,
     strokeColor: accent,
     strokeWidth: 'none',
     borderRadius: 'lg',
-    opacity: 0.5,
+    opacity: 0.82,
     groupId,
   };
   const title: TextElement = {
-    ...createText(left + inset, top + HERO_HEIGHT / 2 - 46),
-    width: HERO_WIDTH - inset * 2,
-    height: 46,
+    ...createText(cardLeft + textInset, cardTop + 16),
+    width: cardWidth - textInset * 2,
+    height: 34,
     label: 'Hero title',
     textSize: 'lg',
     textBold: true,
@@ -312,9 +320,9 @@ export function createHero(cx: number, cy: number, accent: string): BoxedElement
     groupId,
   };
   const body: TextElement = {
-    ...createText(left + inset, top + HERO_HEIGHT / 2 + 6),
-    width: HERO_WIDTH - inset * 2,
-    height: 56,
+    ...createText(cardLeft + textInset, cardTop + 16 + 32),
+    width: cardWidth - textInset * 2,
+    height: 30,
     label: 'A short supporting line of text over the image.',
     textSize: 'sm',
     textAlignX: 'center',
@@ -323,7 +331,7 @@ export function createHero(cx: number, cy: number, accent: string): BoxedElement
     opacity: 0.92,
     groupId,
   };
-  return [image, overlay, title, body];
+  return [image, card, title, body];
 }
 
 // Header (spec/09): a website-style header bar as a composite GROUP — an

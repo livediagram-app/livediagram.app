@@ -47,12 +47,6 @@ export function useElementCreation(opts: {
     make: (x: number, y: number) => T,
   ) => void;
   addBoxedGroup: (build: (cx: number, cy: number) => BoxedElement[]) => BoxedElement[] | undefined;
-  // Opens the image picker for a given element id (from useEditorImages). The
-  // hero / header / avatar drop an empty image placeholder, then open the
-  // picker on it so the user fills the image immediately. Undefined when image
-  // upload is unavailable (no R2 / view-role) — the composites still drop, the
-  // image just stays an empty placeholder.
-  openImagePickerFor?: (elementId: string) => void;
   beginDraw: (intent: PendingDraw) => void;
 }) {
   const {
@@ -66,7 +60,6 @@ export function useElementCreation(opts: {
     addBoxed,
     addBoxedAt,
     addBoxedGroup,
-    openImagePickerFor,
     beginDraw,
   } = opts;
 
@@ -178,41 +171,32 @@ export function useElementCreation(opts: {
   // package's create* factories stay theme-agnostic (they take a colour).
   const themeAccent = () => getTheme(activeTab.theme).elementStroke ?? '#0284c7';
 
-  // A hero (spec/09): a large image with title + supporting text over a
-  // theme-tinted overlay, dropped as a composite group. We then open the
-  // image picker on the hero's image element so the user fills it straight
-  // away (the overlay would otherwise cover the empty placeholder's upload
-  // affordance). Falls back gracefully to an empty placeholder if the picker
-  // is unavailable (no R2 / view-role).
+  // A hero (spec/09): a large image with a title + supporting line on a themed
+  // caption card, dropped as a composite group. The image is an empty
+  // placeholder the user fills later (double-click the image area above the
+  // card) — we deliberately do NOT auto-open the picker.
   const addHero = () => {
     if (editsBlocked) return;
-    const accent = themeAccent();
-    const made = addBoxedGroup((cx, cy) => createHero(cx, cy, accent));
-    const image = made?.find((el) => el.type === 'image');
-    if (image) openImagePickerFor?.(image.id);
+    addBoxedGroup((cx, cy) => createHero(cx, cy, themeAccent()));
     track('Element', 'Added', 'Hero');
   };
 
   // A header (spec/09): a website-style bar with a circular avatar, brand
-  // title, and nav links, dropped as a composite group. Opens the picker on
-  // the avatar image element.
+  // title, and nav links, dropped as a composite group. The avatar is an empty
+  // placeholder filled later (double-click it).
   const addHeader = () => {
     if (editsBlocked) return;
-    const accent = themeAccent();
-    const made = addBoxedGroup((cx, cy) => createHeader(cx, cy, accent));
-    const avatar = made?.find((el) => el.type === 'image');
-    if (avatar) openImagePickerFor?.(avatar.id);
+    addBoxedGroup((cx, cy) => createHeader(cx, cy, themeAccent()));
     track('Element', 'Added', 'Header');
   };
 
-  // An avatar (spec/09): a single circular image element. Reuses
-  // addBoxedGroup (no colour/size derivation — an avatar is just an image) and
-  // opens the picker on it.
+  // An avatar (spec/09): a single circular image element (not a composite — it
+  // lives in the Tools tab beside Image, not Components). Reuses addBoxedGroup
+  // (no colour / size derivation — an avatar is just an image); the user fills
+  // it by double-clicking, like any image placeholder.
   const addAvatar = () => {
     if (editsBlocked) return;
-    const made = addBoxedGroup((cx, cy) => [createAvatar(cx, cy)]);
-    const avatar = made?.[0];
-    if (avatar) openImagePickerFor?.(avatar.id);
+    addBoxedGroup((cx, cy) => [createAvatar(cx, cy)]);
     track('Element', 'Added', 'Avatar');
   };
 

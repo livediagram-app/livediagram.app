@@ -812,6 +812,30 @@ export function CommandPalette({
                       </svg>
                     </IconButton>
                   ) : null}
+                  {onAddImage ? (
+                    <IconButton
+                      label="Add avatar"
+                      description="Avatar. A circular image — double-click it to pick / upload a photo."
+                      onClick={addAvatar}
+                      noTint
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden
+                      >
+                        <circle cx="12" cy="12" r="9" />
+                        <circle cx="12" cy="9.5" r="3" />
+                        <path d="M6.5 19a6 6 0 0 1 11 0" />
+                      </svg>
+                    </IconButton>
+                  ) : null}
                   <IconButton
                     label="Add user"
                     description="User / actor. Use-case and architecture diagrams."
@@ -908,7 +932,7 @@ export function CommandPalette({
               id: 'components',
               label: 'Components',
               description:
-                'Ready-made composites that follow the tab theme: Banner, Hero, Header, and a circular Avatar. Each drops as a group you can recolour, retitle, or ungroup.',
+                'Ready-made composites that follow the tab theme: Banner, Hero, and Header. Each drops as a group you can recolour, retitle, or ungroup.',
               icon: (
                 <svg
                   width="18"
@@ -996,30 +1020,6 @@ export function CommandPalette({
                         <rect x="2.5" y="6.5" width="19" height="11" rx="2" />
                         <circle cx="7" cy="12" r="2.2" />
                         <path d="M14 10.5h5M14 13.5h5" />
-                      </svg>
-                    </IconButton>
-                  ) : null}
-                  {onAddImage ? (
-                    <IconButton
-                      label="Add avatar"
-                      description="Avatar. A circular image — opens the image picker on drop."
-                      onClick={addAvatar}
-                      noTint
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden
-                      >
-                        <circle cx="12" cy="12" r="9" />
-                        <circle cx="12" cy="9.5" r="3" />
-                        <path d="M6.5 19a6 6 0 0 1 11 0" />
                       </svg>
                     </IconButton>
                   ) : null}
