@@ -56,14 +56,121 @@ function localAnchorPosition(
   }
 }
 
+// Outline polygons for the SVG-rendered shapes whose drawn edge differs
+// from their bounding box, in the shared 0..100 viewBox the overlay paints
+// in (apps/live/components/shape-svg-overlay.tsx). Kept in lock-step with
+// that file: an anchor projected onto these vertices lands on the line the
+// user actually sees. Convex only — the ray-exit test below assumes one
+// boundary crossing, so non-convex shapes (star, cloud, speech-bubble) are
+// deliberately absent and fall back to the bounding box.
+const SHAPE_OUTLINES: Partial<Record<string, readonly [number, number][]>> = {
+  diamond: [
+    [50, 0],
+    [100, 50],
+    [50, 100],
+    [0, 50],
+  ],
+  parallelogram: [
+    [20, 0],
+    [100, 0],
+    [80, 100],
+    [0, 100],
+  ],
+  hexagon: [
+    [25, 0],
+    [75, 0],
+    [100, 50],
+    [75, 100],
+    [25, 100],
+    [0, 50],
+  ],
+  triangle: [
+    [50, 2],
+    [98, 98],
+    [2, 98],
+  ],
+  trapezoid: [
+    [22, 4],
+    [78, 4],
+    [98, 96],
+    [2, 96],
+  ],
+};
+
+// Project a bounding-box anchor onto the shape's actual drawn outline, so a
+// connector meets a diamond's slanted edge or a circle's curve instead of
+// floating in the empty bounding-box corner. Returns the point where the ray
+// from the shape centre through the bbox anchor exits the shape, or null when
+// the shape's outline IS its box (square, devices, text/table/sticky/image)
+// so the caller keeps the plain anchor. Works in the element's local
+// (unrotated) px space; the caller rotates the result out to world space.
+function projectAnchorToShape(
+  shape: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  p: Point,
+): Point | null {
+  if (width <= 0 || height <= 0) return null;
+  const cx = x + width / 2;
+  const cy = y + height / 2;
+  const dx = p.x - cx;
+  const dy = p.y - cy;
+  if (Math.abs(dx) < 1e-9 && Math.abs(dy) < 1e-9) return null;
+
+  // Circle renders as an ellipse filling the box; intersect the centre->anchor
+  // ray with that ellipse directly (cheaper + exact vs polygonising it).
+  if (shape === 'circle') {
+    const hx = width / 2;
+    const hy = height / 2;
+    const t = 1 / Math.sqrt((dx / hx) ** 2 + (dy / hy) ** 2);
+    return { x: cx + dx * t, y: cy + dy * t };
+  }
+
+  const outline = SHAPE_OUTLINES[shape];
+  if (!outline) return null;
+
+  // Vertices mapped from the 0..100 viewBox into local px.
+  const verts = outline.map(([vx, vy]) => ({
+    x: x + (vx / 100) * width,
+    y: y + (vy / 100) * height,
+  }));
+  // Smallest positive t where the ray centre + t*(dx,dy) crosses an edge.
+  let bestT = Infinity;
+  for (let i = 0; i < verts.length; i++) {
+    const a = verts[i]!;
+    const b = verts[(i + 1) % verts.length]!;
+    const ex = b.x - a.x;
+    const ey = b.y - a.y;
+    const det = ex * dy - dx * ey;
+    if (Math.abs(det) < 1e-9) continue; // ray parallel to this edge
+    const rx = a.x - cx;
+    const ry = a.y - cy;
+    const t = (ex * ry - rx * ey) / det;
+    const s = (dx * ry - rx * dy) / det;
+    if (t > 1e-6 && s >= -1e-6 && s <= 1 + 1e-6 && t < bestT) bestT = t;
+  }
+  if (!Number.isFinite(bestT)) return null;
+  return { x: cx + dx * bestT, y: cy + dy * bestT };
+}
+
 // Works on any boxed element since they share x/y/width/height. When the
 // element carries a `rotation`, the anchor is rotated about the
 // element's centre so a pinned arrow lands on the visually-rotated edge,
 // not the pre-rotation position. Every pinned endpoint (rendering) and
 // snapToAnchor (pinning) resolve through here, so they stay consistent.
+//
+// For non-rectangular shapes the anchor is first projected onto the shape's
+// real outline (so a connector touches a diamond's edge, not the empty bbox
+// corner) before any rotation is applied.
 export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
   const { x, y, width, height } = element;
-  const local = localAnchorPosition(x, y, width, height, anchor);
+  let local = localAnchorPosition(x, y, width, height, anchor);
+  if (element.type === 'shape') {
+    const projected = projectAnchorToShape(element.shape, x, y, width, height, local);
+    if (projected) local = projected;
+  }
   const rotation = element.rotation ?? 0;
   if (!rotation) return local;
   return rotatePoint(local, { x: x + width / 2, y: y + height / 2 }, rotation);

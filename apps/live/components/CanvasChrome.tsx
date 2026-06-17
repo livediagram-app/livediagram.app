@@ -194,6 +194,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     selfParticipant,
     snapGuides,
     distGuides,
+    snapTargets,
     setActiveDockAnchor,
     setActiveMobilePanel,
     setExplorerBottomY,
@@ -442,6 +443,37 @@ export function CanvasChrome(props: CanvasChromeProps) {
                       strokeWidth={1}
                       strokeOpacity={0.55}
                       strokeDasharray="4 3"
+                    />
+                  );
+                })}
+              </svg>
+            );
+          })()
+        : null}
+
+      {/* Arrow-endpoint snap targets. While dragging an arrow's endpoint,
+          mark the connection points of nearby shapes so the user can see
+          where it will snap; the point the endpoint is currently snapped to
+          is drawn larger + filled. Same canvas→screen conversion as the
+          guides above. */}
+      {snapTargets.length > 0
+        ? (() => {
+            const rect = wrapperRef.current?.getBoundingClientRect();
+            if (!rect) return null;
+            return (
+              <svg aria-hidden className="pointer-events-none fixed inset-0 z-30 h-screen w-screen">
+                {snapTargets.map((t, i) => {
+                  const x = rect.left + t.x * viewportZoom;
+                  const y = rect.top + t.y * viewportZoom;
+                  return (
+                    <circle
+                      key={`snap-${i}`}
+                      cx={x}
+                      cy={y}
+                      r={t.active ? 5 : 3.5}
+                      fill={t.active ? 'rgb(14, 165, 233)' : 'white'}
+                      stroke="rgb(14, 165, 233)"
+                      strokeWidth={t.active ? 2 : 1.5}
                     />
                   );
                 })}

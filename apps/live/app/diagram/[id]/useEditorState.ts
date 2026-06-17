@@ -1641,6 +1641,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     snapGuides,
     distGuides,
+    snapTargets,
     beginDrag,
     beginRotate,
     beginAnchorDrag,
@@ -2029,6 +2030,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     skipTemplatePicker,
     snapGuides,
     distGuides,
+    snapTargets,
     tabLoadErrors,
     tabs,
     tabSummaries,

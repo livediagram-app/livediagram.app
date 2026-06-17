@@ -210,9 +210,12 @@ function buildMindMapTree(cx: number, cy: number): Element[] {
 // sub-branches). Anchors face inward via bestAnchorTowards so the spokes are
 // tidy at every angle.
 function buildBubbleMap(cx: number, cy: number): Element[] {
-  const centerSize = 150;
-  const bubbleSize = 100;
-  const radius = 250;
+  // Sizes give each single-word label room to sit on ONE line (the old
+  // 100px bubbles wrapped "Affordable" / "Supported" mid-word), and the
+  // bigger centre carries the topic at a glance.
+  const centerSize = 180;
+  const bubbleSize = 134;
+  const radius = 300;
   const center = {
     ...createShape('circle', cx - centerSize / 2, cy - centerSize / 2),
     width: centerSize,
@@ -226,7 +229,13 @@ function buildBubbleMap(cx: number, cy: number): Element[] {
     const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
     const bx = cx + Math.cos(angle) * radius - bubbleSize / 2;
     const by = cy + Math.sin(angle) * radius - bubbleSize / 2;
-    return { ...createShape('circle', bx, by), width: bubbleSize, height: bubbleSize, label };
+    return {
+      ...createShape('circle', bx, by),
+      width: bubbleSize,
+      height: bubbleSize,
+      label,
+      textSize: 'sm' as const,
+    };
   });
   const centrePoint = { x: cx, y: cy };
   const arrows = bubbles.map((b) => {
@@ -239,6 +248,9 @@ function buildBubbleMap(cx: number, cy: number): Element[] {
         bestAnchorTowards(b, centrePoint),
       ),
       arrowEnds: 'none' as const,
+      // Gently bowed spokes read as a soft radial "flower" and (now that the
+      // endpoints sit on the circle edges) connect cleanly to each bubble.
+      arrowStyle: 'curved' as const,
     };
   });
   return [...arrows, center, ...bubbles];

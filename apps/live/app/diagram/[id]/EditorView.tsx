@@ -344,6 +344,7 @@ export function EditorView() {
     skipTemplatePicker,
     snapGuides,
     distGuides,
+    snapTargets,
     tabs,
     tabSummaries,
     teamFolders,
@@ -589,6 +590,7 @@ export function EditorView() {
         elements={activeTab.elements}
         snapGuides={snapGuides}
         distGuides={distGuides}
+        snapTargets={snapTargets}
         selectedId={selectedId}
         multiSelectedIds={multiSelectedIds}
         remoteSelectionsByElement={remoteSelectionsByElement}

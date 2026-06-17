@@ -21,6 +21,11 @@ import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/useTeamLibrariesSweep';
 import type { CanvasTool } from './CommandPalette';
 
+// A connection-point marker shown while dragging an arrow endpoint: the
+// world-space position of a nearby shape's anchor, with `active` set on the
+// one the endpoint is currently snapped to. Rendered by CanvasChrome.
+export type SnapTarget = { x: number; y: number; active: boolean };
+
 export type CanvasProps = {
   tabName: string;
   tabLocked: boolean;
@@ -59,6 +64,9 @@ export type CanvasProps = {
   // Equal-spacing guides: the gap segments shown when a moved element
   // snaps to even spacing with its neighbours. Rendered by CanvasChrome.
   distGuides: DistributionGuide[];
+  // Connection-point markers revealed while dragging an arrow endpoint near
+  // a shape, so the user can see exactly where it will snap. Empty otherwise.
+  snapTargets: SnapTarget[];
   selectedId: string | null;
   multiSelectedIds: Set<string>;
   onSelectMarquee: (ids: Set<string>) => void;

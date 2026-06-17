@@ -48,6 +48,33 @@ describe('anchorPosition', () => {
     expect(anchorPosition(shape('a', { rotation: 0 }), 'e')).toEqual({ x: 100, y: 40 });
   });
 
+  it('projects diamond anchors onto the diamond outline (corners land on the slanted edge)', () => {
+    const d = shape('d', { shape: 'diamond', x: 0, y: 0, width: 100, height: 100 });
+    // Cardinal anchors are the diamond's tips already — unchanged.
+    expect(anchorPosition(d, 'n')).toEqual({ x: 50, y: 0 });
+    expect(anchorPosition(d, 'e')).toEqual({ x: 100, y: 50 });
+    // The NE bbox corner (100,0) is empty space outside the diamond; it
+    // projects to the midpoint of the top-right edge instead of floating.
+    const ne = anchorPosition(d, 'ne');
+    expect(ne.x).toBeCloseTo(75, 6);
+    expect(ne.y).toBeCloseTo(25, 6);
+  });
+
+  it('projects circle anchors onto the ellipse (corners pull in to the curve)', () => {
+    const c = shape('c', { shape: 'circle', x: 0, y: 0, width: 100, height: 100 });
+    // Cardinals sit on the circle already.
+    expect(anchorPosition(c, 'e')).toEqual({ x: 100, y: 50 });
+    // The NE corner pulls in to the 45deg point on the circle (r=50).
+    const ne = anchorPosition(c, 'ne');
+    expect(ne.x).toBeCloseTo(50 + 50 / Math.SQRT2, 6);
+    expect(ne.y).toBeCloseTo(50 - 50 / Math.SQRT2, 6);
+  });
+
+  it('leaves rectangular shapes (square / text / table) on the bounding box', () => {
+    const sq = shape('s', { shape: 'square', x: 0, y: 0, width: 100, height: 100 });
+    expect(anchorPosition(sq, 'ne')).toEqual({ x: 100, y: 0 });
+  });
+
   it('rotates the anchor about the element centre (90deg clockwise)', () => {
     // Square at (0,0) 100x100, centre (50,50), spun 90deg clockwise:
     // each edge anchor moves a quarter-turn round the centre.

@@ -26,6 +26,7 @@ import {
   acceptsInlineIcon,
   alignmentGuides,
   distributionSnap,
+  ALL_ANCHORS,
   anchorPosition,
   angledElbow,
   arrowLabelAnchor,
@@ -68,6 +69,7 @@ import {
   type DragState,
   type ShapeBounds,
 } from '@/lib/canvas';
+import type { SnapTarget } from '@/components/Canvas.types';
 
 // Value-equality for two guide lists. Used to bail out of the
 // snapGuides state update when the guides haven't changed: on the vast
@@ -109,6 +111,57 @@ function sameDistGuides(a: DistributionGuide[], b: DistributionGuide[]): boolean
     }
   }
   return true;
+}
+
+// Value-equality for two snap-target lists (position + active flag), so the
+// rAF setter bails when the revealed markers haven't changed frame to frame.
+function sameTargets(a: SnapTarget[], b: SnapTarget[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i]!;
+    const y = b[i]!;
+    if (x.x !== y.x || x.y !== y.y || x.active !== y.active) return false;
+  }
+  return true;
+}
+
+// How far outside a shape's bounding box the cursor can be and still reveal
+// that shape's connection points while dragging an arrow endpoint. A little
+// generous so the anchors appear as you approach rather than only on contact.
+const SNAP_TARGET_REVEAL_MARGIN = 44;
+
+// The connection-point markers to show for the current arrow-endpoint drag:
+// every anchor of each shape whose (margin-expanded) box the cursor is over,
+// with the one the endpoint has snapped to flagged active. Arrows have no
+// anchors and are skipped; so is the arrow being dragged.
+function computeSnapTargets(
+  cursor: { x: number; y: number },
+  elements: Element[],
+  activeElementId: string | null,
+  activeAnchor: Anchor | null,
+): SnapTarget[] {
+  const out: SnapTarget[] = [];
+  for (const el of elements) {
+    if (!isBoxed(el)) continue;
+    const m = SNAP_TARGET_REVEAL_MARGIN;
+    if (
+      cursor.x < el.x - m ||
+      cursor.x > el.x + el.width + m ||
+      cursor.y < el.y - m ||
+      cursor.y > el.y + el.height + m
+    ) {
+      continue;
+    }
+    for (const anchor of ALL_ANCHORS) {
+      const p = anchorPosition(el, anchor);
+      out.push({
+        x: p.x,
+        y: p.y,
+        active: el.id === activeElementId && anchor === activeAnchor,
+      });
+    }
+  }
+  return out;
 }
 
 // Distance from point p to segment a-b (canvas coords). Used to pick which
@@ -243,6 +296,10 @@ type EditorDragApi = {
   // Equal-spacing guides for the in-progress move: the gap segments shown
   // when the element snaps to even spacing with its neighbours.
   distGuides: DistributionGuide[];
+  // Connection-point markers for the in-progress arrow-endpoint drag: the
+  // anchors of nearby shapes, with the snapped one flagged `active`. Empty
+  // outside an endpoint drag.
+  snapTargets: SnapTarget[];
   beginDrag: (elementId: string, mode: DragMode, e: ReactPointerEvent) => void;
   beginRotate: (
     elementId: string,
@@ -276,6 +333,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // element snaps to even spacing with its neighbours. Rendered alongside
   // the alignment guides; coalesced through the same rAF below.
   const [distGuides, setDistGuides] = useState<DistributionGuide[]>([]);
+  // Connection-point markers shown while dragging an arrow endpoint (the
+  // anchors of nearby shapes). Coalesced through the same rAF as the guides.
+  const [snapTargets, setSnapTargets] = useState<SnapTarget[]>([]);
   // Coalesce snap-guide state updates into a single rAF. The guides are
   // purely cosmetic — the snap itself is applied synchronously in the
   // `tick` below — so keeping their state update OFF the synchronous
@@ -312,9 +372,21 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       setDistGuides((prev) => (sameDistGuides(prev, dist) ? prev : dist));
     });
   };
+  // Snap-target markers ride the same coalesce-through-rAF pattern as the
+  // guides: only the latest set lands, and the same-check skips the render
+  // when the marker set (positions + which is active) is unchanged.
+  const snapTargetsRafRef = useRef<number | null>(null);
+  const scheduleSnapTargets = (targets: SnapTarget[]) => {
+    if (snapTargetsRafRef.current !== null) cancelAnimationFrame(snapTargetsRafRef.current);
+    snapTargetsRafRef.current = requestAnimationFrame(() => {
+      snapTargetsRafRef.current = null;
+      setSnapTargets((prev) => (sameTargets(prev, targets) ? prev : targets));
+    });
+  };
   useEffect(
     () => () => {
       if (guideRafRef.current !== null) cancelAnimationFrame(guideRafRef.current);
+      if (snapTargetsRafRef.current !== null) cancelAnimationFrame(snapTargetsRafRef.current);
     },
     [],
   );
@@ -1264,6 +1336,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // another shape is the strongest constraint and the most desirable
       // outcome when both are plausible.
       const anchorSnap = snapToAnchor(cursor, els0, SNAP_THRESHOLD);
+      // Reveal the connection points of nearby shapes so the user can see
+      // where the endpoint will snap, highlighting the active one.
+      scheduleSnapTargets(
+        computeSnapTargets(cursor, els0, anchorSnap?.elementId ?? null, anchorSnap?.anchor ?? null),
+      );
       let endpoint: Endpoint;
       if (anchorSnap) {
         endpoint = {
@@ -1429,6 +1506,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // BoxedElementView), so a plain click just selects — no note-open here.
       setDrag(null);
       scheduleGuides([]);
+      scheduleSnapTargets([]);
       // Disarm any checkpoint the gesture never used (a click that
       // selected without moving), so it can't attach to a later one.
       checkpointPendingRef.current = false;
@@ -1449,6 +1527,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // click just lands it. Clear guides and end the gesture.
       setDrag(null);
       scheduleGuides([]);
+      scheduleSnapTargets([]);
     };
     // Escape cancels follow mode, removing the half-drawn arrow.
     const onKey = (e: KeyboardEvent) => {
@@ -1459,6 +1538,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       depsRef.current.setSelectedId(null);
       setDrag(null);
       scheduleGuides([]);
+      scheduleSnapTargets([]);
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
@@ -1478,6 +1558,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     drag,
     snapGuides,
     distGuides,
+    snapTargets,
     beginDrag,
     beginRotate,
     beginAnchorDrag,
