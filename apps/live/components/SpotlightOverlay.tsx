@@ -6,6 +6,11 @@
 // screen space (so the light does NOT pan / zoom with the diagram), and the
 // feathered rim gives the "emits light" falloff a hard-edged mask can't.
 //
+// The glowing dot at the centre is drawn here as a DOM element (the OS cursor
+// is hidden via .cursor-spotlight): a data-URI SVG cursor renders
+// inconsistently across browsers and silently falls back, whereas this locks
+// to the light's exact centre and can actually glow.
+//
 // pointer-events-none so clicks fall through to <main>, where the Canvas
 // capture handlers turn left-click into grow and right-click into shrink.
 
@@ -27,7 +32,10 @@ export function SpotlightOverlay({
   // Before the first pointer-move we don't know where the cursor is, so park
   // the light in the middle of the canvas (a percentage avoids a measure
   // pass); once `pos` lands every update is a px offset that tracks live.
-  const at = pos === null ? '50% 50%' : `${pos.x}px ${pos.y}px`;
+  const centred = pos === null;
+  const at = centred ? '50% 50%' : `${pos.x}px ${pos.y}px`;
+  const dotLeft = centred ? '50%' : `${pos.x}px`;
+  const dotTop = centred ? '50%' : `${pos.y}px`;
   // Clear core ends where the feather begins; clamp so a small light still
   // has a usable centre.
   const core = Math.max(0, radius - FEATHER);
@@ -44,6 +52,22 @@ export function SpotlightOverlay({
       style={{
         background: `radial-gradient(circle ${radius}px at ${at}, transparent ${core}px, ${SHROUD} ${radius}px)`,
       }}
-    />
+    >
+      {/* Glowing dot marking the exact centre of the light (the hidden OS
+          cursor's stand-in). A bright sky core with a white rim reads on both
+          light diagram content and the dark shroud; the box-shadow is the
+          glow. */}
+      <div
+        className="absolute h-2.5 w-2.5 rounded-full"
+        style={{
+          left: dotLeft,
+          top: dotTop,
+          transform: 'translate(-50%, -50%)',
+          background: '#38bdf8',
+          border: '1.5px solid rgba(255, 255, 255, 0.95)',
+          boxShadow: '0 0 10px 3px rgba(56, 189, 248, 0.85), 0 0 3px 1px rgba(255, 255, 255, 0.9)',
+        }}
+      />
+    </div>
   );
 }

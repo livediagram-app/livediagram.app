@@ -336,29 +336,23 @@
 }
 
 /*
- * Spotlight tool cursor (spec/09). A small glowing dot pinned at the exact
- * pointer tip so the precise point stays visible inside the ring of light;
- * concentric brand-tinted circles fake the glow (data-URI cursors can't blur
- * reliably). Hotspot dead-centre on the dot. Falls back to crosshair if the
- * data-URI can't load. Returned as the `cursor-spotlight` class by
- * canvasCursorClass.
+ * Spotlight tool cursor (spec/09). The OS cursor is HIDDEN: the glowing dot
+ * is drawn by SpotlightOverlay as a DOM element locked to the light's centre
+ * (a data-URI SVG cursor renders inconsistently across browsers and silently
+ * falls back). Returned as the `cursor-spotlight` class by canvasCursorClass.
  */
 .cursor-spotlight {
-  --spotlight-cursor:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='7' fill='%230ea5e9' opacity='0.18'/%3E%3Ccircle cx='12' cy='12' r='4.5' fill='%230ea5e9' opacity='0.35'/%3E%3Ccircle cx='12' cy='12' r='2.6' fill='%230ea5e9' stroke='white' stroke-width='1.2'/%3E%3C/svg%3E")
-      12 12,
-    crosshair;
-  cursor: var(--spotlight-cursor);
+  cursor: none;
 }
 
 /*
- * Keep the glowing-dot cursor even over elements. Arrow hit-bands set
- * `pointer-events: stroke` (re-enabling themselves despite the layer's
- * pointer-events:none) and carry their own hover cursor inline, so without
- * this they'd flip back to a move / pointer cursor mid-spotlight. Scoped to
- * [data-element-id] so floating panels keep theirs (mirrors cursor-eraser).
+ * Hide it over elements too. Arrow hit-bands set `pointer-events: stroke`
+ * (re-enabling themselves despite the layer's pointer-events:none) and carry
+ * their own hover cursor inline, so without this they'd flip back to a move /
+ * pointer cursor mid-spotlight. Scoped to [data-element-id] so floating panels
+ * keep theirs (mirrors cursor-eraser).
  */
 .cursor-spotlight [data-element-id],
 .cursor-spotlight [data-element-id] * {
-  cursor: var(--spotlight-cursor) !important;
+  cursor: none !important;
 }
