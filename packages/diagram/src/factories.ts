@@ -192,6 +192,65 @@ export function createLinkCard(x: number, y: number): LinkCardElement {
   };
 }
 
+// Banner (spec/09): a decorative title block, built as a COMPOSITE group of
+// existing primitives rather than a new element type — an accent-filled
+// rounded bar with a bold title and a muted subtitle, all sharing one
+// `groupId` so they move / lock / copy as a unit yet stay individually
+// editable (and ungroupable). Laid out around the CENTRE (cx, cy) since it's
+// dropped at the viewport centre. `accent` is the theme's accent colour (the
+// caller maps theme -> colour, keeping this package theme-agnostic); the bar
+// is filled with it and the text is white for contrast. Returned in paint
+// order (bar first, so the text sits on top).
+export const BANNER_WIDTH = 440;
+export const BANNER_HEIGHT = 104;
+export function createBanner(cx: number, cy: number, accent: string): BoxedElement[] {
+  const groupId: ElementId = crypto.randomUUID();
+  const left = cx - BANNER_WIDTH / 2;
+  const top = cy - BANNER_HEIGHT / 2;
+  const inset = 24;
+  const titleHeight = 42;
+
+  // Accent bar: a rounded square shape stretched wide, filled with the
+  // accent and borderless so it reads as a solid band.
+  const bar: ShapeElement = {
+    ...createShape('square', left, top),
+    width: BANNER_WIDTH,
+    height: BANNER_HEIGHT,
+    fillColor: accent,
+    strokeColor: accent,
+    strokeWidth: 'none',
+    borderRadius: 'lg',
+    groupId,
+  };
+  // Title: large, bold, centred, white on the accent.
+  const title: TextElement = {
+    ...createText(left + inset, top + 20),
+    width: BANNER_WIDTH - inset * 2,
+    height: titleHeight,
+    label: 'Banner title',
+    textSize: 'lg',
+    textBold: true,
+    textAlignX: 'center',
+    textAlignY: 'middle',
+    textColor: '#ffffff',
+    groupId,
+  };
+  // Subtitle: smaller, centred, slightly muted white beneath the title.
+  const subtitle: TextElement = {
+    ...createText(left + inset, top + 20 + titleHeight - 4),
+    width: BANNER_WIDTH - inset * 2,
+    height: 26,
+    label: 'Subtitle or description',
+    textSize: 'sm',
+    textAlignX: 'center',
+    textAlignY: 'middle',
+    textColor: '#ffffff',
+    opacity: 0.85,
+    groupId,
+  };
+  return [bar, title, subtitle];
+}
+
 // Spawns an image element in the empty-state (placeholder) shape. The
 // imageId stays null until the user picks an image from the picker;
 // the renderer shows the upload affordance in the meantime.

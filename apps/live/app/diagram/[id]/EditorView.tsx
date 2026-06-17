@@ -87,6 +87,7 @@ export function EditorView() {
     addTable,
     addAnnotation,
     addLinkCard,
+    addBanner,
     dropPaletteItem,
     addTab,
     addText,
@@ -621,6 +622,7 @@ export function EditorView() {
         onAddTable={addTable}
         onAddAnnotation={addAnnotation}
         onAddLinkCard={addLinkCard}
+        onAddBanner={addBanner}
         onAddText={addText}
         onAddSticky={addSticky}
         onAddImage={addImage}

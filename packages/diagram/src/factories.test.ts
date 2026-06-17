@@ -4,6 +4,7 @@ import {
   activeCommentCount,
   createAnnotation,
   createArrow,
+  createBanner,
   createComment,
   createImage,
   createPinnedArrow,
@@ -16,6 +17,7 @@ import {
   type CommentThread,
   type Element,
   type ShapeElement,
+  type TextElement,
 } from './index';
 
 describe('boxed-element factories', () => {
@@ -88,6 +90,38 @@ describe('boxed-element factories', () => {
     expect(c.link).toBeUndefined();
     expect(c.meta).toBeUndefined();
     expect(isBoxed(c)).toBe(true);
+  });
+
+  it('createBanner is a composite group: accent bar (first) + title + subtitle (spec/09)', () => {
+    const els = createBanner(100, 50, '#db2777');
+    expect(els).toHaveLength(3);
+    const [bar, title, subtitle] = els as [ShapeElement, TextElement, TextElement];
+
+    // All three share ONE fresh group id so they move / lock / copy as a unit.
+    expect(bar.groupId).toBeDefined();
+    expect(title.groupId).toBe(bar.groupId);
+    expect(subtitle.groupId).toBe(bar.groupId);
+
+    // Bar paints first (lowest z), filled with the accent and borderless.
+    expect(bar.type).toBe('shape');
+    expect(bar.shape).toBe('square');
+    expect(bar).toMatchObject({ fillColor: '#db2777', strokeWidth: 'none', borderRadius: 'lg' });
+
+    // Title + subtitle are white, centred text; subtitle is smaller + muted.
+    expect(title).toMatchObject({ type: 'text', textColor: '#ffffff', textBold: true, textSize: 'lg' });
+    expect(title.textAlignX).toBe('center');
+    expect(subtitle).toMatchObject({ type: 'text', textColor: '#ffffff', textSize: 'sm' });
+    expect(subtitle.opacity).toBeLessThan(1);
+
+    // Centred on the drop point.
+    expect(bar.x + bar.width / 2).toBe(100);
+    expect(bar.y + bar.height / 2).toBe(50);
+  });
+
+  it('createBanner mints a distinct group id each call', () => {
+    const a = createBanner(0, 0, '#000')[0] as ShapeElement;
+    const b = createBanner(0, 0, '#000')[0] as ShapeElement;
+    expect(a.groupId).not.toBe(b.groupId);
   });
 
   it('factories mint distinct ids on each call', () => {

@@ -3,6 +3,7 @@ import {
   acceptsInlineIcon,
   bestAnchorTowards,
   createAnnotation,
+  createBanner,
   createLinkCard,
   createShape,
   createTable,
@@ -42,6 +43,7 @@ export function useElementCreation(opts: {
     canvasY: number,
     make: (x: number, y: number) => T,
   ) => void;
+  addBoxedGroup: (build: (cx: number, cy: number) => BoxedElement[]) => void;
   beginDraw: (intent: PendingDraw) => void;
 }) {
   const {
@@ -54,6 +56,7 @@ export function useElementCreation(opts: {
     setEditingId,
     addBoxed,
     addBoxedAt,
+    addBoxedGroup,
     beginDraw,
   } = opts;
 
@@ -144,6 +147,19 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     addBoxed((x, y) => createLinkCard(x, y));
     track('Element', 'Added', 'LinkCard');
+  };
+
+  // A banner (spec/09): a decorative title block dropped at the viewport
+  // centre as a composite GROUP (accent bar + title + subtitle sharing a
+  // groupId). The accent comes from the active tab's theme (falling back to
+  // brand sky when the theme has no accent, e.g. the Brand theme), mapped here
+  // so the diagram package stays theme-agnostic. createBanner returns the
+  // group in paint order; addBoxedGroup commits + selects it.
+  const addBanner = () => {
+    if (editsBlocked) return;
+    const accent = getTheme(activeTab.theme).elementStroke ?? '#0284c7';
+    addBoxedGroup((cx, cy) => createBanner(cx, cy, accent));
+    track('Element', 'Added', 'Banner');
   };
 
   const addText = () => {
@@ -263,6 +279,7 @@ export function useElementCreation(opts: {
     addTable,
     addAnnotation,
     addLinkCard,
+    addBanner,
     dropPaletteItem,
     addText,
     addSticky,

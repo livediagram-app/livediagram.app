@@ -48,6 +48,8 @@ type CommandPaletteProps = {
   onAddAnnotation: () => void;
   // Drop a link-card / bookmark at the viewport centre. See spec/40.
   onAddLinkCard: () => void;
+  // Drop a decorative banner (composite title block) at the viewport centre.
+  onAddBanner: () => void;
   // Spawn an image placeholder + open the picker. Optional so
   // deployments without R2 (or view-role visitors) can omit it; the
   // Image palette entry hides when the handler is missing. See
@@ -112,6 +114,7 @@ export function CommandPalette({
   onAddTable,
   onAddAnnotation,
   onAddLinkCard,
+  onAddBanner,
   onAddImage,
   onAddArrow,
   onBeginFreehand,
@@ -184,6 +187,10 @@ export function CommandPalette({
   };
   const addLinkCard = () => {
     onAddLinkCard();
+    onMobileClose?.();
+  };
+  const addBanner = () => {
+    onAddBanner();
     onMobileClose?.();
   };
   const addArrow = () => {
@@ -872,6 +879,28 @@ export function CommandPalette({
                     >
                       <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5" />
                       <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5" />
+                    </svg>
+                  </IconButton>
+                  <IconButton
+                    label="Add banner"
+                    description="Banner. A decorative title block (accent bar with a title and subtitle) to head your diagram — drops as a group you can recolour, retitle, or ungroup."
+                    onClick={addBanner}
+                    noTint
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <rect x="2.5" y="5.5" width="19" height="13" rx="2" />
+                      <path d="M7 10.75h10" strokeWidth="2.2" />
+                      <path d="M9 14.25h6" />
                     </svg>
                   </IconButton>
                 </div>

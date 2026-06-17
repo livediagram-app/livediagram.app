@@ -105,6 +105,8 @@ export type CanvasProps = {
   onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
+  // Drop a decorative banner (composite title block) at the viewport centre.
+  onAddBanner: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Spawn an empty image placeholder + open the picker. Optional so
