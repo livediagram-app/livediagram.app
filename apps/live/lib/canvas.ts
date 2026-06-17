@@ -32,37 +32,66 @@ export function inheritedSizeFor(
   return { width, height };
 }
 
-// Frame "section" membership (spec/09): the ids in `ids` plus every boxed
-// element whose CENTRE lies inside any frame in `ids`, plus arrows that sit
-// inside it. Used to expand a frame's move set so dragging the frame carries
-// everything sitting inside it. Pinned arrows between two members follow via
-// the post-move rebind regardless; this also catches a FREE-floating arrow
-// (or the free end of a half-pinned one) drawn inside the frame, so it
+// Frame "section" membership (spec/09): the ids in `ids` plus every element
+// OWNED by a frame in `ids`. Used to expand a frame's move set so dragging the
+// frame carries everything sitting inside it. Pinned arrows between two members
+// follow via the post-move rebind regardless; this also catches a FREE-floating
+// arrow (or the free end of a half-pinned one) drawn inside the frame, so it
 // translates with the section instead of being left behind. A no-op (returns
 // `ids` unchanged) when none of the ids are frames, so a normal drag pays
 // nothing. Centre-point containment (not full-bounds) so a shape straddling
 // the frame edge still counts as "in" when most of it is.
+//
+// Two rules make overlapping / touching frames behave:
+//   1. Frames are NEVER carried as another frame's contents — moving one frame
+//      must not drag a frame it touches or overlaps. (Nest visually all you
+//      like; each frame still moves independently.)
+//   2. An element inside MORE THAN ONE frame belongs to exactly one: the frame
+//      closest to the BACK of the canvas (lowest z-order = earliest in the
+//      `elements` array). So it travels only when that backmost owner is the
+//      one being dragged, not when some other overlapping frame is.
 export function withFrameContents(elements: Element[], ids: Set<string>): Set<string> {
-  const frames = elements.filter(
-    (el): el is ShapeElement => ids.has(el.id) && el.type === 'shape' && el.shape === 'frame',
+  const draggedFrameIds = new Set(
+    elements
+      .filter((el) => ids.has(el.id) && el.type === 'shape' && el.shape === 'frame')
+      .map((el) => el.id),
   );
-  if (frames.length === 0) return ids;
+  if (draggedFrameIds.size === 0) return ids;
+  // Every frame, in array order (lower index = further back). Ownership of an
+  // overlapped element resolves against ALL frames, not just the dragged ones.
+  const allFrames = elements.filter(
+    (el): el is ShapeElement => el.type === 'shape' && el.shape === 'frame',
+  );
+  const contains = (f: ShapeElement, x: number, y: number) =>
+    x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height;
+  // The backmost frame (first in array order) whose bounds contain (x, y).
+  const owningFrame = (x: number, y: number): ShapeElement | null =>
+    allFrames.find((f) => contains(f, x, y)) ?? null;
+  const ownedByDragged = (x: number, y: number): boolean => {
+    const owner = owningFrame(x, y);
+    return owner !== null && draggedFrameIds.has(owner.id);
+  };
   const expanded = new Set(ids);
-  const inAnyFrame = (x: number, y: number) =>
-    frames.some((f) => x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height);
   for (const el of elements) {
     if (expanded.has(el.id)) continue;
+    // Rule 1: a frame never travels as another frame's content.
+    if (el.type === 'shape' && el.shape === 'frame') continue;
     if (isBoxed(el)) {
-      if (inAnyFrame(el.x + el.width / 2, el.y + el.height / 2)) expanded.add(el.id);
+      if (ownedByDragged(el.x + el.width / 2, el.y + el.height / 2)) expanded.add(el.id);
     } else if (el.type === 'arrow') {
       // Only the arrow's FREE endpoints have fixed coordinates; pinned ends
-      // follow their element. Move the arrow with the frame when it has a
-      // free end and every free end lies inside the frame (a free end
-      // OUTSIDE means the arrow spans out, so leave it put).
+      // follow their element. Move the arrow with the frame when it has a free
+      // end and every free end is owned by the SAME dragged frame (a free end
+      // outside, or owned by a different/backmost frame, means leave it put).
       const freePts: Array<{ x: number; y: number }> = [];
       if (el.from.kind === 'free') freePts.push({ x: el.from.x, y: el.from.y });
       if (el.to.kind === 'free') freePts.push({ x: el.to.x, y: el.to.y });
-      if (freePts.length > 0 && freePts.every((p) => inAnyFrame(p.x, p.y))) expanded.add(el.id);
+      if (freePts.length === 0) continue;
+      const owners = freePts.map((p) => owningFrame(p.x, p.y));
+      const first = owners[0];
+      if (first && draggedFrameIds.has(first.id) && owners.every((o) => o?.id === first.id)) {
+        expanded.add(el.id);
+      }
     }
   }
   return expanded;

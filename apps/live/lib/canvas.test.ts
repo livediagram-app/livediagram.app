@@ -159,6 +159,27 @@ describe('withFrameContents', () => {
     const ids = new Set([inside.id]);
     expect(withFrameContents(elements, ids)).toBe(ids);
   });
+
+  it('does NOT carry a touching / overlapping frame as another frame’s content', () => {
+    // A second frame overlapping the first (its centre 250,250 sits inside the
+    // 100..300 first frame). Moving the first frame must leave the second put.
+    const frameB: Element = { ...createShape('frame', 150, 150), width: 200, height: 200 };
+    const out = withFrameContents([frame, frameB], new Set([frame.id]));
+    expect(out.has(frameB.id)).toBe(false);
+  });
+
+  it('an element in overlapping frames belongs to the BACKMOST frame only', () => {
+    // back (earlier in array) + front frames both contain the element centre.
+    const back: Element = { ...createShape('frame', 100, 100), width: 300, height: 300 };
+    const front: Element = { ...createShape('frame', 120, 120), width: 300, height: 300 };
+    // Centre (200,200) is inside both.
+    const el: Element = { ...createShape('square', 180, 180), width: 40, height: 40 };
+    const order = [back, front, el];
+    // Dragging the BACK frame carries it...
+    expect(withFrameContents(order, new Set([back.id])).has(el.id)).toBe(true);
+    // ...dragging the FRONT (overlapping) frame does not.
+    expect(withFrameContents(order, new Set([front.id])).has(el.id)).toBe(false);
+  });
 });
 
 describe('framesFirst', () => {
