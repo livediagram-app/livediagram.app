@@ -105,11 +105,49 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
 // (recolourElementsForTheme); cards read via their borders + the chip.
 export function buildKanban(cx: number, cy: number): Element[] {
   const colW = 505;
-  const colH = 835;
+  const colH = 600;
   const colGap = 23;
   const colPitch = colW + colGap;
-  const columns = ['Todo List', 'In Progress', 'Under Review', 'Done'];
-  const boardW = columns.length * colW + (columns.length - 1) * colGap;
+  // A realistic mid-sprint board: lanes hold different numbers of varied,
+  // believable tickets (not 24 identical cards) with mixed priorities.
+  const lanes: {
+    header: string;
+    cards: { id: string; summary: string; priority: string }[];
+  }[] = [
+    {
+      header: 'Todo List',
+      cards: [
+        { id: 'LIVE-241', summary: 'Add CSV export to the reports page', priority: 'Medium' },
+        { id: 'LIVE-238', summary: 'Fix timezone bug in the calendar view', priority: 'High' },
+        { id: 'LIVE-245', summary: 'Empty-state illustrations for Explorer', priority: 'Low' },
+        { id: 'LIVE-250', summary: 'Rate-limit the share-link endpoint', priority: 'High' },
+      ],
+    },
+    {
+      header: 'In Progress',
+      cards: [
+        { id: 'LIVE-233', summary: 'Realtime cursors flicker on reconnect', priority: 'High' },
+        { id: 'LIVE-236', summary: 'Refactor the theme picker', priority: 'Medium' },
+        { id: 'LIVE-240', summary: 'Draft the onboarding email sequence', priority: 'Low' },
+      ],
+    },
+    {
+      header: 'Under Review',
+      cards: [
+        { id: 'LIVE-229', summary: 'Keyboard shortcuts for the canvas', priority: 'Medium' },
+        { id: 'LIVE-231', summary: 'Migrate image uploads to R2', priority: 'High' },
+      ],
+    },
+    {
+      header: 'Done',
+      cards: [
+        { id: 'LIVE-220', summary: 'Dark mode for the settings page', priority: 'Medium' },
+        { id: 'LIVE-214', summary: 'Speed up the dashboard query', priority: 'High' },
+        { id: 'LIVE-218', summary: 'Build the avatar component', priority: 'Low' },
+      ],
+    },
+  ];
+  const boardW = lanes.length * colW + (lanes.length - 1) * colGap;
 
   const titleH = 64;
   const titleGap = 46;
@@ -118,17 +156,9 @@ export function buildKanban(cx: number, cy: number): Element[] {
   const startY = cy - totalH / 2;
   const columnsTop = startY + titleH + titleGap;
 
-  const cardsPerColumn = 6;
   const firstCardTop = 71; // relative to the column top
   const cardPitch = 125;
   const cardBodyH = 112;
-  // The ticket reference reads as a bold lead-in (the id) followed by the
-  // plain summary — the per-range rich-text model (spec/09). A fresh run
-  // array is built per card so no two cards share a mutable reference.
-  const ticketRuns = (): TextRun[] => [
-    { text: 'TICKET-001:', bold: true },
-    { text: ' Investigate and implement a solution while measuring the outcome' },
-  ];
 
   const elements: Element[] = [];
 
@@ -142,7 +172,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
     textBold: true,
   });
 
-  columns.forEach((header, ci) => {
+  lanes.forEach((lane, ci) => {
     const colX = startX + ci * colPitch;
     // Lane container.
     elements.push({
@@ -156,12 +186,12 @@ export function buildKanban(cx: number, cy: number): Element[] {
       ...createText(colX, columnsTop + 5),
       width: colW,
       height: 64,
-      label: header,
+      label: lane.header,
       textSize: 'lg',
       textAlignX: 'center',
     });
-    // Cards: body + ticket text + priority chip.
-    for (let i = 0; i < cardsPerColumn; i++) {
+    // Cards: body + ticket text (bold id lead-in + summary) + priority chip.
+    lane.cards.forEach((card, i) => {
       const cardTop = columnsTop + firstCardTop + i * cardPitch;
       elements.push({
         ...createShape('square', colX + 24, cardTop),
@@ -169,7 +199,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
         height: cardBodyH,
         textSize: 'md',
       });
-      const runs = ticketRuns();
+      const runs: TextRun[] = [{ text: `${card.id}:`, bold: true }, { text: ` ${card.summary}` }];
       elements.push({
         ...createText(colX + 32, cardTop + 6),
         width: 441,
@@ -183,10 +213,10 @@ export function buildKanban(cx: number, cy: number): Element[] {
         ...createShape('square', colX + 30, cardTop + 76),
         width: 445,
         height: 28,
-        label: 'High priority',
+        label: `${card.priority} priority`,
         textSize: 'sm',
       });
-    }
+    });
   });
 
   return elements;
@@ -366,12 +396,15 @@ export function buildPrioritizationMatrix(cx: number, cy: number): Element[] {
 
   // Items scattered across the field — the user drags each into the
   // quadrant that matches its value / effort.
+  // Realistic backlog items placed to match their quadrant (top = high value,
+  // left = low effort): a quick win, a big bet, and a couple to reconsider.
+  // The top-right item is nudged in from 1408 so it can't clip the field edge.
   const items: { x: number; y: number; label: string }[] = [
-    { x: 1408, y: 183, label: 'Item 1' },
-    { x: 824, y: 679, label: 'Item 2' },
-    { x: 1325, y: 770, label: 'Item 3' },
-    { x: 1147, y: 932, label: 'Item 4' },
-    { x: 621, y: 183, label: 'Item 5' },
+    { x: 1340, y: 183, label: 'Realtime collab' },
+    { x: 824, y: 679, label: 'Revamp onboarding' },
+    { x: 1325, y: 770, label: 'Settings redesign' },
+    { x: 1147, y: 932, label: 'Custom fonts' },
+    { x: 621, y: 183, label: 'Keyboard shortcuts' },
   ];
   for (const it of items) {
     elements.push({

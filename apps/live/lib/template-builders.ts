@@ -173,12 +173,12 @@ function buildMindMapTree(cx: number, cy: number): Element[] {
     ...createShape('square', rootX, cy - rootH / 2),
     width: rootW,
     height: rootH,
-    label: 'Main idea',
-    textSize: 'lg' as const,
+    label: 'Content strategy',
+    textSize: 'md' as const,
     borderRadius: 'lg' as const,
   };
-  const branchLabels = ['Topic 1', 'Topic 2', 'Topic 3', 'Topic 4'];
-  const leafLabels = ['Detail 1', 'Detail 2', 'Detail 3', 'Detail 4'];
+  const branchLabels = ['Blog', 'Social', 'Email', 'Video'];
+  const leafLabels = ['SEO articles', 'Campaigns', 'Newsletter', 'Tutorials'];
   const branchYs = branchLabels.map((_, i) => cy + (i - (branchLabels.length - 1) / 2) * 110);
   const branches = branchLabels.map((label, i) => ({
     ...createShape('square', branchX, branchYs[i]! - branchH / 2),
@@ -217,10 +217,10 @@ function buildBubbleMap(cx: number, cy: number): Element[] {
     ...createShape('circle', cx - centerSize / 2, cy - centerSize / 2),
     width: centerSize,
     height: centerSize,
-    label: 'Topic',
+    label: 'Our product',
     textSize: 'lg' as const,
   };
-  const labels = ['Idea', 'Detail', 'Aspect', 'Trait', 'Feature', 'Note'];
+  const labels = ['Fast', 'Reliable', 'Simple', 'Affordable', 'Secure', 'Supported'];
   const n = labels.length;
   const bubbles = labels.map((label, i) => {
     const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
@@ -298,39 +298,43 @@ function buildDecisionTree(cx: number, cy: number): Element[] {
   const bW = 130;
   const bH = 56;
   const top = cy - 190;
+  // A realistic bug-triage decision so the structure reads as a real tree:
+  // the No branch closes out, the Yes branch poses a follow-up question. Root's
+  // two children sit symmetric about the centre (±180); the follow-up's own
+  // children fan out to its right.
   const root = {
     ...createShape('diamond', cx - dW / 2, top),
     width: dW,
     height: dH,
-    label: 'Start?',
+    label: 'Bug valid?',
   };
   const a = {
-    ...createShape('square', cx - 240 - bW / 2, top + 150),
+    ...createShape('square', cx - 180 - bW / 2, top + 150),
     width: bW,
     height: bH,
-    label: 'Option A',
+    label: 'Close ticket',
   };
   const elseD = {
-    ...createShape('diamond', cx + 110 - dW / 2, top + 150 - (dH - bH) / 2),
+    ...createShape('diamond', cx + 180 - dW / 2, top + 150 - (dH - bH) / 2),
     width: dW,
     height: dH,
-    label: 'Else?',
+    label: 'Critical?',
   };
   const b = {
-    ...createShape('square', cx + 30 - bW / 2, top + 320),
+    ...createShape('square', cx + 70 - bW / 2, top + 320),
     width: bW,
     height: bH,
-    label: 'Option B',
+    label: 'Escalate now',
   };
   const c = {
-    ...createShape('square', cx + 240 - bW / 2, top + 320),
+    ...createShape('square', cx + 290 - bW / 2, top + 320),
     width: bW,
     height: bH,
-    label: 'Option C',
+    label: 'Add to backlog',
   };
   const arrows = [
-    { ...createPinnedArrow(root.id, 'sw', a.id, 'n'), label: 'Yes' },
-    { ...createPinnedArrow(root.id, 'se', elseD.id, 'n'), label: 'No' },
+    { ...createPinnedArrow(root.id, 'sw', a.id, 'n'), label: 'No' },
+    { ...createPinnedArrow(root.id, 'se', elseD.id, 'n'), label: 'Yes' },
     { ...createPinnedArrow(elseD.id, 'sw', b.id, 'n'), label: 'Yes' },
     { ...createPinnedArrow(elseD.id, 'se', c.id, 'n'), label: 'No' },
   ];
@@ -398,13 +402,15 @@ function buildDataFlow(cx: number, cy: number): Element[] {
     label: 'Process order',
   };
   const store = {
-    ...createShape('cylinder', cx + 180, cy - 70),
+    ...createShape('cylinder', cx + 180, cy - 60),
     width: 120,
-    height: 130,
+    height: 120,
     label: 'Orders',
   };
+  // Centred directly under the process so the 'Invoice' flow drops straight
+  // down (process spans cx-60..cx+60, centre cx).
   const output = {
-    ...createShape('square', cx - 120, cy + 160),
+    ...createShape('square', cx - 60, cy + 160),
     width: 120,
     height: 70,
     label: 'Invoice',
@@ -433,7 +439,7 @@ function buildMindMap(cx: number, cy: number): Element[] {
     ...createShape('circle', cx - centerSize / 2, cy - centerSize / 2),
     width: centerSize,
     height: centerSize,
-    label: 'Main idea',
+    label: 'Product launch',
     textSize: 'lg' as const,
   };
 
@@ -452,35 +458,35 @@ function buildMindMap(cx: number, cy: number): Element[] {
   const branches: BranchSpec[] = [
     {
       angle: 0,
-      label: 'Topic 1',
+      label: 'Research',
       from: 'e',
       to: 'w',
       leafSide: 'right',
-      leafLabels: ['Idea 1a', 'Idea 1b'],
+      leafLabels: ['User interviews', 'Market analysis'],
     },
     {
       angle: 90,
-      label: 'Topic 2',
+      label: 'Design',
       from: 's',
       to: 'n',
       leafSide: 'below',
-      leafLabels: ['Idea 2a', 'Idea 2b'],
+      leafLabels: ['Wireframes', 'Design system'],
     },
     {
       angle: 180,
-      label: 'Topic 3',
+      label: 'Build',
       from: 'w',
       to: 'e',
       leafSide: 'left',
-      leafLabels: ['Idea 3a', 'Idea 3b'],
+      leafLabels: ['Frontend', 'API & data'],
     },
     {
       angle: 270,
-      label: 'Topic 4',
+      label: 'Launch',
       from: 'n',
       to: 's',
       leafSide: 'above',
-      leafLabels: ['Idea 4a', 'Idea 4b'],
+      leafLabels: ['Marketing', 'Support docs'],
     },
   ];
 

@@ -356,9 +356,10 @@ describe('board templates', () => {
     for (const lane of ['Todo List', 'In Progress', 'Under Review', 'Done']) {
       expect(labels).toContain(lane);
     }
-    // Six cards per lane, each carrying a ticket line and a priority chip.
-    expect(labels.filter((l) => l.startsWith('TICKET-')).length).toBe(24);
-    expect(labels.filter((l) => l === 'High priority').length).toBe(24);
+    // Realistic mid-sprint board: 12 ticket cards (varied per-lane counts),
+    // each carrying a ticket line and a priority chip with mixed priorities.
+    expect(labels.filter((l) => l.startsWith('LIVE-')).length).toBe(12);
+    expect(labels.filter((l) => /^(High|Medium|Low) priority$/.test(l)).length).toBe(12);
   });
 
   it('swot drops a 2x2 grid with the four classic quadrants, each with a role icon', () => {

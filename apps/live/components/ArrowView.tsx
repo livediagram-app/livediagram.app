@@ -238,7 +238,17 @@ function ArrowViewImpl({
           arrow.labelOffset,
           arrow.curvePoints,
         )
-      : placeLabel(midpoint, labelText, elementIndex, arrow.id, arrowLabelFontSize(arrow.textSize));
+      : placeLabel(
+          midpoint,
+          labelText,
+          elementIndex,
+          arrow.id,
+          arrowLabelFontSize(arrow.textSize),
+          {
+            dx: to.x - from.x,
+            dy: to.y - from.y,
+          },
+        );
   // The label box is draggable (and shows its dashed selection box)
   // when the arrow is selected and editable.
   const labelDraggable = isSelected && !isPaintMode && !readOnly && !isLocked && !isEditing;
@@ -659,28 +669,44 @@ function labelSize(text: string, fontSize = 12): { width: number; height: number
   };
 }
 
-// Choose a label position that doesn't overlap any boxed element on
-// the canvas. Tries the four cardinal slots around the arrow's
-// midpoint in priority order (right, below, left, above) and picks
-// the first that fits. If all four collide, falls back to right
-// rather than hiding the label — the user can drag the colliding
-// element out of the way.
+// Choose a label position that sits OFF the arrow line and doesn't overlap any
+// boxed element. When the arrow's direction is known, the first two candidates
+// are offset PERPENDICULAR to the line (one each side) by enough to clear it —
+// so a label never sits on top of a horizontal / diagonal / vertical arrow
+// (spec/09 quality bar). The four cardinal slots remain as fallbacks for the
+// box-dodging case. If everything collides, falls back to the first candidate
+// rather than hiding the label.
 function placeLabel(
   midpoint: { x: number; y: number },
   text: string,
   elements: ElementIndex,
   selfId: string,
   fontSize = 12,
+  dir?: { dx: number; dy: number },
 ): { x: number; y: number } {
   const size = labelSize(text, fontSize);
   const halfH = size.height / 2;
   const halfW = size.width / 2;
-  const candidates: { x: number; y: number }[] = [
+  const candidates: { x: number; y: number }[] = [];
+  if (dir && (dir.dx !== 0 || dir.dy !== 0)) {
+    const len = Math.hypot(dir.dx, dir.dy);
+    // Unit perpendicular to the arrow.
+    const px = -dir.dy / len;
+    const py = dir.dx / len;
+    // Distance that clears the label's own half-extent along the perpendicular,
+    // so the line never crosses the text box.
+    const clear = Math.abs(px) * halfW + Math.abs(py) * halfH + LABEL_GAP_PX;
+    candidates.push(
+      { x: midpoint.x + px * clear, y: midpoint.y + py * clear },
+      { x: midpoint.x - px * clear, y: midpoint.y - py * clear },
+    );
+  }
+  candidates.push(
     { x: midpoint.x + halfW + LABEL_GAP_PX, y: midpoint.y }, // right
     { x: midpoint.x, y: midpoint.y + halfH + LABEL_GAP_PX }, // below
     { x: midpoint.x - halfW - LABEL_GAP_PX, y: midpoint.y }, // left
     { x: midpoint.x, y: midpoint.y - halfH - LABEL_GAP_PX }, // above
-  ];
+  );
   for (const c of candidates) {
     const rect = { x: c.x - halfW, y: c.y - halfH, width: size.width, height: size.height };
     if (!collidesWithBoxed(rect, elements, selfId)) return c;

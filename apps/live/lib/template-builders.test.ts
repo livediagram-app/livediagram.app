@@ -241,11 +241,13 @@ describe('board templates seed per-range rich text', () => {
     const cards = buildTemplate('kanban', 0, 0).filter((el) =>
       Array.isArray((el as { richText?: unknown }).richText),
     );
-    // Six cards per lane across four lanes.
-    expect(cards.length).toBe(24);
+    // Realistic mid-sprint board: varied card counts per lane (4 + 3 + 2 + 3).
+    expect(cards.length).toBe(12);
     for (const card of cards) {
       const runs = (card as { richText: { text: string; bold?: boolean }[] }).richText;
-      expect(runs[0]).toEqual({ text: 'TICKET-001:', bold: true });
+      // Bold ticket id lead-in (e.g. "LIVE-241:") + a plain summary run.
+      expect(runs[0]?.bold).toBe(true);
+      expect(runs[0]?.text).toMatch(/^LIVE-\d+:$/);
       expect(runs[1]?.bold).toBeUndefined();
     }
   });
