@@ -1155,9 +1155,9 @@ function SpeedTiles({
   );
 }
 
-// Boxed-element Animation control: an illustrated tile per kind (None / Pulse
-// / Blink / Glow) plus the Speed row once one is active. Shared by the single
-// and multi-select menus.
+// Boxed-element Animation control: an illustrated tile per kind (None / Pulse /
+// Blink / Glow / Trace / Gradient / Bounce / Wobble) plus the Speed row once one
+// is active. Shared by the single and multi-select menus.
 function AnimationTiles({
   animation,
   speed,
@@ -1186,7 +1186,8 @@ function AnimationTiles({
   );
 }
 
-// Arrow Flow control: None / Dashes / Dots illustrated, plus the Speed row.
+// Arrow Flow control: None / Dashes / Dots / Beads / Pulse / Grow / Glow
+// illustrated, plus the Speed row.
 function FlowTiles({
   flow,
   speed,
@@ -1200,7 +1201,7 @@ function FlowTiles({
 }) {
   return (
     <>
-      <div className="grid grid-cols-3 gap-1 px-2 py-1.5">
+      <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
         {([null, ...ARROW_FLOWS] as (ArrowFlow | null)[]).map((v) => (
           <SizeButton key={v ?? 'none'} active={flow === v} onClick={() => onSet(v)}>
             <span className="flex flex-col items-center gap-0.5">

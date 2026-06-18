@@ -491,6 +491,21 @@ function BoxedElementViewImpl({
     below: 'left-0 right-0 bottom-0 h-1/3',
   };
 
+  // trace / gradient on an SVG-rendered shape (diamond, triangle, hexagon, …)
+  // render against the true outline / fill inside ShapeSvgOverlay, so the
+  // wrapper must NOT also paint its bounding-box version (a doubled effect).
+  // Every other animation — and trace / gradient on CSS-rendered shapes and
+  // non-shape boxed elements — stays a wrapper class.
+  const svgHandlesAnim =
+    element.type === 'shape' &&
+    isSvgRenderedShape(element.shape) &&
+    (element.animation === 'trace' || element.animation === 'gradient');
+  const wrapperAnimClass = element.animation
+    ? svgHandlesAnim
+      ? ''
+      : `lvd-anim-${element.animation}`
+    : 'animate-pop-in';
+
   return (
     <div
       data-element-id={element.id}
@@ -508,7 +523,7 @@ function BoxedElementViewImpl({
       className={`absolute origin-center touch-none select-none ${
         // A looping animation (spec/09) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
-        element.animation ? `lvd-anim-${element.animation}` : 'animate-pop-in'
+        wrapperAnimClass
       } ${variant.className} ${cursor}`}
       style={{
         left: element.x,
@@ -525,6 +540,12 @@ function BoxedElementViewImpl({
           ? ({
               '--lvd-anim-color': element.strokeColor ?? textColor,
               '--lvd-anim-speed': ANIMATION_SPEED_FACTOR[element.animationSpeed ?? 'normal'],
+              // The moving-gradient animation blends the fill into the accent;
+              // expose the fill (shared by the wrapper CSS gradient and the SVG
+              // <stop> cycle that ShapeSvgOverlay inherits).
+              ...(element.animation === 'gradient'
+                ? { '--lvd-anim-bg': element.fillColor ?? defaultFillColor(element) }
+                : {}),
             } as React.CSSProperties)
           : {}),
         // Spin about the centre (the wrapper already has origin-center).
@@ -569,6 +590,13 @@ function BoxedElementViewImpl({
             BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
           }
           aspect={element.height > 0 ? element.width / element.height : 1}
+          // trace / gradient render against the true SVG geometry here; every
+          // other animation (and the CSS-shape path) stays on the wrapper.
+          animation={
+            element.animation === 'trace' || element.animation === 'gradient'
+              ? element.animation
+              : undefined
+          }
         />
       ) : null}
       {/* CSS-rendered shapes (square / circle / stadium / browser) paint

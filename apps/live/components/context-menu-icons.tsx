@@ -468,17 +468,112 @@ function FlowDotsGlyph() {
   );
 }
 
+// Trace — a light running a rounded outline.
+function AnimTraceGlyph() {
+  return (
+    <AnimSvg>
+      <rect x="3" y="3" width="10" height="10" rx="2.5" />
+      <circle cx="13" cy="5.5" r="1.6" fill="currentColor" stroke="none" />
+    </AnimSvg>
+  );
+}
+
+// Gradient — a tile washed by a diagonal blend.
+function AnimGradientGlyph() {
+  return (
+    <AnimSvg>
+      <rect x="3" y="3" width="10" height="10" rx="2.5" />
+      <path d="M3.5 12.5 12.5 3.5" opacity="0.55" />
+      <path d="M6.5 13 13 6.5" opacity="0.3" />
+    </AnimSvg>
+  );
+}
+
+// Bounce — a ball hopping above a line.
+function AnimBounceGlyph() {
+  return (
+    <AnimSvg>
+      <circle cx="8" cy="5" r="2.2" fill="currentColor" stroke="none" />
+      <path d="M3 12.5 H13" />
+      <path d="M6 9.2 8 7.2 10 9.2" opacity="0.6" />
+    </AnimSvg>
+  );
+}
+
+// Wobble — a tile tilting between two angles.
+function AnimWobbleGlyph() {
+  return (
+    <AnimSvg>
+      <rect x="4.5" y="4.5" width="7" height="7" rx="1.5" transform="rotate(12 8 8)" />
+      <path d="M2.6 6 A 6 6 0 0 1 5 3.2" opacity="0.6" />
+      <path d="M13.4 10 A 6 6 0 0 1 11 12.8" opacity="0.6" />
+    </AnimSvg>
+  );
+}
+
+// Flow: a row of beads marching toward an arrowhead.
+function FlowBeadsGlyph() {
+  return (
+    <AnimSvg>
+      <path d="M10.5 5.5 13.5 8 10.5 10.5" />
+      <circle cx="2.5" cy="8" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="6" cy="8" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="9.5" cy="8" r="1.3" fill="currentColor" stroke="none" />
+    </AnimSvg>
+  );
+}
+
+// Flow: a line whose opacity pulses (drawn as fading segments).
+function FlowPulseGlyph() {
+  return (
+    <AnimSvg>
+      <path d="M2 8 H4.5" />
+      <path d="M6.5 8 H9" opacity="0.55" />
+      <path d="M10.5 5.5 13.5 8 10.5 10.5" opacity="0.3" />
+    </AnimSvg>
+  );
+}
+
+// Flow: a line that breathes its thickness.
+function FlowGrowGlyph() {
+  return (
+    <AnimSvg>
+      <path d="M2 8 H10" strokeWidth="2.8" />
+      <path d="M10 5 13.5 8 10 11" />
+    </AnimSvg>
+  );
+}
+
+// Flow: a line haloed by a soft glow.
+function FlowGlowGlyph() {
+  return (
+    <AnimSvg>
+      <path d="M2 8 H10" strokeWidth="3.6" opacity="0.3" />
+      <path d="M2 8 H10" />
+      <path d="M10 5 13.5 8 10 11" />
+    </AnimSvg>
+  );
+}
+
 // Dispatchers used by the context menu's Animation / Flow tiles. `null` is the
 // "None" option.
 export function AnimationKindGlyph({ kind }: { kind: ElementAnimation | null }) {
   if (kind === 'pulse') return <AnimPulseGlyph />;
   if (kind === 'blink') return <AnimBlinkGlyph />;
   if (kind === 'glow') return <AnimGlowGlyph />;
+  if (kind === 'trace') return <AnimTraceGlyph />;
+  if (kind === 'gradient') return <AnimGradientGlyph />;
+  if (kind === 'bounce') return <AnimBounceGlyph />;
+  if (kind === 'wobble') return <AnimWobbleGlyph />;
   return <AnimNoneGlyph />;
 }
 
 export function FlowKindGlyph({ kind }: { kind: ArrowFlow | null }) {
   if (kind === 'dashes') return <FlowDashesGlyph />;
   if (kind === 'dots') return <FlowDotsGlyph />;
+  if (kind === 'beads') return <FlowBeadsGlyph />;
+  if (kind === 'pulse') return <FlowPulseGlyph />;
+  if (kind === 'grow') return <FlowGrowGlyph />;
+  if (kind === 'glow') return <FlowGlowGlyph />;
   return <AnimNoneGlyph />;
 }

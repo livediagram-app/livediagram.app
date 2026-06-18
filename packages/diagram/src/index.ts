@@ -64,9 +64,31 @@ export type TextAlignY = 'top' | 'middle' | 'bottom';
 // element as a CSS class; deterministic (no broadcast), reduced-motion-safe
 // (the keyframes are disabled under prefers-reduced-motion), and freezes to a
 // static frame on PNG / SVG export. 'pulse' is an attention ping (an
-// expanding ring), 'blink' a status breathe (opacity), 'glow' a soft halo.
-export type ElementAnimation = 'pulse' | 'blink' | 'glow';
-export const ELEMENT_ANIMATIONS: readonly ElementAnimation[] = ['pulse', 'blink', 'glow'];
+// expanding ring), 'blink' a status breathe (opacity), 'glow' a soft halo,
+// 'trace' a light running the element's outline, 'gradient' a moving gradient
+// blending the fill + accent colours, 'bounce' a vertical bob, 'wobble' a
+// tilt wiggle. trace / gradient render against the true shape outline (an SVG
+// stroke / fill for SVG-rendered shapes, the CSS border / background for
+// CSS-rendered shapes + other boxed elements); bounce / wobble drive the
+// independent `translate` / `rotate` CSS properties so they compose with an
+// element's own rotation rather than clobbering it.
+export type ElementAnimation =
+  | 'pulse'
+  | 'blink'
+  | 'glow'
+  | 'trace'
+  | 'gradient'
+  | 'bounce'
+  | 'wobble';
+export const ELEMENT_ANIMATIONS: readonly ElementAnimation[] = [
+  'pulse',
+  'blink',
+  'glow',
+  'trace',
+  'gradient',
+  'bounce',
+  'wobble',
+];
 
 // Animation / flow speed (spec/09). A multiplier on each animation's tuned
 // base duration (so every animation keeps its own feel; speed just scales it):
@@ -84,9 +106,18 @@ export const ANIMATION_SPEED_FACTOR: Record<AnimationSpeed, number> = {
 
 // Flowing-arrow animation (spec/09): 'dashes' marches the dash pattern along
 // the connector (CSS stroke-dashoffset), 'dots' sends a dot travelling the
-// path (CSS offset-path). Shows direction of data / process flow.
-export type ArrowFlow = 'dashes' | 'dots';
-export const ARROW_FLOWS: readonly ArrowFlow[] = ['dashes', 'dots'];
+// path (CSS offset-path), 'beads' marches a row of round dots, 'pulse' breathes
+// the line's opacity, 'grow' breathes its thickness, 'glow' pulses a soft halo
+// around it. All show / emphasise the direction of data / process flow.
+export type ArrowFlow = 'dashes' | 'dots' | 'beads' | 'pulse' | 'grow' | 'glow';
+export const ARROW_FLOWS: readonly ArrowFlow[] = [
+  'dashes',
+  'dots',
+  'beads',
+  'pulse',
+  'grow',
+  'glow',
+];
 
 export type BackgroundPattern =
   | 'grid'

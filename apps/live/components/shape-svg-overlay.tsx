@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 import type { ShapeKind } from '@livediagram/diagram';
 
 // Shape-shape SVG primitives, used by both BoxedElementView (the
@@ -31,6 +33,7 @@ export function ShapeSvgOverlay({
   strokeWidth = 2,
   strokeDasharray,
   aspect = 1.6,
+  animation,
 }: {
   shape: ShapeKind;
   fill: string;
@@ -45,7 +48,39 @@ export function ShapeSvgOverlay({
   // screen pixels on all four sides (see LaptopGlyph). Defaults to a
   // typical landscape ratio for callers that don't pass it.
   aspect?: number;
+  // Looping animation (spec/09) that has to render against the true SVG
+  // geometry rather than the wrapper: 'trace' marches the shape's own outline
+  // (a light running the perimeter), 'gradient' fills it with a moving gradient
+  // between the element's fill + accent. Speed / accent / fill come from the
+  // wrapper's inherited --lvd-anim-* custom properties. Other animations
+  // (pulse / blink / glow / bounce / wobble) stay on the wrapper and don't
+  // reach here. Undefined for the draw-preview and unanimated elements.
+  animation?: 'trace' | 'gradient';
 }) {
+  // useId is not selector-safe (it emits ':' chars); strip them so the id is a
+  // valid url(#…) fragment. One gradient def per overlay instance.
+  const gradId = `lvd-grad-${useId().replace(/:/g, '')}`;
+  // The moving gradient fills the shape body via an SVG paint server; the
+  // marching-outline trace keeps the body's fill and only restyles the stroke.
+  const effectiveFill = animation === 'gradient' ? `url(#${gradId})` : fill;
+  // When tracing, the outline becomes a marching dash (overriding the user's
+  // border style for the duration, the way a flowing arrow's dashes do).
+  const traceOutline =
+    animation === 'trace'
+      ? { strokeDasharray: '10 8', strokeLinecap: 'round' as const, className: 'lvd-trace-run' }
+      : null;
+  // Three cycling stops blend fill ↔ accent into a flowing band; the inline
+  // stop-color is the frozen (reduced-motion / export) resting frame.
+  const gradientDefs =
+    animation === 'gradient' ? (
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" className="lvd-grad-s0" stopColor="var(--lvd-anim-bg, #fff)" />
+          <stop offset="50%" className="lvd-grad-s1" stopColor="var(--lvd-anim-color, #0ea5e9)" />
+          <stop offset="100%" className="lvd-grad-s2" stopColor="var(--lvd-anim-bg, #fff)" />
+        </linearGradient>
+      </defs>
+    ) : null;
   if (shape === 'actor') {
     // UML actor: an open circle head (the fill colour tints it) over a
     // line body, arms and legs. The viewBox is taller than wide and
@@ -60,26 +95,36 @@ export function ShapeSvgOverlay({
         preserveAspectRatio="xMidYMid meet"
         aria-hidden
       >
-        <g
-          fill="none"
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          strokeDasharray={strokeDasharray}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-        >
-          <circle cx={45} cy={22} r={16} fill={fill} />
-          <path d="M 45 38 L 45 82" />
-          <path d="M 16 56 L 74 56" />
-          <path d="M 45 82 L 22 112" />
-          <path d="M 45 82 L 68 112" />
-        </g>
+        {gradientDefs}
+        {(() => {
+          // stroke-dashoffset can't be animated via a class on the parent <g>
+          // (the `animation` property doesn't inherit), so the trace styling
+          // rides each stroked element.
+          const line = {
+            fill: 'none' as const,
+            stroke,
+            strokeWidth,
+            strokeDasharray: traceOutline ? traceOutline.strokeDasharray : strokeDasharray,
+            strokeLinecap: 'round' as const,
+            strokeLinejoin: 'round' as const,
+            vectorEffect: 'non-scaling-stroke' as const,
+            ...(traceOutline ? { className: traceOutline.className } : {}),
+          };
+          return (
+            <>
+              <circle cx={45} cy={22} r={16} {...line} fill={effectiveFill} />
+              <path d="M 45 38 L 45 82" {...line} />
+              <path d="M 16 56 L 74 56" {...line} />
+              <path d="M 45 82 L 22 112" {...line} />
+              <path d="M 45 82 L 68 112" {...line} />
+            </>
+          );
+        })()}
       </svg>
     );
   }
   const common = {
-    fill,
+    fill: effectiveFill,
     stroke,
     strokeWidth,
     // strokeDasharray propagates so the user's dashed / dotted
@@ -88,10 +133,15 @@ export function ShapeSvgOverlay({
     // The chrome details inside the device frames (the URL pill,
     // window dots, etc.) keep their own stroke setup and stay
     // solid, which reads correctly: a dotted browser frame still
-    // has a solid URL bar inside it.
-    strokeDasharray,
+    // has a solid URL bar inside it. When tracing, the outline turns
+    // into a marching dash (traceOutline overrides the user's dash +
+    // adds the animating class) so the light runs the true perimeter.
+    strokeDasharray: traceOutline ? traceOutline.strokeDasharray : strokeDasharray,
     vectorEffect: 'non-scaling-stroke' as const,
     strokeLinejoin: 'round' as const,
+    ...(traceOutline
+      ? { strokeLinecap: traceOutline.strokeLinecap, className: traceOutline.className }
+      : {}),
   };
   return (
     <svg
@@ -100,6 +150,7 @@ export function ShapeSvgOverlay({
       preserveAspectRatio="none"
       aria-hidden
     >
+      {gradientDefs}
       {shape === 'diamond' ? <polygon points="50,0 100,50 50,100 0,50" {...common} /> : null}
       {shape === 'parallelogram' ? <polygon points="20,0 100,0 80,100 0,100" {...common} /> : null}
       {shape === 'hexagon' ? (
@@ -159,7 +210,9 @@ export function ShapeSvgOverlay({
           fill="none"
           stroke={stroke}
           strokeWidth={strokeWidth}
-          strokeDasharray={strokeDasharray}
+          strokeDasharray={traceOutline ? traceOutline.strokeDasharray : strokeDasharray}
+          strokeLinecap={traceOutline ? traceOutline.strokeLinecap : undefined}
+          className={traceOutline ? traceOutline.className : undefined}
           vectorEffect="non-scaling-stroke"
         />
       ) : null}
@@ -180,11 +233,13 @@ export function ShapeSvgOverlay({
           inline elements. */}
       {shape === 'laptop' ? (
         <LaptopGlyph
-          fill={fill}
+          fill={effectiveFill}
           stroke={stroke}
           strokeWidth={strokeWidth}
           strokeDasharray={strokeDasharray}
           aspect={aspect}
+          traceClassName={traceOutline?.className}
+          traceDash={traceOutline?.strokeDasharray}
         />
       ) : null}
       {/* Phone: tall pill silhouette. Heavily rounded corners are the
@@ -260,12 +315,19 @@ function LaptopGlyph({
   strokeWidth,
   strokeDasharray,
   aspect,
+  traceClassName,
+  traceDash,
 }: {
   fill: string;
   stroke: string;
   strokeWidth: number;
   strokeDasharray?: string;
   aspect: number;
+  // When tracing, the lid / hinge / deck panels march their outline; the thin
+  // detail chrome (bezel / keys / trackpad) stays static so it doesn't turn
+  // into noise.
+  traceClassName?: string;
+  traceDash?: string;
 }) {
   // Filled panels (lid / hinge / deck) carry the user's fill + dash;
   // the detail outlines (bezel / keys / trackpad) stay solid + thin,
@@ -274,9 +336,10 @@ function LaptopGlyph({
     fill,
     stroke,
     strokeWidth,
-    strokeDasharray,
+    strokeDasharray: traceDash ?? strokeDasharray,
     vectorEffect: 'non-scaling-stroke' as const,
     strokeLinejoin: 'round' as const,
+    ...(traceClassName ? { strokeLinecap: 'round' as const, className: traceClassName } : {}),
   };
   const detail = {
     fill: 'none',

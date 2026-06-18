@@ -411,6 +411,144 @@
   animation: lvd-glow calc(2s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
 }
 
+/* Trace — a light running the element's outline. CSS-rendered shapes (square /
+ * circle / stadium / browser) + other boxed elements get an orbiting bright arc
+ * drawn as a conic-gradient ring masked to the wrapper's border (so it follows
+ * the real border-radius). SVG-rendered shapes instead march the SVG outline
+ * itself (see .lvd-trace-run, applied by ShapeSvgOverlay). The @property makes
+ * the conic angle animatable; without it the browser can't tween an <angle>
+ * custom property and the ring sits still. The wrapper is already
+ * position: absolute (it's placed by left / top on the canvas), so it anchors
+ * the ::after ring without needing position: relative — setting that here would
+ * break the element's canvas placement. */
+@property --lvd-trace-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes lvd-trace-spin {
+  to {
+    --lvd-trace-angle: 360deg;
+  }
+}
+.lvd-anim-trace::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--lvd-trace-angle),
+    transparent 0deg,
+    transparent 280deg,
+    color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 85%, transparent) 340deg,
+    transparent 360deg
+  );
+  /* Punch out the interior so only the 2px ring paints (mask the content box
+   * out of the full box). -webkit-* duplicated for Safari. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: lvd-trace-spin calc(2.4s * var(--lvd-anim-speed, 1)) linear infinite;
+}
+
+/* Gradient — a moving gradient blending the element's fill (--lvd-anim-bg) and
+ * accent (--lvd-anim-color). CSS-rendered shapes + other boxed elements sweep a
+ * linear-gradient background here; SVG-rendered shapes cycle SVG <stop> colours
+ * instead (see .lvd-grad-s*, applied by ShapeSvgOverlay). */
+@keyframes lvd-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.lvd-anim-gradient {
+  background-image: linear-gradient(
+    120deg,
+    var(--lvd-anim-bg, transparent) 0%,
+    var(--lvd-anim-color, #0ea5e9) 50%,
+    var(--lvd-anim-bg, transparent) 100%
+  );
+  background-size: 200% 200%;
+  animation: lvd-gradient-shift calc(3s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
+}
+
+/* Bounce / wobble use the INDEPENDENT transform properties (translate / rotate)
+ * rather than `transform`, so they compose with an element's own
+ * `transform: rotate()` (set inline when the element is rotated) instead of
+ * overriding it. */
+@keyframes lvd-bounce {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -8px;
+  }
+}
+.lvd-anim-bounce {
+  animation: lvd-bounce calc(1s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
+}
+@keyframes lvd-wobble {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+  50% {
+    rotate: 3deg;
+  }
+}
+.lvd-anim-wobble {
+  animation: lvd-wobble calc(0.9s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
+}
+
+/* SVG-shape trace: the shape's own outline becomes a marching dash that runs
+ * the true perimeter (ShapeSvgOverlay swaps the main outline to this class +
+ * a dash pattern). period = dash + gap = 18, so -18 loops seamlessly. */
+@keyframes lvd-trace-march {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+.lvd-trace-run {
+  animation: lvd-trace-march calc(0.9s * var(--lvd-anim-speed, 1)) linear infinite;
+}
+
+/* SVG-shape gradient: three <stop>s cycle between fill + accent on a shared
+ * keyframe with staggered NEGATIVE delays, so the bright band flows across the
+ * fill, phase-locked deterministically (no JS pinning needed). */
+@keyframes lvd-grad-cycle {
+  0%,
+  100% {
+    stop-color: var(--lvd-anim-bg, #fff);
+  }
+  50% {
+    stop-color: var(--lvd-anim-color, #0ea5e9);
+  }
+}
+.lvd-grad-s0,
+.lvd-grad-s1,
+.lvd-grad-s2 {
+  animation: lvd-grad-cycle calc(3s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
+}
+.lvd-grad-s1 {
+  animation-delay: calc(-1s * var(--lvd-anim-speed, 1));
+}
+.lvd-grad-s2 {
+  animation-delay: calc(-2s * var(--lvd-anim-speed, 1));
+}
+
 /* Flowing arrows: marching dashes (stroke-dashoffset) + a travelling dot
  * (offset-path). The dash pattern is set inline on the path so the march
  * loops seamlessly regardless of the arrow's own stroke style. */
@@ -433,6 +571,59 @@
 }
 .lvd-arrow-dot {
   animation: lvd-arrow-dot calc(2s * var(--lvd-flow-speed, 1)) linear infinite;
+}
+
+/* Beads: a row of round dots marching toward the arrowhead. Same
+ * stroke-dashoffset march as dashes, but the path carries a dotted dasharray
+ * (a near-zero dash + round linecap renders each as a bead). period 12 → -12. */
+@keyframes lvd-arrow-beads {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+.lvd-arrow-beads {
+  animation: lvd-arrow-beads calc(0.9s * var(--lvd-flow-speed, 1)) linear infinite;
+}
+/* Pulse: the line breathes its opacity (a status / heartbeat connector). */
+@keyframes lvd-arrow-pulse {
+  0%,
+  100% {
+    stroke-opacity: 1;
+  }
+  50% {
+    stroke-opacity: 0.3;
+  }
+}
+.lvd-arrow-pulse {
+  animation: lvd-arrow-pulse calc(1.4s * var(--lvd-flow-speed, 1)) ease-in-out infinite;
+}
+/* Grow: the line breathes its thickness. --lvd-flow-w (the arrow's base stroke
+ * width, set inline) keeps it relative to the user's chosen thickness. */
+@keyframes lvd-arrow-grow {
+  0%,
+  100% {
+    stroke-width: var(--lvd-flow-w, 2px);
+  }
+  50% {
+    stroke-width: calc(var(--lvd-flow-w, 2px) * 2.2);
+  }
+}
+.lvd-arrow-grow {
+  animation: lvd-arrow-grow calc(1.3s * var(--lvd-flow-speed, 1)) ease-in-out infinite;
+}
+/* Glow: a soft halo around the line pulses. --lvd-flow-color (the arrow's
+ * stroke colour, set inline) tints the drop-shadow. */
+@keyframes lvd-arrow-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 1px var(--lvd-flow-color, #0ea5e9));
+  }
+  50% {
+    filter: drop-shadow(0 0 5px var(--lvd-flow-color, #0ea5e9));
+  }
+}
+.lvd-arrow-glow {
+  animation: lvd-arrow-glow calc(1.6s * var(--lvd-flow-speed, 1)) ease-in-out infinite;
 }
 
 /* Animated icon glyphs (spinner / gear spin, heart beat, signal pulse). The
@@ -483,8 +674,21 @@
   .lvd-anim-pulse,
   .lvd-anim-blink,
   .lvd-anim-glow,
+  .lvd-anim-trace,
+  .lvd-anim-trace::after,
+  .lvd-anim-gradient,
+  .lvd-anim-bounce,
+  .lvd-anim-wobble,
+  .lvd-trace-run,
+  .lvd-grad-s0,
+  .lvd-grad-s1,
+  .lvd-grad-s2,
   .lvd-arrow-flow,
   .lvd-arrow-dot,
+  .lvd-arrow-beads,
+  .lvd-arrow-pulse,
+  .lvd-arrow-grow,
+  .lvd-arrow-glow,
   .lvd-icon-spin,
   .lvd-icon-beat,
   .lvd-icon-pulse {

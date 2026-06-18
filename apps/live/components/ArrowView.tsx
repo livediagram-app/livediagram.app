@@ -163,6 +163,24 @@ function ArrowViewImpl({
     arrow.curvePoints,
   );
   const flowFactor = ANIMATION_SPEED_FACTOR[arrow.flowSpeed ?? 'normal'];
+  // Every flow except 'dots' (a travelling <circle>) animates the line itself
+  // via a class on the path. dashes / beads also swap in their own dash
+  // pattern; pulse / grow / glow keep the user's static stroke style and just
+  // breathe opacity / thickness / a halo.
+  const flowPathClass =
+    arrow.flow === 'dashes'
+      ? 'lvd-arrow-flow'
+      : arrow.flow === 'beads'
+        ? 'lvd-arrow-beads'
+        : arrow.flow === 'pulse'
+          ? 'lvd-arrow-pulse'
+          : arrow.flow === 'grow'
+            ? 'lvd-arrow-grow'
+            : arrow.flow === 'glow'
+              ? 'lvd-arrow-glow'
+              : undefined;
+  const flowPathDash =
+    arrow.flow === 'dashes' ? '8 6' : arrow.flow === 'beads' ? '0.1 12' : undefined;
   // Phase-sync flowing arrows (spec/09). CSS animations start counting from
   // when each element's animation is applied, so arrows whose flow was turned
   // on at different times drift apart. Pin every flow animation's startTime to
@@ -292,15 +310,14 @@ function ArrowViewImpl({
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
-        // Flowing arrow (spec/09): 'dashes' marches a fixed dash pattern along
-        // the path (the lvd-arrow-flow class animates stroke-dashoffset),
-        // overriding the static strokeStyle dasharray. Otherwise the shared
-        // dasharray lookup mirrors the shape Border accordion's pattern row.
-        className={arrow.flow === 'dashes' ? 'lvd-arrow-flow' : undefined}
+        // Flowing arrow (spec/09): dashes / beads march a fixed pattern along
+        // the path (the class animates stroke-dashoffset), overriding the
+        // static strokeStyle dasharray; pulse / grow / glow animate the line in
+        // place and keep it. Otherwise the shared dasharray lookup mirrors the
+        // shape Border accordion's pattern row.
+        className={flowPathClass}
         strokeDasharray={
-          arrow.flow === 'dashes'
-            ? '8 6'
-            : (BORDER_DASH_ARRAY[arrow.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined)
+          flowPathDash ?? BORDER_DASH_ARRAY[arrow.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
         }
         markerStart={
           arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? markerUrl : undefined
@@ -313,10 +330,14 @@ function ArrowViewImpl({
         style={
           {
             pointerEvents: 'none',
-            // Flow speed scales the marching-dash duration (see lvd-arrow-flow);
-            // phase-sync across arrows is pinned via the Web Animations API in
-            // the effect below, not animation-delay.
-            ...(arrow.flow === 'dashes' ? { '--lvd-flow-speed': flowFactor } : {}),
+            // Flow speed scales each path animation's duration; phase-sync
+            // across arrows is pinned via the Web Animations API in the effect
+            // below, not animation-delay. 'grow' needs the base stroke width to
+            // breathe relative to it, 'glow' needs the stroke colour to tint the
+            // halo.
+            ...(flowPathClass ? { '--lvd-flow-speed': flowFactor } : {}),
+            ...(arrow.flow === 'grow' ? { '--lvd-flow-w': `${strokeWidth}px` } : {}),
+            ...(arrow.flow === 'glow' ? { '--lvd-flow-color': baseStroke } : {}),
           } as React.CSSProperties
         }
       />
