@@ -13,4 +13,5 @@
 export * from './feature-art/canvas';
 export * from './feature-art/foundations';
 export * from './feature-art/features';
+export * from './feature-art/motion';
 export * from './feature-art/versatility';

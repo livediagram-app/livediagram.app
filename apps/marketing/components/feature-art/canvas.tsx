@@ -818,3 +818,103 @@ export function RefreshArt() {
     </Frame>
   );
 }
+
+// Spotlight presenter tool (spec/09): the canvas dims under a dark shroud and
+// only a soft circle around the cursor stays lit, so the presenter can draw
+// the room's eye to one part of the diagram. The clear circle is a transparent
+// span with a huge dark box-shadow; it travels between two nodes.
+export function SpotlightArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <rect
+          x="26"
+          y="20"
+          width="46"
+          height="22"
+          rx="5"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <rect
+          x="150"
+          y="56"
+          width="46"
+          height="22"
+          rx="5"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <line x1="72" y1="31" x2="150" y2="67" stroke="#cbd5e1" strokeWidth="2" />
+      </svg>
+      {/* the travelling light: a clear hole, everything else shrouded dark */}
+      <span
+        className="fa-spot absolute flex h-9 w-9 items-center justify-center rounded-full"
+        style={{ boxShadow: '0 0 0 999px rgba(15,23,42,0.6)' }}
+      >
+        <span
+          className="h-1.5 w-1.5 rounded-full bg-white"
+          style={{ boxShadow: '0 0 5px 1px rgba(255,255,255,0.9)' }}
+        />
+      </span>
+      <span className="absolute bottom-1.5 right-2 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        spotlight
+      </span>
+    </Frame>
+  );
+}
+
+// Custom themes (spec/44): build your own palette, save it to your account,
+// and reuse it across diagrams like any built-in theme. A swatch row with one
+// selected, then a preview adopting the custom (brand-purple) colours.
+export function CustomThemesArt() {
+  const swatches = ['#7c3aed', '#0ea5e9', '#ec4899', '#16a34a', '#f59e0b', '#0f172a'];
+  return (
+    <Frame>
+      <div className="flex h-full flex-col gap-1.5 px-3 py-2">
+        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700">
+          <SlidersIcon /> Theme builder
+          <span className="ml-auto rounded bg-violet-100 px-1.5 py-0.5 text-[7px] font-semibold text-violet-700">
+            My brand
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {swatches.map((c, i) => (
+            <span
+              key={c}
+              className={
+                'fa-pop h-4 w-4 rounded-full ' +
+                (i === 0 ? 'ring-2 ring-violet-500 ring-offset-1' : '')
+              }
+              style={{ backgroundColor: c, animationDelay: `${0.2 + i * 0.25}s` }}
+            />
+          ))}
+        </div>
+        {/* preview canvas adopting the saved palette */}
+        <div className="relative mt-0.5 flex-1 rounded border border-slate-200 bg-white">
+          <svg viewBox="0 0 196 38" className="absolute inset-0 h-full w-full">
+            <rect x="14" y="9" width="44" height="20" rx="5" fill="#ede9fe" stroke="#7c3aed" strokeWidth="2" />
+            <rect x="138" y="9" width="44" height="20" rx="5" fill="#ede9fe" stroke="#7c3aed" strokeWidth="2" />
+            <line x1="58" y1="19" x2="138" y2="19" stroke="#7c3aed" strokeWidth="2" />
+          </svg>
+          <span className="fa-fade absolute -top-1.5 right-2 rounded bg-violet-600 px-1.5 py-0.5 text-[7px] font-semibold text-white shadow-sm">
+            Saved
+          </span>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
+function SlidersIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke={BLUE_STROKE} strokeWidth="1.5">
+      <path d="M2 4 H14 M2 8 H14 M2 12 H14" strokeLinecap="round" />
+      <circle cx="5" cy="4" r="1.6" fill="white" />
+      <circle cx="11" cy="8" r="1.6" fill="white" />
+      <circle cx="7" cy="12" r="1.6" fill="white" />
+    </svg>
+  );
+}

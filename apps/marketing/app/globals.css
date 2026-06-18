@@ -1071,6 +1071,122 @@
   animation: uc-pop 0.35s ease-out both;
 }
 
+/* ─────────────────────────────────────────────────────────────────
+ * Motion-feature illustrations (spec/09 "Animated elements" + the
+ * animated background patterns). These mirror the editor's own looping
+ * element / arrow / icon animations, so they run continuously rather
+ * than on the build-hold-fade cycle the cards above use.
+ * ───────────────────────────────────────────────────────────────── */
+
+/* flowing arrow: dashes march continuously along the path */
+@keyframes fa-flow {
+  to {
+    stroke-dashoffset: -26;
+  }
+}
+.fa-flow {
+  stroke-dasharray: 7 6;
+  animation: fa-flow 1s linear infinite;
+}
+
+/* glow: a soft halo breathing in and out around an element */
+@keyframes fa-glow {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.06);
+  }
+}
+.fa-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-glow 2.2s ease-in-out infinite;
+}
+
+/* continuous spin for animated icons (spinner / gear) */
+@keyframes fa-spin-cont {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.fa-spin-cont {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-spin-cont 2.4s linear infinite;
+}
+
+/* heartbeat: a double-thump scale pulse */
+@keyframes fa-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.22);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.14);
+  }
+  56% {
+    transform: scale(1);
+  }
+}
+.fa-beat {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-beat 1.8s ease-in-out infinite;
+}
+
+/* drift: an ambient mote rising and fading (animated backdrop) */
+@keyframes fa-drift {
+  0% {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-26px);
+    opacity: 0;
+  }
+}
+.fa-drift {
+  animation: fa-drift 4s ease-in-out infinite;
+}
+
+/* spotlight: the lit circle travels between two nodes (top/left) */
+@keyframes fa-spot {
+  0%,
+  14% {
+    left: 22px;
+    top: 12px;
+  }
+  46%,
+  60% {
+    left: 150px;
+    top: 48px;
+  }
+  92%,
+  100% {
+    left: 22px;
+    top: 12px;
+  }
+}
+.fa-spot {
+  left: 22px;
+  top: 12px;
+  animation: fa-spot 6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-pop1,
   .hero-pop2,

@@ -1119,3 +1119,40 @@ export function TechIconsArt() {
     </Frame>
   );
 }
+
+// Ready-made components (spec/09): drop-in composites (Banner, Stat row, Hero,
+// Header, Callout, Process) assembled from primitives, themed and fully
+// editable. Shown as a Banner over a Stat row, dropping in.
+export function ComponentsArt() {
+  const stats = [
+    { n: '128', cap: 'Users' },
+    { n: '94%', cap: 'Uptime' },
+    { n: '12', cap: 'Teams' },
+  ];
+  return (
+    <Frame>
+      <div className="flex h-full flex-col justify-center gap-2 px-3">
+        {/* Banner — accent bar with title + subtitle */}
+        <div className="fa-pop rounded-md bg-brand-500 px-2 py-1.5 text-white">
+          <p className="text-[9px] font-semibold leading-tight">Launch plan</p>
+          <p className="text-[7px] leading-tight text-brand-50">Q3 rollout overview</p>
+        </div>
+        {/* Stat row — three KPI cards */}
+        <div className="flex gap-1.5">
+          {stats.map((s, i) => (
+            <div
+              key={s.cap}
+              className="fa-pop flex flex-1 flex-col items-center rounded-md border border-slate-200 bg-white py-1"
+              style={{ animationDelay: `${0.4 + i * 0.3}s` }}
+            >
+              <span className="text-[11px] font-bold leading-none text-brand-600">{s.n}</span>
+              <span className="mt-0.5 text-[6px] font-medium uppercase tracking-wide text-slate-400">
+                {s.cap}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Frame>
+  );
+}
