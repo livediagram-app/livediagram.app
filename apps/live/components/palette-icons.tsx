@@ -463,6 +463,29 @@ export function EraserIcon() {
   );
 }
 
+// Format tool (spec/09): a paintbrush, matching the selection toolbar's
+// "Copy formatting" glyph — picks one element's style and paints it onto
+// others. Two-phase persistent mode (pick a base, then tap targets).
+export function FormatPainterIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M13.5 2.5l-6 6" />
+      <path d="M7 8l1.5 1.5" />
+      <path d="M6.5 9.5a3 3 0 1 0 1 4.5c.5-.6.5-1.4 0-2-.6-.5-1.4-.5-2 0" />
+    </svg>
+  );
+}
+
 // Spotlight tool (spec/09): a focus glyph — a bright centre dot ringed
 // by a circle with short rays beaming outward, reading as "the cursor
 // emits light" without copying the laser-pointer beam.

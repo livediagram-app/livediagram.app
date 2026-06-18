@@ -298,6 +298,69 @@
 }
 
 /*
+ * Context-menu "falling stack": each direct child of a right-click menu
+ * drops in just after the previous one, so the categories cascade into place
+ * rather than appearing all at once. Capped at a dozen staggered children;
+ * anything past that rides the last delay. The reduced-motion blocks above
+ * already collapse the drop to ~instant, and the delay reset below drops the
+ * cascade too, so motion-sensitive users get the whole menu at once.
+ */
+@keyframes menu-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.lvd-menu-stagger > * {
+  animation: menu-drop 200ms ease-out both;
+}
+.lvd-menu-stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.lvd-menu-stagger > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.lvd-menu-stagger > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.lvd-menu-stagger > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.lvd-menu-stagger > *:nth-child(5) {
+  animation-delay: 160ms;
+}
+.lvd-menu-stagger > *:nth-child(6) {
+  animation-delay: 200ms;
+}
+.lvd-menu-stagger > *:nth-child(7) {
+  animation-delay: 240ms;
+}
+.lvd-menu-stagger > *:nth-child(8) {
+  animation-delay: 280ms;
+}
+.lvd-menu-stagger > *:nth-child(9) {
+  animation-delay: 320ms;
+}
+.lvd-menu-stagger > *:nth-child(10) {
+  animation-delay: 360ms;
+}
+.lvd-menu-stagger > *:nth-child(n + 11) {
+  animation-delay: 400ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lvd-menu-stagger > * {
+    animation-delay: 0ms !important;
+  }
+}
+:root.reduce-motion .lvd-menu-stagger > * {
+  animation-delay: 0ms !important;
+}
+
+/*
  * Empty-state placeholder for the rich-text label editor (spec/09). A
  * contentEditable can't use the native `placeholder` attribute, so when the
  * editor has no children (:empty) we render its `data-rt-placeholder` text

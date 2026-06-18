@@ -104,7 +104,9 @@ export function ContextMenu({
         role="menu"
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.preventDefault()}
-        className={`fixed z-50 flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${
+        // lvd-menu-stagger cascades the direct children (categories / items)
+        // in one at a time for a falling-stack entrance (see globals.css).
+        className={`lvd-menu-stagger fixed z-50 flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${
           flush ? 'overflow-hidden' : 'py-1'
         }`}
         style={{

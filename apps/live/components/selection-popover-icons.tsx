@@ -16,6 +16,29 @@ export function EllipsisIcon() {
   );
 }
 
+// "Edit text" button — a serif capital T, the universal text glyph (matches
+// the palette's Add-text tile). Shown on the toolbar only when the selected
+// element already has a label to edit.
+export function TextIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3.5 4.5h9" />
+      <path d="M8 4.5v7" />
+      <path d="M6 11.5h4" />
+    </svg>
+  );
+}
+
 export function PaintbrushIcon() {
   return (
     <svg

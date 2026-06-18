@@ -243,7 +243,7 @@ function OverflowMenu({
         </button>
       </Tooltip>
       {open ? (
-        <div className="absolute left-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div className="lvd-menu-stagger animate-fade-in absolute left-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <MenuAccordionSection title="Size" icon={<DotsIcon count={2} />} {...catProps('size')}>
             <MenuTileGrid cols={2}>
               {SIZES.map((s) => (

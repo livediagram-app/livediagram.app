@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { clampElevation, ISO_TILT_DEG, isoTransform } from '@/lib/isometric';
+import { clampElevation, ISO_TILT_DEG } from '@/lib/isometric';
 
 // Isometric camera (spec/45): the orbit-able angle of the isometric view.
 // Local view state — like the spotlight / viewport, it never persists and is
@@ -47,5 +47,9 @@ export function useIsometricCamera() {
     window.addEventListener('pointerup', onUp);
   };
 
-  return { azimuth, elevation, transform: isoTransform(azimuth, elevation), startOrbit, reset };
+  // The caller builds the CSS transform via isoTransform(azimuth, elevation,
+  // pivot): the pivot depends on the content bounds + viewport size, which
+  // live in the canvas, not here. Exposing the raw angles keeps this hook
+  // free of any layout knowledge.
+  return { azimuth, elevation, startOrbit, reset };
 }

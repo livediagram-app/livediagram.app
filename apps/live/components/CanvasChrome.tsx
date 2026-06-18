@@ -67,6 +67,13 @@ type ChromeExtras = {
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleResetZoom: () => void;
+  // Begin an isometric orbit drag from the given screen coordinates
+  // (wired to `isoCamera.startOrbit`). Drives the dock orbit button,
+  // which only renders while the isometric tool is active.
+  onIsoOrbit: (clientX: number, clientY: number) => void;
+  // Reset the isometric camera to its default angle (wired to
+  // `isoCamera.reset`) — fired when the dock orbit button is clicked.
+  onIsoReset: () => void;
 };
 
 type CanvasChromeProps = CanvasProps & ChromeExtras;
@@ -180,6 +187,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onResetExplorer,
     onResetPalette,
     onRevertChange,
+    onIsoOrbit,
+    onIsoReset,
     onSetCanvasTool,
     onSkipTemplatePicker,
     onToggleActivityMinimized,
@@ -957,6 +966,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
               onZoomOut={handleZoomOut}
               onReset={handleResetZoom}
               onFitToScreen={onFitToScreen}
+              onIsoOrbit={canvasTool === 'isometric' ? onIsoOrbit : undefined}
+              onIsoReset={canvasTool === 'isometric' ? onIsoReset : undefined}
               onToggleZen={onToggleZen}
               zenActive={zenMode}
             />

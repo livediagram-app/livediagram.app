@@ -187,6 +187,7 @@ export function EditorView() {
     editingId,
     effectiveTemplatePickerMode,
     exitFormatPainter,
+    exitFormatTool,
     exitGroupMode,
     explorerPosition,
     exportOpen,
@@ -820,6 +821,7 @@ export function EditorView() {
         onShiftSelect={toggleInMultiSelect}
         onBeginFormatPainter={beginFormatPainter}
         onCancelFormatPainter={exitFormatPainter}
+        onExitFormatTool={exitFormatTool}
         onBeginGroup={beginGroup}
         onCancelGroup={exitGroupMode}
         onUngroup={ungroupSelected}

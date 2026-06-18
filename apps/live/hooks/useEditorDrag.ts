@@ -230,7 +230,13 @@ type EditorDragDeps = {
   // group-source is active, the click completes a grouping. The drag
   // dispatcher checks these and routes appropriately.
   formatSourceId: string | null;
-  applyFormatFromSource: (targetId: string) => void;
+  applyFormatFromSource: (targetId: string, opts?: { keepSource?: boolean }) => void;
+  // The persistent Format canvas tool is active. A click on an element
+  // picks it as the paint source (first click) or paints the armed
+  // source's style onto it and stays armed (subsequent clicks) — instead
+  // of selecting / dragging. `setFormatSourceId` arms the source.
+  formatToolActive: boolean;
+  setFormatSourceId: (id: string | null) => void;
   groupSourceId: string | null;
   completeGrouping: (targetId: string) => void;
   // Arrow click-to-connect (spec/09): armed source + the action.
@@ -405,6 +411,15 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       d.connectArrowTo(elementId);
       return;
     }
+    // Persistent Format tool: first click arms the source, each later
+    // click paints onto the target and KEEPS the source armed so the
+    // user can format many elements in a row. Checked before the
+    // single-shot painter branch below so it owns both phases.
+    if (d.formatToolActive && mode === 'move') {
+      if (d.formatSourceId === null) d.setFormatSourceId(elementId);
+      else d.applyFormatFromSource(elementId, { keepSource: true });
+      return;
+    }
     if (d.formatSourceId !== null && mode === 'move') {
       d.applyFormatFromSource(elementId);
       return;
@@ -483,7 +498,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     e: ReactPointerEvent,
   ) => {
     const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null) return;
+    if (d.formatSourceId !== null || d.groupSourceId !== null || d.formatToolActive) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
     d.setSelectedId(elementId);
@@ -516,7 +531,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     opts?: { clickToPlace?: boolean; placeOutPx?: number },
   ) => {
     const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null) return;
+    if (d.formatSourceId !== null || d.groupSourceId !== null || d.formatToolActive) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
     const start = anchorPosition(element, anchor);
@@ -605,7 +620,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // guards stay per-handler because their order differs between gestures.
   const resolveArrowDrag = (arrowId: string) => {
     const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null) return null;
+    if (d.formatSourceId !== null || d.groupSourceId !== null || d.formatToolActive) return null;
     const arrow = d.activeTab.elements.find((el) => el.id === arrowId);
     if (!arrow || arrow.type !== 'arrow') return null;
     return { d, arrow };

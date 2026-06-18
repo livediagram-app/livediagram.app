@@ -52,6 +52,9 @@ export function canvasCursorClass(input: {
   // shares the grab cursor (grabbing while dragging is handled by the `pan`
   // branch above).
   if (canvasTool === 'isometric' && !spaceHeld) return 'cursor-grab';
+  // Format tool (spec/09): the copy cursor in both phases (picking a base
+  // and painting onto targets) signals "this click acts on the element".
+  if (canvasTool === 'format' && !spaceHeld) return 'cursor-copy';
   if (canvasTool === 'pan' && !spaceHeld) return 'cursor-grab';
   if (canvasTool === 'select') return 'cursor-crosshair';
   if (isPaintMode) return 'cursor-copy';

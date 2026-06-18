@@ -7,13 +7,16 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import {
+  elementHasText,
   elementKindLabel,
   isAnimatedPattern,
   isBoxed,
   snapResizeBounds,
   snapToAlignment,
+  unionBoxedBounds,
   type ShapeKind,
 } from '@livediagram/diagram';
+import { isoPivot, isoTransform } from '@/lib/isometric';
 import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
@@ -92,7 +95,6 @@ export function Canvas(props: CanvasProps) {
     onMultiContextMenu,
     onOpenMultiContextMenu,
     onShiftSelect,
-    onBeginFormatPainter,
     onBeginGroup,
     onUngroup,
     onOpenComments,
@@ -259,6 +261,19 @@ export function Canvas(props: CanvasProps) {
   // view state; Shift-drag on the canvas spins / tilts it (see the <main>
   // pointerdown handler).
   const isoCamera = useIsometricCamera();
+
+  // Centre of the boxed content, in canvas px — the point the isometric
+  // tilt pivots around so the diagram tilts in place (and stays put as you
+  // orbit) instead of swinging off-screen. Only computed while the tool is
+  // active; null when there's no boxed element to centre on.
+  const isoContentCenter = useMemo(() => {
+    if (canvasTool !== 'isometric') return null;
+    const boxedIds = new Set(elements.filter(isBoxed).map((el) => el.id));
+    if (boxedIds.size === 0) return null;
+    const bb = unionBoxedBounds(elements, boxedIds);
+    if (!bb) return null;
+    return { x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 };
+  }, [canvasTool, elements]);
 
   const cursorClass = canvasCursorClass({
     pendingDraw: !!pendingDraw,
@@ -626,6 +641,23 @@ export function Canvas(props: CanvasProps) {
     [onSelect, onShiftSelect],
   );
 
+  // Isometric tilt fragment, appended innermost to the wrapper transform.
+  // The pivot (content centre relative to the wrapper centre) makes the
+  // tilt rotate around the diagram rather than the wrapper centre, so the
+  // content tilts in place and stays centred as the camera orbits. The
+  // wrapper's unscaled size = the main canvas rect (it's `absolute inset-0`
+  // and untransformed itself), read here rather than tracked in state
+  // because the transform recomputes on every pan / orbit render anyway.
+  let isoFragment = '';
+  if (canvasTool === 'isometric') {
+    const node = mainRef && 'current' in mainRef ? mainRef.current : null;
+    const rect = node?.getBoundingClientRect();
+    const pivot = rect
+      ? isoPivot(isoContentCenter, { width: rect.width, height: rect.height })
+      : null;
+    isoFragment = ` ${isoTransform(isoCamera.azimuth, isoCamera.elevation, pivot ?? undefined)}`;
+  }
+
   return (
     <main
       ref={mainRef}
@@ -761,8 +793,11 @@ export function Canvas(props: CanvasProps) {
         // menu and open a tab-level context menu instead.
         e.preventDefault();
         // Spotlight suppresses all context menus (right-click is its
-        // shrink gesture, handled in onContextMenuCapture).
-        if (canvasTool === 'spotlight') return;
+        // shrink gesture, handled in onContextMenuCapture). Isometric
+        // (spec/45) likewise: right-click-drag orbits the camera, so the
+        // canvas / tab menu must never open in that tool or it interrupts
+        // the orbit gesture.
+        if (canvasTool === 'spotlight' || canvasTool === 'isometric') return;
         onCanvasContextMenu?.(e.clientX, e.clientY);
       }}
       onPointerDown={(e) => {
@@ -770,6 +805,15 @@ export function Canvas(props: CanvasProps) {
         // (touch has no right-click). Armed before the marquee / pan logic;
         // a finger that moves cancels it, so it never fights a drag.
         canvasLongPress.onPointerDown(e);
+        // Isometric (spec/45): holding the RIGHT button and dragging orbits
+        // the camera too — a mouse-only alternative to Shift-drag / the orbit
+        // button. The canvas / tab context menu is suppressed wholesale while
+        // the isometric tool is active (see onContextMenu above), so a
+        // right-press starts an orbit without ever popping a menu.
+        if (canvasTool === 'isometric' && e.button === 2) {
+          isoCamera.startOrbit(e.clientX, e.clientY);
+          return;
+        }
         // Primary button only. A right- (or middle-) click must fall
         // through to onContextMenu untouched: it opens the menu, and if
         // we also armed a marquee here the matching pointerup would fire
@@ -983,9 +1027,12 @@ export function Canvas(props: CanvasProps) {
           // Isometric tilt (spec/45) is appended INNERMOST (last in the list,
           // so it transforms the content first): that keeps the pan translate
           // in screen space, so a drag moves the scene the way the cursor
-          // moves at any camera angle. preserve-3d lets the depth layer's
+          // moves at any camera angle. The fragment (built above as
+          // isoFragment) pivots the tilt around the content centre so the
+          // diagram tilts in place / stays centred while orbiting rather than
+          // swinging off-screen. preserve-3d lets the depth layer's
           // translateZ stack read as real extruded height.
-          transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${canvasTool === 'isometric' ? ` ${isoCamera.transform}` : ''}`,
+          transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
           ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
           // Draw-mode cursor: every intent gets a custom inline-SVG
           // cursor (crosshair at the pointer tip plus a small glyph
@@ -1076,12 +1123,12 @@ export function Canvas(props: CanvasProps) {
             // other edit affordances apply. Every other handler
             // becomes undefined and the matching button drops out.
             locked={readOnly ? undefined : selectedLocked}
-            onCopyFormat={
-              readOnly
-                ? undefined
-                : selected && (isBoxed(selected) || selected.type === 'arrow')
-                  ? onBeginFormatPainter
-                  : undefined
+            // Edit text: only when the element already has a label to edit.
+            // Enters inline edit mode on it (same path as double-click).
+            onEditText={
+              !readOnly && selected && elementHasText(selected)
+                ? () => props.onBeginEdit(selected.id)
+                : undefined
             }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
             onGroup={!readOnly && selectedIsBoxed && !selectedIsGrouped ? onBeginGroup : undefined}
@@ -1165,6 +1212,8 @@ export function Canvas(props: CanvasProps) {
         handleZoomIn={handleZoomIn}
         handleZoomOut={handleZoomOut}
         handleResetZoom={handleResetZoom}
+        onIsoOrbit={isoCamera.startOrbit}
+        onIsoReset={isoCamera.reset}
       />
       {/* Lazy per-tab load (spec/13). Last child + z-50 so it covers the
           canvas AND the floating palette, blocking any edit that would

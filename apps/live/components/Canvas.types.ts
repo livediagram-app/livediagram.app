@@ -289,6 +289,10 @@ export type CanvasProps = {
   onShiftSelect: (id: string) => void;
   onBeginFormatPainter: () => void;
   onCancelFormatPainter: () => void;
+  // Wrap up the persistent Format canvas tool (the palette tool, not the
+  // single-shot painter): drops back to the Select tool. Drives the
+  // format-tool mode banner's "Done" button.
+  onExitFormatTool: () => void;
   onBeginGroup: () => void;
   onCancelGroup: () => void;
   onUngroup: () => void;

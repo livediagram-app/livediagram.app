@@ -30,12 +30,22 @@ just projected. Nothing is re-drawn in a lower-fidelity form.
 Isometric is **navigation-only**, modelled on the Hand tool:
 
 - **Dragging pans** the scene, exactly like Hand. Scroll / pinch still zoom.
-- **Shift-drag orbits the camera**: horizontal motion spins the view around
-  (azimuth), vertical motion tilts it between edge-on and top-down
-  (elevation, clamped so it never goes fully flat or fully side-on). The
+- **Shift-drag or right-button-drag orbits the camera**: horizontal motion
+  spins the view around (azimuth), vertical motion tilts it between edge-on
+  and top-down (elevation, clamped so it never goes fully flat or fully
+  side-on). A plain right-click (no drag) still opens the context menu; only
+  a right-drag orbits and swallows that menu. The
   angle is local, non-synced view state (it opens at the default isometric
   angle and keeps whatever angle you orbit to for the session) — it stays a
   parallel (isometric) projection throughout, never a perspective camera.
+- **An orbit button in the zoom bar** offers the same orbit without a held
+  modifier: while the isometric tool is active an orbit-icon button appears in
+  the bottom-right zoom controls, **between Fit and the Zen toggle**.
+  Click-dragging it runs the identical orbit drag (same azimuth / elevation
+  deltas, reusing `useIsometricCamera.startOrbit`), and a plain **click**
+  (a press released without dragging) snaps the camera back to the default
+  isometric angle (`useIsometricCamera.reset`). It only mounts in isometric
+  view and disappears on any other tool.
 - **No selecting, dragging, resizing, marquee, or editing** while it's
   active — the content layer is non-interactive (like Spotlight, spec/09),
   so there's no reverse hit-testing to get wrong. To edit, switch back to
@@ -86,6 +96,16 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   `<main>` (and `wantsPan` gains the `isometric` case, like `pan` / `laser`).
   No change to the diagram data model — every element stays 2D
   (`x, y, width, height`) and the view is a pure projection on top.
+- The tilt **pivots around the content centre**, not the wrapper centre. The
+  rotation fragment is wrapped in `translate(pivot) … translate(-pivot)`
+  (`isoTransform` + `isoPivot` in `lib/isometric.ts`), where the pivot is the
+  boxed-content bounding-box centre expressed relative to the wrapper centre
+  (its `origin-center`). Without this the rotation pivots about the wrapper
+  centre, so any diagram whose centre sits away from that point swings
+  off-screen the instant the view tilts and again as it orbits; pinning the
+  content centre makes the diagram tilt in place and stay centred while
+  orbiting. The pivot translates sit inside the tilt fragment, so the pan
+  offset (outside it) still pans in screen space.
 - Orbit (Shift-drag) is a self-contained drag in `useIsometricCamera` that
   applies incremental azimuth / elevation deltas, taken before the pan branch
   in the `<main>` pointerdown so plain drag still pans.
@@ -95,6 +115,17 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   the real element layer, which caps each column at z=0. Each column takes the
   element's accent colour (stroke, else fill, else neutral) dimmed toward the
   floor via `filter: brightness()`.
+- Each layer in the column is **clipped to the shape's own silhouette** rather
+  than the bounding rectangle, so a circle / diamond / cylinder / hexagon
+  extrudes as that outline instead of a square block behind it. The clip is
+  derived in `isoShapeSilhouette` (`lib/isometric.ts`): polygonal shapes
+  (diamond, hexagon, parallelogram, triangle, trapezoid, star) get a
+  `clip-path: polygon()` whose percentages are lifted straight from
+  `ShapeSvgOverlay`'s `0 0 100 100` viewBox (one geometry source); curved
+  shapes use `border-radius` (circle / progress-ring `50%`, stadium a pill,
+  cylinder `50% / 12%` elliptical caps). Shapes without an entry and non-shape
+  boxed elements (text / sticky / image / table / …) keep the rounded
+  rectangle.
 
 ## Scope (first cut) and what's deliberately out
 

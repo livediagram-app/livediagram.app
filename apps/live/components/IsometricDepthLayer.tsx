@@ -5,7 +5,7 @@ import {
   type BoxedElement,
   type Element,
 } from '@livediagram/diagram';
-import { isoDepthLayers, isoLayerBrightness } from '@/lib/isometric';
+import { isoDepthLayers, isoLayerBrightness, isoShapeSilhouette } from '@/lib/isometric';
 
 // Isometric extrusion (spec/45). For each boxed element this renders a column
 // of translateZ-offset copies of the element's rectangle, descending from
@@ -40,6 +40,13 @@ export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
     >
       {elements.filter(isBoxed).map((el) => {
         const color = wallColor(el);
+        // Clip each extruded layer to the shape's own silhouette (circle,
+        // diamond, cylinder, …) so the column follows the outline instead of
+        // the bounding rectangle. Non-shape boxed elements (text / sticky /
+        // image / table / …) and shapes without a silhouette entry keep the
+        // default rounded rectangle.
+        const silhouette = el.type === 'shape' ? isoShapeSilhouette(el.shape) : {};
+        const layerRadius = silhouette.borderRadius;
         return (
           <div
             key={el.id}
@@ -55,10 +62,14 @@ export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
             {DEPTH_LAYERS.map((z, i) => (
               <div
                 key={i}
-                className="absolute inset-0 rounded-md"
+                className={
+                  layerRadius === undefined ? 'absolute inset-0 rounded-md' : 'absolute inset-0'
+                }
                 style={{
                   transform: `translateZ(${z}px)`,
                   background: color,
+                  clipPath: silhouette.clipPath,
+                  borderRadius: layerRadius,
                   // Dim the element's colour toward the floor so the wall
                   // reads with ambient shading instead of a flat tint.
                   filter: `brightness(${isoLayerBrightness(i, DEPTH_LAYERS.length)})`,

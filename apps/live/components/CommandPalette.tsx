@@ -9,6 +9,7 @@ import { PaletteDropdown } from './PaletteDropdown';
 import { PaletteShapesTab, PaletteToolsTab, PaletteComponentsTab } from './palette-create-tabs';
 import {
   EraserIcon,
+  FormatPainterIcon,
   IsometricIcon,
   LaserIcon,
   PanIcon,
@@ -26,7 +27,14 @@ import {
 import { IconPrims } from './icon-glyph';
 import { TechIconArt } from './tech-icon-glyph';
 
-export type CanvasTool = 'pan' | 'select' | 'laser' | 'spotlight' | 'eraser' | 'isometric';
+export type CanvasTool =
+  | 'pan'
+  | 'select'
+  | 'laser'
+  | 'spotlight'
+  | 'eraser'
+  | 'format'
+  | 'isometric';
 
 type CommandPaletteProps = {
   position: { x: number; y: number } | null;
@@ -372,6 +380,10 @@ export function CommandPalette({
                 { id: 'select', label: 'Select', shortcut: 'S', icon: <SelectIcon />, group: 0 },
                 { id: 'pan', label: 'Hand', shortcut: 'P', icon: <PanIcon />, group: 0 },
                 { id: 'eraser', label: 'Eraser', shortcut: 'E', icon: <EraserIcon />, group: 0 },
+                // Format painter as a persistent tool: pick a base element,
+                // then tap any number of targets to paint its style. No
+                // keyboard shortcut (F is the Pencil/freehand key).
+                { id: 'format', label: 'Format', icon: <FormatPainterIcon />, group: 0 },
                 { id: 'laser', label: 'Laser', shortcut: 'L', icon: <LaserIcon />, group: 1 },
                 // Spotlight is desktop-only (hover + click-to-resize don't map
                 // to touch); omitted on mobile viewports.

@@ -158,12 +158,16 @@ export function useElementHelpers(opts: {
   const exitFormatPainter = () => setFormatSourceId(null);
   const exitGroupMode = () => setGroupSourceId(null);
 
-  const applyFormatFromSource = (targetId: string) => {
+  // `keepSource` (set by the persistent Format canvas tool) leaves the
+  // source armed after a paint so the user can tap target after target;
+  // the single-shot toolbar painter omits it and the source clears after
+  // one apply.
+  const applyFormatFromSource = (targetId: string, opts?: { keepSource?: boolean }) => {
     if (!formatSourceId) return;
     const source = activeTab.elements.find((el) => el.id === formatSourceId);
     const target = activeTab.elements.find((el) => el.id === targetId);
     if (!source || !target || source.id === target.id) {
-      setFormatSourceId(null);
+      if (!opts?.keepSource) setFormatSourceId(null);
       return;
     }
     track('Element', 'Changed', 'FormatPainter');
@@ -188,7 +192,7 @@ export function useElementHelpers(opts: {
         ),
       );
     }
-    setFormatSourceId(null);
+    if (!opts?.keepSource) setFormatSourceId(null);
   };
 
   const completeGrouping = (targetId: string) => {

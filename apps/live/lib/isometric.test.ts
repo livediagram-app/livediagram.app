@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampElevation,
+  isoShapeSilhouette,
   ISO_DEPTH_PX,
   ISO_ELEVATION_RANGE,
   ISO_LAYER_STEP_PX,
   ISO_TILT_DEG,
   isoDepthLayers,
   isoLayerBrightness,
+  isoPivot,
   isoTransform,
 } from './isometric';
 
@@ -70,5 +72,52 @@ describe('isoTransform', () => {
 
   it('reflects the default camera angles', () => {
     expect(isoTransform(ISO_TILT_DEG.z, ISO_TILT_DEG.x)).toContain(`rotateX(${ISO_TILT_DEG.x}deg)`);
+  });
+
+  it('wraps the rotation in pivot translates so the tilt rotates about the content', () => {
+    expect(isoTransform(-45, 55, { x: 120, y: -30 })).toBe(
+      'translate(120px, -30px) rotateX(55deg) rotateZ(-45deg) translate(-120px, 30px)',
+    );
+  });
+
+  it('omits the pivot translates when no pivot is given', () => {
+    expect(isoTransform(-45, 55)).toBe('rotateX(55deg) rotateZ(-45deg)');
+  });
+});
+
+describe('isoPivot', () => {
+  it('offsets the content centre by the wrapper (viewport) centre', () => {
+    expect(isoPivot({ x: 500, y: 400 }, { width: 800, height: 600 })).toEqual({ x: 100, y: 100 });
+  });
+
+  it('is zero when the content is centred in the viewport', () => {
+    expect(isoPivot({ x: 400, y: 300 }, { width: 800, height: 600 })).toEqual({ x: 0, y: 0 });
+  });
+
+  it('returns null when there is no content to centre on', () => {
+    expect(isoPivot(null, { width: 800, height: 600 })).toBeNull();
+  });
+});
+
+describe('isoShapeSilhouette', () => {
+  it('clips polygonal shapes to their outline', () => {
+    expect(isoShapeSilhouette('diamond').clipPath).toBe(
+      'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+    );
+    expect(isoShapeSilhouette('hexagon').clipPath).toContain('polygon(');
+    expect(isoShapeSilhouette('diamond').borderRadius).toBeUndefined();
+  });
+
+  it('rounds curved shapes via border-radius (no clip path)', () => {
+    expect(isoShapeSilhouette('circle').borderRadius).toBe('50%');
+    expect(isoShapeSilhouette('cylinder').borderRadius).toBe('50% / 12%');
+    expect(isoShapeSilhouette('circle').clipPath).toBeUndefined();
+  });
+
+  it('leaves the rectangular default for shapes without a silhouette', () => {
+    expect(isoShapeSilhouette('square')).toEqual({
+      clipPath: undefined,
+      borderRadius: undefined,
+    });
   });
 });

@@ -345,10 +345,16 @@ function BoxedElementViewImpl({
   // SelectionPopover (handled by the normal selection flow), so the
   // context menu is an additional surface, not a replacement.
   const handleContextMenu = (e: React.MouseEvent) => {
-    // While editing the label, let the browser's native text context menu
-    // (cut / copy / paste / select all) surface instead of the element
-    // context menu, so right-click acts on the text being edited.
-    if (isEditing) return;
+    // While editing the label, right-click surfaces the browser's native
+    // TEXT context menu (cut / copy / paste / select all) so it acts on the
+    // text being edited. We stop propagation — otherwise the canvas's own
+    // onContextMenu hijacks the right-click and opens the tab / element menu
+    // instead — but deliberately do NOT preventDefault, so the native menu
+    // still opens.
+    if (isEditing) {
+      e.stopPropagation();
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     onContextSelect(element.id, e.clientX, e.clientY);

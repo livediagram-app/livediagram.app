@@ -87,6 +87,13 @@ describe('canvasCursorClass', () => {
       'cursor-grab',
     );
   });
+  it('the format tool shows the copy cursor unless Space is held', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'format' })).toBe('cursor-copy');
+    // Space held suppresses it, falling through to the rest (pan -> grab).
+    expect(canvasCursorClass({ ...rest, canvasTool: 'format', spaceHeld: true })).toBe(
+      'cursor-grab',
+    );
+  });
   it('the resting pan tool shows grab; select shows crosshair', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'pan' })).toBe('cursor-grab');
     expect(canvasCursorClass({ ...rest, canvasTool: 'select' })).toBe('cursor-crosshair');

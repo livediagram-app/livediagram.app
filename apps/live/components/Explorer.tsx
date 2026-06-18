@@ -442,6 +442,28 @@ function ExplorerImpl({
       width={isMobile ? 'w-auto' : 'w-64'}
       onReset={onReset}
       onMoveTo={onMoveTo}
+      // "Open the full Explorer page" lives in the header (mirroring the
+      // Palette's panel-layout toggle in its header) rather than as a button
+      // at the bottom of the panel body. Icon-only with a Tooltip; the
+      // header-extra wrapper already swallows the pointerdown so it doesn't
+      // start a panel drag.
+      headerExtra={
+        onOpenFullExplorer ? (
+          <Tooltip
+            title="Open Explorer"
+            description="Open the full Explorer page (all diagrams, folders, and teams)."
+          >
+            <button
+              type="button"
+              onClick={onOpenFullExplorer}
+              aria-label="Open Explorer"
+              className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <ExpandIcon />
+            </button>
+          </Tooltip>
+        ) : null
+      }
       onSize={onSize}
       mobileOpenOverride={mobileOpenOverride}
       mobileTopOverridePx={mobileTopOverridePx}
@@ -735,25 +757,10 @@ function ExplorerImpl({
           </div>
         ) : null}
 
-        {/* The sign-in prompt and the "Open Explorer" button share this
-            slot: the prompt owns it for signed-out guests who haven't
-            dismissed it, and hands it to the button (its `fallback`) once
-            the user signs in or dismisses the prompt — so the button still
-            surfaces for guests without ever stacking under the prompt. */}
-        <SignInPrompt
-          fallback={
-            onOpenFullExplorer ? (
-              <button
-                type="button"
-                onClick={onOpenFullExplorer}
-                className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
-              >
-                <ExpandIcon />
-                Open Explorer
-              </button>
-            ) : null
-          }
-        />
+        {/* Sign-in prompt for signed-out guests. The "Open Explorer" action
+            now lives in the panel header (see headerExtra above), so this slot
+            is just the prompt — no fallback button. */}
+        <SignInPrompt />
       </div>
 
       {/* Move-destination modal (spec/15), shared with the /explorer

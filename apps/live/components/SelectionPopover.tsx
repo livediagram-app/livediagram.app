@@ -7,7 +7,7 @@ import {
   EllipsisIcon,
   GroupIcon,
   LockIcon,
-  PaintbrushIcon,
+  TextIcon,
   TrashIcon,
   UngroupIcon,
 } from './selection-popover-icons';
@@ -24,10 +24,13 @@ type SelectionPopoverProps = {
   locked?: boolean;
   onToggleLock?: () => void;
   onDelete?: () => void;
-  onCopyFormat?: () => void;
-  // Duplicate the selected element. Sits next to Copy formatting as a
-  // one-click toolbar action (it used to live only in the right-click
-  // context menu). Omitted in read-only / view-role mode.
+  // Enter inline text-edit mode on the selected element. Passed only when
+  // the element actually has a label to edit (see elementHasText), so the
+  // button is absent for elements with no text.
+  onEditText?: () => void;
+  // Duplicate the selected element, a one-click toolbar action (it used to
+  // live only in the right-click context menu). Omitted in read-only /
+  // view-role mode.
   onDuplicate?: () => void;
   onGroup?: () => void;
   onUngroup?: () => void;
@@ -66,7 +69,7 @@ export function SelectionPopover({
   locked = false,
   onToggleLock,
   onDelete,
-  onCopyFormat,
+  onEditText,
   onDuplicate,
   onGroup,
   onUngroup,
@@ -186,14 +189,14 @@ export function SelectionPopover({
         </>
       ) : null}
 
-      {onCopyFormat ? (
+      {onEditText ? (
         <>
           <PopoverButton
-            label="Copy formatting"
-            description="Apply this size to the next click."
-            onClick={onCopyFormat}
+            label="Edit text"
+            description="Edit this element's text."
+            onClick={onEditText}
           >
-            <PaintbrushIcon />
+            <TextIcon />
           </PopoverButton>
           <Divider />
         </>

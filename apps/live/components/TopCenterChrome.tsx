@@ -26,6 +26,9 @@ type TopCenterChromeProps = Pick<
   | 'recogniseShapes'
   | 'onToggleRecogniseShapes'
   | 'onCancelFormatPainter'
+  | 'onExitFormatTool'
+  | 'canvasTool'
+  | 'formatSourceId'
   | 'onCancelGroup'
   | 'tabTimer'
   | 'tabVote'
@@ -49,6 +52,9 @@ export function TopCenterChrome({
   recogniseShapes,
   onToggleRecogniseShapes,
   onCancelFormatPainter,
+  onExitFormatTool,
+  canvasTool,
+  formatSourceId,
   onCancelGroup,
   isPaintMode,
   isGroupMode,
@@ -93,7 +99,24 @@ export function TopCenterChrome({
       {/* The multi-selection toolbar used to sit here; it now floats over the
           selection (Canvas + FloatingToolbar). */}
       <TopCenterRow className="flex-col sm:flex-row empty:hidden">
-        {isPaintMode ? (
+        {/* Persistent Format tool (the palette tool): a two-phase guided
+            banner. Phase 1 (no source armed) asks the user to pick a base;
+            phase 2 (source armed) invites them to tap as many targets as
+            they like. Checked before the single-shot painter banner below
+            so the format tool owns the banner even once a source is armed
+            (which also flips isPaintMode true). */}
+        {canvasTool === 'format' ? (
+          <ModeBanner
+            icon={<PaintIcon />}
+            message={
+              formatSourceId
+                ? 'Tap elements to paint this style onto them'
+                : 'Select a base element to copy its style'
+            }
+            actionLabel="Done"
+            onAction={onExitFormatTool}
+          />
+        ) : isPaintMode ? (
           <ModeBanner
             icon={<PaintIcon />}
             message="Click an element to apply formatting"

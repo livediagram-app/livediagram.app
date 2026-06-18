@@ -17,8 +17,7 @@
 // silently no-op'd.
 
 import { useEffect, useRef } from 'react';
-
-type CanvasTool = 'pan' | 'select' | 'laser' | 'eraser' | 'isometric';
+import type { CanvasTool } from '@/components/CommandPalette';
 
 // Shape kinds that have a single-key palette shortcut: the common
 // flowchart set. The rest of the ShapeKind union (stadium, document,
@@ -67,6 +66,9 @@ type EditorKeyboardShortcutsDeps = {
   // anything; selecting is harmless because the popover hides for
   // view-role).
   setCanvasTool: (t: CanvasTool) => void;
+  // Active canvas tool. Read by the Escape handler so Escape exits the
+  // persistent Format tool (back to Select) from either phase.
+  canvasTool: CanvasTool;
   // Element-add callbacks. R / O / D / C / H / G fire addShape with the
   // matching ShortcutShape; T / N / A fire the dedicated handlers; I opens
   // the image picker. All five mirror their palette counterparts so
@@ -148,13 +150,23 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   // one of those modes is on, so we pay nothing in the idle case.
   // The setters come through the ref so the same-render values apply.
   useEffect(() => {
-    const { formatSourceId, groupSourceId, pendingDraw, enabled } = liveRef.current;
+    const { formatSourceId, groupSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
-    if (formatSourceId === null && groupSourceId === null && pendingDraw === null) return;
+    const formatToolActive = canvasTool === 'format';
+    if (
+      formatSourceId === null &&
+      groupSourceId === null &&
+      pendingDraw === null &&
+      !formatToolActive
+    )
+      return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         liveRef.current.setFormatSourceId(null);
         liveRef.current.setGroupSourceId(null);
+        // Persistent Format tool: Escape exits the tool entirely (back to
+        // Select) from either phase, not just disarming the base.
+        if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
         if (liveRef.current.pendingDraw !== null) {
           liveRef.current.onCancelDraw();
         }
@@ -162,7 +174,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled, deps.formatSourceId, deps.groupSourceId, deps.pendingDraw]);
+  }, [deps.enabled, deps.formatSourceId, deps.groupSourceId, deps.pendingDraw, deps.canvasTool]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
   // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the

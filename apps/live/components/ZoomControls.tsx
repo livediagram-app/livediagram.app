@@ -1,3 +1,4 @@
+import { IsometricOrbitButton } from './IsometricOrbitButton';
 import { ZenExitIcon, ZenIcon } from './palette-icons';
 import { Tooltip } from './Tooltip';
 
@@ -7,6 +8,12 @@ type ZoomControlsProps = {
   onZoomOut: () => void;
   onReset: () => void;
   onFitToScreen: () => void;
+  // Isometric orbit control (spec/45). When both are set (the isometric
+  // tool is active) the orbit button sits between Fit and Zen: drag to
+  // orbit the camera, click to reset its angle. Omitted on every other
+  // tool → no button.
+  onIsoOrbit?: (clientX: number, clientY: number) => void;
+  onIsoReset?: () => void;
   // Zen / focus mode toggle (spec/26). When set, the zoom dock carries
   // the zen button at the end: enter-zen outside zen, exit-zen inside it
   // (the zoom dock is the only chrome left in zen, so entry + exit share
@@ -24,6 +31,8 @@ export function ZoomControls({
   onZoomOut,
   onReset,
   onFitToScreen,
+  onIsoOrbit,
+  onIsoReset,
   onToggleZen,
   zenActive,
 }: ZoomControlsProps) {
@@ -100,6 +109,12 @@ export function ZoomControls({
           Fit
         </button>
       </Tooltip>
+      {onIsoOrbit && onIsoReset ? (
+        <>
+          <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+          <IsometricOrbitButton onOrbit={onIsoOrbit} onReset={onIsoReset} />
+        </>
+      ) : null}
       {onToggleZen ? (
         <>
           <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />

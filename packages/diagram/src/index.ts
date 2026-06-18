@@ -496,6 +496,18 @@ export function isBoxed(element: Element): element is BoxedElement {
   );
 }
 
+// True when the element carries a non-empty text label — the plain-text
+// `label` every labelable kind mirrors (shape / text / sticky / freehand /
+// link-card and arrows). Drives the selection toolbar's "Edit text" button,
+// which only appears once an element actually has text to edit. Tables
+// (per-cell `cells`), images (`alt`), and annotations (`note`) carry no
+// single `label`, so this reads false for them — matching the inline label
+// editor, which targets `label`-bearing elements only.
+export function elementHasText(element: Element): boolean {
+  const label = (element as { label?: string }).label;
+  return typeof label === 'string' && label.trim().length > 0;
+}
+
 // --- Re-exported resource modules -----------------------------------------
 export * from './arrow-path';
 export * from './arrow-style';
