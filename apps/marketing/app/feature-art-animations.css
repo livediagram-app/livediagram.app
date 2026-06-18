@@ -1,0 +1,652 @@
+/* Feature-art animations (.fa-* / .uc-* — the landing page's feature
+   illustrations), split out of globals.css to keep each file under the
+   ~1000-line budget. Imported from globals.css. */
+
+.fa-pop {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-pop 6s ease-out infinite;
+}
+
+/* draw a stroked line / path */
+@keyframes fa-draw {
+  0% {
+    stroke-dashoffset: 140;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  26% {
+    stroke-dashoffset: 0;
+  }
+  84% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  93%,
+  100% {
+    stroke-dashoffset: 140;
+    opacity: 0;
+  }
+}
+.fa-draw {
+  stroke-dasharray: 140;
+  stroke-dashoffset: 140;
+  animation: fa-draw 6s ease-out infinite;
+}
+
+/* steady pulse for glows / badges / nodes */
+@keyframes fa-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.fa-pulse {
+  animation: fa-pulse 2s ease-in-out infinite;
+}
+
+/* grow from top-left (marquee selection box) */
+@keyframes fa-grow {
+  0%,
+  6% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  20%,
+  78% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  90%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+.fa-grow {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: top left;
+  animation: fa-grow 6s ease-in-out infinite;
+}
+
+/* highlight ring cycling across template tiles (delay per tile) */
+@keyframes fa-hl {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  28% {
+    opacity: 1;
+  }
+  33%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-hl {
+  opacity: 0;
+  animation: fa-hl 6s ease-in-out infinite;
+}
+
+/* one-click theme recolour, fill + stroke cycle together (one shorthand
+ * per element, so fill and stroke must live in a single keyframe set) */
+@keyframes fa-theme {
+  0%,
+  16% {
+    fill: #dbeafe;
+    stroke: #0284c7;
+  }
+  25%,
+  41% {
+    fill: #dcfce7;
+    stroke: #16a34a;
+  }
+  50%,
+  66% {
+    fill: #ffedd5;
+    stroke: #ea580c;
+  }
+  75%,
+  91% {
+    fill: #ede9fe;
+    stroke: #7c3aed;
+  }
+  100% {
+    fill: #dbeafe;
+    stroke: #0284c7;
+  }
+}
+@keyframes fa-theme-bg {
+  0%,
+  16% {
+    fill: #f0f9ff;
+  }
+  25%,
+  41% {
+    fill: #f0fdf4;
+  }
+  50%,
+  66% {
+    fill: #fff7ed;
+  }
+  75%,
+  91% {
+    fill: #f5f3ff;
+  }
+  100% {
+    fill: #f0f9ff;
+  }
+}
+.fa-theme {
+  animation: fa-theme 7s ease-in-out infinite;
+}
+.fa-theme-bg {
+  animation: fa-theme-bg 7s ease-in-out infinite;
+}
+
+/* arrow follows content, shaft stretches while target box slides */
+@keyframes fa-arrow-move {
+  0%,
+  14% {
+    transform: translateX(0);
+  }
+  48%,
+  62% {
+    transform: translateX(40px);
+  }
+  92%,
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes fa-arrow-grow {
+  0%,
+  14% {
+    transform: scaleX(1);
+  }
+  48%,
+  62% {
+    transform: scaleX(2.5);
+  }
+  92%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+.fa-arrow-move {
+  animation: fa-arrow-move 6s ease-in-out infinite;
+}
+.fa-arrow-grow {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: fa-arrow-grow 6s ease-in-out infinite;
+}
+
+/* format painter, a plain shape adopts a colour */
+@keyframes fa-paint {
+  0%,
+  30% {
+    fill: #e2e8f0;
+    stroke: #cbd5e1;
+  }
+  52%,
+  84% {
+    fill: #dbeafe;
+    stroke: #0284c7;
+  }
+  94%,
+  100% {
+    fill: #e2e8f0;
+    stroke: #cbd5e1;
+  }
+}
+.fa-paint {
+  animation: fa-paint 6s ease-in-out infinite;
+}
+@keyframes fa-brush {
+  0%,
+  22% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  52% {
+    transform: translate(64px, 0);
+    opacity: 1;
+  }
+  60%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-brush {
+  opacity: 0;
+  animation: fa-brush 6s ease-in-out infinite;
+}
+
+/* realtime last-write-wins, a shape flips to the other editor's colour */
+@keyframes fa-lww {
+  0%,
+  34% {
+    fill: #dbeafe;
+    stroke: #0284c7;
+  }
+  54%,
+  88% {
+    fill: #fce7f3;
+    stroke: #db2777;
+  }
+  96%,
+  100% {
+    fill: #dbeafe;
+    stroke: #0284c7;
+  }
+}
+.fa-lww {
+  animation: fa-lww 6s ease-in-out infinite;
+}
+
+/* tab indicator sliding across the tab bar */
+@keyframes fa-tab {
+  0%,
+  18% {
+    transform: translateX(0);
+  }
+  40%,
+  52% {
+    transform: translateX(58px);
+  }
+  74%,
+  86% {
+    transform: translateX(116px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.fa-tab {
+  animation: fa-tab 7s ease-in-out infinite;
+}
+
+/* folder reveal + chevron rotate */
+@keyframes fa-reveal {
+  0%,
+  22% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  34%,
+  86% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.fa-reveal {
+  opacity: 0;
+  animation: fa-reveal 6s ease-in-out infinite;
+}
+@keyframes fa-chev {
+  0%,
+  18% {
+    transform: rotate(0);
+  }
+  30%,
+  100% {
+    transform: rotate(90deg);
+  }
+}
+.fa-chev {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-chev 6s ease-in-out infinite;
+}
+
+/* laser trail, draw, glow, fade, repeat */
+@keyframes fa-laser {
+  0% {
+    stroke-dashoffset: 160;
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  38%,
+  60% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  80%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+.fa-laser {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  animation: fa-laser 4.5s ease-in-out infinite;
+}
+
+/* spin (refresh) once per cycle, shapes dip out and back */
+@keyframes fa-spin {
+  0%,
+  30% {
+    transform: rotate(0);
+  }
+  55%,
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.fa-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-spin 5s ease-in-out infinite;
+}
+@keyframes fa-dip {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.1;
+  }
+  62%,
+  100% {
+    opacity: 1;
+  }
+}
+.fa-dip {
+  animation: fa-dip 5s ease-in-out infinite;
+}
+
+/* name shuffle, two generated names cross-fade */
+@keyframes fa-swap-a {
+  0%,
+  42% {
+    opacity: 1;
+  }
+  50%,
+  92% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fa-swap-b {
+  0%,
+  42% {
+    opacity: 0;
+  }
+  50%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fa-swap-a {
+  animation: fa-swap-a 6s ease-in-out infinite;
+}
+.fa-swap-b {
+  opacity: 0;
+  animation: fa-swap-b 6s ease-in-out infinite;
+}
+
+/* share toggle, knob slides, on/off states cross-fade */
+@keyframes fa-knob {
+  0%,
+  38% {
+    transform: translateX(0);
+  }
+  55%,
+  92% {
+    transform: translateX(14px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.fa-knob {
+  animation: fa-knob 6s ease-in-out infinite;
+}
+@keyframes fa-on {
+  0%,
+  38% {
+    opacity: 1;
+  }
+  55%,
+  92% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fa-off {
+  0%,
+  38% {
+    opacity: 0;
+  }
+  55%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fa-on {
+  animation: fa-on 6s ease-in-out infinite;
+}
+.fa-off {
+  opacity: 0;
+  animation: fa-off 6s ease-in-out infinite;
+}
+
+/* gentle fade-in loop for static-ish panels (popovers, labels) */
+@keyframes fa-fade {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  84% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-fade {
+  opacity: 0;
+  animation: fa-fade 6s ease-in-out infinite;
+}
+
+/* click ripple, an expanding ring, for the icon-badge glyphs */
+@keyframes fa-ripple {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+.fa-ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-ripple 2.4s ease-out infinite;
+}
+
+/* shape rotation, a gentle rock to the 15° snap angle and back (the origin
+   is set inline on the rotating <g> so it pivots about the shape's centre). */
+@keyframes fa-rotate {
+  0%,
+  16% {
+    transform: rotate(0deg);
+  }
+  44%,
+  70% {
+    transform: rotate(15deg);
+  }
+  92%,
+  100% {
+    transform: rotate(0deg);
+  }
+}
+.fa-rotate {
+  animation: fa-rotate 5s ease-in-out infinite;
+}
+
+/* one-shot entrance for the use-case carousel's featured card; replays on
+   selection change via a React key remount (components/UseCaseCarousel). */
+@keyframes uc-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.uc-pop {
+  animation: uc-pop 0.35s ease-out both;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+ * Motion-feature illustrations (spec/09 "Animated elements" + the
+ * animated background patterns). These mirror the editor's own looping
+ * element / arrow / icon animations, so they run continuously rather
+ * than on the build-hold-fade cycle the cards above use.
+ * ───────────────────────────────────────────────────────────────── */
+
+/* flowing arrow: dashes march continuously along the path */
+@keyframes fa-flow {
+  to {
+    stroke-dashoffset: -26;
+  }
+}
+.fa-flow {
+  stroke-dasharray: 7 6;
+  animation: fa-flow 1s linear infinite;
+}
+
+/* glow: a soft halo breathing in and out around an element */
+@keyframes fa-glow {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.06);
+  }
+}
+.fa-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-glow 2.2s ease-in-out infinite;
+}
+
+/* continuous spin for animated icons (spinner / gear) */
+@keyframes fa-spin-cont {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.fa-spin-cont {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-spin-cont 2.4s linear infinite;
+}
+
+/* heartbeat: a double-thump scale pulse */
+@keyframes fa-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.22);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.14);
+  }
+  56% {
+    transform: scale(1);
+  }
+}
+.fa-beat {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-beat 1.8s ease-in-out infinite;
+}
+
+/* drift: an ambient mote rising and fading (animated backdrop) */
+@keyframes fa-drift {
+  0% {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-26px);
+    opacity: 0;
+  }
+}
+.fa-drift {
+  animation: fa-drift 4s ease-in-out infinite;
+}
+
+/* spotlight: the lit circle travels between two nodes (top/left) */
+@keyframes fa-spot {
+  0%,
+  14% {
+    left: 22px;
+    top: 12px;
+  }
+  46%,
+  60% {
+    left: 150px;
+    top: 48px;
+  }
+  92%,
+  100% {
+    left: 22px;
+    top: 12px;
+  }
+}
+.fa-spot {
+  left: 22px;
+  top: 12px;
+  animation: fa-spot 6s ease-in-out infinite;
+}
