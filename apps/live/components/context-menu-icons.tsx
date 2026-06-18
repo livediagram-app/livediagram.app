@@ -472,6 +472,27 @@ export function AnimationMenuGlyph() {
   );
 }
 
+// A magic wand with a sparkle tip — the "Presets" category glyph (spec/48):
+// one-click styled looks. 12x12 stroke style of the shared context-menu icons.
+export function PresetsMenuGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M10 2.2l0.9 1.9 1.9 0.9-1.9 0.9-0.9 1.9-0.9-1.9-1.9-0.9 1.9-0.9z" />
+      <path d="M3 13l5-5" />
+    </svg>
+  );
+}
+
 // Illustrations for the Animation + Flow context-menu tiles (spec/09), so
 // each option reads at a glance. 16-unit viewBox, currentColor; filled dots
 // set their own fill since the wrapping <svg> is stroke-only.

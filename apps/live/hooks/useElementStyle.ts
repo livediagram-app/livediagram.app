@@ -465,6 +465,78 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Changed', 'BorderRadius');
   };
 
+  // Style presets (spec/48). One-click looks for the selected shape(s),
+  // applied in a single history step (unlike the per-field setters above, a
+  // preset writes fill+stroke+text — or width+style+radius — at once).
+  // Colour and border presets are independent: each touches only its own
+  // fields so the two combine. Shapes only.
+  const applyShapeColorPresetSelected = (preset: {
+    fill: string;
+    stroke: string;
+    text: string;
+  }) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape'
+          ? { ...el, fillColor: preset.fill, strokeColor: preset.stroke, textColor: preset.text }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'StylePreset');
+  };
+  const applyShapeBorderPresetSelected = (preset: {
+    stroke: BorderStroke;
+    style: BorderStyle;
+    radius: BorderRadius;
+  }) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape'
+          ? {
+              ...el,
+              strokeWidth: preset.stroke,
+              strokeStyle: preset.style,
+              borderRadius: preset.radius,
+            }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'BorderPreset');
+  };
+  // Reset a preset-styled shape back to its theme default: colour overrides
+  // fall back to the theme (mirroring resetColorsSelected's shape branch) and
+  // the border weight / pattern / radius overrides are cleared. One step.
+  const resetShapeStyleSelected = () => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    const theme = getTheme(activeTab.theme);
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || el.type !== 'shape') return el;
+        return {
+          ...el,
+          ...(theme.elementFill !== null
+            ? { fillColor: theme.elementFill }
+            : { fillColor: undefined }),
+          ...(theme.elementStroke !== null
+            ? { strokeColor: theme.elementStroke }
+            : { strokeColor: undefined }),
+          ...(theme.elementText !== null
+            ? { textColor: theme.elementText }
+            : { textColor: undefined }),
+          strokeWidth: undefined,
+          strokeStyle: undefined,
+          borderRadius: undefined,
+        };
+      }),
+    );
+    track('Element', 'Changed', 'StyleReset');
+  };
+
   // Animated elements (spec/09). A looping animation on the selected boxed
   // element(s); `null` clears it. Arrows take a separate `flow` (marching
   // dashes / travelling dot).
@@ -690,6 +762,9 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setBorderStrokeSelected,
     setBorderStyleSelected,
     setBorderRadiusSelected,
+    applyShapeColorPresetSelected,
+    applyShapeBorderPresetSelected,
+    resetShapeStyleSelected,
     setAnimationSelected,
     setArrowFlowSelected,
     setIconAnimationSelected,

@@ -11,7 +11,7 @@ import {
 } from '@livediagram/diagram';
 import type { QuickConnectDirection } from '@/lib/canvas';
 import { track } from '@/lib/telemetry';
-import { getTheme, themePresetColors, type ThemeId } from '@/lib/themes';
+import { getTheme, shapeColorPresets, themePresetColors, type ThemeId } from '@/lib/themes';
 import { PALETTE_SEARCH_ITEMS } from '@/lib/palette-search';
 import { apiAddComment, apiDeleteComment } from '@/lib/api-client';
 import type { UserPreferences } from '@/lib/user-preferences';
@@ -286,6 +286,9 @@ export function EditorView() {
     setBorderRadiusSelected,
     setBorderStrokeSelected,
     setBorderStyleSelected,
+    applyShapeColorPresetSelected,
+    applyShapeBorderPresetSelected,
+    resetShapeStyleSelected,
     setAnimationSelected,
     setArrowFlowSelected,
     setIconAnimationSelected,
@@ -1238,6 +1241,10 @@ export function EditorView() {
           onSetBorderStroke={setBorderStrokeSelected}
           onSetBorderStyle={setBorderStyleSelected}
           onSetBorderRadius={setBorderRadiusSelected}
+          shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
+          onApplyShapeColorPreset={applyShapeColorPresetSelected}
+          onApplyShapeBorderPreset={applyShapeBorderPresetSelected}
+          onResetShapeStyle={resetShapeStyleSelected}
           onSetAnimation={setAnimationSelected}
           onSetArrowFlow={setArrowFlowSelected}
           onSetIconAnimation={setIconAnimationSelected}

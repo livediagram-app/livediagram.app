@@ -60,3 +60,60 @@ describe('useElementStyle selection-wide setters on a multi-selection', () => {
     }
   });
 });
+
+describe('useElementStyle shape style presets (spec/48)', () => {
+  it('applies a colour preset (fill + stroke + text) in one step, untouched border', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.applyShapeColorPresetSelected({ fill: '#fee2e2', stroke: '#ef4444', text: '#7f1d1d' });
+
+    const el = result()[0] as {
+      fillColor?: string;
+      strokeColor?: string;
+      textColor?: string;
+      strokeStyle?: string;
+    };
+    expect(el.fillColor).toBe('#fee2e2');
+    expect(el.strokeColor).toBe('#ef4444');
+    expect(el.textColor).toBe('#7f1d1d');
+    // Border fields are independent of the colour preset.
+    expect(el.strokeStyle).toBeUndefined();
+  });
+
+  it('applies a border preset (weight + pattern + radius), untouched colour', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.applyShapeBorderPresetSelected({ stroke: 'thick', style: 'dotted', radius: 'lg' });
+
+    const el = result()[0] as {
+      strokeWidth?: string;
+      strokeStyle?: string;
+      borderRadius?: string;
+      fillColor?: string;
+    };
+    expect(el.strokeWidth).toBe('thick');
+    expect(el.strokeStyle).toBe('dotted');
+    expect(el.borderRadius).toBe('lg');
+    expect(el.fillColor).toBeUndefined();
+  });
+
+  it('resets a preset-styled shape back to its defaults (border cleared)', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.applyShapeColorPresetSelected({ fill: '#fee2e2', stroke: '#ef4444', text: '#7f1d1d' });
+    style.applyShapeBorderPresetSelected({ stroke: 'thick', style: 'dotted', radius: 'lg' });
+    style.resetShapeStyleSelected();
+
+    const el = result()[0] as {
+      strokeWidth?: string;
+      strokeStyle?: string;
+      borderRadius?: string;
+    };
+    expect(el.strokeWidth).toBeUndefined();
+    expect(el.strokeStyle).toBeUndefined();
+    expect(el.borderRadius).toBeUndefined();
+  });
+});

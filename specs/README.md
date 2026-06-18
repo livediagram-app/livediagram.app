@@ -55,6 +55,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 45  | [Isometric view](45-isometric-view.md)                             | Navigation tool that tilts the tab into an isometric, extruded-depth view; pans like Hand, read-only       |
 | 46  | [Progress elements](46-progress.md)                                | Horizontal bar + donut ring shapes showing a 0–100 percentage, with fill animations (fill/pulse/stripes)   |
 | 47  | [Layout cleanup](47-layout-cleanup.md)                             | The tab menu's Cleanup band: Auto-align (grid snap) + Auto Layout (deterministic graph layout / Tidy up)   |
+| 48  | [Style presets](48-style-presets.md)                               | One-click Presets category: theme colour + border variations for shapes, animated line styles for arrows   |
 
 ## Workflow
 

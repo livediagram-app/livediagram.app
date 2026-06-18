@@ -21,6 +21,7 @@ import {
   resetThemeElement,
   resetThemeElementsToTheme,
   resolveTheme,
+  shapeColorPresets,
   switchThemeBackdrop,
   switchThemeElement,
   switchThemeElements,
@@ -133,6 +134,28 @@ describe('getTheme', () => {
 
   it('returns the exact catalogue object (referential, not a copy)', () => {
     expect(getTheme('forest')).toBe(THEMES.find((t) => t.id === 'forest'));
+  });
+});
+
+describe('shapeColorPresets (spec/48)', () => {
+  it('returns eight deduped {fill, stroke, text} presets for a single-accent theme', () => {
+    const presets = shapeColorPresets(getTheme('slate'));
+    expect(presets).toHaveLength(8);
+    const keys = presets.map((p) => `${p.fill}|${p.stroke}|${p.text}`.toLowerCase());
+    expect(new Set(keys).size).toBe(8); // all distinct
+    for (const p of presets) {
+      expect(p.fill).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(p.stroke).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(p.text).toMatch(/^#[0-9a-f]{6}$/i);
+    }
+  });
+
+  it('caps a multi-colour (palette) theme at eight presets too', () => {
+    const rainbow = THEMES.find((t) => t.palette && t.palette.length > 0);
+    if (!rainbow) return; // no palette theme in the catalogue
+    const presets = shapeColorPresets(rainbow);
+    expect(presets.length).toBeLessThanOrEqual(8);
+    expect(presets.length).toBeGreaterThan(0);
   });
 });
 

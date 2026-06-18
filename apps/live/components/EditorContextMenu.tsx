@@ -84,6 +84,7 @@ import {
   IconAnimKindGlyph,
   ProgressAnimKindGlyph,
   ProgressMenuGlyph,
+  PresetsMenuGlyph,
   NoteMenuIcon,
   PaletteMenuIcon,
   PointerGlyph,
@@ -100,6 +101,8 @@ import {
   MenuTileGrid,
 } from '@/components/PortalMenu';
 import { ShapeIcon } from '@/components/shape-icon';
+import { ShapePresets, type ShapeBorderPreset } from '@/components/StylePresets';
+import type { ShapeColorPreset } from '@/lib/themes';
 
 // A curated subset of the most common shapes offered for in-place morphing
 // in the context menu's Shape category (the full set lived in the old panel).
@@ -161,6 +164,13 @@ type EditorContextMenuProps = {
   onSetBorderStroke: (value: BorderStroke) => void;
   onSetBorderStyle: (value: BorderStyle) => void;
   onSetBorderRadius: (value: BorderRadius) => void;
+  // Style presets (spec/48): one-click colour + border looks for the selected
+  // shape, plus a reset back to the theme default. `shapeColorPresets` are
+  // theme-derived (see shapeColorPresets in lib/themes).
+  shapeColorPresets: ShapeColorPreset[];
+  onApplyShapeColorPreset: (preset: ShapeColorPreset) => void;
+  onApplyShapeBorderPreset: (preset: ShapeBorderPreset) => void;
+  onResetShapeStyle: () => void;
   // Animated elements (spec/09): a looping animation on boxed elements, and a
   // flow animation on arrows. `null` clears it.
   onSetAnimation: (value: ElementAnimation | null) => void;
@@ -620,8 +630,36 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </div>
           </MenuAccordionSection>
         ) : null}
-        {/* ── Appearance group: Progress / Animation / Colours / Border ── */}
+        {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ── */}
         {showAppearanceGroup ? <MenuGroupSeparator /> : null}
+        {/* Presets (spec/48) — pinned at the top of the appearance group (above
+            Animation): one-click theme-colour + border looks for a shape, plus
+            a reset to the theme default. Shapes only. */}
+        {target.type === 'shape' ? (
+          <MenuAccordionSection
+            title="Presets"
+            icon={<PresetsMenuGlyph />}
+            {...sectionProps('presets')}
+          >
+            <ShapePresets
+              colorPresets={props.shapeColorPresets}
+              current={{
+                fillColor: (target as { fillColor?: string }).fillColor,
+                strokeColor: (target as { strokeColor?: string }).strokeColor,
+                textColor: (target as { textColor?: string }).textColor,
+                strokeWidth: (target as { strokeWidth?: BorderStroke }).strokeWidth,
+                strokeStyle: (target as { strokeStyle?: BorderStyle }).strokeStyle,
+                borderRadius: (target as { borderRadius?: BorderRadius }).borderRadius,
+              }}
+              onApplyColor={(p) => props.onApplyShapeColorPreset(p)}
+              onApplyBorder={(p) => props.onApplyShapeBorderPreset(p)}
+              onReset={() => {
+                props.onResetShapeStyle();
+                onClose();
+              }}
+            />
+          </MenuAccordionSection>
+        ) : null}
         {/* Progress (spec/46) — the percentage + how the fill animates. Only
             for progress bars / rings. */}
         {isProgress ? (

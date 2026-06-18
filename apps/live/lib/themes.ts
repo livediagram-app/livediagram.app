@@ -3,6 +3,7 @@ import {
   DEFAULT_PATTERN_COLOR,
   deriveShapeColours,
   deriveTextColorForBg,
+  isLightColor,
   shade,
   tint,
   type BackgroundPattern,
@@ -384,6 +385,71 @@ export function themePresetColors(theme: ThemeDefinition): string[] {
   push('#475569');
   push('#0f172a');
   return out.slice(0, 20);
+}
+
+// A one-click shape colour preset (spec/48): fill / border / text applied
+// together. Derived from the active theme so the offered presets always match
+// it, the same way themePresetColors derives the colour-picker swatches.
+export type ShapeColorPreset = {
+  name: string;
+  fill: string;
+  stroke: string;
+  text: string;
+};
+
+// Eight on-theme colour variations for a shape — spanning the theme's default
+// look through soft / tinted / solid / bold / outline / muted / inked emphasis
+// (plus a card per branch hue on multi-colour themes). Filled variants pick a
+// contrasting label colour (white on dark, a deep shade on light) so text
+// stays readable. Deduped on the exact fill+stroke+text triple, capped at 8.
+export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
+  const accent = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
+  const baseFill = theme.elementFill ?? DEFAULT_SHAPE_FILL;
+  const baseText = theme.elementText ?? DEFAULT_SHAPE_TEXT;
+  // A readable label colour for a filled tile: white on a dark fill, a deep
+  // shade of the fill on a light one.
+  const labelOn = (fill: string) => (isLightColor(fill) ? shade(fill, 0.6) : '#ffffff');
+
+  const pool: ShapeColorPreset[] = [];
+  // Lead with the theme's own look so "the current theme" is one click away.
+  pool.push({ name: 'Theme', fill: baseFill, stroke: accent, text: baseText });
+  // Multi-colour themes: a tinted card per branch hue for genuine variety.
+  if (theme.palette && theme.palette.length > 0) {
+    for (const entry of theme.palette) {
+      pool.push({
+        name: 'Branch',
+        fill: tint(entry.stroke, 0.8),
+        stroke: entry.stroke,
+        text: shade(entry.stroke, 0.45),
+      });
+    }
+  }
+  // Accent-derived emphasis variants — always appended so single-accent themes
+  // get a full spread and palette themes pad to eight.
+  pool.push(
+    { name: 'Soft', fill: tint(accent, 0.85), stroke: tint(accent, 0.4), text: shade(accent, 0.5) },
+    { name: 'Tinted', fill: tint(accent, 0.6), stroke: accent, text: shade(accent, 0.45) },
+    { name: 'Solid', fill: accent, stroke: shade(accent, 0.25), text: labelOn(accent) },
+    {
+      name: 'Bold',
+      fill: shade(accent, 0.3),
+      stroke: shade(accent, 0.55),
+      text: labelOn(shade(accent, 0.3)),
+    },
+    { name: 'Outline', fill: '#ffffff', stroke: accent, text: shade(accent, 0.3) },
+    { name: 'Muted', fill: '#f1f5f9', stroke: '#94a3b8', text: '#475569' },
+    { name: 'Inked', fill: '#0f172a', stroke: '#334155', text: '#f8fafc' },
+  );
+
+  const seen = new Set<string>();
+  const out: ShapeColorPreset[] = [];
+  for (const p of pool) {
+    const key = `${p.fill}|${p.stroke}|${p.text}`.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out.slice(0, 8);
 }
 
 // Soft theme switch: change the diagram's theme but preserve every
