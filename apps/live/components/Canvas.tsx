@@ -50,7 +50,7 @@ const EMPTY_ID_SET: Set<string> = new Set();
 import { CanvasChrome } from './CanvasChrome';
 import { CanvasElementsLayer } from './CanvasElementsLayer';
 import { IsometricDepthLayer } from './IsometricDepthLayer';
-import { ISO_TILT_TRANSFORM } from '@/lib/isometric';
+import { useIsometricCamera } from '@/hooks/useIsometricCamera';
 import { SpotlightOverlay } from './SpotlightOverlay';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import { Portal } from './Portal';
@@ -254,6 +254,11 @@ export function Canvas(props: CanvasProps) {
   // the overlay share one source of truth; survives Pan/Select detours
   // because Canvas stays mounted.
   const spotlight = useSpotlight();
+
+  // Isometric camera (spec/45): the orbit-able view angle. Local, non-synced
+  // view state; Shift-drag on the canvas spins / tilts it (see the <main>
+  // pointerdown handler).
+  const isoCamera = useIsometricCamera();
 
   const cursorClass = canvasCursorClass({
     pendingDraw: !!pendingDraw,
@@ -812,6 +817,13 @@ export function Canvas(props: CanvasProps) {
         // coords (the canvas slides under the finger), defeating
         // the presenter mode entirely on phones / tablets.
         if (e.target !== e.currentTarget) return;
+        // Isometric (spec/45): Shift-drag orbits the camera (spin + tilt)
+        // instead of panning, so the plain drag stays a pan. Self-contained
+        // in the camera hook; take it before the pan branch below.
+        if (canvasTool === 'isometric' && e.shiftKey) {
+          isoCamera.startOrbit(e.clientX, e.clientY);
+          return;
+        }
         const laserOnTouch = canvasTool === 'laser' && e.pointerType === 'touch';
         // Touch + Laser is a pure draw gesture: no pan, no marquee.
         // pointermove on <main> keeps broadcasting laser samples via
@@ -968,11 +980,12 @@ export function Canvas(props: CanvasProps) {
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
-          // Isometric tilt (spec/45) is placed OUTERMOST so pan + zoom behave
-          // exactly as in 2D and the tilt is a pure post-effect about the
-          // centre; preserve-3d lets the depth layer's translateZ stack read
-          // as real extruded height.
-          transform: `${canvasTool === 'isometric' ? `${ISO_TILT_TRANSFORM} ` : ''}scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+          // Isometric tilt (spec/45) is appended INNERMOST (last in the list,
+          // so it transforms the content first): that keeps the pan translate
+          // in screen space, so a drag moves the scene the way the cursor
+          // moves at any camera angle. preserve-3d lets the depth layer's
+          // translateZ stack read as real extruded height.
+          transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${canvasTool === 'isometric' ? ` ${isoCamera.transform}` : ''}`,
           ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
           // Draw-mode cursor: every intent gets a custom inline-SVG
           // cursor (crosshair at the pointer tip plus a small glyph

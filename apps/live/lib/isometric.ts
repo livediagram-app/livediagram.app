@@ -2,19 +2,31 @@
 // navigation-only isometric canvas tool. Kept out of Canvas.tsx so the
 // geometry is unit-testable and the canvas just consumes the values.
 
-// Fixed isometric (axonometric, parallel — no perspective) camera tilt,
-// applied on top of the canvas pan / zoom transform. rotateX tips the plane
-// away from the viewer; rotateZ spins it so both ground axes recede. Tuned
-// for a readable "board seen from above and to the side" rather than the
-// steep true-isometric 54.7deg, which buries the content edge-on.
+// Default isometric camera angles (degrees). `z` is the azimuth (rotateZ,
+// spin around the vertical), `x` the elevation (rotateX, tilt away from the
+// viewer). These seed the adjustable camera (useIsometricCamera): the view
+// opens here and the user can orbit from it (Shift-drag).
 export const ISO_TILT_DEG = { x: 55, z: -45 } as const;
 
-// The CSS transform fragment for the tilt. Placed OUTERMOST (before the
-// existing scale()/translate()) so pan + zoom still behave exactly as in 2D
-// and the tilt is a pure post-effect about the wrapper centre
-// (transform-origin: center). No `perspective` — isometric is parallel
-// projection, so there is deliberately no vanishing point.
-export const ISO_TILT_TRANSFORM = `rotateX(${ISO_TILT_DEG.x}deg) rotateZ(${ISO_TILT_DEG.z}deg)`;
+// Elevation (rotateX) clamp. Below ~15deg the plane is nearly edge-on and the
+// content all but vanishes; above ~85deg it flattens back toward the plain 2D
+// top-down view, so the orbit stops short of both extremes.
+export const ISO_ELEVATION_RANGE = { min: 15, max: 85 } as const;
+
+export function clampElevation(deg: number): number {
+  return Math.max(ISO_ELEVATION_RANGE.min, Math.min(ISO_ELEVATION_RANGE.max, deg));
+}
+
+// The CSS transform fragment for a given camera. It is placed INNERMOST in
+// the wrapper transform (i.e. AFTER scale()/translate() in the CSS list, so
+// it applies to the content first). That keeps the pan translate in screen
+// space, so drag-to-pan moves the scene the way the cursor moves at ANY
+// camera angle — only the content is tilted, never the pan vector. No
+// `perspective`: isometric is parallel projection, so there is deliberately
+// no vanishing point.
+export function isoTransform(azimuthDeg: number, elevationDeg: number): string {
+  return `rotateX(${elevationDeg}deg) rotateZ(${azimuthDeg}deg)`;
+}
 
 // Extrusion depth, in canvas px, that every boxed element rises off the
 // floor in the isometric view. Rendered as a stack of translateZ-offset
@@ -37,11 +49,13 @@ export function isoDepthLayers(
   return layers;
 }
 
-// Per-layer wall shade: lighter just under the element, darker toward the
-// floor, so the extruded side reads with a little ambient shading. `index`
-// is the layer position (0 = topmost), `count` the total layer count.
-export function isoLayerColor(index: number, count: number): string {
+// Per-layer brightness for the extruded side wall. The wall paints in the
+// element's OWN colour (its accent), and this dims it from full near the
+// element down to half at the floor, so the side reads as a shaded version
+// of the element's colour rather than a flat black slab. Applied as a CSS
+// `filter: brightness()`, so it works for any colour without parsing it.
+// `index` is the layer position (0 = topmost), `count` the total.
+export function isoLayerBrightness(index: number, count: number): number {
   const t = count > 1 ? index / (count - 1) : 0;
-  const alpha = 0.6 + 0.35 * t;
-  return `rgba(15, 23, 42, ${alpha.toFixed(3)})`;
+  return 1 - 0.5 * t; // 1.0 (just under the element) -> 0.5 (floor)
 }

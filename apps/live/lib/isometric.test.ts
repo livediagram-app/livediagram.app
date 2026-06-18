@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { ISO_DEPTH_PX, ISO_LAYER_STEP_PX, isoDepthLayers, isoLayerColor } from './isometric';
+import {
+  clampElevation,
+  ISO_DEPTH_PX,
+  ISO_ELEVATION_RANGE,
+  ISO_LAYER_STEP_PX,
+  ISO_TILT_DEG,
+  isoDepthLayers,
+  isoLayerBrightness,
+  isoTransform,
+} from './isometric';
 
 describe('isoDepthLayers', () => {
   it('descends from just below the element to the floor depth', () => {
@@ -26,16 +35,40 @@ describe('isoDepthLayers', () => {
   });
 });
 
-describe('isoLayerColor', () => {
-  it('darkens toward the floor', () => {
-    const top = isoLayerColor(0, 10);
-    const floor = isoLayerColor(9, 10);
-    expect(top).not.toBe(floor);
-    // alpha rises with index → the floor string sorts after the top one
-    expect(floor > top).toBe(true);
+describe('isoLayerBrightness', () => {
+  it('is full just under the element and dims toward the floor', () => {
+    expect(isoLayerBrightness(0, 10)).toBeCloseTo(1);
+    expect(isoLayerBrightness(9, 10)).toBeCloseTo(0.5);
+  });
+
+  it('decreases monotonically', () => {
+    let prev = Infinity;
+    for (let i = 0; i < 10; i++) {
+      const b = isoLayerBrightness(i, 10);
+      expect(b).toBeLessThan(prev);
+      prev = b;
+    }
   });
 
   it('handles a single-layer stack without dividing by zero', () => {
-    expect(isoLayerColor(0, 1)).toContain('0.600');
+    expect(isoLayerBrightness(0, 1)).toBe(1);
+  });
+});
+
+describe('clampElevation', () => {
+  it('clamps to the allowed orbit range', () => {
+    expect(clampElevation(0)).toBe(ISO_ELEVATION_RANGE.min);
+    expect(clampElevation(90)).toBe(ISO_ELEVATION_RANGE.max);
+    expect(clampElevation(55)).toBe(55);
+  });
+});
+
+describe('isoTransform', () => {
+  it('builds a rotateX (elevation) + rotateZ (azimuth) string', () => {
+    expect(isoTransform(-45, 55)).toBe('rotateX(55deg) rotateZ(-45deg)');
+  });
+
+  it('reflects the default camera angles', () => {
+    expect(isoTransform(ISO_TILT_DEG.z, ISO_TILT_DEG.x)).toContain(`rotateX(${ISO_TILT_DEG.x}deg)`);
   });
 });
