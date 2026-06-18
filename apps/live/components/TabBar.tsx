@@ -34,7 +34,6 @@ import {
   KeyboardIcon,
   MoveIcon,
   SearchGlyph,
-  SessionTabIcon,
   TabLockIcon,
   TabsLabelIcon,
 } from './tab-bar-icons';
@@ -47,11 +46,20 @@ import {
   MenuToolbar,
   MenuToolButton,
 } from './PortalMenu';
-import { AutoAlignIcon, CanvasMenuIcon, FontMenuIcon, PaletteMenuIcon } from './context-menu-icons';
+import {
+  AutoAlignIcon,
+  AutoLayoutMenuIcon,
+  CanvasMenuIcon,
+  CleanupMenuIcon,
+  FontMenuIcon,
+  PaletteMenuIcon,
+  TimerMenuIcon,
+  VoteMenuIcon,
+} from './context-menu-icons';
 import { FontSelect } from './FontSelect';
 import { SizeButton } from './palette-controls';
 import { DotsIcon, ScaleIcon } from './palette-icons';
-import { SessionToolsSection } from './SessionToolsSection';
+import { SessionTimerSection, SessionVoteSection } from './SessionToolsSection';
 import { TabFolderChip } from './TabFolderChip';
 import { TabPresenceStack } from './TabPresenceStack';
 import { Tooltip } from './Tooltip';
@@ -88,7 +96,10 @@ function legibleTabAccent(tab: Tab, isDark: boolean): string {
 type CanvasMenuActions = {
   onChangeTheme: () => void;
   onChangeCanvas: () => void;
+  // Cleanup category (spec/47): Auto-align grid-snaps current positions;
+  // Auto Layout recomputes positions from the arrow graph (Tidy up).
   onAutoAlign: () => void;
+  onAutoLayout: () => void;
   // Tab font + default new-element size (spec/28), surfaced as the menu's Font
   // category (moved out of the Tab Appearance modal). `font` null = the editor
   // default; `defaultTextSize` undefined defaults to medium.
@@ -957,6 +968,9 @@ function PortalMenu({
                 />
               </div>
             </MenuToolbar>
+            {/* Separator under the toolbar, isolating the quick verbs from
+                the verbose category bands below. */}
+            <MenuGroupSeparator />
             {/* Verbose actions live in collapsible categories (closed by
                 default, one open at a time), matching the element menu. */}
             <MenuAccordionSection
@@ -1003,11 +1017,10 @@ function PortalMenu({
                 />
               </MenuTileGrid>
             </MenuAccordionSection>
-            {/* Canvas section (theme / background / auto-align). Rendered
+            {/* ── Look & Feel band: theme / background + Font. Rendered
                 whenever canvas actions are available, which is now both entry
                 points (canvas right-click AND the active tab's ellipsis menu)
                 so the two are one unified menu. */}
-            {/* ── Look & Feel band: theme / background / auto-align + Font ── */}
             {canvas ? (
               <>
                 <MenuGroupSeparator />
@@ -1016,7 +1029,7 @@ function PortalMenu({
                   icon={<CanvasMenuIcon />}
                   {...sectionProps('canvas')}
                 >
-                  <MenuTileGrid cols={3}>
+                  <MenuTileGrid cols={2}>
                     <MenuTile
                       icon={<PaletteMenuIcon />}
                       label="Change Theme"
@@ -1030,14 +1043,6 @@ function PortalMenu({
                       label="Change Canvas"
                       onClick={() => {
                         canvas.onChangeCanvas();
-                        onClose();
-                      }}
-                    />
-                    <MenuTile
-                      icon={<AutoAlignIcon />}
-                      label="Auto-align"
-                      onClick={() => {
-                        canvas.onAutoAlign();
                         onClose();
                       }}
                     />
@@ -1081,23 +1086,50 @@ function PortalMenu({
                     </div>
                   </div>
                 </MenuAccordionSection>
+                {/* ── Cleanup band: layout tidiers (spec/47). Auto-align grid-
+                    snaps; Auto Layout recomputes positions from the arrow graph. */}
+                <MenuGroupSeparator />
+                <MenuAccordionSection
+                  title="Cleanup"
+                  icon={<CleanupMenuIcon />}
+                  {...sectionProps('cleanup')}
+                >
+                  <MenuTileGrid cols={2}>
+                    <MenuTile
+                      icon={<AutoLayoutMenuIcon />}
+                      label="Auto Layout"
+                      onClick={() => {
+                        canvas.onAutoLayout();
+                        onClose();
+                      }}
+                    />
+                    <MenuTile
+                      icon={<AutoAlignIcon />}
+                      label="Auto-align"
+                      onClick={() => {
+                        canvas.onAutoAlign();
+                        onClose();
+                      }}
+                    />
+                  </MenuTileGrid>
+                </MenuAccordionSection>
               </>
             ) : null}
-            {/* ── Session band ── */}
+            {/* ── Session band: Timer + Vote as separate categories ── */}
             <MenuGroupSeparator />
-            <MenuAccordionSection
-              title="Session Tools"
-              icon={<SessionTabIcon />}
-              {...sectionProps('session')}
-            >
-              <SessionToolsSection
+            <MenuAccordionSection title="Timer" icon={<TimerMenuIcon />} {...sectionProps('timer')}>
+              <SessionTimerSection
                 timer={timer}
-                vote={vote}
                 onStartTimer={onStartTimer}
                 onPauseTimer={onPauseTimer}
                 onResumeTimer={onResumeTimer}
                 onResetTimer={onResetTimer}
                 onClearTimer={onClearTimer}
+              />
+            </MenuAccordionSection>
+            <MenuAccordionSection title="Vote" icon={<VoteMenuIcon />} {...sectionProps('vote')}>
+              <SessionVoteSection
+                vote={vote}
                 onStartVote={onStartVote}
                 onEndVote={onEndVote}
                 onRevealVote={onRevealVote}

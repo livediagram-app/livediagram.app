@@ -24,6 +24,8 @@ import {
 } from '@/lib/themes';
 import { isCustomThemeId } from '@/lib/custom-theme-registry';
 import {
+  autoLayoutElements,
+  isBoxed,
   type BackgroundPattern,
   type Element,
   type Tab,
@@ -108,6 +110,24 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     // on top would duplicate the entry without adding undo coverage;
     // the diff-based summary from emitChange is the canonical line.
     commit((els) => autoAlignElements(els));
+    track('Tab', 'Aligned');
+  };
+
+  // Auto Layout / "Tidy up" (spec/47, GitHub #12): recompute element
+  // positions from the arrow graph (layered / tree layout) rather than
+  // merely grid-snapping current positions like Auto-align. Pins the laid-out
+  // block to the diagram's current top-left so it stays where the user is
+  // looking instead of jumping to the origin, and grid-snaps the result (the
+  // same final pass the AI-apply path uses). One undoable op via `commit`.
+  const autoLayoutTab = () => {
+    if (editsBlocked) return;
+    const els = activeTab.elements;
+    if (els.length === 0) return;
+    const boxed = els.filter(isBoxed);
+    if (boxed.length === 0) return;
+    const originX = Math.min(...boxed.map((b) => b.x));
+    const originY = Math.min(...boxed.map((b) => b.y));
+    commit((current) => autoAlignElements(autoLayoutElements(current, { originX, originY })));
     track('Tab', 'Aligned');
   };
 
@@ -317,6 +337,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
 
   return {
     autoAlignTab,
+    autoLayoutTab,
     setTabFont,
     setTabDefaultTextSize,
     setBackgroundPattern,

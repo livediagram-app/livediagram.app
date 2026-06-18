@@ -187,6 +187,88 @@ export function AutoAlignIcon() {
   );
 }
 
+// Clock - the Timer session-tool category glyph.
+export function TimerMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6.5 2h3" />
+      <circle cx="8" cy="9.5" r="5" />
+      <path d="M8 9.5V6.8M8 9.5l2.1 1.3" />
+    </svg>
+  );
+}
+
+// Check-in-circle - the Vote session-tool category glyph (a cast dot-vote).
+export function VoteMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="8" cy="8" r="6" />
+      <path d="M5.4 8.2l1.8 1.8 3.4-3.7" />
+    </svg>
+  );
+}
+
+// Two sparkles - the Cleanup category glyph (tidy / auto-align / auto-layout).
+export function CleanupMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6.5 2.5l1.1 2.9 2.9 1.1-2.9 1.1-1.1 2.9-1.1-2.9L2.5 6.5l2.9-1.1z" />
+      <path d="M12 9.5l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5-1.5-.6 1.5-.6z" />
+    </svg>
+  );
+}
+
+// Hierarchy of connected nodes - the Auto Layout action glyph.
+export function AutoLayoutMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="5.5" y="1.5" width="5" height="3.2" rx="0.8" />
+      <rect x="1.5" y="11.3" width="5" height="3.2" rx="0.8" />
+      <rect x="9.5" y="11.3" width="5" height="3.2" rx="0.8" />
+      <path d="M8 4.7v2.8M4 11.3V8.5h8v2.8M12 11.3V8.5" />
+    </svg>
+  );
+}
+
 // Serif "A" - the Font section glyph.
 export function FontMenuIcon() {
   return (

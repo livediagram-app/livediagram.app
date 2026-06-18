@@ -1,11 +1,11 @@
 'use client';
 
-// The facilitator Session tools (spec/39): the countdown / stopwatch timer
+// The facilitator session tools (spec/39): the countdown / stopwatch timer
 // and the dot-vote, with their full controls (mode + duration picker,
-// pause / resume / reset, dots-per-person stepper, reveal). Extracted so the
-// canvas context menu and the tab context menu render the SAME advanced
-// surface instead of one rich and one stripped-down copy. Renders just the
-// category BODY; each caller wraps it in its own MenuAccordionSection.
+// pause / resume / reset, dots-per-person stepper, reveal). Split into two
+// independent category bodies — Timer and Vote — so the tab context menu can
+// surface each as its own collapsible category. Each renders just the category
+// BODY; the caller wraps it in its own MenuAccordionSection.
 
 import { useState } from 'react';
 import { timerDisplayMs, type TabTimer, type TabVote, type TimerMode } from '@livediagram/diagram';
@@ -26,47 +26,33 @@ function fmtClock(ms: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-type SessionToolsProps = {
+type TimerProps = {
   timer: TabTimer | null;
-  vote: TabVote | null;
   onStartTimer: (mode: TimerMode, durationMs?: number) => void;
   onPauseTimer: () => void;
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number) => void;
-  onEndVote: () => void;
-  onRevealVote: () => void;
-  onClearVote: () => void;
 };
 
-export function SessionToolsSection({
+// The Timer category body: mode + duration picker before start, then the
+// running-timer controls (pause / resume / reset / clear).
+export function SessionTimerSection({
   timer,
-  vote,
   onStartTimer,
   onPauseTimer,
   onResumeTimer,
   onResetTimer,
   onClearTimer,
-  onStartVote,
-  onEndVote,
-  onRevealVote,
-  onClearVote,
-}: SessionToolsProps) {
+}: TimerProps) {
   // Local picker state until the facilitator hits Start.
   const [timerMode, setTimerMode] = useState<TimerMode>('countdown');
   const [durationMin, setDurationMin] = useState(5);
-  const [votesPerPerson, setVotesPerPerson] = useState(3);
-  const totalVotesCast = vote ? Object.values(vote.votes).reduce((n, ids) => n + ids.length, 0) : 0;
 
   return (
     <div className="px-2.5 pb-2 pt-1">
-      {/* Timer */}
-      <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        Timer
-      </p>
       {!timer ? (
-        <div className="mt-1 flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5">
           <div className="flex gap-1">
             <button
               type="button"
@@ -108,7 +94,7 @@ export function SessionToolsSection({
           </button>
         </div>
       ) : (
-        <div className="mt-1 flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5">
           <p className="text-[11px] text-slate-600 dark:text-slate-300">
             {timer.mode === 'countdown' ? 'Countdown' : 'Stopwatch'} ·{' '}
             <span className="font-semibold tabular-nums">
@@ -135,12 +121,34 @@ export function SessionToolsSection({
           </div>
         </div>
       )}
-      {/* Vote */}
-      <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        Vote
-      </p>
+    </div>
+  );
+}
+
+type VoteProps = {
+  vote: TabVote | null;
+  onStartVote: (votesPerPerson: number) => void;
+  onEndVote: () => void;
+  onRevealVote: () => void;
+  onClearVote: () => void;
+};
+
+// The Vote category body: the dots-per-person stepper before start, then the
+// live-vote controls (end / reveal / clear).
+export function SessionVoteSection({
+  vote,
+  onStartVote,
+  onEndVote,
+  onRevealVote,
+  onClearVote,
+}: VoteProps) {
+  const [votesPerPerson, setVotesPerPerson] = useState(3);
+  const totalVotesCast = vote ? Object.values(vote.votes).reduce((n, ids) => n + ids.length, 0) : 0;
+
+  return (
+    <div className="px-2.5 pb-2 pt-1">
       {!vote ? (
-        <div className="mt-1 flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] text-slate-600 dark:text-slate-300">Dots per person</span>
             <div className="flex items-center gap-1.5">
@@ -174,7 +182,7 @@ export function SessionToolsSection({
           </button>
         </div>
       ) : (
-        <div className="mt-1 flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5">
           <p className="text-[11px] text-slate-600 dark:text-slate-300">
             {vote.active ? 'Voting open' : vote.revealed ? 'Results shown' : 'Voting ended'} ·{' '}
             <span className="font-semibold tabular-nums">{totalVotesCast}</span> cast ·{' '}

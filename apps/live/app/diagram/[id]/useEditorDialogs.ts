@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Top-level modal/dialog visibility for the editor: Search, Shortcuts,
 // Settings, the Share dialog, and the per-tab Export / Import dialogs.
@@ -9,7 +9,22 @@ export function useEditorDialogs() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  // `?share=1` deep-link (the Explorer's "Manage Sharing…" row opens the
+  // diagram with this param): land with the Share dialog already open.
+  const [shareDialogOpen, setShareDialogOpen] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      new URL(window.location.href).searchParams.get('share') === '1',
+  );
+  // Strip the param after consuming it so a refresh / back doesn't keep
+  // reopening the dialog, leaving the diagram URL clean.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('share') !== '1') return;
+    url.searchParams.delete('share');
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }, []);
   // The right-click Canvas/Theme dialog (spec/42). null = closed; the
   // value is which tab it opened on. A single flag drives both the open
   // state and the active tab.

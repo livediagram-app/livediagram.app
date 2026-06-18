@@ -23,7 +23,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from './InlineRenameInput';
-import { MenuItem, PortalMenu } from './PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuGroupSeparator,
+  MenuItem,
+  MenuTile,
+  MenuToolbar,
+  MenuToolButton,
+  PortalMenu,
+} from './PortalMenu';
 import { Tooltip } from './Tooltip';
 import {
   ChevronIcon,
@@ -589,12 +597,28 @@ export function DiagramRow({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  // Which menu category is open — at most one at a time (matches the tab /
+  // element context menus).
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const sectionProps = (id: string) => ({
+    open: openSection === id,
+    onToggle: () => setOpenSection((s) => (s === id ? null : id)),
+    flush: true,
+  });
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   const commitRename = (name: string) => {
     const next = name.trim();
     if (next && next !== item.name && onRename) onRename(next);
     setEditing(false);
+  };
+
+  // "Manage Sharing…" opens the diagram with the Share dialog already up
+  // (the editor reads `?share=1`); sharing lives in the editor's full Share
+  // dialog rather than being reimplemented in the panel.
+  const openShareSettings = () => {
+    if (typeof window === 'undefined') return;
+    window.location.assign(`${window.location.origin}/diagram/${item.id}?share=1`);
   };
 
   const hasMenu = Boolean((onRename && active) || onDelete || onDuplicate || onMoveRequest);
@@ -724,62 +748,103 @@ export function DiagramRow({
         <PortalMenu
           anchor={menuButtonRef.current}
           placement="below"
-          onClose={() => setMenuOpen(false)}
+          onClose={() => {
+            setMenuOpen(false);
+            setOpenSection(null);
+          }}
         >
-          {!active ? (
-            <MenuItem
-              icon={<OpenIcon />}
-              label="Open"
-              onClick={() => {
-                onOpen();
-                setMenuOpen(false);
-              }}
-            />
-          ) : null}
-          {active && onRename ? (
-            <MenuItem
-              icon={<PencilIcon />}
-              label="Rename"
-              onClick={() => {
-                setEditing(true);
-                setMenuOpen(false);
-              }}
-            />
-          ) : null}
-          {onDuplicate ? (
-            <MenuItem
-              icon={<DuplicateIcon />}
-              label="Duplicate"
-              onClick={() => {
-                onDuplicate();
-                setMenuOpen(false);
-              }}
-            />
-          ) : null}
+          {/* Quick-action toolbar (matches the tab context menu): the verbs
+              reached for most often as a compact icon row, Delete pinned to
+              the right edge. The verbose actions group into the categories
+              below. */}
+          <MenuToolbar>
+            {!active ? (
+              <MenuToolButton
+                icon={<OpenIcon />}
+                label="Open"
+                description="Open this diagram."
+                onClick={() => {
+                  onOpen();
+                  setMenuOpen(false);
+                }}
+              />
+            ) : null}
+            {active && onRename ? (
+              <MenuToolButton
+                icon={<PencilIcon />}
+                label="Rename"
+                description="Rename this diagram."
+                onClick={() => {
+                  setEditing(true);
+                  setMenuOpen(false);
+                }}
+              />
+            ) : null}
+            {onDuplicate ? (
+              <MenuToolButton
+                icon={<DuplicateIcon />}
+                label="Duplicate"
+                description="Create a copy of this diagram."
+                onClick={() => {
+                  onDuplicate();
+                  setMenuOpen(false);
+                }}
+              />
+            ) : null}
+            {onDelete ? (
+              <div className="ml-auto">
+                <MenuToolButton
+                  icon={<TrashIcon />}
+                  label="Delete"
+                  description="Delete this diagram. It can't be recovered."
+                  danger
+                  onClick={() => {
+                    // Hand the menu button up as the anchor so the panel can
+                    // open the delete-confirm popover beside it (same pattern
+                    // as Move to folder…).
+                    onDelete(menuButtonRef.current);
+                    setMenuOpen(false);
+                  }}
+                />
+              </div>
+            ) : null}
+          </MenuToolbar>
+          {/* Separator under the toolbar (matches the tab context menu). */}
+          <MenuGroupSeparator />
           {onMoveRequest ? (
-            <MenuItem
+            <MenuAccordionSection
+              title="Organise"
               icon={<FolderIcon />}
-              label="Change Folder"
-              onClick={() => {
-                onMoveRequest(menuButtonRef.current);
-                setMenuOpen(false);
-              }}
-            />
+              {...sectionProps('organise')}
+            >
+              <div className="px-2 py-1.5">
+                <MenuTile
+                  icon={<FolderIcon />}
+                  label="Change Folder"
+                  onClick={() => {
+                    onMoveRequest(menuButtonRef.current);
+                    setMenuOpen(false);
+                  }}
+                />
+              </div>
+            </MenuAccordionSection>
           ) : null}
-          {onDelete ? (
-            <MenuItem
-              icon={<TrashIcon />}
-              label="Delete"
-              danger
-              onClick={() => {
-                // Hand the menu button up as the anchor so the panel can
-                // open the delete-confirm popover beside it (same pattern
-                // as Move to folder…).
-                onDelete(menuButtonRef.current);
-                setMenuOpen(false);
-              }}
-            />
-          ) : null}
+          <MenuAccordionSection
+            title="Share"
+            icon={<SharedDiagramIcon />}
+            {...sectionProps('share')}
+          >
+            <div className="px-2 py-1.5">
+              <MenuTile
+                icon={<SharedDiagramIcon />}
+                label={item.shareCode ? 'Manage Sharing' : 'Share'}
+                onClick={() => {
+                  openShareSettings();
+                  setMenuOpen(false);
+                }}
+              />
+            </div>
+          </MenuAccordionSection>
         </PortalMenu>
       ) : null}
     </div>

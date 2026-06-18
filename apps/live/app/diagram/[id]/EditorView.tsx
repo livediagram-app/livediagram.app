@@ -104,6 +104,7 @@ export function EditorView() {
     embedMode,
     applyImageToElement,
     autoAlignTab,
+    autoLayoutTab,
     startTimer,
     pauseTimer,
     resumeTimer,
@@ -1015,6 +1016,7 @@ export function EditorView() {
               track('UI', 'Opened', 'CanvasStyle');
             },
             onAutoAlign: autoAlignTab,
+            onAutoLayout: autoLayoutTab,
             font: activeTab.font ?? null,
             onSetFont: setTabFont,
             defaultTextSize: activeTab.defaultTextSize,
