@@ -164,6 +164,8 @@ type EditorContextMenuProps = {
   onSetIconAnimationSpeed: (value: AnimationSpeed) => void;
   onSetProgress: (value: number) => void;
   onSetProgressAnim: (value: ProgressAnim | null) => void;
+  onSetProgressAnimSpeed: (value: AnimationSpeed) => void;
+  onSetProgressAnimRepeat: (value: boolean) => void;
   onSetAnimationSpeed: (value: AnimationSpeed) => void;
   onSetFlowSpeed: (value: AnimationSpeed) => void;
   onResetColors: () => void;
@@ -629,7 +631,14 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             />
             <ProgressAnimTiles
               anim={(target as ShapeElement).progressAnim ?? null}
+              speed={(target as ShapeElement).progressAnimSpeed ?? 'normal'}
+              repeat={
+                (target as ShapeElement).progressAnimRepeat ??
+                (target as ShapeElement).progressAnim !== 'fill'
+              }
               onSet={props.onSetProgressAnim}
+              onSetSpeed={props.onSetProgressAnimSpeed}
+              onSetRepeat={props.onSetProgressAnimRepeat}
             />
           </MenuAccordionSection>
         ) : null}
@@ -1403,25 +1412,48 @@ function ProgressRow({ value, onChange }: { value: number; onChange: (v: number)
   );
 }
 
-// Progress fill-animation tiles (spec/46): None / Fill / Pulse / Stripes.
+// Progress fill-animation tiles (spec/46): None / Fill / Pulse / Stripes, plus
+// a Speed row + a Repeat toggle once an animation is picked. `fill` defaults to
+// playing once and holding (Repeat off); pulse / stripes default to looping.
 function ProgressAnimTiles({
   anim,
+  speed,
+  repeat,
   onSet,
+  onSetSpeed,
+  onSetRepeat,
 }: {
   anim: ProgressAnim | null;
+  speed: AnimationSpeed;
+  repeat: boolean;
   onSet: (v: ProgressAnim | null) => void;
+  onSetSpeed: (v: AnimationSpeed) => void;
+  onSetRepeat: (v: boolean) => void;
 }) {
   return (
-    <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-      {([null, ...PROGRESS_ANIMS] as (ProgressAnim | null)[]).map((v) => (
-        <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
-          <span className="flex flex-col items-center gap-0.5">
-            <ProgressAnimKindGlyph kind={v} />
-            <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
-          </span>
-        </SizeButton>
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
+        {([null, ...PROGRESS_ANIMS] as (ProgressAnim | null)[]).map((v) => (
+          <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
+            <span className="flex flex-col items-center gap-0.5">
+              <ProgressAnimKindGlyph kind={v} />
+              <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
+            </span>
+          </SizeButton>
+        ))}
+      </div>
+      {anim ? (
+        <>
+          <SpeedTiles value={speed} onSet={onSetSpeed} />
+          <MenuToggleRow
+            label="Repeat"
+            description="Loop the animation instead of playing it once."
+            checked={repeat}
+            onToggle={() => onSetRepeat(!repeat)}
+          />
+        </>
+      ) : null}
+    </>
   );
 }
 

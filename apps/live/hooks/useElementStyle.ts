@@ -542,6 +542,30 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     );
     track('Element', 'Changed', 'ProgressAnim');
   };
+  const setProgressAnimSpeedSelected = (value: AnimationSpeed) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && isProgressShape(el.shape)
+          ? { ...el, progressAnimSpeed: value }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'ProgressAnim');
+  };
+  const setProgressAnimRepeatSelected = (value: boolean) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && isProgressShape(el.shape)
+          ? { ...el, progressAnimRepeat: value }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'ProgressAnim');
+  };
   const setAnimationSpeedSelected = (value: AnimationSpeed) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -671,6 +695,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setIconAnimationSpeedSelected,
     setProgressSelected,
     setProgressAnimSelected,
+    setProgressAnimSpeedSelected,
+    setProgressAnimRepeatSelected,
     setAnimationSpeedSelected,
     setFlowSpeedSelected,
     resetColorsSelected,

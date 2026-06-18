@@ -114,12 +114,14 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   }
   // Progress ring is drawn as a donut, so lock the aspect ratio to keep it
   // circular. Both progress kinds start half-filled so the fill is visible the
-  // moment they're dropped.
+  // moment they're dropped, and default to the `fill` animation — which plays
+  // once on drop and holds the filled state (it doesn't loop), so a freshly
+  // dropped progress element animates in and stays done.
   if (kind === 'progress-ring') {
-    return { ...base, aspectLocked: true, progress: 50 };
+    return { ...base, aspectLocked: true, progress: 50, progressAnim: 'fill' };
   }
   if (kind === 'progress-bar') {
-    return { ...base, progress: 50 };
+    return { ...base, progress: 50, progressAnim: 'fill' };
   }
   return base;
 }

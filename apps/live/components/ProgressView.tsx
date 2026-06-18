@@ -9,7 +9,20 @@
 
 import { useId } from 'react';
 
-import type { ShapeElement } from '@livediagram/diagram';
+import { ANIMATION_SPEED_FACTOR, type ShapeElement } from '@livediagram/diagram';
+
+// The speed + iteration custom properties the `lvd-prog-*` keyframes read.
+// `fill` defaults to playing once and holding; `pulse` / `stripes` default to
+// looping. The per-element `progressAnimRepeat` toggle overrides.
+function progressAnimStyle(el: ShapeElement): React.CSSProperties | undefined {
+  const anim = el.progressAnim;
+  if (!anim) return undefined;
+  const loops = el.progressAnimRepeat ?? anim !== 'fill';
+  return {
+    '--lvd-prog-speed': ANIMATION_SPEED_FACTOR[el.progressAnimSpeed ?? 'normal'],
+    '--lvd-prog-iter': loops ? 'infinite' : 1,
+  } as React.CSSProperties;
+}
 
 // Map a progress animation to its fill class. The bar fill and the ring arc
 // use different keyframes for "fill" / "stripes" (a div transform / background
@@ -37,6 +50,7 @@ export function ProgressView({
 }) {
   const pct = Math.max(0, Math.min(100, Math.round(element.progress ?? 50)));
   const anim = element.progressAnim;
+  const animStyle = progressAnimStyle(element);
 
   const label = (
     <div
@@ -56,7 +70,7 @@ export function ProgressView({
         >
           <div
             className={`h-full rounded-full ${barFillClass(anim) ?? ''}`}
-            style={{ width: `${pct}%`, backgroundColor: accent }}
+            style={{ width: `${pct}%`, backgroundColor: accent, ...animStyle }}
           />
         </div>
         {label}
@@ -64,7 +78,16 @@ export function ProgressView({
     );
   }
 
-  return <ProgressRing pct={pct} anim={anim} accent={accent} track={track} labelNode={label} />;
+  return (
+    <ProgressRing
+      pct={pct}
+      anim={anim}
+      accent={accent}
+      track={track}
+      labelNode={label}
+      animStyle={animStyle}
+    />
+  );
 }
 
 // Donut ring: a track circle + a progress arc. pathLength is normalised to 100
@@ -78,12 +101,15 @@ function ProgressRing({
   accent,
   track,
   labelNode,
+  animStyle,
 }: {
   pct: number;
   anim: ShapeElement['progressAnim'];
   accent: string;
   track: string;
   labelNode: React.ReactNode;
+  // Speed / iteration custom properties for the ring's animation class.
+  animStyle?: React.CSSProperties;
 }) {
   const maskId = `lvd-prog-mask-${useId().replace(/:/g, '')}`;
   const STROKE = 13;
@@ -124,6 +150,7 @@ function ProgressRing({
               strokeLinecap="butt"
               strokeDasharray="4 3"
               mask={`url(#${maskId})`}
+              style={animStyle}
             />
           </>
         ) : (
@@ -138,7 +165,7 @@ function ProgressRing({
             }
             strokeDasharray={`${pct} 100`}
             transform="rotate(-90 50 50)"
-            style={{ '--lvd-progress': pct } as React.CSSProperties}
+            style={{ '--lvd-progress': pct, ...animStyle } as React.CSSProperties}
           />
         )}
       </svg>

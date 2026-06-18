@@ -54,6 +54,14 @@ export type ShapeElement = {
   // Edited from the element's context menu.
   progress?: number;
   progressAnim?: ProgressAnim;
+  // Loop speed for `progressAnim` (slow / normal / fast), same multiplier as
+  // boxed-element animations. Undefined = normal.
+  progressAnimSpeed?: AnimationSpeed;
+  // Whether the animation repeats. `fill` defaults to playing ONCE and holding
+  // the filled state (so a dropped progress bar fills in and stays done, not a
+  // perpetual loop); `pulse` / `stripes` are continuous and default to looping.
+  // The context-menu toggle overrides this per element.
+  progressAnimRepeat?: boolean;
   x: number;
   y: number;
   width: number;

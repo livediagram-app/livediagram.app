@@ -873,9 +873,14 @@
     transform: scaleX(1);
   }
 }
+/* Progress fill durations scale with --lvd-prog-speed; --lvd-prog-iter is the
+ * iteration count (1 for play-once, infinite to loop) set inline from
+ * progressAnimRepeat. `forwards` holds the grown state so a one-shot fill stays
+ * full instead of snapping back. */
 .lvd-prog-grow {
   transform-origin: left center;
-  animation: lvd-prog-grow 1.8s ease-out infinite;
+  animation: lvd-prog-grow calc(1.8s * var(--lvd-prog-speed, 1)) ease-out var(--lvd-prog-iter, 1)
+    forwards;
 }
 @keyframes lvd-prog-pulse {
   0%,
@@ -887,7 +892,8 @@
   }
 }
 .lvd-prog-pulse {
-  animation: lvd-prog-pulse 1.4s ease-in-out infinite;
+  animation: lvd-prog-pulse calc(1.4s * var(--lvd-prog-speed, 1)) ease-in-out
+    var(--lvd-prog-iter, infinite);
 }
 @keyframes lvd-prog-stripes {
   from {
@@ -906,7 +912,8 @@
     transparent 12px
   );
   background-size: 22px 22px;
-  animation: lvd-prog-stripes 0.6s linear infinite;
+  animation: lvd-prog-stripes calc(0.6s * var(--lvd-prog-speed, 1)) linear
+    var(--lvd-prog-iter, infinite);
 }
 @keyframes lvd-prog-ring-grow {
   from {
@@ -917,7 +924,8 @@
   }
 }
 .lvd-prog-ring-grow {
-  animation: lvd-prog-ring-grow 1.8s ease-out infinite;
+  animation: lvd-prog-ring-grow calc(1.8s * var(--lvd-prog-speed, 1)) ease-out
+    var(--lvd-prog-iter, 1) forwards;
 }
 @keyframes lvd-prog-ring-stripes {
   to {
@@ -925,7 +933,8 @@
   }
 }
 .lvd-prog-ring-stripes {
-  animation: lvd-prog-ring-stripes 0.6s linear infinite;
+  animation: lvd-prog-ring-stripes calc(0.6s * var(--lvd-prog-speed, 1)) linear
+    var(--lvd-prog-iter, infinite);
 }
 
 @media (prefers-reduced-motion: reduce) {
