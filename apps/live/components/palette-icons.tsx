@@ -416,6 +416,31 @@ export function LaserIcon() {
   );
 }
 
+// Isometric view tool (spec/45): a cube drawn in isometric projection —
+// a top rhombus plus the two front faces — signalling "see the diagram in
+// 3-D, tilted". The shared vertical edge hints at the extruded depth.
+export function IsometricIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* top face (rhombus) */}
+      <path d="M8 1.8l5.2 3v0L8 7.8 2.8 4.8z" />
+      {/* left + right front faces share the centre vertical edge */}
+      <path d="M2.8 4.8v5.4L8 13.2v-5.4" />
+      <path d="M13.2 4.8v5.4L8 13.2" />
+    </svg>
+  );
+}
+
 // Eraser tool (spec/09): a tilted block eraser sitting on the canvas
 // baseline. The diagonal band reads as the eraser's two-tone body.
 export function EraserIcon() {

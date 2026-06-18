@@ -49,6 +49,8 @@ const EMPTY_ID_SET: Set<string> = new Set();
 
 import { CanvasChrome } from './CanvasChrome';
 import { CanvasElementsLayer } from './CanvasElementsLayer';
+import { IsometricDepthLayer } from './IsometricDepthLayer';
+import { ISO_TILT_TRANSFORM } from '@/lib/isometric';
 import { SpotlightOverlay } from './SpotlightOverlay';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import { Portal } from './Portal';
@@ -817,7 +819,11 @@ export function Canvas(props: CanvasProps) {
         // would fall into the marquee branch below and paint a
         // selection rectangle while the user is presenting.
         if (laserOnTouch) return;
-        const wantsPan = spaceHeldRef.current || canvasTool === 'pan' || canvasTool === 'laser';
+        const wantsPan =
+          spaceHeldRef.current ||
+          canvasTool === 'pan' ||
+          canvasTool === 'laser' ||
+          canvasTool === 'isometric';
         if (wantsPan) {
           setPan({
             startClientX: e.clientX,
@@ -913,7 +919,11 @@ export function Canvas(props: CanvasProps) {
           // laser samples. See the outer handler above for the
           // matching short-circuit.
           if (laserOnTouch) return;
-          const wantsPan = spaceHeldRef.current || canvasTool === 'pan' || canvasTool === 'laser';
+          const wantsPan =
+            spaceHeldRef.current ||
+            canvasTool === 'pan' ||
+            canvasTool === 'laser' ||
+            canvasTool === 'isometric';
           if (wantsPan) {
             setPan({
               startClientX: e.clientX,
@@ -948,13 +958,22 @@ export function Canvas(props: CanvasProps) {
         // click vs pointerdown). Clicks then fall through to <main>, where the
         // capture handler turns them into grow / shrink, and middle-mouse or
         // held-Space still pans.
+        // Isometric view (spec/45): like Spotlight, the layer goes
+        // pointer-events-none so NO element kind can be selected / dragged —
+        // it's a read-only view tool. Clicks fall through to <main>, where a
+        // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
         className={`absolute inset-0 origin-center touch-none ${
-          canvasTool === 'spotlight' ? 'pointer-events-none' : ''
+          canvasTool === 'spotlight' || canvasTool === 'isometric' ? 'pointer-events-none' : ''
         } ${pendingDraw ? '' : cursorClass}`}
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
-          transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+          // Isometric tilt (spec/45) is placed OUTERMOST so pan + zoom behave
+          // exactly as in 2D and the tilt is a pure post-effect about the
+          // centre; preserve-3d lets the depth layer's translateZ stack read
+          // as real extruded height.
+          transform: `${canvasTool === 'isometric' ? `${ISO_TILT_TRANSFORM} ` : ''}scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+          ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
           // Draw-mode cursor: every intent gets a custom inline-SVG
           // cursor (crosshair at the pointer tip plus a small glyph
           // hinting at what's about to land). Without this, tool
@@ -964,6 +983,10 @@ export function Canvas(props: CanvasProps) {
           ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
         }}
       >
+        {/* Isometric extrusion (spec/45): per-element raised blocks painted
+            behind the real element layer, which caps each column at z=0.
+            Only mounted while the tool is active. */}
+        {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
         <CanvasElementsLayer
           {...props}
           hasArrows={hasArrows}

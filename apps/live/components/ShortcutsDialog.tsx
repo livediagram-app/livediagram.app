@@ -43,6 +43,7 @@ const SECTIONS: ShortcutSection[] = [
     rows: [
       { keys: ['S'], label: 'Select tool' },
       { keys: ['P'], label: 'Hand tool' },
+      { keys: ['I'], label: 'Isometric view' },
       { keys: ['L'], label: 'Laser pointer' },
       { keys: ['E'], label: 'Eraser (click / drag to delete)' },
       { keys: ['F'], label: 'Pencil (freehand)' },

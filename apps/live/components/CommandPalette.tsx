@@ -6,7 +6,14 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { MovablePanel } from './MovablePanel';
 import { PaletteTabBar } from './PaletteTabBar';
 import { PaletteDropdown } from './PaletteDropdown';
-import { EraserIcon, LaserIcon, PanIcon, SelectIcon, SpotlightIcon } from './palette-icons';
+import {
+  EraserIcon,
+  IsometricIcon,
+  LaserIcon,
+  PanIcon,
+  SelectIcon,
+  SpotlightIcon,
+} from './palette-icons';
 import { Tooltip } from './Tooltip';
 import { ICON_CATALOG, ICON_CATEGORIES, ICON_DND_MIME, iconsInCategory } from '@/lib/icons';
 import {
@@ -18,7 +25,7 @@ import {
 import { IconPrims } from './icon-glyph';
 import { TechIconArt } from './tech-icon-glyph';
 
-export type CanvasTool = 'pan' | 'select' | 'laser' | 'spotlight' | 'eraser';
+export type CanvasTool = 'pan' | 'select' | 'laser' | 'spotlight' | 'eraser' | 'isometric';
 
 type CommandPaletteProps = {
   position: { x: number; y: number } | null;
@@ -359,6 +366,12 @@ export function CommandPalette({
               options={[
                 { id: 'select', label: 'Select', shortcut: 'S', icon: <SelectIcon /> },
                 { id: 'pan', label: 'Hand', shortcut: 'P', icon: <PanIcon /> },
+                {
+                  id: 'isometric',
+                  label: 'Isometric',
+                  shortcut: 'I',
+                  icon: <IsometricIcon />,
+                },
                 { id: 'laser', label: 'Laser', shortcut: 'L', icon: <LaserIcon /> },
                 // Spotlight is desktop-only (hover + click-to-resize don't map
                 // to touch); omitted on mobile viewports.

@@ -52,6 +52,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 41  | [Technology icons](41-technology-icons.md)                         | Technology palette category: full-colour AWS / Azure / generic-infra brand icons for architecture diagrams |
 | 42  | [Canvas + theme dialog](42-canvas-and-theme-dialog.md)             | Right-click Change Canvas / Change Theme open a modal with Canvas + Theme tabs (category-browse themes)    |
 | 44  | [Custom themes](44-custom-themes.md)                               | Build + save your own themes (owner-scoped, D1-backed); reuse + edit from Tab Appearance and the Explorer  |
+| 45  | [Isometric view](45-isometric-view.md)                             | Navigation tool that tilts the tab into an isometric, extruded-depth view; pans like Hand, read-only       |
 
 ## Workflow
 

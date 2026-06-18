@@ -48,6 +48,10 @@ export function canvasCursorClass(input: {
   // Eraser shows a custom eraser glyph (see .cursor-eraser in globals.css),
   // unless Space is held for a temporary pan.
   if (canvasTool === 'eraser' && !spaceHeld) return 'cursor-eraser';
+  // Isometric view (spec/45) is navigation-only: it pans like Hand, so it
+  // shares the grab cursor (grabbing while dragging is handled by the `pan`
+  // branch above).
+  if (canvasTool === 'isometric' && !spaceHeld) return 'cursor-grab';
   if (canvasTool === 'pan' && !spaceHeld) return 'cursor-grab';
   if (canvasTool === 'select') return 'cursor-crosshair';
   if (isPaintMode) return 'cursor-copy';

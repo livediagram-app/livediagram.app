@@ -18,7 +18,7 @@
 
 import { useEffect, useRef } from 'react';
 
-type CanvasTool = 'pan' | 'select' | 'laser' | 'eraser';
+type CanvasTool = 'pan' | 'select' | 'laser' | 'eraser' | 'isometric';
 
 // Shape kinds that have a single-key palette shortcut: the common
 // flowchart set. The rest of the ShapeKind union (stadium, document,
@@ -348,6 +348,14 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (lower === 'l') {
         e.preventDefault();
         live.setCanvasTool('laser');
+        return;
+      }
+      // I = Isometric view (spec/45). A non-mutating view tool (pans like
+      // Hand), so it sits with the other S / P / L switches above the
+      // read-only gate — view-role visitors can tilt the diagram too.
+      if (lower === 'i') {
+        e.preventDefault();
+        live.setCanvasTool('isometric');
         return;
       }
       // Zen / focus mode (spec/26). Before the read-only gate so
