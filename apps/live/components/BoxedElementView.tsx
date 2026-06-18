@@ -586,6 +586,7 @@ function BoxedElementViewImpl({
           iconId={element.iconId}
           hasLabel={(element.label ?? '').trim().length > 0}
           animation={element.iconAnimation}
+          animationSpeed={element.iconAnimationSpeed}
         />
       ) : element.type === 'shape' && element.shape === 'icon' ? (
         // Curated glyph: line art tinted by the element's stroke
@@ -600,6 +601,7 @@ function BoxedElementViewImpl({
           // Per-icon looping animation (spec/09). Picked from the icon context
           // menu; undefined = static.
           animation={element.iconAnimation}
+          animationSpeed={element.iconAnimationSpeed}
         />
       ) : element.type === 'shape' && isProgressShape(element.shape) ? (
         // Progress elements (spec/46): a bar / donut showing element.progress.

@@ -161,6 +161,7 @@ type EditorContextMenuProps = {
   onSetAnimation: (value: ElementAnimation | null) => void;
   onSetArrowFlow: (value: ArrowFlow | null) => void;
   onSetIconAnimation: (value: IconAnimation | null) => void;
+  onSetIconAnimationSpeed: (value: AnimationSpeed) => void;
   onSetProgress: (value: number) => void;
   onSetProgressAnim: (value: ProgressAnim | null) => void;
   onSetAnimationSpeed: (value: AnimationSpeed) => void;
@@ -640,7 +641,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               // instead of the boxed-element animation set.
               <IconAnimationTiles
                 animation={(target as { iconAnimation?: IconAnimation }).iconAnimation ?? null}
+                speed={
+                  (target as { iconAnimationSpeed?: AnimationSpeed }).iconAnimationSpeed ?? 'normal'
+                }
                 onSet={props.onSetIconAnimation}
+                onSetSpeed={props.onSetIconAnimationSpeed}
               />
             ) : (
               <AnimationTiles
@@ -1301,25 +1306,33 @@ function FlowTiles({
 
 // Icon Animation control (spec/09): icons get their own glyph-motion set
 // (Spin / Beat / Pulse / Bounce / Wiggle / Flash / Tada) instead of the
-// boxed-element animation set. Icon speed is fixed, so there's no Speed row.
+// boxed-element animation set. Like the boxed Animation + arrow Flow controls,
+// a Speed row appears once a motion is picked.
 function IconAnimationTiles({
   animation,
+  speed,
   onSet,
+  onSetSpeed,
 }: {
   animation: IconAnimation | null;
+  speed: AnimationSpeed;
   onSet: (v: IconAnimation | null) => void;
+  onSetSpeed: (v: AnimationSpeed) => void;
 }) {
   return (
-    <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-      {([null, ...ICON_ANIMATIONS] as (IconAnimation | null)[]).map((v) => (
-        <SizeButton key={v ?? 'none'} active={animation === v} onClick={() => onSet(v)}>
-          <span className="flex flex-col items-center gap-0.5">
-            <IconAnimKindGlyph kind={v} />
-            <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
-          </span>
-        </SizeButton>
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
+        {([null, ...ICON_ANIMATIONS] as (IconAnimation | null)[]).map((v) => (
+          <SizeButton key={v ?? 'none'} active={animation === v} onClick={() => onSet(v)}>
+            <span className="flex flex-col items-center gap-0.5">
+              <IconAnimKindGlyph kind={v} />
+              <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
+            </span>
+          </SizeButton>
+        ))}
+      </div>
+      {animation ? <SpeedTiles value={speed} onSet={onSetSpeed} /> : null}
+    </>
   );
 }
 

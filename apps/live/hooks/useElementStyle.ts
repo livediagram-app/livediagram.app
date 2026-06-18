@@ -501,6 +501,20 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     );
     track('Element', 'Changed', 'IconAnimation');
   };
+  // Loop speed for an icon's animation (slow / normal / fast), mirroring
+  // setAnimationSpeedSelected for boxed elements.
+  const setIconAnimationSpeedSelected = (value: AnimationSpeed) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'icon'
+          ? { ...el, iconAnimationSpeed: value }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'IconAnimation');
+  };
   // Progress elements (spec/46). The percentage + how its fill animates;
   // both apply only to progress shapes. `null` clears the animation.
   const setProgressSelected = (value: number) => {
@@ -654,6 +668,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setAnimationSelected,
     setArrowFlowSelected,
     setIconAnimationSelected,
+    setIconAnimationSpeedSelected,
     setProgressSelected,
     setProgressAnimSelected,
     setAnimationSpeedSelected,

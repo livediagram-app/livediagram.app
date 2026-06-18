@@ -288,6 +288,7 @@ export function EditorView() {
     setAnimationSelected,
     setArrowFlowSelected,
     setIconAnimationSelected,
+    setIconAnimationSpeedSelected,
     setProgressSelected,
     setProgressAnimSelected,
     setAnimationSpeedSelected,
@@ -1236,6 +1237,7 @@ export function EditorView() {
           onSetAnimation={setAnimationSelected}
           onSetArrowFlow={setArrowFlowSelected}
           onSetIconAnimation={setIconAnimationSelected}
+          onSetIconAnimationSpeed={setIconAnimationSpeedSelected}
           onSetProgress={setProgressSelected}
           onSetProgressAnim={setProgressAnimSelected}
           onSetAnimationSpeed={setAnimationSpeedSelected}

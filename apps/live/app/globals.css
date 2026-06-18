@@ -836,26 +836,29 @@
   transform-box: fill-box;
   transform-origin: center;
 }
+/* --lvd-icon-anim-speed (set inline from iconAnimationSpeed) scales every
+ * icon-animation duration the same way --lvd-anim-speed does for boxed
+ * elements: slow = 2, normal = 1, fast = 0.5. */
 .lvd-icon-spin {
-  animation: lvd-icon-spin 1.1s linear infinite;
+  animation: lvd-icon-spin calc(1.1s * var(--lvd-icon-anim-speed, 1)) linear infinite;
 }
 .lvd-icon-beat {
-  animation: lvd-icon-beat 1.1s ease-in-out infinite;
+  animation: lvd-icon-beat calc(1.1s * var(--lvd-icon-anim-speed, 1)) ease-in-out infinite;
 }
 .lvd-icon-pulse {
-  animation: lvd-icon-pulse 1.6s ease-in-out infinite;
+  animation: lvd-icon-pulse calc(1.6s * var(--lvd-icon-anim-speed, 1)) ease-in-out infinite;
 }
 .lvd-icon-bounce {
-  animation: lvd-icon-bounce 0.9s ease-in-out infinite;
+  animation: lvd-icon-bounce calc(0.9s * var(--lvd-icon-anim-speed, 1)) ease-in-out infinite;
 }
 .lvd-icon-wiggle {
-  animation: lvd-icon-wiggle 0.8s ease-in-out infinite;
+  animation: lvd-icon-wiggle calc(0.8s * var(--lvd-icon-anim-speed, 1)) ease-in-out infinite;
 }
 .lvd-icon-flash {
-  animation: lvd-icon-flash 1.4s ease-in-out infinite;
+  animation: lvd-icon-flash calc(1.4s * var(--lvd-icon-anim-speed, 1)) ease-in-out infinite;
 }
 .lvd-icon-tada {
-  animation: lvd-icon-tada 1.4s ease-in-out infinite;
+  animation: lvd-icon-tada calc(1.4s * var(--lvd-icon-anim-speed, 1)) ease-in-out infinite;
 }
 
 /* Progress elements (spec/46): animate HOW the fill behaves. 'fill' grows it

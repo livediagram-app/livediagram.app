@@ -132,7 +132,8 @@ export const ANIMATION_SPEED_FACTOR: Record<AnimationSpeed, number> = {
 // hard-wired to a few icon ids and always-on). 'spin' rotates, 'beat' is the
 // heart double-pump (scale), 'pulse' breathes opacity, 'bounce' bobs, 'wiggle'
 // tilts, 'flash' blinks, 'tada' is a celebratory scale + rotate. Undefined =
-// static. Mapped to a `lvd-icon-*` class; icon speed is fixed (no speed row).
+// static. Mapped to a `lvd-icon-*` class; loop speed comes from the separate
+// `iconAnimationSpeed` field (slow / normal / fast), same as boxed elements.
 export type IconAnimation = 'spin' | 'beat' | 'pulse' | 'bounce' | 'wiggle' | 'flash' | 'tada';
 export const ICON_ANIMATIONS: readonly IconAnimation[] = [
   'spin',

@@ -9,10 +9,20 @@
 // this paints the tile fill from the catalogue and the glyph in white,
 // ignoring the element's stroke colour entirely.
 
-import type { IconAnimation } from '@livediagram/diagram';
+import {
+  ANIMATION_SPEED_FACTOR,
+  type AnimationSpeed,
+  type IconAnimation,
+} from '@livediagram/diagram';
 
 import { iconAnimationClass } from '@/lib/icons';
 import { getTechIcon } from '@/lib/tech-icons';
+
+// Duration multiplier exposed to the `lvd-icon-*` keyframes (see icon-glyph).
+function iconSpeedStyle(speed: AnimationSpeed | undefined): React.CSSProperties | undefined {
+  if (!speed || speed === 'normal') return undefined;
+  return { '--lvd-icon-anim-speed': ANIMATION_SPEED_FACTOR[speed] } as React.CSSProperties;
+}
 
 // The white line-art group the glyph markup sits in. A bare path/circle in
 // the markup strokes white; a filled mark sets fill="#fff" stroke="none"
@@ -53,12 +63,15 @@ export function TechIconGlyph({
   iconId,
   hasLabel = false,
   animation,
+  animationSpeed,
 }: {
   iconId: string | undefined;
   hasLabel?: boolean;
   // Per-icon looping animation (spec/09); undefined = static. Wraps the whole
   // tile + glyph so a brand mark spins / beats as one.
   animation?: IconAnimation;
+  // Loop speed for the animation (slow / normal / fast); undefined = normal.
+  animationSpeed?: AnimationSpeed;
 }) {
   const animClass = iconAnimationClass(animation);
   // With a label, pin the art to the TOP ~62% band (leaving the bottom for the
@@ -76,7 +89,7 @@ export function TechIconGlyph({
       aria-hidden
     >
       {animClass ? (
-        <g className={animClass}>
+        <g className={animClass} style={iconSpeedStyle(animationSpeed)}>
           <TechIconArt iconId={iconId} />
         </g>
       ) : (

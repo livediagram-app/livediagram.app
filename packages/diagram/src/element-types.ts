@@ -39,6 +39,10 @@ export type ShapeElement = {
   // wrapper ring / glow a shape uses. Undefined = static. Applied as a
   // `lvd-icon-*` CSS class on the glyph by IconGlyph / IconPrims.
   iconAnimation?: IconAnimation;
+  // Loop speed for `iconAnimation`, mirroring the boxed-element `animationSpeed`
+  // (slow / normal / fast → a duration multiplier fed to the `lvd-icon-*`
+  // keyframes via `--lvd-icon-anim-speed`). Undefined = normal.
+  iconAnimationSpeed?: AnimationSpeed;
   // Where the inline icon sits relative to the shape's text label (only
   // meaningful on a non-'icon' shape carrying an `iconId`). Defaults to
   // 'left' when unset. Chosen by which side of the shape the icon was
