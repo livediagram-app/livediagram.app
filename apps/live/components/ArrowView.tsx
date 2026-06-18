@@ -358,6 +358,13 @@ function ArrowViewImpl({
         }}
         onPointerDown={(e) => {
           longPress.onPointerDown(e);
+          // Secondary / middle button: don't select-or-drag here. Right-click
+          // is handled by onContextMenu (which preserves an active
+          // multi-selection via handleElementContextSelect); collapsing the
+          // selection on the right-click's pointerdown is what dropped the
+          // other selected arrows. Middle-click falls through to the canvas
+          // pan. Mirrors boxed elements, which never select on right-click.
+          if (e.button !== 0) return;
           e.stopPropagation();
           onSelect(arrow.id, e);
           // Translate gesture only fires when both ends are

@@ -284,13 +284,18 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           const showMultiAppearance =
             boxedSel.length > 0 || !!arrowSrc || colourable || borderableSel;
           const showMultiContent = !!arrowSrc || !!textSrc;
+          // A mixed shape + arrow selection would otherwise show two
+          // "Animation" categories (boxed animation + arrow flow). Disambiguate
+          // by kind only when both are present; on a single-kind selection the
+          // plain "Animation" reads fine.
+          const bothAnimated = boxedSel.length > 0 && !!arrowSrc;
           return (
             <>
               {/* Animation (spec/09) — applies to every boxed member of the
                   selection. */}
               {boxedSel.length ? (
                 <MenuAccordionSection
-                  title="Animation"
+                  title={bothAnimated ? 'Shape Animation' : 'Animation'}
                   icon={<AnimationMenuGlyph />}
                   {...sectionProps('m-animation')}
                 >
@@ -304,7 +309,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               ) : null}
               {arrowSrc ? (
                 <MenuAccordionSection
-                  title="Animation"
+                  title={bothAnimated ? 'Arrow Animation' : 'Animation'}
                   icon={<AnimationMenuGlyph />}
                   {...sectionProps('m-flow')}
                 >
