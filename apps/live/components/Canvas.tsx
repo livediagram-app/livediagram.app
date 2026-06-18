@@ -88,6 +88,7 @@ export function Canvas(props: CanvasProps) {
     onCanvasContextMenu,
     onElementContextMenu,
     onMultiContextMenu,
+    onOpenMultiContextMenu,
     onShiftSelect,
     onBeginFormatPainter,
     onBeginGroup,
@@ -1100,7 +1101,7 @@ export function Canvas(props: CanvasProps) {
               onGroup={props.onGroupMultiSelected}
               onToggleLock={props.onToggleLockMultiSelected}
               onExport={props.onExportMultiSelected}
-              onOpenContextMenu={readOnly ? undefined : onMultiContextMenu}
+              onOpenContextMenu={readOnly ? undefined : onOpenMultiContextMenu}
             />
           </FloatingToolbar>
         </div>

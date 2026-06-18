@@ -759,8 +759,19 @@ export function EditorView() {
         onMultiContextMenu={
           isReadOnly
             ? undefined
+            : // Right-click on a group / multi-selection always OPENS at the
+              // cursor (a direct set, like onElementContextMenu). A toggle here
+              // meant a lingering multi menu — which clicking elsewhere doesn't
+              // dismiss, since element pointerdown stops propagation — got
+              // closed by the next right-click instead of reopening, so the
+              // group menu "wouldn't open".
+              (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })
+        }
+        onOpenMultiContextMenu={
+          isReadOnly
+            ? undefined
             : (sx, sy) =>
-                // Toggle: the ⋯ button (and a repeat right-click) closes an
+                // Toggle: the selection toolbar's ⋯ button closes an
                 // already-open multi menu instead of reopening it.
                 setContextMenu((cur) =>
                   cur && cur.mode === 'multi' ? null : { mode: 'multi', x: sx, y: sy },

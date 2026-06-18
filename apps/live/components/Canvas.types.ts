@@ -248,8 +248,14 @@ export type CanvasProps = {
   // page opens an element context menu.
   onElementContextMenu?: (id: string, screenX: number, screenY: number) => void;
   // Right-click on a multi-selection or group: open a selection-wide menu
-  // (the page sets a 'multi' context-menu mode).
+  // (the page sets a 'multi' context-menu mode). Always OPENS at the cursor —
+  // mirrors onElementContextMenu, so re-right-clicking repositions rather than
+  // toggling closed.
   onMultiContextMenu?: (screenX: number, screenY: number) => void;
+  // Toggle variant for the selection toolbar's "More" ellipsis: opens the
+  // 'multi' menu, or closes it if already open (mirrors onOpenElementContextMenu
+  // for the single-element ellipsis).
+  onOpenMultiContextMenu?: (screenX: number, screenY: number) => void;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string, runs?: TextRun[]) => void;
