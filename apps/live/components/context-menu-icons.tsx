@@ -802,3 +802,79 @@ export function ProgressAnimKindGlyph({ kind }: { kind: ProgressAnim | null }) {
   if (kind === 'stripes') return <ProgAnimStripesGlyph />;
   return <AnimNoneGlyph />;
 }
+
+// Rectangle with corner ticks - the "lock aspect ratio" Layer-row glyph.
+export function AspectLockMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
+      <path d="M5 8.5v2.5h2.5M11 7.5V5H8.5" />
+    </svg>
+  );
+}
+
+// A serif "A" - the "Text" category glyph.
+export function TextGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <text
+        x="8"
+        y="12"
+        textAnchor="middle"
+        fontSize="13"
+        fontWeight="600"
+        fontFamily="Georgia, serif"
+      >
+        A
+      </text>
+    </svg>
+  );
+}
+
+// A star - the "Icon" category glyph (the un-slashed sibling of RemoveIconGlyph).
+export function IconCategoryGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
+    </svg>
+  );
+}
+
+// A star glyph with a slash - "remove the inline icon".
+export function RemoveIconGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
+      <path d="M2.5 13.5l11-11" />
+    </svg>
+  );
+}

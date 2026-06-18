@@ -67,9 +67,11 @@ import {
   UnderlineIcon,
 } from '@/components/palette-icons';
 import {
+  AspectLockMenuIcon,
   BorderGlyph,
   CommentMenuIcon,
   DirArrow,
+  IconCategoryGlyph,
   ImageGlyph,
   LayerDownIcon,
   LayersGlyph,
@@ -85,9 +87,11 @@ import {
   NoteMenuIcon,
   PaletteMenuIcon,
   PointerGlyph,
+  RemoveIconGlyph,
   RotationGlyph,
   SquareMenuIcon,
   TableGlyph,
+  TextGlyph,
 } from '@/components/context-menu-icons';
 import {
   MenuAccordionSection,
@@ -1481,45 +1485,6 @@ function OpacityRow({ value, onChange }: { value: number; onChange: (opacity: nu
   );
 }
 
-// Rectangle with corner ticks — "lock aspect ratio". 12x12 stroke style of
-// the shared context-menu icons.
-function AspectLockMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
-      <path d="M5 8.5v2.5h2.5M11 7.5V5H8.5" />
-    </svg>
-  );
-}
-
-// A serif "A" — the "Text" category glyph.
-function TextGlyph() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-      <text
-        x="8"
-        y="12"
-        textAnchor="middle"
-        fontSize="13"
-        fontWeight="600"
-        fontFamily="Georgia, serif"
-      >
-        A
-      </text>
-    </svg>
-  );
-}
-
 // A square toggle for the arrow Text category (B / I / U / S).
 function TextToggle({
   active,
@@ -1546,46 +1511,5 @@ function TextToggle({
     >
       {children}
     </button>
-  );
-}
-
-// Glyphs for the multi-selection menu (12px, context-menu stroke style).
-// A star — the "Icon" category glyph (the un-slashed sibling of
-// RemoveIconGlyph).
-function IconCategoryGlyph() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
-    </svg>
-  );
-}
-
-// A star glyph with a slash — "remove the inline icon". Matches the
-// 12x12 stroke style of the shared context-menu icons.
-function RemoveIconGlyph() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
-      <path d="M2.5 13.5l11-11" />
-    </svg>
   );
 }
