@@ -159,6 +159,13 @@ export function isProgressShape(kind: ShapeKind): boolean {
   return kind === 'progress-bar' || kind === 'progress-ring';
 }
 
+// Round a value to a whole 0–100 percentage. Shared by the progress setter,
+// the context-menu slider, and ProgressView so the clamp-and-round can't drift
+// (default applied by the caller before clamping).
+export function clampPercent(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
 // Flowing-arrow animation (spec/09): 'dashes' marches the dash pattern along
 // the connector (CSS stroke-dashoffset), 'dots' sends a dot travelling the
 // path (CSS offset-path), 'beads' marches a row of round dots, 'pulse' breathes

@@ -20,6 +20,7 @@
 import {
   ARROW_THICKNESS_PX,
   bringManyToFront,
+  clampPercent,
   isBoxed,
   isProgressShape,
   sendManyToBack,
@@ -520,7 +521,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setProgressSelected = (value: number) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    const clamped = Math.max(0, Math.min(100, Math.round(value)));
+    const clamped = clampPercent(value);
     commit((els) =>
       els.map((el) =>
         ids.has(el.id) && el.type === 'shape' && isProgressShape(el.shape)

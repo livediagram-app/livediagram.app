@@ -9,7 +9,7 @@
 
 import { useId } from 'react';
 
-import { ANIMATION_SPEED_FACTOR, type ShapeElement } from '@livediagram/diagram';
+import { ANIMATION_SPEED_FACTOR, clampPercent, type ShapeElement } from '@livediagram/diagram';
 
 // The speed + iteration custom properties the `lvd-prog-*` keyframes read.
 // `fill` defaults to playing once and holding; `pulse` / `stripes` default to
@@ -48,7 +48,7 @@ export function ProgressView({
   // The centred percentage label colour.
   textColor: string;
 }) {
-  const pct = Math.max(0, Math.min(100, Math.round(element.progress ?? 50)));
+  const pct = clampPercent(element.progress ?? 50);
   const anim = element.progressAnim;
   const animStyle = progressAnimStyle(element);
 

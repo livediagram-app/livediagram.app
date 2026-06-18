@@ -18,6 +18,7 @@ import {
   arrowheadShapeOf,
   arrowheadSizeOf,
   ANIMATION_SPEEDS,
+  clampPercent,
   ARROW_FLOWS,
   arrowStyleOf,
   arrowThicknessOf,
@@ -1390,7 +1391,7 @@ function MenuToggleRow({
 // Progress percentage slider (spec/46). Mirrors OpacityRow but on a 0–100
 // integer scale.
 function ProgressRow({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const pct = Math.max(0, Math.min(100, Math.round(value)));
+  const pct = clampPercent(value);
   return (
     <div className="px-3 py-1.5">
       <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Percentage</p>
