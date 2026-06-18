@@ -13,6 +13,12 @@ export type PaletteDropdownOption = {
   // Optional single-key shortcut letter rendered as a subtle badge in the
   // menu row (the canvas-tool dropdown uses S / P / L).
   shortcut?: string;
+  // Optional group index for visual separation: a divider is drawn in the
+  // menu wherever the group changes between two visible (non-selected)
+  // options. Robust to the selected option being filtered out — dividers
+  // only ever fall between groups that both still have visible items, never
+  // leading / trailing / doubled. Options without a group never divide.
+  group?: number;
 };
 
 // Normalises whatever <svg> an option carries to a consistent 14px box so
@@ -216,35 +222,53 @@ export function PaletteDropdown({
             {/* The trigger already shows the current option, so the menu lists
                 only the OTHER options to switch to (no duplicate of the
                 selected one). */}
+            {/* The trigger already shows the current option, so filter it out
+                first, THEN decide dividers from the surviving list — a divider
+                sits before an option whose group differs from the previous
+                visible one (never at the top, so no stray leading rule). */}
             {options
               .filter((opt) => opt.id !== value)
-              .map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  role="option"
-                  aria-selected={false}
-                  onClick={() => {
-                    onChange(opt.id);
-                    setOpen(false);
-                  }}
-                  className={`flex w-full items-center gap-2 text-left text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 ${
-                    // Match the trigger's sizing so the options read as the
-                    // same control AND are the same height as the selected
-                    // item (`py-3`), which is an easier tap target on touch.
-                    // Flush pickers are roomier than the compact filter pills.
-                    connected ? 'px-3.5 py-3 text-xs' : 'px-2.5 py-1.5 text-[11px]'
-                  }`}
-                >
-                  {opt.icon ? <span className={ICON_WRAP}>{opt.icon}</span> : null}
-                  <span className="flex-1 truncate">{opt.label}</span>
-                  {opt.shortcut ? (
-                    <kbd className="rounded-[3px] border border-slate-300 bg-white px-1 text-[8px] font-semibold uppercase leading-[1.4] text-slate-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400">
-                      {opt.shortcut}
-                    </kbd>
-                  ) : null}
-                </button>
-              ))}
+              .map((opt, i, visible) => {
+                const prev = visible[i - 1];
+                const divide =
+                  i > 0 && opt.group !== undefined && prev?.group !== undefined
+                    ? opt.group !== prev.group
+                    : false;
+                return (
+                  <div key={opt.id}>
+                    {divide ? (
+                      <div
+                        role="separator"
+                        className="mx-2 my-1 border-t border-slate-200 dark:border-slate-700"
+                      />
+                    ) : null}
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={false}
+                      onClick={() => {
+                        onChange(opt.id);
+                        setOpen(false);
+                      }}
+                      className={`flex w-full items-center gap-2 text-left text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 ${
+                        // Match the trigger's sizing so the options read as the
+                        // same control AND are the same height as the selected
+                        // item (`py-3`), which is an easier tap target on touch.
+                        // Flush pickers are roomier than the compact filter pills.
+                        connected ? 'px-3.5 py-3 text-xs' : 'px-2.5 py-1.5 text-[11px]'
+                      }`}
+                    >
+                      {opt.icon ? <span className={ICON_WRAP}>{opt.icon}</span> : null}
+                      <span className="flex-1 truncate">{opt.label}</span>
+                      {opt.shortcut ? (
+                        <kbd className="rounded-[3px] border border-slate-300 bg-white px-1 text-[8px] font-semibold uppercase leading-[1.4] text-slate-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400">
+                          {opt.shortcut}
+                        </kbd>
+                      ) : null}
+                    </button>
+                  </div>
+                );
+              })}
           </div>
         </Portal>
       ) : null}

@@ -48,10 +48,11 @@ Available to everyone, including view-only visitors (looking is read-only).
 
 ## How it's toggled
 
-- **Tool dropdown** in the command palette, sitting directly after Hand in
-  the canvas-tool picker (its own isometric-cube icon) since it pans like
-  Hand. Selecting it switches the cursor mode the same way Select / Hand /
-  Laser do.
+- **Tool dropdown** in the command palette (its own isometric-cube icon).
+  The picker is grouped with menu dividers — editing tools (Select / Hand /
+  Eraser), then presenter tools (Laser / Spotlight), then Isometric on its
+  own at the end. Selecting it switches the cursor mode the same way Select /
+  Hand / Laser do.
 - **Keyboard:** `I` selects it (free letter; `S`/`P`/`L` are the other tools,
   `E` eraser, `Z` zen). Obeys the per-device keyboard-shortcuts toggle and the
   text-input / label-edit bailouts so typing `i` into a label never flips the

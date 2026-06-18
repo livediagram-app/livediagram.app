@@ -364,22 +364,26 @@ export function CommandPalette({
               value={canvasTool}
               variant="flush"
               onChange={(id) => onSetCanvasTool(id as CanvasTool)}
+              // Grouped (group index drives the menu dividers): editing tools
+              // (Select / Hand / Eraser), then presenter tools (Laser /
+              // Spotlight), then the isometric view on its own.
               options={[
-                { id: 'select', label: 'Select', shortcut: 'S', icon: <SelectIcon /> },
-                { id: 'pan', label: 'Hand', shortcut: 'P', icon: <PanIcon /> },
+                { id: 'select', label: 'Select', shortcut: 'S', icon: <SelectIcon />, group: 0 },
+                { id: 'pan', label: 'Hand', shortcut: 'P', icon: <PanIcon />, group: 0 },
+                { id: 'eraser', label: 'Eraser', shortcut: 'E', icon: <EraserIcon />, group: 0 },
+                { id: 'laser', label: 'Laser', shortcut: 'L', icon: <LaserIcon />, group: 1 },
+                // Spotlight is desktop-only (hover + click-to-resize don't map
+                // to touch); omitted on mobile viewports.
+                ...(isMobile
+                  ? []
+                  : [{ id: 'spotlight', label: 'Spotlight', icon: <SpotlightIcon />, group: 1 }]),
                 {
                   id: 'isometric',
                   label: 'Isometric',
                   shortcut: 'I',
                   icon: <IsometricIcon />,
+                  group: 2,
                 },
-                { id: 'laser', label: 'Laser', shortcut: 'L', icon: <LaserIcon /> },
-                // Spotlight is desktop-only (hover + click-to-resize don't map
-                // to touch); omitted on mobile viewports.
-                ...(isMobile
-                  ? []
-                  : [{ id: 'spotlight', label: 'Spotlight', icon: <SpotlightIcon /> }]),
-                { id: 'eraser', label: 'Eraser', shortcut: 'E', icon: <EraserIcon /> },
               ]}
             />
           }
