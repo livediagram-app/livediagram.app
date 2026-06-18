@@ -10,6 +10,14 @@ import { Tooltip } from './Tooltip';
 // to a successful save. Now they don't.
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
+// Full-height, edge-flush header action button: the icon stacked over a small
+// label, a left divider, hugging the top + bottom of the bar so the right-edge
+// actions read as a row of tabs filling the header rather than little floating
+// pills. Shared with AuthControls so Share / Make-a-copy / Sign-in all match.
+// The caller adds the tone (default slate, or the Share brand fill).
+export const HEADER_ACTION_BTN =
+  'flex h-full min-w-[3.75rem] cursor-pointer flex-col items-center justify-center gap-1 border-l border-slate-200 px-3 text-[10px] font-medium leading-none transition dark:border-slate-800';
+
 type EditorHeaderProps = {
   diagramName: string;
   // Hides the centred diagram title while the first-run welcome modal
@@ -101,17 +109,19 @@ export function EditorHeader({
           </div>
         )}
       </div>
-      <div className="flex w-56 items-center justify-end gap-2">
+      {/* Right-edge actions: full-height, flush to the top / bottom / right of
+          the bar (the -mr-4 cancels the header's right padding). */}
+      <div className="-mr-4 flex items-stretch self-stretch">
         {onMakeCopy ? (
           <Tooltip title="Make a copy" description="Duplicate this diagram into your own files.">
             <button
               type="button"
               onClick={onMakeCopy}
               disabled={copying}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition enabled:hover:border-brand-300 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-400 dark:enabled:hover:bg-slate-700 dark:enabled:hover:text-brand-200"
+              className={`${HEADER_ACTION_BTN} text-slate-600 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-brand-200`}
             >
               <CopyIcon />
-              {copying ? 'Copying' : 'Make a copy'}
+              {copying ? 'Copying' : 'Copy'}
             </button>
           </Tooltip>
         ) : null}
@@ -123,22 +133,19 @@ export function EditorHeader({
             <button
               type="button"
               onClick={onOpenShare}
-              className={
+              className={`${HEADER_ACTION_BTN} ${
                 shareable
-                  ? 'inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600'
-                  : 'inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
-              }
+                  ? 'bg-brand-500 text-white hover:bg-brand-600'
+                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
+              }`}
               aria-pressed={shareable}
             >
               <ShareIcon />
-              {/* Label stays "Share" in both states — the user dislikes
-                  the verb changing to "Shared". State is communicated
-                  by the brand-500 fill + aria-pressed flip; the small
-                  green SharedBadge next to the diagram title in the
-                  centre cluster is the explicit "on" affordance.
-                  Hidden on mobile to keep the header dense; the icon
-                  + brand-500 fill carry the state on small screens. */}
-              <span className="hidden sm:inline">Share</span>
+              {/* Label stays "Share" in both states — the user dislikes the
+                  verb changing to "Shared". State is communicated by the
+                  brand-500 fill + aria-pressed flip + the green SharedBadge by
+                  the title. */}
+              <span>Share</span>
             </button>
           </Tooltip>
         ) : null}

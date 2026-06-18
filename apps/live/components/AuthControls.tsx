@@ -27,6 +27,11 @@ import { useRef, useState } from 'react';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
+import { HEADER_ACTION_BTN } from './EditorHeader';
+
+// Shared tone for the (non-Share) header actions — slate text, subtle hover.
+const HEADER_ACTION_TONE =
+  'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800';
 
 // Lazy-load the delete-account dialog. Almost every signed-in
 // session NEVER opens it (it's the destructive option at the
@@ -56,10 +61,7 @@ function AuthControlsEnabled() {
 
   if (!isSignedIn) {
     return (
-      <Link
-        href="/sign-in/"
-        className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-      >
+      <Link href="/sign-in/" className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}>
         <SignInIcon />
         Sign in
       </Link>
@@ -81,23 +83,23 @@ function AuthControlsEnabled() {
   })();
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative flex h-full" ref={menuRef}>
       <button
         type="button"
         onClick={() => setMenuOpen((open) => !open)}
         aria-label="Account menu"
         aria-expanded={menuOpen}
-        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 text-xs font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:py-1 sm:pl-1 sm:pr-3"
+        className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-[11px] font-semibold text-white">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white">
           {initial}
         </span>
-        {pillLabel ? <span className="hidden truncate sm:inline">{pillLabel}</span> : null}
+        <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>
       {menuOpen ? (
         <div
           role="menu"
-          className="absolute right-0 mt-1.5 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10"
+          className="absolute right-0 top-full mt-1 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10"
         >
           {displayName ? (
             <div className="px-3 py-2 text-xs text-slate-500">
