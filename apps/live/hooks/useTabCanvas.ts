@@ -150,6 +150,28 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     track('Tab', 'Changed', 'Font');
   };
 
+  // "Apply to all elements" in the Font category (spec/28): push the tab's
+  // font + default size onto every existing text-bearing element, so the whole
+  // tab reads in one typeface/size. Clears each element's per-element `font`
+  // override (elements with no font inherit the tab font at render) and sets
+  // `textSize` to the tab default. One undoable op via `commit`. Per-run
+  // rich-text bold/italic/colour is left intact; only the element-level font +
+  // size are reset.
+  const applyTabFontToAll = () => {
+    if (editsBlocked) return;
+    if (activeTab.elements.length === 0) return;
+    const size: TextSize = activeTab.defaultTextSize ?? 'md';
+    commit((els) =>
+      els.map((el) => {
+        if (!isBoxed(el) && el.type !== 'arrow') return el;
+        const next = { ...el, textSize: size } as Element & { font?: string };
+        delete next.font;
+        return next;
+      }),
+    );
+    track('Tab', 'Changed', 'Font');
+  };
+
   // Tab default text size (spec/28): seeded onto NEW palette elements.
   const setTabDefaultTextSize = (size: TextSize) => {
     if (editsBlocked) return;
@@ -338,6 +360,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   return {
     autoAlignTab,
     autoLayoutTab,
+    applyTabFontToAll,
     setTabFont,
     setTabDefaultTextSize,
     setBackgroundPattern,
