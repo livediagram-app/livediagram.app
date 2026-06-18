@@ -140,7 +140,7 @@ Tab-level appearance + tools (no longer a panel section): **Theme**, **Canvas** 
 
 When an element is selected, these per-element controls are available from its **right-click context menu** (and the floating selection toolbar), grouped into **collapsible categories**. Each category is **closed by default**; clicking its header toggles it open.
 
-**Category order is fixed and consistent** across the single-element and multi-selection menus, sorted into four visually-separated bands (a divider rules between bands, drawn only when the following band has a visible category so an absent band leaves no dangling rule):
+**Category order is fixed and consistent** across the single-element and multi-selection menus, sorted into four visually-separated bands. Rows within a band sit **flush** (no per-row hairline); the only rules in the menu are the band separators (a slightly inset, stronger divider), drawn only when the following band has a visible category so an absent band leaves no dangling rule. The bands:
 
 1. **Placement** — Layer, Shape, Rotation.
 2. **Appearance** — Progress, Animation, Colours, Border.

@@ -133,6 +133,10 @@ export function MenuAccordionSection({
   // from a contentEditable behind it (the rich-text toolbar's ⋯ menu needs
   // the live text selection to survive a category toggle).
   preserveFocus = false,
+  // When true the section draws no top border. Used where the parent supplies
+  // its own grouping separators (the editor context menu bands rows into
+  // groups), so adjacent rows sit flush instead of each carrying a hairline.
+  flush = false,
 }: {
   title: string;
   icon: ReactNode;
@@ -140,9 +144,12 @@ export function MenuAccordionSection({
   onToggle: () => void;
   children: ReactNode;
   preserveFocus?: boolean;
+  flush?: boolean;
 }) {
   return (
-    <div className="border-t border-slate-100 first:border-t-0 dark:border-slate-800">
+    <div
+      className={flush ? '' : 'border-t border-slate-100 first:border-t-0 dark:border-slate-800'}
+    >
       <button
         type="button"
         onClick={onToggle}

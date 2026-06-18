@@ -221,6 +221,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   const sectionProps = (id: string) => ({
     open: openSection === id,
     onToggle: () => setOpenSection((s) => (s === id ? null : id)),
+    // Rows sit flush (no per-row hairline); the only rules in this menu are the
+    // MenuGroupSeparator bands, so grouping reads at a glance.
+    flush: true,
   });
   // Which colour row's inline palette is open (text / background / border) —
   // at most one, toggled by re-clicking the row so it never sticks open.
@@ -378,7 +381,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                 </MenuAccordionSection>
               ) : null}
               {/* ── Content group: Line / Pointer / Text ── */}
-              {showMultiContent && showMultiAppearance ? <ContextMenuDivider /> : null}
+              {showMultiContent && showMultiAppearance ? <MenuGroupSeparator /> : null}
               {arrowSrc ? (
                 <>
                   <MenuAccordionSection
@@ -600,7 +603,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           </MenuAccordionSection>
         ) : null}
         {/* ── Appearance group: Progress / Animation / Colours / Border ── */}
-        {showAppearanceGroup ? <ContextMenuDivider /> : null}
+        {showAppearanceGroup ? <MenuGroupSeparator /> : null}
         {/* Progress (spec/46) — the percentage + how the fill animates. Only
             for progress bars / rings. */}
         {isProgress ? (
@@ -766,7 +769,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           </>
         ) : null}
         {/* ── Content group: Line / Pointer / Text / Icon / Image / Table / Link ── */}
-        {showContentGroup ? <ContextMenuDivider /> : null}
+        {showContentGroup ? <MenuGroupSeparator /> : null}
         {/* Line + Pointer — arrow stroke + arrowhead controls (shared
             ArrowLine/PointerControls). */}
         {target.type === 'arrow' ? (
@@ -995,7 +998,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           </MenuAccordionSection>
         ) : null}
         {/* ── Collaboration group ── */}
-        {showCollaborateGroup ? <ContextMenuDivider /> : null}
+        {showCollaborateGroup ? <MenuGroupSeparator /> : null}
         {/* Collaborate — link / note / comments. Boxed-only: arrows can't be
             linked, noted, or commented on. */}
         {boxed ? (
@@ -1045,6 +1048,19 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   // only renders the element + multi menus. `menu.mode === 'canvas'` never
   // reaches here (the page routes it to the TabBar), so fall through to null.
   return null;
+}
+
+// Band separator between context-menu category groups (placement / appearance
+// / content / collaboration). Stronger than the old per-row hairline and the
+// only rule in the menu now that rows render flush, so the grouping reads
+// clearly. Inset slightly from the edges so it looks deliberate, not like a
+// row border.
+function MenuGroupSeparator() {
+  return (
+    <div className="my-1.5 px-2" role="separator" aria-hidden>
+      <div className="h-px bg-slate-200/90 dark:bg-slate-700/80" />
+    </div>
+  );
 }
 
 // A small preset palette for the inline colour picker. The "+" custom chip
