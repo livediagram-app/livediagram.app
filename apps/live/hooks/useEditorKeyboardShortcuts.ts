@@ -18,6 +18,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { CanvasTool } from '@/components/CommandPalette';
+import { isMobileViewportSync } from '@/lib/responsive';
 
 // Shape kinds that have a single-key palette shortcut: the common
 // flowchart set. The rest of the ShapeKind union (stadium, document,
@@ -156,7 +157,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       formatSourceId === null &&
       groupSourceId === null &&
       pendingDraw === null &&
-      canvasTool !== 'format'
+      canvasTool !== 'format' &&
+      canvasTool !== 'isometric'
     )
       return;
     const onKey = (e: KeyboardEvent) => {
@@ -166,6 +168,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // Persistent Format tool: Escape exits the tool entirely (back to
         // Select) from either phase, not just disarming the base.
         if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
+        // Isometric: Escape leaves the view back to the normal editing tool —
+        // Select on desktop, Hand (pan) on touch where Select isn't the
+        // default. Mirrors how Spotlight reverts to Select.
+        if (liveRef.current.canvasTool === 'isometric') {
+          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
+        }
         if (liveRef.current.pendingDraw !== null) {
           liveRef.current.onCancelDraw();
         }

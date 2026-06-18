@@ -490,6 +490,24 @@ export function RichTextEditor({
             handleCancel();
             return;
           }
+          // Cmd/Ctrl+B/I/U must drive the SAME run-based toggle as the toolbar
+          // buttons. Left to the browser, contentEditable runs its native
+          // execCommand('bold'…), which wraps the DOM in <b>/<i>/<u> tags the
+          // run model never sees — so the formatting vanished on commit. We
+          // intercept and preventDefault so the native command never fires.
+          if ((e.metaKey || e.ctrlKey) && !e.altKey) {
+            const shortcut: Record<string, RunBoolKey> = {
+              b: 'bold',
+              i: 'italic',
+              u: 'underline',
+            };
+            const key = shortcut[e.key.toLowerCase()];
+            if (key) {
+              e.preventDefault();
+              onToggle(key);
+              return;
+            }
+          }
           if (e.key === 'Enter') {
             // Insert a newline as a real '\n' text node (never <br>/<div>)
             // so it survives read-back and keeps plain-text length == DOM

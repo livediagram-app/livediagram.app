@@ -538,14 +538,20 @@
   }
 }
 .lvd-anim-gradient {
+  /* A soft sheen, not a hard colour swipe: the moving band is the element's
+   * own fill tinted only ~20% toward the accent, with broad fill plateaus at
+   * each edge so it reads as a gentle highlight sweeping across rather than a
+   * saturated accent bar. Slower + eased for a calm, usable shimmer. */
   background-image: linear-gradient(
     120deg,
-    var(--lvd-anim-bg, transparent) 0%,
-    var(--lvd-anim-color, #0ea5e9) 50%,
-    var(--lvd-anim-bg, transparent) 100%
+    var(--lvd-anim-bg, #fff) 0%,
+    var(--lvd-anim-bg, #fff) 32%,
+    color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 20%, var(--lvd-anim-bg, #fff)) 50%,
+    var(--lvd-anim-bg, #fff) 68%,
+    var(--lvd-anim-bg, #fff) 100%
   );
   background-size: 200% 200%;
-  animation: lvd-gradient-shift calc(3s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
+  animation: lvd-gradient-shift calc(5s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
 }
 
 /* SVG-shape pulse / glow. The wrapper versions (.lvd-anim-pulse / -glow) use
@@ -643,19 +649,21 @@
     stop-color: var(--lvd-anim-bg, #fff);
   }
   50% {
-    stop-color: var(--lvd-anim-color, #0ea5e9);
+    /* Soft tint, not a full accent swap — matches the calmer CSS-gradient
+     * sheen above so SVG shapes (diamond / hexagon / …) shimmer just as gently. */
+    stop-color: color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 22%, var(--lvd-anim-bg, #fff));
   }
 }
 .lvd-grad-s0,
 .lvd-grad-s1,
 .lvd-grad-s2 {
-  animation: lvd-grad-cycle calc(3s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
+  animation: lvd-grad-cycle calc(5s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
 }
 .lvd-grad-s1 {
-  animation-delay: calc(-1s * var(--lvd-anim-speed, 1));
+  animation-delay: calc(-1.67s * var(--lvd-anim-speed, 1));
 }
 .lvd-grad-s2 {
-  animation-delay: calc(-2s * var(--lvd-anim-speed, 1));
+  animation-delay: calc(-3.33s * var(--lvd-anim-speed, 1));
 }
 
 /* Flowing arrows: marching dashes (stroke-dashoffset) + a travelling dot

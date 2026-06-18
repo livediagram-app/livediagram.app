@@ -49,7 +49,9 @@ Isometric is **navigation-only**, modelled on the Hand tool:
 - **No selecting, dragging, resizing, marquee, or editing** while it's
   active — the content layer is non-interactive (like Spotlight, spec/09),
   so there's no reverse hit-testing to get wrong. To edit, switch back to
-  Select.
+  Select. **Escape** exits the view to the default editing tool — Select on
+  desktop, Hand (pan) on touch viewports where Select isn't the default
+  (mirrors how Spotlight reverts to Select).
 - It is **purely a view state**: it changes nothing about the diagram, never
   persists to the server, and is **not synced** to other participants — each
   viewer tilts independently (same contract as Zen mode, spec/26).
