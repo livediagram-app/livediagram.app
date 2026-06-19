@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import { Brand, Tooltip } from '@livediagram/ui';
 import type { TelemetryCount, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
@@ -292,6 +292,109 @@ function eventExplanation(category: string, action: string, type: string | null)
 // category fallback. Falls back to a tiny dot when nothing matches, so
 // future enum additions still render something instead of throwing.
 // All glyphs use `currentColor` so they inherit the row's text colour.
+// Glyph lookup for an event icon, in priority order: a type-specific glyph
+// (shape kinds + other recognisable types), else an action-specific one, else
+// a category fallback, else a neutral dot. Tables rather than an if-ladder so
+// adding an event is a one-line entry and shared glyphs read at a glance.
+const TYPE_GLYPH: Record<string, () => ReactElement> = {
+  Square: RectGlyph,
+  Rectangle: RectGlyph,
+  Circle: CircleGlyph,
+  Ellipse: CircleGlyph,
+  Triangle: TriangleGlyph,
+  Diamond: DiamondGlyph,
+  Star: StarGlyph,
+  Hexagon: PolyGlyph,
+  Pentagon: PolyGlyph,
+  Octagon: PolyGlyph,
+  Heart: HeartGlyph,
+  Cloud: CloudGlyph,
+  Cylinder: CylinderGlyph,
+  Arrow: ArrowGlyph,
+  Text: TextGlyph,
+  Sticky: StickyGlyph,
+  Image: ImageGlyph,
+  Dark: MoonGlyph,
+  Light: SunGlyph,
+  Settings: GearGlyph,
+  Shortcuts: KeyboardGlyph,
+  Tips: SparkGlyph,
+  Share: ShareGlyph,
+  Activity: ActivityGlyph,
+  Welcome: SparkGlyph,
+  ShareLink: LinkGlyph,
+  In: ZoomInGlyph,
+  Out: ZoomOutGlyph,
+  Fit: FitGlyph,
+  Reset: ResetGlyph,
+  Edit: PencilGlyph,
+  View: EyeGlyph,
+  JSON: FileGlyph,
+  Markdown: FileGlyph,
+  PDF: FileGlyph,
+  PNG: FileGlyph,
+  Front: LayersGlyph,
+  Back: LayersGlyph,
+  FormatPainter: BrushGlyph,
+  Diagram: DiagramGlyph,
+  Folder: FolderGlyph,
+  Tab: TabGlyph,
+  Element: ElementGlyph,
+};
+const ACTION_GLYPH: Record<string, () => ReactElement> = {
+  Deleted: TrashGlyph,
+  Created: PlusGlyph,
+  Added: PlusGlyph,
+  Duplicated: CopyGlyph,
+  Locked: LockGlyph,
+  Unlocked: UnlockGlyph,
+  Renamed: PencilGlyph,
+  Undone: UndoGlyph,
+  Redone: RedoGlyph,
+  Grouped: GroupGlyph,
+  Ungrouped: GroupGlyph,
+  Moved: MoveGlyph,
+  Reverted: RevertGlyph,
+  Reordered: LayersGlyph,
+  Aligned: AlignGlyph,
+  Cleared: ClearGlyph,
+  Linked: LinkGlyph,
+  Unlinked: LinkGlyph,
+  Resolved: CheckGlyph,
+  Unresolved: CheckGlyph,
+  Searched: MagnifierGlyph,
+  Selected: PointerGlyph,
+  Opened: OpenGlyph,
+  Closed: CloseGlyph,
+  Copied: ClipboardGlyph,
+  Imported: DownloadGlyph,
+  Exported: UploadGlyph,
+  Shared: ShareGlyph,
+  Joined: PersonGlyph,
+  Used: SparkGlyph,
+  Changed: PencilGlyph,
+  Toggled: ToggleGlyph,
+  Zoomed: FitGlyph,
+  SignedIn: SignInGlyph,
+  SignedUp: PersonAddGlyph,
+  SignedOut: SignOutGlyph,
+};
+const CATEGORY_GLYPH: Record<string, () => ReactElement> = {
+  Diagram: DiagramGlyph,
+  Element: ElementGlyph,
+  Tab: TabGlyph,
+  Theme: PaletteGlyph,
+  Canvas: CanvasGlyph,
+  Template: TemplateGlyph,
+  Comment: CommentGlyph,
+  Note: NoteGlyph,
+  Search: MagnifierGlyph,
+  UI: WindowGlyph,
+  Folder: FolderGlyph,
+  Session: PersonGlyph,
+  Participant: PersonGlyph,
+};
+
 function EventIcon({
   category,
   action,
@@ -301,91 +404,9 @@ function EventIcon({
   action: string;
   type: string | null;
 }) {
-  const t = type ?? '';
-  // Shape kinds and other type-specific glyphs first.
-  if (t === 'Square' || t === 'Rectangle') return <RectGlyph />;
-  if (t === 'Circle' || t === 'Ellipse') return <CircleGlyph />;
-  if (t === 'Triangle') return <TriangleGlyph />;
-  if (t === 'Diamond') return <DiamondGlyph />;
-  if (t === 'Star') return <StarGlyph />;
-  if (t === 'Hexagon' || t === 'Pentagon' || t === 'Octagon') return <PolyGlyph />;
-  if (t === 'Heart') return <HeartGlyph />;
-  if (t === 'Cloud') return <CloudGlyph />;
-  if (t === 'Cylinder') return <CylinderGlyph />;
-  if (t === 'Arrow') return <ArrowGlyph />;
-  if (t === 'Text') return <TextGlyph />;
-  if (t === 'Sticky') return <StickyGlyph />;
-  if (t === 'Image') return <ImageGlyph />;
-  if (t === 'Dark') return <MoonGlyph />;
-  if (t === 'Light') return <SunGlyph />;
-  if (t === 'Settings') return <GearGlyph />;
-  if (t === 'Shortcuts') return <KeyboardGlyph />;
-  if (t === 'Tips') return <SparkGlyph />;
-  if (t === 'Share') return <ShareGlyph />;
-  if (t === 'Activity') return <ActivityGlyph />;
-  if (t === 'Welcome') return <SparkGlyph />;
-  if (t === 'ShareLink') return <LinkGlyph />;
-  if (t === 'In') return <ZoomInGlyph />;
-  if (t === 'Out') return <ZoomOutGlyph />;
-  if (t === 'Fit') return <FitGlyph />;
-  if (t === 'Reset') return <ResetGlyph />;
-  if (t === 'Edit') return <PencilGlyph />;
-  if (t === 'View') return <EyeGlyph />;
-  if (t === 'JSON' || t === 'Markdown' || t === 'PDF' || t === 'PNG') return <FileGlyph />;
-  if (t === 'Front' || t === 'Back') return <LayersGlyph />;
-  if (t === 'FormatPainter') return <BrushGlyph />;
-  if (t === 'Diagram') return <DiagramGlyph />;
-  if (t === 'Folder') return <FolderGlyph />;
-  if (t === 'Tab') return <TabGlyph />;
-  if (t === 'Element') return <ElementGlyph />;
-  // Action-specific overrides (no type or unrecognised type).
-  if (action === 'Deleted') return <TrashGlyph />;
-  if (action === 'Created' || action === 'Added') return <PlusGlyph />;
-  if (action === 'Duplicated') return <CopyGlyph />;
-  if (action === 'Locked') return <LockGlyph />;
-  if (action === 'Unlocked') return <UnlockGlyph />;
-  if (action === 'Renamed') return <PencilGlyph />;
-  if (action === 'Undone') return <UndoGlyph />;
-  if (action === 'Redone') return <RedoGlyph />;
-  if (action === 'Grouped' || action === 'Ungrouped') return <GroupGlyph />;
-  if (action === 'Moved') return <MoveGlyph />;
-  if (action === 'Reverted') return <RevertGlyph />;
-  if (action === 'Reordered') return <LayersGlyph />;
-  if (action === 'Aligned') return <AlignGlyph />;
-  if (action === 'Cleared') return <ClearGlyph />;
-  if (action === 'Linked' || action === 'Unlinked') return <LinkGlyph />;
-  if (action === 'Resolved' || action === 'Unresolved') return <CheckGlyph />;
-  if (action === 'Searched') return <MagnifierGlyph />;
-  if (action === 'Selected') return <PointerGlyph />;
-  if (action === 'Opened') return <OpenGlyph />;
-  if (action === 'Closed') return <CloseGlyph />;
-  if (action === 'Copied') return <ClipboardGlyph />;
-  if (action === 'Imported') return <DownloadGlyph />;
-  if (action === 'Exported') return <UploadGlyph />;
-  if (action === 'Shared') return <ShareGlyph />;
-  if (action === 'Joined') return <PersonGlyph />;
-  if (action === 'Used') return <SparkGlyph />;
-  if (action === 'Changed') return <PencilGlyph />;
-  if (action === 'Toggled') return <ToggleGlyph />;
-  if (action === 'Zoomed') return <FitGlyph />;
-  if (action === 'SignedIn') return <SignInGlyph />;
-  if (action === 'SignedUp') return <PersonAddGlyph />;
-  if (action === 'SignedOut') return <SignOutGlyph />;
-  // Category fallback.
-  if (category === 'Diagram') return <DiagramGlyph />;
-  if (category === 'Element') return <ElementGlyph />;
-  if (category === 'Tab') return <TabGlyph />;
-  if (category === 'Theme') return <PaletteGlyph />;
-  if (category === 'Canvas') return <CanvasGlyph />;
-  if (category === 'Template') return <TemplateGlyph />;
-  if (category === 'Comment') return <CommentGlyph />;
-  if (category === 'Note') return <NoteGlyph />;
-  if (category === 'Search') return <MagnifierGlyph />;
-  if (category === 'UI') return <WindowGlyph />;
-  if (category === 'Folder') return <FolderGlyph />;
-  if (category === 'Session') return <PersonGlyph />;
-  if (category === 'Participant') return <PersonGlyph />;
-  return <DotGlyph />;
+  const Glyph =
+    TYPE_GLYPH[type ?? ''] ?? ACTION_GLYPH[action] ?? CATEGORY_GLYPH[category] ?? DotGlyph;
+  return <Glyph />;
 }
 
 // ---------------------------------------------------------------------
