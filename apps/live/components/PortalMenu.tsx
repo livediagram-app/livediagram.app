@@ -205,6 +205,23 @@ export function MenuGroupSeparator() {
   );
 }
 
+// A full-width, outlined action button for the bottom of a menu section —
+// the "Reset to theme / default", "Reset aspect ratio", "Apply to all
+// elements" style buttons. One definition so the (long) outlined-button
+// styling can't drift across the context menu, style presets, and tab menu.
+// The caller supplies its own surrounding padding wrapper.
+export function MenuActionButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
+    >
+      {label}
+    </button>
+  );
+}
+
 // A compact icon-button row pinned to the top of a menu for the most
 // common quick actions (lock / rename / duplicate), keeping them one
 // glance away while the verbose actions move into labelled sections below.

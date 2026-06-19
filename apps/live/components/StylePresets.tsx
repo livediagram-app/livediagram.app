@@ -21,6 +21,7 @@ import {
 } from '@livediagram/diagram';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { SizeButton } from '@/components/palette-controls';
+import { MenuActionButton } from '@/components/PortalMenu';
 import { nearestCssBorderStyle } from '@/components/border-css';
 
 // ── Static preset table ─────────────────────────────────────────────────
@@ -262,13 +263,7 @@ export function ArrowPresets({
 function ResetButton({ onReset }: { onReset: () => void }) {
   return (
     <div className="px-0 pb-1 pt-1.5">
-      <button
-        type="button"
-        onClick={onReset}
-        className="inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
-      >
-        Reset to default
-      </button>
+      <MenuActionButton label="Reset to default" onClick={onReset} />
     </div>
   );
 }

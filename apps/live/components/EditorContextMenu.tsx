@@ -96,6 +96,7 @@ import {
 } from '@/components/context-menu-icons';
 import {
   MenuAccordionSection,
+  MenuActionButton,
   MenuGroupSeparator,
   MenuTile,
   MenuTileGrid,
@@ -601,16 +602,13 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               ))}
             </div>
             <div className="px-2 pb-1.5 pt-0.5">
-              <button
-                type="button"
+              <MenuActionButton
+                label="Reset aspect ratio"
                 onClick={() => {
                   props.onResetAspectRatio();
                   onClose();
                 }}
-                className="inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
-              >
-                Reset aspect ratio
-              </button>
+              />
             </div>
           </MenuAccordionSection>
         ) : null}
@@ -805,16 +803,13 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                 />
               ) : null}
               <div className="px-2 pb-1 pt-1.5">
-                <button
-                  type="button"
+                <MenuActionButton
+                  label="Reset to theme"
                   onClick={() => {
                     props.onResetColors();
                     onClose();
                   }}
-                  className="inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
-                >
-                  Reset to theme
-                </button>
+                />
               </div>
             </MenuAccordionSection>
           </>

@@ -39,6 +39,7 @@ import {
 } from './tab-bar-icons';
 import {
   MenuAccordionSection,
+  MenuActionButton,
   MenuGroupSeparator,
   MenuItem,
   MenuTile,
@@ -1089,16 +1090,13 @@ function PortalMenu({
                     </div>
                     {/* Push the tab font + size onto everything already on the
                         tab (clears per-element font overrides so they inherit). */}
-                    <button
-                      type="button"
+                    <MenuActionButton
+                      label="Apply to all elements"
                       onClick={() => {
                         canvas.onApplyFontToAll();
                         onClose();
                       }}
-                      className="inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
-                    >
-                      Apply to all elements
-                    </button>
+                    />
                   </div>
                 </MenuAccordionSection>
                 {/* ── Cleanup band: layout tidiers (spec/47). Auto-align grid-
