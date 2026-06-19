@@ -251,6 +251,16 @@ describe('exportTabAsSvg', () => {
     expect(svg).not.toContain('A & B <ok>');
   });
 
+  it('renders a colour-deferring shape with the canvas defaults, not flat white', async () => {
+    // A shape with no explicit colours defers to the theme/type defaults; the
+    // export must match what the canvas draws (brand-50 fill / brand-500 border)
+    // rather than a white box with a slate border.
+    const svg = await text(exportTabAsSvg(tab({ elements: [shape('s')] })));
+    expect(svg).toContain('fill="#f0f9ff"'); // brand-50
+    expect(svg).toContain('stroke="#0ea5e9"'); // brand-500
+    expect(svg).not.toContain('stroke="#0f172a"'); // not the old slate-ink default
+  });
+
   it('wraps a long label to multiple lines instead of one overflowing line', async () => {
     const svg = await text(
       exportTabAsSvg(

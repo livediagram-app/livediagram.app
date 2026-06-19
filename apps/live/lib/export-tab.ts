@@ -17,6 +17,10 @@ import {
   BORDER_DASH_ARRAY,
   curveAnchorPoints,
   curveControlPoint,
+  defaultArrowStrokeColor,
+  defaultFillColor,
+  defaultStrokeColor,
+  defaultTextColor,
   endpointPosition,
   hasRichFormatting,
   isBoxed,
@@ -244,8 +248,9 @@ function renderTabToCanvas(
 // renderers from drifting (a new export-visible shape or a tweaked
 // default lands in one place, not two).
 
-// The label colour / size / weight defaults shared by both renderers.
-const EXPORT_INK = '#0f172a'; // slate-900 — default stroke + label colour
+// The image-placeholder colours shared by both renderers. Element fill /
+// stroke / text fall through to the diagram's defaultFillColor / -Stroke /
+// -Text (matching the canvas), so there's no separate "export ink" default.
 const EXPORT_IMAGE_FILL = '#f1f5f9'; // slate-100 placeholder body
 const EXPORT_IMAGE_STROKE = '#94a3b8'; // slate-400 placeholder dashes
 const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
@@ -303,8 +308,14 @@ function describeBoxedExport(el: BoxedElement): BoxedExport {
       },
     };
   }
-  const fill = el.fillColor ?? (el.type === 'sticky' ? '#fef3c7' : '#ffffff');
-  const stroke = el.strokeColor ?? EXPORT_INK;
+  // Fall through to the SAME element-type defaults the canvas uses
+  // (defaultFillColor / -Stroke / -Text) so an element that defers its colour
+  // to the theme — e.g. every shape on the default brand theme — exports with
+  // its rendered look (brand-50 fill / brand-500 border) rather than a flat
+  // white box. Themed tabs store explicit colours on each element, so those
+  // round-trip unchanged; this only changes the deferring case.
+  const fill = el.fillColor ?? defaultFillColor(el);
+  const stroke = el.strokeColor ?? defaultStrokeColor(el);
   // Annotation markers + circles render as the themed circle; diamonds as
   // a 4-point polygon; text as label-only; everything else as a rounded
   // rect — the "faithful overview" simplification shared by both exporters.
@@ -316,7 +327,7 @@ function describeBoxedExport(el: BoxedElement): BoxedExport {
         : el.type === 'text'
           ? { kind: 'none' }
           : { kind: 'rect', fill, stroke };
-  const baseColor = el.textColor ?? EXPORT_INK;
+  const baseColor = el.textColor ?? defaultTextColor(el);
   const baseSize = fontSizeFor(el.textSize);
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)
@@ -523,7 +534,7 @@ function arrowHeadRefs(
 function drawArrow(ctx: CanvasRenderingContext2D, arrow: ArrowElement, elements: Element[]): void {
   const from = endpointPosition(arrow.from, elements);
   const to = endpointPosition(arrow.to, elements);
-  const stroke = arrow.strokeColor ?? '#64748b';
+  const stroke = arrow.strokeColor ?? defaultArrowStrokeColor();
   const lineWidth = arrow.strokeWidth ?? 2;
   const style = arrowStyleOf(arrow);
   ctx.save();
@@ -841,7 +852,7 @@ function svgArrowhead(
 function svgArrow(arrow: ArrowElement, elements: Element[]): string {
   const from = endpointPosition(arrow.from, elements);
   const to = endpointPosition(arrow.to, elements);
-  const stroke = arrow.strokeColor ?? '#64748b';
+  const stroke = arrow.strokeColor ?? defaultArrowStrokeColor();
   const lw = arrow.strokeWidth ?? 2;
   const op = arrow.opacity ?? 1;
   const opAttr = op !== 1 ? ` opacity="${r2(op)}"` : '';
