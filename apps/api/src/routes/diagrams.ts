@@ -75,6 +75,15 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       if (!body.id || !body.name) {
         return badRequest('missing id/name');
       }
+      // Ownership guard (security): upsertDiagramMeta is INSERT ... ON
+      // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an
+      // id that already exists under a DIFFERENT owner would silently transfer
+      // ownership to the caller. Diagram ids are unguessable UUIDs but they
+      // leak to every share-link visitor / team member, so refuse the create
+      // when the id is already owned by someone else (legitimate updates go
+      // through PUT, which gates on edit access).
+      const clash = await getDiagram(env, body.id);
+      if (clash && clash.ownerId !== owner) return forbidden();
       const now = Date.now();
       // Diagram meta first so the FK in tabs can resolve.
       await upsertDiagramMeta(env, {
