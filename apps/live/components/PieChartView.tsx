@@ -10,15 +10,12 @@
 
 import {
   ANIMATION_SPEED_FACTOR,
+  animLoops,
   PIE_DEFAULT_SLICES,
+  PIE_LOOPING_ANIMS,
   PIE_PALETTE,
-  type PieAnim,
   type ShapeElement,
 } from '@livediagram/diagram';
-
-function loopsByDefault(anim: PieAnim): boolean {
-  return anim === 'spin' || anim === 'pulse';
-}
 
 export function PieChartView({
   element,
@@ -70,7 +67,7 @@ export function PieChartView({
   });
 
   const anim = element.pieAnim;
-  const loops = element.pieAnimRepeat ?? (anim ? loopsByDefault(anim) : false);
+  const loops = animLoops(anim, element.pieAnimRepeat, PIE_LOOPING_ANIMS);
   const groupStyle = anim
     ? ({
         transformOrigin: `${cx}px ${cy}px`,

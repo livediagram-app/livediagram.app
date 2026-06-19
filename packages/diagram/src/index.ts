@@ -157,6 +157,22 @@ export type IconPosition = 'left' | 'right' | 'above' | 'below';
 // Undefined = a static fill. Mapped to `lvd-prog-*` classes by ProgressView.
 export type ProgressAnim = 'fill' | 'pulse' | 'stripes';
 export const PROGRESS_ANIMS: readonly ProgressAnim[] = ['fill', 'pulse', 'stripes'];
+// Progress animations that loop by default: 'fill' fills in once and holds;
+// 'pulse' / 'stripes' cycle forever (see animLoops).
+export const PROGRESS_LOOPING_ANIMS: readonly ProgressAnim[] = ['pulse', 'stripes'];
+
+// Whether an element's animation should loop. The explicit per-element `repeat`
+// override wins; otherwise it loops only if it's one of `loopingAnims` (the
+// rest play once and hold). Centralises the "does this anim loop by default"
+// rule the progress / rating / pie renderers + their context-menu Repeat
+// toggles all share, so adding a looping animation is a one-line change.
+export function animLoops<T>(
+  anim: T | null | undefined,
+  repeat: boolean | undefined,
+  loopingAnims: readonly T[],
+): boolean {
+  return repeat ?? (anim != null && loopingAnims.includes(anim));
+}
 
 // The two progress ShapeKinds, grouped so renderers + context-menu gates can
 // branch on "is this a progress element" without repeating the literal pair.
@@ -185,6 +201,8 @@ export const RATING_MAX = 5;
 export const RATING_DEFAULT = 3;
 export type RatingAnim = 'pop' | 'twinkle' | 'pulse' | 'rock';
 export const RATING_ANIMS: readonly RatingAnim[] = ['pop', 'twinkle', 'pulse', 'rock'];
+// 'pop' / 'rock' play once; 'twinkle' / 'pulse' loop (see animLoops).
+export const RATING_LOOPING_ANIMS: readonly RatingAnim[] = ['twinkle', 'pulse'];
 
 export function isRatingShape(kind: ShapeKind): boolean {
   return kind === 'rating';
@@ -198,6 +216,8 @@ export function isRatingShape(kind: ShapeKind): boolean {
 export type PieSlice = { label: string; value: number; color?: string };
 export type PieAnim = 'grow' | 'pop' | 'spin' | 'pulse';
 export const PIE_ANIMS: readonly PieAnim[] = ['grow', 'pop', 'spin', 'pulse'];
+// 'grow' / 'pop' play once; 'spin' / 'pulse' loop (see animLoops).
+export const PIE_LOOPING_ANIMS: readonly PieAnim[] = ['spin', 'pulse'];
 // Default categorical palette for slices without an explicit colour.
 export const PIE_PALETTE: readonly string[] = [
   '#0ea5e9',

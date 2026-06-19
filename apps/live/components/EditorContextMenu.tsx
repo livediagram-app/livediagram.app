@@ -15,6 +15,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import {
+  animLoops,
   arrowheadShapeOf,
   arrowheadSizeOf,
   clampPercent,
@@ -30,13 +31,16 @@ import {
   isRatingShape,
   PIE_ANIMS,
   PIE_DEFAULT_SLICES,
+  PIE_LOOPING_ANIMS,
   PIE_PALETTE,
   PROGRESS_ANIMS,
+  PROGRESS_LOOPING_ANIMS,
   RAIL_DEFAULT_POINTS,
   RAIL_MAX_POINTS,
   RAIL_MIN_POINTS,
   RATING_ANIMS,
   RATING_DEFAULT,
+  RATING_LOOPING_ANIMS,
   RATING_MAX,
   SHAPE_MARKERS,
   supportsBorderControls,
@@ -732,7 +736,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             <ProgressAnimTiles
               anim={shapeTarget?.progressAnim ?? null}
               speed={shapeTarget?.progressAnimSpeed ?? 'normal'}
-              repeat={shapeTarget?.progressAnimRepeat ?? shapeTarget?.progressAnim !== 'fill'}
+              repeat={animLoops(
+                shapeTarget?.progressAnim,
+                shapeTarget?.progressAnimRepeat,
+                PROGRESS_LOOPING_ANIMS,
+              )}
               onSet={props.onSetProgressAnim}
               onSetSpeed={props.onSetProgressAnimSpeed}
               onSetRepeat={props.onSetProgressAnimRepeat}
@@ -767,10 +775,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             <RatingAnimTiles
               anim={shapeTarget?.ratingAnim ?? null}
               speed={shapeTarget?.ratingAnimSpeed ?? 'normal'}
-              repeat={
-                shapeTarget?.ratingAnimRepeat ??
-                (shapeTarget?.ratingAnim === 'pulse' || shapeTarget?.ratingAnim === 'twinkle')
-              }
+              repeat={animLoops(
+                shapeTarget?.ratingAnim,
+                shapeTarget?.ratingAnimRepeat,
+                RATING_LOOPING_ANIMS,
+              )}
               onSet={props.onSetRatingAnim}
               onSetSpeed={props.onSetRatingAnimSpeed}
               onSetRepeat={props.onSetRatingAnimRepeat}
@@ -788,10 +797,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             <PieAnimTiles
               anim={shapeTarget?.pieAnim ?? null}
               speed={shapeTarget?.pieAnimSpeed ?? 'normal'}
-              repeat={
-                shapeTarget?.pieAnimRepeat ??
-                (shapeTarget?.pieAnim === 'spin' || shapeTarget?.pieAnim === 'pulse')
-              }
+              repeat={animLoops(
+                shapeTarget?.pieAnim,
+                shapeTarget?.pieAnimRepeat,
+                PIE_LOOPING_ANIMS,
+              )}
               onSet={props.onSetPieAnim}
               onSetSpeed={props.onSetPieAnimSpeed}
               onSetRepeat={props.onSetPieAnimRepeat}

@@ -9,7 +9,13 @@
 
 import { useId } from 'react';
 
-import { ANIMATION_SPEED_FACTOR, clampPercent, type ShapeElement } from '@livediagram/diagram';
+import {
+  ANIMATION_SPEED_FACTOR,
+  animLoops,
+  clampPercent,
+  PROGRESS_LOOPING_ANIMS,
+  type ShapeElement,
+} from '@livediagram/diagram';
 
 // The speed + iteration custom properties the `lvd-prog-*` keyframes read.
 // `fill` defaults to playing once and holding; `pulse` / `stripes` default to
@@ -17,7 +23,7 @@ import { ANIMATION_SPEED_FACTOR, clampPercent, type ShapeElement } from '@livedi
 function progressAnimStyle(el: ShapeElement): React.CSSProperties | undefined {
   const anim = el.progressAnim;
   if (!anim) return undefined;
-  const loops = el.progressAnimRepeat ?? anim !== 'fill';
+  const loops = animLoops(anim, el.progressAnimRepeat, PROGRESS_LOOPING_ANIMS);
   return {
     '--lvd-prog-speed': ANIMATION_SPEED_FACTOR[el.progressAnimSpeed ?? 'normal'],
     '--lvd-prog-iter': loops ? 'infinite' : 1,
