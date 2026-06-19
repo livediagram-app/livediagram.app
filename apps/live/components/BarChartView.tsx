@@ -25,7 +25,7 @@ export function BarChartView({
   palette?: readonly string[];
 }) {
   const { w, h, data, showLegend, colorAt } = chartFrame(element, palette);
-  const { hover, markProps } = useChartHover();
+  const { hover, markProps } = useChartHover<number>();
   const maxVal = data.reduce((m, d) => Math.max(m, Math.max(0, d.value)), 0) || 1;
   const legendW = showLegend ? Math.max(0, Math.min(w * 0.4, 120)) : 0;
   const barAreaW = w - legendW;

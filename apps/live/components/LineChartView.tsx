@@ -7,13 +7,13 @@
 // animation (`pieAnim` -> lvd-pie-*) + legend toggle. The line + point group
 // animates; the axes + x-labels stay still.
 
-import { useState } from 'react';
 import {
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   type ShapeElement,
 } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
+import { useChartHover } from '@/hooks/useChartHover';
 import { ChartLegend } from './ChartLegend';
 import { ChartTooltip } from './ChartTooltip';
 
@@ -29,7 +29,9 @@ export function LineChartView({
   palette?: readonly string[];
 }) {
   const { w, h, showLegend, colorAt } = chartFrame(element, palette);
-  const [hover, setHover] = useState<{ s: number; i: number } | null>(null);
+  const { hover, markProps } = useChartHover<{ s: number; i: number }>(
+    (a, b) => a.s === b.s && a.i === b.i,
+  );
   const categories =
     element.lineCategories && element.lineCategories.length > 0
       ? element.lineCategories
@@ -112,11 +114,7 @@ export function LineChartView({
                     cy={yAt(valAt(si, i))}
                     r={3}
                     fill={color}
-                    style={{ pointerEvents: 'auto' }}
-                    onPointerEnter={() => setHover({ s: si, i })}
-                    onPointerLeave={() =>
-                      setHover((p) => (p && p.s === si && p.i === i ? null : p))
-                    }
+                    {...markProps({ s: si, i })}
                   />
                 ))}
               </g>

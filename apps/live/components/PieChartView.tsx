@@ -28,7 +28,7 @@ export function PieChartView({
   palette?: readonly string[];
 }) {
   const { w, h, data: slices, showLegend, colorAt } = chartFrame(element, palette);
-  const { hover, markProps } = useChartHover();
+  const { hover, markProps } = useChartHover<number>();
   const total = slices.reduce((sum, s) => sum + Math.max(0, s.value), 0) || 1;
   // Legend takes a right-hand column (toggleable, on by default); the pie fills
   // the remaining left area, or the whole box when the legend is off.
