@@ -543,12 +543,17 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {marquee ? (
         <div
           aria-hidden
-          className="pointer-events-none fixed z-30 rounded-sm border border-brand-500 bg-brand-500/10"
+          // Border + faint fill take the active tab theme's accent (elementStroke,
+          // else the brand sky) so the marquee suits the tab. color-mix keeps the
+          // 12% fill working whatever colour format the theme uses.
+          className="pointer-events-none fixed z-30 rounded-sm border"
           style={{
             left: Math.min(marquee.startX, marquee.currentX),
             top: Math.min(marquee.startY, marquee.currentY),
             width: Math.abs(marquee.currentX - marquee.startX),
             height: Math.abs(marquee.currentY - marquee.startY),
+            borderColor: paletteTheme.elementStroke ?? '#0ea5e9',
+            backgroundColor: `color-mix(in srgb, ${paletteTheme.elementStroke ?? '#0ea5e9'} 12%, transparent)`,
           }}
         />
       ) : null}
