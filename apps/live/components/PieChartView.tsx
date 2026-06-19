@@ -8,9 +8,9 @@
 // deterministic + reduced-motion-safe like the other element animations. The
 // first of the chart family, so the anim set is its own.
 
-import { useState } from 'react';
 import { type ShapeElement } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
+import { useChartHover } from '@/hooks/useChartHover';
 import { ChartLegend } from './ChartLegend';
 import { ChartTooltip } from './ChartTooltip';
 
@@ -28,7 +28,7 @@ export function PieChartView({
   palette?: readonly string[];
 }) {
   const { w, h, data: slices, showLegend, colorAt } = chartFrame(element, palette);
-  const [hover, setHover] = useState<number | null>(null);
+  const { hover, markProps } = useChartHover();
   const total = slices.reduce((sum, s) => sum + Math.max(0, s.value), 0) || 1;
   // Legend takes a right-hand column (toggleable, on by default); the pie fills
   // the remaining left area, or the whole box when the legend is off.
@@ -79,17 +79,9 @@ export function PieChartView({
         aria-hidden
       >
         <g className={group.className} style={group.style}>
-          {wedges.map((wedge, i) => {
-            // pointer-events:auto re-enables hover on the mark (the svg is
-            // pointer-events-none); pointerdown still bubbles to the element
-            // wrapper, so selecting / dragging the chart is unaffected.
-            const hoverProps = {
-              style: { pointerEvents: 'auto' as const },
-              onPointerEnter: () => setHover(i),
-              onPointerLeave: () => setHover((h) => (h === i ? null : h)),
-            };
-            return wedge.full ? (
-              <circle key={i} cx={cx} cy={cy} r={rad} fill={wedge.color} {...hoverProps} />
+          {wedges.map((wedge, i) =>
+            wedge.full ? (
+              <circle key={i} cx={cx} cy={cy} r={rad} fill={wedge.color} {...markProps(i)} />
             ) : (
               <path
                 key={i}
@@ -97,10 +89,10 @@ export function PieChartView({
                 fill={wedge.color}
                 stroke="#ffffff"
                 strokeWidth={1}
-                {...hoverProps}
+                {...markProps(i)}
               />
-            );
-          })}
+            ),
+          )}
         </g>
       </svg>
       {hover !== null && wedges[hover] ? (

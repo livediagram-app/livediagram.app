@@ -7,9 +7,9 @@
 // edited from the context menu's Data category. The slice group carries the
 // `lvd-pie-*` animation (grow / pop / spin / pulse), reduced-motion-safe.
 
-import { useState } from 'react';
 import { type ShapeElement } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
+import { useChartHover } from '@/hooks/useChartHover';
 import { ChartLegend } from './ChartLegend';
 import { ChartTooltip } from './ChartTooltip';
 
@@ -25,7 +25,7 @@ export function BarChartView({
   palette?: readonly string[];
 }) {
   const { w, h, data, showLegend, colorAt } = chartFrame(element, palette);
-  const [hover, setHover] = useState<number | null>(null);
+  const { hover, markProps } = useChartHover();
   const maxVal = data.reduce((m, d) => Math.max(m, Math.max(0, d.value)), 0) || 1;
   const legendW = showLegend ? Math.max(0, Math.min(w * 0.4, 120)) : 0;
   const barAreaW = w - legendW;
@@ -74,11 +74,7 @@ export function BarChartView({
                 height={barH}
                 rx={Math.min(3, barW / 4)}
                 fill={colorAt(i, d)}
-                // pointer-events:auto re-enables hover (the svg is none);
-                // pointerdown still bubbles to the wrapper so drag/select works.
-                style={{ pointerEvents: 'auto' }}
-                onPointerEnter={() => setHover(i)}
-                onPointerLeave={() => setHover((prev) => (prev === i ? null : prev))}
+                {...markProps(i)}
               />
             );
           })}
