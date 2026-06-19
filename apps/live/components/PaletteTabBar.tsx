@@ -89,6 +89,10 @@ export function PaletteTabBar({
           value={activeId}
           align="right"
           variant="flush"
+          // Grow to fit every category (Shapes / Tools / … / Data / Devices /
+          // Icons / Technology) rather than capping at max-h + scrolling — the
+          // list is short and fixed, so a scrollbar just looked cramped.
+          autoHeight
           onChange={setActiveId}
           options={tabs.map((tab) => ({ id: tab.id, label: tab.label, icon: tab.icon }))}
         />
