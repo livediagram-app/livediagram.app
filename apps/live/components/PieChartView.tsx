@@ -16,6 +16,7 @@ import {
   PIE_PALETTE,
   type ShapeElement,
 } from '@livediagram/diagram';
+import { animClass } from '@/lib/icons';
 
 export function PieChartView({
   element,
@@ -85,7 +86,7 @@ export function PieChartView({
         className="pointer-events-none absolute inset-0"
         aria-hidden
       >
-        <g className={anim ? `lvd-pie-${anim}` : undefined} style={groupStyle}>
+        <g className={animClass('pie', anim)} style={groupStyle}>
           {wedges.map((wedge, i) =>
             wedge.full ? (
               <circle key={i} cx={cx} cy={cy} r={rad} fill={wedge.color} />

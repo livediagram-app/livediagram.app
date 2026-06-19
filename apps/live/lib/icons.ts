@@ -37,13 +37,21 @@ export const PALETTE_DND_MIME = 'application/x-livediagram-palette';
 // part 1 then part 2, so ICON_CATALOG[0] is still the default icon.
 export const ICON_CATALOG: IconDef[] = [...ICON_CATALOG_1, ...ICON_CATALOG_2];
 
+// The globals.css class for an `lvd-{prefix}-{anim}` keyframe set (undefined
+// anim = static, no class). The shared shape behind the per-element animation
+// classes — icon glyphs, rating stars, pie slices — so the `lvd-` naming
+// convention lives in one place.
+export function animClass(prefix: string, anim: string | null | undefined): string | undefined {
+  return anim ? `lvd-${prefix}-${anim}` : undefined;
+}
+
 // Animated icons (spec/09): any icon can opt into a looping animation via the
 // icon context menu (the `iconAnimation` field on the element). This maps the
 // chosen IconAnimation to its globals.css class; undefined = a static glyph.
 // (Previously a few icon ids were hard-wired to always animate; that's gone —
 // the catalogue glyphs are static unless the element asks for motion.)
 export function iconAnimationClass(anim: IconAnimation | undefined): string | undefined {
-  return anim ? `lvd-icon-${anim}` : undefined;
+  return animClass('icon', anim);
 }
 
 // The duration multiplier for an icon animation, exposed to the `lvd-icon-*`
