@@ -1328,6 +1328,18 @@ function SpeedTiles({
   );
 }
 
+// The glyph-over-label content inside one animation-picker tile (an illustrated
+// kind glyph above its capitalised name). Shared by the Animation / Flow / Icon
+// / Progress tile grids so the four can't drift on spacing or type scale.
+function TileLabel({ glyph, label }: { glyph: ReactNode; label: string }) {
+  return (
+    <span className="flex flex-col items-center gap-0.5">
+      {glyph}
+      <span className="text-[9px] capitalize leading-none">{label}</span>
+    </span>
+  );
+}
+
 // Boxed-element Animation control: an illustrated tile per kind (None / Pulse /
 // Blink / Glow / Trace / Gradient / Bounce / Wobble) plus the Speed row once one
 // is active. Shared by the single and multi-select menus.
@@ -1347,10 +1359,7 @@ function AnimationTiles({
       <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
         {([null, ...ELEMENT_ANIMATIONS] as (ElementAnimation | null)[]).map((v) => (
           <SizeButton key={v ?? 'none'} active={animation === v} onClick={() => onSet(v)}>
-            <span className="flex flex-col items-center gap-0.5">
-              <AnimationKindGlyph kind={v} />
-              <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
-            </span>
+            <TileLabel glyph={<AnimationKindGlyph kind={v} />} label={v ?? 'None'} />
           </SizeButton>
         ))}
       </div>
@@ -1377,10 +1386,7 @@ function FlowTiles({
       <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
         {([null, ...ARROW_FLOWS] as (ArrowFlow | null)[]).map((v) => (
           <SizeButton key={v ?? 'none'} active={flow === v} onClick={() => onSet(v)}>
-            <span className="flex flex-col items-center gap-0.5">
-              <FlowKindGlyph kind={v} />
-              <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
-            </span>
+            <TileLabel glyph={<FlowKindGlyph kind={v} />} label={v ?? 'None'} />
           </SizeButton>
         ))}
       </div>
@@ -1409,10 +1415,7 @@ function IconAnimationTiles({
       <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
         {([null, ...ICON_ANIMATIONS] as (IconAnimation | null)[]).map((v) => (
           <SizeButton key={v ?? 'none'} active={animation === v} onClick={() => onSet(v)}>
-            <span className="flex flex-col items-center gap-0.5">
-              <IconAnimKindGlyph kind={v} />
-              <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
-            </span>
+            <TileLabel glyph={<IconAnimKindGlyph kind={v} />} label={v ?? 'None'} />
           </SizeButton>
         ))}
       </div>
@@ -1506,10 +1509,7 @@ function ProgressAnimTiles({
       <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
         {([null, ...PROGRESS_ANIMS] as (ProgressAnim | null)[]).map((v) => (
           <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
-            <span className="flex flex-col items-center gap-0.5">
-              <ProgressAnimKindGlyph kind={v} />
-              <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
-            </span>
+            <TileLabel glyph={<ProgressAnimKindGlyph kind={v} />} label={v ?? 'None'} />
           </SizeButton>
         ))}
       </div>
