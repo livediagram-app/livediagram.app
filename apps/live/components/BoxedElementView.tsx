@@ -31,7 +31,7 @@ import {
   type TextRun,
   type TextSize,
 } from '@livediagram/diagram';
-import type { DragMode } from '@/lib/canvas';
+import { iconDropSide, type DragMode } from '@/lib/canvas';
 import { renderLabel } from './element-labels';
 import {
   ALIGN_ITEMS,
@@ -431,19 +431,12 @@ function BoxedElementViewImpl({
   // releasing (null = not currently a drag target).
   const acceptsIconDrop = !!onDropIcon && acceptsInlineIcon(element);
   const [dropSide, setDropSide] = useState<IconPosition | null>(null);
-  // Which side a point sits nearest, normalised by half-extent so a
-  // wide-but-short box still reads top / bottom correctly.
-  const sideFromPoint = (clientX: number, clientY: number, rect: DOMRect): IconPosition => {
-    const dx = (clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
-    const dy = (clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);
-    return Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'above' : 'below';
-  };
   const handleIconDragOver = (e: ReactDragEvent) => {
     if (!acceptsIconDrop || !e.dataTransfer.types.includes(ICON_DND_MIME)) return;
     // preventDefault marks this element as a valid drop target.
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
-    const side = sideFromPoint(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect());
+    const side = iconDropSide(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect());
     setDropSide((prev) => (prev === side ? prev : side));
   };
   const handleIconDragLeave = () => setDropSide(null);
@@ -457,7 +450,7 @@ function BoxedElementViewImpl({
     onDropIcon!(
       element.id,
       iconId,
-      sideFromPoint(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect()),
+      iconDropSide(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect()),
     );
   };
   // Reposition the EXISTING inline icon by dragging it (when its shape is
@@ -475,12 +468,12 @@ function BoxedElementViewImpl({
     if (!wrapper) return;
     const iconId = element.iconId;
     const move = (ev: PointerEvent) => {
-      setDropSide(sideFromPoint(ev.clientX, ev.clientY, wrapper.getBoundingClientRect()));
+      setDropSide(iconDropSide(ev.clientX, ev.clientY, wrapper.getBoundingClientRect()));
     };
     const up = (ev: PointerEvent) => {
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
-      const side = sideFromPoint(ev.clientX, ev.clientY, wrapper.getBoundingClientRect());
+      const side = iconDropSide(ev.clientX, ev.clientY, wrapper.getBoundingClientRect());
       setDropSide(null);
       onDropIcon!(element.id, iconId, side);
     };

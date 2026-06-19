@@ -3,8 +3,19 @@ import {
   type ArrowElement,
   type BoxedElement,
   type Element,
+  type IconPosition,
   type ShapeElement,
 } from '@livediagram/diagram';
+
+// Which side of a boxed element a screen point sits nearest, normalised by
+// half-extent so a wide-but-short box still reads top / bottom correctly.
+// Shared by the icon-drop hover preview (BoxedElementView) and the drop-commit
+// (useEditorDrag) so both pick the same side.
+export function iconDropSide(clientX: number, clientY: number, rect: DOMRect): IconPosition {
+  const dx = (clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
+  const dy = (clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);
+  return Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'above' : 'below';
+}
 
 // Convert a pointer's screen coords into canvas coords: shift by the canvas
 // element's top-left, then divide by zoom (the canvas transform is

@@ -57,6 +57,7 @@ import { getTheme } from '@/lib/themes';
 import {
   ALIGN_SNAP_THRESHOLD,
   cornerOf,
+  iconDropSide,
   snapModeOf,
   MIN_SIZE,
   nextBounds,
@@ -1502,16 +1503,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             const target = d.activeTab.elements.find((el) => el.id === id);
             if (target && acceptsInlineIcon(target) && host) {
               const rect = host.getBoundingClientRect();
-              const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
-              const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);
-              const position =
-                Math.abs(dx) >= Math.abs(dy)
-                  ? dx < 0
-                    ? 'left'
-                    : 'right'
-                  : dy < 0
-                    ? 'above'
-                    : 'below';
+              const position = iconDropSide(e.clientX, e.clientY, rect);
               d.onIconElementDroppedOnShape(drag.primaryId, id, position);
             }
             break;
