@@ -29,6 +29,7 @@ import { useCanvasMobileDock } from '@/hooks/useCanvasMobileDock';
 import { drawIntentCursor } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { useCanvasPanAndMarquee } from '@/hooks/useCanvasPanAndMarquee';
+import { useQuickRing } from '@/hooks/useQuickRing';
 import { useLongPress } from '@/hooks/useLongPress';
 import { getTheme } from '@/lib/themes';
 import { FloatingToolbar } from './FloatingToolbar';
@@ -135,24 +136,9 @@ export function Canvas(props: CanvasProps) {
   // above the Palette without overlapping. Desktop ignores it (the
   // Explorer pins to top-left there, not as a banner).
   const [explorerBottomY, setExplorerBottomY] = useState<number>(0);
-  // Which quick-connect ring (if any) is currently open, lifted here so
-  // only one opens at a time and the selection toolbar can dodge the
-  // top ring (see SelectionPopover forceBelow below). Reset whenever the
-  // selection changes, and closed by any pointerdown outside a ring.
-  const [quickRingOpen, setQuickRingOpen] = useState<'right' | 'below' | 'left' | 'above' | null>(
-    null,
-  );
-  useEffect(() => {
-    setQuickRingOpen(null);
-  }, [selectedId]);
-  useEffect(() => {
-    if (!quickRingOpen) return;
-    const onDown = (e: PointerEvent) => {
-      if (!(e.target as HTMLElement)?.closest?.('[data-quick-ring]')) setQuickRingOpen(null);
-    };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
-  }, [quickRingOpen]);
+  // Which quick-connect ring (if any) is open. Self-contained state + reset /
+  // outside-close effects live in useQuickRing.
+  const [quickRingOpen, setQuickRingOpen] = useQuickRing(selectedId);
   // Mobile dock state + toggle (compact button row replacing the four
   // full-width collapse banners on mobile). See useCanvasMobileDock; the
   // popover anchor math is the tested computeDockAnchor.
