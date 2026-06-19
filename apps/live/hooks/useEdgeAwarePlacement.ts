@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 type XY = { x: number; y: number };
@@ -21,9 +21,17 @@ type Bounds = { x: number; y: number; width: number; height: number };
 // bounds / offset / placeAbove changes that actually move the box.
 //
 // The box ref must be attached to the floating element so its measured rect can
-// be checked against the viewport. Callers derive their own base top/left from
-// the returned `placeAbove` and add `adjust`.
-export function useEdgeAwarePlacement(bounds: Bounds, canvasOffset: XY, zoom: number) {
+// be checked against the viewport. `style` is the ready-to-spread placement:
+// the box is horizontally centred over the selection and sits `gap` (in canvas
+// units — the caller divides by zoom) above or below it, counter-scaled by
+// 1/zoom so it stays a constant on-screen size. Callers still read `placeAbove`
+// for any above/below-dependent chrome (e.g. a title badge's side).
+export function useEdgeAwarePlacement(
+  bounds: Bounds,
+  canvasOffset: XY,
+  zoom: number,
+  gap: number,
+): { ref: React.RefObject<HTMLDivElement | null>; placeAbove: boolean; style: CSSProperties } {
   const ref = useRef<HTMLDivElement>(null);
   const [adjust, setAdjust] = useState<XY>({ x: 0, y: 0 });
   const flipSigRef = useRef('');
@@ -61,5 +69,14 @@ export function useEdgeAwarePlacement(bounds: Bounds, canvasOffset: XY, zoom: nu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bounds.x, bounds.y, bounds.width, bounds.height, canvasOffset.x, canvasOffset.y, placeAbove]);
 
-  return { ref, adjust, placeAbove };
+  const baseLeft = bounds.x + bounds.width / 2;
+  const baseTop = placeAbove ? bounds.y - gap : bounds.y + bounds.height + gap;
+  const style: CSSProperties = {
+    left: baseLeft + adjust.x,
+    top: baseTop + adjust.y,
+    transform: `translate(-50%, ${placeAbove ? '-100%' : '0'}) scale(${1 / zoom})`,
+    transformOrigin: placeAbove ? 'center bottom' : 'center top',
+  };
+
+  return { ref, placeAbove, style };
 }

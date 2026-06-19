@@ -26,11 +26,7 @@ export function FloatingToolbar({
   title?: string;
   children: ReactNode;
 }) {
-  const { ref, adjust, placeAbove } = useEdgeAwarePlacement(bounds, canvasOffset, zoom);
-
-  const gap = GAP / zoom;
-  const baseTop = placeAbove ? bounds.y - gap : bounds.y + bounds.height + gap;
-  const baseLeft = bounds.x + bounds.width / 2;
+  const { ref, placeAbove, style } = useEdgeAwarePlacement(bounds, canvasOffset, zoom, GAP / zoom);
 
   return (
     <div
@@ -41,12 +37,7 @@ export function FloatingToolbar({
         e.stopPropagation();
       }}
       className="pointer-events-auto absolute z-20 flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
-      style={{
-        left: baseLeft + adjust.x,
-        top: baseTop + adjust.y,
-        transform: `translate(-50%, ${placeAbove ? '-100%' : '0'}) scale(${1 / zoom})`,
-        transformOrigin: placeAbove ? 'center bottom' : 'center top',
-      }}
+      style={style}
     >
       {title ? (
         <span

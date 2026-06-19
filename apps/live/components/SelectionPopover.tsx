@@ -79,11 +79,14 @@ export function SelectionPopover({
   title,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
-  const { ref, adjust, placeAbove } = useEdgeAwarePlacement(bounds, canvasOffset, zoom);
-
-  const visualGap = (compact ? GAP_COMPACT : GAP_DEFAULT) / zoom;
-  const baseTop = placeAbove ? bounds.y - visualGap : bounds.y + bounds.height + visualGap;
-  const baseLeft = bounds.x + bounds.width / 2;
+  // Counter-scaled placement: the popover renders at its natural on-screen size
+  // regardless of zoom, pinned to the selection's nearest centre edge.
+  const { ref, placeAbove, style } = useEdgeAwarePlacement(
+    bounds,
+    canvasOffset,
+    zoom,
+    (compact ? GAP_COMPACT : GAP_DEFAULT) / zoom,
+  );
 
   return (
     <div
@@ -94,15 +97,7 @@ export function SelectionPopover({
         e.stopPropagation();
       }}
       className="pointer-events-auto absolute z-20 flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
-      style={{
-        left: baseLeft + adjust.x,
-        top: baseTop + adjust.y,
-        // Counter-scale so the popover renders at its natural on-screen
-        // size regardless of canvas zoom. Origin pinned to the centre edge
-        // closest to the selected element so the popover stays attached.
-        transform: `translate(-50%, ${placeAbove ? '-100%' : '0'}) scale(${1 / zoom})`,
-        transformOrigin: placeAbove ? 'center bottom' : 'center top',
-      }}
+      style={style}
     >
       {title ? (
         <span
