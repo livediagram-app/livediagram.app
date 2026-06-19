@@ -22,14 +22,14 @@ import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { AnimatedCanvasBackground } from './AnimatedCanvasBackground';
-import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
+import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useCanvasMobileDock } from '@/hooks/useCanvasMobileDock';
 import { drawIntentCursor } from '@/lib/draw-mode';
-import { track } from '@/lib/telemetry';
 import { useCanvasPanAndMarquee } from '@/hooks/useCanvasPanAndMarquee';
 import { useQuickRing } from '@/hooks/useQuickRing';
+import { useZoomControls } from '@/hooks/useZoomControls';
 import { useLongPress } from '@/hooks/useLongPress';
 import { getTheme } from '@/lib/themes';
 import { FloatingToolbar } from './FloatingToolbar';
@@ -167,20 +167,11 @@ export function Canvas(props: CanvasProps) {
     isPinchingRef,
   });
 
-  const zoomStep = 0.1;
-  const clampZoom = (z: number) => Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
-  const handleZoomIn = () => {
-    setViewportZoom(clampZoom(viewportZoom + zoomStep));
-    track('Canvas', 'Zoomed', 'In');
-  };
-  const handleZoomOut = () => {
-    setViewportZoom(clampZoom(viewportZoom - zoomStep));
-    track('Canvas', 'Zoomed', 'Out');
-  };
-  const handleResetZoom = () => {
-    setViewportZoom(1);
-    track('Canvas', 'Zoomed', 'Reset');
-  };
+  const {
+    zoomIn: handleZoomIn,
+    zoomOut: handleZoomOut,
+    resetZoom: handleResetZoom,
+  } = useZoomControls(viewportZoom, setViewportZoom);
 
   // Selection-display derivation (primary element, bounds, and every
   // "show this chrome?" predicate) lives in lib/canvas-selection.ts so
