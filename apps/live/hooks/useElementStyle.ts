@@ -42,6 +42,7 @@ import {
   type BorderStyle,
   type Element,
   type Padding,
+  type ShapeElement,
   type ShapeKind,
   type Tab,
   type TextAlignX,
@@ -598,57 +599,29 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     );
     track('Element', 'Changed', 'IconAnimation');
   };
-  // Progress elements (spec/46). The percentage + how its fill animates;
-  // both apply only to progress shapes. `null` clears the animation.
-  const setProgressSelected = (value: number) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    const clamped = clampPercent(value);
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && isProgressShape(el.shape)
-          ? { ...el, progress: clamped }
-          : el,
-      ),
-    );
-    track('Element', 'Changed', 'Progress');
-  };
-  const setProgressAnimSelected = (value: ProgressAnim | null) => {
+  // Progress elements (spec/46): the percentage + how its fill animates, all
+  // gated to progress shapes. The four setters differ only in the patched
+  // field + telemetry type, so they share one body.
+  const setProgressFieldSelected = (patch: Partial<ShapeElement>, telemetryType: string) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     commit((els) =>
       els.map((el) =>
         ids.has(el.id) && el.type === 'shape' && isProgressShape(el.shape)
-          ? { ...el, progressAnim: value ?? undefined }
+          ? { ...el, ...patch }
           : el,
       ),
     );
-    track('Element', 'Changed', 'ProgressAnim');
+    track('Element', 'Changed', telemetryType);
   };
-  const setProgressAnimSpeedSelected = (value: AnimationSpeed) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && isProgressShape(el.shape)
-          ? { ...el, progressAnimSpeed: value }
-          : el,
-      ),
-    );
-    track('Element', 'Changed', 'ProgressAnim');
-  };
-  const setProgressAnimRepeatSelected = (value: boolean) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && isProgressShape(el.shape)
-          ? { ...el, progressAnimRepeat: value }
-          : el,
-      ),
-    );
-    track('Element', 'Changed', 'ProgressAnim');
-  };
+  const setProgressSelected = (value: number) =>
+    setProgressFieldSelected({ progress: clampPercent(value) }, 'Progress');
+  const setProgressAnimSelected = (value: ProgressAnim | null) =>
+    setProgressFieldSelected({ progressAnim: value ?? undefined }, 'ProgressAnim');
+  const setProgressAnimSpeedSelected = (value: AnimationSpeed) =>
+    setProgressFieldSelected({ progressAnimSpeed: value }, 'ProgressAnim');
+  const setProgressAnimRepeatSelected = (value: boolean) =>
+    setProgressFieldSelected({ progressAnimRepeat: value }, 'ProgressAnim');
   const setAnimationSpeedSelected = (value: AnimationSpeed) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
