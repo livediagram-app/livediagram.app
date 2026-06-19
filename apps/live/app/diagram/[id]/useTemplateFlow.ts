@@ -138,9 +138,9 @@ export function useTemplateFlow(opts: {
         };
       }),
     );
-    // Auto-select when a template produces a single element (today: blank
-    // diagram's seeded rectangle) so the user can immediately rename or edit
-    // it. Multi-element templates leave the selection cleared.
+    // Auto-select when a template produces a single element so the user can
+    // immediately rename or edit it. Multi-element templates — and the now
+    // truly-empty Blank template (zero elements) — leave the selection cleared.
     setSelectedId(elements.length === 1 ? elements[0]!.id : null);
     setEditingId(null);
   };

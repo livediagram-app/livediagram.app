@@ -83,7 +83,7 @@ export function buildTemplatedTab(
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
   switch (kind) {
     case 'blank':
-      return buildBlank(cx, cy);
+      return buildBlank();
     case 'mindmap':
       return buildMindMap(cx, cy);
     case 'mindmap-tree':
@@ -145,20 +145,11 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
   }
 }
 
-// A truly blank canvas is intimidating, so the "Blank diagram" template
-// drops a single centred rectangle that the user can rename and grow from.
-function buildBlank(cx: number, cy: number): Element[] {
-  const w = 220;
-  const h = 100;
-  return [
-    {
-      ...createShape('square', cx - w / 2, cy - h / 2),
-      width: w,
-      height: h,
-      label: 'Blank Diagram',
-      textSize: 'md' as const,
-    },
-  ];
+// The "Blank diagram" template is truly blank — no seeded element. The user
+// starts from an empty canvas (with the empty-canvas hint banner, spec/14) and
+// adds their first element from the palette / Quick Start.
+function buildBlank(): Element[] {
+  return [];
 }
 
 // Tree mind map (spec/09): a left-to-right hierarchy — root, a vertical stack

@@ -91,36 +91,42 @@ describe('buildTemplate translation invariance', () => {
   const DX = 137;
   const DY = -421;
 
-  it.each(ALL_KINDS)('%s: every coordinate shifts by (cx, cy)', (kind) => {
-    const atOrigin = buildTemplate(kind, 0, 0);
-    const atOffset = buildTemplate(kind, DX, DY);
+  // 'blank' is intentionally empty (no seeded element, spec/14), so it has no
+  // coordinates to shift — excluded from this invariance check (it stays in
+  // ALL_KINDS above for the exhaustiveness assertion).
+  it.each(ALL_KINDS.filter((k) => k !== 'blank'))(
+    '%s: every coordinate shifts by (cx, cy)',
+    (kind) => {
+      const atOrigin = buildTemplate(kind, 0, 0);
+      const atOffset = buildTemplate(kind, DX, DY);
 
-    expect(atOffset.length).toBe(atOrigin.length);
-    expect(atOrigin.length).toBeGreaterThan(0);
+      expect(atOffset.length).toBe(atOrigin.length);
+      expect(atOrigin.length).toBeGreaterThan(0);
 
-    for (let i = 0; i < atOrigin.length; i++) {
-      const a = atOrigin[i]!;
-      const b = atOffset[i]!;
-      // Element types stay aligned (a 'shape' at position N stays
-      // a 'shape' at position N regardless of the centre): the
-      // builder is a pure function of (kind, cx, cy).
-      expect(b.type).toBe(a.type);
+      for (let i = 0; i < atOrigin.length; i++) {
+        const a = atOrigin[i]!;
+        const b = atOffset[i]!;
+        // Element types stay aligned (a 'shape' at position N stays
+        // a 'shape' at position N regardless of the centre): the
+        // builder is a pure function of (kind, cx, cy).
+        expect(b.type).toBe(a.type);
 
-      const ca = coordsOf(a);
-      const cb = coordsOf(b);
-      expect(cb.length).toBe(ca.length);
-      for (let j = 0; j < ca.length; j++) {
-        // toBeCloseTo (not toBe) because trig-based builders
-        // (mindmap branches, flywheel sectors) introduce IEEE 754
-        // rounding when the same trig terms get added in different
-        // orders. The contract is "shift by (cx, cy)", not "shift
-        // by exactly (cx, cy) bit-for-bit". Five-decimal precision
-        // is well below sub-pixel and well above floating drift.
-        expect(cb[j]!.x - ca[j]!.x).toBeCloseTo(DX, 5);
-        expect(cb[j]!.y - ca[j]!.y).toBeCloseTo(DY, 5);
+        const ca = coordsOf(a);
+        const cb = coordsOf(b);
+        expect(cb.length).toBe(ca.length);
+        for (let j = 0; j < ca.length; j++) {
+          // toBeCloseTo (not toBe) because trig-based builders
+          // (mindmap branches, flywheel sectors) introduce IEEE 754
+          // rounding when the same trig terms get added in different
+          // orders. The contract is "shift by (cx, cy)", not "shift
+          // by exactly (cx, cy) bit-for-bit". Five-decimal precision
+          // is well below sub-pixel and well above floating drift.
+          expect(cb[j]!.x - ca[j]!.x).toBeCloseTo(DX, 5);
+          expect(cb[j]!.y - ca[j]!.y).toBeCloseTo(DY, 5);
+        }
       }
-    }
-  });
+    },
+  );
 
   it.each(ALL_KINDS)('%s: returns a fresh array per call (no shared mutable state)', (kind) => {
     // Builders are documented as pure, returning "a fresh array of

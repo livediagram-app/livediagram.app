@@ -7,6 +7,8 @@ import type { TemplateKind } from '@/lib/templates';
 export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'blank':
+      // Truly blank now (no seeded box): show an empty dashed canvas with a
+      // faint centre "+" — "start from nothing, add your own".
       return (
         <svg width="60" height="36" viewBox="0 0 60 40" aria-hidden>
           <rect
@@ -18,7 +20,10 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             fill="none"
             stroke="rgb(148 163 184)"
             strokeWidth="1.5"
+            strokeDasharray="4 3"
           />
+          <line x1="30" y1="14" x2="30" y2="26" stroke="rgb(148 163 184)" strokeWidth="1.5" />
+          <line x1="24" y1="20" x2="36" y2="20" stroke="rgb(148 163 184)" strokeWidth="1.5" />
         </svg>
       );
     case 'mindmap':

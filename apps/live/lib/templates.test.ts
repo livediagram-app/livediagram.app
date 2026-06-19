@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTemplatedTab } from './template-builders';
+import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
   TEMPLATES,
   TEMPLATE_CATEGORIES,
@@ -91,10 +91,12 @@ describe('TEMPLATES catalogue', () => {
     expect(kinds.size).toBe(ALL_KINDS.length);
   });
 
-  it('every kind builds to at least one element (the buildTemplate switch handles every union member)', () => {
+  it('every kind builds without throwing (the buildTemplate switch handles every union member)', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
-      expect(tab.elements.length).toBeGreaterThan(0);
+      // 'blank' is intentionally empty (spec/14); every other kind seeds
+      // content. Either way the switch must handle the union member.
+      expect(tab.elements.length).toBeGreaterThan(kind === 'blank' ? -1 : 0);
     }
   });
 });
@@ -165,10 +167,10 @@ describe('buildTemplatedTab', () => {
   });
 
   it('recolours shape elements with the chosen theme palette', () => {
-    // `blank` produces a single shape, which keeps the assertion
-    // narrow: any drift in the recolouring loop shows up here as a
-    // mismatched fill / stroke / text triple.
-    const tab = buildTemplatedTab('blank', 'slate', 'tab-1', 'blank');
+    // `flowchart` seeds plain shapes (the blank template is now empty,
+    // spec/14), so its first shape pins the recolouring contract: a single-
+    // colour theme writes the same fill / stroke / text triple onto it.
+    const tab = buildTemplatedTab('flowchart', 'slate', 'tab-1', 'name');
     const slate = getTheme('slate');
     const shape = tab.elements.find((el) => el.type === 'shape');
     expect(shape).toBeDefined();
@@ -180,17 +182,17 @@ describe('buildTemplatedTab', () => {
   });
 
   it('leaves shape colours untouched when the theme provides no overrides', () => {
-    // The brand theme has all three element fields null. Recolouring
-    // should be a no-op so the template's own defaults show through.
-    const tab = buildTemplatedTab('blank', 'brand', 'tab-1', 'blank');
+    // The brand theme has all three element fields null, so recolouring is a
+    // no-op: the first shape keeps exactly the colours the raw builder gave it.
+    const raw = buildTemplate('flowchart', 0, 0).find((el) => el.type === 'shape');
+    const tab = buildTemplatedTab('flowchart', 'brand', 'tab-1', 'name');
     const shape = tab.elements.find((el) => el.type === 'shape');
     expect(shape).toBeDefined();
-    if (shape && shape.type === 'shape') {
-      // No fill/stroke/text fields written. The shape's defaults
-      // (whatever `createShape` chose) survive intact.
-      expect(shape.fillColor).toBeUndefined();
-      expect(shape.strokeColor).toBeUndefined();
-      expect(shape.textColor).toBeUndefined();
+    expect(raw).toBeDefined();
+    if (shape?.type === 'shape' && raw?.type === 'shape') {
+      expect(shape.fillColor).toBe(raw.fillColor);
+      expect(shape.strokeColor).toBe(raw.strokeColor);
+      expect(shape.textColor).toBe(raw.textColor);
     }
   });
 
