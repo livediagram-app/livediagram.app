@@ -49,6 +49,12 @@ jobs:
           # just lets the live editor actually send events. Unset (e.g.
           # local builds, OSS forks) keeps emission off.
           NEXT_PUBLIC_TELEMETRY_ENABLED: 'true'
+          # Show the "Continue with Google" OAuth button on the sign-in
+          # / get-started pages for the production build. Plain public
+          # flag, not a secret. Only takes effect when the Clerk key
+          # above is also set and Google SSO is enabled in the Clerk
+          # dashboard (see apps/live/lib/clerk-config.ts + spec/04).
+          NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED: 'true'
         run: pnpm build
 
       - name: Upload marketing build

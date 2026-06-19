@@ -21,10 +21,15 @@ export const clerkEnabled =
 export const clerkPublishableKey = clerkEnabled ? key : null;
 
 // Whether the sign-in / sign-up pages should show the "Continue with
-// Google" OAuth button. Disabled until the Google Cloud OAuth client
-// has been configured against Clerk's redirect URI
+// Google" OAuth button. Gated by `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED`
+// so dev tenants (which can use Clerk's shared Google credentials)
+// can turn it on before prod's own Google Cloud OAuth client exists.
+// The connection must be enabled in the Clerk dashboard and, for prod,
+// a Google Cloud OAuth client registered against Clerk's redirect URI
 // (`https://clerk.<domain>/v1/oauth_callback`) — without that the
 // button would surface a `redirect_uri_mismatch` error to the user.
-// The handlers stay in the code so flipping this flag re-enables
-// the button without re-implementing anything.
-export const googleOAuthEnabled = false;
+// Requires Clerk itself to be on (no point showing it in guest mode).
+// The handlers stay in the code so flipping this flag re-enables the
+// button without re-implementing anything.
+export const googleOAuthEnabled =
+  clerkEnabled && process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === 'true';
