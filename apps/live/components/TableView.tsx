@@ -30,6 +30,11 @@ import { describeLink } from '@/lib/link-label';
 // so it reads as the medium size.
 const CELL_FONT_PX: Record<string, number> = { sm: 11, md: 13, lg: 16, scale: 13 };
 
+// 'scale' cell text tracks the row height (≈40%), clamped to a legible range,
+// so it grows / shrinks as the table is resized. Shared by the table-wide
+// default and the per-cell override so the two can't drift.
+const scaleCellFontPx = (rowH: number): number => Math.max(9, Math.min(40, Math.round(rowH * 0.4)));
+
 const MIN_COL_PX = 30;
 const MIN_ROW_PX = 24;
 
@@ -289,7 +294,7 @@ export function TableView({
   const rowH = rows > 0 ? element.height / rows : element.height;
   const fontPx =
     element.textSize === 'scale'
-      ? Math.max(9, Math.min(40, Math.round(rowH * 0.4)))
+      ? scaleCellFontPx(rowH)
       : (CELL_FONT_PX[element.textSize ?? 'md'] ?? 13);
   const cellPad = PADDING_PX[element.padding ?? 'sm'];
   // Default header band: an OPAQUE tint of the grid stroke (the theme
@@ -516,7 +521,7 @@ export function TableView({
                     : 'center';
               const cellFontPx = cs?.textSize
                 ? cs.textSize === 'scale'
-                  ? Math.max(9, Math.min(40, Math.round(rowH * 0.4)))
+                  ? scaleCellFontPx(rowH)
                   : (CELL_FONT_PX[cs.textSize] ?? fontPx)
                 : fontPx;
               const isEditingCell = editing?.r === r && editing?.c === c;
