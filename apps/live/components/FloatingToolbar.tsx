@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/useEdgeAwarePlacement';
+import { FloatingTitle } from './FloatingTitle';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -39,15 +40,7 @@ export function FloatingToolbar({
       className="pointer-events-auto absolute z-20 flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
       style={style}
     >
-      {title ? (
-        <span
-          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 shadow-sm ring-1 ring-slate-200 dark:bg-slate-700 dark:text-white dark:ring-0 ${
-            placeAbove ? 'bottom-full mb-1' : 'top-full mt-1'
-          }`}
-        >
-          {title}
-        </span>
-      ) : null}
+      {title ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
       {children}
     </div>
   );
