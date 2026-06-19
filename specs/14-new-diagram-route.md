@@ -265,11 +265,25 @@ isn't the placeholder. (The template-order shuffle moved to a mount effect, off
 the lazy `useState` initializer, so the statically-prerendered HTML matches
 hydration.)
 
-The in-editor **"Browse templates"** flow (templates mode, opened on an empty
-tab) uses the **same two-step wizard**, with mode-appropriate controls: its
-far-left escape is **Cancel** (not Open Existing), it has no Skip, and its
-primary action is **Apply** (not Create Diagram). Only the visitor identity
-prompt stays a single-section, non-wizard surface.
+The in-editor template flow — titled **Quick Start** — uses the **same two-step
+wizard**, with mode-appropriate controls: its far-left escape is **Cancel** (not
+Open Existing), it has no Skip, and its primary action is **Apply** (not Create
+Diagram). Only the visitor identity prompt stays a single-section, non-wizard
+surface.
+
+**Quick Start opens only on an explicit request** — adding a tab
+(`useTabActions.addTab`) or the empty-canvas banner's **Quick Start** button,
+both of which set `templatePickerMode='templates'` (`templateGridOpen`). It no
+longer auto-opens just because a tab has no elements, so a freshly-created
+(truly blank) diagram lands on the canvas rather than behind the picker.
+
+The **empty-canvas hint** is a subdued, **dismissible bottom banner**
+(`EmptyCanvasBanner`), shown while the active tab has no elements — not the old
+centre-of-canvas card, which read as a half-finished modal. It shares the
+bottom-banner slot with the sign-in / theme banners (yielding to the sign-in
+one), hides while a draw tool is armed or Quick Start is open, and persists its
+dismissal per-device (`useDismissibleBanner`). Editors get a **Quick Start**
+button on it; viewers get a passive "nothing here yet" line.
 
 A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
 the card: thick multi-colour curved lines that slowly flow along their paths via

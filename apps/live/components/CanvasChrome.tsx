@@ -147,7 +147,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     handleResetZoom,
     handleZoomIn,
     handleZoomOut,
-    hydrated,
     marquee,
     minimalPanels,
     onToggleMinimalPanels,
@@ -187,7 +186,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onOpenCommentsForElement,
     onOpenDiagram,
     onOpenFullExplorer,
-    onOpenTemplatePicker,
     onRedo,
     onRenameCurrent,
     onRenameFolder,
@@ -381,60 +379,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     drawArrowSnaps.length > 0 ? [...snapTargets, ...drawArrowSnaps] : snapTargets;
   return (
     <>
-      {/* Hidden while a draw / placement tool is armed (pendingDraw): the
-          user is mid-gesture to add an element, so the "empty canvas"
-          welcome card would just be in the way / read as stale. */}
-      {hydrated && elements.length === 0 && !pendingDraw && !showTemplatePicker && !chromeHidden ? (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="pointer-events-none flex max-w-sm animate-fly-up-in flex-col items-center rounded-xl border border-slate-200 bg-white px-6 py-5 text-center shadow-md">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-500">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <rect x="3" y="6" width="10" height="10" rx="1.5" />
-                <circle cx="16" cy="14" r="5" />
-              </svg>
-            </div>
-            <p className="text-sm font-semibold text-slate-800">{tabName}</p>
-            <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Empty canvas
-            </p>
-            {readOnly ? (
-              // View-role visitors can't add elements or browse
-              // templates, so the editor copy + CTA would be
-              // misleading. Surface a passive "nothing here yet"
-              // line so the empty state still reads as intentional
-              // rather than broken.
-              <p className="mt-3 text-xs leading-relaxed text-slate-600">
-                Nothing has been added to this tab yet. The diagram's owner can build it out, and
-                your view will update live.
-              </p>
-            ) : (
-              <>
-                <p className="mt-3 text-xs leading-relaxed text-slate-600">
-                  Add your first element from the Palette or choose a template to get started fast.
-                </p>
-                <button
-                  type="button"
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={onOpenTemplatePicker}
-                  className="pointer-events-auto mt-4 inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
-                >
-                  Browse templates
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      ) : null}
+      {/* The empty-canvas hint is now a dismissible bottom banner
+          (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
+          theme banners rather than a centre-of-canvas card. */}
 
       {showTemplatePicker ? (
         <TemplatePicker

@@ -26,6 +26,7 @@ import { EditorHeader } from '@/components/EditorHeader';
 import { EmbedChrome } from '@/components/EmbedChrome';
 import { TabBar } from '@/components/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/SignInBanner';
+import { EmptyCanvasBanner } from '@/components/EmptyCanvasBanner';
 import { ThemeModeBanner } from '@/components/ThemeModeBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/useDismissibleBanner';
@@ -194,6 +195,7 @@ export function EditorView() {
     editCursorAtEnd,
     editingId,
     effectiveTemplatePickerMode,
+    templateGridOpen,
     exitFormatPainter,
     exitFormatTool,
     exitGroupMode,
@@ -226,7 +228,6 @@ export function EditorView() {
     openLinkPicker,
     livePresence,
     loadAllTabs,
-    loadedTabIds,
     makeCopy,
     moveDiagramToFolder,
     multiSelectedIds,
@@ -422,6 +423,21 @@ export function EditorView() {
   const signInTimerEnabled = clerkEnabled && !clerkUserId && !embedMode && !signInDismissed;
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
   const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
+  // Empty-canvas hint (spec/14): a dismissible bottom banner while the active
+  // tab has no elements. Hidden in zen / embed, while a draw tool is armed, or
+  // while Quick Start is open; yields the bottom slot to the sign-in banner.
+  const { dismissed: emptyHintDismissed, dismiss: dismissEmptyHint } = useDismissibleBanner(
+    'livediagram:empty-canvas-hint-dismissed:v1',
+  );
+  const showEmptyCanvasBanner =
+    hydrated &&
+    !zenMode &&
+    !embedMode &&
+    !showSignInBanner &&
+    !templateGridOpen &&
+    !pendingDraw &&
+    !emptyHintDismissed &&
+    activeTab.elements.length === 0;
   // Stable references for the two list-shaped props the Explorer +
   // Activity panels take, so those (React.memo'd) panels don't
   // re-render on every drag frame just because the editor re-rendered.
@@ -873,18 +889,12 @@ export function EditorView() {
           // participant row, so there's no 403, and they should set a
           // name before others see them in presence.
           identityOnlyScreenOpen ||
-          // The template-CHOOSING variant stays editor-only: a viewer
-          // can't commit a template (every write 403s), so it'd be a
-          // dead-end. Wait for the active tab's content to land first,
-          // or the empty-elements / templateChosen-unset placeholder
-          // briefly trips the gate after hydration and flashes "pick a
-          // template" before the real content pops in. `loadedTabIds
-          // .has(activeId)` flips true once the lazy fetch resolves.
-          (!isReadOnly &&
-            hydrated &&
-            loadedTabIds.has(activeId) &&
-            activeTab.elements.length === 0 &&
-            activeTab.templateChosen !== true)
+          // The template-CHOOSING variant (Quick Start) stays editor-only: a
+          // viewer can't commit a template (every write 403s). It opens only on
+          // an explicit request (adding a tab or the empty-canvas button, both
+          // of which set templatePickerMode='templates' -> templateGridOpen),
+          // never automatically just because a tab is empty.
+          (!isReadOnly && hydrated && templateGridOpen)
         }
         hydrated={hydrated}
         templatePickerMode={effectiveTemplatePickerMode}
@@ -1409,11 +1419,22 @@ export function EditorView() {
       {showSignInBanner ? (
         <SignInBanner onDismiss={dismissSignIn} placementClassName="bottom-0 z-40 pb-16" />
       ) : null}
+      {/* Empty-canvas hint (spec/14) — replaces the old centre-of-canvas card
+          with a subdued, dismissible bottom banner so a blank diagram reads as
+          intentionally blank. */}
+      {showEmptyCanvasBanner ? (
+        <EmptyCanvasBanner
+          tabName={activeTab.name}
+          readOnly={isReadOnly}
+          onQuickStart={openTemplatePicker}
+          onDismiss={dismissEmptyHint}
+        />
+      ) : null}
       {/* Offer to match the editor chrome to the active tab's theme
           (dark theme -> dark mode, light theme -> light mode). Hidden in
           zen / embed like the other floating prompts, and yields the
-          bottom-centre slot to the sign-in banner when that's showing. */}
-      {zenMode || embedMode || showSignInBanner ? null : (
+          bottom-centre slot to the sign-in / empty-canvas banners. */}
+      {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner ? null : (
         <ThemeModeBanner themeId={activeTab.theme} />
       )}
     </div>
