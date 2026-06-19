@@ -24,6 +24,18 @@ Treat them as part of the change, not an afterthought:
 - Don't let docs drift: an out-of-date doc is worse than a missing one. If you can't fully update it now, note the gap explicitly rather than leaving a confidently wrong instruction.
 - Specs (`specs/`) remain the source of truth for product decisions; `docs/` explains how to understand, run, and contribute to the code. Keep both honest.
 
+## Help centre articles must stay registered
+
+The help centre (`apps/help`, spec/55) has a hand-curated registry at [`apps/help/lib/articles.ts`](apps/help/lib/articles.ts) that is the **single source for the help search** (`SearchInput` → `searchArticles`) **and the category/browse listings**. The article's MDX page renders from the filesystem, but it is **invisible to search and browse unless it's in that registry** — there is no filesystem auto-discovery.
+
+So, whenever you add (or remove/rename) a help article:
+
+- Add (or update) its entry in the `articles` array in `apps/help/lib/articles.ts` — `slug`, `title`, `description`, `category`, `categorySlug` (the full nested path, e.g. `features/canvas`), and `parentSlug` for a sub-article — **in the same change** as the new `apps/help/app/.../page.mdx`.
+- Bump the matching `categories[].articleCount` (and add a `categories` entry if it's a brand-new top-level category).
+- The registry `description` is the **short search-card summary** and is intentionally separate from the MDX `helpMetadata` description (the longer SEO/OG meta) — write a concise one, don't just copy the meta.
+
+Treat this exactly like the specs / docs rules above: a new article that isn't registered is a bug, the same way an out-of-date spec is. (`categorySlug`/`slug` in the registry must match the `page.mdx` path, so the search result link resolves.)
+
 ## Repo layout
 
 ```
