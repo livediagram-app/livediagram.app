@@ -15,15 +15,18 @@ export function tabAccent(tab: Tab): string {
   return getTheme(tab.theme).elementStroke ?? DEFAULT_TAB_ACCENT;
 }
 
-// The raw accent can vanish against the bar's surface (white in light mode,
-// slate-900 in dark): a custom theme's white stroke is invisible on the light
-// bar, a near-black one on the dark bar. Keep the accent's hue but push it into
-// the legible half for the current surface — darken a too-light accent on the
-// light bar, lighten a too-dark one on the dark bar. isLightColor/tint/shade
-// only parse `#rrggbb`, so the non-hex DEFAULT_TAB_ACCENT falls through
-// untouched (it already reads on both).
-export function legibleTabAccent(tab: Tab, isDark: boolean): string {
-  const raw = tabAccent(tab);
+// Push a colour into the legible half for the current bar surface (white in
+// light mode, slate-900 in dark): a custom theme's white stroke is invisible on
+// the light bar, a near-black one on the dark bar. Keep the hue but darken a
+// too-light colour on the light bar, lighten a too-dark one on the dark bar.
+// isLightColor/tint/shade only parse `#rrggbb`, so a non-hex colour (like the
+// default accent) falls through untouched — it already reads on both. Pure (no
+// theme lookup) so the rule is unit-tested in isolation.
+export function legibleColor(raw: string, isDark: boolean): string {
   if (isDark) return isLightColor(raw) ? raw : tint(raw, 0.6);
   return isLightColor(raw) ? shade(raw, 0.6) : raw;
+}
+
+export function legibleTabAccent(tab: Tab, isDark: boolean): string {
+  return legibleColor(tabAccent(tab), isDark);
 }
