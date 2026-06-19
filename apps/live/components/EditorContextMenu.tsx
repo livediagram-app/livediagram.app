@@ -669,8 +669,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         {/* Presets (spec/48) — pinned at the top of the appearance group (above
             Animation): one-click theme-colour + border looks for a shape, plus
             a reset to the theme default. Regular shapes only — the dedicated
-            icon glyph has no fill/border to preset, so it's excluded. */}
-        {target.type === 'shape' && !isIcon ? (
+            icon glyph has no fill/border to preset, and the pie chart styles
+            per-slice via its Data category, so both are excluded. */}
+        {target.type === 'shape' && !isIcon && !isPie ? (
           <MenuAccordionSection
             title="Presets"
             icon={<PresetsMenuGlyph />}
@@ -852,8 +853,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         ) : null}
         {/* Colours — text / background / border swatches. Boxed elements that
             support colours (excludes images). Icons included: Text tints a
-            line-art glyph, Background / Border paint the icon's box. */}
-        {boxed && supportsColours(target) ? (
+            line-art glyph, Background / Border paint the icon's box. Pie charts
+            colour per-slice via their Data category, so they're excluded. */}
+        {boxed && supportsColours(target) && !isPie ? (
           <>
             <MenuAccordionSection
               title="Colours"
@@ -906,8 +908,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </MenuAccordionSection>
           </>
         ) : null}
-        {/* Border — strength / pattern / radius. */}
-        {borderable ? (
+        {/* Border — strength / pattern / radius. Pie charts have no box border
+            to style, so they're excluded. */}
+        {borderable && !isPie ? (
           <>
             <MenuAccordionSection title="Border" icon={<BorderGlyph />} {...sectionProps('border')}>
               <div className="px-2 py-1">
@@ -1568,31 +1571,46 @@ function RatingPickerRow({ value, onChange }: { value: number; onChange: (n: num
 }
 
 // Rating animation tiles (spec/52): None + the star-specific animations, then a
-// Speed row + Repeat toggle once one is picked (mirrors ProgressAnimTiles).
-function RatingAnimTiles({
+// Shared body for the per-element animation pickers (Progress / Rating / Pie):
+// a None-prepended tile grid, then a Speed row + a Repeat toggle once an
+// animation is picked. Each kind passes only its own anim list + tile glyph;
+// everything else (speed, repeat, the play-once-vs-loop copy) is identical.
+// `header` adds the "Animation" label (Progress omits it, as the category
+// title already reads "Animation").
+type AnimTilesProps<T extends string> = {
+  anim: T | null;
+  speed: AnimationSpeed;
+  repeat: boolean;
+  onSet: (v: T | null) => void;
+  onSetSpeed: (v: AnimationSpeed) => void;
+  onSetRepeat: (v: boolean) => void;
+};
+function AnimTiles<T extends string>({
+  anims,
+  glyphFor,
+  header = true,
   anim,
   speed,
   repeat,
   onSet,
   onSetSpeed,
   onSetRepeat,
-}: {
-  anim: RatingAnim | null;
-  speed: AnimationSpeed;
-  repeat: boolean;
-  onSet: (v: RatingAnim | null) => void;
-  onSetSpeed: (v: AnimationSpeed) => void;
-  onSetRepeat: (v: boolean) => void;
+}: AnimTilesProps<T> & {
+  anims: readonly T[];
+  glyphFor: (v: T | null) => ReactNode;
+  header?: boolean;
 }) {
   return (
     <>
-      <p className="px-3 pb-1 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-        Animation
-      </p>
-      <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
-        {withNone(RATING_ANIMS).map((v) => (
+      {header ? (
+        <p className="px-3 pb-1 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+          Animation
+        </p>
+      ) : null}
+      <div className={`grid grid-cols-4 gap-1 px-2 ${header ? 'pb-1.5' : 'py-1.5'}`}>
+        {withNone(anims).map((v) => (
           <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
-            <TileLabel glyph={<StarGlyph filled={!!v} size={16} />} label={v ?? 'None'} />
+            <TileLabel glyph={glyphFor(v)} label={v ?? 'None'} />
           </SizeButton>
         ))}
       </div>
@@ -1608,6 +1626,16 @@ function RatingAnimTiles({
         </>
       ) : null}
     </>
+  );
+}
+
+function RatingAnimTiles(props: AnimTilesProps<RatingAnim>) {
+  return (
+    <AnimTiles
+      {...props}
+      anims={RATING_ANIMS}
+      glyphFor={(v) => <StarGlyph filled={!!v} size={16} />}
+    />
   );
 }
 
@@ -1702,48 +1730,13 @@ function PieDataEditor({
 
 // Pie slice animation tiles (spec/53): None + the chart animations, then Speed
 // + Repeat once one is picked (mirrors ProgressAnimTiles / RatingAnimTiles).
-function PieAnimTiles({
-  anim,
-  speed,
-  repeat,
-  onSet,
-  onSetSpeed,
-  onSetRepeat,
-}: {
-  anim: PieAnim | null;
-  speed: AnimationSpeed;
-  repeat: boolean;
-  onSet: (v: PieAnim | null) => void;
-  onSetSpeed: (v: AnimationSpeed) => void;
-  onSetRepeat: (v: boolean) => void;
-}) {
+function PieAnimTiles(props: AnimTilesProps<PieAnim>) {
   return (
-    <>
-      <p className="px-3 pb-1 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-        Animation
-      </p>
-      <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
-        {([null, ...PIE_ANIMS] as (PieAnim | null)[]).map((v) => (
-          <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
-            <span className="flex flex-col items-center gap-0.5">
-              {v ? <PieGlyph size={16} /> : <NoMarkerGlyph />}
-              <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
-            </span>
-          </SizeButton>
-        ))}
-      </div>
-      {anim ? (
-        <>
-          <SpeedTiles value={speed} onSet={onSetSpeed} />
-          <MenuToggleRow
-            label="Repeat"
-            description="Loop the animation instead of playing it once."
-            checked={repeat}
-            onToggle={() => onSetRepeat(!repeat)}
-          />
-        </>
-      ) : null}
-    </>
+    <AnimTiles
+      {...props}
+      anims={PIE_ANIMS}
+      glyphFor={(v) => (v ? <PieGlyph size={16} /> : <NoMarkerGlyph />)}
+    />
   );
 }
 
@@ -1787,42 +1780,15 @@ function ProgressRow({ value, onChange }: { value: number; onChange: (v: number)
 // Progress fill-animation tiles (spec/46): None / Fill / Pulse / Stripes, plus
 // a Speed row + a Repeat toggle once an animation is picked. `fill` defaults to
 // playing once and holding (Repeat off); pulse / stripes default to looping.
-function ProgressAnimTiles({
-  anim,
-  speed,
-  repeat,
-  onSet,
-  onSetSpeed,
-  onSetRepeat,
-}: {
-  anim: ProgressAnim | null;
-  speed: AnimationSpeed;
-  repeat: boolean;
-  onSet: (v: ProgressAnim | null) => void;
-  onSetSpeed: (v: AnimationSpeed) => void;
-  onSetRepeat: (v: boolean) => void;
-}) {
+// No header (the Progress category title already reads "Animation").
+function ProgressAnimTiles(props: AnimTilesProps<ProgressAnim>) {
   return (
-    <>
-      <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-        {withNone(PROGRESS_ANIMS).map((v) => (
-          <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
-            <TileLabel glyph={<ProgressAnimKindGlyph kind={v} />} label={v ?? 'None'} />
-          </SizeButton>
-        ))}
-      </div>
-      {anim ? (
-        <>
-          <SpeedTiles value={speed} onSet={onSetSpeed} />
-          <MenuToggleRow
-            label="Repeat"
-            description="Loop the animation instead of playing it once."
-            checked={repeat}
-            onToggle={() => onSetRepeat(!repeat)}
-          />
-        </>
-      ) : null}
-    </>
+    <AnimTiles
+      {...props}
+      anims={PROGRESS_ANIMS}
+      header={false}
+      glyphFor={(v) => <ProgressAnimKindGlyph kind={v} />}
+    />
   );
 }
 
