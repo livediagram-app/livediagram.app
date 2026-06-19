@@ -13,6 +13,7 @@ import {
   isBoxed,
   snapResizeBounds,
   snapToAlignment,
+  snapToArrowPoint,
   unionBoxedBounds,
   type ShapeKind,
 } from '@livediagram/diagram';
@@ -21,7 +22,7 @@ import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { AnimatedCanvasBackground } from './AnimatedCanvasBackground';
-import { pointerToCanvas, ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
+import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useCanvasMobileDock } from '@/hooks/useCanvasMobileDock';
@@ -525,19 +526,33 @@ export function Canvas(props: CanvasProps) {
         endX = mode === 'se' || mode === 'ne' ? snapped.x + snapped.width : snapped.x;
         endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
       } else {
-        // Arrow: snap the moving endpoint to nearby element edge / centre
-        // lines (a point snap) so it can latch onto a shape's edge or
-        // corner as you draw, the way the box corner does. (Per-end
-        // anchor pinning still happens via the arrow drag-handle flow
-        // after creation.)
-        const snap = snapToAlignment(
-          { x: endX, y: endY, width: 0, height: 0 },
+        // Arrow: first try to latch the moving endpoint onto a nearby ARROW's
+        // line (spec/50), so drawing a message onto another arrow connects as
+        // you draw (the dots render in CanvasChrome). That takes precedence
+        // over the element edge/centre alignment snap below.
+        const arrowHit = snapToArrowPoint(
+          { x: endX, y: endY },
           elements,
-          EMPTY_ID_SET,
-          snapPx,
+          ARROW_SNAP_THRESHOLD_PX,
+          '',
         );
-        endX += snap.dx;
-        endY += snap.dy;
+        if (arrowHit) {
+          endX = arrowHit.x;
+          endY = arrowHit.y;
+        } else {
+          // Else snap to nearby element edge / centre lines (a point snap) so
+          // it can latch onto a shape's edge or corner as you draw, the way
+          // the box corner does. (Per-end anchor pinning still happens via the
+          // arrow drag-handle flow after creation.)
+          const snap = snapToAlignment(
+            { x: endX, y: endY, width: 0, height: 0 },
+            elements,
+            EMPTY_ID_SET,
+            snapPx,
+          );
+          endX += snap.dx;
+          endY += snap.dy;
+        }
       }
       latest = { ...latest, currentX: endX, currentY: endY };
       setDrawDrag(latest);

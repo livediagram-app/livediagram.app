@@ -1,4 +1,13 @@
-import { alignmentGuides, deriveTextColorForBg, isProgressShape } from '@livediagram/diagram';
+import {
+  alignmentGuides,
+  arrowSnapPoints,
+  deriveTextColorForBg,
+  isProgressShape,
+  snapToArrowPoint,
+  type ArrowElement,
+} from '@livediagram/diagram';
+import { ARROW_SNAP_REVEAL_PX, ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
+import type { SnapTarget } from './Canvas.types';
 import { getTheme } from '@/lib/themes';
 import { CommandPalette } from './CommandPalette';
 import { isSvgRenderedShape, ShapeSvgOverlay } from './shape-svg-overlay';
@@ -347,6 +356,29 @@ export function CanvasChrome(props: CanvasChromeProps) {
     drawBoxGuides.length > 0 || drawHoverGuides.length > 0 || drawPenGuides.length > 0
       ? [...snapGuides, ...drawBoxGuides, ...drawHoverGuides, ...drawPenGuides]
       : snapGuides;
+  // While drawing a NEW arrow near another arrow, reveal that arrow's snap
+  // points (spec/50) — the same dots the reposition drag shows — so the user
+  // can line the new endpoint up as they draw, not only after dropping it.
+  const drawArrowSnaps: SnapTarget[] = (() => {
+    if (!drawDrag || !pendingDraw || pendingDraw.type !== 'arrow') return [];
+    const cursor = { x: drawDrag.currentX, y: drawDrag.currentY };
+    const hit = snapToArrowPoint(cursor, elements, ARROW_SNAP_REVEAL_PX, '');
+    if (!hit) return [];
+    const target = elements.find((e) => e.id === hit.arrowId && e.type === 'arrow') as
+      | ArrowElement
+      | undefined;
+    if (!target) return [];
+    const snapped = hit.dist <= ARROW_SNAP_THRESHOLD_PX;
+    return arrowSnapPoints(target, elements).map((sp) => ({
+      x: sp.x,
+      y: sp.y,
+      active: snapped && Math.abs(sp.t - hit.t) < 1e-6,
+    }));
+  })();
+  // The reposition-drag targets and the draw-time targets never coexist (one
+  // gesture at a time), so a simple concat drives the single dot overlay.
+  const allSnapTargets =
+    drawArrowSnaps.length > 0 ? [...snapTargets, ...drawArrowSnaps] : snapTargets;
   return (
     <>
       {/* Hidden while a draw / placement tool is armed (pendingDraw): the
@@ -465,13 +497,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
           where it will snap; the point the endpoint is currently snapped to
           is drawn larger + filled. Same canvas→screen conversion as the
           guides above. */}
-      {snapTargets.length > 0
+      {allSnapTargets.length > 0
         ? (() => {
             const rect = wrapperRef.current?.getBoundingClientRect();
             if (!rect) return null;
             return (
               <svg aria-hidden className="pointer-events-none fixed inset-0 z-30 h-screen w-screen">
-                {snapTargets.map((t, i) => {
+                {allSnapTargets.map((t, i) => {
                   const x = rect.left + t.x * viewportZoom;
                   const y = rect.top + t.y * viewportZoom;
                   return (
