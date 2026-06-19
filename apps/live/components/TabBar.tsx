@@ -6,10 +6,7 @@ import { ConfirmPopover } from './ConfirmPopover';
 import {
   folderNamesInDiagram,
   groupTabsIntoRuns,
-  isLightColor,
-  shade,
   tabFolderName,
-  tint,
   type Tab,
   type TabTimer,
   type TabVote,
@@ -19,7 +16,7 @@ import {
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { useUiMode } from '@/hooks/useUiMode';
 import type { Participant } from '@/lib/identity';
-import { getTheme } from '@/lib/themes';
+import { legibleTabAccent } from '@/lib/tab-accent';
 import { PencilIcon, TrashIcon } from './explorer-icons';
 import { FileExportIcon, FileImportIcon } from './palette-icons';
 import {
@@ -64,32 +61,6 @@ import { SessionTimerSection, SessionVoteSection } from './SessionToolsSection';
 import { TabFolderChip } from './TabFolderChip';
 import { TabPresenceStack } from './TabPresenceStack';
 import { Tooltip } from './Tooltip';
-
-// Pick the accent colour a tab pill uses to identify itself in the bar.
-// Each tab knows its theme id; the theme's `elementStroke` already
-// drives the rest of the canvas accent for that tab, so reusing it on
-// the pill ties the bar visually to the tab content. Themes without a
-// stroke override (e.g. brand) fall through to the palette default so
-// the bar still reads.
-const DEFAULT_TAB_ACCENT = 'rgb(2 132 199)';
-function tabAccent(tab: Tab): string {
-  return getTheme(tab.theme).elementStroke ?? DEFAULT_TAB_ACCENT;
-}
-
-// The raw accent is a theme's element stroke, which can vanish against the
-// bar's surface (white in light mode, slate-900 in dark): a custom theme's
-// white stroke is invisible on the light bar, a near-black one on the dark
-// bar. Keep the accent's hue but push it into the legible half for the
-// current surface — darken a too-light accent on the light bar, lighten a
-// too-dark one on the dark bar. Reuses the diagram package's
-// tint/shade/isLightColor (same perceived-brightness threshold the canvas
-// uses). isLightColor/tint/shade only parse `#rrggbb`, so the non-hex
-// DEFAULT_TAB_ACCENT falls through untouched — it already reads on both.
-function legibleTabAccent(tab: Tab, isDark: boolean): string {
-  const raw = tabAccent(tab);
-  if (isDark) return isLightColor(raw) ? raw : tint(raw, 0.6);
-  return isLightColor(raw) ? shade(raw, 0.6) : raw;
-}
 
 // Canvas-scoped actions folded into the unified tab / canvas menu: change
 // theme / background, and tidy the layout. (Add-element actions used to live
