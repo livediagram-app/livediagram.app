@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { buildElementIndex, endpointPosition, isBoxed, type Element } from '@livediagram/diagram';
+import { pointerToCanvas } from '@/lib/canvas';
 
 // Pan + marquee gesture machinery lifted out of Canvas.tsx so the
 // component file stays focused on JSX + per-element wiring. The
@@ -192,12 +193,15 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
         // the rect that already had it baked in, throwing
         // intersection bounds off by the pan amount and making the
         // marquee silently miss every element on a panned canvas.
-        const toCanvasX = (sx: number) => (sx - rect.left) / d.viewportZoom;
-        const toCanvasY = (sy: number) => (sy - rect.top) / d.viewportZoom;
-        const minX = Math.min(toCanvasX(m.startX), toCanvasX(m.currentX));
-        const maxX = Math.max(toCanvasX(m.startX), toCanvasX(m.currentX));
-        const minY = Math.min(toCanvasY(m.startY), toCanvasY(m.currentY));
-        const maxY = Math.max(toCanvasY(m.startY), toCanvasY(m.currentY));
+        // Marquee start + current are two screen points; convert both with the
+        // shared transform (same one Canvas.tsx's pointer handlers use), then
+        // take their bounding box.
+        const start = pointerToCanvas(m.startX, m.startY, rect, d.viewportZoom);
+        const current = pointerToCanvas(m.currentX, m.currentY, rect, d.viewportZoom);
+        const minX = Math.min(start.x, current.x);
+        const maxX = Math.max(start.x, current.x);
+        const minY = Math.min(start.y, current.y);
+        const maxY = Math.max(start.y, current.y);
         const hits = new Set<string>();
         // Index once up front: resolving each arrow's endpoints inside
         // the element loop would otherwise be O(elements^2) per sweep.
