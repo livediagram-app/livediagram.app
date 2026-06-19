@@ -462,24 +462,10 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                   <p className="px-3 pb-1 pt-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
                     Size
                   </p>
-                  <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
-                    {(
-                      [
-                        ['scale', <ScaleIcon key="s" />],
-                        ['sm', <DotsIcon key="1" count={1} />],
-                        ['md', <DotsIcon key="2" count={2} />],
-                        ['lg', <DotsIcon key="3" count={3} />],
-                      ] as const
-                    ).map(([size, glyph]) => (
-                      <SizeButton
-                        key={size}
-                        active={(textSrc as { textSize?: TextSize }).textSize === size}
-                        onClick={() => props.onSetTextSize(size)}
-                      >
-                        {glyph}
-                      </SizeButton>
-                    ))}
-                  </div>
+                  <TextSizeTiles
+                    current={(textSrc as { textSize?: TextSize }).textSize}
+                    onSet={props.onSetTextSize}
+                  />
                 </MenuAccordionSection>
               ) : null}
             </>
@@ -930,24 +916,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
               Size
             </p>
-            <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
-              {(
-                [
-                  ['scale', <ScaleIcon key="s" />],
-                  ['sm', <DotsIcon key="1" count={1} />],
-                  ['md', <DotsIcon key="2" count={2} />],
-                  ['lg', <DotsIcon key="3" count={3} />],
-                ] as const
-              ).map(([size, glyph]) => (
-                <SizeButton
-                  key={size}
-                  active={(target.textSize ?? 'sm') === size}
-                  onClick={() => props.onSetTextSize(size)}
-                >
-                  {glyph}
-                </SizeButton>
-              ))}
-            </div>
+            <TextSizeTiles current={target.textSize ?? 'sm'} onSet={props.onSetTextSize} />
             <ContextMenuDivider />
             <ColourRow
               label="Colour"
@@ -1434,5 +1403,34 @@ function TextToggle({
     >
       {children}
     </button>
+  );
+}
+
+// The four-up text-size picker (Scale / Small / Medium / Large) shown in the
+// Text categories. `current` is the already-resolved size to highlight (the
+// caller decides its default), so the single-element + multi menus share one
+// grid.
+function TextSizeTiles({
+  current,
+  onSet,
+}: {
+  current: TextSize | undefined;
+  onSet: (size: TextSize) => void;
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
+      {(
+        [
+          ['scale', <ScaleIcon key="s" />],
+          ['sm', <DotsIcon key="1" count={1} />],
+          ['md', <DotsIcon key="2" count={2} />],
+          ['lg', <DotsIcon key="3" count={3} />],
+        ] as const
+      ).map(([size, glyph]) => (
+        <SizeButton key={size} active={current === size} onClick={() => onSet(size)}>
+          {glyph}
+        </SizeButton>
+      ))}
+    </div>
   );
 }
