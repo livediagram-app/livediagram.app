@@ -868,8 +868,21 @@ function PortalMenu({
   }, [pos, view, openSection]);
 
   useEffect(() => {
+    // Grace window after the menu opens during which outside mouse events are
+    // ignored. A mobile / iPad long-press opens this menu (the canvas menu)
+    // while the finger is still down, and the lift then emits trailing
+    // synthetic mouse events at the press point — outside the menu — within a
+    // few hundred ms. Without this guard that synthetic mousedown lands on the
+    // just-mounted dismiss listener and closes the menu the instant it appears
+    // (the bug). Mirrors ContextMenu.tsx's GRACE_MS. Desktop right-click is
+    // unaffected: its mousedown fires before the contextmenu that opens the
+    // menu, so nothing arrives during the window. Escape (below) is never
+    // graced.
+    const openedAt = performance.now();
+    const GRACE_MS = 400;
     const handler = (e: MouseEvent) => {
       if (!ref.current) return;
+      if (performance.now() - openedAt < GRACE_MS) return;
       // The delete-confirm popover is portaled outside this menu's DOM,
       // so a click on it would otherwise read as "outside" and close the
       // whole menu before the confirm registers. Treat it as inside.
