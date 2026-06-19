@@ -32,7 +32,15 @@ import {
   updateTeam,
   updateTeamMemberRole,
 } from '../db';
-import { badRequest, conflict, json, noContent, notFound, signInRequired } from '../responses';
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  json,
+  noContent,
+  notFound,
+  signInRequired,
+} from '../responses';
 import type { RouteContext } from './context';
 
 // Light shape check, not RFC 5322: something@something.tld. The real
@@ -146,7 +154,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   // on an invite sees the team's shape, not its content.
   if (segments.length === 4 && segments[3] === 'library') {
     if (request.method === 'GET') {
-      if (me.status !== 'joined') return json({ error: 'forbidden' }, { status: 403 });
+      if (me.status !== 'joined') return forbidden();
       const [folders, diagrams] = await Promise.all([
         listFoldersByTeam(env, teamId),
         listDiagramsByTeam(env, teamId),
