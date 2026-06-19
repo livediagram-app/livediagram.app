@@ -95,6 +95,14 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
    Leaving it unset keeps the legacy unsigned migrate, which is fine for a single-user self-host (no one else to claim from). See [spec/04](../specs/04-auth-and-guest-access.md).
 
+6. **Optional — "Continue with Google" button.** To surface Google OAuth on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (a production `pk_live_*` instance needs your own Google Cloud OAuth client registered against Clerk's redirect URI, `https://clerk.<domain>/v1/oauth_callback`, shown verbatim in the dashboard), then set the build-time flag on the live app alongside the publishable key:
+
+   ```sh
+   NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true
+   ```
+
+   Like the publishable key it's baked in at build time (CI env or `apps/live/.env.production`). It's gated on Clerk being configured, so it's a no-op in guest-only mode. Unset keeps just the email-code sign-in.
+
 Without the Clerk vars set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend's ClerkProvider becomes a pass-through that renders the editor without any auth UI. Self-host without Clerk is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without Clerk accounts).
 
 See [spec/04](../specs/04-auth-and-guest-access.md) for the hybrid auth model.
