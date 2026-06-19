@@ -398,6 +398,11 @@ function BoxedElementViewImpl({
   // colour so the realtime "X is here" signal is glanceable from anywhere
   // on the canvas — not just from the small initial-badge.
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
+  // Accent for the data-element fills (progress bar / ring, rail line, rating
+  // stars): a remote selector colour wins, else the element's own stroke, else
+  // the theme default stroke. Shared by the ProgressView / RailView / RatingView
+  // branches below so they all read the same accent.
+  const accent = remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element);
   const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor);
 
   const commentCount = activeCommentCount(element.commentThread);
@@ -623,7 +628,7 @@ function BoxedElementViewImpl({
         // The fill takes the stroke accent; the track takes the fill colour.
         <ProgressView
           element={element}
-          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          accent={accent}
           track={element.fillColor ?? '#e2e8f0'}
           textColor={textColor}
         />
@@ -632,7 +637,7 @@ function BoxedElementViewImpl({
         // add-point affordance at the right end when selected + editable.
         <RailView
           element={element}
-          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          accent={accent}
           textColor={textColor}
           fontFamily={fontFamily}
           editable={isSelected && !readOnly && !isLocked}
@@ -640,10 +645,7 @@ function BoxedElementViewImpl({
         />
       ) : element.type === 'shape' && isRatingShape(element.shape) ? (
         // Rating (spec/52): a row of stars showing element.rating.
-        <RatingView
-          element={element}
-          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
-        />
+        <RatingView element={element} accent={accent} />
       ) : element.type === 'shape' && isPieShape(element.shape) ? (
         // Pie chart (spec/53): slices sized by value + a legend.
         <PieChartView
