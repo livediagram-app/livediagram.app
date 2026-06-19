@@ -26,10 +26,14 @@ import {
   isBoxed,
   isProgressShape,
   isRailShape,
+  isRatingShape,
   PROGRESS_ANIMS,
   RAIL_DEFAULT_POINTS,
   RAIL_MAX_POINTS,
   RAIL_MIN_POINTS,
+  RATING_ANIMS,
+  RATING_DEFAULT,
+  RATING_MAX,
   SHAPE_MARKERS,
   supportsBorderControls,
   supportsBorderRadius,
@@ -50,6 +54,7 @@ import {
   type IconAnimation,
   type IconPosition,
   type ProgressAnim,
+  type RatingAnim,
   type ShapeElement,
   type ShapeKind,
   type ShapeMarker,
@@ -184,6 +189,11 @@ type EditorContextMenuProps = {
   onSetMarkerSize: (value: TextSize) => void;
   // Timeline rail (spec/51): set the rail's point count.
   onSetRailCount: (count: number) => void;
+  // Rating (spec/52): the star score + its animation.
+  onSetRating: (value: number) => void;
+  onSetRatingAnim: (value: RatingAnim | null) => void;
+  onSetRatingAnimSpeed: (value: AnimationSpeed) => void;
+  onSetRatingAnimRepeat: (value: boolean) => void;
   // Style presets (spec/48): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).
@@ -518,8 +528,14 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // another common kind in place.
     const isProgress = target.type === 'shape' && isProgressShape(target.shape);
     const isRail = target.type === 'shape' && isRailShape(target.shape);
+    const isRating = target.type === 'shape' && isRatingShape(target.shape);
     const morphable =
-      target.type === 'shape' && !isIcon && target.shape !== 'frame' && !isProgress && !isRail;
+      target.type === 'shape' &&
+      !isIcon &&
+      target.shape !== 'frame' &&
+      !isProgress &&
+      !isRail &&
+      !isRating;
     // Consistent category grouping (spec/09): placement (Layer / Shape /
     // Rotation) · appearance (Progress / Animation / Colours / Border) ·
     // content (Line / Pointer / Text / Icon / Image / Table / Link) ·
@@ -722,6 +738,31 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             <RailPointsRow
               value={(target as ShapeElement).railCount ?? RAIL_DEFAULT_POINTS}
               onChange={props.onSetRailCount}
+            />
+          </MenuAccordionSection>
+        ) : null}
+        {/* Rating (spec/52) — the star score + a star-specific animation. */}
+        {isRating ? (
+          <MenuAccordionSection
+            title="Rating"
+            icon={<RatingMenuGlyph />}
+            {...sectionProps('rating')}
+          >
+            <RatingPickerRow
+              value={(target as ShapeElement).rating ?? RATING_DEFAULT}
+              onChange={props.onSetRating}
+            />
+            <RatingAnimTiles
+              anim={(target as ShapeElement).ratingAnim ?? null}
+              speed={(target as ShapeElement).ratingAnimSpeed ?? 'normal'}
+              repeat={
+                (target as ShapeElement).ratingAnimRepeat ??
+                ((target as ShapeElement).ratingAnim === 'pulse' ||
+                  (target as ShapeElement).ratingAnim === 'twinkle')
+              }
+              onSet={props.onSetRatingAnim}
+              onSetSpeed={props.onSetRatingAnimSpeed}
+              onSetRepeat={props.onSetRatingAnimRepeat}
             />
           </MenuAccordionSection>
         ) : null}
@@ -1449,6 +1490,102 @@ function RailPointsRow({ value, onChange }: { value: number; onChange: (n: numbe
         </button>
       </div>
     </div>
+  );
+}
+
+// A small star glyph for the Rating controls (filled = scored, else outline).
+function StarGlyph({ filled, size = 16 }: { filled: boolean; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.6 19.23l1.03-6.02L3.26 8.95l6.04-.88z"
+        fill={filled ? '#f59e0b' : 'none'}
+        stroke={filled ? '#f59e0b' : 'currentColor'}
+        strokeWidth={filled ? 0 : 1.6}
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// The "Rating" category glyph.
+function RatingMenuGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.6 19.23l1.03-6.02L3.26 8.95l6.04-.88z" />
+    </svg>
+  );
+}
+
+// Rating star picker (spec/52): click a star to set the 1..RATING_MAX score.
+function RatingPickerRow({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  return (
+    <div className="px-2 py-1.5">
+      <p className="px-1 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">Stars</p>
+      <div className="flex items-center justify-center gap-1 text-slate-400 dark:text-slate-500">
+        {Array.from({ length: RATING_MAX }, (_, i) => {
+          const n = i + 1;
+          return (
+            <button
+              key={n}
+              type="button"
+              onClick={() => onChange(n)}
+              aria-label={`${n} star${n > 1 ? 's' : ''}`}
+              className="cursor-pointer rounded p-0.5 transition hover:scale-110"
+            >
+              <StarGlyph filled={n <= value} size={20} />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Rating animation tiles (spec/52): None + the star-specific animations, then a
+// Speed row + Repeat toggle once one is picked (mirrors ProgressAnimTiles).
+function RatingAnimTiles({
+  anim,
+  speed,
+  repeat,
+  onSet,
+  onSetSpeed,
+  onSetRepeat,
+}: {
+  anim: RatingAnim | null;
+  speed: AnimationSpeed;
+  repeat: boolean;
+  onSet: (v: RatingAnim | null) => void;
+  onSetSpeed: (v: AnimationSpeed) => void;
+  onSetRepeat: (v: boolean) => void;
+}) {
+  return (
+    <>
+      <p className="px-3 pb-1 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+        Animation
+      </p>
+      <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
+        {([null, ...RATING_ANIMS] as (RatingAnim | null)[]).map((v) => (
+          <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
+            <span className="flex flex-col items-center gap-0.5">
+              <StarGlyph filled={!!v} size={16} />
+              <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
+            </span>
+          </SizeButton>
+        ))}
+      </div>
+      {anim ? (
+        <>
+          <SpeedTiles value={speed} onSet={onSetSpeed} />
+          <MenuToggleRow
+            label="Repeat"
+            description="Loop the animation instead of playing it once."
+            checked={repeat}
+            onToggle={() => onSetRepeat(!repeat)}
+          />
+        </>
+      ) : null}
+    </>
   );
 }
 

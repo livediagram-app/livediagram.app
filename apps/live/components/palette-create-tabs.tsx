@@ -644,6 +644,22 @@ export function PaletteToolsTab({
           <circle cx="13.5" cy="6" r="1.8" fill="currentColor" />
         </svg>
       </IconButton>
+      <IconButton
+        label="Add rating"
+        caption="Rating"
+        description="A 1–5 star rating. Set the score + an animation from its menu."
+        onClick={() => addShape('rating')}
+        dragKind="rating"
+        filled
+        active={pendingShapeKind === 'rating'}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+          <path
+            d="M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.6 19.23l1.03-6.02L3.26 8.95l6.04-.88z"
+            fill="currentColor"
+          />
+        </svg>
+      </IconButton>
     </div>
   );
 }

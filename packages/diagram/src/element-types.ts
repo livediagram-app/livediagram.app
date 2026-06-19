@@ -16,6 +16,7 @@ import type {
   IconPosition,
   Padding,
   ProgressAnim,
+  RatingAnim,
   ShapeKind,
   TextAlignX,
   TextAlignY,
@@ -111,6 +112,12 @@ export type ShapeElement = {
   // line. Only meaningful on the 'timeline-rail' kind; clamped to
   // RAIL_MIN_POINTS..RAIL_MAX_POINTS.
   railCount?: number;
+  // Rating (spec/52): the score in filled stars (0..RATING_MAX) + its optional
+  // animation. Only meaningful on the 'rating' kind.
+  rating?: number;
+  ratingAnim?: RatingAnim;
+  ratingAnimSpeed?: AnimationSpeed;
+  ratingAnimRepeat?: boolean;
   // Status marker (spec/49): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize bucket where 'scale' tracks the element's text size.

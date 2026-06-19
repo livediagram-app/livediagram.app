@@ -24,6 +24,7 @@ import {
   hasRichFormatting,
   isProgressShape,
   isRailShape,
+  isRatingShape,
   PADDING_PX,
   type BoxedElement,
   type FreehandElement,
@@ -55,6 +56,7 @@ import { LinkCardView } from './LinkCardView';
 import { IconGlyph } from './icon-glyph';
 import { ShapeMarkerGlyph } from './ShapeMarker';
 import { RailView } from './RailView';
+import { RatingView } from './RatingView';
 import { TechIconGlyph } from './tech-icon-glyph';
 import { ICON_DND_MIME } from '@/lib/icons';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -624,6 +626,12 @@ function BoxedElementViewImpl({
           interactive={isSelected && !readOnly && !isLocked}
           onAddPoint={onAddRailPoint}
         />
+      ) : element.type === 'shape' && isRatingShape(element.shape) ? (
+        // Rating (spec/52): a row of stars showing element.rating.
+        <RatingView
+          element={element}
+          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+        />
       ) : element.type === 'shape' && isSvgRenderedShape(element.shape) ? (
         <ShapeSvgOverlay
           shape={element.shape}
@@ -742,9 +750,11 @@ function BoxedElementViewImpl({
           onIconPointerDown={startIconReposition}
         />
       ) : element.type === 'shape' &&
-        (isProgressShape(element.shape) || isRailShape(element.shape)) ? (
-        // Progress + rail elements draw their own content, so they render no
-        // standard editable label.
+        (isProgressShape(element.shape) ||
+          isRailShape(element.shape) ||
+          isRatingShape(element.shape)) ? (
+        // Progress / rail / rating elements draw their own content, so they
+        // render no standard editable label.
         <></>
       ) : (
         labelNode

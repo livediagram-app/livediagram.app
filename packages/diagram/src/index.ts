@@ -177,6 +177,24 @@ export function isRailShape(kind: ShapeKind): boolean {
   return kind === 'timeline-rail';
 }
 
+// Rating element (spec/52): a row of stars showing a 1..RATING_MAX score.
+// `ratingAnim` animates the filled stars — 'pop' pops them in one-by-one,
+// 'twinkle' sparkles them, 'pulse' breathes their opacity, 'rock' tips them.
+// Undefined = static. Mapped to `lvd-rating-*` classes by RatingView.
+export const RATING_MAX = 5;
+export const RATING_DEFAULT = 3;
+export type RatingAnim = 'pop' | 'twinkle' | 'pulse' | 'rock';
+export const RATING_ANIMS: readonly RatingAnim[] = ['pop', 'twinkle', 'pulse', 'rock'];
+
+export function isRatingShape(kind: ShapeKind): boolean {
+  return kind === 'rating';
+}
+
+// Clamp to a whole 0..RATING_MAX star count.
+export function clampRating(value: number): number {
+  return Math.max(0, Math.min(RATING_MAX, Math.round(value)));
+}
+
 // Round a value to a whole 0–100 percentage. Shared by the progress setter,
 // the context-menu slider, and ProgressView so the clamp-and-round can't drift
 // (default applied by the caller before clamping).
@@ -283,6 +301,9 @@ export type ShapeKind =
   // it. Carries `railCount` (below); a canvas affordance adds points at the
   // right end. The first of a family of composite "rail" components.
   | 'timeline-rail'
+  // Rating (spec/52): a row of five stars showing a 1–5 score. Carries
+  // `rating` / `ratingAnim` (below).
+  | 'rating'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

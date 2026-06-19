@@ -2,6 +2,7 @@ import {
   isBoxed,
   RAIL_DEFAULT_POINTS,
   RAIL_POINT_STEP_PX,
+  RATING_DEFAULT,
   type Anchor,
   type AnnotationElement,
   type LinkCardElement,
@@ -81,6 +82,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Timeline rail: width carries the default points at RAIL_POINT_STEP_PX
   // spacing; height leaves room for the dots + ticks above the line.
   'timeline-rail': { width: RAIL_DEFAULT_POINTS * RAIL_POINT_STEP_PX, height: 96 },
+  // Rating: a row of five stars.
+  rating: { width: 200, height: 44 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -132,6 +135,10 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // (the rail draws its own dots + line). See spec/51.
   if (kind === 'timeline-rail') {
     return { ...base, railCount: RAIL_DEFAULT_POINTS, strokeColor: '#64748b' };
+  }
+  // Rating: a row of stars, three filled by default, amber accent. See spec/52.
+  if (kind === 'rating') {
+    return { ...base, rating: RATING_DEFAULT, strokeColor: '#f59e0b' };
   }
   return base;
 }

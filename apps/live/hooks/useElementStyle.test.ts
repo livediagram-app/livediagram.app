@@ -117,6 +117,33 @@ describe('useElementStyle timeline rail (spec/51)', () => {
   });
 });
 
+describe('useElementStyle rating (spec/52)', () => {
+  it('sets the star score (clamped 0..5) on the rating shape', () => {
+    const a = createShape('rating', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setRatingSelected(4);
+    expect((result()[0] as { rating?: number }).rating).toBe(4);
+    style.setRatingSelected(99);
+    expect((result()[0] as { rating?: number }).rating).toBe(5);
+  });
+
+  it('sets and clears the rating animation', () => {
+    const a = createShape('rating', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setRatingAnimSelected('twinkle');
+    expect((result()[0] as { ratingAnim?: string }).ratingAnim).toBe('twinkle');
+    style.setRatingAnimSelected(null);
+    expect((result()[0] as { ratingAnim?: string }).ratingAnim).toBeUndefined();
+  });
+
+  it('leaves non-rating shapes untouched', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setRatingSelected(4);
+    expect((result()[0] as { rating?: number }).rating).toBeUndefined();
+  });
+});
+
 describe('useElementStyle shape style presets (spec/48)', () => {
   it('applies a colour preset (fill + stroke + text) in one step, untouched border', () => {
     const a = createShape('square', 0, 0);

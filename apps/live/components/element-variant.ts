@@ -7,6 +7,7 @@ import {
   defaultFillColor,
   defaultStrokeColor,
   isRailShape,
+  isRatingShape,
   type BoxedElement,
 } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from './border-css';
@@ -50,9 +51,9 @@ export function describeVariant(
           style: { borderRadius: '4px' },
         };
       }
-      // Timeline rail (spec/51) paints its own line + dots, so the wrapper
-      // carries no box border / background — just the selection ring.
-      if (isRailShape(element.shape)) {
+      // Timeline rail (spec/51) + rating (spec/52) paint their own content, so
+      // the wrapper carries no box border / background — just the selection ring.
+      if (isRailShape(element.shape) || isRatingShape(element.shape)) {
         return { className: ring, style: { borderRadius: '4px' } };
       }
       // CSS-rendered shapes (square / circle / stadium and the

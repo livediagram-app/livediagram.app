@@ -19,6 +19,7 @@
 
 import {
   ARROW_THICKNESS_PX,
+  clampRating,
   RAIL_DEFAULT_POINTS,
   RAIL_MAX_POINTS,
   RAIL_MIN_POINTS,
@@ -42,6 +43,7 @@ import {
   type ElementAnimation,
   type IconAnimation,
   type ProgressAnim,
+  type RatingAnim,
   type BorderStroke,
   type BorderStyle,
   type Element,
@@ -674,6 +676,28 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Changed', 'TimelineRail');
   };
 
+  // Rating (spec/52): the star score + its optional animation, gated to rating
+  // shapes. The setters share one body (differing only in the patched field +
+  // telemetry type), mirroring the progress setters.
+  const setRatingFieldSelected = (patch: Partial<ShapeElement>, telemetryType: string) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'rating' ? { ...el, ...patch } : el,
+      ),
+    );
+    track('Element', 'Changed', telemetryType);
+  };
+  const setRatingSelected = (value: number) =>
+    setRatingFieldSelected({ rating: clampRating(value) }, 'Rating');
+  const setRatingAnimSelected = (value: RatingAnim | null) =>
+    setRatingFieldSelected({ ratingAnim: value ?? undefined }, 'RatingAnim');
+  const setRatingAnimSpeedSelected = (value: AnimationSpeed) =>
+    setRatingFieldSelected({ ratingAnimSpeed: value }, 'RatingAnim');
+  const setRatingAnimRepeatSelected = (value: boolean) =>
+    setRatingFieldSelected({ ratingAnimRepeat: value }, 'RatingAnim');
+
   // Clear per-element colour overrides so the element falls back to
   // whatever the current tab theme dictates. Each colour field is set
   // to undefined; the history hook snapshots the present so this is
@@ -784,6 +808,10 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setMarkerSizeSelected,
     setRailCountSelected,
     addRailPointSelected,
+    setRatingSelected,
+    setRatingAnimSelected,
+    setRatingAnimSpeedSelected,
+    setRatingAnimRepeatSelected,
     applyShapeColorPresetSelected,
     applyShapeBorderPresetSelected,
     resetShapeStyleSelected,

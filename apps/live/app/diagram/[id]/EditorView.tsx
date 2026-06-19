@@ -290,6 +290,10 @@ export function EditorView() {
     setMarkerSizeSelected,
     setRailCountSelected,
     addRailPointSelected,
+    setRatingSelected,
+    setRatingAnimSelected,
+    setRatingAnimSpeedSelected,
+    setRatingAnimRepeatSelected,
     applyShapeColorPresetSelected,
     applyShapeBorderPresetSelected,
     resetShapeStyleSelected,
@@ -1251,6 +1255,10 @@ export function EditorView() {
           onSetMarker={setMarkerSelected}
           onSetMarkerSize={setMarkerSizeSelected}
           onSetRailCount={setRailCountSelected}
+          onSetRating={setRatingSelected}
+          onSetRatingAnim={setRatingAnimSelected}
+          onSetRatingAnimSpeed={setRatingAnimSpeedSelected}
+          onSetRatingAnimRepeat={setRatingAnimRepeatSelected}
           shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
           onApplyShapeColorPreset={applyShapeColorPresetSelected}
           onApplyShapeBorderPreset={applyShapeBorderPresetSelected}

@@ -937,6 +937,69 @@
     var(--lvd-prog-iter, infinite);
 }
 
+/* Rating stars (spec/52): pop / rock play once as an entrance (iter 1 from the
+ * element); twinkle / pulse loop. Speed + iteration come from the inline
+ * --lvd-rating-* custom properties; pop/twinkle also carry a per-star delay. */
+@keyframes lvd-rating-pop {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.lvd-rating-pop {
+  animation: lvd-rating-pop calc(0.5s * var(--lvd-rating-speed, 1)) ease-out
+    var(--lvd-rating-iter, 1) both;
+}
+@keyframes lvd-rating-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+}
+.lvd-rating-twinkle {
+  animation: lvd-rating-twinkle calc(1.4s * var(--lvd-rating-speed, 1)) ease-in-out
+    var(--lvd-rating-iter, infinite);
+}
+@keyframes lvd-rating-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.lvd-rating-pulse {
+  animation: lvd-rating-pulse calc(1.3s * var(--lvd-rating-speed, 1)) ease-in-out
+    var(--lvd-rating-iter, infinite);
+}
+@keyframes lvd-rating-rock {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-12deg);
+  }
+  75% {
+    transform: rotate(12deg);
+  }
+}
+.lvd-rating-rock {
+  animation: lvd-rating-rock calc(0.7s * var(--lvd-rating-speed, 1)) ease-in-out
+    var(--lvd-rating-iter, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lvd-anim-pulse,
   .lvd-anim-blink,
@@ -969,7 +1032,11 @@
   .lvd-prog-pulse,
   .lvd-prog-stripes,
   .lvd-prog-ring-grow,
-  .lvd-prog-ring-stripes {
+  .lvd-prog-ring-stripes,
+  .lvd-rating-pop,
+  .lvd-rating-twinkle,
+  .lvd-rating-pulse,
+  .lvd-rating-rock {
     animation: none;
   }
 }
