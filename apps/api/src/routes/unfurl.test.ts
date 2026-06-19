@@ -16,8 +16,15 @@ describe('isBlockedHost (SSRF guard)', () => {
       '100.64.0.1', // CGNAT
       '0.0.0.0',
       '::1',
+      '::',
       'fd00::1',
       'fe80::1',
+      // IPv4-mapped IPv6: dotted + the hex form WHATWG URL normalises to.
+      '::ffff:127.0.0.1',
+      '::ffff:7f00:1', // 127.0.0.1
+      '::ffff:a9fe:a9fe', // 169.254.169.254 (metadata)
+      '::ffff:c0a8:1', // 192.168.0.1
+      '[::ffff:7f00:1]', // bracketed (as a URL hostname arrives)
     ]) {
       expect(isBlockedHost(h), h).toBe(true);
     }
@@ -30,6 +37,7 @@ describe('isBlockedHost (SSRF guard)', () => {
       '8.8.8.8',
       '172.32.0.1',
       '93.184.216.34',
+      '::ffff:808:808', // 8.8.8.8 mapped — public, allowed
     ]) {
       expect(isBlockedHost(h), h).toBe(false);
     }

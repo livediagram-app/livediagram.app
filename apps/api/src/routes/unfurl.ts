@@ -18,20 +18,36 @@ const USER_AGENT = 'livediagram-unfurl/1.0 (+https://livediagram.app)';
 // True for a hostname we must NOT fetch: loopback / private / link-local /
 // cloud-metadata / *.local. Defence-in-depth — Cloudflare Workers don't sit on
 // a private network, but we still refuse to fetch (or return data from) these.
+// True for a private / loopback / link-local / metadata IPv4 (from its first
+// two octets). Shared by the dotted-quad and IPv4-mapped-IPv6 paths.
+function isBlockedIpv4(a: number, b: number): boolean {
+  if (a === 0 || a === 10 || a === 127) return true; // this-host / 10·8 / loopback
+  if (a === 169 && b === 254) return true; // link-local + cloud metadata (169.254.169.254)
+  if (a === 172 && b >= 16 && b <= 31) return true; // 172.16·12
+  if (a === 192 && b === 168) return true; // 192.168·16
+  if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT 100.64·10
+  return false;
+}
+
 export function isBlockedHost(hostname: string): boolean {
   const h = hostname.toLowerCase().replace(/^\[/, '').replace(/\]$/, ''); // strip ipv6 brackets
   if (!h) return true;
   if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local')) return true;
-  if (h === '::1' || h === '0.0.0.0') return true;
+  if (h === '::1' || h === '::' || h === '0.0.0.0') return true; // loopback / unspecified
   const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
-  if (m) {
-    const a = Number(m[1]);
-    const b = Number(m[2]);
-    if (a === 0 || a === 10 || a === 127) return true; // this-host / 10·8 / loopback
-    if (a === 169 && b === 254) return true; // link-local + cloud metadata (169.254.169.254)
-    if (a === 172 && b >= 16 && b <= 31) return true; // 172.16·12
-    if (a === 192 && b === 168) return true; // 192.168·16
-    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT 100.64·10
+  if (m && isBlockedIpv4(Number(m[1]), Number(m[2]))) return true;
+  // IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1, which WHATWG URL normalises to the
+  // hex form ::ffff:7f00:1): unwrap the embedded IPv4 and re-run the checks,
+  // else a mapped loopback / metadata address slips past the IPv6 prefixes.
+  if (h.startsWith('::ffff:')) {
+    const mapped = h.slice('::ffff:'.length);
+    const dotted = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(mapped);
+    if (dotted && isBlockedIpv4(Number(dotted[1]), Number(dotted[2]))) return true;
+    const hex = /^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(mapped);
+    if (hex) {
+      const hi = parseInt(hex[1]!, 16);
+      if (isBlockedIpv4((hi >> 8) & 0xff, hi & 0xff)) return true;
+    }
   }
   if (h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe80')) return true; // ipv6 ULA / link-local
   return false;
