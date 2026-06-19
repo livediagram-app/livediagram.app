@@ -6,6 +6,7 @@ import {
   DEFAULT_BORDER_STYLE,
   defaultFillColor,
   defaultStrokeColor,
+  isRailShape,
   type BoxedElement,
 } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from './border-css';
@@ -48,6 +49,11 @@ export function describeVariant(
           className: `text-brand-800 ${ring}`,
           style: { borderRadius: '4px' },
         };
+      }
+      // Timeline rail (spec/51) paints its own line + dots, so the wrapper
+      // carries no box border / background — just the selection ring.
+      if (isRailShape(element.shape)) {
+        return { className: ring, style: { borderRadius: '4px' } };
       }
       // CSS-rendered shapes (square / circle / stadium and the
       // rectangular device frames). The user-pickable border

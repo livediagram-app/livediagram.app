@@ -58,6 +58,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 48  | [Style presets](48-style-presets.md)                               | One-click Presets category: theme colour + border variations for shapes, animated line styles for arrows   |
 | 49  | [Shape markers](49-shape-markers.md)                               | Status glyph inside a shape (traffic-light dots + checkbox), left of the label; Markers context-menu band  |
 | 50  | [Arrow-to-arrow connections](50-arrow-to-arrow.md)                 | Snap an arrow endpoint to evenly-spaced points along another arrow's line (sequence-diagram messages)      |
+| 51  | [Timeline rail](51-timeline-rail.md)                               | Composite component: a line with evenly-spaced points + a right-end "add point" affordance; rail pattern   |
 
 ## Workflow
 

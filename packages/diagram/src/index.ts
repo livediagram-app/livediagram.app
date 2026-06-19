@@ -164,6 +164,19 @@ export function isProgressShape(kind: ShapeKind): boolean {
   return kind === 'progress-bar' || kind === 'progress-ring';
 }
 
+// Timeline-rail bounds: a rail always has at least 2 points, and the canvas
+// affordance caps additions so the element stays legible (spec/51).
+export const RAIL_MIN_POINTS = 2;
+export const RAIL_MAX_POINTS = 12;
+export const RAIL_DEFAULT_POINTS = 3;
+// Canvas px the rail widens by per added point, so spacing stays constant as
+// points are appended at the right end.
+export const RAIL_POINT_STEP_PX = 120;
+
+export function isRailShape(kind: ShapeKind): boolean {
+  return kind === 'timeline-rail';
+}
+
 // Round a value to a whole 0–100 percentage. Shared by the progress setter,
 // the context-menu slider, and ProgressView so the clamp-and-round can't drift
 // (default applied by the caller before clamping).
@@ -266,6 +279,10 @@ export type ShapeKind =
   // 0–100 percentage. They carry `progress` / `progressAnim` (below).
   | 'progress-bar'
   | 'progress-ring'
+  // Timeline rail (spec/51): a horizontal line with evenly-spaced points above
+  // it. Carries `railCount` (below); a canvas affordance adds points at the
+  // right end. The first of a family of composite "rail" components.
+  | 'timeline-rail'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

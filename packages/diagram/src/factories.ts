@@ -1,5 +1,7 @@
 import {
   isBoxed,
+  RAIL_DEFAULT_POINTS,
+  RAIL_POINT_STEP_PX,
   type Anchor,
   type AnnotationElement,
   type LinkCardElement,
@@ -76,6 +78,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // (aspect-locked on create so it stays circular).
   'progress-bar': { width: 220, height: 44 },
   'progress-ring': { width: 130, height: 130 },
+  // Timeline rail: width carries the default points at RAIL_POINT_STEP_PX
+  // spacing; height leaves room for the dots + ticks above the line.
+  'timeline-rail': { width: RAIL_DEFAULT_POINTS * RAIL_POINT_STEP_PX, height: 96 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -122,6 +127,11 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   }
   if (kind === 'progress-bar') {
     return { ...base, progress: 50, progressAnim: 'fill' };
+  }
+  // Timeline rail: starts with the default number of points; no label inside
+  // (the rail draws its own dots + line). See spec/51.
+  if (kind === 'timeline-rail') {
+    return { ...base, railCount: RAIL_DEFAULT_POINTS, strokeColor: '#64748b' };
   }
   return base;
 }

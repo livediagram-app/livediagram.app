@@ -620,6 +620,30 @@ export function PaletteToolsTab({
           <path d="M9 3 a6 6 0 0 1 5.2 9" strokeWidth="2.4" strokeLinecap="round" />
         </svg>
       </IconButton>
+      <IconButton
+        label="Add timeline rail"
+        caption="Timeline"
+        description="A line with points above it. Add more points from its right-end button."
+        onClick={() => addShape('timeline-rail')}
+        dragKind="timeline-rail"
+        filled
+        active={pendingShapeKind === 'timeline-rail'}
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+          <line
+            x1="2"
+            y1="12"
+            x2="16"
+            y2="12"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+          <circle cx="4.5" cy="6" r="1.8" fill="currentColor" />
+          <circle cx="9" cy="6" r="1.8" fill="currentColor" />
+          <circle cx="13.5" cy="6" r="1.8" fill="currentColor" />
+        </svg>
+      </IconButton>
     </div>
   );
 }

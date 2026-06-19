@@ -288,6 +288,8 @@ export function EditorView() {
     setBorderStyleSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
+    setRailCountSelected,
+    addRailPointSelected,
     applyShapeColorPresetSelected,
     applyShapeBorderPresetSelected,
     resetShapeStyleSelected,
@@ -821,6 +823,7 @@ export function EditorView() {
         onBeginEdit={beginEdit}
         onCommitLabel={commitLabel}
         onCommitTable={commitTable}
+        onAddRailPoint={addRailPointSelected}
         onCancelEdit={cancelEdit}
         onBeginEndpointDrag={beginEndpointDrag}
         onBeginArrowTranslate={beginArrowTranslate}
@@ -1247,6 +1250,7 @@ export function EditorView() {
           onSetBorderRadius={setBorderRadiusSelected}
           onSetMarker={setMarkerSelected}
           onSetMarkerSize={setMarkerSizeSelected}
+          onSetRailCount={setRailCountSelected}
           shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
           onApplyShapeColorPreset={applyShapeColorPresetSelected}
           onApplyShapeBorderPreset={applyShapeBorderPresetSelected}

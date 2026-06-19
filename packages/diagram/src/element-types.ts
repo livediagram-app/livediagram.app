@@ -107,6 +107,10 @@ export type ShapeElement = {
   strokeWidth?: BorderStroke;
   strokeStyle?: BorderStyle;
   borderRadius?: BorderRadius;
+  // Timeline rail (spec/51): how many evenly-spaced points sit above the rail
+  // line. Only meaningful on the 'timeline-rail' kind; clamped to
+  // RAIL_MIN_POINTS..RAIL_MAX_POINTS.
+  railCount?: number;
   // Status marker (spec/49): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize bucket where 'scale' tracks the element's text size.

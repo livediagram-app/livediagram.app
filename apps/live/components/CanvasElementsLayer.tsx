@@ -80,6 +80,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetFont,
     onSetTextSize,
     onCommitTable,
+    onAddRailPoint,
     onSpawnConnect,
     onStartArrow,
     onStartPencil,
@@ -215,6 +216,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onSetFont={readOnly ? undefined : onSetFont}
             onSetTextSize={readOnly ? undefined : onSetTextSize}
             onCommitTable={onCommitTable}
+            onAddRailPoint={onAddRailPoint}
             onCancelEdit={onCancelEdit}
             onFollowLink={onFollowLink}
             onOpenComments={onOpenComments}

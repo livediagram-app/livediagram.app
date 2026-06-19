@@ -82,6 +82,41 @@ describe('useElementStyle shape markers (spec/49)', () => {
   });
 });
 
+describe('useElementStyle timeline rail (spec/51)', () => {
+  it('sets the point count and resizes to keep spacing constant', () => {
+    const a = createShape('timeline-rail', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.setRailCountSelected(5);
+    const el = result()[0] as { railCount?: number; width: number };
+    expect(el.railCount).toBe(5);
+    expect(el.width).toBe(5 * 120); // RAIL_POINT_STEP_PX
+  });
+
+  it('clamps the count to the allowed range', () => {
+    const a = createShape('timeline-rail', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setRailCountSelected(99);
+    expect((result()[0] as { railCount?: number }).railCount).toBe(12); // RAIL_MAX_POINTS
+  });
+
+  it('appends a point via addRailPointSelected', () => {
+    const a = createShape('timeline-rail', 0, 0); // default 3
+    const { style, result } = harness([a], new Set([a.id]));
+    style.addRailPointSelected();
+    const el = result()[0] as { railCount?: number; width: number };
+    expect(el.railCount).toBe(4);
+    expect(el.width).toBe(4 * 120);
+  });
+
+  it('leaves non-rail shapes untouched', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setRailCountSelected(5);
+    expect((result()[0] as { railCount?: number }).railCount).toBeUndefined();
+  });
+});
+
 describe('useElementStyle shape style presets (spec/48)', () => {
   it('applies a colour preset (fill + stroke + text) in one step, untouched border', () => {
     const a = createShape('square', 0, 0);

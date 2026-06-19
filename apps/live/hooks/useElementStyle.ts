@@ -19,6 +19,10 @@
 
 import {
   ARROW_THICKNESS_PX,
+  RAIL_DEFAULT_POINTS,
+  RAIL_MAX_POINTS,
+  RAIL_MIN_POINTS,
+  RAIL_POINT_STEP_PX,
   bringManyToFront,
   clampPercent,
   isBoxed,
@@ -639,6 +643,37 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setFlowSpeedSelected = (value: AnimationSpeed) =>
     setArrowFieldSelected({ flowSpeed: value }, 'FlowSpeed');
 
+  // Timeline rail (spec/51). Setting the point count also resizes the element
+  // so the per-point spacing stays constant (count × step), keeping the rail
+  // neat as points are added / removed. Applies to selected rail shapes.
+  const setRailCountSelected = (count: number) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    const n = Math.max(RAIL_MIN_POINTS, Math.min(RAIL_MAX_POINTS, Math.round(count)));
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'timeline-rail'
+          ? { ...el, railCount: n, width: n * RAIL_POINT_STEP_PX }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'TimelineRail');
+  };
+  // Append a point to each selected rail (the canvas "+" affordance), capped at
+  // RAIL_MAX_POINTS; widens each by one step so spacing holds.
+  const addRailPointSelected = () => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) => {
+        if (!(ids.has(el.id) && el.type === 'shape' && el.shape === 'timeline-rail')) return el;
+        const n = Math.min(RAIL_MAX_POINTS, (el.railCount ?? RAIL_DEFAULT_POINTS) + 1);
+        return { ...el, railCount: n, width: n * RAIL_POINT_STEP_PX };
+      }),
+    );
+    track('Element', 'Changed', 'TimelineRail');
+  };
+
   // Clear per-element colour overrides so the element falls back to
   // whatever the current tab theme dictates. Each colour field is set
   // to undefined; the history hook snapshots the present so this is
@@ -747,6 +782,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setBorderRadiusSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
+    setRailCountSelected,
+    addRailPointSelected,
     applyShapeColorPresetSelected,
     applyShapeBorderPresetSelected,
     resetShapeStyleSelected,

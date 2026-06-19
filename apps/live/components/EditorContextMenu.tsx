@@ -25,7 +25,11 @@ import {
   defaultTextColor,
   isBoxed,
   isProgressShape,
+  isRailShape,
   PROGRESS_ANIMS,
+  RAIL_DEFAULT_POINTS,
+  RAIL_MAX_POINTS,
+  RAIL_MIN_POINTS,
   SHAPE_MARKERS,
   supportsBorderControls,
   supportsBorderRadius,
@@ -178,6 +182,8 @@ type EditorContextMenuProps = {
   // Status markers (spec/49): set / clear the shape's marker glyph and its size.
   onSetMarker: (value: ShapeMarker | null) => void;
   onSetMarkerSize: (value: TextSize) => void;
+  // Timeline rail (spec/51): set the rail's point count.
+  onSetRailCount: (count: number) => void;
   // Style presets (spec/48): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).
@@ -511,7 +517,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // a progress element which carries its own `progress` data) can morph to
     // another common kind in place.
     const isProgress = target.type === 'shape' && isProgressShape(target.shape);
-    const morphable = target.type === 'shape' && !isIcon && target.shape !== 'frame' && !isProgress;
+    const isRail = target.type === 'shape' && isRailShape(target.shape);
+    const morphable =
+      target.type === 'shape' && !isIcon && target.shape !== 'frame' && !isProgress && !isRail;
     // Consistent category grouping (spec/09): placement (Layer / Shape /
     // Rotation) · appearance (Progress / Animation / Colours / Border) ·
     // content (Line / Pointer / Text / Icon / Image / Table / Link) ·
@@ -700,6 +708,20 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               onSet={props.onSetProgressAnim}
               onSetSpeed={props.onSetProgressAnimSpeed}
               onSetRepeat={props.onSetProgressAnimRepeat}
+            />
+          </MenuAccordionSection>
+        ) : null}
+        {/* Timeline (spec/51) — how many points sit on the rail. The right-end
+            "+" on the canvas adds one too; this is the precise control. */}
+        {isRail ? (
+          <MenuAccordionSection
+            title="Timeline"
+            icon={<ProgressMenuGlyph />}
+            {...sectionProps('timeline')}
+          >
+            <RailPointsRow
+              value={(target as ShapeElement).railCount ?? RAIL_DEFAULT_POINTS}
+              onChange={props.onSetRailCount}
             />
           </MenuAccordionSection>
         ) : null}
@@ -1395,6 +1417,41 @@ function MenuToggleRow({
 // the menu, so the ContextMenu's outside-click guard keeps it open.
 // Progress percentage slider (spec/46). Mirrors OpacityRow but on a 0–100
 // integer scale.
+// Timeline-rail point count (spec/51): a − / value / + stepper. The canvas
+// "+" affordance adds points too; this also removes them.
+function RailPointsRow({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const stepBtn =
+    'flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-700 transition enabled:cursor-pointer enabled:hover:border-brand-300 enabled:hover:bg-brand-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60';
+  return (
+    <div className="px-3 py-1.5">
+      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Points</p>
+      <div className="mt-1 flex items-center gap-2">
+        <button
+          type="button"
+          className={stepBtn}
+          disabled={value <= RAIL_MIN_POINTS}
+          onClick={() => onChange(Math.max(RAIL_MIN_POINTS, value - 1))}
+          aria-label="Fewer points"
+        >
+          −
+        </button>
+        <span className="w-8 text-center text-xs font-medium tabular-nums text-slate-700 dark:text-slate-200">
+          {value}
+        </span>
+        <button
+          type="button"
+          className={stepBtn}
+          disabled={value >= RAIL_MAX_POINTS}
+          onClick={() => onChange(Math.min(RAIL_MAX_POINTS, value + 1))}
+          aria-label="More points"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ProgressRow({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const pct = clampPercent(value);
   return (

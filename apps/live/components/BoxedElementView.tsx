@@ -23,6 +23,7 @@ import {
   defaultTextColor,
   hasRichFormatting,
   isProgressShape,
+  isRailShape,
   PADDING_PX,
   type BoxedElement,
   type FreehandElement,
@@ -53,6 +54,7 @@ import { AnnotationGlyph, AnnotationHoverNote } from './AnnotationMarker';
 import { LinkCardView } from './LinkCardView';
 import { IconGlyph } from './icon-glyph';
 import { ShapeMarkerGlyph } from './ShapeMarker';
+import { RailView } from './RailView';
 import { TechIconGlyph } from './tech-icon-glyph';
 import { ICON_DND_MIME } from '@/lib/icons';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -115,6 +117,9 @@ type BoxedElementViewProps = {
       >
     >,
   ) => void;
+  // Append a point to a timeline rail (spec/51), from the rail's canvas
+  // affordance. Omitted in read-only mode.
+  onAddRailPoint?: () => void;
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (id: string) => void;
@@ -212,6 +217,7 @@ function BoxedElementViewImpl({
   onSetFont,
   onSetTextSize,
   onCommitTable,
+  onAddRailPoint,
   onCancelEdit,
   onFollowLink,
   onOpenComments,
@@ -609,6 +615,15 @@ function BoxedElementViewImpl({
           track={element.fillColor ?? '#e2e8f0'}
           textColor={textColor}
         />
+      ) : element.type === 'shape' && isRailShape(element.shape) ? (
+        // Timeline rail (spec/51): a line + evenly-spaced points, with an
+        // add-point affordance at the right end when selected + editable.
+        <RailView
+          element={element}
+          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          interactive={isSelected && !readOnly && !isLocked}
+          onAddPoint={onAddRailPoint}
+        />
       ) : element.type === 'shape' && isSvgRenderedShape(element.shape) ? (
         <ShapeSvgOverlay
           shape={element.shape}
@@ -726,8 +741,9 @@ function BoxedElementViewImpl({
           draggableIcon={canRepositionIcon}
           onIconPointerDown={startIconReposition}
         />
-      ) : element.type === 'shape' && isProgressShape(element.shape) ? (
-        // Progress elements draw their own centred percentage, so they render no
+      ) : element.type === 'shape' &&
+        (isProgressShape(element.shape) || isRailShape(element.shape)) ? (
+        // Progress + rail elements draw their own content, so they render no
         // standard editable label.
         <></>
       ) : (

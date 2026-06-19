@@ -279,6 +279,9 @@ export type CanvasProps = {
     >,
   ) => void;
   onCancelEdit: () => void;
+  // Append a point to the selected timeline rail (spec/51) — the canvas
+  // "add point" affordance on the rail's right end.
+  onAddRailPoint: () => void;
   onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
   onBeginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowCurvePointDrag: (arrowId: string, index: number, e: ReactPointerEvent) => void;
