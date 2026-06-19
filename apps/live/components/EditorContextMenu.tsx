@@ -1728,6 +1728,11 @@ function ChartMenuGlyph() {
   );
 }
 
+// Shared cell-input styling for the chart data editors (pie slice rows + line
+// category/series grid): a compact bordered text/number field.
+const CHART_CELL_INPUT =
+  'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+
 // Pie-chart data editor (spec/53): one row per slice — a colour swatch
 // (recolourable), a label, and a value — plus add / remove. Local draft while
 // typing; commits the whole array on blur / structural change (one undo step).
@@ -1743,8 +1748,6 @@ function PieDataEditor({
   const colorAt = (i: number, s: PieSlice) => s.color ?? PIE_PALETTE[i % PIE_PALETTE.length]!;
   const patch = (i: number, p: Partial<PieSlice>) =>
     setRows((r) => r.map((s, j) => (j === i ? { ...s, ...p } : s)));
-  const cellInput =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
     <div className="px-2 py-1.5">
       <div className="flex flex-col gap-1">
@@ -1765,14 +1768,14 @@ function PieDataEditor({
               />
             </label>
             <input
-              className={`${cellInput} flex-1`}
+              className={`${CHART_CELL_INPUT} flex-1`}
               value={s.label}
               placeholder="Label"
               onChange={(e) => patch(i, { label: e.target.value })}
               onBlur={() => onChange(rows)}
             />
             <input
-              className={`${cellInput} w-12 text-right tabular-nums`}
+              className={`${CHART_CELL_INPUT} w-12 text-right tabular-nums`}
               type="number"
               min={0}
               value={s.value}
@@ -1828,8 +1831,6 @@ function LineDataEditor({
     setRows(s);
     onChange(c, s);
   };
-  const cell =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   const xBtn =
     'flex h-4 w-4 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-rose-50 enabled:hover:text-rose-600 disabled:opacity-30 dark:enabled:hover:bg-rose-500/15';
   const importCsv = (file: File) => {
@@ -1861,7 +1862,7 @@ function LineDataEditor({
             {rows.map((s, si) => (
               <div key={si} className="flex w-16 shrink-0 items-center gap-0.5">
                 <input
-                  className={`${cell} w-full`}
+                  className={`${CHART_CELL_INPUT} w-full`}
                   value={s.name}
                   aria-label="Series name"
                   onChange={(e) =>
@@ -1903,7 +1904,7 @@ function LineDataEditor({
           {cats.map((c, i) => (
             <div key={i} className="mt-1 flex items-center gap-1">
               <input
-                className={`${cell} w-14 shrink-0`}
+                className={`${CHART_CELL_INPUT} w-14 shrink-0`}
                 value={c}
                 aria-label="Category"
                 onChange={(e) => setCats((cc) => cc.map((v, j) => (j === i ? e.target.value : v)))}
@@ -1912,7 +1913,7 @@ function LineDataEditor({
               {rows.map((s, si) => (
                 <input
                   key={si}
-                  className={`${cell} w-16 shrink-0 text-right tabular-nums`}
+                  className={`${CHART_CELL_INPUT} w-16 shrink-0 text-right tabular-nums`}
                   type="number"
                   value={s.values[i] ?? 0}
                   aria-label={`${s.name} ${c}`}
