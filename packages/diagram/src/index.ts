@@ -190,6 +190,35 @@ export function isRatingShape(kind: ShapeKind): boolean {
   return kind === 'rating';
 }
 
+// Pie chart (spec/53). A slice is one labelled datum; `color` overrides the
+// default categorical palette when set. `pieAnim` animates the slices —
+// 'grow' sweeps them in, 'pop' scales them in, 'spin' rotates the whole pie,
+// 'pulse' breathes their opacity. Undefined = static. Mapped to `lvd-pie-*`
+// by PieChartView. The first of the chart family, so the anim set is its own.
+export type PieSlice = { label: string; value: number; color?: string };
+export type PieAnim = 'grow' | 'pop' | 'spin' | 'pulse';
+export const PIE_ANIMS: readonly PieAnim[] = ['grow', 'pop', 'spin', 'pulse'];
+// Default categorical palette for slices without an explicit colour.
+export const PIE_PALETTE: readonly string[] = [
+  '#0ea5e9',
+  '#f59e0b',
+  '#22c55e',
+  '#ef4444',
+  '#a855f7',
+  '#14b8a6',
+  '#ec4899',
+  '#84cc16',
+];
+export const PIE_DEFAULT_SLICES: readonly PieSlice[] = [
+  { label: 'A', value: 40 },
+  { label: 'B', value: 30 },
+  { label: 'C', value: 20 },
+];
+
+export function isPieShape(kind: ShapeKind): boolean {
+  return kind === 'pie-chart';
+}
+
 // Clamp to a whole 0..RATING_MAX star count.
 export function clampRating(value: number): number {
   return Math.max(0, Math.min(RATING_MAX, Math.round(value)));
@@ -304,6 +333,9 @@ export type ShapeKind =
   // Rating (spec/52): a row of five stars showing a 1–5 score. Carries
   // `rating` / `ratingAnim` (below).
   | 'rating'
+  // Pie chart (spec/53): a data chart whose slices are sized by value. Carries
+  // `pieSlices` / `pieAnim` (below). The first of the "Data" component family.
+  | 'pie-chart'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

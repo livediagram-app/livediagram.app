@@ -42,6 +42,8 @@ import {
   type BorderRadius,
   type ElementAnimation,
   type IconAnimation,
+  type PieAnim,
+  type PieSlice,
   type ProgressAnim,
   type RatingAnim,
   type BorderStroke,
@@ -710,6 +712,30 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setRatingAnimRepeatSelected = (value: boolean) =>
     setRatingFieldSelected({ ratingAnimRepeat: value }, 'RatingAnim');
 
+  // Pie chart (spec/53): the data + its slice animation, gated to pie shapes.
+  const setPieFieldSelected = (patch: Partial<ShapeElement>, telemetryType: string) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'pie-chart'
+          ? { ...el, ...patch }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', telemetryType);
+  };
+  // Replace the whole slice array (the Data editor builds the next array from
+  // the current one — add / remove / edit a row — and commits it).
+  const setPieDataSelected = (slices: PieSlice[]) =>
+    setPieFieldSelected({ pieSlices: slices }, 'PieData');
+  const setPieAnimSelected = (value: PieAnim | null) =>
+    setPieFieldSelected({ pieAnim: value ?? undefined }, 'PieAnim');
+  const setPieAnimSpeedSelected = (value: AnimationSpeed) =>
+    setPieFieldSelected({ pieAnimSpeed: value }, 'PieAnim');
+  const setPieAnimRepeatSelected = (value: boolean) =>
+    setPieFieldSelected({ pieAnimRepeat: value }, 'PieAnim');
+
   // Clear per-element colour overrides so the element falls back to
   // whatever the current tab theme dictates. Each colour field is set
   // to undefined; the history hook snapshots the present so this is
@@ -825,6 +851,10 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
     setRatingAnimRepeatSelected,
+    setPieDataSelected,
+    setPieAnimSelected,
+    setPieAnimSpeedSelected,
+    setPieAnimRepeatSelected,
     applyShapeColorPresetSelected,
     applyShapeBorderPresetSelected,
     resetShapeStyleSelected,

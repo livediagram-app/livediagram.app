@@ -8,6 +8,37 @@ import { IconButton } from './palette-controls';
 // draw-to-size intent. The search-driven tabs (Icons / Technology / Devices)
 // stay inline in CommandPalette since they own the search/filter state.
 
+// Data tab (spec/53): chart elements. Pie chart today; more chart kinds will
+// land here (the "we'll add more later" family). Each tile arms the
+// tap-or-drag draw gesture via addShape, like the other ShapeKind tiles.
+export function PaletteDataTab({
+  pendingDraw,
+  addShape,
+}: {
+  pendingDraw: PendingDraw | null | undefined;
+  addShape: (kind: ShapeKind) => void;
+}) {
+  const pendingShapeKind = pendingDraw && pendingDraw.type === 'shape' ? pendingDraw.kind : null;
+  return (
+    <div className="grid grid-cols-3 justify-items-center gap-1 overflow-x-hidden">
+      <IconButton
+        label="Add pie chart"
+        caption="Pie"
+        description="A pie chart. Edit its labels + values from the Data menu."
+        onClick={() => addShape('pie-chart')}
+        dragKind="pie-chart"
+        filled
+        active={pendingShapeKind === 'pie-chart'}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+          <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.25" />
+          <path d="M12 12 L12 3 A9 9 0 0 1 20.5 15 Z" fill="currentColor" />
+        </svg>
+      </IconButton>
+    </div>
+  );
+}
+
 export function PaletteShapesTab({
   pendingDraw,
   addShape,

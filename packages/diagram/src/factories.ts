@@ -1,5 +1,6 @@
 import {
   isBoxed,
+  PIE_DEFAULT_SLICES,
   RAIL_DEFAULT_POINTS,
   RAIL_POINT_STEP_PX,
   RATING_DEFAULT,
@@ -84,6 +85,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'timeline-rail': { width: RAIL_DEFAULT_POINTS * RAIL_POINT_STEP_PX, height: 96 },
   // Rating: a row of five stars.
   rating: { width: 200, height: 44 },
+  // Pie chart: the pie + a legend beside it.
+  'pie-chart': { width: 280, height: 180 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -139,6 +142,11 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Rating: a row of stars, three filled by default, amber accent. See spec/52.
   if (kind === 'rating') {
     return { ...base, rating: RATING_DEFAULT, strokeColor: '#f59e0b' };
+  }
+  // Pie chart: starts with three sample slices; edit the data from its menu.
+  // See spec/53.
+  if (kind === 'pie-chart') {
+    return { ...base, pieSlices: PIE_DEFAULT_SLICES.map((s) => ({ ...s })) };
   }
   return base;
 }

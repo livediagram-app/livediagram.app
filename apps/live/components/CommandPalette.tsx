@@ -6,7 +6,12 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { MovablePanel } from './MovablePanel';
 import { PaletteTabBar } from './PaletteTabBar';
 import { PaletteDropdown } from './PaletteDropdown';
-import { PaletteShapesTab, PaletteToolsTab, PaletteComponentsTab } from './palette-create-tabs';
+import {
+  PaletteShapesTab,
+  PaletteToolsTab,
+  PaletteComponentsTab,
+  PaletteDataTab,
+} from './palette-create-tabs';
 import {
   EraserIcon,
   FormatPainterIcon,
@@ -500,6 +505,25 @@ export function CommandPalette({
                   onAddImage={onAddImage}
                 />
               ),
+            },
+            {
+              id: 'data',
+              label: 'Data',
+              description: 'Data charts that follow the tab theme. Pie chart today; more to come.',
+              icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                  />
+                  <path d="M12 12 L12 3 A9 9 0 0 1 20.5 15 Z" fill="currentColor" opacity="0.85" />
+                </svg>
+              ),
+              content: <PaletteDataTab pendingDraw={pendingDraw} addShape={addShape} />,
             },
             {
               id: 'devices',

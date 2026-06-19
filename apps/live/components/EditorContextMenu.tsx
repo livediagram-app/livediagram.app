@@ -13,7 +13,7 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   arrowheadShapeOf,
   arrowheadSizeOf,
@@ -24,9 +24,13 @@ import {
   defaultStrokeColor,
   defaultTextColor,
   isBoxed,
+  isPieShape,
   isProgressShape,
   isRailShape,
   isRatingShape,
+  PIE_ANIMS,
+  PIE_DEFAULT_SLICES,
+  PIE_PALETTE,
   PROGRESS_ANIMS,
   RAIL_DEFAULT_POINTS,
   RAIL_MAX_POINTS,
@@ -53,6 +57,8 @@ import {
   type ElementAnimation,
   type IconAnimation,
   type IconPosition,
+  type PieAnim,
+  type PieSlice,
   type ProgressAnim,
   type RatingAnim,
   type ShapeElement,
@@ -194,6 +200,11 @@ type EditorContextMenuProps = {
   onSetRatingAnim: (value: RatingAnim | null) => void;
   onSetRatingAnimSpeed: (value: AnimationSpeed) => void;
   onSetRatingAnimRepeat: (value: boolean) => void;
+  // Pie chart (spec/53): the data rows + the slice animation.
+  onSetPieData: (slices: PieSlice[]) => void;
+  onSetPieAnim: (value: PieAnim | null) => void;
+  onSetPieAnimSpeed: (value: AnimationSpeed) => void;
+  onSetPieAnimRepeat: (value: boolean) => void;
   // Style presets (spec/48): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).
@@ -529,13 +540,15 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     const isProgress = target.type === 'shape' && isProgressShape(target.shape);
     const isRail = target.type === 'shape' && isRailShape(target.shape);
     const isRating = target.type === 'shape' && isRatingShape(target.shape);
+    const isPie = target.type === 'shape' && isPieShape(target.shape);
     const morphable =
       target.type === 'shape' &&
       !isIcon &&
       target.shape !== 'frame' &&
       !isProgress &&
       !isRail &&
-      !isRating;
+      !isRating &&
+      !isPie;
     // Consistent category grouping (spec/09): placement (Layer / Shape /
     // Rotation) · appearance (Progress / Animation / Colours / Border) ·
     // content (Line / Pointer / Text / Icon / Image / Table / Link) ·
@@ -766,6 +779,30 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             />
           </MenuAccordionSection>
         ) : null}
+        {/* Data (spec/53) — the pie chart's label + value rows, plus a
+            chart-specific slice animation. */}
+        {isPie ? (
+          <MenuAccordionSection title="Data" icon={<DataMenuGlyph />} {...sectionProps('pie-data')}>
+            <PieDataEditor
+              slices={
+                (target as ShapeElement).pieSlices ?? PIE_DEFAULT_SLICES.map((s) => ({ ...s }))
+              }
+              onChange={props.onSetPieData}
+            />
+            <PieAnimTiles
+              anim={(target as ShapeElement).pieAnim ?? null}
+              speed={(target as ShapeElement).pieAnimSpeed ?? 'normal'}
+              repeat={
+                (target as ShapeElement).pieAnimRepeat ??
+                ((target as ShapeElement).pieAnim === 'spin' ||
+                  (target as ShapeElement).pieAnim === 'pulse')
+              }
+              onSet={props.onSetPieAnim}
+              onSetSpeed={props.onSetPieAnimSpeed}
+              onSetRepeat={props.onSetPieAnimRepeat}
+            />
+          </MenuAccordionSection>
+        ) : null}
         {/* Animation (spec/09) — a looping attention/status effect on the
             element. None clears it. */}
         {boxed ? (
@@ -916,7 +953,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         {/* ── Markers group (spec/49): its own band between Border and the
             content / collaborate groups. Regular shapes only — the self-drawing
             shapes (progress / rail / rating) have no label slot for a marker. ── */}
-        {target.type === 'shape' && !isProgress && !isRail && !isRating ? (
+        {target.type === 'shape' && !isProgress && !isRail && !isRating && !isPie ? (
           <>
             <MenuGroupSeparator />
             <MenuAccordionSection
@@ -1556,6 +1593,142 @@ function RatingAnimTiles({
         {withNone(RATING_ANIMS).map((v) => (
           <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
             <TileLabel glyph={<StarGlyph filled={!!v} size={16} />} label={v ?? 'None'} />
+          </SizeButton>
+        ))}
+      </div>
+      {anim ? (
+        <>
+          <SpeedTiles value={speed} onSet={onSetSpeed} />
+          <MenuToggleRow
+            label="Repeat"
+            description="Loop the animation instead of playing it once."
+            checked={repeat}
+            onToggle={() => onSetRepeat(!repeat)}
+          />
+        </>
+      ) : null}
+    </>
+  );
+}
+
+// A small pie glyph for the Data category + its animation tiles.
+function PieGlyph({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+      <circle cx="12" cy="12" r="9" fill="#0ea5e9" />
+      <path d="M12 12 L12 3 A9 9 0 0 1 20.5 15 Z" fill="#f59e0b" />
+      <path d="M12 12 L20.5 15 A9 9 0 0 1 7 20.2 Z" fill="#22c55e" />
+    </svg>
+  );
+}
+function DataMenuGlyph() {
+  return <PieGlyph size={12} />;
+}
+
+// Pie-chart data editor (spec/53): one row per slice — a colour swatch
+// (recolourable), a label, and a value — plus add / remove. Local draft while
+// typing; commits the whole array on blur / structural change (one undo step).
+function PieDataEditor({
+  slices,
+  onChange,
+}: {
+  slices: PieSlice[];
+  onChange: (slices: PieSlice[]) => void;
+}) {
+  const [rows, setRows] = useState<PieSlice[]>(slices);
+  useEffect(() => setRows(slices), [slices]);
+  const colorAt = (i: number, s: PieSlice) => s.color ?? PIE_PALETTE[i % PIE_PALETTE.length]!;
+  const patch = (i: number, p: Partial<PieSlice>) =>
+    setRows((r) => r.map((s, j) => (j === i ? { ...s, ...p } : s)));
+  const cellInput =
+    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+  return (
+    <div className="px-2 py-1.5">
+      <div className="flex flex-col gap-1">
+        {rows.map((s, i) => (
+          <div key={i} className="flex items-center gap-1">
+            <label
+              className="relative h-4 w-4 shrink-0 cursor-pointer rounded-[3px] border border-slate-300 dark:border-slate-600"
+              style={{ backgroundColor: colorAt(i, s) }}
+              aria-label="Slice colour"
+            >
+              <input
+                type="color"
+                value={hexish(colorAt(i, s))}
+                onChange={(e) =>
+                  onChange(rows.map((r, j) => (j === i ? { ...r, color: e.target.value } : r)))
+                }
+                className="absolute h-0 w-0 opacity-0"
+              />
+            </label>
+            <input
+              className={`${cellInput} flex-1`}
+              value={s.label}
+              placeholder="Label"
+              onChange={(e) => patch(i, { label: e.target.value })}
+              onBlur={() => onChange(rows)}
+            />
+            <input
+              className={`${cellInput} w-12 text-right tabular-nums`}
+              type="number"
+              min={0}
+              value={s.value}
+              aria-label="Value"
+              onChange={(e) => patch(i, { value: Math.max(0, Number(e.target.value) || 0) })}
+              onBlur={() => onChange(rows)}
+            />
+            <button
+              type="button"
+              aria-label="Remove slice"
+              disabled={rows.length <= 1}
+              onClick={() => onChange(rows.filter((_, j) => j !== i))}
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-rose-50 enabled:hover:text-rose-600 disabled:opacity-30 dark:enabled:hover:bg-rose-500/15"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange([...rows, { label: `Item ${rows.length + 1}`, value: 10 }])}
+        className="mt-1.5 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
+      >
+        + Add slice
+      </button>
+    </div>
+  );
+}
+
+// Pie slice animation tiles (spec/53): None + the chart animations, then Speed
+// + Repeat once one is picked (mirrors ProgressAnimTiles / RatingAnimTiles).
+function PieAnimTiles({
+  anim,
+  speed,
+  repeat,
+  onSet,
+  onSetSpeed,
+  onSetRepeat,
+}: {
+  anim: PieAnim | null;
+  speed: AnimationSpeed;
+  repeat: boolean;
+  onSet: (v: PieAnim | null) => void;
+  onSetSpeed: (v: AnimationSpeed) => void;
+  onSetRepeat: (v: boolean) => void;
+}) {
+  return (
+    <>
+      <p className="px-3 pb-1 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+        Animation
+      </p>
+      <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
+        {([null, ...PIE_ANIMS] as (PieAnim | null)[]).map((v) => (
+          <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
+            <span className="flex flex-col items-center gap-0.5">
+              {v ? <PieGlyph size={16} /> : <NoMarkerGlyph />}
+              <span className="text-[9px] capitalize leading-none">{v ?? 'None'}</span>
+            </span>
           </SizeButton>
         ))}
       </div>

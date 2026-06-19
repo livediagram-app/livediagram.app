@@ -295,6 +295,10 @@ export function EditorView() {
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
     setRatingAnimRepeatSelected,
+    setPieDataSelected,
+    setPieAnimSelected,
+    setPieAnimSpeedSelected,
+    setPieAnimRepeatSelected,
     applyShapeColorPresetSelected,
     applyShapeBorderPresetSelected,
     resetShapeStyleSelected,
@@ -1261,6 +1265,10 @@ export function EditorView() {
           onSetRatingAnim={setRatingAnimSelected}
           onSetRatingAnimSpeed={setRatingAnimSpeedSelected}
           onSetRatingAnimRepeat={setRatingAnimRepeatSelected}
+          onSetPieData={setPieDataSelected}
+          onSetPieAnim={setPieAnimSelected}
+          onSetPieAnimSpeed={setPieAnimSpeedSelected}
+          onSetPieAnimRepeat={setPieAnimRepeatSelected}
           shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
           onApplyShapeColorPreset={applyShapeColorPresetSelected}
           onApplyShapeBorderPreset={applyShapeBorderPresetSelected}

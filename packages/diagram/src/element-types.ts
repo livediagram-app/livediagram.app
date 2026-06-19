@@ -15,6 +15,8 @@ import type {
   IconAnimation,
   IconPosition,
   Padding,
+  PieAnim,
+  PieSlice,
   ProgressAnim,
   RatingAnim,
   ShapeKind,
@@ -121,6 +123,12 @@ export type ShapeElement = {
   ratingAnim?: RatingAnim;
   ratingAnimSpeed?: AnimationSpeed;
   ratingAnimRepeat?: boolean;
+  // Pie chart (spec/53): the labelled data + its optional slice animation.
+  // Only meaningful on the 'pie-chart' kind.
+  pieSlices?: PieSlice[];
+  pieAnim?: PieAnim;
+  pieAnimSpeed?: AnimationSpeed;
+  pieAnimRepeat?: boolean;
   // Status marker (spec/49): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize bucket where 'scale' tracks the element's text size.

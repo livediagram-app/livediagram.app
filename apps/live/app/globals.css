@@ -1000,6 +1000,56 @@
     var(--lvd-rating-iter, 1);
 }
 
+/* Pie chart slices (spec/53): grow / pop play once as an entrance; spin /
+ * pulse loop. Speed + iteration from the inline --lvd-pie-* custom properties;
+ * the group's transform-origin is set to the pie centre inline. */
+@keyframes lvd-pie-grow {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.lvd-pie-grow {
+  animation: lvd-pie-grow calc(0.6s * var(--lvd-pie-speed, 1)) ease-out var(--lvd-pie-iter, 1) both;
+}
+@keyframes lvd-pie-pop {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.lvd-pie-pop {
+  animation: lvd-pie-pop calc(0.5s * var(--lvd-pie-speed, 1)) ease-out var(--lvd-pie-iter, 1) both;
+}
+@keyframes lvd-pie-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.lvd-pie-spin {
+  animation: lvd-pie-spin calc(6s * var(--lvd-pie-speed, 1)) linear var(--lvd-pie-iter, infinite);
+}
+@keyframes lvd-pie-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+.lvd-pie-pulse {
+  animation: lvd-pie-pulse calc(1.6s * var(--lvd-pie-speed, 1)) ease-in-out
+    var(--lvd-pie-iter, infinite);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lvd-anim-pulse,
   .lvd-anim-blink,
@@ -1036,7 +1086,11 @@
   .lvd-rating-pop,
   .lvd-rating-twinkle,
   .lvd-rating-pulse,
-  .lvd-rating-rock {
+  .lvd-rating-rock,
+  .lvd-pie-grow,
+  .lvd-pie-pop,
+  .lvd-pie-spin,
+  .lvd-pie-pulse {
     animation: none;
   }
 }

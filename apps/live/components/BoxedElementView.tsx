@@ -22,6 +22,7 @@ import {
   defaultTextAlign,
   defaultTextColor,
   hasRichFormatting,
+  isPieShape,
   isProgressShape,
   isRailShape,
   isRatingShape,
@@ -57,6 +58,7 @@ import { IconGlyph } from './icon-glyph';
 import { ShapeMarkerGlyph } from './ShapeMarker';
 import { RailView } from './RailView';
 import { RatingView } from './RatingView';
+import { PieChartView } from './PieChartView';
 import { TechIconGlyph } from './tech-icon-glyph';
 import { ICON_DND_MIME } from '@/lib/icons';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -419,7 +421,8 @@ function BoxedElementViewImpl({
     element.type === 'shape' &&
     !isProgressShape(element.shape) &&
     !isRailShape(element.shape) &&
-    !isRatingShape(element.shape)
+    !isRatingShape(element.shape) &&
+    !isPieShape(element.shape)
       ? element.marker
       : undefined;
   // The text label, computed once so the freehand branch, the plain
@@ -638,6 +641,9 @@ function BoxedElementViewImpl({
           element={element}
           accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
         />
+      ) : element.type === 'shape' && isPieShape(element.shape) ? (
+        // Pie chart (spec/53): slices sized by value + a legend.
+        <PieChartView element={element} fontFamily={fontFamily} textColor={textColor} />
       ) : element.type === 'shape' && isSvgRenderedShape(element.shape) ? (
         <ShapeSvgOverlay
           shape={element.shape}
@@ -758,9 +764,10 @@ function BoxedElementViewImpl({
       ) : element.type === 'shape' &&
         (isProgressShape(element.shape) ||
           isRailShape(element.shape) ||
-          isRatingShape(element.shape)) ? (
-        // Progress / rail / rating elements draw their own content, so they
-        // render no standard editable label.
+          isRatingShape(element.shape) ||
+          isPieShape(element.shape)) ? (
+        // Progress / rail / rating / pie elements draw their own content, so
+        // they render no standard editable label.
         <></>
       ) : (
         labelNode

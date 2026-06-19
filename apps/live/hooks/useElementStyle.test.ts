@@ -144,6 +144,38 @@ describe('useElementStyle rating (spec/52)', () => {
   });
 });
 
+describe('useElementStyle pie chart (spec/53)', () => {
+  it('replaces the slice data on the pie shape', () => {
+    const a = createShape('pie-chart', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setPieDataSelected([
+      { label: 'X', value: 1 },
+      { label: 'Y', value: 2 },
+    ]);
+    const el = result()[0] as { pieSlices?: { label: string; value: number }[] };
+    expect(el.pieSlices).toEqual([
+      { label: 'X', value: 1 },
+      { label: 'Y', value: 2 },
+    ]);
+  });
+
+  it('sets and clears the pie animation', () => {
+    const a = createShape('pie-chart', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setPieAnimSelected('spin');
+    expect((result()[0] as { pieAnim?: string }).pieAnim).toBe('spin');
+    style.setPieAnimSelected(null);
+    expect((result()[0] as { pieAnim?: string }).pieAnim).toBeUndefined();
+  });
+
+  it('leaves non-pie shapes untouched', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setPieDataSelected([{ label: 'X', value: 1 }]);
+    expect((result()[0] as { pieSlices?: unknown }).pieSlices).toBeUndefined();
+  });
+});
+
 describe('useElementStyle shape style presets (spec/48)', () => {
   it('applies a colour preset (fill + stroke + text) in one step, untouched border', () => {
     const a = createShape('square', 0, 0);

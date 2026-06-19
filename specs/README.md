@@ -60,6 +60,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 50  | [Arrow-to-arrow connections](50-arrow-to-arrow.md)                 | Snap an arrow endpoint to evenly-spaced points along another arrow's line (sequence-diagram messages)      |
 | 51  | [Timeline rail](51-timeline-rail.md)                               | Composite component: a line with evenly-spaced points + a right-end "add point" affordance; rail pattern   |
 | 52  | [Rating](52-rating.md)                                             | 1–5 star rating element with a Rating context-menu category (score picker + star-specific animations)      |
+| 53  | [Pie chart](53-pie-chart.md)                                       | Data palette category + pie chart element: editable label/value rows + chart-specific slice animations     |
 
 ## Workflow
 
