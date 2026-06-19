@@ -89,7 +89,7 @@ export function PaletteTabBar({
           value={activeId}
           align="right"
           variant="flush"
-          // Grow to fit every category (Shapes / Tools / … / Data / Devices /
+          // Grow to fit every category (Shapes / Tools / Components / Devices /
           // Icons / Technology) rather than capping at max-h + scrolling — the
           // list is short and fixed, so a scrollbar just looked cramped.
           autoHeight
