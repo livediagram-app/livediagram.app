@@ -82,6 +82,55 @@ export function isoTransform(
   return `translate(${pivot.x}px, ${pivot.y}px) ${rot} translate(${-pivot.x}px, ${-pivot.y}px)`;
 }
 
+// The 2D affine matrix equivalent of `isoTransform` for a flat (z=0) plane,
+// used by the image export (spec/48 isometric export). Isometric is a parallel
+// (orthographic) projection with no perspective, so projecting the diagram
+// plane under `rotateX(elevation) rotateZ(azimuth)` collapses to a plain 2x2
+// affine map: an in-plane rotation by the azimuth, then a vertical squash by
+// cos(elevation) (the tilt's foreshortening). Returned in canvas
+// `transform(a,b,c,d,e,f)` order (e/f are the caller's translation), so a
+// point (x,y) maps to (a·x + c·y, b·x + d·y). Defaults to the on-screen camera
+// so the export matches the editor's isometric view.
+export function isoCanvasMatrix(
+  azimuthDeg: number = ISO_TILT_DEG.z,
+  elevationDeg: number = ISO_TILT_DEG.x,
+): { a: number; b: number; c: number; d: number } {
+  const a = (azimuthDeg * Math.PI) / 180;
+  const e = (elevationDeg * Math.PI) / 180;
+  const cosA = Math.cos(a);
+  const sinA = Math.sin(a);
+  const cosE = Math.cos(e);
+  return { a: cosA, b: cosE * sinA, c: -sinA, d: cosE * cosA };
+}
+
+// Project a rectangle through `isoCanvasMatrix`, returning the axis-aligned
+// bounding box of the result (its four mapped corners). Used to size the
+// export canvas / SVG viewBox so the tilted scene isn't clipped.
+export function isoProjectBounds(
+  rect: { x: number; y: number; w: number; h: number },
+  m: { a: number; b: number; c: number; d: number },
+): { x: number; y: number; w: number; h: number } {
+  const corners = [
+    { x: rect.x, y: rect.y },
+    { x: rect.x + rect.w, y: rect.y },
+    { x: rect.x, y: rect.y + rect.h },
+    { x: rect.x + rect.w, y: rect.y + rect.h },
+  ];
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  for (const c of corners) {
+    const px = m.a * c.x + m.c * c.y;
+    const py = m.b * c.x + m.d * c.y;
+    if (px < minX) minX = px;
+    if (py < minY) minY = py;
+    if (px > maxX) maxX = px;
+    if (py > maxY) maxY = py;
+  }
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
 // The rotation pivot (canvas px) for isoTransform: the content's centre
 // expressed relative to the wrapper centre, since the wrapper's
 // transform-origin is its centre (`origin-center`). `viewport` is the

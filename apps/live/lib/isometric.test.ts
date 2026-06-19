@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampElevation,
+  isoCanvasMatrix,
+  isoProjectBounds,
   isoShapeSilhouette,
   ISO_DEPTH_PX,
   ISO_ELEVATION_RANGE,
@@ -119,5 +121,51 @@ describe('isoShapeSilhouette', () => {
       clipPath: undefined,
       borderRadius: undefined,
     });
+  });
+});
+
+describe('isoCanvasMatrix (spec/45 / 48 export projection)', () => {
+  it('defaults to the on-screen camera angles', () => {
+    const m = isoCanvasMatrix();
+    const a = (ISO_TILT_DEG.z * Math.PI) / 180;
+    const e = (ISO_TILT_DEG.x * Math.PI) / 180;
+    expect(m.a).toBeCloseTo(Math.cos(a), 6);
+    expect(m.c).toBeCloseTo(-Math.sin(a), 6);
+    expect(m.b).toBeCloseTo(Math.cos(e) * Math.sin(a), 6);
+    expect(m.d).toBeCloseTo(Math.cos(e) * Math.cos(a), 6);
+  });
+
+  it('a zero camera (no azimuth, flat elevation) is the identity', () => {
+    const m = isoCanvasMatrix(0, 0);
+    expect(m.a).toBeCloseTo(1, 6);
+    expect(m.b).toBeCloseTo(0, 6);
+    expect(m.c).toBeCloseTo(0, 6);
+    expect(m.d).toBeCloseTo(1, 6);
+  });
+
+  it('squashes the vertical axis by cos(elevation)', () => {
+    // No azimuth: x maps straight through, y is foreshortened by cos(e).
+    const m = isoCanvasMatrix(0, 60);
+    expect(m.a).toBeCloseTo(1, 6);
+    expect(m.d).toBeCloseTo(Math.cos((60 * Math.PI) / 180), 6); // 0.5
+    expect(m.b).toBeCloseTo(0, 6);
+  });
+});
+
+describe('isoProjectBounds', () => {
+  it('returns the axis-aligned box of the projected corners', () => {
+    // Pure vertical squash → width unchanged, height halved.
+    const m = isoCanvasMatrix(0, 60);
+    const out = isoProjectBounds({ x: 0, y: 0, w: 100, h: 100 }, m);
+    expect(out.w).toBeCloseTo(100, 6);
+    expect(out.h).toBeCloseTo(50, 6);
+  });
+
+  it('grows the footprint when the scene is rotated', () => {
+    const m = isoCanvasMatrix(); // default tilt
+    const out = isoProjectBounds({ x: 0, y: 0, w: 100, h: 100 }, m);
+    // A 45° spin widens the diagonal footprint beyond the original width.
+    expect(out.w).toBeGreaterThan(100);
+    expect(out.h).toBeLessThan(100); // and the tilt squashes the height
   });
 });

@@ -20,6 +20,12 @@ import {
   type TextRun,
 } from '@livediagram/diagram';
 import { framesFirst } from './canvas';
+import { isoCanvasMatrix, isoProjectBounds } from './isometric';
+
+// Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
+// the rendered scene into the editor's isometric projection (spec/45 / 48),
+// off by default so the standard export stays a flat top-down view.
+export type ImageExportOpts = { isometric?: boolean };
 
 // ---------------------------------------------------------------------
 // File (JSON)
@@ -163,23 +169,35 @@ function contentBounds(elements: Element[]): { x: number; y: number; w: number; 
 // triangular head. Fancier rendering (rich text, padding, theme
 // patterns) is intentionally out of scope; the export is meant as
 // a faithful overview, not a pixel-perfect screenshot.
-function renderTabToCanvas(tab: Tab, opts: { scale?: number } = {}): HTMLCanvasElement {
+function renderTabToCanvas(
+  tab: Tab,
+  opts: { scale?: number } & ImageExportOpts = {},
+): HTMLCanvasElement {
   const scale = opts.scale ?? 2; // default 2× for crisp output
   const bounds = contentBounds(tab.elements);
-  const w = (bounds.w + EXPORT_PADDING * 2) * scale;
-  const h = (bounds.h + EXPORT_PADDING * 2) * scale;
+  // Isometric export (spec/45 / 48): project the flat content through the iso
+  // affine and size the canvas to the tilted footprint so nothing clips. The
+  // matrix is applied to the drawing context after positioning, so every
+  // element / arrow drawer stays in plain canvas coordinates.
+  const iso = opts.isometric ? isoCanvasMatrix() : null;
+  const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
+  const w = (draw.w + EXPORT_PADDING * 2) * scale;
+  const h = (draw.h + EXPORT_PADDING * 2) * scale;
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.floor(w));
   canvas.height = Math.max(1, Math.floor(h));
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
   ctx.scale(scale, scale);
-  ctx.translate(EXPORT_PADDING - bounds.x, EXPORT_PADDING - bounds.y);
-  // Background — solid white. Theme backgrounds (dots/grid/colour)
-  // would be nice but they're decorative; flat white is the safest
-  // export default.
+  // Background — solid white. Painted across the whole canvas BEFORE the iso
+  // tilt so the triangular margins around the parallelogram fill too (theme
+  // backgrounds stay out of scope; flat white is the safest export default).
   ctx.fillStyle = tab.backgroundColor ?? EXPORT_BG;
-  ctx.fillRect(bounds.x - EXPORT_PADDING, bounds.y - EXPORT_PADDING, w / scale, h / scale);
+  ctx.fillRect(0, 0, w / scale, h / scale);
+  // Position the (projected) content min-corner at the padding offset, then
+  // apply the iso projection so element coords map onto the tilted plane.
+  ctx.translate(EXPORT_PADDING - draw.x, EXPORT_PADDING - draw.y);
+  if (iso) ctx.transform(iso.a, iso.b, iso.c, iso.d, 0, 0);
 
   // Boxed elements first so arrows draw over them with the right
   // z-order on either end; framesFirst keeps frame sections behind
@@ -606,12 +624,17 @@ function svgArrow(arrow: ArrowElement, elements: Element[]): string {
   return parts.join('');
 }
 
-function renderTabToSvg(tab: Tab): string {
+function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const bounds = contentBounds(tab.elements);
-  const vbX = bounds.x - EXPORT_PADDING;
-  const vbY = bounds.y - EXPORT_PADDING;
-  const vbW = bounds.w + EXPORT_PADDING * 2;
-  const vbH = bounds.h + EXPORT_PADDING * 2;
+  // Isometric export: the viewBox spans the projected (tilted) footprint and a
+  // <g matrix> applies the iso projection to the content, while the background
+  // rect stays in viewBox space so it fills the whole frame.
+  const iso = opts.isometric ? isoCanvasMatrix() : null;
+  const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
+  const vbX = draw.x - EXPORT_PADDING;
+  const vbY = draw.y - EXPORT_PADDING;
+  const vbW = draw.w + EXPORT_PADDING * 2;
+  const vbH = draw.h + EXPORT_PADDING * 2;
   const parts: string[] = [];
   parts.push(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
@@ -619,6 +642,9 @@ function renderTabToSvg(tab: Tab): string {
   parts.push(
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(tab.backgroundColor ?? EXPORT_BG)}"/>`,
   );
+  if (iso) {
+    parts.push(`<g transform="matrix(${r2(iso.a)} ${r2(iso.b)} ${r2(iso.c)} ${r2(iso.d)} 0 0)">`);
+  }
   // Boxed elements first, then arrows on top (same z-order as the canvas).
   // framesFirst keeps frame sections behind their contents (spec/09).
   for (const el of framesFirst(tab.elements)) {
@@ -627,20 +653,21 @@ function renderTabToSvg(tab: Tab): string {
   for (const el of tab.elements) {
     if (el.type === 'arrow') parts.push(svgArrow(el, tab.elements));
   }
+  if (iso) parts.push('</g>');
   parts.push('</svg>');
   return parts.join('\n');
 }
 
-export function exportTabAsSvg(tab: Tab): Blob {
-  return new Blob([renderTabToSvg(tab)], { type: 'image/svg+xml' });
+export function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Blob {
+  return new Blob([renderTabToSvg(tab, opts)], { type: 'image/svg+xml' });
 }
 
 // ---------------------------------------------------------------------
 // PNG
 // ---------------------------------------------------------------------
 
-export function exportTabAsPng(tab: Tab): Promise<Blob> {
-  const canvas = renderTabToCanvas(tab);
+export function exportTabAsPng(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
+  const canvas = renderTabToCanvas(tab, opts);
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
@@ -655,8 +682,8 @@ export function exportTabAsPng(tab: Tab): Promise<Blob> {
 // hundred-KB pdf library for a single-image export.
 // ---------------------------------------------------------------------
 
-export async function exportTabAsPdf(tab: Tab): Promise<Blob> {
-  const canvas = renderTabToCanvas(tab);
+export async function exportTabAsPdf(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
+  const canvas = renderTabToCanvas(tab, opts);
   // Fetch the PNG bytes from the canvas, then embed them as a
   // /DCTDecode-less image — we use the simpler /FlateDecode raw
   // pixel-bytes encoding so we don't need a JPEG re-encoder. The

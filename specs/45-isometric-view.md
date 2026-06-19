@@ -129,9 +129,23 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   boxed elements (text / sticky / image / table / …) keep the rounded
   rectangle.
 
+## Isometric export
+
+The Export dialog (spec/07 `ExportTabDialog`) carries an **Isometric view**
+iOS-style toggle, **off by default**. When on, the image exports (PNG / SVG /
+PDF) tilt the rendered scene into the same isometric projection as the on-canvas
+view; JSON / Markdown ignore it. The export applies the projection's 2D affine
+(`isoCanvasMatrix` in `lib/isometric.ts` — an in-plane rotation by the azimuth
+then a `cos(elevation)` vertical squash, the parallel-projection equivalent of
+the on-screen `rotateX·rotateZ`) and sizes the canvas / SVG viewBox to the
+projected footprint (`isoProjectBounds`) so nothing clips. It is the **flat
+projected** look (matching the export renderer's faithful-overview remit); the
+on-screen voxel **extrusion** is not reproduced in the export.
+
 ## Scope (first cut) and what's deliberately out
 
-- **In:** the projected, extruded read-only view + pan, for the active tab.
+- **In:** the projected, extruded read-only view + pan, for the active tab;
+  the flat **projected** isometric image export (above).
 - **Out (for now):** a faint isometric floor grid behind the content (a nice
   seat for the scene, deferred), editing in isometric, a perspective (true
   vanishing-point) camera, per-element height authoring, and 3D arrows. These
