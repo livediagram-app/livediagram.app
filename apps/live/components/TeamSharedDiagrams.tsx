@@ -11,7 +11,7 @@ import { InlineRenameInput } from './InlineRenameInput';
 import { MoveToFolderDialog } from './MoveToFolderDialog';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useTeamLibrary } from '@/hooks/useTeamLibrary';
-import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
+import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 
 // "Shared diagrams" on the team page (spec/35): the team's folder
 // tree + diagrams, navigated with a small breadcrumb instead of a
@@ -377,7 +377,7 @@ function TeamDiagramRow({
         )}
       </span>
       <span className="text-[11px] uppercase tracking-wider text-slate-400">
-        {formatRelativeTime(Date.now() - diagram.savedAt)}
+        {relativeSince(diagram.savedAt)}
       </span>
       {renaming ? (
         <span />

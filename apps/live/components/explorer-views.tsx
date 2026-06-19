@@ -21,7 +21,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 // panel and the /explorer route can't drift apart on what a list
 // item carries.
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
-import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
+import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from './InlineRenameInput';
 import {
   MenuAccordionSection,
@@ -459,7 +459,7 @@ export function SharedRow({
   onDismiss?: () => void;
 }) {
   useRelativeTimeTick();
-  const relative = formatRelativeTime(Date.now() - item.savedAt);
+  const relative = relativeSince(item.savedAt);
   return (
     <li className="group relative">
       <button
@@ -622,7 +622,7 @@ export function DiagramRow({
   };
 
   const hasMenu = Boolean((onRename && active) || onDelete || onDuplicate || onMoveRequest);
-  const relative = formatRelativeTime(Date.now() - item.savedAt);
+  const relative = relativeSince(item.savedAt);
 
   const pillClasses = active
     ? 'group flex items-stretch rounded-md bg-brand-100 text-brand-800 dark:bg-brand-500/20 dark:text-brand-100'

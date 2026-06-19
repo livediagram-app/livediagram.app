@@ -10,7 +10,7 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
-import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
+import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/InlineRenameInput';
 import { MenuItem, PortalMenu } from '@/components/PortalMenu';
 import {
@@ -456,7 +456,7 @@ export function FolderRow({
       )}
       <span className="hidden sm:block" />
       <span className="text-[11px] uppercase tracking-wider text-slate-400">
-        {formatRelativeTime(Date.now() - folder.updatedAt)}
+        {relativeSince(folder.updatedAt)}
       </span>
       {renaming ? (
         <span />
@@ -653,7 +653,7 @@ function DiagramRow({
         )}
       </span>
       <span className="text-[11px] uppercase tracking-wider text-slate-400">
-        {formatRelativeTime(Date.now() - diagram.savedAt)}
+        {relativeSince(diagram.savedAt)}
       </span>
       {renaming ? (
         <span />
@@ -844,7 +844,7 @@ export function SharedList({
               {s.role === 'edit' ? 'Edit' : 'View'}
             </span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400">
-              {formatRelativeTime(Date.now() - s.savedAt)}
+              {relativeSince(s.savedAt)}
             </span>
             <button
               type="button"

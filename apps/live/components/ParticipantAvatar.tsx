@@ -1,5 +1,5 @@
 import { initialsOf, statusLabel, statusRingColor, type Participant } from '@/lib/identity';
-import { formatRelativeTime, useRelativeTimeTick } from '@/lib/relative-time';
+import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { Tooltip } from './Tooltip';
 
 type ParticipantAvatarProps = {
@@ -58,7 +58,7 @@ export function ParticipantAvatar({
   // label so the tooltip still says something sensible.
   const idleSuffix =
     participant.lastActiveAt !== undefined
-      ? ` · Active ${formatRelativeTime(Date.now() - participant.lastActiveAt)}`
+      ? ` · Active ${relativeSince(participant.lastActiveAt)}`
       : '';
   const title =
     badges && badges.length > 0 ? (

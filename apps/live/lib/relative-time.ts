@@ -26,6 +26,14 @@ export function formatRelativeTime(deltaMs: number): string {
   return `${days} days ago`;
 }
 
+// Verbose relative time elapsed since a past timestamp — the
+// `formatRelativeTime(Date.now() - ts)` idiom the diagram / folder / shared /
+// participant rows all spelled out. Evaluated at call time, so it refreshes on
+// each render; pair with useRelativeTimeTick where a live-updating row is wanted.
+export function relativeSince(timestamp: number): string {
+  return formatRelativeTime(Date.now() - timestamp);
+}
+
 // Forward-looking compact countdown ("6d left" / "3h left"), used by
 // the Share dialog's expiring-link rows (spec/34). Zero or negative
 // deltas read as 'expired' so a row that lapses while the dialog is
