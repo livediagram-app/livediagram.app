@@ -21,6 +21,7 @@ import {
 } from '@livediagram/diagram';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { SizeButton } from '@/components/palette-controls';
+import { nearestCssBorderStyle } from '@/components/border-css';
 
 // ── Static preset table ─────────────────────────────────────────────────
 
@@ -83,14 +84,6 @@ const BORDER_RADIUS_PX: Record<BorderRadius, number> = {
   lg: 7,
   full: 999,
 };
-// CSS border-style for the preview. dash-dot / long-dash / dash-dot-dot have
-// no native CSS equivalent, so they fall back to dashed (the shape presets
-// only use solid / dotted / dashed anyway).
-function cssBorderStyle(style: BorderStyle): string {
-  if (style === 'dotted') return 'dotted';
-  if (style === 'solid') return 'solid';
-  return 'dashed';
-}
 // SVG stroke-dasharray for an arrow-line preview, scaled to the stroke width.
 function svgDash(style: BorderStyle, w: number): string | undefined {
   if (style === 'dotted') return `0.1 ${w * 2.5}`;
@@ -135,7 +128,7 @@ function BorderPresetSwatch({ preset }: { preset: ShapeBorderPreset }) {
       className="h-5 w-7"
       style={{
         borderWidth: BORDER_WIDTH_PX[preset.stroke],
-        borderStyle: cssBorderStyle(preset.style),
+        borderStyle: nearestCssBorderStyle(preset.style),
         borderRadius: BORDER_RADIUS_PX[preset.radius],
       }}
       aria-hidden
