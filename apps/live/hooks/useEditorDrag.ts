@@ -71,6 +71,7 @@ import {
   type DragState,
   type ShapeBounds,
 } from '@/lib/canvas';
+import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import type { SnapTarget } from '@/components/Canvas.types';
 
 // Value-equality for two guide lists. Used to bail out of the
@@ -1492,16 +1493,14 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           dragged.shape === 'icon' &&
           !isTechIconId(dragged.iconId)
         ) {
-          for (const node of document.elementsFromPoint(e.clientX, e.clientY)) {
-            const host = node.closest('[data-element-id]');
-            const id = host?.getAttribute('data-element-id');
-            if (!id || id === drag.primaryId) continue;
+          for (const { id, host } of elementHostsAtPoint(e.clientX, e.clientY)) {
+            if (id === drag.primaryId) continue;
             // First real element beneath the icon. Fold in only if it's a
             // shape that hosts inline icons (regular shapes — not an icon or
             // a frame); otherwise leave the icon as a plain move, so an icon
             // dropped on a frame lands inside it as a standalone element.
             const target = d.activeTab.elements.find((el) => el.id === id);
-            if (target && acceptsInlineIcon(target) && host) {
+            if (target && acceptsInlineIcon(target)) {
               const rect = host.getBoundingClientRect();
               const position = iconDropSide(e.clientX, e.clientY, rect);
               d.onIconElementDroppedOnShape(drag.primaryId, id, position);

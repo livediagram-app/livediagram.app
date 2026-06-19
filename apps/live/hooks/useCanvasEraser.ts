@@ -27,6 +27,7 @@ import { useRef } from 'react';
 import type { ChangeLogEntry } from '@livediagram/api-schema';
 import type { Element, Tab } from '@livediagram/diagram';
 import { arrowReferencesAny } from '@/lib/canvas';
+import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import { track } from '@/lib/telemetry';
 
 type EraserDeps = {
@@ -68,10 +69,8 @@ export function useCanvasEraser(deps: EraserDeps) {
   const eraseAtPoint = (clientX: number, clientY: number) => {
     const { activeTab, tick, markCheckpoint } = depsRef.current;
     let changed = false;
-    for (const node of document.elementsFromPoint(clientX, clientY)) {
-      const host = node.closest('[data-element-id]');
-      const id = host?.getAttribute('data-element-id');
-      if (!id || erasedRef.current.has(id)) continue;
+    for (const { id } of elementHostsAtPoint(clientX, clientY)) {
+      if (erasedRef.current.has(id)) continue;
       const el = activeTab.elements.find((e) => e.id === id);
       // Skip unknown ids (a wrapper for something on another layer) and
       // locked elements (protected from deletion).
