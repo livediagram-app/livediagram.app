@@ -623,6 +623,49 @@ const SCENES: Record<string, React.ReactNode> = {
       ))}
     </>
   ),
+  // Search panel: a search field with a magnifier, over a dropdown of result
+  // rows (the top one highlighted, the way Enter picks the first match).
+  'search-panel': (
+    <>
+      <rect
+        x={68}
+        y={20}
+        width={184}
+        height={28}
+        rx={14}
+        className="fill-white stroke-brand-400"
+        strokeWidth={2}
+      />
+      <g className="stroke-brand-600" strokeWidth={3} fill="none" strokeLinecap="round">
+        <circle cx={88} cy={34} r={7} />
+        <path d="M93 39 l6 6" />
+      </g>
+      <rect x={106} y={31} width={64} height={6} rx={3} className="fill-brand-200" />
+      {[60, 82, 104].map((y, i) => (
+        <g key={y}>
+          <rect
+            x={68}
+            y={y}
+            width={184}
+            height={16}
+            rx={4}
+            className={i === 0 ? 'fill-brand-500 stroke-brand-600' : 'fill-white stroke-brand-300'}
+            strokeWidth={2}
+          />
+          <circle cx={80} cy={y + 8} r={3} className={i === 0 ? 'fill-white' : 'fill-brand-300'} />
+          <rect
+            x={90}
+            y={y + 5}
+            width={i === 0 ? 96 : 72}
+            height={6}
+            rx={3}
+            className={i === 0 ? 'fill-white' : 'fill-brand-200'}
+            opacity={i === 0 ? 0.85 : 1}
+          />
+        </g>
+      ))}
+    </>
+  ),
 };
 
 export function CategoryIllustration({ slug }: { slug: string }) {

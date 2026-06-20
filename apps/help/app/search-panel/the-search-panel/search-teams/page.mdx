@@ -1,0 +1,42 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Searching Teams',
+  description:
+    'Find the teams you belong to, plus their shared folders and diagrams, right from the search panel.',
+  path: '/help/search-panel/the-search-panel/search-teams/',
+});
+
+<ArticleLayout
+  title="Searching Teams"
+  description="When you are signed in, search reaches into your teams: the teams themselves and the folders and diagrams shared inside them."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel"
+  parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
+  subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-teams')}
+>
+
+When you are signed in and belong to one or more [teams](/help/collaboration/teams/), the [search panel](/help/search-panel/the-search-panel/) reaches into them as well, so team work is as findable as your own.
+
+## What the Teams group matches
+
+A single **Teams** group gathers three kinds of match:
+
+- **Teams** themselves, by name. Picking one jumps to that team's page.
+- **Team folders** shared inside a team.
+- **Team diagrams** shared inside a team.
+
+Team folders and diagrams are shown with an **"in &lt;team&gt;"** suffix, so when a name appears in more than one place you can tell which team it belongs to at a glance. Picking a team folder lands you on the team page with that folder already open.
+
+## Signed-in only
+
+Teams require an account, so this group only appears when you are signed in with teams to search. Guests, and signed-in users with no teams, simply will not see it. The rest of search, your [diagrams and folders](/help/search-panel/the-search-panel/search-diagrams/), works the same either way.
+
+<Tip>
+  Searching is often faster than expanding the Teams tree in the Explorer: type a team or folder
+  name and jump straight in.
+</Tip>
+
+</ArticleLayout>

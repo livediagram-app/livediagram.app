@@ -1,0 +1,36 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Adding Elements from Search',
+  description:
+    'Search the palette from the search panel and drop a shape, icon, or tech icon onto the canvas without opening the palette.',
+  path: '/help/search-panel/the-search-panel/search-add-to-canvas/',
+});
+
+<ArticleLayout
+  title="Adding Elements from Search"
+  description="Search doubles as a palette: find a shape or icon by name and place it on the canvas in one go."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel"
+  parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
+  subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-add-to-canvas')}
+>
+
+Inside the editor, the [search panel](/help/search-panel/the-search-panel/) is not only for getting around, it can also add to the canvas. Alongside the navigation results, your query is matched against the [palette](/help/palette/) catalogue, so you can place an element by name instead of hunting for it in the palette panel.
+
+## Add to canvas
+
+When a search matches a palette item, a shape, an icon, or a technology icon, it appears under an **Add to canvas** result. Picking it closes the panel and arms the same placement gesture the palette uses, so you then tap or drag on the canvas to drop the element exactly where you want it. It is the quickest route from "I need an AWS Lambda icon" to having it on the board.
+
+## Why search the palette
+
+The palette groups its contents into tabs (Shapes, Tools, Devices, Icons), which is great for browsing but slower when you already know what you want. Searching by name skips the browsing: type "cylinder", "phone", or a cloud service name, and place it. For the full palette and its categories, see [The Canvas](/help/canvas/the-canvas/) and [Technology Icons](/help/palette/technology-icons/).
+
+<Tip>
+  Add to canvas only shows up in the editor, where there is a canvas to add to. From the Explorer,
+  search sticks to finding diagrams, folders, and teams.
+</Tip>
+
+</ArticleLayout>

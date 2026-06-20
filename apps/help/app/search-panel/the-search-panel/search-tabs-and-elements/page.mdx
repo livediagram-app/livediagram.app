@@ -1,0 +1,43 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Finding Tabs and Elements',
+  description:
+    'Inside a diagram, search also covers its tabs and every element on them, including text inside table cells.',
+  path: '/help/search-panel/the-search-panel/search-tabs-and-elements/',
+});
+
+<ArticleLayout
+  title="Finding Tabs and Elements"
+  description="The in-diagram scope of search: jump to any tab, or straight to an element by its label, even text buried in a table cell."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel"
+  parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
+  subArticles={getSubArticles('the-search-panel').filter(
+    (a) => a.slug !== 'search-tabs-and-elements',
+  )}
+>
+
+When you open the [search panel](/help/search-panel/the-search-panel/) from inside a diagram, its scope grows to include that diagram's own contents: its [tabs](/help/tabs/using-tabs/) and the elements on them. This is what turns search into a within-diagram jump tool, not just a way to open a different diagram.
+
+## Tabs
+
+The **Tabs** group matches the diagram's tabs by name, and marks the one you are currently on so you can tell a jump from a no-op. Picking a tab switches to it. On a diagram with many tabs (or [tab folders](/help/tabs/tab-folders/)) this is quicker than scanning the tab bar.
+
+## Elements
+
+The **Elements** group matches elements by their label and, when you pick one, switches to its tab and selects it, so you land exactly on the thing you were looking for. Element ids are unique across the whole diagram, so a match points at one specific element wherever it lives.
+
+### Text inside tables
+
+Tables do not have a single label, their text lives in the cells. So a table matches through its **cells**: the first cell whose text matches your query becomes the result's label, and picking it takes you to that table. That means you can find a value tucked inside a table without remembering which table, or which tab, it is on.
+
+<Tip>
+  This scope only appears inside a diagram. From the Explorer or the dashboard, search covers your
+  diagrams, folders, and teams instead, see [Finding Diagrams and
+  Folders](/help/search-panel/the-search-panel/search-diagrams/).
+</Tip>
+
+</ArticleLayout>

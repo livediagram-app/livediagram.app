@@ -260,4 +260,11 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M14 6l4 4" {...s} />
     </Glyph>
   ),
+  // Search Panel guide.
+  'the-search-panel': (
+    <Glyph>
+      <circle cx="11" cy="11" r="7" {...s} />
+      <path d="M16 16l5 5" {...s} />
+    </Glyph>
+  ),
 };

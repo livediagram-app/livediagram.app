@@ -1,0 +1,53 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Search Panel',
+  description:
+    'One global search across your diagrams, folders, teams, tabs, and elements, that can also add to the canvas. Open it with Ctrl/Cmd + . or the Search button.',
+  path: '/help/search-panel/the-search-panel/',
+});
+
+<ArticleLayout
+  title="The Search Panel"
+  description="One box to jump anywhere: diagrams, folders, teams, tabs, and elements, plus actions like adding a shape or creating a tab."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel"
+  subArticles={getSubArticles('the-search-panel')}
+>
+
+The **search panel** is the fastest way to get anywhere in livediagram. It is one box that searches across everything you can reach and, when you are in the editor, can act on the canvas too. The scope adapts to where you are, so the same panel finds a diagram from the Explorer and an element from inside a board.
+
+## Opening and closing search
+
+- **Keyboard:** press `Ctrl` / `Cmd` + `.` from anywhere in the editor. (It is `.` rather than `T` because browsers reserve `Cmd`+`T` for a new browser tab.)
+- **Button:** click the **Search** button in the footer toolbar.
+
+The panel pops up near the top of the screen and blurs the canvas behind it so you can focus on the query. Press `Esc` or click outside to close it. Search only ever navigates or adds, it never edits what is already there, so it is available even in read-only views.
+
+## What search covers
+
+Type a few letters and matches appear, grouped by what they are. What is in scope depends on where you open it:
+
+- **Always:** your **[diagrams and folders](/help/search-panel/the-search-panel/search-diagrams/)**, and the **diagrams shared with you**.
+- **When signed in:** your **[teams](/help/search-panel/the-search-panel/search-teams/)** and their shared folders and diagrams.
+- **Inside a diagram:** also the **[tabs and elements](/help/search-panel/the-search-panel/search-tabs-and-elements/)** of the current diagram, including text inside table cells.
+
+## Beyond navigation
+
+In the editor the panel does more than jump around:
+
+- **[Add to the canvas](/help/search-panel/the-search-panel/search-add-to-canvas/):** search the palette and drop a shape or icon straight onto the board.
+- **[Create a new tab](/help/search-panel/the-search-panel/search-create-tab/):** an action result that spins up a fresh tab.
+
+## Picking a result
+
+Results are ordered by group, and the very first match is preselected, so for the common case you can just type and press `Enter`. Otherwise click a row, or arrow down to it and press `Enter`. Picking a result takes you exactly where it points: opening a diagram, switching to a tab, selecting an element, or jumping to a team.
+
+<Tip>
+  Looking for a node buried deep in a big diagram? Open search inside the diagram and type part of
+  its label, even a word from a table cell, and jump straight to it.
+</Tip>
+
+</ArticleLayout>

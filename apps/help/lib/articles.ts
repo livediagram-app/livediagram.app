@@ -144,6 +144,13 @@ export const categories: Category[] = [
     articleCount: 4,
     kind: 'feature',
   },
+  {
+    slug: 'search-panel',
+    title: 'Search Panel',
+    description: 'Jump to any diagram, folder, team, tab, or element, and add to the canvas.',
+    articleCount: 1,
+    kind: 'feature',
+  },
 ];
 
 // The two ways the category list partitions by `kind`, derived once here so the
@@ -925,6 +932,56 @@ export const articles: Article[] = [
     category: 'Tools',
     categorySlug: 'tools/layout-cleanup',
     parentSlug: 'layout-cleanup',
+  },
+
+  // ============ Search Panel (landing + sub-articles) ============
+  {
+    slug: 'the-search-panel',
+    title: 'The Search Panel',
+    description: 'Open the global search, what it covers, and how to navigate the results.',
+    category: 'Search Panel',
+    categorySlug: 'search-panel',
+  },
+  {
+    slug: 'search-diagrams',
+    title: 'Finding Diagrams and Folders',
+    description: 'Search across your diagrams, folders, and the diagrams shared with you.',
+    category: 'Search Panel',
+    categorySlug: 'search-panel/the-search-panel',
+    parentSlug: 'the-search-panel',
+  },
+  {
+    slug: 'search-teams',
+    title: 'Searching Teams',
+    description: 'Find teams and their shared folders and diagrams from the search panel.',
+    category: 'Search Panel',
+    categorySlug: 'search-panel/the-search-panel',
+    parentSlug: 'the-search-panel',
+  },
+  {
+    slug: 'search-tabs-and-elements',
+    title: 'Finding Tabs and Elements',
+    description: 'Inside a diagram, jump to any tab or element, including text inside table cells.',
+    category: 'Search Panel',
+    categorySlug: 'search-panel/the-search-panel',
+    parentSlug: 'the-search-panel',
+  },
+  {
+    slug: 'search-add-to-canvas',
+    title: 'Adding Elements from Search',
+    description:
+      'Search the palette and drop a shape or icon onto the canvas without leaving search.',
+    category: 'Search Panel',
+    categorySlug: 'search-panel/the-search-panel',
+    parentSlug: 'the-search-panel',
+  },
+  {
+    slug: 'search-create-tab',
+    title: 'Creating a Tab from Search',
+    description: 'Spin up a new tab straight from the search panel with the Create new tab action.',
+    category: 'Search Panel',
+    categorySlug: 'search-panel/the-search-panel',
+    parentSlug: 'the-search-panel',
   },
 ];
 

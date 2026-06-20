@@ -1,0 +1,36 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Creating a Tab from Search',
+  description:
+    'The search panel offers a Create new tab action when your query looks like "tab" or "new", so you can add a board without leaving search.',
+  path: '/help/search-panel/the-search-panel/search-create-tab/',
+});
+
+<ArticleLayout
+  title="Creating a Tab from Search"
+  description="Search can act, not just find: when your query looks like you want a new board, it offers a Create new tab action."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel"
+  parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
+  subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-create-tab')}
+>
+
+As well as finding things, the [search panel](/help/search-panel/the-search-panel/) can run the occasional **action**. The first of these is creating a [tab](/help/tabs/using-tabs/): when you are inside a diagram and your query looks like you want a new board, search offers a **Create new tab** result.
+
+## When it appears
+
+The action surfaces when your query reads like a request for a tab, for example typing `tab` or `new`. It only shows inside a diagram, where there is something to add a tab to, never from the Explorer. Because it is an action rather than a match, it does not steal the default `Enter`: an actual match still wins the first slot, and you arrow down to the **Create new tab** result to choose it deliberately.
+
+## What it does
+
+Picking **Create new tab** adds a fresh, empty tab to the current diagram and switches to it, the same as the `+` button on the tab bar, without you leaving the keyboard. From there it is an ordinary tab: rename it, fold it into a [folder](/help/tabs/tab-folders/), or start placing elements.
+
+<Tip>
+  Think of search actions as shortcuts for "I know what I want to do". Today that is creating a tab;
+  the pattern leaves room for more over time.
+</Tip>
+
+</ArticleLayout>

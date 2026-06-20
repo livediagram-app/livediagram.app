@@ -42,6 +42,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'import-tabs': '#0891b2',
   'export-tabs': '#0284c7',
   'tab-cleanup': '#2563eb',
+  'the-search-panel': '#6366f1',
 };
 
 /** Default colour used when no slug match is found. */
