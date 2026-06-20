@@ -46,6 +46,10 @@ const positionClasses: Record<HandlePosition, string> = {
   se: '-bottom-1.5 -right-1.5',
 };
 
+// The four corner handles, typed (Object.keys widens to string[]). Computed
+// once here rather than per-render in each handle component below.
+const HANDLE_POSITIONS = Object.keys(positionClasses) as HandlePosition[];
+
 // Resize axis angle (degrees, y-down, mod 180) for each corner / edge, used
 // to pick the right resize cursor once the element's rotation is added.
 const HANDLE_AXIS: Record<string, number> = {
@@ -99,7 +103,7 @@ type ResizeHandlesProps = {
 export function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: ResizeHandlesProps) {
   return (
     <>
-      {(Object.keys(positionClasses) as HandlePosition[]).map((pos) => (
+      {HANDLE_POSITIONS.map((pos) => (
         <div
           key={pos}
           onPointerDown={(e) => {
@@ -154,7 +158,7 @@ export function UnionResizeHandles({
         height: bounds.height,
       }}
     >
-      {(Object.keys(positionClasses) as HandlePosition[]).map((pos) => (
+      {HANDLE_POSITIONS.map((pos) => (
         <div
           key={pos}
           onPointerDown={(e) => {
