@@ -6,7 +6,7 @@ import { featureCategories, supportCategories } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = helpMetadata({
-  title: 'livediagram Help Centre',
+  title: 'Help',
   description:
     'Guides, tutorials, and answers for livediagram. Browse feature documentation, getting-started guides, and troubleshooting.',
   path: '/help/',

@@ -17,22 +17,25 @@ interface SeoInput {
  *  layout's homepage block. */
 export function helpMetadata({ title, description, path }: SeoInput): Metadata {
   const url = `${SITE_URL}${path}`;
-  const ogTitle = `${title} · livediagram Help`;
+  // Final document/OG title, consistent everywhere: "<Page Title> | livediagram".
+  // `absolute` bypasses the layout title template (which only applies to child
+  // segments, not the root index), so the home page gets the suffix too.
+  const fullTitle = `${title} | livediagram`;
   return {
-    title,
+    title: { absolute: fullTitle },
     description,
     alternates: { canonical: path },
     openGraph: {
       type: 'article',
       locale: LOCALE,
       siteName: SITE_NAME,
-      title: ogTitle,
+      title: fullTitle,
       description,
       url,
     },
     twitter: {
       card: 'summary',
-      title: ogTitle,
+      title: fullTitle,
       description,
     },
   };

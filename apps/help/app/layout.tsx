@@ -10,9 +10,11 @@ import './globals.css';
 // self-host-clean (spec/03).
 export const metadata: Metadata = {
   metadataBase: new URL('https://livediagram.app'),
+  // Consistent page titles across the help centre: every page reads
+  // "<Page Title> | livediagram"; the bare help home is "Help | livediagram".
   title: {
-    default: 'Help Centre · livediagram',
-    template: '%s · livediagram Help',
+    default: 'Help | livediagram',
+    template: '%s | livediagram',
   },
   description:
     'Guides, tutorials, and answers for livediagram. Browse feature documentation, getting-started guides, and troubleshooting.',
@@ -26,17 +28,10 @@ export const metadata: Metadata = {
     card: 'summary',
   },
   robots: { index: true, follow: true },
-  // Literal hrefs, so Next leaves them un-prefixed by the `/help`
-  // basePath and the router resolves them to the workers that already
-  // serve them (live serves /icon.svg, marketing serves the PNG +
-  // /apple-icon). Mirrors apps/telemetry. See spec/16.
-  icons: {
-    icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/livediagram-icon-256.png', type: 'image/png', sizes: '256x256' },
-    ],
-    apple: '/apple-icon',
-  },
+  // Favicon is served BY this app: `app/icon.svg` (Next auto-injects it,
+  // basePath-aware at /help/icon.svg) so the help centre owns its icon
+  // instead of relying on the router forwarding a bare /icon.svg to another
+  // worker (which 404s in standalone dev).
 };
 
 export const viewport: Viewport = {
