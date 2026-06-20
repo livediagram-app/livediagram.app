@@ -8,27 +8,9 @@
 // Keyed by the category `slug` (top-level support categories + the seven
 // feature categories). An unknown slug falls back to the generic canvas scene.
 
+// The scene fits (meet) within a short banner whose brand wash lives on the
+// CategoryCard container, so the motifs scale down rather than crop.
 const VIEWBOX = '0 0 320 120';
-
-// Soft brand wash behind every scene + a faint dotted "canvas" grid, so the
-// illustrations share one frame and read as the app surface.
-function Backdrop() {
-  return (
-    <>
-      <defs>
-        <linearGradient id="cat-bg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" className="[stop-color:var(--color-brand-100)]" />
-          <stop offset="100%" className="[stop-color:var(--color-brand-50)]" />
-        </linearGradient>
-        <pattern id="cat-dots" width="16" height="16" patternUnits="userSpaceOnUse">
-          <circle cx="1.5" cy="1.5" r="1" className="fill-brand-200" />
-        </pattern>
-      </defs>
-      <rect width="320" height="120" fill="url(#cat-bg)" />
-      <rect width="320" height="120" fill="url(#cat-dots)" opacity="0.5" />
-    </>
-  );
-}
 
 // --- Reusable motif bits -----------------------------------------------------
 
@@ -128,41 +110,50 @@ const SCENES: Record<string, React.ReactNode> = {
   // Tips & tricks: a lightbulb + keyboard keys (shortcuts).
   'tips-and-tricks': (
     <>
-      <circle cx="110" cy="48" r="20" className="fill-white stroke-brand-400" strokeWidth={2} />
-      <path
-        d="M104 64 h12 M105 69 h10"
-        className="stroke-brand-400"
+      {/* Lightbulb: round glass + a screw base + idea rays. */}
+      <circle cx="104" cy="50" r="22" className="fill-white stroke-brand-400" strokeWidth={2.5} />
+      <rect
+        x={95}
+        y={70}
+        width={18}
+        height={10}
+        rx={2}
+        className="fill-white stroke-brand-400"
         strokeWidth={2.5}
-        strokeLinecap="round"
       />
-      <path
-        d="M110 38 v6 M110 52 a4 4 0 0 0 0 0"
-        className="stroke-brand-500"
-        strokeWidth={2.5}
-        strokeLinecap="round"
-      />
-      <path
-        d="M104 48 a6 6 0 0 1 12 0"
-        className="stroke-brand-500"
-        strokeWidth={2.5}
-        fill="none"
-      />
-      {[170, 202, 234].map((x) => (
+      <path d="M98 84 h12" className="stroke-brand-400" strokeWidth={2.5} strokeLinecap="round" />
+      <path d="M97 50 a7 7 0 0 1 14 0" className="stroke-brand-500" strokeWidth={2.5} fill="none" />
+      {[
+        [104, 18, 104, 26],
+        [128, 28, 134, 22],
+        [80, 28, 74, 22],
+        [136, 50, 144, 50],
+      ].map(([x1, y1, x2, y2], i) => (
+        <path
+          key={i}
+          d={`M${x1} ${y1} L${x2} ${y2}`}
+          className="stroke-brand-300"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+        />
+      ))}
+      {/* Shortcut keys. */}
+      {[176, 210, 244].map((x) => (
         <rect
           key={x}
           x={x}
-          y={66}
-          width={26}
-          height={26}
-          rx={5}
+          y={64}
+          width={28}
+          height={28}
+          rx={6}
           className="fill-white stroke-brand-300"
           strokeWidth={2}
         />
       ))}
       <path
-        d="M179 79 h8 M211 79 h8 M243 79 h8"
+        d="M186 78 h8 M220 78 h8 M254 78 h8"
         className="stroke-brand-400"
-        strokeWidth={2.5}
+        strokeWidth={3}
         strokeLinecap="round"
       />
     </>
@@ -674,10 +665,9 @@ export function CategoryIllustration({ slug }: { slug: string }) {
     <svg
       viewBox={VIEWBOX}
       className="h-full w-full"
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMidYMid meet"
       aria-hidden
     >
-      <Backdrop />
       {scene}
     </svg>
   );
