@@ -20,6 +20,9 @@ export function Footer() {
           <a href="/faq" className="hover:text-slate-900">
             FAQ
           </a>
+          <a href="/help" className="hover:text-slate-900">
+            Help
+          </a>
           <a href="/terms" className="hover:text-slate-900">
             Terms
           </a>

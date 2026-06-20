@@ -43,6 +43,11 @@ export default function robots(): MetadataRoute.Robots {
         '/api/',
       ],
     },
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    // Two sitemaps share this origin: the marketing one (this app) and
+    // the help centre's (apps/help, served at /help with its own
+    // app/sitemap.ts that mirrors lib/articles.ts). Both are listed so
+    // crawlers discover the help articles, which otherwise hang off a
+    // sitemap nothing points at.
+    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/help/sitemap.xml`],
   };
 }
