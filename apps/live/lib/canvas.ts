@@ -76,18 +76,18 @@ export function inheritedSizeFor(
 //      closest to the BACK of the canvas (lowest z-order = earliest in the
 //      `elements` array). So it travels only when that backmost owner is the
 //      one being dragged, not when some other overlapping frame is.
+// A frame shape (the section-container kind, spec/09). The check recurs across
+// the frame-section + frames-first logic below; one definition keeps it in step.
+const isFrameEl = (el: Element): boolean => el.type === 'shape' && el.shape === 'frame';
+
 export function withFrameContents(elements: Element[], ids: Set<string>): Set<string> {
   const draggedFrameIds = new Set(
-    elements
-      .filter((el) => ids.has(el.id) && el.type === 'shape' && el.shape === 'frame')
-      .map((el) => el.id),
+    elements.filter((el) => ids.has(el.id) && isFrameEl(el)).map((el) => el.id),
   );
   if (draggedFrameIds.size === 0) return ids;
   // Every frame, in array order (lower index = further back). Ownership of an
   // overlapped element resolves against ALL frames, not just the dragged ones.
-  const allFrames = elements.filter(
-    (el): el is ShapeElement => el.type === 'shape' && el.shape === 'frame',
-  );
+  const allFrames = elements.filter((el): el is ShapeElement => isFrameEl(el));
   const contains = (f: ShapeElement, x: number, y: number) =>
     x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height;
   // The backmost frame (first in array order) whose bounds contain (x, y).
@@ -101,7 +101,7 @@ export function withFrameContents(elements: Element[], ids: Set<string>): Set<st
   for (const el of elements) {
     if (expanded.has(el.id)) continue;
     // Rule 1: a frame never travels as another frame's content.
-    if (el.type === 'shape' && el.shape === 'frame') continue;
+    if (isFrameEl(el)) continue;
     if (isBoxed(el)) {
       if (ownedByDragged(el.x + el.width / 2, el.y + el.height / 2)) expanded.add(el.id);
     } else if (el.type === 'arrow') {
@@ -130,7 +130,6 @@ export function withFrameContents(elements: Element[], ids: Set<string>): Set<st
 // rule in one place and never depends on array position. Returns the input
 // array unchanged when there are no frames (cheap no-op).
 export function framesFirst<T extends Element>(elements: T[]): T[] {
-  const isFrameEl = (el: Element) => el.type === 'shape' && el.shape === 'frame';
   if (!elements.some(isFrameEl)) return elements;
   return [...elements.filter(isFrameEl), ...elements.filter((el) => !isFrameEl(el))];
 }
