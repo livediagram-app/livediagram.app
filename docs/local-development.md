@@ -35,7 +35,7 @@ It applies every SQL file in `apps/api/migrations/` to the local SQLite file Wra
 pnpm dev
 ```
 
-Turbo spins up all four dev servers in parallel:
+Turbo spins up all five dev servers in parallel:
 
 | App              | Dev URL                                                             |
 | ---------------- | ------------------------------------------------------------------- |
