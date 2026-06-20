@@ -277,16 +277,23 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
   return isProgressShape(kind) || isRailShape(kind) || isRatingShape(kind) || isChartShape(kind);
 }
 
+// Round to a whole number and clamp into [0, max]. The fiddly half of the
+// clamp-and-round idiom (min/max order, the round) lives here so clampRating /
+// clampPercent can't drift apart.
+function clampRound(value: number, max: number): number {
+  return Math.max(0, Math.min(max, Math.round(value)));
+}
+
 // Clamp to a whole 0..RATING_MAX star count.
 export function clampRating(value: number): number {
-  return Math.max(0, Math.min(RATING_MAX, Math.round(value)));
+  return clampRound(value, RATING_MAX);
 }
 
 // Round a value to a whole 0–100 percentage. Shared by the progress setter,
 // the context-menu slider, and ProgressView so the clamp-and-round can't drift
 // (default applied by the caller before clamping).
 export function clampPercent(value: number): number {
-  return Math.max(0, Math.min(100, Math.round(value)));
+  return clampRound(value, 100);
 }
 
 // Flowing-arrow animation (spec/09): 'dashes' marches the dash pattern along
