@@ -1,0 +1,37 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Image Gallery',
+  description:
+    'The Image gallery in the Explorer Library holds every image you have uploaded, shows where each is used, and lets you delete the ones you no longer need.',
+  path: '/help/explorer/image-gallery/',
+});
+
+<ArticleLayout
+  title="Image Gallery"
+  description="Every image you have uploaded, in one place, with a 'used in' badge so you can spot and clear the ones nothing references."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+The **Image gallery** lives in the Explorer's **Library** section and collects every image you have uploaded. It is the companion to placing [images](/help/palette/images/) on the canvas: the canvas is where you use them, and the gallery is where you manage them.
+
+## What it shows
+
+Each uploaded image appears as a thumbnail with a **Used in** badge derived from where it is referenced, so you can tell at a glance which images are doing work and which are orphaned bytes safe to remove. You can upload a new image straight from the gallery, the same way you would from the canvas.
+
+## Deleting images
+
+Delete an image you no longer need to reclaim the space. If an image is still used in one or more diagrams, the delete confirmation warns you first: those tiles will render as broken images afterwards, and the removal cannot be undone. Images nothing references can be cleared without that risk.
+
+## Signed-in feature
+
+The gallery is tied to your account, so it is available when you are signed in and on deployments where image uploads are enabled. If uploads are turned off for a deployment, the gallery says so rather than failing silently.
+
+<Tip>
+  Sweep the gallery occasionally and delete anything with no **Used in** badge: those are uploads
+  nothing points at, so removing them is safe and keeps your storage tidy.
+</Tip>
+
+</ArticleLayout>

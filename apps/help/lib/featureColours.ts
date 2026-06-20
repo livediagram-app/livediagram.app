@@ -30,6 +30,12 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   isometric: '#9333ea',
   annotations: '#eab308',
   'technology-icons': '#0ea5e9',
+  recent: '#0ea5e9',
+  'shared-with-you': '#10b981',
+  'my-work': '#f59e0b',
+  'team-spaces': '#a855f7',
+  'image-gallery': '#ec4899',
+  'themes-library': '#d946ef',
 };
 
 /** Default colour used when no slug match is found. */

@@ -1,0 +1,37 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Recent Diagrams',
+  description:
+    'The Explorer opens on Recent: the diagrams you touched most recently, the fastest way back into current work.',
+  path: '/help/explorer/recent/',
+});
+
+<ArticleLayout
+  title="Recent Diagrams"
+  description="The default Explorer view: your most recently opened diagrams, newest first, so you can pick up where you left off."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Recent diagrams** is the first thing the [Explorer](/explorer/recent) shows you, and the view it opens on by default. It lists the diagrams you have opened or edited most recently, newest first, so the work you are in the middle of is always one click away.
+
+## What lands here
+
+Every diagram you open or edit moves to the top of Recent, whichever folder it actually lives in. It is a view across your whole library, not a folder of its own, so a diagram appearing in Recent has not been moved or copied: it still belongs to its folder (or to Unsorted), and you will find it there too.
+
+The sidebar shows a count next to **Recent diagrams** so you can see at a glance how much recent activity there is.
+
+## Working from Recent
+
+- **Open** a diagram by clicking its row.
+- Each row carries the same actions as anywhere else in the Explorer, including rename, move to a folder, and share.
+- Because Recent spans every folder, it is the quickest place to reopen something without remembering where you filed it.
+
+<Tip>
+  Recent is owner-scoped like the rest of the Explorer: a guest sees the diagrams their own browser
+  has opened, and signing in carries that history into your account.
+</Tip>
+
+</ArticleLayout>

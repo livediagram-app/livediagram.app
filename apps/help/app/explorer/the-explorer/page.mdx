@@ -1,51 +1,48 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
-import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'Explorer and Folders',
+  title: 'The Explorer',
   description:
-    'Browse, search, and organise all your diagrams in the Explorer. Group them into nested folders, or leave them in Unsorted.',
+    'The Explorer is where all your diagrams live: a sidebar of sections, a list view, and folders to organise your work. Here is how it is laid out.',
   path: '/help/explorer/the-explorer/',
 });
 
-<ArticleLayout title="Explorer and Folders" description="Your whole diagram library in one place. Browse recent work, organise diagrams into nested folders, and find anything fast." categoryTitle="Explorer" categorySlug="explorer" subArticles={getSubArticles("the-explorer")}>
+<ArticleLayout
+  title="The Explorer"
+  description="Your whole diagram library in one place: how the Explorer is laid out, and where everything lives."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
 
-The [Explorer](/explorer/recent) is where all your diagrams live. It gives you a sidebar tree to navigate, a list view of whatever folder you are in, and folders to group your work by project, customer, or topic. Diagrams you have not filed anywhere sit in a default bucket called **Unsorted**, so a freshly created diagram always has an obvious home.
+The [Explorer](/explorer/recent) is where all your diagrams live. It gives you a sidebar to navigate, a list view of whatever you have selected, and folders to group your work by project, customer, or topic. This page is the map; each section below has its own guide.
 
-## Finding your diagrams
+## The sidebar at a glance
 
-The Explorer's sidebar is organised into a few sections so the thing you want is never far away:
+The sidebar is organised into a few sections so the thing you want is never far away:
 
-- **Recent diagrams** lists the diagrams you touched most recently. It is the default view and the fastest way back into current work.
-- **Shared with you** appears when someone has shared a diagram with you, and lists those.
-- **My Work** holds your own library: the Unsorted bucket and your folders, as a tree you expand on demand.
-- **Image Gallery**, under the Library section, opens your personal image gallery.
+- **[Recent diagrams](/help/explorer/recent/)** is the default view: the diagrams you touched most recently, the fastest way back into current work.
+- **[Shared with you](/help/explorer/shared-with-you/)** collects diagrams other people have shared with you.
+- **[My Work](/help/explorer/my-work/)** is your own library, the Unsorted bucket plus the folders you create.
+- **[Team Spaces](/help/explorer/team-spaces/)** lists the teams you belong to and their shared folders, with your pending invites.
+- **[Image Gallery](/help/explorer/image-gallery/)** holds every image you have uploaded.
+- **[Saved Themes](/help/explorer/themes-library/)** keeps your custom themes ready to reuse.
 
 The main pane shows the contents of whatever you have selected, with the folder path as a breadcrumb you can click to jump back up.
-
-## Organising with folders
-
-Folders give your library structure without forcing it. Every diagram is in exactly one folder, or none, and folders themselves can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat under Unsorted when you do not.
-
-- **Create a folder** with the New folder action. Each folder's own menu offers a New subfolder option for deeper levels.
-- **Move a diagram** with its "Move to folder" menu item, which opens a tree of destinations to pick from. You can also drag a diagram row onto a folder to move it.
-- **Rename or delete** a folder from its menu. Deleting a folder is safe for its contents: the diagrams inside drop to Unsorted and any subfolders move up to the top level, so nothing is lost.
-
-Unsorted is always present and cannot be deleted, so there is never a moment where a diagram has nowhere to go.
 
 ## The Explorer in two places
 
 You will meet the Explorer in two forms, suited to two situations:
 
-- **The full-page Explorer** is the complete library view, modelled on a desktop file browser: a sidebar tree on the left, a breadcrumb and list of folders and diagrams on the right.
+- **The full-page Explorer** is the complete library view, modelled on a desktop file browser: a sidebar on the left, a breadcrumb and list of folders and diagrams on the right.
 - **The floating Explorer panel** is the compact side panel in the editor and the new-diagram flow, built for finding a diagram fast while you are mid-task.
 
 Both work whether or not you are signed in. A guest sees the diagrams and folders that their own browser owns, and can sign in later to carry that work into an account.
 
 <Tip>
-  Do not over-organise on day one. Start in Unsorted, and pull diagrams into folders once a real
-  grouping emerges. Folders are easy to add and rearrange whenever you need them.
+  New here? Start with [My Work](/help/explorer/my-work/) to learn folders, then lean on
+  [Recent](/help/explorer/recent/) day to day, it is the quickest way back into whatever you had
+  open last.
 </Tip>
 
 </ArticleLayout>

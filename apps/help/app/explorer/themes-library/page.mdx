@@ -1,0 +1,39 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Saved Themes',
+  description:
+    'The Themes view in the Explorer Library holds your saved custom themes as swatch previews you can edit, duplicate, or delete.',
+  path: '/help/explorer/themes-library/',
+});
+
+<ArticleLayout
+  title="Saved Themes"
+  description="Your custom themes, kept as swatch previews in the Explorer Library, ready to edit, duplicate, or reuse across diagrams."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+The **Themes** view sits in the Explorer's **Library** section, beside the [Image gallery](/help/explorer/image-gallery/), and holds the [custom themes](/help/customisation/themes/custom-themes/) you have built. It is where your themes live between diagrams, so a palette you crafted once is ready to reuse everywhere.
+
+## Your theme library
+
+Each saved theme shows as a **swatch preview** with its name, so you can recognise it at a glance, plus a **New theme** card to start another. If you have not built any yet, the view simply says so and offers that New theme card.
+
+Each theme carries three actions:
+
+- **Edit** opens it in the theme builder to tweak its colours.
+- **Duplicate** creates a copy as a starting point for a variation.
+- **Delete** removes it. Any diagram still using a deleted theme falls back to the default theme, and the removal cannot be undone.
+
+## Where themes get used
+
+Saved themes appear alongside the built-in ones wherever you pick a theme, so applying your own palette to a diagram is no different from choosing a built-in. See [Themes](/help/customisation/themes/) for applying them, and [Custom Themes](/help/customisation/themes/custom-themes/) for building one in the first place.
+
+<Tip>
+  Duplicate a theme before a big change rather than editing in place, so you keep the original as a
+  fallback while you experiment with the copy.
+</Tip>
+
+</ArticleLayout>

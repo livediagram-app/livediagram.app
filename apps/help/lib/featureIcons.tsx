@@ -175,4 +175,50 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 4v16M15 4v16M4 9h16M4 15h16" {...s} />
     </Glyph>
   ),
+  // Explorer section guides.
+  recent: (
+    <Glyph>
+      <circle cx="12" cy="12" r="9" {...s} />
+      <path d="M12 7v5l3 2" {...s} />
+    </Glyph>
+  ),
+  'shared-with-you': (
+    <Glyph>
+      <circle cx="6" cy="12" r="2.5" {...s} />
+      <circle cx="17" cy="6.5" r="2.5" {...s} />
+      <circle cx="17" cy="17.5" r="2.5" {...s} />
+      <path d="M8.2 10.8l6.6-3.4M8.2 13.2l6.6 3.4" {...s} />
+    </Glyph>
+  ),
+  'my-work': (
+    <Glyph>
+      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" {...s} />
+    </Glyph>
+  ),
+  'team-spaces': (
+    <Glyph>
+      <circle cx="9" cy="9" r="3" {...s} />
+      <path d="M3.5 19a5.5 5.5 0 0 1 11 0" {...s} />
+      <path d="M16 6.5a3 3 0 0 1 0 5.8M17 19a5.5 5.5 0 0 0-3-4.9" {...s} />
+    </Glyph>
+  ),
+  'image-gallery': (
+    <Glyph>
+      <rect x="3" y="5" width="18" height="14" rx="2" {...s} />
+      <circle cx="8.5" cy="10" r="1.5" {...s} />
+      <path d="M21 16l-5-5-7 7" {...s} />
+    </Glyph>
+  ),
+  'themes-library': (
+    <Glyph>
+      <circle cx="13.5" cy="6.5" r=".8" {...s} />
+      <circle cx="17.5" cy="10.5" r=".8" {...s} />
+      <circle cx="8.5" cy="7.5" r=".8" {...s} />
+      <circle cx="6.5" cy="12.5" r=".8" {...s} />
+      <path
+        d="M12 3a9 9 0 1 0 0 18c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1a1.6 1.6 0 0 1 1.6-1.6H16a5 5 0 0 0 5-5C21 6 16.9 3 12 3z"
+        {...s}
+      />
+    </Glyph>
+  ),
 };

@@ -1,0 +1,49 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'My Work and Folders',
+  description:
+    'My Work is your own diagram library: the Unsorted bucket plus the nested folders you create to group diagrams by project, customer, or topic.',
+  path: '/help/explorer/my-work/',
+});
+
+<ArticleLayout
+  title="My Work and Folders"
+  description="Your personal library, an Unsorted bucket plus folders you can nest as deep as you like. Every diagram has an obvious home."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**My Work** is your own library: the [diagrams](/explorer/all) you have created, organised however suits you. It is the tree in the middle of the Explorer sidebar, holding the **Unsorted** bucket and whatever folders you have made.
+
+## Unsorted
+
+Diagrams you have not filed anywhere sit in **Unsorted**, so a freshly created diagram always has a home without you deciding anything first. Unsorted is always present and cannot be deleted, and it only appears in the sidebar when it actually holds loose diagrams, so an empty bucket never adds noise.
+
+## Folders
+
+Folders give your library structure without forcing it. Every diagram is in exactly one folder, or none, and folders can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat under Unsorted when you do not.
+
+<Step n={1}>
+  Create a folder with the **New folder** action (the plus beside the My Work heading adds one at
+  the top level). Each folder's own menu offers **New subfolder** for deeper levels.
+</Step>
+<Step n={2}>
+  Move a diagram with its **Move to folder** menu item, which opens a tree of destinations, or drag
+  a diagram row straight onto a folder.
+</Step>
+<Step n={3}>Rename or delete a folder from its menu.</Step>
+
+Deleting a folder is safe for its contents: the diagrams inside drop to Unsorted and any subfolders move up to the top level, so nothing is ever lost when you tidy up.
+
+## Two places to browse
+
+You will meet My Work in two forms: the **full-page Explorer**, modelled on a desktop file browser, and the compact **floating Explorer panel** in the editor for finding a diagram mid-task. Both work whether or not you are signed in: a guest sees the diagrams and folders their own browser owns, and can sign in later to carry that work into an account.
+
+<Tip>
+  Do not over-organise on day one. Start in Unsorted, and pull diagrams into folders once a real
+  grouping emerges. Folders are easy to add and rearrange whenever you need them.
+</Tip>
+
+</ArticleLayout>

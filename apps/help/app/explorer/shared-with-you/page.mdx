@@ -1,0 +1,35 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Shared With You',
+  description:
+    'Diagrams other people have shared with you collect under Shared with you in the Explorer, so a link you were sent is easy to find again.',
+  path: '/help/explorer/shared-with-you/',
+});
+
+<ArticleLayout
+  title="Shared With You"
+  description="Open a share link someone sent you and the diagram lands under Shared with you, ready to reopen any time."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Shared with you** collects the diagrams other people have handed you, so a link a colleague sent last week is still easy to find this week. It sits in the Explorer's **Quick find** section, just below [Recent](/help/explorer/recent/), and shows a count of how many diagrams are waiting.
+
+## How a diagram gets here
+
+When you open a [share link](/help/collaboration/sharing/) that someone sent you, that diagram is remembered and added to **Shared with you**. You do not have to do anything extra: opening the link once is enough for it to show up here afterwards. Until you have opened a shared link, the section stays empty, with a prompt explaining that anything shared with you will land here.
+
+## Working with shared diagrams
+
+- **Reopen** a shared diagram by clicking its row, no need to dig the original link out of your messages.
+- You can **dismiss** a diagram from the list when you are done with it. That only removes it from your Shared with you view; it does not affect the diagram or anyone else's access.
+- Your access follows the share link's permissions, so whether you can edit or only view depends on how the owner shared it.
+
+<Tip>
+  Shared diagrams stay separate from **My Work**: they are other people's diagrams you have access
+  to, not your own library, so they never clutter your folders.
+</Tip>
+
+</ArticleLayout>

@@ -46,7 +46,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area:
 
-- **Explorer** — folders for organising diagrams (explorer/15).
+- **Explorer** — the diagram library (explorer/15, teams/32+35): The Explorer overview, Recent, Shared with you, My Work and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar section.
 - **Palette** — adding elements: shapes and arrows (09), drawing (drawing + shape recognition), images (19), technology icons (41), data elements (46+51+52+53).
 - **Canvas** — the infinite canvas (09), selecting and grouping (selection/groups), links and link cards (40), annotations (38).
 - **Tabs** — multiple boards and tab folders (13+17+30).

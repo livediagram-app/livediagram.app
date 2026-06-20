@@ -1,0 +1,37 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Team Spaces',
+  description:
+    'The Teams section of the Explorer lists the teams you belong to and their shared folders, alongside your pending invites.',
+  path: '/help/explorer/team-spaces/',
+});
+
+<ArticleLayout
+  title="Team Spaces"
+  description="Browse the teams you belong to and their shared folders right in the Explorer, and keep an eye on pending invites."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+The **Teams** section of the Explorer sits between your own [My Work](/help/explorer/my-work/) tree and the Library. It lists every team you belong to, lets you expand a team into its shared folders, and keeps your pending invites one click away. For the full picture of how teams, roles, and invites work, see the [Teams guide](/help/collaboration/teams/).
+
+## Your teams
+
+Each team you are a member of appears as a row, with a badge showing the member count once a team has more than one person. Click a team to open its page; expand it to walk its shared folder tree without leaving the sidebar, and click a folder to jump straight to it on the team page. Team-shared diagrams live in [a folder tree every member can manage](/help/collaboration/teams/team-shared-diagrams/), separate from your personal library.
+
+## Invites
+
+An **Invites** row shows how many invitations are waiting for you, with the badge always present (even at zero) so you get a stable "is anything waiting?" answer at a glance. Open it to accept or decline.
+
+## Signed-in only
+
+Teams need an account, so this section is only available when you are signed in. Guests see a **Sign in to use teams** prompt in its place. On deployments configured without authentication, the Teams section does not appear at all, since teams cannot exist without it.
+
+<Tip>
+  Create a team from the plus beside the **Teams** heading, then invite people by email. They show
+  up here as soon as they accept.
+</Tip>
+
+</ArticleLayout>
