@@ -140,8 +140,8 @@ export const categories: Category[] = [
   {
     slug: 'tools',
     title: 'Tools',
-    description: 'AI assistance, zen mode, Markdown import, and layout cleanup.',
-    articleCount: 4,
+    description: 'AI, zen mode, light/dark mode, Markdown import, and layout cleanup.',
+    articleCount: 5,
     kind: 'feature',
   },
   {
@@ -584,6 +584,13 @@ export const articles: Article[] = [
     slug: 'zen-mode',
     title: 'Zen Mode',
     description: 'A distraction-free canvas with all the chrome hidden.',
+    category: 'Tools',
+    categorySlug: 'tools',
+  },
+  {
+    slug: 'dark-mode',
+    title: 'Light and Dark Mode',
+    description: 'Flip the editor chrome between light and dark, separate from your diagram theme.',
     category: 'Tools',
     categorySlug: 'tools',
   },

@@ -1,0 +1,41 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Light and Dark Mode',
+  description:
+    'Flip the editor between light and dark with the sun/moon toggle. It recolours the editor chrome, not your diagram, and your choice is remembered.',
+  path: '/help/tools/dark-mode/',
+});
+
+<ArticleLayout
+  title="Light and Dark Mode"
+  description="A light/dark toggle for the editor chrome, separate from your diagram's theme, so you can work comfortably in either."
+  categoryTitle="Tools"
+  categorySlug="tools"
+>
+
+livediagram has a **light / dark mode** for the editor itself. It is the sun-or-moon button on the right edge of the tab bar: click it to flip the editor between light and dark, and the icon (and its tooltip) always shows the mode you will switch to next.
+
+## Chrome, not canvas
+
+The most important thing to know is what the toggle changes, and what it does not. UI mode recolours the **editor chrome**, the tab bar, header, panels, and the backdrop around your work. It does **not** touch the diagram itself: your canvas keeps whatever [theme](/help/customisation/themes/) you gave it.
+
+That keeps two separate decisions separate. The diagram theme is about how your _content_ looks, to you and to everyone you share with. UI mode is about how _your editor_ looks, just for you. So a light, pastel diagram can sit on a dark editor late at night, and a dark architecture diagram can sit on a light one, whichever is comfortable. The two are fully independent.
+
+## The theme-match nudge
+
+Because the two are independent, they can end up mismatched, a dark-backdrop diagram on a light editor, or the reverse. When that happens, a small dismissible prompt appears above the tab bar offering to switch the editor mode to match the tab's theme in one click. It works out "light" or "dark" from the theme's background brightness, so it is right for built-in and custom themes alike. Dismiss it and it stays gone for that pairing, but it can still offer again on a differently themed tab. The theme picker offers the same one-click switch inline.
+
+## Your choice sticks
+
+- **Remembered.** Your pick is saved in your browser, so a refresh, or your next visit, keeps the mode you chose.
+- **No flash.** The choice is applied before the page first paints, on every screen including the welcome and new-diagram flows, so you never see a flash of the wrong mode.
+- **Light by default, and opt-in.** New visitors start in light mode. livediagram deliberately does **not** follow your operating system's dark-mode setting: the toggle is yours to set, so the editor only goes dark when you ask it to.
+
+<Tip>
+  Prefer a dark workspace? Flip it on once and forget it, the setting persists per browser. Pair it
+  with a dark diagram theme, or let the match nudge line them up for you.
+</Tip>
+
+</ArticleLayout>

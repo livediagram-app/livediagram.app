@@ -53,7 +53,7 @@ The feature categories group the feature guides by area:
 - **Tabs** — multiple boards (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Diagram, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Customisation** — themes (29+42+44), templates, style presets (48), text and fonts (28), isometric (45).
 - **Collaboration** — comments, teams (32+35), sharing and embeds (24+33+34), activity and history (12), session tools (39).
-- **Tools** — AI assistance (25), zen mode (26), Markdown import (27), layout cleanup (47).
+- **Tools** — AI assistance (25), zen mode (26), light/dark UI mode (07), Markdown import (27), layout cleanup (47).
 - **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding diagrams/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
