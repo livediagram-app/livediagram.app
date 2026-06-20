@@ -107,9 +107,9 @@ export const categories: Category[] = [
   {
     slug: 'explorer',
     title: 'Explorer',
-    description: 'Organise your diagrams into nested folders in the Explorer.',
+    description: 'Recent, Shared, My Work, Teams, the image gallery, and saved themes.',
     icon: 'folder',
-    articleCount: 1,
+    articleCount: 7,
     kind: 'feature',
   },
   {
@@ -161,6 +161,15 @@ export const categories: Category[] = [
     kind: 'feature',
   },
 ];
+
+// The two ways the category list partitions by `kind`, derived once here so the
+// home + features pages don't each re-spell the predicate. Feature-guide
+// categories (the card grids), and the support categories (About, Getting
+// Started, ...) minus Contact, which the home renders as its own CTA.
+export const featureCategories: Category[] = categories.filter((c) => c.kind === 'feature');
+export const supportCategories: Category[] = categories.filter(
+  (c) => c.kind !== 'feature' && c.slug !== 'contact',
+);
 
 export const articles: Article[] = [
   // ---- About ----
@@ -477,8 +486,50 @@ export const articles: Article[] = [
   },
   {
     slug: 'the-explorer',
-    title: 'Explorer and Folders',
-    description: 'Organise diagrams into nested folders in the Explorer.',
+    title: 'The Explorer',
+    description: 'How the Explorer is laid out: the sidebar sections, list view, and folders.',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'recent',
+    title: 'Recent Diagrams',
+    description: 'The default view: the diagrams you opened or edited most recently.',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'shared-with-you',
+    title: 'Shared With You',
+    description: 'Diagrams other people have shared with you, collected in one place.',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'my-work',
+    title: 'My Work and Folders',
+    description: 'Your own library: the Unsorted bucket and the nested folders you create.',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'team-spaces',
+    title: 'Team Spaces',
+    description: 'The teams you belong to, their shared folders, and your pending invites.',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'image-gallery',
+    title: 'Image Gallery',
+    description: 'Every image you have uploaded, with where each is used and how to delete them.',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'themes-library',
+    title: 'Saved Themes',
+    description: 'Your custom themes as swatch previews, ready to edit, duplicate, or reuse.',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

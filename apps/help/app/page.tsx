@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { SearchInput } from '@/components/SearchInput';
 import { CategoryCard } from '@/components/CategoryCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { categories } from '@/lib/articles';
+import { featureCategories, supportCategories } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = helpMetadata({
@@ -13,9 +13,6 @@ export const metadata: Metadata = helpMetadata({
 });
 
 export default function HelpHome() {
-  const supportCategories = categories.filter((c) => c.kind !== 'feature' && c.slug !== 'contact');
-  const featureCategories = categories.filter((c) => c.kind === 'feature');
-
   return (
     <div>
       <Breadcrumb items={[]} />

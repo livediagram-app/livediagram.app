@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { CategoryCard } from '@/components/CategoryCard';
-import { categories } from '@/lib/articles';
+import { featureCategories } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = helpMetadata({
@@ -12,8 +12,6 @@ export const metadata: Metadata = helpMetadata({
 });
 
 export default function FeaturesPage() {
-  const featureCategories = categories.filter((c) => c.kind === 'feature');
-
   return (
     <div>
       <Breadcrumb items={[{ label: 'Features' }]} />
