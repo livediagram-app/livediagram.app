@@ -43,7 +43,6 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `palette`              | Palette              | palette   | feature |
 | `canvas`               | Canvas               | frame     | feature |
 | `tabs`                 | Tabs                 | tabs      | feature |
-| `customisation`        | Customisation        | swatch    | feature |
 | `collaboration`        | Collaboration        | users     | feature |
 | `activity-panel`       | Activity Panel       | activity  | feature |
 | `tools`                | Tools                | tools     | feature |
@@ -52,10 +51,9 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 The feature categories group the feature guides by area:
 
 - **Explorer** — the diagram library (explorer/15, teams/32+35): The Explorer overview, Recent, Shared with you, My Work and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar section.
-- **Palette** — the floating palette, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per gear-menu setting: Auto-Attach Arrows, Alignment Guides, Minimal Panels, Reset Palette Position).
-- **Canvas** — the infinite canvas (09), selecting and grouping (selection/groups), links and link cards (40), annotations (38).
+- **Palette** — the floating palette, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per gear-menu setting: Auto-Attach Arrows, Alignment Guides, Minimal Panels, Reset Palette Position).
+- **Canvas** — the infinite canvas (09), selecting and grouping (selection/groups), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28).
 - **Tabs** — multiple boards (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Diagram, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
-- **Customisation** — themes (29+42+44), templates, style presets (48), text and fonts (28), isometric (45).
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
 - **Activity Panel** — the per-diagram change log (12) promoted to its own category: What it is, How it works, Undo, Redo, and Reverting a change, one guide each.
 - **Tools** — AI assistance (25), zen mode (26), light/dark UI mode (07), Markdown import (27), layout cleanup (47).
