@@ -1,0 +1,28 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Context Menus',
+  description:
+    'Right-click almost anything in the editor for a menu of the actions that apply to it: elements, the canvas, and tabs.',
+  path: '/help/user-interface/context-menus/',
+});
+
+<ArticleLayout
+  title="Context Menus"
+  description="Right-click menus across the editor, each scoped to what you clicked."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+A **context menu** is the menu you get by right-clicking (or long-pressing on touch). Each one is scoped to whatever you clicked, so it only ever offers actions that make sense there.
+
+## Where you will find them
+
+- **On an element** — the full set of element actions: style, layer order, group, lock, link, comment, duplicate, and delete, the same things the [toolbar](/help/user-interface/toolbar/) offers, one right-click away.
+- **On the canvas** — board-level actions when you click empty space: paste, select all, change the background, and quick access to adding elements.
+- **On a tab** — tab management from the [tab bar](/help/user-interface/tab-bar/): rename, duplicate, move into a folder, lock, and delete the tab.
+
+Context menus keep the common actions a click away without you hunting through panels, and they close as soon as you pick something or click elsewhere.
+
+</ArticleLayout>

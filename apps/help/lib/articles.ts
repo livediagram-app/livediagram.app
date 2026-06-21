@@ -114,6 +114,14 @@ export const categories: Category[] = [
   // counts the feature landings in the category (each landing has its own
   // sub-guides). See spec/55.
   {
+    slug: 'user-interface',
+    title: 'User Interface',
+    description:
+      'Get your bearings in the editor: the panels, toolbar, context menus, zoom and tab bars, and quick controls.',
+    articleCount: 6,
+    kind: 'feature',
+  },
+  {
     slug: 'explorer',
     title: 'Explorer',
     description:

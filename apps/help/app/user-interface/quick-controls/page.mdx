@@ -1,0 +1,28 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Quick Controls',
+  description:
+    'The quick controls in the corner of the editor gather the always-available actions: search, settings, and more.',
+  path: '/help/user-interface/quick-controls/',
+});
+
+<ArticleLayout
+  title="Quick Controls"
+  description="The always-available actions tucked into the corner of the editor."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+The **quick controls** sit in the bottom corner of the editor and gather the actions you want reachable at any moment, whatever you are doing on the canvas. They stay put while the rest of the chrome comes and goes with your selection.
+
+## What lives here
+
+- **Search** — open the [search panel](/help/search-panel/) to jump to any diagram, tab, or element, or to drop something onto the canvas.
+- **Settings** — open the editor settings: appearance, behaviour toggles, and your preferences.
+- **Other shortcuts** — quick access to help and the handful of editor-wide toggles, so the things you reach for repeatedly are never more than a corner click away.
+
+Because they are fixed in the corner rather than tied to a selection, the quick controls are the dependable starting point when you are not sure where an action lives.
+
+</ArticleLayout>

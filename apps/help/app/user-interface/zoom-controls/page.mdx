@@ -1,0 +1,28 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Zoom Controls',
+  description:
+    'The zoom controls let you move in and out of the canvas, fit the whole diagram to the screen, and reset to 100%.',
+  path: '/help/user-interface/zoom-controls/',
+});
+
+<ArticleLayout
+  title="Zoom Controls"
+  description="Move in and out of the canvas, fit the diagram to the screen, and reset to 100%."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+The **zoom controls** sit in the corner of the canvas and govern how close you are to your diagram. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
+
+## The controls
+
+- **Zoom in / out** — step closer or further, centred on the canvas.
+- **Fit to screen** — frame the whole diagram in view at once, the quickest way to get your bearings after panning around.
+- **Reset** — jump back to 100%, true size.
+
+The current zoom level is shown alongside the buttons. You can also zoom with a trackpad pinch or `Ctrl`/`Cmd` + scroll, and pan with the [Hand tool](/help/palette/hand/) or by dragging empty canvas, the zoom controls are simply the always-visible way to do it.
+
+</ArticleLayout>

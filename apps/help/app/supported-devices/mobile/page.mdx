@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Mobile',
+  description:
+    'livediagram on a phone is a touch-friendly editor: pinch to zoom, drag to pan, long-press for menus, and a compact dock in place of the floating panels.',
+  path: '/help/supported-devices/mobile/',
+});
+
+<ArticleLayout title="Mobile" description="On a phone the editor is built for touch, with a compact dock and finger gestures in place of a mouse and keyboard." categoryTitle="Supported Devices" categorySlug="supported-devices">
+
+livediagram works on a phone right in your browser, with no app to install. The editor automatically switches to a touch-friendly layout on small screens so the canvas stays the star and everything is reachable with a thumb. It is great for viewing a diagram, making quick edits, and joining a live session on the go.
+
+## A layout built for touch
+
+On a small screen the floating panels are replaced by a **compact dock** in the top corner. Tap a dock button to open the palette, Explorer, or other panels as a pop-over, and it tidies itself away again after you add something, so you keep the most room for your work.
+
+The editor also opens zoomed out a little so you land on a useful overview of the whole diagram, and when you add a new element it slides into view automatically.
+
+## Touch gestures
+
+Your fingers do the work a mouse would on a computer:
+
+- **Pinch** with two fingers to zoom in and out.
+- **Drag** to move around the canvas.
+- **Tap** to select, and **drag** an element to move it.
+- **Press and hold** an element (a long press) to open its menu, the touch version of a right-click.
+
+Buttons and drag handles have a little extra invisible padding on touch, so they are easier to hit accurately with a fingertip.
+
+## What works differently on a phone
+
+A phone has no mouse pointer or physical keyboard, so a few things made for those are not available on a small screen:
+
+- **Keyboard shortcuts** are off, since there are no keys to press. Use the palette and the on-screen controls instead, which do everything the shortcuts do.
+- **Shortcuts that need a held key**, like Shift to keep proportions while resizing or to add to a selection, are not available without a keyboard.
+- **Spotlight** (the presenting highlight) and **dragging a box to multi-select** rely on a hovering, clicking mouse, so they are reserved for larger screens.
+
+<Tip>
+  For a long or detailed editing session, a [tablet](/help/supported-devices/tablet/) with more
+  room (or a [computer](/help/supported-devices/desktop/)) is more comfortable. A phone is perfect
+  for quick changes and following along live.
+</Tip>
+
+</ArticleLayout>
