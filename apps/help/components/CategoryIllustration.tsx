@@ -58,27 +58,40 @@ const SCENES: Record<string, React.ReactNode> = {
   // About: a tiny flow — two nodes joined by an arrow — the product in one glance.
   about: (
     <>
-      <Node x={36} y={44} />
-      <Node x={172} y={44} accent />
-      <path
-        d="M96 61 H168"
-        className="stroke-brand-400"
-        strokeWidth={3}
-        strokeLinecap="round"
-        markerEnd="url(#cat-arrow)"
-      />
+      {/* A tiny flowchart — one node branching to two — the product at a glance. */}
       <defs>
-        <marker id="cat-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+        <marker
+          id="cat-ar-about"
+          markerWidth="7"
+          markerHeight="7"
+          refX="5.5"
+          refY="3"
+          orient="auto"
+        >
           <path d="M0 0 L6 3 L0 6 Z" className="fill-brand-400" />
         </marker>
       </defs>
-      <circle cx="250" cy="38" r="14" className="fill-white stroke-brand-300" strokeWidth={2} />
       <path
-        d="M250 35 v8 M250 31 h0.01"
-        className="stroke-brand-500"
-        strokeWidth={2.5}
+        d="M92 60 H150 V34 H188"
+        className="stroke-brand-400"
+        strokeWidth={3}
+        fill="none"
         strokeLinecap="round"
+        strokeLinejoin="round"
+        markerEnd="url(#cat-ar-about)"
       />
+      <path
+        d="M92 60 H150 V86 H188"
+        className="stroke-brand-400"
+        strokeWidth={3}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        markerEnd="url(#cat-ar-about)"
+      />
+      <Node x={28} y={42} w={64} h={36} />
+      <Node x={192} y={18} w={64} h={34} accent />
+      <Node x={192} y={68} w={64} h={34} />
     </>
   ),
 
@@ -272,31 +285,34 @@ const SCENES: Record<string, React.ReactNode> = {
     </>
   ),
 
-  // Troubleshooting: a wrench over a node, fixing it.
+  // Troubleshooting: a magnifier inspecting a card, with a check in the lens.
   troubleshooting: (
     <>
       <rect
-        x={60}
-        y={42}
-        width={120}
-        height={50}
-        rx={8}
+        x={44}
+        y={38}
+        width={150}
+        height={58}
+        rx={10}
         className="fill-white stroke-brand-300"
         strokeWidth={2}
       />
       <path
-        d="M74 60 h40 M74 72 h64"
+        d="M62 58 h74 M62 74 h52"
         className="stroke-brand-200"
-        strokeWidth={3}
+        strokeWidth={4}
         strokeLinecap="round"
       />
-      <g transform="translate(196 40) rotate(40)">
-        <path
-          d="M14 0 a14 14 0 0 0 -18 16 l-10 26 a6 6 0 0 0 8 8 l26 -10 a14 14 0 0 0 16 -18 l-9 9 -10 -3 -3 -10 Z"
-          className="fill-brand-500 stroke-brand-600"
-          strokeWidth={1.5}
-        />
-      </g>
+      <circle cx="202" cy="58" r="27" className="fill-white stroke-brand-500" strokeWidth={4} />
+      <path d="M222 78 l20 20" className="stroke-brand-500" strokeWidth={6} strokeLinecap="round" />
+      <path
+        d="M191 58 l8 8 14 -16"
+        className="stroke-brand-500"
+        strokeWidth={3.5}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </>
   ),
 
@@ -536,82 +552,74 @@ const SCENES: Record<string, React.ReactNode> = {
     </>
   ),
 
-  // Collaboration: live cursors + a comment bubble over a shared node.
+  // Collaboration: a shared card, three overlapping avatars, and a comment bubble.
   collaboration: (
     <>
       <rect
-        x={86}
-        y={46}
-        width={120}
-        height={44}
+        x={40}
+        y={48}
+        width={132}
+        height={48}
         rx={8}
         className="fill-white stroke-brand-300"
         strokeWidth={2}
       />
       <path
-        d="M100 62 h70 M100 76 h50"
+        d="M56 66 h62 M56 80 h42"
         className="stroke-brand-200"
-        strokeWidth={3}
+        strokeWidth={4}
         strokeLinecap="round"
       />
-      <Cursor x={74} y={36} className="fill-brand-600" />
-      <rect x={84} y={30} width={34} height={13} rx={6} className="fill-brand-600" />
-      <Cursor x={196} y={70} className="fill-emerald-500" />
-      <rect x={206} y={84} width={34} height={13} rx={6} className="fill-emerald-500" />
-      <g transform="translate(214 24)">
-        <rect width={48} height={32} rx={8} className="fill-brand-500" />
-        <path d="M12 32 l0 10 10 -10 Z" className="fill-brand-500" />
+      {/* A comment bubble pointing at the shared card. */}
+      <g transform="translate(196 20)">
+        <rect width={54} height={34} rx={9} className="fill-brand-600" />
+        <path d="M14 34 l0 12 12 -12 Z" className="fill-brand-600" />
         <path
-          d="M12 13 h24 M12 21 h16"
+          d="M13 14 h28 M13 23 h17"
           className="stroke-white"
           strokeWidth={3}
           strokeLinecap="round"
         />
       </g>
+      {/* Three overlapping collaborators. */}
+      <circle cx="210" cy="74" r="17" className="fill-brand-500 stroke-white" strokeWidth={3} />
+      <circle cx="238" cy="74" r="17" className="fill-emerald-500 stroke-white" strokeWidth={3} />
+      <circle cx="266" cy="74" r="17" className="fill-brand-300 stroke-white" strokeWidth={3} />
     </>
   ),
 
-  // Tools: an AI wand with sparkles + an align/cleanup motif.
+  // Tools: a magic wand (AI) with a clean star tip + sparkles, beside tidy bars.
   tools: (
     <>
-      {[44, 70, 96].map((y, i) => (
+      {[42, 66, 90].map((y, i) => (
         <rect
           key={y}
-          x={48}
+          x={44}
           y={y}
-          width={i === 1 ? 70 : 50}
-          height={16}
+          width={i === 1 ? 84 : 58}
+          height={14}
           rx={4}
           className="fill-white stroke-brand-300"
           strokeWidth={2}
         />
       ))}
-      <path d="M40 38 v74" className="stroke-brand-400" strokeWidth={2} strokeDasharray="4 4" />
-      <g transform="translate(196 34)">
-        <path d="M0 64 L48 16" className="stroke-brand-500" strokeWidth={7} strokeLinecap="round" />
-        <rect
-          x={-4}
-          y={58}
-          width={16}
-          height={12}
-          rx={3}
-          transform="rotate(-45 4 64)"
-          className="fill-brand-600"
-        />
-      </g>
-      {(
-        [
-          [250, 30],
-          [272, 52],
-          [238, 60],
-        ] as [number, number][]
-      ).map(([x, y]) => (
-        <path
-          key={`${x}-${y}`}
-          d={`M${x} ${y - 7} l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z`}
-          className="fill-brand-300"
-        />
-      ))}
+      {/* The wand: a rounded diagonal stick rising to a four-point star. */}
+      <path
+        d="M196 102 L234 56"
+        className="stroke-brand-500"
+        strokeWidth={8}
+        strokeLinecap="round"
+      />
+      <path
+        d="M244 22 l4.5 12 12 4.5 -12 4.5 -4.5 12 -4.5 -12 -12 -4.5 12 -4.5 Z"
+        className="fill-brand-500"
+      />
+      {/* Two small sparkles. */}
+      <path
+        d="M214 40 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 Z"
+        className="fill-brand-300"
+      />
+      <path d="M278 66 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z" className="fill-brand-300" />
     </>
   ),
   // Search panel: a search field with a magnifier, over a dropdown of result
