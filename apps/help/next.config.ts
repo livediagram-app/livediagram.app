@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import createMDX from '@next/mdx';
+import remarkGfm from 'remark-gfm';
 
 // Static export fronted by Cloudflare Static Assets, served under
 // `/help` by the router worker (which strips the prefix before
@@ -21,6 +22,9 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@livediagram/ui'],
 };
 
-const withMDX = createMDX({});
+// remark-gfm enables GitHub-flavoured markdown in MDX bodies — most importantly
+// pipe tables (e.g. the link-expiry table), which plain MDX renders as literal
+// text. Also covers strikethrough, autolinks, and task lists.
+const withMDX = createMDX({ options: { remarkPlugins: [remarkGfm] } });
 
 export default withMDX(nextConfig);
