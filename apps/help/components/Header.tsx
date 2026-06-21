@@ -1,18 +1,25 @@
 import { Brand } from '@livediagram/ui';
+import { SearchInput } from '@/components/SearchInput';
 
 // Help-centre header. Brand links back to the marketing home; the editor
 // is always one click away (the canvas works without signing in, spec/04).
 // Same origin as the rest of livediagram — the router stitches the apps by
-// path — so these are plain absolute links.
+// path — so these are plain absolute links. The search box sits here too so
+// it's reachable from every article, not just the home hero.
 export function Header() {
   return (
     <header className="sticky top-0 z-50 h-16 border-b border-slate-200/70 bg-slate-50/85 backdrop-blur">
-      <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 md:px-8">
-        <div className="flex items-center gap-2.5">
+      <div className="mx-auto flex h-full max-w-7xl items-center gap-3 px-4 md:px-8">
+        <div className="flex shrink-0 items-center gap-2.5">
           <Brand href="/" size="md" />
           <span className="hidden text-sm font-medium text-slate-400 sm:inline">Help</span>
         </div>
-        <nav className="flex items-center gap-1.5">
+        <div className="hidden min-w-0 flex-1 justify-center sm:flex">
+          <div className="w-full max-w-sm">
+            <SearchInput />
+          </div>
+        </div>
+        <nav className="flex shrink-0 items-center gap-1.5">
           <a
             href="/help/"
             className="rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-sm font-medium text-brand-700 transition hover:bg-brand-100"
