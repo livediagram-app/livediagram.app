@@ -11,12 +11,12 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Annotations" description="A lightweight way to attach an explanatory note to a spot on the canvas without cluttering it." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("annotations")}>
 
-An annotation is a small themed circle holding a fixed note glyph, a way to pin a piece of explanation to a spot on the canvas without adding a box of text that gets in the way. The note itself stays hidden until you want it: hover the marker to read it, click it to edit. It's perfect for footnotes, callouts, and reviewer comments that should be available but not in the foreground.
+An annotation is a small themed circle holding a fixed note symbol, a way to pin a piece of explanation to a spot on the canvas without adding a box of text that gets in the way. The note itself stays hidden until you want it: hover the marker to read it, click it to edit. It's perfect for footnotes, callouts, and reviewer comments that should be available but not in the foreground.
 
 ## What it is
 
-- A fixed-size circle (around 44 pixels) themed like a shape, with fill and stroke from the active theme and a single note glyph centred inside, tinted by the stroke colour.
-- It's a marker, not a box: it doesn't resize and has no corner or rotate handles, so a canvas full of annotations stays tidy and uniform. The glyph is always the same note marker, not pickable per annotation.
+- A fixed-size circle (around 44 pixels) themed like a shape, with fill and stroke from the active theme and a single note symbol centred inside, tinted by the stroke colour.
+- It's a marker, not a box: it doesn't resize and has no corner or rotate handles, so a canvas full of annotations stays tidy and uniform. The symbol is always the same note marker, not pickable per annotation.
 - You can still move it, recolour it (via the Colours controls), bring it to front or send it to back, lock it, group it, link it, and delete it like any other element.
 
 ## Adding one
@@ -24,7 +24,7 @@ An annotation is a small themed circle holding a fixed note glyph, a way to pin 
 <Step n={1}>Open the palette and switch to the **Tools** tab.</Step>
 
 <Step n={2}>
-  Click **Annotation**. A new marker drops at the centre of the viewport, already selected, in one
+  Click **Annotation**. A new marker drops at the centre of the view, already selected, in one
   undoable step.
 </Step>
 

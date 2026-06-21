@@ -4,22 +4,22 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Light and Dark Mode',
   description:
-    'Flip the editor between light and dark with the sun/moon toggle. It recolours the editor chrome, not your diagram, and your choice is remembered.',
+    'Flip the editor between light and dark with the sun/moon toggle. It recolours the surrounding toolbars and panels, not your diagram, and your choice is remembered.',
   path: '/help/tools/dark-mode/',
 });
 
 <ArticleLayout
   title="Light and Dark Mode"
-  description="A light/dark toggle for the editor chrome, separate from your diagram's theme, so you can work comfortably in either."
+  description="A light/dark toggle for the editor's toolbars and panels, separate from your diagram's theme, so you can work comfortably in either."
   categoryTitle="Tools"
   categorySlug="tools"
 >
 
 livediagram has a **light / dark mode** for the editor itself. It is the sun-or-moon button on the right edge of the tab bar: click it to flip the editor between light and dark, and the icon (and its tooltip) always shows the mode you will switch to next.
 
-## Chrome, not canvas
+## The interface, not the canvas
 
-The most important thing to know is what the toggle changes, and what it does not. UI mode recolours the **editor chrome**, the tab bar, header, panels, and the backdrop around your work. It does **not** touch the diagram itself: your canvas keeps whatever [theme](/help/customisation/themes/) you gave it.
+The most important thing to know is what the toggle changes, and what it does not. UI mode recolours the **editor's interface**, the tab bar, header, panels, and the backdrop around your work. It does **not** touch the diagram itself: your canvas keeps whatever [theme](/help/customisation/themes/) you gave it.
 
 That keeps two separate decisions separate. The diagram theme is about how your _content_ looks, to you and to everyone you share with. UI mode is about how _your editor_ looks, just for you. So a light, pastel diagram can sit on a dark editor late at night, and a dark architecture diagram can sit on a light one, whichever is comfortable. The two are fully independent.
 

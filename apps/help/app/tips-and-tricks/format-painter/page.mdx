@@ -36,7 +36,7 @@ The format painter copies cosmetic styling: fill, border, and text colours, bord
 
 A couple of things stay put by design: aspect-ratio lock is not currently copied, so a painted element keeps its own width-to-height behaviour. The painter applies styling, not size or position, so your layout is never disturbed.
 
-Because it only mutates elements, the format painter is available to editors. View-only visitors will not see it, since there is nothing for them to change.
+Because it only changes elements, the format painter is available to editors. View-only visitors will not see it, since there is nothing for them to change.
 
 <Tip>
   Build one "reference" element with the exact colours, border, and text you want, then use the

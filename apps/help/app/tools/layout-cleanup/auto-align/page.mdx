@@ -17,7 +17,7 @@ Auto-Align is the gentle tidier. It rounds every boxed element's position and si
 
 - It is **structure-blind**: it never reads the arrow graph or considers how shapes connect. It just snaps positions and sizes to the grid.
 - It **never moves anything far**. Because it only rounds to the nearest grid line, a shape that was roughly in place stays roughly in place, only neater.
-- It is **idempotent**: running it a second time changes nothing, because everything is already on the grid.
+- **Running it again changes nothing**: a second pass leaves everything where it is, because it is already on the grid.
 
 ## Running it
 
@@ -36,7 +36,7 @@ If the result isn't what you wanted, one undo restores the previous positions ex
 Reach for Auto-Align when the diagram already looks right and you just want it crisp: rows that should share a baseline, columns that should share an edge, shapes that should be the same size. If instead the diagram has no real layout, or you want positions computed from how shapes are connected, use [Auto Layout](/help/tools/layout-cleanup/auto-layout/) instead. Auto Layout actually runs Auto-Align as its final step, so the structural tool gives you grid alignment for free.
 
 <Tip>
-  Auto-Align is safe to run often. Since it's idempotent and never relocates anything far, it's a
+  Auto-Align is safe to run often. Since running it again changes nothing and it never moves anything far, it's a
   low-risk way to keep a diagram looking tidy as you work.
 </Tip>
 
