@@ -270,6 +270,40 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 4v4h4M12 8v4l3 2" {...s} />
     </Glyph>
   ),
+  // Activity Panel category.
+  'what-it-is': (
+    <Glyph>
+      <rect x="4" y="4" width="16" height="16" rx="2" {...s} />
+      <path d="M8 9h8M8 13h8M8 17h5" {...s} />
+    </Glyph>
+  ),
+  'how-it-works': (
+    <Glyph>
+      <circle cx="12" cy="12" r="3" {...s} />
+      <path
+        d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"
+        {...s}
+      />
+    </Glyph>
+  ),
+  undo: (
+    <Glyph>
+      <path d="M9 7L4 12l5 5" {...s} />
+      <path d="M4 12h11a5 5 0 010 10h-1" {...s} />
+    </Glyph>
+  ),
+  redo: (
+    <Glyph>
+      <path d="M15 7l5 5-5 5" {...s} />
+      <path d="M20 12H9a5 5 0 000 10h1" {...s} />
+    </Glyph>
+  ),
+  'reverting-changes': (
+    <Glyph>
+      <path d="M3 8a9 9 0 119-2.4L21 8" {...s} />
+      <path d="M21 4v4h-4M12 8v4l3 2" {...s} />
+    </Glyph>
+  ),
   'session-tools': (
     <Glyph>
       <circle cx="12" cy="13" r="8" {...s} />

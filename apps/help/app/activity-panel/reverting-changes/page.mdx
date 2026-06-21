@@ -1,0 +1,40 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Reverting a Change',
+  description:
+    'Revert cancels one specific past change from the history, wherever it sits in the list, without disturbing anything that came after it.',
+  path: '/help/activity-panel/reverting-changes/',
+});
+
+<ArticleLayout
+  title="Reverting a Change"
+  description="Cancel one specific past change from the history without disturbing anything that came after it."
+  categoryTitle="Activity Panel"
+  categorySlug="activity-panel"
+  subArticles={getSubArticles("reverting-changes")}
+>
+
+## What revert does
+
+Revert cancels one specific past change from the history, wherever it sits in the list, and leaves everything that came after it untouched.
+
+## How it differs from undo
+
+This is different from [Undo](/help/activity-panel/undo/), which only peels back your most recent change. Revert lets you reach into the list and cancel a single entry on its own. That is what makes the history safe to use when several people are editing at once: you can take back one change without unwinding everyone else's work.
+
+## Reverting an entry
+
+<Step n={1}>Open the Activity Panel and find the change you want to cancel.</Step>
+
+<Step n={2}>Hover over that entry in the list.</Step>
+
+<Step n={3}>Click its Revert button.</Step>
+
+The reverted entry is removed from the list rather than adding a new "undo" line, which keeps the history tidy and easy to read.
+
+<Note>Revert is hidden on locked tabs and for people who are only viewing the diagram.</Note>
+
+</ArticleLayout>

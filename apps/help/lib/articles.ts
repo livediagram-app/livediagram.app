@@ -165,8 +165,16 @@ export const categories: Category[] = [
     slug: 'collaboration',
     title: 'Collaboration',
     description:
-      'Work together in real time: comments, live presence, teams, sharing, history, and session tools.',
-    articleCount: 6,
+      'Work together in real time: comments, live presence, teams, sharing, and session tools.',
+    articleCount: 5,
+    kind: 'feature',
+  },
+  {
+    slug: 'activity-panel',
+    title: 'Activity Panel',
+    description:
+      'The running record of every change to a diagram, with undo, redo, and reverting a single change.',
+    articleCount: 5,
     kind: 'feature',
   },
   {
@@ -860,13 +868,6 @@ export const articles: Article[] = [
     categorySlug: 'tools',
   },
   {
-    slug: 'history',
-    title: 'Activity and History',
-    description: 'The per-diagram change log, Activity Panel, and surgical revert.',
-    category: 'Collaboration',
-    categorySlug: 'collaboration',
-  },
-  {
     slug: 'session-tools',
     title: 'Session Tools',
     description: 'A shared countdown or stopwatch and live dot-voting.',
@@ -1124,22 +1125,41 @@ export const articles: Article[] = [
     parentSlug: 'ai',
   },
 
-  // ---- Sub-articles: History ----
+  // ---- Activity Panel (feature category landings) ----
   {
-    slug: 'activity-panel',
-    title: 'The Activity Panel',
-    description: 'Read the per-diagram change log as it happens.',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/history',
-    parentSlug: 'history',
+    slug: 'what-it-is',
+    title: 'What the Activity Panel Is',
+    description: 'A running record of every change to a diagram: who did what, and when.',
+    category: 'Activity Panel',
+    categorySlug: 'activity-panel',
+  },
+  {
+    slug: 'how-it-works',
+    title: 'How the Activity Panel Works',
+    description: 'Per-tab entries, real-time updates, jumping to an element, and clearing history.',
+    category: 'Activity Panel',
+    categorySlug: 'activity-panel',
+  },
+  {
+    slug: 'undo',
+    title: 'Undo',
+    description: 'Step back your most recent change, with a keyboard shortcut and a button.',
+    category: 'Activity Panel',
+    categorySlug: 'activity-panel',
+  },
+  {
+    slug: 'redo',
+    title: 'Redo',
+    description: 'Re-apply a change you just undid.',
+    category: 'Activity Panel',
+    categorySlug: 'activity-panel',
   },
   {
     slug: 'reverting-changes',
-    title: 'Reverting Changes',
-    description: 'Undo a specific past change without losing the rest.',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/history',
-    parentSlug: 'history',
+    title: 'Reverting a Change',
+    description: 'Cancel one specific past change without disturbing later edits.',
+    category: 'Activity Panel',
+    categorySlug: 'activity-panel',
   },
 
   // ---- Sub-articles: Session Tools ----

@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Undo',
+  description:
+    'Step back your most recent change with a keyboard shortcut or the undo button. Undo is personal to you and covers your last few steps.',
+  path: '/help/activity-panel/undo/',
+});
+
+<ArticleLayout
+  title="Undo"
+  description="Step back your most recent change with a keyboard shortcut or the undo button."
+  categoryTitle="Activity Panel"
+  categorySlug="activity-panel"
+  subArticles={getSubArticles("undo")}
+>
+
+## Stepping back a change
+
+Undo takes back your most recent change. You can:
+
+- Press **Cmd+Z** on a Mac, or **Ctrl+Z** on Windows and Linux.
+- Click the undo button, which lives in the controls at the bottom-right and at the top of the Activity Panel.
+
+A whole drag counts as a single step, so one undo takes you all the way back to before you started dragging.
+
+## Undo is personal
+
+Undo steps back the changes that **you** made. Each person editing the diagram has their own short undo history of their last few steps, so undoing never reaches into someone else's work.
+
+<Note>
+  Your quick undo history is just for the current session and is cleared when you reload the page.
+  The saved Activity history itself stays put.
+</Note>
+
+## What other people see
+
+When you undo, the matching line disappears from the Activity Panel for everyone, keeping the record honest.
+
+Undo is not available to people who are only viewing the diagram.
+
+When you have gone back too far, use [Redo](/help/activity-panel/redo/) to put a change back.
+
+</ArticleLayout>

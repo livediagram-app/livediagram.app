@@ -31,6 +31,12 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'markdown-import': '#0d9488',
   history: '#94a3b8',
   'session-tools': '#f43f5e',
+  // Activity Panel category
+  'what-it-is': '#94a3b8',
+  'how-it-works': '#64748b',
+  undo: '#0ea5e9',
+  redo: '#06b6d4',
+  'reverting-changes': '#f43f5e',
   'data-elements': '#22c55e',
   'style-presets': '#e11d48',
   'layout-cleanup': '#2563eb',

@@ -1,0 +1,38 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Redo',
+  description:
+    'Re-apply something you just undid with a keyboard shortcut or the redo button. Step back and forth through your recent changes.',
+  path: '/help/activity-panel/redo/',
+});
+
+<ArticleLayout
+  title="Redo"
+  description="Re-apply something you just undid with a keyboard shortcut or the redo button."
+  categoryTitle="Activity Panel"
+  categorySlug="activity-panel"
+  subArticles={getSubArticles("redo")}
+>
+
+## Putting a change back
+
+Redo re-applies something you just undid. You can:
+
+- Press **Cmd+Shift+Z** on a Mac.
+- Press **Ctrl+Y** or **Ctrl+Shift+Z** on Windows and Linux.
+- Click the redo button, which lives in the controls at the bottom-right and at the top of the Activity Panel.
+
+When you redo, the change is put back and its line reappears in the Activity Panel.
+
+## Stepping back and forth
+
+Like undo, redo is personal to you and applies to your current session. Keep undoing and redoing to move back and forth through your recent changes until the diagram looks the way you want.
+
+<Tip>If you undo a few steps too many, redo is the quickest way to return to where you were.</Tip>
+
+To go the other direction, see [Undo](/help/activity-panel/undo/).
+
+</ArticleLayout>

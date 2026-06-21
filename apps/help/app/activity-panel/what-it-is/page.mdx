@@ -1,0 +1,41 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'What the Activity Panel Is',
+  description:
+    'The Activity Panel is a movable panel that shows a running record of every change made to the current tab: who did what, and when.',
+  path: '/help/activity-panel/what-it-is/',
+});
+
+<ArticleLayout
+  title="What the Activity Panel Is"
+  description="A movable panel that shows a running record of every change made to the current tab: who did what, and when."
+  categoryTitle="Activity Panel"
+  categorySlug="activity-panel"
+  subArticles={getSubArticles("what-it-is")}
+>
+
+## A running record of your diagram
+
+The Activity Panel is a floating, movable panel that keeps a list of every change made to the tab you are looking at. Each line tells you who made the change and when, so you always have a clear picture of how your diagram came to look the way it does.
+
+## Opening and moving it
+
+Open the panel from its dock button. By default it sits in the bottom-left corner. You can drag it anywhere on the screen, and you can minimise it back to a button to keep the canvas clear. This is the same handy floating-panel behaviour you already get with the Explorer and the Palette.
+
+## Always up to date, always there
+
+The history is saved with the diagram, so it survives reloading the page, signing out, and re-sharing the diagram with others. It also updates as you work: when other people edit the same diagram, their changes appear in the list in real time.
+
+Everyone can see the history, including guests and anyone viewing through a share link. Only people who are allowed to edit get the Undo, Redo, and Revert controls.
+
+<Tip>
+  The panel also shows a small "Saving…" or "Not saved" status, so you can tell at a glance that
+  your work is safely stored.
+</Tip>
+
+Next, learn [How the Activity Panel Works](/help/activity-panel/how-it-works/).
+
+</ArticleLayout>

@@ -45,6 +45,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `tabs`                 | Tabs                 | tabs      | feature |
 | `customisation`        | Customisation        | swatch    | feature |
 | `collaboration`        | Collaboration        | users     | feature |
+| `activity-panel`       | Activity Panel       | activity  | feature |
 | `tools`                | Tools                | tools     | feature |
 | `search-panel`         | Search Panel         | search    | feature |
 
@@ -55,7 +56,8 @@ The feature categories group the feature guides by area:
 - **Canvas** — the infinite canvas (09), selecting and grouping (selection/groups), links and link cards (40), annotations (38).
 - **Tabs** — multiple boards (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Diagram, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Customisation** — themes (29+42+44), templates, style presets (48), text and fonts (28), isometric (45).
-- **Collaboration** — comments, teams (32+35), sharing and embeds (24+33+34), activity and history (12), session tools (39).
+- **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
+- **Activity Panel** — the per-diagram change log (12) promoted to its own category: What it is, How it works, Undo, Redo, and Reverting a change, one guide each.
 - **Tools** — AI assistance (25), zen mode (26), light/dark UI mode (07), Markdown import (27), layout cleanup (47).
 - **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding diagrams/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 

@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'How the Activity Panel Works',
+  description:
+    'Each entry in the Activity Panel shows who made a change, what changed, and when. Here is how to read the list and what it keeps.',
+  path: '/help/activity-panel/how-it-works/',
+});
+
+<ArticleLayout
+  title="How the Activity Panel Works"
+  description="How to read each entry, what the panel keeps, and how to jump to the element that changed."
+  categoryTitle="Activity Panel"
+  categorySlug="activity-panel"
+  subArticles={getSubArticles("how-it-works")}
+>
+
+## Reading an entry
+
+Every line in the panel tells you three things:
+
+- **Who** made the change, shown with their name and colour.
+- **What** changed, for example "Added a Square", "Moved an Arrow", "Recoloured", "Renamed", or "Edited".
+- **When** it happened, shown as a relative time like "2 minutes ago".
+
+## One action, one line
+
+A continuous action becomes a single entry, not dozens of them. One drag to move or resize something, or a quick burst of arrow-key nudges, is recorded as one tidy line.
+
+## Finding what changed
+
+Click an entry to jump straight to the element it changed, so you do not have to hunt for it on the canvas.
+
+## What the panel keeps
+
+The list is tied to the tab you are viewing: switch tabs and you see that tab's history. The panel shows your most recent changes, and older history is kept for about 90 days before it is cleared automatically.
+
+<Note>
+  The name and colour shown on each entry are fixed at the moment the change was made. If someone
+  later changes their name, the older history is not rewritten.
+</Note>
+
+## Clearing the history
+
+The diagram's owner can choose "Clear Activity" to wipe the current tab's history without deleting the tab itself.
+
+Once you understand the list, see [Undo](/help/activity-panel/undo/) and [Reverting a Change](/help/activity-panel/reverting-changes/).
+
+</ArticleLayout>

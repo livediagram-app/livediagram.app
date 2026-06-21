@@ -713,6 +713,56 @@ const SCENES: Record<string, React.ReactNode> = {
       <path d="M278 72 V86" className="stroke-brand-400" strokeWidth={2} />
     </>
   ),
+
+  // Activity Panel: a small panel of timestamped change rows beside an
+  // undo arrow, evoking the history list and its undo/redo controls.
+  'activity-panel': (
+    <>
+      <rect
+        x={90}
+        y={26}
+        width={140}
+        height={68}
+        rx={8}
+        className="fill-white stroke-brand-300"
+        strokeWidth={2}
+      />
+      {[38, 56, 74].map((y, i) => (
+        <g key={y}>
+          <circle
+            cx={106}
+            cy={y + 4}
+            r={5}
+            className={i === 1 ? 'fill-brand-500' : 'fill-brand-200'}
+          />
+          <rect
+            x={118}
+            y={y}
+            width={i === 1 ? 92 : 70}
+            height={8}
+            rx={4}
+            className="fill-brand-100"
+          />
+        </g>
+      ))}
+      {/* Undo arrow curving back to the panel. */}
+      <path
+        d="M70 104a22 22 0 0119-30"
+        className="stroke-brand-400"
+        strokeWidth={3}
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M83 70l8 4-3 8"
+        className="stroke-brand-400"
+        strokeWidth={3}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </>
+  ),
 };
 
 export function CategoryIllustration({ slug }: { slug: string }) {
