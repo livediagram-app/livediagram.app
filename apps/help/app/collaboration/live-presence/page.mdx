@@ -1,0 +1,50 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Live Presence',
+  description:
+    'See who else is in a diagram in real time: live cursors with names, what each person has selected, who is on which tab, and shared laser pointers.',
+  path: '/help/collaboration/live-presence/',
+});
+
+<ArticleLayout
+  title="Live Presence"
+  description="When more than one person opens the same diagram, you see each other live: cursors, names, selections, and who is where."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles("live-presence")}
+>
+
+Open a diagram with other people and it comes alive. Everyone sees each other move, select, and edit in real time, so it feels like working at the same whiteboard. Nothing needs setting up: as soon as two or more people are in a shared diagram, presence just appears.
+
+## Live cursors
+
+You see everyone else's pointer move around the canvas, each labelled with their name in their own colour. Cursors are tied to a tab, so you only see the cursors of the people looking at the same tab as you. When someone moves to a different tab, their cursor follows them there.
+
+## Who is here, and where
+
+Each person is given a colour and a name. Signed-in people show their account name; everyone else gets a friendly auto-generated name like "Curious Otter". You can see who is around in two places:
+
+- **On each tab**, small initials show who is currently looking at that tab, so you can tell at a glance where everyone is working.
+- A coloured ring around someone shows whether they are **active**, **away** (after a few quiet minutes), or have gone **offline**.
+
+## Seeing what others have selected
+
+When someone selects an element, a small badge with their initials appears on it, so you always know what a teammate is working on. While they have it selected, that element is gently locked for everyone else, with a "Locked to (name)" note, so two people can not fight over the same shape at once. It frees up again the moment they click away.
+
+## Shared laser pointer
+
+The [Laser Pointer](/help/palette/laser/) is built for presenting together: when you draw with it, everyone in the diagram sees your glowing trail in real time, then it fades away. It is perfect for "look over here" without changing anything on the canvas.
+
+## Who can see presence
+
+Live presence works for everyone in a shared diagram, including guests and people opening a [share link](/help/collaboration/sharing/) to view, not just signed-in editors. A private diagram you have not shared has no presence, since it is just you.
+
+<Tip>
+  Names and colours are chosen automatically, and a colour is nudged if two people happen to get the
+  same one, so everyone stays easy to tell apart.
+</Tip>
+
+</ArticleLayout>

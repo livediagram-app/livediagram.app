@@ -165,8 +165,8 @@ export const categories: Category[] = [
     slug: 'collaboration',
     title: 'Collaboration',
     description:
-      'Work together in real time: comments, teams, sharing, change history, and live session tools.',
-    articleCount: 5,
+      'Work together in real time: comments, live presence, teams, sharing, history, and session tools.',
+    articleCount: 6,
     kind: 'feature',
   },
   {
@@ -743,6 +743,13 @@ export const articles: Article[] = [
     slug: 'comments',
     title: 'Comments',
     description: 'Leave threaded comments on the canvas and resolve them.',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'live-presence',
+    title: 'Live Presence',
+    description: 'Live cursors, names, selections, and who is on which tab, in real time.',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

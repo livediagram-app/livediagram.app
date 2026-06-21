@@ -201,6 +201,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z" {...s} />
     </Glyph>
   ),
+  'live-presence': (
+    <Glyph>
+      <path d="M4 5l7 14 2.2-5.8L19 11 4 5z" {...s} />
+      <circle cx="18" cy="6" r="2.5" {...s} />
+    </Glyph>
+  ),
   links: (
     <Glyph>
       <path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.5 1.5" {...s} />
