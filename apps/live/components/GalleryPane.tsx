@@ -5,7 +5,6 @@ import { apiDeleteImage, apiImageUsage, apiListImages, type ImageSummary } from 
 import { ImageUploadError, uploadImageFile } from '@/lib/upload-image';
 import { useConfirm } from '@/hooks/useConfirm';
 import { TrashIcon } from './explorer-icons';
-import { HelpArticleLink } from './HelpArticleLink';
 import { GalleryImageButton } from './GalleryImageButton';
 import { ImageDropZone } from './ImageDropZone';
 
@@ -103,15 +102,6 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
         error={uploadError}
         prompt="Drop, paste, or click to upload an image"
       />
-
-      <div className="mt-2 flex justify-end">
-        <HelpArticleLink
-          article="imageGallery"
-          variant="text"
-          title="Image gallery"
-          description="How uploaded images are stored and reused across diagrams."
-        />
-      </div>
 
       <div className="mt-4">
         {galleryError ? (

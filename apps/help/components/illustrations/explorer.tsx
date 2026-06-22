@@ -873,3 +873,29 @@ export function ThemesLibrary() {
     </Scene>
   );
 }
+
+/** The Unsorted folder: the synthetic home for diagrams not filed anywhere,
+ *  shown highlighted at the top of My Work with a couple of loose docs in it. */
+export function UnsortedFolder() {
+  return (
+    <Scene w={420} h={214} bg="plain">
+      <rect
+        x={24}
+        y={16}
+        width={372}
+        height={182}
+        rx={10}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={40} y={32} size={11} weight={700} tone="strong">
+        My Work
+      </Label>
+      <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
+      <SidebarRow x={40} y={54} w={336} label="Unsorted" glyph="folder" active count={2} />
+      <SidebarRow x={64} y={92} w={312} label="Untitled diagram" glyph="doc" />
+      <SidebarRow x={64} y={122} w={312} label="Quick sketch" glyph="doc" />
+      <SidebarRow x={40} y={158} w={336} label="Projects" glyph="folder" />
+    </Scene>
+  );
+}

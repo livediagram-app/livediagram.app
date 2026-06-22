@@ -3,7 +3,46 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { useExplorer } from './ExplorerContext';
+import type { HelpArticleKey } from '@/lib/help-articles';
 import { EmptyPane, ListView, PaneHeader, SharedList, SkeletonRows } from './views';
+
+// Each Explorer section deep-links its matching help-centre article from a
+// "?" button in the pane header (spec/56). Sections without a guide (team,
+// invites) simply omit it.
+const SECTION_HELP: Partial<
+  Record<string, { article: HelpArticleKey; title: string; description: string }>
+> = {
+  recent: {
+    article: 'recentDiagrams',
+    title: 'Recent diagrams',
+    description: 'Your most recently opened diagrams, personal and team, in one list.',
+  },
+  shared: {
+    article: 'sharedWithYou',
+    title: 'Shared with you',
+    description: 'Diagrams other people have shared with you, collected here.',
+  },
+  gallery: {
+    article: 'imageGallery',
+    title: 'Image gallery',
+    description: 'How uploaded images are stored and reused across diagrams.',
+  },
+  unsorted: {
+    article: 'unsorted',
+    title: 'The Unsorted folder',
+    description: 'Where diagrams live until you file them into a folder.',
+  },
+  folder: {
+    article: 'folders',
+    title: 'Folders',
+    description: 'Organise diagrams into a nestable tree of folders.',
+  },
+  all: {
+    article: 'folders',
+    title: 'Folders',
+    description: 'Organise diagrams into a nestable tree of folders.',
+  },
+};
 
 // Lazy-load the heavier panes — each is only mounted on its own
 // route, so none of them sit in the shared explorer chunk.
@@ -62,6 +101,7 @@ export function ExplorerPane() {
     setTeamNotFound(false);
   }, [selected]);
   const hideTeamTitle = selected.kind === 'team' && teamNotFound;
+  const sectionHelp = SECTION_HELP[selected.kind];
 
   return (
     <>
@@ -69,6 +109,9 @@ export function ExplorerPane() {
         title={hideTeamTitle ? '' : paneTitle}
         crumbs={hideTeamTitle ? [] : paneCrumbs}
         onOpenNav={() => setMobileNavOpen(true)}
+        helpArticle={sectionHelp?.article}
+        helpTitle={sectionHelp?.title}
+        helpDescription={sectionHelp?.description}
         onCreateDiagram={
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||

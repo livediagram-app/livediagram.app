@@ -1,0 +1,49 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { MyWorkTree } from '@/components/illustrations/explorer';
+
+export const metadata = helpMetadata({
+  title: 'Folders',
+  description:
+    'Organise your diagrams into a tree of folders in the Explorer: create them, nest them, move diagrams between them, and rename or delete them.',
+  path: '/help/explorer/folders/',
+});
+
+<ArticleLayout title="Folders" description="Group your diagrams into a tree of folders so a growing library stays easy to navigate." categoryTitle="Explorer" categorySlug="explorer" subArticles={getSubArticles("folders")}>
+
+Folders are how you organise a growing library in the Explorer. Every diagram lives in exactly one folder, or in none, and folders can nest inside other folders, so you can shape your work into whatever tree fits how you think.
+
+<Figure caption="A My Work tree: the Unsorted folder, then nested folders holding diagrams.">
+  <MyWorkTree />
+</Figure>
+
+## Creating a folder
+
+Use the **Create** button at the top right of any Explorer section:
+
+- **New folder** adds a folder at the current level.
+- Inside a folder, the same button reads **New subfolder**, so you can nest as deep as you need.
+
+A new folder starts named "New folder" and ready to rename. Your folder tree shows under **My Work** in the sidebar, so every section is one click away.
+
+## Putting diagrams in folders
+
+- **Move an existing diagram.** Open a diagram row's menu and choose **Move to folder…**, then pick the destination from the folder picker. The picker shows your whole tree, including team libraries.
+- **Create straight into a folder.** Open the folder first, then **Create → New diagram**, and the new diagram lands inside it.
+
+## Renaming and deleting
+
+Each folder row has a menu to **rename**, add a **subfolder**, **move**, or **delete** it. Deleting a folder doesn't delete your diagrams: any diagrams directly inside it return to [Unsorted](/help/explorer/unsorted/), and any subfolders move up to the level the deleted folder was at.
+
+<Note>
+  A diagram that isn't filed in any folder lives in <a href="/help/explorer/unsorted/">Unsorted</a>,
+  the Explorer's catch-all. Moving it into a folder is what takes it out of Unsorted.
+</Note>
+
+<Tip>
+  Keep the tree shallow at first. A handful of top-level folders by project or client is easier to
+  scan than deep nesting, and you can always add subfolders as a folder fills up.
+</Tip>
+
+</ArticleLayout>

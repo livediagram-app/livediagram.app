@@ -1,0 +1,45 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { UnsortedFolder } from '@/components/illustrations/explorer';
+
+export const metadata = helpMetadata({
+  title: 'The Unsorted Folder',
+  description:
+    'Unsorted is the Explorer catch-all for diagrams not filed in any folder. Learn what lands there and how to tidy it into folders.',
+  path: '/help/explorer/unsorted/',
+});
+
+<ArticleLayout title="The Unsorted Folder" description="Where diagrams live until you file them: the Explorer's catch-all for anything not in a folder." categoryTitle="Explorer" categorySlug="explorer" subArticles={getSubArticles("unsorted")}>
+
+**Unsorted** is the Explorer's catch-all. Any diagram that isn't filed in a [folder](/help/explorer/folders/) lives here, so nothing is ever lost just because you haven't organised it yet.
+
+<Figure caption="Diagrams with no folder collect in Unsorted at the top of My Work.">
+  <UnsortedFolder />
+</Figure>
+
+## What lands in Unsorted
+
+- **New diagrams** you create without opening a folder first.
+- **Diagrams freed from a deleted folder** — when you delete a folder, the diagrams that were directly inside it return to Unsorted rather than being deleted.
+
+In short, a diagram is in Unsorted whenever it has no folder of its own.
+
+## It's a view, not a real folder
+
+Unsorted is a synthetic group the Explorer shows for convenience, not a folder you created. So it behaves a little differently from your own folders:
+
+- You can't rename or delete it, and you can't nest folders inside it.
+- It only appears when there's something in it, so an organised library doesn't show an empty Unsorted row.
+- It has its own section so you can always find unfiled work: open **Unsorted** from the sidebar or visit `/explorer/unsorted`.
+
+## Tidying up
+
+To clear Unsorted, move its diagrams into [folders](/help/explorer/folders/). Open a diagram row's menu, choose **Move to folder…**, and pick a destination. As soon as a diagram has a folder, it leaves Unsorted.
+
+<Tip>
+  Treat Unsorted like an inbox: let new diagrams collect there while you work, then file them into
+  folders in a quick pass when you have a moment.
+</Tip>
+
+</ArticleLayout>

@@ -126,7 +126,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your diagrams, folders, teams, and assets easy to find and manage.',
-    articleCount: 8,
+    articleCount: 10,
     kind: 'feature',
   },
   {
@@ -786,6 +786,20 @@ export const articles: Article[] = [
     slug: 'shared-with-you',
     title: 'Shared With You',
     description: 'Diagrams other people have shared with you, collected in one place.',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'folders',
+    title: 'Folders',
+    description: 'Group diagrams into a nestable tree, and move them between folders.',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'unsorted',
+    title: 'The Unsorted Folder',
+    description: 'The catch-all for diagrams that are not filed in any folder yet.',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

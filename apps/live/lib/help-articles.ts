@@ -41,6 +41,10 @@ export const HELP_ARTICLES = {
   // Explorer / data
   explorerPanel: 'explorer/explorer-panel',
   imageGallery: 'explorer/image-gallery',
+  recentDiagrams: 'explorer/recent',
+  sharedWithYou: 'explorer/shared-with-you',
+  folders: 'explorer/folders',
+  unsorted: 'explorer/unsorted',
   dataElements: 'palette/tools/data-elements',
   palette: 'palette',
   // Settings

@@ -11,6 +11,8 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { HelpArticleLink } from '@/components/HelpArticleLink';
+import type { HelpArticleKey } from '@/lib/help-articles';
 import { InlineRenameInput } from '@/components/InlineRenameInput';
 import { MenuItem, PortalMenu } from '@/components/PortalMenu';
 import {
@@ -100,9 +102,18 @@ export function PaneHeader({
   onCreateFolder,
   folderLabel,
   onOpenNav,
+  helpArticle,
+  helpTitle,
+  helpDescription,
 }: {
   title: string;
   crumbs: { name: string; onClick?: () => void }[];
+  // Section-scoped "?" help button, rendered to the left of Create (or
+  // alone when the section has no Create action). Deep-links the matching
+  // help-centre article (spec/56) for this Explorer section.
+  helpArticle?: HelpArticleKey;
+  helpTitle?: string;
+  helpDescription?: string;
   // Mobile only: opens the section drawer (the sidebar is hidden below
   // `sm`). Renders a hamburger to the left of the title. Omitted on
   // desktop where the sidebar is always visible.
@@ -124,7 +135,8 @@ export function PaneHeader({
   // place: visually noisy and provides no navigation. Show only
   // when there are actual parents to click back to.
   const showCrumbs = crumbs.length >= 2;
-  const hasActions = Boolean(onCreateDiagram || onCreateFolder);
+  const hasCreate = Boolean(onCreateDiagram || onCreateFolder);
+  const hasActions = hasCreate || Boolean(helpArticle);
   // A single "+ Create" dropdown (both desktop and mobile) replaces the
   // standalone New-diagram / New-folder buttons: two shrink-0 buttons
   // squeezed the folder-name title to nothing on a narrow phone, and
@@ -152,19 +164,28 @@ export function PaneHeader({
           ) : null}
         </div>
         {hasActions ? (
-          <div className="shrink-0">
-            <button
-              ref={createRef}
-              type="button"
-              onClick={() => setCreateOpen((o) => !o)}
-              aria-haspopup="menu"
-              aria-expanded={createOpen}
-              className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
-            >
-              <PlusIcon />
-              Create
-              <CaretDownIcon />
-            </button>
+          <div className="flex shrink-0 items-center gap-2">
+            {helpArticle ? (
+              <HelpArticleLink
+                article={helpArticle}
+                title={helpTitle ?? 'Learn more'}
+                description={helpDescription}
+              />
+            ) : null}
+            {hasCreate ? (
+              <button
+                ref={createRef}
+                type="button"
+                onClick={() => setCreateOpen((o) => !o)}
+                aria-haspopup="menu"
+                aria-expanded={createOpen}
+                className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
+              >
+                <PlusIcon />
+                Create
+                <CaretDownIcon />
+              </button>
+            ) : null}
             {createOpen ? (
               <PortalMenu
                 anchor={createRef.current}
