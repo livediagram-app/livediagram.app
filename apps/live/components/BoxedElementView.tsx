@@ -781,7 +781,7 @@ function BoxedElementViewImpl({
           marker={marker}
           markerSize={element.markerSize ?? 'scale'}
           position={element.iconPosition ?? 'left'}
-          iconStroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          iconStroke={textColor}
           isEditing={isEditing}
           editor={labelNode}
           label={label}

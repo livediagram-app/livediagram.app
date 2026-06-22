@@ -445,28 +445,6 @@ function ExplorerImpl({
           description="Switch diagrams, folders, and teams without leaving the canvas."
         />
       }
-      // "Open the full Explorer page" lives in the header (mirroring the
-      // Palette's panel-layout toggle in its header) rather than as a button
-      // at the bottom of the panel body. Icon-only with a Tooltip; the
-      // header-extra wrapper already swallows the pointerdown so it doesn't
-      // start a panel drag.
-      headerExtra={
-        onOpenFullExplorer ? (
-          <Tooltip
-            title="Open Explorer"
-            description="Open the full Explorer page (all diagrams, folders, and teams)."
-          >
-            <button
-              type="button"
-              onClick={onOpenFullExplorer}
-              aria-label="Open Explorer"
-              className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            >
-              <ExpandIcon />
-            </button>
-          </Tooltip>
-        ) : null
-      }
       onSize={onSize}
       mobileOpenOverride={mobileOpenOverride}
       mobileTopOverridePx={mobileTopOverridePx}
@@ -760,9 +738,22 @@ function ExplorerImpl({
           </div>
         ) : null}
 
-        {/* Sign-in prompt for signed-out guests. The "Open Explorer" action
-            now lives in the panel header (see headerExtra above), so this slot
-            is just the prompt — no fallback button. */}
+        {/* Open the full Explorer page (all diagrams, folders, teams) as a
+            full-width button at the bottom of the panel body, easier to hit
+            than the old header icon. The standalone route gates itself with a
+            sign-in CTA, so it's safe to show guests too. */}
+        {onOpenFullExplorer ? (
+          <button
+            type="button"
+            onClick={onOpenFullExplorer}
+            className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-brand-200"
+          >
+            <ExpandIcon />
+            Open Explorer
+          </button>
+        ) : null}
+
+        {/* Sign-in prompt for signed-out guests. */}
         <SignInPrompt />
       </div>
 

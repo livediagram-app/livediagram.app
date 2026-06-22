@@ -14,7 +14,7 @@ import {
   type TimerMode,
 } from '@livediagram/diagram';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
-import { track } from '@/lib/telemetry';
+
 import { useUiMode } from '@/hooks/useUiMode';
 import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
@@ -29,7 +29,6 @@ import {
   FolderRemoveIcon,
   GearIcon,
   GithubIcon,
-  HelpIcon,
   KeyboardIcon,
   MoveIcon,
   SearchGlyph,
@@ -495,21 +494,6 @@ export function TabBar({
             className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             <GithubIcon />
-          </a>
-        </Tooltip>
-        {/* Help-centre link (spec/55). Like the GitHub link it's a plain
-            external <a> (opens /help in a new tab), so it needs no wiring
-            from the editor page; it just fires a telemetry event. */}
-        <Tooltip title="Help" description="Guides, tutorials, and answers in the help centre.">
-          <a
-            href="/help/"
-            target="_blank"
-            rel="noreferrer noopener"
-            onClick={() => track('UI', 'Opened', 'Help')}
-            aria-label="Help"
-            className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-          >
-            <HelpIcon />
           </a>
         </Tooltip>
         {onOpenSettings ? (

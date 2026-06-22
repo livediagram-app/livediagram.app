@@ -5,8 +5,8 @@ Status: accepted
 ## Problem
 
 The help centre (spec/55) holds 130+ articles, but the editor only exposes
-**one** entry point to it: the global Help icon in the tab bar
-(`TabBar.tsx`). A user looking at a specific dialog (Share expiry, password
+**one** entry point to it: the global Help icon in the editor header
+(`EditorHeader.tsx`, to the right of the Share button). A user looking at a specific dialog (Share expiry, password
 gate, export formats) or a specific toggle (auto-attach arrows, AI assistant)
 has no in-context path to the article that explains it; they have to open the
 help centre and search for it by hand.
@@ -31,7 +31,7 @@ is the only way the editor links to a help article. It:
   placing next to a control label, or a `"Learn more"` text link
   (`variant="text"`) for dialog headers / empty states;
 - opens `/help/<slug>/` in a new tab (`target="_blank"`,
-  `rel="noreferrer noopener"`), matching the existing tab-bar Help link;
+  `rel="noreferrer noopener"`), matching the existing header Help link;
 - wraps the trigger in the shared `Tooltip` (custom tooltips only, never a
   native `title` - see the toolbar-tooltip rule);
 - fires `track('UI', 'Opened', <leaf-slug>)` on click, reusing the existing

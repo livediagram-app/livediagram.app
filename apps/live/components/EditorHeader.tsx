@@ -3,6 +3,8 @@ import { NameEditor } from './NameEditor';
 import { Brand } from '@livediagram/ui';
 import { AuthControls } from './AuthControls';
 import { Tooltip } from './Tooltip';
+import { HelpIcon } from './tab-bar-icons';
+import { track } from '@/lib/telemetry';
 
 // Sync state surfaced as a small pill next to the diagram title. The
 // editor is autosave-driven, so silent failures (offline, API down,
@@ -149,6 +151,22 @@ export function EditorHeader({
             </button>
           </Tooltip>
         ) : null}
+        {/* Help-centre link (spec/55), moved here from the tab bar so it sits
+            with the other top-right actions. Plain external <a> opening /help
+            in a new tab; fires a telemetry event like the old tab-bar link. */}
+        <Tooltip title="Help" description="Guides, tutorials, and answers in the help centre.">
+          <a
+            href="/help/"
+            target="_blank"
+            rel="noreferrer noopener"
+            onClick={() => track('UI', 'Opened', 'Help')}
+            aria-label="Help"
+            className={`${HEADER_ACTION_BTN} text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800`}
+          >
+            <HelpIcon />
+            <span>Help</span>
+          </a>
+        </Tooltip>
         <AuthControls />
       </div>
     </header>
