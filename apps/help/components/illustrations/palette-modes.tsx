@@ -3,6 +3,7 @@
 // popover (Auto-Attach Arrows, Alignment Guides, Minimal Panels, Reset Palette
 // Position). Composed only from the shared primitives so the house style holds.
 
+import { useId } from 'react';
 import { Scene, Shape, Arrow, SelectionBox, Panel, Tile, Label, Button } from './primitives';
 
 // --- Mode glyphs ------------------------------------------------------------
@@ -312,10 +313,11 @@ export function LaserMode() {
 /** Spotlight mode: the picker with Spotlight lit, the canvas dimmed except a
  *  bright circle around the cursor over one shape. */
 export function SpotlightMode() {
+  const hole = `spotlight-hole-${useId().replace(/:/g, '')}`;
   return (
     <Scene w={420} h={230}>
       <defs>
-        <mask id="spotlight-hole">
+        <mask id={hole}>
           <rect x={0} y={0} width={420} height={230} fill="white" />
           <circle cx={232} cy={150} r={52} fill="black" />
         </mask>
@@ -332,7 +334,7 @@ export function SpotlightMode() {
         width={420}
         height={134}
         className="fill-slate-900/55"
-        mask="url(#spotlight-hole)"
+        mask={`url(#${hole})`}
       />
       {/* Bright ring around the cursor */}
       <circle cx={232} cy={150} r={52} className="fill-none stroke-amber-300" strokeWidth={2} />
@@ -570,6 +572,9 @@ export function AlignmentGuides() {
 /** Minimal panels: floating panels (off) versus a compact button bar (on),
  *  shown before and after. */
 export function MinimalPanels() {
+  const uid = useId().replace(/:/g, '');
+  const gridBefore = `grid-mp-${uid}`;
+  const gridAfter = `grid-mp2-${uid}`;
   return (
     <Scene w={420} h={210} bg="none">
       {/* Before: floating panels on the canvas */}
@@ -580,12 +585,12 @@ export function MinimalPanels() {
           width={186}
           height={170}
           rx={10}
-          fill="url(#grid-mp)"
+          fill={`url(#${gridBefore})`}
           className="stroke-slate-200"
           strokeWidth={2}
         />
         <defs>
-          <pattern id="grid-mp" width="16" height="16" patternUnits="userSpaceOnUse">
+          <pattern id={gridBefore} width="16" height="16" patternUnits="userSpaceOnUse">
             <circle cx="1" cy="1" r="1" className="fill-slate-200" />
           </pattern>
         </defs>
@@ -604,12 +609,12 @@ export function MinimalPanels() {
           width={186}
           height={170}
           rx={10}
-          fill="url(#grid-mp2)"
+          fill={`url(#${gridAfter})`}
           className="stroke-slate-200"
           strokeWidth={2}
         />
         <defs>
-          <pattern id="grid-mp2" width="16" height="16" patternUnits="userSpaceOnUse">
+          <pattern id={gridAfter} width="16" height="16" patternUnits="userSpaceOnUse">
             <circle cx="1" cy="1" r="1" className="fill-slate-200" />
           </pattern>
         </defs>

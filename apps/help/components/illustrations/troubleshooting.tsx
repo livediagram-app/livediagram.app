@@ -3,6 +3,7 @@
 // rendering glitch, the autosave indicator and the Activity Panel). Composed
 // only from the shared primitives so the house style holds.
 
+import { useId } from 'react';
 import { Scene, Shape, Panel, Button, Label, TextBar, Avatar } from './primitives';
 
 /** A blank canvas stuck mid-load: a brand spinner ring over the dot grid with a
@@ -137,6 +138,7 @@ export function BrowserTiles() {
 /** A rendering glitch versus the fixed result: a misaligned, clipped shape next
  *  to the same shape rendering cleanly after an update or hard refresh. */
 export function RenderGlitch() {
+  const head = `rg-head-${useId().replace(/:/g, '')}`;
   return (
     <Scene w={420} h={200}>
       {/* Before: a glitched, clipped, misaligned render */}
@@ -165,10 +167,10 @@ export function RenderGlitch() {
         className="fill-none stroke-slate-400"
         strokeWidth={2.5}
         strokeLinecap="round"
-        markerEnd="url(#rg-head)"
+        markerEnd={`url(#${head})`}
       />
       <defs>
-        <marker id="rg-head" markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto">
+        <marker id={head} markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto">
           <path d="M0 0 L6 3 L0 6 Z" className="fill-slate-400" />
         </marker>
       </defs>

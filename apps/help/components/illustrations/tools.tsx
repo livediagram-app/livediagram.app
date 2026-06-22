@@ -2,6 +2,7 @@
 // mode, Markdown import, and the two layout tidiers (Auto-Align, Auto Layout).
 // Composed only from the shared primitives so the house style holds.
 
+import { useId } from 'react';
 import {
   Scene,
   Shape,
@@ -90,6 +91,7 @@ export function AiBuild() {
 /** The editor with full chrome (header, tab bar, palette, zoom dock) over the
  *  canvas, before zen mode is turned on. */
 export function ZenBefore() {
+  const grid = `grid-zenbefore-${useId().replace(/:/g, '')}`;
   return (
     <Scene w={420} h={240} bg="none">
       <rect x={0} y={0} width={420} height={240} className="fill-slate-50" />
@@ -118,9 +120,9 @@ export function ZenBefore() {
       />
       <rect x={80} y={30} width={64} height={14} rx={4} className="fill-slate-200" />
       {/* Canvas */}
-      <rect x={0} y={48} width={420} height={192} fill="url(#grid-zenbefore)" />
+      <rect x={0} y={48} width={420} height={192} fill={`url(#${grid})`} />
       <defs>
-        <pattern id="grid-zenbefore" width="16" height="16" patternUnits="userSpaceOnUse">
+        <pattern id={grid} width="16" height="16" patternUnits="userSpaceOnUse">
           <circle cx="1" cy="1" r="1" className="fill-slate-200" />
         </pattern>
       </defs>
