@@ -1,6 +1,6 @@
 // Diagram-level calls: load / create / save-meta / delete / list, the
 // copy-into-my-files flow, and the "Shared with you" list.
-import type { Diagram, DiagramSummary } from '@livediagram/api-schema';
+import type { Diagram, DiagramSummary, SharedWithItem } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
 import {
@@ -104,25 +104,12 @@ export const apiListDiagrams = dedupeInFlight(_apiListDiagrams, (ownerId) => own
 // shared_with — "Shared with you" (migration 0010)
 // ---------------------------------------------------------------------
 
-export type SharedWithItem = {
-  id: string;
-  name: string;
-  savedAt: number;
-  role: 'edit' | 'view';
-  // Still-live share code for the same role the visitor was
-  // granted. Client uses it to build the editor URL
-  // (`/diagram/<id>?s=<code>`) — without it the link would
-  // land on the owner-only diagram path and 404. Server-side
-  // filtering drops rows whose share was revoked entirely.
-  shareCode: string;
-  // Owner's display name + avatar colour, joined server-side from
-  // the participants table. Nullable because Clerk-authed owners
-  // don't always have a participant row (they show up after their
-  // first share / hello). The UI renders an "Unknown owner"
-  // placeholder when null.
-  ownerName: string | null;
-  ownerColor: string | null;
-};
+// The "Shared with you" row shape now lives in @livediagram/api-schema
+// (the api worker emits it via listSharedWith), imported above and
+// re-exported here so the existing `@/lib/api-client` / `./api/diagrams`
+// import paths keep resolving unchanged. See that package for the
+// per-field rationale.
+export type { SharedWithItem };
 
 // List diagrams that have been shared with this owner (i.e. the
 // owner previously opened a share link for them and was identified

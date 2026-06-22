@@ -1,5 +1,6 @@
 // shared_with — "shared with you" tracking (migration 0010).
 
+import type { SharedWithItem } from '@livediagram/api-schema';
 import type { Env, ShareRole } from '../types';
 
 // Record a visitor's access to a shared diagram. Idempotent on
@@ -37,20 +38,7 @@ export async function recordSharedAccess(
 // been entirely revoked since the visit (no code left at the
 // matching role, or shareable flipped off) are filtered out so the
 // visitor doesn't see a list item they can't act on.
-export async function listSharedWith(
-  env: Env,
-  ownerId: string,
-): Promise<
-  {
-    id: string;
-    name: string;
-    savedAt: number;
-    role: ShareRole;
-    shareCode: string;
-    ownerName: string | null;
-    ownerColor: string | null;
-  }[]
-> {
+export async function listSharedWith(env: Env, ownerId: string): Promise<SharedWithItem[]> {
   const res = await env.DB.prepare(
     `SELECT d.id, d.name, d.saved_at, s.role,
             (SELECT code

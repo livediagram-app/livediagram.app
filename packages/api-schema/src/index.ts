@@ -70,6 +70,31 @@ export type DiagramSummary = {
   createdAt: number;
 };
 
+// One row of the "Shared with you" list (shared_with, migration 0010):
+// a diagram a non-owner has previously opened via a share link. The api
+// worker (`listSharedWith` in db/shared.ts) builds this by joining
+// shared_with → diagrams → participants; the live editor's Explorer
+// renders it. Canonical home here so the worker's emit and the client's
+// read can't drift apart (consistency review #7) — both import this one
+// type instead of redeclaring the shape on each side.
+export type SharedWithItem = {
+  id: string;
+  name: string;
+  savedAt: number;
+  // The role the visitor was granted on the share link they used.
+  role: ShareRole;
+  // Still-live share code for that same role, so the client can rebuild
+  // the openable `/diagram/<id>?s=<code>` URL — without it the link
+  // lands on the owner-only path and 404s. The worker filters out rows
+  // whose share was revoked (no code left), so this is never null here.
+  shareCode: string;
+  // Owner's display name + avatar colour, joined from participants.
+  // Nullable: Clerk-authed owners may have no participant row yet, so
+  // the UI shows an "Unknown owner" placeholder.
+  ownerName: string | null;
+  ownerColor: string | null;
+};
+
 // ---------------------------------------------------------------------
 // Tabs
 // ---------------------------------------------------------------------
