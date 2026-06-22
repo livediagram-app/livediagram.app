@@ -27,9 +27,10 @@ export function NewDiagramWelcome() {
           <path d="M357 35 l7 7 M364 35 l-7 7" />
         </g>
         <circle cx={338} cy={41.6} r={0.7} className="fill-slate-400" />
+        {/* Three cards centred in the dialog with even 12u margins and gaps. */}
         {/* Blank card, selected */}
         <rect
-          x={66}
+          x={60}
           y={72}
           width={92}
           height={116}
@@ -38,17 +39,17 @@ export function NewDiagramWelcome() {
           strokeWidth={2.5}
         />
         <path
-          d="M96 122 h32 M112 106 v32"
+          d="M90 122 h32 M106 106 v32"
           className="stroke-brand-400"
           strokeWidth={3}
           strokeLinecap="round"
         />
-        <Label x={112} y={174} anchor="middle" size={11} weight={700} tone="strong">
+        <Label x={106} y={174} anchor="middle" size={11} weight={700} tone="strong">
           Blank
         </Label>
         {/* Template card A */}
         <rect
-          x={170}
+          x={164}
           y={72}
           width={92}
           height={116}
@@ -56,16 +57,16 @@ export function NewDiagramWelcome() {
           className="fill-white stroke-slate-200"
           strokeWidth={1.5}
         />
-        <rect x={184} y={92} width={26} height={18} rx={3} className="fill-brand-200" />
-        <rect x={222} y={92} width={26} height={18} rx={3} className="fill-brand-400" />
-        <line x1={210} y1={101} x2={222} y2={101} className="stroke-slate-300" strokeWidth={2} />
-        <rect x={196} y={124} width={40} height={16} rx={3} className="fill-brand-300" />
-        <Label x={216} y={174} anchor="middle" size={11} weight={600} tone="body">
+        <rect x={178} y={92} width={26} height={18} rx={3} className="fill-brand-200" />
+        <rect x={216} y={92} width={26} height={18} rx={3} className="fill-brand-400" />
+        <line x1={204} y1={101} x2={216} y2={101} className="stroke-slate-300" strokeWidth={2} />
+        <rect x={190} y={124} width={40} height={16} rx={3} className="fill-brand-300" />
+        <Label x={210} y={174} anchor="middle" size={11} weight={600} tone="body">
           Flowchart
         </Label>
         {/* Template card B */}
         <rect
-          x={274}
+          x={268}
           y={72}
           width={92}
           height={116}
@@ -73,10 +74,10 @@ export function NewDiagramWelcome() {
           className="fill-white stroke-slate-200"
           strokeWidth={1.5}
         />
-        <circle cx={320} cy={104} r={11} className="fill-emerald-200" />
-        <rect x={290} y={124} width={26} height={16} rx={3} className="fill-violet-300" />
-        <rect x={324} y={124} width={26} height={16} rx={3} className="fill-amber-300" />
-        <Label x={320} y={174} anchor="middle" size={11} weight={600} tone="body">
+        <circle cx={314} cy={104} r={11} className="fill-emerald-200" />
+        <rect x={284} y={124} width={26} height={16} rx={3} className="fill-violet-300" />
+        <rect x={318} y={124} width={26} height={16} rx={3} className="fill-amber-300" />
+        <Label x={314} y={174} anchor="middle" size={11} weight={600} tone="body">
           Mind map
         </Label>
       </Dialog>
@@ -88,8 +89,8 @@ export function NewDiagramWelcome() {
  *  surface every element comes from. */
 export function ShapePalette() {
   return (
-    <Scene w={420} h={236}>
-      <Panel x={96} y={20} w={228} h={196} title="PALETTE">
+    <Scene w={420} h={200}>
+      <Panel x={96} y={20} w={228} h={160} title="PALETTE">
         <Tabs
           x={110}
           y={54}
@@ -177,21 +178,6 @@ export function ShapePalette() {
         <Tile x={274} y={132}>
           <path d="M0 -8 L8 8 H-8 Z" className="stroke-brand-500" strokeWidth={2} fill="none" />
         </Tile>
-        {/* Undo / redo footer */}
-        <path
-          d="M120 192 a8 8 0 1 1 -2 -6 m0 0 v-5 m0 5 h-5"
-          className="stroke-slate-400"
-          strokeWidth={2}
-          fill="none"
-          strokeLinecap="round"
-        />
-        <path
-          d="M148 192 a8 8 0 1 0 2 -6 m0 0 v-5 m0 5 h5"
-          className="stroke-slate-400"
-          strokeWidth={2}
-          fill="none"
-          strokeLinecap="round"
-        />
       </Panel>
     </Scene>
   );

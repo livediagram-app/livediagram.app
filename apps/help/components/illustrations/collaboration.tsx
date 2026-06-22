@@ -242,37 +242,38 @@ function ShareLinkRow({ x, y, role }: { x: number; y: number; role: 'Edit' | 'Vi
   const edit = role === 'Edit';
   return (
     <g>
-      {/* Role pill */}
+      {/* Role pill (a role dropdown): label left, caret clear to its right */}
       <rect
         x={x}
         y={y}
-        width={44}
+        width={54}
         height={26}
         rx={7}
         className={edit ? 'fill-brand-500 stroke-brand-600' : 'fill-slate-100 stroke-slate-300'}
         strokeWidth={1.5}
       />
-      <Label x={x + 16} y={y + 13} size={10} weight={600} tone={edit ? 'onAccent' : 'body'}>
+      <Label x={x + 12} y={y + 13} size={10} weight={600} tone={edit ? 'onAccent' : 'body'}>
         {role}
       </Label>
       <path
-        d={`M${x + 32} ${y + 11} l4 4 l4 -4`}
+        d={`M${x + 42} ${y + 11} l3.5 3.5 l3.5 -3.5`}
         fill="none"
         className={edit ? 'stroke-white' : 'stroke-slate-400'}
         strokeWidth={1.5}
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
       {/* URL field */}
       <rect
-        x={x + 52}
+        x={x + 60}
         y={y}
-        width={156}
+        width={150}
         height={26}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={x + 62} y={y + 13} size={10} tone="muted">
+      <Label x={x + 70} y={y + 13} size={10} tone="muted">
         livediagram.app/d/…
       </Label>
       {/* Copy button */}

@@ -509,33 +509,33 @@ export function ExplorerPanel() {
 /** A list of recently opened diagrams, newest first. */
 export function RecentList() {
   return (
-    <Scene w={420} h={210} bg="plain">
+    <Scene w={420} h={224} bg="plain">
       <rect
         x={24}
         y={16}
         width={372}
-        height={178}
+        height={194}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <g transform="translate(40 22)">
+      <g transform="translate(40 33)">
         <SidebarGlyph kind="recent" active />
       </g>
-      <Label x={56} y={32} size={10.5} weight={700} tone="strong">
+      <Label x={56} y={33} size={10.5} weight={700} tone="strong">
         Recent diagrams
       </Label>
       <g>
-        <rect x={178} y={25} width={20} height={13} rx={6.5} className="fill-brand-500" />
-        <Label x={188} y={32} anchor="middle" size={9} weight={700} tone="onAccent">
+        <rect x={178} y={26} width={20} height={14} rx={7} className="fill-brand-500" />
+        <Label x={188} y={33} anchor="middle" size={9} weight={700} tone="onAccent">
           8
         </Label>
       </g>
-      <line x1={24} y1={46} x2={396} y2={46} className="stroke-slate-200" strokeWidth={1.5} />
-      <DiagramRow x={40} y={56} w={340} title="Onboarding flow" meta="opened just now" active />
-      <DiagramRow x={40} y={92} w={340} title="Q3 roadmap" meta="opened 12m ago" />
-      <DiagramRow x={40} y={128} w={340} title="Auth sequence" meta="opened yesterday" />
-      <DiagramRow x={40} y={164} w={340} title="Data model" meta="opened 2 days ago" />
+      <line x1={24} y1={48} x2={396} y2={48} className="stroke-slate-200" strokeWidth={1.5} />
+      <DiagramRow x={40} y={58} w={340} title="Onboarding flow" meta="opened just now" active />
+      <DiagramRow x={40} y={94} w={340} title="Q3 roadmap" meta="opened 12m ago" />
+      <DiagramRow x={40} y={130} w={340} title="Auth sequence" meta="opened yesterday" />
+      <DiagramRow x={40} y={166} w={340} title="Data model" meta="opened 2 days ago" />
     </Scene>
   );
 }

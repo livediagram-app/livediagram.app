@@ -1,17 +1,18 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { ZenMode, LaserPointer } from '@/components/illustrations/tips';
+import { SpotlightMode } from '@/components/illustrations/palette-modes';
 
 export const metadata = helpMetadata({
   title: 'Presenting from the Canvas',
   description:
-    'Walk an audience through a diagram with zen mode and the laser pointer in livediagram.',
+    'Walk an audience through a diagram with zen mode, the laser pointer, and spotlight in livediagram.',
   path: '/help/tips-and-tricks/presenting-well/',
 });
 
-<ArticleLayout title="Presenting from the Canvas" description="Turn a finished diagram into a clear story with a distraction-free view and a laser pointer." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
+<ArticleLayout title="Presenting from the Canvas" description="Turn a finished diagram into a clear story with a distraction-free view, a laser pointer, and a spotlight." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
 
-A finished diagram shows everything at once, which is great for reference but harder to narrate. livediagram gives you a couple of ways to focus an audience as you walk through your work, whether you are on a call, a projector, or sharing your screen.
+A finished diagram shows everything at once, which is great for reference but harder to narrate. livediagram gives you a few ways to focus an audience as you walk through your work, whether you are on a call, a projector, or sharing your screen.
 
 ## Zen mode
 
@@ -27,6 +28,14 @@ For pointing things out live, switch to the **Laser** tool (`K`). Moving the poi
 
 <Figure caption="The laser leaves a glowing trail in your colour that fades behind the pointer as you sweep.">
   <LaserPointer />
+</Figure>
+
+## The spotlight
+
+To focus on one element at a time, switch to the [Spotlight](/help/palette/spotlight/) tool. It dims the rest of the canvas and lights up whatever sits under your cursor, so the room's eye lands exactly where yours does. Like the laser, it is shared live in a session, so move the cursor from shape to shape to walk through a diagram one piece at a time without anyone losing their place.
+
+<Figure caption="Spotlight dims the canvas and keeps a bright circle on the element under your cursor.">
+  <SpotlightMode />
 </Figure>
 
 <Tip>

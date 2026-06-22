@@ -3,7 +3,7 @@
 // (Zen mode and the laser pointer). Format-painter and theme scenes are reused
 // from canvas.tsx, not redrawn. Composed only from the shared primitives.
 
-import { Scene, Shape, Arrow, Panel, Tabs, Tile, Label, TextBar, Button } from './primitives';
+import { Scene, Shape, Arrow, Panel, Tabs, Tile, Label, TextBar } from './primitives';
 
 /** A single key cap, sized to its glyph, drawn like a physical keyboard key. */
 function KeyCap({ x, y, w = 24, label }: { x: number; y: number; w?: number; label: string }) {
@@ -83,10 +83,10 @@ export function ShortcutsToggle() {
  *  grid of shapes ready to drop onto the canvas. */
 export function CommandPalette() {
   return (
-    <Scene w={420} h={240}>
-      <Shape x={28} y={150} w={72} h={42} kind="rect" label="Start" />
-      <Arrow from={[100, 171]} to={[150, 150]} kind="curved" tone="muted" dashed />
-      <Panel x={222} y={16} w={178} h={208} title="PALETTE">
+    <Scene w={420} h={224}>
+      <Shape x={28} y={146} w={72} h={42} kind="rect" label="Start" />
+      <Arrow from={[100, 167]} to={[150, 146]} kind="curved" tone="muted" dashed />
+      <Panel x={222} y={16} w={178} h={190} title="PALETTE">
         {/* Tool toggles */}
         <Tile x={234} y={52} active>
           <path d="M-6 -7 L-6 7 L-1 2 L3 8 L6 6 L2 1 L8 1 Z" className="fill-white" />
@@ -182,7 +182,6 @@ export function CommandPalette() {
         <Tile x={348} y={158} size={30}>
           <path d="M-8 8 L0 -8 L8 8 Z" className="stroke-brand-500" strokeWidth={2} fill="none" />
         </Tile>
-        <Button x={234} y={194} w={154} h={22} label="Minimal panel layout" variant="ghost" />
       </Panel>
     </Scene>
   );
