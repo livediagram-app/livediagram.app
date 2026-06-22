@@ -226,25 +226,25 @@ export function TemplatePicker({
                     ? 'This is the name from your account; others will see it on this diagram.'
                     : 'Pick the name people will see while you collaborate on this diagram.'}
               </p>
-              {showTemplates ? (
-                <div className="mt-1.5">
-                  <HelpArticleLink
-                    article="templates"
-                    variant="text"
-                    title="Templates"
-                    description="How templates give you a themed starting point."
-                  />
-                </div>
-              ) : null}
             </div>
-            <button
-              type="button"
-              onClick={onSkip}
-              aria-label="Close"
-              className="-mr-2 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <CloseIcon />
-            </button>
+            <div className="-mr-2 -mt-1 flex shrink-0 items-center gap-0.5">
+              {showTemplates ? (
+                <HelpArticleLink
+                  article="templates"
+                  title="Templates"
+                  description="How templates give you a themed starting point."
+                  className="!h-8 !w-8 !rounded-lg !border-0 !text-sm !text-slate-400 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
+                />
+              ) : null}
+              <button
+                type="button"
+                onClick={onSkip}
+                aria-label="Close"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <CloseIcon />
+              </button>
+            </div>
           </div>
           {/* Step indicator: a modern two-segment progress rail so the
               wizard reads as 1 of 2 at a glance. Both wizard modes. */}
