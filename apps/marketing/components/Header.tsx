@@ -45,7 +45,7 @@ export function Header() {
 }
 
 function HelpNavIcon() {
-  // Question mark in a circle — the universal "help / support" glyph.
+  // Question mark in a circle: the universal "help / support" glyph.
   return (
     <svg
       width="16"

@@ -10,7 +10,7 @@
 //     start fails with EADDRINUSE and someone chases a stray process.
 //  2. The `.next` cache desynchronises after a route restructure or a
 //     big file churn, leaving the HMR client asking for chunks the
-//     bundler no longer emits ("Cannot find module './257.js'") — or,
+//     bundler no longer emits ("Cannot find module './257.js'"), or,
 //     worse, the `app/layout.css` asset the page <link>s to 404s and the
 //     page renders unstyled. The dev server happily serves the broken
 //     state until someone wipes the cache by hand. The help centre hit
@@ -47,7 +47,7 @@ if (!Number.isInteger(port)) {
   process.exit(1);
 }
 
-// Webpack-vs-Turbopack: Turbopack is the better default — its HMR doesn't
+// Webpack-vs-Turbopack: Turbopack is the better default, its HMR doesn't
 // desync the way webpack's does after live edits. But apps that pass JS
 // remark/rehype plugins through `@next/mdx` (the help centre uses
 // remark-gfm for its pipe tables) must stay on webpack: Turbopack compiles
@@ -62,27 +62,27 @@ function freePort(p) {
       .toString()
       .trim();
   } catch {
-    // lsof exits non-zero when nothing is bound — nothing to kill.
+    // lsof exits non-zero when nothing is bound, nothing to kill.
     return;
   }
   if (!pids) return;
   for (const pid of pids.split(/\s+/)) {
-    // Kill children FIRST — `lsof -ti` only returns processes bound to the
+    // Kill children FIRST, `lsof -ti` only returns processes bound to the
     // port, so jest-worker / static-paths-worker etc. are invisible to it.
     // Leaving them alive keeps file handles open on `.next/server`, which
     // races the wipe below and leaves stale `webpack-runtime.js` references
-    // to vendor chunks whose pnpm-resolved hashes no longer match —
+    // to vendor chunks whose pnpm-resolved hashes no longer match: this is
     // empirically the "Cannot find module './vendor-chunks/...'" crash that
     // needs a manual rm -rf to recover from.
     try {
       execSync(`pkill -KILL -P ${pid}`, { stdio: 'ignore' });
     } catch {
-      // No children — fine.
+      // No children, fine.
     }
     try {
       execSync(`kill -9 ${pid}`, { stdio: 'ignore' });
     } catch {
-      // Already exited between lsof and kill — fine.
+      // Already exited between lsof and kill, fine.
     }
   }
   console.log(`[dev] freed port ${p} (killed ${pids.replace(/\s+/g, ', ')} + children)`);
@@ -98,7 +98,7 @@ function clearCache() {
 freePort(port);
 clearCache();
 
-// `dev` must stay first — it's the next subcommand; a flag before it is
+// `dev` must stay first, it's the next subcommand; a flag before it is
 // parsed as the project directory.
 const nextArgs = ['dev', '-p', String(port)];
 if (!useWebpack) nextArgs.splice(1, 0, '--turbopack');

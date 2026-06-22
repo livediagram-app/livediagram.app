@@ -1,6 +1,6 @@
 // Decorative illustration for the "Time to start" CTA band: a pen laying down
 // a flourish over a card, an arrow flowing to a second node that pops in, and a
-// scatter of sparkles — a quick "start drawing" cue above the heading. White
+// scatter of sparkles, a quick "start drawing" cue above the heading. White
 // line-art reads on the brand-500 band; every moving part reuses the shared
 // `.fa-*` classes (apps/marketing/app/feature-art-animations.css), which the
 // reduced-motion guard in globals.css settles to a clean static frame. Purely
@@ -19,7 +19,7 @@ export function StartDrawingArt() {
         </marker>
       </defs>
 
-      {/* Node A — a card with a couple of content lines. */}
+      {/* Node A, a card with a couple of content lines. */}
       <rect
         x={40}
         y={50}
@@ -72,7 +72,7 @@ export function StartDrawingArt() {
         className="fa-flow"
       />
 
-      {/* Node B — a circle that pops in, with a plus inside (add to canvas). */}
+      {/* Node B, a circle that pops in, with a plus inside (add to canvas). */}
       <circle
         cx={250}
         cy={74}
@@ -92,7 +92,7 @@ export function StartDrawingArt() {
         className="fa-pop"
       />
 
-      {/* Sparkles — a little delight, breathing on the shared pulse. */}
+      {/* Sparkles, a little delight, breathing on the shared pulse. */}
       <g className="fa-pulse">
         <path
           d="M306 44 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 Z"

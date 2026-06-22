@@ -346,8 +346,8 @@ const SCENES: Record<string, React.ReactNode> = {
     </>
   ),
 
-  // User Interface: the editor chrome around a muted canvas — a toolbar of
-  // tool buttons, a side panel, a row of tab pills, and a zoom control — the
+  // User Interface: the editor chrome around a muted canvas (a toolbar of
+  // tool buttons, a side panel, a row of tab pills, and a zoom control): the
   // panels / toolbar / tab bar / zoom controls the category covers.
   'user-interface': (
     <>
