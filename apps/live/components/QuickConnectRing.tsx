@@ -40,7 +40,7 @@ type Props = {
 };
 
 // The plus trigger stays in the shared floating-control family (matching
-// the resize / rotate handles). The options form ONE horizontal segmented
+// the resize handles). The options form ONE horizontal segmented
 // control (flush sub-buttons, dividers) that unfolds out of the plus.
 const SIZE = FLOATING_CONTROL_SIZE;
 const GAP = FLOATING_CONTROL_GAP;

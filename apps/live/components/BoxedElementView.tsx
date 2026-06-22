@@ -260,9 +260,8 @@ function BoxedElementViewImpl({
   // Clockwise rotation about the element centre. `isRotated` gates the
   // resize handles off while rotated: the resize math runs in canvas-
   // axis space, so dragging a corner of a spun box would make it
-  // "swim". Rotating back to 0 restores resize. The rotate handle
-  // itself stays available at any angle so the user can always undo a
-  // rotation by dragging.
+  // "swim". Setting it back to 0° (the Rotation menu / search palette's
+  // reset) restores resize.
   const rotation = element.rotation ?? 0;
   const isRotated = rotation % 360 !== 0;
   const label = element.label ?? '';

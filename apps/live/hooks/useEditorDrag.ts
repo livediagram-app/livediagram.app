@@ -52,7 +52,7 @@ import {
   type IconPosition,
   type Tab,
 } from '@livediagram/diagram';
-import { titleCaseType, track } from '@/lib/telemetry';
+import { track } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getTheme } from '@/lib/themes';
 import {
@@ -64,7 +64,6 @@ import {
   snapModeOf,
   MIN_SIZE,
   nextBounds,
-  snapRotation,
   SNAP_THRESHOLD,
   unionOfBounds,
   unionResizeMember,
@@ -210,12 +209,6 @@ type EditorDragApi = {
   // outside an endpoint drag.
   snapTargets: SnapTarget[];
   beginDrag: (elementId: string, mode: DragMode, e: ReactPointerEvent) => void;
-  beginRotate: (
-    elementId: string,
-    centerClientX: number,
-    centerClientY: number,
-    e: ReactPointerEvent,
-  ) => void;
   beginAnchorDrag: (
     elementId: string,
     anchor: Anchor,
@@ -390,43 +383,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       startBounds,
       startArrowEnds,
       aspectLocked: element.aspectLocked === true,
-    });
-  };
-
-  // Rotate-handle drag. The caller passes the element's centre in
-  // client coords (read off the wrapper's bounding rect at grab time)
-  // so the move handler can sweep angles in screen space without
-  // threading the viewport offset through here.
-  const beginRotate = (
-    elementId: string,
-    centerClientX: number,
-    centerClientY: number,
-    e: ReactPointerEvent,
-  ) => {
-    const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null || d.formatToolActive) return;
-    const element = d.activeTab.elements.find((el) => el.id === elementId);
-    if (!element || !isBoxed(element)) return;
-    d.setSelectedId(elementId);
-    if (element.locked === true || d.isReadOnly) return;
-    const startPointerAngle = Math.atan2(e.clientY - centerClientY, e.clientX - centerClientX);
-    // Arm a checkpoint; it is taken on the first real mutation (tick).
-    checkpointPendingRef.current = true;
-    // Emit at gesture start (same pragmatism as beginAnchorDrag's
-    // Added/Arrow): a proxy for "the user reached for rotation". The
-    // `type` reuses the Added vocab (shape kind, else element kind).
-    track(
-      'Element',
-      'Rotated',
-      titleCaseType(element.type === 'shape' ? element.shape : element.type),
-    );
-    setDrag({
-      kind: 'rotate',
-      elementId,
-      centerClientX,
-      centerClientY,
-      startPointerAngle,
-      startRotation: element.rotation ?? 0,
     });
   };
 
@@ -873,21 +829,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       };
       // Screen-pixel delta into canvas-coord delta (invert the
       // current zoom).
-      if (drag.kind === 'rotate') {
-        // Sweep the element's rotation by the angle the pointer has
-        // travelled around the centre since grab. Shift bypasses the
-        // 15-degree snap for fine control.
-        const angle = Math.atan2(e.clientY - drag.centerClientY, e.clientX - drag.centerClientX);
-        const deltaDeg = ((angle - drag.startPointerAngle) * 180) / Math.PI;
-        const next = snapRotation(drag.startRotation + deltaDeg, e.shiftKey);
-        tick((els) =>
-          els.map((el) =>
-            el.id === drag.elementId && isBoxed(el) ? { ...el, rotation: next } : el,
-          ),
-        );
-        return;
-      }
-
       const dx = (e.clientX - drag.startClientX) / zoomRef.current;
       const dy = (e.clientY - drag.startClientY) / zoomRef.current;
 
@@ -1505,7 +1446,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     distGuides,
     snapTargets,
     beginDrag,
-    beginRotate,
     beginAnchorDrag,
     beginArrowTranslate,
     beginEndpointDrag,

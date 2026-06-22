@@ -180,26 +180,6 @@ export const MIN_SIZE = 20;
 export const ZOOM_MIN = 0.1;
 export const ZOOM_MAX = 5;
 
-// Rotation snap: dragging the rotate handle snaps to the nearest
-// 15-degree increment (which covers 0 / 45 / 90 / 180 / ...) whenever
-// the raw angle lands within ROTATION_SNAP_DEG of one, so squaring a
-// shape up is effortless. Holding Shift (passed as `free`) disables
-// the snap for fine control.
-const ROTATION_SNAP_STEP = 15;
-const ROTATION_SNAP_DEG = 7;
-
-// Normalise a rotation in degrees into [0, 360) and, unless `free`,
-// snap it to the nearest ROTATION_SNAP_STEP when within
-// ROTATION_SNAP_DEG of it. Pure + framework-free so it's unit-testable.
-export function snapRotation(deg: number, free: boolean): number {
-  let r = deg % 360;
-  if (r < 0) r += 360;
-  if (free) return r;
-  const nearest = Math.round(r / ROTATION_SNAP_STEP) * ROTATION_SNAP_STEP;
-  if (Math.abs(r - nearest) <= ROTATION_SNAP_DEG) return nearest % 360;
-  return r;
-}
-
 // The axis-aligned bounding rectangle a boxed element occupies on the
 // canvas. The drag pipeline reads start-bounds at gesture begin and
 // recomputes a fresh ShapeBounds on every pointer move.
@@ -331,26 +311,6 @@ export type DragState =
       // the line — the label stays under the cursor.
       startAnchorX: number;
       startAnchorY: number;
-    }
-  | {
-      // Rotate-handle drag: the user grabbed the rotate handle and is
-      // spinning the element about its centre. Captured in CLIENT
-      // (screen) coordinates — rotation is conformal under the uniform
-      // canvas zoom, so the angle the pointer sweeps in screen space
-      // equals the angle in canvas space, and no zoom/pan inversion is
-      // needed.
-      kind: 'rotate';
-      elementId: string;
-      // Element centre in client coords at gesture start. Because
-      // rotation is about the centre, the element's bounding-rect
-      // centre stays put as it spins, so this stays valid all drag.
-      centerClientX: number;
-      centerClientY: number;
-      // Pointer angle (radians) from the centre at gesture start, plus
-      // the element's rotation then: newRotation = startRotation +
-      // (currentAngle - startPointerAngle).
-      startPointerAngle: number;
-      startRotation: number;
     };
 
 // Given a shape's bounds at gesture start, project the current pointer

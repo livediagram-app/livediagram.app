@@ -3,7 +3,7 @@
 // committed sizes (scale / sm / md / lg) and both single-line and
 // multi-line layouts. Lifted out of element-parts.tsx (was 643 lines,
 // two-thirds of it labels) so the parts file is scoped to selection
-// chrome (lock badge, resize / rotate handles) and labels live with
+// chrome (lock badge, resize handles) and labels live with
 // their own shared CSS / font tables.
 //
 // The split lines up cleanly: nothing in the selection-chrome half

@@ -13,7 +13,6 @@ import {
   inheritedSizeFor,
   MIN_SIZE,
   nextBounds,
-  snapRotation,
   unionOfBounds,
   unionResizeMember,
   withFrameContents,
@@ -326,33 +325,5 @@ describe('unionResizeMember', () => {
     const out = unionResizeMember(flat, flat, { ...flat, width: 30 }, 'se');
     expect(Number.isFinite(out.x)).toBe(true);
     expect(Number.isFinite(out.width)).toBe(true);
-  });
-});
-
-describe('snapRotation', () => {
-  it('normalises into [0, 360) including negative + over-360 inputs', () => {
-    expect(snapRotation(-90, true)).toBe(270);
-    expect(snapRotation(370, true)).toBe(10);
-    expect(snapRotation(720, true)).toBe(0);
-  });
-
-  it('snaps to the nearest 15-degree increment when within threshold', () => {
-    expect(snapRotation(3, false)).toBe(0);
-    expect(snapRotation(43, false)).toBe(45);
-    expect(snapRotation(92, false)).toBe(90);
-    // 358 is within 7 of 360 -> snaps to 360 % 360 = 0.
-    expect(snapRotation(358, false)).toBe(0);
-  });
-
-  it('leaves angles outside the snap threshold untouched', () => {
-    // Midpoints between 15-degree multiples sit 7.5 from either, just
-    // outside the 7-degree snap window.
-    expect(snapRotation(22.5, false)).toBe(22.5);
-    expect(snapRotation(52.5, false)).toBe(52.5);
-  });
-
-  it('bypasses snapping entirely when free (Shift held)', () => {
-    expect(snapRotation(3, true)).toBe(3);
-    expect(snapRotation(43, true)).toBe(43);
   });
 });

@@ -401,8 +401,9 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
 
   // Set the selected element's rotation to a fixed angle (degrees clockwise
   // about its centre), normalised to 0..359. Drives the context menu's
-  // Rotation category — the freeform rotate handle still covers arbitrary
-  // angles; these are the common snap points. Boxed elements only.
+  // Rotation category + the search palette's Rotate actions — fixed 45°
+  // steps, the only way to rotate (there's no free-drag handle). Boxed
+  // elements only.
   const setRotationSelected = (deg: number) => {
     if (!selectedId) return;
     const next = ((Math.round(deg) % 360) + 360) % 360;

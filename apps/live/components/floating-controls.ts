@@ -1,5 +1,5 @@
 // Floating circular canvas controls (the quick-connect plus + its
-// radial ring, the resize + rotate handles) share one size + visual
+// radial ring, the resize handles) share one size + visual
 // family so they read as a set. Lifted out of the old PlusButton so the
 // constants have a neutral home that any control can import without
 // pulling in a component.
