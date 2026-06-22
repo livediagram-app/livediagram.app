@@ -345,44 +345,50 @@ describe('buildSearchResults — team library (spec/35)', () => {
   });
 });
 
-describe('buildSearchResults — create-tab action', () => {
-  const inDiagram = (query: string) =>
-    buildSearchResults({ query, diagrams: [], folders: [], tabs: [tab('t1', 'Overview')] });
+describe('buildSearchResults — commands (action palette)', () => {
+  const commandItems = [
+    { id: 'create-tab', name: 'Create new tab', keywords: 'new tab create add page sheet board' },
+    { id: 'delete', name: 'Delete', keywords: 'remove' },
+    { id: 'lock', name: 'Lock', keywords: 'unlock freeze' },
+  ];
+  const withCommands = (query: string) =>
+    buildSearchResults({ query, diagrams: [], folders: [], commandItems });
 
-  it('surfaces a "Create new tab" action when the query looks like "tab"', () => {
-    const out = inDiagram('tab');
-    const actions = out.find((g) => g.key === 'actions')!;
-    expect(actions.items).toEqual([
-      { kind: 'action', id: 'create-tab', name: 'Create new tab', action: 'create-tab' },
-    ]);
+  it('surfaces matching commands as an "Actions" group, matched on name', () => {
+    const out = withCommands('lock');
+    const commands = out.find((g) => g.key === 'commands')!;
+    expect(commands.label).toBe('Actions');
+    expect(commands.items).toEqual([{ kind: 'command', id: 'lock', name: 'Lock' }]);
   });
 
-  it('also matches the "new" keyword', () => {
-    expect(inDiagram('new').find((g) => g.key === 'actions')).toBeDefined();
+  it('matches on keyword synonyms beyond the name (create-tab via "new")', () => {
+    const commands = withCommands('new').find((g) => g.key === 'commands')!;
+    expect(commands.items.map((i) => (i.kind === 'command' ? i.id : null))).toEqual(['create-tab']);
   });
 
-  it('does not surface the action for unrelated queries', () => {
-    expect(inDiagram('database').find((g) => g.key === 'actions')).toBeUndefined();
+  it('does not surface commands for unrelated queries', () => {
+    expect(withCommands('database').find((g) => g.key === 'commands')).toBeUndefined();
   });
 
-  it('does not surface the action on an empty query', () => {
-    expect(inDiagram('').find((g) => g.key === 'actions')).toBeUndefined();
+  it('does not surface commands on an empty query (no catalogue dump)', () => {
+    expect(withCommands('').find((g) => g.key === 'commands')).toBeUndefined();
   });
 
-  it('is not offered outside a diagram (no tabs scope)', () => {
-    const out = buildSearchResults({ query: 'tab', diagrams: [], folders: [] });
-    expect(out.find((g) => g.key === 'actions')).toBeUndefined();
+  it('is absent when the editor passes no command catalogue', () => {
+    const out = buildSearchResults({ query: 'delete', diagrams: [], folders: [] });
+    expect(out.find((g) => g.key === 'commands')).toBeUndefined();
   });
 
-  it('ranks below an existing tab match so navigation keeps the default Enter', () => {
+  it('ranks below a matching tab so navigation keeps the default Enter', () => {
     const out = buildSearchResults({
       query: 'tab',
       diagrams: [],
       folders: [],
       tabs: [tab('t1', 'Tab notes')],
+      commandItems,
     });
     const keys = out.map((g) => g.key);
-    expect(keys.indexOf('tabs')).toBeLessThan(keys.indexOf('actions'));
+    expect(keys.indexOf('tabs')).toBeLessThan(keys.indexOf('commands'));
   });
 });
 

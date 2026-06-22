@@ -34,6 +34,7 @@ import { ThemeModeBanner } from '@/components/ThemeModeBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/useDismissibleBanner';
 import { useDelayedReveal } from '@/hooks/useDelayedReveal';
+import { useEditorCommands } from '@/hooks/useEditorCommands';
 import { useEditorContext } from './EditorContext';
 
 // How long a guest edits before the sign-in nudge appears (spec/36).
@@ -316,14 +317,21 @@ export function EditorView() {
     setLineDataSelected,
     lineDataOpenForId,
     setLineDataOpenForId,
-    applyShapeColorPresetSelected,
-    applyShapeBorderPresetSelected,
+    clearStylePreview,
+    previewShapeColorPreset,
+    commitShapeColorPreset,
+    previewShapeBorderPreset,
+    commitShapeBorderPreset,
+    previewArrowPreset,
+    commitArrowPreset,
+    previewAnimation,
+    commitAnimation,
+    previewArrowFlow,
+    commitArrowFlow,
+    previewIconAnimation,
+    commitIconAnimation,
     resetShapeStyleSelected,
-    applyArrowPresetSelected,
     resetArrowStyleSelected,
-    setAnimationSelected,
-    setArrowFlowSelected,
-    setIconAnimationSelected,
     setIconAnimationSpeedSelected,
     setProgressSelected,
     setProgressAnimSelected,
@@ -361,6 +369,8 @@ export function EditorView() {
     setShareDialogOpen,
     canvasThemeTab,
     setCanvasThemeTab,
+    renameDiagramNonce,
+    renameTabNonce,
     setShortcutsEnabled,
     setShortcutsOpen,
     setStrokeColorSelected,
@@ -408,6 +418,10 @@ export function EditorView() {
     viewportZoom,
     writeUserPreferences,
   } = ctx;
+  // Contextual command palette for the SearchPanel "Actions" group (spec/09):
+  // selection-aware command list + dispatcher, built off the same editor
+  // actions the menus use. Empty (undefined items) for view-only sessions.
+  const { commandItems, runCommand } = useEditorCommands();
   // Selection-context-menu wiring (right-click a multi-selection or group):
   // resolve the member set, whether it's a group vs a marquee multi, count,
   // and lock state, then route the actions to the multi- or group-aware
@@ -517,6 +531,7 @@ export function EditorView() {
           onMakeCopy={!isOwner && hydrated && !anyWelcomeOpen && diagramId ? makeCopy : undefined}
           copying={copying}
           readOnly={isReadOnly}
+          renameNonce={renameDiagramNonce}
           brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
           onOpenShare={() => {
             setShareDialogOpen(true);
@@ -1031,6 +1046,7 @@ export function EditorView() {
           onToggleLockTab={toggleActiveTabLock}
           onReorder={reorderTabs}
           readOnly={isReadOnly}
+          renameActiveNonce={renameTabNonce}
           participantsByTab={participantsByTab}
           selfId={selfParticipant.id}
           selfRole={sessionRole}
@@ -1131,7 +1147,8 @@ export function EditorView() {
                   else addTechIcon(add.iconId);
                 }
           }
-          onCreateTab={isReadOnly ? undefined : addTab}
+          commandItems={commandItems}
+          onRunCommand={runCommand}
           helpItems={HELP_SEARCH_ITEMS}
           onClose={() => setSearchOpen(false)}
         />
@@ -1302,14 +1319,22 @@ export function EditorView() {
           onSetChartLegend={setChartLegendSelected}
           onEditLineData={setLineDataOpenForId}
           shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
-          onApplyShapeColorPreset={applyShapeColorPresetSelected}
-          onApplyShapeBorderPreset={applyShapeBorderPresetSelected}
+          onApplyShapeColorPreset={commitShapeColorPreset}
+          onPreviewShapeColorPreset={previewShapeColorPreset}
+          onApplyShapeBorderPreset={commitShapeBorderPreset}
+          onPreviewShapeBorderPreset={previewShapeBorderPreset}
           onResetShapeStyle={resetShapeStyleSelected}
-          onApplyArrowPreset={applyArrowPresetSelected}
+          onApplyArrowPreset={commitArrowPreset}
+          onPreviewArrowPreset={previewArrowPreset}
+          onPreviewStyleEnd={clearStylePreview}
           onResetArrowStyle={resetArrowStyleSelected}
-          onSetAnimation={setAnimationSelected}
-          onSetArrowFlow={setArrowFlowSelected}
-          onSetIconAnimation={setIconAnimationSelected}
+          onSetAnimation={commitAnimation}
+          onSetArrowFlow={commitArrowFlow}
+          onSetIconAnimation={commitIconAnimation}
+          onPreviewAnimation={previewAnimation}
+          onPreviewArrowFlow={previewArrowFlow}
+          onPreviewIconAnimation={previewIconAnimation}
+          onAnimationPreviewEnd={clearStylePreview}
           onSetIconAnimationSpeed={setIconAnimationSpeedSelected}
           onSetProgress={setProgressSelected}
           onSetProgressAnim={setProgressAnimSelected}

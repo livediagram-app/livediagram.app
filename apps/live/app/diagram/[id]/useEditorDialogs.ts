@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 // Top-level modal/dialog visibility for the editor: Search, Shortcuts,
 // Settings, the Share dialog, and the per-tab Export / Import dialogs.
@@ -37,6 +37,15 @@ export function useEditorDialogs() {
   const [exportScope, setExportScope] = useState<'tab' | 'selection'>('tab');
   const [importOpen, setImportOpen] = useState(false);
 
+  // Rename-request nonces. The command palette (useEditorCommands) can't reach
+  // into EditorHeader / TabBar's local inline-rename state, so it bumps a
+  // monotonic counter that each component watches via an effect to enter edit
+  // mode. A number (not a boolean) so a repeated request always re-triggers.
+  const [renameDiagramNonce, setRenameDiagramNonce] = useState(0);
+  const requestRenameDiagram = useCallback(() => setRenameDiagramNonce((n) => n + 1), []);
+  const [renameTabNonce, setRenameTabNonce] = useState(0);
+  const requestRenameTab = useCallback(() => setRenameTabNonce((n) => n + 1), []);
+
   return {
     searchOpen,
     setSearchOpen,
@@ -54,5 +63,9 @@ export function useEditorDialogs() {
     setExportScope,
     importOpen,
     setImportOpen,
+    renameDiagramNonce,
+    requestRenameDiagram,
+    renameTabNonce,
+    requestRenameTab,
   };
 }

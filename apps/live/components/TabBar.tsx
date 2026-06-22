@@ -170,6 +170,10 @@ type TabBarProps = {
   // all vanish), and tab drag-to-reorder. Tab pills remain
   // clickable so the viewer can still navigate between tabs.
   readOnly?: boolean;
+  // Bumped by the command palette's "Rename tab" action to inline-rename the
+  // ACTIVE tab (the palette can't reach this component's local editing state).
+  // A monotonic counter; each increment opens the active tab's name editor.
+  renameActiveNonce?: number;
   // Remote participants grouped by which tab they're currently
   // focused on. Each tab in the bar renders the matching avatars so
   // collaborators can see at a glance where everyone is working.
@@ -215,6 +219,7 @@ export function TabBar({
   onToggleLockTab,
   onReorder,
   readOnly = false,
+  renameActiveNonce = 0,
   participantsByTab,
   selfId,
   selfRole,
@@ -227,6 +232,12 @@ export function TabBar({
 }: TabBarProps) {
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // The command palette requests an active-tab rename by bumping
+  // renameActiveNonce. Skip the initial 0 so we don't open the editor on
+  // mount; ignored for view-only sessions (rename is blocked there).
+  useEffect(() => {
+    if (renameActiveNonce > 0 && !readOnly) setEditingId(activeId);
+  }, [renameActiveNonce, readOnly, activeId]);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   // Drives the per-tab accent's legibility guard: the bar is white in

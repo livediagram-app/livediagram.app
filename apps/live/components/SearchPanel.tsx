@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import {
   buildSearchResults,
+  type CommandSearchItem,
   type HelpSearchItem,
   type PaletteAdd,
   type PaletteSearchItem,
@@ -77,10 +78,12 @@ type SearchPanelProps = {
   // editor and the Explorer (help is global); picking one opens the article
   // in a new tab.
   helpItems?: HelpSearchItem[];
-  // Editor-only: create a new tab in the current diagram. Surfaced as a
-  // "Create new tab" action result when the query looks like "tab" /
-  // "new" (search.ts gates it on the in-diagram `tabs` scope).
-  onCreateTab?: () => void;
+  // Editor-only: the contextual command catalogue (delete / lock / rotate /
+  // share / rename / ...) surfaced as "Actions" results, plus the dispatcher
+  // that runs the picked command's id. The editor builds the list selection-
+  // aware (useEditorCommands) and withholds it from view-only sessions.
+  commandItems?: CommandSearchItem[];
+  onRunCommand?: (id: string) => void;
   onClose: () => void;
 };
 
@@ -106,7 +109,8 @@ export function SearchPanel({
   paletteItems,
   onAddPaletteItem,
   helpItems,
-  onCreateTab,
+  commandItems,
+  onRunCommand,
   onClose,
 }: SearchPanelProps) {
   const [query, setQuery] = useState('');
@@ -141,6 +145,7 @@ export function SearchPanel({
         tabs,
         currentTabId,
         paletteItems,
+        commandItems,
         helpItems,
       }),
     [
@@ -154,6 +159,7 @@ export function SearchPanel({
       tabs,
       currentTabId,
       paletteItems,
+      commandItems,
       helpItems,
     ],
   );
@@ -186,7 +192,7 @@ export function SearchPanel({
     else if (item.kind === 'element' && onSelectElement)
       onSelectElement(item.tabId, item.elementId);
     else if (item.kind === 'palette' && onAddPaletteItem) onAddPaletteItem(item.add);
-    else if (item.kind === 'action' && item.action === 'create-tab' && onCreateTab) onCreateTab();
+    else if (item.kind === 'command' && onRunCommand) onRunCommand(item.id);
     track('Search', 'Selected', titleCaseType(item.kind));
     onClose();
   };
@@ -414,10 +420,10 @@ function SearchResultIcon({ item }: { item: SearchResultItem }) {
       </svg>
     );
   }
-  if (item.kind === 'action') {
-    // Tab outline with a plus: an action that CREATES rather than
-    // navigates. Echoes the tab glyph so "Create new tab" reads as a
-    // tab, distinct from the palette's plus-in-a-box.
+  if (item.kind === 'command') {
+    // Lightning bolt: a do-something command (delete / lock / rotate / share
+    // / rename / ...) rather than navigation, distinct from the palette's
+    // plus-in-a-box add glyph.
     return (
       <svg
         width="13"
@@ -430,8 +436,7 @@ function SearchResultIcon({ item }: { item: SearchResultItem }) {
         strokeLinejoin="round"
         aria-hidden
       >
-        <path d="M2.5 6.5h4l1-2h6v9h-11z" />
-        <path d="M9 9h3M10.5 7.5v3" />
+        <path d="M8.5 1.5 3 9h4l-.5 5.5L13 7H9z" />
       </svg>
     );
   }

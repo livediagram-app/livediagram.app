@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NameEditor } from './NameEditor';
 import { Brand } from '@livediagram/ui';
 import { AuthControls } from './AuthControls';
@@ -49,6 +49,10 @@ type EditorHeaderProps = {
   brandAccent?: string;
   onOpenShare: () => void;
   onRename: (name: string) => void;
+  // Bumped by the command palette's "Rename diagram" action to enter inline
+  // edit mode (the palette can't reach this component's local editing state).
+  // A monotonic counter; each increment opens the editor (unless read-only).
+  renameNonce?: number;
 };
 
 export function EditorHeader({
@@ -63,8 +67,15 @@ export function EditorHeader({
   brandAccent,
   onOpenShare,
   onRename,
+  renameNonce = 0,
 }: EditorHeaderProps) {
   const [editing, setEditing] = useState(false);
+
+  // The command palette requests a rename by bumping renameNonce. Skip the
+  // initial 0 so we don't pop into edit mode on mount.
+  useEffect(() => {
+    if (renameNonce > 0 && !readOnly && !hideTitle) setEditing(true);
+  }, [renameNonce, readOnly, hideTitle]);
 
   return (
     // `relative z-50` puts the entire header into its own stacking

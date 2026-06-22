@@ -19,6 +19,7 @@ const TEAM_LIMIT = 8;
 const TAB_LIMIT = 8;
 const ELEMENT_LIMIT = 12;
 const PALETTE_LIMIT = 10;
+const COMMAND_LIMIT = 10;
 const HELP_LIMIT = 6;
 
 // Internal-only input shapes for the by-name match inputs. Several
@@ -86,13 +87,15 @@ export type PaletteAdd =
   | { type: 'icon'; iconId: string }
   | { type: 'tech'; iconId: string };
 type PaletteItem = { kind: 'palette'; id: string; name: string; add: PaletteAdd };
-// A synthetic action result — performing it changes the diagram rather
-// than navigating somewhere. Modelled like a palette item (an intent the
-// panel hands back to the editor) but for whole-diagram actions. Today
-// the only action is creating a new tab, offered inside a diagram when
-// the query looks like "tab" / "new"; the union + `action` discriminator
-// leave room for more without reshaping callers.
-type ActionItem = { kind: 'action'; id: string; name: string; action: 'create-tab' };
+// A synthetic command result — performing it changes the diagram / a
+// selection rather than navigating somewhere. Modelled like a palette item
+// (an intent the panel hands back to the editor): the panel returns the
+// `id` and the editor's `useEditorCommands` dispatcher runs the matching
+// handler. The catalogue (which commands apply to the current selection /
+// diagram) is the editor's concern — this lib only matches + caps + groups
+// what it's handed. Replaces the old single-purpose create-tab "action",
+// which is now just one command among many.
+type CommandItem = { kind: 'command'; id: string; name: string };
 // A help-centre article result. Picking it opens the article (in a new tab);
 // `href` is the absolute /help path and `leaf` the telemetry-safe slug tail.
 type HelpItem = { kind: 'help'; id: string; name: string; href: string; leaf: string };
@@ -105,7 +108,7 @@ export type SearchResultItem =
   | TabItem
   | ElementItem
   | PaletteItem
-  | ActionItem
+  | CommandItem
   | HelpItem;
 
 export type SearchGroup = {
@@ -117,17 +120,17 @@ export type SearchGroup = {
     | 'tabs'
     | 'elements'
     | 'palette'
-    | 'actions'
+    | 'commands'
     | 'help';
   label: string;
   items: SearchResultItem[];
 };
 
-// Keywords that surface the "Create new tab" action. The user told us
-// they'd reach for "tab" or "new"; the rest are near-synonyms so the
-// action is forgiving to find without polluting unrelated queries (a
-// search for "database" matches none of these).
-const CREATE_TAB_KEYWORDS = 'new tab create add page sheet board';
+// A searchable command the editor passes in (delete / lock / rotate /
+// share / rename / ...). `keywords` widens matching beyond the visible
+// name (so "front" finds "Bring to front"); the editor builds the list
+// contextually (selection-aware) and owns the id -> handler dispatch.
+export type CommandSearchItem = { id: string; name: string; keywords: string };
 
 // A searchable palette entry the editor passes in (shapes / icons / tech
 // icons). `keywords` widens matching beyond the visible name (so "database"
@@ -176,6 +179,12 @@ type SearchInput = {
   // "Add to canvas" results. Only the editor passes it; matched only when
   // the query is non-empty (you don't browse the whole palette via search).
   paletteItems?: PaletteSearchItem[];
+  // Contextual command catalogue (delete / lock / rotate / share / rename /
+  // ...) the editor offers as "Actions" results. Editor-only, selection-aware
+  // (the editor decides which commands apply); matched on name + keywords on
+  // a non-empty query only (no catalogue dump, and an empty query keeping the
+  // browse list free of a destructive command that Enter would run).
+  commandItems?: CommandSearchItem[];
   // Help-centre catalogue surfaced as "Help" results. Matched only on a
   // non-empty query (an empty one would dump the whole catalogue). Both the
   // editor and the Explorer pass it, since help is global.
@@ -331,17 +340,22 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     if (elementMatches.length > 0) {
       groups.push({ key: 'elements', label: 'Elements', items: elementMatches });
     }
+  }
 
-    // "Create new tab" action. Only inside a diagram (we're in the
-    // `tabs` branch) and only on a query that looks like it (so it never
-    // steals the empty-query "show everything" list). Last group + last
-    // match priority, so navigating to an existing tab by name still
-    // wins the default Enter; the user arrows down to create.
-    if (q && matches(q, CREATE_TAB_KEYWORDS)) {
+  // Commands: the contextual action palette (delete / lock / share / rename
+  // / ...). Editor-supplied + non-empty query only, placed AFTER the
+  // navigation + element groups so picking a tab / element by name keeps the
+  // default Enter; the user types a verb to reach a command. Matched on name
+  // + keywords.
+  if (q && input.commandItems && input.commandItems.length > 0) {
+    const commandMatches = input.commandItems
+      .filter((c) => matches(q, c.name) || matches(q, c.keywords))
+      .slice(0, COMMAND_LIMIT);
+    if (commandMatches.length > 0) {
       groups.push({
-        key: 'actions',
+        key: 'commands',
         label: 'Actions',
-        items: [{ kind: 'action', id: 'create-tab', name: 'Create new tab', action: 'create-tab' }],
+        items: commandMatches.map((c) => ({ kind: 'command', id: c.id, name: c.name })),
       });
     }
   }
