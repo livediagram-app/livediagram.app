@@ -1,0 +1,55 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LayerOrder } from '@/components/illustrations/element-properties';
+
+export const metadata = helpMetadata({
+  title: 'Layer Order and Opacity',
+  description:
+    'Control which elements sit in front and which sit behind with Bring to Front and Send to Back, and fade an element with the opacity slider.',
+  path: '/help/canvas/layer-order/',
+});
+
+<ArticleLayout title="Layer Order and Opacity" description="Decide what stacks on top of what, and fade an element back, from the Layer category of the right-click menu." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layer-order")}>
+
+When two elements overlap, one has to sit on top. livediagram paints boxed elements in the order they were added: the newest lands on top. The **Layer** controls let you change that order whenever you want, and fade an element so the content behind it shows through.
+
+<Figure caption="The front card sits on top of the back one; the faded twin shows a lower opacity.">
+  <LayerOrder />
+</Figure>
+
+## Bringing things to front and back
+
+Right-click an element (or use the floating toolbar) and open the **Layer** category:
+
+- **Bring to Front** moves the element on top of everything else, so nothing overlaps it.
+- **Send to Back** moves it behind everything else, so other elements paint over it.
+
+Both also work from the keyboard while an element is selected:
+
+- **Cmd+Shift+]** brings the selection to the front.
+- **Cmd+Shift+[** sends it to the back.
+
+The menu stays open after each one, so you can nudge an element forward or back a few times in a row without reopening it. Layer changes are a single undoable step.
+
+<Note>
+  Newly added elements always land on top, which is what you usually want. Reach for Send to Back
+  for the rarer case where a shape, frame, or background image should sit behind your content.
+</Note>
+
+## Fading an element with opacity
+
+The same Layer category holds an **Opacity** slider, from 0 to 100%. Drag it to make an element semi-transparent so whatever sits behind it stays partly visible. It's useful for a background watermark, a frame that shouldn't compete with its contents, or a "ghosted" element you want present but quiet.
+
+Opacity is a cosmetic property, so the [format painter](/help/palette/format-painter/) copies it along with colours and borders, and it carries through to PNG and SVG [exports](/help/account-and-data/exporting-diagrams/).
+
+## A note on arrows
+
+Arrows always render in a single layer on top of every boxed element, so Bring to Front and Send to Back reorder shapes, text, stickies, and images relative to each other rather than relative to arrows.
+
+<Tip>
+  Layer order and opacity both appear in the multi-select menu too, so you can push a whole group of
+  elements to the back or fade them together in one action.
+</Tip>
+
+</ArticleLayout>

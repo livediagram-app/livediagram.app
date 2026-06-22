@@ -141,8 +141,8 @@ export const categories: Category[] = [
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, theming, and templating.',
-    articleCount: 7,
+      'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, layering, rotating, animating, theming, and templating.',
+    articleCount: 10,
     kind: 'feature',
   },
   {
@@ -885,6 +885,27 @@ export const articles: Article[] = [
     slug: 'annotations',
     title: 'Annotations',
     description: 'Drop a marker with a note that readers hover to read.',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'layer-order',
+    title: 'Layer Order and Opacity',
+    description: 'Bring elements to front or back, and fade them with opacity.',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'rotation',
+    title: 'Rotating Elements',
+    description: 'Snap an element to a preset angle or drag its rotate handle.',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'animations',
+    title: 'Animating Elements',
+    description: 'Loop a subtle animation on shapes, arrows, and icons.',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

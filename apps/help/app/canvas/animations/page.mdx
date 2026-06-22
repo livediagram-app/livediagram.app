@@ -1,0 +1,57 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ElementAnimation } from '@/components/illustrations/element-properties';
+
+export const metadata = helpMetadata({
+  title: 'Animating Elements',
+  description:
+    'Add a looping animation to a shape, send flow along an arrow, or animate an icon to convey motion, signal status, and draw the eye during a presentation.',
+  path: '/help/canvas/animations/',
+});
+
+<ArticleLayout title="Animating Elements" description="Loop a subtle animation on a shape, flow along an arrow, or motion on an icon to show direction, status, and focus." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("animations")}>
+
+A looping animation can convey flow, signal status, or draw the room's eye during a presentation. livediagram offers three flavours, each from the **Animation** category of the right-click menu, and each option shows an illustrated tile so you can see the motion before you apply it.
+
+<Figure caption="A shape with a pulse animation beside an arrow with flowing dashes.">
+  <ElementAnimation />
+</Figure>
+
+## Animating a shape
+
+Right-click a boxed element (a shape, sticky, label, or image) and pick an **Animation**:
+
+- **Pulse** sends an attention ring expanding out from the element.
+- **Blink** gently breathes its opacity, the classic "status LED" when paired with a small coloured circle.
+- **Glow** wraps it in a soft halo.
+- **Trace** runs a light around its outline.
+- **Gradient** drifts a moving gradient across its fill.
+- **Bounce** bobs it up and down, and **Wobble** tilts it side to side.
+
+## Flowing arrows
+
+Select an arrow and pick a **flow** to show direction along its path: **Dashes** march along the line, **Dots** and **Beads** travel it, **Pulse** breathes its opacity, **Grow** breathes its thickness, and **Glow** pulses a soft halo. Flow is ideal for data and process diagrams where you want to show which way things move.
+
+## Animating an icon
+
+Any [icon](/help/palette/icons/) can loop a glyph animation chosen from its menu: **Spin, Beat, Pulse, Bounce, Wiggle, Flash,** or **Tada**. A spinning gear or a beating heart adds life without a separate element.
+
+## Speed
+
+Once you've picked any animation, a **Speed** row appears with **Slow, Normal,** and **Fast**. It scales the timing while keeping each animation's character.
+
+## How animations behave
+
+- **Subtle by design.** They loop quietly so a diagram stays readable rather than busy.
+- **Shared with collaborators.** Everyone in a live session sees the same loop; nothing is broadcast frame by frame.
+- **Reduced-motion safe.** If your system asks for reduced motion, animations freeze to a tidy still frame.
+- **Frozen on export.** PNG and SVG [exports](/help/account-and-data/exporting-diagrams/) capture a static frame.
+- **Copied by the format painter.** Animation is a cosmetic property, so the [format painter](/help/palette/format-painter/) carries it to other elements.
+
+<Tip>
+  Select several elements first and the Animation control applies to every matching one at once, so
+  you can set a whole flow of arrows moving in a single action.
+</Tip>
+
+</ArticleLayout>
