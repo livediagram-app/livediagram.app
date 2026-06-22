@@ -5,7 +5,7 @@
 // Rendered atop CategoryCard. Brand-tinted via Tailwind fill-/stroke- utilities
 // so they track the theme; a soft brand gradient backs every scene.
 //
-// Keyed by the category `slug` (top-level support categories + the seven
+// Keyed by the category `slug` (top-level support categories + the nine
 // feature categories). An unknown slug falls back to the generic canvas scene.
 
 // The scene fits (meet) within a short banner whose brand wash lives on the
@@ -343,6 +343,98 @@ const SCENES: Record<string, React.ReactNode> = {
         <circle cx="32" cy="22" r="3.5" className="fill-white" />
         <circle cx="44" cy="22" r="3.5" className="fill-white" />
       </g>
+    </>
+  ),
+
+  // User Interface: the editor chrome around a muted canvas — a toolbar of
+  // tool buttons, a side panel, a row of tab pills, and a zoom control — the
+  // panels / toolbar / tab bar / zoom controls the category covers.
+  'user-interface': (
+    <>
+      {/* Editor window frame. */}
+      <rect
+        x={40}
+        y={20}
+        width={240}
+        height={84}
+        rx={10}
+        className="fill-white stroke-brand-300"
+        strokeWidth={2}
+      />
+      {/* Toolbar: a row of tool buttons, one active. */}
+      {[52, 72, 92, 112, 132].map((x, i) => (
+        <rect
+          key={x}
+          x={x}
+          y={30}
+          width={14}
+          height={14}
+          rx={3}
+          className={i === 1 ? 'fill-brand-500 stroke-brand-600' : 'fill-brand-50 stroke-brand-300'}
+          strokeWidth={1.5}
+        />
+      ))}
+      {/* Muted canvas content (two elements + arrow) so the chrome reads as
+          the hero rather than the canvas (which has its own box). */}
+      <rect
+        x={92}
+        y={56}
+        width={44}
+        height={22}
+        rx={5}
+        className="fill-white stroke-brand-300"
+        strokeWidth={2}
+      />
+      <path d="M136 67 H164" className="stroke-brand-300" strokeWidth={2.5} strokeLinecap="round" />
+      <circle cx="176" cy="67" r="11" className="fill-brand-100 stroke-brand-300" strokeWidth={2} />
+      {/* Side panel (quick controls): a header bar over a couple of rows. */}
+      <rect
+        x={222}
+        y={30}
+        width={46}
+        height={44}
+        rx={6}
+        className="fill-brand-50 stroke-brand-300"
+        strokeWidth={1.5}
+      />
+      <rect x={228} y={36} width={34} height={6} rx={3} className="fill-brand-300" />
+      <rect x={228} y={48} width={34} height={5} rx={2.5} className="fill-brand-200" />
+      <rect x={228} y={58} width={26} height={5} rx={2.5} className="fill-brand-200" />
+      {/* Tab bar: an active pill and two inactive ones. */}
+      <rect x={52} y={82} width={46} height={16} rx={7} className="fill-brand-500" />
+      <rect x={60} y={88} width={30} height={4} rx={2} className="fill-white" opacity="0.85" />
+      {[104, 150].map((x) => (
+        <g key={x}>
+          <rect
+            x={x}
+            y={84}
+            width={40}
+            height={13}
+            rx={6}
+            className="fill-brand-50 stroke-brand-200"
+            strokeWidth={1.5}
+          />
+          <rect x={x + 8} y={89} width={24} height={4} rx={2} className="fill-brand-300" />
+        </g>
+      ))}
+      {/* Zoom control: − [zoom] + in a pill. */}
+      <rect
+        x={208}
+        y={82}
+        width={60}
+        height={16}
+        rx={8}
+        className="fill-white stroke-brand-300"
+        strokeWidth={1.5}
+      />
+      <path d="M218 90 h8" className="stroke-brand-500" strokeWidth={2.5} strokeLinecap="round" />
+      <rect x={232} y={87} width={12} height={6} rx={2} className="fill-brand-200" />
+      <path
+        d="M254 86 v8 M250 90 h8"
+        className="stroke-brand-500"
+        strokeWidth={2.5}
+        strokeLinecap="round"
+      />
     </>
   ),
 
