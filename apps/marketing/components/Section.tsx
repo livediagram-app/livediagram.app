@@ -62,17 +62,25 @@ export function FeatureGrid({ items }: { items: FeatureProps[] }) {
 }
 
 function FeatureCard({ title, description, art, href }: FeatureProps) {
+  // Full-height flex column: the text block grows to fill, so the "Learn more"
+  // footer bar pins to the bottom edge and lines up across every card in a row
+  // (grid rows stretch all cards to a shared height) instead of floating at the
+  // end of whichever description happened to be longest.
   const body = (
     <>
-      {art}
-      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
+      <div className="flex flex-1 flex-col p-6">
+        {art}
+        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
+      </div>
       {href ? (
-        <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand-600 transition-colors group-hover:text-brand-700">
-          Learn more
+        <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-600 transition-colors group-hover:bg-brand-50 group-hover:text-brand-700">
+          <span>
+            Learn more<span className="sr-only"> (opens in a new tab)</span>
+          </span>
           <svg
-            width="14"
-            height="14"
+            width="15"
+            height="15"
             viewBox="0 0 16 16"
             fill="none"
             stroke="currentColor"
@@ -84,21 +92,20 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
           >
             <path d="M6 3.5 10.5 8 6 12.5" />
           </svg>
-          <span className="sr-only">(opens in a new tab)</span>
-        </span>
+        </div>
       ) : null}
     </>
   );
 
   const className =
-    'block rounded-lg border border-slate-200 bg-white p-6 transition hover:border-brand-300 hover:shadow-sm';
+    'group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md';
 
   return href ? (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`group ${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500`}
+      className={`${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500`}
     >
       {body}
     </a>
