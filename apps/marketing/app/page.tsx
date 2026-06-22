@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { PrivacySection } from '@/components/PrivacySection';
 import { FeatureGrid, Section } from '@/components/Section';
+import { StartDrawingArt } from '@/components/StartDrawingArt';
 import { LANDING_SECTIONS } from '@/lib/landing-content';
 // Lazy-load UseCaseCarousel: the 470-line `'use client'` rotator
 // sits below several feature sections (well below the fold) and
@@ -49,6 +50,7 @@ export default function LandingPage() {
 
         <section id="get-started" className="border-t border-slate-200/70 bg-brand-500">
           <div className="mx-auto max-w-6xl px-6 py-20 text-center sm:py-24">
+            <StartDrawingArt />
             <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
               Time to start
             </h2>
