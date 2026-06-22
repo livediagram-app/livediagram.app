@@ -230,9 +230,13 @@ export function TemplatePicker({
             <div className="-mr-2 -mt-1 flex shrink-0 items-center gap-0.5">
               {showTemplates ? (
                 <HelpArticleLink
-                  article="templates"
-                  title="Templates"
-                  description="How templates give you a themed starting point."
+                  article={step === 'theme' ? 'themes' : 'templates'}
+                  title={step === 'theme' ? 'Themes' : 'Templates'}
+                  description={
+                    step === 'theme'
+                      ? 'How themes restyle your whole diagram.'
+                      : 'How templates give you a themed starting point.'
+                  }
                   className="!h-8 !w-8 !rounded-lg !border-0 !text-sm !text-slate-400 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
                 />
               ) : null}

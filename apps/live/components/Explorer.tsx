@@ -4,6 +4,7 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { MovablePanel } from './MovablePanel';
+import { HelpArticleLink } from './HelpArticleLink';
 import { MoveToFolderDialog } from './MoveToFolderDialog';
 import { SignInPrompt } from './SignInPrompt';
 import { ConfirmPopover } from './ConfirmPopover';
@@ -442,6 +443,14 @@ function ExplorerImpl({
       width={isMobile ? 'w-auto' : 'w-64'}
       onReset={onReset}
       onMoveTo={onMoveTo}
+      headerActions={
+        <HelpArticleLink
+          article="explorerPanel"
+          variant="chrome"
+          title="Explorer panel"
+          description="Switch diagrams, folders, and teams without leaving the canvas."
+        />
+      }
       // "Open the full Explorer page" lives in the header (mirroring the
       // Palette's panel-layout toggle in its header) rather than as a button
       // at the bottom of the panel body. Icon-only with a Tooltip; the

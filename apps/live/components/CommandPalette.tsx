@@ -6,6 +6,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { MovablePanel } from './MovablePanel';
 import { PaletteSettingsPopover } from './PaletteSettingsPopover';
+import { HelpArticleLink } from './HelpArticleLink';
 import { PaletteTabBar } from './PaletteTabBar';
 import { PaletteDropdown } from './PaletteDropdown';
 import { PaletteShapesTab, PaletteToolsTab, PaletteComponentsTab } from './palette-create-tabs';
@@ -335,14 +336,22 @@ export function CommandPalette({
       // minimise: it now hosts the panel-layout toggle and the reset-position
       // action that each used to be their own header button.
       headerActions={
-        <PaletteSettingsPopover
-          settings={settings}
-          onChange={onChangeSettings}
-          minimalPanels={minimalPanels}
-          onToggleMinimalPanels={onToggleMinimalPanels}
-          onResetPosition={onReset}
-          resettable={position !== null}
-        />
+        <>
+          <HelpArticleLink
+            article="palette"
+            variant="chrome"
+            title="Palette"
+            description="Every selection mode, element, and palette setting explained."
+          />
+          <PaletteSettingsPopover
+            settings={settings}
+            onChange={onChangeSettings}
+            minimalPanels={minimalPanels}
+            onToggleMinimalPanels={onToggleMinimalPanels}
+            onResetPosition={onReset}
+            resettable={position !== null}
+          />
+        </>
       }
       collapsible
       // The category / canvas-tool dropdowns portal their menus to

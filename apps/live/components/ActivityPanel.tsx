@@ -86,6 +86,7 @@ function ActivityPanelImpl({
       headerActions={
         <HelpArticleLink
           article="revertingChanges"
+          variant="chrome"
           title="Activity & revert"
           description="How the change log works and how to revert an edit."
         />

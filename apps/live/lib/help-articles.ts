@@ -31,6 +31,7 @@ export const HELP_ARTICLES = {
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
+  themes: 'canvas/themes',
   changingTheme: 'canvas/themes/changing-theme',
   customThemes: 'canvas/themes/custom-themes',
   // Links / activity / comments
@@ -38,8 +39,10 @@ export const HELP_ARTICLES = {
   revertingChanges: 'activity-panel/reverting-changes',
   comments: 'collaboration/comments',
   // Explorer / data
+  explorerPanel: 'explorer/explorer-panel',
   imageGallery: 'explorer/image-gallery',
   dataElements: 'palette/tools/data-elements',
+  palette: 'palette',
   // Settings
   minimalPanels: 'palette/minimal-panels',
   whatWeCollect: 'privacy-and-security/what-we-collect',
