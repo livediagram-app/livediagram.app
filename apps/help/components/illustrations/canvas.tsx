@@ -211,7 +211,6 @@ export function CanvasBackground() {
                 className={`${cls} ${sel ? 'stroke-brand-500' : 'stroke-slate-200'}`}
                 strokeWidth={sel ? 2.5 : 1.5}
               />
-              {i === 1 && <rect x={sx} y={sy} width={56} height={42} rx={7} fill="url(#none)" />}
             </g>
           );
         })}

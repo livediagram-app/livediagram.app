@@ -167,6 +167,15 @@ export function SearchPanel({
   }, [query]);
 
   const handleSelect = (item: SearchResultItem) => {
+    // Help opens the article in a new tab and records the SAME per-article
+    // UI/Opened telemetry every other help link fires (keyed by the article
+    // leaf), so help analytics are unified regardless of entry point.
+    if (item.kind === 'help') {
+      window.open(item.href, '_blank', 'noopener,noreferrer');
+      track('UI', 'Opened', item.leaf);
+      onClose();
+      return;
+    }
     if (item.kind === 'diagram') onSelectDiagram(item.id);
     else if (item.kind === 'shared' && onSelectShared) onSelectShared(item.id, item.shareCode);
     else if (item.kind === 'folder' && item.team && onSelectTeamFolder)
@@ -178,7 +187,6 @@ export function SearchPanel({
       onSelectElement(item.tabId, item.elementId);
     else if (item.kind === 'palette' && onAddPaletteItem) onAddPaletteItem(item.add);
     else if (item.kind === 'action' && item.action === 'create-tab' && onCreateTab) onCreateTab();
-    else if (item.kind === 'help') window.open(item.href, '_blank', 'noopener,noreferrer');
     track('Search', 'Selected', titleCaseType(item.kind));
     onClose();
   };
