@@ -15,3 +15,4 @@ export * from './feature-art/foundations';
 export * from './feature-art/features';
 export * from './feature-art/motion';
 export * from './feature-art/versatility';
+export * from './feature-art/content';
