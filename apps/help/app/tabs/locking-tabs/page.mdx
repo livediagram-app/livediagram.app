@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LockedTab } from '@/components/illustrations/tabs';
+
+export const metadata = helpMetadata({
+  title: 'Locking a Tab',
+  description:
+    'Lock a tab to make a whole board read-only, so its elements cannot be moved, edited, erased, or deleted by accident. Unlock it to edit again.',
+  path: '/help/tabs/locking-tabs/',
+});
+
+<ArticleLayout title="Locking a Tab" description="Make an entire board read-only in one step, so a finished tab stays exactly as you left it." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("locking-tabs")}>
+
+When a whole board is finished, locking the tab protects everything on it at once, rather than locking elements one by one. A locked tab becomes read-only: you can still look at it and switch to it, but nothing on it changes until you unlock it.
+
+<Figure caption="A locked tab carries a padlock and is marked read-only in the tab bar.">
+  <LockedTab />
+</Figure>
+
+## Locking and unlocking a tab
+
+Right-click the tab in the [tab bar](/help/user-interface/tab-bar/) (or long-press on touch) to open its menu, then choose **Lock tab**. The same item reads **Unlock tab** afterwards, so it toggles the tab back to editable. A locked tab shows a small **padlock** in the bar so you can tell at a glance which boards are frozen.
+
+## What a locked tab protects
+
+While a tab is locked, its whole canvas is read-only:
+
+- Elements **can't be moved, resized, or edited**.
+- The [eraser](/help/palette/eraser/) skips everything on the tab.
+- The tab's content **can't be cleared**, and the tab itself **can't be deleted** until you unlock it.
+
+You can still **rename** or **duplicate** the tab from the same menu, and duplicating gives you an editable copy if you want to keep building from a locked original.
+
+## When to use it
+
+- Freeze a signed-off or presented board so a later edit can't disturb it.
+- Protect a reference or template tab you copy from but never change.
+- Hand a diagram to collaborators with the finished tabs locked, leaving only the working tabs open.
+
+<Tip>
+  To protect just a few elements rather than a whole board, lock them individually instead. See
+  [locking elements](/help/canvas/locking/).
+</Tip>
+
+</ArticleLayout>

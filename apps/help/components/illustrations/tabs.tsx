@@ -489,3 +489,45 @@ export function CleanupBeforeAfter() {
     </Scene>
   );
 }
+
+/** A locked tab: the active pill carries a padlock and the bar reads read-only. */
+export function LockedTab() {
+  const barY = 78;
+  const px = 88;
+  const pw = 116;
+  return (
+    <Scene w={420} h={150} bg="plain">
+      <TabBar y={barY} w={420} />
+      <TabPill x={14} y={barY + 8} w={66} label="Draft" />
+      {/* The locked active tab: brand pill with a padlock before the label */}
+      <g>
+        <rect
+          x={px}
+          y={barY + 6}
+          width={pw}
+          height={30}
+          rx={15}
+          className="fill-brand-500 stroke-brand-600"
+          strokeWidth={1.5}
+        />
+        <g transform={`translate(${px + 22} ${barY + 21})`}>
+          <rect x={-5} y={-1} width={10} height={8} rx={1.5} className="fill-white" />
+          <path
+            d="M-3 -1 V-3.5 a3 3 0 0 1 6 0 V-1"
+            fill="none"
+            className="stroke-white"
+            strokeWidth={1.6}
+          />
+        </g>
+        <Label x={px + 40} y={barY + 21} size={11} weight={700} tone="onAccent">
+          Approved
+        </Label>
+      </g>
+      <TabPill x={212} y={barY + 8} w={62} label="Notes" />
+      <AddTabButton x={282} y={barY + 8} />
+      <Label x={px} y={barY - 12} size={9} tone="muted">
+        Locked: read-only
+      </Label>
+    </Scene>
+  );
+}

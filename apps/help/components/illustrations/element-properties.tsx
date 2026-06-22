@@ -2,7 +2,23 @@
 // (front / back / opacity), rotation (snap angles), and animation (boxed loops
 // + arrow flow). All built from the shared primitives so they match the rest
 // of the help centre's visual language.
-import { Scene, Shape, Label, Arrow } from './primitives';
+import { Scene, Shape, Label, Arrow, SelectionBox } from './primitives';
+
+/** A small padlock glyph, centred on (cx, cy). */
+function Padlock({ cx, cy }: { cx: number; cy: number }) {
+  return (
+    <g transform={`translate(${cx} ${cy})`}>
+      <circle r={12} className="fill-white stroke-brand-300" strokeWidth={1.5} />
+      <rect x={-5} y={-1} width={10} height={8} rx={1.5} className="fill-brand-500" />
+      <path
+        d="M-3 -1 V-3.5 a3 3 0 0 1 6 0 V-1"
+        fill="none"
+        className="stroke-brand-500"
+        strokeWidth={1.6}
+      />
+    </g>
+  );
+}
 
 /** Two overlapping cards with the front one selected, plus a faded (low-opacity)
  *  twin, illustrating Bring to Front / Send to Back and the opacity slider. */
@@ -111,6 +127,21 @@ export function ElementAnimation() {
       <Label x={276} y={150} anchor="middle" size={11} tone="muted">
         Flow
       </Label>
+    </Scene>
+  );
+}
+
+/** A locked element (padlock badge, no resize handles) beside an unlocked one
+ *  that still shows its selection handles. */
+export function LockedElement() {
+  return (
+    <Scene w={400} h={240}>
+      {/* Unlocked: full selection handles */}
+      <Shape x={56} y={92} w={120} h={64} kind="rect" label="Editable" labelTone="strong" />
+      <SelectionBox x={56} y={92} w={120} h={64} />
+      {/* Locked: padlock badge, no handles */}
+      <Shape x={232} y={92} w={120} h={64} kind="rect" accent label="Locked" />
+      <Padlock cx={352} cy={92} />
     </Scene>
   );
 }

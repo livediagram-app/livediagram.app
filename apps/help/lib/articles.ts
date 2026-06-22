@@ -141,8 +141,8 @@ export const categories: Category[] = [
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, layering, rotating, animating, theming, and templating.',
-    articleCount: 10,
+      'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, layering, rotating, animating, locking, theming, and templating.',
+    articleCount: 11,
     kind: 'feature',
   },
   {
@@ -150,7 +150,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one diagram: organise, link, and move between multiple boards with tabs.',
-    articleCount: 7,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -712,6 +712,13 @@ export const articles: Article[] = [
     categorySlug: 'tabs',
   },
   {
+    slug: 'locking-tabs',
+    title: 'Locking a Tab',
+    description: 'Make a whole board read-only so it cannot be changed by accident.',
+    category: 'Tabs',
+    categorySlug: 'tabs',
+  },
+  {
     slug: 'add-to-diagram',
     title: 'Add a Tab to Another Diagram',
     description: 'Copy the active tab into another diagram you own from the tab menu.',
@@ -920,6 +927,13 @@ export const articles: Article[] = [
     slug: 'animations',
     title: 'Animating Elements',
     description: 'Loop a subtle animation on shapes, arrows, and icons.',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'locking',
+    title: 'Locking Elements',
+    description: 'Protect an element from accidental moves, resizes, and deletion.',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

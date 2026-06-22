@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LockedElement } from '@/components/illustrations/element-properties';
+
+export const metadata = helpMetadata({
+  title: 'Locking Elements',
+  description:
+    'Lock a shape, arrow, or any element to protect it from accidental moves, resizes, and deletion while you work around it. Unlock it the same way.',
+  path: '/help/canvas/locking/',
+});
+
+<ArticleLayout title="Locking Elements" description="Pin an element in place so a stray drag or delete can't disturb it, then unlock it when you need to change it." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("locking")}>
+
+Once part of a diagram is the way you want it, locking keeps it that way. A locked element can't be moved, resized, or deleted by accident, so you can keep building around it without knocking it out of place.
+
+<Figure caption="A locked element carries a padlock and shows no resize handles; an editable one still does.">
+  <LockedElement />
+</Figure>
+
+## Locking and unlocking
+
+Select an element and click the **Lock** button in its floating toolbar. The button reads **Unlock** while it's locked, so the same control toggles it back. Select several elements first and the button locks or unlocks the whole selection at once.
+
+A locked element shows a small **padlock** so it's clear at a glance which parts of the diagram are protected.
+
+## What locking protects
+
+A locked element:
+
+- **Can still be selected**, so you can always reach it to unlock it.
+- **Can't be moved** — dragging its body does nothing.
+- **Can't be resized** — its corner handles are hidden entirely, so there's nothing to grab.
+- **Can't be deleted** — Delete and Backspace skip it, the [eraser](/help/palette/eraser/) passes over it, and a multi-select delete keeps the locked members while removing the rest. Deleting a shape that an arrow connects to also leaves a locked arrow in place.
+- **Can still be labelled** — double-click to edit its text. Locking protects an element's position and existence, not its content.
+
+The same applies to **arrows**: a locked arrow's endpoint handles can't be dragged, and it can't be moved or deleted until you unlock it.
+
+<Note>
+  This per-element lock is different from the brief lock you see in a live session, where an element
+  someone else has selected is held for them until they move on. See [live
+  presence](/help/collaboration/live-presence/) for that one.
+</Note>
+
+<Tip>
+  Lock a finished background, frame, or legend before you start arranging the busy part of a
+  diagram, so the foundation stays put while you work on top of it. To freeze a whole board at once,
+  see [locking a tab](/help/tabs/locking-tabs/).
+</Tip>
+
+</ArticleLayout>
