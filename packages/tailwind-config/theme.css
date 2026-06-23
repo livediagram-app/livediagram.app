@@ -17,3 +17,18 @@
   --color-brand-900: #0c4a6e;
   --color-brand-950: #082f49;
 }
+
+/* One consistent keyboard-focus ring (WCAG 2.4.7) for EVERY app. Lives in
+ * the shared theme because Tailwind's preflight removes the browser default
+ * outline — so an app without its own rule (marketing, telemetry) gave
+ * keyboard users no visible focus at all, while live + help each hand-rolled
+ * their own (one with a hardcoded hex). :focus-visible keeps pointer clicks
+ * from showing it; form fields keep their own focus:ring / focus:border, and
+ * a control that sets its own focus-visible:outline-* utility still wins
+ * (this sits in the base layer). */
+@layer base {
+  :is(button, a, summary, [role='button']):focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+  }
+}

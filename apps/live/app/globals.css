@@ -12,18 +12,9 @@
     cursor: pointer;
   }
 
-  /* One consistent keyboard-focus ring (WCAG 2.4.7). Buttons / links
-   * previously relied on the browser default outline (which varies by
-   * engine) or a subtle focus:border shift, and a couple set an outline
-   * colour with no width so nothing rendered. This gives every
-   * keyboard-focused control the same branded ring. :focus-visible means
-   * pointer clicks never show it; form fields keep their own focus:ring /
-   * focus:border treatment, and a control that sets its own
-   * focus-visible:outline-* utility still wins over this base rule. */
-  :is(button, a, summary, [role='button']):focus-visible {
-    outline: 2px solid var(--color-brand-500);
-    outline-offset: 2px;
-  }
+  /* The keyboard-focus ring (WCAG 2.4.7) now lives in the shared theme
+   * (@livediagram/tailwind-config) so every app gets the same branded ring;
+   * see there for the rationale. */
 }
 
 /* iOS Safari refuses to honour `user-scalable=no` for accessibility,
