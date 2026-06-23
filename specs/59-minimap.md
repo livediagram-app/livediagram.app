@@ -5,7 +5,7 @@ lets you jump the viewport anywhere with a tap or drag.
 
 ## Behaviour
 
-- **Where / when.** Bottom-left corner, labelled **"Minimap"**. Shown only
+- **Where / when.** Bottom-left corner, labelled **"Map"**. Shown only
   when it's enabled (`showMinimap` preference, **on by default**, toggled in
   Settings and dismissable via the card's **×**), the tab has **at least 4
   elements**, the **Activity panel is minimised** (it owns the same corner),
@@ -15,7 +15,8 @@ lets you jump the viewport anywhere with a tap or drag.
   its **real silhouette** (a circle reads as a circle, a cylinder as a
   cylinder — reusing `ShapeGlyph` stretched to the element's footprint) and
   every arrow as a **connecting line** between its resolved endpoints. The area
-  **outside the current view is dimmed**, leaving a brand-outlined lit window
+  **outside the current view is dimmed**, leaving a lit window (outlined in the
+  tab theme's accent, matching the on-canvas selection)
   that reads at a glance as where you are.
 - **Navigation.** Tap a point to re-centre the canvas there; press-and-drag to
   pan continuously; **scroll** on the minimap to zoom the canvas in/out centred

@@ -1204,6 +1204,7 @@ export function Canvas(props: CanvasProps) {
           setViewportOffset={setViewportOffset}
           setViewportZoom={setViewportZoom}
           mainRef={mainRef}
+          accentColor={badgeColor}
           onDisable={() => {
             track('UI', 'Toggled', 'MinimapOff');
             props.onChangeSettings({ ...props.settings, showMinimap: false });

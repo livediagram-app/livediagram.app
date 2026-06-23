@@ -28,6 +28,9 @@ type MinimapProps = {
   setViewportOffset: (offset: { x: number; y: number }) => void;
   setViewportZoom: (zoom: number) => void;
   mainRef: Ref<HTMLElement>;
+  // The active tab theme's accent (matches the on-canvas selection), used to
+  // colour the current-view highlight instead of a fixed brand blue.
+  accentColor: string;
   // Hide the minimap (persists showMinimap = false; re-enabled in Settings).
   onDisable: () => void;
 };
@@ -44,6 +47,7 @@ export function Minimap({
   setViewportOffset,
   setViewportZoom,
   mainRef,
+  accentColor,
   onDisable,
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -181,7 +185,7 @@ export function Minimap({
       {/* Header so the panel is unmistakably the canvas minimap. */}
       <div className="flex items-center gap-1.5 border-b border-slate-200/70 px-2.5 py-1.5 dark:border-slate-700/60">
         <span className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-          Minimap
+          Map
         </span>
         <button
           type="button"
@@ -196,7 +200,7 @@ export function Minimap({
         ref={svgRef}
         viewBox={vb}
         preserveAspectRatio="xMidYMid meet"
-        className="block h-28 w-full cursor-pointer touch-none bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 dark:text-slate-500"
+        className="block h-28 w-full cursor-pointer touch-none rounded-b-xl bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 dark:text-slate-500"
         role="img"
         aria-label="Canvas minimap — tap or drag to navigate, scroll to zoom"
         onPointerDown={(e) => {
@@ -232,8 +236,8 @@ export function Minimap({
               width={vx1 - vx}
               height={vy1 - vy}
               rx={3}
-              fill="none"
-              className="stroke-brand-500 dark:stroke-brand-400"
+              fill={`color-mix(in srgb, ${accentColor} 14%, transparent)`}
+              stroke={accentColor}
               strokeWidth={1.75}
               vectorEffect="non-scaling-stroke"
             />
