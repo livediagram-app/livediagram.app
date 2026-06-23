@@ -11,8 +11,8 @@
 
 import { useRef, useState } from 'react';
 import type { Folder } from '@/lib/api-client';
-import { InlineRenameInput } from '@/components/InlineRenameInput';
-import { PortalMenu } from '@/components/PortalMenu';
+import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
+import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { ChevronIcon, EllipsisIcon, FolderIcon } from './icons';
 import { FolderMenuItems, type SelectedNode } from './views';
 

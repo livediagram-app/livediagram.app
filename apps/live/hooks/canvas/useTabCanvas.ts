@@ -32,7 +32,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
-import { PATTERNS } from '@/components/palette-controls';
+import { PATTERNS } from '@/components/palette/palette-controls';
 
 // Human-readable names for the activity log, so an entry reads
 // "Changed default text size to Medium" rather than leaking the raw

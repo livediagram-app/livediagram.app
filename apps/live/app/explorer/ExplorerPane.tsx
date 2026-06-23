@@ -46,11 +46,15 @@ const SECTION_HELP: Partial<
 
 // Lazy-load the heavier panes — each is only mounted on its own
 // route, so none of them sit in the shared explorer chunk.
-const GalleryPane = dynamic(() => import('@/components/GalleryPane').then((m) => m.GalleryPane));
-const ThemesPane = dynamic(() => import('@/components/ThemesPane').then((m) => m.ThemesPane));
-const TeamPane = dynamic(() => import('@/components/TeamPane').then((m) => m.TeamPane));
+const GalleryPane = dynamic(() =>
+  import('@/components/panels/GalleryPane').then((m) => m.GalleryPane),
+);
+const ThemesPane = dynamic(() =>
+  import('@/components/panels/ThemesPane').then((m) => m.ThemesPane),
+);
+const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) => m.TeamPane));
 const TeamInvitesPane = dynamic(() =>
-  import('@/components/TeamInvitesPane').then((m) => m.TeamInvitesPane),
+  import('@/components/panels/TeamInvitesPane').then((m) => m.TeamInvitesPane),
 );
 
 // The right pane for whichever /explorer/<section> route is active:

@@ -3,18 +3,20 @@
 import dynamic from 'next/dynamic';
 import { useEffect, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
-import { EditorHeader } from '@/components/EditorHeader';
-import { Explorer } from '@/components/Explorer';
-import { DiagramLoading } from '@/components/DiagramLoading';
-import { CustomThemeProvider } from '@/components/CustomThemeProvider';
+import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { Explorer } from '@/components/panels/Explorer';
+import { DiagramLoading } from '@/components/chrome/DiagramLoading';
+import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 
-const NotFound = dynamic(() => import('@/components/NotFound').then((m) => m.NotFound));
-const ApiErrorPage = dynamic(() => import('@/components/ApiErrorPage').then((m) => m.ApiErrorPage));
+const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound));
+const ApiErrorPage = dynamic(() =>
+  import('@/components/chrome/ApiErrorPage').then((m) => m.ApiErrorPage),
+);
 const SharePasswordGate = dynamic(() =>
-  import('@/components/SharePasswordGate').then((m) => m.SharePasswordGate),
+  import('@/components/dialogs/SharePasswordGate').then((m) => m.SharePasswordGate),
 );
 
 const LOAD_ERROR_MESSAGE =

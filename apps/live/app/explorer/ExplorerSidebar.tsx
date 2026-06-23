@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { SignInIcon } from '@/components/AuthControls';
-import { Tooltip } from '@/components/Tooltip';
+import { SignInIcon } from '@/components/chrome/AuthControls';
+import { Tooltip } from '@/components/primitives/Tooltip';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from './ExplorerContext';
 import { useMemo } from 'react';

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import type { SaveStatus } from '@/components/EditorHeader';
+import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import type { useToast } from '@/hooks/ui/useToast';
 import {
   apiListDiagrams,

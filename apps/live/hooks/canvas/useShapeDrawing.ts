@@ -45,7 +45,7 @@ import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import type { PendingDraw } from '@/lib/draw-mode';
-import type { CanvasTool } from '@/components/CommandPalette';
+import type { CanvasTool } from '@/components/palette/CommandPalette';
 
 // Stroke for a new arrow when the active theme has no explicit
 // `elementStroke` (the Brand theme). brand-500 — matches the shape

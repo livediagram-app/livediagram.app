@@ -17,8 +17,8 @@
 // build doesn't pull in @clerk/nextjs's Server Actions — see
 // components/providers/ClerkProvider.tsx for the same rationale.
 import { AuthenticateWithRedirectCallback } from '@clerk/react';
-import { AuthCard, AuthDisabledNotice } from '@/components/auth-shared';
-import { DiagramBuildAnimation } from '@/components/DiagramBuildAnimation';
+import { AuthCard, AuthDisabledNotice } from '@/components/chrome/auth-shared';
+import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation';
 import { clerkEnabled } from '@/lib/clerk-config';
 
 export default function SSOCallbackPage() {

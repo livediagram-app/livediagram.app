@@ -15,7 +15,7 @@ import {
   type DistributionGuide,
   type Element,
 } from '@livediagram/diagram';
-import type { SnapTarget } from '@/components/Canvas.types';
+import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
 // Value-equality for two guide lists. Used to bail out of the
 // snapGuides state update when the guides haven't changed: on the vast

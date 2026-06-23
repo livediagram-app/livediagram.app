@@ -1,8 +1,7 @@
 # 57 — Source layout: group `apps/live` components + hooks by domain
 
-Status: **in progress** — `apps/live/hooks/` has been reorganised into the
-buckets below (canvas / persistence / ui / collab). `apps/live/components/`
-is the remaining half; see "Execution".
+Status: **done** — both `apps/live/hooks/` and `apps/live/components/` have
+been reorganised into the buckets below.
 
 ## Problem
 
@@ -72,5 +71,8 @@ green before a single commit and push.
 
 - **`hooks/` — done.** 66 files → canvas / persistence / ui / collab; ~410
   files had their `@/hooks/*` imports rewritten; full suite green.
-- **`components/` — next.** Same recipe, larger (157 files). The buckets
-  above are the target.
+- **`components/` — done.** 158 files → dialogs / panels / palette / chrome /
+  primitives / canvas (`providers/` already existed, left as-is). Two passes:
+  first every inter-component relative import (`./X`, `../X`, `./providers/X`)
+  was resolved to a `@/components/...` alias, then the files moved and the
+  aliases were rewritten to bucketed paths. Full suite green.

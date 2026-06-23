@@ -14,7 +14,7 @@ import {
   flushDiagramSavesBeacon,
   type DiagramListItem,
 } from '@/lib/api-client';
-import type { SaveStatus } from '@/components/EditorHeader';
+import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { computeTabSaveDiff } from './editor-page-helpers';
 
 // Per-tab autosave (spec/13), lifted out of editor-page.tsx. Two effects:

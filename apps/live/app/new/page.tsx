@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { EditorHeader } from '@/components/EditorHeader';
-import { ApiErrorPage } from '@/components/ApiErrorPage';
-import { TemplatePicker } from '@/components/TemplatePicker';
-import { CustomThemeProvider } from '@/components/CustomThemeProvider';
-import { AnimatedLinesBackdrop } from '@/components/AnimatedLinesBackdrop';
+import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
+import { TemplatePicker } from '@/components/palette/TemplatePicker';
+import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
+import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
 import { randomColor, randomName, type Participant } from '@/lib/identity';

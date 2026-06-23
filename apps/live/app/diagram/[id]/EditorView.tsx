@@ -24,13 +24,13 @@ import { PALETTE_SEARCH_ITEMS } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { apiAddComment, apiDeleteComment } from '@/lib/api-client';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { Canvas } from '@/components/Canvas';
-import { EditorHeader } from '@/components/EditorHeader';
-import { EmbedChrome } from '@/components/EmbedChrome';
-import { TabBar } from '@/components/TabBar';
-import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/SignInBanner';
-import { EmptyCanvasBanner } from '@/components/EmptyCanvasBanner';
-import { ThemeModeBanner } from '@/components/ThemeModeBanner';
+import { Canvas } from '@/components/canvas/Canvas';
+import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { EmbedChrome } from '@/components/chrome/EmbedChrome';
+import { TabBar } from '@/components/chrome/TabBar';
+import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
+import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
+import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
@@ -43,35 +43,43 @@ import { useEditorContext } from './EditorContext';
 const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 
 const EditorContextMenu = dynamic(() =>
-  import('@/components/EditorContextMenu').then((m) => m.EditorContextMenu),
+  import('@/components/palette/EditorContextMenu').then((m) => m.EditorContextMenu),
 );
 const LinkPickerDialog = dynamic(() =>
-  import('@/components/LinkPickerDialog').then((m) => m.LinkPickerDialog),
+  import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
 );
 const LineDataDialog = dynamic(() =>
-  import('@/components/LineDataDialog').then((m) => m.LineDataDialog),
+  import('@/components/dialogs/LineDataDialog').then((m) => m.LineDataDialog),
 );
 const CommentThreadPopover = dynamic(() =>
-  import('@/components/CommentThreadPopover').then((m) => m.CommentThreadPopover),
+  import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
 );
 const ExportTabDialog = dynamic(() =>
-  import('@/components/ExportTabDialog').then((m) => m.ExportTabDialog),
+  import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
 );
 const ImportTabDialog = dynamic(() =>
-  import('@/components/ImportTabDialog').then((m) => m.ImportTabDialog),
+  import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
 );
-const ShareDialog = dynamic(() => import('@/components/ShareDialog').then((m) => m.ShareDialog));
-const NotePopover = dynamic(() => import('@/components/NotePopover').then((m) => m.NotePopover));
-const SearchPanel = dynamic(() => import('@/components/SearchPanel').then((m) => m.SearchPanel));
-const ImagePicker = dynamic(() => import('@/components/ImagePicker').then((m) => m.ImagePicker));
+const ShareDialog = dynamic(() =>
+  import('@/components/dialogs/ShareDialog').then((m) => m.ShareDialog),
+);
+const NotePopover = dynamic(() =>
+  import('@/components/canvas/NotePopover').then((m) => m.NotePopover),
+);
+const SearchPanel = dynamic(() =>
+  import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+);
+const ImagePicker = dynamic(() =>
+  import('@/components/panels/ImagePicker').then((m) => m.ImagePicker),
+);
 const ShortcutsDialog = dynamic(() =>
-  import('@/components/ShortcutsDialog').then((m) => m.ShortcutsDialog),
+  import('@/components/dialogs/ShortcutsDialog').then((m) => m.ShortcutsDialog),
 );
 const SettingsDialog = dynamic(() =>
-  import('@/components/SettingsDialog').then((m) => m.SettingsDialog),
+  import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
 );
 const CanvasThemeDialog = dynamic(() =>
-  import('@/components/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
+  import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
 );
 
 // The editor's full view (header + canvas + tab bar + all dialogs),

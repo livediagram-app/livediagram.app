@@ -11,10 +11,10 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
-import { HelpArticleLink } from '@/components/HelpArticleLink';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import { InlineRenameInput } from '@/components/InlineRenameInput';
-import { MenuItem, PortalMenu } from '@/components/PortalMenu';
+import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
+import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
 import {
   CloseIcon,
   DiagramIcon,

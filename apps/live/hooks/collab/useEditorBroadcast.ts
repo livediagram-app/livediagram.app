@@ -12,7 +12,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { RoomOutgoing } from '@livediagram/api-schema';
-import type { CanvasTool } from '@/components/CommandPalette';
+import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 
 const BROADCAST_THROTTLE_MS = 33;

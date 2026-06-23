@@ -17,7 +17,7 @@
 // silently no-op'd.
 
 import { useEffect, useRef } from 'react';
-import type { CanvasTool } from '@/components/CommandPalette';
+import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { isMobileViewportSync } from '@/lib/responsive';
 
 // Shape kinds that have a single-key palette shortcut: the common

@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { ConfirmDialog, type ConfirmDialogProps } from '@/components/ConfirmDialog';
+import { ConfirmDialog, type ConfirmDialogProps } from '@/components/dialogs/ConfirmDialog';
 
 // Imperative `confirm({...}) => Promise<boolean>` adapter around
 // the declarative ConfirmDialog. Call sites stay declarative even

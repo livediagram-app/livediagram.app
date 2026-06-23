@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { TeamInviteJoin } from '@/components/TeamInviteJoin';
+import { TeamInviteJoin } from '@/components/panels/TeamInviteJoin';
 
 // /join?token=<token> — landing for a shareable team invite link
 // (spec/32). A top-level route (outside the Explorer chrome) so the

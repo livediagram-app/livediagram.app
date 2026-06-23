@@ -4,7 +4,7 @@
 // swaps its items based on what was clicked. Null = menu closed.
 
 import { useState } from 'react';
-import type { EditorContextMenuState } from '@/components/EditorContextMenu';
+import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 
 export function useEditorContextMenu() {
   const [contextMenu, setContextMenu] = useState<EditorContextMenuState | null>(null);

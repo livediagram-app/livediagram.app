@@ -3,14 +3,14 @@
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { Brand } from '@livediagram/ui';
-import { AuthControls } from '@/components/AuthControls';
-import { TeamFormModal } from '@/components/TeamFormModal';
-import { MoveToFolderDialog } from '@/components/MoveToFolderDialog';
-import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/SignInBanner';
+import { AuthControls } from '@/components/chrome/AuthControls';
+import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
+import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
+import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
-import { CustomThemeProvider } from '@/components/CustomThemeProvider';
+import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
@@ -20,7 +20,9 @@ import { CloseIcon } from './icons';
 // gated on `searchOpen`, never default-rendered, and dropping ~375
 // lines from the Explorer's initial chunk pays for itself immediately
 // on the first paint of the dashboard.
-const SearchPanel = dynamic(() => import('@/components/SearchPanel').then((m) => m.SearchPanel));
+const SearchPanel = dynamic(() =>
+  import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+);
 
 // Sidebar width. Wide enough for ~3 levels of indented folder names,
 // narrow enough that the list view keeps its breathing room.

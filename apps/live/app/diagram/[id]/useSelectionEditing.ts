@@ -10,7 +10,7 @@ import {
   type TextRun,
 } from '@livediagram/diagram';
 import { patchTab } from './editor-page-helpers';
-import type { EditorContextMenuState } from '@/components/EditorContextMenu';
+import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 

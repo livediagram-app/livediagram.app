@@ -9,8 +9,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Portal } from '@/components/Portal';
-import { CloseIcon } from '@/components/CloseIcon';
+import { Portal } from '@/components/primitives/Portal';
+import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { readUserPreferences } from '@/lib/user-preferences';
 
 // Lightweight toast surface. Two jobs: (1) make previously-silent async

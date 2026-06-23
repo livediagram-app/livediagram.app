@@ -74,7 +74,7 @@ import {
   type ShapeBounds,
 } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
-import type { SnapTarget } from '@/components/Canvas.types';
+import type { SnapTarget } from '@/components/canvas/Canvas.types';
 import {
   computeSnapTargets,
   distToSegment,

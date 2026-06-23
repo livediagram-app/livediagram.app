@@ -32,7 +32,7 @@ import {
   RedirectingCard,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
-} from '@/components/auth-shared';
+} from '@/components/chrome/auth-shared';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 
