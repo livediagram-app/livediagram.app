@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { PaletteSettings, PanelOpacity } from '@/components/illustrations/palette-modes';
 
 export const metadata = helpMetadata({
   title: 'Panel Opacity',
@@ -19,9 +20,17 @@ export const metadata = helpMetadata({
 
 Panel Opacity lets you see the canvas through the editor’s floating panels. It is a slider, and it lives behind the gear (settings) icon in the header of the floating palette, which opens a small settings popover.
 
+<Figure caption="The palette settings popover, with the Panel opacity slider highlighted.">
+  <PaletteSettings highlight="panel-opacity" />
+</Figure>
+
 ## What it does
 
 Drag the slider down and the floating panels (Palette, Explorer, Editor, AI) become translucent, so the diagram behind them stays visible while you work near an edge. The percentage next to the slider shows the current setting. At 100% the panels are fully solid, the default.
+
+<Figure caption="At a lower opacity the floating panels turn translucent, so the diagram behind them stays visible.">
+  <PanelOpacity />
+</Figure>
 
 So a translucent panel never gets in your way, each panel snaps back to fully opaque the moment you hover over it or focus something inside it, then fades back once you move away. You always get a clear, readable panel exactly when you are using it.
 

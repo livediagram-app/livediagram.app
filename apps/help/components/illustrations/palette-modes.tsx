@@ -438,16 +438,24 @@ export function IsometricMode() {
 export function PaletteSettings({
   highlight,
 }: {
-  highlight?: 'auto-attach' | 'guides' | 'minimal' | 'reset';
+  highlight?: 'auto-attach' | 'guides' | 'panel-opacity' | 'minimal' | 'reset';
 }) {
-  const rows: { key: 'auto-attach' | 'guides' | 'minimal'; label: string; on: boolean }[] = [
-    { key: 'auto-attach', label: 'Auto-attach arrows', on: true },
-    { key: 'guides', label: 'Alignment guides', on: true },
-    { key: 'minimal', label: 'Minimal panels', on: false },
+  // `slider` rows draw a mini opacity track instead of a toggle (Panel
+  // opacity); the order mirrors the real popover.
+  const rows: {
+    key: 'auto-attach' | 'guides' | 'panel-opacity' | 'minimal';
+    label: string;
+    slider: boolean;
+    on: boolean;
+  }[] = [
+    { key: 'auto-attach', label: 'Auto-attach arrows', slider: false, on: true },
+    { key: 'guides', label: 'Alignment guides', slider: false, on: true },
+    { key: 'panel-opacity', label: 'Panel opacity', slider: true, on: true },
+    { key: 'minimal', label: 'Minimal panels', slider: false, on: false },
   ];
   return (
-    <Scene w={400} h={234} bg="plain">
-      <Panel x={92} y={26} w={216} h={182} title="PALETTE SETTINGS">
+    <Scene w={400} h={268} bg="plain">
+      <Panel x={92} y={26} w={216} h={216} title="PALETTE SETTINGS">
         {rows.map((r, i) => {
           const ry = 70 + i * 34;
           const hot = highlight === r.key;
@@ -472,30 +480,71 @@ export function PaletteSettings({
               >
                 {r.label}
               </Label>
-              {/* Toggle switch */}
-              <g transform={`translate(${262} ${ry - 6})`}>
-                <rect
-                  width={30}
-                  height={16}
-                  rx={8}
-                  className={r.on ? 'fill-brand-500' : 'fill-slate-300'}
-                />
-                <circle cx={r.on ? 22 : 8} cy={8} r={6} className="fill-white" />
-              </g>
+              {r.slider ? (
+                // Mini opacity slider, filled ~70%.
+                <g transform={`translate(224 ${ry + 2})`}>
+                  <rect x={0} y={-2} width={68} height={4} rx={2} className="fill-slate-200" />
+                  <rect x={0} y={-2} width={47} height={4} rx={2} className="fill-brand-500" />
+                  <circle
+                    cx={47}
+                    cy={0}
+                    r={6}
+                    className="fill-white stroke-brand-500"
+                    strokeWidth={2}
+                  />
+                </g>
+              ) : (
+                // Toggle switch
+                <g transform={`translate(${262} ${ry - 6})`}>
+                  <rect
+                    width={30}
+                    height={16}
+                    rx={8}
+                    className={r.on ? 'fill-brand-500' : 'fill-slate-300'}
+                  />
+                  <circle cx={r.on ? 22 : 8} cy={8} r={6} className="fill-white" />
+                </g>
+              )}
             </g>
           );
         })}
         {/* Reset action */}
-        <line x1={100} y1={168} x2={300} y2={168} className="stroke-slate-200" strokeWidth={1.5} />
+        <line x1={100} y1={202} x2={300} y2={202} className="stroke-slate-200" strokeWidth={1.5} />
         <Button
           x={108}
-          y={176}
+          y={210}
           w={184}
           h={22}
           label="Reset palette position"
           variant={highlight === 'reset' ? 'primary' : 'default'}
         />
       </Panel>
+    </Scene>
+  );
+}
+
+/** Panel opacity: a floating panel rendered translucent so the canvas content
+ *  behind it stays visible. Pairs with the settings popover illustration to
+ *  show what the slider does. */
+export function PanelOpacity() {
+  return (
+    <Scene w={400} h={240}>
+      {/* Canvas content the panel floats over. */}
+      <Shape x={54} y={104} w={86} h={52} accent label="A" />
+      <Shape x={150} y={158} w={86} h={52} kind="circle" label="B" />
+      <Shape x={252} y={150} w={92} h={52} label="C" />
+      {/* The floating panel at ~60% opacity: the shapes behind it stay
+          visible through it. */}
+      <g opacity={0.6}>
+        <Panel x={196} y={42} w={156} h={150} title="PALETTE">
+          <rect x={210} y={78} width={128} height={10} rx={5} className="fill-slate-200" />
+          <rect x={210} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
+          <rect x={252} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
+          <rect x={294} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
+          <rect x={210} y={144} width={128} height={10} rx={5} className="fill-slate-200" />
+          <rect x={210} y={162} width={86} height={10} rx={5} className="fill-slate-200" />
+        </Panel>
+      </g>
     </Scene>
   );
 }
