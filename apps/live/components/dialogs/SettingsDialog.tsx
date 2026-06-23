@@ -71,6 +71,15 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
               />
             }
           />
+          <ToggleRow
+            label="Show minimap"
+            description="Shows a small overview of the whole canvas in the bottom-left corner once a tab has a few elements and the Activity panel is minimised. Tap or drag it to jump around; scroll on it to zoom. Desktop only."
+            checked={settings.showMinimap !== false}
+            onChange={(v) => {
+              track('UI', 'Toggled', v ? 'MinimapOn' : 'MinimapOff');
+              onChange({ ...settings, showMinimap: v });
+            }}
+          />
         </SettingsGroup>
         <SettingsGroup {...groupProps('Notifications')}>
           <ToggleRow

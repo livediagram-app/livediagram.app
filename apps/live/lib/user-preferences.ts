@@ -90,6 +90,11 @@ export type UserPreferences = {
   // breakage. Missing / undefined / true === notifications on, the
   // default. See hooks/useToast.tsx.
   notificationsEnabled?: boolean;
+  // Minimap (spec/59). When `false`, the bottom-left canvas minimap is hidden.
+  // Missing / undefined / true === shown, the default (and even then only once
+  // the tab has a few elements, the Activity panel is minimised, and on
+  // desktop). The minimap's own close button writes an explicit `false`.
+  showMinimap?: boolean;
 };
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';

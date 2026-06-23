@@ -5,17 +5,21 @@ lets you jump the viewport anywhere with a tap or drag.
 
 ## Behaviour
 
-- **Where / when.** Bottom-left corner. Shown only when the **Activity panel
-  is minimised** (it owns the same corner — `activityMinimized` is the gate),
-  and **only on desktop** (hidden on mobile, where the canvas is already
+- **Where / when.** Bottom-left corner, labelled **"Minimap"**. Shown only
+  when it's enabled (`showMinimap` preference, **on by default**, toggled in
+  Settings and dismissable via the card's **×**), the tab has **at least 4
+  elements**, the **Activity panel is minimised** (it owns the same corner),
+  and **on desktop** (hidden on mobile, where the canvas is already
   edge-to-edge and the corner is used by the mobile dock).
-- **What it shows.** A labelled **"Overview"** card (header with a
-  frame-and-highlight glyph so it's unmistakable) over a wireframe of every
-  boxed element. The area **outside the current view is dimmed**, leaving a
-  brand-outlined lit window that reads at a glance as where you are. Hidden
-  entirely on an empty tab (nothing to map).
+- **What it shows.** A true-to-shape overview: every boxed element painted as
+  its **real silhouette** (a circle reads as a circle, a cylinder as a
+  cylinder — reusing `ShapeGlyph` stretched to the element's footprint) and
+  every arrow as a **connecting line** between its resolved endpoints. The area
+  **outside the current view is dimmed**, leaving a brand-outlined lit window
+  that reads at a glance as where you are.
 - **Navigation.** Tap a point to re-centre the canvas there; press-and-drag to
-  pan continuously. The viewport rectangle tracks live as you move.
+  pan continuously; **scroll** on the minimap to zoom the canvas in/out centred
+  on that spot. The viewport rectangle tracks live as you move.
 
 ## Geometry
 

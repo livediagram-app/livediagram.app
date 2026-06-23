@@ -62,6 +62,7 @@ import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import { Minimap } from '@/components/canvas/Minimap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { track } from '@/lib/telemetry';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 
 export function Canvas(props: CanvasProps) {
@@ -1192,13 +1193,21 @@ export function Canvas(props: CanvasProps) {
       <PaletteDragGhost zoom={viewportZoom} />
       {/* Minimap (spec/59): zoomed-out overview + tap/drag to navigate. Bottom
           left, only when the Activity panel is minimised + on desktop. */}
-      {props.activityMinimized && !isMobile ? (
+      {props.settings?.showMinimap !== false &&
+      props.activityMinimized &&
+      !isMobile &&
+      elements.length >= 4 ? (
         <Minimap
           elements={elements}
           viewportOffset={viewportOffset}
           viewportZoom={viewportZoom}
           setViewportOffset={setViewportOffset}
+          setViewportZoom={setViewportZoom}
           mainRef={mainRef}
+          onDisable={() => {
+            track('UI', 'Toggled', 'MinimapOff');
+            props.onChangeSettings({ ...props.settings, showMinimap: false });
+          }}
         />
       ) : null}
       {/* Touch long-press "hold" ring at the finger (spec/43-style touch

@@ -125,6 +125,11 @@ export function ShapeGlyph({
   strokeWidth,
   dash,
   size = 14,
+  x,
+  y,
+  width,
+  height,
+  preserveAspectRatio,
 }: {
   kind: ShapeKind;
   fill?: string;
@@ -134,13 +139,26 @@ export function ShapeGlyph({
   // SVG stroke-dasharray (16-unit units) for dotted / dashed previews.
   dash?: string;
   size?: number;
+  // Explicit placement + non-square sizing, for callers that paint the glyph
+  // at an element's footprint as a nested <svg> (e.g. the minimap). Default to
+  // a square `size` at the origin. Pass `preserveAspectRatio="none"` to let a
+  // shape stretch to a non-square box (a wide "circle" reads as an ellipse,
+  // matching the real element).
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  preserveAspectRatio?: string;
 }) {
   const g = SHAPE_GLYPH[kind] ?? FALLBACK_GLYPH;
   return (
     <svg
-      width={size}
-      height={size}
+      x={x}
+      y={y}
+      width={width ?? size}
+      height={height ?? size}
       viewBox="0 0 16 16"
+      preserveAspectRatio={preserveAspectRatio}
       fill={fill}
       stroke={stroke}
       strokeWidth={strokeWidth ?? g.sw}
