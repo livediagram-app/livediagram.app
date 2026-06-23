@@ -109,7 +109,18 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
             {galleryError}
           </p>
         ) : !gallery ? (
-          <p className="text-xs text-slate-500 dark:text-slate-400">Loading…</p>
+          // Tile skeletons matching the gallery grid, rather than a bare
+          // "Loading…" line — same animate-pulse / aria-busy convention as
+          // ActivityPanel's loading state.
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" aria-busy="true">
+            {[0, 1, 2, 3].map((i) => (
+              <li
+                key={i}
+                aria-hidden
+                className="aspect-square animate-pulse rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
+              />
+            ))}
+          </ul>
         ) : gallery.length === 0 ? (
           <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-6 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400">
             No images yet. Drop one above and it&apos;ll show up here.
