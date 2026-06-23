@@ -15,6 +15,7 @@ import {
   ICON_ANIMATIONS,
   type AnimationSpeed,
   type ArrowFlow,
+  type ChartLegendPosition,
   type ElementAnimation,
   type IconAnimation,
 } from '@livediagram/diagram';
@@ -185,5 +186,86 @@ export function IconAnimationTiles({
       </div>
       {animation ? <SpeedTiles value={speed} onSet={onSetSpeed} /> : null}
     </>
+  );
+}
+
+// Legend placement (spec/53): Off plus the four sides, drawn as a chart-area
+// box with a legend bar on the relevant edge (none for Off).
+const LEGEND_PLACEMENTS = ['off', 'top', 'left', 'right', 'bottom'] as const;
+type LegendPlacement = (typeof LEGEND_PLACEMENTS)[number];
+
+function LegendPosGlyph({ pos }: { pos: LegendPlacement }) {
+  const box = (x: number, y: number, w: number, h: number) => (
+    <rect
+      x={x}
+      y={y}
+      width={w}
+      height={h}
+      rx={1.5}
+      className="fill-none stroke-current"
+      strokeWidth={1.2}
+    />
+  );
+  const bar = (x: number, y: number, w: number, h: number) => (
+    <rect x={x} y={y} width={w} height={h} rx={1} className="fill-current opacity-60" />
+  );
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
+      {pos === 'top' && (
+        <>
+          {bar(3, 2, 10, 2.5)}
+          {box(3, 6, 10, 8)}
+        </>
+      )}
+      {pos === 'bottom' && (
+        <>
+          {box(3, 2, 10, 8)}
+          {bar(3, 11.5, 10, 2.5)}
+        </>
+      )}
+      {pos === 'left' && (
+        <>
+          {bar(2, 3, 2.5, 10)}
+          {box(6, 3, 8, 10)}
+        </>
+      )}
+      {pos === 'right' && (
+        <>
+          {box(2, 3, 8, 10)}
+          {bar(11.5, 3, 2.5, 10)}
+        </>
+      )}
+      {pos === 'off' && box(2.5, 3, 11, 10)}
+    </svg>
+  );
+}
+
+// Chart legend placement picker (spec/53): Off / Top / Left / Right / Below.
+// The four sides set both the position and chartLegend=true (onSetPosition);
+// Off flips chartLegend=false (onSetOff). Default position is 'right'.
+export function LegendPositionTiles({
+  position,
+  show,
+  onSetOff,
+  onSetPosition,
+}: {
+  position: ChartLegendPosition;
+  show: boolean;
+  onSetOff: () => void;
+  onSetPosition: (pos: ChartLegendPosition) => void;
+}) {
+  const isActive = (p: LegendPlacement) => (p === 'off' ? !show : show && position === p);
+  return (
+    <div className="grid grid-cols-5 gap-1 px-2 py-1.5">
+      {LEGEND_PLACEMENTS.map((p) => (
+        <SizeButton
+          key={p}
+          active={isActive(p)}
+          onClick={() => (p === 'off' ? onSetOff() : onSetPosition(p))}
+        >
+          <TileLabel glyph={<LegendPosGlyph pos={p} />} label={p === 'bottom' ? 'Below' : p} />
+        </SizeButton>
+      ))}
+    </div>
   );
 }

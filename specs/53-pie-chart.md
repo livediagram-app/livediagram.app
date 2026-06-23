@@ -22,8 +22,15 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   legend redraw live from the data.
 - Hovering a mark (slice / bar / line point) shows a tooltip with its label +
   value, regardless of the legend toggle.
-- A **Chart** context-menu category holds display options: a **Legend** toggle
-  (on by default) that shows / hides the label key beside the chart.
+- A **Chart** context-menu category holds display options: a **Legend**
+  placement picker — **Off / Top / Left / Right / Below** (glyph-over-label
+  tiles). Picking a side both turns the legend on and positions it (setting
+  `chartLegend: true` and `chartLegendPosition`), while **Off** sets
+  `chartLegend: false`. The default is **Right** (the historical placement), so
+  existing charts are unchanged. The chart layout (`chartFrame`) reserves a
+  vertical strip for a left/right legend or a horizontal band for a top/bottom
+  one, and the chart body fills the remaining `area`; `ChartLegend` stacks in a
+  column on the side, or wraps in a centred row on top/bottom.
 - The **Animation** category carries the chart-specific animations
   (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
   in place of the boxed-element animation set — a chart animates its marks, not
@@ -46,7 +53,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories — a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
-- All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` + `chartLegend?`.
+- All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` / `chartLegend?` / `chartLegendPosition?`.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
   `isChartShape` live in `packages/diagram/src/index.ts`.
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
@@ -59,7 +66,8 @@ groups all three (they're all in `isSelfDrawingShape` too).
   aware) turns a pasted/uploaded CSV into categories + series.
 - Setters in `useElementStyle.ts`: `setPieDataSelected(slices)` (pie / bar),
   `setLineDataSelected(categories, series)` (line), + `setChartLegendSelected` /
-  `setPieAnim*Selected`, all gated to chart shapes.
+  `setChartLegendPositionSelected` / `setPieAnim*Selected`, all gated to chart
+  shapes.
 - Telemetry (spec/22): `track('Element', 'Added', 'PieChart' | 'BarChart' |
 'LineChart')` on create, `track('Element', 'Changed', 'ChartData' | 'LineData'
 | 'ChartAnim' | 'ChartLegend')` on edits.

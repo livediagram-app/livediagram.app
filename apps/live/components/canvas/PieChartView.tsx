@@ -27,16 +27,14 @@ export function PieChartView({
   // categorical palette when absent (e.g. an export with no theme context).
   palette?: readonly string[];
 }) {
-  const { w, h, data: slices, showLegend, colorAt } = chartFrame(element, palette);
+  const { w, h, data: slices, colorAt, area, legend } = chartFrame(element, palette);
   const { hover, markProps } = useChartHover<number>();
   const total = slices.reduce((sum, s) => sum + Math.max(0, s.value), 0) || 1;
-  // Legend takes a right-hand column (toggleable, on by default); the pie fills
-  // the remaining left area, or the whole box when the legend is off.
-  const legendW = showLegend ? Math.max(0, Math.min(w * 0.44, 130)) : 0;
-  const pieAreaW = w - legendW;
-  const rad = Math.max(10, (Math.min(pieAreaW, h) * 0.86) / 2);
-  const cx = pieAreaW / 2;
-  const cy = h / 2;
+  // The pie fills the chart area chartFrame leaves after the legend strip
+  // (whatever side it's on, or the whole box when the legend is off).
+  const rad = Math.max(10, (Math.min(area.w, area.h) * 0.86) / 2);
+  const cx = area.x + area.w / 2;
+  const cy = area.y + area.h / 2;
 
   // Build slice paths (clockwise from 12 o'clock). A single 100% slice draws
   // as a full circle (an arc from a point back to itself is degenerate).
@@ -106,7 +104,7 @@ export function PieChartView({
       <ChartLegend
         items={slices}
         colorAt={colorAt}
-        legendW={legendW}
+        legend={legend}
         textColor={textColor}
         fontFamily={fontFamily}
       />

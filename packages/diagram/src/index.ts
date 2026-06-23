@@ -25,6 +25,7 @@ import type {
   LinkCardElement,
 } from './element-types';
 export type {
+  ChartLegendPosition,
   ShapeElement,
   TextElement,
   TableCellStyle,

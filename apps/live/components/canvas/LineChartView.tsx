@@ -28,7 +28,7 @@ export function LineChartView({
   textColor: string;
   palette?: readonly string[];
 }) {
-  const { w, h, showLegend, colorAt } = chartFrame(element, palette);
+  const { w, h, colorAt, area, legend } = chartFrame(element, palette);
   const { hover, markProps } = useChartHover<{ s: number; i: number }>(
     (a, b) => a.s === b.s && a.i === b.i,
   );
@@ -40,14 +40,14 @@ export function LineChartView({
     element.lineSeries && element.lineSeries.length > 0 ? element.lineSeries : LINE_DEFAULT_SERIES;
   const n = categories.length;
 
-  const legendW = showLegend ? Math.max(0, Math.min(w * 0.32, 110)) : 0;
   const padL = 10;
   const padTop = 12;
   const padBottom = 22;
-  const plotX0 = padL;
-  const plotW = Math.max(1, w - legendW - padL - 8);
-  const plotY0 = padTop;
-  const plotH = Math.max(1, h - padTop - padBottom);
+  // Plot fills the chart area chartFrame leaves after the legend strip.
+  const plotX0 = area.x + padL;
+  const plotW = Math.max(1, area.w - padL - 8);
+  const plotY0 = area.y + padTop;
+  const plotH = Math.max(1, area.h - padTop - padBottom);
 
   // Value range across every series, with 0 included so the baseline reads
   // naturally; guard the degenerate all-equal case so the line isn't flat at
@@ -147,7 +147,7 @@ export function LineChartView({
       <ChartLegend
         items={legendItems}
         colorAt={colorAt}
-        legendW={legendW}
+        legend={legend}
         textColor={textColor}
         fontFamily={fontFamily}
       />

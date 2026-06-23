@@ -26,6 +26,10 @@ import type {
   TextSize,
 } from './index';
 
+// Where a chart's legend sits relative to the plot (spec/53). 'off' is modelled
+// separately by `chartLegend: false`, so this only covers the four placements.
+export type ChartLegendPosition = 'top' | 'right' | 'bottom' | 'left';
+
 export type ShapeElement = {
   id: ElementId;
   type: 'shape';
@@ -141,6 +145,9 @@ export type ShapeElement = {
   pieAnimSpeed?: AnimationSpeed;
   pieAnimRepeat?: boolean;
   chartLegend?: boolean;
+  // Legend placement (spec/53); ignored when `chartLegend` is false. Missing /
+  // undefined === 'right', the historical default.
+  chartLegendPosition?: ChartLegendPosition;
   // Line chart (spec/53): the shared x-axis categories + one or more named
   // series (CSV-importable). Only meaningful on the 'line-chart' kind.
   lineCategories?: string[];

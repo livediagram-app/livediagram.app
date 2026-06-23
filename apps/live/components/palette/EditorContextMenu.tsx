@@ -51,6 +51,7 @@ import {
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
+  type ChartLegendPosition,
   type Element,
   type ElementAnimation,
   type IconAnimation,
@@ -111,6 +112,7 @@ import {
   AnimationTiles,
   FlowTiles,
   IconAnimationTiles,
+  LegendPositionTiles,
 } from '@/components/palette/context-menu-tiles';
 import {
   ArrowPresets,
@@ -251,6 +253,7 @@ type EditorContextMenuProps = {
   onSetPieAnimSpeed: (value: AnimationSpeed) => void;
   onSetPieAnimRepeat: (value: boolean) => void;
   onSetChartLegend: (value: boolean) => void;
+  onSetChartLegendPosition: (position: ChartLegendPosition) => void;
   // Line chart (spec/53): open the data modal for the given element (the 2-D
   // grid is too wide for the menu, which just summarises the series).
   onEditLineData: (elementId: string) => void;
@@ -910,14 +913,17 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             )}
           </MenuAccordionSection>
         ) : null}
-        {/* Chart (spec/53) — display options (the legend toggle today). */}
+        {/* Chart (spec/53) — display options. Legend placement: Off + 4 sides. */}
         {isChart ? (
           <MenuAccordionSection title="Chart" icon={<ChartMenuGlyph />} {...sectionProps('chart')}>
-            <MenuToggleRow
-              label="Legend"
-              description="Show the label key beside the chart."
-              checked={shapeTarget?.chartLegend !== false}
-              onToggle={() => props.onSetChartLegend(shapeTarget?.chartLegend === false)}
+            <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+              Legend
+            </p>
+            <LegendPositionTiles
+              position={shapeTarget?.chartLegendPosition ?? 'right'}
+              show={shapeTarget?.chartLegend !== false}
+              onSetOff={() => props.onSetChartLegend(false)}
+              onSetPosition={props.onSetChartLegendPosition}
             />
           </MenuAccordionSection>
         ) : null}

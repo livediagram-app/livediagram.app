@@ -24,7 +24,29 @@ export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
     element.pieSlices && element.pieSlices.length > 0 ? element.pieSlices : PIE_DEFAULT_SLICES;
   const showLegend = element.chartLegend !== false;
   const colorAt = (i: number, d: { color?: string }) => d.color ?? colors[i % colors.length]!;
-  return { w, h, data, showLegend, colorAt };
+  // Legend placement (spec/53). A left/right legend takes a vertical strip; a
+  // top/bottom legend a horizontal band. `area` is the rect left for the chart
+  // body (each view draws inside it); `legend` is the strip ChartLegend paints
+  // into. Both default to the historical right-hand legend.
+  const pos = element.chartLegendPosition ?? 'right';
+  const vertical = pos === 'left' || pos === 'right';
+  const legendW = showLegend && vertical ? Math.max(0, Math.min(w * 0.4, 130)) : 0;
+  const legendH = showLegend && !vertical ? Math.max(0, Math.min(h * 0.32, 72)) : 0;
+  const area = {
+    x: pos === 'left' ? legendW : 0,
+    y: pos === 'top' ? legendH : 0,
+    w: w - legendW,
+    h: h - legendH,
+  };
+  const legend = {
+    show: showLegend,
+    pos,
+    x: pos === 'right' ? w - legendW : 0,
+    y: pos === 'bottom' ? h - legendH : 0,
+    w: vertical ? legendW : w,
+    h: vertical ? h : legendH,
+  };
+  return { w, h, data, showLegend, colorAt, area, legend };
 }
 
 // The animated-group className + style for a chart element (pie / bar share the

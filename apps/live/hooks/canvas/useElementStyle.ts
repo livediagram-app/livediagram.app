@@ -52,6 +52,7 @@ import {
   type Element,
   type Padding,
   type ShapeElement,
+  type ChartLegendPosition,
   type ShapeKind,
   type ShapeMarker,
   type Tab,
@@ -686,6 +687,10 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setPieFieldSelected({ pieAnimRepeat: value }, 'ChartAnim');
   const setChartLegendSelected = (value: boolean) =>
     setPieFieldSelected({ chartLegend: value }, 'ChartLegend');
+  // Legend placement (spec/53): picking a side also turns the legend on, so the
+  // position tiles double as "on" while the Off tile uses setChartLegendSelected.
+  const setChartLegendPositionSelected = (position: ChartLegendPosition) =>
+    setPieFieldSelected({ chartLegend: true, chartLegendPosition: position }, 'ChartLegend');
   // Line chart (spec/53): replace the whole 2-D dataset (the grid editor / CSV
   // import builds the next categories + series and commits them together).
   const setLineDataSelected = (categories: string[], series: LineSeries[]) =>
@@ -813,6 +818,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setPieAnimSpeedSelected,
     setPieAnimRepeatSelected,
     setChartLegendSelected,
+    setChartLegendPositionSelected,
     setLineDataSelected,
     applyShapeColorPresetSelected,
     applyShapeBorderPresetSelected,
