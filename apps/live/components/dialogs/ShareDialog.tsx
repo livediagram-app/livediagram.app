@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Portal } from '@/components/primitives/Portal';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
 import { buildEmbedSnippet } from '@/lib/embed';
 import type { ShareLink, ShareLinkExpiry, ShareRole } from '@/lib/api-client';
@@ -87,7 +88,9 @@ export function ShareDialog({
   // flips the button to "Saved" for a beat after a successful write.
   const [pw, setPw] = useState(sharePassword ?? '');
   const [pwSaved, setPwSaved] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
+  useFocusTrap(dialogRef);
   useEscape(onClose);
 
   const trimmedName = name.trim();
@@ -209,10 +212,12 @@ export function ShareDialog({
         className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-slate-950/60"
       >
         <div
+          ref={dialogRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label="Share this diagram"
-          className="flex max-h-[calc(100%-2rem)] w-[34rem] max-w-[calc(100%-2rem)] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+          className="flex max-h-[calc(100%-2rem)] w-[34rem] max-w-[calc(100%-2rem)] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none dark:border-slate-700 dark:bg-slate-900"
         >
           <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-4 pt-5 dark:border-slate-800">
             <div>

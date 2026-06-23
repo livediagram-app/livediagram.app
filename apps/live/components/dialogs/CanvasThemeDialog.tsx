@@ -13,8 +13,10 @@
 // New-diagram picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
+import { useRef } from 'react';
 import type { BackgroundPattern } from '@livediagram/diagram';
 import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -64,6 +66,8 @@ export function CanvasThemeDialog({
   onResetElementsToTheme,
   onClose,
 }: CanvasThemeDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
   useEscape(onClose);
 
   return (
@@ -85,10 +89,12 @@ export function CanvasThemeDialog({
         className="fixed inset-0 z-50 flex items-center justify-center"
       >
         <div
+          ref={dialogRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label="Tab appearance"
-          className="flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+          className="flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none dark:border-slate-700 dark:bg-slate-900"
         >
           {/* Header + the full-width tab bar live in one band so the modal
               reads as a single unit rather than two stacked divider rows. */}

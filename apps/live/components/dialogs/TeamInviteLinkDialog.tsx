@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { TeamInviteLink } from '@livediagram/api-schema';
 import { apiGenerateTeamInviteLink, apiRevokeTeamInviteLink } from '@/lib/api-client';
 import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { Portal } from '@/components/primitives/Portal';
 
 // "Invite by link" (spec/32): the admin actively turns on a shareable
@@ -45,6 +46,8 @@ export function TeamInviteLinkDialog({
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open);
 
   useEffect(() => {
     if (!open) return;
@@ -110,10 +113,12 @@ export function TeamInviteLinkDialog({
         }}
       >
         <div
+          ref={dialogRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-labelledby="invite-link-title"
-          className="flex w-[28rem] max-w-full animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+          className="flex w-[28rem] max-w-full animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         >
           <div className="border-b border-slate-100 px-6 pt-6 pb-5 dark:border-slate-800">
             <h2

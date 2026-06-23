@@ -23,6 +23,7 @@ import { Portal } from '@/components/primitives/Portal';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
 import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { messageOf } from '@/components/chrome/auth-shared';
 
 type Phase = 'idle' | 'submitting' | 'error';
@@ -55,6 +56,8 @@ export function DeleteAccountDialog({
   const [phase, setPhase] = useState<Phase>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open);
 
   // Reset state every time the dialog opens. Without this, a user
   // who cancels mid-flow and re-opens it sees a stale typed value
@@ -119,10 +122,12 @@ export function DeleteAccountDialog({
         className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
       >
         <div
+          ref={dialogRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-labelledby="delete-account-title"
-          className="pointer-events-auto flex w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10"
+          className="pointer-events-auto flex w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none"
         >
           <div className="border-b border-slate-100 px-6 pt-6 pb-4">
             <h2 id="delete-account-title" className="text-lg font-semibold text-slate-900">

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { LineSeries } from '@livediagram/diagram';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { parseCsvLineData } from '@/lib/csv';
 
 // Line-chart data editor in a modal (spec/53). The context menu's Data category
@@ -24,6 +25,8 @@ export function LineDataDialog({
   onCommit: (categories: string[], series: LineSeries[]) => void;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
   useEscape(onClose);
   const [cats, setCats] = useState<string[]>(categories);
   const [rows, setRows] = useState<LineSeries[]>(series);
@@ -62,10 +65,12 @@ export function LineDataDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-6 backdrop-blur-sm dark:bg-slate-950/60"
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Edit chart data"
-        className="pointer-events-auto flex max-h-[90vh] w-[40rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900"
+        className="pointer-events-auto flex max-h-[90vh] w-[40rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
           <div>

@@ -5,17 +5,19 @@
 // gains by creating an account, each with an icon + one-liner, and
 // repeats the primary Sign in call to action in the footer.
 //
-// Uses the app's portal-based modal convention (Escape + backdrop
-// close, fly-up-in card) rather than a shared Dialog primitive, since
-// the codebase doesn't have one yet and every existing dialog
-// open-codes the same shell.
+// Keeps its own portal shell rather than the shared Dialog primitive
+// because of the bespoke design (brand-gradient header, bottom-sheet on
+// mobile, rounded-2xl, max-w-lg) that Dialog's centred fixed-width frame
+// doesn't fit — but it shares the same focus-trap + Escape behaviour so
+// keyboard / screen-reader users get the same modal semantics.
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 
 type Reason = {
   icon: ReactNode;
@@ -62,6 +64,9 @@ export function SignInReasonsModal({
   // navigation itself is a real <Link> so it works without JS.
   onSignIn: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -84,11 +89,13 @@ export function SignInReasonsModal({
         role="presentation"
       >
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="signin-reasons-title"
+          tabIndex={-1}
           onClick={(e) => e.stopPropagation()}
-          className="flex max-h-[calc(100dvh-2rem)] w-full max-w-lg animate-fly-up-in flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+          className="flex max-h-[calc(100dvh-2rem)] w-full max-w-lg animate-fly-up-in flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl outline-none dark:border-slate-700 dark:bg-slate-900"
         >
           {/* Header with a brand gradient wash so the modal reads as a
               celebratory upsell, not a system dialog. */}

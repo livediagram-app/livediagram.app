@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import type { Tab } from '@livediagram/diagram';
 import {
   downloadBlob,
@@ -58,6 +59,8 @@ export function ExportTabDialog({
   // Backdrop pattern (spec/48): paint the tab's grid / dots / … pattern. On by
   // default so the export matches the canvas; switch off for a clean backdrop.
   const [pattern, setPattern] = useState(true);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
   useEscape(onClose);
 
   const isSelection = scope === 'selection';
@@ -97,10 +100,12 @@ export function ExportTabDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-6 backdrop-blur-sm dark:bg-slate-950/60"
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label={isSelection ? 'Export selection' : 'Export tab'}
-        className="pointer-events-auto flex max-h-[90vh] w-[36rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900"
+        className="pointer-events-auto flex max-h-[90vh] w-[36rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
           <div>

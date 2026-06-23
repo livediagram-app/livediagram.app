@@ -23,10 +23,11 @@
 // `{ teamId, folderId }` destination — via `onPick`; this component
 // only renders, filters, and collapses.
 
-import { Fragment, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Portal } from '@/components/primitives/Portal';
 import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { matches } from '@/lib/search';
 
 // One folder in a tree. The caller passes a flat list; this component
@@ -90,6 +91,8 @@ export function MoveToFolderDialog({
   // drills in as needed. A live filter force-opens everything so
   // matches always surface.
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(['personal']));
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
   useEscape(onClose, { capture: true, stopPropagation: true });
 
   const filtering = query.trim().length > 0;
@@ -188,10 +191,12 @@ export function MoveToFolderDialog({
         className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-6 backdrop-blur-sm dark:bg-slate-950/60"
       >
         <div
+          ref={dialogRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label="Move to folder"
-          className="pointer-events-auto flex max-h-[80vh] w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900"
+          className="pointer-events-auto flex max-h-[80vh] w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-800 dark:bg-slate-900"
         >
           <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 pb-3 pt-5 dark:border-slate-800">
             <div className="min-w-0">

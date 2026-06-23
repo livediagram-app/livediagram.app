@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import type { ImportOutcome } from '@/lib/import-tab';
 
 type Format = 'json' | 'markdown';
@@ -24,6 +25,8 @@ type ImportTabDialogProps = {
 export function ImportTabDialog({ tabName, onImport, onClose }: ImportTabDialogProps) {
   const [busyFormat, setBusyFormat] = useState<Format | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
   useEscape(onClose);
 
   const handle = async (format: Format) => {
@@ -51,10 +54,12 @@ export function ImportTabDialog({ tabName, onImport, onClose }: ImportTabDialogP
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-6 backdrop-blur-sm dark:bg-slate-950/60"
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Import into tab"
-        className="pointer-events-auto flex max-h-[90vh] w-[36rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900"
+        className="pointer-events-auto flex max-h-[90vh] w-[36rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
           <div>
