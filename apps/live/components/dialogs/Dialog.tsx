@@ -70,6 +70,13 @@ export function Dialog({
     <Portal>
       <div
         onPointerDown={(e) => e.stopPropagation()}
+        // Swallow right-click on the backdrop so neither the browser menu nor
+        // the editor's canvas context menu fires behind the modal (several
+        // dialogs open-coded this guard before adopting the shell).
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
         className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
