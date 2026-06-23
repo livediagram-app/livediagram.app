@@ -134,7 +134,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every selection mode, element, and palette setting explained.',
-    articleCount: 18,
+    articleCount: 19,
     kind: 'feature',
   },
   {
@@ -642,6 +642,14 @@ export const articles: Article[] = [
     slug: 'alignment-guides',
     title: 'Alignment Guides',
     description: 'Show snap lines while moving or resizing elements.',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Palette Settings',
+  },
+  {
+    slug: 'panel-opacity',
+    title: 'Panel Opacity',
+    description: 'Make the floating panels translucent so the canvas shows through.',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',

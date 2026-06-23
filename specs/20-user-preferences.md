@@ -129,6 +129,16 @@ type UserPreferences = {
   // desktop behaviour. See spec/09.
   minimalPanels?: boolean;
 
+  // Opacity (0..1) of the FULL floating panels at rest, so the canvas
+  // shows through them; they snap back to fully opaque while hovered or
+  // focused so they stay readable in use. Applied via the
+  // `--lvd-panel-opacity` custom property (usePanelOpacity), which only
+  // the full panels read (the `data-panel-translucent` tag is on
+  // MovablePanel's floating branch, not the minimal dock) — so this is
+  // scoped to floating panels and never touches the minimal layout.
+  // Defaults to 1 (fully opaque). See spec/09's Palette settings.
+  panelOpacity?: number;
+
   // When false, the editor suppresses the faint alignment guide
   // lines drawn along the edges / centres a dragged or resized
   // element shares with its neighbours. The snap itself is
@@ -183,6 +193,13 @@ Missing key === undefined === default behaviour. Concretely:
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
+- `panelOpacity` undefined / 1 → floating panels fully opaque (the
+  default). A value below 1 makes the full floating panels translucent
+  at rest (snapping back to opaque on hover / focus) via the
+  `--lvd-panel-opacity` custom property; the minimal dock never reads
+  the var, so the minimal layout is unaffected. The popover slider is
+  hidden while `minimalPanels` is on. Emits `UI`/`Changed`/`PanelOpacity`
+  on release (spec/22).
 - `reduceMotion` undefined / false → full motion (the default), still
   subject to the OS `prefers-reduced-motion` media query which
   `globals.css` always honours. Setting it to `true` adds
@@ -230,6 +247,12 @@ modal.
     in editor-page through the same `setUserPreferences` +
     `writeUserPreferences` round-trip as the Settings dialog, emitting the
     same `AutoRebind*` / `AlignmentGuides*` telemetry before persisting.
+  - "Panel opacity" (`panelOpacity`) — a slider (not a toggle), shown only
+    while `minimalPanels` is off (it does nothing in the dock layout). The
+    drag previews live by writing the `--lvd-panel-opacity` custom property
+    imperatively; the persisted value is committed on release (one
+    `writeUserPreferences` / D1 PUT, not one per tick) and emits
+    `UI`/`Changed`/`PanelOpacity`.
   - "Minimal panels" (`minimalPanels`) — the panel-layout toggle that used
     to be its own header button. Turning it on docks the panels (and so
     hides this popover); the Settings dialog's Interface group remains the

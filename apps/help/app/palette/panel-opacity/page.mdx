@@ -1,0 +1,36 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Panel Opacity',
+  description:
+    'Make the editor’s floating panels translucent with a slider, so the canvas shows through them while you work.',
+  path: '/help/palette/panel-opacity/',
+});
+
+<ArticleLayout
+  title="Panel Opacity"
+  description="Make the floating panels translucent so the canvas shows through, set with a slider in the palette settings."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("panel-opacity")}
+>
+
+Panel Opacity lets you see the canvas through the editor’s floating panels. It is a slider, and it lives behind the gear (settings) icon in the header of the floating palette, which opens a small settings popover.
+
+## What it does
+
+Drag the slider down and the floating panels (Palette, Explorer, Editor, AI) become translucent, so the diagram behind them stays visible while you work near an edge. The percentage next to the slider shows the current setting. At 100% the panels are fully solid, the default.
+
+So a translucent panel never gets in your way, each panel snaps back to fully opaque the moment you hover over it or focus something inside it, then fades back once you move away. You always get a clear, readable panel exactly when you are using it.
+
+## Where it applies
+
+Panel Opacity only affects the **full, floating** panels. If you have switched on [Minimal panels](/help/palette/minimal-panels/), the compact button bar that replaces the floating panels is always fully opaque, and the opacity slider is hidden, since there is nothing floating over the canvas to see through. Turn Minimal panels back off and the slider returns at the value you last set.
+
+## Resetting it
+
+Drag the slider back to 100% to make the panels solid again. The setting is saved with your other [palette settings](/help/palette/) and follows you across your devices.
+
+</ArticleLayout>
