@@ -16,7 +16,7 @@
 // ALTERNATIVES array so revising a competitor row + bumping the date
 // lands in one diff. Bump this when adding a competitor or revising
 // any row / claim / lede.
-export const ALTERNATIVES_LAST_UPDATED = new Date('2026-06-02');
+export const ALTERNATIVES_LAST_UPDATED = new Date('2026-06-23');
 
 type ComparisonRow = {
   label: string;
@@ -73,7 +73,10 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       "It's free and MIT-licensed, so you can self-host it instead of paying per seat.",
       'Open a link and draw, with no sign-up wall in front of the canvas.',
-      'Real-time multiplayer comes standard, not gated behind a plan.',
+      'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
+      'Friction-free editing: tap once to add a shape, drag arrows that snap into place, and a format painter to copy a style across elements.',
+      'Themed templates and one-click whole-canvas themes turn a blank board into a polished diagram fast.',
+      'Walk a team through the board with the built-in present mode (laser pointer + spotlight), no export needed.',
     ],
   },
   {
@@ -101,8 +104,11 @@ export const ALTERNATIVES: Alternative[] = [
       'A built-in presentation mode for walking through a single map.',
     ],
     usBest: [
-      'Brainstorm together in real time, not just on your own machine.',
-      'More than mind maps: switch to a flowchart, kanban or timeline on the same canvas.',
+      'Brainstorm together in real time, with live cursors and comments, not just on your own machine.',
+      'More than mind maps: flowcharts, kanban, timelines, wireframes and charts on the same canvas.',
+      'Nothing to install: open a link in any browser and start, no account needed.',
+      'Sketch freehand with the pencil and let shape-recognition tidy it into clean shapes.',
+      'Themed templates and one-click canvas themes make a map look polished instantly.',
       'Free, open source, and self-hostable.',
     ],
   },
@@ -133,8 +139,11 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     usBest: [
       'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page.',
-      'Organise many diagrams in folders, synced to a free account.',
-      'Themes that recolour the whole canvas, shapes and arrows in one click.',
+      'Keep a whole project together: several tabs in one diagram, organised in folders.',
+      'Themes recolour the whole canvas, shapes and arrows, in one click.',
+      'Prefer the sketchy look? A pencil tool with optional shape-recognition keeps that freehand feel.',
+      'Built-in charts, an icon library, comments and a present mode, without add-ons.',
+      'Smart alignment guides and snapping line everything up as you drag.',
     ],
   },
   {
@@ -172,8 +181,11 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     usBest: [
       'True real-time co-editing with live cursors and presence on every tab.',
-      'A modern, fast canvas with nothing to set up.',
-      'Templates and themes for good-looking diagrams in minutes.',
+      'A modern, fast canvas with nothing to set up — open a link and go.',
+      'Templates and themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
+      'Diagrams stay tidy on their own: arrows re-route as shapes move, with alignment guides and snapping.',
+      'Charts, icons, freehand sketching, comments and a present mode, all built in.',
+      'Free, MIT-licensed, and self-hostable on your own Cloudflare account.',
     ],
   },
   {
@@ -199,8 +211,11 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     usBest: [
       'Arrows that stay connected to shapes and re-route as you move them.',
-      'Start from a diagram template instead of an empty slide.',
-      'An infinite canvas instead of a fixed-size slide.',
+      'Start from a diagram template (flowchart, mind map, kanban…) instead of an empty slide.',
+      'An infinite, pannable canvas instead of a fixed slide, with a minimap to navigate big ones.',
+      'Diagram-native tools: smart snapping, a format painter, quick-connect arrows, charts and icons.',
+      'Real-time multiplayer with live cursors and comments, plus a present mode to walk through it.',
+      'Free and open source, with no Google account required to start.',
     ],
   },
 ];
