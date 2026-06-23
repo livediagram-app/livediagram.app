@@ -142,7 +142,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, layering, rotating, animating, locking, theming, and templating.',
-    articleCount: 11,
+    articleCount: 12,
     kind: 'feature',
   },
   {
@@ -943,6 +943,13 @@ export const articles: Article[] = [
     slug: 'locking',
     title: 'Locking Elements',
     description: 'Protect an element from accidental moves, resizes, and deletion.',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'snapping',
+    title: 'Alignment & Snapping',
+    description: 'Drag to snap elements into line with guides; hold Cmd/Ctrl to place freely.',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

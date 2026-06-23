@@ -1,0 +1,45 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SnappingGuides } from '@/components/illustrations/canvas';
+
+export const metadata = helpMetadata({
+  title: 'Alignment & Snapping',
+  description:
+    'As you drag an element it snaps into line with its neighbours and shows guide lines for the match. Hold Cmd or Ctrl while dragging to place it freely, with no snapping.',
+  path: '/help/canvas/snapping/',
+});
+
+<ArticleLayout title="Alignment & Snapping" description="Elements snap into line as you drag them, with guides that show why — and a modifier to switch it off when you want a free hand." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("snapping")}>
+
+When you drag an element around the canvas, livediagram quietly helps you line it up. As an edge or centre comes close to a neighbour's, the element **snaps** into alignment and a faint **guide line** appears to show the match — so a tidy layout falls into place without nudging pixels by hand.
+
+<Figure caption="Dragging B next to A snaps their top edges together; the dashed guide shows the alignment.">
+  <SnappingGuides />
+</Figure>
+
+## What snapping lines up
+
+While you drag, the element snaps to nearby elements':
+
+- **Edges** — left, right, top, or bottom edges line up flush.
+- **Centres** — horizontal and vertical centres align, so things sit centred on one another.
+- **Even spacing** — when an element sits between or beyond two others it snaps to an equal gap, and a short guide marks the matched spacing.
+
+A guide line only appears once a match is actually in effect, so the canvas stays clean until alignment is doing something. The same guides show when you drag an **arrow endpoint**, latching it onto a shape's edge or straightening a near-horizontal or near-vertical arrow.
+
+## Dragging freely — hold Cmd or Ctrl
+
+Sometimes you want a deliberately off-grid position and snapping gets in the way. **Hold Cmd (⌘) on a Mac, or Ctrl on Windows / Linux, while you drag** to switch snapping off for that move: no snap, no guide lines — the element follows your pointer exactly. Let go and the next drag snaps as usual, so it's a per-drag override, not a mode you have to remember to turn back on.
+
+<Note>
+  The modifier works the same for a single element, a multi-selection, and an arrow's endpoint —
+  anything you drag follows the pointer freely while the key is held.
+</Note>
+
+<Tip>
+  Reach for ⌘/Ctrl-drag for the last fine adjustment: let snapping line most of a diagram up for
+  you, then hold the key for the one element you want sitting slightly off the grid.
+</Tip>
+
+</ArticleLayout>

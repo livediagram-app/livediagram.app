@@ -597,3 +597,26 @@ export function Annotation() {
     </Scene>
   );
 }
+
+/** Dragging an element snaps it into line with a neighbour; the dashed guide
+ * shows the matched edge. Holding Cmd / Ctrl skips snapping for a free drop. */
+export function SnappingGuides() {
+  return (
+    <Scene w={400} h={200}>
+      {/* The dashed brand guide marks the shared top edge A and B aligned to. */}
+      <line
+        x1={40}
+        y1={66}
+        x2={344}
+        y2={66}
+        className="stroke-brand-500"
+        strokeWidth={1.5}
+        strokeDasharray="5 4"
+      />
+      <Shape x={64} y={66} w={84} h={60} label="A" />
+      {/* The dragged element, snapped flush to A's top edge. */}
+      <Shape x={236} y={66} w={84} h={60} accent label="B" />
+      <Cursor x={300} y={104} />
+    </Scene>
+  );
+}

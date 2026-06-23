@@ -831,6 +831,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // current zoom).
       const dx = (e.clientX - drag.startClientX) / zoomRef.current;
       const dy = (e.clientY - drag.startClientY) / zoomRef.current;
+      // Hold Cmd / Ctrl while dragging to place freely: skip alignment +
+      // distribution snapping and its guide lines for this gesture (spec/60).
+      const noSnap = e.metaKey || e.ctrlKey;
 
       if (drag.kind === 'boxed') {
         if (drag.mode === 'move') {
@@ -853,7 +856,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           const memberIds = new Set(drag.startBounds.keys());
           let snapDx = 0;
           let snapDy = 0;
-          if (primaryStart) {
+          if (primaryStart && !noSnap) {
             const candidate = {
               x: primaryStart.x + dx,
               y: primaryStart.y + dy,
@@ -1286,7 +1289,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         // OTHER endpoint (so it clicks into a perfectly horizontal /
         // vertical line), showing the same faint guides a boxed move does.
         const guidesOn = depsRef.current.alignmentGuidesRef.current ?? true;
-        if (!angleLocked) {
+        if (!angleLocked && !noSnap) {
           const boxSnap = snapToAlignment(
             { x: resolved.x, y: resolved.y, width: 0, height: 0 },
             els0,
