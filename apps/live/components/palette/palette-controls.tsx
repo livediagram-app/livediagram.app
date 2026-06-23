@@ -1,10 +1,12 @@
 import {
+  SHAPE_DEFAULT_SIZE,
   type BackgroundPattern,
   type ShapeKind,
   type TextAlignX,
   type TextAlignY,
 } from '@livediagram/diagram';
 import { PALETTE_DND_MIME } from '@/lib/icons';
+import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import {
   BackgroundAuroraIcon,
   BackgroundBlankIcon,
@@ -449,6 +451,10 @@ export function IconButton({
     ? (e: React.DragEvent) => {
         e.dataTransfer.setData(PALETTE_DND_MIME, dragKind);
         e.dataTransfer.effectAllowed = 'copy';
+        // Publish the footprint so the canvas ghost (spec/58) can preview
+        // where this shape will land.
+        const { width, height } = SHAPE_DEFAULT_SIZE[dragKind];
+        setPaletteDragPreview({ kind: dragKind, width, height });
       }
     : onDragStart;
   const modHeld = useModKeyHeld();
@@ -496,7 +502,14 @@ export function IconButton({
       aria-pressed={active}
       disabled={disabled}
       draggable={effectiveDraggable}
-      onDragStart={effectiveDragStart}
+      onDragStart={(e) => {
+        // Hide the browser's tile-snapshot drag image for shape tiles so the
+        // canvas ghost is the only preview (icons keep the native image until
+        // they're wired to the ghost too).
+        if (dragKind) suppressNativeDragImage(e);
+        effectiveDragStart?.(e);
+      }}
+      onDragEnd={() => setPaletteDragPreview(null)}
       className={
         hideCaption
           ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`

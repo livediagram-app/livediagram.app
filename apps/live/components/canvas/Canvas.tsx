@@ -58,6 +58,7 @@ import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
+import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 
 export function Canvas(props: CanvasProps) {
@@ -1177,6 +1178,9 @@ export function Canvas(props: CanvasProps) {
       {tabLoadState && tabLoadState !== 'ready' ? (
         <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
       ) : null}
+      {/* Drag-to-add ghost (spec/58): previews where a dragged palette shape
+          will land, following the cursor over the canvas. */}
+      <PaletteDragGhost zoom={viewportZoom} />
       {/* Touch long-press "hold" ring at the finger (spec/43-style touch
           affordance). Portaled to escape the canvas's pan/zoom transform so its
           fixed position is viewport-relative. Reveals only after a deliberate
