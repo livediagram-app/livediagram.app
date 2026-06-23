@@ -306,7 +306,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               placement={placement}
               zoom={viewportZoom}
               open={quickRingOpen === placement}
-              openOnHover={settings.quickAddOnHover !== false}
+              openOnHover={settings.quickAddOnHover === true}
               onToggle={() => setQuickRingOpen(quickRingOpen === placement ? null : placement)}
               onOpen={() => setQuickRingOpen(placement)}
               onClose={() => setQuickRingOpen(null)}

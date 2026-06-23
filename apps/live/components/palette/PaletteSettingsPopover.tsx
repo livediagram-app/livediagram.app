@@ -81,7 +81,7 @@ export function PaletteSettingsPopover({
 
   const autoRebind = settings.autoRebindArrows !== false;
   const alignment = settings.alignmentGuides !== false;
-  const quickAddOnHover = settings.quickAddOnHover !== false;
+  const quickAddOnHover = settings.quickAddOnHover === true;
   const panelOpacity = settings.panelOpacity ?? 1;
 
   // Persist the panel-opacity slider on release (not per drag tick):
