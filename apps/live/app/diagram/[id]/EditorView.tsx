@@ -300,14 +300,10 @@ export function EditorView() {
     setArrowThicknessSelected,
     setShapeKindSelected,
     resetAspectRatioSelected,
-    setRotationSelected,
     setBackgroundColor,
     setBackgroundOpacity,
     setBackgroundPatternScale,
     setBackgroundPattern,
-    setBorderRadiusSelected,
-    setBorderStrokeSelected,
-    setBorderStyleSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
     setRailCountSelected,
@@ -338,6 +334,20 @@ export function EditorView() {
     commitArrowFlow,
     previewIconAnimation,
     commitIconAnimation,
+    previewFillColor,
+    commitFillColor,
+    previewStrokeColor,
+    commitStrokeColor,
+    previewTextColor,
+    commitTextColor,
+    previewBorderStroke,
+    commitBorderStroke,
+    previewBorderStyle,
+    commitBorderStyle,
+    previewBorderRadius,
+    commitBorderRadius,
+    previewRotation,
+    commitRotation,
     resetShapeStyleSelected,
     resetArrowStyleSelected,
     setIconAnimationSpeedSelected,
@@ -1310,9 +1320,20 @@ export function EditorView() {
           onSetTextColor={setTextColorSelected}
           onSetFillColor={setFillColorSelected}
           onSetStrokeColor={setStrokeColorSelected}
-          onSetBorderStroke={setBorderStrokeSelected}
-          onSetBorderStyle={setBorderStyleSelected}
-          onSetBorderRadius={setBorderRadiusSelected}
+          onPreviewTextColor={previewTextColor}
+          onCommitTextColor={commitTextColor}
+          onPreviewFillColor={previewFillColor}
+          onCommitFillColor={commitFillColor}
+          onPreviewStrokeColor={previewStrokeColor}
+          onCommitStrokeColor={commitStrokeColor}
+          onPreviewBorderStroke={previewBorderStroke}
+          onCommitBorderStroke={commitBorderStroke}
+          onPreviewBorderStyle={previewBorderStyle}
+          onCommitBorderStyle={commitBorderStyle}
+          onPreviewBorderRadius={previewBorderRadius}
+          onCommitBorderRadius={commitBorderRadius}
+          onPreviewRotation={previewRotation}
+          onCommitRotation={commitRotation}
           onSetMarker={setMarkerSelected}
           onSetMarkerSize={setMarkerSizeSelected}
           onSetRailCount={setRailCountSelected}
@@ -1364,7 +1385,6 @@ export function EditorView() {
           onSetArrowheadShape={setArrowheadShapeSelected}
           onSetShapeKind={setShapeKindSelected}
           onResetAspectRatio={resetAspectRatioSelected}
-          onSetRotation={setRotationSelected}
           presetColors={themePresetColors(getTheme(activeTab.theme))}
           onToggleTableHeaderRow={setTableHeaderRowSelected}
           onToggleTableHeaderColumn={setTableHeaderColumnSelected}

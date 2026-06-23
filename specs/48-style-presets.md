@@ -54,6 +54,21 @@ entry, and is reverted before the click commits, so undo snapshots the true
 pre-hover state and the activity entry diffs from it correctly. Touch / pen
 input does not preview (a tap is the commit).
 
+### Granular controls preview too
+
+The same hover-to-preview / click-commit flow extends to the **individual**
+appearance controls in the context menu, not just the preset tiles:
+
+- the **colour swatches** (Text / Background / Border) in the Colours section,
+- the **Border** tiles (Strength / Pattern / Radius), and
+- the **Rotation** angle tiles.
+
+Hovering any of these shows the value live on the selection and only commits on
+click, with the same ephemeral-preview / true-undo guarantees as the presets.
+The one exception is each colour row's **custom `+` picker** (the native
+`<input type=color>`): it stays on the debounced direct setter (a colour drag
+must not land a history step per pixel), so it does not hover-preview.
+
 ## Arrows
 
 When a single **arrow** is right-clicked, the **Presets** category offers
@@ -81,7 +96,13 @@ arrow's line-pattern / thickness / animation overrides.
   (`apps/live/components/StylePresets.tsx`).
 - The element transforms each preset performs live in `apps/live/lib/style-presets.ts`
   (`applyColorPresetToEl` / `applyBorderPresetToEl` / `applyArrowPresetToEl`),
-  shared so the hover preview is byte-for-byte the change the click commits.
+  shared so the hover preview is byte-for-byte the change the click commits. The
+  granular single-field transforms live in the same file
+  (`applyFillColorToEl` / `applyStrokeColorToEl` / `applyTextColorToEl` /
+  `applyBorderStrokeToEl` / `applyBorderStyleToEl` / `applyBorderRadiusToEl` /
+  `applyRotationToEl`) and are shared by both the direct setters in
+  `useElementStyle.ts` and the preview/commit pairs in `useStylePreview.ts`, so
+  the swatch/tile preview matches its commit exactly.
 - Direct (non-preview) commits go through the selection setters in
   `apps/live/hooks/useElementStyle.ts` (`applyShapeColorPresetSelected` /
   `applyShapeBorderPresetSelected` / `resetShapeStyleSelected` /

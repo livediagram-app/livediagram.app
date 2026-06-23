@@ -429,6 +429,21 @@ function BoxedElementViewImpl({
   // so they skip it. Shares the icon+label flex layout below.
   const marker: ShapeMarker | undefined =
     element.type === 'shape' && !isSelfDrawingShape(element.shape) ? element.marker : undefined;
+  // A standalone text element has no fill or border, so the box-shadow / ring /
+  // background animations (glow / pulse / trace / gradient) would animate an
+  // invisible bounding rectangle around the words. For those, ride the rendered
+  // glyphs instead: the wrapper drops the box class (see wrapperAnimClass below)
+  // and the label content node gets the matching .lvd-anim-text-* class. The
+  // transform animations (bounce, float, swing, …) already move the text with
+  // the box, so they stay on the wrapper unchanged.
+  const isTextNativeAnim =
+    element.type === 'text' &&
+    (element.animation === 'glow' ||
+      element.animation === 'pulse' ||
+      element.animation === 'trace' ||
+      element.animation === 'gradient');
+  const labelAnimClass = isTextNativeAnim ? `lvd-anim-text-${element.animation}` : undefined;
+
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -449,6 +464,7 @@ function BoxedElementViewImpl({
     onSetFont,
     onSetTextSize,
     !!inlineIcon,
+    labelAnimClass,
   );
 
   // Drag a palette icon onto a regular shape to drop it inside, on the
@@ -533,7 +549,7 @@ function BoxedElementViewImpl({
   const svgHandlesAnim =
     element.type === 'shape' && isSvgRenderedShape(element.shape) && svgAnim !== undefined;
   const wrapperAnimClass = element.animation
-    ? svgHandlesAnim
+    ? svgHandlesAnim || isTextNativeAnim
       ? ''
       : `lvd-anim-${element.animation}`
     : 'animate-pop-in';
@@ -577,6 +593,12 @@ function BoxedElementViewImpl({
               // <stop> cycle that ShapeSvgOverlay inherits).
               ...(element.animation === 'gradient'
                 ? { '--lvd-anim-bg': element.fillColor ?? defaultFillColor(element) }
+                : {}),
+              // Text-native gradient blends the element's own text colour
+              // toward the accent (the box version blends the fill, which a
+              // text element doesn't have); see .lvd-anim-text-gradient.
+              ...(isTextNativeAnim && element.animation === 'gradient'
+                ? { '--lvd-anim-text': textColor }
                 : {}),
             } as React.CSSProperties)
           : {}),

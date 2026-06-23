@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Breadcrumb } from './Breadcrumb';
 import { JsonLd } from './JsonLd';
@@ -8,6 +9,7 @@ import { SectionedContent } from './SectionedContent';
 import { TableOfContents } from './TableOfContents';
 import { articleHref, articles, categoryHref, type Article } from '@/lib/articles';
 import { articleJsonLd } from '@/lib/structured-data';
+import { track } from '@/lib/telemetry';
 
 /** Sidebar card: shows the TOC and/or a "Learn more" list of related
  *  guides. Renders nothing visible if both are empty (CSS hides it). */
@@ -76,6 +78,16 @@ export function ArticleLayout({
       setReadingTime(Math.max(1, Math.ceil(words / 200)));
     }
   }, []);
+
+  // The current article's slug, taken from the last URL path segment. Used
+  // as the telemetry `type` (spec/22): a bounded registry identifier, never
+  // the free-text title (which the ingest validator would reject). One
+  // Help/View event fires per article view.
+  const pathname = usePathname();
+  const slug = (pathname ?? '').split('/').filter(Boolean).pop() ?? '';
+  useEffect(() => {
+    if (slug) track('Help', 'View', slug);
+  }, [slug]);
 
   // Build breadcrumb. Skip the category when it duplicates the title or
   // the parent title.
@@ -207,7 +219,10 @@ export function ArticleLayout({
               <p className="mb-3 text-sm text-slate-600">Was this article helpful?</p>
               <div className="flex gap-3">
                 <button
-                  onClick={() => setFeedback('yes')}
+                  onClick={() => {
+                    if (feedback !== 'yes' && slug) track('Help', 'Helpful', slug);
+                    setFeedback('yes');
+                  }}
                   className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
                     feedback === 'yes'
                       ? 'bg-emerald-600 text-white'
@@ -217,7 +232,10 @@ export function ArticleLayout({
                   Yes, it helped
                 </button>
                 <button
-                  onClick={() => setFeedback('no')}
+                  onClick={() => {
+                    if (feedback !== 'no' && slug) track('Help', 'Unhelpful', slug);
+                    setFeedback('no');
+                  }}
                   className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
                     feedback === 'no'
                       ? 'bg-rose-600 text-white'

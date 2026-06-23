@@ -41,7 +41,14 @@ import type {
 import {
   applyArrowPresetToEl,
   applyBorderPresetToEl,
+  applyBorderRadiusToEl,
+  applyBorderStrokeToEl,
+  applyBorderStyleToEl,
   applyColorPresetToEl,
+  applyFillColorToEl,
+  applyRotationToEl,
+  applyStrokeColorToEl,
+  applyTextColorToEl,
 } from '@/lib/style-presets';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
@@ -147,6 +154,30 @@ export function useStylePreview(deps: {
     previewArrowPreset: (p: ArrowPreset) => previewStyle((el) => applyArrowPresetToEl(el, p)),
     commitArrowPreset: (p: ArrowPreset) =>
       commitStyle((el) => applyArrowPresetToEl(el, p), 'ArrowPreset'),
+    // Granular colour swatches (text / fill / stroke): the same hover-preview /
+    // click-commit flow as the presets, one field per swatch. The custom colour
+    // <input> drag stays on the debounced useElementStyle setter — only the
+    // discrete swatch tiles preview.
+    previewFillColor: (c: string) => previewStyle((el) => applyFillColorToEl(el, c)),
+    commitFillColor: (c: string) => commitStyle((el) => applyFillColorToEl(el, c), 'FillColor'),
+    previewStrokeColor: (c: string) => previewStyle((el) => applyStrokeColorToEl(el, c)),
+    commitStrokeColor: (c: string) =>
+      commitStyle((el) => applyStrokeColorToEl(el, c), 'StrokeColor'),
+    previewTextColor: (c: string) => previewStyle((el) => applyTextColorToEl(el, c)),
+    commitTextColor: (c: string) => commitStyle((el) => applyTextColorToEl(el, c), 'TextColor'),
+    // Border weight / pattern / radius tiles.
+    previewBorderStroke: (v: BorderStroke) => previewStyle((el) => applyBorderStrokeToEl(el, v)),
+    commitBorderStroke: (v: BorderStroke) =>
+      commitStyle((el) => applyBorderStrokeToEl(el, v), 'BorderStroke'),
+    previewBorderStyle: (v: BorderStyle) => previewStyle((el) => applyBorderStyleToEl(el, v)),
+    commitBorderStyle: (v: BorderStyle) =>
+      commitStyle((el) => applyBorderStyleToEl(el, v), 'BorderStyle'),
+    previewBorderRadius: (v: BorderRadius) => previewStyle((el) => applyBorderRadiusToEl(el, v)),
+    commitBorderRadius: (v: BorderRadius) =>
+      commitStyle((el) => applyBorderRadiusToEl(el, v), 'BorderRadius'),
+    // Rotation angle tiles (fixed 45° steps).
+    previewRotation: (deg: number) => previewStyle((el) => applyRotationToEl(el, deg)),
+    commitRotation: (deg: number) => commitStyle((el) => applyRotationToEl(el, deg), 'Rotation'),
     // Animation tiles (spec/09): the same hover-preview / click-commit flow,
     // each setting a single field on the matching member of the selection
     // (boxed `animation`, arrow `flow`, icon-shape `iconAnimation`). `null` is

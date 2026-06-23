@@ -95,7 +95,6 @@ export function Canvas(props: CanvasProps) {
     onMultiContextMenu,
     onOpenMultiContextMenu,
     onShiftSelect,
-    onBeginGroup,
     onUngroup,
     onOpenComments,
     onOpenElementContextMenu,
@@ -210,7 +209,6 @@ export function Canvas(props: CanvasProps) {
     memberIds,
     selected,
     selectionScope,
-    selectedIsBoxed,
     selectedIsGrouped,
     selectionBounds,
     selectedLocked,
@@ -1086,7 +1084,10 @@ export function Canvas(props: CanvasProps) {
                 : undefined
             }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
-            onGroup={!readOnly && selectedIsBoxed && !selectedIsGrouped ? onBeginGroup : undefined}
+            // "Group with another" is intentionally absent from the
+            // single-element toolbar: grouping needs a multi-selection,
+            // so the action lives only on the marquee MultiSelectionToolbar.
+            // Ungroup stays here so a selected group can be broken apart.
             onUngroup={!readOnly && selectedIsGrouped ? onUngroup : undefined}
             onToggleLock={readOnly ? undefined : onToggleLockSelected}
             onDelete={readOnly ? undefined : onDeleteSelected}

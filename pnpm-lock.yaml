@@ -75,6 +75,9 @@ importers:
 
   apps/help:
     dependencies:
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui

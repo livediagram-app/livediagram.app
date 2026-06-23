@@ -11,6 +11,8 @@
 
 import {
   ARROW_THICKNESS_PX,
+  isBoxed,
+  supportsBorder,
   type ArrowFlow,
   type ArrowThickness,
   type BorderRadius,
@@ -35,6 +37,60 @@ export function applyBorderPresetToEl(
 ): Element {
   if (el.type !== 'shape') return el;
   return { ...el, strokeWidth: p.stroke, strokeStyle: p.style, borderRadius: p.radius };
+}
+
+// ── Granular single-field transforms ────────────────────────────────────
+//
+// The individual colour / border / rotation controls in the context menu hover-
+// preview the same way the presets do (spec/48). These are the pure field
+// setters behind that flow, shared by the commit setters (useElementStyle) and
+// the preview hook (useStylePreview) so a hovered swatch shows byte-for-byte the
+// change its click commits. Each MUST match the per-type rules in
+// useElementStyle exactly.
+
+// Hand-editing any colour breaks a shape's colour-preset binding (spec/48), so
+// setting fill / stroke / text on a shape clears `colorPreset` (a no-op field on
+// other types). Fill applies to shapes + sticky / freehand / table.
+export function applyFillColorToEl(el: Element, color: string): Element {
+  if (el.type === 'shape') return { ...el, fillColor: color, colorPreset: undefined };
+  if (el.type === 'sticky' || el.type === 'freehand' || el.type === 'table')
+    return { ...el, fillColor: color };
+  return el;
+}
+
+export function applyStrokeColorToEl(el: Element, color: string): Element {
+  if (el.type === 'shape') return { ...el, strokeColor: color, colorPreset: undefined };
+  if (el.type === 'sticky' || el.type === 'arrow' || el.type === 'freehand' || el.type === 'table')
+    return { ...el, strokeColor: color };
+  return el;
+}
+
+export function applyTextColorToEl(el: Element, color: string): Element {
+  if (el.type === 'shape') return { ...el, textColor: color, colorPreset: undefined };
+  if (isBoxed(el) || el.type === 'arrow') return { ...el, textColor: color };
+  return el;
+}
+
+// Border weight / pattern apply to any border-bearing element (shapes + the
+// freehand pen) plus tables; radius is shape-only.
+export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element {
+  return supportsBorder(el) || el.type === 'table' ? { ...el, strokeWidth: value } : el;
+}
+
+export function applyBorderStyleToEl(el: Element, value: BorderStyle): Element {
+  return supportsBorder(el) || el.type === 'table' ? { ...el, strokeStyle: value } : el;
+}
+
+export function applyBorderRadiusToEl(el: Element, value: BorderRadius): Element {
+  return el.type === 'shape' ? { ...el, borderRadius: value } : el;
+}
+
+// Rotation in degrees clockwise about the centre, normalised to 0..359; 0 is
+// stored as undefined (upright). Boxed elements only.
+export function applyRotationToEl(el: Element, deg: number): Element {
+  if (!isBoxed(el)) return el;
+  const next = ((Math.round(deg) % 360) + 360) % 360;
+  return { ...el, rotation: next === 0 ? undefined : next };
 }
 
 // Apply a line preset (pattern × thickness × optional flow) to an arrow. A

@@ -49,12 +49,18 @@ function ScalingLabel({
   alignY,
   padding,
   style,
+  animClass,
 }: {
   text: string;
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: number;
   style?: LabelTextStyle;
+  // Text-native animation class (spec/09). Only the drop-shadow variants
+  // (glow / pulse / trace) reach here — see renderLabel — since drop-shadow
+  // follows the SVG glyph alpha; the background-clip gradient can't paint SVG
+  // <text> fill, so it's withheld for the auto-fit (`scale`) renderer.
+  animClass?: string;
 }) {
   const textRef = useRef<SVGTextElement>(null);
   const [bbox, setBBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -75,6 +81,7 @@ function ScalingLabel({
         height="100%"
         viewBox={viewBox}
         preserveAspectRatio={svgPreserve(alignX, alignY)}
+        className={animClass}
       >
         <text
           ref={textRef}
@@ -119,6 +126,7 @@ function FixedSizeLabel({
   alignY,
   padding,
   style,
+  animClass,
 }: {
   text: string;
   size: Exclude<TextSize, 'scale'>;
@@ -126,6 +134,8 @@ function FixedSizeLabel({
   alignY: TextAlignY;
   padding: number;
   style?: LabelTextStyle;
+  // Text-native animation class for the glyphs (spec/09); see renderLabel.
+  animClass?: string;
 }) {
   if (!text) return null;
   return (
@@ -138,7 +148,7 @@ function FixedSizeLabel({
       }}
     >
       <div
-        className="w-full whitespace-pre-wrap break-words"
+        className={`w-full whitespace-pre-wrap break-words ${animClass ?? ''}`}
         style={{ textAlign: TEXT_ALIGN[alignX], ...labelTextStyleCss(style ?? {}) }}
       >
         {text}
@@ -217,6 +227,7 @@ function RichLabel({
   fontFamily,
   multiline,
   className = '',
+  animClass,
 }: {
   runs: TextRun[];
   element: BoxedElement;
@@ -227,6 +238,8 @@ function RichLabel({
   fontFamily?: string;
   multiline: boolean;
   className?: string;
+  // Text-native animation class for the glyphs (spec/09); see renderLabel.
+  animClass?: string;
 }) {
   const basePx = multiline
     ? MULTI_FONT_PX[textSize]
@@ -242,7 +255,7 @@ function RichLabel({
       style={{ fontSize: `${basePx}px`, alignItems: ALIGN_ITEMS[alignY], padding }}
     >
       <div
-        className="w-full whitespace-pre-wrap break-words"
+        className={`w-full whitespace-pre-wrap break-words ${animClass ?? ''}`}
         style={{ textAlign: TEXT_ALIGN[alignX], fontFamily }}
       >
         {runs.map((run, i) => (
@@ -284,6 +297,11 @@ export function renderLabel(
   // child (not a full-box fill) so the icon stays visible beside it while
   // typing; the inline-icon layout owns positioning + padding.
   inlineIcon = false,
+  // Text-native animation class (spec/09): applied to the label content node
+  // so glow / pulse / trace / gradient ride the glyphs rather than the
+  // element's invisible bounding box. Set only for text elements (see
+  // isTextNativeAnim in BoxedElementView); undefined otherwise.
+  labelAnimClass?: string,
 ) {
   const isSticky = element.type === 'sticky';
   // Shape elements don't carry a placeholder during edit. The user
@@ -356,6 +374,7 @@ export function renderLabel(
         fontFamily={fontFamily}
         multiline={isSticky}
         className={isSticky ? 'text-amber-950' : ''}
+        animClass={labelAnimClass}
       />
     );
   }
@@ -384,6 +403,10 @@ export function renderLabel(
         alignY={alignY}
         padding={padding}
         style={textStyle}
+        // The gradient relies on background-clip:text, which can't paint an SVG
+        // <text> fill — withhold it here so the glyphs don't vanish; glow /
+        // pulse / trace ride the SVG drop-shadow fine.
+        animClass={labelAnimClass === 'lvd-anim-text-gradient' ? undefined : labelAnimClass}
       />
     );
   }
@@ -396,6 +419,7 @@ export function renderLabel(
       alignY={alignY}
       padding={padding}
       style={textStyle}
+      animClass={labelAnimClass}
     />
   );
 }

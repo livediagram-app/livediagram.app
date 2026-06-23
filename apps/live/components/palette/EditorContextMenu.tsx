@@ -14,6 +14,7 @@
 // handlers; this component only decides which items to show.
 
 import { useState } from 'react';
+import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
   animLoops,
   arrowheadShapeOf,
@@ -208,12 +209,32 @@ type EditorContextMenuProps = {
   // only). Read the current values off the target below.
   onToggleAspectLock: () => void;
   onSetOpacity: (opacity: number) => void;
+  // Colour setters back the custom "+" picker in each ColourRow (the native
+  // <input type=color>, kept on the debounced direct setter — see below). The
+  // discrete swatch / border / rotation tiles commit through the onCommit*
+  // hover-preview handlers instead.
   onSetTextColor: (color: string) => void;
   onSetFillColor: (color: string) => void;
   onSetStrokeColor: (color: string) => void;
-  onSetBorderStroke: (value: BorderStroke) => void;
-  onSetBorderStyle: (value: BorderStyle) => void;
-  onSetBorderRadius: (value: BorderRadius) => void;
+  // Hover-to-preview for the individual colour swatches, border tiles, and
+  // rotation angles (spec/48 flow extended to the granular controls): on a
+  // desktop pointer, hovering shows the value live and it only sticks on click.
+  // onCommit*/onPreview* mirror the preset rows; onPreviewStyleEnd (declared
+  // below) reverts. The custom colour <input> keeps onSet*Color (debounced).
+  onPreviewTextColor: (color: string) => void;
+  onCommitTextColor: (color: string) => void;
+  onPreviewFillColor: (color: string) => void;
+  onCommitFillColor: (color: string) => void;
+  onPreviewStrokeColor: (color: string) => void;
+  onCommitStrokeColor: (color: string) => void;
+  onPreviewBorderStroke: (value: BorderStroke) => void;
+  onCommitBorderStroke: (value: BorderStroke) => void;
+  onPreviewBorderStyle: (value: BorderStyle) => void;
+  onCommitBorderStyle: (value: BorderStyle) => void;
+  onPreviewBorderRadius: (value: BorderRadius) => void;
+  onCommitBorderRadius: (value: BorderRadius) => void;
+  onPreviewRotation: (deg: number) => void;
+  onCommitRotation: (deg: number) => void;
   // Status markers (spec/49): set / clear the shape's marker glyph and its size.
   onSetMarker: (value: ShapeMarker | null) => void;
   onSetMarkerSize: (value: TextSize) => void;
@@ -293,8 +314,6 @@ type EditorContextMenuProps = {
   // Reset the shape back to its kind's default aspect ratio (keeps area,
   // snaps the width:height proportion back to the canonical look).
   onResetAspectRatio: () => void;
-  // Rotate the selected element to a fixed angle (degrees clockwise).
-  onSetRotation: (deg: number) => void;
   // Preset colour swatches for the colour pickers, derived from the active
   // theme so the offered presets match it.
   presetColors: string[];
@@ -319,6 +338,11 @@ type EditorContextMenuProps = {
 export function EditorContextMenu(props: EditorContextMenuProps) {
   const { menu, elements, onClose } = props;
   const position = { x: menu.x, y: menu.y };
+  // Revert any in-flight swatch / border / rotation hover preview if the menu
+  // unmounts mid-hover (dismissed by click-away or Escape) — pointerleave won't
+  // fire on unmount. The inline tiles below share this single safety net; the
+  // preset rows + ColourRow also revert on their own pointerleave.
+  useRevertOnUnmount(props.onPreviewStyleEnd);
   // Grow UPWARD when the menu is opened in the bottom fifth of the
   // viewport, so the tall collapsible-category menu opens above the
   // cursor instead of running off-screen — matching the tab menu.
@@ -340,6 +364,28 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     open: openColor === id,
     onToggle: () => setOpenColor((c) => (c === id ? null : id)),
   });
+  // Hover-preview handler bundles for the three colour kinds, spread into each
+  // ColourRow so the swatches preview/commit like the style presets while the
+  // custom <input> keeps the debounced onChange. onPreviewEnd is the shared
+  // revert (clearStylePreview).
+  const textColorHandlers = {
+    onChange: props.onSetTextColor,
+    onPreview: props.onPreviewTextColor,
+    onCommit: props.onCommitTextColor,
+    onPreviewEnd: props.onPreviewStyleEnd,
+  };
+  const fillColorHandlers = {
+    onChange: props.onSetFillColor,
+    onPreview: props.onPreviewFillColor,
+    onCommit: props.onCommitFillColor,
+    onPreviewEnd: props.onPreviewStyleEnd,
+  };
+  const strokeColorHandlers = {
+    onChange: props.onSetStrokeColor,
+    onPreview: props.onPreviewStrokeColor,
+    onCommit: props.onCommitStrokeColor,
+    onPreviewEnd: props.onPreviewStyleEnd,
+  };
   // Session-tool pickers (spec/39): the chosen timer mode + countdown length
   // and the votes-per-person budget, local until the facilitator hits Start
   // (mirrors the old tab editor's Session accordion).
@@ -440,7 +486,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                         (textSrc as { textColor?: string }).textColor ??
                         defaultTextColor(textSrc as BoxedElement)
                       }
-                      onChange={props.onSetTextColor}
+                      {...textColorHandlers}
                       {...colorProps('m-text')}
                       presets={props.presetColors}
                     />
@@ -449,7 +495,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                     <ColourRow
                       label="Background"
                       value={fillSrc.fillColor ?? defaultFillColor(fillSrc)}
-                      onChange={props.onSetFillColor}
+                      {...fillColorHandlers}
                       {...colorProps('m-bg')}
                       presets={props.presetColors}
                     />
@@ -458,7 +504,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                     <ColourRow
                       label="Border"
                       value={strokeSrc.strokeColor ?? defaultStrokeColor(strokeSrc)}
-                      onChange={props.onSetStrokeColor}
+                      {...strokeColorHandlers}
                       {...colorProps('m-border')}
                       presets={props.presetColors}
                     />
@@ -477,7 +523,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                         <SizeButton
                           key={v}
                           active={(borderSrc?.strokeWidth ?? 'medium') === v}
-                          onClick={() => props.onSetBorderStroke(v)}
+                          onClick={() => props.onCommitBorderStroke(v)}
+                          onPointerEnter={onMouseHover(() => props.onPreviewBorderStroke(v))}
+                          onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
                         >
                           <BorderStrokeIcon value={v} />
                         </SizeButton>
@@ -488,7 +536,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                         <SizeButton
                           key={v}
                           active={(borderSrc?.strokeStyle ?? 'solid') === v}
-                          onClick={() => props.onSetBorderStyle(v)}
+                          onClick={() => props.onCommitBorderStyle(v)}
+                          onPointerEnter={onMouseHover(() => props.onPreviewBorderStyle(v))}
+                          onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
                         >
                           <BorderStyleIcon value={v} />
                         </SizeButton>
@@ -707,7 +757,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                 <SizeButton
                   key={deg}
                   active={((target as { rotation?: number }).rotation ?? 0) % 360 === deg}
-                  onClick={() => props.onSetRotation(deg)}
+                  onClick={() => props.onCommitRotation(deg)}
+                  onPointerEnter={onMouseHover(() => props.onPreviewRotation(deg))}
+                  onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
                 >
                   <span className="flex flex-col items-center gap-0.5">
                     <RotationGlyph deg={deg} />
@@ -954,7 +1006,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                   (target as { textColor?: string }).textColor ??
                   defaultTextColor(target as BoxedElement)
                 }
-                onChange={props.onSetTextColor}
+                {...textColorHandlers}
                 {...colorProps('text')}
                 presets={props.presetColors}
               />
@@ -965,7 +1017,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                     (target as { fillColor?: string }).fillColor ??
                     defaultFillColor(target as BoxedElement)
                   }
-                  onChange={props.onSetFillColor}
+                  {...fillColorHandlers}
                   {...colorProps('background')}
                   presets={props.presetColors}
                 />
@@ -977,7 +1029,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                     (target as { strokeColor?: string }).strokeColor ??
                     defaultStrokeColor(target as BoxedElement)
                   }
-                  onChange={props.onSetStrokeColor}
+                  {...strokeColorHandlers}
                   {...colorProps('border')}
                   presets={props.presetColors}
                 />
@@ -1005,7 +1057,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                     <SizeButton
                       key={v}
                       active={borderStrokeVal === v}
-                      onClick={() => props.onSetBorderStroke(v)}
+                      onClick={() => props.onCommitBorderStroke(v)}
+                      onPointerEnter={onMouseHover(() => props.onPreviewBorderStroke(v))}
+                      onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
                     >
                       <BorderStrokeIcon value={v} />
                     </SizeButton>
@@ -1016,7 +1070,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                     <SizeButton
                       key={v}
                       active={borderStyleVal === v}
-                      onClick={() => props.onSetBorderStyle(v)}
+                      onClick={() => props.onCommitBorderStyle(v)}
+                      onPointerEnter={onMouseHover(() => props.onPreviewBorderStyle(v))}
+                      onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
                     >
                       <BorderStyleIcon value={v} />
                     </SizeButton>
@@ -1028,7 +1084,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                       <SizeButton
                         key={v}
                         active={borderRadiusVal === v}
-                        onClick={() => props.onSetBorderRadius(v)}
+                        onClick={() => props.onCommitBorderRadius(v)}
+                        onPointerEnter={onMouseHover(() => props.onPreviewBorderRadius(v))}
+                        onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
                       >
                         <BorderRadiusIcon value={v} />
                       </SizeButton>
@@ -1139,7 +1197,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             <ColourRow
               label="Colour"
               value={target.textColor ?? '#0f172a'}
-              onChange={props.onSetTextColor}
+              {...textColorHandlers}
               {...colorProps('text')}
               presets={props.presetColors}
             />

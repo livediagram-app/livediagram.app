@@ -33,6 +33,11 @@ import { DirArrow, ProgressAnimKindGlyph } from '@/components/palette/context-me
 
 import { MARKER_LABELS, ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
 import { SpeedTiles, TileLabel, withNone } from '@/components/palette/context-menu-tiles';
+import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
+
+// Stable no-op for ColourRow callers that don't supply a preview-end handler,
+// so useRevertOnUnmount has a constant reference.
+const NOOP = () => {};
 
 // A small preset palette for the inline colour picker. The "+" custom chip
 // still opens the OS picker for anything off-palette.
@@ -47,6 +52,9 @@ export function ColourRow({
   onToggle,
   onChange,
   presets,
+  onPreview,
+  onCommit,
+  onPreviewEnd,
 }: {
   label: string;
   value: string;
@@ -55,7 +63,18 @@ export function ColourRow({
   onChange: (color: string) => void;
   // Preset swatches to offer — derived from the active theme so they match it.
   presets: string[];
+  // Hover-to-preview for the discrete swatches (desktop pointer), mirroring the
+  // style-preset tiles: onPreview shows the colour live, onPreviewEnd reverts,
+  // and onCommit is the click-commit that snapshots the true pre-hover value for
+  // undo. The custom "+" <input> keeps onChange (debounced drag). All optional,
+  // so a caller without the preview wiring still works on plain onChange.
+  onPreview?: (color: string) => void;
+  onCommit?: (color: string) => void;
+  onPreviewEnd?: () => void;
 }) {
+  // Revert an in-flight swatch preview if the menu/section unmounts mid-hover
+  // (pointerleave doesn't fire on unmount).
+  useRevertOnUnmount(onPreviewEnd ?? NOOP);
   return (
     <div>
       <button
@@ -79,7 +98,9 @@ export function ColourRow({
               key={c}
               type="button"
               aria-label={c}
-              onClick={() => onChange(c)}
+              onClick={() => (onCommit ?? onChange)(c)}
+              onPointerEnter={onPreview ? onMouseHover(() => onPreview(c)) : undefined}
+              onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
               className={`h-7 w-7 cursor-pointer rounded-md border transition ${
                 value.toLowerCase() === c.toLowerCase()
                   ? 'border-brand-500 ring-1 ring-brand-400'

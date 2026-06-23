@@ -31,7 +31,6 @@ import {
   isProgressShape,
   sendManyToBack,
   SHAPE_DEFAULT_SIZE,
-  supportsBorder,
   type ArrowElement,
   type ArrowEnds,
   type ArrowheadShape,
@@ -64,7 +63,14 @@ import { getTheme, type ShapeColorPreset } from '@/lib/themes';
 import {
   applyArrowPresetToEl,
   applyBorderPresetToEl,
+  applyBorderRadiusToEl,
+  applyBorderStrokeToEl,
+  applyBorderStyleToEl,
   applyColorPresetToEl,
+  applyFillColorToEl,
+  applyRotationToEl,
+  applyStrokeColorToEl,
+  applyTextColorToEl,
 } from '@/lib/style-presets';
 import { track } from '@/lib/telemetry';
 
@@ -234,34 +240,13 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   // pull the shape back onto the preset's variant. Clearing `colorPreset` on a
   // shape (a no-op field on other types) keeps that invariant in one place.
   const setFillColorSelected = (color: string) =>
-    commitSelectedStyle('fillColor', (el) =>
-      el.type === 'shape'
-        ? { ...el, fillColor: color, colorPreset: undefined }
-        : el.type === 'sticky' || el.type === 'freehand' || el.type === 'table'
-          ? { ...el, fillColor: color }
-          : el,
-    );
+    commitSelectedStyle('fillColor', (el) => applyFillColorToEl(el, color));
 
   const setStrokeColorSelected = (color: string) =>
-    commitSelectedStyle('strokeColor', (el) =>
-      el.type === 'shape'
-        ? { ...el, strokeColor: color, colorPreset: undefined }
-        : el.type === 'sticky' ||
-            el.type === 'arrow' ||
-            el.type === 'freehand' ||
-            el.type === 'table'
-          ? { ...el, strokeColor: color }
-          : el,
-    );
+    commitSelectedStyle('strokeColor', (el) => applyStrokeColorToEl(el, color));
 
   const setTextColorSelected = (color: string) =>
-    commitSelectedStyle('textColor', (el) =>
-      el.type === 'shape'
-        ? { ...el, textColor: color, colorPreset: undefined }
-        : isBoxed(el) || el.type === 'arrow'
-          ? { ...el, textColor: color }
-          : el,
-    );
+    commitSelectedStyle('textColor', (el) => applyTextColorToEl(el, color));
 
   // Table header-band colours (debounced like the other colour
   // pickers). Apply only to selected tables.
@@ -406,14 +391,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   // elements only.
   const setRotationSelected = (deg: number) => {
     if (!selectedId) return;
-    const next = ((Math.round(deg) % 360) + 360) % 360;
-    commit((els) =>
-      els.map((el) =>
-        el.id === selectedId && isBoxed(el)
-          ? { ...el, rotation: next === 0 ? undefined : next }
-          : el,
-      ),
-    );
+    commit((els) => els.map((el) => (el.id === selectedId ? applyRotationToEl(el, deg) : el)));
     track('Element', 'Changed', 'Rotation');
   };
 
@@ -430,35 +408,19 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setBorderStrokeSelected = (value: BorderStroke) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && (supportsBorder(el) || el.type === 'table')
-          ? { ...el, strokeWidth: value }
-          : el,
-      ),
-    );
+    commit((els) => els.map((el) => (ids.has(el.id) ? applyBorderStrokeToEl(el, value) : el)));
     track('Element', 'Changed', 'BorderStroke');
   };
   const setBorderStyleSelected = (value: BorderStyle) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && (supportsBorder(el) || el.type === 'table')
-          ? { ...el, strokeStyle: value }
-          : el,
-      ),
-    );
+    commit((els) => els.map((el) => (ids.has(el.id) ? applyBorderStyleToEl(el, value) : el)));
     track('Element', 'Changed', 'BorderStyle');
   };
   const setBorderRadiusSelected = (value: BorderRadius) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' ? { ...el, borderRadius: value } : el,
-      ),
-    );
+    commit((els) => els.map((el) => (ids.has(el.id) ? applyBorderRadiusToEl(el, value) : el)));
     track('Element', 'Changed', 'BorderRadius');
   };
 

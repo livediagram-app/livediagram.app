@@ -554,6 +554,110 @@
   animation: lvd-gradient-shift calc(5s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
 }
 
+/* Text-native animations (spec/09). A standalone text element has no fill or
+ * border, so the box-shadow / ring / background versions above would animate an
+ * invisible bounding rectangle around the words. These variants ride the
+ * rendered glyphs instead and are applied to the label content node (not the
+ * wrapper) for text elements — see isTextNativeAnim in BoxedElementView. The
+ * content node has a transparent background, so a drop-shadow filter follows the
+ * text's alpha and the halo hugs each letter shape; the gradient is clipped to
+ * the text. Colour + speed inherit the wrapper's --lvd-anim-* custom properties;
+ * --lvd-anim-text carries the element's own text colour so the gradient blends
+ * from it toward the accent. */
+@keyframes lvd-text-glow {
+  0%,
+  100% {
+    filter: drop-shadow(
+      0 0 1px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 35%, transparent)
+    );
+  }
+  50% {
+    filter: drop-shadow(
+      0 0 6px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
+    );
+  }
+}
+.lvd-anim-text-glow {
+  animation: lvd-text-glow calc(2s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
+}
+
+/* Pulse — a rhythmic emphasis: the letters swell a touch and flash a halo, like
+ * a heartbeat, then settle. transform-origin keeps the swell centred. */
+@keyframes lvd-text-pulse {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 0%, transparent));
+  }
+  30% {
+    transform: scale(1.06);
+    filter: drop-shadow(
+      0 0 5px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 60%, transparent)
+    );
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 0%, transparent));
+  }
+}
+.lvd-anim-text-pulse {
+  transform-origin: center;
+  animation: lvd-text-pulse calc(1.8s * var(--lvd-anim-speed, 1)) ease-out infinite;
+}
+
+/* Trace — the box version runs a light around the outline; on text a coloured
+ * drop-shadow orbits the glyphs (offset sweeps around the clock) so the same
+ * "light travelling the edge" reads on the letters themselves. */
+@keyframes lvd-text-trace {
+  0% {
+    filter: drop-shadow(
+      2px 0 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
+    );
+  }
+  25% {
+    filter: drop-shadow(
+      0 2px 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
+    );
+  }
+  50% {
+    filter: drop-shadow(
+      -2px 0 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
+    );
+  }
+  75% {
+    filter: drop-shadow(
+      0 -2px 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
+    );
+  }
+  100% {
+    filter: drop-shadow(
+      2px 0 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
+    );
+  }
+}
+.lvd-anim-text-trace {
+  animation: lvd-text-trace calc(2.4s * var(--lvd-anim-speed, 1)) linear infinite;
+}
+
+/* Gradient — a soft sheen sweeping across the letters. Clipped to the text
+ * (background-clip: text + transparent fill), blending the element's own text
+ * colour (--lvd-anim-text) toward the accent. Reuses the lvd-gradient-shift
+ * keyframes the box version rides. */
+.lvd-anim-text-gradient {
+  background-image: linear-gradient(
+    120deg,
+    var(--lvd-anim-text, #334155) 0%,
+    var(--lvd-anim-text, #334155) 35%,
+    color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 70%, var(--lvd-anim-text, #334155)) 50%,
+    var(--lvd-anim-text, #334155) 65%,
+    var(--lvd-anim-text, #334155) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: lvd-gradient-shift calc(5s * var(--lvd-anim-speed, 1)) ease-in-out infinite;
+}
+
 /* SVG-shape pulse / glow. The wrapper versions (.lvd-anim-pulse / -glow) use
  * box-shadow, which rings the bounding rectangle — fine for CSS-rendered shapes
  * (circle / stadium / square / browser) whose border-radius matches the
@@ -1278,6 +1382,10 @@
   .lvd-anim-trace,
   .lvd-anim-trace::after,
   .lvd-anim-gradient,
+  .lvd-anim-text-glow,
+  .lvd-anim-text-pulse,
+  .lvd-anim-text-trace,
+  .lvd-anim-text-gradient,
   .lvd-anim-bounce,
   .lvd-anim-wobble,
   .lvd-anim-shake,
