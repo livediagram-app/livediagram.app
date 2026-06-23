@@ -120,11 +120,11 @@ function ToastStack({
   return (
     <Portal>
       <div
-        // Bottom-centre. Sits above ConfirmDialog (z-50) and the api
-        // worker dialogs so a failure toast surfaces even when one of
-        // those is open. On mobile it's lifted clear of the zoom / dock
+        // Bottom-centre. Sits at the top of the stacking ladder (z-toast,
+        // above the modal rung) so a failure toast surfaces even when a
+        // dialog is open. On mobile it's lifted clear of the zoom / dock
         // controls along the bottom edge (sm+ drops it back to bottom-4).
-        className="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex flex-col items-center gap-2 px-4 sm:bottom-4"
+        className="pointer-events-none fixed inset-x-0 bottom-24 z-[var(--z-toast)] flex flex-col items-center gap-2 px-4 sm:bottom-4"
         aria-live="polite"
         aria-atomic="true"
       >
