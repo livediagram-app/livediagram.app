@@ -665,8 +665,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       target.type === 'arrow' ||
       target.type === 'table' ||
       target.type === 'image' ||
-      target.type === 'link-card' ||
-      hasInlineIcon;
+      target.type === 'link-card';
     const showCollaborateGroup = boxed;
     return (
       <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
@@ -1097,6 +1096,45 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </MenuAccordionSection>
           </>
         ) : null}
+        {/* Icon — re-place or remove a shape's inline icon. Sits directly
+            above Markers (both are shape-content controls); the Icon position
+            grid here is now the only way to move the icon, since drag-to-
+            reposition was removed. */}
+        {hasInlineIcon ? (
+          <>
+            <MenuGroupSeparator />
+            <MenuAccordionSection
+              title="Icon"
+              icon={<IconCategoryGlyph />}
+              {...sectionProps('icon')}
+            >
+              <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                Icon position
+              </p>
+              <IconPositionGrid
+                current={(target as { iconPosition?: string }).iconPosition ?? 'left'}
+                onPick={(pos) =>
+                  props.onSetIconPosition(
+                    target.id,
+                    (target as { iconId?: string }).iconId ?? '',
+                    pos,
+                  )
+                }
+              />
+              <ContextMenuDivider />
+              <div className="px-2 py-1.5">
+                <MenuTile
+                  icon={<RemoveIconGlyph />}
+                  label="Remove icon"
+                  onClick={() => {
+                    props.onRemoveIcon(target.id);
+                    onClose();
+                  }}
+                />
+              </div>
+            </MenuAccordionSection>
+          </>
+        ) : null}
         {/* ── Markers group (spec/49): its own band between Border and the
             content / collaborate groups. Regular shapes only — the self-drawing
             shapes (progress / rail / rating) have no label slot for a marker. ── */}
@@ -1201,35 +1239,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               {...colorProps('text')}
               presets={props.presetColors}
             />
-          </MenuAccordionSection>
-        ) : null}
-        {/* Icon — re-place or remove a shape's inline icon. */}
-        {hasInlineIcon ? (
-          <MenuAccordionSection title="Icon" icon={<IconCategoryGlyph />} {...sectionProps('icon')}>
-            <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-              Icon position
-            </p>
-            <IconPositionGrid
-              current={(target as { iconPosition?: string }).iconPosition ?? 'left'}
-              onPick={(pos) =>
-                props.onSetIconPosition(
-                  target.id,
-                  (target as { iconId?: string }).iconId ?? '',
-                  pos,
-                )
-              }
-            />
-            <ContextMenuDivider />
-            <div className="px-2 py-1.5">
-              <MenuTile
-                icon={<RemoveIconGlyph />}
-                label="Remove icon"
-                onClick={() => {
-                  props.onRemoveIcon(target.id);
-                  onClose();
-                }}
-              />
-            </div>
           </MenuAccordionSection>
         ) : null}
         {/* Image — pick / change / clear the bitmap (spec/19). */}

@@ -495,33 +495,10 @@ function BoxedElementViewImpl({
       iconDropSide(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect()),
     );
   };
-  // Reposition the EXISTING inline icon by dragging it (when its shape is
-  // selected). Pointer-drag rather than HTML5 DnD since it starts on a
-  // canvas element; on release the nearest side becomes the new
-  // iconPosition (reuses onDropIcon with the same iconId). The live
-  // preview band reuses `dropSide`.
-  const canRepositionIcon =
-    isSelected && !readOnly && !!onDropIcon && element.type === 'shape' && !!element.iconId;
-  const startIconReposition = (e: ReactPointerEvent) => {
-    if (!canRepositionIcon || !element.iconId) return;
-    e.stopPropagation();
-    e.preventDefault();
-    const wrapper = (e.currentTarget as HTMLElement).closest('[data-element-id]');
-    if (!wrapper) return;
-    const iconId = element.iconId;
-    const move = (ev: PointerEvent) => {
-      setDropSide(iconDropSide(ev.clientX, ev.clientY, wrapper.getBoundingClientRect()));
-    };
-    const up = (ev: PointerEvent) => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', up);
-      const side = iconDropSide(ev.clientX, ev.clientY, wrapper.getBoundingClientRect());
-      setDropSide(null);
-      onDropIcon!(element.id, iconId, side);
-    };
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
-  };
+  // The existing inline icon is no longer draggable to reposition it: the
+  // Icon section of the element context menu (Icon position) is the one way
+  // to move it. Dragging an icon FROM the palette ONTO a shape (the drop
+  // preview below) is unaffected.
   // Translucent band on the target side + a ring, shown while dragging an
   // icon over this shape so the drop position is obvious.
   const DROP_BAND: Record<IconPosition, string> = {
@@ -802,8 +779,6 @@ function BoxedElementViewImpl({
           alignY={alignY}
           padding={PADDING_PX[element.padding ?? defaultPadding(element)]}
           fontFamily={fontFamily}
-          draggableIcon={canRepositionIcon}
-          onIconPointerDown={startIconReposition}
         />
       ) : element.type === 'shape' && isSelfDrawingShape(element.shape) ? (
         // Progress / rail / rating / chart elements draw their own content, so
