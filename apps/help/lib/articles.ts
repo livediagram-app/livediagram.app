@@ -134,7 +134,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every selection mode, element, and palette setting explained.',
-    articleCount: 19,
+    articleCount: 20,
     kind: 'feature',
   },
   {
@@ -650,6 +650,14 @@ export const articles: Article[] = [
     slug: 'panel-opacity',
     title: 'Panel Opacity',
     description: 'Make the floating panels translucent so the canvas shows through.',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Palette Settings',
+  },
+  {
+    slug: 'quick-add-on-hover',
+    title: 'Quick-add on Hover',
+    description: 'Open an element’s + menu by hovering it instead of clicking.',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',

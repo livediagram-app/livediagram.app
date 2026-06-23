@@ -438,24 +438,25 @@ export function IsometricMode() {
 export function PaletteSettings({
   highlight,
 }: {
-  highlight?: 'auto-attach' | 'guides' | 'panel-opacity' | 'minimal' | 'reset';
+  highlight?: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity' | 'minimal' | 'reset';
 }) {
   // `slider` rows draw a mini opacity track instead of a toggle (Panel
   // opacity); the order mirrors the real popover.
   const rows: {
-    key: 'auto-attach' | 'guides' | 'panel-opacity' | 'minimal';
+    key: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity' | 'minimal';
     label: string;
     slider: boolean;
     on: boolean;
   }[] = [
     { key: 'auto-attach', label: 'Auto-attach arrows', slider: false, on: true },
     { key: 'guides', label: 'Alignment guides', slider: false, on: true },
+    { key: 'quick-add', label: 'Quick-add on hover', slider: false, on: true },
     { key: 'panel-opacity', label: 'Panel opacity', slider: true, on: true },
     { key: 'minimal', label: 'Minimal panels', slider: false, on: false },
   ];
   return (
-    <Scene w={400} h={268} bg="plain">
-      <Panel x={92} y={26} w={216} h={216} title="PALETTE SETTINGS">
+    <Scene w={400} h={302} bg="plain">
+      <Panel x={92} y={26} w={216} h={250} title="PALETTE SETTINGS">
         {rows.map((r, i) => {
           const ry = 70 + i * 34;
           const hot = highlight === r.key;
@@ -509,16 +510,64 @@ export function PaletteSettings({
           );
         })}
         {/* Reset action */}
-        <line x1={100} y1={202} x2={300} y2={202} className="stroke-slate-200" strokeWidth={1.5} />
+        <line x1={100} y1={236} x2={300} y2={236} className="stroke-slate-200" strokeWidth={1.5} />
         <Button
           x={108}
-          y={210}
+          y={244}
           w={184}
           h={22}
           label="Reset palette position"
           variant={highlight === 'reset' ? 'primary' : 'default'}
         />
       </Panel>
+    </Scene>
+  );
+}
+
+/** Quick-add on hover: hovering an element's "+" opens its quick-add menu
+ *  (Duplicate / Arrow / Pencil / Text) without a click. A cursor rests on the
+ *  + with the menu unfolded beside it. */
+export function QuickAddOnHover() {
+  return (
+    <Scene w={400} h={216}>
+      <Shape x={56} y={82} w={104} h={58} accent label="Idea" />
+      {/* The menu unfolded to the right of the + (four option tiles). */}
+      <rect
+        x={210}
+        y={92}
+        width={150}
+        height={40}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={2}
+      />
+      {[0, 1, 2, 3].map((i) => (
+        <rect
+          key={i}
+          x={222 + i * 34}
+          y={104}
+          width={26}
+          height={16}
+          rx={4}
+          className="fill-slate-100"
+        />
+      ))}
+      {/* The + button on the shape's right edge. */}
+      <circle cx={184} cy={112} r={13} className="fill-white stroke-slate-200" strokeWidth={2} />
+      <path
+        d="M184 105.5v13M177.5 112h13"
+        className="stroke-brand-500"
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      {/* Cursor resting on the + (hovering, no click). */}
+      <g transform="translate(186 112)">
+        <path
+          d="M0 0 L0 15 L4.2 11 L6.6 16.2 L9.2 15 L6.8 9.8 L12 9.4 Z"
+          className="fill-white stroke-slate-700"
+          strokeWidth={1}
+        />
+      </g>
     </Scene>
   );
 }

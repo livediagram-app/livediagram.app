@@ -200,6 +200,11 @@ Missing key === undefined === default behaviour. Concretely:
   the var, so the minimal layout is unaffected. The popover slider is
   hidden while `minimalPanels` is on. Emits `UI`/`Changed`/`PanelOpacity`
   on release (spec/22).
+- `quickAddOnHover` undefined / true → an element's quick-add `+` buttons
+  open their menu on hover (the default); only an explicit `false` reverts
+  to click-to-open. A click still opens the menu either way, and the `+`
+  buttons still appear only on the selected element (spec/09). Emits
+  `UI`/`Toggled`/`QuickAddHover{On,Off}`.
 - `reduceMotion` undefined / false → full motion (the default), still
   subject to the OS `prefers-reduced-motion` media query which
   `globals.css` always honours. Setting it to `true` adds
@@ -247,6 +252,11 @@ modal.
     in editor-page through the same `setUserPreferences` +
     `writeUserPreferences` round-trip as the Settings dialog, emitting the
     same `AutoRebind*` / `AlignmentGuides*` telemetry before persisting.
+  - "Quick-add on hover" (`quickAddOnHover`) — same round-trip; on by
+    default. Threads through `CanvasElementsLayer` to `QuickConnectRing` as
+    `openOnHover`, which opens the `+` menu on pointer-enter and closes it a
+    beat after the pointer leaves both the `+` and the menu. Emits
+    `UI`/`Toggled`/`QuickAddHover{On,Off}`.
   - "Panel opacity" (`panelOpacity`) — a slider (not a toggle), shown only
     while `minimalPanels` is off (it does nothing in the dock layout). The
     drag previews live by writing the `--lvd-panel-opacity` custom property

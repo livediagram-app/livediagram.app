@@ -20,6 +20,7 @@ export const HELP_ARTICLES = {
   autoAttachArrows: 'palette/auto-attach-arrows',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
+  quickAddOnHover: 'palette/quick-add-on-hover',
   isometricMode: 'palette/isometric-mode',
   // AI
   aiTools: 'tools/ai/ai-tools',

@@ -114,6 +114,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     viewportZoom,
     quickRingOpen,
     setQuickRingOpen,
+    settings,
   } = props;
   // Resolved tab default font once; per-element falls back to it (spec/28).
   const tabFontStack = resolveFontStack(tabFont);
@@ -305,7 +306,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               placement={placement}
               zoom={viewportZoom}
               open={quickRingOpen === placement}
+              openOnHover={settings.quickAddOnHover !== false}
               onToggle={() => setQuickRingOpen(quickRingOpen === placement ? null : placement)}
+              onOpen={() => setQuickRingOpen(placement)}
               onClose={() => setQuickRingOpen(null)}
               onSpawn={(kind) => onSpawnConnect(placement, kind)}
               onArrowPointerDown={(e) => onStartArrow(placement, e)}

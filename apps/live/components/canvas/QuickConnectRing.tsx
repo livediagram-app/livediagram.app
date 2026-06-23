@@ -1,6 +1,7 @@
 import {
   Fragment,
   useEffect,
+  useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
@@ -27,6 +28,13 @@ type QuickConnectRingProps = {
   open: boolean;
   onToggle: () => void;
   onClose: () => void;
+  // Quick-add-on-hover preference (spec/09). When true, the menu opens on
+  // hover of the + and closes when the pointer leaves both the + and the
+  // menu, instead of needing a click. Click still toggles in either mode.
+  openOnHover?: boolean;
+  // Open this side's menu (the hover-open path; distinct from onToggle so
+  // re-entering an already-open ring doesn't toggle it shut).
+  onOpen: () => void;
   // Spawn a connected element of the given kind to this side.
   onSpawn: (kind: QuickConnectKind) => void;
   // Start the Arrow action from this side. The parent decides drag
@@ -152,6 +160,8 @@ export function QuickConnectRing({
   open,
   onToggle,
   onClose,
+  openOnHover,
+  onOpen,
   onSpawn,
   onArrowPointerDown,
   onPencil,
@@ -177,6 +187,34 @@ export function QuickConnectRing({
     const t = setTimeout(() => setRendered(false), EXIT_MS);
     return () => clearTimeout(t);
   }, [open]);
+
+  // Hover-open (quick-add-on-hover, spec/09): open on pointer-enter of the +
+  // or its menu, and close on a short delay after leaving both, so crossing
+  // the gap between the + and the menu doesn't close it. No-op unless the
+  // preference is on; click still toggles in either mode.
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    },
+    [],
+  );
+  const handleHoverEnter = () => {
+    if (!openOnHover) return;
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    if (!open) onOpen();
+  };
+  const handleHoverLeave = () => {
+    if (!openOnHover) return;
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => {
+      closeTimer.current = null;
+      onClose();
+    }, 160);
+  };
 
   const out = OUTWARD[placement];
   // Plus centre in canvas coords: out beyond the edge by GAP + half the
@@ -209,6 +247,8 @@ export function QuickConnectRing({
         }}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={onToggle}
+        onMouseEnter={handleHoverEnter}
+        onMouseLeave={handleHoverLeave}
       >
         <svg
           width="14"
@@ -233,6 +273,8 @@ export function QuickConnectRing({
           className={`pointer-events-auto absolute flex items-center rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 ${
             menu.col ? 'flex-col' : 'flex-row'
           }`}
+          onMouseEnter={handleHoverEnter}
+          onMouseLeave={handleHoverLeave}
           style={{
             ...menu.pos,
             transformOrigin: menu.origin,

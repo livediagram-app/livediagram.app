@@ -60,6 +60,13 @@ export type UserPreferences = {
   // dock bar never reads the var, so this leaves the minimal layout
   // untouched. Missing / undefined / 1 === fully opaque, the default.
   panelOpacity?: number;
+  // Quick-add on hover (spec/09). When on, an element's quick-add "+"
+  // buttons open their menu on hover instead of requiring a click; moving
+  // the pointer away closes it. The "+" buttons still only appear on the
+  // selected element, and a click still opens the menu either way. Missing /
+  // undefined / true === open on hover, the default; only an explicit
+  // `false` reverts to click-to-open.
+  quickAddOnHover?: boolean;
   // Alignment guides (spec/09). When `false`, the editor skips the
   // faint guide lines drawn along the edges / centres a dragged or
   // resized element shares with its neighbours (the snap itself is

@@ -81,6 +81,7 @@ export function PaletteSettingsPopover({
 
   const autoRebind = settings.autoRebindArrows !== false;
   const alignment = settings.alignmentGuides !== false;
+  const quickAddOnHover = settings.quickAddOnHover !== false;
   const panelOpacity = settings.panelOpacity ?? 1;
 
   // Persist the panel-opacity slider on release (not per drag tick):
@@ -165,6 +166,24 @@ export function PaletteSettingsPopover({
                   article="alignmentGuides"
                   title="Alignment guides"
                   description="How snap lines help you line elements up."
+                />
+              }
+            />
+            <SettingRow
+              label="Quick-add on hover"
+              hint="Open an element's + menu on hover, not a click."
+              checked={quickAddOnHover}
+              onToggle={() =>
+                apply(
+                  { quickAddOnHover: !quickAddOnHover },
+                  !quickAddOnHover ? 'QuickAddHoverOn' : 'QuickAddHoverOff',
+                )
+              }
+              help={
+                <HelpArticleLink
+                  article="quickAddOnHover"
+                  title="Quick-add on hover"
+                  description="Open the element + menu by hovering instead of clicking."
                 />
               }
             />
