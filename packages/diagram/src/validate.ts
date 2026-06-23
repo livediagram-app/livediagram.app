@@ -1,0 +1,132 @@
+// Runtime structural validation for Element + Tab. The TypeScript types are
+// compile-time only; this is the runtime guard for data crossing a trust
+// boundary — chiefly the API worker accepting tabs / diagrams from
+// (eventually untrusted, token-authenticated) callers, but reusable by AI
+// ingest and import paths too. One source so the API and the app agree on
+// "what a valid tab is".
+//
+// It validates STRUCTURE: the discriminant `type`, the required fields + their
+// primitive types, the closed enums that actually matter (endpoint kind,
+// anchor), and BOUNDS on every array so a single payload can't blow up memory
+// or a downstream O(n) pass. It is intentionally LENIENT on cosmetic optionals
+// (colours, text styling, animation, shape KIND): a bad value there is
+// harmless — the renderer defaults / falls back — and pinning every field
+// would be brittle against forward-compatible model additions. Pair this with
+// the byte-size caps at the API layer (a structurally valid tab can still be
+// too big).
+
+import type { Element, Tab } from './index';
+
+// Bounds. Generous vs any real diagram, tight vs an abuse payload.
+export const MAX_ELEMENTS_PER_TAB = 10_000;
+export const MAX_FREEHAND_POINTS = 20_000;
+export const MAX_TABLE_ROWS = 1_000;
+export const MAX_TABLE_COLS = 1_000;
+export const MAX_TABLE_CELLS = 50_000;
+export const MAX_DATA_ARRAY = 5_000; // railLabels / lineCategories / pieSlices / lineSeries
+
+const ELEMENT_TYPES = new Set([
+  'shape',
+  'text',
+  'table',
+  'sticky',
+  'image',
+  'freehand',
+  'annotation',
+  'link-card',
+  'arrow',
+]);
+const ANCHORS = new Set(['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']);
+
+function isObj(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+function isNum(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v);
+}
+function isNonEmptyStr(v: unknown): v is string {
+  return typeof v === 'string' && v.length > 0;
+}
+function boundedArray(v: unknown, max: number): v is unknown[] {
+  return Array.isArray(v) && v.length <= max;
+}
+
+// A boxed element's geometry: finite x/y, non-negative finite width/height.
+function hasValidBox(o: Record<string, unknown>): boolean {
+  return (
+    isNum(o.x) && isNum(o.y) && isNum(o.width) && o.width >= 0 && isNum(o.height) && o.height >= 0
+  );
+}
+
+function isValidEndpoint(ep: unknown): boolean {
+  if (!isObj(ep)) return false;
+  if (ep.kind === 'free') return isNum(ep.x) && isNum(ep.y);
+  if (ep.kind === 'pinned') return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string);
+  if (ep.kind === 'on-arrow') return isNonEmptyStr(ep.arrowId) && isNum(ep.t);
+  return false;
+}
+
+// Structural validity of a single element. Returns true for any element the
+// renderer can safely handle; false for a missing/wrong discriminant, a
+// missing required field, a malformed endpoint, or an over-cap array.
+export function isValidElement(el: unknown): el is Element {
+  if (!isObj(el) || !isNonEmptyStr(el.id)) return false;
+  const t = el.type;
+  if (typeof t !== 'string' || !ELEMENT_TYPES.has(t)) return false;
+
+  if (t === 'arrow') {
+    return isValidEndpoint(el.from) && isValidEndpoint(el.to);
+  }
+
+  // Every non-arrow element is a boxed element: it needs a valid box.
+  if (!hasValidBox(el)) return false;
+
+  if (t === 'shape') {
+    if (!isNonEmptyStr(el.shape)) return false;
+    // Bound the optional data arrays (charts / rail) if present.
+    if (el.railLabels !== undefined && !boundedArray(el.railLabels, MAX_DATA_ARRAY)) return false;
+    if (el.lineCategories !== undefined && !boundedArray(el.lineCategories, MAX_DATA_ARRAY))
+      return false;
+    if (el.pieSlices !== undefined && !boundedArray(el.pieSlices, MAX_DATA_ARRAY)) return false;
+    if (el.lineSeries !== undefined && !boundedArray(el.lineSeries, MAX_DATA_ARRAY)) return false;
+    return true;
+  }
+  if (t === 'table') {
+    if (!boundedArray(el.cells, MAX_TABLE_ROWS)) return false;
+    let total = 0;
+    for (const row of el.cells) {
+      if (!boundedArray(row, MAX_TABLE_COLS)) return false;
+      total += row.length;
+      if (total > MAX_TABLE_CELLS) return false;
+      for (const c of row) if (typeof c !== 'string') return false;
+    }
+    return true;
+  }
+  if (t === 'image') {
+    return el.imageId === null || typeof el.imageId === 'string';
+  }
+  if (t === 'freehand') {
+    if (typeof el.closed !== 'boolean' || !boundedArray(el.points, MAX_FREEHAND_POINTS))
+      return false;
+    for (const p of el.points) if (!isObj(p) || !isNum(p.nx) || !isNum(p.ny)) return false;
+    return true;
+  }
+  // text / sticky / annotation / link-card carry no extra required fields.
+  return true;
+}
+
+// Structural validity of a tab: id + name + a bounded `elements` array of
+// valid elements with unique ids (a duplicate id breaks selection + arrow
+// references downstream, so it's rejected). Other tab fields (theme, font,
+// background) are cosmetic and left unchecked.
+export function isValidTab(tab: unknown): tab is Tab {
+  if (!isObj(tab) || !isNonEmptyStr(tab.id) || typeof tab.name !== 'string') return false;
+  if (!boundedArray(tab.elements, MAX_ELEMENTS_PER_TAB)) return false;
+  const ids = new Set<string>();
+  for (const el of tab.elements) {
+    if (!isValidElement(el)) return false;
+    if (ids.has(el.id)) return false;
+    ids.add(el.id);
+  }
+  return true;
+}

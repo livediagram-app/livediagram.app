@@ -733,6 +733,10 @@ export * from './factories';
 export * from './component-factories';
 export * from './table';
 
+// Runtime structural validation for Element + Tab (the trust-boundary guard
+// the API uses to vet incoming tabs / diagrams). See validate.ts.
+export * from './validate';
+
 // Deterministic auto-layout for AI-generated diagrams (spec/25).
 export * from './auto-layout';
 
