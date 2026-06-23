@@ -165,7 +165,7 @@ export function EditorHeader({
         {/* Help-centre link (spec/55), moved here from the tab bar so it sits
             with the other top-right actions. Plain external <a> opening /help
             in a new tab; fires a telemetry event like the old tab-bar link. */}
-        <Tooltip title="Help" description="Guides, tutorials, and answers in the help centre.">
+        <Tooltip title="Help" description="Guides, tutorials, and answers in Help.">
           <a
             href="/help/"
             target="_blank"
