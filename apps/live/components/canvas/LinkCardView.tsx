@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { type LinkCardElement } from '@livediagram/diagram';
+import { defaultTextColor, type LinkCardElement } from '@livediagram/diagram';
 
 // Inner content of a link-card element (spec/40): a favicon / glyph + title +
 // destination row, with the OG image as a top banner when a URL has unfurled.
@@ -99,7 +99,7 @@ export function LinkCardView({
       <div className="min-w-0 flex-1">
         <p
           className="line-clamp-2 text-[12px] font-semibold leading-tight"
-          style={{ color: element.textColor ?? '#1e293b' }}
+          style={{ color: element.textColor ?? defaultTextColor(element) }}
         >
           {title}
         </p>
