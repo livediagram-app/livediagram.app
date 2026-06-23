@@ -66,6 +66,7 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 | 56  | [Contextual help links](56-contextual-help-links.md)               | Reusable `HelpArticleLink` deep-linking editor surfaces to their help article; `HELP_ARTICLES` slug source  |
 | 57  | [Source layout](57-source-layout.md)                               | Proposal: group `apps/live` components + hooks into domain subdirectories (canvas/dialogs/panels/…), atomic |
 | 58  | [Palette drag ghost](58-palette-drag-ghost.md)                     | Drag-to-add shows a live translucent footprint of the shape at the cursor, replacing the browser drag image |
+| 59  | [Minimap](59-minimap.md)                                           | Bottom-left zoomed-out overview + viewport rect; tap/drag to navigate. Desktop, when Activity panel closed  |
 
 ## Workflow
 

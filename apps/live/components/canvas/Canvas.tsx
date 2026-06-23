@@ -60,6 +60,8 @@ import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
+import { Minimap } from '@/components/canvas/Minimap';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 
 export function Canvas(props: CanvasProps) {
@@ -119,6 +121,9 @@ export function Canvas(props: CanvasProps) {
 
   const isPaintMode = formatSourceId !== null;
   const isGroupMode = groupSourceId !== null;
+  // Desktop-only: the minimap (spec/59) shares the bottom-left corner with
+  // the Activity panel, so it shows only while that panel is minimised.
+  const isMobile = useIsMobileViewport();
   // Nudge above the Fit button when the whole diagram has scrolled out of view.
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
 
@@ -1185,6 +1190,17 @@ export function Canvas(props: CanvasProps) {
       {/* Drag-to-add ghost (spec/58): previews where a dragged palette shape
           will land, following the cursor over the canvas. */}
       <PaletteDragGhost zoom={viewportZoom} />
+      {/* Minimap (spec/59): zoomed-out overview + tap/drag to navigate. Bottom
+          left, only when the Activity panel is minimised + on desktop. */}
+      {props.activityMinimized && !isMobile ? (
+        <Minimap
+          elements={elements}
+          viewportOffset={viewportOffset}
+          viewportZoom={viewportZoom}
+          setViewportOffset={setViewportOffset}
+          mainRef={mainRef}
+        />
+      ) : null}
       {/* Touch long-press "hold" ring at the finger (spec/43-style touch
           affordance). Portaled to escape the canvas's pan/zoom transform so its
           fixed position is viewport-relative. Reveals only after a deliberate
