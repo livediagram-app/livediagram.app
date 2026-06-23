@@ -1,8 +1,9 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 
 // The shared modal shell. Every editor dialog (ConfirmDialog,
 // TeamFormModal, ShareDialog, Import/Export, Settings, …) re-built the
@@ -17,24 +18,31 @@ import { useEscape } from '@/hooks/ui/useEscape';
 // frame without contorting into a one-size props bag. `size` is the
 // width scale; `closeOnEscape` lets a mid-submit dialog suppress Esc.
 
-type DialogSize = 'sm' | 'md' | 'lg';
+// Width scale covering the values the hand-rolled dialogs actually used
+// (26 / 30 / 34 / 36rem) so every dialog snaps to one rung instead of a
+// bespoke `w-[..]`.
+type DialogSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const WIDTHS: Record<DialogSize, string> = {
   sm: 'w-[26rem]',
-  md: 'w-[32rem]',
-  lg: 'w-[36rem]',
+  md: 'w-[30rem]',
+  lg: 'w-[34rem]',
+  xl: 'w-[36rem]',
 };
 
 export type DialogProps = {
   open: boolean;
   onClose: () => void;
-  // Wires aria-labelledby to the caller's heading element id.
+  // Wires aria-labelledby to the caller's heading element id. Use `ariaLabel`
+  // instead when the dialog has no visible heading element to point at.
   titleId?: string;
+  ariaLabel?: string;
   size?: DialogSize;
   // Off for dialogs that must not cancel mid-flight (e.g. a submit in
   // progress); defaults on.
   closeOnEscape?: boolean;
-  // Extra classes appended to the panel (rarely needed).
+  // Extra classes appended to the panel (e.g. `max-h-[90vh]` for a dialog
+  // with its own scrolling body).
   className?: string;
   children: ReactNode;
 };
@@ -43,12 +51,18 @@ export function Dialog({
   open,
   onClose,
   titleId,
+  ariaLabel,
   size = 'sm',
   closeOnEscape = true,
   className,
   children,
 }: DialogProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
   useEscape(onClose, { enabled: open && closeOnEscape, preventDefault: true });
+  // Trap focus inside the modal while open and hand it back on close — keeps
+  // keyboard / screen-reader users out of the inert background. Re-engages on
+  // `open` because the dialog stays mounted and toggles rather than unmounting.
+  useFocusTrap(panelRef, open);
 
   if (!open) return null;
 
@@ -62,10 +76,13 @@ export function Dialog({
         }}
       >
         <div
+          ref={panelRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className={`flex ${WIDTHS[size]} max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
+          aria-label={ariaLabel}
+          tabIndex={-1}
+          className={`flex ${WIDTHS[size]} max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
             className ? ` ${className}` : ''
           }`}
         >

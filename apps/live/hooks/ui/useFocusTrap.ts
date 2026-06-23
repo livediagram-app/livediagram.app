@@ -13,6 +13,11 @@ import { useEffect, type RefObject } from 'react';
 // Tab / Shift+Tab at the ends so focus can't escape behind the modal, and on
 // unmount restores focus to whatever was focused before it opened (the
 // trigger button). Escape / click-outside close are left to the caller.
+//
+// `active` (default true) re-engages the trap when it flips true, for the
+// shared Dialog primitive that stays mounted and toggles `open` rather than
+// unmounting — pass `open` so focus is captured the moment the dialog shows
+// and handed back when it hides.
 
 const FOCUSABLE = [
   'a[href]',
@@ -23,8 +28,9 @@ const FOCUSABLE = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
-export function useFocusTrap(ref: RefObject<HTMLElement | null>): void {
+export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true): void {
   useEffect(() => {
+    if (!active) return;
     const node = ref.current;
     if (!node) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -69,5 +75,5 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>): void {
         previouslyFocused?.focus?.({ preventScroll: true });
       }
     };
-  }, [ref]);
+  }, [ref, active]);
 }
