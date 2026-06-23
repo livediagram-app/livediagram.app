@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CloseIcon } from './CloseIcon';
 import { ToggleSwitch } from './palette-controls';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 import type { Tab } from '@livediagram/diagram';
 import {
   downloadBlob,

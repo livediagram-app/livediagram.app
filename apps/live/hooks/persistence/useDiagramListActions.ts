@@ -19,8 +19,8 @@ import {
 } from '@/lib/api-client';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { track } from '@/lib/telemetry';
-import type { useConfirm } from '@/hooks/useConfirm';
-import type { useToast } from '@/hooks/useToast';
+import type { useConfirm } from '@/hooks/ui/useConfirm';
+import type { useToast } from '@/hooks/ui/useToast';
 
 type DiagramListActionsDeps = {
   // The resolved owner id. Null / placeholder while identity is still

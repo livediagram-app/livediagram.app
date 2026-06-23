@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { ClerkProvider } from '@/components/providers/ClerkProvider';
-import { ConfirmProvider } from '@/hooks/useConfirm';
-import { ToastProvider } from '@/hooks/useToast';
+import { ConfirmProvider } from '@/hooks/ui/useConfirm';
+import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@/lib/fonts';
 import './globals.css';
 

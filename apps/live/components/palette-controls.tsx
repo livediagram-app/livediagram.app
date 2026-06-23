@@ -28,7 +28,7 @@ import {
 } from './background-pattern-icons';
 import { AlignIcon } from './palette-icons';
 import { Tooltip } from './Tooltip';
-import { useModKeyHeld } from '@/hooks/useModKeyHeld';
+import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
 
 // The active tab theme's element colours, made available to every palette

@@ -57,7 +57,7 @@ import { LineChartView } from './LineChartView';
 import { TechIconGlyph } from './tech-icon-glyph';
 import { ICON_DND_MIME } from '@/lib/icons';
 import { isTechIconId } from '@/lib/tech-icons';
-import { useLongPress } from '@/hooks/useLongPress';
+import { useLongPress } from '@/hooks/ui/useLongPress';
 import { describeLink } from '@/lib/link-label';
 import { TableView } from './TableView';
 import { Tooltip } from './Tooltip';

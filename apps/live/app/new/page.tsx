@@ -6,7 +6,7 @@ import { ApiErrorPage } from '@/components/ApiErrorPage';
 import { TemplatePicker } from '@/components/TemplatePicker';
 import { CustomThemeProvider } from '@/components/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/AnimatedLinesBackdrop';
-import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
+import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';

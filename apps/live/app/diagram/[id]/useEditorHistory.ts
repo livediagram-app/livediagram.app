@@ -10,7 +10,7 @@ import {
 } from '@/lib/api-client';
 import { applyRevert } from '@/lib/change-log';
 import { track } from '@/lib/telemetry';
-import { HISTORY_LIMIT } from '@/hooks/useDiagramHistory';
+import { HISTORY_LIMIT } from '@/hooks/canvas/useDiagramHistory';
 import { patchTab } from './editor-page-helpers';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;

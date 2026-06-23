@@ -24,7 +24,7 @@ import { useAuth, useClerk, useUser } from '@clerk/react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { HEADER_ACTION_BTN } from './EditorHeader';

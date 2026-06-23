@@ -9,7 +9,7 @@
 
 import { type ShapeElement } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
-import { useChartHover } from '@/hooks/useChartHover';
+import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartLegend } from './ChartLegend';
 import { ChartTooltip } from './ChartTooltip';
 

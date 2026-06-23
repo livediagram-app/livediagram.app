@@ -1,6 +1,8 @@
 # 57 — Source layout: group `apps/live` components + hooks by domain
 
-Status: **proposal** (taxonomy agreed; the file moves are a mechanical follow-up, see "Execution").
+Status: **in progress** — `apps/live/hooks/` has been reorganised into the
+buckets below (canvas / persistence / ui / collab). `apps/live/components/`
+is the remaining half; see "Execution".
 
 ## Problem
 
@@ -58,18 +60,17 @@ Rules:
 
 ## Execution
 
-This is a **single atomic change**, not an incremental one: a partial move
-leaves the tree half-organised (worse than consistently-flat), and every
-move rewrites `@/components/X` / `@/hooks/X` import sites across hundreds of
-files — many of them hot files (`EditorView`, `useEditorState`, `Canvas`)
-edited continuously by the repo's background auto-committer. Doing it
-piecemeal against that churn guarantees merge conflicts and risks landing a
-half-state on `main`.
+Each directory moves **atomically in its own pass** — never a partial move
+within a directory, which would leave it half-organised (worse than
+consistently-flat). Every move rewrites that directory's `@/<dir>/X` import
+sites across hundreds of files, including hot files (`EditorView`,
+`useEditorState`, `Canvas`) edited continuously by the repo's background
+auto-committer, so each pass runs in an isolated `git worktree` off
+`origin/main`: `git mv` each file into its bucket, a quote-anchored
+project-wide import-path rewrite, then `typecheck && lint && test && format`
+green before a single commit and push.
 
-So it must run in one pass with the working tree otherwise quiet:
-`git mv` each file, then a project-wide import-path rewrite, then
-`pnpm -w typecheck && pnpm -w lint && pnpm -w test` green before a single
-commit. Best done in an isolated `git worktree` off `origin/main` with the
-auto-committer paused.
-
-Deferred until that window exists; the taxonomy above is the agreed target.
+- **`hooks/` — done.** 66 files → canvas / persistence / ui / collab; ~410
+  files had their `@/hooks/*` imports rewritten; full suite green.
+- **`components/` — next.** Same recipe, larger (157 files). The buckets
+  above are the target.

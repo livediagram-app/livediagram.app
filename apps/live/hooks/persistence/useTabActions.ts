@@ -19,8 +19,8 @@ import { normalizeFolderOrder, tabFolderName, type Element, type Tab } from '@li
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
 import { parseImportedTab, pickTabFile, type ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
-import type { useConfirm } from '@/hooks/useConfirm';
-import type { useToast } from '@/hooks/useToast';
+import type { useConfirm } from '@/hooks/ui/useConfirm';
+import type { useToast } from '@/hooks/ui/useToast';
 
 type TabActionsDeps = {
   tabs: Tab[];

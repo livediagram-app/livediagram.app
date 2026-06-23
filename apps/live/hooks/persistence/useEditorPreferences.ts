@@ -7,7 +7,7 @@
 // (reduce motion, AI panel auto-open).
 
 import { useEffect, useRef, useState } from 'react';
-import { useReduceMotion } from '@/hooks/useReduceMotion';
+import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
 import {
   readUserPreferences,
   fetchUserPreferences,

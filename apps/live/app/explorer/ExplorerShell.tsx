@@ -9,7 +9,7 @@ import { MoveToFolderDialog } from '@/components/MoveToFolderDialog';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/SignInBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
-import { useDismissibleBanner } from '@/hooks/useDismissibleBanner';
+import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { CustomThemeProvider } from '@/components/CustomThemeProvider';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './ExplorerSidebar';

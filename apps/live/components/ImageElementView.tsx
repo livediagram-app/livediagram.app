@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { BORDER_RADIUS_PX, type ImageElement } from '@livediagram/diagram';
-import { useImageBlobUrl } from '@/hooks/useImageBlobUrl';
+import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 
 // Renders the bitmap (or upload placeholder) for an ImageElement.
 // Mounted inside BoxedElementView's transformed wrapper so it picks

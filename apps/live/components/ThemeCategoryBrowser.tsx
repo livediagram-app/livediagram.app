@@ -29,7 +29,7 @@ import {
   type ThemeId,
   themeCategory,
 } from '@/lib/themes';
-import { useUiMode } from '@/hooks/useUiMode';
+import { useUiMode } from '@/hooks/ui/useUiMode';
 import { AnimatedHeightBox } from './AnimatedHeightBox';
 import { ToggleSwitch } from './palette-controls';
 import {

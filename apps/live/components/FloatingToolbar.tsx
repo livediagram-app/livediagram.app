@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { useEdgeAwarePlacement } from '@/hooks/useEdgeAwarePlacement';
+import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from './FloatingTitle';
 
 type Bounds = { x: number; y: number; width: number; height: number };

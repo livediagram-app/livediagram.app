@@ -11,7 +11,7 @@ import { ConfirmPopover } from './ConfirmPopover';
 import { Tooltip } from './Tooltip';
 import { ExpandIcon, PlusIcon } from './explorer-icons';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
-import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/useTeamLibrariesSweep';
+import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { AccordionHeader, DiagramRow, FolderNode, SharedRow, UnsortedNode } from './explorer-views';
 import { TeamNode } from './explorer-team-views';
 

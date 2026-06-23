@@ -26,7 +26,7 @@
 import { Fragment, useState } from 'react';
 import { CloseIcon } from './CloseIcon';
 import { Portal } from './Portal';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 import { matches } from '@/lib/search';
 
 // One folder in a tree. The caller passes a flat list; this component

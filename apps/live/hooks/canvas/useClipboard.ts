@@ -24,7 +24,7 @@ import { useEffect, useRef, useState } from 'react';
 import { duplicateGroupedElements, type Element, type Tab } from '@livediagram/diagram';
 import { uploadImageFile } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
-import type { useToast } from '@/hooks/useToast';
+import type { useToast } from '@/hooks/ui/useToast';
 
 // Written to the OS clipboard on an in-app element copy purely to displace
 // any lingering image (see copySelection). The paste handler only inspects

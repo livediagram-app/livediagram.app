@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TeamInviteLinkInfo } from '@livediagram/api-schema';
 import { Brand } from '@livediagram/ui';
-import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
+import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { ensureGuestSelfId } from '@/lib/local-identity';
 import { track } from '@/lib/telemetry';

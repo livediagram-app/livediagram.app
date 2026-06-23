@@ -12,7 +12,7 @@ import {
   type SearchResultItem,
 } from '@/lib/search';
 import { titleCaseType, track } from '@/lib/telemetry';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 
 // Global search panel: triggered from a footer button, blurs the
 // canvas behind it, pops up near the top-centre. The scope is

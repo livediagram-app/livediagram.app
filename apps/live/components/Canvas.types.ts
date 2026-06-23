@@ -20,7 +20,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { TemplateKind } from '@/lib/templates';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
-import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/useTeamLibrariesSweep';
+import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from './CommandPalette';
 
 // A connection-point marker shown while dragging an arrow endpoint: the

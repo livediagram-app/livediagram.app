@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { SaveStatus } from '@/components/EditorHeader';
-import type { useToast } from '@/hooks/useToast';
+import type { useToast } from '@/hooks/ui/useToast';
 import {
   apiListDiagrams,
   apiListSharedWith,

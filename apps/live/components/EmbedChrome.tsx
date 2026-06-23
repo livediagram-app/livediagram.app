@@ -15,8 +15,8 @@
 
 import { useRef, useState } from 'react';
 import type { Tab } from '@livediagram/diagram';
-import { useClickOutside } from '@/hooks/useClickOutside';
-import { useEscape } from '@/hooks/useEscape';
+import { useClickOutside } from '@/hooks/ui/useClickOutside';
+import { useEscape } from '@/hooks/ui/useEscape';
 
 function OpenExternalIcon() {
   return (

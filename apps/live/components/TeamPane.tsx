@@ -12,7 +12,7 @@ import {
   type TeamRole,
 } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
-import { useConfirm } from '@/hooks/useConfirm';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import { SignInIcon } from './AuthControls';

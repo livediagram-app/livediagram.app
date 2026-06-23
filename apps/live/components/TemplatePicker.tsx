@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { CloseIcon } from './CloseIcon';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 import type { Participant } from '@/lib/identity';
 import { initialsOf, randomName } from '@/lib/identity';
 import { shufflePinned } from '@/lib/shuffle';

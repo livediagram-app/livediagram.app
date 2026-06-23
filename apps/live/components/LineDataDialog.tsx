@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { LineSeries } from '@livediagram/diagram';
 import { CloseIcon } from './CloseIcon';
 import { HelpArticleLink } from './HelpArticleLink';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 import { parseCsvLineData } from '@/lib/csv';
 
 // Line-chart data editor in a modal (spec/53). The context menu's Data category

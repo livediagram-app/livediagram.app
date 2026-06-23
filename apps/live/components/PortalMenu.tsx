@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { Portal } from './Portal';
 import { Tooltip } from './Tooltip';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
-import { useReposition } from '@/hooks/useReposition';
+import { useReposition } from '@/hooks/canvas/useReposition';
 
 type Placement = 'above' | 'below';
 

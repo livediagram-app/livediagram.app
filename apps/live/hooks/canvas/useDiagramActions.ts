@@ -14,9 +14,9 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { apiCopyDiagram, type DiagramListItem, type SharedWithItem } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
-import type { useConfirm } from '@/hooks/useConfirm';
-import { useDiagramListActions } from '@/hooks/useDiagramListActions';
-import { useToast } from '@/hooks/useToast';
+import type { useConfirm } from '@/hooks/ui/useConfirm';
+import { useDiagramListActions } from '@/hooks/persistence/useDiagramListActions';
+import { useToast } from '@/hooks/ui/useToast';
 
 type DiagramActionsDeps = {
   diagramId: string | null;

@@ -11,7 +11,7 @@
 // the active tab. The "Show more" expansion is local UI state owned here.
 
 import { isAnimatedPattern, type BackgroundPattern } from '@livediagram/diagram';
-import { useShowMoreList } from '@/hooks/useShowMoreList';
+import { useShowMoreList } from '@/hooks/ui/useShowMoreList';
 import { ColorSwatch, PATTERNS, PatternButton, type PatternEntry } from './palette-controls';
 import { ShowMoreButton } from './ShowMoreButton';
 import { Tooltip } from './Tooltip';

@@ -1,4 +1,4 @@
-import { useUiMode } from '@/hooks/useUiMode';
+import { useUiMode } from '@/hooks/ui/useUiMode';
 import { Tooltip } from './Tooltip';
 
 // Light / dark chrome toggle. A self-contained feature (its own hook +

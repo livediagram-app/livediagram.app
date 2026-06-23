@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { Portal } from './Portal';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 
 // The shared modal shell. Every editor dialog (ConfirmDialog,
 // TeamFormModal, ShareDialog, Import/Export, Settings, …) re-built the

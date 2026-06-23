@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CloseIcon } from './CloseIcon';
 import { HelpArticleLink } from './HelpArticleLink';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 import { normaliseUrl } from '@/lib/url-safety';
 import type { ElementLink } from '@livediagram/diagram';
 

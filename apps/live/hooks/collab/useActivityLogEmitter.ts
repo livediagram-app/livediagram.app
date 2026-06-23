@@ -9,7 +9,7 @@ import {
 import type { Element } from '@livediagram/diagram';
 import { apiAppendChangeLogEntry } from '@/lib/api-client';
 import { diffElements } from '@/lib/change-log';
-import { HISTORY_LIMIT } from './useDiagramHistory';
+import { HISTORY_LIMIT } from '@/hooks/canvas/useDiagramHistory';
 
 // Activity-log entry emission lifted out of editor-page.tsx. The
 // trio is cohesive (`emitChange` for an element diff, `emitTabMeta`

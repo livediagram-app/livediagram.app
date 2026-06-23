@@ -1,8 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { useEscape } from '@/hooks/useEscape';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { CloseIcon } from './CloseIcon';
 import { HelpArticleLink } from './HelpArticleLink';
 

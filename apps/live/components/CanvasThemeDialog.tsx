@@ -14,7 +14,7 @@
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
 import type { BackgroundPattern } from '@livediagram/diagram';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 import { CanvasStyleControls } from './CanvasStyleControls';
 import { CloseIcon } from './CloseIcon';
 import { HelpArticleLink } from './HelpArticleLink';

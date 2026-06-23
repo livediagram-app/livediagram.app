@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { NameEditor } from './NameEditor';
-import { useReposition } from '@/hooks/useReposition';
+import { useReposition } from '@/hooks/canvas/useReposition';
 import { Portal } from './Portal';
 import { ConfirmPopover } from './ConfirmPopover';
 import {
@@ -15,7 +15,7 @@ import {
 } from '@livediagram/diagram';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 
-import { useUiMode } from '@/hooks/useUiMode';
+import { useUiMode } from '@/hooks/ui/useUiMode';
 import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { PencilIcon, TrashIcon } from './explorer-icons';

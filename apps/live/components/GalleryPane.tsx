@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiDeleteImage, apiImageUsage, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { ImageUploadError, uploadImageFile } from '@/lib/upload-image';
-import { useConfirm } from '@/hooks/useConfirm';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 import { TrashIcon } from './explorer-icons';
 import { GalleryImageButton } from './GalleryImageButton';
 import { ImageDropZone } from './ImageDropZone';

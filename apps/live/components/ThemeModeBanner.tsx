@@ -16,7 +16,7 @@
 import { useState } from 'react';
 import { isLightColor } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
-import { useUiMode } from '@/hooks/useUiMode';
+import { useUiMode } from '@/hooks/ui/useUiMode';
 
 export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
   const { mode, toggle } = useUiMode();

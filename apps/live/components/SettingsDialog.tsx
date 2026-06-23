@@ -4,8 +4,8 @@ import { useRef, useState, type ReactNode } from 'react';
 import { CloseIcon } from './CloseIcon';
 import { Portal } from './Portal';
 import { HelpArticleLink } from './HelpArticleLink';
-import { useEscape } from '@/hooks/useEscape';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useEscape } from '@/hooks/ui/useEscape';
+import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { track } from '@/lib/telemetry';
 import type { UserPreferences } from '@/lib/user-preferences';
 

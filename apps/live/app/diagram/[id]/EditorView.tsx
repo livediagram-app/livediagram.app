@@ -32,9 +32,9 @@ import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/SignInBann
 import { EmptyCanvasBanner } from '@/components/EmptyCanvasBanner';
 import { ThemeModeBanner } from '@/components/ThemeModeBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
-import { useDismissibleBanner } from '@/hooks/useDismissibleBanner';
-import { useDelayedReveal } from '@/hooks/useDelayedReveal';
-import { useEditorCommands } from '@/hooks/useEditorCommands';
+import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
+import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
+import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { useEditorContext } from './EditorContext';
 
 // How long a guest edits before the sign-in nudge appears (spec/36).

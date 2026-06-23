@@ -22,7 +22,7 @@ import { useReverification, useUser } from '@clerk/react';
 import { Portal } from './Portal';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 import { messageOf } from './auth-shared';
 
 type Phase = 'idle' | 'submitting' | 'error';

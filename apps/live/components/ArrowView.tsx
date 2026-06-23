@@ -31,7 +31,7 @@ import {
 } from '@livediagram/diagram';
 import type { ArrowEnd } from '@/lib/canvas';
 import { arrowLabelFontSize, labelSize, placeLabel } from '@/lib/arrow-label-geometry';
-import { useLongPress } from '@/hooks/useLongPress';
+import { useLongPress } from '@/hooks/ui/useLongPress';
 
 type ArrowViewProps = {
   arrow: ArrowElement;

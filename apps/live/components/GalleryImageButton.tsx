@@ -1,7 +1,7 @@
 'use client';
 
 import type { ImageSummary } from '@livediagram/api-schema';
-import { useImageBlobUrl } from '@/hooks/useImageBlobUrl';
+import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 
 // Aspect-square clickable thumbnail for one ImageSummary. Used by
 // the ImagePicker's Gallery tab + the Current Tab Images

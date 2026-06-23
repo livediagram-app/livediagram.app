@@ -7,7 +7,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { Tooltip } from './Tooltip';
 

@@ -15,7 +15,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { customDefinitionFromTheme } from '@/lib/custom-theme-registry';
 import { type ThemeDefinition } from '@/lib/themes';
-import { useConfirm } from '@/hooks/useConfirm';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useCustomThemes } from './CustomThemeProvider';
 import { CustomThemeBuilder, type CustomThemeDraft } from './CustomThemeBuilder';
 import { ThemeCategoryBrowser } from './ThemeCategoryBrowser';

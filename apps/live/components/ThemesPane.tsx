@@ -9,8 +9,8 @@
 // mounts.
 
 import { useState } from 'react';
-import { useConfirm } from '@/hooks/useConfirm';
-import { useEscape } from '@/hooks/useEscape';
+import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useEscape } from '@/hooks/ui/useEscape';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from './CustomThemeProvider';
 import { CustomThemeBuilder, type CustomThemeDraft } from './CustomThemeBuilder';

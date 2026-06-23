@@ -48,8 +48,8 @@ import {
   type RefObject,
   type SetStateAction,
 } from 'react';
-import { useStableCallbacks } from '@/hooks/useStableCallbacks';
-import type { DockAnchor, MobilePanel } from '@/hooks/useCanvasMobileDock';
+import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
+import type { DockAnchor, MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.

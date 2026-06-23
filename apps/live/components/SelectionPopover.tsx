@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Tooltip } from './Tooltip';
-import { useEdgeAwarePlacement } from '@/hooks/useEdgeAwarePlacement';
+import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from './FloatingTitle';
 import {
   CommentIcon,

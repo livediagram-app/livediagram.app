@@ -9,8 +9,8 @@ import { DiagramIcon, EllipsisIcon, MenuDuplicateIcon, MenuPencilIcon } from '@/
 import { MenuItem, PortalMenu } from './PortalMenu';
 import { InlineRenameInput } from './InlineRenameInput';
 import { MoveToFolderDialog } from './MoveToFolderDialog';
-import { useConfirm } from '@/hooks/useConfirm';
-import { useTeamLibrary } from '@/hooks/useTeamLibrary';
+import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useTeamLibrary } from '@/hooks/persistence/useTeamLibrary';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 
 // "Shared diagrams" on the team page (spec/35): the team's folder

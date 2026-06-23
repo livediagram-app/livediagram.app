@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useClerkApiBootstrap } from '@/hooks/useClerkApiBootstrap';
+import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import {
   apiListDiagrams,
   apiListSharedWith,
@@ -14,12 +14,12 @@ import {
 } from '@/lib/api-client';
 import { ensureGuestSelfId } from '@/lib/local-identity';
 import { track } from '@/lib/telemetry';
-import { useFolders } from '@/hooks/useFolders';
-import { useTeamLibrariesSweep } from '@/hooks/useTeamLibrariesSweep';
-import { useTeams } from '@/hooks/useTeams';
-import { useConfirm } from '@/hooks/useConfirm';
-import { useDiagramListActions } from '@/hooks/useDiagramListActions';
-import { useToast } from '@/hooks/useToast';
+import { useFolders } from '@/hooks/persistence/useFolders';
+import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
+import { useTeams } from '@/hooks/persistence/useTeams';
+import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useDiagramListActions } from '@/hooks/persistence/useDiagramListActions';
+import { useToast } from '@/hooks/ui/useToast';
 import { explorerPathFor, selectedFromRoute } from './routes';
 import type { PaneDiagram, SelectedNode } from './views';
 

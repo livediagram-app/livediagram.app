@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { TeamInviteLink } from '@livediagram/api-schema';
 import { apiGenerateTeamInviteLink, apiRevokeTeamInviteLink } from '@/lib/api-client';
-import { useEscape } from '@/hooks/useEscape';
+import { useEscape } from '@/hooks/ui/useEscape';
 import { Portal } from './Portal';
 
 // "Invite by link" (spec/32): the admin actively turns on a shareable
