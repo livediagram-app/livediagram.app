@@ -531,6 +531,10 @@ export const TELEMETRY_CATEGORIES = [
   // once per fresh browser identity mint, the daily-new-visitors
   // signal. Sign-in / sign-up / sign-out stay under 'Session'.
   'Participant',
+  // Help centre (apps/help, spec/22 + spec/55): article views +
+  // per-article helpful / not-really feedback. The second app (besides
+  // the editor) that emits telemetry. `type` is the article slug.
+  'Help',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -579,6 +583,11 @@ export const TELEMETRY_ACTIONS = [
   'Ended',
   'Revealed',
   'Voted',
+  // Help centre (spec/22 + spec/55): an article was viewed, and the
+  // reader rated it helpful / not-really via the article feedback widget.
+  'View',
+  'Helpful',
+  'Unhelpful',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 
