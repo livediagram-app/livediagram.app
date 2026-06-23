@@ -21,9 +21,17 @@ export async function apiGetCapabilities(): Promise<CapabilitiesResponse> {
   }
 }
 
-// Valid shape kinds — must stay in sync with packages/diagram ShapeKind.
-// Used to validate AI-returned elements before applying them.
-const VALID_SHAPE_KINDS = new Set([
+// Shape kinds the AI may emit and we render as-is. A SUPERSET of what the
+// server prompt lists (apps/api SCHEMA), because models routinely stray:
+// they emit valid-but-unprompted kinds (triangle, star, speech-bubble, …)
+// and synonyms ("rectangle", "box", "oval"). Anything NOT in this set is
+// coerced to "square" by normalizeAiElement rather than dropped — a wrong
+// shape still shows; a dropped one leaves arrows pointing at nothing. The
+// data-carrying composites (charts / rail / rating / progress / icon) are
+// deliberately excluded: without their extra fields they'd render empty, so
+// they collapse to a plain square. Keep in sync with packages/diagram
+// ShapeKind (the simple, self-contained subset).
+const AI_SHAPE_KINDS = new Set([
   'square',
   'circle',
   'diamond',
@@ -34,12 +42,23 @@ const VALID_SHAPE_KINDS = new Set([
   'stadium',
   'actor',
   'cloud',
+  'triangle',
+  'trapezoid',
+  'star',
+  'speech-bubble',
+  'frame',
   'browser',
   'monitor',
   'laptop',
   'phone',
   'tablet',
+  'smartwatch',
 ]);
+
+// Fallback size for an AI shape that omitted / mis-typed width or height, so
+// the box still renders (generated diagrams get re-laid-out anyway).
+const AI_DEFAULT_SHAPE_W = 120;
+const AI_DEFAULT_SHAPE_H = 64;
 
 function isValidElement(el: unknown): el is Element {
   if (typeof el !== 'object' || el === null) return false;
@@ -47,23 +66,14 @@ function isValidElement(el: unknown): el is Element {
   if (typeof obj.id !== 'string' || !obj.id) return false;
   const t = obj.type;
   if (t === 'shape') {
-    return (
-      VALID_SHAPE_KINDS.has(obj.shape as string) &&
-      typeof obj.x === 'number' &&
-      typeof obj.y === 'number' &&
-      typeof obj.width === 'number' &&
-      (obj.width as number) > 0 &&
-      typeof obj.height === 'number' &&
-      (obj.height as number) > 0
-    );
+    // Accept any shape with a position; the kind is coerced and the size
+    // defaulted in normalizeAiElement, so an off-vocabulary kind or a
+    // missing width/height no longer drops the whole node (which used to
+    // leave its connecting arrows floating).
+    return typeof obj.x === 'number' && typeof obj.y === 'number';
   }
   if (t === 'text' || t === 'sticky') {
-    return (
-      typeof obj.x === 'number' &&
-      typeof obj.y === 'number' &&
-      typeof obj.width === 'number' &&
-      typeof obj.height === 'number'
-    );
+    return typeof obj.x === 'number' && typeof obj.y === 'number';
   }
   if (t === 'arrow') {
     return typeof obj.from === 'object' && typeof obj.to === 'object';
@@ -81,10 +91,20 @@ function isValidElement(el: unknown): el is Element {
 // hierarchy choices are preserved.
 function normalizeAiElement(el: Element): Element {
   if (el.type === 'shape') {
-    const ts = (el as { textSize?: unknown }).textSize;
-    if (ts !== 'sm' && ts !== 'md' && ts !== 'lg') {
-      return { ...el, textSize: 'md' };
+    const obj = el as Record<string, unknown>;
+    const patch: Record<string, unknown> = {};
+    // Off-vocabulary / synonym kind ("rectangle", "box", a composite without
+    // its data) → plain square, so the node renders instead of being dropped.
+    if (typeof obj.shape !== 'string' || !AI_SHAPE_KINDS.has(obj.shape)) {
+      patch.shape = 'square';
     }
+    // Default a missing / non-positive size so the box has area to draw.
+    if (typeof obj.width !== 'number' || obj.width <= 0) patch.width = AI_DEFAULT_SHAPE_W;
+    if (typeof obj.height !== 'number' || obj.height <= 0) patch.height = AI_DEFAULT_SHAPE_H;
+    // Pin a non-fixed textSize to 'md' (else 'scale' balloons the label).
+    const ts = obj.textSize;
+    if (ts !== 'sm' && ts !== 'md' && ts !== 'lg') patch.textSize = 'md';
+    return Object.keys(patch).length ? ({ ...el, ...patch } as Element) : el;
   }
   return el;
 }
@@ -99,9 +119,21 @@ export function extractElementsFromBuffer(buffer: string): Element[] {
   const elements: Element[] = [];
   let depth = 0;
   let start = -1;
+  // Track string state so braces INSIDE a value (a label like "if (x) {")
+  // don't throw off the depth count and corrupt every object after it.
+  let inStr = false;
+  let esc = false;
   for (let i = match.index + match[0].length; i < buffer.length; i++) {
     const ch = buffer[i];
-    if (ch === '{') {
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === '\\') esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') {
+      inStr = true;
+    } else if (ch === '{') {
       if (depth === 0) start = i;
       depth++;
     } else if (ch === '}') {
@@ -115,6 +147,8 @@ export function extractElementsFromBuffer(buffer: string): Element[] {
         }
         start = -1;
       }
+    } else if (ch === ']' && depth === 0) {
+      break; // end of the elements array — stop before the summary field
     }
   }
   return elements;
