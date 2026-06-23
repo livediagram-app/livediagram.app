@@ -646,7 +646,7 @@ export function DiagramRow({
             initial={item.name}
             onCommit={commitRename}
             onCancel={() => setEditing(false)}
-            className="w-full rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800"
+            className="w-full rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-100"
           />
         ) : (
           <span className="flex min-w-0 items-center gap-1">

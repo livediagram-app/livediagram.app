@@ -105,11 +105,13 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
 
       <div className="mt-4">
         {galleryError ? (
-          <p className="rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{galleryError}</p>
+          <p className="rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+            {galleryError}
+          </p>
         ) : !gallery ? (
-          <p className="text-xs text-slate-500">Loading…</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Loading…</p>
         ) : gallery.length === 0 ? (
-          <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-6 text-center text-xs text-slate-500">
+          <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-6 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400">
             No images yet. Drop one above and it&apos;ll show up here.
           </p>
         ) : (
@@ -143,7 +145,7 @@ function GalleryCard({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <li className="group relative rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+    <li className="group relative rounded-lg border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900">
       <GalleryImageButton
         image={image}
         ownerId={ownerId}
@@ -155,10 +157,10 @@ function GalleryCard({
       />
       <div className="mt-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-slate-700">
+          <p className="truncate text-xs font-medium text-slate-700 dark:text-slate-200">
             {image.originalName ?? 'Untitled image'}
           </p>
-          <p className="text-[10px] text-slate-500">
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">
             {image.width} × {image.height} · {formatBytes(image.byteSize)}
           </p>
         </div>
@@ -166,21 +168,21 @@ function GalleryCard({
           type="button"
           onClick={onDelete}
           aria-label={`Delete ${image.originalName ?? 'image'}`}
-          className="rounded p-1 text-rose-700 transition hover:bg-rose-50"
+          className="rounded p-1 text-rose-700 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10"
         >
           <TrashIcon strokeWidth={1.6} />
         </button>
       </div>
       <div className="mt-1">
         {usage.length === 0 ? (
-          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
             Not used
           </span>
         ) : (
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
-            className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 transition hover:bg-brand-100"
+            className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 transition hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"
             aria-expanded={open}
           >
             Used in {usage.length} {usage.length === 1 ? 'diagram' : 'diagrams'}
@@ -188,12 +190,12 @@ function GalleryCard({
         )}
       </div>
       {open && usage.length > 0 ? (
-        <ul className="mt-2 space-y-1 border-t border-slate-100 pt-2">
+        <ul className="mt-2 space-y-1 border-t border-slate-100 pt-2 dark:border-slate-800">
           {usage.map((d) => (
             <li key={d.id} className="truncate text-[11px]">
               <a
                 href={`/diagram/${encodeURIComponent(d.id)}`}
-                className="text-brand-700 transition hover:text-brand-800 hover:underline"
+                className="text-brand-700 transition hover:text-brand-800 hover:underline dark:text-brand-300 dark:hover:text-brand-200"
               >
                 {d.name || 'Untitled diagram'}
               </a>

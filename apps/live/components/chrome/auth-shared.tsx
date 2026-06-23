@@ -35,25 +35,27 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
+    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10 dark:bg-slate-950">
       <div className="w-full max-w-md">
-        <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-900/10">
+        <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
           <div className="mb-8 text-center">
             <div className="mb-3 flex justify-center">
               <Brand href="/" />
             </div>
-            <p className="text-sm text-slate-600">{subtitle}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
           </div>
 
           {error ? (
-            <div className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <div className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
               {error}
             </div>
           ) : null}
 
           {children}
 
-          {footer ? <p className="mt-6 text-center text-sm text-slate-600">{footer}</p> : null}
+          {footer ? (
+            <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">{footer}</p>
+          ) : null}
         </div>
       </div>
     </div>
@@ -67,9 +69,9 @@ export function AuthCard({
 
 export function RedirectingCard() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4">
-      <div className="rounded-xl border border-slate-200 bg-white px-8 py-6 text-center shadow-lg shadow-slate-900/10">
-        <p className="text-sm text-slate-600">Redirecting…</p>
+    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
+      <div className="rounded-xl border border-slate-200 bg-white px-8 py-6 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
+        <p className="text-sm text-slate-600 dark:text-slate-400">Redirecting…</p>
       </div>
     </div>
   );
@@ -85,10 +87,10 @@ export function RedirectingCard() {
 export function AuthDisabledNotice() {
   return (
     <AuthCard subtitle="Sign-in isn't enabled on this deployment" error="">
-      <p className="text-sm leading-relaxed text-slate-600">
+      <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
         This livediagram instance is running in <strong>guest-only</strong> mode: the canvas works
         without an account. To enable sign-in, set{' '}
-        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">
+        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800 dark:text-slate-200">
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
         </code>{' '}
         at build time and redeploy.
@@ -137,7 +139,7 @@ export function CodeInputRow({
           maxLength={1}
           autoComplete={i === 0 ? 'one-time-code' : 'off'}
           value={codeDigits[i]}
-          className="h-12 w-10 rounded-md border border-slate-200 bg-white text-center text-lg font-semibold text-slate-900 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
+          className="h-12 w-10 rounded-md border border-slate-200 bg-white text-center text-lg font-semibold text-slate-900 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/30"
           onChange={(e) => {
             const v = e.target.value.replace(/\D/g, '').slice(-1);
             const next = [...codeDigits];
