@@ -466,6 +466,12 @@ export function MovablePanel({
     <div
       ref={ref}
       data-floating-panel=""
+      // Marks the FULL floating panel as opacity-controlled: globals.css
+      // applies the user's --lvd-panel-opacity here (spec/20) and restores
+      // it to opaque on hover / focus. The minimal dock branch above is
+      // deliberately not tagged, so panel opacity never touches the
+      // minimal layout.
+      data-panel-translucent=""
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         // Swallow the right-click so it doesn't bubble to the canvas

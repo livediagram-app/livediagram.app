@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -81,6 +81,17 @@ export function PaletteSettingsPopover({
 
   const autoRebind = settings.autoRebindArrows !== false;
   const alignment = settings.alignmentGuides !== false;
+  const panelOpacity = settings.panelOpacity ?? 1;
+
+  // Persist the panel-opacity slider on release (not per drag tick):
+  // writeUserPreferences fires a D1 PUT on every call, so the live drag
+  // feedback is handled by the CSS var inside PanelOpacityRow and only the
+  // final value is written here. Telemetry once per adjustment (spec/22).
+  const commitOpacity = (next: number) => {
+    if (next === panelOpacity) return;
+    track('UI', 'Changed', 'PanelOpacity');
+    onChange({ ...settings, panelOpacity: next });
+  };
 
   const apply = (patch: Partial<UserPreferences>, telemetry: string) => {
     // Telemetry before persistence so the flip itself reaches the wire
@@ -157,6 +168,19 @@ export function PaletteSettingsPopover({
                 />
               }
             />
+            {!minimalPanels ? (
+              <PanelOpacityRow
+                value={panelOpacity}
+                onCommit={commitOpacity}
+                help={
+                  <HelpArticleLink
+                    article="panelOpacity"
+                    title="Panel opacity"
+                    description="Make the floating panels translucent so the canvas shows through."
+                  />
+                }
+              />
+            ) : null}
             {onToggleMinimalPanels ? (
               <SettingRow
                 label="Minimal panels"
@@ -269,6 +293,68 @@ function SettingRow({
   return (
     <div className="flex items-center gap-1 pr-1">
       <span className="min-w-0 flex-1">{row}</span>
+      {help}
+    </div>
+  );
+}
+
+// Panel-opacity slider row. Holds a local draft so the thumb tracks the
+// drag, and sets the --lvd-panel-opacity custom property imperatively on
+// each input so the floating panels go translucent live. The persisted
+// value (which writes to localStorage + D1) is committed on release via
+// onCommit. `value` is the persisted opacity (0..1); the effect re-syncs
+// the draft when it changes from elsewhere (e.g. a cross-device sync).
+function PanelOpacityRow({
+  value,
+  onCommit,
+  help,
+}: {
+  value: number;
+  onCommit: (next: number) => void;
+  help?: ReactNode;
+}) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const previewLive = (v: number) => {
+    if (typeof document === 'undefined') return;
+    if (v >= 1) document.documentElement.style.removeProperty('--lvd-panel-opacity');
+    else document.documentElement.style.setProperty('--lvd-panel-opacity', String(v));
+  };
+
+  return (
+    <div className="flex items-center gap-1 pr-1">
+      <div className="min-w-0 flex-1 rounded-md px-2 py-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+            Panel opacity
+          </span>
+          <span className="text-[10px] font-medium text-slate-400 tabular-nums dark:text-slate-500">
+            {Math.round(draft * 100)}%
+          </span>
+        </div>
+        <span className="mb-1.5 block text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+          See the canvas through floating panels.
+        </span>
+        <input
+          type="range"
+          min={0.3}
+          max={1}
+          step={0.05}
+          value={draft}
+          aria-label="Panel opacity"
+          onChange={(e) => {
+            const v = parseFloat(e.target.value);
+            setDraft(v);
+            previewLive(v);
+          }}
+          onPointerUp={() => onCommit(draft)}
+          onKeyUp={() => onCommit(draft)}
+          className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
+        />
+      </div>
       {help}
     </div>
   );

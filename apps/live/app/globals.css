@@ -261,6 +261,23 @@
 }
 
 /*
+ * Panel opacity (spec/20). The FULL floating panels render at the user's
+ * chosen opacity so the canvas shows through, then snap back to fully
+ * opaque while hovered or focused so they stay readable in use. Only the
+ * full panels carry `data-panel-translucent` (set in MovablePanel); the
+ * minimal dock bar never does, so the minimal layout is unaffected. The
+ * var defaults to 1 (fully opaque) when the preference is unset.
+ */
+[data-panel-translucent] {
+  opacity: var(--lvd-panel-opacity, 1);
+  transition: opacity 200ms ease;
+}
+[data-panel-translucent]:hover,
+[data-panel-translucent]:focus-within {
+  opacity: 1;
+}
+
+/*
  * Reduced motion (accessibility, spec/20). Honour BOTH the operating
  * system's `prefers-reduced-motion` setting AND the per-user "Reduce
  * motion" preference, which adds `.reduce-motion` to <html>. Decorative

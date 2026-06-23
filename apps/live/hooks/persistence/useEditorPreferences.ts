@@ -8,6 +8,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
+import { usePanelOpacity } from '@/hooks/ui/usePanelOpacity';
 import {
   readUserPreferences,
   fetchUserPreferences,
@@ -38,6 +39,10 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // prefers-reduced-motion media query is honoured by globals.css
   // regardless; this lets the user force it on independent of the OS.
   useReduceMotion(userPreferences.reduceMotion === true);
+  // Apply the "Panel opacity" preference (spec/20) to the floating panels
+  // via the --lvd-panel-opacity custom property. Floating panels only; the
+  // minimal dock never reads the var.
+  usePanelOpacity(userPreferences.panelOpacity);
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults
   // to true (auto-rebind on) so a fresh session keeps today's UX.

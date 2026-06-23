@@ -19,6 +19,7 @@ export const HELP_ARTICLES = {
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
   alignmentGuides: 'palette/alignment-guides',
+  panelOpacity: 'palette/panel-opacity',
   isometricMode: 'palette/isometric-mode',
   // AI
   aiTools: 'tools/ai/ai-tools',

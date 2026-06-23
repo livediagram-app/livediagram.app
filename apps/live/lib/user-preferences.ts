@@ -52,6 +52,14 @@ export type UserPreferences = {
   // mobile regardless of this setting. Missing / undefined / false ===
   // standard floating panels on desktop.
   minimalPanels?: boolean;
+  // Panel opacity (spec/20). The opacity (0..1) of the FULL floating
+  // panels (Explorer, Palette, Editor, AI) at rest, so the canvas shows
+  // through; they snap back to fully opaque while hovered / focused.
+  // Applied via the `--lvd-panel-opacity` custom property (see
+  // usePanelOpacity). Deliberately scoped to floating panels: the minimal
+  // dock bar never reads the var, so this leaves the minimal layout
+  // untouched. Missing / undefined / 1 === fully opaque, the default.
+  panelOpacity?: number;
   // Alignment guides (spec/09). When `false`, the editor skips the
   // faint guide lines drawn along the edges / centres a dragged or
   // resized element shares with its neighbours (the snap itself is
