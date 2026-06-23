@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, type ReactNode } from 'react';
+import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Portal } from '@/components/primitives/Portal';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -239,24 +240,5 @@ function ToggleRow({
       {row}
       <div className="pl-3">{help}</div>
     </div>
-  );
-}
-
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className={`transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
-    >
-      <path d="M2 4l4 4 4-4" />
-    </svg>
   );
 }

@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
+import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
@@ -220,7 +221,7 @@ function ShortcutSection({
         <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
           {section.heading}
         </span>
-        <ChevronIcon open={open} />
+        <ChevronIcon open={open} className="text-slate-400 dark:text-slate-400" />
       </button>
       <div
         className={`grid transition-[grid-template-rows] duration-200 ease-out ${
@@ -251,24 +252,5 @@ function ShortcutSection({
         </div>
       </div>
     </div>
-  );
-}
-
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className={`text-slate-400 transition-transform duration-150 dark:text-slate-400 ${open ? 'rotate-180' : ''}`}
-    >
-      <path d="M2 4l4 4 4-4" />
-    </svg>
   );
 }
