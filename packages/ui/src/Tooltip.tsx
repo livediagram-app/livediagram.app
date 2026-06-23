@@ -140,7 +140,7 @@ export function Tooltip({
             <div
               ref={cardRef}
               role="tooltip"
-              className="pointer-events-none fixed z-50 w-56 animate-fade-in rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-950/40"
+              className="pointer-events-none fixed z-[var(--z-toast)] w-56 animate-fade-in rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-950/40"
               style={
                 layout
                   ? { left: layout.left, top: layout.top }

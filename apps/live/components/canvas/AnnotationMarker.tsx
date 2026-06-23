@@ -72,7 +72,7 @@ export function AnnotationHoverNote({ elementId, note }: { elementId: string; no
   return (
     <Portal>
       <div
-        className="pointer-events-none fixed z-[60] max-h-60 overflow-hidden whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs leading-snug text-slate-800 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/50"
+        className="pointer-events-none fixed z-[var(--z-toast)] max-h-60 overflow-hidden whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs leading-snug text-slate-800 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/50"
         style={{
           left: pos.left,
           top: pos.top,

@@ -1185,7 +1185,7 @@ export function Canvas(props: CanvasProps) {
         <Portal>
           <div
             aria-hidden
-            className="animate-longpress-hold pointer-events-none fixed z-[60] h-9 w-9 rounded-full border-2 border-brand-500/70"
+            className="animate-longpress-hold pointer-events-none fixed z-[var(--z-toast)] h-9 w-9 rounded-full border-2 border-brand-500/70"
             style={{ left: canvasLongPress.pressPoint.x, top: canvasLongPress.pressPoint.y }}
           />
         </Portal>
