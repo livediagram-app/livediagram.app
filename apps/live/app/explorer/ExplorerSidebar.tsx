@@ -269,19 +269,30 @@ export function ExplorerSidebar() {
         onClick={() => go({ kind: 'themes' })}
         depth={0}
       />
-      {/* API tokens (spec/61): signed-in only. Gated on `teamsEnabled` (the
-          sidebar's signed-in flag — `isSignedIn && clerkUserId`), NOT just
-          `clerkEnabled`, so a signed-OUT user on a Clerk deployment doesn't
-          see a row that would only 403; it appears once they sign in. A
-          no-auth self-host never has it either. */}
-      {teamsEnabled ? (
-        <SidebarRow
-          icon={<KeyIcon />}
-          label="API tokens"
-          selected={selected.kind === 'tokens'}
-          onClick={() => go({ kind: 'tokens' })}
-          depth={0}
-        />
+      {/* API tokens (spec/61): signed-in only, surfaced exactly like the Teams
+          section — visible whenever auth is configured (`clerkEnabled`), a real
+          row once signed in, and the same "Sign in to use…" nudge for a
+          signed-out guest. A no-auth self-host never sees it. */}
+      {clerkEnabled ? (
+        teamsEnabled ? (
+          <SidebarRow
+            icon={<KeyIcon />}
+            label="API tokens"
+            selected={selected.kind === 'tokens'}
+            onClick={() => go({ kind: 'tokens' })}
+            depth={0}
+          />
+        ) : (
+          <Link
+            href="/sign-in/"
+            className="flex w-full items-center gap-1.5 rounded-md py-1 pl-7 pr-1 text-left text-xs text-slate-500 transition hover:bg-slate-100 hover:text-brand-700"
+          >
+            <span className="shrink-0 text-slate-400">
+              <SignInIcon />
+            </span>
+            Sign in to use API tokens
+          </Link>
+        )
       ) : null}
     </>
   );
