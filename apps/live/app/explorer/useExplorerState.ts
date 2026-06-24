@@ -176,7 +176,10 @@ export function useExplorerState() {
   useEffect(() => {
     if (!authLoaded) return;
     if (!ownerId) {
-      setLoading(false);
+      // A guest's ownerId resolves asynchronously now (ensureSignedGuestIdentity
+      // above), so it lags `authLoaded` by a tick. Keep the skeleton rather than
+      // flashing an empty state — ownerId always resolves (signed-in → Clerk id;
+      // guest → minted id), so this never stalls.
       return;
     }
     void refresh(ownerId);
