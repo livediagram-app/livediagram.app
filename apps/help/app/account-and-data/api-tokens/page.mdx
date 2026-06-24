@@ -1,0 +1,45 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'API Tokens',
+  description:
+    'Create an API token to call the livediagram API from your own scripts. A signed-in-only feature: tokens act as your account and last six months.',
+  path: '/help/account-and-data/api-tokens/',
+});
+
+<ArticleLayout
+  title="API Tokens"
+  description="Call the livediagram API from your own scripts with a revocable token. A signed-in-only feature for advanced users."
+  categoryTitle="Account and Data"
+  categorySlug="account-and-data"
+>
+
+An API token lets your own scripts and integrations talk to the livediagram API as you, outside the editor. A token carries your account's **full read and write access**, so treat it like a password.
+
+## You need an account
+
+API tokens are a **signed-in-only** feature. The canvas, sharing, and real-time collaboration all stay account-free for guests, but tokens require [signing in](/help/account-and-data/signing-in/), the same as [teams](/help/collaboration/teams/). Programmatic API access is an advanced, opt-in capability, so needing an account for it is a fair trade. On a self-hosted instance that hasn't enabled accounts, the feature simply isn't there.
+
+## Creating a token
+
+Open the **Explorer**, and in the **Library** section of the sidebar choose **API tokens** (just under Themes). Give the token a name (for example, "CI bot") and create it.
+
+The token's secret is shown **once**, right after you create it. Copy it then, because for your security it is never displayed again, here or anywhere else. If you lose it, revoke it and create a new one.
+
+## What a token can do, and for how long
+
+- **Access:** a token has your account's full read + write access. There is no read-only option yet.
+- **Lifetime:** every token lasts **six months**, then expires. There is no never-expires option. Rotate by creating a fresh token before the old one lapses.
+- **Limit:** you can have up to **10** live tokens at once. Revoke one (or let it expire) to free a slot.
+
+## Revoking a token
+
+Revoke a token from the same **API tokens** section any time. Revocation is immediate: the next request that token makes is rejected. Deleting your account also removes all of your tokens, along with the rest of your data.
+
+<Tip>
+  Keep tokens out of source control and shared logs. If one might have leaked, revoke it and create
+  a replacement, no need to change anything else about your account.
+</Tip>
+
+</ArticleLayout>

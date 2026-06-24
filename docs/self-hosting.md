@@ -95,7 +95,15 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
    Leaving it unset keeps the legacy unsigned migrate, which is fine for a single-user self-host (no one else to claim from). See [spec/04](../specs/04-auth-and-guest-access.md).
 
-6. **Optional — "Continue with Google" button.** To surface Google OAuth on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (a production `pk_live_*` instance needs your own Google Cloud OAuth client registered against Clerk's redirect URI, `https://clerk.<domain>/v1/oauth_callback`, shown verbatim in the dashboard), then set the build-time flag on the live app alongside the publishable key:
+   With the secret set, you can also require a valid signature on the guest `X-Owner-Id` REST path (spec/61 §4) — this closes the "observe a guest id, use it as a credential" hole for shared diagrams. It's **off by default** so pre-signing guests aren't locked out; set `GUEST_SIG_ENFORCE_AFTER` to an epoch-ms cutoff once your active guests have rotated to signed ids (the app re-signs on load):
+
+   ```sh
+   echo "$(date +%s000)" | pnpm --filter @livediagram/api exec wrangler secret put GUEST_SIG_ENFORCE_AFTER
+   ```
+
+6. **API tokens (spec/61) come with Clerk.** They're a signed-in-only feature, so a self-host with Clerk configured gets the Explorer "API tokens" section automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
+
+7. **Optional — "Continue with Google" button.** To surface Google OAuth on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (a production `pk_live_*` instance needs your own Google Cloud OAuth client registered against Clerk's redirect URI, `https://clerk.<domain>/v1/oauth_callback`, shown verbatim in the dashboard), then set the build-time flag on the live app alongside the publishable key:
 
    ```sh
    NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true

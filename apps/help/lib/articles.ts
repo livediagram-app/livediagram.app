@@ -72,8 +72,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, and deletion work.',
-    articleCount: 4,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, and API tokens work.',
+    articleCount: 5,
   },
   {
     slug: 'privacy-and-security',
@@ -391,6 +391,13 @@ export const articles: Article[] = [
     slug: 'deleting-your-data',
     title: 'Deleting Your Data',
     description: 'How to remove a diagram or clear everything tied to your id.',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'api-tokens',
+    title: 'API Tokens',
+    description: 'Create signed-in-only tokens to call the livediagram API from your own scripts.',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
