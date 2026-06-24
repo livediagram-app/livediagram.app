@@ -161,17 +161,20 @@ describe('DiagramRoom hello frame role forcing', () => {
 
     const stored = room.sessions.get(ws as unknown as WebSocket);
     expect(stored?.role).toBe('view');
-    expect(stored?.id).toBe('lying-peer');
+    // The client-claimed id is replaced by a server-assigned ephemeral id
+    // (spec/61 §6), so the spoofed value never reaches presence.
+    expect(stored?.id).not.toBe('lying-peer');
+    expect(stored?.id).toBeTruthy();
   });
 
-  it('overrides the client participant id with the server-verified owner id', () => {
+  it('replaces the client participant id with a server-assigned ephemeral id', () => {
     const room = newRoom();
     const ws = makeSocket();
-    // The api worker verified the connector owns 'real-owner' (owner-id match
-    // or guest HMAC) and forwarded it as X-Verified-Owner.
-    room.handleSession(ws as unknown as WebSocket, 'edit', 'real-owner');
+    // The DO assigns each session a fresh ephemeral presence id (spec/61 §6):
+    // the real owner id is never broadcast, and a client can't impersonate
+    // another peer because its claimed id is discarded.
+    room.handleSession(ws as unknown as WebSocket, 'edit');
 
-    // Client tries to impersonate another participant by claiming their id.
     ws.listeners['message']?.[0]?.({
       data: JSON.stringify({
         kind: 'hello',
@@ -180,7 +183,8 @@ describe('DiagramRoom hello frame role forcing', () => {
     });
 
     const stored = room.sessions.get(ws as unknown as WebSocket);
-    expect(stored?.id).toBe('real-owner'); // not the spoofed 'victim-peer-id'
+    expect(stored?.id).not.toBe('victim-peer-id');
+    expect(stored?.id).toBeTruthy();
   });
 
   it('leaves role undefined when the upgrade carried no X-Verified-Role', () => {
@@ -243,7 +247,11 @@ describe('DiagramRoom hello frame role forcing', () => {
     expect(peer.sent).toHaveLength(1);
     const payload = JSON.parse(peer.sent[0]!);
     expect(payload.kind).toBe('op');
-    expect(payload.from).toBe('sender');
+    // `from` is the sender's server-assigned ephemeral id (not the claimed
+    // 'sender'), so peers still get a stable per-session attribution key.
+    const senderId = room.sessions.get(sender as unknown as WebSocket)?.id;
+    expect(payload.from).toBe(senderId);
+    expect(payload.from).not.toBe('sender');
   });
 
   it('ignores op messages from a session that never sent hello', () => {
@@ -381,8 +389,11 @@ describe('DiagramRoom tab-focus presence echo', () => {
     b.listeners['message']![0]!({
       data: JSON.stringify({ kind: 'hello', participant: { id: 'p-b', name: 'B', color: '#def' } }),
     });
+    // A's broadcast id is its server-assigned ephemeral id (spec/61 §6), not
+    // the claimed 'p-a' — find its row by the stored id.
+    const aId = room.sessions.get(a as unknown as WebSocket)?.id;
     const presenceFrames = b.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'presence');
-    const aRow = presenceFrames.at(-1)!.participants.find((p: { id: string }) => p.id === 'p-a');
+    const aRow = presenceFrames.at(-1)!.participants.find((p: { id: string }) => p.id === aId);
     expect(aRow?.tabId).toBe('tab-2');
   });
 });

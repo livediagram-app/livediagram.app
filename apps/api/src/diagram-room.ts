@@ -78,11 +78,7 @@ export class DiagramRoom implements DurableObject {
     const headerRole = request.headers.get('X-Verified-Role');
     const verifiedRole: 'edit' | 'view' | undefined =
       headerRole === 'edit' || headerRole === 'view' ? headerRole : undefined;
-    // The api worker sets this only when it verified the connector owns the id
-    // (owner-id match or a valid guest-id HMAC). Used to override the client's
-    // self-declared participant id so a joiner can't impersonate another peer.
-    const verifiedOwner = request.headers.get('X-Verified-Owner') ?? undefined;
-    this.handleSession(server, verifiedRole, verifiedOwner);
+    this.handleSession(server, verifiedRole);
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -111,9 +107,16 @@ export class DiagramRoom implements DurableObject {
     this.broadcast({ kind: 'op', from: 'system', op });
   }
 
-  handleSession(ws: WebSocket, verifiedRole?: 'edit' | 'view', verifiedOwner?: string): void {
+  handleSession(ws: WebSocket, verifiedRole?: 'edit' | 'view'): void {
     ws.accept();
     this.sessions.set(ws, null);
+    // Per-session ephemeral presence id (spec/61 §6): the broadcast presence /
+    // cursor id is a fresh server-assigned random, NOT the connector's real
+    // owner id — so a co-present collaborator (incl. a view-only share
+    // visitor) never reads an owner id off a presence frame. Being
+    // server-random it ALSO defeats presence impersonation: a joiner can't
+    // claim another peer's id because it never sees or sets one.
+    const presenceId = crypto.randomUUID();
 
     ws.addEventListener('message', (event) => {
       // Drop an oversized frame before parsing / broadcasting it: ops are
@@ -129,14 +132,14 @@ export class DiagramRoom implements DurableObject {
         return;
       }
       if (msg.kind === 'hello') {
-        // Force the server-resolved role AND (when verified) the server-bound
-        // participant id onto the stored presence: the hello frame's own
-        // `role` / `id` are not trusted. Overriding the id stops a joiner from
-        // impersonating another participant's cursor / presence by claiming
-        // their id; the role override is the Viewer / Editor lie-defence.
+        // Force the server-resolved role AND the server-assigned ephemeral id
+        // onto the stored presence: the hello frame's own `role` / `id` are
+        // not trusted. The id override hides the real owner id (spec/61 §6)
+        // and stops a joiner impersonating another peer; the role override is
+        // the Viewer / Editor lie-defence.
         this.sessions.set(ws, {
           ...msg.participant,
-          ...(verifiedOwner ? { id: verifiedOwner } : {}),
+          id: presenceId,
           role: verifiedRole,
         });
         this.broadcastPresence();

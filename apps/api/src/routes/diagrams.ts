@@ -8,7 +8,6 @@ import { isValidTab } from '@livediagram/diagram';
 import { MAX_NAME_LEN, MAX_TAB_BYTES, MAX_PASSWORD_LEN, byteLength } from '../limits';
 import { parseChangeLogEntryBody } from '../change-log-body';
 import { timingSafeEqual } from '../auth/timing-safe';
-import { verifyOwnerId } from '../auth/owner-signature';
 import {
   findComment,
   redactCommentAuthorIds,
@@ -747,27 +746,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       if (required && !(await timingSafeEqual(url.searchParams.get('p') ?? '', required)))
         return forbidden();
     }
-    // Bind the broadcast participant identity to something we've actually
-    // verified, so a joiner can't spoof another participant's presence by
-    // lying in its `hello` frame (the DO otherwise trusts the client id).
-    // `o` is proven when it matches the diagram owner (knowing the unguessable
-    // owner id is the proof), or when the guest-id HMAC signature `g` checks
-    // out (proves possession of that guest id). Forward only a verified id; the
-    // DO overrides hello.id from it when present, else keeps the client value
-    // (Clerk non-owner members can't prove their sub over a WS, so they fall
-    // back — a narrow residual that grants no write/data access).
-    let verifiedOwner: string | null = null;
-    if (isOwnerUpgrade) {
-      verifiedOwner = claimedOwnerId;
-    } else if (
-      claimedOwnerId &&
-      (await verifyOwnerId(env.GUEST_ID_HMAC_SECRET, claimedOwnerId, url.searchParams.get('g')))
-    ) {
-      verifiedOwner = claimedOwnerId;
-    }
+    // Presence identity is no longer forwarded: the DO assigns each session a
+    // fresh ephemeral id for its broadcast presence / cursor (spec/61 §6), so
+    // the real owner id never reaches the room and a joiner can't spoof
+    // another peer's presence (there's no real id to claim). Only the
+    // server-resolved role is forwarded; it still gates edit vs view ops.
     const forwarded = new Request(request);
     forwarded.headers.set('X-Verified-Role', role);
-    if (verifiedOwner) forwarded.headers.set('X-Verified-Owner', verifiedOwner);
     return stub.fetch(forwarded);
   }
 
@@ -782,7 +767,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
 
     if (request.method === 'GET') {
       const entries = await listChangeLog(env, id);
-      return json({ entries });
+      // Redact each entry's author owner id for non-owners (spec/61 §6): it's
+      // the same value a token / X-Owner-Id authenticates with, so a non-owner
+      // edit collaborator must not be able to harvest it from the audit trail.
+      // The owner still sees the real ids; display name / colour are untouched
+      // (mirrors redactCommentAuthorIds + the diagram-DTO ownerId redaction).
+      const isOwner = ctx.resolveOwner() === access.ownerId;
+      const safe = isOwner ? entries : entries.map((e) => ({ ...e, participantId: '' }));
+      return json({ entries: safe });
     }
     if (request.method === 'POST') {
       const body = (await request.json()) as Partial<ChangeLogEntryDTO>;
