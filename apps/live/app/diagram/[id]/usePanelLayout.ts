@@ -14,6 +14,7 @@ export function usePanelLayout() {
   const [palettePosition, setPalettePosition] = useState<Pos | null>(null);
   const [explorerPosition, setExplorerPosition] = useState<Pos | null>(null);
   const [activityPosition, setActivityPosition] = useState<Pos | null>(null);
+  const [mapPosition, setMapPosition] = useState<Pos | null>(null);
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
   const [aiPanelPosition, setAiPanelPosition] = useState<Pos | null>(null);
   const [aiPanelVisible, setAiPanelVisible] = useState(false);
@@ -32,6 +33,8 @@ export function usePanelLayout() {
     setExplorerPosition,
     activityPosition,
     setActivityPosition,
+    mapPosition,
+    setMapPosition,
     commentsPanelPosition,
     setCommentsPanelPosition,
     aiPanelPosition,

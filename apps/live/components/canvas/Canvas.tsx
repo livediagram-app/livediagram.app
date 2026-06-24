@@ -122,9 +122,11 @@ export function Canvas(props: CanvasProps) {
 
   const isPaintMode = formatSourceId !== null;
   const isGroupMode = groupSourceId !== null;
-  // Desktop-only: the minimap (spec/59) shares the bottom-left corner with
-  // the Activity panel, so it shows only while that panel is minimised.
+  // The Map (spec/59) is desktop-only. `mapEnabled` is hoisted so the gate +
+  // the popover toggle read one boolean (re-comparing the narrowed pref inside
+  // the gated branch trips a no-overlap type error).
   const isMobile = useIsMobileViewport();
+  const mapEnabled = props.settings?.showMinimap !== false;
   // Nudge above the Fit button when the whole diagram has scrolled out of view.
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
 
@@ -1191,12 +1193,14 @@ export function Canvas(props: CanvasProps) {
       {/* Drag-to-add ghost (spec/58): previews where a dragged palette shape
           will land, following the cursor over the canvas. */}
       <PaletteDragGhost zoom={viewportZoom} />
-      {/* Minimap (spec/59): zoomed-out overview + tap/drag to navigate. Bottom
-          left, only when the Activity panel is minimised + on desktop. */}
-      {props.settings?.showMinimap !== false &&
-      props.activityMinimized &&
+      {/* Map (spec/59): a movable overview panel. Shown when enabled, on
+          desktop, once the tab has a few elements. At its default corner it
+          defers to the Activity panel (they share bottom-left), but once the
+          user drags it elsewhere it stays put regardless. */}
+      {mapEnabled &&
       !isMobile &&
-      elements.length >= 4 ? (
+      elements.length >= 4 &&
+      (props.mapPosition !== null || props.activityMinimized) ? (
         <Minimap
           elements={elements}
           viewportOffset={viewportOffset}
@@ -1205,9 +1209,13 @@ export function Canvas(props: CanvasProps) {
           setViewportZoom={setViewportZoom}
           mainRef={mainRef}
           accentColor={badgeColor}
-          onDisable={() => {
-            track('UI', 'Toggled', 'MinimapOff');
-            props.onChangeSettings({ ...props.settings, showMinimap: false });
+          position={props.mapPosition}
+          onMove={props.onMoveMap}
+          onReset={props.onResetMap}
+          enabled={mapEnabled}
+          onSetEnabled={(v) => {
+            track('UI', 'Toggled', v ? 'MinimapOn' : 'MinimapOff');
+            props.onChangeSettings({ ...props.settings, showMinimap: v });
           }}
         />
       ) : null}

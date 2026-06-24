@@ -4,16 +4,17 @@ import { useMemo, useRef, type Ref, type ReactElement } from 'react';
 import { endpointPosition, isBoxed, type Element } from '@livediagram/diagram';
 import { ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
+import { MapSettingsPopover } from '@/components/canvas/MapSettingsPopover';
 
-// Bottom-left "Minimap" (spec/59): a labelled card with a zoomed-out, true-to-
-// shape overview of the whole tab — each boxed element painted as its real
-// silhouette (a circle reads as a circle) and each arrow as a connecting line —
-// with the area outside the current view dimmed so the lit window reads as
-// where you are. Tap or drag to re-centre the canvas there; scroll to zoom in
-// on that spot; the header's × hides it (writes showMinimap = false). Rendered
-// only when enabled, the tab has a few elements, the Activity panel is closed
-// (shared corner), and on desktop (all gated by the caller).
+// The "Map" panel (spec/59): a movable floating panel — like the Palette — with
+// a zoomed-out, true-to-shape overview of the whole tab. Each boxed element is
+// painted as its real silhouette (a circle reads as a circle) and each arrow as
+// a connecting line; the area outside the current view is dimmed so the lit
+// window reads as where you are. Tap or drag to re-centre the canvas there;
+// scroll to zoom in on that spot. It drags, minimises and resets position like
+// the other panels (MovablePanel), and a settings gear in its header holds the
+// "Enable Map" toggle (off → showMinimap = false, re-enabled in Settings).
 //
 // Geometry: the canvas transform is `scale(z) translate(o)` about the <main>
 // centre, so the viewport centre in world coords is (W/2 - oₓ, H/2 - o_y) and
@@ -31,18 +32,25 @@ type MinimapProps = {
   // The active tab theme's accent (matches the on-canvas selection), used to
   // colour the current-view highlight instead of a fixed brand blue.
   accentColor: string;
-  // Hide the minimap (persists showMinimap = false; re-enabled in Settings).
-  onDisable: () => void;
+  // Panel position (null = default corner) + its move / reset handlers, shared
+  // with the other floating panels via usePanelLayout.
+  position: { x: number; y: number } | null;
+  onMove: (x: number, y: number) => void;
+  onReset: () => void;
+  // "Enable Map" toggle state in the header's settings popover.
+  enabled: boolean;
+  onSetEnabled: (value: boolean) => void;
 };
 
 // Padding around the content (a fraction of its size plus a floor) so elements
-// never touch the minimap's edge.
+// never touch the map's edge.
 const PAD_FRACTION = 0.12;
 const PAD_MIN = 48;
-// The map's on-screen size in px (the w-48 card, h-28 svg). The viewBox is
-// expanded to this aspect ratio so the wireframe fills the panel edge-to-edge
-// rather than letterboxing into white bars under preserveAspectRatio="meet".
-const MAP_RATIO = 192 / 112;
+// The map's on-screen size in px (the w-64 panel — matching the Palette — and
+// its h-36 svg). The viewBox is expanded to this aspect ratio so the wireframe
+// fills the panel edge-to-edge rather than letterboxing into white bars under
+// preserveAspectRatio="meet".
+const MAP_RATIO = 256 / 144;
 
 export function Minimap({
   elements,
@@ -52,7 +60,11 @@ export function Minimap({
   setViewportZoom,
   mainRef,
   accentColor,
-  onDisable,
+  position,
+  onMove,
+  onReset,
+  enabled,
+  onSetEnabled,
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef(false);
@@ -145,7 +157,13 @@ export function Minimap({
     pt.x = clientX;
     pt.y = clientY;
     const world = pt.matrixTransform(ctm.inverse());
-    setViewportOffset({ x: r.width / 2 - world.x, y: r.height / 2 - world.y });
+    const nx = r.width / 2 - world.x;
+    const ny = r.height / 2 - world.y;
+    // Only write when it actually changes: setting an equal-valued new object
+    // every render would re-render forever (max update depth).
+    if (nx !== viewportOffset.x || ny !== viewportOffset.y) {
+      setViewportOffset({ x: nx, y: ny });
+    }
     return world;
   };
 
@@ -184,7 +202,7 @@ export function Minimap({
   const vy1 = Math.min(y1, viewCy + h / z / 2);
   const hasView = vx1 > vx && vy1 > vy;
 
-  // Scroll on the minimap zooms the canvas in/out centred on that spot.
+  // Scroll on the map zooms the canvas in/out centred on that spot.
   const onWheel = (e: React.WheelEvent) => {
     const world = recentreToClient(e.clientX, e.clientY);
     if (!world) return;
@@ -193,72 +211,70 @@ export function Minimap({
   };
 
   return (
-    <div
-      data-floating-panel
-      className="pointer-events-auto absolute bottom-4 left-4 z-[var(--z-panel)] w-48 overflow-hidden rounded-xl bg-white/90 shadow-lg ring-1 ring-slate-900/10 backdrop-blur transition hover:ring-brand-500/40 dark:bg-slate-900/90 dark:ring-white/10"
+    <MovablePanel
+      title="Map"
+      position={position}
+      defaultCorner="bottom-left"
+      width="w-64"
+      onMoveTo={onMove}
+      onReset={onReset}
+      collapsible
+      flushTop
+      growBody
+      headerActions={<MapSettingsPopover enabled={enabled} onSetEnabled={onSetEnabled} />}
     >
-      {/* Header so the panel is unmistakably the canvas minimap. */}
-      <div className="flex items-center gap-1.5 border-b border-slate-200/70 px-2.5 py-1.5 dark:border-slate-700/60">
-        <span className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-          Map
-        </span>
-        <button
-          type="button"
-          onClick={onDisable}
-          aria-label="Hide minimap"
-          className="-mr-1 ml-auto rounded p-0.5 text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-700/60 dark:hover:text-slate-200"
+      {/* Clip the map to the panel's rounded bottom so its corners don't
+          square off past the border. */}
+      <div className="overflow-hidden rounded-b-lg">
+        <svg
+          ref={svgRef}
+          viewBox={vb}
+          preserveAspectRatio="xMidYMid meet"
+          className="block h-36 w-full cursor-pointer touch-none bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 dark:text-slate-500"
+          role="img"
+          aria-label="Canvas map — tap or drag to navigate, scroll to zoom"
+          onPointerDown={(e) => {
+            draggingRef.current = true;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            recentreToClient(e.clientX, e.clientY);
+          }}
+          onPointerMove={(e) => {
+            if (draggingRef.current) recentreToClient(e.clientX, e.clientY);
+          }}
+          onPointerUp={(e) => {
+            draggingRef.current = false;
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          }}
+          onWheel={onWheel}
         >
-          <CloseIcon size={13} strokeWidth={1.6} />
-        </button>
-      </div>
-      <svg
-        ref={svgRef}
-        viewBox={vb}
-        preserveAspectRatio="xMidYMid meet"
-        className="block h-28 w-full cursor-pointer touch-none rounded-b-xl bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 dark:text-slate-500"
-        role="img"
-        aria-label="Canvas minimap — tap or drag to navigate, scroll to zoom"
-        onPointerDown={(e) => {
-          draggingRef.current = true;
-          e.currentTarget.setPointerCapture(e.pointerId);
-          recentreToClient(e.clientX, e.clientY);
-        }}
-        onPointerMove={(e) => {
-          if (draggingRef.current) recentreToClient(e.clientX, e.clientY);
-        }}
-        onPointerUp={(e) => {
-          draggingRef.current = false;
-          e.currentTarget.releasePointerCapture(e.pointerId);
-        }}
-        onWheel={onWheel}
-      >
-        {/* Connectors first so they sit behind the shapes. */}
-        {lines}
-        {shapes}
-        {hasView ? (
-          <>
-            {/* Dim everything outside the current view (even-odd: outer box
+          {/* Connectors first so they sit behind the shapes. */}
+          {lines}
+          {shapes}
+          {hasView ? (
+            <>
+              {/* Dim everything outside the current view (even-odd: outer box
                 minus the view hole) so the lit window reads at a glance as
                 "where you are on the canvas". */}
-            <path
-              d={`M${x0} ${y0}H${x1}V${y1}H${x0}Z M${vx} ${vy}H${vx1}V${vy1}H${vx}Z`}
-              fillRule="evenodd"
-              className="fill-slate-500/25 dark:fill-slate-950/55"
-            />
-            <rect
-              x={vx}
-              y={vy}
-              width={vx1 - vx}
-              height={vy1 - vy}
-              rx={3}
-              fill={`color-mix(in srgb, ${accentColor} 14%, transparent)`}
-              stroke={accentColor}
-              strokeWidth={1.75}
-              vectorEffect="non-scaling-stroke"
-            />
-          </>
-        ) : null}
-      </svg>
-    </div>
+              <path
+                d={`M${x0} ${y0}H${x1}V${y1}H${x0}Z M${vx} ${vy}H${vx1}V${vy1}H${vx}Z`}
+                fillRule="evenodd"
+                className="fill-slate-500/25 dark:fill-slate-950/55"
+              />
+              <rect
+                x={vx}
+                y={vy}
+                width={vx1 - vx}
+                height={vy1 - vy}
+                rx={3}
+                fill={`color-mix(in srgb, ${accentColor} 14%, transparent)`}
+                stroke={accentColor}
+                strokeWidth={1.75}
+                vectorEffect="non-scaling-stroke"
+              />
+            </>
+          ) : null}
+        </svg>
+      </div>
+    </MovablePanel>
   );
 }

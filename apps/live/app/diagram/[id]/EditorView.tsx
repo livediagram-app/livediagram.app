@@ -96,6 +96,7 @@ export function EditorView() {
     activeTabLocked,
     activityMinimized,
     activityPosition,
+    mapPosition,
     addArrow,
     addComment,
     addImage,
@@ -288,6 +289,7 @@ export function EditorView() {
     setActiveId,
     setActivityMinimized,
     setActivityPosition,
+    setMapPosition,
     setAiPanelPosition,
     setArrowEndsSelected,
     setArrowheadSizeSelected,
@@ -790,6 +792,13 @@ export function EditorView() {
         changeLogLoading={changeLogLoading}
         activityPosition={activityPosition}
         activityMinimized={activityMinimized}
+        mapPosition={mapPosition}
+        onMoveMap={(x, y) =>
+          // Equality-guarded so a drag tick that resolves to the same spot
+          // doesn't spin the render loop (max update depth).
+          setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
+        }
+        onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
         onMoveActivity={(x, y) => setActivityPosition({ x, y })}
         onToggleActivityMinimized={() => {
           // Emit only the open transition (minimized -> expanded);

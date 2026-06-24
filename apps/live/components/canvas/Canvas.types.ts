@@ -210,6 +210,10 @@ export type CanvasProps = {
   changeLogLoading: boolean;
   activityPosition: { x: number; y: number } | null;
   activityMinimized: boolean;
+  // Map panel (spec/59) position + move/reset, shared with the other panels.
+  mapPosition: { x: number; y: number } | null;
+  onMoveMap: (x: number, y: number) => void;
+  onResetMap: () => void;
   onMoveActivity: (x: number, y: number) => void;
   onToggleActivityMinimized: () => void;
   onResetActivity: () => void;
