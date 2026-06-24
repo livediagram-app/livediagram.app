@@ -15,26 +15,45 @@ under an explicit, revocable credential.
 This must not weaken the friction-free guest model ([spec/04](04-auth-and-guest-access.md))
 or self-hosting ([spec/03](03-open-source-and-business-model.md)).
 
-## 2. Why the API isn't safe to expose as-is
+## 2. Why the API isn't safe to expose as-is — and a current weakness
 
 Today the worker resolves the caller two ways ([spec/04](04-auth-and-guest-access.md)):
 
 - **Clerk JWT** in `Authorization: Bearer <jwt>` — verified (signature, exp,
   optional issuer/audience) in `apps/api/src/auth/clerk.ts`. Sound.
 - **Guest path**: an `X-Owner-Id` header carrying a per-browser UUID, **trusted
-  verbatim** (`resolveOwner()` in `apps/api/src/index.ts`).
+  verbatim** (`resolveOwner()` in `apps/api/src/index.ts`), with **no
+  signature** on the REST path. (The realtime WS upgrade _does_ require an HMAC
+  proof, `?g=`; REST does not.)
 
-The guest header is the blocker. It is bound to **no credential**: any caller
-can set `X-Owner-Id: <someone-else's-id>` and act as that owner over REST
-(read their diagram list, edit a diagram, delete an image). For the first-party
-app this is acceptable — ids are unguessable UUIDs, only ever held by their
-owner's browser, and the realtime/WS path already requires an HMAC proof
-(`?g=`) — but it is **not** an authentication scheme we can hand to untrusted
-external callers, because the header is exactly the thing an attacker controls.
+The guest header is the blocker, and the owner id it carries is **not a secret
+in practice.** The obvious REST surfaces are redacted for non-owners — the
+shared diagram DTO (`redactOwner`, `routes/share.ts`) and comment author ids on
+tab read (`redactCommentAuthorIds`, `routes/diagrams.ts`) — but two surfaces
+still expose a collaborator to the owner's id:
 
-Conclusion: external access needs a credential the server can verify and bind
-to an owner. Bare `X-Owner-Id` from a non-first-party caller must stop being
-honoured.
+- **Realtime presence** — `broadcastPresence` (`diagram-room.ts`) sends every
+  connected participant's `id`, unredacted, to all room peers. The participant
+  id _is_ the owner id (`apps/live/lib/api/core.ts`: "X-Owner-Id set to the
+  current participant's id"). So any co-present collaborator — including a
+  **view-only** share visitor who opens the diagram while the owner is
+  connected — reads it off a presence frame.
+- **Change-log / Activity** — `GET /diagrams/<id>/log` returns each entry's
+  `participantId` unredacted to any **edit-access** collaborator (edit-share
+  holders, joined team members). A static, reliable harvest.
+
+Because REST trusts `X-Owner-Id` with no signature, a collaborator who harvests
+an owner's id can then call the API **as** that owner across ALL their content:
+`GET /api/diagrams` lists every diagram the id owns, each then readable /
+editable / deletable. So today, **sharing one diagram (or being in a team) can
+escalate to impersonating the owner account-wide** — a current cross-object
+authorization hole, not merely a future-external concern. It applies to
+signed-in owners too: their id is the Clerk `sub`, and the `X-Owner-Id` fallback
+accepts it whenever a request carries no Bearer token.
+
+Conclusion: external access needs a real, server-verifiable credential — AND
+the bare `X-Owner-Id` trust must be replaced, which also closes the current
+escalation above. The fix is [§4](#4-x-owner-id-trust-change).
 
 ## 3. Design: API tokens
 
@@ -112,19 +131,37 @@ identities. No SaaS dependency.
 
 ## 4. `X-Owner-Id` trust change
 
-When token auth ships, the guest header must no longer be honoured for
-arbitrary external callers. Options (decide at implementation):
+The bare header must stop being a usable credential — both for external callers
+and to close the [§2](#2-why-the-api-isnt-safe-to-expose-as-is--and-a-current-weakness)
+escalation. Two options were weighed:
 
-- **(a) First-party gate** — accept `X-Owner-Id` only when the request is
-  same-origin (the app), via the `Origin` / `Sec-Fetch-Site` signals already
-  used for telemetry (`origin-check.ts`). External callers must use a token.
-- **(b) Require the HMAC proof** — extend the WS `?g=` signature model
-  (`auth/owner-signature.ts`) to REST: a guest header must arrive with a valid
-  `X-Owner-Sig`. Heavier for the app, but uniform.
+- **(a) First-party origin gate — rejected as the sole fix.** Accept
+  `X-Owner-Id` only on same-origin requests via the `Origin` / `Sec-Fetch-Site`
+  signals (as telemetry does, `origin-check.ts`). This does **not** stop the
+  attack: a non-browser client sets the `Origin` header freely, so a `curl`
+  caller forges `Origin: https://livediagram.app` and passes the gate. Origin
+  is hygiene, not an authorization boundary.
+- **(b) Require an HMAC proof on the header — chosen.** Extend the guest-id
+  HMAC already used on the WS upgrade (`?g=`, `auth/owner-signature.ts`) to
+  REST: an `X-Owner-Id` request must also carry a valid `X-Owner-Sig` for that
+  id, verified against `GUEST_ID_HMAC_SECRET`. The legitimate guest holds its
+  signature (minted at `POST /api/guest-id`); a collaborator who merely
+  _harvested_ an id (a guest UUID, or a Clerk `sub`) has no valid signature, so
+  the spoof is rejected. Signed-in users keep using the Clerk Bearer (a real
+  credential) and never the header.
 
-(a) is the lighter path and preserves today's app behaviour exactly; (b) is
-stricter but changes every guest write. Leaning (a). Either way the bare header
-stops being a usable external credential.
+(b) is the heavier change — every guest write now signs — but it's the one that
+actually closes the harvested-id escalation, and the live app already obtains
+its signature, so wiring it onto REST requests is incremental. API tokens
+([§3](#3-design-api-tokens)) are a parallel server-verifiable credential for
+external callers.
+
+**Compatibility:** `verifyOwnerId` returns true when `GUEST_ID_HMAC_SECRET` is
+unset, so self-hosts without the secret are unaffected (they opt out of the
+guard, as today). Where the secret IS set, legacy guests minted before signing
+([spec/04](04-auth-and-guest-access.md) transition, `routes/migrate.ts`) must
+re-mint a signed id (or migrate) before their writes are accepted — a one-time
+grace to design at implementation so existing guests aren't locked out.
 
 ## 5. Input validation (prerequisite — shipped)
 
@@ -146,10 +183,17 @@ hardening landed first:
 ## 6. Rollout
 
 1. ✅ Input hardening (done).
-2. `api_tokens` table + migration + token mint/verify (`auth/`), Clerk-gated
+2. **The `X-Owner-Id` HMAC requirement ([§4](#4-x-owner-id-trust-change)).**
+   Pulled to the FRONT: it closes the current cross-object escalation in
+   [§2](#2-why-the-api-isnt-safe-to-expose-as-is--and-a-current-weakness) and
+   is independent of the token work, so it ships first (with the legacy-guest
+   grace). Defence-in-depth: also stop emitting the raw owner id where a
+   collaborator can read it — redact `participantId` in the change-log read for
+   non-owners, and consider a room-scoped presence id — so a leaked id is
+   harder to obtain even before the signature check rejects its use.
+3. `api_tokens` table + migration + token mint/verify (`auth/`), Clerk-gated
    management routes.
-3. Wire token resolution into `resolveOwner`; enforce scopes.
-4. Apply the `X-Owner-Id` trust change ([§4](#4-x-owner-id-trust-change)).
+4. Wire token resolution into `resolveOwner`; enforce scopes.
 5. Public API docs (the surface is the existing routes; document them).
 
 ## 7. Out of scope (for now)
