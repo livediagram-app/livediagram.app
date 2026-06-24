@@ -204,6 +204,17 @@ escalation. Two options were weighed:
   the spoof is rejected. Signed-in users keep using the Clerk Bearer (a real
   credential) and never the header.
 
+**Explicit guarantee for signed-up users.** Today `resolveOwner()`
+(`apps/api/src/index.ts`) is `clerkUserId ?? X-Owner-Id`, with no check binding
+the credential _type_ to the owner id — so a caller with no Bearer and
+`X-Owner-Id: <a Clerk sub>` is accepted AS that account (verified: the sub leaks
+via presence / the change-log, and nothing rejects it). After (b), a Clerk
+account's diagrams are reachable **only via a verified Bearer token**: an
+`X-Owner-Id` carrying a Clerk `sub` has no guest signature (one is never minted
+for a Clerk id), so it is rejected. The post-fix invariant is therefore "once
+signed up, your diagrams require your Bearer token; the header can't reach
+them" — which is the property to assert in tests.
+
 (b) is the heavier change — every guest write now signs — but it's the one that
 actually closes the harvested-id escalation, and the live app already obtains
 its signature, so wiring it onto REST requests is incremental. API tokens
