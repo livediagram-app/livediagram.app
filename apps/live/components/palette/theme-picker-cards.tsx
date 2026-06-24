@@ -5,7 +5,8 @@
 // the overview and the category detail view.
 
 import type { CustomTheme } from '@livediagram/api-schema';
-import { type ThemeDefinition, themeDescription } from '@/lib/themes';
+import { type ThemeDefinition } from '@/lib/themes';
+import { themeDescription } from '@/lib/themes-taxonomy';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 

@@ -11,10 +11,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createPinnedArrow, createShape } from '@livediagram/diagram';
 import {
   THEMES,
-  THEME_CATEGORIES,
   deriveNewBoxedColours,
   getTheme,
-  themeCategory,
   recolourElementForTheme,
   recolourElementsForTheme,
   resetArrowsToTheme,
@@ -28,6 +26,7 @@ import {
   switchThemeElements,
   type ThemeDefinition,
 } from './themes';
+import { THEME_CATEGORIES, themeCategory } from './themes-taxonomy';
 import {
   clearCustomThemeRegistry,
   registerCustomTheme,

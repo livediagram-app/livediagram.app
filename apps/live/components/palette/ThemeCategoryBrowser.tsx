@@ -21,14 +21,8 @@ import { useState } from 'react';
 import type { CustomTheme } from '@livediagram/api-schema';
 import { isCustomThemeId, materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { shufflePinned } from '@/lib/shuffle';
-import {
-  THEME_CATEGORIES,
-  THEMES,
-  type ThemeCategory,
-  type ThemeDefinition,
-  type ThemeId,
-  themeCategory,
-} from '@/lib/themes';
+import { THEMES, type ThemeCategory, type ThemeDefinition, type ThemeId } from '@/lib/themes';
+import { THEME_CATEGORIES, themeCategory } from '@/lib/themes-taxonomy';
 import { useUiMode } from '@/hooks/ui/useUiMode';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
