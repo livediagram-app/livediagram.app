@@ -1,5 +1,12 @@
 import { getClerkIdentity } from './auth/clerk';
-import { deleteOldChangeLogEntries, deleteOldEvents, deleteOldUnusedImages } from './db';
+import {
+  deleteOldChangeLogEntries,
+  deleteOldEvents,
+  deleteOldUnusedImages,
+  resolveApiToken,
+} from './db';
+import { isApiTokenFormat } from './auth/api-token';
+import { handleTokens } from './routes/tokens';
 import { DiagramRoom } from './diagram-room';
 import { CORS_HEADERS, json, notFound, rateLimited } from './responses';
 import { clientIp } from './client-ip';
@@ -66,7 +73,19 @@ export default {
     // session token (dashboard → Sessions → Customize session token →
     // `{"email": "{{user.primary_email_address}}"}`); see auth/clerk.ts.
     const clerkEmail = clerkIdentity?.email ?? null;
-    const resolveOwner = (): string | null => clerkUserId ?? request.headers.get('X-Owner-Id');
+    // API token (spec/61): a `Bearer lvd_…` resolves to its owner — always a
+    // Clerk account — via the hashed-token lookup. Only consulted when no Clerk
+    // JWT verified (a token and a JWT can't both be the bearer). The resolved
+    // owner is the token's Clerk userId, so a token request flows through the
+    // exact same ownership / gate checks as a signed-in one.
+    let tokenOwnerId: string | null = null;
+    if (!clerkUserId) {
+      const authz = request.headers.get('Authorization');
+      const bearer = authz?.startsWith('Bearer ') ? authz.slice(7) : null;
+      if (bearer && isApiTokenFormat(bearer)) tokenOwnerId = await resolveApiToken(env, bearer);
+    }
+    const resolveOwner = (): string | null =>
+      clerkUserId ?? tokenOwnerId ?? request.headers.get('X-Owner-Id');
 
     // Per-owner write rate limit. Gates POST / PUT / DELETE at a
     // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
@@ -145,6 +164,8 @@ export default {
           return await handleCustomThemes(ctx);
         case 'teams':
           return await handleTeams(ctx);
+        case 'tokens':
+          return await handleTokens(ctx);
         case 'account':
           return await handleAccount(ctx);
         case 'preferences':
