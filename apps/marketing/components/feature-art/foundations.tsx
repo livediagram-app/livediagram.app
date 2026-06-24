@@ -24,6 +24,35 @@ export function MitArt() {
   );
 }
 
+export function ApiArt() {
+  // A tiny terminal: a curl call to the API with a bearer token, echoing the
+  // "call it from your own scripts" card.
+  return (
+    <Frame>
+      <div className="flex h-full flex-col items-center justify-center gap-1.5">
+        <div
+          className="fa-pop w-[152px] overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm"
+          style={{ animationDelay: '0.3s' }}
+        >
+          <div className="flex items-center gap-1 border-b border-slate-100 bg-slate-50 px-1.5 py-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-300" />
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+          </div>
+          <div className="px-2 py-1.5 font-mono text-[7px] leading-relaxed">
+            <div className="text-slate-400">$ curl …/api/diagrams</div>
+            <div className="text-slate-600">
+              -H &quot;Authorization:{' '}
+              <span className="font-semibold text-brand-600">Bearer lvd_…</span>&quot;
+            </div>
+          </div>
+        </div>
+        <span className="text-[7px] text-slate-400">your scripts, your account</span>
+      </div>
+    </Frame>
+  );
+}
+
 function GitHubIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 16 16" fill="#334155">

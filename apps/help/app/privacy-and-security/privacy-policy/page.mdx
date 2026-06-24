@@ -20,6 +20,7 @@ livediagram is built to need as little of your data as possible, and the whole c
 - **Images you upload.** Images placed on a diagram are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the diagram with.
 - **A browser id.** If you use livediagram without an account, we keep a random identifier in your browser's local storage to link diagrams to your browser. It is not tied to your name or email.
 - **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these only to identify your account.
+- **API tokens, if you create them.** If you create an [API token](/help/account-and-data/api-tokens/) to call the API from your own scripts, we store a one-way hash of it (never the token itself), its name, and a last-used timestamp, so the token can be verified and you can see when it was last active. Tokens are a signed-in-only feature, expire after six months, and are deleted when you delete your account.
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
 
 ## What we do not do

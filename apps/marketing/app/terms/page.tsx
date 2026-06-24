@@ -52,6 +52,16 @@ export default function TermsPage() {
         time. Treat share links like keys.
       </p>
 
+      <h2>API access</h2>
+      <p>
+        You can create API tokens to use the Service programmatically. A token acts as your account:
+        anyone who holds it has the same access to your diagrams that you do. Keep tokens secret,
+        treat them like a password, and revoke any that might have been exposed. You are responsible
+        for activity carried out with your tokens. We may apply rate limits to keep the Service
+        healthy, and the acceptable-use rules below apply equally to anything you do through the
+        API.
+      </p>
+
       <h2>Acceptable use</h2>
       <p>Do not use the Service to:</p>
       <ul>

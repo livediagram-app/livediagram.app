@@ -33,6 +33,18 @@ The token's secret is shown **once**, right after you create it. Copy it then, b
 - **Lifetime:** every token lasts **six months**, then expires. There is no never-expires option. Rotate by creating a fresh token before the old one lapses.
 - **Limit:** you can have up to **10** live tokens at once. Revoke one (or let it expire) to free a slot.
 
+## Using a token
+
+Send the token as a **bearer header** to the API, which lives under `/api` on your livediagram host (`https://livediagram.app/api` on the hosted service):
+
+```bash
+# List your diagrams
+curl https://livediagram.app/api/diagrams \
+  -H "Authorization: Bearer lvd_your_token_here"
+```
+
+Every request authenticated this way acts as your account, with the same read and write access you have in the editor, so the endpoints behave just as they do for the app. Keep the `Authorization` header on each request; there is no separate login step.
+
 ## Revoking a token
 
 Revoke a token from the same **API tokens** section any time. Revocation is immediate: the next request that token makes is rejected. Deleting your account also removes all of your tokens, along with the rest of your data.

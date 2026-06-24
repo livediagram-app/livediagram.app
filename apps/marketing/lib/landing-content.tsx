@@ -6,6 +6,7 @@ import {
   AnimatedIconsArt,
   AnimatedShapesArt,
   AnyDeviceArt,
+  ApiArt,
   ArrowsArt,
   AutosaveArt,
   BorderStyleArt,
@@ -611,6 +612,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'No tracking pixels',
         description:
           'No third-party analytics, no ad pixels, no SDK calls home. The only usage data is anonymous, first-party product events, and they are public: see exactly what we measure on the telemetry page.',
+      },
+      {
+        art: <ApiArt />,
+        href: '/help/account-and-data/api-tokens/',
+        title: 'Drive it from your own scripts',
+        description:
+          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations. Signed in, revocable, six-month tokens, no lock-in.',
       },
     ],
   },
