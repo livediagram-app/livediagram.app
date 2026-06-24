@@ -85,7 +85,6 @@ api_tokens(
   owner_id      TEXT NOT NULL,        -- the Clerk userId this token acts as (never a guest id)
   token_hash    TEXT NOT NULL UNIQUE, -- SHA-256 of the secret
   name          TEXT,                 -- user label ("CI bot")
-  scopes        TEXT NOT NULL,        -- 'read' | 'read,write' (see 3.4)
   created_at    INTEGER NOT NULL,
   last_used_at  INTEGER,
   expires_at    INTEGER NOT NULL,     -- created_at + 6 months; never null, never "forever"
@@ -123,12 +122,13 @@ ownership checks every route already enforces — so a token can only touch what
 its `owner_id` owns. No route changes for authorization; only the identity
 source changes.
 
-### 3.4 Scopes
+### 3.4 Access — full read + write (no scopes yet)
 
-Start coarse: `read` (GET only) and `write` (POST/PUT/DELETE). The dispatcher
-already classifies writes (`isWrite` in `index.ts`); a write under a read-only
-token returns `403`. Per-resource / per-diagram scopes are future work
-([§7](#7-out-of-scope-for-now)).
+A token grants its owner's **full** access — read AND write, the same surface
+the app has. There is **no scope choice and no read-only token** for now: a
+read-only mode is a plausible future addition but has no clear use today, so
+it's deferred ([§7](#7-out-of-scope-for-now)). Hence no `scopes` column — when
+granular access lands it returns with the columns it needs.
 
 ### 3.5 Rate limiting
 
@@ -157,6 +157,16 @@ by, and act as, a signed-in account. Creation returns the secret **once**
 the public id + metadata. Revoke is immediate (the lookup filters
 `revoked = 0`). The pane states the fixed 6-month expiry ([§3.2](#32-storage-d1))
 so rotation isn't a surprise.
+
+**Per-account cap: 10.** A `POST /api/tokens` is refused (`409`) once the owner
+already has 10 live (non-revoked, non-expired) tokens — enough for any real
+integration set, low enough to keep the list + table tidy. Revoking or letting
+one expire frees a slot.
+
+**Account deletion removes them.** Deleting an account erases ALL of that
+user's data, tokens included: `DELETE /api/account` ([`routes/account.ts`](../apps/api/src/routes/account.ts))
+must delete the owner's `api_tokens` rows in the same cascade as their diagrams
+/ folders / themes, so no credential outlives the account.
 
 ### 3.7 Self-hosting
 
@@ -221,12 +231,34 @@ its signature, so wiring it onto REST requests is incremental. API tokens
 ([§3](#3-design-api-tokens)) are a parallel server-verifiable credential for
 external callers.
 
-**Compatibility:** `verifyOwnerId` returns true when `GUEST_ID_HMAC_SECRET` is
-unset, so self-hosts without the secret are unaffected (they opt out of the
-guard, as today). Where the secret IS set, legacy guests minted before signing
-([spec/04](04-auth-and-guest-access.md) transition, `routes/migrate.ts`) must
-re-mint a signed id (or migrate) before their writes are accepted — a one-time
-grace to design at implementation so existing guests aren't locked out.
+**Compatibility — legacy unsigned guests (recommended approach).**
+`verifyOwnerId` returns true when `GUEST_ID_HMAC_SECRET` is unset, so self-hosts
+without the secret opt out of the guard entirely (as today). Where the secret
+IS set, the migration follows from one hard truth: **an unsigned id can't be
+retroactively secured** — there is no proof bound to it, so the server cannot
+tell its real owner from someone who harvested it (that's exactly why we're
+adding signatures). So don't try; bound the window instead and lean on the
+self-heal that already exists:
+
+1. The app already, on load, mints a _signed_ id and migrates a legacy unsigned
+   id's diagrams onto it (`apps/live/lib/guest-identity.ts` → `apiUpgradeGuestId`).
+   Active guests largely hold a signed id already (they migrated when signing
+   first shipped, [spec/04](04-auth-and-guest-access.md)).
+2. Ship the `X-Owner-Sig` requirement **behind a grace flag / cutoff date.**
+   Before the cutoff, an unsigned `X-Owner-Id` is still accepted (today's
+   behaviour) so every returning guest self-heals to a signed id; at the
+   cutoff, unsigned ids are rejected for writes.
+3. **Never delete the orphaned data.** A long-dormant guest who only returns
+   after the cutoff finds their old unsigned id rejected, but the diagrams
+   still exist server-side under that id — recoverable via the migrate tooling
+   / a "sign in to recover" path, so it's a re-auth, never data loss.
+
+The grace window IS the residual exposure (unsigned ids stay spoofable until
+migrated) — the same residual [spec/04](04-auth-and-guest-access.md) /
+`routes/migrate.ts` already acknowledge — so set the cutoff far enough out
+(e.g. 30–90 days after the migrate code is live) that the active-guest
+population has rotated to signed ids, and keep it short enough to close the
+window. No active user is ever hard-locked.
 
 ## 5. Input validation (prerequisite — shipped)
 
@@ -252,10 +284,19 @@ hardening landed first:
    Pulled to the FRONT: it closes the current cross-object escalation in
    [§2](#2-why-the-api-isnt-safe-to-expose-as-is--and-a-current-weakness) and
    is independent of the token work, so it ships first (with the legacy-guest
-   grace). Defence-in-depth: also stop emitting the raw owner id where a
-   collaborator can read it — redact `participantId` in the change-log read for
-   non-owners, and consider a room-scoped presence id — so a leaked id is
-   harder to obtain even before the signature check rejects its use.
+   grace). **Stop emitting the raw owner id where a collaborator can read it**
+   (do this, not just "consider" — shrinking the attack surface is worth it
+   even though §4 already neutralises a leaked id, because people WILL probe
+   for it):
+   - Redact `participantId` in the change-log read for non-owners (the static
+     harvest), the same way comment authors and the diagram `ownerId` already
+     are.
+   - Give each realtime session a **room-scoped ephemeral presence id**
+     (random per connection) for the broadcast presence / cursor frames,
+     decoupled from the real owner id. Cursor identity + dedup within the room
+     use the ephemeral id; the server keeps the real→ephemeral mapping
+     internally for its role/identity checks but never broadcasts the owner id.
+     This removes the last surface that exposed it.
 3. `api_tokens` table + migration (`expires_at` fixed to +6 months) + token
    mint/verify (`auth/`), Clerk-gated `/api/tokens` routes (the team-route
    gate, [spec/32](32-teams.md)).
@@ -281,7 +322,9 @@ hardening landed first:
 
 ## 7. Out of scope (for now)
 
-Per-diagram / per-folder scopes, OAuth / third-party app authorization,
-webhooks, and any billing or quota tiers (the product has no paid tier —
-[spec/03](03-open-source-and-business-model.md)). Tokens inherit the owner's
-full access; finer grants come later if demand appears.
+Scopes of any kind — a **read-only token**, and per-diagram / per-folder grants
+([§3.4](#34-access--full-read--write-no-scopes-yet)) — plus OAuth /
+third-party app authorization, webhooks, and any billing or quota tiers (the
+product has no paid tier — [spec/03](03-open-source-and-business-model.md)).
+Every token inherits the owner's full read+write access; finer grants come
+later if demand appears.
