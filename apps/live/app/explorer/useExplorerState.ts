@@ -472,6 +472,7 @@ export function useExplorerState() {
       selected.kind === 'shared' ||
       selected.kind === 'gallery' ||
       selected.kind === 'themes' ||
+      selected.kind === 'tokens' ||
       selected.kind === 'team' ||
       selected.kind === 'invites'
     ) {
@@ -514,6 +515,7 @@ export function useExplorerState() {
     if (selected.kind === 'shared') return 'Shared with you';
     if (selected.kind === 'gallery') return 'Image gallery';
     if (selected.kind === 'themes') return 'Themes';
+    if (selected.kind === 'tokens') return 'API tokens';
     if (selected.kind === 'team') {
       return teams.find((t) => t.id === selected.id)?.name ?? 'Team';
     }
@@ -533,6 +535,7 @@ export function useExplorerState() {
     if (selected.kind === 'shared') return [{ name: 'Shared with you' }];
     if (selected.kind === 'gallery') return [{ name: 'Image gallery' }];
     if (selected.kind === 'themes') return [{ name: 'Themes' }];
+    if (selected.kind === 'tokens') return [{ name: 'API tokens' }];
     if (selected.kind === 'team') return [{ name: paneTitle }];
     if (selected.kind === 'invites') return [{ name: 'Invites' }];
     if (selected.kind === 'all') return [{ name: 'My Work' }];

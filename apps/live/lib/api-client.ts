@@ -48,6 +48,7 @@ export * from './api/change-log';
 export * from './api/folders';
 export * from './api/custom-themes';
 export * from './api/teams';
+export * from './api/tokens';
 export * from './api/self';
 export * from './api/room';
 export * from './api/images';

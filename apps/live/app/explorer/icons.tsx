@@ -174,6 +174,26 @@ export function PaletteIcon() {
   );
 }
 
+export function KeyIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="5.5" cy="5.5" r="3" />
+      <path d="M7.7 7.7 13.5 13.5" />
+      <path d="M11 11l1.2-1.2M12.3 12.3l1.2-1.2" />
+    </svg>
+  );
+}
+
 export function TeamIcon() {
   return (
     <svg

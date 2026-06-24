@@ -53,6 +53,7 @@ export type SelectedNode =
   | { kind: 'shared' }
   | { kind: 'gallery' }
   | { kind: 'themes' }
+  | { kind: 'tokens' }
   | { kind: 'folder'; id: string }
   | { kind: 'team'; id: string }
   | { kind: 'invites' };

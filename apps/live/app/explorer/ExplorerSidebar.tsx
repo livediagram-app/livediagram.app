@@ -11,6 +11,7 @@ import {
   FolderIcon,
   ImageIcon,
   InviteIcon,
+  KeyIcon,
   PaletteIcon,
   PlusIcon,
   ShareIcon,
@@ -268,6 +269,18 @@ export function ExplorerSidebar() {
         onClick={() => go({ kind: 'themes' })}
         depth={0}
       />
+      {/* API tokens (spec/61): signed-in only, so the row is shown only when
+          auth is enabled — same `clerkEnabled` gate the teams / sign-in
+          sections use, so a no-auth self-host never sees it. */}
+      {clerkEnabled ? (
+        <SidebarRow
+          icon={<KeyIcon />}
+          label="API tokens"
+          selected={selected.kind === 'tokens'}
+          onClick={() => go({ kind: 'tokens' })}
+          depth={0}
+        />
+      ) : null}
     </>
   );
 }

@@ -32,6 +32,11 @@ const SECTION_HELP: Partial<
     title: 'Custom themes',
     description: 'Build your own palette and reuse it across diagrams.',
   },
+  tokens: {
+    article: 'apiTokens',
+    title: 'API tokens',
+    description: 'Create tokens to call the livediagram API from your own scripts.',
+  },
   unsorted: {
     article: 'unsorted',
     title: 'The Unsorted folder',
@@ -53,6 +58,9 @@ const SECTION_HELP: Partial<
 // route, so none of them sit in the shared explorer chunk.
 const GalleryPane = dynamic(() =>
   import('@/components/panels/GalleryPane').then((m) => m.GalleryPane),
+);
+const TokensPane = dynamic(() =>
+  import('@/components/panels/TokensPane').then((m) => m.TokensPane),
 );
 const ThemesPane = dynamic(() =>
   import('@/components/panels/ThemesPane').then((m) => m.ThemesPane),
@@ -125,6 +133,7 @@ export function ExplorerPane() {
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
+          selected.kind === 'tokens' ||
           selected.kind === 'team' ||
           selected.kind === 'invites'
             ? undefined
@@ -137,6 +146,7 @@ export function ExplorerPane() {
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
+          selected.kind === 'tokens' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           selected.kind === 'recent'
@@ -176,6 +186,10 @@ export function ExplorerPane() {
         ) : null
       ) : selected.kind === 'themes' ? (
         <ThemesPane />
+      ) : selected.kind === 'tokens' ? (
+        ownerId ? (
+          <TokensPane ownerId={ownerId} />
+        ) : null
       ) : selected.kind === 'shared' ? (
         <SharedList shared={shared} onDismiss={dismissShared} />
       ) : paneContent.folders.length === 0 &&

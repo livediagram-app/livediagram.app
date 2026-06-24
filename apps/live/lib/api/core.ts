@@ -4,6 +4,7 @@
 // state. The per-domain call collections (diagrams, tabs, share, …)
 // import from here; callers go through the lib/api-client.ts barrel.
 import type {
+  ApiToken,
   ChangeLogEntry,
   CustomTheme,
   Diagram,
@@ -15,6 +16,7 @@ import type {
 } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/diagram';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
+import { getGuestSelfSig } from '../local-identity';
 
 // `API_BASE` resolution:
 //   1. `NEXT_PUBLIC_API_BASE` env var if set — used for local dev (e.g.
@@ -63,6 +65,15 @@ export type FolderResponse = { folder: Folder };
 export type FoldersResponse = { folders: Folder[] };
 export type CustomThemeResponse = { theme: CustomTheme };
 export type CustomThemesResponse = { themes: CustomTheme[] };
+export type TokensResponse = { tokens: ApiToken[] };
+// POST /api/tokens returns the one-time plaintext secret alongside the new
+// token's public metadata (the secret is never retrievable again).
+export type CreateTokenResponse = {
+  token: string;
+  id: string;
+  name: string | null;
+  expiresAt: number;
+};
 export type ShareLinkResponse = { link: ShareLink };
 // The share-links list doubles as the owner's read of the diagram's
 // share password (spec/24): owner-only endpoint, so it's safe in the
@@ -177,6 +188,13 @@ export async function apiHeaders(
     h['Authorization'] = `Bearer ${token}`;
   } else {
     h['X-Owner-Id'] = ownerId;
+    // Proof of possession for the guest id (spec/61 §4): the api worker can
+    // require a valid signature on owner-scoped routes, which a harvested id
+    // wouldn't have. Sent whenever we hold one for this id; absent for legacy
+    // unsigned guests (accepted during the grace window) and self-hosts with
+    // signing disabled.
+    const sig = getGuestSelfSig();
+    if (sig) h['X-Owner-Sig'] = sig;
   }
   if (opts.body) h['Content-Type'] = 'application/json';
   if (opts.share) h['X-Share-Code'] = opts.share;

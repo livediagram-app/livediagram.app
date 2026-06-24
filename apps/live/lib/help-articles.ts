@@ -26,6 +26,7 @@ export const HELP_ARTICLES = {
   aiTools: 'tools/ai/ai-tools',
   // Tabs / import-export
   exportingDiagrams: 'account-and-data/exporting-diagrams',
+  apiTokens: 'account-and-data/api-tokens',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
   linkingTabs: 'tabs/linking-tabs',
