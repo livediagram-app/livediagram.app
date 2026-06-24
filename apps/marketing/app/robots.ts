@@ -22,7 +22,8 @@ export const dynamic = 'force-static';
 // even fetching them.
 //
 // allow: ['/'] keeps the marketing surface (/, /faq, /terms,
-// /privacy, /sitemap.xml, /robots.txt) discoverable.
+// /sitemap.xml, /robots.txt) discoverable. (/privacy is now a
+// noindex redirect to the help-centre privacy policy.)
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {

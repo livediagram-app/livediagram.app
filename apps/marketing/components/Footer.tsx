@@ -26,7 +26,7 @@ export function Footer() {
           <a href="/terms" className="hover:text-slate-900">
             Terms
           </a>
-          <a href="/privacy" className="hover:text-slate-900">
+          <a href="/help/privacy-and-security/privacy-policy/" className="hover:text-slate-900">
             Privacy
           </a>
           <a href="/telemetry" className="hover:text-slate-900">

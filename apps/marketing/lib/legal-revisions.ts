@@ -1,10 +1,12 @@
-// Last-revised date for the legal pages (/terms and /privacy).
-// Single source of truth shared by:
+// Last-revised date for the Terms page (/terms). Single source of truth
+// shared by:
 //
-//   - app/sitemap.ts (drives `lastModified` for the legal entries),
-//   - app/terms/page.tsx + app/privacy/page.tsx (the visible
-//     "Last updated <date>" line on each page, rendered by
-//     components/LegalPage.tsx).
+//   - app/sitemap.ts (drives `lastModified` for the /terms entry),
+//   - app/terms/page.tsx (the visible "Last updated <date>" line,
+//     rendered by components/LegalPage.tsx).
+//
+// (The privacy policy moved into the help centre, which carries its own
+// "Last updated" line; only Terms still uses this constant.)
 //
 // Previously the date was hardcoded in three places: an ISO Date
 // in sitemap.ts and the literal string "31 May 2026" in each of

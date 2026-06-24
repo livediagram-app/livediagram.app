@@ -59,12 +59,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly',
       priority: 0.3,
     },
-    {
-      url: `${base}/privacy`,
-      lastModified: LEGAL_LAST_UPDATED,
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
+    // /privacy is intentionally omitted: the privacy policy moved into the help
+    // centre (its own sitemap lists the canonical article), and /privacy is now
+    // a noindex redirect there.
     // Operational surfaces reachable from the footer (spec/16). Lower
     // priority than the marketing content above: they're transparency
     // pages, not landing destinations, but they're public + indexable

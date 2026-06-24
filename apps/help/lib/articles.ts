@@ -79,8 +79,8 @@ export const categories: Category[] = [
     slug: 'privacy-and-security',
     title: 'Privacy and Security',
     description:
-      'Know exactly how your diagrams are stored, what we collect, and how to keep shared links safe.',
-    articleCount: 4,
+      'Know exactly how your diagrams are stored, what we collect, and how to keep shared links safe — including the full privacy policy.',
+    articleCount: 5,
   },
   {
     slug: 'self-hosting',
@@ -396,6 +396,14 @@ export const articles: Article[] = [
   },
 
   // ---- Privacy and Security ----
+  {
+    slug: 'privacy-policy',
+    title: 'Privacy Policy',
+    description: 'The full privacy policy for the hosted livediagram service.',
+    category: 'Privacy and Security',
+    categorySlug: 'privacy-and-security',
+    parentSlug: 'privacy-and-security',
+  },
   {
     slug: 'data-privacy',
     title: 'Data Privacy',

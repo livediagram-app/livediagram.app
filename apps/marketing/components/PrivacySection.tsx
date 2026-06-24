@@ -93,7 +93,10 @@ export function PrivacySection() {
 
         <p className="mt-12 text-center text-xs text-slate-500">
           Read the full{' '}
-          <a href="/privacy" className="underline transition hover:text-slate-300">
+          <a
+            href="/help/privacy-and-security/privacy-policy/"
+            className="underline transition hover:text-slate-300"
+          >
             privacy policy
           </a>
           {' or check the live '}
