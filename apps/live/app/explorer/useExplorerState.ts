@@ -17,6 +17,7 @@ import { track } from '@/lib/telemetry';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/persistence/useTeams';
+import { useTokens } from '@/hooks/persistence/useTokens';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDiagramListActions } from '@/hooks/persistence/useDiagramListActions';
 import { useToast } from '@/hooks/ui/useToast';
@@ -95,6 +96,10 @@ export function useExplorerState() {
     declineInvite,
     refresh: refreshTeams,
   } = useTeams(ownerId, { enabled: teamsEnabled });
+  // API tokens (spec/61): signed-in only, same gate as teams. Loaded here so
+  // the sidebar badge, the header New-token popover, and the list pane share
+  // one source.
+  const tokens = useTokens(ownerId, { enabled: teamsEnabled });
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   // Folder id mid-rename so the tree / list row swaps to an input
@@ -616,6 +621,7 @@ export function useExplorerState() {
     teamFolders,
     teamDiagrams,
     invites,
+    tokens,
     loading,
     folderById,
     childrenByParent,

@@ -53,6 +53,7 @@ export function ExplorerSidebar() {
     teamFolders,
     invites,
     teamsEnabled,
+    tokens,
     recentCount,
     createFolder,
     setTeamModalOpen,
@@ -284,6 +285,7 @@ export function ExplorerSidebar() {
               selected={selected.kind === 'tokens'}
               onClick={() => go({ kind: 'tokens' })}
               depth={0}
+              badge={tokens.count > 0 ? tokens.count : undefined}
             />
           ) : (
             <Link

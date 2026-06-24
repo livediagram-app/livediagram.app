@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { useExplorer } from './ExplorerContext';
+import { NewTokenButton } from '@/components/panels/NewTokenButton';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { EmptyPane, ListView, PaneHeader, SharedList, SkeletonRows } from './views';
 
@@ -83,6 +84,7 @@ export function ExplorerPane() {
     ownerId,
     clerkUserId,
     clerkDisplayName,
+    tokens,
     paneTitle,
     paneCrumbs,
     paneContent,
@@ -129,6 +131,9 @@ export function ExplorerPane() {
         helpArticle={sectionHelp?.article}
         helpTitle={sectionHelp?.title}
         helpDescription={sectionHelp?.description}
+        headerActions={
+          selected.kind === 'tokens' && clerkUserId ? <NewTokenButton tokens={tokens} /> : undefined
+        }
         onCreateDiagram={
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
@@ -191,7 +196,7 @@ export function ExplorerPane() {
         // in, but a guest could deep-link /explorer/tokens — show a sign-in
         // prompt rather than a TokensPane that would just 403.
         clerkUserId ? (
-          <TokensPane ownerId={clerkUserId} />
+          <TokensPane tokens={tokens.list} error={tokens.error} onRevoke={tokens.revoke} />
         ) : (
           <div className="rounded-xl border border-dashed border-slate-300 px-6 py-10 text-center dark:border-slate-700">
             <p className="text-sm font-medium text-slate-600 dark:text-slate-300">

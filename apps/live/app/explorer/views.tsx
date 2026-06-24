@@ -8,7 +8,7 @@
 // level state, no api calls. The page wires them together.
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -106,6 +106,7 @@ export function PaneHeader({
   helpArticle,
   helpTitle,
   helpDescription,
+  headerActions,
 }: {
   title: string;
   crumbs: { name: string; onClick?: () => void }[];
@@ -131,13 +132,18 @@ export function PaneHeader({
   // "New folder" at the root level, "New subfolder" inside an
   // existing folder. Caller resolves the wording.
   folderLabel?: string;
+  // Extra section-specific action(s) rendered in the actions row, just to the
+  // right of the help "?" button (e.g. the API tokens "New token" popover
+  // button, spec/61). Lets a section add a header CTA without going through
+  // the diagram/folder Create dropdown.
+  headerActions?: ReactNode;
 }) {
   // A single-item breadcrumb is just the page title in a second
   // place: visually noisy and provides no navigation. Show only
   // when there are actual parents to click back to.
   const showCrumbs = crumbs.length >= 2;
   const hasCreate = Boolean(onCreateDiagram || onCreateFolder);
-  const hasActions = hasCreate || Boolean(helpArticle);
+  const hasActions = hasCreate || Boolean(helpArticle) || Boolean(headerActions);
   // A single "+ Create" dropdown (both desktop and mobile) replaces the
   // standalone New-diagram / New-folder buttons: two shrink-0 buttons
   // squeezed the folder-name title to nothing on a narrow phone, and
@@ -174,6 +180,7 @@ export function PaneHeader({
                 description={helpDescription}
               />
             ) : null}
+            {headerActions}
             {hasCreate ? (
               <button
                 ref={createRef}
