@@ -6,6 +6,8 @@ import {
   resolveApiToken,
 } from './db';
 import { isApiTokenFormat } from './auth/api-token';
+import { verifyOwnerId } from './auth/owner-signature';
+import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { DiagramRoom } from './diagram-room';
 import { CORS_HEADERS, json, notFound, rateLimited } from './responses';
@@ -86,6 +88,32 @@ export default {
     }
     const resolveOwner = (): string | null =>
       clerkUserId ?? tokenOwnerId ?? request.headers.get('X-Owner-Id');
+
+    // Guest REST signature gate (spec/61 §4). On owner-scoped routes, a
+    // presented `X-Owner-Id` must carry a valid HMAC signature once
+    // enforcement is on — so a harvested owner id (a guest UUID, or a
+    // signed-up user's Clerk `sub` slipped into the header) can't be used as a
+    // credential. Skipped for Clerk / token callers (they aren't on the guest
+    // path) and during the grace window. A request with NO `X-Owner-Id` is
+    // untouched (it just resolves to no owner), so public reads still work.
+    if (
+      !clerkUserId &&
+      !tokenOwnerId &&
+      OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') &&
+      guestSignatureEnforced(env, Date.now())
+    ) {
+      const headerOwner = request.headers.get('X-Owner-Id');
+      if (
+        headerOwner &&
+        !(await verifyOwnerId(
+          env.GUEST_ID_HMAC_SECRET,
+          headerOwner,
+          request.headers.get('X-Owner-Sig'),
+        ))
+      ) {
+        return json({ error: 'signature_required' }, { status: 401 });
+      }
+    }
 
     // Per-owner write rate limit. Gates POST / PUT / DELETE at a
     // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot

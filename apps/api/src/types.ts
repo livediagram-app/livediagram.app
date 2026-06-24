@@ -50,6 +50,13 @@ export type Env = {
   // claim its data" hole. Unset → migrate keeps its legacy unsigned
   // behaviour (OSS self-host that hasn't configured it).
   GUEST_ID_HMAC_SECRET?: string;
+  // Guest REST signature enforcement cutoff (spec/61 §4), epoch ms. While
+  // unset (or in the future) the guest `X-Owner-Id` REST path keeps its
+  // legacy unsigned behaviour — the grace window that lets pre-signing guests
+  // self-heal to a signed id. Set to a past timestamp (once active guests have
+  // rotated) to require a valid `X-Owner-Sig` on owner-scoped routes. No-op
+  // without GUEST_ID_HMAC_SECRET.
+  GUEST_SIG_ENFORCE_AFTER?: string;
   // R2 bucket holding image-element bytes (spec/19). Optional so
   // self-hosters who haven't provisioned R2 can still deploy the
   // api worker: when unbound, the image endpoints all return 503
