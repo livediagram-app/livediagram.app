@@ -15,7 +15,6 @@ import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
 import { CustomThemeBuilder, type CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { Portal } from '@/components/primitives/Portal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -67,14 +66,6 @@ export function ThemesPane() {
           <p className="mt-1 text-xs text-slate-400">
             Build your own palette and reuse it across diagrams.
           </p>
-          <div className="mt-3 flex justify-center">
-            <HelpArticleLink
-              article="customThemes"
-              variant="text"
-              title="Custom themes"
-              description="How to build a palette and reuse it across diagrams."
-            />
-          </div>
           <button
             type="button"
             onClick={() => setBuilding('new')}
