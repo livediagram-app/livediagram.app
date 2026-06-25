@@ -132,6 +132,7 @@ Four tools. The search/view capability is two tools (find, then read); create
 and update are separate because their inputs and intent differ.
 
 ### 4.1 `find_diagrams`
+
 Search/list the caller's diagrams. Input: optional `query` (name match), `limit`.
 Wraps `GET /api/diagrams`, filters by name. Returns a compact list:
 `{ id, name, tabs: [{ id, name }], updatedAt, url }` where `url` is the
@@ -139,6 +140,7 @@ Wraps `GET /api/diagrams`, filters by name. Returns a compact list:
 the model can scan many results cheaply, then `read_diagram` the one it wants.
 
 ### 4.2 `read_diagram`
+
 Fetch one diagram's full content **and render it** — this is the "visualise"
 capability. Input: `diagramId`, optional `tabId` (defaults to the first tab).
 Wraps `GET /api/diagrams/:id` + `GET /api/diagrams/:id/tabs/:tabId`. Returns the
@@ -148,8 +150,10 @@ plus the deep-link `url`. So "show me my auth-flow diagram" → `find_diagrams` 
 `read_diagram` renders it inline.
 
 ### 4.3 `create_diagram`
+
 Create a new diagram (or add a tab) from elements the model produced. Input:
 `name`, `tab: { name, elements: Element[] }`. The MCP:
+
 1. **Validates** `elements` with `isValidTab` (reject `400`-style with a clear
    message the model can correct against).
 2. **Runs `autoLayoutElements`** when `isLayoutCandidate` (≥3 nodes + ≥1 pinned
@@ -161,7 +165,9 @@ Create a new diagram (or add a tab) from elements the model produced. Input:
    sees the result inline immediately.
 
 ### 4.4 `update_diagram`
+
 Edit an existing tab. **Two modes** (the user asked for both):
+
 - **`replace`** — for building or reworking a whole tab. Input: full new
   `elements: Element[]`. Validated + auto-laid-out exactly like `create_diagram`,
   then `PUT …/tabs/:tabId`. Use when the change is large enough that re-emitting
@@ -178,6 +184,7 @@ Both modes re-read → apply → validate → write, and return the rendered PNG
 result. The model picks the mode: rebuild → `replace`; tweak → `ops`.
 
 ### 4.5 Schema resource (not a tool)
+
 A static, cacheable MCP **resource** — e.g. `livediagram://schema/elements` —
 returning a compact description of the element schema: the element types
 (`shape` / `text` / `sticky` / `arrow` / `table` / …), the shape vocabulary,
