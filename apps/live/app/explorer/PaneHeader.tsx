@@ -8,7 +8,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, PortalMenu } from '@/components/primitives/PortalMenu';
 import { DiagramIcon, MenuFolderIcon, PlusIcon } from './icons';
 
 function HamburgerIcon() {
@@ -152,26 +152,42 @@ export function PaneHeader({
                 placement="below"
                 onClose={() => setCreateOpen(false)}
               >
-                {onCreateDiagram ? (
-                  <MenuItem
-                    icon={<DiagramIcon />}
-                    label="New diagram"
-                    onClick={() => {
-                      onCreateDiagram();
-                      setCreateOpen(false);
-                    }}
-                  />
-                ) : null}
-                {onCreateFolder ? (
-                  <MenuItem
-                    icon={<MenuFolderIcon />}
-                    label={folderLabel ?? 'New folder'}
-                    onClick={() => {
-                      onCreateFolder();
-                      setCreateOpen(false);
-                    }}
-                  />
-                ) : null}
+                {/* Icon-over-label tiles (bigger tap targets than thin rows),
+                    laid out 2-up when both actions apply, full-width when one. */}
+                <div
+                  className={`grid gap-1 px-1.5 py-1.5 ${
+                    onCreateDiagram && onCreateFolder ? 'grid-cols-2' : 'grid-cols-1'
+                  }`}
+                >
+                  {onCreateDiagram ? (
+                    <MenuTile
+                      icon={
+                        <span className="[&_svg]:h-5 [&_svg]:w-5">
+                          <DiagramIcon />
+                        </span>
+                      }
+                      label="New diagram"
+                      onClick={() => {
+                        onCreateDiagram();
+                        setCreateOpen(false);
+                      }}
+                    />
+                  ) : null}
+                  {onCreateFolder ? (
+                    <MenuTile
+                      icon={
+                        <span className="[&_svg]:h-5 [&_svg]:w-5">
+                          <MenuFolderIcon />
+                        </span>
+                      }
+                      label={folderLabel ?? 'New folder'}
+                      onClick={() => {
+                        onCreateFolder();
+                        setCreateOpen(false);
+                      }}
+                    />
+                  ) : null}
+                </div>
               </PortalMenu>
             ) : null}
           </div>
