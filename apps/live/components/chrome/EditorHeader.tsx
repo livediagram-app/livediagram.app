@@ -163,18 +163,22 @@ export function EditorHeader({
           </Tooltip>
         ) : null}
         {/* Explorer link — in-app navigation to the diagram library, sat just
-            left of Help. Same tab (it's part of the live app, not external). */}
-        <Tooltip title="Explorer" description="Browse your diagrams, folders, and teams.">
-          <a
-            href="/explorer/recent"
-            onClick={() => track('UI', 'Opened', 'Explorer')}
-            aria-label="Explorer"
-            className={`${HEADER_ACTION_BTN} text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800`}
-          >
-            <ExplorerIcon />
-            <span>Explorer</span>
-          </a>
-        </Tooltip>
+            left of Help. Same tab (it's part of the live app, not external).
+            Hidden on phones (< sm): the Explorer is reachable from the in-canvas
+            panel there, so the header keeps its room. */}
+        <div className="hidden h-full sm:flex">
+          <Tooltip title="Explorer" description="Browse your diagrams, folders, and teams.">
+            <a
+              href="/explorer/recent"
+              onClick={() => track('UI', 'Opened', 'Explorer')}
+              aria-label="Explorer"
+              className={`${HEADER_ACTION_BTN} text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800`}
+            >
+              <ExplorerIcon />
+              <span>Explorer</span>
+            </a>
+          </Tooltip>
+        </div>
         {/* Help-centre link (spec/55), moved here from the tab bar so it sits
             with the other top-right actions. Plain external <a> opening /help
             in a new tab; fires a telemetry event like the old tab-bar link.
