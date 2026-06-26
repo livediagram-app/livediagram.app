@@ -360,6 +360,15 @@ export function templateCategory(kind: TemplateKind): TemplateCategory {
   return TEMPLATE_CATEGORY[kind];
 }
 
+// Default name for a freshly-created diagram: "Untitled <template title>" so a
+// templated diagram is recognisable in the Explorer (e.g. "Untitled Mind map"),
+// while a blank one (or no template) keeps the plain "Untitled diagram".
+export function untitledNameForTemplate(kind: TemplateKind | null): string {
+  if (!kind || kind === 'blank') return 'Untitled diagram';
+  const title = TEMPLATES.find((t) => t.kind === kind)?.title;
+  return title ? `Untitled ${title}` : 'Untitled diagram';
+}
+
 // The canvas backdrop pattern that best suits each template's layout.
 // Applied on top of the chosen theme (which only supplies the colours),
 // so a starter ships with a fitting canvas instead of inheriting the

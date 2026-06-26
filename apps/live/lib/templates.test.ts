@@ -5,6 +5,7 @@ import {
   TEMPLATE_CATEGORIES,
   templateCanvasOverrides,
   templateCategory,
+  untitledNameForTemplate,
   type TemplateKind,
 } from './templates';
 import { getTheme } from './themes';
@@ -388,5 +389,18 @@ describe('board templates', () => {
     // quadrants aren't empty frames.
     const bulletCount = labels.filter((l) => l.startsWith('•')).length;
     expect(bulletCount).toBeGreaterThan(0);
+  });
+});
+
+describe('untitledNameForTemplate', () => {
+  it('names a templated diagram after its template title', () => {
+    expect(untitledNameForTemplate('mindmap')).toBe('Untitled Mind map');
+    // Any non-blank template -> "Untitled <its title>".
+    const t = TEMPLATES.find((x) => x.kind !== 'blank')!;
+    expect(untitledNameForTemplate(t.kind)).toBe(`Untitled ${t.title}`);
+  });
+  it('keeps "Untitled diagram" for blank or no template', () => {
+    expect(untitledNameForTemplate('blank')).toBe('Untitled diagram');
+    expect(untitledNameForTemplate(null)).toBe('Untitled diagram');
   });
 });

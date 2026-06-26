@@ -12,7 +12,7 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { ensureGuestSelfId, markNameConfirmed } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
-import type { TemplateKind } from '@/lib/templates';
+import { untitledNameForTemplate, type TemplateKind } from '@/lib/templates';
 import { getTheme, THEMES } from '@/lib/themes';
 import { isCustomThemeId } from '@/lib/custom-theme-registry';
 
@@ -121,7 +121,7 @@ export default function NewDiagramPage() {
     try {
       await apiCreateDiagram(self.id, {
         id: diagramId,
-        name: 'Untitled diagram',
+        name: untitledNameForTemplate(templateKind),
         tabs: [tab],
       });
     } catch {
