@@ -321,10 +321,14 @@ export function registerTools(server: McpServer, env: Env): void {
           'The resulting elements are invalid. See the livediagram://schema/elements resource.',
         );
       }
+      // Coerce off-vocabulary shape kinds (e.g. "rectangle" -> "square") so an
+      // edit can't introduce a node that renders as a bare label, same as create.
+      const fixed = candidate.elements.map((el) =>
+        el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
+      );
       // Layout applies only on a full replace (the model decides via `layout`);
       // ops edits always keep the existing positions (spec/62 §4.4).
-      const elements: Element[] =
-        args.mode === 'replace' ? applyLayout(args.layout, candidate.elements) : candidate.elements;
+      const elements: Element[] = args.mode === 'replace' ? applyLayout(args.layout, fixed) : fixed;
       const nextTab: Tab = { ...(tab as Tab), id: tabId, elements };
       await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
         method: 'PUT',
