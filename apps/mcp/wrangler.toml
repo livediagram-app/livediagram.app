@@ -1,0 +1,24 @@
+# livediagram MCP server (spec/62). Its own Worker + hostname
+# (mcp.livediagram.app), separate from the api worker — distinct dependency
+# surface (MCP SDK, OAuth/KV, the resvg WASM rasteriser) and public origin.
+name = "livediagram-mcp"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# nodejs_compat for the MCP SDK's transport internals; WASM modules (resvg) are
+# bundled by wrangler directly.
+compatibility_flags = ["nodejs_compat"]
+
+# Reach the api worker over a service binding (not public DNS). Every tool
+# forwards to /api/* carrying the caller's `Authorization: Bearer lvd_…`
+# token, which the api already accepts on every route (spec/61 §3.3), so no
+# api authorization change is needed for the tools (spec/62 §2).
+[[services]]
+binding = "API"
+service = "livediagram-api"
+
+# OAuth 2.1 state (spec/62 §3): client registrations, authorize sessions, and
+# codes — all short TTLs. Provision with `wrangler kv namespace create OAUTH_KV`
+# and paste the id here (the api worker needs no KV; token storage stays in D1).
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
