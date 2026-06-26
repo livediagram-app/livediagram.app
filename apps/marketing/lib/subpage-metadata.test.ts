@@ -64,18 +64,25 @@ describe('subpageMetadata', () => {
     });
   });
 
-  it('does not set openGraph.images itself (the app/opengraph-image.tsx fallback supplies it)', () => {
-    // Next.js's convention auto-promotes app/opengraph-image.tsx
-    // to og:image for every route under that app/ tree. If this
-    // factory ever started setting `images` explicitly it would
-    // override that fallback for every subpage at once, so we
-    // pin the explicit absence here. The same applies to twitter
-    // (which inherits og:image when its own image is missing).
+  it('sets the OG + Twitter card image explicitly (the file-convention fallback is suppressed once openGraph is declared)', () => {
+    // Next.js auto-promotes app/opengraph-image.tsx to og:image ONLY for
+    // routes that don't declare their own openGraph. Every subpage here
+    // sets an explicit openGraph object, which suppresses that fallback, so
+    // without an explicit image the card goes missing (verified against the
+    // built HTML). Pin that the factory references the generated assets so
+    // subpage links keep their social / SERP card.
     const md = subpageMetadata({ title: 't', description: 'd', path: '/privacy' });
     const og = md.openGraph as Record<string, unknown> | undefined;
-    expect(og?.images).toBeUndefined();
+    expect(og?.images).toEqual([
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'livediagram: a real-time multiplayer canvas for diagrams and mindmaps',
+      },
+    ]);
     const tw = md.twitter as Record<string, unknown> | undefined;
-    expect(tw?.images).toBeUndefined();
+    expect(tw?.images).toEqual(['/twitter-image']);
   });
 
   it('returns a fresh object on each call (call sites compose into Next metadata at module load)', () => {

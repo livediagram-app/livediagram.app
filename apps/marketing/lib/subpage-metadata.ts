@@ -16,6 +16,21 @@ import { SITE_NAME } from './site';
 
 const SUBPAGE_LOCALE = 'en_GB';
 
+// The shared OG / Twitter card. Next only auto-attaches the file-convention
+// opengraph-image.tsx to a page when that page doesn't declare its own
+// openGraph; because every subpage here sets an explicit openGraph object,
+// the auto-image is suppressed and the card goes missing. So reference the
+// same generated assets (served at `/opengraph-image` + `/twitter-image`)
+// explicitly, resolved to absolute URLs via metadataBase, so subpage links
+// shared on social / shown in SERPs carry the brand card like the homepage.
+const OG_IMAGE = {
+  url: '/opengraph-image',
+  width: 1200,
+  height: 630,
+  alt: 'livediagram: a real-time multiplayer canvas for diagrams and mindmaps',
+};
+const TWITTER_IMAGE = '/twitter-image';
+
 export type SubpageMetadataInput = {
   title: string;
   description: string;
@@ -53,6 +68,7 @@ export function subpageMetadata({
       title,
       description,
       locale: SUBPAGE_LOCALE,
+      images: [OG_IMAGE],
       // Only set when supplied: Next will simply omit the
       // article:modified_time meta tag if `modifiedTime` is
       // undefined, which is what FAQ / Terms / Privacy expect.
@@ -62,6 +78,7 @@ export function subpageMetadata({
       card: 'summary_large_image',
       title,
       description,
+      images: [TWITTER_IMAGE],
     },
   };
 }
