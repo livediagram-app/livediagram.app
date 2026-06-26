@@ -1,6 +1,7 @@
 # 62 — MCP server
 
-**Status: proposed.** Builds directly on [spec/61](61-public-api-and-tokens.md)
+**Status: implemented** on branch `mcp-server` (awaiting merge + a staging deploy
+for the live protocol / OAuth / WASM-render sign-off). Builds directly on [spec/61](61-public-api-and-tokens.md)
 (API tokens), which it picks up where §7 left off: spec/61 deferred "OAuth /
 third-party app authorization" — this spec adds exactly that, scoped to one
 client (an MCP server), reusing the `lvd_` token as the credential it ultimately

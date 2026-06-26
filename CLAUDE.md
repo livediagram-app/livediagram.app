@@ -44,6 +44,7 @@ apps/
   live/         # the diagram editor app (Next.js, clean routes)
   telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
+  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
 packages/
   ui/             # shared UI primitives (Brand, etc.)
@@ -137,7 +138,7 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 ## Naming conventions
 
 - Workspace packages: `@livediagram/<name>`.
-- Apps in `apps/<name>` (e.g. `apps/marketing`, `apps/live`, `apps/telemetry`, `apps/api`, `apps/router`).
+- Apps in `apps/<name>` (e.g. `apps/marketing`, `apps/live`, `apps/telemetry`, `apps/api`, `apps/mcp`, `apps/router`).
 - Cross-workspace deps use `"@livediagram/foo": "workspace:*"`.
 
 ## Shared config
@@ -161,7 +162,7 @@ See [specs/10-deployment.md](specs/10-deployment.md).
 
 All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing`, `live`, and `telemetry`). CI runs lint / format / typecheck / test / build on every PR and push. The deploy workflow is **manual-only** (`workflow_dispatch`, intentionally not chained to CI): trigger it from the Actions tab or `gh workflow run Deploy --ref main` once CI on `main` is green and you've decided to ship. It builds, then deploys `marketing` + `live` + `telemetry` + `api` in parallel, then `router` last (its service bindings depend on the other four existing).
 
-Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetry`, `livediagram-api`, `livediagram-router`, matching the service-binding targets in `apps/router/wrangler.toml`. Deploy order: marketing + live + telemetry + api in parallel, then router last (its service bindings depend on the other four existing).
+Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetry`, `livediagram-api`, `livediagram-mcp`, `livediagram-router`, matching the service-binding targets in `apps/router/wrangler.toml`. Deploy order: marketing + live + telemetry + api in parallel, then `mcp` after api (it has a service binding to api; its own host `mcp.livediagram.app`, not a router path), then router last (its service bindings depend on the other four existing).
 
 Production is live at **https://livediagram.app** (`/` → marketing; `/diagram`, `/explorer`, `/new`, `/join`, ... → editor at clean routes, with only its `_next` assets under `/live`; `/telemetry` → telemetry dashboard; `/api/*` → api).
 

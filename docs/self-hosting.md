@@ -133,7 +133,7 @@ pnpm --filter @livediagram/api exec wrangler deploy
 pnpm --filter @livediagram/router exec wrangler deploy   # last, depends on the five above
 ```
 
-Deploy order matters: the router's service bindings reference the five other workers, so it can't deploy until they exist. The GitHub Actions deploy workflow encodes this as a job dependency.
+Deploy order matters: the router's service bindings reference the five other workers, so it can't deploy until they exist; the optional `mcp` worker deploys after `api` (it binds to it). The GitHub Actions deploy workflow encodes this as job dependencies.
 
 Or just push to `main` and use the bundled GitHub Actions workflows:
 
@@ -141,6 +141,34 @@ Or just push to `main` and use the bundled GitHub Actions workflows:
 - `.github/workflows/deploy.yml` is **manually triggered** from the Actions tab. It builds once then deploys all six workers in the right order.
 
 See [spec/10](../specs/10-deployment.md) for the deeper deploy mechanics, including how D1 migrations run BEFORE the worker deploy so the new code never briefly runs against the old schema.
+
+## MCP server (optional, needs Clerk)
+
+The `apps/mcp` worker (spec/62) lets people connect an AI tool (Claude, any MCP
+client) to drive their diagrams. It's **optional** — don't deploy it and nothing
+else references it — and **needs Clerk**, exactly like API tokens and teams: the
+OAuth consent page authenticates the user via Clerk and the api's
+`/api/oauth/exchange` requires a Clerk identity, so a no-auth self-host can mint
+nothing. To run it:
+
+1. **Create a KV namespace** for OAuth state and put the id in `apps/mcp/wrangler.toml`:
+
+   ```sh
+   pnpm --filter @livediagram/mcp exec wrangler kv namespace create OAUTH_KV
+   ```
+
+2. **Point it at your hosts.** In `apps/mcp/wrangler.toml` set the `[[routes]]`
+   pattern to your MCP hostname and `CONSENT_BASE_URL` to your live app's origin.
+   Set `NEXT_PUBLIC_MCP_ORIGIN` (live build env) to the same MCP origin so the
+   consent page posts the minted token only to your trusted host.
+
+3. **Deploy after the api worker** (it reaches api over a service binding). The
+   deploy workflow already orders `mcp` after `api`. Tokens minted via the MCP
+   are ordinary `lvd_` API tokens — they appear in the Explorer's API tokens
+   page and are revocable there.
+
+The MCP carries no model of its own and makes no LLM calls; the connected AI
+tool does the thinking. See [spec/62](../specs/62-mcp-server.md).
 
 ## Telemetry: off by default for self-hosters
 

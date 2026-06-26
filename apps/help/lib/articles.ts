@@ -72,8 +72,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, and API tokens work.',
-    articleCount: 5,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, and connecting AI tools work.',
+    articleCount: 6,
   },
   {
     slug: 'privacy-and-security',
@@ -398,6 +398,13 @@ export const articles: Article[] = [
     slug: 'api-tokens',
     title: 'API Tokens',
     description: 'Create signed-in-only tokens to call the livediagram API from your own scripts.',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'connect-ai-mcp',
+    title: 'Connect an AI tool (MCP)',
+    description: 'Connect Claude or any MCP client to find, view, create, and edit your diagrams.',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },

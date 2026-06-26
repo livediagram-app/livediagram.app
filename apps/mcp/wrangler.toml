@@ -13,6 +13,13 @@ compatibility_flags = ["nodejs_compat"]
 # live origin; the authorize endpoint redirects the signed-in user here.
 CONSENT_BASE_URL = "https://livediagram.app"
 
+# Its own hostname (spec/62) — not a path under the main router. Self-hosters
+# point this at their own host (and update CONSENT_BASE_URL + the live app's
+# NEXT_PUBLIC_MCP_ORIGIN to match).
+[[routes]]
+pattern = "mcp.livediagram.app"
+custom_domain = true
+
 # Reach the api worker over a service binding (not public DNS). Every tool
 # forwards to /api/* carrying the caller's `Authorization: Bearer lvd_…`
 # token, which the api already accepts on every route (spec/61 §3.3), so no

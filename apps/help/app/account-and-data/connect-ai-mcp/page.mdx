@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Connect an AI tool (MCP)',
+  description:
+    'Connect livediagram to Claude or any MCP client to find, view, create, and edit your diagrams from inside your AI tool. A signed-in-only feature.',
+  path: '/help/account-and-data/connect-ai-mcp/',
+});
+
+<ArticleLayout
+  title="Connect an AI tool (MCP)"
+  description="Drive your diagrams from Claude or any MCP client. A signed-in-only feature for advanced users."
+  categoryTitle="Account and Data"
+  categorySlug="account-and-data"
+>
+
+livediagram has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your diagrams from inside that tool. Point the AI at a codebase and ask for a control-flow diagram, or ask it to tweak an existing one, and the result is saved to your account.
+
+## You need an account
+
+Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](/help/account-and-data/api-tokens/) and [teams](/help/collaboration/teams/). The canvas, sharing, and real-time collaboration stay account-free for guests, but driving your diagrams programmatically is an advanced, opt-in capability that needs an account. On a self-hosted instance that hasn't enabled accounts, the feature isn't available.
+
+## Connecting
+
+In your AI tool, add a connector / MCP server pointing at **`https://mcp.livediagram.app/mcp`**. The first time, your tool opens a livediagram page asking you to **approve** the connection (you'll sign in if you aren't already). Approving creates an [API token](/help/account-and-data/api-tokens/) behind the scenes and hands it to your tool. From then on the connection just works.
+
+The token it creates is an ordinary API token: it appears in the Explorer's **API tokens** page and you can **revoke** it there any time to disconnect the tool. Like all tokens, it lasts six months.
+
+## What the AI can do
+
+The connection exposes four tools:
+
+- **Find diagrams** — search your diagrams by name.
+- **Read a diagram** — get a tab's contents and an inline picture of it.
+- **Create a diagram** — turn a request into a new diagram; the server lays it out cleanly.
+- **Update a diagram** — rework a whole tab or make a small adjustment.
+
+The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. A token has full read and write access to your diagrams, so only connect tools you trust, and revoke the token if you stop using one.
+
+<Tip>
+  Connected a tool you no longer use? Open the Explorer’s API tokens page and revoke its token —
+  that instantly cuts off its access.
+</Tip>
+
+</ArticleLayout>
