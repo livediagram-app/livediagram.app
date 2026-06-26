@@ -3,7 +3,7 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
+import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
@@ -93,6 +93,8 @@ type ExplorerProps = {
   // banner-pins to the top of the viewport rather than the left
   // corner). Optional: desktop layout doesn't need it.
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
+  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  dock?: MovablePanelDockProps;
   // Mobile dock control — forwarded to the inner MovablePanel.
   mobileOpenOverride?: boolean;
   mobileTopOverridePx?: number;
@@ -133,6 +135,7 @@ function ExplorerImpl({
   onOpenFullExplorer,
   defaultRecentOpen = false,
   onSize,
+  dock,
   mobileOpenOverride,
   mobileTopOverridePx,
   onMobileClose,
@@ -443,6 +446,7 @@ function ExplorerImpl({
       width={isMobile ? 'w-auto' : 'w-64'}
       onReset={onReset}
       onMoveTo={onMoveTo}
+      {...dock}
       headerActions={
         <HelpArticleLink
           article="explorerPanel"

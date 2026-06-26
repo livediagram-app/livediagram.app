@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -10,6 +11,20 @@ import {
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import type { PanelDragGeometry } from '@/lib/panel-layout';
+
+// The corner-docking props bundle (spec/63). CanvasChrome builds one of
+// these per panel when docking is active and panel wrappers spread it
+// straight onto their inner MovablePanel, so each wrapper only grows by
+// one optional prop. Empty / absent => the panel stays on the legacy
+// (non-docking) drag path.
+export type MovablePanelDockProps = {
+  docked?: boolean;
+  getDockBounds?: () => DOMRect | null;
+  onDockDragStart?: () => void;
+  onDockDrag?: (geom: PanelDragGeometry) => void;
+  onDockDragEnd?: (geom: PanelDragGeometry) => void;
+};
 
 type MovablePanelProps = {
   // Caps-styled label that sits at the top-left of the header (acts as
@@ -138,6 +153,23 @@ type MovablePanelProps = {
   // … tab panels grow rather than showing a scrollbar (their content is
   // bounded; searchable tabs scroll their own inner grid).
   growBody?: boolean;
+  // --- Corner docking (spec/63, desktop only) ---
+  // When true the panel renders as a static flex child of its corner
+  // stack container (no absolute positioning / corner class), so the
+  // container owns its resting position + reflow. Ignored while a drag
+  // is in progress (the panel lifts to absolute to follow the pointer)
+  // and in the mobile / minimal dock paths. Wired only by CanvasChrome's
+  // desktop docking layout.
+  docked?: boolean;
+  // Returns the positioning container's (<main>) viewport rect, so drag
+  // coordinates can be expressed relative to it and the snap zones sized
+  // to it. The PRESENCE of this prop is what routes the panel onto the
+  // docking drag path instead of the legacy onMoveTo path; without it
+  // MovablePanel behaves exactly as before.
+  getDockBounds?: () => DOMRect | null;
+  onDockDragStart?: () => void;
+  onDockDrag?: (geom: PanelDragGeometry) => void;
+  onDockDragEnd?: (geom: PanelDragGeometry) => void;
   children: ReactNode;
 };
 
@@ -172,10 +204,44 @@ export function MovablePanel({
   mobileDockAnchor,
   flushTop = false,
   growBody = false,
+  docked = false,
+  getDockBounds,
+  onDockDragStart,
+  onDockDrag,
+  onDockDragEnd,
   children,
 }: MovablePanelProps) {
   const ref = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  // Presence of getDockBounds opts this panel into the corner-docking
+  // drag path (spec/63). Computed once per render; cheap.
+  const docking = !!getDockBounds;
+  // Last drag geometry, so pointerup can hand the final spot to
+  // onDockDragEnd (which decides snap-to-corner vs free drop).
+  const dragGeomRef = useRef<PanelDragGeometry | null>(null);
+  // Live position while dragging on the docking path, in <main>
+  // coordinates. Rendered locally (not round-tripped through the
+  // parent) so the panel tracks the pointer smoothly; the parent only
+  // hears the snap candidate (onDockDrag) and the final drop
+  // (onDockDragEnd). Null when not docking-dragging.
+  const [dockDragPos, setDockDragPos] = useState<{ x: number; y: number } | null>(null);
+  const computeDragGeom = useCallback(
+    (x: number, y: number): PanelDragGeometry => {
+      const node = ref.current;
+      const bounds = getDockBounds?.() ?? null;
+      const fallbackW = typeof window !== 'undefined' ? window.innerWidth : 0;
+      const fallbackH = typeof window !== 'undefined' ? window.innerHeight : 0;
+      return {
+        x,
+        y,
+        width: node?.offsetWidth ?? 0,
+        height: node?.offsetHeight ?? 0,
+        parentWidth: bounds?.width ?? fallbackW,
+        parentHeight: bounds?.height ?? fallbackH,
+      };
+    },
+    [getDockBounds],
+  );
   // Max height for the panel body so it never extends below the viewport.
   // Recomputed on mount, on resize, and whenever the panel's position
   // changes (drag end updates `position`; stackBelowY changes move it too).
@@ -233,7 +299,11 @@ export function MovablePanel({
       // through the ResizeObserver below (taller body -> higher top ->
       // bigger cap -> ...), collapsing or jittering the panel. Its bottom
       // edge is CSS-fixed and stable, so measure the space up from there.
-      const bottomAnchored = position === null && defaultCorner.startsWith('bottom');
+      // A docked flex child (spec/63) is positioned by its corner stack
+      // container, so measure available height from its real top like any
+      // top-anchored panel; the bottom-grow special-case only applies to
+      // the legacy CSS bottom-corner path (position null + bottom corner).
+      const bottomAnchored = position === null && defaultCorner.startsWith('bottom') && !docked;
       if (bottomAnchored) {
         setBodyMaxH(Math.max(panelRect.bottom - headerH - GAP * 2, 80));
         return;
@@ -265,7 +335,7 @@ export function MovablePanel({
       ro?.disconnect();
     };
     // Re-measure after drag (position changes) or dynamic stacking (stackBelowY changes).
-  }, [position, stackBelowY, defaultCorner]);
+  }, [position, stackBelowY, defaultCorner, docked]);
 
   // Publish the panel's bounding box upward whenever it changes
   // (the Palette uses this so the Comments / AI panels can stack below).
@@ -298,19 +368,29 @@ export function MovablePanel({
   useEffect(() => {
     if (!drag) return;
     const onMove = (e: PointerEvent) => {
-      onMoveTo(
-        drag.startX + (e.clientX - drag.startClientX),
-        drag.startY + (e.clientY - drag.startClientY),
-      );
+      const x = drag.startX + (e.clientX - drag.startClientX);
+      const y = drag.startY + (e.clientY - drag.startClientY);
+      if (docking) {
+        setDockDragPos({ x, y });
+        const geom = computeDragGeom(x, y);
+        dragGeomRef.current = geom;
+        onDockDrag?.(geom);
+      } else {
+        onMoveTo(x, y);
+      }
     };
-    const onUp = () => setDrag(null);
+    const onUp = () => {
+      if (docking && dragGeomRef.current) onDockDragEnd?.(dragGeomRef.current);
+      if (docking) setDockDragPos(null);
+      setDrag(null);
+    };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-  }, [drag, onMoveTo]);
+  }, [drag, onMoveTo, docking, computeDragGeom, onDockDrag, onDockDragEnd]);
 
   const beginDrag = (e: ReactPointerEvent) => {
     // Collapsible panels in their collapsed (banner) state treat the
@@ -339,6 +419,24 @@ export function MovablePanel({
     e.stopPropagation();
     const node = ref.current;
     if (!node) return;
+    if (docking) {
+      // Docking path: express the start in <main> coordinates (the panel
+      // may currently be a flex child of a corner container, so offsetLeft
+      // would be container-relative). The parent lifts it to a free
+      // absolute child of <main> in the same commit, so left/top = these
+      // coords land it at the same visual spot with no jump.
+      const bounds = getDockBounds?.() ?? null;
+      const rect = node.getBoundingClientRect();
+      const startX = bounds ? rect.left - bounds.left : node.offsetLeft;
+      const startY = bounds ? rect.top - bounds.top : node.offsetTop;
+      onDockDragStart?.();
+      setDockDragPos({ x: startX, y: startY });
+      const geom = computeDragGeom(startX, startY);
+      dragGeomRef.current = geom;
+      onDockDrag?.(geom);
+      setDrag({ startClientX: e.clientX, startClientY: e.clientY, startX, startY });
+      return;
+    }
     const startX = node.offsetLeft;
     const startY = node.offsetTop;
     // If the panel hasn't been positioned yet, freeze the current corner
@@ -434,6 +532,24 @@ export function MovablePanel({
                   ? 'bottom-4 right-4'
                   : 'left-4 top-4';
 
+  // Docked rest (spec/63): the panel sits in a corner stack container
+  // and lets that flex column own its position + reflow — no absolute
+  // positioning, no corner class, no inline left/top. Only when docking
+  // is active, the panel is assigned to a corner, and it's not currently
+  // being dragged (a drag lifts it back to absolute to follow the pointer).
+  const isDockedRest = docking && docked && !drag;
+  // While dragging on the docking path the panel is an absolute child of
+  // the dock layer (<main> coords), following the pointer via the local
+  // dockDragPos — never the corner class (which would re-pin it).
+  const isDockDragging = docking && !!drag;
+  const finalStyle: React.CSSProperties | undefined = isDockedRest
+    ? undefined
+    : isDockDragging
+      ? { left: dockDragPos?.x ?? 0, top: dockDragPos?.y ?? 0 }
+      : style;
+  const positionClass = isDockedRest ? 'relative' : 'absolute';
+  const finalCornerClass = isDockedRest || isDockDragging ? '' : cornerClass;
+
   if (dockActive && mobileOpenOverride === false) return null;
 
   // Dock-controlled on mobile: render as a popover with arrow, no header.
@@ -481,12 +597,13 @@ export function MovablePanel({
         e.preventDefault();
         e.stopPropagation();
       }}
-      style={style}
+      style={finalStyle}
       // cursor-default so the panel body doesn't inherit the canvas's
       // grab cursor (the panel is a DOM descendant of the pannable
       // canvas surface); the header re-asserts cursor-grab since that's
-      // the only part you can drag.
-      className={`pointer-events-auto absolute z-[var(--z-panel)] flex animate-pop-in cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${cornerClass}`}
+      // the only part you can drag. When docked at rest the panel is a
+      // static flex child of its corner stack (no absolute / corner class).
+      className={`pointer-events-auto ${positionClass} z-[var(--z-panel)] flex animate-pop-in cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${finalCornerClass}`}
     >
       <div
         ref={headerRef}

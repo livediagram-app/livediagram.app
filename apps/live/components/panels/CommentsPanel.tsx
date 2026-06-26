@@ -3,7 +3,7 @@
 import type { BoxedElement } from '@livediagram/diagram';
 import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
+import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 
 export type CommentRow = {
   // Element id; click jumps to it and opens the thread.
@@ -45,6 +45,8 @@ type CommentsPanelProps = {
   // thread popover. Bound here as a single callback so the panel
   // doesn't have to know about either piece of editor state.
   onRowClick: (elementId: string) => void;
+  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  dock?: MovablePanelDockProps;
 };
 
 // Floating "Comments" panel. Only mounted (by the caller) when the
@@ -60,6 +62,7 @@ export function CommentsPanel({
   onMoveTo,
   onReset,
   onRowClick,
+  dock,
 }: CommentsPanelProps) {
   // Refresh "X mins ago" strings every 30s. Cheap, see spec/07's
   // useRelativeTimeTick singleton.
@@ -85,6 +88,7 @@ export function CommentsPanel({
       stackBelowY={stackBelowY}
       onReset={onReset}
       onMoveTo={onMoveTo}
+      {...dock}
       collapsible
       // Default collapsed: an open Comments panel would compete with
       // the Palette right above it. Users open

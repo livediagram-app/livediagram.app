@@ -22,7 +22,7 @@ To the right of Laser sits the **Zen mode** button (a fullscreen / expand icon, 
 ### Movable
 
 - The header row is a **drag handle** — press it and drag to move the palette anywhere on the canvas. Clicking a button does not start a drag.
-- Position survives until the page reloads.
+- Dragging on desktop shows **snap-to-corner guides**; releasing near a corner docks the panel there (stacking below any panel already in that corner), releasing elsewhere leaves it free. The chosen corner / free position **persists across reloads** in device-local storage. See [spec/63](63-panel-docking.md).
 
 ### Collapse to banner
 

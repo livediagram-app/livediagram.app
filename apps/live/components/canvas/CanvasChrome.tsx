@@ -46,15 +46,23 @@ import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { CanvasMobileDock } from '@/components/canvas/CanvasMobileDock';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import {
+  Fragment,
   useCallback,
   useEffect,
   useRef,
   type Dispatch,
+  type ReactNode,
   type RefObject,
   type SetStateAction,
 } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { DockAnchor, MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { usePanelDock } from '@/hooks/ui/usePanelDock';
+import { PanelSnapGuides } from '@/components/canvas/PanelSnapGuides';
+import { PANEL_CORNERS, PANEL_IDS, type PanelCorner, type PanelId } from '@/lib/panel-layout';
+import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { track } from '@/lib/telemetry';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -94,6 +102,18 @@ type ChromeExtras = {
 };
 
 type CanvasChromeProps = CanvasProps & ChromeExtras;
+
+// Per-corner stack container classes (spec/63). Each is an absolute,
+// pointer-inert flex column pinned to one corner of the dock layer
+// (inset 16px = the `*-4` resting inset). Top corners stack downward,
+// bottom corners upward (flex-col-reverse) so the first panel always
+// sits flush to the corner and the rest flow away from it.
+const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
+  'top-left': 'left-4 top-4 flex-col items-start',
+  'top-right': 'right-4 top-4 flex-col items-end',
+  'bottom-left': 'left-4 bottom-4 flex-col-reverse items-start',
+  'bottom-right': 'right-4 bottom-4 flex-col-reverse items-end',
+};
 
 // The floating chrome layer of the canvas: empty-state prompt, template
 // picker, multi-select toolbar, mode banners, mobile dock, Explorer, the
@@ -306,6 +326,57 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
   const chromeHidden = welcomeOpen || zenMode === true;
+
+  // --- Corner docking (spec/63) ---
+  // Device-local panel layout + live drag/snap state. Self-contained
+  // (reads/writes localStorage itself), so it lives here at the one
+  // consumer rather than threaded through the editor view-model.
+  const isMobile = useIsMobileViewport();
+  const dock = usePanelDock();
+  // The dock layer is an inset-0 child of <main>, so its rect is the
+  // positioning origin for free / dragging panels and the basis for the
+  // corner snap zones. Docking is desktop-only and off in the minimal
+  // dock + zen layouts (no corners to dock into there).
+  const dockLayerRef = useRef<HTMLDivElement>(null);
+  const getDockBounds = useCallback(
+    () => dockLayerRef.current?.getBoundingClientRect() ?? null,
+    [],
+  );
+  const dockingActive = !isMobile && !minimalPanels && !zenMode;
+  // Build the per-panel wiring: in docking mode, position comes from the
+  // layout (free pos, or null when corner-docked → rendered as a flex
+  // child), reset snaps back to the default corner, and the dock bundle
+  // routes drags through the snap machinery. Otherwise the legacy
+  // per-panel position/reset props are used unchanged.
+  const panelWiringFor = useCallback(
+    (
+      id: PanelId,
+      legacyPosition: { x: number; y: number } | null,
+      legacyReset: () => void,
+    ): {
+      position: { x: number; y: number } | null;
+      onReset: () => void;
+      dock?: MovablePanelDockProps;
+    } => {
+      if (!dockingActive) return { position: legacyPosition, onReset: legacyReset };
+      const placement = dock.placementOf(id);
+      const dragging = dock.isDragging(id);
+      return {
+        position: placement.mode === 'free' ? placement.pos : null,
+        onReset: () => dock.resetPanel(id),
+        dock: {
+          docked: placement.mode === 'corner' && !dragging,
+          getDockBounds,
+          onDockDragStart: () => dock.beginDrag(id),
+          onDockDrag: (geom) => dock.updateDrag(id, geom),
+          onDockDragEnd: (geom) => {
+            if (dock.endDrag(id, geom)) track('UI', 'Moved', 'PanelDock');
+          },
+        },
+      };
+    },
+    [dockingActive, dock, getDockBounds],
+  );
   // Theme tint for the palette tiles, so the palette previews the active
   // tab theme: the boxed-shape tiles render filled in the theme's element
   // fill + stroke, line-art tools + icons tint to the stroke. The Basic
@@ -388,6 +459,224 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // gesture at a time), so a simple concat drives the single dot overlay.
   const allSnapTargets =
     drawArrowSnaps.length > 0 ? [...snapTargets, ...drawArrowSnaps] : snapTargets;
+
+  // --- Floating panels as elements (spec/63) ---
+  // Built once with docking-aware wiring, then rendered either inline
+  // (legacy: mobile / minimal / zen) or distributed into corner stacks
+  // (desktop docking). Each keeps its own visibility gate.
+  const explorerWiring = panelWiringFor(
+    'explorer',
+    explorerPosition,
+    explorerHandlers.onResetExplorer,
+  );
+  const paletteWiring = panelWiringFor('palette', palettePosition, onResetPalette);
+  const activityWiring = panelWiringFor(
+    'activity',
+    activityPosition,
+    activityHandlers.onResetActivity,
+  );
+  const commentsWiring = panelWiringFor('comments', commentsPanelPosition, onResetCommentsPanel);
+  const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
+  // In docking mode the corner flex columns own stacking, so the legacy
+  // measured stack-below-the-palette offset is dropped.
+  const legacyStackBelowY =
+    palettePosition !== null || paletteBottomY === 0 ? undefined : paletteBottomY;
+
+  const explorerEl = zenMode ? null : (
+    <Explorer
+      position={explorerWiring.position}
+      diagrams={diagramList}
+      folders={folders}
+      loading={diagramListLoading}
+      shared={sharedDiagrams}
+      teams={teams}
+      teamFolders={teamFolders}
+      teamDiagrams={teamDiagrams}
+      onDismissShared={explorerHandlers.onDismissShared}
+      onOpenFullExplorer={explorerHandlers.onOpenFullExplorer}
+      currentDiagramId={currentDiagramId}
+      onMoveTo={explorerHandlers.onMoveExplorer}
+      onReset={explorerWiring.onReset}
+      dock={explorerWiring.dock}
+      onOpenDiagram={explorerHandlers.onOpenDiagram}
+      onNewDiagram={explorerHandlers.onNewDiagram}
+      onRenameCurrent={explorerHandlers.onRenameCurrent}
+      onDeleteDiagram={explorerHandlers.onDeleteDiagram}
+      onDuplicateDiagram={explorerHandlers.onDuplicateDiagram}
+      onCreateFolder={explorerHandlers.onCreateFolder}
+      onRenameFolder={explorerHandlers.onRenameFolder}
+      onDeleteFolder={explorerHandlers.onDeleteFolder}
+      onMoveDiagramToFolder={explorerHandlers.onMoveDiagramToFolder}
+      onSize={onExplorerSize}
+      mobileOpenOverride={activeMobilePanel === 'explorer'}
+      mobileDockAnchor={activeDockAnchor ?? undefined}
+      forceDockMode={!!minimalPanels}
+      onMobileClose={closeMobilePanel}
+    />
+  );
+
+  const commentsEl =
+    !chromeHidden && !minimalPanels && commentRows.length > 0 ? (
+      <div className="hidden sm:contents">
+        <CommentsPanel
+          position={commentsWiring.position}
+          rows={commentRows}
+          stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+          onMoveTo={onMoveCommentsPanel}
+          onReset={commentsWiring.onReset}
+          dock={commentsWiring.dock}
+          onRowClick={onOpenCommentsForElement}
+        />
+      </div>
+    ) : null;
+
+  const aiEl =
+    !chromeHidden && aiPanel && aiWiring ? (
+      <MovablePanel
+        title="AI Assistant"
+        position={aiWiring.position}
+        defaultCorner="top-right-stacked"
+        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        width="w-auto sm:w-64"
+        collapsible
+        onReset={aiWiring.onReset}
+        onMoveTo={aiPanel.onMove}
+        {...aiWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'ai'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={() => {
+          setActiveMobilePanel(null);
+          setActiveDockAnchor(null);
+        }}
+      >
+        <AiPanelContent
+          contextElements={aiPanel.contextElements}
+          focusIds={aiPanel.focusIds}
+          tabName={tabName}
+          ownerId={aiPanel.ownerId}
+          onApplyElements={aiPanel.onApplyElements}
+        />
+      </MovablePanel>
+    ) : null;
+
+  const activityEl = chromeHidden ? null : (
+    <ActivityPanel
+      position={activityWiring.position}
+      minimized={activityMinimized}
+      tabLocked={tabLocked}
+      entries={changeLog}
+      loading={changeLogLoading}
+      readOnly={readOnly}
+      canUndo={canUndo}
+      canRedo={canRedo}
+      onUndo={activityHandlers.onUndo}
+      onRedo={activityHandlers.onRedo}
+      onRevert={activityHandlers.onRevertChange}
+      onRowClick={activityHandlers.onActivityRowClick}
+      onClearActivity={activityHandlers.onClearActivity}
+      saveStatus={saveStatus}
+      savedAt={savedAt}
+      onMoveTo={activityHandlers.onMoveActivity}
+      onReset={activityWiring.onReset}
+      dock={activityWiring.dock}
+      onToggleMinimized={activityHandlers.onToggleActivityMinimized}
+    />
+  );
+
+  const paletteEl =
+    chromeHidden || readOnly ? null : (
+      <CommandPalette
+        position={paletteWiring.position}
+        canvasTool={canvasTool}
+        onSetCanvasTool={onSetCanvasTool}
+        onMoveTo={onMovePalette}
+        onReset={paletteWiring.onReset}
+        dock={paletteWiring.dock}
+        minimalPanels={minimalPanels}
+        onToggleMinimalPanels={onToggleMinimalPanels}
+        settings={settings}
+        onChangeSettings={onChangeSettings}
+        canvasEmpty={elements.length === 0}
+        onAddShape={onAddShape}
+        onAddIcon={onAddIcon}
+        onAddTechIcon={onAddTechIcon}
+        onAddTable={onAddTable}
+        onAddAnnotation={onAddAnnotation}
+        onAddLinkCard={onAddLinkCard}
+        onAddBanner={onAddBanner}
+        onAddHero={onAddHero}
+        onAddHeader={onAddHeader}
+        onAddCallout={onAddCallout}
+        onAddStatRow={onAddStatRow}
+        onAddProcess={onAddProcess}
+        onAddAvatar={onAddAvatar}
+        onAddText={onAddText}
+        onAddSticky={onAddSticky}
+        onAddImage={onAddImage}
+        onAddArrow={onAddArrow}
+        onBeginFreehand={onBeginFreehand}
+        pendingDraw={pendingDraw}
+        themeTint={paletteTint}
+        onSize={(size) => setPaletteBottomY(size.bottomY)}
+        mobileTopOverridePx={explorerBottomY > 0 ? explorerBottomY + 4 : undefined}
+        mobileOpenOverride={activeMobilePanel === 'palette'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onDrawArmed={() => {
+          // Only remember to reopen if the palette was actually the open
+          // dock panel when the draw was armed.
+          reopenPaletteAfterDrawRef.current = activeMobilePanel === 'palette';
+        }}
+        onMobileClose={() => {
+          setActiveMobilePanel(null);
+          setActiveDockAnchor(null);
+        }}
+      />
+    );
+
+  // Map of panel id → element for the docked-layout distribution.
+  // Minimap is not yet routed through docking (it renders from Canvas
+  // with its own Activity-deferral gate); it stays on its legacy path.
+  const panelEls: Partial<Record<PanelId, ReactNode>> = {
+    explorer: explorerEl,
+    palette: paletteEl,
+    comments: commentsEl,
+    ai: aiEl,
+    activity: activityEl,
+  };
+  const draggingId = dock.drag?.panelId ?? null;
+  // A panel renders in the free layer when it's parked free OR is the
+  // one currently being dragged (lifted out of its corner stack to
+  // follow the pointer); otherwise it sits in its corner's flex column.
+  const freePanelIds = PANEL_IDS.filter(
+    (id) => panelEls[id] != null && (id === draggingId || dock.placementOf(id).mode === 'free'),
+  );
+  const dockedLayer = dockingActive ? (
+    <div ref={dockLayerRef} className="pointer-events-none absolute inset-0 z-[var(--z-panel)]">
+      {PANEL_CORNERS.map((corner) => {
+        const children = dock.cornerStacks[corner].filter(
+          (id) => id !== draggingId && panelEls[id] != null,
+        );
+        if (children.length === 0) return null;
+        return (
+          <div
+            key={corner}
+            className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
+          >
+            {children.map((id) => (
+              <Fragment key={id}>{panelEls[id]}</Fragment>
+            ))}
+          </div>
+        );
+      })}
+      {freePanelIds.map((id) => (
+        <Fragment key={id}>{panelEls[id]}</Fragment>
+      ))}
+      {dock.drag ? <PanelSnapGuides candidate={dock.drag.candidate} /> : null}
+    </div>
+  ) : null;
+
   return (
     <>
       {/* The empty-canvas hint is now a dismissible bottom banner
@@ -737,181 +1026,24 @@ export function CanvasChrome(props: CanvasChromeProps) {
         onDockButtonClick={handleDockButtonClick}
       />
 
-      {/* Explorer is the one piece of chrome that stays visible during
-          the welcome flow — the sign-up nudge is genuinely useful there
-          and lives outside the diagram's controls. Zen mode hides it
-          along with everything else (spec/26). */}
-      {zenMode ? null : (
-        <Explorer
-          position={explorerPosition}
-          diagrams={diagramList}
-          folders={folders}
-          loading={diagramListLoading}
-          shared={sharedDiagrams}
-          teams={teams}
-          teamFolders={teamFolders}
-          teamDiagrams={teamDiagrams}
-          onDismissShared={explorerHandlers.onDismissShared}
-          onOpenFullExplorer={explorerHandlers.onOpenFullExplorer}
-          currentDiagramId={currentDiagramId}
-          onMoveTo={explorerHandlers.onMoveExplorer}
-          onReset={explorerHandlers.onResetExplorer}
-          onOpenDiagram={explorerHandlers.onOpenDiagram}
-          onNewDiagram={explorerHandlers.onNewDiagram}
-          onRenameCurrent={explorerHandlers.onRenameCurrent}
-          onDeleteDiagram={explorerHandlers.onDeleteDiagram}
-          onDuplicateDiagram={explorerHandlers.onDuplicateDiagram}
-          onCreateFolder={explorerHandlers.onCreateFolder}
-          onRenameFolder={explorerHandlers.onRenameFolder}
-          onDeleteFolder={explorerHandlers.onDeleteFolder}
-          onMoveDiagramToFolder={explorerHandlers.onMoveDiagramToFolder}
-          onSize={onExplorerSize}
-          mobileOpenOverride={activeMobilePanel === 'explorer'}
-          mobileDockAnchor={activeDockAnchor ?? undefined}
-          forceDockMode={!!minimalPanels}
-          onMobileClose={closeMobilePanel}
-        />
-      )}
-
-      {/* Activity panel — per-diagram audit log + Undo/Redo. Hidden
-          during the welcome flow because there's nothing to audit
-          yet and Undo/Redo would target an empty history. */}
-      {/* Comments panel is desktop-only chrome: on mobile, the canvas
-          is already tight, the per-element comment popover stays
-          available for viewing / replying, and a floating cheat
-          sheet of threads would crowd the surface that's already
-          banner-collapsing the Palette. Wrapped in `hidden sm:contents`
-          so the MovablePanel beneath gets `display: none` on phones
-          without changing its props. It stacks below the Palette
-          (paletteBottomY) when the Palette is in its default corner.
-          Suppressed entirely under minimalPanels: the per-element
-          comment popover stays available for viewing / replying. */}
-      {!chromeHidden && !minimalPanels && commentRows.length > 0 ? (
-        <div className="hidden sm:contents">
-          <CommentsPanel
-            position={commentsPanelPosition}
-            rows={commentRows}
-            stackBelowY={
-              palettePosition !== null || paletteBottomY === 0 ? undefined : paletteBottomY
-            }
-            onMoveTo={onMoveCommentsPanel}
-            onReset={onResetCommentsPanel}
-            onRowClick={onOpenCommentsForElement}
-          />
-        </div>
-      ) : null}
-
-      {!chromeHidden && aiPanel ? (
-        <MovablePanel
-          title="AI Assistant"
-          position={aiPanel.position}
-          defaultCorner="top-right-stacked"
-          stackBelowY={
-            palettePosition !== null || paletteBottomY === 0 ? undefined : paletteBottomY
-          }
-          width="w-auto sm:w-64"
-          collapsible
-          onReset={aiPanel.onReset}
-          onMoveTo={aiPanel.onMove}
-          mobileOpenOverride={activeMobilePanel === 'ai'}
-          mobileDockAnchor={activeDockAnchor ?? undefined}
-          forceDockMode={!!minimalPanels}
-          onMobileClose={() => {
-            setActiveMobilePanel(null);
-            setActiveDockAnchor(null);
-          }}
-        >
-          <AiPanelContent
-            contextElements={aiPanel.contextElements}
-            focusIds={aiPanel.focusIds}
-            tabName={tabName}
-            ownerId={aiPanel.ownerId}
-            onApplyElements={aiPanel.onApplyElements}
-          />
-        </MovablePanel>
-      ) : null}
-
-      {chromeHidden ? null : (
-        <ActivityPanel
-          position={activityPosition}
-          minimized={activityMinimized}
-          tabLocked={tabLocked}
-          entries={changeLog}
-          loading={changeLogLoading}
-          readOnly={readOnly}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          onUndo={activityHandlers.onUndo}
-          onRedo={activityHandlers.onRedo}
-          onRevert={activityHandlers.onRevertChange}
-          onRowClick={activityHandlers.onActivityRowClick}
-          onClearActivity={activityHandlers.onClearActivity}
-          saveStatus={saveStatus}
-          savedAt={savedAt}
-          onMoveTo={activityHandlers.onMoveActivity}
-          onReset={activityHandlers.onResetActivity}
-          onToggleMinimized={activityHandlers.onToggleActivityMinimized}
-        />
-      )}
-
-      {/* Top-middle status row. Only renders for visitors (non-owners):
-          owners already know it's their own diagram and that they're
-          editing, so the extra chrome is just noise. Visitors see who
-          owns it ("Owner: <avatar> <name>", when the owner is in the
-          room and so reachable via livePresence) and their own role
-          (Viewing in amber, Editing in green). Pointer events stay off
-          so the badges don't intercept clicks on the canvas. Hidden
-          below sm: on a phone the top-row real estate is too tight, so
-          the badge is a desktop-only affordance — the role stays
-          discoverable from the canvas chrome (no-add palette + locked
-          element affordances for view-role). */}
-      {chromeHidden || readOnly ? null : (
-        <CommandPalette
-          position={palettePosition}
-          canvasTool={canvasTool}
-          onSetCanvasTool={onSetCanvasTool}
-          onMoveTo={onMovePalette}
-          onReset={onResetPalette}
-          minimalPanels={minimalPanels}
-          onToggleMinimalPanels={onToggleMinimalPanels}
-          settings={settings}
-          onChangeSettings={onChangeSettings}
-          canvasEmpty={elements.length === 0}
-          onAddShape={onAddShape}
-          onAddIcon={onAddIcon}
-          onAddTechIcon={onAddTechIcon}
-          onAddTable={onAddTable}
-          onAddAnnotation={onAddAnnotation}
-          onAddLinkCard={onAddLinkCard}
-          onAddBanner={onAddBanner}
-          onAddHero={onAddHero}
-          onAddHeader={onAddHeader}
-          onAddCallout={onAddCallout}
-          onAddStatRow={onAddStatRow}
-          onAddProcess={onAddProcess}
-          onAddAvatar={onAddAvatar}
-          onAddText={onAddText}
-          onAddSticky={onAddSticky}
-          onAddImage={onAddImage}
-          onAddArrow={onAddArrow}
-          onBeginFreehand={onBeginFreehand}
-          pendingDraw={pendingDraw}
-          themeTint={paletteTint}
-          onSize={(size) => setPaletteBottomY(size.bottomY)}
-          mobileTopOverridePx={explorerBottomY > 0 ? explorerBottomY + 4 : undefined}
-          mobileOpenOverride={activeMobilePanel === 'palette'}
-          mobileDockAnchor={activeDockAnchor ?? undefined}
-          forceDockMode={!!minimalPanels}
-          onDrawArmed={() => {
-            // Only remember to reopen if the palette was actually the open
-            // dock panel when the draw was armed.
-            reopenPaletteAfterDrawRef.current = activeMobilePanel === 'palette';
-          }}
-          onMobileClose={() => {
-            setActiveMobilePanel(null);
-            setActiveDockAnchor(null);
-          }}
-        />
+      {/* Floating panels (spec/63). In the desktop docking layout they
+          are distributed into per-corner stack containers (with a free
+          layer + snap guides) by `dockedLayer`; otherwise — mobile,
+          minimal dock, or zen — they render inline where they always
+          did. Each element carries its own visibility gate, so the
+          welcome-flow / read-only / zen suppression is unchanged.
+          Explorer stays visible during the welcome flow; only zen hides
+          it. */}
+      {dockingActive ? (
+        dockedLayer
+      ) : (
+        <>
+          {explorerEl}
+          {commentsEl}
+          {aiEl}
+          {activityEl}
+          {paletteEl}
+        </>
       )}
 
       {/* Bottom dock. Order, left → right: Zoom controls, History

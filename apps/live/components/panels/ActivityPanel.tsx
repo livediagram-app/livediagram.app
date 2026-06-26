@@ -6,7 +6,7 @@ import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-tim
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { TrashIcon } from '@/components/panels/explorer-icons';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
+import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
 type ActivityPanelProps = {
@@ -46,6 +46,8 @@ type ActivityPanelProps = {
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
   onToggleMinimized: () => void;
+  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  dock?: MovablePanelDockProps;
 };
 
 // Floating "Activity" panel — per-diagram audit of every edit, with a
@@ -71,6 +73,7 @@ function ActivityPanelImpl({
   onMoveTo,
   onReset,
   onToggleMinimized,
+  dock,
 }: ActivityPanelProps) {
   if (minimized) return null;
   return (
@@ -81,6 +84,7 @@ function ActivityPanelImpl({
       width="w-64"
       onReset={onReset}
       onMoveTo={onMoveTo}
+      {...dock}
       onMinimize={onToggleMinimized}
       headerExtra={<SaveStatusBadge status={saveStatus} savedAt={savedAt} />}
       headerActions={

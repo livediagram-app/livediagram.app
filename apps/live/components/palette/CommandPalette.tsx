@@ -8,7 +8,7 @@ import {
 import type { ShapeKind } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
+import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { PaletteSettingsPopover } from '@/components/palette/PaletteSettingsPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { PaletteTabBar } from '@/components/palette/PaletteTabBar';
@@ -139,6 +139,8 @@ type CommandPaletteProps = {
   // fill + stroke, line-art tools + icons tint to the stroke. Undefined (the
   // Basic theme) leaves the palette in its default slate look. See spec/09.
   themeTint?: PaletteTint;
+  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  dock?: MovablePanelDockProps;
 };
 
 export function CommandPalette({
@@ -179,6 +181,7 @@ export function CommandPalette({
   mobileDockAnchor,
   forceDockMode,
   themeTint,
+  dock,
 }: CommandPaletteProps) {
   const pendingShapeKind = pendingDraw && pendingDraw.type === 'shape' ? pendingDraw.kind : null;
   // Spotlight (spec/09) is desktop-only: it relies on hover-tracking the
@@ -340,6 +343,7 @@ export function CommandPalette({
       flushTop
       growBody
       onMoveTo={onMoveTo}
+      {...dock}
       // The settings popover is the palette's only header affordance besides
       // minimise: it now hosts the panel-layout toggle and the reset-position
       // action that each used to be their own header button.
@@ -357,7 +361,10 @@ export function CommandPalette({
             minimalPanels={minimalPanels}
             onToggleMinimalPanels={onToggleMinimalPanels}
             onResetPosition={onReset}
-            resettable={position !== null}
+            // When docking is active (spec/63) the panel can always be
+            // snapped back to its default corner, even sitting in a
+            // (non-default) corner where `position` is null.
+            resettable={position !== null || dock !== undefined}
           />
         </>
       }

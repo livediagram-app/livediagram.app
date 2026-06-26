@@ -64,6 +64,13 @@ effectively a remote copy of localStorage for that device, but
 with a cross-browser bonus: a guest who clears localStorage but
 keeps the same browser session still recovers their preferences.
 
+**Panel corner layout is the deliberate exception.** Which corner
+each floating panel docks into ([spec/63](63-panel-docking.md)) is a
+per-device ergonomic choice (screen size, handedness, monitor), so it
+lives in its own **device-local** `localStorage` store
+(`livediagram:panel-layout:v1`) and is **not** part of this synced
+blob. Don't fold panel placement into `UserPreferences`.
+
 ### Sign-up migration
 
 `POST /api/migrate` (spec/04) moves `user_preferences.owner_id`
