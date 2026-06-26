@@ -157,10 +157,13 @@ nothing. To run it:
    pnpm --filter @livediagram/mcp exec wrangler kv namespace create OAUTH_KV
    ```
 
-2. **Point it at your hosts.** In `apps/mcp/wrangler.toml` set the `[[routes]]`
-   pattern to your MCP hostname and `CONSENT_BASE_URL` to your live app's origin.
-   Set `NEXT_PUBLIC_MCP_ORIGIN` (live build env) to the same MCP origin so the
-   consent page posts the minted token only to your trusted host.
+2. **Point it at your hosts.** Attach your MCP hostname to the worker in the
+   Cloudflare dashboard (Workers → `livediagram-mcp` → Domains & Routes → add a
+   custom domain) — the same way every other worker here gets its hostname, since
+   the deploy token only uploads scripts, not zone routes. Then set
+   `CONSENT_BASE_URL` (in `apps/mcp/wrangler.toml`) to your live app's origin and
+   `NEXT_PUBLIC_MCP_ORIGIN` (live build env) to the MCP origin, so the consent
+   page posts the minted token only to your trusted host.
 
 3. **Deploy after the api worker** (it reaches api over a service binding). The
    deploy workflow already orders `mcp` after `api`. Tokens minted via the MCP

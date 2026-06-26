@@ -13,12 +13,13 @@ compatibility_flags = ["nodejs_compat"]
 # live origin; the authorize endpoint redirects the signed-in user here.
 CONSENT_BASE_URL = "https://livediagram.app"
 
-# Its own hostname (spec/62) — not a path under the main router. Self-hosters
-# point this at their own host (and update CONSENT_BASE_URL + the live app's
-# NEXT_PUBLIC_MCP_ORIGIN to match).
-[[routes]]
-pattern = "mcp.livediagram.app"
-custom_domain = true
+# Its own hostname `mcp.livediagram.app` (spec/62) — NOT declared here. Like
+# every other worker on this platform (the router included), the public hostname
+# is attached in the Cloudflare dashboard, not via wrangler: the deploy
+# CF_API_TOKEN is scoped to upload worker scripts, not manage zone routes / DNS.
+# Attach the custom domain once under Workers → livediagram-mcp → Domains &
+# Routes. Self-hosters do the same with their own host, then point
+# CONSENT_BASE_URL + the live app's NEXT_PUBLIC_MCP_ORIGIN at it.
 
 # Reach the api worker over a service binding (not public DNS). Every tool
 # forwards to /api/* carrying the caller's `Authorization: Bearer lvd_…`
