@@ -80,6 +80,21 @@ describe('dynamic client registration', () => {
     );
     expect(res.status).toBe(201);
   });
+
+  it('rate-limits registration per IP', async () => {
+    const reqOnce = () =>
+      app.request(
+        '/oauth/register',
+        {
+          method: 'POST',
+          body: JSON.stringify({ redirect_uris: [REDIRECT] }),
+          headers: { 'Content-Type': 'application/json' },
+        },
+        env,
+      );
+    for (let i = 0; i < 20; i++) expect((await reqOnce()).status).toBe(201);
+    expect((await reqOnce()).status).toBe(429);
+  });
 });
 
 describe('full authorize -> complete -> token flow', () => {

@@ -78,6 +78,14 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
 
   // --- Dynamic client registration (RFC 7591) ---
   app.post('/oauth/register', async (c) => {
+    // Per-IP cap (spec/62 §3.2) so an open registration endpoint can't be used
+    // to flood KV. KV-backed, sliding hour window; good enough for DCR abuse.
+    const ip = c.req.header('CF-Connecting-IP') ?? 'unknown';
+    const rateKey = `reg-rate:${ip}`;
+    const count = Number((await c.env.OAUTH_KV.get(rateKey)) ?? '0');
+    if (count >= 20) return c.json({ error: 'rate_limited' }, 429);
+    await c.env.OAUTH_KV.put(rateKey, String(count + 1), { expirationTtl: 3600 });
+
     const body = (await c.req.json().catch(() => ({}))) as {
       redirect_uris?: unknown;
       client_name?: unknown;
