@@ -202,31 +202,29 @@ function ToggleRow({
   description: string;
   checked: boolean;
   onChange: (next: boolean) => void;
-  // Optional "Learn more" link rendered beneath the row, outside the
+  // Optional "Learn more" link. Rendered INSIDE the setting card (indented
+  // under the label) so it's clearly tied to this setting, but outside the
   // <label> so clicking it doesn't toggle the checkbox.
   help?: ReactNode;
 }) {
-  const row = (
-    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3 transition hover:border-brand-300 dark:border-slate-700 dark:hover:border-brand-500/60">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-slate-600 dark:bg-slate-800"
-      />
-      <span className="flex flex-col gap-0.5">
-        <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{label}</span>
-        <span className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          {description}
-        </span>
-      </span>
-    </label>
-  );
-  if (!help) return row;
   return (
-    <div className="flex flex-col gap-1">
-      {row}
-      <div className="pl-3">{help}</div>
+    <div className="flex flex-col gap-1.5 rounded-lg border border-slate-200 p-3 transition hover:border-brand-300 dark:border-slate-700 dark:hover:border-brand-500/60">
+      <label className="flex cursor-pointer items-start gap-3">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-slate-600 dark:bg-slate-800"
+        />
+        <span className="flex flex-col gap-0.5">
+          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{label}</span>
+          <span className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+            {description}
+          </span>
+        </span>
+      </label>
+      {/* Aligned under the label text (checkbox 1rem + gap 0.75rem = pl-7). */}
+      {help ? <div className="pl-7">{help}</div> : null}
     </div>
   );
 }
