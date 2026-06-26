@@ -744,6 +744,11 @@ export * from './auto-layout';
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
 
+// Theme engine (spec/29, /42, /44, /48): theme catalogue + types + the pure
+// recolour / switch / reset / preset transforms, shared by the editor and the
+// MCP worker (spec/62). Custom-theme resolution stays in apps/live/lib/themes.ts.
+export * from './themes';
+
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
 // used by selection captions and any surface that names what's selected.
 export * from './element-kind-label';

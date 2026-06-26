@@ -1,4 +1,5 @@
-import { createPinnedArrow, createShape, type Element } from '@livediagram/diagram';
+import { createPinnedArrow, createShape } from './factories';
+import type { Element } from './index';
 import { describe, expect, it } from 'vitest';
 import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
 

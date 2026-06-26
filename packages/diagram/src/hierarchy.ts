@@ -1,4 +1,4 @@
-import { isBoxed, type Element, type ElementId } from '@livediagram/diagram';
+import { isBoxed, type Element, type ElementId } from './index';
 
 // Branch assignment for multi-colour ("rainbow") themes. See
 // specs/29-multicolour-themes.md. The diagram model has no explicit

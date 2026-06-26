@@ -1,20 +1,19 @@
+// The shared theme ENGINE (spec/29, /42, /44, /48): theme data, types, and the
+// pure element/backdrop transforms that take a resolved ThemeDefinition. Lives
+// in the package so both the editor (apps/live) and the MCP worker (apps/mcp,
+// spec/62) theme diagrams identically. Custom-theme (per-owner) resolution +
+// deriveNewBoxedColours stay in apps/live/lib/themes.ts, which re-exports this.
 import {
-  DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_PATTERN_COLOR,
-  deriveShapeColours,
   deriveTextColorForBg,
   isLightColor,
   shade,
   tint,
   type BackgroundPattern,
-  type BoxedElement,
   type Element,
   type ShapeKind,
-} from '@livediagram/diagram';
+} from './index';
 import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
-import { lookupCustomTheme } from './custom-theme-registry';
 import { THEMES } from './themes-data';
-// Re-export so existing `@/lib/themes` consumers keep importing THEMES from here.
 export { THEMES };
 
 // A preset theme bundles a canvas backdrop (background colour + pattern +
@@ -129,30 +128,12 @@ export type ThemeDefinition = {
 // THEME_CATEGORIES order and skips empties.
 export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour' | 'formal';
 
-// Resolve an id to its real ThemeDefinition, or `undefined` when the id
-// names nothing we know — a deleted custom theme (spec/44), or a custom
-// id whose owner fetch hasn't landed yet. Callers that need to render
-// something always (getTheme) fall back to the default; callers that
-// must DISTINGUISH "unknown" from "the default theme" (setTheme's
-// preserve-customs diff) use this and branch on undefined. Without that
-// distinction, switching away from a deleted theme would diff every
-// element against the default's colours, mistake the dead theme's
-// colours for user overrides, and silently change nothing.
-export function resolveTheme(id: string | undefined): ThemeDefinition | undefined {
-  if (id) {
-    const custom = lookupCustomTheme(id);
-    if (custom) return custom;
-  }
-  return THEMES.find((t) => t.id === id);
-}
-
-export function getTheme(id: string | undefined): ThemeDefinition {
-  // Custom themes (spec/44) win: the editor registers the owner's saved
-  // themes into the module registry, so a `custom:<uuid>` id resolves
-  // here synchronously like any built-in. Falls through to the catalogue
-  // (and ultimately the default) when the id isn't a registered custom
-  // theme — including a deleted one, so a diagram never breaks.
-  return resolveTheme(id) ?? THEMES[0]!;
+// Resolve an id to a BUILT-IN ThemeDefinition (the catalogue), falling back to
+// the default. Custom (per-owner) themes are NOT resolved here — that needs the
+// live app's registry; apps/live/lib/themes.ts wraps this with custom-theme
+// resolution as `getTheme`. The MCP worker uses this directly (built-ins only).
+export function getBuiltInTheme(id: string | undefined): ThemeDefinition {
+  return THEMES.find((t) => t.id === id) ?? THEMES[0]!;
 }
 
 // Which element-colour fields each element type writes from a theme.
@@ -711,86 +692,4 @@ export function resetArrowsToTheme(elements: Element[], theme: ThemeDefinition):
   return elements.map((el) =>
     el.type === 'arrow' ? resetThemeElement(el, elementThemeView(theme, el, branches)) : el,
   );
-}
-
-// Colour projection for a NEWLY-added boxed element, given the
-// active tab's background + pattern colour + theme. Two-pass:
-//
-//   1. Derive colours from the tab's backdrop. A tab whose
-//      backgroundColor / patternColor stayed at the design defaults
-//      gets nothing (deriveShapeColours returns null); a customised
-//      backdrop drives the new shape's fill / stroke / text so it
-//      sits on the canvas with intentional contrast. Text elements
-//      pick up a backdrop-tuned textColor (white -> dark slate,
-//      dark -> light slate).
-//
-//   2. Apply the active theme's explicit element-fill / -stroke /
-//      -text overrides on top. The theme always wins over the
-//      backdrop-derived guess (a Slate theme on a brand-cyan
-//      backdrop should still produce Slate-coloured shapes).
-//
-// Sticky notes keep their amber palette regardless: they return
-// `{}` so the caller's spread doesn't paint over the iconic
-// yellow. Matches the rule used by recolourElementForTheme.
-//
-// Pure function, so the contract ("which colours land on a brand-
-// new element") is testable without rendering anything.
-export function deriveNewBoxedColours(
-  base: BoxedElement,
-  tab: {
-    backgroundColor?: string | null;
-    patternColor?: string | null;
-    theme?: string;
-  },
-): { fillColor?: string; strokeColor?: string; textColor?: string } {
-  // Narrow return: only the three fields common to shape / sticky /
-  // text, never anything from ImageElement (which has no colour
-  // fields, see spec/19). Callers spread the result onto any boxed
-  // element; the missing-from-Image fields are no-ops at that point.
-  const colours: { fillColor?: string; strokeColor?: string; textColor?: string } = {};
-  const bg = tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR;
-  const patternColor = tab.patternColor ?? DEFAULT_PATTERN_COLOR;
-  if (base.type === 'shape' || base.type === 'annotation') {
-    // Annotation markers derive fill + stroke from the backdrop the same
-    // way a shape does (text isn't used — the note is plain). See spec/38.
-    const derived = deriveShapeColours(patternColor, bg);
-    if (derived) {
-      colours.fillColor = derived.fill;
-      colours.strokeColor = derived.stroke;
-      colours.textColor = derived.text;
-    }
-  } else if (base.type === 'text') {
-    if (bg !== DEFAULT_BACKGROUND_COLOR) {
-      colours.textColor = deriveTextColorForBg(bg);
-    }
-  } else if (base.type === 'table') {
-    // Give cells a solid background matching the canvas base colour so
-    // the backdrop pattern doesn't bleed through and make text hard to
-    // read; derive the text colour to contrast with it. (Grid lines use
-    // the slate-400 default, which reads on both light and dark.)
-    colours.fillColor = bg;
-    colours.textColor = deriveTextColorForBg(bg);
-  }
-  // Theme overrides win. Sticky stays untouched (returns colours
-  // empty for that branch).
-  const theme = getTheme(tab.theme);
-  // Per-shape themes (UML) paint a shape KIND its own colours; fall
-  // through to the theme's element colours for kinds without an
-  // override. Only shapes carry a `shape` kind.
-  const shapeOverride =
-    base.type === 'shape' && theme.shapeColors ? theme.shapeColors[base.shape] : undefined;
-  const elementFill = shapeOverride?.fill ?? theme.elementFill;
-  const elementStroke = shapeOverride?.stroke ?? theme.elementStroke;
-  const elementText = shapeOverride?.text ?? theme.elementText;
-  if (base.type === 'shape' || base.type === 'annotation') {
-    if (elementFill) colours.fillColor = elementFill;
-    if (elementStroke) colours.strokeColor = elementStroke;
-    if (elementText) colours.textColor = elementText;
-  } else if (base.type === 'text') {
-    if (theme.elementText) colours.textColor = theme.elementText;
-  } else if (base.type === 'table') {
-    if (theme.elementText) colours.textColor = theme.elementText;
-    if (theme.elementStroke) colours.strokeColor = theme.elementStroke;
-  }
-  return colours;
 }
