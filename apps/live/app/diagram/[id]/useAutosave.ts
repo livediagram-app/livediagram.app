@@ -15,6 +15,7 @@ import {
   type DiagramListItem,
 } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
+import { isDiagramDeleted } from '@/lib/diagram-tombstones';
 import { computeTabSaveDiff } from './editor-page-helpers';
 
 // Per-tab autosave (spec/13), lifted out of editor-page.tsx. Two effects:
@@ -64,6 +65,9 @@ export function useAutosave(opts: {
   useEffect(() => {
     if (!hydrated || !diagramId || isReadOnly) return;
     const handler = () => {
+      // The user just deleted this diagram (navigating to /explorer fires
+      // beforeunload): don't beacon its tabs/meta back and re-create it.
+      if (isDiagramDeleted(diagramId)) return;
       const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
         lastSavedTabsRef.current,
         tabs,
@@ -101,6 +105,9 @@ export function useAutosave(opts: {
       return;
     }
     const handle = window.setTimeout(() => {
+      // Bail if the diagram was just deleted (the debounce can still be
+      // pending when the delete fires) so we don't re-create it.
+      if (isDiagramDeleted(diagramId)) return;
       const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
         lastSavedTabsRef.current,
         tabs,

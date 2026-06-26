@@ -18,6 +18,7 @@ import {
   type SharedWithItem,
 } from '@/lib/api-client';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
+import { markDiagramDeleted } from '@/lib/diagram-tombstones';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -140,8 +141,18 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
       if (!ok) return;
     }
     track('Diagram', 'Deleted');
+    // Tombstone first, ALWAYS: the open editor's autosave (debounce + the
+    // beforeunload keepalive beacon) must not write this diagram back. For
+    // the open diagram that's the bug fix; for others it's harmless (their
+    // editor isn't mounted) but keeps the rule simple. See diagram-tombstones.
+    markDiagramDeleted(id);
     if (id === currentDiagram?.id) {
-      void apiDeleteDiagram(ownerId, id).catch(() => {});
+      // AWAIT the delete before navigating: a fire-and-forget DELETE has no
+      // keepalive, so the immediate navigation below would cancel the
+      // in-flight request and the diagram would survive (the "didn't delete
+      // first time" report). Awaiting sends it to completion first; the
+      // tombstone then stops the beforeunload flush from re-creating it.
+      await apiDeleteDiagram(ownerId, id).catch(() => {});
       window.location.assign(`${window.location.origin}/explorer`);
       return;
     }
