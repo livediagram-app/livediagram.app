@@ -121,7 +121,7 @@ export function ExplorerSidebar() {
               type="button"
               onClick={() => void createFolder(null)}
               aria-label="New folder"
-              className="-my-1 flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-brand-300"
+              className="-my-1 flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-brand-300"
             >
               <PlusIcon />
             </button>
@@ -185,7 +185,7 @@ export function ExplorerSidebar() {
                     setMobileNavOpen(false);
                   }}
                   aria-label="New team"
-                  className="-my-1 flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-brand-300"
+                  className="-my-1 flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-brand-300"
                 >
                   <PlusIcon />
                 </button>

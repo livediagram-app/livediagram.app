@@ -99,11 +99,13 @@ function AuthControlsEnabled() {
       {menuOpen ? (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-1 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10"
+          className="absolute right-0 top-full mt-1 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
           {displayName ? (
-            <div className="px-3 py-2 text-xs text-slate-500">
-              <p className="truncate font-medium text-slate-900">{displayName}</p>
+            <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+              <p className="truncate font-medium text-slate-900 dark:text-slate-100">
+                {displayName}
+              </p>
               {user?.primaryEmailAddress?.emailAddress &&
               user.primaryEmailAddress.emailAddress !== displayName ? (
                 <p className="truncate">{user.primaryEmailAddress.emailAddress}</p>
@@ -122,11 +124,11 @@ function AuthControlsEnabled() {
               // the wrong default, the landing page is.
               void signOut({ redirectUrl: '/' });
             }}
-            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100"
+            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
           >
             Sign out
           </button>
-          <div className="my-1 border-t border-slate-100" />
+          <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
           <button
             type="button"
             role="menuitem"
@@ -134,7 +136,7 @@ function AuthControlsEnabled() {
               setMenuOpen(false);
               setDeleteOpen(true);
             }}
-            className="block w-full rounded px-3 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50"
+            className="block w-full rounded px-3 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15"
           >
             Delete account
           </button>

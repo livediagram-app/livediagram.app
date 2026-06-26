@@ -203,7 +203,7 @@ function SyntheticFolderRow({
   onOpen: () => void;
 }) {
   return (
-    <li className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-800">
+    <li className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700">
       <button
         type="button"
         onDoubleClick={onOpen}
@@ -300,7 +300,7 @@ export function FolderRow({
   );
   return (
     <li
-      className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-800"
+      className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700"
       // Right-click anywhere on the row opens the same actions menu as the
       // ellipsis button (anchored to it).
       onContextMenu={
@@ -413,7 +413,7 @@ function DiagramRow({
   return (
     <li
       className={
-        'group grid grid-cols-[1fr_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-800 ' +
+        'group grid grid-cols-[1fr_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700 ' +
         (showOwner
           ? 'sm:grid-cols-[1fr_110px_90px_140px_40px]'
           : 'sm:grid-cols-[1fr_90px_140px_40px]')
@@ -696,7 +696,7 @@ export function SharedList({
         {shared.map((s) => (
           <li
             key={s.id}
-            className="group grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-800 sm:grid-cols-[1fr_110px_60px_140px_40px]"
+            className="group grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700 sm:grid-cols-[1fr_110px_60px_140px_40px]"
           >
             <Link
               href={`/diagram/${s.id}?s=${encodeURIComponent(s.shareCode)}`}

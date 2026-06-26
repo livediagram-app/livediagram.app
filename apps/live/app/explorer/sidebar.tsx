@@ -55,7 +55,7 @@ export function SidebarSectionLabel({
 }) {
   return (
     <div
-      className={`flex items-center justify-between px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${
+      className={`flex items-center justify-between px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 ${
         first ? '' : 'mt-5 pt-1'
       }`}
     >
@@ -98,14 +98,16 @@ export function SidebarRow({
   renaming?: boolean;
 }) {
   const labelClass = `flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-xs ${
-    selected ? 'font-semibold text-brand-700' : 'text-slate-700'
+    selected
+      ? 'font-semibold text-brand-700 dark:text-brand-300'
+      : 'text-slate-700 dark:text-slate-200'
   }`;
   const labelInner = (
     <>
-      <span className="shrink-0 text-slate-400">{icon}</span>
+      <span className="shrink-0 text-slate-400 dark:text-slate-500">{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {badge !== undefined ? (
-        <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600">
+        <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
           {badge}
         </span>
       ) : null}
@@ -113,15 +115,15 @@ export function SidebarRow({
   );
   return (
     <div
-      className={`group flex items-center gap-1 rounded-md px-1 ${selected ? 'bg-brand-50' : 'hover:bg-slate-100'}`}
+      className={`group flex items-center gap-1 rounded-md px-1 ${selected ? 'bg-brand-50 dark:bg-brand-500/15' : 'hover:bg-slate-100 dark:hover:bg-slate-700'}`}
       style={{ paddingLeft: depth * INDENT_STEP + 4 }}
     >
       <button
         type="button"
         onClick={onToggleExpand}
         aria-label={expanded ? 'Collapse' : 'Expand'}
-        className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition ${
-          hasChildren ? 'hover:text-slate-700' : 'invisible'
+        className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition dark:text-slate-500 ${
+          hasChildren ? 'hover:text-slate-700 dark:hover:text-slate-200' : 'invisible'
         }`}
         disabled={!hasChildren || !onToggleExpand}
       >
@@ -245,7 +247,7 @@ export function SidebarFolderSubtree({
       initial={folder.name}
       onCommit={(name) => onCommitRenameFolder(folder.id, name)}
       onCancel={onCancelRenameFolder}
-      className="rounded border border-brand-300 bg-white px-1 py-0 text-xs"
+      className="rounded border border-brand-300 bg-white px-1 py-0 text-xs dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
     />
   ) : (
     folder.name
@@ -273,7 +275,7 @@ export function SidebarFolderSubtree({
                 setMenuOpen((o) => !o);
               }}
               aria-label={`Menu for ${folder.name}`}
-              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
             >
               <EllipsisIcon />
             </button>
