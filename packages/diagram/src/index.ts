@@ -740,6 +740,10 @@ export * from './validate';
 // Deterministic auto-layout for AI-generated diagrams (spec/25).
 export * from './auto-layout';
 
+// Headless SVG renderer (spec/62 §5): per-element drawers + renderElementsToSvg,
+// shared by the in-app export and the MCP worker's inline image render.
+export * from './svg-render';
+
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
 // used by selection captions and any surface that names what's selected.
 export * from './element-kind-label';
