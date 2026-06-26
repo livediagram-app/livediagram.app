@@ -10,25 +10,38 @@
 // rendering.
 
 import {
-  angledElbow,
   arrowLabelAnchor,
   arrowPathD,
   arrowStyleOf,
   BORDER_DASH_ARRAY,
-  curveAnchorPoints,
-  curveControlPoint,
   defaultArrowStrokeColor,
-  defaultFillColor,
-  defaultStrokeColor,
-  defaultTextColor,
   endpointPosition,
-  hasRichFormatting,
   shade,
   type ArrowElement,
   type BoxedElement,
   type Element,
   type Tab,
-  type TextRun,
+} from '@livediagram/diagram';
+// Shared SVG render helpers (spec/62 §5): moved into the diagram package so the
+// MCP worker reuses the same element drawing. The canvas / isometric / backdrop
+// orchestration below stays here and imports the per-element drawers + helpers.
+import {
+  arrowHeadRefs,
+  contentBounds,
+  describeBoxedExport,
+  EXPORT_BG,
+  EXPORT_IMAGE_FILL,
+  EXPORT_IMAGE_STROKE,
+  EXPORT_PADDING,
+  labelMaxWidth,
+  LABEL_LINE_HEIGHT,
+  r2,
+  svgArrow,
+  svgBoxed,
+  wrapLabel,
+  xmlEscape,
+  type ExportRun,
+  type ExportShape,
 } from '@livediagram/diagram';
 import { framesFirst } from './canvas';
 import { backgroundPatternTile } from './canvas-backgrounds';
@@ -101,50 +114,6 @@ export {
 // PNG / PDF helpers — shared canvas rendering
 // ---------------------------------------------------------------------
 
-const EXPORT_PADDING = 32;
-const EXPORT_BG = '#ffffff';
-
-// Walk all elements and return the bounding box of the visible
-// content. Arrows count via their endpoints; boxed elements via
-// their rectangle. Empty tabs default to a small standard page so
-// the export isn't a 0×0 canvas.
-function contentBounds(elements: Element[]): { x: number; y: number; w: number; h: number } {
-  if (elements.length === 0) return { x: 0, y: 0, w: 600, h: 400 };
-  let minX = Number.POSITIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  let maxY = Number.NEGATIVE_INFINITY;
-  const consider = (x: number, y: number) => {
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-  };
-  for (const el of elements) {
-    if (el.type === 'arrow') {
-      if (el.from.kind === 'free') consider(el.from.x, el.from.y);
-      if (el.to.kind === 'free') consider(el.to.x, el.to.y);
-      // Pinned endpoints resolve through their target element's
-      // bounding rect below.
-    } else {
-      consider(el.x, el.y);
-      consider(el.x + el.width, el.y + el.height);
-    }
-  }
-  // Fall through to a sane default when nothing contributed bounds
-  // (e.g. a tab with only pinned arrows whose elements were since
-  // deleted — degenerate but possible).
-  if (!Number.isFinite(minX)) return { x: 0, y: 0, w: 600, h: 400 };
-  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
-}
-
-// Render the tab to a 2D <canvas> at the requested pixel ratio.
-// Minimal renderer — covers shape rectangles / ellipses, text
-// elements (rendered as flat text without alignment fanciness),
-// sticky notes (filled rect + text), and arrows as lines with a
-// triangular head. Fancier rendering (rich text, padding, theme
-// patterns) is intentionally out of scope; the export is meant as
-// a faithful overview, not a pixel-perfect screenshot.
 export async function renderTabToCanvas(
   tab: Tab,
   opts: { scale?: number } & ImageExportOpts = {},
@@ -223,118 +192,6 @@ export async function renderTabToCanvas(
 // The image-placeholder colours shared by both renderers. Element fill /
 // stroke / text fall through to the diagram's defaultFillColor / -Stroke /
 // -Text (matching the canvas), so there's no separate "export ink" default.
-const EXPORT_IMAGE_FILL = '#f1f5f9'; // slate-100 placeholder body
-const EXPORT_IMAGE_STROKE = '#94a3b8'; // slate-400 placeholder dashes
-const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
-
-// One resolved span of a rich label (run ⊕ element defaults). Underline /
-// strikethrough are intentionally absent — neither visual exporter draws
-// them today, so runs match (not exceed) that fidelity.
-type ExportRun = { text: string; color: string; size: number; bold: boolean; italic: boolean };
-
-type ExportLabel = {
-  text: string;
-  x: number;
-  y: number;
-  anchor: 'start' | 'middle' | 'end';
-  color: string;
-  size: number;
-  bold: boolean;
-  italic: boolean;
-  // Present when the element carries per-range formatting; both renderers
-  // lay these out on one baseline from the anchor point. The single
-  // text/color/size/bold/italic fields above stay populated as a fallback.
-  runs?: ExportRun[];
-};
-
-// `image` is a dashed placeholder (a static export can't embed the
-// bitmap synchronously); `none` is a label-only element (text); the
-// rest carry the resolved fill + stroke. Geometry comes from the
-// element itself at draw time — the descriptor only carries the
-// branch decision + colours + label so neither renderer re-derives them.
-type ExportShape =
-  | { kind: 'image' }
-  | { kind: 'ellipse'; fill: string; stroke: string }
-  | { kind: 'diamond'; fill: string; stroke: string }
-  | { kind: 'rect'; fill: string; stroke: string }
-  | { kind: 'none' };
-
-type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
-
-function describeBoxedExport(el: BoxedElement): BoxedExport {
-  const opacity = el.opacity ?? 1;
-  if (el.type === 'image') {
-    return {
-      opacity,
-      shape: { kind: 'image' },
-      // Alt text (or "Image") centred in the placeholder.
-      label: {
-        text: el.alt ?? 'Image',
-        x: el.x + el.width / 2,
-        y: el.y + el.height / 2,
-        anchor: 'middle',
-        color: EXPORT_IMAGE_LABEL,
-        size: 12,
-        bold: true,
-        italic: false,
-      },
-    };
-  }
-  // Fall through to the SAME element-type defaults the canvas uses
-  // (defaultFillColor / -Stroke / -Text) so an element that defers its colour
-  // to the theme — e.g. every shape on the default brand theme — exports with
-  // its rendered look (brand-50 fill / brand-500 border) rather than a flat
-  // white box. Themed tabs store explicit colours on each element, so those
-  // round-trip unchanged; this only changes the deferring case.
-  const fill = el.fillColor ?? defaultFillColor(el);
-  const stroke = el.strokeColor ?? defaultStrokeColor(el);
-  // Annotation markers + circles render as the themed circle; diamonds as
-  // a 4-point polygon; text as label-only; everything else as a rounded
-  // rect — the "faithful overview" simplification shared by both exporters.
-  const shape: ExportShape =
-    (el.type === 'shape' && el.shape === 'circle') || el.type === 'annotation'
-      ? { kind: 'ellipse', fill, stroke }
-      : el.type === 'shape' && el.shape === 'diamond'
-        ? { kind: 'diamond', fill, stroke }
-        : el.type === 'text'
-          ? { kind: 'none' }
-          : { kind: 'rect', fill, stroke };
-  const baseColor = el.textColor ?? defaultTextColor(el);
-  const baseSize = fontSizeFor(el.textSize);
-  const richText = (el as { richText?: TextRun[] }).richText;
-  const runs: ExportRun[] | undefined = hasRichFormatting(richText)
-    ? richText!.map((run) => ({
-        text: run.text,
-        color: run.color ?? baseColor,
-        size: run.size ? fontSizeFor(run.size) : baseSize,
-        bold: run.bold ?? !!el.textBold,
-        italic: run.italic ?? !!el.textItalic,
-      }))
-    : undefined;
-  const label: ExportLabel | null = el.label
-    ? {
-        text: el.label,
-        x:
-          el.textAlignX === 'right'
-            ? el.x + el.width - 8
-            : el.textAlignX === 'left'
-              ? el.x + 8
-              : el.x + el.width / 2,
-        y: el.y + el.height / 2,
-        anchor: el.textAlignX === 'right' ? 'end' : el.textAlignX === 'left' ? 'start' : 'middle',
-        color: baseColor,
-        size: baseSize,
-        bold: !!el.textBold,
-        italic: !!el.textItalic,
-        runs,
-      }
-    : null;
-  return { opacity, shape, label };
-}
-
-// Build the silhouette path for a boxed export shape at an optional offset
-// (canvas px). Shared by the element body and its isometric extrusion copies
-// so the two never diverge. `image` shares the rect's rounded outline.
 function boxedSilhouettePath(
   ctx: CanvasRenderingContext2D,
   el: BoxedElement,
@@ -481,28 +338,6 @@ function roundedRect(
 // arrowhead can point along a curved / angled line instead of the straight
 // from→to chord (the reported "curves export straight" bug). Mirrors the
 // tangent the editor's <ArrowView> draws its heads along.
-function arrowHeadRefs(
-  arrow: ArrowElement,
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-): { toRef: { x: number; y: number }; fromRef: { x: number; y: number } } {
-  const style = arrowStyleOf(arrow);
-  const pts = arrow.curvePoints;
-  if (pts && pts.length > 0 && (style === 'curved' || style === 'angled')) {
-    const anchors = curveAnchorPoints(from, to, pts);
-    return { toRef: anchors[anchors.length - 1]!, fromRef: anchors[0]! };
-  }
-  if (style === 'curved') {
-    const c = curveControlPoint(from, to, arrow.curveOffset);
-    return { toRef: c, fromRef: c };
-  }
-  if (style === 'angled') {
-    const elbow = angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset);
-    return { toRef: elbow, fromRef: elbow };
-  }
-  return { toRef: from, fromRef: to };
-}
-
 function drawArrow(ctx: CanvasRenderingContext2D, arrow: ArrowElement, elements: Element[]): void {
   const from = endpointPosition(arrow.from, elements);
   const to = endpointPosition(arrow.to, elements);
@@ -590,181 +425,6 @@ function drawArrowhead(
 // ---------------------------------------------------------------------
 
 // Round to 2dp so the markup stays compact without visible drift.
-function r2(n: number): number {
-  return Math.round(n * 100) / 100;
-}
-
-// XML-escape for both text nodes and attribute values.
-function xmlEscape(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function fontSizeFor(textSize: BoxedElement['textSize']): number {
-  return textSize === 'lg' ? 20 : textSize === 'sm' ? 12 : textSize === 'scale' ? 18 : 14;
-}
-
-// Horizontal room a label has inside its element — the box width minus the
-// same ~8px inset the label x already uses on each side. Both renderers wrap
-// to this so long labels (sticky notes especially) stay inside the element
-// instead of spilling out as one illegible line (the reported bug).
-function labelMaxWidth(el: BoxedElement): number {
-  return Math.max(8, el.width - 16);
-}
-const LABEL_LINE_HEIGHT = 1.25;
-
-// Greedy word-wrap to a max pixel width, preserving explicit newlines. A
-// single word wider than the box is left whole (no mid-word breaking) — it
-// still overflows far less than the previous unwrapped single line.
-function wrapLabel(text: string, maxWidth: number, measure: (s: string) => number): string[] {
-  const out: string[] = [];
-  for (const para of text.split('\n')) {
-    const words = para.split(/\s+/).filter(Boolean);
-    if (words.length === 0) {
-      out.push('');
-      continue;
-    }
-    let cur = words[0]!;
-    for (let i = 1; i < words.length; i++) {
-      const w = words[i]!;
-      if (measure(`${cur} ${w}`) <= maxWidth) cur += ` ${w}`;
-      else {
-        out.push(cur);
-        cur = w;
-      }
-    }
-    out.push(cur);
-  }
-  return out;
-}
-
-// A reusable measuring 2D context for the SVG path (the canvas renderer
-// measures on its own context). Null in non-DOM environments (jsdom tests),
-// where we fall back to a rough character-width estimate so wrapping still
-// degrades gracefully rather than throwing.
-let _labelMeasureCtx: CanvasRenderingContext2D | null | undefined;
-function labelMeasure(size: number, bold: boolean, italic: boolean): (s: string) => number {
-  if (_labelMeasureCtx === undefined) {
-    _labelMeasureCtx =
-      typeof document !== 'undefined' ? document.createElement('canvas').getContext('2d') : null;
-  }
-  const ctx = _labelMeasureCtx;
-  if (!ctx) return (s) => s.length * size * 0.55;
-  ctx.font = `${bold ? '600' : '400'} ${italic ? 'italic ' : ''}${size}px system-ui, sans-serif`;
-  return (s) => ctx.measureText(s).width;
-}
-
-function svgLabel(
-  text: string,
-  x: number,
-  y: number,
-  anchor: 'start' | 'middle' | 'end',
-  color: string,
-  fontSize: number,
-  bold: boolean,
-  italic: boolean,
-): string {
-  return (
-    `<text x="${r2(x)}" y="${r2(y)}" font-family="system-ui, sans-serif" font-size="${fontSize}"` +
-    ` font-weight="${bold ? 600 : 400}"${italic ? ' font-style="italic"' : ''}` +
-    ` fill="${xmlEscape(color)}" text-anchor="${anchor}" dominant-baseline="central">${xmlEscape(text)}</text>`
-  );
-}
-
-// A word-wrapped plain label as one anchored <text> with a <tspan> per line,
-// each dy a line-height below the last, centred on the vertical anchor — the
-// SVG counterpart of the canvas multi-line label.
-function svgWrappedLabel(
-  lines: string[],
-  x: number,
-  y: number,
-  anchor: 'start' | 'middle' | 'end',
-  color: string,
-  fontSize: number,
-  bold: boolean,
-  italic: boolean,
-): string {
-  const lineH = fontSize * LABEL_LINE_HEIGHT;
-  const firstY = y - ((lines.length - 1) * lineH) / 2;
-  const tspans = lines
-    .map(
-      (line, i) => `<tspan x="${r2(x)}" dy="${i === 0 ? 0 : r2(lineH)}">${xmlEscape(line)}</tspan>`,
-    )
-    .join('');
-  return (
-    `<text x="${r2(x)}" y="${r2(firstY)}" font-family="system-ui, sans-serif" font-size="${fontSize}"` +
-    ` font-weight="${bold ? 600 : 400}"${italic ? ' font-style="italic"' : ''}` +
-    ` fill="${xmlEscape(color)}" text-anchor="${anchor}" dominant-baseline="central">${tspans}</text>`
-  );
-}
-
-// Per-range label as one anchored <text> with a <tspan> per run; the
-// parent text-anchor positions the whole block and the tspans flow
-// left-to-right from there (SVG advances each tspan automatically).
-function svgRichLabel(
-  runs: ExportRun[],
-  x: number,
-  y: number,
-  anchor: 'start' | 'middle' | 'end',
-): string {
-  const spans = runs
-    .map(
-      (r) =>
-        `<tspan fill="${xmlEscape(r.color)}" font-size="${r.size}"` +
-        ` font-weight="${r.bold ? 600 : 400}"${r.italic ? ' font-style="italic"' : ''}>` +
-        `${xmlEscape(r.text)}</tspan>`,
-    )
-    .join('');
-  return (
-    `<text x="${r2(x)}" y="${r2(y)}" font-family="system-ui, sans-serif"` +
-    ` text-anchor="${anchor}" dominant-baseline="central">${spans}</text>`
-  );
-}
-
-function svgBoxed(el: BoxedElement): string {
-  const { opacity, shape, label } = describeBoxedExport(el);
-  const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
-  const cx = el.x + el.width / 2;
-  const cy = el.y + el.height / 2;
-  let shapeStr = '';
-  if (shape.kind === 'image') {
-    // Dashed placeholder rect — a static export can't embed the bitmap.
-    shapeStr =
-      `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
-      ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`;
-  } else if (shape.kind === 'ellipse') {
-    shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(el.width / 2)}" ry="${r2(el.height / 2)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
-  } else if (shape.kind === 'diamond') {
-    shapeStr = `<polygon points="${r2(cx)},${r2(el.y)} ${r2(el.x + el.width)},${r2(cy)} ${r2(cx)},${r2(el.y + el.height)} ${r2(el.x)},${r2(cy)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5" stroke-linejoin="round"/>`;
-  } else if (shape.kind === 'rect') {
-    shapeStr = `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
-  }
-  const labelStr = !label
-    ? ''
-    : label.runs
-      ? svgRichLabel(label.runs, label.x, label.y, label.anchor)
-      : svgWrappedLabel(
-          wrapLabel(
-            label.text,
-            labelMaxWidth(el),
-            labelMeasure(label.size, label.bold, label.italic),
-          ),
-          label.x,
-          label.y,
-          label.anchor,
-          label.color,
-          label.size,
-          label.bold,
-          label.italic,
-        );
-  return `<g${opAttr}>${shapeStr}${labelStr}</g>`;
-}
-
-// A single filled silhouette (no stroke / label) at an offset — the SVG
-// counterpart of boxedSilhouettePath, used for the isometric extrusion copies.
 function svgSilhouette(
   el: BoxedElement,
   kind: ExportShape['kind'],
@@ -803,70 +463,6 @@ function svgBoxedExtrusion(el: BoxedElement): string {
     const z = -layers[i]!;
     const fill = shade(accent, 1 - isoLayerBrightness(i, layers.length));
     parts.push(svgSilhouette(el, shape.kind, z * k * ox, z * k * oy, fill));
-  }
-  parts.push('</g>');
-  return parts.join('');
-}
-
-function svgArrowhead(
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-  color: string,
-): string {
-  const angle = Math.atan2(to.y - from.y, to.x - from.x);
-  const size = 8;
-  const p1 = `${r2(to.x)},${r2(to.y)}`;
-  const p2 = `${r2(to.x - size * Math.cos(angle - Math.PI / 6))},${r2(to.y - size * Math.sin(angle - Math.PI / 6))}`;
-  const p3 = `${r2(to.x - size * Math.cos(angle + Math.PI / 6))},${r2(to.y - size * Math.sin(angle + Math.PI / 6))}`;
-  return `<polygon points="${p1} ${p2} ${p3}" fill="${xmlEscape(color)}"/>`;
-}
-
-function svgArrow(arrow: ArrowElement, elements: Element[]): string {
-  const from = endpointPosition(arrow.from, elements);
-  const to = endpointPosition(arrow.to, elements);
-  const stroke = arrow.strokeColor ?? defaultArrowStrokeColor();
-  const lw = arrow.strokeWidth ?? 2;
-  const op = arrow.opacity ?? 1;
-  const opAttr = op !== 1 ? ` opacity="${r2(op)}"` : '';
-  const style = arrowStyleOf(arrow);
-  const parts = [`<g${opAttr}>`];
-  // The same path the editor renders (straight / curved / angled, honouring
-  // the curve / elbow drag handles) — not a flat from→to line (the reported
-  // "curves export straight" bug).
-  const d = arrowPathD(
-    style,
-    from,
-    to,
-    arrow.from,
-    arrow.to,
-    arrow.curveOffset,
-    arrow.elbowOffset,
-    arrow.curvePoints,
-  );
-  const dash = BORDER_DASH_ARRAY[arrow.strokeStyle ?? 'solid'];
-  const dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
-  parts.push(
-    `<path d="${d}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"${dashAttr}/>`,
-  );
-  const { toRef, fromRef } = arrowHeadRefs(arrow, from, to);
-  const ends = arrow.arrowEnds ?? 'to';
-  if (ends === 'to' || ends === 'both') parts.push(svgArrowhead(toRef, to, stroke));
-  if (ends === 'from' || ends === 'both') parts.push(svgArrowhead(fromRef, from, stroke));
-  if (arrow.label) {
-    const anchor = arrowLabelAnchor(
-      style,
-      from,
-      to,
-      arrow.from,
-      arrow.to,
-      arrow.curveOffset,
-      arrow.elbowOffset,
-      arrow.labelOffset,
-      arrow.curvePoints,
-    );
-    parts.push(
-      svgLabel(arrow.label, anchor.x, anchor.y - 6, 'middle', '#0f172a', 12, false, false),
-    );
   }
   parts.push('</g>');
   return parts.join('');
