@@ -4,7 +4,7 @@
 // the elements; these tools validate, lay out, persist, and render.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { Diagram, DiagramSummary, TabRecord } from '@livediagram/api-schema';
+import type { Diagram, DiagramSummary, Folder, TabRecord } from '@livediagram/api-schema';
 import {
   autoLayoutElements,
   isLayoutCandidate,
@@ -18,6 +18,7 @@ import { apiJson } from './api';
 import type { Env } from './env';
 import { svgToPngBase64 } from './render';
 import {
+  addTabShape,
   createDiagramShape,
   findDiagramsShape,
   readDiagramShape,
@@ -67,6 +68,30 @@ function applyLayout(layout: 'auto' | 'preserve' | undefined, elements: Element[
   const shouldLayout =
     layout === 'auto' ? true : layout === 'preserve' ? false : nodesLookUnplaced(elements);
   return shouldLayout && isLayoutCandidate(elements) ? autoLayoutElements(elements) : elements;
+}
+
+// MCP-created diagrams land in a dedicated "Generated diagrams" folder rather
+// than Unsorted (spec/62). Find the owner's folder by name or create it; the
+// diagram POST takes the folderId directly. Best-effort: if folder
+// listing/creation fails, fall back to Unsorted rather than failing the create.
+const GENERATED_FOLDER_NAME = 'Generated diagrams';
+
+async function ensureGeneratedFolder(env: Env, token: string): Promise<string | null> {
+  try {
+    const { folders } = await apiJson<{ folders: Folder[] }>(env, token, '/folders');
+    const existing = folders.find(
+      (f) => f.name === GENERATED_FOLDER_NAME && !f.parentId && !f.teamId,
+    );
+    if (existing) return existing.id;
+    const id = crypto.randomUUID();
+    await apiJson(env, token, '/folders', {
+      method: 'POST',
+      body: JSON.stringify({ id, name: GENERATED_FOLDER_NAME }),
+    });
+    return id;
+  } catch {
+    return null;
+  }
 }
 
 export function registerTools(server: McpServer, env: Env): void {
@@ -134,30 +159,77 @@ export function registerTools(server: McpServer, env: Env): void {
       title: 'Create a diagram',
       description:
         'Create a new diagram from elements you produce (see the ' +
-        'livediagram://schema/elements resource). Emit nodes + pinned arrows with rough ' +
-        'or zero coordinates; the server validates, auto-lays-out the graph, persists it, ' +
-        'and returns the link + an inline PNG.',
+        'livediagram://schema/elements resource). Pass one tab, or several to build a ' +
+        'multi-tab diagram in one call (an overview plus detail tabs). The server validates, ' +
+        'lays out each tab per the layout arg, files it under your "Generated diagrams" ' +
+        'folder, and returns the link + an inline PNG of the first tab.',
       inputSchema: createDiagramShape,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      const tabId = crypto.randomUUID();
-      const candidate: unknown = { id: tabId, name: args.tab.name, elements: args.tab.elements };
-      if (!isValidTab(candidate)) {
-        return errorResult(
-          'Invalid elements. Check the livediagram://schema/elements resource: every ' +
-            'element needs id/type/x/y/width/height (arrows need from/to), and arrays must ' +
-            'be well-formed.',
-        );
+      const tabs: Tab[] = [];
+      for (const t of args.tabs) {
+        const tabId = crypto.randomUUID();
+        const candidate: unknown = { id: tabId, name: t.name, elements: t.elements };
+        if (!isValidTab(candidate)) {
+          return errorResult(
+            `Invalid elements in tab "${t.name}". Check the livediagram://schema/elements ` +
+              'resource: every element needs id/type/x/y/width/height (arrows need from/to), ' +
+              'and arrays must be well-formed.',
+          );
+        }
+        tabs.push({ ...candidate, elements: applyLayout(args.layout, candidate.elements) });
       }
-      const elements: Element[] = applyLayout(args.layout, candidate.elements);
-      const tab: Tab = { ...candidate, elements };
       const id = crypto.randomUUID();
+      const folderId = await ensureGeneratedFolder(env, token);
       await apiJson(env, token, '/diagrams', {
         method: 'POST',
-        body: JSON.stringify({ id, name: args.name, tabs: [tab] }),
+        body: JSON.stringify({ id, name: args.name, tabs, ...(folderId ? { folderId } : {}) }),
       });
-      return imageResult({ id, name: args.name, tabId, url: deepLink(id) }, tab);
+      return imageResult(
+        {
+          id,
+          name: args.name,
+          tabCount: tabs.length,
+          tabIds: tabs.map((t) => t.id),
+          folder: folderId ? GENERATED_FOLDER_NAME : 'Unsorted',
+          url: deepLink(id),
+        },
+        tabs[0]!,
+      );
+    },
+  );
+
+  server.registerTool(
+    'add_tab',
+    {
+      title: 'Add a tab to a diagram',
+      description:
+        'Add a NEW tab (its own canvas) to an existing diagram — e.g. a detail view zooming ' +
+        'into one part of an architecture. Produce the elements like create_diagram; the ' +
+        'server validates, lays out per the layout arg, appends the tab, and returns an ' +
+        'inline PNG. Run read_diagram first to see the diagram and its existing tabs.',
+      inputSchema: addTabShape,
+    },
+    async (args, extra) => {
+      const token = requireToken(extra as Extra);
+      const tabId = crypto.randomUUID();
+      const candidate: unknown = { id: tabId, name: args.name, elements: args.elements };
+      if (!isValidTab(candidate)) {
+        return errorResult(
+          'Invalid elements. Check the livediagram://schema/elements resource: every element ' +
+            'needs id/type/x/y/width/height (arrows need from/to), and arrays must be well-formed.',
+        );
+      }
+      const tab: Tab = { ...candidate, elements: applyLayout(args.layout, candidate.elements) };
+      await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
+        method: 'PUT',
+        body: JSON.stringify(tab),
+      });
+      return imageResult(
+        { diagramId: args.diagramId, tabId, name: args.name, url: deepLink(args.diagramId) },
+        tab,
+      );
     },
   );
 

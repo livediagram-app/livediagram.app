@@ -14,6 +14,9 @@ export function elementSchemaDoc(): string {
   return `# livediagram element schema
 
 A tab is { name, elements: Element[] }. Every element needs a unique string "id".
+A diagram has one or more tabs, each its own canvas. create_diagram makes a
+diagram with one or more tabs at once; add_tab appends another tab to an existing
+diagram (e.g. an overview tab, then a detail tab zooming into one subsystem).
 
 ## Element types
 ${types}
@@ -59,7 +62,7 @@ YOU decide the layout; the server does not override a real arrangement.
 
 // Server-level instructions echo the essentials for clients that don't read
 // resources (spec/62 §4.5).
-export const SERVER_INSTRUCTIONS = `Tools to find, view, create, and edit the user's livediagram diagrams.
+export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, and edit the user's livediagram diagrams.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). Read the ${SCHEMA_RESOURCE_URI}
@@ -89,14 +92,30 @@ export const readDiagramShape = {
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
 };
 
+const tabShape = z.object({
+  name: z.string().describe('Name of the tab.'),
+  elements: elementArray.describe('The elements (see the schema resource).'),
+});
+
 export const createDiagramShape = {
   name: z.string().describe('Name for the new diagram.'),
-  tab: z
-    .object({
-      name: z.string().describe('Name of the tab.'),
-      elements: elementArray.describe('The elements (see the schema resource).'),
-    })
-    .describe('The single tab to create.'),
+  tabs: z
+    .array(tabShape)
+    .min(1)
+    .max(20)
+    .describe(
+      'One or more tabs, each its own canvas. Pass several to create a multi-tab diagram in ' +
+        'one call (e.g. an overview tab plus a detail tab per subsystem).',
+    ),
+  layout: layoutField,
+};
+
+export const addTabShape = {
+  diagramId: z
+    .string()
+    .describe('The diagram to add a tab to (from find_diagrams / read_diagram).'),
+  name: z.string().describe('Name of the new tab.'),
+  elements: elementArray.describe('The elements for the new tab (see the schema resource).'),
   layout: layoutField,
 };
 

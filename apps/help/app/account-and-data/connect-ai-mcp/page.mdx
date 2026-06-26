@@ -29,14 +29,15 @@ The token it creates is an ordinary API token: it appears in the Explorer's **AP
 
 ## What the AI can do
 
-The connection exposes four tools:
+The connection exposes five tools:
 
 - **Find diagrams** — search your diagrams by name.
 - **Read a diagram** — get a tab's contents and an inline picture of it.
-- **Create a diagram** — turn a request into a new diagram; the server lays it out cleanly.
+- **Create a diagram** — turn a request into a new diagram, with one tab or several.
+- **Add a tab** — add another tab (its own canvas) to an existing diagram, e.g. a detail view of one part.
 - **Update a diagram** — rework a whole tab or make a small adjustment.
 
-The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. A token has full read and write access to your diagrams, so only connect tools you trust, and revoke the token if you stop using one.
+The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. New diagrams an AI creates land in a **"Generated diagrams"** folder in your Explorer (you can move them afterwards). A token has full read and write access to your diagrams, so only connect tools you trust, and revoke the token if you stop using one.
 
 <Tip>
   Connected a tool you no longer use? Open the Explorer’s API tokens page and revoke its token —

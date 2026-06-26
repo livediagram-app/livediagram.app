@@ -27,7 +27,7 @@ well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no
 model of its own and makes no LLM calls.
 
-**Keep the surface small.** Four tools and one schema resource, no more (see
+**Keep the surface small.** Five tools and one schema resource (see
 [§4](#4-tools)). Each tool is a thin wrapper over an existing `/api` route plus
 shared helpers from `packages/diagram`; the MCP adds no business logic that
 isn't reusable.
@@ -129,8 +129,8 @@ the MCP simply don't deploy `apps/mcp`; nothing else references it.
 
 ## 4. Tools
 
-Four tools. The search/view capability is two tools (find, then read); create
-and update are separate because their inputs and intent differ.
+Five tools. The search/view capability is two tools (find, then read); create,
+add_tab, and update are separate because their inputs and intent differ.
 
 ### 4.1 `find_diagrams`
 
@@ -152,11 +152,13 @@ plus the deep-link `url`. So "show me my auth-flow diagram" → `find_diagrams` 
 
 ### 4.3 `create_diagram`
 
-Create a new diagram (or add a tab) from elements the model produced. Input:
-`name`, `tab: { name, elements: Element[] }`. The MCP:
+Create a new diagram from elements the model produced. Input: `name`, `tabs:
+[{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
+diagram in one call — an overview plus a detail tab per subsystem), and the
+optional `layout`. The MCP:
 
-1. **Validates** `elements` with `isValidTab` (reject `400`-style with a clear
-   message the model can correct against).
+1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
+   a clear message naming the offending tab).
 2. **Lays out — but the model decides.** A `layout` argument (`'auto'` |
    `'preserve'`, optional) governs it: `'preserve'` keeps the exact coordinates
    the model gave (so it can draw a deliberate shape — a cycle as a ring, a tree,
@@ -169,9 +171,26 @@ Create a new diagram (or add a tab) from elements the model produced. Input:
    Layout only ever arranges the **connected graph** — edgeless content (titles,
    per-node descriptions, captions) passes through at its given position rather
    than being raked into a disconnected-component column.
-3. **Persists** via `POST /api/diagrams` (seed) + `PUT …/tabs/:tabId`.
-4. **Returns** the new `id`, deep-link `url`, **and the rendered PNG** so the user
-   sees the result inline immediately.
+3. **Files it under "Generated diagrams".** MCP-created diagrams land in a
+   dedicated personal folder (find-or-create by name via `GET`/`POST /api/folders`)
+   rather than Unsorted, so a user's own work and AI-generated diagrams stay
+   separate (the user can move them after). Best-effort: if the folder
+   list/create fails, fall back to Unsorted rather than failing the create.
+4. **Persists** all tabs via `POST /api/diagrams` (which seeds a `tabs[]` array
+   and takes the `folderId` directly).
+5. **Returns** the new `id`, tab count + ids, the folder, the deep-link `url`,
+   **and the rendered PNG of the first tab** so the user sees the result inline.
+
+### 4.3a `add_tab`
+
+Add a **new tab** (its own canvas) to an existing diagram — the motivating case:
+"make a tab going into more detail on one part of this architecture." Input:
+`diagramId`, `name`, `elements`, optional `layout`. Validates + lays out exactly
+like a `create_diagram` tab, then `PUT /api/diagrams/:id/tabs/:newTabId` — which
+is an upsert that also links the tab into the diagram and appends it, so a fresh
+tab id creates and orders the tab in one call. Returns the new `tabId`, `url`,
+and the rendered PNG. (Pair with `read_diagram`, which lists the diagram's
+existing tabs, to decide where a new one fits.)
 
 ### 4.4 `update_diagram`
 
@@ -264,13 +283,12 @@ Worker (no DOM, no React).
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
 - **Real image-element embedding** in renders ([§5](#5-visualise--inline-image-render)).
-- **Folder / team / share management** via MCP — the four tools cover the three
-  stated capabilities; more `/api` surface can be wrapped later if demand appears.
+- **Folder / team / share management** via MCP — there are no tools to list,
+  rename, or move folders (create_diagram only auto-files new diagrams under
+  "Generated diagrams"); more `/api` surface can be wrapped later if demand appears.
 - **Token-paste connector** as a supported path — OAuth is the chosen front door
   ([§3](#3-authentication-oauth-21)); a raw Bearer still works for local dev but
   isn't a documented user flow.
 - **Read-only / scoped MCP tokens** — inherits spec/61's "full read+write, no
   scopes yet" ([spec/61 §3.4](61-public-api-and-tokens.md)); a read-only token
   would map cleanly to find/read-only MCP use if scopes ever land.
-- **Multi-tab generation** in one call — `create`/`update` operate on one tab;
-  multiple calls build multiple tabs.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
+  addTabShape,
   createDiagramShape,
   elementSchemaDoc,
   findDiagramsShape,
@@ -25,12 +26,25 @@ describe('tool input shapes', () => {
     expect(() => s.parse({ limit: 100 })).toThrow();
   });
 
-  it('create: requires name + tab.elements', () => {
+  it('create: requires name + at least one tab', () => {
     const s = z.object(createDiagramShape);
-    expect(() => s.parse({ name: 'x' })).toThrow();
-    expect(
-      s.parse({ name: 'x', tab: { name: 't', elements: [{ id: 'a', type: 'shape' }] } }).name,
-    ).toBe('x');
+    expect(() => s.parse({ name: 'x' })).toThrow(); // tabs required
+    expect(() => s.parse({ name: 'x', tabs: [] })).toThrow(); // min 1
+    const ok = s.parse({
+      name: 'x',
+      tabs: [
+        { name: 'Overview', elements: [{ id: 'a', type: 'shape' }] },
+        { name: 'Detail', elements: [] },
+      ],
+    });
+    expect(ok.tabs).toHaveLength(2);
+  });
+
+  it('add_tab: requires diagramId + name + elements', () => {
+    const s = z.object(addTabShape);
+    expect(() => s.parse({ name: 't', elements: [] })).toThrow(); // missing diagramId
+    const ok = s.parse({ diagramId: 'd', name: 'Detail', elements: [], layout: 'preserve' });
+    expect(ok.diagramId).toBe('d');
   });
 
   it('update: mode enum + optional ops', () => {
@@ -47,10 +61,10 @@ describe('tool input shapes', () => {
   it('create/update accept an optional layout enum', () => {
     const c = z.object(createDiagramShape);
     expect(
-      c.parse({ name: 'x', tab: { name: 't', elements: [] }, layout: 'preserve' }).layout,
+      c.parse({ name: 'x', tabs: [{ name: 't', elements: [] }], layout: 'preserve' }).layout,
     ).toBe('preserve');
     expect(() =>
-      c.parse({ name: 'x', tab: { name: 't', elements: [] }, layout: 'nope' }),
+      c.parse({ name: 'x', tabs: [{ name: 't', elements: [] }], layout: 'nope' }),
     ).toThrow();
     const u = z.object(updateDiagramShape);
     expect(u.parse({ diagramId: 'd', mode: 'replace', elements: [], layout: 'auto' }).layout).toBe(
