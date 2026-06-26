@@ -8,6 +8,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { Env } from './env';
 import { buildServer } from './server';
+import { registerOauthRoutes } from './oauth';
 
 export type { Env };
 
@@ -25,6 +26,9 @@ app.use(
 );
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
+
+// OAuth 2.1 discovery / register / authorize / complete / token (spec/62 §3).
+registerOauthRoutes(app);
 
 // The MCP Streamable-HTTP transport. Stateless (no session id) with JSON
 // responses, which suits a per-request Worker: build a fresh server + transport,

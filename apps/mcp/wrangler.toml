@@ -8,6 +8,11 @@ compatibility_date = "2026-05-29"
 # bundled by wrangler directly.
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+# Where the OAuth consent page lives (apps/live). Self-hosters set their own
+# live origin; the authorize endpoint redirects the signed-in user here.
+CONSENT_BASE_URL = "https://livediagram.app"
+
 # Reach the api worker over a service binding (not public DNS). Every tool
 # forwards to /api/* carrying the caller's `Authorization: Bearer lvd_…`
 # token, which the api already accepts on every route (spec/61 §3.3), so no
