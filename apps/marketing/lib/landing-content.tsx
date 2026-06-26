@@ -580,15 +580,8 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore the smart assists',
     title: 'The canvas does the fiddly parts',
     description:
-      'Lean on the editor for the precise bits: rotation that snaps to clean angles, guides that line everything up, and an optional AI assistant when you want a hand.',
+      'Lean on the editor for the precise bits: rotation that snaps to clean angles, and guides that line everything up so a busy canvas stays tidy.',
     items: [
-      {
-        art: <AiAssistArt />,
-        href: '/help/tools/ai/',
-        title: 'An optional AI assistant',
-        description:
-          'Switch it on for a hand on the active tab: Ask answers questions about the diagram without changing it, and Clean tidies sizes, labels, and layout. It works from your selection or the whole tab, and one undo takes it all back. Off by default, and self-hosters bring their own key.',
-      },
       {
         art: <RotateArt />,
         href: '/help/canvas/rotation/',
@@ -602,6 +595,36 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Guides that line things up',
         description:
           'Move or resize a shape and faint guide lines light up the moment an edge or centre lines up with a neighbour, so you can see exactly why it snapped and lay things out cleanly on a busy canvas. The lines match your theme and fade the instant you let go. Switch them off in Settings if you want a bare canvas.',
+      },
+    ],
+  },
+  {
+    id: 'connect',
+    cta: 'Explore connecting your tools',
+    title: 'Connect your tools and AI',
+    description:
+      'livediagram is open at the edges. Drive it programmatically from your own scripts, or hand it to an AI that reads and builds your diagrams with full context, all on the same account, all revocable.',
+    items: [
+      {
+        art: <McpArt />,
+        href: '/help/account-and-data/connect-ai-mcp/',
+        title: 'Build diagrams with AI',
+        description:
+          'Hook livediagram up to Claude or any MCP client and let it find, read, create, and edit your diagrams for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token, so you can disconnect any time.',
+      },
+      {
+        art: <ApiArt />,
+        href: '/help/account-and-data/api-tokens/',
+        title: 'Write your own integrations',
+        description:
+          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations. Signed in, revocable, six-month tokens, no lock-in.',
+      },
+      {
+        art: <AiAssistArt />,
+        href: '/help/tools/ai/',
+        title: 'An optional AI assistant',
+        description:
+          'Switch it on for a hand on the active tab: Ask answers questions about the diagram without changing it, and Clean tidies sizes, labels, and layout. It works from your selection or the whole tab, and one undo takes it all back. Off by default, and self-hosters bring their own key.',
       },
     ],
   },
@@ -632,20 +655,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'No tracking pixels',
         description:
           'No third-party analytics, no ad pixels, no SDK calls home. The only usage data is anonymous, first-party product events, and they are public: see exactly what we measure on the telemetry page.',
-      },
-      {
-        art: <ApiArt />,
-        href: '/help/account-and-data/api-tokens/',
-        title: 'Drive it from your own scripts',
-        description:
-          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations. Signed in, revocable, six-month tokens, no lock-in.',
-      },
-      {
-        art: <McpArt />,
-        href: '/help/account-and-data/connect-ai-mcp/',
-        title: 'Connect your AI tools',
-        description:
-          'Hook livediagram up to Claude or any MCP client and let it find, read, create, and edit your diagrams for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token, so you can disconnect any time.',
       },
     ],
   },

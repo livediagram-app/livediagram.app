@@ -3,18 +3,14 @@ import type { LandingSection } from '@/lib/landing-content';
 // A landing-page advertising block for one feature category. Instead of
 // enumerating every feature card inline (which made the page feel cluttered,
 // see spec/16), each section is pitched as a self-contained band: its
-// headline, one-line positioning, a representative illustration from its lead
-// feature, a few feature-name chips that tease the breadth, and an
-// "Explore all N →" link into the category's own /features/<id> page where the
-// full grid lives.
+// headline, one-line positioning, a badge for every feature it covers (so the
+// breadth is scannable at a glance without the heavy cards), a representative
+// illustration from its lead feature, and an "Explore ..." link into the
+// category's own /features/<id> page where the full grid lives.
 //
 // The illustration side alternates left/right by index and the background
 // alternates tinted/plain, so a run of these reads as a composed page rather
 // than a stack of identical grids.
-
-// How many feature-name chips to tease before collapsing the rest into "+N
-// more". Enough to signal breadth, few enough to stay scannable.
-const MAX_CHIPS = 5;
 
 export function FeatureCategoryBlock({
   section,
@@ -26,10 +22,6 @@ export function FeatureCategoryBlock({
   const tinted = index % 2 === 1;
   const artFirst = index % 2 === 1;
   const lead = section.items[0];
-  const count = section.items.length;
-
-  const chips = section.items.slice(0, MAX_CHIPS);
-  const overflow = count - chips.length;
 
   return (
     <section
@@ -44,9 +36,9 @@ export function FeatureCategoryBlock({
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-slate-600">{section.description}</p>
 
-          {/* Feature-name chips: tease what's inside without the full cards. */}
+          {/* A badge per feature: the whole category at a glance, no cards. */}
           <ul className="mt-6 flex flex-wrap gap-2">
-            {chips.map((item) => (
+            {section.items.map((item) => (
               <li
                 key={item.title}
                 className="rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-sm text-slate-600"
@@ -54,11 +46,6 @@ export function FeatureCategoryBlock({
                 {item.title}
               </li>
             ))}
-            {overflow > 0 ? (
-              <li className="rounded-full px-3 py-1 text-sm font-medium text-slate-500">
-                +{overflow} more
-              </li>
-            ) : null}
           </ul>
 
           <a
