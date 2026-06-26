@@ -45,6 +45,13 @@ export type FeatureProps = {
   description: string;
   /** Optional animated mini-illustration rendered above the text. */
   art?: ReactNode;
+  /**
+   * Optional sub-section label. On a `/features/<id>` detail page, a section
+   * whose items carry `group` values renders its grid broken into captioned
+   * sub-sections (grouping related items) instead of one long grid, so the
+   * larger categories stay scannable. Sections without groups render flat.
+   */
+  group?: string;
   /** Help-centre article this feature is documented in. When set, the whole
    *  card becomes a link to it (opens in a new tab). Cross-app absolute path
    *  under `/help` (the router serves the help app there). */

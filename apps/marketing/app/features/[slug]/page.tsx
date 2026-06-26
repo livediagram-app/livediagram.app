@@ -8,7 +8,11 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { FeatureGrid, Section } from '@/components/Section';
 import { StartDrawingCta } from '@/components/StartDrawingCta';
-import { getLandingSection, LANDING_SECTION_IDS } from '@/lib/landing-content';
+import {
+  getLandingSection,
+  groupSectionFeatures,
+  LANDING_SECTION_IDS,
+} from '@/lib/landing-content';
 import { subpageMetadata } from '@/lib/subpage-metadata';
 
 // One detail page per feature category at /features/<id>, reading the matching
@@ -46,6 +50,10 @@ export default async function FeatureCategoryPage({
   const section = getLandingSection(slug);
   if (!section) notFound();
 
+  // Larger categories tag their features into groups; render those as captioned
+  // sub-sections so the grid stays scannable. Smaller ones render one flat grid.
+  const groups = groupSectionFeatures(section);
+
   return (
     <>
       <BreadcrumbJsonLd name={section.title} path={`/features/${slug}`} />
@@ -54,7 +62,20 @@ export default async function FeatureCategoryPage({
         <Breadcrumb items={[{ label: section.title }]} />
         <FeatureCategoryHero section={section} />
         <Section id={section.id} title="Everything in this category">
-          <FeatureGrid items={section.items} />
+          {groups ? (
+            <div className="space-y-16">
+              {groups.map((group) => (
+                <div key={group.title}>
+                  <h3 className="mb-6 text-xl font-semibold tracking-tight text-slate-900">
+                    {group.title}
+                  </h3>
+                  <FeatureGrid items={group.items} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <FeatureGrid items={section.items} />
+          )}
         </Section>
         <StartDrawingCta />
       </main>

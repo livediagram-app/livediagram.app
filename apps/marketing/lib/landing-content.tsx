@@ -151,6 +151,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <ShareLinksArt />,
         href: '/help/collaboration/sharing/',
+        group: 'Share & access',
         title: 'Editor or view-only links',
         description:
           'Create an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side. Any link also embeds read-only in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog.',
@@ -158,6 +159,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <TeamsArt />,
         href: '/help/collaboration/teams/',
+        group: 'Share & access',
         title: 'Teams with a shared library',
         description:
           'Create a team, invite people by email, and everyone gets a shared folder of diagrams they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
@@ -165,6 +167,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <PresenceArt />,
         href: '/help/collaboration/live-presence/',
+        group: 'Work together live',
         title: 'Live presence',
         description:
           'See who is in the diagram from the participant avatars on each tab. Status rings show online, away, or stale.',
@@ -172,6 +175,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <RealtimeArt />,
         href: '/help/collaboration/live-presence/',
+        group: 'Work together live',
         title: 'Edits land live',
         description:
           'The moment someone makes a change, everyone sees it. If two people edit the same thing at once, the most recent change is the one that sticks.',
@@ -179,6 +183,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <SelectionGlowArt />,
         href: '/help/collaboration/live-presence/',
+        group: 'Work together live',
         title: 'See what others are working on',
         description:
           'Click an element and your collaborators see your colour glow on its border, plus your initials in the corner, in real time.',
@@ -186,6 +191,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <CommentsArt />,
         href: '/help/collaboration/comments/',
+        group: 'Work together live',
         title: 'Comments on any element',
         description:
           "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
@@ -193,6 +199,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <LaserArt />,
         href: '/help/palette/laser/',
+        group: 'Present & facilitate',
         title: 'Laser pointer for presenting',
         description:
           'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
@@ -200,6 +207,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <SpotlightArt />,
         href: '/help/palette/spotlight/',
+        group: 'Present & facilitate',
         title: 'Spotlight the room on one thing',
         description:
           'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy diagram one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
@@ -207,6 +215,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <SessionToolsArt />,
         href: '/help/collaboration/session-tools/',
+        group: 'Present & facilitate',
         title: 'Run the session: timer + voting',
         description:
           'Facilitate live from the canvas. Start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time. Perfect for retros, workshops, and timeboxed planning.',
@@ -214,6 +223,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <ExpiryArt />,
         href: '/help/collaboration/sharing/share-link-expiry/',
+        group: 'Share & access',
         title: 'Links that expire on their own',
         description:
           'Give a share link a lifetime when you create it: a week, a month, six months, or never. When it lapses the URL stops working on its own, no cleanup to remember, and you can extend it for another run or delete it for good.',
@@ -221,6 +231,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <RevokeArt />,
         href: '/help/privacy-and-security/share-link-security/',
+        group: 'Share & access',
         title: 'Stop sharing on demand',
         description:
           'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The diagram is yours again.',
@@ -237,6 +248,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
+        group: 'Templates & themes',
         title: 'Twenty-four starter templates',
         description:
           'Blank, mind map, org chart, retrospective, flowchart, Kanban, SWOT and timeline to start, plus Gantt, Venn, user journey, fishbone, pyramid, flywheel, prioritization matrix, comparison table, ER / sequence / system-architecture diagrams, logo design, a live card, and mobile / laptop / slide-deck wireframes. Pick one, edit it, or start blank.',
@@ -244,6 +256,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <ThemesArt />,
         href: '/help/canvas/themes/changing-theme/',
+        group: 'Templates & themes',
         title: 'Twenty-seven preset themes',
         description:
           'Basic, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more — plus multi-colour Rainbow, Pastel, Tropical, Autumn, and Jewel themes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow.',
@@ -251,6 +264,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <CustomThemesArt />,
         href: '/help/canvas/themes/custom-themes/',
+        group: 'Templates & themes',
         title: 'Build your own theme',
         description:
           'Need your brand palette, a house style, or a notation that is not in the list? Build a custom theme, save it to your account, and reuse it across diagrams just like a built-in one. Edit it any time, and guests get them too.',
@@ -258,6 +272,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <CanvasBackdropArt />,
         href: '/help/canvas/the-canvas/changing-the-background/',
+        group: 'Canvas & type',
         title: 'Set the canvas backdrop',
         description:
           'Switch the canvas background between fourteen backdrops, from grid and lines to crosshatch, waves, isometric, and engineering, or none at all. Each theme and template picks a fitting default.',
@@ -265,6 +280,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <FontsArt />,
         href: '/help/canvas/text-and-fonts/choosing-fonts/',
+        group: 'Canvas & type',
         title: 'Eight fonts',
         description:
           'Set the typeface per element or as a tab-wide default, from eight Google Fonts spanning sans, serif, slab, mono, and handwriting. New tabs inherit it, so a diagram reads consistently.',
@@ -272,6 +288,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <ShapesArt />,
         href: '/help/palette/shapes/',
+        group: 'Shapes & connectors',
         title: 'A shape for everything',
         description:
           'Fourteen core shapes — flowchart blocks plus an actor, cloud, triangle, star, and speech bubble — a section frame that carries whatever you draw inside it, and six device frames (browser, monitor, laptop, phone, tablet, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next.',
@@ -279,6 +296,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <ArrowsArt />,
         href: '/help/palette/arrows/',
+        group: 'Shapes & connectors',
         title: 'Arrows that bend your way',
         description:
           'Connect anything with straight, curved, or angled arrows. Drag the handle on a curve to reshape its bow, or on an elbow to move the bend. Set the thickness, choose the arrowhead shape, filled or hollow triangle, line, circle, or diamond, for UML-style connectors and size it, add a label, and pin an end to a shape so it follows when things move.',
@@ -286,6 +304,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <BorderStyleArt />,
         href: '/help/palette/shapes/',
+        group: 'Shapes & connectors',
         title: 'Style every border',
         description:
           'Set border strength, switch between solid, dashed, and dotted, and round the corners as much or as little as the shape calls for.',
@@ -293,6 +312,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <FoldersArt />,
         href: '/help/explorer/my-work/',
+        group: 'Canvas & type',
         title: 'Organise in folders',
         description:
           'File diagrams into nested folders in the explorer. Recent diagrams stay one click away; everything else lives where you put it.',
@@ -346,6 +366,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <MarqueeArt />,
         href: '/help/canvas/selecting-and-grouping/multi-select/',
+        group: 'Select, group & lock',
         title: 'Multi-select with marquee',
         description:
           'Switch to the Select tool, drag a box, and act on everything inside at once: move, duplicate, or delete in one step, one Cmd-Z. Or grab the eraser and wipe out whatever you drag across, the whole sweep undone in a single step.',
@@ -353,6 +374,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <GroupArt />,
         href: '/help/canvas/selecting-and-grouping/groups/',
+        group: 'Select, group & lock',
         title: 'Group elements together',
         description:
           'Bundle shapes into a group so they move, lock, and delete as one. Ungroup any time to work on a single piece again.',
@@ -360,6 +382,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <LockArt />,
         href: '/help/canvas/locking/',
+        group: 'Select, group & lock',
         title: 'Lock anything in place',
         description:
           'Lock an element, or a whole tab, and it turns read-only, so a finished part of the diagram cannot be nudged or edited by accident.',
@@ -367,6 +390,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <FormatPainterArt />,
         href: '/help/palette/format-painter/',
+        group: 'Select, group & lock',
         title: 'Format painter',
         description:
           "Copy one element's look, its size, colours, text style, opacity, and padding, then brush it onto the next. Consistent diagrams without re-picking every option.",
@@ -374,6 +398,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <DarkModeArt />,
         href: '/help/tools/dark-mode/',
+        group: 'Your workspace',
         title: 'Light or dark, your call',
         description:
           'Flip the whole editor to a dark theme with one toggle. Toolbars, panels, dialogs, and menus all come along, and the choice sticks per device. The canvas stays crisp either way.',
@@ -381,6 +406,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <MinimalPanelArt />,
         href: '/help/palette/minimal-panels/',
+        group: 'Your workspace',
         title: 'Panels your way',
         description:
           'Prefer floating side panels or a clean canvas? Switch on the minimal layout and the palette and tools collapse into a compact dock with pop-out panels, the same tidy chrome you get on mobile. The choice sticks per device.',
@@ -388,6 +414,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <ZenModeArt />,
         href: '/help/tools/zen-mode/',
+        group: 'Your workspace',
         title: 'Zen mode for focus',
         description:
           'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
@@ -662,13 +689,37 @@ export const LANDING_SECTIONS: LandingSection[] = [
 
 /**
  * The section ids, in render order. The `/features/<id>` detail route's
- * `generateStaticParams`, the `/features` hub, and the sitemap all map over
- * this, so adding a section to `LANDING_SECTIONS` automatically gives it a
- * page + a sitemap entry with no second list to keep in sync.
+ * `generateStaticParams` and the sitemap both map over this, so adding a
+ * section to `LANDING_SECTIONS` automatically gives it a page + a sitemap
+ * entry with no second list to keep in sync.
  */
 export const LANDING_SECTION_IDS = LANDING_SECTIONS.map((section) => section.id);
 
 /** Look up a single section by id (the `/features/<id>` page's source). */
 export function getLandingSection(id: string): LandingSection | undefined {
   return LANDING_SECTIONS.find((section) => section.id === id);
+}
+
+export type FeatureGroup = { title: string; items: FeatureProps[] };
+
+/**
+ * Split a section's features into ordered, captioned sub-groups for the
+ * detail page. Groups appear in first-seen order; items keep their order
+ * within a group. Returns `null` when the section has no `group` tags at all,
+ * so the caller renders one flat grid (only the larger categories opt in to
+ * grouping — see the `group` field on `FeatureProps`).
+ */
+export function groupSectionFeatures(section: LandingSection): FeatureGroup[] | null {
+  if (!section.items.some((item) => item.group)) return null;
+  const order: string[] = [];
+  const byGroup = new Map<string, FeatureProps[]>();
+  for (const item of section.items) {
+    const key = item.group ?? 'More';
+    if (!byGroup.has(key)) {
+      byGroup.set(key, []);
+      order.push(key);
+    }
+    byGroup.get(key)!.push(item);
+  }
+  return order.map((title) => ({ title, items: byGroup.get(title)! }));
 }
