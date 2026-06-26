@@ -142,6 +142,92 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
   },
   {
+    id: 'collaboration',
+    cta: 'Explore collaboration',
+    title: 'Invite your team to collaborate',
+    description:
+      'Diagrams stay private until you share. Everyone you invite shows up on the canvas in real time, with live cursors, comments, and presence.',
+    items: [
+      {
+        art: <ShareLinksArt />,
+        href: '/help/collaboration/sharing/',
+        title: 'Editor or view-only links',
+        description:
+          'Create an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side. Any link also embeds read-only in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog.',
+      },
+      {
+        art: <TeamsArt />,
+        href: '/help/collaboration/teams/',
+        title: 'Teams with a shared library',
+        description:
+          'Create a team, invite people by email, and everyone gets a shared folder of diagrams they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
+      },
+      {
+        art: <PresenceArt />,
+        href: '/help/collaboration/live-presence/',
+        title: 'Live presence',
+        description:
+          'See who is in the diagram from the participant avatars on each tab. Status rings show online, away, or stale.',
+      },
+      {
+        art: <RealtimeArt />,
+        href: '/help/collaboration/live-presence/',
+        title: 'Edits land live',
+        description:
+          'The moment someone makes a change, everyone sees it. If two people edit the same thing at once, the most recent change is the one that sticks.',
+      },
+      {
+        art: <SelectionGlowArt />,
+        href: '/help/collaboration/live-presence/',
+        title: 'See what others are working on',
+        description:
+          'Click an element and your collaborators see your colour glow on its border, plus your initials in the corner, in real time.',
+      },
+      {
+        art: <CommentsArt />,
+        href: '/help/collaboration/comments/',
+        title: 'Comments on any element',
+        description:
+          "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
+      },
+      {
+        art: <LaserArt />,
+        href: '/help/palette/laser/',
+        title: 'Laser pointer for presenting',
+        description:
+          'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
+      },
+      {
+        art: <SpotlightArt />,
+        href: '/help/palette/spotlight/',
+        title: 'Spotlight the room on one thing',
+        description:
+          'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy diagram one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
+      },
+      {
+        art: <SessionToolsArt />,
+        href: '/help/collaboration/session-tools/',
+        title: 'Run the session: timer + voting',
+        description:
+          'Facilitate live from the canvas. Start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time. Perfect for retros, workshops, and timeboxed planning.',
+      },
+      {
+        art: <ExpiryArt />,
+        href: '/help/collaboration/sharing/share-link-expiry/',
+        title: 'Links that expire on their own',
+        description:
+          'Give a share link a lifetime when you create it: a week, a month, six months, or never. When it lapses the URL stops working on its own, no cleanup to remember, and you can extend it for another run or delete it for good.',
+      },
+      {
+        art: <RevokeArt />,
+        href: '/help/privacy-and-security/share-link-security/',
+        title: 'Stop sharing on demand',
+        description:
+          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The diagram is yours again.',
+      },
+    ],
+  },
+  {
     id: 'customise',
     cta: 'Explore customisation',
     title: 'Customise it your way',
@@ -251,92 +337,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
   },
   {
-    id: 'collaboration',
-    cta: 'Explore collaboration',
-    title: 'Invite your team to collaborate',
-    description:
-      'Diagrams stay private until you share. Everyone you invite shows up on the canvas in real time, with live cursors, comments, and presence.',
-    items: [
-      {
-        art: <ShareLinksArt />,
-        href: '/help/collaboration/sharing/',
-        title: 'Editor or view-only links',
-        description:
-          'Create an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side. Any link also embeds read-only in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog.',
-      },
-      {
-        art: <TeamsArt />,
-        href: '/help/collaboration/teams/',
-        title: 'Teams with a shared library',
-        description:
-          'Create a team, invite people by email, and everyone gets a shared folder of diagrams they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
-      },
-      {
-        art: <PresenceArt />,
-        href: '/help/collaboration/live-presence/',
-        title: 'Live presence',
-        description:
-          'See who is in the diagram from the participant avatars on each tab. Status rings show online, away, or stale.',
-      },
-      {
-        art: <RealtimeArt />,
-        href: '/help/collaboration/live-presence/',
-        title: 'Edits land live',
-        description:
-          'The moment someone makes a change, everyone sees it. If two people edit the same thing at once, the most recent change is the one that sticks.',
-      },
-      {
-        art: <SelectionGlowArt />,
-        href: '/help/collaboration/live-presence/',
-        title: 'See what others are working on',
-        description:
-          'Click an element and your collaborators see your colour glow on its border, plus your initials in the corner, in real time.',
-      },
-      {
-        art: <CommentsArt />,
-        href: '/help/collaboration/comments/',
-        title: 'Comments on any element',
-        description:
-          "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
-      },
-      {
-        art: <LaserArt />,
-        href: '/help/palette/laser/',
-        title: 'Laser pointer for presenting',
-        description:
-          'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
-      },
-      {
-        art: <SpotlightArt />,
-        href: '/help/palette/spotlight/',
-        title: 'Spotlight the room on one thing',
-        description:
-          'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy diagram one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
-      },
-      {
-        art: <SessionToolsArt />,
-        href: '/help/collaboration/session-tools/',
-        title: 'Run the session: timer + voting',
-        description:
-          'Facilitate live from the canvas. Start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time. Perfect for retros, workshops, and timeboxed planning.',
-      },
-      {
-        art: <ExpiryArt />,
-        href: '/help/collaboration/sharing/share-link-expiry/',
-        title: 'Links that expire on their own',
-        description:
-          'Give a share link a lifetime when you create it: a week, a month, six months, or never. When it lapses the URL stops working on its own, no cleanup to remember, and you can extend it for another run or delete it for good.',
-      },
-      {
-        art: <RevokeArt />,
-        href: '/help/privacy-and-security/share-link-security/',
-        title: 'Stop sharing on demand',
-        description:
-          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The diagram is yours again.',
-      },
-    ],
-  },
-  {
     id: 'refine',
     cta: 'Explore the organising tools',
     title: 'Keep your work tidy',
@@ -397,7 +397,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
   {
     id: 'tabs',
     cta: 'Explore tabs',
-    title: 'One diagram, as many tabs as it takes',
+    title: 'Work across tabs',
     description:
       'Every diagram is a stack of tabs, each its own canvas. Split a big system across them, link between them, copy them between diagrams, and lock the ones that are done.',
     items: [
