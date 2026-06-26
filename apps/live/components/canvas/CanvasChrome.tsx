@@ -60,7 +60,14 @@ import type { DockAnchor, MobilePanel } from '@/hooks/canvas/useCanvasMobileDock
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { usePanelDock } from '@/hooks/ui/usePanelDock';
 import { PanelSnapGuides } from '@/components/canvas/PanelSnapGuides';
-import { PANEL_CORNERS, PANEL_IDS, type PanelCorner, type PanelId } from '@/lib/panel-layout';
+import {
+  PANEL_CORNERS,
+  PANEL_IDS,
+  cornerBottomInset,
+  type PanelCorner,
+  type PanelId,
+} from '@/lib/panel-layout';
+import { Minimap } from '@/components/canvas/Minimap';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { track } from '@/lib/telemetry';
 
@@ -112,7 +119,10 @@ const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
   'top-right': 'right-4 top-4 flex-col items-end',
   'bottom-left': 'left-4 bottom-4 flex-col-reverse items-start',
-  'bottom-right': 'right-4 bottom-4 flex-col-reverse items-end',
+  // bottom-right omits `bottom-4`; its bottom is set inline to clear the
+  // fixed zoom controls (cornerBottomInset), so panels docked there sit
+  // above the zoom bar instead of overlapping it.
+  'bottom-right': 'right-4 flex-col-reverse items-end',
 };
 
 // The floating chrome layer of the canvas: empty-state prompt, template
@@ -635,15 +645,45 @@ export function CanvasChrome(props: CanvasChromeProps) {
       />
     );
 
+  // Minimap (spec/59) routed through docking like the other panels: it
+  // stacks with Activity in the bottom-left and snaps / persists the same
+  // way (the old "defer to Activity at the default corner" gate is gone —
+  // stacking handles their coexistence). Desktop-only, gated on the map
+  // setting + a few elements; hidden in zen / welcome (chromeHidden).
+  const mapEnabled = settings?.showMinimap !== false;
+  const mapAccent = paletteTheme.elementStroke ?? '#0ea5e9';
+  const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
+  const minimapEl =
+    !chromeHidden && !isMobile && mapEnabled && elements.length >= 4 ? (
+      <Minimap
+        elements={elements}
+        viewportOffset={props.viewportOffset}
+        viewportZoom={viewportZoom}
+        setViewportOffset={props.setViewportOffset}
+        setViewportZoom={props.setViewportZoom}
+        mainRef={props.mainRef}
+        accentColor={mapAccent}
+        position={minimapWiring.position}
+        onMove={props.onMoveMap}
+        onResetPosition={minimapWiring.onReset}
+        resettable={minimapWiring.position !== null || minimapWiring.dock !== undefined}
+        dock={minimapWiring.dock}
+        enabled={mapEnabled}
+        onSetEnabled={(v) => {
+          track('UI', 'Toggled', v ? 'MinimapOn' : 'MinimapOff');
+          onChangeSettings({ ...settings, showMinimap: v });
+        }}
+      />
+    ) : null;
+
   // Map of panel id → element for the docked-layout distribution.
-  // Minimap is not yet routed through docking (it renders from Canvas
-  // with its own Activity-deferral gate); it stays on its legacy path.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: explorerEl,
     palette: paletteEl,
     comments: commentsEl,
     ai: aiEl,
     activity: activityEl,
+    minimap: minimapEl,
   };
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
@@ -662,6 +702,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         return (
           <div
             key={corner}
+            style={corner === 'bottom-right' ? { bottom: cornerBottomInset(corner) } : undefined}
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
             {children.map((id) => (
@@ -1043,6 +1084,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {aiEl}
           {activityEl}
           {paletteEl}
+          {minimapEl}
         </>
       )}
 

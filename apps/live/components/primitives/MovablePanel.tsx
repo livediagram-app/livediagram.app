@@ -453,15 +453,17 @@ export function MovablePanel({
       // Record the grab WITHOUT lifting: a bare click must not pull the
       // panel out of the flex flow or re-dock it (the move handler's
       // threshold decides when it becomes a real drag). startX/startY are
-      // offsetParent-relative (the panel's corner stack container, or the
-      // dock layer for a free panel) — the same coordinate space the
-      // lifted `position: absolute` renders into, so lifting in place
-      // never jumps, and the panel is never reparented mid-drag.
+      // the panel's current VIEWPORT position: while lifted the panel is
+      // `position: fixed`, so it tracks the pointer against the viewport
+      // and is immune to its corner stack container collapsing as it leaves
+      // the flow (which previously shifted an absolute origin and made the
+      // panel jump). It is never reparented mid-drag either.
+      const rect = node.getBoundingClientRect();
       setDrag({
         startClientX: e.clientX,
         startClientY: e.clientY,
-        startX: node.offsetLeft,
-        startY: node.offsetTop,
+        startX: rect.left,
+        startY: rect.top,
       });
       return;
     }
@@ -566,11 +568,11 @@ export function MovablePanel({
   // hasn't yet crossed the drag threshold (drag set, not lifted) still
   // counts as rest, so a bare click never disturbs the layout.
   const isDockedRest = docking && docked && !dockLifted;
-  // While LIFTED the panel is absolute IN PLACE (same offsetParent — its
-  // corner container or the dock layer), following the pointer via the
-  // local dockDragPos. It is never reparented mid-drag (that would remount
-  // it and drop the gesture), so the only visual change is its siblings
-  // reflowing into the gap it left.
+  // While LIFTED the panel is `position: fixed` against the VIEWPORT (not
+  // reparented — that would remount it and drop the gesture), so it follows
+  // the pointer via the viewport-space dockDragPos and is unaffected by its
+  // corner stack container collapsing as it leaves the flow. Its siblings
+  // reflow into the gap it left.
   const isDockDragging = docking && dockLifted;
   const finalStyle: React.CSSProperties | undefined = isDockedRest
     ? undefined
@@ -579,7 +581,7 @@ export function MovablePanel({
         // over the others (but stays below toolbars / modals).
         { left: dockDragPos?.x ?? 0, top: dockDragPos?.y ?? 0, zIndex: 'calc(var(--z-panel) + 1)' }
       : style;
-  const positionClass = isDockedRest ? 'relative' : 'absolute';
+  const positionClass = isDockedRest ? 'relative' : isDockDragging ? 'fixed' : 'absolute';
   const finalCornerClass = isDockedRest || isDockDragging ? '' : cornerClass;
 
   if (dockActive && mobileOpenOverride === false) return null;

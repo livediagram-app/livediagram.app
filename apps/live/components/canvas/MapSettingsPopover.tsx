@@ -5,6 +5,7 @@ import { Portal } from '@/components/primitives/Portal';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { GearIcon } from '@/components/chrome/tab-bar-icons';
+import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
@@ -20,9 +21,15 @@ const GAP = 8; // space between the trigger and the popover
 export function MapSettingsPopover({
   enabled,
   onSetEnabled,
+  onResetPosition,
+  resettable,
 }: {
   enabled: boolean;
   onSetEnabled: (value: boolean) => void;
+  // Reset-to-default-corner lives here (not a header button) so the Map's
+  // header stays a single gear; greyed out when already at the default.
+  onResetPosition: () => void;
+  resettable: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -100,6 +107,26 @@ export function MapSettingsPopover({
                 </span>
               </span>
               <ToggleSwitch checked={enabled} label="Enable Map" presentational />
+            </button>
+            <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
+            <button
+              type="button"
+              disabled={!resettable}
+              onClick={() => {
+                onResetPosition();
+                setOpen(false);
+              }}
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent dark:text-slate-200 dark:hover:bg-slate-800 dark:disabled:hover:bg-transparent"
+            >
+              <ResetPositionGlyph />
+              <span className="flex flex-col">
+                <span>Reset position</span>
+                <span className="text-[10px] font-normal leading-snug text-slate-400 dark:text-slate-500">
+                  {resettable
+                    ? 'Snap back to the default corner.'
+                    : 'Already at the default corner.'}
+                </span>
+              </span>
             </button>
           </div>
         </Portal>

@@ -4,7 +4,7 @@ import { useMemo, useRef, type Ref, type ReactElement } from 'react';
 import { endpointPosition, isBoxed, type Element } from '@livediagram/diagram';
 import { ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
+import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { MapSettingsPopover } from '@/components/canvas/MapSettingsPopover';
 
 // The "Map" panel (spec/59): a movable floating panel — like the Palette — with
@@ -32,11 +32,17 @@ type MinimapProps = {
   // The active tab theme's accent (matches the on-canvas selection), used to
   // colour the current-view highlight instead of a fixed brand blue.
   accentColor: string;
-  // Panel position (null = default corner) + its move / reset handlers, shared
-  // with the other floating panels via usePanelLayout.
+  // Panel position (null = default corner) + its move handler, shared with
+  // the other floating panels via the docking layout.
   position: { x: number; y: number } | null;
   onMove: (x: number, y: number) => void;
-  onReset: () => void;
+  // Reset-to-default lives in the settings popover (not a header button),
+  // so it sits beside the Enable Map toggle. `resettable` greys it out when
+  // the map is already at its default corner.
+  onResetPosition: () => void;
+  resettable: boolean;
+  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  dock?: MovablePanelDockProps;
   // "Enable Map" toggle state in the header's settings popover.
   enabled: boolean;
   onSetEnabled: (value: boolean) => void;
@@ -62,7 +68,9 @@ export function Minimap({
   accentColor,
   position,
   onMove,
-  onReset,
+  onResetPosition,
+  resettable,
+  dock,
   enabled,
   onSetEnabled,
 }: MinimapProps) {
@@ -217,11 +225,18 @@ export function Minimap({
       defaultCorner="bottom-left"
       width="w-64"
       onMoveTo={onMove}
-      onReset={onReset}
+      {...dock}
       collapsible
       flushTop
       growBody
-      headerActions={<MapSettingsPopover enabled={enabled} onSetEnabled={onSetEnabled} />}
+      headerActions={
+        <MapSettingsPopover
+          enabled={enabled}
+          onSetEnabled={onSetEnabled}
+          onResetPosition={onResetPosition}
+          resettable={resettable}
+        />
+      }
     >
       {/* Clip the map to the panel's rounded bottom so its corners don't
           square off past the border. */}

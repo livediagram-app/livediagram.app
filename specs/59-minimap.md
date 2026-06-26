@@ -6,21 +6,24 @@ lets you jump the viewport anywhere with a tap or drag.
 ## Behaviour
 
 - **A movable panel.** The Map is a first-class floating panel (`MovablePanel`,
-  like the Palette), labelled **"Map"**: drag its header to move it, minimise it
-  to a banner, and reset it to its default corner — all the panel chrome the
-  others have. Its default corner is **bottom-left**; its position lives in
-  `usePanelLayout` (`mapPosition`) alongside the other panels'.
+  like the Palette), labelled **"Map"**: drag its header to move it and collapse
+  it to a banner. It **docks into the four canvas corners** like the other panels
+  ([spec/63](63-panel-docking.md)) — snap-to-corner on drag, free-drop, and a
+  device-local persisted position; its default corner is **bottom-left**, where
+  it stacks with the Activity panel.
 - **When.** Shown when it's **enabled** (`showMinimap` preference, **on by
   default**), the tab has **at least 4 elements**, and **on desktop** (hidden on
   mobile, where the canvas is already edge-to-edge and the corner is the mobile
-  dock's). At its **default** corner it defers to the Activity panel (they share
-  bottom-left), so it appears only while Activity is minimised; **once dragged
-  elsewhere it stays put** regardless.
-- **Enable / disable.** A **settings gear** in the panel header opens a small
-  popover (mirroring the Palette's) with an **Enable Map** toggle. Turning it
-  off sets `showMinimap = false` and hides the panel; the master **Settings**
-  dialog's "Show minimap" toggle switches it back on. (Replaces the earlier
-  one-shot **×**.)
+  dock's). It **stacks** with the Activity panel in the bottom-left rather than
+  hiding behind it (the docking layout reflows them); the old "defer until
+  Activity is minimised" rule is gone.
+- **Enable / disable + reset.** A **settings gear** in the panel header opens a
+  small popover (mirroring the Palette's) with an **Enable Map** toggle and a
+  **Reset position** action (snap back to the default corner, greyed out when
+  already there — the reset lives here rather than as a header button so the Map
+  header stays a single gear). Turning Enable off sets `showMinimap = false` and
+  hides the panel; the master **Settings** dialog's "Show minimap" toggle switches
+  it back on. (Replaces the earlier one-shot **×**.)
 - **What it shows.** A true-to-shape overview: every boxed element painted as
   its **real silhouette** (a circle reads as a circle, a cylinder as a
   cylinder — reusing `ShapeGlyph` stretched to the element's footprint) and

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CORNER_INSET_PX,
+  cornerBottomInset,
   DEFAULT_PANEL_CORNER,
   defaultPanelLayout,
   dockPanel,
@@ -127,6 +128,20 @@ describe('panel-layout', () => {
         ...container,
       };
       expect(nearestSnapCorner(geom)).toBeNull();
+    });
+
+    it('bottom-right anchor is raised to clear the zoom controls', () => {
+      // The bottom-right corner sits higher than the others by the zoom
+      // clearance, so a panel docked there clears the zoom bar.
+      expect(cornerBottomInset('bottom-right')).toBeGreaterThan(cornerBottomInset('bottom-left'));
+      // A panel flush in the bottom-right at the RAISED inset snaps there.
+      const raised: PanelDragGeometry = {
+        x: container.parentWidth - CORNER_INSET_PX - size.width,
+        y: container.parentHeight - cornerBottomInset('bottom-right') - size.height,
+        ...size,
+        ...container,
+      };
+      expect(nearestSnapCorner(raised)).toBe('bottom-right');
     });
   });
 });

@@ -6,6 +6,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { GearIcon } from '@/components/chrome/tab-bar-icons';
+import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
@@ -236,7 +237,7 @@ export function PaletteSettingsPopover({
                   }}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent dark:text-slate-200 dark:hover:bg-slate-800 dark:disabled:hover:bg-transparent"
                 >
-                  <ResetGlyph />
+                  <ResetPositionGlyph />
                   <span className="flex flex-col">
                     <span>Reset position</span>
                     <span className="text-[10px] font-normal leading-snug text-slate-400 dark:text-slate-500">
@@ -257,34 +258,6 @@ export function PaletteSettingsPopover({
 
 // The same diagonal "snap-back" glyph the old header reset button used,
 // kept consistent now that the action moved into the popover.
-function ResetGlyph() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 12 12"
-      aria-hidden
-      fill="none"
-      className="shrink-0 text-slate-500 dark:text-slate-400"
-    >
-      <path
-        d="M6.5 3H9v2.5"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M9 3L5 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      <path
-        d="M3 7v2h6"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function SettingRow({
   label,

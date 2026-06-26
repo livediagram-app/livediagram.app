@@ -1,5 +1,5 @@
 import type { PanelCorner } from '@/lib/panel-layout';
-import { PANEL_CORNERS } from '@/lib/panel-layout';
+import { PANEL_CORNERS, ZOOM_CLEARANCE_PX } from '@/lib/panel-layout';
 
 // Drag-time corner targets for panel docking (spec/63). Rendered by
 // CanvasChrome only while a panel is being dragged on desktop, on a
@@ -24,12 +24,15 @@ const CORNER_POSITION: Record<PanelCorner, string> = {
   'top-left': 'left-0 top-0',
   'top-right': 'right-0 top-0',
   'bottom-left': 'bottom-0 left-0',
-  'bottom-right': 'bottom-0 right-0',
+  // bottom-right omits `bottom-0`; an inline bottom raises it clear of the
+  // zoom controls (see ZOOM_CLEARANCE_PX), matching the dock container.
+  'bottom-right': 'right-0',
 };
 
 function CornerTarget({ corner, active }: { corner: PanelCorner; active: boolean }) {
   return (
     <div
+      style={corner === 'bottom-right' ? { bottom: ZOOM_CLEARANCE_PX } : undefined}
       className={`absolute h-16 w-16 rounded-xl border-2 border-dashed transition-all duration-150 ${
         CORNER_POSITION[corner]
       } ${

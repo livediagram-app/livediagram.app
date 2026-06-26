@@ -60,9 +60,6 @@ import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
-import { Minimap } from '@/components/canvas/Minimap';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { track } from '@/lib/telemetry';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 
 export function Canvas(props: CanvasProps) {
@@ -122,11 +119,6 @@ export function Canvas(props: CanvasProps) {
 
   const isPaintMode = formatSourceId !== null;
   const isGroupMode = groupSourceId !== null;
-  // The Map (spec/59) is desktop-only. `mapEnabled` is hoisted so the gate +
-  // the popover toggle read one boolean (re-comparing the narrowed pref inside
-  // the gated branch trips a no-overlap type error).
-  const isMobile = useIsMobileViewport();
-  const mapEnabled = props.settings?.showMinimap !== false;
   // Nudge above the Fit button when the whole diagram has scrolled out of view.
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
 
@@ -1193,32 +1185,8 @@ export function Canvas(props: CanvasProps) {
       {/* Drag-to-add ghost (spec/58): previews where a dragged palette shape
           will land, following the cursor over the canvas. */}
       <PaletteDragGhost zoom={viewportZoom} />
-      {/* Map (spec/59): a movable overview panel. Shown when enabled, on
-          desktop, once the tab has a few elements. At its default corner it
-          defers to the Activity panel (they share bottom-left), but once the
-          user drags it elsewhere it stays put regardless. */}
-      {mapEnabled &&
-      !isMobile &&
-      elements.length >= 4 &&
-      (props.mapPosition !== null || props.activityMinimized) ? (
-        <Minimap
-          elements={elements}
-          viewportOffset={viewportOffset}
-          viewportZoom={viewportZoom}
-          setViewportOffset={setViewportOffset}
-          setViewportZoom={setViewportZoom}
-          mainRef={mainRef}
-          accentColor={badgeColor}
-          position={props.mapPosition}
-          onMove={props.onMoveMap}
-          onReset={props.onResetMap}
-          enabled={mapEnabled}
-          onSetEnabled={(v) => {
-            track('UI', 'Toggled', v ? 'MinimapOn' : 'MinimapOff');
-            props.onChangeSettings({ ...props.settings, showMinimap: v });
-          }}
-        />
-      ) : null}
+      {/* Map (spec/59) now renders inside CanvasChrome's docking layer
+          (spec/63) so it snaps + stacks like the other floating panels. */}
       {/* Touch long-press "hold" ring at the finger (spec/43-style touch
           affordance). Portaled to escape the canvas's pan/zoom transform so its
           fixed position is viewport-relative. Reveals only after a deliberate

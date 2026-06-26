@@ -25,7 +25,10 @@ theirs without adding a settings screen.
 - **Participating panels:** Palette, Explorer, Activity, Comments, AI, Minimap — every
   panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
-  the body-height measurement both rely on that pin). They are not dockable.
+  the body-height measurement both rely on that pin). They are not dockable, and the
+  **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
+  docked there never overlaps the zoom bar — the snap anchor, the corner guide, and the
+  dock container all use the raised inset.
 
 ## The four corners
 
@@ -125,20 +128,28 @@ later, or reading a layout written by a newer client, never strands the UI.
   Composed alongside `usePanelLayout` in the editor view-model.
 - **`MovablePanel`** gains an additive **docked** render mode: when the parent places it
   inside a corner stack it renders as a static flex child (no `absolute`, no corner class,
-  no inline `left/top`), so the flex column owns its position and reflow. Free / dragging
-  panels keep the existing absolute `left/top` path. Optional drag-lifecycle callbacks let
-  the panel report drag start / move (with its bounding rect) / end up to the dock hook so
-  it can drive the snap guides and the dock-vs-free decision. The mobile dock,
-  `forceDockMode`, `collapsible`, and stacking-via-`stackBelowY` paths are untouched.
+  no inline `left/top`), so the flex column owns its position and reflow. **Dragging never
+  reparents the panel** — a reparent would remount the component and drop the in-flight
+  gesture. Instead, once the pointer clears a small **movement threshold** (so a bare click
+  never disturbs the layout or re-docks), the panel lifts to **`position: fixed`** against
+  the viewport and follows the pointer there: fixed is immune to its (shrink-to-fit) corner
+  container collapsing as it leaves the flow, which would otherwise shift an absolute origin
+  and make the panel jump. Its siblings reflow into the gap. Optional drag-lifecycle
+  callbacks report start / move (with the live bounding rect, converted to dock-layer
+  coords) / end up to the dock hook, which drives the snap guides and the dock-vs-free
+  decision. The mobile dock, `forceDockMode`, `collapsible`, and `stackBelowY` paths are
+  untouched. The persisted corner/free placement only changes on pointer-up.
 - **`apps/live/components/canvas/PanelSnapGuides.tsx`** — the four-corner guide overlay,
   rendered by `CanvasChrome` only while a panel drag is active; highlights the snap
   candidate corner from the dock hook.
 - **`CanvasChrome`** — in the standard desktop layout, renders four corner **stack
   containers** (absolutely positioned flex columns, `gap-4`; bottom corners
-  `flex-col-reverse`) and distributes each visible panel node into the container for its
-  docked corner; free / dragging panels render outside the containers at their pixel
-  position. The whole corner-container path is gated behind "not mobile, not
-  `minimalPanels`, not zen"; otherwise the existing inline rendering runs as before.
+  `flex-col-reverse`; bottom-right raised to clear the zoom controls) and distributes each
+  visible panel node into the container for its **persisted** corner. A panel mid-drag stays
+  in its current container (it just lifts to fixed); only free-placement panels render in a
+  separate free layer. The whole corner-container path is gated behind "not mobile, not
+  `minimalPanels`, not zen"; otherwise the existing inline rendering runs as before. The
+  Minimap is rendered here as the sixth panel rather than from `Canvas.tsx`.
 
 ## Telemetry
 

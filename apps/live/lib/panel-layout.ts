@@ -205,11 +205,22 @@ export function resolvePlacement(layout: PanelLayout, panel: PanelId): ResolvedP
 // --- Snap geometry (pure; drives the drag snap-to-corner guides) ---
 
 // The corner inset (px) that resting panels sit at — matches the
-// `*-4` (1rem) Tailwind corner classes in MovablePanel.
+// `*-4` (1rem) Tailwind corner classes in the dock containers.
 export const CORNER_INSET_PX = 16;
+// Extra bottom inset for the BOTTOM-RIGHT corner so a panel docked there
+// sits ABOVE the fixed zoom controls (bottom-right, ~44px tall at a 16px
+// inset) rather than overlapping them. Applied to the snap anchor, the
+// guide target, AND the dock container's bottom offset so all three agree.
+export const ZOOM_CLEARANCE_PX = 56;
 // How close (px) the panel's relevant corner must get to a corner
 // anchor before that corner becomes the snap candidate.
 export const SNAP_RADIUS_PX = 96;
+
+// The total bottom inset for a corner: bottom-right is raised to clear the
+// zoom controls; every other corner uses the plain inset.
+export function cornerBottomInset(corner: PanelCorner): number {
+  return corner === 'bottom-right' ? CORNER_INSET_PX + ZOOM_CLEARANCE_PX : CORNER_INSET_PX;
+}
 
 // A dragged panel's geometry in positioning-container (i.e. <main>)
 // coordinates, plus the container's own size — everything
@@ -234,7 +245,7 @@ function cornerAnchor(
   const top = corner === 'top-left' || corner === 'top-right';
   return {
     x: left ? CORNER_INSET_PX : parentWidth - CORNER_INSET_PX,
-    y: top ? CORNER_INSET_PX : parentHeight - CORNER_INSET_PX,
+    y: top ? CORNER_INSET_PX : parentHeight - cornerBottomInset(corner),
   };
 }
 
