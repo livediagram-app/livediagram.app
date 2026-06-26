@@ -92,7 +92,7 @@ export function TokensPane({
           </p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {tokens.map((t) => {
             const status = tokenStatus(t);
             const expired = t.expiresAt - Date.now() <= 0;
@@ -104,30 +104,28 @@ export function TokensPane({
             return (
               <li
                 key={t.id}
-                className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/40 dark:hover:border-slate-600"
+                className="group flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3.5 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/40 dark:hover:border-slate-600"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
-                  <KeyIcon />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
-                      {t.name || 'Untitled token'}
-                    </p>
-                    <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}
-                    >
-                      {status.label}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-[11px] text-slate-400 dark:text-slate-500">
-                    {meta.join(' · ')}
+                <div className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+                    <KeyIcon />
+                  </span>
+                  <p className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800 dark:text-slate-100">
+                    {t.name || 'Untitled token'}
                   </p>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}
+                  >
+                    {status.label}
+                  </span>
                 </div>
+                <p className="text-[11px] leading-relaxed text-slate-400 dark:text-slate-500">
+                  {meta.join(' · ')}
+                </p>
                 <button
                   type="button"
                   onClick={(e) => setConfirm({ id: t.id, anchor: e.currentTarget })}
-                  className="shrink-0 rounded-md border border-transparent px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:border-rose-500/30 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                  className="mt-auto self-end rounded-md border border-transparent px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:border-rose-500/30 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 >
                   Revoke
                 </button>
