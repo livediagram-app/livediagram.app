@@ -96,36 +96,51 @@ export function TokensPane({
           {tokens.map((t) => {
             const status = tokenStatus(t);
             const expired = t.expiresAt - Date.now() <= 0;
-            const meta = [
-              `Created ${fmtDate(t.createdAt)}`,
-              t.lastUsedAt ? `last used ${relative(t.lastUsedAt)}` : 'never used',
-              ...(expired ? [] : [`expires ${relative(t.expiresAt)}`]),
+            const rows: [string, string][] = [
+              ['Created', fmtDate(t.createdAt)],
+              ['Last used', t.lastUsedAt ? relative(t.lastUsedAt) : 'Never'],
+              [
+                expired ? 'Expired' : 'Expires',
+                expired ? fmtDate(t.expiresAt) : relative(t.expiresAt),
+              ],
             ];
             return (
               <li
                 key={t.id}
-                className="group flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3.5 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/40 dark:hover:border-slate-600"
+                className="group flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/40 dark:hover:border-slate-600"
               >
-                <div className="flex items-center gap-2">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+                <div className="flex items-start gap-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
                     <KeyIcon />
                   </span>
-                  <p className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800 dark:text-slate-100">
-                    {t.name || 'Untitled token'}
-                  </p>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}
-                  >
-                    {status.label}
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100"
+                      title={t.name || 'Untitled token'}
+                    >
+                      {t.name || 'Untitled token'}
+                    </p>
+                    <span
+                      className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}
+                    >
+                      {status.label}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-[11px] leading-relaxed text-slate-400 dark:text-slate-500">
-                  {meta.join(' · ')}
-                </p>
+                <dl className="mt-3.5 space-y-1.5 border-t border-slate-100 pt-3 text-xs dark:border-slate-700/60">
+                  {rows.map(([label, value]) => (
+                    <div key={label} className="flex items-baseline justify-between gap-2">
+                      <dt className="text-slate-400 dark:text-slate-500">{label}</dt>
+                      <dd className="truncate font-medium text-slate-600 dark:text-slate-300">
+                        {value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
                 <button
                   type="button"
                   onClick={(e) => setConfirm({ id: t.id, anchor: e.currentTarget })}
-                  className="mt-auto self-end rounded-md border border-transparent px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:border-rose-500/30 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                  className="mt-3 self-end rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 >
                   Revoke
                 </button>
