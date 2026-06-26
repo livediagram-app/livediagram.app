@@ -278,13 +278,43 @@ export function isLayoutCandidate(elements: Element[]): boolean {
   return buildEdges(arrows, nodeIds).length >= 1;
 }
 
+// True when the boxed elements carry no meaningful arrangement — piled at
+// roughly one point (e.g. everything left at 0,0) — i.e. the model left
+// placement to us. Lets a caller PRESERVE a real layout the model produced (a
+// ring for a cycle, a tree, a grid) and only auto-lay-out when it didn't bother
+// to place things (spec/62 §4.3: the calling LLM decides the layout).
+export function nodesLookUnplaced(elements: Element[]): boolean {
+  const boxed = elements.filter(isBoxed);
+  if (boxed.length < 2) return true; // nothing meaningful to preserve
+  const xs = boxed.map((n) => n.x);
+  const ys = boxed.map((n) => n.y);
+  const spreadX = Math.max(...xs) - Math.min(...xs);
+  const spreadY = Math.max(...ys) - Math.min(...ys);
+  const avgW = boxed.reduce((s, n) => s + n.width, 0) / boxed.length;
+  const avgH = boxed.reduce((s, n) => s + n.height, 0) / boxed.length;
+  // Unplaced if the whole set sits within roughly a single node's footprint.
+  return spreadX < avgW && spreadY < avgH;
+}
+
 // Re-lay-out a self-contained set of elements (the nodes + the arrows between
-// them). Non-boxed, non-arrow elements and arrows with free / external
-// endpoints pass through with only their position untouched.
+// them). Non-boxed, non-arrow elements, edgeless boxed content, and arrows with
+// free / external endpoints pass through with only their position untouched.
 export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions = {}): Element[] {
-  const nodes = elements.filter(isBoxed);
-  if (nodes.length === 0) return elements;
+  const allBoxed = elements.filter(isBoxed);
   const arrows = elements.filter((e): e is ArrowElement => e.type === 'arrow');
+
+  // Only boxed elements an arrow touches are graph nodes. Edgeless boxed
+  // content — titles, captions, per-stage descriptions, legends, loose notes —
+  // is NOT a node: it passes through at the position it was given rather than
+  // being raked into a disconnected-component column beside the graph (which
+  // detached and scrambled the frog-lifecycle descriptions, spec/62 §4.3).
+  const connected = new Set<ElementId>();
+  for (const e of buildEdges(arrows, new Set(allBoxed.map((n) => n.id)))) {
+    connected.add(e.from);
+    connected.add(e.to);
+  }
+  const nodes = allBoxed.filter((n) => connected.has(n.id));
+  if (nodes.length === 0) return elements;
 
   const nodeIds = new Set(nodes.map((n) => n.id));
   const size = normalizeSizes(nodes);

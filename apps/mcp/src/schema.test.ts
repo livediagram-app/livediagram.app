@@ -43,4 +43,18 @@ describe('tool input shapes', () => {
     });
     expect(ok.mode).toBe('ops');
   });
+
+  it('create/update accept an optional layout enum', () => {
+    const c = z.object(createDiagramShape);
+    expect(
+      c.parse({ name: 'x', tab: { name: 't', elements: [] }, layout: 'preserve' }).layout,
+    ).toBe('preserve');
+    expect(() =>
+      c.parse({ name: 'x', tab: { name: 't', elements: [] }, layout: 'nope' }),
+    ).toThrow();
+    const u = z.object(updateDiagramShape);
+    expect(u.parse({ diagramId: 'd', mode: 'replace', elements: [], layout: 'auto' }).layout).toBe(
+      'auto',
+    );
+  });
 });

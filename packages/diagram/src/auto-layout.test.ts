@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { autoLayoutElements, isLayoutCandidate } from './auto-layout';
+import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
 import { createShape, createPinnedArrow } from './factories';
 import type { ArrowElement, BoxedElement, Element, ShapeElement } from './index';
 
@@ -152,3 +152,43 @@ describe('autoLayoutElements', () => {
 function isBoxedLike(e: Element): e is BoxedElement {
   return e.type !== 'arrow';
 }
+
+describe('edgeless pass-through', () => {
+  it('leaves boxed elements that no arrow touches at their given position', () => {
+    const out = autoLayoutElements([
+      shape('a', 0, 0, 140, 60),
+      shape('b', 0, 0, 140, 60),
+      shape('c', 0, 0, 140, 60),
+      arrow('a', 'b'),
+      arrow('b', 'c'),
+      shape('note', 777, 555, 120, 40), // a loose caption / description
+    ]);
+    const note = box(out.find((e) => e.id === 'note')!);
+    expect([note.x, note.y]).toEqual([777, 555]);
+    // ...while the connected nodes were actually re-laid-out.
+    const a = box(out.find((e) => e.id === 'a')!);
+    const c = box(out.find((e) => e.id === 'c')!);
+    expect(a.x !== c.x || a.y !== c.y).toBe(true);
+  });
+});
+
+describe('nodesLookUnplaced', () => {
+  it('is true when nodes are piled at one point (model left them unplaced)', () => {
+    expect(
+      nodesLookUnplaced([
+        shape('a', 0, 0, 140, 60),
+        shape('b', 0, 0, 140, 60),
+        shape('c', 0, 0, 140, 60),
+      ]),
+    ).toBe(true);
+  });
+  it('is false when nodes carry a real arrangement', () => {
+    expect(
+      nodesLookUnplaced([
+        shape('a', 0, 0, 140, 60),
+        shape('b', 400, 0, 140, 60),
+        shape('c', 800, 0, 140, 60),
+      ]),
+    ).toBe(false);
+  });
+});

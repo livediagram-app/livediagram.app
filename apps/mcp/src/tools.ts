@@ -9,6 +9,7 @@ import {
   autoLayoutElements,
   isLayoutCandidate,
   isValidTab,
+  nodesLookUnplaced,
   renderElementsToSvg,
   type Element,
   type Tab,
@@ -55,6 +56,17 @@ async function imageResult(value: unknown, tab: Tab): Promise<ToolResult> {
       { type: 'image', data: png, mimeType: 'image/png' },
     ],
   };
+}
+
+// Layout is the model's call (spec/62 §4.3). 'preserve' keeps the coordinates
+// it gave (a ring for a cycle, a tree, a grid); 'auto' forces a clean server
+// layout; omitted = preserve a real arrangement, but auto-lay-out when the
+// model left everything piled at one spot. Either way the connected graph is
+// the only thing arranged — edgeless content keeps its place.
+function applyLayout(layout: 'auto' | 'preserve' | undefined, elements: Element[]): Element[] {
+  const shouldLayout =
+    layout === 'auto' ? true : layout === 'preserve' ? false : nodesLookUnplaced(elements);
+  return shouldLayout && isLayoutCandidate(elements) ? autoLayoutElements(elements) : elements;
 }
 
 export function registerTools(server: McpServer, env: Env): void {
@@ -138,8 +150,7 @@ export function registerTools(server: McpServer, env: Env): void {
             'be well-formed.',
         );
       }
-      let elements: Element[] = candidate.elements;
-      if (isLayoutCandidate(elements)) elements = autoLayoutElements(elements);
+      const elements: Element[] = applyLayout(args.layout, candidate.elements);
       const tab: Tab = { ...candidate, elements };
       const id = crypto.randomUUID();
       await apiJson(env, token, '/diagrams', {
@@ -200,12 +211,10 @@ export function registerTools(server: McpServer, env: Env): void {
           'The resulting elements are invalid. See the livediagram://schema/elements resource.',
         );
       }
-      let elements: Element[] = candidate.elements;
-      // Auto-layout only on a full replace; ops edits must keep the user's
-      // existing positions (spec/62 §4.4).
-      if (args.mode === 'replace' && isLayoutCandidate(elements)) {
-        elements = autoLayoutElements(elements);
-      }
+      // Layout applies only on a full replace (the model decides via `layout`);
+      // ops edits always keep the existing positions (spec/62 §4.4).
+      const elements: Element[] =
+        args.mode === 'replace' ? applyLayout(args.layout, candidate.elements) : candidate.elements;
       const nextTab: Tab = { ...(tab as Tab), id: tabId, elements };
       await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
         method: 'PUT',

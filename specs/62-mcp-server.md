@@ -1,7 +1,7 @@
 # 62 — MCP server
 
-**Status: implemented** on branch `mcp-server` (awaiting merge + a staging deploy
-for the live protocol / OAuth / WASM-render sign-off). Builds directly on [spec/61](61-public-api-and-tokens.md)
+**Status: live.** Merged and deployed at `mcp.livediagram.app`; connect flow
+verified end-to-end from Claude. Builds directly on [spec/61](61-public-api-and-tokens.md)
 (API tokens), which it picks up where §7 left off: spec/61 deferred "OAuth /
 third-party app authorization" — this spec adds exactly that, scoped to one
 client (an MCP server), reusing the `lvd_` token as the credential it ultimately
@@ -157,10 +157,18 @@ Create a new diagram (or add a tab) from elements the model produced. Input:
 
 1. **Validates** `elements` with `isValidTab` (reject `400`-style with a clear
    message the model can correct against).
-2. **Runs `autoLayoutElements`** when `isLayoutCandidate` (≥3 nodes + ≥1 pinned
-   arrow) — so the model only has to emit nodes + pinned arrows with rough/zero
-   coordinates and the MCP produces a clean layout. This reuses the editor's own
-   layout engine; the model is never asked for pixel-perfect placement.
+2. **Lays out — but the model decides.** A `layout` argument (`'auto'` |
+   `'preserve'`, optional) governs it: `'preserve'` keeps the exact coordinates
+   the model gave (so it can draw a deliberate shape — a cycle as a ring, a tree,
+   a grid), `'auto'` runs `autoLayoutElements`, and **omitted = auto-detect**:
+   preserve a real arrangement, but run the layout when the model left nodes
+   piled at ~one point (`nodesLookUnplaced`). This realigns with "the calling LLM
+   does the thinking" — the server stopped overriding the model's spatial intent
+   (which flattened a life-cycle ring into a row). When it does lay out it reuses
+   the editor's engine; the model is never _forced_ into pixel-perfect placement.
+   Layout only ever arranges the **connected graph** — edgeless content (titles,
+   per-node descriptions, captions) passes through at its given position rather
+   than being raked into a disconnected-component column.
 3. **Persists** via `POST /api/diagrams` (seed) + `PUT …/tabs/:tabId`.
 4. **Returns** the new `id`, deep-link `url`, **and the rendered PNG** so the user
    sees the result inline immediately.
@@ -170,9 +178,10 @@ Create a new diagram (or add a tab) from elements the model produced. Input:
 Edit an existing tab. **Two modes** (the user asked for both):
 
 - **`replace`** — for building or reworking a whole tab. Input: full new
-  `elements: Element[]`. Validated + auto-laid-out exactly like `create_diagram`,
-  then `PUT …/tabs/:tabId`. Use when the change is large enough that re-emitting
-  the tab is cleaner than patching.
+  `elements: Element[]` (and the same optional `layout` control as
+  `create_diagram`). Validated + laid out exactly like `create_diagram`, then
+  `PUT …/tabs/:tabId`. Use when the change is large enough that re-emitting the
+  tab is cleaner than patching.
 - **`ops`** — for small adjustments. Input: an ordered list of
   `{ op: 'add' | 'update' | 'remove', element? , elementId? }` targeting existing
   element ids. The MCP reads the current tab, applies the ops, validates the
