@@ -142,6 +142,11 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     if (q.code_challenge_method && q.code_challenge_method !== 'S256') {
       return c.text('only S256 PKCE is supported', 400);
     }
+    // A real S256 challenge is base64url(SHA-256) = 43 chars; reject anything
+    // shorter so a client can't downgrade to a trivially-guessable challenge.
+    if (codeChallenge.length < 43) {
+      return c.text('invalid code_challenge', 400);
+    }
     if (q.response_type && q.response_type !== 'code') {
       return c.text('only response_type=code is supported', 400);
     }
@@ -162,9 +167,17 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     });
     const consentBase = c.env.CONSENT_BASE_URL ?? 'https://livediagram.app';
     // client name is display-only; the binding is the session + PKCE.
+    // Pass the (validated, registered) redirect host so the consent screen can
+    // show WHERE access will go — anti-phishing for a misleadingly-named client.
+    let toHost = '';
+    try {
+      toHost = new URL(redirectUri).host;
+    } catch {
+      // already validated above; ignore
+    }
     return c.redirect(
       `${consentBase}/oauth/consent?session=${encodeURIComponent(session)}` +
-        `&client=${encodeURIComponent(reg.clientName)}`,
+        `&client=${encodeURIComponent(reg.clientName)}&to=${encodeURIComponent(toHost)}`,
     );
   });
 
@@ -204,6 +217,11 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     const redirectUri = String(form.redirect_uri ?? '');
     if (grantType !== 'authorization_code' || !code || !verifier) {
       return c.json({ error: 'invalid_request' }, 400);
+    }
+    // RFC 7636: the code_verifier is 43-128 chars. Enforce it so a weak verifier
+    // can't undermine PKCE.
+    if (verifier.length < 43 || verifier.length > 128) {
+      return c.json({ error: 'invalid_request', error_description: 'bad code_verifier' }, 400);
     }
     const record = await c.env.OAUTH_KV.get<AuthCode>(`code:${code}`, 'json');
     if (!record) return c.json({ error: 'invalid_grant' }, 400);

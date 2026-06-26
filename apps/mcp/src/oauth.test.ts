@@ -178,7 +178,7 @@ describe('full authorize -> complete -> token flow', () => {
         body: new URLSearchParams({
           grant_type: 'authorization_code',
           code,
-          code_verifier: 'wrong-verifier',
+          code_verifier: 'w'.repeat(64), // valid length, wrong value
         }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       },
@@ -206,10 +206,57 @@ describe('full authorize -> complete -> token flow', () => {
   it('rejects authorize for an unregistered redirect uri', async () => {
     const clientId = await register();
     const res = await app.request(
-      `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent('https://other.test/cb')}&code_challenge=abc`,
+      `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent('https://other.test/cb')}&code_challenge=${'a'.repeat(43)}`,
       {},
       env,
     );
     expect(res.status).toBe(400);
+  });
+
+  it('rejects a too-short PKCE challenge and a too-short verifier', async () => {
+    const clientId = await register();
+    // authorize: short challenge.
+    const shortChallenge = await app.request(
+      `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}&code_challenge=short`,
+      {},
+      env,
+    );
+    expect(shortChallenge.status).toBe(400);
+
+    // token: short verifier against a valid code.
+    const verifier = 'z'.repeat(64);
+    const challenge = await __test.sha256base64url(verifier);
+    const auth = await app.request(
+      `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}&code_challenge=${challenge}`,
+      {},
+      env,
+    );
+    const session = new URL(auth.headers.get('location')!).searchParams.get('session')!;
+    const comp = await app.request(
+      '/oauth/complete',
+      {
+        method: 'POST',
+        body: JSON.stringify({ session, token: 'lvd_x' }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+    const code = new URL(
+      ((await comp.json()) as { redirectTo: string }).redirectTo,
+    ).searchParams.get('code')!;
+    const tok = await app.request(
+      '/oauth/token',
+      {
+        method: 'POST',
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          code_verifier: 'tooshort',
+        }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      },
+      env,
+    );
+    expect(((await tok.json()) as { error: string }).error).toBe('invalid_request');
   });
 });

@@ -32,6 +32,7 @@ function Consent() {
   const params = useSearchParams();
   const session = params.get('session');
   const client = params.get('client') || 'An application';
+  const to = params.get('to');
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
 
@@ -115,6 +116,12 @@ function Consent() {
         livediagram diagrams (full read + write) on your behalf. Approving creates an API token,
         which you can revoke any time from the Explorer’s API tokens page.
       </p>
+      {to ? (
+        <p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-500">
+          Access will be sent to <span className="font-medium text-slate-700">{to}</span>. Only
+          continue if you recognise this.
+        </p>
+      ) : null}
       {status === 'error' ? (
         <p className="mt-3 text-xs text-rose-600">Something went wrong. Please try again.</p>
       ) : null}
