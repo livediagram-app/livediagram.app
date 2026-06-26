@@ -1,4 +1,6 @@
+import type { Element } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 
 // Shared styling for the toolbar's plain icon buttons (More / Duplicate / Group
 // / Export). Lock (active brand fill) and Delete (rose / disabled) compose
@@ -14,10 +16,16 @@ type MultiSelectionToolbarProps = {
   // True when EVERY member is locked. Delete protects locked members and
   // removes the rest, so it only goes fully dead when nothing's deletable.
   allLocked: boolean;
+  // The elements in the multi-selection — drives the Filter Selection menu's
+  // per-kind buckets.
+  selectedElements: Element[];
   onDuplicate: () => void;
   onDelete: () => void;
   onGroup: () => void;
   onToggleLock: () => void;
+  // Narrows the selection to one kind (Filter Selection menu). Omitted for
+  // view-role, where the selection can't be edited.
+  onFilter?: (ids: Set<string>) => void;
   // Opens the Export dialog scoped to just the selected elements.
   onExport: () => void;
   // Opens the selection-wide context menu (anchored under the ⋯ button).
@@ -31,10 +39,12 @@ type MultiSelectionToolbarProps = {
 export function MultiSelectionToolbar({
   anyLocked,
   allLocked,
+  selectedElements,
   onDuplicate,
   onDelete,
   onGroup,
   onToggleLock,
+  onFilter,
   onExport,
   onOpenContextMenu,
 }: MultiSelectionToolbarProps) {
@@ -58,6 +68,9 @@ export function MultiSelectionToolbar({
           </Tooltip>
           <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
         </>
+      ) : null}
+      {onFilter ? (
+        <SelectionFilterMenu selectedElements={selectedElements} onFilter={onFilter} />
       ) : null}
       <Tooltip title="Duplicate" description="Duplicate selected (arrows skipped).">
         <button

@@ -95,6 +95,8 @@ export type CanvasProps = {
   onDeleteMultiSelected: () => void;
   onGroupMultiSelected: () => void;
   onToggleLockMultiSelected: () => void;
+  // Narrows the multi-selection to just `ids` (Filter Selection menu).
+  onFilterMultiSelected: (ids: Set<string>) => void;
   // Opens the Export dialog scoped to just the multi-selection.
   onExportMultiSelected: () => void;
   editingId: string | null;

@@ -1139,10 +1139,12 @@ export function Canvas(props: CanvasProps) {
               allLocked={elements
                 .filter((el) => multiSelectedIds.has(el.id))
                 .every((el) => el.locked === true)}
+              selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
               onDelete={props.onDeleteMultiSelected}
               onGroup={props.onGroupMultiSelected}
               onToggleLock={props.onToggleLockMultiSelected}
+              onFilter={readOnly ? undefined : props.onFilterMultiSelected}
               onExport={props.onExportMultiSelected}
               onOpenContextMenu={readOnly ? undefined : onOpenMultiContextMenu}
             />

@@ -238,6 +238,24 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setEditingId(null);
   };
 
+  // Narrow the marquee multi-selection to just `ids` (the Filter Selection
+  // menu's "keep only Arrows / Squares / Text" action). Mirrors selectMarquee's
+  // mutex: dropping to a single element transitions to single-selection so the
+  // popover/accordion applies; an empty set is ignored (a no-op filter).
+  const narrowMultiSelection = (ids: Set<string>) => {
+    if (ids.size === 0) return;
+    if (ids.size === 1) {
+      const only = Array.from(ids)[0]!;
+      setSelectedId(only);
+      setMultiSelectedIds(new Set());
+    } else {
+      setSelectedId(null);
+      setMultiSelectedIds(ids);
+    }
+    setEditingId(null);
+    track('Element', 'Selected', 'Filter');
+  };
+
   const duplicateSelected = () => {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
@@ -424,6 +442,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     toggleLockMultiSelected,
     duplicateMultiSelected,
     deleteMultiSelected,
+    narrowMultiSelection,
     duplicateSelected,
     spawnConnectSelected,
     ungroupSelected,

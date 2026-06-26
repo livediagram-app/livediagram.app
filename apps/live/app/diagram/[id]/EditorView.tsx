@@ -248,6 +248,7 @@ export function EditorView() {
     moveDiagramToFolder,
     multiSelectedIds,
     nameConfirmed,
+    narrowMultiSelection,
     newDiagram,
     noteOpenId,
     openComments,
@@ -703,6 +704,7 @@ export function EditorView() {
         onDeleteMultiSelected={deleteMultiSelected}
         onGroupMultiSelected={groupMultiSelected}
         onToggleLockMultiSelected={toggleLockMultiSelected}
+        onFilterMultiSelected={narrowMultiSelection}
         onExportMultiSelected={() => {
           setExportScope('selection');
           setExportOpen(true);
