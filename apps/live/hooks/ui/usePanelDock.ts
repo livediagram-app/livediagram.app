@@ -36,8 +36,11 @@ import {
 export type PanelDragState = {
   panelId: PanelId;
   // The corner the panel would snap to if released now, or null for a
-  // free drop. Drives which corner guide highlights.
+  // free drop. Drives which corner shows the landing slot.
   candidate: PanelCorner | null;
+  // The dragged panel's current height (px), so the candidate corner's
+  // landing slot previews its real footprint. 0 until the first move.
+  height: number;
 };
 
 export type PanelDock = {
@@ -103,7 +106,7 @@ export function usePanelDock(): PanelDock {
   const isDragging = useCallback((panel: PanelId) => drag?.panelId === panel, [drag]);
 
   const beginDrag = useCallback((panel: PanelId) => {
-    setDrag({ panelId: panel, candidate: null });
+    setDrag({ panelId: panel, candidate: null, height: 0 });
   }, []);
 
   const updateDrag = useCallback((panel: PanelId, geom: PanelDragGeometry) => {
@@ -112,8 +115,8 @@ export function usePanelDock(): PanelDock {
       // Only the panel that owns the drag updates the candidate; guard
       // against stale geometry from a panel that isn't dragging.
       if (!prev || prev.panelId !== panel) return prev;
-      if (prev.candidate === candidate) return prev;
-      return { panelId: panel, candidate };
+      if (prev.candidate === candidate && prev.height === geom.height) return prev;
+      return { panelId: panel, candidate, height: geom.height };
     });
   }, []);
 

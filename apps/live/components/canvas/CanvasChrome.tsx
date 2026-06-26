@@ -59,7 +59,7 @@ import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { DockAnchor, MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { usePanelDock } from '@/hooks/ui/usePanelDock';
-import { PanelSnapGuides } from '@/components/canvas/PanelSnapGuides';
+import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
 import {
   PANEL_CORNERS,
   PANEL_IDS,
@@ -376,6 +376,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         onReset: () => dock.resetPanel(id),
         dock: {
           docked: placement.mode === 'corner' && !dragging,
+          dockedCorner: placement.mode === 'corner' ? placement.corner : undefined,
           getDockBounds,
           onDockDragStart: () => dock.beginDrag(id),
           onDockDrag: (geom) => dock.updateDrag(id, geom),
@@ -694,11 +695,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const freePanelIds = PANEL_IDS.filter(
     (id) => panelEls[id] != null && dock.placementOf(id).mode === 'free',
   );
+  const snapCorner = dock.drag?.candidate ?? null;
+  const snapHeight = dock.drag?.height ?? 0;
   const dockedLayer = dockingActive ? (
     <div ref={dockLayerRef} className="pointer-events-none absolute inset-0 z-[var(--z-panel)]">
       {PANEL_CORNERS.map((corner) => {
         const children = dock.cornerStacks[corner].filter((id) => panelEls[id] != null);
-        if (children.length === 0) return null;
+        // Show the live landing slot at the end of the candidate corner's
+        // stack (flexbox places it where the panel will actually land).
+        const showSlot = snapCorner === corner;
+        if (children.length === 0 && !showSlot) return null;
         return (
           <div
             key={corner}
@@ -708,13 +714,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {children.map((id) => (
               <Fragment key={id}>{panelEls[id]}</Fragment>
             ))}
+            {showSlot ? <PanelSnapSlot height={snapHeight} /> : null}
           </div>
         );
       })}
       {freePanelIds.map((id) => (
         <Fragment key={id}>{panelEls[id]}</Fragment>
       ))}
-      {dock.drag ? <PanelSnapGuides candidate={dock.drag.candidate} /> : null}
     </div>
   ) : null;
 

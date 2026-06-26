@@ -11,7 +11,7 @@ import {
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import type { PanelDragGeometry } from '@/lib/panel-layout';
+import type { PanelCorner, PanelDragGeometry } from '@/lib/panel-layout';
 
 // Pointer travel (px) before a header press on the docking path counts
 // as a drag rather than a click. Keeps a plain click from pulling the
@@ -25,6 +25,11 @@ const DOCK_DRAG_THRESHOLD_PX = 4;
 // (non-docking) drag path.
 export type MovablePanelDockProps = {
   docked?: boolean;
+  // The corner the panel is currently docked in (when `docked`), so the
+  // body-height measurement anchors correctly: a panel in a BOTTOM corner
+  // grows upward from its stable bottom edge, not downward toward the tab
+  // bar (which, clamped against the zoom controls, shrank it to nothing).
+  dockedCorner?: PanelCorner;
   getDockBounds?: () => DOMRect | null;
   onDockDragStart?: () => void;
   onDockDrag?: (geom: PanelDragGeometry) => void;
@@ -166,6 +171,9 @@ type MovablePanelProps = {
   // and in the mobile / minimal dock paths. Wired only by CanvasChrome's
   // desktop docking layout.
   docked?: boolean;
+  // The corner the panel currently rests in while docked (see the bundle
+  // type above) — drives the body-height anchor for bottom corners.
+  dockedCorner?: PanelCorner;
   // Returns the positioning container's (<main>) viewport rect, so drag
   // coordinates can be expressed relative to it and the snap zones sized
   // to it. The PRESENCE of this prop is what routes the panel onto the
@@ -210,6 +218,7 @@ export function MovablePanel({
   flushTop = false,
   growBody = false,
   docked = false,
+  dockedCorner,
   getDockBounds,
   onDockDragStart,
   onDockDrag,
@@ -307,17 +316,19 @@ export function MovablePanel({
       // Canvas accordions on a laptop) run under the tab bar / behind the
       // zoom bar.
       const GAP = 12;
-      // A panel parked at a BOTTOM default corner (and not yet dragged)
-      // grows UPWARD, so its top edge moves with its own body content.
-      // Measuring the body cap from panelRect.top there would feed back
-      // through the ResizeObserver below (taller body -> higher top ->
-      // bigger cap -> ...), collapsing or jittering the panel. Its bottom
-      // edge is CSS-fixed and stable, so measure the space up from there.
-      // A docked flex child (spec/63) is positioned by its corner stack
-      // container, so measure available height from its real top like any
-      // top-anchored panel; the bottom-grow special-case only applies to
-      // the legacy CSS bottom-corner path (position null + bottom corner).
-      const bottomAnchored = position === null && defaultCorner.startsWith('bottom') && !docked;
+      // A panel anchored at a BOTTOM corner grows UPWARD, so its top edge
+      // moves with its own body content. Measuring the body cap from
+      // panelRect.top there would feed back through the ResizeObserver
+      // below (taller body -> higher top -> bigger cap -> ...) AND, because
+      // the downward space to the tab bar gets clamped against the zoom
+      // controls in the bottom-right, would shrink the panel to almost
+      // nothing. Its bottom edge is stable, so measure the space up from
+      // there instead. This covers both the legacy CSS bottom corner
+      // (position null + a bottom defaultCorner) and a panel DOCKED into a
+      // bottom corner (spec/63), whose live corner is dockedCorner.
+      const bottomAnchored = docked
+        ? dockedCorner === 'bottom-left' || dockedCorner === 'bottom-right'
+        : position === null && defaultCorner.startsWith('bottom');
       if (bottomAnchored) {
         setBodyMaxH(Math.max(panelRect.bottom - headerH - GAP * 2, 80));
         return;
@@ -349,7 +360,7 @@ export function MovablePanel({
       ro?.disconnect();
     };
     // Re-measure after drag (position changes) or dynamic stacking (stackBelowY changes).
-  }, [position, stackBelowY, defaultCorner, docked]);
+  }, [position, stackBelowY, defaultCorner, docked, dockedCorner]);
 
   // Publish the panel's bounding box upward whenever it changes
   // (the Palette uses this so the Comments / AI panels can stack below).
