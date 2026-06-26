@@ -113,11 +113,12 @@ describe('full authorize -> complete -> token flow', () => {
     const session = new URL(auth.headers.get('location')!).searchParams.get('session')!;
     expect(session).toBeTruthy();
 
+    const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 180;
     const comp = await app.request(
       '/oauth/complete',
       {
         method: 'POST',
-        body: JSON.stringify({ session, token: 'lvd_secret' }),
+        body: JSON.stringify({ session, token: 'lvd_secret', expiresAt }),
         headers: { 'Content-Type': 'application/json' },
       },
       env,
@@ -141,7 +142,10 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    expect(((await tok.json()) as { access_token: string }).access_token).toBe('lvd_secret');
+    const token = (await tok.json()) as { access_token: string; expires_in: number };
+    expect(token.access_token).toBe('lvd_secret');
+    // expires_in reflects the ~6-month token life (spec/62 §3.5).
+    expect(token.expires_in).toBeGreaterThan(60 * 60 * 24 * 179);
   });
 
   it('rejects a wrong PKCE verifier and a reused code', async () => {

@@ -16,7 +16,15 @@ type AuthSession = {
   state?: string;
   clientName: string;
 };
-type AuthCode = { token: string; codeChallenge: string; redirectUri: string; clientId: string };
+type AuthCode = {
+  token: string;
+  codeChallenge: string;
+  redirectUri: string;
+  clientId: string;
+  // The token's absolute expiry (epoch ms), so /oauth/token can report a
+  // truthful expires_in (spec/62 §3.5).
+  expiresAt?: number;
+};
 
 const CLIENT_TTL = 60 * 60 * 24 * 30; // 30 days
 const SESSION_TTL = 60 * 10; // 10 minutes
@@ -163,7 +171,11 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
   // --- Complete: the Clerk-authed consent page posts the minted token here,
   // bound to a fresh authorization code (one-time, PKCE-gated at /oauth/token).
   app.post('/oauth/complete', async (c) => {
-    const body = (await c.req.json().catch(() => ({}))) as { session?: string; token?: string };
+    const body = (await c.req.json().catch(() => ({}))) as {
+      session?: string;
+      token?: string;
+      expiresAt?: number;
+    };
     if (!body.session || !body.token) return c.json({ error: 'invalid_request' }, 400);
     const session = await c.env.OAUTH_KV.get<AuthSession>(`session:${body.session}`, 'json');
     if (!session) return c.json({ error: 'invalid_session' }, 400);
@@ -174,6 +186,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
       codeChallenge: session.codeChallenge,
       redirectUri: session.redirectUri,
       clientId: session.clientId,
+      expiresAt: typeof body.expiresAt === 'number' ? body.expiresAt : undefined,
     };
     await c.env.OAUTH_KV.put(`code:${code}`, JSON.stringify(record), { expirationTtl: CODE_TTL });
     const url = new URL(session.redirectUri);
@@ -203,7 +216,13 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     if (challenge !== record.codeChallenge) {
       return c.json({ error: 'invalid_grant', error_description: 'PKCE verification failed' }, 400);
     }
-    return c.json({ access_token: record.token, token_type: 'Bearer' });
+    // expires_in reflects the token's remaining 6-month life (spec/62 §3.5);
+    // fall back to the full window if the consent page didn't pass an expiry.
+    const SIX_MONTHS = 60 * 60 * 24 * 180;
+    const expiresIn = record.expiresAt
+      ? Math.max(0, Math.floor((record.expiresAt - Date.now()) / 1000))
+      : SIX_MONTHS;
+    return c.json({ access_token: record.token, token_type: 'Bearer', expires_in: expiresIn });
   });
 }
 

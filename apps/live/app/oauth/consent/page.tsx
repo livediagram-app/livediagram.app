@@ -84,11 +84,11 @@ function Consent() {
   const approve = async () => {
     setStatus('connecting');
     try {
-      const { token } = await apiExchangeOauthToken(clerkUserId, client);
+      const { token, expiresAt } = await apiExchangeOauthToken(clerkUserId, client);
       const res = await fetch(`${MCP_ORIGIN}/oauth/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session, token }),
+        body: JSON.stringify({ session, token, expiresAt }),
       });
       if (!res.ok) throw new Error('complete failed');
       const { redirectTo } = (await res.json()) as { redirectTo: string };
