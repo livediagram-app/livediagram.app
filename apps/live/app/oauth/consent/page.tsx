@@ -68,6 +68,21 @@ function Consent() {
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
 
+  // Checked first so Cancel works from any state (incl. the sign-in screen,
+  // which otherwise returns before the later checks).
+  if (status === 'cancelled') {
+    return (
+      <Shell>
+        <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+          Connection cancelled
+        </h1>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          You can close this window.
+        </p>
+      </Shell>
+    );
+  }
+
   if (!clerkEnabled) {
     return (
       <Shell>
@@ -101,12 +116,21 @@ function Consent() {
         <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           You need to be signed in to connect an app to your diagrams.
         </p>
-        <a
-          href={`/sign-in/?redirect_url=${encodeURIComponent(back)}`}
-          className="mt-5 inline-flex rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-        >
-          Sign in
-        </a>
+        <div className="mt-5 flex items-center gap-2">
+          <a
+            href={`/sign-in/?redirect_url=${encodeURIComponent(back)}`}
+            className="inline-flex rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+          >
+            Sign in
+          </a>
+          <button
+            type="button"
+            onClick={() => setStatus('cancelled')}
+            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            Cancel
+          </button>
+        </div>
         <div>
           <HelpLink />
         </div>
@@ -145,19 +169,6 @@ function Consent() {
       setStatus('error');
     }
   };
-
-  if (status === 'cancelled') {
-    return (
-      <Shell>
-        <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          Connection cancelled
-        </h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          You can close this window.
-        </p>
-      </Shell>
-    );
-  }
 
   return (
     <Shell>

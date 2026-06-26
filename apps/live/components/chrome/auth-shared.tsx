@@ -14,6 +14,7 @@
 
 import { Brand } from '@livediagram/ui';
 import type { MutableRefObject, ReactNode } from 'react';
+import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 
 // ---------------------------------------------------------------------
 // Outer card layout
@@ -35,8 +36,11 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10 dark:bg-slate-950">
-      <div className="w-full max-w-md">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-slate-50 px-4 py-10 dark:bg-slate-950">
+      {/* Same animated lines backdrop as the new-diagram + consent screens;
+          decorative, reduced-motion aware, hidden below sm. */}
+      <AnimatedLinesBackdrop />
+      <div className="relative z-10 w-full max-w-md">
         <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
           <div className="mb-8 text-center">
             <div className="mb-3 flex justify-center">
