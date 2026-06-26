@@ -9,6 +9,7 @@ import { isApiTokenFormat } from './auth/api-token';
 import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
+import { handleOauthExchange } from './routes/oauth';
 import { DiagramRoom } from './diagram-room';
 import { CORS_HEADERS, json, notFound, rateLimited } from './responses';
 import { clientIp } from './client-ip';
@@ -204,6 +205,8 @@ export default {
           return await handleTeams(ctx);
         case 'tokens':
           return await handleTokens(ctx);
+        case 'oauth':
+          return await handleOauthExchange(ctx);
         case 'account':
           return await handleAccount(ctx);
         case 'preferences':

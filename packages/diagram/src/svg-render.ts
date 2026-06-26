@@ -118,16 +118,21 @@ export function wrapLabel(
 // A reusable measuring 2D context for the SVG path. Null in non-DOM
 // environments (Workers / jsdom), where we fall back to a rough
 // character-width estimate so wrapping degrades gracefully.
-let _labelMeasureCtx:
-  | { measureText: (s: string) => { width: number }; font: string }
-  | null
-  | undefined;
+type MeasureCtx = { measureText: (s: string) => { width: number }; font: string };
+let _labelMeasureCtx: MeasureCtx | null | undefined;
 export function labelMeasure(size: number, bold: boolean, italic: boolean): (s: string) => number {
   if (_labelMeasureCtx === undefined) {
-    _labelMeasureCtx =
-      typeof document !== 'undefined'
-        ? (document.createElement('canvas').getContext('2d') as unknown as typeof _labelMeasureCtx)
-        : null;
+    // Reach `document` via globalThis so this module typechecks under a no-DOM
+    // lib (the api / mcp Workers) and still uses the real canvas measure in the
+    // browser. Absent in Workers -> char-width fallback below.
+    const doc = (
+      globalThis as {
+        document?: { createElement(tag: string): { getContext(ctx: string): unknown } };
+      }
+    ).document;
+    _labelMeasureCtx = doc
+      ? (doc.createElement('canvas').getContext('2d') as MeasureCtx | null)
+      : null;
   }
   const ctx = _labelMeasureCtx;
   if (!ctx) return (s) => s.length * size * 0.55;
