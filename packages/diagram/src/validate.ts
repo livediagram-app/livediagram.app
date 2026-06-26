@@ -25,7 +25,9 @@ export const MAX_TABLE_COLS = 1_000;
 export const MAX_TABLE_CELLS = 50_000;
 export const MAX_DATA_ARRAY = 5_000; // railLabels / lineCategories / pieSlices / lineSeries
 
-const ELEMENT_TYPES = new Set([
+// Exported so the MCP schema resource (spec/62 §4.5) lists the real element
+// types + anchors rather than a hand-maintained copy that can drift.
+export const ELEMENT_TYPES = new Set([
   'shape',
   'text',
   'table',
@@ -36,7 +38,7 @@ const ELEMENT_TYPES = new Set([
   'link-card',
   'arrow',
 ]);
-const ANCHORS = new Set(['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']);
+export const ANCHORS = new Set(['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']);
 
 function isObj(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);

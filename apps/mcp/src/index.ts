@@ -1,18 +1,15 @@
 // livediagram MCP server (spec/62) — a standalone Cloudflare Worker fronted by
-// Hono. The Streamable-HTTP MCP transport + tools mount on POST /mcp (added in
-// the tools phase); the OAuth 2.1 endpoints mount alongside. Every tool reaches
-// the api worker over the API service binding, forwarding the caller's
-// `Authorization: Bearer lvd_…` token.
+// Hono. POST /mcp carries the Streamable-HTTP MCP transport (stateless, JSON
+// responses), Bearer-gated; tools reach the api worker over the API service
+// binding, forwarding the caller's `Authorization: Bearer lvd_…`. OAuth 2.1
+// endpoints mount alongside (added in the OAuth step).
+import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import type { Env } from './env';
+import { buildServer } from './server';
 
-// Worker bindings (wrangler.toml).
-export type Env = {
-  // Service binding to livediagram-api — tools forward to /api/* through it.
-  API: Fetcher;
-  // OAuth 2.1 state: client registrations, authorize sessions, codes.
-  OAUTH_KV: KVNamespace;
-};
+export type { Env };
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -27,10 +24,31 @@ app.use(
   }),
 );
 
-// Liveness probe (spec/62 §2).
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
-// The MCP transport mounts here in the tools phase (spec/62 §4), Bearer-gated.
-app.post('/mcp', (c) => c.json({ error: 'not_implemented' }, 501));
+// The MCP Streamable-HTTP transport. Stateless (no session id) with JSON
+// responses, which suits a per-request Worker: build a fresh server + transport,
+// connect, and let the transport turn the request into a response.
+app.all('/mcp', async (c) => {
+  const auth = c.req.header('Authorization');
+  const token = auth?.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : null;
+  if (!token) {
+    // Point MCP clients at the OAuth resource metadata so they can start the
+    // connect flow (the metadata endpoint lands with the OAuth step).
+    return c.json({ error: 'unauthorized' }, 401, {
+      'WWW-Authenticate':
+        'Bearer resource_metadata="https://mcp.livediagram.app/.well-known/oauth-protected-resource"',
+    });
+  }
+  const server = buildServer(c.env);
+  const transport = new WebStandardStreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true,
+  });
+  await server.connect(transport);
+  return transport.handleRequest(c.req.raw, {
+    authInfo: { token, clientId: 'mcp', scopes: [] },
+  });
+});
 
 export default app;
