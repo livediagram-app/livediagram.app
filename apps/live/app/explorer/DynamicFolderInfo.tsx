@@ -9,8 +9,7 @@ import type { SelectedNode } from './views';
 const DYNAMIC_FOLDER_INFO: Partial<Record<SelectedNode['kind'], string>> = {
   unsorted:
     'Unsorted is an automatically generated folder, not one you made: every diagram that you haven’t filed into a folder shows up here. Move one into a folder and it leaves Unsorted.',
-  generated:
-    'Generated is an automatically generated folder, not one you made: diagrams created by the AI assistant or by an AI tool connected over MCP collect here. Move one into a folder of your own and it leaves Generated.',
+  generated: 'Diagrams created by a connected AI tool collect here automatically.',
 };
 
 export function DynamicFolderInfo({ selected }: { selected: SelectedNode }) {
