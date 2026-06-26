@@ -374,8 +374,10 @@ export function CommandPalette({
           (the most common entry point on every fresh canvas). */}
       <PaletteTintProvider tint={themeTint}>
         <PaletteTabBar
+          // No storageKey: the palette always opens on Shapes when a diagram
+          // loads (the most common entry point) rather than restoring the
+          // last-used category across diagrams. See spec/09.
           defaultOpenId="shapes"
-          storageKey="livediagram:palette-category"
           leading={
             <PaletteDropdown
               ariaLabel="Canvas tool"
