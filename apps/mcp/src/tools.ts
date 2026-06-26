@@ -259,7 +259,32 @@ export function registerTools(server: McpServer, env: Env): void {
             'needs id/type/x/y/width/height (arrows need from/to), and arrays must be well-formed.',
         );
       }
-      const tab = buildTab(tabId, args.name, candidate.elements, args.layout, args.theme);
+      // Default the new tab's theme to the diagram's existing one so it matches
+      // the other tabs rather than landing as a clashing brand-white tab. The
+      // model can still override via args.theme. Best-effort: fall back to the
+      // buildTab default if the lookup fails.
+      let themeId = args.theme;
+      if (!themeId) {
+        try {
+          const { diagram } = await apiJson<{ diagram: Diagram }>(
+            env,
+            token,
+            `/diagrams/${args.diagramId}`,
+          );
+          const firstTabId = diagram.tabs[0]?.id;
+          if (firstTabId) {
+            const { tab: existing } = await apiJson<{ tab: TabRecord }>(
+              env,
+              token,
+              `/diagrams/${args.diagramId}/tabs/${firstTabId}`,
+            );
+            themeId = existing.theme;
+          }
+        } catch {
+          /* keep buildTab's default */
+        }
+      }
+      const tab = buildTab(tabId, args.name, candidate.elements, args.layout, themeId);
       await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
         method: 'PUT',
         body: JSON.stringify(tab),
