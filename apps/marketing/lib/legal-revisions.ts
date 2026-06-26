@@ -17,7 +17,7 @@
 //
 // Bump LAST_UPDATED_ISO when revising the legal copy. The visible
 // display string + the sitemap Date both follow automatically.
-const LAST_UPDATED_ISO = '2026-06-24';
+const LAST_UPDATED_ISO = '2026-06-26';
 
 export const LEGAL_LAST_UPDATED = new Date(LAST_UPDATED_ISO);
 

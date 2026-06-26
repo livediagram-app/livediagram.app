@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Privacy Policy" description="What the hosted livediagram service does, and does not do, with your data." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-_Last updated: 24 June 2026._
+_Last updated: 26 June 2026._
 
 livediagram is built to need as little of your data as possible, and the whole codebase is public so you can check that for yourself. This policy explains what the hosted service at **livediagram.app** does with your data. If you self-host livediagram, you are responsible for your own deployment and this policy does not apply to it.
 
@@ -21,6 +21,7 @@ livediagram is built to need as little of your data as possible, and the whole c
 - **A browser id.** If you use livediagram without an account, we keep a random identifier in your browser's local storage to link diagrams to your browser. It is not tied to your name or email.
 - **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these only to identify your account.
 - **API tokens, if you create them.** If you create an [API token](/help/account-and-data/api-tokens/) to call the API from your own scripts, we store a one-way hash of it (never the token itself), its name, and a last-used timestamp, so the token can be verified and you can see when it was last active. Tokens are a signed-in-only feature, expire after six months, and are deleted when you delete your account.
+- **Connecting an AI tool, if you do.** If you connect an AI tool via our [MCP server](/help/account-and-data/connect-ai-mcp/), we briefly store the state needed to complete the connection handshake (the app's registration plus short-lived authorization sessions and codes), which expires automatically within minutes. The connection itself is an API token, covered above, and you can revoke it any time.
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
 
 ## What we do not do

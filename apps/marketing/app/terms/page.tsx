@@ -59,7 +59,8 @@ export default function TermsPage() {
         treat them like a password, and revoke any that might have been exposed. You are responsible
         for activity carried out with your tokens. We may apply rate limits to keep the Service
         healthy, and the acceptable-use rules below apply equally to anything you do through the
-        API.
+        API. If you connect a third-party or AI tool to your account, you authorise it to act for
+        you with that access; you can disconnect it at any time by revoking its token.
       </p>
 
       <h2>Acceptable use</h2>
