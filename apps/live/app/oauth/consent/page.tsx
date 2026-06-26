@@ -53,7 +53,8 @@ function Consent() {
     );
   }
   if (!isSignedIn || !clerkUserId) {
-    const back = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
+    const back =
+      typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
     return (
       <Shell>
         <h1 className="text-base font-semibold text-slate-900">Sign in to connect {client}</h1>
@@ -110,9 +111,9 @@ function Consent() {
     <Shell>
       <h1 className="text-base font-semibold text-slate-900">Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500">
-        <span className="font-medium text-slate-700">{client}</span> wants to access your livediagram
-        diagrams (full read + write) on your behalf. Approving creates an API token, which you can
-        revoke any time from the Explorer’s API tokens page.
+        <span className="font-medium text-slate-700">{client}</span> wants to access your
+        livediagram diagrams (full read + write) on your behalf. Approving creates an API token,
+        which you can revoke any time from the Explorer’s API tokens page.
       </p>
       {status === 'error' ? (
         <p className="mt-3 text-xs text-rose-600">Something went wrong. Please try again.</p>

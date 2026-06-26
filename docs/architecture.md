@@ -1,6 +1,6 @@
 # Architecture
 
-A pnpm + Turborepo monorepo: six Cloudflare-deployed apps and seven shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
+A pnpm + Turborepo monorepo: seven Cloudflare-deployed apps and seven shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
 
 ```
 apps/
@@ -9,6 +9,7 @@ apps/
   telemetry/    public anonymous-events dashboard (Next.js export, /telemetry)
   help/         help centre (Next.js export + MDX, /help)
   api/          REST + WebSocket worker (D1 + Durable Objects + R2, /api)
+  mcp/          MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       service-binding router stitching the apps under one hostname
 packages/
   ui/             shared UI primitives (Brand, etc.)
