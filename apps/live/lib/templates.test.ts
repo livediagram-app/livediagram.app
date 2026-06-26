@@ -393,11 +393,9 @@ describe('board templates', () => {
 });
 
 describe('untitledNameForTemplate', () => {
-  it('names a templated diagram after its template title', () => {
-    expect(untitledNameForTemplate('mindmap')).toBe('Untitled Mind map');
-    // Any non-blank template -> "Untitled <its title>".
-    const t = TEMPLATES.find((x) => x.kind !== 'blank')!;
-    expect(untitledNameForTemplate(t.kind)).toBe(`Untitled ${t.title}`);
+  it('names a templated diagram in title case after its template title', () => {
+    expect(untitledNameForTemplate('mindmap')).toBe('Untitled Mind Map');
+    expect(untitledNameForTemplate('mindmap-tree')).toBe('Untitled Tree Mind Map');
   });
   it('keeps "Untitled diagram" for blank or no template', () => {
     expect(untitledNameForTemplate('blank')).toBe('Untitled diagram');

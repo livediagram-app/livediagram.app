@@ -360,13 +360,20 @@ export function templateCategory(kind: TemplateKind): TemplateCategory {
   return TEMPLATE_CATEGORY[kind];
 }
 
-// Default name for a freshly-created diagram: "Untitled <template title>" so a
-// templated diagram is recognisable in the Explorer (e.g. "Untitled Mind map"),
-// while a blank one (or no template) keeps the plain "Untitled diagram".
+// Title-case each word, only ever upper-casing the leading letter so existing
+// caps survive (acronyms like ER / UML / SWOT stay intact).
+function titleCase(s: string): string {
+  return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Default name for a freshly-created diagram: "Untitled <Template Title>" in
+// title case so a templated diagram is recognisable in the Explorer (e.g.
+// "Untitled Tree Mind Map"), while a blank one (or no template) keeps the plain
+// "Untitled diagram".
 export function untitledNameForTemplate(kind: TemplateKind | null): string {
   if (!kind || kind === 'blank') return 'Untitled diagram';
   const title = TEMPLATES.find((t) => t.kind === kind)?.title;
-  return title ? `Untitled ${title}` : 'Untitled diagram';
+  return title ? `Untitled ${titleCase(title)}` : 'Untitled diagram';
 }
 
 // The canvas backdrop pattern that best suits each template's layout.
