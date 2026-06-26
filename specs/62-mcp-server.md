@@ -171,7 +171,7 @@ optional `layout`. The MCP:
    Layout only ever arranges the **connected graph** — edgeless content (titles,
    per-node descriptions, captions) passes through at its given position rather
    than being raked into a disconnected-component column.
-3. **Files it under "Generated diagrams".** MCP-created diagrams land in a
+3. **Files it under "Generated".** MCP-created diagrams land in a
    dedicated personal folder (find-or-create by name via `GET`/`POST /api/folders`)
    rather than Unsorted, so a user's own work and AI-generated diagrams stay
    separate (the user can move them after). Best-effort: if the folder
@@ -291,7 +291,7 @@ Worker (no DOM, no React).
 - **Real image-element embedding** in renders ([§5](#5-visualise--inline-image-render)).
 - **Folder / team / share management** via MCP — there are no tools to list,
   rename, or move folders (create_diagram only auto-files new diagrams under
-  "Generated diagrams"); more `/api` surface can be wrapped later if demand appears.
+  "Generated"); more `/api` surface can be wrapped later if demand appears.
 - **Token-paste connector** as a supported path — OAuth is the chosen front door
   ([§3](#3-authentication-oauth-21)); a raw Bearer still works for local dev but
   isn't a documented user flow.

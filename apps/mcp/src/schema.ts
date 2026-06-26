@@ -4,13 +4,14 @@
 // here — the real structural check is the diagram package's isValidTab at the
 // tool boundary, so the schema lives in one place.
 import { z } from 'zod';
-import { ANCHORS, ELEMENT_TYPES } from '@livediagram/diagram';
+import { ANCHORS, ELEMENT_TYPES, THEMES } from '@livediagram/diagram';
 
 export const SCHEMA_RESOURCE_URI = 'livediagram://schema/elements';
 
 export function elementSchemaDoc(): string {
   const types = [...ELEMENT_TYPES].join(', ');
   const anchors = [...ANCHORS].join(', ');
+  const themeIds = THEMES.map((t) => t.id).join(', ');
   return `# livediagram element schema
 
 A tab is { name, elements: Element[] }. Every element needs a unique string "id".
@@ -57,6 +58,17 @@ YOU decide the layout; the server does not override a real arrangement.
   where you place it and never auto-arranged — so put it next to the node it
   describes, not in a loose pile.
 
+## Themes (the look)
+Set "theme" on create_diagram / add_tab to one of these presets and the server
+paints the whole diagram + canvas with it (you still omit per-element colours):
+  ${themeIds}
+Defaults to "brand" (clean, light). Rough guide: cool blues = ocean / sky;
+greens = forest / pine / olive; warm = sunset / sand / rose / mocha; neutral =
+mono / steel / cream; dark backdrops = midnight / charcoal / plum / abyss;
+multi-colour (each branch a different hue) = rainbow / pastel / tropical /
+autumn / jewel; uml = standard UML notation colours. Pick one that fits the
+subject; one theme applies to all tabs in a create_diagram call.
+
 ## Design rules (diagrams that read well)
 - Nodes are SHAPES, not text. Use type "shape" (shape: "rectangle" by default,
   "diamond" for a decision, "cylinder" for a datastore) for every box in the
@@ -93,6 +105,15 @@ const layoutField = z
     'How to position elements. "preserve" keeps the exact x/y you give — use it for a deliberate shape (a cycle as a ring, a tree, a grid). "auto" arranges a clean directed graph for you. Omit to auto-detect: a real arrangement is kept; nodes left piled at one point get laid out. Supporting text is always kept in place either way.',
   );
 
+const themeField = z
+  .string()
+  .optional()
+  .describe(
+    'Preset theme id that paints the whole diagram + canvas (see the schema ' +
+      'resource for the list, e.g. brand, ocean, forest, sunset, midnight, rainbow). ' +
+      'Omit per-element colours and let the theme own them. Defaults to "brand".',
+  );
+
 export const findDiagramsShape = {
   query: z.string().optional().describe('Only diagrams whose name contains this text.'),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
@@ -124,6 +145,7 @@ export const createDiagramShape = {
     ),
   tab: tabShape.optional().describe('A single tab — accepted as an alias for tabs: [tab].'),
   layout: layoutField,
+  theme: themeField,
 };
 
 export const addTabShape = {
@@ -133,6 +155,7 @@ export const addTabShape = {
   name: z.string().describe('Name of the new tab.'),
   elements: elementArray.describe('The elements for the new tab (see the schema resource).'),
   layout: layoutField,
+  theme: themeField,
 };
 
 export const updateDiagramShape = {

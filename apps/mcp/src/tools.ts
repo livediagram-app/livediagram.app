@@ -1,4 +1,4 @@
-// The four MCP tools (spec/62 §4). Each is a thin wrapper over the api worker
+// The five MCP tools (spec/62 §4). Each is a thin wrapper over the api worker
 // plus the shared diagram helpers (validate / auto-layout / renderElementsToSvg)
 // — no business logic the editor doesn't already own. The calling LLM produces
 // the elements; these tools validate, lay out, persist, and render.
@@ -7,9 +7,11 @@ import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/proto
 import type { Diagram, DiagramSummary, Folder, TabRecord } from '@livediagram/api-schema';
 import {
   autoLayoutElements,
+  getBuiltInTheme,
   isLayoutCandidate,
   isValidTab,
   nodesLookUnplaced,
+  recolourElementsForTheme,
   renderElementsToSvg,
   type Element,
   type Tab,
@@ -70,11 +72,36 @@ function applyLayout(layout: 'auto' | 'preserve' | undefined, elements: Element[
   return shouldLayout && isLayoutCandidate(elements) ? autoLayoutElements(elements) : elements;
 }
 
-// MCP-created diagrams land in a dedicated "Generated diagrams" folder rather
+// Build a finished, persistable Tab from validated elements: apply the layout,
+// then paint the chosen preset theme onto the elements + the canvas backdrop —
+// the same engine the editor uses (spec/62). `themeId` defaults to brand;
+// unknown ids fall back to it. `elements` must already be a valid Element[].
+function buildTab(
+  tabId: string,
+  name: string,
+  elements: Element[],
+  layout: 'auto' | 'preserve' | undefined,
+  themeId: string | undefined,
+): Tab {
+  const theme = getBuiltInTheme(themeId);
+  const laidOut = applyLayout(layout, elements);
+  return {
+    id: tabId,
+    name,
+    elements: recolourElementsForTheme(laidOut, theme),
+    theme: theme.id,
+    backgroundColor: theme.backgroundColor,
+    backgroundPattern: theme.backgroundPattern,
+    patternColor: theme.patternColor,
+    ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
+  };
+}
+
+// MCP-created diagrams land in a dedicated "Generated" folder rather
 // than Unsorted (spec/62). Find the owner's folder by name or create it; the
 // diagram POST takes the folderId directly. Best-effort: if folder
 // listing/creation fails, fall back to Unsorted rather than failing the create.
-const GENERATED_FOLDER_NAME = 'Generated diagrams';
+const GENERATED_FOLDER_NAME = 'Generated';
 
 async function ensureGeneratedFolder(env: Env, token: string): Promise<string | null> {
   try {
@@ -161,7 +188,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'Create a new diagram from elements you produce (see the ' +
         'livediagram://schema/elements resource). Pass one tab, or several to build a ' +
         'multi-tab diagram in one call (an overview plus detail tabs). The server validates, ' +
-        'lays out each tab per the layout arg, files it under your "Generated diagrams" ' +
+        'lays out each tab per the layout arg, files it under your "Generated" ' +
         'folder, and returns the link + an inline PNG of the first tab.',
       inputSchema: createDiagramShape,
     },
@@ -183,7 +210,7 @@ export function registerTools(server: McpServer, env: Env): void {
               'and arrays must be well-formed.',
           );
         }
-        tabs.push({ ...candidate, elements: applyLayout(args.layout, candidate.elements) });
+        tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, args.theme));
       }
       const id = crypto.randomUUID();
       const folderId = await ensureGeneratedFolder(env, token);
@@ -226,7 +253,7 @@ export function registerTools(server: McpServer, env: Env): void {
             'needs id/type/x/y/width/height (arrows need from/to), and arrays must be well-formed.',
         );
       }
-      const tab: Tab = { ...candidate, elements: applyLayout(args.layout, candidate.elements) };
+      const tab = buildTab(tabId, args.name, candidate.elements, args.layout, args.theme);
       await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
         method: 'PUT',
         body: JSON.stringify(tab),
