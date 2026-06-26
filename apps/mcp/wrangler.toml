@@ -33,4 +33,4 @@ service = "livediagram-api"
 # and paste the id here (the api worker needs no KV; token storage stays in D1).
 [[kv_namespaces]]
 binding = "OAUTH_KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "b6f3814b4a4e4e51b8b88412915d8d84"
