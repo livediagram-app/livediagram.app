@@ -125,6 +125,11 @@ pick it up.
   - `apps/marketing/lib`: the metadata + content registries: alternatives
     list + slug map, legal revision date, subpage metadata generator. Three
     suites.
+  - `apps/help`: the hand-maintained article registry's consistency with the
+    filesystem (every registered article has a `page.mdx` and vice versa, plus
+    each category's `articleCount`), the registry query / href helpers
+    (`searchArticles`, `getArticlesByCategory`, ...), and the schema.org
+    JSON-LD builders (`articleJsonLd` / `webSiteJsonLd`). Two suites.
 
 - **Ahead:**
   - React component + hook bodies in `apps/live`: current hook tests target
