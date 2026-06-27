@@ -39,26 +39,6 @@ export function TextIcon() {
   );
 }
 
-export function PaintbrushIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M13.5 2.5l-6 6" />
-      <path d="M7 8l1.5 1.5" />
-      <path d="M6.5 9.5a3 3 0 1 0 1 4.5c.5-.6.5-1.4 0-2-.6-.5-1.4-.5-2 0" />
-    </svg>
-  );
-}
-
 export function DuplicateIcon() {
   return (
     <svg

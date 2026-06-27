@@ -158,26 +158,6 @@ export function TabsLabelIcon() {
   );
 }
 
-// Clock face — the Session timer rows.
-export function SessionTabIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="8" cy="8.5" r="5.5" />
-      <path d="M8 5.5V8.5L10 10M8 2.5V1" />
-    </svg>
-  );
-}
-
 export function ClearIcon() {
   return (
     <svg
