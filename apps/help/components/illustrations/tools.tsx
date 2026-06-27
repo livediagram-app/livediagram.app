@@ -52,40 +52,6 @@ export function AiPanel() {
   );
 }
 
-/** Build mode: a prompt becomes a freshly drafted, connected flow on the
- *  canvas (before/after, prompt on the left, generated diagram on the right). */
-export function AiBuild() {
-  return (
-    <Scene w={420} h={220}>
-      {/* Prompt card */}
-      <Panel x={20} y={66} w={150} h={92} title="BUILD">
-        <rect
-          x={34}
-          y={104}
-          width={122}
-          height={42}
-          rx={7}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={44} y={119} size={9} tone="body">
-          Flow for
-        </Label>
-        <Label x={44} y={132} size={9} tone="body">
-          onboarding
-        </Label>
-      </Panel>
-      <Arrow from={[176, 110]} to={[224, 110]} kind="curved" tone="muted" dashed />
-      {/* Generated, tidied flow */}
-      <Shape x={236} y={36} w={76} h={38} kind="stadium" label="Sign up" />
-      <Shape x={236} y={100} w={76} h={38} kind="rect" label="Verify" />
-      <Shape x={236} y={164} w={76} h={38} kind="rect" accent label="Done" />
-      <Arrow from={[274, 74]} to={[274, 100]} />
-      <Arrow from={[274, 138]} to={[274, 164]} />
-    </Scene>
-  );
-}
-
 // --- Zen mode ---------------------------------------------------------------
 
 /** The editor with full chrome (header, tab bar, palette, zoom dock) over the
