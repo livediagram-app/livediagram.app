@@ -35,7 +35,9 @@ export const PANEL_IDS: readonly PanelId[] = [
   'minimap',
 ];
 
-export type FreePosition = { x: number; y: number };
+// Internal: a free panel's pixel position. Not exported — callers pass
+// plain { x, y } object literals to freePanel().
+type FreePosition = { x: number; y: number };
 
 // A panel id appears in EXACTLY ONE place: one corner's array, or
 // `free`, or neither (then it uses its default corner, below). The
@@ -209,12 +211,13 @@ export function resolvePlacement(layout: PanelLayout, panel: PanelId): ResolvedP
 export const CORNER_INSET_PX = 16;
 // Extra bottom inset for the BOTTOM-RIGHT corner so a panel docked there
 // sits ABOVE the fixed zoom controls (bottom-right, ~44px tall at a 16px
-// inset) rather than overlapping them. Applied to the snap anchor, the
-// guide target, AND the dock container's bottom offset so all three agree.
-export const ZOOM_CLEARANCE_PX = 56;
-// How close (px) the panel's relevant corner must get to a corner
-// anchor before that corner becomes the snap candidate.
-export const SNAP_RADIUS_PX = 96;
+// inset) rather than overlapping them. Internal: it reaches the dock
+// container + snap detection via cornerBottomInset(), so nothing imports
+// the raw constant.
+const ZOOM_CLEARANCE_PX = 56;
+// How close (px) the panel's relevant corner must get to a corner anchor
+// before that corner becomes the snap candidate. Internal to the snap math.
+const SNAP_RADIUS_PX = 96;
 // Gap between stacked panels in a corner (matches the dock containers'
 // `gap-4`). Used to offset the snap anchor past an occupied corner's
 // existing stack so detection lines up with where the panel will land.
