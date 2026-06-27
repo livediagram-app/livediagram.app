@@ -1,5 +1,7 @@
+import type { Tab } from '@livediagram/diagram';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  apiCreateDiagram,
   apiCreateShareLink,
   apiDeleteImage,
   apiDeleteShareLink,
@@ -402,5 +404,39 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
       const headers = init.headers as Record<string, string>;
       expect(headers['X-Share-Code']).toBeUndefined();
     });
+  });
+});
+
+describe('apiCreateDiagram persisted body (spec/30)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('strips UI-only tab fields (templateChosen, folder) before POSTing', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ diagram: { id: 'd1' } }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+    // A tab carrying the editor-only fields that must NOT reach tabs.data:
+    // templateChosen (UI state) + folder (per-diagram link, spec/30).
+    const tab = {
+      id: 't1',
+      name: 'Tab',
+      elements: [],
+      templateChosen: true,
+      folder: 'f1',
+    } as unknown as Tab;
+
+    const out = await apiCreateDiagram('owner', { id: 'd1', name: 'N', tabs: [tab] });
+
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(String(url)).toMatch(/\/diagrams$/);
+    expect(init.method).toBe('POST');
+    const body = JSON.parse(init.body as string) as { tabs: Record<string, unknown>[] };
+    expect(body.tabs[0]).not.toHaveProperty('templateChosen');
+    expect(body.tabs[0]).not.toHaveProperty('folder');
+    expect(body.tabs[0]).toMatchObject({ id: 't1', name: 'Tab' });
+    expect(out).toEqual({ id: 'd1' });
   });
 });
