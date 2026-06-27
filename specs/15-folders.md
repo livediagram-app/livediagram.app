@@ -104,12 +104,14 @@ info block under its breadcrumb explaining why it exists:
 
 - **Unsorted** — `folder_id IS NULL AND source IS NULL`. Diagrams not filed
   into a folder and not generated.
-- **Generated** — `source IS NOT NULL`. Everything the AI assistant / MCP
-  server created, regardless of folder. The two buckets are mutually
-  exclusive (Unsorted excludes generated rows), so a generated diagram
-  shows in Generated, not Unsorted, until the user files it into a real
-  folder of their own. Route: `/explorer/generated`. Neither dynamic folder
-  offers New folder / New diagram affordances (you don't author into them).
+- **Generated** — `source IS NOT NULL AND folder_id IS NULL`. AI-made
+  diagrams (the AI assistant / MCP server) the user hasn't filed yet.
+  Mirrors Unsorted (folder-null), so the two synthetic buckets are mutually
+  exclusive: a generated diagram shows in Generated, not Unsorted, until the
+  user files it into a real folder of their own, at which point it leaves
+  Generated just as a filed diagram leaves Unsorted. Route:
+  `/explorer/generated`. Neither dynamic folder offers New folder / New
+  diagram affordances (you don't author into them).
 - `parent_id IS NULL` means the folder is at the tree root.
 - `ON DELETE SET NULL` on both `parent_id` and `folder_id`: deleting
   a folder doesn't delete its contents. Direct subfolders become

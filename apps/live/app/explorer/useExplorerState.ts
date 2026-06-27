@@ -465,10 +465,16 @@ export function useExplorerState() {
     [diagrams],
   );
 
-  // Generated diagrams (spec/15): a synthetic folder over everything the AI
-  // assistant / MCP server created (source != null), regardless of folder.
+  // Generated diagrams (spec/15): the synthetic folder for AI-made diagrams
+  // (source != null) that the user hasn't filed yet. Mirrors Unsorted
+  // (folder_id null), so filing a generated diagram into a folder of your
+  // own moves it out of Generated, just like Unsorted; the two synthetic
+  // buckets stay mutually exclusive (Unsorted excludes source != null).
   const generatedDiagrams = useMemo(
-    () => diagrams.filter((d) => d.source != null).sort((a, b) => b.savedAt - a.savedAt),
+    () =>
+      diagrams
+        .filter((d) => d.source != null && d.folderId === null)
+        .sort((a, b) => b.savedAt - a.savedAt),
     [diagrams],
   );
 
