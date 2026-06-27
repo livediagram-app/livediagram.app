@@ -393,6 +393,46 @@ const SCENES: Record<string, React.ReactNode> = {
     </>
   ),
 
+  // Policies: a legal document (the Terms, with ruled lines) beside a shield
+  // bearing a tick (the Privacy Policy) — the two policies the category holds.
+  policies: (
+    <>
+      {/* The terms document. */}
+      <g transform="translate(78 20)">
+        <rect
+          width={84}
+          height={80}
+          rx={8}
+          className="fill-white stroke-brand-300"
+          strokeWidth={2}
+        />
+        <path
+          d="M18 22 H66 M18 34 H66 M18 46 H66 M18 58 H50"
+          className="stroke-brand-300"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+        />
+      </g>
+      {/* The privacy shield with a tick. */}
+      <g transform="translate(176 22)">
+        <path
+          d="M33 2 L62 12 V40 c0 18 -13 30 -29 36 C17 70 4 58 4 40 V12 Z"
+          className="fill-brand-500 stroke-brand-600"
+          strokeWidth={2}
+          strokeLinejoin="round"
+        />
+        <path
+          d="M22 38 l8 8 16 -18"
+          className="stroke-white"
+          strokeWidth={4}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+    </>
+  ),
+
   // User Interface: the editor chrome around a muted canvas (a toolbar of
   // tool buttons, a side panel, a row of tab pills, and a zoom control): the
   // panels / toolbar / tab bar / zoom controls the category covers.

@@ -21,9 +21,9 @@ export const dynamic = 'force-static';
 // belt-and-braces Disallow stops well-behaved crawlers from
 // even fetching them.
 //
-// allow: ['/'] keeps the marketing surface (/, /faq, /terms,
-// /sitemap.xml, /robots.txt) discoverable. (/privacy is now a
-// noindex redirect to the help-centre privacy policy.)
+// allow: ['/'] keeps the marketing surface (/, /faq,
+// /sitemap.xml, /robots.txt) discoverable. (/terms and /privacy are
+// now noindex redirects to the help-centre Policies articles.)
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {

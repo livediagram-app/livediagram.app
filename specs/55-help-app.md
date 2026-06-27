@@ -30,6 +30,8 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 **Developers.** A support category for the public REST API ([spec/61](61-public-api-and-tokens.md)). Standalone articles — _The livediagram API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Diagrams_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([spec/37](37-api-documentation.md)), which the articles link out to rather than duplicate.
 
+**Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service** and the **Privacy Policy**, both governing only the hosted service at livediagram.app (a self-hosted copy is the operator's responsibility). These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
+
 | slug                   | title                | icon      | kind    |
 | ---------------------- | -------------------- | --------- | ------- |
 | `about`                | About livediagram    | info      | support |
@@ -41,6 +43,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `developers`           | Developers           | code      | support |
 | `troubleshooting`      | Troubleshooting      | wrench    | support |
 | `supported-devices`    | Supported Devices    | devices   | support |
+| `policies`             | Policies             | document  | support |
 | `contact`              | Contact              | mail      | support |
 | `explorer`             | Explorer             | folder    | feature |
 | `palette`              | Palette              | palette   | feature |

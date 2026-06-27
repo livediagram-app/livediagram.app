@@ -2,7 +2,6 @@ import type { MetadataRoute } from 'next';
 
 import { ALTERNATIVE_SLUGS, ALTERNATIVES_LAST_UPDATED } from '@/lib/alternatives';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
-import { LEGAL_LAST_UPDATED } from '@/lib/legal-revisions';
 import { SITE_URL } from '@/lib/site';
 
 // Required for `output: 'export'` (same reason as robots.ts):
@@ -25,10 +24,9 @@ export const dynamic = 'force-static';
 //
 // `lastModified` per page reflects the truth of when that page's
 // content last changed. The landing + FAQ pages update with most
-// product releases, so they use the build-time `now`. Terms +
-// Privacy share their revision date with the visible "Last
-// updated" line on each page via lib/legal-revisions.ts, so
-// bumping the legal copy is a one-line ISO change.
+// product releases, so they use the build-time `now`. The Terms and
+// Privacy Policy moved into the help centre (its own sitemap lists the
+// canonical articles), so they are not listed here.
 //
 // ALTERNATIVES_LAST_UPDATED lives alongside the ALTERNATIVES array
 // in lib/alternatives.ts so the sitemap, the per-competitor pages'
@@ -65,15 +63,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     })),
-    {
-      url: `${base}/terms`,
-      lastModified: LEGAL_LAST_UPDATED,
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-    // /privacy is intentionally omitted: the privacy policy moved into the help
-    // centre (its own sitemap lists the canonical article), and /privacy is now
-    // a noindex redirect there.
+    // /terms and /privacy are intentionally omitted: both legal pages moved
+    // into the help centre (its own sitemap lists the canonical articles), and
+    // each marketing route is now a noindex redirect there.
     // Operational surfaces reachable from the footer (spec/16). Lower
     // priority than the marketing content above: they're transparency
     // pages, not landing destinations, but they're public + indexable

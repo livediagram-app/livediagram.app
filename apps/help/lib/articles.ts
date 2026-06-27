@@ -79,8 +79,8 @@ export const categories: Category[] = [
     slug: 'privacy-and-security',
     title: 'Privacy and Security',
     description:
-      'Know exactly how your diagrams are stored, what we collect, and how to keep shared links safe — including the full privacy policy.',
-    articleCount: 5,
+      'Know exactly how your diagrams are stored, what we collect, and how to keep shared links safe.',
+    articleCount: 4,
   },
   {
     slug: 'self-hosting',
@@ -109,6 +109,13 @@ export const categories: Category[] = [
     description:
       'How livediagram works on a computer, a tablet, and a phone, and what to expect on each.',
     articleCount: 3,
+  },
+  {
+    slug: 'policies',
+    title: 'Policies',
+    description:
+      'The legal terms for the hosted livediagram service: the Terms of Service and the full Privacy Policy.',
+    articleCount: 2,
   },
   {
     slug: 'contact',
@@ -446,15 +453,25 @@ export const articles: Article[] = [
     categorySlug: 'developers',
   },
 
-  // ---- Privacy and Security ----
+  // ---- Policies ----
+  {
+    slug: 'terms',
+    title: 'Terms of Service',
+    description: 'The terms that govern use of the hosted livediagram service.',
+    category: 'Policies',
+    categorySlug: 'policies',
+    parentSlug: 'policies',
+  },
   {
     slug: 'privacy-policy',
     title: 'Privacy Policy',
     description: 'The full privacy policy for the hosted livediagram service.',
-    category: 'Privacy and Security',
-    categorySlug: 'privacy-and-security',
-    parentSlug: 'privacy-and-security',
+    category: 'Policies',
+    categorySlug: 'policies',
+    parentSlug: 'policies',
   },
+
+  // ---- Privacy and Security ----
   {
     slug: 'data-privacy',
     title: 'Data Privacy',

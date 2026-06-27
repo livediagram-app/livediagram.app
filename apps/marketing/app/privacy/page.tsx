@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 
-import { PrivacyRedirect } from './PrivacyRedirect';
+import { LegalRedirect } from '@/components/LegalRedirect';
 
-// The privacy policy moved into the help centre (Privacy and Security). This
-// page keeps the historical /privacy URL alive — it redirects there — but is
-// noindex so search engines consolidate on the canonical help article rather
-// than indexing this thin redirect.
-const HELP_PRIVACY_URL = '/help/privacy-and-security/privacy-policy/';
+// The privacy policy moved into the help centre (Policies). This page keeps the
+// historical /privacy URL alive — it redirects there — but is noindex so search
+// engines consolidate on the canonical help article rather than this thin
+// redirect.
+const HELP_PRIVACY_URL = '/help/policies/privacy-policy/';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy · livediagram',
@@ -16,5 +16,11 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
-  return <PrivacyRedirect href={HELP_PRIVACY_URL} />;
+  return (
+    <LegalRedirect
+      href={HELP_PRIVACY_URL}
+      heading="Our privacy policy has moved"
+      linkText="read the privacy policy here"
+    />
+  );
 }
