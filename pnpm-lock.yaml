@@ -112,6 +112,9 @@ importers:
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../../packages/vitest-config
       '@tailwindcss/postcss':
         specifier: ^4.0.0
         version: 4.3.0
@@ -127,6 +130,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.2
         version: 19.2.3(@types/react@19.2.15)
+      '@vitest/coverage-v8':
+        specifier: ^3.2.6
+        version: 3.2.6(vitest@3.2.6(@types/debug@4.1.13)(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0))
       eslint:
         specifier: ^9.17.0
         version: 9.39.4(jiti@2.7.0)
@@ -136,6 +142,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+      vitest:
+        specifier: ^3.2.6
+        version: 3.2.6(@types/debug@4.1.13)(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)
 
   apps/live:
     dependencies:
