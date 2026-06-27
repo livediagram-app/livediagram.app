@@ -1,7 +1,16 @@
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { articles, categories } from './articles';
+import {
+  articleHref,
+  articles,
+  categories,
+  categoryHref,
+  getArticlesByCategory,
+  getCategoryGroups,
+  getSubArticles,
+  searchArticles,
+} from './articles';
 
 // The help registry (articles.ts) is hand-maintained and is the SINGLE
 // source for search + browse: an article's page.mdx renders from the
@@ -51,5 +60,65 @@ describe('help article registry', () => {
       categories.map((c) => [c.slug, actual[c.slug] ?? 0]),
     );
     expect(normalisedActual).toEqual(declared);
+  });
+});
+
+describe('href builders', () => {
+  it('builds trailing-slash paths', () => {
+    expect(categoryHref('explorer')).toBe('/explorer/');
+    expect(articleHref({ categorySlug: 'canvas', slug: 'themes' })).toBe('/canvas/themes/');
+  });
+});
+
+describe('getArticlesByCategory', () => {
+  it('returns exactly the articles in that category', () => {
+    const slug = articles[0]!.categorySlug;
+    const got = getArticlesByCategory(slug);
+    expect(got.length).toBeGreaterThan(0);
+    expect(got.every((a) => a.categorySlug === slug)).toBe(true);
+    expect(getArticlesByCategory('no-such-category')).toEqual([]);
+  });
+});
+
+describe('getCategoryGroups', () => {
+  it('partitions a category without losing or duplicating articles', () => {
+    const slug = articles[0]!.categorySlug;
+    const groups = getCategoryGroups(slug);
+    const flat = groups.flatMap((g) => g.articles);
+    expect(flat).toEqual(getArticlesByCategory(slug)); // same items, same order
+    expect(new Set(groups.map((g) => g.group)).size).toBe(groups.length); // no dup group labels
+  });
+});
+
+describe('getSubArticles', () => {
+  it('returns the children of a parent slug', () => {
+    const child = articles.find((a) => a.parentSlug);
+    expect(child).toBeDefined();
+    const subs = getSubArticles(child!.parentSlug!);
+    expect(subs).toContain(child);
+    expect(subs.every((a) => a.parentSlug === child!.parentSlug)).toBe(true);
+    expect(getSubArticles('no-such-parent')).toEqual([]);
+  });
+});
+
+describe('searchArticles', () => {
+  it('matches case-insensitively on title or description', () => {
+    const first = articles[0]!;
+    const word = first.title.split(' ')[0]!;
+    const hits = searchArticles(word);
+    expect(hits).toContain(first);
+    const lower = word.toLowerCase();
+    expect(
+      hits.every(
+        (a) => a.title.toLowerCase().includes(lower) || a.description.toLowerCase().includes(lower),
+      ),
+    ).toBe(true);
+    // Case-insensitive: upper and lower queries return the same set.
+    expect(searchArticles(word.toUpperCase())).toEqual(searchArticles(word.toLowerCase()));
+  });
+
+  it('returns everything for an empty query and nothing for a non-match', () => {
+    expect(searchArticles('')).toHaveLength(articles.length);
+    expect(searchArticles('zzz-no-such-help-content-xyz')).toEqual([]);
   });
 });
