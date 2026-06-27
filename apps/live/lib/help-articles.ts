@@ -6,10 +6,13 @@
 // reference a symbolic key, never a hand-written `/help/...` URL, so a slug
 // change is a one-line edit here.
 //
-// Each value is the NESTED slug (the path under /help, matching the
-// article's categorySlug/slug in apps/help and its page.mdx path). A key
-// pointing at a missing article is a bug, the same way an unregistered
-// help article is - keep these in sync with apps/help/lib/articles.ts.
+// Each value is the NESTED slug (the path under /help): usually an
+// article's categorySlug/slug (matching its page.mdx path in apps/help),
+// but it may also be a category LANDING path (e.g. `palette` points at the
+// palette overview page.tsx) when the editor links to a whole section
+// rather than one article. A key pointing at a path that resolves to no
+// help page is a bug, the same way an unregistered help article is - keep
+// these in sync with apps/help/lib/articles.ts.
 
 export const HELP_ARTICLES = {
   // Sharing
