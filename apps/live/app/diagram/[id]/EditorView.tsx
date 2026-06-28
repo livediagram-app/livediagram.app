@@ -17,8 +17,6 @@ import {
   themePresetColors,
   type ThemeId,
 } from '@/lib/themes';
-import { PALETTE_SEARCH_ITEMS } from '@/lib/palette-search';
-import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { Canvas } from '@/components/canvas/Canvas';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -30,12 +28,12 @@ import { EditorModals } from '@/components/dialogs/EditorModals';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
+import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
-import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { useEditorContext } from './EditorContext';
 
 // How long a guest edits before the sign-in nudge appears (spec/36).
@@ -45,9 +43,6 @@ const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 
 const EditorContextMenu = dynamic(() =>
   import('@/components/palette/EditorContextMenu').then((m) => m.EditorContextMenu),
-);
-const SearchPanel = dynamic(() =>
-  import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
 );
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
@@ -223,7 +218,6 @@ export function EditorView() {
     revertChange,
     savedAt,
     saveStatus,
-    searchOpen,
     selectedId,
     selectElement,
     connectSourceId,
@@ -365,7 +359,6 @@ export function EditorView() {
   // Contextual command palette for the SearchPanel "Actions" group (spec/09):
   // selection-aware command list + dispatcher, built off the same editor
   // actions the menus use. Empty (undefined items) for view-only sessions.
-  const { commandItems, runCommand } = useEditorCommands();
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the diagram (spec/42).
   useEditorAccent(activeTab.theme);
@@ -1009,65 +1002,7 @@ export function EditorView() {
           }}
         />
       )}
-      {searchOpen ? (
-        <SearchPanel
-          diagrams={diagramList.map((d) => ({ id: d.id, name: d.name }))}
-          folders={folders.map((f) => ({ id: f.id, name: f.name }))}
-          shared={sharedDiagrams.map((s) => ({
-            id: s.id,
-            name: s.name,
-            shareCode: s.shareCode,
-          }))}
-          teams={teams.map((t) => ({ id: t.id, name: t.name }))}
-          teamFolders={teamFolders}
-          teamDiagrams={teamDiagrams.map((d) => ({
-            id: d.id,
-            name: d.name,
-            teamId: d.team.id,
-            teamName: d.team.name,
-          }))}
-          tabs={tabs}
-          currentTabId={activeId}
-          onSelectDiagram={(id) => {
-            openDiagram(id);
-          }}
-          onSelectShared={(id, shareCode) => {
-            openDiagram(id, shareCode);
-          }}
-          onSelectTeam={(id) => {
-            window.location.assign(
-              `${window.location.origin}/explorer/team?id=${encodeURIComponent(id)}`,
-            );
-          }}
-          onSelectTeamFolder={(teamId, folderId) => {
-            window.location.assign(
-              `${window.location.origin}/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
-            );
-          }}
-          onSelectTab={(tabId) => {
-            setActiveId(tabId);
-            setSelectedId(null);
-          }}
-          onSelectElement={(tabId, elementId) => {
-            setActiveId(tabId);
-            setSelectedId(elementId);
-          }}
-          paletteItems={isReadOnly ? undefined : PALETTE_SEARCH_ITEMS}
-          onAddPaletteItem={
-            isReadOnly
-              ? undefined
-              : (add) => {
-                  if (add.type === 'shape') addShape(add.shapeKind);
-                  else if (add.type === 'icon') addIcon(add.iconId);
-                  else addTechIcon(add.iconId);
-                }
-          }
-          commandItems={commandItems}
-          onRunCommand={runCommand}
-          helpItems={HELP_SEARCH_ITEMS}
-          onClose={() => setSearchOpen(false)}
-        />
-      ) : null}
+      <EditorSearchPanel />
       <EditorModals />
       <EditorAnchoredPopovers />
       {contextMenu && contextMenu.mode !== 'canvas' && !isReadOnly ? (
