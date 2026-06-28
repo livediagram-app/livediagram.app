@@ -3,10 +3,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Brand, EmptyState } from '@livediagram/ui';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import { ActivityGlyph, ListGlyph, SearchGlyph, SparkGlyph } from './glyphs';
+import { ActivityGlyph, BrushGlyph, ListGlyph, SearchGlyph, SparkGlyph } from './glyphs';
 import { WindowPanel } from './WindowPanel';
 import { HighlightsView } from './HighlightsView';
 import { RawView } from './RawView';
+import { LookAndFeelView } from './LookAndFeelView';
 import { MetricSearch } from './MetricSearch';
 
 // Same origin as the editor + api under the router (livediagram.app).
@@ -17,10 +18,11 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // Three ways to read the same summary payload (spec/22). The timeframe
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
-type ViewKey = 'highlights' | 'raw' | 'search';
+type ViewKey = 'highlights' | 'raw' | 'lookfeel' | 'search';
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'highlights', label: 'Highlights', icon: <SparkGlyph /> },
   { key: 'raw', label: 'Raw', icon: <ListGlyph /> },
+  { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
 ];
 
@@ -133,9 +135,11 @@ export default function TelemetryDashboard() {
             <HighlightsView summary={summary} active={active} />
           ) : view === 'raw' ? (
             <RawView summary={summary} active={active} />
+          ) : view === 'lookfeel' ? (
+            <LookAndFeelView summary={summary} active={active} />
           ) : summary.daily ? (
             <div className="mt-8">
-              <MetricSearch windows={summary.windows} daily={summary.daily} />
+              <MetricSearch windows={summary.windows} daily={summary.daily} active={active} />
             </div>
           ) : (
             <p className="mt-8 text-slate-500">

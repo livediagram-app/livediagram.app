@@ -9,7 +9,7 @@ import { buildMetrics, type Metric } from './metrics';
 import { MetricPicker } from './MetricPicker';
 import { EventIcon } from './telemetry-event-icon';
 import { TrendChart } from './TrendChart';
-import { buildWindowCounts, WINDOW_META } from './windows';
+import { buildWindowCounts, WINDOW_META, windowHighlightFrom } from './windows';
 
 // The Search view (spec/22): find one specific event — by typing a query
 // or by drilling category → action → type in the MetricPicker — then see
@@ -19,9 +19,11 @@ import { buildWindowCounts, WINDOW_META } from './windows';
 export function MetricSearch({
   windows,
   daily,
+  active,
 }: {
   windows: Record<TelemetryWindowKey, TelemetryWindow>;
   daily: TelemetryDaily;
+  active: TelemetryWindowKey;
 }) {
   const [selected, setSelected] = useState<Metric | null>(null);
 
@@ -46,7 +48,12 @@ export function MetricSearch({
       <MetricPicker metrics={metrics} onSelect={setSelected} />
 
       {selected ? (
-        <SelectedMetric metric={selected} windowCounts={windowCounts} daily={daily} />
+        <SelectedMetric
+          metric={selected}
+          windowCounts={windowCounts}
+          daily={daily}
+          active={active}
+        />
       ) : (
         <div className="mt-6">
           <EmptyState
@@ -64,10 +71,12 @@ function SelectedMetric({
   metric,
   windowCounts,
   daily,
+  active,
 }: {
   metric: Metric;
   windowCounts: Record<TelemetryWindowKey, Map<string, number>>;
   daily: TelemetryDaily;
+  active: TelemetryWindowKey;
 }) {
   const color = categoryColor(metric.category);
   const series = daily.byMetric[metric.key] ?? [];
@@ -108,7 +117,12 @@ function SelectedMetric({
           Daily trend — last 30 days
         </p>
         <div className="mt-4">
-          <TrendChart days={daily.days} values={series} color={color} highlightFromIndex={null} />
+          <TrendChart
+            days={daily.days}
+            values={series}
+            color={color}
+            highlightFromIndex={windowHighlightFrom(daily, active)}
+          />
         </div>
       </div>
     </div>
