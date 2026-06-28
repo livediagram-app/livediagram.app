@@ -30,6 +30,7 @@ import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
+import { EditorModals } from '@/components/dialogs/EditorModals';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
@@ -72,15 +73,6 @@ const SearchPanel = dynamic(() =>
 );
 const ImagePicker = dynamic(() =>
   import('@/components/panels/ImagePicker').then((m) => m.ImagePicker),
-);
-const ShortcutsDialog = dynamic(() =>
-  import('@/components/dialogs/ShortcutsDialog').then((m) => m.ShortcutsDialog),
-);
-const SettingsDialog = dynamic(() =>
-  import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
-);
-const CanvasThemeDialog = dynamic(() =>
-  import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
 );
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
@@ -271,7 +263,6 @@ export function EditorView() {
     removeTabFromFolder,
     reorderTabs,
     resetColorsSelected,
-    resetElementsToTheme,
     resolveThread,
     retryActiveTabLoad,
     revertChange,
@@ -304,10 +295,6 @@ export function EditorView() {
     setArrowThicknessSelected,
     setShapeKindSelected,
     resetAspectRatioSelected,
-    setBackgroundColor,
-    setBackgroundOpacity,
-    setBackgroundPatternScale,
-    setBackgroundPattern,
     setMarkerSelected,
     setMarkerSizeSelected,
     setRailCountSelected,
@@ -385,16 +372,13 @@ export function EditorView() {
     setOpacitySelected,
     setPaddingSelected,
     setPalettePosition,
-    setPatternColor,
     setSearchOpen,
     setSelectedId,
     setSettingsOpen,
     setShareDialogOpen,
-    canvasThemeTab,
     setCanvasThemeTab,
     renameDiagramNonce,
     renameTabNonce,
-    setShortcutsEnabled,
     setShortcutsOpen,
     setStrokeColorSelected,
     setTextAlignSelected,
@@ -403,8 +387,6 @@ export function EditorView() {
     setTextSizeSelected,
     setTabFont,
     setTabDefaultTextSize,
-    setTheme,
-    settingsOpen,
     setUserPreferences,
     setViewportOffset,
     setViewportZoom,
@@ -413,8 +395,6 @@ export function EditorView() {
     shareLinks,
     sharePassword,
     shareUrlFor,
-    shortcutsEnabled,
-    shortcutsOpen,
     skipTemplatePicker,
     snapGuides,
     distGuides,
@@ -1187,49 +1167,7 @@ export function EditorView() {
           onClose={() => setSearchOpen(false)}
         />
       ) : null}
-      {shortcutsOpen ? (
-        <ShortcutsDialog
-          enabled={shortcutsEnabled}
-          onToggleEnabled={setShortcutsEnabled}
-          onClose={() => setShortcutsOpen(false)}
-        />
-      ) : null}
-      {settingsOpen ? (
-        <SettingsDialog
-          settings={userPreferences}
-          onChange={(next) => {
-            setUserPreferences(next);
-            // Pass the resolved owner id so the new prefs round-trip
-            // to D1 (spec/20). selfParticipant?.id is null until the
-            // identity effect resolves it, but settingsOpen can't be
-            // true until the user clicks the gear, which only renders
-            // after that effect ran, so the id is always set here.
-            writeUserPreferences(next, selfParticipant?.id ?? null);
-          }}
-          onClose={() => setSettingsOpen(false)}
-          aiCapable={aiCapable}
-        />
-      ) : null}
-      {canvasThemeTab !== null && !isReadOnly ? (
-        <CanvasThemeDialog
-          tab={canvasThemeTab}
-          onTabChange={setCanvasThemeTab}
-          backgroundPattern={activeTab.backgroundPattern ?? 'grid'}
-          backgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}
-          patternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
-          backgroundOpacity={activeTab.backgroundOpacity ?? 1}
-          backgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
-          onSetBackgroundPattern={setBackgroundPattern}
-          onSetBackgroundColor={setBackgroundColor}
-          onSetPatternColor={setPatternColor}
-          onSetBackgroundOpacity={setBackgroundOpacity}
-          onSetBackgroundPatternScale={setBackgroundPatternScale}
-          themeId={activeTab.theme ?? 'brand'}
-          onSetTheme={setTheme}
-          onResetElementsToTheme={resetElementsToTheme}
-          onClose={() => setCanvasThemeTab(null)}
-        />
-      ) : null}
+      <EditorModals />
       {commentThreadOpenId !== null
         ? (() => {
             const target = activeTab.elements.find(
