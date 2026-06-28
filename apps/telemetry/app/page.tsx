@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Brand, EmptyState } from '@livediagram/ui';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import { ActivityGlyph } from './glyphs';
+import { ActivityGlyph, ListGlyph, SearchGlyph, SparkGlyph } from './glyphs';
 import { WindowPanel } from './WindowPanel';
 import { HighlightsView } from './HighlightsView';
 import { RawView } from './RawView';
@@ -18,10 +18,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
 type ViewKey = 'highlights' | 'raw' | 'search';
-const VIEWS: { key: ViewKey; label: string }[] = [
-  { key: 'highlights', label: 'Highlights' },
-  { key: 'raw', label: 'Raw' },
-  { key: 'search', label: 'Search' },
+const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
+  { key: 'highlights', label: 'Highlights', icon: <SparkGlyph /> },
+  { key: 'raw', label: 'Raw', icon: <ListGlyph /> },
+  { key: 'search', label: 'Search', icon: <SearchGlyph /> },
 ];
 
 export default function TelemetryDashboard() {
@@ -117,10 +117,13 @@ export default function TelemetryDashboard() {
                 aria-selected={view === v.key}
                 onClick={() => setView(v.key)}
                 className={
-                  'cursor-pointer rounded-md px-4 py-1.5 text-sm font-medium transition ' +
+                  'flex cursor-pointer items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-medium transition ' +
                   (view === v.key ? 'bg-brand-500 text-white' : 'text-slate-600 hover:bg-slate-100')
                 }
               >
+                <span aria-hidden className="[&_svg]:h-3.5 [&_svg]:w-3.5">
+                  {v.icon}
+                </span>
                 {v.label}
               </button>
             ))}

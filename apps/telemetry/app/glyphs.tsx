@@ -173,6 +173,21 @@ export function SparkGlyph() {
     </svg>
   );
 }
+export function SearchGlyph() {
+  return (
+    <svg {...SVG_PROPS}>
+      <circle cx="6" cy="6" r="4" />
+      <path d="M9 9 L12.5 12.5" />
+    </svg>
+  );
+}
+export function ListGlyph() {
+  return (
+    <svg {...SVG_PROPS}>
+      <path d="M2 4 L12 4 M2 7 L12 7 M2 10 L12 10" />
+    </svg>
+  );
+}
 export function LinkGlyph() {
   return (
     <svg {...SVG_PROPS}>

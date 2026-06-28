@@ -65,8 +65,16 @@ export function groupByCategory(rows: TelemetryCount[]): Group[] {
     .sort((a, b) => b.subtotal - a.subtotal);
 }
 
+// Raise the first letter of each word without lowering the rest, so a
+// lowercased preset type (theme names like `mint`, template ids like
+// `flowchart`) displays Title Case while an acronym or PascalCase value
+// (`PNG`, `JSON`, `FormatPainter`, `ShareLink`) is left intact.
+export function titleCase(value: string): string {
+  return value.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export function eventLabel(row: Pick<TelemetryCount, 'action' | 'type'>): string {
-  return row.type ? `${row.action} · ${row.type}` : row.action;
+  return row.type ? `${titleCase(row.action)} · ${titleCase(row.type)}` : titleCase(row.action);
 }
 
 // Short plain-language explanation for a single event row, shown as

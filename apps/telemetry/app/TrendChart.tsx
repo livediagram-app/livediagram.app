@@ -64,6 +64,10 @@ export function TrendChart({
   const activePoints = points.slice(from);
   const activeFromX = points[from]?.x ?? 0;
   const peak = Math.max(...values, 0);
+  // Mean across the whole series, drawn as a dashed reference line so a
+  // reader can see at a glance which days ran above / below average.
+  const avg = values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : 0;
+  const avgY = VIEW_H - PAD_TOP - (avg / max) * (VIEW_H - PAD_TOP);
   // Unique gradient id per render so two charts on one page don't collide.
   const gradientId = `trend-fill-${color.replace(/[^a-z0-9]/gi, '')}-${from}`;
 
@@ -95,6 +99,18 @@ export function TrendChart({
           ) : null}
           {/* Fill under the active region. */}
           <path d={areaPath(activePoints)} fill={`url(#${gradientId})`} />
+          {/* Dashed average reference line across the full width. */}
+          <line
+            x1={0}
+            y1={avgY}
+            x2={VIEW_W}
+            y2={avgY}
+            stroke="currentColor"
+            strokeWidth={1}
+            strokeDasharray="3 3"
+            vectorEffect="non-scaling-stroke"
+            className="text-slate-400 dark:text-slate-500"
+          />
           {/* Full line, muted: the context before the active window. */}
           <path
             d={linePath(points)}
@@ -143,7 +159,10 @@ export function TrendChart({
       </div>
       <div className="mt-2 flex justify-between text-[10px] text-slate-400">
         <span>{fmtDay(days[0] ?? 0)}</span>
-        <span className="text-slate-500 dark:text-slate-400">Peak {peak.toLocaleString()}</span>
+        <span className="text-slate-500 dark:text-slate-400">
+          Peak {peak.toLocaleString()} · Avg{' '}
+          {avg.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+        </span>
         <span>{fmtDay(days[days.length - 1] ?? 0)}</span>
       </div>
     </div>
