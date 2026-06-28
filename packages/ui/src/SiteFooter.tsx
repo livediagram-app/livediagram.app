@@ -23,17 +23,11 @@ export function SiteFooter() {
           <a href="/faq" className="hover:text-slate-900">
             FAQ
           </a>
-          <a href="/help" className="hover:text-slate-900">
-            Help
-          </a>
           <a href="/help/policies/terms/" className="hover:text-slate-900">
             Terms
           </a>
           <a href="/help/policies/privacy-policy/" className="hover:text-slate-900">
             Privacy
-          </a>
-          <a href="/telemetry" className="hover:text-slate-900">
-            Telemetry
           </a>
           <a href="/status" className="hover:text-slate-900">
             Status

@@ -32,7 +32,7 @@ export function StickyWindowBar({
       },
       // Negative top margin ≈ the sticky SiteHeader height, so the bar
       // appears as the panel slips under the header rather than off-screen.
-      { rootMargin: '-72px 0px 0px 0px', threshold: 0 },
+      { rootMargin: '-80px 0px 0px 0px', threshold: 0 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -42,11 +42,11 @@ export function StickyWindowBar({
     <div
       aria-hidden={!stuck}
       className={
-        'fixed inset-x-0 top-16 z-30 flex justify-center px-4 transition-all duration-200 ' +
-        (stuck ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-2 opacity-0')
+        'fixed inset-x-0 top-24 z-30 flex justify-center px-4 transition-all duration-200 ' +
+        (stuck ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-3 opacity-0')
       }
     >
-      <div className="inline-flex gap-1 rounded-full border border-slate-200 bg-white/90 p-1 shadow-md backdrop-blur dark:border-slate-700 dark:bg-slate-900/90">
+      <div className="inline-flex gap-1.5 rounded-full border border-slate-200 bg-white p-1.5 shadow-xl ring-1 ring-black/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900 dark:ring-white/10">
         {WINDOW_META.map((w) => {
           const isActive = active === w.key;
           return (
@@ -56,9 +56,9 @@ export function StickyWindowBar({
               onClick={() => onSelect(w.key)}
               aria-pressed={isActive}
               className={
-                'cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition ' +
+                'cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition ' +
                 (isActive
-                  ? 'bg-brand-500 text-white'
+                  ? 'bg-brand-500 text-white shadow-sm'
                   : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')
               }
             >

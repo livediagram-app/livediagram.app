@@ -50,12 +50,11 @@ export function RankCard({
       ) : (
         <ul className="mt-4 flex flex-col gap-3">
           {items.map((row, i) => {
-            const tag =
-              items.length > 1 && i === 0
-                ? 'most'
-                : items.length > 1 && i === items.length - 1
-                  ? 'least'
-                  : null;
+            // Only the top row is tagged. We deliberately don't tag a "least
+            // used" — features with zero usage have no row at all, so the
+            // bottom of this list isn't truly the least used, just the lowest
+            // among those that have any data.
+            const isTop = items.length > 1 && i === 0;
             const series = daily?.byMetric[metricKey(category, action, row.type)];
             return (
               <li key={row.type} className="flex items-center gap-3">
@@ -65,7 +64,7 @@ export function RankCard({
                       <span className="truncate text-slate-700 dark:text-slate-200">
                         {titleCase(row.type ?? '')}
                       </span>
-                      {tag ? <RankTag kind={tag} /> : null}
+                      {isTop ? <RankTag /> : null}
                     </span>
                     <span className="shrink-0 font-semibold tabular-nums text-slate-900 dark:text-slate-100">
                       {row.count.toLocaleString()}
@@ -97,18 +96,10 @@ export function RankCard({
   );
 }
 
-function RankTag({ kind }: { kind: 'most' | 'least' }) {
-  const isMost = kind === 'most';
+function RankTag() {
   return (
-    <span
-      className={
-        'shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ' +
-        (isMost
-          ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-          : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500')
-      }
-    >
-      {isMost ? 'Most used' : 'Least used'}
+    <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+      Most used
     </span>
   );
 }
