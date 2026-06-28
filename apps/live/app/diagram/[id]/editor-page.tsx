@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
+import { track } from '@/lib/telemetry';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
 import { DiagramLoading } from '@/components/chrome/DiagramLoading';
@@ -27,6 +28,11 @@ const LOAD_ERROR_MESSAGE =
 // flag. The /live/embed route passes it; the /diagram route doesn't.
 export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   const state = useEditorState({ embed });
+  // Anonymous telemetry (spec/22): one emit per rendered embed iframe
+  // document. Fires once on mount; the /diagram route never sets `embed`.
+  useEffect(() => {
+    if (embed) track('Session', 'Opened', 'Embed');
+  }, [embed]);
   // Tab title reflects the diagram: "<name> | livediagram" (falls back to
   // Untitled when the diagram has no name yet). Updates as the user renames.
   useEffect(() => {

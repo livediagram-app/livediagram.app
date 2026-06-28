@@ -306,6 +306,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     const themeLabel =
       THEMES.find((t) => t.id === themeId)?.label ??
       themeId.charAt(0).toUpperCase() + themeId.slice(1);
+    track('Theme', 'Changed', 'ResetElements'); // discrete one-shot recolour to theme
     emitTabMeta(activeId, `Reset element colours to the ${themeLabel} theme`);
     commitTabs((ts) =>
       ts.map((t) => {

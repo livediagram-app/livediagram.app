@@ -226,6 +226,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // rest. A fully-locked marquee is a no-op (selection stays put).
     const targetIds = deletableIds(multiSelectedIds);
     if (targetIds.size === 0) return;
+    track('Element', 'Deleted'); // parity with single-element deleteSelected
     commit((els) =>
       els.filter((el) => {
         if (el.locked === true) return true;

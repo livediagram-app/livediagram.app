@@ -197,6 +197,7 @@ export function useElementHelpers(opts: {
 
   const completeGrouping = (targetId: string) => {
     if (!groupSourceId) return;
+    track('Element', 'Grouped'); // parity with the marquee-group path
     commit((els) => joinGroups(els, groupSourceId, targetId));
     setSelectedId(targetId);
   };

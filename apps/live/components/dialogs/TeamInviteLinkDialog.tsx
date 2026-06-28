@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { TeamInviteLink } from '@livediagram/api-schema';
 import { apiGenerateTeamInviteLink, apiRevokeTeamInviteLink } from '@/lib/api-client';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { track } from '@/lib/telemetry';
 
 // "Invite by link" (spec/32): the admin actively turns on a shareable
 // join link that expires after a week. Anyone signed in who opens the
@@ -57,6 +58,7 @@ export function TeamInviteLinkDialog({
     setError(null);
     try {
       const link = await apiGenerateTeamInviteLink(ownerId, teamId);
+      track('Team', 'Shared', 'Link'); // spec/22: an invite link was turned on
       onInviteLinkChange(link);
       setCopied(false);
     } catch {
@@ -72,6 +74,7 @@ export function TeamInviteLinkDialog({
     setError(null);
     try {
       await apiRevokeTeamInviteLink(ownerId, teamId);
+      track('Team', 'Removed', 'Link'); // spec/22: invite link turned off
       onInviteLinkChange(null);
     } catch {
       setError('Could not turn the link off. Try again.');
@@ -90,6 +93,7 @@ export function TeamInviteLinkDialog({
       // to selecting the field so the user can copy by hand.
       inputRef.current?.select();
     }
+    track('UI', 'Copied', 'TeamInviteLink'); // spec/22: mirrors ShareLink/EmbedCode copies
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
   };

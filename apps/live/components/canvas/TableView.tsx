@@ -328,6 +328,26 @@ export function TableView({
     onCommitTable(element.id, patch);
     setMenu(null);
   };
+
+  // Structural add/remove wrappers around `apply` so each emits its own
+  // discrete event, mirroring moveCol/moveRow's telemetry. The `at`/index
+  // args match the menu call sites (insert before/after a column or row).
+  const addCol = (at: number) => {
+    track('Element', 'Added', 'TableColumn');
+    apply(addTableColumn(element, at));
+  };
+  const delCol = (c: number) => {
+    track('Element', 'Deleted', 'TableColumn');
+    apply(removeTableColumn(element, c));
+  };
+  const addRow = (at: number) => {
+    track('Element', 'Added', 'TableRow');
+    apply(addTableRow(element, at));
+  };
+  const delRow = (r: number) => {
+    track('Element', 'Deleted', 'TableRow');
+    apply(removeTableRow(element, r));
+  };
   const showControls = isSelected && !readOnly && !element.locked;
   const toggle = (axis: 'col' | 'row', index: number) =>
     setMenu((m) => (m && m.axis === axis && m.index === index ? null : { axis, index }));
@@ -746,16 +766,10 @@ export function TableView({
                           data-table-ui
                           className="pointer-events-auto absolute left-1/2 top-7 z-[var(--z-chrome)] w-36 -translate-x-1/2 animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
                         >
-                          <MenuButton
-                            label="Insert left"
-                            onClick={() => apply(addTableColumn(element, c))}
-                          >
+                          <MenuButton label="Insert left" onClick={() => addCol(c)}>
                             <ArrowIcon dir="left" />
                           </MenuButton>
-                          <MenuButton
-                            label="Insert right"
-                            onClick={() => apply(addTableColumn(element, c + 1))}
-                          >
+                          <MenuButton label="Insert right" onClick={() => addCol(c + 1)}>
                             <ArrowIcon dir="right" />
                           </MenuButton>
                           <MenuButton
@@ -776,7 +790,7 @@ export function TableView({
                             label="Delete column"
                             danger
                             disabled={cols <= 1}
-                            onClick={() => apply(removeTableColumn(element, c))}
+                            onClick={() => delCol(c)}
                           >
                             <TrashIcon />
                           </MenuButton>
@@ -816,13 +830,10 @@ export function TableView({
                     data-table-ui
                     className="pointer-events-auto absolute left-7 top-1/2 z-[var(--z-chrome)] w-36 -translate-y-1/2 animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
                   >
-                    <MenuButton label="Insert above" onClick={() => apply(addTableRow(element, r))}>
+                    <MenuButton label="Insert above" onClick={() => addRow(r)}>
                       <ArrowIcon dir="up" />
                     </MenuButton>
-                    <MenuButton
-                      label="Insert below"
-                      onClick={() => apply(addTableRow(element, r + 1))}
-                    >
+                    <MenuButton label="Insert below" onClick={() => addRow(r + 1)}>
                       <ArrowIcon dir="down" />
                     </MenuButton>
                     <MenuButton
@@ -843,7 +854,7 @@ export function TableView({
                       label="Delete row"
                       danger
                       disabled={rows <= 1}
-                      onClick={() => apply(removeTableRow(element, r))}
+                      onClick={() => delRow(r)}
                     >
                       <TrashIcon />
                     </MenuButton>

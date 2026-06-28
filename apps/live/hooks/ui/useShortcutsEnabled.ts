@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import { track } from '@/lib/telemetry';
 
 // Per-device toggle that disables ALL editor keyboard shortcuts
 // (Cmd-Z undo, Delete to wipe selection, Escape to cancel modes,
@@ -30,6 +31,9 @@ export function useShortcutsEnabled(): { enabled: boolean; setEnabled: (next: bo
   }, []);
 
   const setEnabled = (next: boolean) => {
+    // Settings flip (spec/22): emit BEFORE persisting so the wire value
+    // matches the value the user just chose, like the other UI toggles.
+    track('UI', 'Toggled', next ? 'ShortcutsOn' : 'ShortcutsOff');
     writeLocalStorageSafe(STORAGE_KEY, next ? 'true' : 'false');
     setLocalEnabled(next);
   };
