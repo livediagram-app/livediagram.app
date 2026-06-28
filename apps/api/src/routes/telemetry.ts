@@ -1,6 +1,6 @@
 // /api/telemetry/summary — public usage dashboard data (spec/22).
 
-import type { TelemetrySummary } from '@livediagram/api-schema';
+import { metricKey, type TelemetrySummary } from '@livediagram/api-schema';
 import { telemetryCountsSince, telemetryDailyCountsSince } from '../db';
 import { json, notFound } from '../responses';
 import type { RouteContext } from './context';
@@ -52,6 +52,7 @@ export async function handleTelemetry(ctx: RouteContext): Promise<Response> {
   const days: number[] = [];
   const totals: number[] = [];
   const byCategory: Record<string, number[]> = {};
+  const byMetric: Record<string, number[]> = {};
   const dayIndex: Map<string, number> = new Map();
   for (let i = 0; i < 30; i++) {
     const ts = dailySince + i * day;
@@ -65,15 +66,22 @@ export async function handleTelemetry(ctx: RouteContext): Promise<Response> {
     const idx = dayIndex.get(row.day);
     if (idx === undefined) continue;
     totals[idx] = (totals[idx] ?? 0) + row.count;
-    const arr = byCategory[row.category] ?? new Array(30).fill(0);
-    arr[idx] = (arr[idx] ?? 0) + row.count;
-    byCategory[row.category] = arr;
+    const cat = byCategory[row.category] ?? new Array(30).fill(0);
+    cat[idx] = (cat[idx] ?? 0) + row.count;
+    byCategory[row.category] = cat;
+    // Per-event series for the Search view's metric trend line. The
+    // grouped query already splits on action/type, so each row maps to
+    // exactly one metric bucket.
+    const key = metricKey(row.category, row.action, row.type);
+    const metric = byMetric[key] ?? new Array(30).fill(0);
+    metric[idx] = (metric[idx] ?? 0) + row.count;
+    byMetric[key] = metric;
   }
   const summary: TelemetrySummary = {
     enabled: true,
     generatedAt: now,
     windows: { today: toWindow(today), last7: toWindow(last7), last30: toWindow(last30) },
-    daily: { days, totals, byCategory },
+    daily: { days, totals, byCategory, byMetric },
   };
   const res = json(summary);
   if (isLocalDev) return res;

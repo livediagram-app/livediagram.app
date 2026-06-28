@@ -1,9 +1,10 @@
 // Reusable illustrated empty state (spec/15): a floating gradient icon badge
 // over a softly pulsing double ring and a faint mini-diagram motif, with a
 // heading, a one-line explainer, and an optional CTA slot (children). CSS-only
-// motion (animate-empty-* in globals.css), paused under prefers-reduced-motion.
-// Shared by the Explorer's diagram-list empty states (EmptyPane) and the
-// per-feature panes (tokens, themes, gallery, invites) so they read alike.
+// motion (the `animate-empty-*` utilities + keyframes live in the shared
+// tailwind theme, paused under prefers-reduced-motion). Shared across apps —
+// the live Explorer's diagram-list + per-feature empty states and the
+// telemetry dashboard's no-data states — so they all read alike.
 import type { ReactNode } from 'react';
 
 export function EmptyState({

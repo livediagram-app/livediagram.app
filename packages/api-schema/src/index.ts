@@ -709,11 +709,26 @@ export type CapabilitiesResponse = {
 // events on `days[i]`; `byCategory[category][i]` is the per-category
 // count on the same day. Pre-aggregated server-side so the dashboard
 // can render the sparkline + stacked-area without any client work.
+//
+// `byMetric` is the per-event version of `byCategory`: one 30-day
+// series per distinct event, keyed by `metricKey(category, action,
+// type)` (= `category|action|type`, empty string for a null type).
+// Drives the Search view's single-metric trend line (spec/22).
 export type TelemetryDaily = {
   days: number[];
   totals: number[];
   byCategory: Record<string, number[]>;
+  byMetric: Record<string, number[]>;
 };
+
+// Stable key for a single (category, action, type) event, used as the
+// `TelemetryDaily.byMetric` map key. Defined here so the api worker
+// that builds the map and the dashboard that reads it can't drift.
+// `type` is null for type-less events; we collapse it to '' so the key
+// is always a 3-part `a|b|c` string.
+export function metricKey(category: string, action: string, type: string | null): string {
+  return `${category}|${action}|${type ?? ''}`;
+}
 
 export type TelemetrySummary = {
   enabled: boolean;

@@ -67,10 +67,16 @@ The dashboard surfaces three fixed windows that top out at **30 days** (Last mon
       days: number[];                       // UTC-midnight ms per bucket
       totals: number[];                     // total events that day
       byCategory: Record<string, number[]>; // per-category counts, same indexing
+      byMetric: Record<string, number[]>;   // per-event counts, same indexing; key = `category|action|type`
     };
   }
   // Window = { total: number; rows: { category; action; type; count }[] }
   ```
+  `byMetric` is the per-event (category·action·type) version of `byCategory` —
+  one 30-day series per distinct event, keyed `category|action|type` (empty
+  string for a null `type`). It drives the Search view's metric trend line so a
+  single event can be charted over time, not just a whole category. Same
+  zero-filled indexing as `days`/`totals`/`byCategory`.
   Cached at the edge (Cache API, a few minutes) so a public traffic spike never hammers D1. When disabled, returns `{ enabled: false }`. The cache is bypassed when the worker is serving from a localhost hostname (parallel to the same-origin escape hatch), so a developer iterating on the feature sees fresh counts immediately instead of waiting out a 5-minute TTL per emit.
 
 ## On/off env var
@@ -114,7 +120,17 @@ Extend by adding to the `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums (if n
 
 ## Dashboard app (`apps/telemetry`)
 
-A new Next.js static-export app (same stack as the others), mounted by the router at **`/telemetry`** (`basePath: '/telemetry'`, prefix stripped by the router, like the live app's assets). Public, read-only. A timeframe toggle (Today / Last 7 days / Last month) switches which window of the single `GET /api/telemetry/summary` payload it shows: headline totals + breakdowns grouped by category → action → type, plus a 30-day overall sparkline and a per-category stacked-area chart driven by the `daily` field on the same response. Charts render in inline SVG; no charting library, no extra request. Explains in-page that the data is anonymous, first-party, no vendors. Degrades to an "analytics not enabled" state when the summary returns `enabled: false`.
+A new Next.js static-export app (same stack as the others), mounted by the router at **`/telemetry`** (`basePath: '/telemetry'`, prefix stripped by the router, like the live app's assets). Public, read-only.
+
+A **global timeframe panel** sits above the view tabs and is shared by every tab (the window is not tab-specific): three selectable cards (Today / Last 7 days / Last month) each show that window's total and act as the filter, with the selected window highlighted on a 30-day daily **trend line** directly below — so the reader controls the filter and sees the volume line in one always-visible place. The selected window drives the counts in all three tabs.
+
+Below it, three top-level **view tabs** switch between ways of reading the single `GET /api/telemetry/summary` payload:
+
+- **Highlights** (default) — a curated grid of the ~10 key product metrics we most want to watch (new visitors `Participant·Created`, new diagrams, share/join, exports, comments, sign-ups, dark-mode adoption, …), each as a card with the selected-window count and a 30-day mini trend line. A fixed list, not "top by volume", so a low-volume but important signal (a first-time visitor) is always on screen. Metrics absent from the payload render as zero rather than vanishing.
+- **Raw** — the full aggregate view: the category-share bar, the top-N leaderboard, and the per-category breakdowns grouped by category → action → type (each with its own per-category sparkline), all reflecting the selected window.
+- **Search** — type to find one specific metric. An autocomplete input matches every event (category·action·type) in the payload; selecting one **visualises it underneath** as its own 30-day trend line (from `daily.byMetric`) plus its Today / Last 7 / Last month totals. Lets a reader chart a single event over time instead of scanning the whole breakdown.
+
+Charts render in inline SVG; no charting library, no extra request. Explains in-page that the data is anonymous, first-party, no vendors. Degrades to an "analytics not enabled" state when the summary returns `enabled: false`.
 
 ## Routing & deploy
 

@@ -28,26 +28,31 @@ export async function deleteOldEvents(env: Env, cutoffMs: number): Promise<numbe
   return result.meta.changes ?? 0;
 }
 
-// Per-day per-category counts since `since`, used to render the
-// dashboard's daily-volume sparkline + the per-category stacked
-// area chart. SQLite's date() with the 'unixepoch' modifier
-// produces YYYY-MM-DD which is naturally sortable; we re-bucket
-// into the caller's 30-day array client-side rather than in SQL so
-// missing-day rows (zero events) still show up as zero rather than
-// being dropped. The events_ts_idx covers the range filter.
+// Per-day per-event counts since `since`, used to render the
+// dashboard's daily-volume sparkline, the per-category stacked area
+// chart, and the Search view's per-metric trend line. Grouped down to
+// (category, action, type) so the caller can fold the rows up into both
+// a per-category and a per-metric 30-day series. SQLite's date() with
+// the 'unixepoch' modifier produces YYYY-MM-DD which is naturally
+// sortable; we re-bucket into the caller's 30-day array client-side
+// rather than in SQL so missing-day rows (zero events) still show up as
+// zero rather than being dropped. The events_ts_idx covers the range
+// filter.
 export async function telemetryDailyCountsSince(
   env: Env,
   since: number,
-): Promise<{ day: string; category: string; count: number }[]> {
+): Promise<
+  { day: string; category: string; action: string; type: string | null; count: number }[]
+> {
   const result = await env.DB.prepare(
-    `SELECT date(ts / 1000, 'unixepoch') AS day, category, COUNT(*) AS count
+    `SELECT date(ts / 1000, 'unixepoch') AS day, category, action, type, COUNT(*) AS count
        FROM events
       WHERE ts >= ?
-      GROUP BY day, category
+      GROUP BY day, category, action, type
       ORDER BY day ASC`,
   )
     .bind(since)
-    .all<{ day: string; category: string; count: number }>();
+    .all<{ day: string; category: string; action: string; type: string | null; count: number }>();
   return result.results ?? [];
 }
 

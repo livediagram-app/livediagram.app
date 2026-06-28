@@ -2,7 +2,7 @@
 
 import type { TeamInvite } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
-import { EmptyState } from '@/components/panels/EmptyState';
+import { EmptyState } from '@livediagram/ui';
 
 // Right-pane Invites view for the Explorer (spec/32 accept/decline):
 // one card per pending invite — team monogram, name, organisation,

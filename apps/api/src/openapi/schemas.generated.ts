@@ -3273,6 +3273,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "object"
       },
+      "byMetric": {
+        "additionalProperties": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "type": "object"
+      },
       "days": {
         "items": {
           "type": "number"
@@ -3289,7 +3298,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "days",
       "totals",
-      "byCategory"
+      "byCategory",
+      "byMetric"
     ],
     "type": "object"
   },

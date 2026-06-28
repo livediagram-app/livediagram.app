@@ -16,6 +16,42 @@
   --color-brand-800: #075985;
   --color-brand-900: #0c4a6e;
   --color-brand-950: #082f49;
+
+  /* Illustrated empty-state motion (the shared `EmptyState` in
+   * @livediagram/ui): a gently floating icon badge over a softly
+   * expanding ring. Ambient + looping; paused under reduced-motion
+   * below. Lives in the shared theme so every app that renders an
+   * EmptyState (live Explorer, telemetry dashboard) animates alike. */
+  --animate-empty-float: empty-float 3.6s ease-in-out infinite;
+  --animate-empty-ring: empty-ring 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes empty-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes empty-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-empty-float,
+  .animate-empty-ring {
+    animation: none;
+  }
 }
 
 /* Stacking ladder for floating UI. Until this, overlays piled onto a bare

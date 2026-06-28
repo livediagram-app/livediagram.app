@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import type { ApiToken } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { EmptyState } from '@/components/panels/EmptyState';
+import { EmptyState } from '@livediagram/ui';
 
 const DAY = 86_400_000;
 const EXPIRES_SOON = 14 * DAY;

@@ -8,7 +8,7 @@
 // and pauses under prefers-reduced-motion.
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { EmptyState } from '@/components/panels/EmptyState';
+import { EmptyState } from '@livediagram/ui';
 import { helpArticleHref } from '@/lib/help-articles';
 import { ClockIcon, DiagramIcon, FolderIcon, PlusIcon, ShareIcon, SparkleIcon } from './icons';
 import type { SelectedNode } from './views';

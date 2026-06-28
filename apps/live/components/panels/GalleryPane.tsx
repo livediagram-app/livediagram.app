@@ -5,7 +5,7 @@ import { apiDeleteImage, apiImageUsage, apiListImages, type ImageSummary } from 
 import { ImageUploadError, uploadImageFile } from '@/lib/upload-image';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { TrashIcon } from '@/components/panels/explorer-icons';
-import { EmptyState } from '@/components/panels/EmptyState';
+import { EmptyState } from '@livediagram/ui';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 

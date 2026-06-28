@@ -15,7 +15,7 @@ import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
 import { CustomThemeBuilder, type CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
-import { EmptyState } from '@/components/panels/EmptyState';
+import { EmptyState } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { Tooltip } from '@/components/primitives/Tooltip';

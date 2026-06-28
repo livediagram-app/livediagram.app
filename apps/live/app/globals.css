@@ -117,38 +117,9 @@
      window (reveal at 180ms, fires at 500ms) so the press reads as deliberate.
      Centring lives in the keyframe so it survives the scale transform. */
   --animate-longpress-hold: longpress-hold 320ms ease-out;
-  /* Explorer empty-state illustrations: a gently floating icon badge over a
-     softly expanding ring. Ambient + looping; paused under reduced-motion. */
-  --animate-empty-float: empty-float 3.6s ease-in-out infinite;
-  --animate-empty-ring: empty-ring 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-@keyframes empty-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-7px);
-  }
-}
-
-@keyframes empty-ring {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(1.7);
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-empty-float,
-  .animate-empty-ring {
-    animation: none;
-  }
+  /* Empty-state illustration motion (--animate-empty-*) now lives in the
+     shared tailwind theme (@livediagram/tailwind-config) so every app's
+     EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
 }
 
 @keyframes pop-in {
