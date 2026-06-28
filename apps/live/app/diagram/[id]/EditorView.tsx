@@ -6,8 +6,6 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
   isBoxed,
-  LINE_DEFAULT_CATEGORIES,
-  LINE_DEFAULT_SERIES,
   selectionMembers,
   type Anchor,
 } from '@livediagram/diagram';
@@ -32,6 +30,7 @@ import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/Sig
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
+import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
@@ -48,12 +47,6 @@ const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 const EditorContextMenu = dynamic(() =>
   import('@/components/palette/EditorContextMenu').then((m) => m.EditorContextMenu),
 );
-const LinkPickerDialog = dynamic(() =>
-  import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
-);
-const LineDataDialog = dynamic(() =>
-  import('@/components/dialogs/LineDataDialog').then((m) => m.LineDataDialog),
-);
 const CommentThreadPopover = dynamic(() =>
   import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
 );
@@ -62,9 +55,6 @@ const NotePopover = dynamic(() =>
 );
 const SearchPanel = dynamic(() =>
   import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
-);
-const ImagePicker = dynamic(() =>
-  import('@/components/panels/ImagePicker').then((m) => m.ImagePicker),
 );
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
@@ -110,7 +100,6 @@ export function EditorView() {
     anyWelcomeOpen,
     applyAiElements,
     embedMode,
-    applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
     applyTabFontToAll,
@@ -158,7 +147,6 @@ export function EditorView() {
     clerkUserId,
     closeComments,
     closeContextMenu,
-    closeImagePicker,
     closeNote,
     commentRows,
     commentsPanelPosition,
@@ -211,15 +199,12 @@ export function EditorView() {
     hydrated,
     identityOnlyScreenOpen,
     imageContext,
-    imagePickerOpenFor,
     setImportOpen,
     isOwner,
     isPinchingRef,
     isReadOnly,
     laserTrailRows,
     linkActiveTabTo,
-    linkPickerOpenForId,
-    linkPickerInitialMode,
     openLinkPicker,
     livePresence,
     loadAllTabs,
@@ -237,7 +222,6 @@ export function EditorView() {
     participantsByTab,
     pendingDraw,
     redo,
-    refreshRecentImages,
     remoteCursorRows,
     remoteSelectionsByElement,
     removeImageFromElement,
@@ -294,8 +278,6 @@ export function EditorView() {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
-    setLineDataSelected,
-    lineDataOpenForId,
     setLineDataOpenForId,
     clearStylePreview,
     previewShapeColorPreset,
@@ -346,10 +328,7 @@ export function EditorView() {
     setGroupSourceId,
     setLinkPickerOpenForId,
     applyElementLink,
-    cellLinkPickerOpenFor,
-    setCellLinkPickerOpenFor,
     openCellLinkPicker,
-    applyCellLink,
     setMultiSelectedIds,
     setNote,
     setOpacitySelected,
@@ -1289,106 +1268,7 @@ export function EditorView() {
             .filter((e): e is NonNullable<typeof e> => e != null)}
         />
       ) : null}
-      {linkPickerOpenForId !== null && !isReadOnly ? (
-        <LinkPickerDialog
-          title="Link element"
-          currentLink={activeTab.elements.find((e) => e.id === linkPickerOpenForId)?.link ?? null}
-          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
-          currentTabId={activeId}
-          initialMode={linkPickerInitialMode ?? undefined}
-          recentDiagrams={diagramList
-            .filter((d) => d.id !== diagramId)
-            .slice(0, 8)
-            .map((d) => ({ id: d.id, name: d.name }))}
-          onCommit={(link) => {
-            applyElementLink(link);
-            if (link === null) track('Element', 'Unlinked');
-            else
-              track(
-                'Element',
-                'Linked',
-                link.kind === 'url' ? 'Url' : link.kind === 'diagram' ? 'Diagram' : 'Tab',
-              );
-          }}
-          onClose={() => setLinkPickerOpenForId(null)}
-        />
-      ) : null}
-      {cellLinkPickerOpenFor !== null && !isReadOnly ? (
-        <LinkPickerDialog
-          title="Link cell"
-          currentLink={(() => {
-            const t = activeTab.elements.find(
-              (e) => e.id === cellLinkPickerOpenFor.tableId && e.type === 'table',
-            );
-            return t && t.type === 'table'
-              ? (t.cellStyles?.[cellLinkPickerOpenFor.r]?.[cellLinkPickerOpenFor.c]?.link ?? null)
-              : null;
-          })()}
-          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
-          currentTabId={activeId}
-          recentDiagrams={diagramList
-            .filter((d) => d.id !== diagramId)
-            .slice(0, 8)
-            .map((d) => ({ id: d.id, name: d.name }))}
-          onCommit={(link) => {
-            applyCellLink(link);
-            if (link === null) track('Element', 'Unlinked');
-            else
-              track(
-                'Element',
-                'Linked',
-                link.kind === 'url' ? 'Url' : link.kind === 'diagram' ? 'Diagram' : 'Tab',
-              );
-          }}
-          onClose={() => setCellLinkPickerOpenFor(null)}
-        />
-      ) : null}
-      {/* Line-chart data modal (spec/53): edits the chart whose id is open. */}
-      {lineDataOpenForId !== null && !isReadOnly
-        ? (() => {
-            const el = activeTab.elements.find((e) => e.id === lineDataOpenForId);
-            if (!el || el.type !== 'shape') return null;
-            return (
-              <LineDataDialog
-                categories={el.lineCategories ?? [...LINE_DEFAULT_CATEGORIES]}
-                series={
-                  el.lineSeries ?? LINE_DEFAULT_SERIES.map((s) => ({ ...s, values: [...s.values] }))
-                }
-                onCommit={setLineDataSelected}
-                onClose={() => setLineDataOpenForId(null)}
-              />
-            );
-          })()
-        : null}
-      {imagePickerOpenFor && diagramId && !isReadOnly ? (
-        <ImagePicker
-          ownerId={selfParticipant.id}
-          diagramId={diagramId}
-          forElementId={imagePickerOpenFor.forElementId}
-          currentImageId={(() => {
-            const targetId = imagePickerOpenFor.forElementId;
-            if (!targetId) return null;
-            const el = activeTab.elements.find((e) => e.id === targetId);
-            return el && isBoxed(el) && el.type === 'image' ? el.imageId : null;
-          })()}
-          onRemove={
-            imagePickerOpenFor.forElementId
-              ? () => removeImageFromElement(imagePickerOpenFor.forElementId!)
-              : undefined
-          }
-          onSelect={(image) => {
-            if (imagePickerOpenFor.forElementId) {
-              applyImageToElement(imagePickerOpenFor.forElementId, image);
-            } else {
-              closeImagePicker();
-            }
-            // Refresh the Current Tab → Images accordion so the
-            // just-uploaded image surfaces without a diagram reload.
-            refreshRecentImages(selfParticipant.id);
-          }}
-          onClose={closeImagePicker}
-        />
-      ) : null}
+      <EditorElementDialogs />
 
       {/* Guest sign-in nudge (spec/36), delayed ~5 min. Lifted above
           the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
