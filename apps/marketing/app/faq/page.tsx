@@ -33,7 +33,11 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'What can I make with it?',
-    a: 'Flowcharts, mind maps, org charts, retrospectives, kanban boards, SWOT grids, timelines, Gantt charts, flywheels, editable tables, and UI wireframes for browser, laptop, phone and tablet screens. Nineteen starter templates and twenty-one themes get you going in seconds.',
+    a: 'Flowcharts, mind maps, org charts, retrospectives, kanban boards, SWOT grids, timelines, Gantt charts, flywheels, editable tables, pie, bar and line charts, and UI wireframes for browser, laptop, phone and tablet screens. Thirty starter templates and twenty-seven themes get you going in seconds.',
+  },
+  {
+    q: 'Can AI help me build or tidy a diagram?',
+    a: 'Yes, when it is switched on. Turn on AI assistance in Settings to get an in-editor panel with two modes: Ask, for questions about the diagram in front of you, and Clean, which tidies and tightens the current tab. It is optional and off by default; if you self-host, you supply your own AI provider key.',
   },
   {
     q: 'Can I work on a diagram with my team?',
@@ -50,6 +54,14 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   {
     q: 'Can I embed a diagram in my docs or wiki?',
     a: 'Yes. Any share link can be embedded as a read-only, live-updating iframe. Copy the embed snippet from the Share dialog and paste it into Notion, Confluence, a wiki, or any page that allows iframes, and it always shows the current state of the diagram.',
+  },
+  {
+    q: 'Can I connect my own AI assistant, like Claude?',
+    a: 'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool (such as Claude) and, after a one-time authorization, it can find, read, create, and edit the diagrams in your account on your behalf.',
+  },
+  {
+    q: 'Is there an API?',
+    a: 'Yes. Once you sign in, you can create API tokens and call the REST API to read and manage your diagrams programmatically. It is an optional power-user feature; guests and the canvas itself stay completely account-free.',
   },
   {
     q: 'What happens if two people edit the same thing at once?',
@@ -69,7 +81,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'Can I export my diagrams?',
-    a: 'Yes. Each tab can be exported as Markdown, PDF, PNG, or a portable .json file you can import into another diagram. The same Import / Export accordion in the Palette covers both directions.',
+    a: 'Yes. Each tab can be exported as Markdown, PDF, PNG, SVG, or a portable .json file you can import into another diagram. The same Import / Export accordion in the Palette covers both directions.',
   },
   {
     q: 'Where is my data stored, and do you track me?',
