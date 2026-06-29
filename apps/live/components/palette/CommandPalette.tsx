@@ -13,19 +13,11 @@ import {
   PaletteToolsTab,
   PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
-import {
-  EraserIcon,
-  FormatPainterIcon,
-  IsometricIcon,
-  LaserIcon,
-  PanIcon,
-  SelectIcon,
-  SpotlightIcon,
-} from '@/components/palette/palette-icons';
 import { ICON_CATALOG, ICON_CATEGORIES, iconsInCategory } from '@/lib/icons';
 import { searchTechIcons, TECH_PROVIDERS, type TechProvider } from '@/lib/tech-icons';
 
 import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
+import { buildCanvasToolOptions } from './canvas-tool-options';
 
 export type { CanvasTool };
 
@@ -272,63 +264,7 @@ export function CommandPalette({
               variant="flush"
               autoHeight
               onChange={(id) => onSetCanvasTool(id as CanvasTool)}
-              // Grouped (group index drives the menu dividers): editing tools
-              // (Select / Hand / Eraser), then presenter tools (Laser /
-              // Spotlight), then the isometric view on its own.
-              options={[
-                { id: 'select', label: 'Select', shortcut: 'V', icon: <SelectIcon />, group: 0 },
-                { id: 'pan', label: 'Hand', shortcut: 'H', icon: <PanIcon />, group: 0 },
-                // Eraser / Format / Laser / Spotlight / Isometric all act on
-                // existing content, so they're disabled on an empty canvas —
-                // only Select + Hand stay available until something's drawn.
-                {
-                  id: 'eraser',
-                  label: 'Eraser',
-                  shortcut: 'E',
-                  icon: <EraserIcon />,
-                  group: 0,
-                  disabled: canvasEmpty,
-                },
-                // Format painter as a persistent tool: pick a base element,
-                // then tap any number of targets to paint its style. No
-                // keyboard shortcut (F is the Pencil/freehand key).
-                {
-                  id: 'format',
-                  label: 'Format',
-                  icon: <FormatPainterIcon />,
-                  group: 0,
-                  disabled: canvasEmpty,
-                },
-                {
-                  id: 'laser',
-                  label: 'Laser',
-                  shortcut: 'K',
-                  icon: <LaserIcon />,
-                  group: 1,
-                  disabled: canvasEmpty,
-                },
-                // Spotlight is desktop-only (hover + click-to-resize don't map
-                // to touch); omitted on mobile viewports.
-                ...(isMobile
-                  ? []
-                  : [
-                      {
-                        id: 'spotlight',
-                        label: 'Spotlight',
-                        icon: <SpotlightIcon />,
-                        group: 1,
-                        disabled: canvasEmpty,
-                      },
-                    ]),
-                {
-                  id: 'isometric',
-                  label: 'Isometric',
-                  shortcut: 'I',
-                  icon: <IsometricIcon />,
-                  group: 2,
-                  disabled: canvasEmpty,
-                },
-              ]}
+              options={buildCanvasToolOptions({ canvasEmpty, isMobile })}
             />
           }
           tabs={[
