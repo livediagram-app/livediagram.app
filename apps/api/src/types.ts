@@ -91,7 +91,7 @@ export type Env = {
   // opt in.
   TELEMETRY_ENABLED?: string;
   // Resend API key for transactional + lifecycle email (spec/64). When absent
-  // the whole email feature is inert — no sends, and the email_lifecycle table
+  // the whole email feature is inert: no sends, and the email_lifecycle table
   // is never touched. Set via `wrangler secret put RESEND_API_KEY` for prod;
   // drop into `apps/api/.dev.vars` for local dev (gitignored, never commit).
   RESEND_API_KEY?: string;

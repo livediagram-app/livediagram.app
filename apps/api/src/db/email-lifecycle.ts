@@ -1,4 +1,4 @@
-// spec/64: the email_lifecycle table — one row per authenticated owner, tracking
+// spec/64: the email_lifecycle table: one row per authenticated owner, tracking
 // which onboarding emails have been sent. The first sighting creates the row
 // (treated as sign-up); the daily cron drives the welcome / week-1 / week-2
 // stages off the *_sent_at stamps, which keep every send idempotent.
@@ -7,7 +7,7 @@ import type { Env } from '../types';
 
 export type LifecycleStage = 'welcome' | 'week1' | 'week2';
 
-// Static column whitelist — the `${col}` interpolation below is one of these
+// Static column whitelist: the `${col}` interpolation below is one of these
 // literals, never anything caller-supplied (same pattern as the *_COLS consts).
 const STAGE_COLUMN: Record<LifecycleStage, string> = {
   welcome: 'welcome_sent_at',

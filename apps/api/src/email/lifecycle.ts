@@ -23,7 +23,7 @@ const STAGE_BUILDER: Record<LifecycleStage, (env: Env) => RenderedEmail> = {
 
 // First authenticated sighting → sign-up (spec/64 §4). Best-effort: stamps
 // welcome_sent_at only on a successful send, so a failed inline send is left for
-// the next daily sweep to retry. Runs in ctx.waitUntil — never blocks the request.
+// the next daily sweep to retry. Runs in ctx.waitUntil, so it never blocks the request.
 export async function welcomeOnSighting(env: Env, ownerId: string, email: string): Promise<void> {
   if (!emailEnabled(env)) return;
   const isNew = await recordSighting(env, ownerId, email);

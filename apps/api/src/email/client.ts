@@ -1,4 +1,4 @@
-// spec/64: Resend client. The whole email feature is gated on RESEND_API_KEY —
+// spec/64: Resend client. The whole email feature is gated on RESEND_API_KEY:
 // absent, every send is a no-op and the lifecycle table is never touched, so a
 // deployment with email off does zero extra work (mirrors the OPENAI_API_KEY ->
 // AI-hidden pattern). Sends are best-effort: this never throws, so an email or

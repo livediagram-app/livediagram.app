@@ -1,8 +1,8 @@
 // spec/64: the five email bodies. Plain, inline-styled, email-client-safe HTML
 // (no external CSS, tables for layout where it matters). Each builder returns
 // { subject, html }; links resolve against APP_BASE_URL via appBaseUrl(env).
-// Content only — never a diagram's contents, only the user's own account facts
-// + a team name the inviter already chose.
+// Content only: never a diagram's contents, only the user's own account facts
+// plus a team name the inviter already chose.
 
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
@@ -10,6 +10,12 @@ import { appBaseUrl } from './client';
 const BRAND = '#0ea5e9';
 const INK = '#0f172a';
 const MUTED = '#475569';
+
+// Default sign-off, used by the onboarding emails (their recipients all have an
+// account). The invite + account-deleted builders pass their own, since those
+// recipients may not have (or no longer have) an account.
+const ACCOUNT_FOOTER =
+  'You’re receiving this because you have a livediagram account. The editor is free and open source.';
 
 export type RenderedEmail = { subject: string; html: string };
 
@@ -20,6 +26,7 @@ type Section = {
   outro?: string;
   ctaText?: string;
   ctaHref?: string;
+  footer?: string;
 };
 
 function shell(section: Section): string {
@@ -56,7 +63,7 @@ function shell(section: Section): string {
       </td></tr>
       <tr><td style="padding:0 32px 28px">
         <p style="margin:24px 0 0;border-top:1px solid #e2e8f0;padding-top:16px;color:#94a3b8;font-size:12px;line-height:1.6">
-          You're receiving this because you have a livediagram account. The editor is free and open source.
+          ${section.footer ?? ACCOUNT_FOOTER}
         </p>
       </td></tr>
     </table>
@@ -69,12 +76,12 @@ export function welcomeEmail(env: Env): RenderedEmail {
   return {
     subject: 'Welcome to livediagram',
     html: shell({
-      heading: 'Welcome — let’s draw something',
+      heading: 'Welcome, let’s draw something',
       intro:
         'livediagram is a fast, no-friction canvas for diagrams. Here’s how to get your first one going:',
       points: [
         '<strong>Drop a shape</strong> from the palette, double-click it to type, and drag the corners to resize.',
-        '<strong>Connect things</strong> by hovering an element’s edge and dragging an arrow to another — the arrow stays pinned as you move them.',
+        '<strong>Connect things</strong> by hovering an element’s edge and dragging an arrow to another, and the arrow stays pinned as you move them.',
         '<strong>Start from a template</strong> (flowchart, mind map, kanban, SWOT and more) or pick one of the built-in themes for an instant look.',
       ],
       outro: 'Everything autosaves as you go, so you can just start and come back later.',
@@ -94,7 +101,7 @@ export function week1Email(env: Env): RenderedEmail {
       points: [
         '<strong>Folders</strong> group related diagrams; drag to sort, and collapse folders you’re not using.',
         '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
-        '<strong>Share or export</strong> right from the grid — a view-only or editor link, or a PDF / PNG / SVG / Markdown copy.',
+        '<strong>Share or export</strong> right from the grid: a view-only or editor link, or a PDF / PNG / SVG / Markdown copy.',
       ],
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
@@ -112,10 +119,10 @@ export function week2Email(env: Env): RenderedEmail {
         'If you’re working with other people, a team gives everyone a shared home for diagrams:',
       points: [
         '<strong>Create a team</strong> from the Explorer and invite people by email.',
-        '<strong>A shared folder</strong> every member can open and edit — no more passing links around.',
+        '<strong>A shared folder</strong> every member can open and edit (no more passing links around).',
         '<strong>Admin and Member roles</strong>: admins manage who’s in the team, everyone else just gets to work.',
       ],
-      outro: 'The canvas itself still needs no account — teams just add a shared home on top.',
+      outro: 'The canvas itself still needs no account. Teams just add a shared home on top.',
       ctaText: 'Create a team',
       ctaHref: `${base}/explorer/team`,
     }),
@@ -124,16 +131,19 @@ export function week2Email(env: Env): RenderedEmail {
 
 export function teamInviteEmail(env: Env, teamName: string | null): RenderedEmail {
   const base = appBaseUrl(env);
-  const name = teamName && teamName.trim() ? escapeHtml(teamName.trim()) : 'a team';
+  const named = !!(teamName && teamName.trim());
+  const name = named ? escapeHtml(teamName!.trim()) : 'a team';
   return {
-    subject: `You’ve been invited to ${teamName && teamName.trim() ? escapeText(teamName.trim()) : 'a team'} on livediagram`,
+    subject: `You’ve been invited to ${named ? escapeText(teamName!.trim()) : 'a team'} on livediagram`,
     html: shell({
       heading: `You’re invited to ${name}`,
       intro: `Someone invited you to join <strong>${name}</strong> on livediagram, a shared space for diagrams you and your teammates can open and edit together.`,
       outro:
-        'Sign in (or sign up — it’s free) with this email address and the invite will be waiting on your invites page.',
+        'Sign in (or sign up, it’s free) with this email address and the invite will be waiting on your invites page.',
       ctaText: 'View your invite',
       ctaHref: `${base}/explorer/invites`,
+      footer:
+        'You’re receiving this because someone invited you to a team on livediagram. If it wasn’t expected, you can safely ignore it, nothing happens unless you accept.',
     }),
   };
 }
@@ -147,9 +157,11 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
       intro:
         'This confirms that your livediagram account and the diagrams stored under it have been permanently removed, as you requested. There’s nothing left for you to do.',
       outro:
-        'If this wasn’t you, or you change your mind, you’re always welcome back — the canvas is free and needs no account to start.',
+        'If this wasn’t you, or you change your mind, you’re always welcome back. The canvas is free and needs no account to start.',
       ctaText: 'Start a new diagram',
       ctaHref: `${base}/new`,
+      footer:
+        'This is a one-time confirmation of your account deletion. We won’t send any further email to this address.',
     }),
   };
 }
