@@ -16,6 +16,7 @@ import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-controls';
 import { TableCellToolbar } from '@/components/canvas/TableCellToolbar';
 import { useTableStructure } from '@/components/canvas/useTableStructure';
+import { useTableEditing } from '@/components/canvas/useTableEditing';
 import { describeLink } from '@/lib/link-label';
 
 // Cell font size per preset (element-space px; the canvas zoom scales
@@ -227,45 +228,15 @@ export function TableView({
   const colTemplate = gridTrackTemplate(cols, resizeWidths ?? element.colWidths);
   const rowTemplate = gridTrackTemplate(rows, resizeHeights ?? element.rowHeights);
 
-  const beginEdit = (r: number, c: number) => {
-    if (readOnly || element.locked) return;
-    initialTextRef.current = element.cells[r]?.[c] ?? '';
-    setSelectedCell(null);
-    setEditing({ r, c });
-  };
-
-  const commitCell = (r: number, c: number, text: string) => {
-    onCommitTable(element.id, { cells: setTableCell(element, r, c, text).cells });
-  };
-
-  // Commit the current cell and jump to (nr, nc), seeding its text.
-  const moveTo = (fromR: number, fromC: number, nr: number, nc: number) => {
-    commitCell(fromR, fromC, editorRef.current?.textContent ?? '');
-    initialTextRef.current = element.cells[nr]?.[nc] ?? '';
-    setEditing({ r: nr, c: nc });
-  };
-
-  // Where the caret sits in the editor, for arrow-key cell navigation
-  // (so arrows only move cells when they wouldn't fight the text caret).
-  const caretInfo = () => {
-    const el = editorRef.current;
-    const sel = window.getSelection();
-    if (!el || !sel || sel.rangeCount === 0)
-      return { collapsed: true, atStart: true, atEnd: true, firstLine: true, lastLine: true };
-    const range = sel.getRangeAt(0);
-    const pre = range.cloneRange();
-    pre.selectNodeContents(el);
-    pre.setEnd(range.endContainer, range.endOffset);
-    const offset = pre.toString().length;
-    const text = el.textContent ?? '';
-    return {
-      collapsed: sel.isCollapsed,
-      atStart: offset === 0,
-      atEnd: offset === text.length,
-      firstLine: !text.slice(0, offset).includes('\n'),
-      lastLine: !text.slice(offset).includes('\n'),
-    };
-  };
+  const { beginEdit, commitCell, moveTo, caretInfo } = useTableEditing({
+    element,
+    readOnly,
+    onCommitTable,
+    editorRef,
+    initialTextRef,
+    setEditing,
+    setSelectedCell,
+  });
 
   const { applyCellStyle, moveCol, moveRow, addCol, delCol, addRow, delRow } = useTableStructure({
     element,
