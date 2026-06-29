@@ -1,5 +1,6 @@
 import {
   memo,
+  useRef,
   useState,
   type DragEvent as ReactDragEvent,
   type PointerEvent as ReactPointerEvent,
@@ -26,6 +27,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { iconDropSide } from '@/lib/canvas';
+import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { EdgeResizeHandle, LockBadge, ResizeHandles } from '@/components/canvas/element-parts';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
@@ -220,6 +222,25 @@ function BoxedElementViewImpl({
   // context menu at the cursor. The page also keeps showing the
   // SelectionPopover (handled by the normal selection flow), so the
   // context menu is an additional surface, not a replacement.
+  // The element's wrapper node, so the context-menu handlers can read its
+  // live screen rect to anchor the menu at the bottom-right corner.
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Open the context menu beside the element rather than under the cursor /
+  // finger, so it never covers the thing you're editing. `elementMenuAnchor`
+  // owns the top-right corner + flip-to-left + gap rule (shared with the
+  // toolbar "More" button). Reads the live on-screen rect so zoom / scroll are
+  // already baked in.
+  const openContextMenuBesideElement = () => {
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    if (!rect) {
+      onContextSelect(element.id, element.x, element.y);
+      return;
+    }
+    const { x, y } = elementMenuAnchor(rect);
+    onContextSelect(element.id, x, y);
+  };
+
   const handleContextMenu = (e: React.MouseEvent) => {
     // While editing the label, right-click surfaces the browser's native
     // TEXT context menu (cut / copy / paste / select all) so it acts on the
@@ -233,15 +254,15 @@ function BoxedElementViewImpl({
     }
     e.preventDefault();
     e.stopPropagation();
-    onContextSelect(element.id, e.clientX, e.clientY);
+    openContextMenuBesideElement();
   };
 
   // Touch long-press is the phone / tablet equivalent of right-click: it
   // opens the element's context menu (touch never fires `contextmenu`). Same
   // guards as handleContextMenu; a press that moves becomes a drag instead.
-  const longPress = useLongPress((x, y) => {
+  const longPress = useLongPress(() => {
     if (isEditing || remotelyLocked) return;
-    onContextSelect(element.id, x, y);
+    openContextMenuBesideElement();
   });
 
   const cursor = remotelyLocked
@@ -392,6 +413,7 @@ function BoxedElementViewImpl({
 
   return (
     <div
+      ref={wrapperRef}
       data-element-id={element.id}
       onPointerDown={(e) => {
         longPress.onPointerDown(e);

@@ -17,6 +17,7 @@ import { isoPivot, isoTransform } from '@/lib/isometric';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { pointerToCanvas } from '@/lib/canvas';
+import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useCanvasMobileDock } from '@/hooks/canvas/useCanvasMobileDock';
@@ -842,7 +843,18 @@ export function Canvas(props: CanvasProps) {
               readOnly
                 ? undefined
                 : selected && onOpenElementContextMenu
-                  ? (x, y) => onOpenElementContextMenu(selected.id, x, y)
+                  ? (x, y) => {
+                      // Open from the element's top-right corner (same as a
+                      // right-click, via elementMenuAnchor), NOT under the
+                      // toolbar's ⋯ button, so the menu doesn't cover the
+                      // element. Fall back to the button coords if the
+                      // element node can't be found.
+                      const rect = document
+                        .querySelector(`[data-element-id="${selected.id}"]`)
+                        ?.getBoundingClientRect();
+                      const anchor = rect ? elementMenuAnchor(rect) : { x, y };
+                      onOpenElementContextMenu(selected.id, anchor.x, anchor.y);
+                    }
                   : undefined
             }
             compact={readOnly}
