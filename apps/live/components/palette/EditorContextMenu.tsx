@@ -125,6 +125,7 @@ import {
   TextToggle,
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
+import { useContextMenuScaffold } from './useContextMenuScaffold';
 
 // A curated subset of the most common shapes offered for in-place morphing
 // in the context menu's Shape category (the full set lived in the old panel).
@@ -174,45 +175,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   // viewport, so the tall collapsible-category menu opens above the
   // cursor instead of running off-screen — matching the tab menu.
   const anchorBottom = typeof window !== 'undefined' && menu.y > window.innerHeight * 0.8;
-  // Which collapsible section is open in the element menu — at most one at a
-  // time (null = all collapsed). An accordion the user can only open one of.
-  const [openSection, setOpenSection] = useState<string | null>(null);
-  const sectionProps = (id: string) => ({
-    open: openSection === id,
-    onToggle: () => setOpenSection((s) => (s === id ? null : id)),
-    // Rows sit flush (no per-row hairline); the only rules in this menu are the
-    // MenuGroupSeparator bands, so grouping reads at a glance.
-    flush: true,
-  });
-  // Which colour row's inline palette is open (text / background / border) —
-  // at most one, toggled by re-clicking the row so it never sticks open.
-  const [openColor, setOpenColor] = useState<string | null>(null);
-  const colorProps = (id: string) => ({
-    open: openColor === id,
-    onToggle: () => setOpenColor((c) => (c === id ? null : id)),
-  });
-  // Hover-preview handler bundles for the three colour kinds, spread into each
-  // ColourRow so the swatches preview/commit like the style presets while the
-  // custom <input> keeps the debounced onChange. onPreviewEnd is the shared
-  // revert (clearStylePreview).
-  const textColorHandlers = {
-    onChange: props.onSetTextColor,
-    onPreview: props.onPreviewTextColor,
-    onCommit: props.onCommitTextColor,
-    onPreviewEnd: props.onPreviewStyleEnd,
-  };
-  const fillColorHandlers = {
-    onChange: props.onSetFillColor,
-    onPreview: props.onPreviewFillColor,
-    onCommit: props.onCommitFillColor,
-    onPreviewEnd: props.onPreviewStyleEnd,
-  };
-  const strokeColorHandlers = {
-    onChange: props.onSetStrokeColor,
-    onPreview: props.onPreviewStrokeColor,
-    onCommit: props.onCommitStrokeColor,
-    onPreviewEnd: props.onPreviewStyleEnd,
-  };
+  // Accordion + colour-row scaffolding, shared with the multi-selection branch.
+  const { sectionProps, colorProps, textColorHandlers, fillColorHandlers, strokeColorHandlers } =
+    useContextMenuScaffold(props);
   // Session-tool pickers (spec/39): the chosen timer mode + countdown length
   // and the votes-per-person budget, local until the facilitator hits Start
   // (mirrors the old tab editor's Session accordion).
