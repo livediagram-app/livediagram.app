@@ -748,6 +748,7 @@ export * from './svg-render';
 // recolour / switch / reset / preset transforms, shared by the editor and the
 // MCP worker (spec/62). Custom-theme resolution stays in apps/live/lib/themes.ts.
 export * from './themes';
+export * from './theme-presets';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
 // used by selection captions and any surface that names what's selected.
