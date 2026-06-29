@@ -89,7 +89,7 @@ export default function TelemetryDashboard() {
           SiteFooter), with the apps-menu dropdown enabled next to the logo so
           telemetry reads as part of the product. */}
       <SiteHeader productNav="telemetry" />
-      <main className="mx-auto max-w-4xl px-6 py-16 sm:py-20">
+      <main className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
           Telemetry, in the open
         </h1>

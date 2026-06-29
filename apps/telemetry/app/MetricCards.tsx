@@ -64,7 +64,7 @@ export function MetricGroups({
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             {group.title}
           </h3>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {group.metrics.map((m) => (
               <MetricCard
                 key={`${m.category}|${m.action}|${m.allTypes ? '*' : (m.type ?? '')}`}
