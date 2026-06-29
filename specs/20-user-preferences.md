@@ -165,6 +165,22 @@ type UserPreferences = {
   // calm UI on regardless of their OS setting, synced across devices.
   // Defaults to false (full motion, subject to the OS setting).
   reduceMotion?: boolean;
+
+  // Email notification preferences (spec/65). Account-level email
+  // settings that share this synced blob rather than a parallel store,
+  // surfaced on the Explorer profile page (only when the deployment has
+  // email configured — capabilities.emailEnabled). The api worker reads
+  // these server-side before sending the matching transactional email
+  // (spec/64), so a missing key === undefined === notify (opt-out, not
+  // opt-in). Distinct from `notificationsEnabled`, which gates in-editor
+  // toasts, not email.
+  //
+  // When false, suppress the "someone first opened one of my shared
+  // diagrams" email. Defaults to true (notify).
+  notifyDiagramJoin?: boolean;
+  // When false, suppress the "someone accepted/declined a team invite I
+  // sent" email (sent to the team's admins). Defaults to true (notify).
+  notifyInviteResponse?: boolean;
 };
 ```
 
@@ -224,6 +240,12 @@ Missing key === undefined === default behaviour. Concretely:
   `.reduce-motion` to `<html>` (via `useReduceMotion`), collapsing every
   decorative animation + transition to ~instant for motion-sensitive
   users who want it on regardless of their OS setting.
+- `notifyDiagramJoin` / `notifyInviteResponse` undefined / true → the
+  matching email notification is on (the default; spec/65). Setting
+  either to `false` is the only state that suppresses its email. Read
+  server-side by the api worker before sending; flipped from the
+  Explorer profile page. Emit `UI`/`Toggled`/`NotifyDiagramJoin{On,Off}`
+  and `NotifyInviteResponse{On,Off}` (spec/22).
 - `notificationsEnabled` undefined / true → notifications on (the
   default). Setting it to `false` suppresses the success + info toasts
   the editor shows for consequential, otherwise-silent actions (a

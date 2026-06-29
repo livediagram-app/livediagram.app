@@ -1,6 +1,13 @@
 // /api/share/<code> — resolve a share code to its diagram + role.
 
-import { getDiagram, getDiagramSharePassword, getShareLink, recordSharedAccess } from '../db';
+import {
+  getDiagram,
+  getDiagramSharePassword,
+  getParticipant,
+  getShareLink,
+  recordSharedAccess,
+} from '../db';
+import { notifyDiagramJoin } from '../email/notifications';
 import { json, notFound } from '../responses';
 import { timingSafeEqual } from '../auth/timing-safe';
 import type { DiagramDTO } from '../types';
@@ -48,7 +55,22 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
       // tracking is a nice-to-have.
       const visitor = resolveOwner();
       if (visitor && visitor !== d.ownerId) {
-        await recordSharedAccess(env, visitor, d.id, link.role).catch(() => {});
+        const firstVisit = await recordSharedAccess(env, visitor, d.id, link.role).catch(
+          () => false,
+        );
+        // spec/65: tell the owner the first time a new person opens
+        // their shared diagram. Best-effort + off the response path; the
+        // notify layer no-ops when email is off, the owner is a guest, or
+        // they've opted out. Resolve the joiner's display name (shown to
+        // the owner already in presence) for a friendlier subject.
+        if (firstVisit) {
+          ctx.waitUntil?.(
+            getParticipant(env, visitor)
+              .catch(() => null)
+              .then((p) => notifyDiagramJoin(env, d, p?.name ?? null))
+              .catch(() => {}),
+          );
+        }
       }
       return json({ diagram: redactOwner(d, visitor), role: link.role });
     }

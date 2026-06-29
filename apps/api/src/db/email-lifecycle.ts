@@ -64,3 +64,17 @@ export async function markStageSent(
 export async function deleteEmailLifecycle(env: Env, ownerId: string): Promise<void> {
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
 }
+
+// The verified address stored for an authenticated owner at first sighting.
+// The only server-trusted way to reach a Clerk owner by email outside the
+// request that carried their token (spec/65 notifications fire on someone
+// else's request). Returns null for a guest owner, an owner with no
+// lifecycle row (email off when they signed in), or a backfilled
+// suppression row carrying the empty-string sentinel.
+export async function getOwnerEmail(env: Env, ownerId: string): Promise<string | null> {
+  const row = await env.DB.prepare('SELECT email FROM email_lifecycle WHERE owner_id = ?')
+    .bind(ownerId)
+    .first<{ email: string }>();
+  const email = row?.email?.trim();
+  return email ? email : null;
+}

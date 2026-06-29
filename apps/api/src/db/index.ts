@@ -18,6 +18,7 @@ export * from './custom-themes';
 export * from './teams';
 export * from './api-tokens';
 export * from './email-lifecycle';
+export * from './notification-prefs';
 export * from './account';
 export * from './images';
 export * from './telemetry';

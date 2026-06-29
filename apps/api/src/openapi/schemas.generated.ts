@@ -520,6 +520,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "aiEnabled": {
         "type": "boolean"
+      },
+      "emailEnabled": {
+        "type": "boolean"
       }
     },
     "required": [

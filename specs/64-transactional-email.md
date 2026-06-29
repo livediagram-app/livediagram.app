@@ -28,6 +28,11 @@ Five messages, two kinds:
 5. **Account deleted** — after a user deletes their account (spec: account
    self-deletion), a confirmation that the account and its data are gone.
 
+[spec/65](65-profile-and-email-notifications.md) adds two further transactional
+messages — **someone joined my diagram** and **someone responded to my team
+invite** — each opt-**out** per user via a notification preference, on the same
+`RESEND_API_KEY` gate and the same best-effort `ctx.waitUntil` contract.
+
 The lifecycle series has **no unsubscribe link** for now (decision: treat as
 low-volume onboarding). If that changes, add an `unsubscribed_at` column +
 a public `GET /api/email/unsubscribe?token=…` endpoint and skip the series for
@@ -126,6 +131,9 @@ the request's critical path.
 
 ## 8. Out of scope (for now)
 
-Unsubscribe endpoint, email preferences UI, HTML theming beyond simple inline
-styles, retries/bounce handling (Resend handles delivery; sends are best-effort
-and idempotent via the `*_sent_at` stamps).
+Unsubscribe endpoint for the lifecycle series, HTML theming beyond simple
+inline styles, retries/bounce handling (Resend handles delivery; sends are
+best-effort and idempotent via the `*_sent_at` stamps). Per-notification
+**email preferences** are no longer out of scope — [spec/65](65-profile-and-email-notifications.md)
+adds an opt-out toggle for each of its two transactional notifications, stored
+in the spec/20 preference blob.

@@ -36,6 +36,7 @@ import {
 export function ExplorerSidebar() {
   const {
     clerkDisplayName,
+    clerkUserId,
     selected,
     go,
     setSearchOpen,
@@ -79,7 +80,25 @@ export function ExplorerSidebar() {
 
   return (
     <>
-      <SidebarSectionLabel first>Hi {clerkDisplayName ?? 'there'}</SidebarSectionLabel>
+      {/* Signed-in greeting deep-links to the profile page (spec/65); guests
+          have no profile, so theirs is plain text. */}
+      <SidebarSectionLabel first>
+        {clerkUserId ? (
+          <Tooltip title="Profile" description="Your account, email notifications, and more.">
+            <button
+              type="button"
+              onClick={() => go({ kind: 'profile' })}
+              className={`rounded transition hover:text-brand-700 hover:underline dark:hover:text-brand-300 ${
+                selected.kind === 'profile' ? 'text-brand-700 dark:text-brand-300' : ''
+              }`}
+            >
+              Hi {clerkDisplayName ?? 'there'}
+            </button>
+          </Tooltip>
+        ) : (
+          <>Hi {clerkDisplayName ?? 'there'}</>
+        )}
+      </SidebarSectionLabel>
       <button
         type="button"
         onClick={() => {

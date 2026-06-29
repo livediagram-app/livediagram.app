@@ -36,6 +36,8 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/themes';
     case 'tokens':
       return '/explorer/tokens';
+    case 'profile':
+      return '/explorer/profile';
     case 'invites':
       return '/explorer/invites';
     case 'folder':
@@ -67,6 +69,8 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'themes' };
     case '/explorer/tokens':
       return { kind: 'tokens' };
+    case '/explorer/profile':
+      return { kind: 'profile' };
     case '/explorer/invites':
       return { kind: 'invites' };
     case '/explorer/folder': {

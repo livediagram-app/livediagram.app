@@ -42,6 +42,7 @@ import {
   signInRequired,
 } from '../responses';
 import { emailEnabled, sendEmail } from '../email/client';
+import { notifyInviteResponse } from '../email/notifications';
 import { teamInviteEmail } from '../email/templates';
 import type { RouteContext } from './context';
 
@@ -254,7 +255,17 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (member.userId === null || member.userId !== clerkUserId) {
       return forbidden('not_your_invite');
     }
-    if (member.status === 'invited') await acceptTeamMember(env, member.id);
+    if (member.status === 'invited') {
+      await acceptTeamMember(env, member.id);
+      // spec/65: tell the team's admins someone said yes. Best-effort,
+      // off the response path; no-op when email is off / admins opted out.
+      const responder = member.email ?? clerkEmail;
+      if (responder) {
+        ctx.waitUntil?.(
+          notifyInviteResponse(env, team, responder, true, clerkUserId).catch(() => {}),
+        );
+      }
+    }
     const updated = await getTeamMember(env, member.id);
     return json({ member: updated });
   }
@@ -295,6 +306,17 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         return conflict('last_admin');
       }
       await removeTeamMember(env, member.id);
+      // spec/65: a self-removal of a still-INVITED row is a DECLINE — tell
+      // the team's admins. An admin revoking a pending invite, or a joined
+      // member leaving, is not an invite response and notifies no one.
+      if (member.status === 'invited' && isSelf) {
+        const responder = member.email ?? clerkEmail;
+        if (responder) {
+          ctx.waitUntil?.(
+            notifyInviteResponse(env, team, responder, false, clerkUserId).catch(() => {}),
+          );
+        }
+      }
       return noContent();
     }
     return notFound();

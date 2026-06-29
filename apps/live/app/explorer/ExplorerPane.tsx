@@ -72,6 +72,9 @@ const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) =
 const TeamInvitesPane = dynamic(() =>
   import('@/components/panels/TeamInvitesPane').then((m) => m.TeamInvitesPane),
 );
+const ProfilePane = dynamic(() =>
+  import('@/components/panels/ProfilePane').then((m) => m.ProfilePane),
+);
 
 // The right pane for whichever /explorer/<section> route is active:
 // PaneHeader (title, breadcrumb, contextual CTAs) + the section's
@@ -142,6 +145,7 @@ export function ExplorerPane() {
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
           selected.kind === 'tokens' ||
+          selected.kind === 'profile' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           // Generated is a read-through view of AI output, not a place you
@@ -158,6 +162,7 @@ export function ExplorerPane() {
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
           selected.kind === 'tokens' ||
+          selected.kind === 'profile' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           selected.kind === 'recent' ||
@@ -173,6 +178,8 @@ export function ExplorerPane() {
 
       {loading ? (
         <SkeletonRows />
+      ) : selected.kind === 'profile' ? (
+        <ProfilePane />
       ) : selected.kind === 'invites' ? (
         <TeamInvitesPane
           invites={invites}

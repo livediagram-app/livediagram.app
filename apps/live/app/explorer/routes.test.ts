@@ -13,6 +13,7 @@ const STATIC_NODES: SelectedNode[] = [
   { kind: 'shared' },
   { kind: 'gallery' },
   { kind: 'invites' },
+  { kind: 'profile' },
 ];
 
 describe('explorer route mapping', () => {

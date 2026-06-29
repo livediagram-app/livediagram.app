@@ -393,6 +393,21 @@ export async function countTeamAdmins(env: Env, teamId: string): Promise<number>
   return row?.n ?? 0;
 }
 
+// The Clerk user ids of a team's joined admins (spec/65): who gets told
+// when someone responds to an invite. Only `joined` rows with a connected
+// user_id qualify — a pending-admin invite has no identity to email yet,
+// and a member isn't an admin. The notification layer resolves each id to a
+// verified address via email_lifecycle.
+export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<string[]> {
+  const { results } = await env.DB.prepare(
+    `SELECT user_id FROM team_members
+      WHERE team_id = ? AND role = 'admin' AND status = 'joined' AND user_id IS NOT NULL`,
+  )
+    .bind(teamId)
+    .all<{ user_id: string }>();
+  return (results ?? []).map((r) => r.user_id);
+}
+
 // Joined-member count for a team (the public "N members" number the
 // invite-link landing shows). Excludes pending invites.
 export async function countJoinedMembers(env: Env, teamId: string): Promise<number> {

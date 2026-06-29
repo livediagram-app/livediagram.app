@@ -3,7 +3,7 @@
 // Header sign-in / sign-out pill. Shows:
 //
 //   - signed out → "Sign in" link to /live/sign-in/
-//   - signed in  → initial-bubble + dropdown with "Sign out"
+//   - signed in  → initial-bubble + dropdown with "Profile" + "Sign out"
 //
 // Mounted in EditorHeader (and any future header chrome that wants
 // auth controls). Pure presentational — Clerk's `useUser` / `useAuth`
@@ -21,7 +21,6 @@
 // touches Clerk.
 
 import { useAuth, useClerk, useUser } from '@clerk/react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
@@ -33,24 +32,15 @@ import { HEADER_ACTION_BTN } from '@/components/chrome/EditorHeader';
 const HEADER_ACTION_TONE =
   'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800';
 
-// Lazy-load the delete-account dialog. Almost every signed-in
-// session NEVER opens it (it's the destructive option at the
-// bottom of an account menu most users won't even look at), but
-// the static import shipped the 192-line component (plus its
-// Clerk reverification + useReverification dependency surface)
-// in the eager AuthControls bundle on every page. Switching to
-// next/dynamic + gating the JSX on `deleteOpen` means the chunk
-// only fetches when the user actually clicks Delete account.
-const DeleteAccountDialog = dynamic(() =>
-  import('@/components/dialogs/DeleteAccountDialog').then((m) => m.DeleteAccountDialog),
-);
+// Account self-deletion now lives on the Explorer profile page (spec/65),
+// reachable from the "Profile" item below, so the destructive action has one
+// home rather than hanging off this dropdown too.
 
 function AuthControlsEnabled() {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const { signOut } = useClerk();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Click-outside closes the menu. Listener installs only while
@@ -112,6 +102,16 @@ function AuthControlsEnabled() {
               ) : null}
             </div>
           ) : null}
+          {/* Profile (spec/65): account home in the Explorer — identity,
+              email notifications, and account deletion all live there. */}
+          <Link
+            href="/explorer/profile"
+            role="menuitem"
+            onClick={() => setMenuOpen(false)}
+            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+          >
+            Profile
+          </Link>
           <button
             type="button"
             role="menuitem"
@@ -119,43 +119,15 @@ function AuthControlsEnabled() {
               setMenuOpen(false);
               track('Session', 'SignedOut');
               // Land on the marketing landing page at `/` (router worker
-              // serves marketing there). Same destination as the delete-
-              // account flow — once you're signed out, the editor is
-              // the wrong default, the landing page is.
+              // serves marketing there). Once you're signed out, the editor
+              // is the wrong default, the landing page is.
               void signOut({ redirectUrl: '/' });
             }}
             className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
           >
             Sign out
           </button>
-          <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setMenuOpen(false);
-              setDeleteOpen(true);
-            }}
-            className="block w-full rounded px-3 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15"
-          >
-            Delete account
-          </button>
         </div>
-      ) : null}
-      {deleteOpen ? (
-        <DeleteAccountDialog
-          open={deleteOpen}
-          onClose={() => setDeleteOpen(false)}
-          onDeleted={async () => {
-            // Backend + Clerk delete already completed inside the
-            // dialog. Sign out (just to clear any client-side Clerk
-            // state, the token's already invalid) and land the user
-            // on the marketing site at `/` (the router serves the
-            // marketing app there). Routes are clean now (no `/live`
-            // prefix), so `/` is the real marketing root.
-            await signOut({ redirectUrl: '/' });
-          }}
-        />
       ) : null}
     </div>
   );

@@ -166,6 +166,65 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
   };
 }
 
+// spec/65: a new person opened one of the owner's shared diagrams for the
+// first time. Sent to the diagram OWNER, so the diagram name is their own
+// content coming back to them (not a spec/64 §7 leak). `joinerName` is the
+// visitor's display name when known (already visible to the owner in live
+// presence / the Shared list); null falls back to "Someone".
+export function diagramJoinedEmail(
+  env: Env,
+  diagramName: string,
+  joinerName: string | null,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const who = joinerName && joinerName.trim() ? escapeHtml(joinerName.trim()) : 'Someone';
+  const named = diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'your diagram';
+  const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
+  return {
+    subject: `${whoText} opened one of your diagrams`,
+    html: shell({
+      heading: 'Someone joined your diagram',
+      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a diagram you shared. They can collaborate on it with the access you granted.`,
+      outro:
+        'You’re getting this because you turned on join notifications. You can turn them off any time from your profile.',
+      ctaText: 'Open the diagram',
+      ctaHref: `${base}/explorer`,
+      footer:
+        'You’re receiving this because someone opened a diagram you shared and you have join notifications on. Turn them off on your livediagram profile.',
+    }),
+  };
+}
+
+// spec/65: an invitee accepted or declined a team invite. Sent to the team's
+// admins. The responder address + team name are both already known to the
+// inviting admin (they typed the address, they named the team), so this stays
+// within spec/64 §7.
+export function inviteResponseEmail(
+  env: Env,
+  teamName: string | null,
+  responderEmail: string,
+  accepted: boolean,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const team = teamName && teamName.trim() ? escapeHtml(teamName.trim()) : 'your team';
+  const teamText = teamName && teamName.trim() ? escapeText(teamName.trim()) : 'your team';
+  const who = escapeHtml(responderEmail);
+  const verb = accepted ? 'accepted' : 'declined';
+  return {
+    subject: `${escapeText(responderEmail)} ${verb} your invitation to ${teamText}`,
+    html: shell({
+      heading: accepted ? 'Invitation accepted' : 'Invitation declined',
+      intro: accepted
+        ? `<strong>${who}</strong> accepted your invitation and is now a member of <strong>${team}</strong>.`
+        : `<strong>${who}</strong> declined your invitation to <strong>${team}</strong>. You can invite them again any time.`,
+      ctaText: 'Open the team',
+      ctaHref: `${base}/explorer/team`,
+      footer:
+        'You’re receiving this because you’re an admin of this team and have invite-response notifications on. Turn them off on your livediagram profile.',
+    }),
+  };
+}
+
 // Minimal escaping for the one piece of user-influenced text in an email body
 // (the team name). HTML-escape for the body, and a plain-text variant for the
 // subject line.

@@ -100,6 +100,17 @@ export type UserPreferences = {
   // the tab has a few elements, the Activity panel is minimised, and on
   // desktop). The minimap's own close button writes an explicit `false`.
   showMinimap?: boolean;
+  // Email notifications (spec/65). Account-level settings flipped from the
+  // Explorer profile page; the api worker reads them server-side before
+  // sending the matching transactional email (spec/64). Distinct from
+  // `notificationsEnabled`, which is about in-editor toasts, not email.
+  // Missing / undefined / true === notify (opt-out); an explicit false
+  // suppresses that email.
+  //
+  // "Someone first opened one of my shared diagrams."
+  notifyDiagramJoin?: boolean;
+  // "Someone accepted / declined a team invite I sent" (to the team's admins).
+  notifyInviteResponse?: boolean;
 };
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';

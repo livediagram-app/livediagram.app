@@ -461,6 +461,11 @@ export type AiRequest = {
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
   aiEnabled: boolean;
+  // True only when the deployment has Resend configured (spec/64). The
+  // live app hides the email-notification toggles (spec/65) when false,
+  // since they'd be inert without an email backend. Optional so an older
+  // client / a fail-closed default still parses.
+  emailEnabled?: boolean;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is

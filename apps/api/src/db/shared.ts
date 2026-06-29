@@ -9,12 +9,23 @@ import type { Env, ShareRole } from '../types';
 // owner differs from the diagram's owner (an owner opening their own
 // diagram via a share link shouldn't show up in their own
 // "Shared with you" list).
+//
+// Returns whether this was a FIRST visit (no prior row), which the share
+// route uses to fire the "someone joined your diagram" notification
+// (spec/65) once per person rather than per reload. The existence check +
+// upsert aren't atomic, but a rare double / missed notification on a true
+// race is harmless for a best-effort email.
 export async function recordSharedAccess(
   env: Env,
   ownerId: string,
   diagramId: string,
   role: ShareRole,
-): Promise<void> {
+): Promise<boolean> {
+  const existing = await env.DB.prepare(
+    'SELECT 1 AS one FROM shared_with WHERE owner_id = ? AND diagram_id = ? LIMIT 1',
+  )
+    .bind(ownerId, diagramId)
+    .first<{ one: number }>();
   const now = Date.now();
   await env.DB.prepare(
     `INSERT INTO shared_with (owner_id, diagram_id, role, last_seen) VALUES (?, ?, ?, ?)
@@ -22,6 +33,7 @@ export async function recordSharedAccess(
   )
     .bind(ownerId, diagramId, role, now)
     .run();
+  return existing === null;
 }
 
 // List diagrams shared with this owner, newest interaction first.

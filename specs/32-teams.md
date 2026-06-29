@@ -41,6 +41,9 @@ Membership is a two-step handshake: being invited does not make someone a member
 - The invitee sees the invite in the Explorer's **Invites** section (below, with team name, organisation, and member count) and chooses:
   - **Accept** → `status` flips to `joined`; the team moves into their Teams list and their row in the team reads as a normal member.
   - **Decline** → the member row is deleted; they were never a member. An Admin may re-invite the same address later.
+- Either response (accept or decline) emails the team's admins, opt-out per
+  admin, when email is configured — see [spec/65](65-profile-and-email-notifications.md).
+  Leaving a team you already joined is not an invite response and sends nothing.
 - An `invited` row grants no membership: `GET /api/teams` lists `joined` rows only, and `memberCount` counts `joined` rows only. The invitee may read the team's detail (to decide), accept, or decline — nothing else.
 - Duplicate invite of an email already on the team (any status): `409 conflict`.
 

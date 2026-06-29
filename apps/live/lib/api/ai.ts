@@ -9,15 +9,15 @@ import type {
 import type { Element } from '@livediagram/diagram';
 import { API_BASE, apiHeaders } from './core';
 
-// Fetch server capabilities once at editor mount. Returns
-// { aiEnabled: false } on any network error so callers can fail-closed.
+// Fetch server capabilities once at editor mount. Returns everything
+// fail-closed (false) on any network error so callers degrade gracefully.
 export async function apiGetCapabilities(): Promise<CapabilitiesResponse> {
   try {
     const res = await fetch(`${API_BASE}/capabilities`);
-    if (!res.ok) return { aiEnabled: false };
+    if (!res.ok) return { aiEnabled: false, emailEnabled: false };
     return (await res.json()) as CapabilitiesResponse;
   } catch {
-    return { aiEnabled: false };
+    return { aiEnabled: false, emailEnabled: false };
   }
 }
 
