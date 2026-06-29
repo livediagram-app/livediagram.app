@@ -47,8 +47,6 @@ import {
   type BoxedElement,
   type ElementAnimation,
   type IconAnimation,
-  type ShapeKind,
-  type TextSize,
 } from '@livediagram/diagram';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
@@ -125,37 +123,15 @@ import {
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
-// A curated subset of the most common shapes offered for in-place morphing
-// in the context menu's Shape category (the full set lived in the old panel).
-const COMMON_SHAPES: ShapeKind[] = [
-  'square',
-  'circle',
-  'diamond',
-  'stadium',
-  'parallelogram',
-  'hexagon',
-  'triangle',
-  'cylinder',
-];
-
-// Fixed rotation angles offered in the context menu's Rotation category
-// (and the search palette's Rotate actions). 0 doubles as "reset to
-// upright". These 45° steps are the only way to rotate — there's no
-// free-drag rotate handle.
-const ROTATION_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315] as const;
-
-// Border option sets rendered in the menu's Border section.
-const BORDER_STROKES: readonly BorderStroke[] = ['none', 'thin', 'medium', 'thick', 'extra-thick'];
-const BORDER_STYLES: readonly BorderStyle[] = [
-  'solid',
-  'dashed',
-  'dotted',
-  'dash-dot',
-  'long-dash',
-  'dash-dot-dot',
-];
-const BORDER_RADII: readonly BorderRadius[] = ['none', 'sm', 'md', 'lg', 'full'];
+import {
+  BORDER_RADII,
+  BORDER_STROKES,
+  BORDER_STYLES,
+  COMMON_SHAPES,
+  ROTATION_ANGLES,
+} from './context-menu-constants';
 
 // Cursor position + which menu to show. `element` carries the clicked
 // element id; `canvas` is the empty-canvas right-click. Exported so
@@ -182,219 +158,13 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   // (mirrors the old tab editor's Session accordion).
 
   if (menu.mode === 'multi') {
-    // The selection toolbar (SelectionPopover / MultiSelectionToolbar) already
-    // carries Duplicate / Group / Lock / Export / Delete, so this menu is
-    // purely the type-aware formatting categories its ellipsis opens. A
-    // selection with nothing formattable (e.g. only images) shows no menu
-    // rather than an empty box.
-    const selectionFormattable =
-      props.selectionElements.some((el) => supportsColours(el)) ||
-      props.selectionElements.some((el) => supportsBorderControls(el)) ||
-      props.selectionElements.some((el) => el.type === 'arrow');
-    if (!selectionFormattable) return null;
     return (
-      <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
-        {(() => {
-          // Type-aware formatting for the whole selection: only the categories
-          // that match the selected element types show, and each control
-          // applies to every matching member (the setters are selection-wide).
-          // Display values read off the first matching member.
-          const sel = props.selectionElements;
-          const boxedSel = sel.filter(isBoxed);
-          const arrowSel = sel.filter((el) => el.type === 'arrow');
-          const colourable = sel.some((el) => supportsColours(el));
-          const borderableSel = sel.some((el) => supportsBorderControls(el));
-          const textSrc = boxedSel[0] ?? arrowSel[0];
-          const fillSrc = boxedSel.find(
-            (el) => defaultFillColor(el as BoxedElement) !== 'transparent',
-          ) as BoxedElement | undefined;
-          const strokeSrc = boxedSel.find(
-            (el) => defaultStrokeColor(el as BoxedElement) !== 'transparent',
-          ) as BoxedElement | undefined;
-          const borderSrc = sel.find((el) => supportsBorderControls(el)) as
-            | { strokeWidth?: BorderStroke; strokeStyle?: BorderStyle; type: string }
-            | undefined;
-          const arrowSrc = arrowSel[0];
-          if (!colourable && !borderableSel && !arrowSel.length) return null;
-          // Same grouping as the single-element menu: appearance (Animation /
-          // Colours / Border) · content (Line / Pointer / Text). Layer / Shape /
-          // Rotation / Icon / Image / Table / Link / Collaborate don't apply to a
-          // multi-selection, so those groups stay excluded.
-          const showMultiAppearance =
-            boxedSel.length > 0 || !!arrowSrc || colourable || borderableSel;
-          const showMultiContent = !!arrowSrc || !!textSrc;
-          // A mixed shape + arrow selection would otherwise show two
-          // "Animation" categories (boxed animation + arrow flow). Disambiguate
-          // by kind only when both are present; on a single-kind selection the
-          // plain "Animation" reads fine.
-          const bothAnimated = boxedSel.length > 0 && !!arrowSrc;
-          return (
-            <>
-              {/* Animation (spec/09) — applies to every boxed member of the
-                  selection. */}
-              {boxedSel.length ? (
-                <MenuAccordionSection
-                  title={bothAnimated ? 'Shape Animation' : 'Animation'}
-                  icon={<AnimationMenuGlyph />}
-                  {...sectionProps('m-animation')}
-                >
-                  <AnimationTiles
-                    animation={boxedSel[0]!.animation ?? null}
-                    speed={boxedSel[0]!.animationSpeed ?? 'normal'}
-                    onSet={props.onSetAnimation}
-                    onSetSpeed={props.onSetAnimationSpeed}
-                    onPreview={props.onPreviewAnimation}
-                    onPreviewEnd={props.onAnimationPreviewEnd}
-                  />
-                </MenuAccordionSection>
-              ) : null}
-              {arrowSrc ? (
-                <MenuAccordionSection
-                  title={bothAnimated ? 'Arrow Animation' : 'Animation'}
-                  icon={<AnimationMenuGlyph />}
-                  {...sectionProps('m-flow')}
-                >
-                  <FlowTiles
-                    flow={arrowSrc.flow ?? null}
-                    speed={arrowSrc.flowSpeed ?? 'normal'}
-                    onSet={props.onSetArrowFlow}
-                    onSetSpeed={props.onSetFlowSpeed}
-                    onPreview={props.onPreviewArrowFlow}
-                    onPreviewEnd={props.onAnimationPreviewEnd}
-                  />
-                </MenuAccordionSection>
-              ) : null}
-              {colourable ? (
-                <MenuAccordionSection
-                  title="Colours"
-                  icon={<PaletteMenuIcon />}
-                  {...sectionProps('m-colours')}
-                >
-                  {textSrc ? (
-                    <ColourRow
-                      label="Text"
-                      value={
-                        (textSrc as { textColor?: string }).textColor ??
-                        defaultTextColor(textSrc as BoxedElement)
-                      }
-                      {...textColorHandlers}
-                      {...colorProps('m-text')}
-                      presets={props.presetColors}
-                    />
-                  ) : null}
-                  {fillSrc ? (
-                    <ColourRow
-                      label="Background"
-                      value={fillSrc.fillColor ?? defaultFillColor(fillSrc)}
-                      {...fillColorHandlers}
-                      {...colorProps('m-bg')}
-                      presets={props.presetColors}
-                    />
-                  ) : null}
-                  {strokeSrc ? (
-                    <ColourRow
-                      label="Border"
-                      value={strokeSrc.strokeColor ?? defaultStrokeColor(strokeSrc)}
-                      {...strokeColorHandlers}
-                      {...colorProps('m-border')}
-                      presets={props.presetColors}
-                    />
-                  ) : null}
-                </MenuAccordionSection>
-              ) : null}
-              {borderableSel ? (
-                <MenuAccordionSection
-                  title="Border"
-                  icon={<BorderGlyph />}
-                  {...sectionProps('m-border-style')}
-                >
-                  <div className="px-2 py-1">
-                    <BorderGrid label="Strength" cols={5}>
-                      {BORDER_STROKES.map((v) => (
-                        <SizeButton
-                          key={v}
-                          active={(borderSrc?.strokeWidth ?? 'medium') === v}
-                          onClick={() => props.onCommitBorderStroke(v)}
-                          onPointerEnter={onMouseHover(() => props.onPreviewBorderStroke(v))}
-                          onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                        >
-                          <BorderStrokeIcon value={v} />
-                        </SizeButton>
-                      ))}
-                    </BorderGrid>
-                    <BorderGrid label="Pattern" cols={3}>
-                      {BORDER_STYLES.map((v) => (
-                        <SizeButton
-                          key={v}
-                          active={(borderSrc?.strokeStyle ?? 'solid') === v}
-                          onClick={() => props.onCommitBorderStyle(v)}
-                          onPointerEnter={onMouseHover(() => props.onPreviewBorderStyle(v))}
-                          onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                        >
-                          <BorderStyleIcon value={v} />
-                        </SizeButton>
-                      ))}
-                    </BorderGrid>
-                  </div>
-                </MenuAccordionSection>
-              ) : null}
-              {/* ── Content group: Line / Pointer / Text ── */}
-              {showMultiContent && showMultiAppearance ? <MenuGroupSeparator /> : null}
-              {arrowSrc ? (
-                <>
-                  <MenuAccordionSection
-                    title="Line"
-                    icon={<LineGlyph />}
-                    {...sectionProps('m-line')}
-                  >
-                    <div className="px-3 py-1.5">
-                      <ArrowLineControls
-                        thickness={arrowThicknessOf(arrowSrc)}
-                        style={arrowStyleOf(arrowSrc)}
-                        strokeStyle={arrowSrc.strokeStyle ?? 'solid'}
-                        onSetThickness={props.onSetArrowThickness}
-                        onSetStyle={props.onSetArrowStyle}
-                        onSetStrokeStyle={props.onSetArrowStrokeStyle}
-                      />
-                    </div>
-                  </MenuAccordionSection>
-                  <MenuAccordionSection
-                    title="Pointer"
-                    icon={<PointerGlyph />}
-                    {...sectionProps('m-pointer')}
-                  >
-                    <div className="px-3 py-1.5">
-                      <ArrowPointerControls
-                        ends={arrowSrc.arrowEnds ?? 'to'}
-                        headSize={arrowheadSizeOf(arrowSrc)}
-                        headShape={arrowheadShapeOf(arrowSrc)}
-                        onSetEnds={props.onSetArrowEnds}
-                        onSetHeadSize={props.onSetArrowheadSize}
-                        onSetHeadShape={props.onSetArrowheadShape}
-                      />
-                    </div>
-                  </MenuAccordionSection>
-                </>
-              ) : null}
-              {textSrc ? (
-                <MenuAccordionSection
-                  title="Text"
-                  icon={<TextGlyph />}
-                  {...sectionProps('m-text-size')}
-                >
-                  <p className="px-3 pb-1 pt-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                    Size
-                  </p>
-                  <TextSizeTiles
-                    current={(textSrc as { textSize?: TextSize }).textSize}
-                    onSet={props.onSetTextSize}
-                  />
-                </MenuAccordionSection>
-              ) : null}
-            </>
-          );
-        })()}
-      </ContextMenu>
+      <MultiSelectionContextMenu
+        props={props}
+        position={position}
+        onClose={onClose}
+        anchorBottom={anchorBottom}
+      />
     );
   }
 
