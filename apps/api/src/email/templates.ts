@@ -348,3 +348,49 @@ export function commentNotificationEmail(
     }),
   };
 }
+
+// spec/64 (#5): a friendly re-engagement nudge for someone who's been away for
+// a few weeks. Opt-out (notifyTips).
+export function winBackEmail(env: Env): RenderedEmail {
+  const base = appBaseUrl(env);
+  return {
+    subject: 'Your diagrams are waiting',
+    html: shell({
+      heading: 'It’s been a while',
+      intro:
+        'You haven’t opened livediagram in a few weeks, and your diagrams are right where you left them. A few things you can pick back up:',
+      points: [
+        'Start something new in seconds from a template or theme.',
+        'Share a diagram with a live link, or bring a team onto the canvas.',
+        'Export to PDF / PNG / SVG / Markdown whenever you need a copy.',
+      ],
+      outro: 'No rush: it’s all still here whenever you want it.',
+      ctaText: 'Open your diagrams',
+      ctaHref: `${base}/explorer`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because you have a livediagram account and check-ins are on.',
+      ),
+    }),
+  };
+}
+
+// spec/64 (#6): a small celebration when an owner reaches a diagram-count
+// milestone. Opt-out (notifyMilestones).
+export function milestoneEmail(env: Env, count: number): RenderedEmail {
+  const base = appBaseUrl(env);
+  return {
+    subject: `You’ve made ${count} diagrams on livediagram`,
+    html: shell({
+      heading: `That’s ${count} diagrams`,
+      intro: `Nice work, you’ve created <strong>${count}</strong> diagrams on livediagram. Thanks for building with us.`,
+      outro: 'Here’s to the next one.',
+      ctaText: 'Open your Explorer',
+      ctaHref: `${base}/explorer`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because you reached a milestone and milestone emails are on.',
+      ),
+    }),
+  };
+}

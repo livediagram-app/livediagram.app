@@ -16,6 +16,7 @@ import {
   deleteDiagram,
   getDiagram,
   getDiagramSharePassword,
+  countDiagramsByOwner,
   getFolder,
   getMembership,
   getParticipant,
@@ -30,6 +31,8 @@ import {
   upsertDiagramMeta,
 } from '../db';
 import { badRequest, forbidden, json, noContent, notFound } from '../responses';
+import { emailEnabled } from '../email/client';
+import { notifyMilestone } from '../email/notifications';
 import { handleDiagramSubresources } from './diagram-subresource-routes';
 import type { ChangeLogEntryDTO, DiagramDTO } from '../types';
 import {
@@ -106,6 +109,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         await seedTabs(env, body.id, body.tabs);
       }
       const diagram = await getDiagram(env, body.id);
+      // spec/64 (#6): on a genuine create (no prior row), check for a diagram
+      // milestone. Count + send run in the background, off the response path.
+      if (emailEnabled(env) && !clash) {
+        ctx.waitUntil?.(
+          countDiagramsByOwner(env, owner).then((count) => notifyMilestone(env, owner, count)),
+        );
+      }
       return json({ diagram }, { status: 201 });
     }
   }

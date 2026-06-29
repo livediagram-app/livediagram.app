@@ -13,12 +13,16 @@ export type NotificationPrefs = {
   notifyDiagramJoin: boolean;
   notifyInviteResponse: boolean;
   notifyComments: boolean;
+  notifyTips: boolean;
+  notifyMilestones: boolean;
 };
 
 const DEFAULTS: NotificationPrefs = {
   notifyDiagramJoin: true,
   notifyInviteResponse: true,
   notifyComments: true,
+  notifyTips: true,
+  notifyMilestones: true,
 };
 
 // One SELECT + JSON.parse. Reads only the two notification keys; every other
@@ -40,6 +44,8 @@ export async function getNotificationPrefs(env: Env, ownerId: string): Promise<N
       notifyDiagramJoin: blob.notifyDiagramJoin !== false,
       notifyInviteResponse: blob.notifyInviteResponse !== false,
       notifyComments: blob.notifyComments !== false,
+      notifyTips: blob.notifyTips !== false,
+      notifyMilestones: blob.notifyMilestones !== false,
     };
   } catch {
     return DEFAULTS;

@@ -296,3 +296,12 @@ export async function copyDiagram(
   if (inserts.length > 0) await env.DB.batch(inserts);
   return await getDiagram(env, newId);
 }
+
+// spec/64 (#6): total diagrams owned by `ownerId`, for the milestone check on
+// create. Counts all of an owner's diagrams (a cheap indexed COUNT).
+export async function countDiagramsByOwner(env: Env, ownerId: string): Promise<number> {
+  const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM diagrams WHERE owner_id = ?')
+    .bind(ownerId)
+    .first<{ n: number }>();
+  return row?.n ?? 0;
+}

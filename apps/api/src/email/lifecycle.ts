@@ -2,11 +2,14 @@
 // the templates + Resend client. Two entry points: an inline first-sighting
 // welcome (immediate) and the daily cron sweep (welcome catch-up + week 1 / 2).
 
+import { getNotificationPrefs } from '../db';
 import {
   dueForActivation,
   dueForStage,
+  dueForWinback,
   markActivationSent,
   markStageSent,
+  markWinbackSent,
   recordSighting,
   type LifecycleStage,
 } from '../db/email-lifecycle';
@@ -17,11 +20,13 @@ import {
   week1Email,
   week2Email,
   welcomeEmail,
+  winBackEmail,
   type RenderedEmail,
 } from './templates';
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const ACTIVATION_DELAY_MS = 3 * 24 * 60 * 60 * 1000; // nudge zero-diagram signups ~day 3
+const WINBACK_QUIET_MS = 4 * WEEK_MS; // re-engage after ~4 weeks of no activity
 const SWEEP_LIMIT = 100; // bounded per daily run, oldest-first
 
 const STAGE_BUILDER: Record<LifecycleStage, (env: Env) => RenderedEmail> = {
@@ -53,6 +58,24 @@ export async function runLifecycleSweep(env: Env): Promise<void> {
   await sweepActivation(env, now - ACTIVATION_DELAY_MS);
   await sweepStage(env, 'week1', now - WEEK_MS);
   await sweepStage(env, 'week2', now - 2 * WEEK_MS);
+  await sweepWinback(env, now - WINBACK_QUIET_MS);
+}
+
+// Win-back (spec/64 #5): one-shot re-engagement for owners quiet ~4 weeks.
+// Opt-out (notifyTips). Each quiet owner is considered exactly once: we stamp
+// winback_sent_at whether we send or they've opted out (only a failed send is
+// left to retry), so an opted-out owner isn't re-queried every day.
+async function sweepWinback(env: Env, cutoff: number): Promise<void> {
+  const rows = await dueForWinback(env, cutoff, SWEEP_LIMIT);
+  for (const row of rows) {
+    const prefs = await getNotificationPrefs(env, row.ownerId);
+    if (!prefs.notifyTips) {
+      await markWinbackSent(env, row.ownerId);
+      continue;
+    }
+    const { sent } = await sendEmail(env, { to: row.email, ...winBackEmail(env) });
+    if (sent) await markWinbackSent(env, row.ownerId);
+  }
 }
 
 async function sweepStage(env: Env, stage: LifecycleStage, cutoff: number): Promise<void> {

@@ -22,6 +22,8 @@ describe('getNotificationPrefs (spec/65)', () => {
       notifyDiagramJoin: true,
       notifyInviteResponse: true,
       notifyComments: true,
+      notifyTips: true,
+      notifyMilestones: true,
     });
   });
 
@@ -31,6 +33,8 @@ describe('getNotificationPrefs (spec/65)', () => {
       notifyDiagramJoin: true,
       notifyInviteResponse: true,
       notifyComments: true,
+      notifyTips: true,
+      notifyMilestones: true,
     });
   });
 
@@ -43,6 +47,8 @@ describe('getNotificationPrefs (spec/65)', () => {
       notifyDiagramJoin: false,
       notifyInviteResponse: true,
       notifyComments: true,
+      notifyTips: true,
+      notifyMilestones: true,
     });
   });
 
@@ -52,6 +58,8 @@ describe('getNotificationPrefs (spec/65)', () => {
       notifyDiagramJoin: true,
       notifyInviteResponse: true,
       notifyComments: true,
+      notifyTips: true,
+      notifyMilestones: true,
     });
   });
 

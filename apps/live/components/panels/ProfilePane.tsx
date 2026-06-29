@@ -62,7 +62,7 @@ function ProfilePaneEnabled() {
   // event isn't lost if the user is simultaneously toggling other prefs
   // (spec/22 convention). `undefined === on`, so we default to true.
   const setFlag = (
-    key: 'notifyDiagramJoin' | 'notifyInviteResponse' | 'notifyComments',
+    key: 'notifyDiagramJoin' | 'notifyInviteResponse' | 'notifyComments' | 'notifyTips' | 'notifyMilestones',
     telemetryType: string,
   ) => {
     const on = !(prefs[key] !== false);
@@ -120,6 +120,18 @@ function ProfilePaneEnabled() {
               description="When someone leaves a comment on a diagram you own."
               checked={prefs.notifyComments !== false}
               onChange={() => setFlag('notifyComments', 'NotifyComments')}
+            />
+            <NotificationRow
+              title="Tips and check-ins"
+              description="Occasional getting-started tips, and a friendly nudge if you’ve been away for a while."
+              checked={prefs.notifyTips !== false}
+              onChange={() => setFlag('notifyTips', 'NotifyTips')}
+            />
+            <NotificationRow
+              title="Milestones"
+              description="A note when you hit a milestone, like your first shared diagram."
+              checked={prefs.notifyMilestones !== false}
+              onChange={() => setFlag('notifyMilestones', 'NotifyMilestones')}
             />
           </div>
         </section>

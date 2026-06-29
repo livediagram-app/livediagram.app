@@ -8,10 +8,15 @@
 // Like every spec/64 send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import { getNotificationPrefs, getOwnerEmail, listTeamAdminUserIds } from '../db';
+import { claimMilestone, getNotificationPrefs, getOwnerEmail, listTeamAdminUserIds } from '../db';
 import type { Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
-import { commentNotificationEmail, diagramJoinedEmail, inviteResponseEmail } from './templates';
+import {
+  commentNotificationEmail,
+  diagramJoinedEmail,
+  inviteResponseEmail,
+  milestoneEmail,
+} from './templates';
 
 // Someone opened one of an owner's shared diagrams for the FIRST time
 // (recordSharedAccess reported a new row). No-op unless email is on, the owner
@@ -76,4 +81,26 @@ export async function notifyNewComment(
     to,
     ...commentNotificationEmail(env, diagram.name, diagram.id, commenterName),
   });
+}
+
+// spec/64 (#6): the diagram counts that trigger a milestone email. Just the
+// tenth for now; the single milestone_sent_at column fires once per owner.
+const MILESTONE_DIAGRAM_COUNTS = [10];
+
+// Celebrate when an owner reaches a diagram-count milestone (spec/64 #6).
+// Opt-out (notifyMilestones). The atomic claim means a burst of saves at the
+// milestone count sends exactly one email. Best-effort; never blocks the write.
+export async function notifyMilestone(
+  env: Env,
+  ownerId: string,
+  diagramCount: number,
+): Promise<void> {
+  if (!emailEnabled(env)) return;
+  if (!MILESTONE_DIAGRAM_COUNTS.includes(diagramCount)) return;
+  const to = await getOwnerEmail(env, ownerId);
+  if (!to) return;
+  const prefs = await getNotificationPrefs(env, ownerId);
+  if (!prefs.notifyMilestones) return;
+  if (!(await claimMilestone(env, ownerId))) return;
+  await sendEmail(env, { to, ...milestoneEmail(env, diagramCount) });
 }

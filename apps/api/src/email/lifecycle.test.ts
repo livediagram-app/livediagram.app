@@ -7,18 +7,24 @@ vi.mock('../db/email-lifecycle', () => ({
   markStageSent: vi.fn(),
   dueForActivation: vi.fn(),
   markActivationSent: vi.fn(),
+  dueForWinback: vi.fn(),
+  markWinbackSent: vi.fn(),
 }));
+vi.mock('../db', () => ({ getNotificationPrefs: vi.fn() }));
 // Keep emailEnabled + appBaseUrl real; only the network send is mocked.
 vi.mock('./client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./client')>()),
   sendEmail: vi.fn(),
 }));
 
+import { getNotificationPrefs } from '../db';
 import {
   dueForActivation,
   dueForStage,
+  dueForWinback,
   markActivationSent,
   markStageSent,
+  markWinbackSent,
   recordSighting,
 } from '../db/email-lifecycle';
 import { sendEmail } from './client';
@@ -65,6 +71,7 @@ describe('runLifecycleSweep', () => {
   it('sweeps welcome, week1, week2 with widening age cutoffs', async () => {
     vi.mocked(dueForStage).mockResolvedValue([]);
     vi.mocked(dueForActivation).mockResolvedValue([]);
+    vi.mocked(dueForWinback).mockResolvedValue([]);
     await runLifecycleSweep(env);
     const calls = vi.mocked(dueForStage).mock.calls;
     expect(calls.map((c) => c[1])).toEqual(['welcome', 'week1', 'week2']);
@@ -78,6 +85,7 @@ describe('runLifecycleSweep', () => {
       .mockResolvedValueOnce([{ ownerId: 'u1', email: 'a@b.com' }])
       .mockResolvedValue([]);
     vi.mocked(dueForActivation).mockResolvedValue([]);
+    vi.mocked(dueForWinback).mockResolvedValue([]);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await runLifecycleSweep(env);
     expect(sendEmail).toHaveBeenCalledOnce();
@@ -91,5 +99,26 @@ describe('runLifecycleSweep', () => {
     await runLifecycleSweep(env);
     expect(sendEmail).toHaveBeenCalledOnce();
     expect(markActivationSent).toHaveBeenCalledWith(env, 'u2');
+  });
+
+  it('win-back: sends + stamps a quiet owner who has tips on (spec/64 #5)', async () => {
+    vi.mocked(dueForStage).mockResolvedValue([]);
+    vi.mocked(dueForActivation).mockResolvedValue([]);
+    vi.mocked(dueForWinback).mockResolvedValue([{ ownerId: 'u3', email: 'e@f.com' }]);
+    vi.mocked(getNotificationPrefs).mockResolvedValue({ notifyTips: true } as never);
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    await runLifecycleSweep(env);
+    expect(sendEmail).toHaveBeenCalledOnce();
+    expect(markWinbackSent).toHaveBeenCalledWith(env, 'u3');
+  });
+
+  it('win-back: stamps without sending when the owner opted out of tips', async () => {
+    vi.mocked(dueForStage).mockResolvedValue([]);
+    vi.mocked(dueForActivation).mockResolvedValue([]);
+    vi.mocked(dueForWinback).mockResolvedValue([{ ownerId: 'u4', email: 'g@h.com' }]);
+    vi.mocked(getNotificationPrefs).mockResolvedValue({ notifyTips: false } as never);
+    await runLifecycleSweep(env);
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(markWinbackSent).toHaveBeenCalledWith(env, 'u4');
   });
 });

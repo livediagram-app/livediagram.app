@@ -105,3 +105,42 @@ export async function markActivationSent(env: Env, ownerId: string): Promise<voi
     .bind(Date.now(), ownerId)
     .run();
 }
+
+// spec/64 (#5): owners whose most recent diagram activity was at or before
+// `cutoff` (active once, now quiet), not yet win-backed. MAX(updated_at) is NULL
+// for a zero-diagram owner and NULL <= ? is false, so they're excluded (the
+// activation nudge handles those). Quietest-longest first.
+export async function dueForWinback(
+  env: Env,
+  cutoff: number,
+  limit: number,
+): Promise<LifecycleRow[]> {
+  const { results } = await env.DB.prepare(
+    `SELECT el.owner_id, el.email FROM email_lifecycle el
+     WHERE el.winback_sent_at IS NULL AND el.email <> ''
+       AND (SELECT MAX(d.updated_at) FROM diagrams d WHERE d.owner_id = el.owner_id) <= ?
+     ORDER BY el.created_at ASC LIMIT ?`,
+  )
+    .bind(cutoff, limit)
+    .all<{ owner_id: string; email: string }>();
+  return (results ?? []).map((r) => ({ ownerId: r.owner_id, email: r.email }));
+}
+
+export async function markWinbackSent(env: Env, ownerId: string): Promise<void> {
+  await env.DB.prepare('UPDATE email_lifecycle SET winback_sent_at = ? WHERE owner_id = ?')
+    .bind(Date.now(), ownerId)
+    .run();
+}
+
+// spec/64 (#6): atomically claim the one-time milestone email for an owner.
+// The conditional UPDATE means only the first caller wins (changes === 1), so a
+// burst of saves at the milestone count can't double-send. False = already
+// claimed, or no row (a guest has none).
+export async function claimMilestone(env: Env, ownerId: string): Promise<boolean> {
+  const res = await env.DB.prepare(
+    'UPDATE email_lifecycle SET milestone_sent_at = ? WHERE owner_id = ? AND milestone_sent_at IS NULL',
+  )
+    .bind(Date.now(), ownerId)
+    .run();
+  return res.meta.changes === 1;
+}
