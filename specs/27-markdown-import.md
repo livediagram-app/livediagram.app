@@ -82,11 +82,14 @@ clearer than silently growing the tab list, and Undo makes it safe.)
 
 - **Round-trip:** our own Markdown export (spec — `export-tab.ts`) imports
   back as a structural tree (title → Elements/Connections sections), not
-  a byte-for-byte graph reconstruction.
-- **Not in scope (yet):** Mermaid (` ```mermaid `) fl/ graph blocks →
+  a byte-for-byte graph reconstruction. Markdown is a human _summary_;
+  the faithful round-trip text format is the native DSL in
+  [spec/66](66-text-dsl.md), which preserves the connection graph by id.
+- **Not in scope here:** Mermaid (` ```mermaid `) fl/ graph blocks →
   real edge graphs, and Excalidraw `.excalidraw` JSON (that's JSON, not
   Markdown; a separate importer). The parser deliberately skips code
-  fences today so a future Mermaid pass can claim them.
+  fences today so a future Mermaid pass can claim them — tracked under
+  [spec/66](66-text-dsl.md) (Boundaries).
 
 Implementation: `apps/live/lib/markdown-import.ts` (pure parser + layout +
 `buildTabFromMarkdown`, unit-tested), dynamically imported by

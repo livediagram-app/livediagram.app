@@ -15,7 +15,13 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
-import { normalizeFolderOrder, tabFolderName, type Element, type Tab } from '@livediagram/diagram';
+import {
+  normalizeFolderOrder,
+  parseTab,
+  tabFolderName,
+  type Element,
+  type Tab,
+} from '@livediagram/diagram';
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
 import { parseImportedTab, pickTabFile, type ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
@@ -134,13 +140,18 @@ export function useTabActions(deps: TabActionsDeps) {
     });
     for (const el of next) {
       if (el.type === 'arrow') {
-        if (el.from.kind === 'pinned') {
-          const mapped = idMap.get(el.from.elementId);
-          if (mapped) el.from = { ...el.from, elementId: mapped };
-        }
-        if (el.to.kind === 'pinned') {
-          const mapped = idMap.get(el.to.elementId);
-          if (mapped) el.to = { ...el.to, elementId: mapped };
+        for (const end of ['from', 'to'] as const) {
+          const ep = el[end];
+          if (ep.kind === 'pinned') {
+            const mapped = idMap.get(ep.elementId);
+            if (mapped) el[end] = { ...ep, elementId: mapped };
+          } else if (ep.kind === 'on-arrow') {
+            // Arrow-to-arrow endpoints (spec/50) reference another arrow's id,
+            // so they need remapping too — otherwise a DSL / JSON import with a
+            // message hung off a lifeline points at the pre-remint id.
+            const mapped = idMap.get(ep.arrowId);
+            if (mapped) el[end] = { ...ep, arrowId: mapped };
+          }
         }
       }
     }
@@ -180,7 +191,9 @@ export function useTabActions(deps: TabActionsDeps) {
   // The Import dialog passes the user's chosen format, which drives both
   // the file-picker filter and the parser. Returns an outcome the dialog
   // renders (close / stay / show error) rather than throwing.
-  const importIntoActiveTab = async (format: 'json' | 'markdown'): Promise<ImportOutcome> => {
+  const importIntoActiveTab = async (
+    format: 'json' | 'dsl' | 'markdown',
+  ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
@@ -188,9 +201,25 @@ export function useTabActions(deps: TabActionsDeps) {
     const accept =
       format === 'markdown'
         ? 'text/markdown,.md,.markdown,.mdown,.mkd,text/plain'
-        : '.json,application/json';
+        : format === 'dsl'
+          ? '.lvd,text/plain'
+          : '.json,application/json';
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };
+
+    if (format === 'dsl') {
+      // The DSL parser (spec/66) lives in @livediagram/diagram; it throws on a
+      // structurally broken file, so wrap it into the dialog's outcome shape.
+      let parsed;
+      try {
+        parsed = parseTab(picked.text);
+      } catch (e) {
+        return { status: 'error', error: e instanceof Error ? e.message : 'Could not parse file.' };
+      }
+      replaceActiveTabContent({ ...parsed.tab, elements: remintElementIds(parsed.tab.elements) });
+      track('Tab', 'Imported', 'Text');
+      return { status: 'done' };
+    }
 
     if (format === 'markdown') {
       // Lazy-load the parser so its ~300 lines stay out of the editor's

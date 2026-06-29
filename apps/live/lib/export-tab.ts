@@ -90,6 +90,7 @@ export {
   TAB_SCHEMA_VERSION,
   exportTabAsJson,
   exportTabAsMarkdown,
+  exportTabAsDsl,
   type ExportedTabEnvelope,
 } from './export-tab-text';
 

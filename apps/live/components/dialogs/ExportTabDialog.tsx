@@ -5,6 +5,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { Tab } from '@livediagram/diagram';
 import {
   downloadBlob,
+  exportTabAsDsl,
   exportTabAsJson,
   exportTabAsMarkdown,
   exportTabAsPng,
@@ -17,6 +18,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 // Telemetry (spec/22): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
+  text: 'Text',
   markdown: 'Markdown',
   pdf: 'PDF',
   png: 'PNG',
@@ -36,7 +38,7 @@ type ExportTabDialogProps = {
   scope?: 'tab' | 'selection';
 };
 
-type Format = 'markdown' | 'pdf' | 'png' | 'svg' | 'file';
+type Format = 'text' | 'markdown' | 'pdf' | 'png' | 'svg' | 'file';
 
 // Welcome-style overlay: four export options laid out as a card grid,
 // matching the visual language of the TemplatePicker. One per format.
@@ -70,6 +72,8 @@ export function ExportTabDialog({
     try {
       if (format === 'file') {
         downloadBlob(exportTabAsJson(tab), `${baseName}.livediagram-tab.json`);
+      } else if (format === 'text') {
+        downloadBlob(exportTabAsDsl(tab), `${baseName}.lvd`);
       } else if (format === 'markdown') {
         downloadBlob(exportTabAsMarkdown(tab), `${baseName}.md`);
       } else if (format === 'png') {
@@ -124,6 +128,13 @@ export function ExportTabDialog({
       </div>
       <div className="flex-1 overflow-y-auto px-6 py-5">
         <div className="grid grid-cols-2 gap-3">
+          <ExportCard
+            kind="text"
+            title="Text"
+            description="A human-editable .lvd file that keeps every shape and connection — edit it and import it back."
+            busy={busyFormat === 'text'}
+            onClick={() => void handle('text')}
+          />
           <ExportCard
             kind="markdown"
             title="Markdown"
@@ -255,6 +266,27 @@ function ExportCard({
 
 function FormatIcon({ kind }: { kind: Format }) {
   switch (kind) {
+    case 'text':
+      return (
+        <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="18"
+            rx="2"
+            fill="rgb(237 233 254)"
+            stroke="rgb(167 139 250)"
+            strokeWidth="1.25"
+          />
+          <path
+            d="M6 7h13M6 10h16M6 13h9"
+            stroke="rgb(124 58 237)"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
     case 'markdown':
       return (
         <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
