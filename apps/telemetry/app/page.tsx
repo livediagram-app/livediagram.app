@@ -143,34 +143,37 @@ export default function TelemetryDashboard() {
               onSelectView={(k) => setView(k as ViewKey)}
             />
 
-            {/* View tabs (Highlights / Look & Feel / Palette / Search / Raw).
-              A wrapping flex on mobile so all five tabs stay readable instead
-              of overflowing a single row; a single inline row from sm up. */}
-            <div
-              role="tablist"
-              aria-label="Telemetry views"
-              className="mt-8 flex flex-wrap gap-1 rounded-lg border border-slate-200 bg-white p-1 sm:inline-flex sm:flex-nowrap sm:gap-0"
-            >
-              {VIEWS.map((v) => (
-                <button
-                  key={v.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={view === v.key}
-                  onClick={() => setView(v.key)}
-                  className={
-                    'flex cursor-pointer items-center justify-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-medium transition ' +
-                    (view === v.key
-                      ? 'bg-brand-500 text-white'
-                      : 'text-slate-600 hover:bg-slate-100')
-                  }
-                >
-                  <span aria-hidden className="[&_svg]:h-3.5 [&_svg]:w-3.5">
-                    {v.icon}
-                  </span>
-                  {v.label}
-                </button>
-              ))}
+            {/* View tabs. A centred pill group: every tab keeps its label on a
+              single line, and the group wraps to a second centred row when the
+              full set is wider than the column (rather than squeezing labels or
+              hiding tabs off-screen), so every view stays visible at any width. */}
+            <div className="mt-8 flex justify-center">
+              <div
+                role="tablist"
+                aria-label="Telemetry views"
+                className="flex max-w-full flex-wrap justify-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm"
+              >
+                {VIEWS.map((v) => (
+                  <button
+                    key={v.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={view === v.key}
+                    onClick={() => setView(v.key)}
+                    className={
+                      'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium transition ' +
+                      (view === v.key
+                        ? 'bg-brand-500 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900')
+                    }
+                  >
+                    <span aria-hidden className="shrink-0 [&_svg]:h-3.5 [&_svg]:w-3.5">
+                      {v.icon}
+                    </span>
+                    {v.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {view === 'highlights' ? (
