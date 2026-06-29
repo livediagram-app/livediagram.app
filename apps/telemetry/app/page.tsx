@@ -12,6 +12,7 @@ import {
   PaletteGlyph,
   PersonAddGlyph,
   SearchGlyph,
+  ShareGlyph,
   SparkGlyph,
 } from './glyphs';
 import { WindowPanel } from './WindowPanel';
@@ -24,6 +25,7 @@ import { LookAndFeelView } from './LookAndFeelView';
 import { PaletteView } from './PaletteView';
 import { HelpView } from './HelpView';
 import { ExternalConnectionsView } from './ExternalConnectionsView';
+import { CollaborationView } from './CollaborationView';
 import { MetricSearch } from './MetricSearch';
 
 // Same origin as the editor + api under the router (livediagram.app).
@@ -35,8 +37,9 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
 // Tab order follows the product funnel: who arrives (Acquisition), what they
-// build (Palette / Look & Feel), how they get unstuck (Help), how machines
-// connect (External Connections), then the power-user lenses (Search / Raw).
+// build (Palette / Look & Feel), how they work together (Collaboration), how
+// they get unstuck (Help), how machines connect (External Connections), then
+// the power-user lenses (Search / Raw).
 type ViewKey =
   | 'highlights'
   | 'acquisition'
@@ -44,6 +47,7 @@ type ViewKey =
   | 'lookfeel'
   | 'help'
   | 'external'
+  | 'collaboration'
   | 'search'
   | 'raw';
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
@@ -53,6 +57,7 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
   { key: 'external', label: 'External Connections', icon: <LinkGlyph /> },
+  { key: 'collaboration', label: 'Collaboration', icon: <ShareGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
   { key: 'raw', label: 'Raw', icon: <ListGlyph /> },
 ];
@@ -160,6 +165,8 @@ export default function TelemetryDashboard() {
               <HelpView summary={summary} active={active} />
             ) : view === 'external' ? (
               <ExternalConnectionsView summary={summary} active={active} />
+            ) : view === 'collaboration' ? (
+              <CollaborationView summary={summary} active={active} />
             ) : view === 'raw' ? (
               <RawView summary={summary} active={active} />
             ) : summary.daily ? (
