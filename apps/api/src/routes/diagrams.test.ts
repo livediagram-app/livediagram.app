@@ -47,6 +47,12 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
 vi.mock('../db', () => db);
 vi.mock('../auth/diagram-access', () => ({ canReadDiagram, canEditDiagram }));
 
+// The thumbnail route (spec/67) delegates rendering to ./thumbnail; stub
+// it so these cases pin the ACCESS GATE, and can assert the renderer is
+// never reached for a denied caller (no render, no info leak).
+const getDiagramThumbnailSvg = vi.hoisted(() => vi.fn());
+vi.mock('../thumbnail', () => ({ getDiagramThumbnailSvg }));
+
 import type { RouteContext } from './context';
 import { handleDiagrams } from './diagrams';
 
@@ -88,6 +94,55 @@ beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
   canReadDiagram.mockReset();
   canEditDiagram.mockReset();
+  getDiagramThumbnailSvg.mockReset();
+});
+
+describe('GET /diagrams/:id/thumbnail (spec/67 access gate)', () => {
+  it('404s an anonymous caller with no owner / share code / team — and never renders', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('someone-else'));
+    canReadDiagram.mockResolvedValue(false);
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/thumbnail', { owner: null }));
+    expect(res.status).toBe(404);
+    // The security property: a denied caller never reaches the renderer,
+    // so no snapshot bytes can leak past the gate.
+    expect(getDiagramThumbnailSvg).not.toHaveBeenCalled();
+  });
+
+  it('404s a known owner id that fails the read gate (not theirs, no share, no team)', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('someone-else'));
+    canReadDiagram.mockResolvedValue(false);
+    const res = await handleDiagrams(
+      makeCtx('GET', '/api/diagrams/d1/thumbnail', { owner: 'intruder' }),
+    );
+    expect(res.status).toBe(404);
+    expect(getDiagramThumbnailSvg).not.toHaveBeenCalled();
+  });
+
+  it('404s a missing diagram (no existence leak)', async () => {
+    db.getDiagram.mockResolvedValue(null);
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/thumbnail'));
+    expect(res.status).toBe(404);
+    expect(canReadDiagram).not.toHaveBeenCalled();
+  });
+
+  it('serves the SVG to a caller the read gate allows (owner / share / team)', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canReadDiagram.mockResolvedValue(true);
+    getDiagramThumbnailSvg.mockResolvedValue('<svg>ok</svg>');
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/thumbnail'));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('image/svg+xml');
+    expect(res.headers.get('Cache-Control')).toContain('private');
+    expect(await res.text()).toBe('<svg>ok</svg>');
+  });
+
+  it('404s when access is allowed but there is no snapshot (empty diagram / no R2)', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canReadDiagram.mockResolvedValue(true);
+    getDiagramThumbnailSvg.mockResolvedValue(null);
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/thumbnail'));
+    expect(res.status).toBe(404);
+  });
 });
 
 describe('handleDiagrams owner-only paths (DELETE /diagrams/:id)', () => {
