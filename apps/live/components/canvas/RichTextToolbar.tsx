@@ -5,6 +5,13 @@
 // handlers); this component is presentation + the focus-preservation detail.
 
 import { useEffect, useRef, useState } from 'react';
+import {
+  BulletListIcon,
+  EllipsisIcon,
+  FontGlyph,
+  NoListIcon,
+  NumberedListIcon,
+} from './rich-text-toolbar-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import {
   AlignIcon,
@@ -70,95 +77,6 @@ const PADDINGS: { key: Padding; label: string }[] = [
 // contentEditable when a control is clicked (the classic rich-text-toolbar
 // bug). Shared by every button so the editor never blurs mid-format.
 const noFocusSteal = (e: React.MouseEvent) => e.preventDefault();
-
-function EllipsisIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <circle cx="4" cy="8" r="1.4" fill="currentColor" />
-      <circle cx="8" cy="8" r="1.4" fill="currentColor" />
-      <circle cx="12" cy="8" r="1.4" fill="currentColor" />
-    </svg>
-  );
-}
-
-// Bulleted-list glyph: three dots + lines.
-function BulletListIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <circle cx="3" cy="4" r="1" fill="currentColor" stroke="none" />
-      <circle cx="3" cy="8" r="1" fill="currentColor" stroke="none" />
-      <circle cx="3" cy="12" r="1" fill="currentColor" stroke="none" />
-      <path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
-    </svg>
-  );
-}
-
-// Numbered-list glyph: 1/2/3 + lines.
-function NumberedListIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
-      <text x="1.5" y="5.5" fontSize="5" fill="currentColor" stroke="none">
-        1
-      </text>
-      <text x="1.5" y="9.5" fontSize="5" fill="currentColor" stroke="none">
-        2
-      </text>
-      <text x="1.5" y="13.5" fontSize="5" fill="currentColor" stroke="none">
-        3
-      </text>
-    </svg>
-  );
-}
-
-// "Remove list" glyph: lines with a slash.
-function NoListIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
-      <path d="M2.5 13.5l11-11" />
-    </svg>
-  );
-}
-
-// A serif "A" — the font/typeface glyph for the Font submenu row.
-function FontGlyph() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden fill="currentColor">
-      <text x="8" y="12" textAnchor="middle" fontSize="12" fontFamily="Georgia, serif">
-        A
-      </text>
-    </svg>
-  );
-}
 
 // Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same
 // active + hover tones) so the two toolbars read as one system.
