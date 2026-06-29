@@ -19,7 +19,7 @@ livediagram is built to need as little of your data as possible, and the whole c
 - **Your diagrams.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare.
 - **Images you upload.** Images placed on a diagram are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the diagram with.
 - **A browser id.** If you use livediagram without an account, we keep a random identifier in your browser's local storage to link diagrams to your browser. It is not tied to your name or email.
-- **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these only to identify your account.
+- **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these to identify your account and to send you the account and onboarding emails described under **Emails we send** below.
 - **API tokens, if you create them.** If you create an [API token](/help/account-and-data/api-tokens/) to call the API from your own scripts, we store a one-way hash of it (never the token itself), its name, and a last-used timestamp, so the token can be verified and you can see when it was last active. Tokens are a signed-in-only feature, expire after six months, and are deleted when you delete your account.
 - **Connecting an AI tool, if you do.** If you connect an AI tool via our [MCP server](/help/account-and-data/connect-ai-mcp/), we briefly store the state needed to complete the connection handshake (the app's registration plus short-lived authorization sessions and codes), which expires automatically within minutes. The connection itself is an API token, covered above, and you can revoke it any time.
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
@@ -38,12 +38,22 @@ We collect this ourselves, store it in our own database, and use no third-party 
 
 We use local storage to keep your browser id and your preferences. When you sign in, Clerk sets cookies to keep you logged in. We do not use advertising or tracking cookies.
 
+## Emails we send
+
+If you have an account, we use your email address to send you a small number of emails:
+
+- **Account and service emails** — for example, a notification when someone invites you to a team, and a confirmation when you delete your account.
+- **A short onboarding series** — a welcome message and a couple of follow-up tips during your first two weeks, to help you get started.
+
+We do not send advertising or marketing beyond these, and we never share your address other than with our email provider for the sole purpose of delivering them. People who use livediagram without an account are never emailed.
+
 ## Service providers
 
 We rely on a small number of providers to run the service:
 
 - **Cloudflare**, for hosting, database storage, and image storage.
 - **Clerk**, for authentication (only if you sign in).
+- **Resend**, for delivering the account and onboarding emails described above (only if you have an account).
 
 These providers process data on our behalf so that we can run the service.
 
