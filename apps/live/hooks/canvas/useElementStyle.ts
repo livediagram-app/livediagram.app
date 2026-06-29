@@ -125,7 +125,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setMarkerSelected,
     setMarkerSizeSelected,
     applyShapeColorPresetSelected,
-    applyShapeBorderPresetSelected,
     resetShapeStyleSelected,
   } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, selectedId });
 
@@ -474,7 +473,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setChartLegendPositionSelected,
     setLineDataSelected,
     applyShapeColorPresetSelected,
-    applyShapeBorderPresetSelected,
     resetShapeStyleSelected,
     applyArrowPresetSelected,
     resetArrowStyleSelected,

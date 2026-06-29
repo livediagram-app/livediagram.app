@@ -262,8 +262,6 @@ export function EditorView() {
     clearStylePreview,
     previewShapeColorPreset,
     commitShapeColorPreset,
-    previewShapeBorderPreset,
-    commitShapeBorderPreset,
     previewArrowPreset,
     commitArrowPreset,
     previewAnimation,
@@ -1054,8 +1052,6 @@ export function EditorView() {
           shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
           onApplyShapeColorPreset={commitShapeColorPreset}
           onPreviewShapeColorPreset={previewShapeColorPreset}
-          onApplyShapeBorderPreset={commitShapeBorderPreset}
-          onPreviewShapeBorderPreset={previewShapeBorderPreset}
           onResetShapeStyle={resetShapeStyleSelected}
           onApplyArrowPreset={commitArrowPreset}
           onPreviewArrowPreset={previewArrowPreset}
