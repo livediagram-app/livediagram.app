@@ -89,9 +89,13 @@ export function Dialog({
           aria-labelledby={titleId}
           aria-label={ariaLabel}
           tabIndex={-1}
+          // Default to a viewport-bounded, scrollable panel so a tall dialog on
+          // a short/landscape screen never pushes its footer off the bottom.
+          // Dialogs that set their own max-h (e.g. ShareDialog, Export) opt out
+          // of the default and manage their own scroll region.
           className={`flex ${WIDTHS[size]} max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
-            className ? ` ${className}` : ''
-          }`}
+            className?.includes('max-h') ? '' : ' max-h-[calc(100dvh-2rem)] overflow-y-auto'
+          }${className ? ` ${className}` : ''}`}
         >
           {children}
         </div>

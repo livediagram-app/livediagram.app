@@ -161,7 +161,15 @@ export function TeamPane({
 
   const submitEdit = async (values: { name: string; organisation: string | null }) => {
     setEditOpen(false);
-    await apiUpdateTeam(ownerId, teamId, values).catch(() => {});
+    try {
+      await apiUpdateTeam(ownerId, teamId, values);
+    } catch {
+      // Don't leave the optimistic name on screen as if it saved: refresh back
+      // to the stored value and tell the user.
+      setNotice('Could not save the team. Try again.');
+      await refresh();
+      return;
+    }
     track('Team', 'Changed');
     await refresh();
     onTeamsChanged();
@@ -174,7 +182,14 @@ export function TeamPane({
       confirmLabel: 'Delete team',
     });
     if (!ok) return;
-    await apiDeleteTeam(ownerId, teamId).catch(() => {});
+    // Only navigate away once the delete actually succeeds — a failed delete
+    // must not bounce the user out as though the team were gone.
+    try {
+      await apiDeleteTeam(ownerId, teamId);
+    } catch {
+      setNotice('Could not delete the team. Try again.');
+      return;
+    }
     track('Team', 'Deleted');
     onTeamsChanged();
     onLeftTeam();

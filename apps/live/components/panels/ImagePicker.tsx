@@ -150,7 +150,7 @@ export function ImagePicker({
           role="dialog"
           aria-modal="true"
           aria-label="Image picker"
-          className="flex w-[640px] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+          className="flex max-h-[calc(100dvh-2rem)] w-[640px] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
         >
           <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
             <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Image</h2>
@@ -171,7 +171,7 @@ export function ImagePicker({
               Gallery {gallery ? `(${gallery.length})` : ''}
             </TabButton>
           </nav>
-          <div className="p-4">
+          <div className="min-h-0 flex-1 overflow-y-auto p-4">
             {tab === 'upload' ? (
               <ImageDropZone
                 onSelectFile={handleFile}
