@@ -134,7 +134,14 @@ export default function TelemetryDashboard() {
                 onSelect={setActive}
               />
             </div>
-            <StickyWindowBar watchRef={panelRef} active={active} onSelect={setActive} />
+            <StickyWindowBar
+              watchRef={panelRef}
+              active={active}
+              onSelect={setActive}
+              views={VIEWS}
+              view={view}
+              onSelectView={(k) => setView(k as ViewKey)}
+            />
 
             {/* View tabs (Highlights / Look & Feel / Palette / Search / Raw).
               A wrapping flex on mobile so all five tabs stay readable instead
