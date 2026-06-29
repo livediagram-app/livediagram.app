@@ -3,50 +3,21 @@
 import { useState } from 'react';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { initialsOf, randomName, type Participant } from '@/lib/identity';
+import { initialsOf, randomName } from '@/lib/identity';
 import { buildEmbedSnippet } from '@/lib/embed';
-import type { ShareLink, ShareLinkExpiry, ShareRole } from '@/lib/api-client';
+import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { formatTimeLeftCompact, useRelativeTimeTick } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { TrashIcon } from '@/components/panels/explorer-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { EXPIRY_LABELS, LinkIcon, RefreshIcon, RoleButton } from './share-dialog-parts';
+import type { ShareDialogProps } from './ShareDialog.types';
+import { SharePasswordSection } from './SharePasswordSection';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-
-type ShareDialogProps = {
-  participant: Participant;
-  links: ShareLink[];
-  // The diagram's current share password (spec/24), or null when unset.
-  // Shown in the clear so the owner can always see + change it.
-  sharePassword: string | null;
-  shareUrlFor: (code: string) => string;
-  // Whether the owner has confirmed their name (drives the share button
-  // behaviour but no longer hides the identity card).
-  nameConfirmed: boolean;
-  // When non-null, the owner is signed in via Clerk and their display
-  // name is dictated by their account — there's nothing to edit, so
-  // the "Your name" row hides entirely (spec/07). Guests (null) get
-  // the editable name + shuffle row.
-  lockedName?: string | null;
-  onSaveName: (name: string) => Promise<void> | void;
-  onCreateLink: (role: ShareRole, expiry: ShareLinkExpiry) => Promise<void> | void;
-  onRevokeLink: (code: string) => Promise<void> | void;
-  // Re-arm an expiring link for another round of its creation-time
-  // duration (spec/34). Only rendered on inactive (expired) rows.
-  onExtendLink: (code: string) => Promise<void> | void;
-  // Set (or clear, with null) the diagram's share password. Returns the
-  // stored value so the field can reflect what now gates access.
-  onSetPassword: (password: string | null) => Promise<string | null> | void;
-  onClose: () => void;
-};
 
 // Human labels for the expiry choices (spec/34), shared by the create
 // dropdown and the inactive rows' Extend button.
-const EXPIRY_LABELS: Record<Exclude<ShareLinkExpiry, 'never'>, string> = {
-  week: '1 week',
-  month: '1 month',
-  sixMonths: '6 months',
-};
 
 // Share-diagram modal. Layout per spec/07 ("Share dialog"): the
 // guest-only name row first (so a guest sets the identity their links
@@ -81,11 +52,6 @@ export function ShareDialog({
   // Lifetime for the next link (spec/34). Never = the pre-expiry
   // default: the link works until revoked.
   const [newExpiry, setNewExpiry] = useState<ShareLinkExpiry>('never');
-  // Password field (spec/24). Kept in the clear (type="text") so the
-  // owner can always read it. Seeded from the saved value; `pwSaved`
-  // flips the button to "Saved" for a beat after a successful write.
-  const [pw, setPw] = useState(sharePassword ?? '');
-  const [pwSaved, setPwSaved] = useState(false);
 
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
@@ -122,31 +88,6 @@ export function ShareDialog({
     setBusy(true);
     try {
       await onExtendLink(code);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const savePassword = async () => {
-    setBusy(true);
-    try {
-      const next = pw.trim() ? pw : null;
-      const stored = await onSetPassword(next);
-      // onSetPassword returns the server-normalised value (or void in
-      // tests); reflect it so a whitespace-only entry visibly clears.
-      setPw(typeof stored === 'string' ? stored : (next ?? ''));
-      setPwSaved(true);
-      window.setTimeout(() => setPwSaved(false), 1500);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const removePassword = async () => {
-    setBusy(true);
-    try {
-      await onSetPassword(null);
-      setPw('');
     } finally {
       setBusy(false);
     }
@@ -467,55 +408,13 @@ export function ShareDialog({
           </div>
         ) : null}
 
-        {/* Options band: the share password (spec/24). Applies to
-                every link, and is touched far less often than the link
-                actions above, so it sits last. */}
-        <div className="flex flex-col gap-4 border-t border-slate-100 pt-4 dark:border-slate-800">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5">
-              <p className={sectionLabel}>Password</p>
-              <HelpArticleLink
-                article="sharePasswords"
-                title="Share passwords"
-                description="How the optional password gate protects every link."
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={pw}
-                onChange={(e) => setPw(e.target.value)}
-                placeholder="No password"
-                aria-label="Share password"
-                autoComplete="off"
-                spellCheck={false}
-                className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              />
-              <button
-                type="button"
-                onClick={savePassword}
-                disabled={busy || pw === (sharePassword ?? '')}
-                className="inline-flex items-center rounded-md bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
-              >
-                {pwSaved ? 'Saved' : 'Save'}
-              </button>
-              {sharePassword ? (
-                <button
-                  type="button"
-                  onClick={removePassword}
-                  disabled={busy}
-                  className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
-                >
-                  Remove
-                </button>
-              ) : null}
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Optional, applies to every link: anyone opening one must enter it first (embed viewers
-              are prompted inside the frame). Shown in the clear so you can always read it.
-            </p>
-          </div>
-        </div>
+        <SharePasswordSection
+          sharePassword={sharePassword}
+          onSetPassword={onSetPassword}
+          busy={busy}
+          setBusy={setBusy}
+          sectionLabel={sectionLabel}
+        />
       </div>
 
       <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
@@ -528,75 +427,5 @@ export function ShareDialog({
         </button>
       </div>
     </Dialog>
-  );
-}
-
-function RoleButton({
-  active,
-  label,
-  description,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <Tooltip title={label} description={description} block>
-      <button
-        type="button"
-        onClick={onClick}
-        aria-pressed={active}
-        className={
-          active
-            ? 'w-full rounded-sm bg-white px-2 py-1 text-xs font-semibold text-slate-800 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-            : 'w-full rounded-sm px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-white/60 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-200'
-        }
-      >
-        {label}
-      </button>
-    </Tooltip>
-  );
-}
-
-function RefreshIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2.5 8a5.5 5.5 0 0 1 9.4-3.9L13.5 5.5" />
-      <path d="M13.5 2.5v3h-3" />
-      <path d="M13.5 8a5.5 5.5 0 0 1-9.4 3.9L2.5 10.5" />
-      <path d="M2.5 13.5v-3h3" />
-    </svg>
-  );
-}
-
-function LinkIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M7 4.5l1.5-1.5a3.25 3.25 0 0 1 4.6 4.6L11 9.5" />
-      <path d="M9 11.5l-1.5 1.5a3.25 3.25 0 0 1-4.6-4.6L5 7" />
-      <line x1="6" y1="10" x2="10" y2="6" />
-    </svg>
   );
 }
