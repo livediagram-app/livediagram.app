@@ -18,7 +18,6 @@
 // Keeping that policy in one file makes it auditable.
 
 import {
-  ARROW_THICKNESS_PX,
   clampRating,
   RAIL_DEFAULT_POINTS,
   RAIL_MAX_POINTS,
@@ -31,14 +30,7 @@ import {
   isProgressShape,
   sendManyToBack,
   SHAPE_DEFAULT_SIZE,
-  type ArrowElement,
-  type ArrowEnds,
-  type ArrowheadShape,
-  type ArrowheadSize,
   type AnimationSpeed,
-  type ArrowFlow,
-  type ArrowStyle,
-  type ArrowThickness,
   type BorderRadius,
   type ElementAnimation,
   type IconAnimation,
@@ -62,7 +54,6 @@ import {
 } from '@livediagram/diagram';
 import { getTheme, type ShapeColorPreset } from '@/lib/themes';
 import {
-  applyArrowPresetToEl,
   applyBorderPresetToEl,
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
@@ -74,6 +65,7 @@ import {
   applyTextColorToEl,
 } from '@/lib/style-presets';
 import { track } from '@/lib/telemetry';
+import { useArrowStyleSetters } from './useArrowStyleSetters';
 
 type EditorElementStyleDeps = {
   // The active selection, resolved to a set of element ids (single
@@ -116,6 +108,19 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     commitTabs,
     scheduleElementChangeLog,
   } = deps;
+
+  const {
+    setArrowFieldSelected,
+    setArrowEndsSelected,
+    setArrowThicknessSelected,
+    setArrowheadSizeSelected,
+    setArrowStyleSelected,
+    setArrowheadShapeSelected,
+    setArrowStrokeStyleSelected,
+    applyArrowPresetSelected,
+    resetArrowStyleSelected,
+    setArrowFlowSelected,
+  } = useArrowStyleSetters({ currentSelectionIds, commit });
 
   const toggleLockSelected = () => {
     if (!selectedId) return;
@@ -273,23 +278,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   // Set arrow-only field(s) on every selected arrow. The straightforward
   // per-field arrow setters share this; setArrowStyleSelected stays separate
   // because it also has to drop curvePoints.
-  const setArrowFieldSelected = (patch: Partial<ArrowElement>, telemetryType: string) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && el.type === 'arrow' ? { ...el, ...patch } : el)),
-    );
-    track('Element', 'Changed', telemetryType);
-  };
-
-  const setArrowEndsSelected = (arrowEnds: ArrowEnds) =>
-    setArrowFieldSelected({ arrowEnds }, 'ArrowEnds');
-
-  const setArrowThicknessSelected = (thickness: ArrowThickness) =>
-    setArrowFieldSelected({ strokeWidth: ARROW_THICKNESS_PX[thickness] }, 'ArrowThickness');
-
-  const setArrowheadSizeSelected = (size: ArrowheadSize) =>
-    setArrowFieldSelected({ arrowheadSize: size }, 'ArrowheadSize');
 
   // Toggle the header row / column band on the selected table(s).
   // Toggle a boolean structure flag on every selected table. The three table
@@ -310,37 +298,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setTableHeaderRowSelected = () => toggleTableFlag('headerRow', 'TableHeaderRow');
   const setTableZebraSelected = () => toggleTableFlag('zebra', 'TableZebra');
   const setTableHeaderColumnSelected = () => toggleTableFlag('headerColumn', 'TableHeaderColumn');
-
-  const setArrowStyleSelected = (style: ArrowStyle) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => {
-        if (!(ids.has(el.id) && el.type === 'arrow')) return el;
-        // Start the arrow from the new style's clean default shape. The
-        // multi-bend control points are shared by the curved (spline) and
-        // angled (polyline) renderers, so carried across a style switch they
-        // draw a stray polyline whose final segment no longer ends at the
-        // element (the arrowhead detaches into a stray bend). Drop them on an
-        // explicit style change; adding/moving a point keeps the style as
-        // before. The single-bow / single-elbow offsets are each style-local,
-        // so they can stay harmlessly.
-        const { curvePoints: _drop, ...rest } = el;
-        return { ...rest, arrowStyle: style };
-      }),
-    );
-    track('Element', 'Changed', 'ArrowStyle');
-  };
-
-  const setArrowheadShapeSelected = (shape: ArrowheadShape) =>
-    setArrowFieldSelected({ arrowheadShape: shape }, 'ArrowheadShape');
-
-  // Line pattern (solid / dashed / dotted) on the selected arrow.
-  // Reuses the BorderStyle union shapes already carry so future
-  // pattern additions (e.g. 'long-dash') just need a single
-  // BORDER_DASH_ARRAY entry to light up both surfaces.
-  const setArrowStrokeStyleSelected = (style: BorderStyle) =>
-    setArrowFieldSelected({ strokeStyle: style }, 'ArrowLineStyle');
 
   // Morph the selected shape into a different kind, preserving width /
   // height / label / colour overrides. Circle and diamond are 1:1
@@ -498,35 +455,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Changed', 'StyleReset');
   };
 
-  // Arrow style presets (spec/48). A one-click line look — pattern + thickness
-  // + optional flow animation — applied in a single step. A preset without a
-  // `flow` clears any existing animation; one with a flow defaults its speed to
-  // normal when the arrow had none. Arrows only.
-  const applyArrowPresetSelected = (preset: {
-    style: BorderStyle;
-    thickness: ArrowThickness;
-    flow?: ArrowFlow;
-  }) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) => els.map((el) => (ids.has(el.id) ? applyArrowPresetToEl(el, preset) : el)));
-    track('Element', 'Changed', 'ArrowPreset');
-  };
-  // Reset a preset-styled arrow: drop its line pattern / thickness / flow
-  // overrides so it falls back to the defaults. One step.
-  const resetArrowStyleSelected = () => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'arrow') return el;
-        const { strokeWidth: _w, strokeStyle: _s, flow: _f, flowSpeed: _fs, ...rest } = el;
-        return rest as typeof el;
-      }),
-    );
-    track('Element', 'Changed', 'StyleReset');
-  };
-
   // Animated elements (spec/09). A looping animation on the selected boxed
   // element(s); `null` clears it. Arrows take a separate `flow` (marching
   // dashes / travelling dot).
@@ -540,8 +468,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     );
     track('Element', 'Changed', 'Animation');
   };
-  const setArrowFlowSelected = (value: ArrowFlow | null) =>
-    setArrowFieldSelected({ flow: value ?? undefined }, 'ArrowFlow');
   // Per-icon glyph animation (spec/09), gated to icon shapes — its own set
   // instead of the boxed-element animation. The animation + its loop speed
   // differ only in the patched field, so they share one body.
