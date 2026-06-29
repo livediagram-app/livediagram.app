@@ -8,13 +8,25 @@
 // Like every spec/64 send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import { claimMilestone, getNotificationPrefs, getOwnerEmail, listTeamAdminUserIds } from '../db';
+import {
+  claimCommentNotify,
+  claimFirstShare,
+  claimMilestone,
+  getNotificationPrefs,
+  getOwnerEmail,
+  listTeamAdminUserIds,
+} from '../db';
 import type { Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
+
+// At most one "new comment" email per diagram per this window (spec/64 #1), so a
+// burst of comments doesn't spam the owner.
+const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 import {
   commentNotificationEmail,
   diagramJoinedEmail,
   inviteResponseEmail,
+  firstShareEmail,
   milestoneEmail,
 } from './templates';
 
@@ -77,6 +89,9 @@ export async function notifyNewComment(
   if (!to) return;
   const prefs = await getNotificationPrefs(env, diagram.ownerId);
   if (!prefs.notifyComments) return;
+  // Throttle so a burst of comments is one email, not one per comment.
+  const now = Date.now();
+  if (!(await claimCommentNotify(env, diagram.id, now, now - COMMENT_NOTIFY_THROTTLE_MS))) return;
   await sendEmail(env, {
     to,
     ...commentNotificationEmail(env, diagram.name, diagram.id, commenterName),
@@ -103,4 +118,16 @@ export async function notifyMilestone(
   if (!prefs.notifyMilestones) return;
   if (!(await claimMilestone(env, ownerId))) return;
   await sendEmail(env, { to, ...milestoneEmail(env, diagramCount) });
+}
+
+// First-ever share link is a milestone (spec/64 #6). Opt-out (notifyMilestones).
+// Same claim-then-send shape as notifyMilestone; the atomic claim fires it once.
+export async function notifyFirstShare(env: Env, ownerId: string): Promise<void> {
+  if (!emailEnabled(env)) return;
+  const to = await getOwnerEmail(env, ownerId);
+  if (!to) return;
+  const prefs = await getNotificationPrefs(env, ownerId);
+  if (!prefs.notifyMilestones) return;
+  if (!(await claimFirstShare(env, ownerId))) return;
+  await sendEmail(env, { to, ...firstShareEmail(env) });
 }

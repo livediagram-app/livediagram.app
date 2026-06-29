@@ -21,11 +21,23 @@ export function appBaseUrl(env: Env): string {
   return (env.APP_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
 }
 
-export type EmailMessage = { to: string; subject: string; html: string };
+export type EmailMessage = {
+  to: string;
+  subject: string;
+  html: string;
+  // For opt-out emails: a URL where the recipient can manage / turn off this
+  // category. Emitted as a `List-Unsubscribe` header so mail clients can surface
+  // a native unsubscribe affordance (we point it at the profile page rather than
+  // a one-click POST endpoint, by design — spec/64).
+  unsubscribeUrl?: string;
+};
 
 export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: boolean }> {
   if (!emailEnabled(env)) return { sent: false };
   try {
+    const headers: Record<string, string> = msg.unsubscribeUrl
+      ? { 'List-Unsubscribe': `<${msg.unsubscribeUrl}>` }
+      : {};
     const res = await fetch(RESEND_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -37,6 +49,7 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
         to: [msg.to],
         subject: msg.subject,
         html: msg.html,
+        ...(msg.unsubscribeUrl ? { headers } : {}),
       }),
     });
     if (!res.ok) {

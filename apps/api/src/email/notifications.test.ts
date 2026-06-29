@@ -6,16 +6,24 @@ vi.mock('../db', () => ({
   getNotificationPrefs: vi.fn(),
   listTeamAdminUserIds: vi.fn(),
   claimMilestone: vi.fn(),
+  claimFirstShare: vi.fn(),
+  claimCommentNotify: vi.fn(),
 }));
 vi.mock('./client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./client')>()),
   sendEmail: vi.fn(),
 }));
 
-import { claimMilestone, getNotificationPrefs, getOwnerEmail } from '../db';
+import {
+  claimCommentNotify,
+  claimFirstShare,
+  claimMilestone,
+  getNotificationPrefs,
+  getOwnerEmail,
+} from '../db';
 import { sendEmail } from './client';
 import { commentNotificationEmail } from './templates';
-import { notifyMilestone, notifyNewComment } from './notifications';
+import { notifyFirstShare, notifyMilestone, notifyNewComment } from './notifications';
 
 const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Env;
 const diagram = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
@@ -37,6 +45,7 @@ describe('commentNotificationEmail', () => {
     expect(e.html).toContain('https://app.test/diagram/d1');
     // Footer links to the profile so the owner can turn it off (per request).
     expect(e.html).toContain('https://app.test/explorer/profile');
+    expect(e.unsubscribeUrl).toBe('https://app.test/explorer/profile');
   });
 
   it('falls back to "Someone" / "your diagram" when unknown', () => {
@@ -55,9 +64,18 @@ describe('notifyNewComment', () => {
   it('sends to the owner when they have an address and have not opted out', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(claimCommentNotify).mockResolvedValue(true);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await notifyNewComment(env, diagram, 'Anna');
     expect(sendEmail).toHaveBeenCalledOnce();
+  });
+
+  it('throttles: no send when a comment email went out recently', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
+    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(claimCommentNotify).mockResolvedValue(false);
+    await notifyNewComment(env, diagram, 'Anna');
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('skips when the owner opted out of comment notifications', async () => {
@@ -102,6 +120,32 @@ describe('notifyMilestone (spec/64 #6)', () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyMilestones: false });
     await notifyMilestone(env, 'u1', 10);
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe('notifyFirstShare (spec/64 #6)', () => {
+  it('sends + claims on a first share when opted in', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
+    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(claimFirstShare).mockResolvedValue(true);
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    await notifyFirstShare(env, 'u1');
+    expect(sendEmail).toHaveBeenCalledOnce();
+  });
+
+  it('does not send when already claimed (not actually the first share)', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
+    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(claimFirstShare).mockResolvedValue(false);
+    await notifyFirstShare(env, 'u1');
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('skips when the owner opted out of milestones', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
+    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyMilestones: false });
+    await notifyFirstShare(env, 'u1');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 });

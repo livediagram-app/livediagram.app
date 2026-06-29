@@ -14,7 +14,7 @@ import {
   rewriteCommentAuthors,
 } from '../comments';
 import { emailEnabled } from '../email/client';
-import { notifyNewComment } from '../email/notifications';
+import { notifyFirstShare, notifyNewComment } from '../email/notifications';
 import {
   createShareLink,
   deleteShareLink,
@@ -354,6 +354,11 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
           : 'never';
       const code = generateShareCode();
       const link = await createShareLink(env, id, code, role, expiry);
+      // spec/64 (#6): a first-ever share link is a milestone. Best-effort,
+      // off the response path; claimFirstShare dedups so it fires only once.
+      if (emailEnabled(env)) {
+        ctx.waitUntil?.(notifyFirstShare(env, access.ownerId));
+      }
       return json({ link }, { status: 201 });
     }
     if (request.method === 'DELETE') {

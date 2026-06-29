@@ -139,3 +139,15 @@ export async function claimMilestone(env: Env, ownerId: string): Promise<boolean
     .run();
   return res.meta.changes === 1;
 }
+
+// spec/64 (#6): atomically claim the one-time "first shared link" milestone for
+// an owner. Conditional UPDATE → only the first share-create wins (changes === 1).
+// False = already claimed, or no row (a guest has none).
+export async function claimFirstShare(env: Env, ownerId: string): Promise<boolean> {
+  const res = await env.DB.prepare(
+    'UPDATE email_lifecycle SET first_share_sent_at = ? WHERE owner_id = ? AND first_share_sent_at IS NULL',
+  )
+    .bind(Date.now(), ownerId)
+    .run();
+  return res.meta.changes === 1;
+}

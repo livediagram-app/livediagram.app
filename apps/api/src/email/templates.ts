@@ -24,11 +24,20 @@ function manageNotificationsFooter(env: Env, reason: string): string {
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
 
-export type RenderedEmail = { subject: string; html: string };
+export type RenderedEmail = { subject: string; html: string; unsubscribeUrl?: string };
+
+// Profile page where every opt-out category can be turned off. Used by both the
+// footer link and the List-Unsubscribe header (spec/64).
+export function profilePath(env: Env): string {
+  return `${appBaseUrl(env)}/explorer/profile`;
+}
 
 type Section = {
   heading: string;
   intro: string;
+  // The dim inbox preview line shown next to the subject. Kept distinct from the
+  // heading so the two-line inbox listing reads well; falls back to the intro.
+  preheader?: string;
   points?: string[];
   outro?: string;
   ctaText?: string;
@@ -37,6 +46,7 @@ type Section = {
 };
 
 function shell(section: Section): string {
+  const preheader = `<span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;max-height:0;overflow:hidden">${section.preheader ?? section.intro}</span>`;
   const points = (section.points ?? [])
     .map(
       (p) => `<li style="margin:0 0 10px;color:${MUTED};font-size:15px;line-height:1.6">${p}</li>`,
@@ -56,6 +66,7 @@ function shell(section: Section): string {
       : '';
   return `<!doctype html>
 <html><body style="margin:0;background:#f8fafc;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  ${preheader}
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden">
       <tr><td style="padding:28px 32px 0">
@@ -201,6 +212,7 @@ export function diagramJoinedEmail(
         'You’re receiving this because someone opened a diagram you shared.',
       ),
     }),
+    unsubscribeUrl: profilePath(env),
   };
 }
 
@@ -233,6 +245,7 @@ export function inviteResponseEmail(
         'You’re receiving this because you’re an admin of this team.',
       ),
     }),
+    unsubscribeUrl: profilePath(env),
   };
 }
 
@@ -346,6 +359,7 @@ export function commentNotificationEmail(
         'You’re receiving this because someone commented on a diagram you own.',
       ),
     }),
+    unsubscribeUrl: profilePath(env),
   };
 }
 
@@ -372,6 +386,7 @@ export function winBackEmail(env: Env): RenderedEmail {
         'You’re receiving this because you have a livediagram account and check-ins are on.',
       ),
     }),
+    unsubscribeUrl: profilePath(env),
   };
 }
 
@@ -392,5 +407,35 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
         'You’re receiving this because you reached a milestone and milestone emails are on.',
       ),
     }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// spec/64 (#6): the first time an owner creates a share link. Opt-out
+// (notifyMilestones), same category as the diagram-count milestone.
+export function firstShareEmail(env: Env): RenderedEmail {
+  const base = appBaseUrl(env);
+  return {
+    subject: 'You shared your first diagram',
+    html: shell({
+      heading: 'Your first shared diagram',
+      preheader: 'Anyone with the link can open it now, and you stay in control.',
+      intro:
+        'Nice work, you just shared a diagram for the first time. Anyone with the link can open it, and you stay in control:',
+      points: [
+        'Hand out a <strong>view-only</strong> or an <strong>editor</strong> link, whichever fits.',
+        'Set a link to <strong>expire</strong> after a week, a month, or six months.',
+        'Revoke a link any time from the Share dialog, and it stops working instantly.',
+      ],
+      outro:
+        'Collaboration needs no account, so whoever you share with can jump straight onto the canvas.',
+      ctaText: 'Open your Explorer',
+      ctaHref: `${base}/explorer`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because you reached a milestone and milestone emails are on.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
   };
 }

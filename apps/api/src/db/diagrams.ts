@@ -305,3 +305,21 @@ export async function countDiagramsByOwner(env: Env, ownerId: string): Promise<n
     .first<{ n: number }>();
   return row?.n ?? 0;
 }
+
+// spec/64 (#1) throttle: claim the right to email the owner about a new comment
+// on this diagram, at most once per window. Atomic conditional UPDATE so a burst
+// of concurrent comment saves can't each fire an email. `cutoff` = now - window;
+// returns false when we already emailed within the window.
+export async function claimCommentNotify(
+  env: Env,
+  diagramId: string,
+  now: number,
+  cutoff: number,
+): Promise<boolean> {
+  const res = await env.DB.prepare(
+    'UPDATE diagrams SET comment_notified_at = ? WHERE id = ? AND (comment_notified_at IS NULL OR comment_notified_at < ?)',
+  )
+    .bind(now, diagramId, cutoff)
+    .run();
+  return res.meta.changes === 1;
+}

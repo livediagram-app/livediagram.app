@@ -3,8 +3,8 @@
 // Profile pane (spec/65): the signed-in user's account home, rendered at
 // /explorer/profile inside the normal Explorer chrome. Shows identity read
 // from Clerk (avatar, name, email, join date — the page never writes
-// identity, that's managed in Clerk), the two opt-out email-notification
-// toggles, and the Danger zone that opens the delete-account confirmation.
+// identity, that's managed in Clerk), the opt-out email-notification toggles,
+// and the Danger zone that opens the delete-account confirmation.
 //
 // Clerk-gated the same way as AuthControls: when Clerk is disabled for the
 // deployment (self-host without a publishable key, spec/03) there are no
@@ -134,7 +134,7 @@ function ProfilePaneEnabled() {
             />
             <NotificationRow
               title="Milestones"
-              description="A note when you hit a milestone, like your first shared diagram."
+              description="A note when you hit a milestone, like sharing your first diagram or reaching your tenth."
               checked={prefs.notifyMilestones !== false}
               onChange={() => setFlag('notifyMilestones', 'NotifyMilestones')}
             />
