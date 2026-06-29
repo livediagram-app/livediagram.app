@@ -62,7 +62,12 @@ function ProfilePaneEnabled() {
   // event isn't lost if the user is simultaneously toggling other prefs
   // (spec/22 convention). `undefined === on`, so we default to true.
   const setFlag = (
-    key: 'notifyDiagramJoin' | 'notifyInviteResponse' | 'notifyComments' | 'notifyTips' | 'notifyMilestones',
+    key:
+      | 'notifyDiagramJoin'
+      | 'notifyInviteResponse'
+      | 'notifyComments'
+      | 'notifyTips'
+      | 'notifyMilestones',
     telemetryType: string,
   ) => {
     const on = !(prefs[key] !== false);
