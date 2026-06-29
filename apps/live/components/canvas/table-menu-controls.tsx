@@ -1,5 +1,7 @@
 import { type ReactNode } from 'react';
 
+import { ArrowIcon, TrashIcon } from '@/components/canvas/table-icons';
+
 // Edge-menu UI primitives for TableView: the compact "⋯" trigger that
 // opens a column / row menu from the table's top / left edge, and the
 // large tappable rows inside that menu. Split out of TableView so the
@@ -83,5 +85,61 @@ export function MenuButton({
       <span className="shrink-0">{children}</span>
       {label}
     </button>
+  );
+}
+
+// One column-or-row header menu (Insert before / after, Move back / forward,
+// Delete), parameterized by axis. The column and row header triggers render
+// identical menus differing only by axis labels and icon directions, so they
+// share this one implementation.
+export function TableHeaderMenu({
+  axis,
+  index,
+  count,
+  onAdd,
+  onMove,
+  onDelete,
+}: {
+  axis: 'col' | 'row';
+  index: number;
+  count: number;
+  onAdd: (at: number) => void;
+  onMove: (from: number, to: number) => void;
+  onDelete: (i: number) => void;
+}) {
+  const isCol = axis === 'col';
+  const beforeDir = isCol ? 'left' : 'up';
+  const afterDir = isCol ? 'right' : 'down';
+  return (
+    <>
+      <MenuButton label={isCol ? 'Insert left' : 'Insert above'} onClick={() => onAdd(index)}>
+        <ArrowIcon dir={beforeDir} />
+      </MenuButton>
+      <MenuButton label={isCol ? 'Insert right' : 'Insert below'} onClick={() => onAdd(index + 1)}>
+        <ArrowIcon dir={afterDir} />
+      </MenuButton>
+      <MenuButton
+        label={isCol ? 'Move left' : 'Move up'}
+        disabled={index === 0}
+        onClick={() => onMove(index, index - 1)}
+      >
+        <ArrowIcon dir={beforeDir} />
+      </MenuButton>
+      <MenuButton
+        label={isCol ? 'Move right' : 'Move down'}
+        disabled={index === count - 1}
+        onClick={() => onMove(index, index + 1)}
+      >
+        <ArrowIcon dir={afterDir} />
+      </MenuButton>
+      <MenuButton
+        label={isCol ? 'Delete column' : 'Delete row'}
+        danger
+        disabled={count <= 1}
+        onClick={() => onDelete(index)}
+      >
+        <TrashIcon />
+      </MenuButton>
+    </>
   );
 }

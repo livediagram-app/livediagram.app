@@ -21,8 +21,8 @@ import { isMobileViewportSync } from '@/lib/responsive';
 import { track } from '@/lib/telemetry';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { ArrowIcon, CellLinkIcon, TrashIcon } from '@/components/canvas/table-icons';
-import { MenuButton, Trigger } from '@/components/canvas/table-menu-controls';
+import { CellLinkIcon } from '@/components/canvas/table-icons';
+import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-controls';
 import { TableCellToolbar } from '@/components/canvas/TableCellToolbar';
 import { describeLink } from '@/lib/link-label';
 
@@ -739,34 +739,14 @@ export function TableView({
                           data-table-ui
                           className="pointer-events-auto absolute left-1/2 top-7 z-[var(--z-chrome)] w-36 -translate-x-1/2 animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
                         >
-                          <MenuButton label="Insert left" onClick={() => addCol(c)}>
-                            <ArrowIcon dir="left" />
-                          </MenuButton>
-                          <MenuButton label="Insert right" onClick={() => addCol(c + 1)}>
-                            <ArrowIcon dir="right" />
-                          </MenuButton>
-                          <MenuButton
-                            label="Move left"
-                            disabled={c === 0}
-                            onClick={() => moveCol(c, c - 1)}
-                          >
-                            <ArrowIcon dir="left" />
-                          </MenuButton>
-                          <MenuButton
-                            label="Move right"
-                            disabled={c === cols - 1}
-                            onClick={() => moveCol(c, c + 1)}
-                          >
-                            <ArrowIcon dir="right" />
-                          </MenuButton>
-                          <MenuButton
-                            label="Delete column"
-                            danger
-                            disabled={cols <= 1}
-                            onClick={() => delCol(c)}
-                          >
-                            <TrashIcon />
-                          </MenuButton>
+                          <TableHeaderMenu
+                            axis="col"
+                            index={c}
+                            count={cols}
+                            onAdd={addCol}
+                            onMove={moveCol}
+                            onDelete={delCol}
+                          />
                         </div>
                       ) : null}
                     </div>
@@ -803,34 +783,14 @@ export function TableView({
                     data-table-ui
                     className="pointer-events-auto absolute left-7 top-1/2 z-[var(--z-chrome)] w-36 -translate-y-1/2 animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
                   >
-                    <MenuButton label="Insert above" onClick={() => addRow(r)}>
-                      <ArrowIcon dir="up" />
-                    </MenuButton>
-                    <MenuButton label="Insert below" onClick={() => addRow(r + 1)}>
-                      <ArrowIcon dir="down" />
-                    </MenuButton>
-                    <MenuButton
-                      label="Move up"
-                      disabled={r === 0}
-                      onClick={() => moveRow(r, r - 1)}
-                    >
-                      <ArrowIcon dir="up" />
-                    </MenuButton>
-                    <MenuButton
-                      label="Move down"
-                      disabled={r === rows - 1}
-                      onClick={() => moveRow(r, r + 1)}
-                    >
-                      <ArrowIcon dir="down" />
-                    </MenuButton>
-                    <MenuButton
-                      label="Delete row"
-                      danger
-                      disabled={rows <= 1}
-                      onClick={() => delRow(r)}
-                    >
-                      <TrashIcon />
-                    </MenuButton>
+                    <TableHeaderMenu
+                      axis="row"
+                      index={r}
+                      count={rows}
+                      onAdd={addRow}
+                      onMove={moveRow}
+                      onDelete={delRow}
+                    />
                   </div>
                 ) : null}
               </div>
