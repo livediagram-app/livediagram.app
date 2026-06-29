@@ -1,0 +1,41 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Email Notifications',
+  description:
+    'The emails livediagram can send to signed-in users, and how to turn each kind off from your profile.',
+  path: '/help/account-and-data/email-notifications/',
+});
+
+<ArticleLayout title="Email Notifications" description="Optional emails for signed-in users, and how to control every kind of them from your profile." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+Email is an optional capability of livediagram. It only does anything when the deployment has been set up to send mail, and only signed-in users ever receive anything, because email needs an address and a [guest identity](/help/account-and-data/guest-identity/) has none. The canvas itself never needs an account or an email, so this is purely additive.
+
+## What we might send
+
+There are three groups:
+
+- **Tips and check-ins.** A short welcome when you first sign in, a couple of getting-started notes over your first weeks, and a friendly nudge if you have been away for a while. These are optional.
+- **Notifications about your work.** When someone opens a diagram you shared for the first time, when someone responds to a team invite you sent, and when someone comments on a diagram you own. Each of these is optional and has its own switch.
+- **Account messages.** A team invite when you are invited, a confirmation when you delete your account, and a heads-up before an [API token](/help/account-and-data/api-tokens/) expires. These are tied to an action you took, so they always send.
+
+We never put a diagram's contents into an email. A comment notification, for example, tells you who commented and on which diagram, with a link to open it, but not what the comment said.
+
+## Turning them off
+
+Open your profile (the account menu, then **Profile**) and find **Email notifications**. Each optional kind has its own toggle: getting-started tips and check-ins, diagram comments, diagram joins, team-invite responses, and milestones. The whole row is the switch, so click anywhere on it.
+
+<Tip>
+  Every optional email also carries a "Manage your notifications" link in its footer that takes you
+  straight to these toggles, and mail apps that show a native unsubscribe button point at the same
+  place.
+</Tip>
+
+The toggles are stored per device with your other preferences, and the change applies before the next email would go out. Account messages (the invite, the deletion confirmation, and the token-expiry warning) are not on this list, because they confirm something you asked for rather than nudge you.
+
+## Self-hosting
+
+If you run your own instance without email configured, none of this applies: no emails are sent, and the **Email notifications** section simply does not appear. See [signing in](/help/account-and-data/signing-in/) for how accounts work, and the project's self-hosting docs for enabling email.
+
+</ArticleLayout>

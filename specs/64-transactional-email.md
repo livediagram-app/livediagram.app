@@ -53,8 +53,13 @@ invite** — read from the spec/20 preference blob on the new profile page.
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the spec/65 pair in `getNotificationPrefs`
 and as toggles on the profile page; every opt-out email's footer links to
-`/explorer/profile` so the recipient can turn it off in one click. The pure
-onboarding series (welcome / week 1 / week 2 / activation) stays no-unsubscribe.
+`/explorer/profile` (also emitted as a `List-Unsubscribe` header) so the
+recipient can turn it off in one click. `notifyTips` governs **every** tip /
+check-in after the immediate welcome, i.e. week 1, week 2, the activation nudge,
+and win-back all respect it; only the welcome (the first authenticated sighting,
+before any toggle could exist) is unconditional. The opt-out toggles are
+documented for users in the [Email Notifications](../apps/help/app/account-and-data/email-notifications/page.mdx)
+help article.
 
 ## 2. Gating — the secret is the switch
 

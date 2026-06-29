@@ -72,8 +72,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, and connecting AI tools work.',
-    articleCount: 6,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
+    articleCount: 7,
   },
   {
     slug: 'privacy-and-security',
@@ -419,6 +419,13 @@ export const articles: Article[] = [
     slug: 'connect-ai-mcp',
     title: 'Connect an AI tool (MCP)',
     description: 'Connect Claude or any MCP client to find, view, create, and edit your diagrams.',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'email-notifications',
+    title: 'Email Notifications',
+    description: 'The optional emails we send, and how to turn each kind off from your profile.',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
