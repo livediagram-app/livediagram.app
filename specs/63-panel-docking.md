@@ -139,9 +139,10 @@ later, or reading a layout written by a newer client, never strands the UI.
   coords) / end up to the dock hook, which drives the snap guides and the dock-vs-free
   decision. The mobile dock, `forceDockMode`, `collapsible`, and `stackBelowY` paths are
   untouched. The persisted corner/free placement only changes on pointer-up.
-- **`apps/live/components/canvas/PanelSnapGuides.tsx`** — the four-corner guide overlay,
-  rendered by `CanvasChrome` only while a panel drag is active; highlights the snap
-  candidate corner from the dock hook.
+- **`apps/live/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
+  by `CanvasChrome` as the last flex child of the candidate corner's stack container
+  while a panel drag is active, so flexbox previews exactly where the released panel will
+  land (its height mirrors the dragged panel); the candidate corner comes from the dock hook.
 - **`CanvasChrome`** — in the standard desktop layout, renders four corner **stack
   containers** (absolutely positioned flex columns, `gap-4`; bottom corners
   `flex-col-reverse`; bottom-right raised to clear the zoom controls) and distributes each
