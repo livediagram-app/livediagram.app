@@ -33,16 +33,16 @@ The unit of value is the team, not the individual. See [spec/00](../specs/00-pur
 - **Teams**: create teams with Admin / Member roles and email invites in the Explorer, plus a per-team shared library of diagrams. See [spec/32](../specs/32-teams.md) and [spec/35](../specs/35-team-shared-diagrams.md).
 - **AI assistance** (optional): an in-editor panel (Build / Ask / Review / Clean) that adds or edits elements from a prompt, answers questions about the active tab, and reviews structure. Off by default; needs an `OPENAI_API_KEY` on the api worker plus per-user opt-in in Settings, and is hidden entirely on forks that don't configure a key. See [spec/25](../specs/25-ai-assistance.md).
 - **Telemetry**: anonymous first-party product events stored in D1; public dashboard at `/telemetry`. No third-party analytics; no identifiers crossing the wire. Off in OSS forks unless the worker is configured for it. See [spec/22](../specs/22-telemetry.md).
+- **Transactional + lifecycle email** (optional): welcome on first sign-in, week-1 / week-2 onboarding tips off the daily cron, and transactional team-invite + account-deleted messages, sent via Resend. Off until a `RESEND_API_KEY` is set; guests never receive email (it's authenticated-only). See [spec/64](../specs/64-transactional-email.md).
 
 ## What's still ahead
 
-- **Transactional email** (Resend) for share notifications and account flows.
 - **Operational transform / CRDT** (today's realtime is last-writer-wins; concurrent edits to the same field collapse to whoever wrote most recently).
 
 ## Open source
 
 - The codebase is **[MIT-licensed](../LICENSE)** and publicly viewable. Anyone can self-host.
 - The hosted version at [livediagram.app](https://livediagram.app) runs alongside. **Free for everyone, no paid tier, no plan to introduce one.**
-- The OSS core never calls home and never gates features behind a license check. Clerk auth is the one optional SaaS dependency: when `CLERK_JWKS_URL` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` aren't set, the api worker and live frontend degrade to pure-guest mode and the editor is fully usable. A self-hoster who wants zero outbound runtime traffic (besides Cloudflare) can run that configuration.
+- The OSS core never calls home and never gates features behind a license check. Its SaaS integrations are all optional, each gated on its own key — Clerk (auth), Resend (email), and OpenAI (the AI assistant): with `CLERK_JWKS_URL` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` unset the api worker and live frontend degrade to pure-guest mode and the editor is fully usable. A self-hoster who wants zero outbound runtime traffic (besides Cloudflare) can leave all three unset.
 
 See [spec/03](../specs/03-open-source-and-business-model.md) for the distribution model, and [spec/04](../specs/04-auth-and-guest-access.md) for the hybrid auth contract.
