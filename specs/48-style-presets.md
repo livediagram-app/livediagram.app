@@ -100,7 +100,7 @@ applies to every selected arrow at once.
   override. The `colorPreset` binding lives on `ShapeElement` in
   `packages/diagram`.
 - Arrow presets are a static preset table in the presets component
-  (`apps/live/components/StylePresets.tsx`); shape style presets are theme-derived
+  (`apps/live/components/palette/StylePresets.tsx`); shape style presets are theme-derived
   (`shapeColorPresets`), each carrying its border treatment.
 - The element transforms each preset performs live in `apps/live/lib/style-presets.ts`
   (`applyColorPresetToEl` / `applyArrowPresetToEl`),
@@ -112,11 +112,11 @@ applies to every selected arrow at once.
   `useElementStyle.ts` and the preview/commit pairs in `useStylePreview.ts`, so
   the swatch/tile preview matches its commit exactly.
 - Direct (non-preview) commits go through the selection setters in
-  `apps/live/hooks/useElementStyle.ts` (`applyShapeColorPresetSelected` /
+  `apps/live/hooks/canvas/useElementStyle.ts` (`applyShapeColorPresetSelected` /
   `resetShapeStyleSelected` / `applyArrowPresetSelected` /
   `resetArrowStyleSelected`). Hand-editing a
   colour or resetting clears the `colorPreset` binding there.
-- Hover preview is owned by `apps/live/hooks/useStylePreview.ts`: preview +
+- Hover preview is owned by `apps/live/hooks/canvas/useStylePreview.ts`: preview +
   revert go through `tickTabs` (present-only, no history / no log); the click
   commit restores the originals into the present, then commits, so the undo
   snapshot and activity diff are taken from the true pre-hover state. The

@@ -47,14 +47,14 @@ images / tables, nor in the multi-selection menu.
 - Data model: `ShapeElement.marker?: ShapeMarker` and
   `ShapeElement.markerSize?: TextSize` (`packages/diagram/src/shape-marker.ts`
   defines the `ShapeMarker` union + `SHAPE_MARKERS` order).
-- The glyph is one component, `ShapeMarkerGlyph` (`apps/live/components/ShapeMarker.tsx`),
+- The glyph is one component, `ShapeMarkerGlyph` (`apps/live/components/canvas/ShapeMarker.tsx`),
   shared by the canvas renderer and the context-menu tiles; the circles carry a
   fixed fill, the checkbox tints with the element's text colour.
 - Rendering reuses the shape's icon+label flex layout (`ShapeInlineIconLayout`
   in `BoxedElementView.tsx`), generalised to draw an optional marker left of the
   label with or without an inline icon.
 - Setters `setMarkerSelected` / `setMarkerSizeSelected` in
-  `apps/live/hooks/useElementStyle.ts` apply to the selected shape(s) in one
+  `apps/live/hooks/canvas/useElementStyle.ts` apply to the selected shape(s) in one
   history step.
 - Telemetry (spec/22): `track('Element', 'Changed', 'Marker' | 'MarkerSize')`.
 - Image export (PNG / SVG / PDF) drawing the marker beside the label is a
