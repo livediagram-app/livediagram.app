@@ -43,6 +43,7 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   live/         # the diagram editor app (Next.js, clean routes)
   telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
+  help/         # help centre (Next.js export + MDX, /help)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
@@ -138,7 +139,7 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 ## Naming conventions
 
 - Workspace packages: `@livediagram/<name>`.
-- Apps in `apps/<name>` (e.g. `apps/marketing`, `apps/live`, `apps/telemetry`, `apps/api`, `apps/mcp`, `apps/router`).
+- Apps in `apps/<name>` (e.g. `apps/marketing`, `apps/live`, `apps/telemetry`, `apps/help`, `apps/api`, `apps/mcp`, `apps/router`).
 - Cross-workspace deps use `"@livediagram/foo": "workspace:*"`.
 
 ## Shared config
@@ -164,7 +165,7 @@ All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static
 
 Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetry`, `livediagram-help`, `livediagram-api`, `livediagram-mcp`, `livediagram-router`, matching the service-binding targets in `apps/router/wrangler.toml`. Deploy order: marketing + live + telemetry + help + api in parallel, then `mcp` after api (it has a service binding to api; its own host `mcp.livediagram.app`, not a router path), then router last (its service bindings depend on the other five existing).
 
-Production is live at **https://livediagram.app** (`/` → marketing; `/diagram`, `/explorer`, `/new`, `/join`, ... → editor at clean routes, with only its `_next` assets under `/live`; `/telemetry` → telemetry dashboard; `/api/*` → api).
+Production is live at **https://livediagram.app** (`/` → marketing; `/diagram`, `/explorer`, `/new`, `/join`, ... → editor at clean routes, with only its `_next` assets under `/live`; `/telemetry` → telemetry dashboard; `/help` → help centre; `/api/*` → api).
 
 Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets policy](specs/06-secrets-policy.md).
 
