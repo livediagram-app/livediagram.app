@@ -27,8 +27,9 @@ function manageNotificationsFooter(env: Env, reason: string): string {
 export type RenderedEmail = { subject: string; html: string; unsubscribeUrl?: string };
 
 // Profile page where every opt-out category can be turned off. Used by both the
-// footer link and the List-Unsubscribe header (spec/64).
-export function profilePath(env: Env): string {
+// footer link and the List-Unsubscribe header (spec/64). Module-private: only
+// the templates in this file build URLs with it.
+function profilePath(env: Env): string {
   return `${appBaseUrl(env)}/explorer/profile`;
 }
 
