@@ -16,7 +16,9 @@ import { track } from '@/lib/telemetry';
 
 type UiMode = 'light' | 'dark';
 
-const STORAGE_KEY = 'livediagram:v2:ui-mode';
+// Exported so the root layout's pre-hydration dark-mode script reads the
+// same key this hook writes, instead of hardcoding a copy that could drift.
+export const STORAGE_KEY = 'livediagram:v2:ui-mode';
 
 function read(): UiMode {
   return readLocalStorageSafe(STORAGE_KEY) === 'dark' ? 'dark' : 'light';

@@ -4,6 +4,8 @@ import { ClerkProvider } from '@/components/providers/ClerkProvider';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@/lib/fonts';
+import { STORAGE_KEY as UI_MODE_STORAGE_KEY } from '@/hooks/ui/useUiMode';
+import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
 import './globals.css';
 
 // The live app is the product, not a content surface. Every route
@@ -100,11 +102,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             EVERY route honours it — including /live/new and the welcome /
             template-picker flow, which never mount the TabBar that's the
             only caller of useUiMode. Without this they'd render light over
-            the dark body. Mirrors hooks/useUiMode.ts (same localStorage
-            key); opt-in only, never auto-detects the OS (spec/07). */}
+            the dark body. Reads useUiMode's exported STORAGE_KEY so the two
+            can't drift; opt-in only, never auto-detects the OS (spec/07). */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('livediagram:v2:ui-mode')==='dark')document.documentElement.classList.add('dark')}catch(e){}`,
+            __html: `try{if(localStorage.getItem('${UI_MODE_STORAGE_KEY}')==='dark')document.documentElement.classList.add('dark')}catch(e){}`,
           }}
         />
         {/* Apply the persisted "Reduce motion" preference (spec/20) before
@@ -115,7 +117,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             in globals.css needs no JS; this only covers the user override. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var p=JSON.parse(localStorage.getItem('livediagram:user-preferences:v1')||'{}');if(p&&p.reduceMotion===true)document.documentElement.classList.add('reduce-motion')}catch(e){}`,
+            __html: `try{var p=JSON.parse(localStorage.getItem('${USER_PREFERENCES_STORAGE_KEY}')||'{}');if(p&&p.reduceMotion===true)document.documentElement.classList.add('reduce-motion')}catch(e){}`,
           }}
         />
         <ClerkProvider>
