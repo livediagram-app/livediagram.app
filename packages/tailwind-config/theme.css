@@ -57,10 +57,12 @@
 /* Stacking ladder for floating UI. Until this, overlays piled onto a bare
  * `z-50` with no agreed order and reached for `z-[60]` escape hatches when
  * something had to sit higher. These name the rungs (canvas < panel <
- * toolbar < chrome < overlay < modal < toast) so a surface can pick the one
- * that matches its role via `z-[var(--z-toast)]` etc. Values match what the
- * app already uses, so adopting them is a zero-behaviour rename; new code
- * should reference the variable instead of a magic number. */
+ * toolbar < chrome < overlay < modal < popover < toast) so a surface can pick
+ * the one that matches its role via `z-[var(--z-toast)]` etc. Values match what
+ * the app already uses, so adopting them is a zero-behaviour rename; new code
+ * should reference the variable instead of a magic number. `popover` sits above
+ * `modal` so a context / dropdown menu opened from inside a dialog (e.g. the
+ * Share dialog's Live image menu) renders on top of it rather than behind. */
 :root {
   --z-canvas: 0;
   --z-panel: 10;
@@ -68,6 +70,7 @@
   --z-chrome: 30;
   --z-overlay: 40;
   --z-modal: 50;
+  --z-popover: 55;
   --z-toast: 60;
 }
 

@@ -70,7 +70,7 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
       <div
         ref={ref}
         role="menu"
-        className="fixed z-[var(--z-overlay)] flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40"
+        className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40"
         style={{
           left: pos.left + adjust.x,
           top: pos.top + adjust.y,
