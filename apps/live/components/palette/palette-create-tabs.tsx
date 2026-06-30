@@ -30,7 +30,7 @@ export function PaletteComponentsTab({
   onAddImage?: () => void;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-1 px-2 pb-1.5">
+    <div className="grid grid-cols-3 gap-1">
       <IconButton
         label="Add banner"
         description="Banner. A themed title block (accent bar with a title and subtitle) to head your diagram. Tap to drop or drag to size; drops as a group you can recolour, retitle, or ungroup."
