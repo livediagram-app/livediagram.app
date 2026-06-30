@@ -17,8 +17,11 @@ import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
 // of a single nodes-fill-the-screen view. 30% was too far out, the
 // text on every element became unreadable; 60% keeps labels legible
 // while still showing a workable chunk of canvas around the
-// pointer.
-const MOBILE_BREAKPOINT_PX = 768;
+// pointer. Deliberately wider than lib/responsive's MOBILE_BREAKPOINT_PX
+// (640, the "dock the panels" line): tablets in the 640–768 band keep
+// the desktop layout but still benefit from the zoomed-out overview, so
+// this is its own constant rather than the shared one.
+const OVERVIEW_ZOOM_BREAKPOINT_PX = 768;
 const MOBILE_DEFAULT_ZOOM = 0.6;
 const DESKTOP_DEFAULT_ZOOM = 1;
 
@@ -72,7 +75,9 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
   const [viewportZoom, setViewportZoom] = useState<number>(() => {
     if (typeof window === 'undefined') return DESKTOP_DEFAULT_ZOOM;
-    return window.innerWidth <= MOBILE_BREAKPOINT_PX ? MOBILE_DEFAULT_ZOOM : DESKTOP_DEFAULT_ZOOM;
+    return window.innerWidth <= OVERVIEW_ZOOM_BREAKPOINT_PX
+      ? MOBILE_DEFAULT_ZOOM
+      : DESKTOP_DEFAULT_ZOOM;
   });
   const canvasMainRef = useRef<HTMLElement>(null);
   const zoomRef = useRef(viewportZoom);
@@ -198,7 +203,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       offFirstRunRef.current = false;
       return;
     }
-    if (typeof window === 'undefined' || window.innerWidth > MOBILE_BREAKPOINT_PX) return;
+    if (typeof window === 'undefined' || window.innerWidth > OVERVIEW_ZOOM_BREAKPOINT_PX) return;
     const sel = deps.selectedId;
     if (!sel || prev.has(sel) || !ids.has(sel)) return;
     const el = els.find((e) => e.id === sel);
