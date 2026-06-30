@@ -20,6 +20,11 @@ type ZoomControlsProps = {
   // one home). `zenActive` picks the icon / copy. Omitted → no button.
   onToggleZen?: () => void;
   zenActive?: boolean;
+  // Size the dock to its content instead of the fixed `sm:min-w-64`. The
+  // min-width keeps the editor dock a stable width as the iso / zen buttons
+  // appear and disappear; a read-only / embed dock has none of those, so the
+  // min-width just stretches its few buttons (zoom / Fit) out with odd gaps.
+  compact?: boolean;
 };
 
 // Floating zoom controls, bottom-right of the canvas. Four
@@ -35,6 +40,7 @@ export function ZoomControls({
   onIsoReset,
   onToggleZen,
   zenActive,
+  compact = false,
 }: ZoomControlsProps) {
   const percent = Math.round(zoom * 100);
   return (
@@ -45,7 +51,9 @@ export function ZoomControls({
         e.preventDefault();
         e.stopPropagation();
       }}
-      className="pointer-events-auto flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 sm:min-w-64 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className={`pointer-events-auto flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40${
+        compact ? '' : ' sm:min-w-64'
+      }`}
     >
       <Tooltip title="Zoom out" description="Zoom out by 10%.">
         <IconButton onClick={onZoomOut} label="Zoom out">

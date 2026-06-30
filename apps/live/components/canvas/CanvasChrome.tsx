@@ -830,6 +830,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               onIsoReset={canvasTool === 'isometric' ? onIsoReset : undefined}
               onToggleZen={onToggleZen}
               zenActive={zenMode}
+              compact={readOnly}
             />
           </>
         )}
