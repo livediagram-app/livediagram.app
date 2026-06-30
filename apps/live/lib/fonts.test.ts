@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_FONT_STACK, FONTS, fontLabel, googleFontsHref, resolveFontStack } from './fonts';
+import { DEFAULT_FONT_STACK, FONTS, googleFontsHref, resolveFontStack } from './fonts';
 
 // The generic CSS families a stack is allowed to terminate in. spec/28:
 // fonts are a progressive enhancement, so every stack must end in one of
@@ -39,20 +39,6 @@ describe('FONTS catalogue invariants', () => {
         expect(f.google).not.toContain(':');
       }
     }
-  });
-});
-
-describe('fontLabel', () => {
-  it('returns the label for a known id', () => {
-    expect(fontLabel('inter')).toBe('Inter');
-    expect(fontLabel('roboto-mono')).toBe('Roboto Mono');
-  });
-
-  it("returns 'Default' for unset / empty / unknown ids", () => {
-    expect(fontLabel(null)).toBe('Default');
-    expect(fontLabel(undefined)).toBe('Default');
-    expect(fontLabel('')).toBe('Default');
-    expect(fontLabel('not-a-real-font')).toBe('Default');
   });
 });
 

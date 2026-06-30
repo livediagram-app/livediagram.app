@@ -117,11 +117,6 @@ const BY_ID = new Map(FONTS.map((f) => [f.id, f] as const));
 // so unstyled text is byte-identical.
 export const DEFAULT_FONT_STACK = 'ui-sans-serif, system-ui, sans-serif';
 
-export function fontLabel(id: string | undefined | null): string {
-  if (!id) return 'Default';
-  return BY_ID.get(id)?.label ?? 'Default';
-}
-
 // Map a stored font id to its CSS stack. Returns undefined for unset /
 // unknown ids so callers can fall back (element → tab → CSS default)
 // instead of forcing a family onto text that never chose one.
