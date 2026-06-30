@@ -662,9 +662,6 @@ export function EditorView() {
         teamFolders={teamFolders}
         teamDiagrams={teamDiagrams}
         onDismissShared={dismissSharedDiagram}
-        onOpenFullExplorer={() =>
-          window.location.assign(`${window.location.origin}/explorer/recent`)
-        }
         diagramListLoading={diagramListLoading}
         changeLog={activeTabChangeLog}
         changeLogLoading={changeLogLoading}

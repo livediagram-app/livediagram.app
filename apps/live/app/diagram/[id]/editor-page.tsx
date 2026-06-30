@@ -78,7 +78,6 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
       loading={diagramListLoading}
       shared={sharedDiagrams}
       onDismissShared={dismissSharedDiagram}
-      onOpenFullExplorer={() => window.location.assign(`${window.location.origin}/explorer/recent`)}
       currentDiagramId={null}
       onMoveTo={(x, y) => setExplorerPosition({ x, y })}
       onReset={() => setExplorerPosition(null)}

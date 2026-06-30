@@ -204,9 +204,6 @@ export type CanvasProps = {
   teams?: { id: string; name: string }[];
   teamFolders?: TeamFolderRow[];
   teamDiagrams?: TeamDiagramRow[];
-  // Navigate to the standalone full-page Explorer. Forwarded into
-  // the floating Explorer panel's header "expand" button.
-  onOpenFullExplorer?: () => void;
   diagramListLoading: boolean;
   changeLog: ChangeLogEntry[];
   changeLogLoading: boolean;

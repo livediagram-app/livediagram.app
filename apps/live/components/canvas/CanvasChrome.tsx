@@ -195,7 +195,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onNewDiagram,
     onOpenCommentsForElement,
     onOpenDiagram,
-    onOpenFullExplorer,
     onRedo,
     onRenameCurrent,
     onRenameFolder,
@@ -250,7 +249,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // mid-drag, and EditorView memoises the `teams` / change-log arrays.)
   const explorerHandlers = useStableCallbacks({
     onDismissShared,
-    onOpenFullExplorer,
     onMoveExplorer,
     onResetExplorer,
     onOpenDiagram,
@@ -449,7 +447,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       teamFolders={teamFolders}
       teamDiagrams={teamDiagrams}
       onDismissShared={explorerHandlers.onDismissShared}
-      onOpenFullExplorer={explorerHandlers.onOpenFullExplorer}
       currentDiagramId={currentDiagramId}
       onMoveTo={explorerHandlers.onMoveExplorer}
       onReset={explorerWiring.onReset}

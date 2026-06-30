@@ -33,11 +33,6 @@ export type ExplorerProps = {
   onDismissShared?: (diagramId: string) => void;
   // Navigate to the standalone /live/explorer page. When set, the
   // panel header surfaces an "Expand" button next to the title.
-  // Optional because pure-guest surfaces (no Clerk) could leave it
-  // off — the standalone route gates itself with a sign-in CTA
-  // either way, so passing it is safe even when the user isn't
-  // signed in.
-  onOpenFullExplorer?: () => void;
   // True while the initial diagram-list fetch is in flight. Shows a
   // skeleton in place of the list so the panel doesn't read as "no
   // diagrams" before the API call resolves.
