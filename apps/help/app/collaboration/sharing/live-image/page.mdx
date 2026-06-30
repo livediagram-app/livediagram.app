@@ -1,0 +1,44 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Live Image',
+  description:
+    'Copy an always-current image URL of a diagram to embed in a README, wiki, or doc where an interactive iframe is not allowed.',
+  path: '/help/collaboration/sharing/live-image/',
+});
+
+<ArticleLayout title="Live Image" description="An image URL that re-renders your diagram, so a README or doc always shows the latest version." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "live-image")}>
+
+A live image is a plain image URL for a diagram that **re-renders every time it is requested**, so wherever you place it always shows the current diagram. It is the companion to a [read-only embed](/help/collaboration/sharing/embeds/): the embed is interactive (pan, zoom, live updates), while a live image is a single static picture, which is exactly what you need somewhere an `<iframe>` is not allowed, like a **GitHub README** or a Markdown file.
+
+## How it differs from an embed
+
+Both come from a share link and both stay current, but they suit different homes:
+
+- An **embed** is an interactive frame: readers can pan and zoom, and it updates in real time. Best for wikis, Notion, and your own pages.
+- A **live image** is a static SVG served at a URL. It does not pan or zoom, but it drops into anywhere that accepts an image, including places that strip iframes. It refreshes to the latest diagram whenever the page loads it.
+
+## Getting a live image
+
+<Step n={1}>Open the **Share** dialog and create or pick a share link for the diagram.</Step>
+<Step n={2}>Open the **Live image** menu next to that link and choose the format you need: **Copy image URL** for the bare link, **Copy Markdown** for a `![](…)` snippet, or **Copy HTML** for an `<img>` tag.</Step>
+<Step n={3}>Paste it where you want the diagram to appear. A README takes the Markdown; a web page takes the HTML or the raw URL.</Step>
+
+Because the image re-renders on request, editing the diagram updates the image the next time it loads (a browser or service may cache it briefly).
+
+## When it is not offered
+
+The **Live image** menu is hidden for a link that has a [share password](/help/collaboration/sharing/share-passwords/). An `<img>` request cannot supply a password, so the server refuses an image for a gated share rather than leak it, and offering the option would only mislead. Remove the password to use a live image, or use the [embed](/help/collaboration/sharing/embeds/), which can prompt for the password inside its frame.
+
+## Privacy and self-hosting
+
+A live image only exposes what its share link exposes, as a flat picture with no editing actions. It works on self-hosted instances with no external services: the URL is built from your own origin, so a self-hosted diagram produces a self-hosted image.
+
+<Tip>
+  A live image in your project's README keeps the architecture diagram beside the code and always
+  current, without anyone re-exporting and re-committing a PNG.
+</Tip>
+
+</ArticleLayout>

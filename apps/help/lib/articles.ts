@@ -1272,6 +1272,14 @@ export const articles: Article[] = [
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
   },
+  {
+    slug: 'live-image',
+    title: 'Live Image',
+    description: 'Copy an always-current image of a diagram for READMEs and docs.',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
 
   // ---- Sub-articles: AI ----
   {
