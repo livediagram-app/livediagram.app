@@ -21,6 +21,15 @@ import type { DiagramDTO, Env } from './types';
 // the R2 object's metadata on write.
 const THUMBNAIL_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
 
+// Ceiling on the raw image bytes inlined into one snapshot. The renderer
+// embeds each referenced image as a base64 data URL (so the SVG is
+// self-contained for the Explorer preview + the public live image), which
+// inflates the cached/streamed SVG by ~1.33×. Without a cap a diagram full
+// of large photos would produce a multi-megabyte thumbnail that's slow to
+// cache and stream in the Explorer grid; images that would push past the
+// budget fall back to their placeholder instead.
+const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
+
 // Resolve a diagram's cached SVG snapshot, rendering + caching it first
 // if stale. Returns null — caller should 404 / fall back to an icon —
 // when there's nothing to show: no R2 binding (self-host without
@@ -82,5 +91,45 @@ async function renderFirstTab(env: Env, diagram: DiagramDTO): Promise<string | n
   // renderer only reads `elements` + `backgroundColor`, both already in
   // the parsed body.
   const tab = { id: diagram.id, name: diagram.name, ...parsed } as Tab;
-  return renderElementsToSvg(tab);
+  // Inline referenced image bitmaps (read from R2) so the preview / live
+  // image renders the actual photos, matching the in-app PNG/SVG export.
+  const images = await loadEmbeddedImages(env, tab);
+  return renderElementsToSvg(tab, { resolveImageHref: (id) => images.get(id) });
+}
+
+// Read each image/avatar element's bytes from R2 and return them keyed by
+// imageId as base64 data URLs, ready for the renderer to inline. Honours
+// IMAGE_EMBED_BUDGET_BYTES: ids are read in document order until the budget
+// is spent, after which (or on a missing object) the element keeps its
+// placeholder. R2 is the same store the authenticated image endpoint reads
+// (key = imageId), so a shared diagram's images embed without re-auth.
+async function loadEmbeddedImages(env: Env, tab: Tab): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  if (!env.IMAGES) return map;
+  const ids = Array.from(
+    new Set(tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []))),
+  );
+  let budget = IMAGE_EMBED_BUDGET_BYTES;
+  for (const id of ids) {
+    const object = await env.IMAGES.get(id);
+    if (!object) continue;
+    const buf = await object.arrayBuffer();
+    if (buf.byteLength > budget) continue; // keep the snapshot bounded
+    budget -= buf.byteLength;
+    const contentType = object.httpMetadata?.contentType ?? 'application/octet-stream';
+    map.set(id, `data:${contentType};base64,${bytesToBase64(new Uint8Array(buf))}`);
+  }
+  return map;
+}
+
+// Base64-encode bytes without Node's Buffer (Workers runtime). Chunked
+// through String.fromCharCode so a large image doesn't blow the argument
+// limit of a single spread.
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
 }

@@ -136,7 +136,11 @@ The visual tab exporters embed the bitmap so an image / avatar element looks the
 - **SVG** inlines an `<image>` with the data URL (so the downloaded `.svg` stays self-contained), a per-element `clipPath` for the corner radius (a `full`-radius avatar clamps to a circle), and `preserveAspectRatio` mapping `objectFit` (`cover` → `slice`, `contain` → `meet`), over a white backing rect that matches the on-screen white background.
 - **PNG / PDF** `ctx.drawImage` the decoded bitmap into the same rounded, clipped box (data URLs are same-origin, so the canvas isn't tainted and the PDF's `getImageData` read still works).
 
-The decision is centralized in `describeBoxedExport` (`packages/diagram/src/svg-render.ts`), which now carries `href` / `objectFit` / `radius` on the image `ExportShape`. A missing / failed image (or any caller that supplies no bytes — e.g. the headless thumbnail path) keeps the placeholder, so the export degrades gracefully per-image.
+The decision is centralized in `describeBoxedExport` (`packages/diagram/src/svg-render.ts`), which now carries `href` / `objectFit` / `radius` on the image `ExportShape` and takes an optional `resolveImageHref` resolver. A missing / failed image (or any caller that supplies no resolver) keeps the placeholder, so the snapshot degrades gracefully per-image.
+
+### Preview / live image (server-rendered SVG)
+
+The same `renderElementsToSvg` powers the headless snapshot behind the Explorer **preview** thumbnail (`GET /api/diagrams/:id/thumbnail`) and the public **live image** (`GET /api/share/:code/image.svg`) — both via `getDiagramThumbnailSvg` ([spec/67](67-diagram-thumbnails.md), [spec/54](54-live-image-share.md)). That path now embeds images too: it runs in the api Worker (no DOM, no fetch-with-auth), so instead of the browser's `apiFetchImageDataUrl` it reads each referenced id straight from the R2 `IMAGES` bucket (key = `imageId`), base64-encodes the bytes with the object's stored content type, and passes the `resolveImageHref` resolver to the renderer. A per-snapshot **embed budget** (`IMAGE_EMBED_BUDGET_BYTES`, 3 MB raw) bounds how much bitmap is inlined so a photo-heavy diagram can't produce a multi-megabyte cached thumbnail; images past the budget (or missing from R2) keep the placeholder. The snapshot is cached in R2 and invalidated by `saved_at`, so swapping an element's image (an edit, which bumps `saved_at`) re-renders with the new bytes.
 
 ## Self-host degradation
 

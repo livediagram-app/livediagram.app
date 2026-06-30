@@ -120,6 +120,47 @@ describe('getDiagramThumbnailSvg', () => {
     expect(images.put).not.toHaveBeenCalled();
   });
 
+  it('embeds a referenced image as a base64 data URL in the rendered snapshot', async () => {
+    const images = r2();
+    const tabData = JSON.stringify({
+      elements: [{ id: 'e1', type: 'image', x: 0, y: 0, width: 100, height: 80, imageId: 'img-1' }],
+    });
+    db.getThumbRenderedAt.mockResolvedValue(null); // stale → render
+    db.getFirstTabData.mockResolvedValue(tabData);
+    images.get.mockImplementation(async (key: string) =>
+      key === 'img-1'
+        ? {
+            arrayBuffer: async () => new Uint8Array([1, 2, 3, 4]).buffer,
+            httpMetadata: { contentType: 'image/png' },
+          }
+        : null,
+    );
+    const env = { IMAGES: images } as unknown as Env;
+
+    const out = await getDiagramThumbnailSvg(env, diagram());
+
+    expect(out).toContain('<image');
+    // btoa of bytes [1,2,3,4] is "AQIDBA==".
+    expect(out).toContain('data:image/png;base64,AQIDBA==');
+    expect(out).not.toContain('stroke-dasharray="4 4"'); // not the placeholder
+  });
+
+  it('keeps the placeholder when the referenced image is missing from R2', async () => {
+    const images = r2();
+    const tabData = JSON.stringify({
+      elements: [{ id: 'e1', type: 'image', x: 0, y: 0, width: 100, height: 80, imageId: 'gone' }],
+    });
+    db.getThumbRenderedAt.mockResolvedValue(null);
+    db.getFirstTabData.mockResolvedValue(tabData);
+    images.get.mockResolvedValue(null); // image bytes absent
+    const env = { IMAGES: images } as unknown as Env;
+
+    const out = await getDiagramThumbnailSvg(env, diagram());
+
+    expect(out).toContain('stroke-dasharray="4 4"'); // dashed placeholder
+    expect(out).not.toContain('<image');
+  });
+
   it('still returns the SVG when the R2 write fails (no stamp)', async () => {
     const images = r2();
     images.get.mockResolvedValue(null);
