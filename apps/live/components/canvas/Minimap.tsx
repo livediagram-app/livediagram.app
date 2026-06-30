@@ -57,6 +57,11 @@ const PAD_MIN = 48;
 // fills the panel edge-to-edge rather than letterboxing into white bars under
 // preserveAspectRatio="meet".
 const MAP_RATIO = 256 / 144;
+// Breathing room kept around the current viewport, as a fraction of the view
+// size on each side. Even when the whole diagram is on screen, the map stays
+// zoomed out this much past the view rect so the rect floats inside the map
+// (easy to grab + drag to pan) instead of filling it edge to edge.
+const VIEW_MARGIN_FRACTION = 0.2;
 
 export function Minimap({
   elements,
@@ -177,14 +182,33 @@ export function Minimap({
 
   if (!bounds) return null; // Nothing to map.
 
+  // The current viewport in world space (what the canvas shows right now).
+  const rect = getMain()?.getBoundingClientRect();
+  const w = rect?.width ?? 0;
+  const h = rect?.height ?? 0;
+  const z = viewportZoom || 1;
+  const viewCx = w / 2 - viewportOffset.x;
+  const viewCy = h / 2 - viewportOffset.y;
+  const viewX0 = viewCx - w / z / 2;
+  const viewY0 = viewCy - h / z / 2;
+  const viewX1 = viewCx + w / z / 2;
+  const viewY1 = viewCy + h / z / 2;
+
   const padX = bounds.width * PAD_FRACTION + PAD_MIN;
   const padY = bounds.height * PAD_FRACTION + PAD_MIN;
-  // Padded content box, then grown on the short axis to the panel's aspect
-  // ratio so the map fills it with no white letterbox bars.
+  // Padded content box, then unioned with a margin around the current viewport
+  // (so the view rect never fills the map) and grown on the short axis to the
+  // panel's aspect ratio so the map fills it with no white letterbox bars.
   let x0 = bounds.x - padX;
   let y0 = bounds.y - padY;
   let x1 = bounds.x + bounds.width + padX;
   let y1 = bounds.y + bounds.height + padY;
+  const viewMarginX = (viewX1 - viewX0) * VIEW_MARGIN_FRACTION;
+  const viewMarginY = (viewY1 - viewY0) * VIEW_MARGIN_FRACTION;
+  x0 = Math.min(x0, viewX0 - viewMarginX);
+  y0 = Math.min(y0, viewY0 - viewMarginY);
+  x1 = Math.max(x1, viewX1 + viewMarginX);
+  y1 = Math.max(y1, viewY1 + viewMarginY);
   if ((x1 - x0) / (y1 - y0) < MAP_RATIO) {
     const grow = ((y1 - y0) * MAP_RATIO - (x1 - x0)) / 2;
     x0 -= grow;
@@ -196,18 +220,11 @@ export function Minimap({
   }
   const vb = `${x0} ${y0} ${x1 - x0} ${y1 - y0}`;
 
-  const rect = getMain()?.getBoundingClientRect();
-  const w = rect?.width ?? 0;
-  const h = rect?.height ?? 0;
-  const z = viewportZoom || 1;
-  const viewCx = w / 2 - viewportOffset.x;
-  const viewCy = h / 2 - viewportOffset.y;
-  // Visible-world rect, clamped to the padded content box so the "current view"
-  // highlight + the dimmed surround never spill past the map edges.
-  const vx = Math.max(x0, viewCx - w / z / 2);
-  const vy = Math.max(y0, viewCy - h / z / 2);
-  const vx1 = Math.min(x1, viewCx + w / z / 2);
-  const vy1 = Math.min(y1, viewCy + h / z / 2);
+  // View-rect highlight, clamped to the final map box.
+  const vx = Math.max(x0, viewX0);
+  const vy = Math.max(y0, viewY0);
+  const vx1 = Math.min(x1, viewX1);
+  const vy1 = Math.min(y1, viewY1);
   const hasView = vx1 > vx && vy1 > vy;
 
   // Scroll on the map zooms the canvas in/out centred on that spot.
