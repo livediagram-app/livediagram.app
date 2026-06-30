@@ -4,15 +4,23 @@ import { useState } from 'react';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
-import { buildEmbedSnippet } from '@/lib/embed';
+import { buildEmbedSnippet, embedUrlFor } from '@/lib/embed';
+import { liveImageHtml, liveImageMarkdown, liveImageUrlFor } from '@/lib/live-image';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { formatTimeLeftCompact, useRelativeTimeTick } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { TrashIcon } from '@/components/panels/explorer-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { EXPIRY_LABELS, LinkIcon, RefreshIcon, RoleButton } from './share-dialog-parts';
-import { LiveImageMenu } from './LiveImageMenu';
+import {
+  CodeGlyph,
+  EXPIRY_LABELS,
+  ImageGlyph,
+  LinkIcon,
+  RefreshIcon,
+  RoleButton,
+} from './share-dialog-parts';
+import { ShareCopyMenu } from './ShareCopyMenu';
 import type { ShareDialogProps } from './ShareDialog.types';
 import { SharePasswordSection } from './SharePasswordSection';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -109,26 +117,11 @@ export function ShareDialog({
     }
   };
 
-  // Copy an <iframe> snippet for the read-only embed view (spec/33).
-  // Per link, so the snippet inherits that link's code (and its
-  // password gate, if one is set). The copied-state slot is shared
-  // with the URL copy via a distinct key so the two buttons don't
-  // flash each other's "Copied".
-  const copyEmbed = async (code: string) => {
-    const snippet = buildEmbedSnippet(window.location.origin, code);
-    try {
-      await navigator.clipboard.writeText(snippet);
-      setCopiedCode(`embed:${code}`);
-      window.setTimeout(() => setCopiedCode(null), 1500);
-      track('UI', 'Copied', 'EmbedCode');
-    } catch {
-      // Same failure surface as the URL copy above.
-      toast.error('Could not copy the embed code. Select it to copy manually.');
-    }
-  };
-
   const sectionLabel =
     'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+  // Origin for the embed / live-image snippets. Guarded so a build-time
+  // prerender (the dialog isn't shown then) doesn't touch window.
+  const origin = typeof window === 'undefined' ? '' : window.location.origin;
 
   return (
     <Dialog
@@ -326,24 +319,61 @@ export function ShareDialog({
                     >
                       {copiedCode === link.code ? 'Copied' : 'Copy link'}
                     </button>
-                    <Tooltip
-                      title="Embed code"
-                      description="Copies an <iframe> snippet you can paste into wikis, Notion, and docs."
-                    >
-                      <button
-                        type="button"
-                        onClick={() => copyEmbed(link.code)}
-                        className="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-400 dark:hover:text-brand-300"
-                      >
-                        {copiedCode === `embed:${link.code}` ? 'Copied' : 'Embed'}
-                      </button>
-                    </Tooltip>
+                    {/* Embed (spec/33): copy the read-only embed as a raw
+                            URL or an <iframe> snippet. */}
+                    <ShareCopyMenu
+                      label="Embed"
+                      tooltipTitle="Embed"
+                      tooltipDescription="Copy a read-only embed of this diagram as a URL or an <iframe> snippet for wikis, Notion, and docs."
+                      trackType="EmbedCode"
+                      items={[
+                        {
+                          label: 'Copy embed URL',
+                          icon: <LinkIcon />,
+                          text: embedUrlFor(origin, link.code),
+                          what: 'embed URL',
+                        },
+                        {
+                          label: 'Copy iframe',
+                          icon: <CodeGlyph />,
+                          text: buildEmbedSnippet(origin, link.code),
+                          what: 'iframe',
+                        },
+                      ]}
+                    />
                     {/* Live image (spec/54 + spec/67): an <img>-able SVG
                             URL. Hidden while a password is set — an <img>
                             can't supply one, so the server refuses an
                             image for gated shares and offering it here
                             would mislead. */}
-                    {sharePassword ? null : <LiveImageMenu code={link.code} />}
+                    {sharePassword ? null : (
+                      <ShareCopyMenu
+                        label="Live image"
+                        tooltipTitle="Live image"
+                        tooltipDescription="An <img>-able SVG URL that re-renders this diagram, so an embed in a README, wiki, or doc stays up to date."
+                        trackType="LiveImage"
+                        items={[
+                          {
+                            label: 'Copy image URL',
+                            icon: <ImageGlyph />,
+                            text: liveImageUrlFor(origin, link.code),
+                            what: 'image URL',
+                          },
+                          {
+                            label: 'Copy Markdown',
+                            icon: <ImageGlyph />,
+                            text: liveImageMarkdown(origin, link.code),
+                            what: 'Markdown',
+                          },
+                          {
+                            label: 'Copy HTML',
+                            icon: <ImageGlyph />,
+                            text: liveImageHtml(origin, link.code),
+                            what: 'HTML',
+                          },
+                        ]}
+                      />
+                    )}
                     <span className="flex-1" />
                     <Tooltip
                       title="Revoke link"
