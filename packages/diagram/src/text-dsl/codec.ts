@@ -60,8 +60,9 @@ export function serializeAttrs(
 // --- Parsing --------------------------------------------------------------
 
 // Decode a bare (unquoted) token to its scalar value: boolean / null / number /
-// otherwise the literal string (an enum word).
-export function decodeBareScalar(token: string): unknown {
+// otherwise the literal string (an enum word). Module-private: only the attr
+// parser below consumes it.
+function decodeBareScalar(token: string): unknown {
   if (token === 'true') return true;
   if (token === 'false') return false;
   if (token === 'null') return null;
