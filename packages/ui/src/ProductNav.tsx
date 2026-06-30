@@ -189,10 +189,10 @@ export function ProductNav({
                 role="menuitem"
                 aria-current={isCurrent ? 'page' : undefined}
                 onClick={() => setOpen(false)}
-                className={`flex items-start gap-2.5 rounded-lg px-3 py-2 transition ${
+                className={`group/navitem flex items-start gap-2.5 rounded-lg px-3 py-2 transition ${
                   isCurrent
                     ? 'bg-brand-50 dark:bg-brand-500/15'
-                    : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                    : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
                 <span
@@ -209,7 +209,7 @@ export function ProductNav({
                     className={`text-sm font-semibold ${
                       isCurrent
                         ? 'text-brand-700 dark:text-brand-300'
-                        : 'text-slate-800 dark:text-slate-100'
+                        : 'text-slate-800 dark:text-slate-100 dark:group-hover/navitem:text-white'
                     }`}
                   >
                     {item.label}
