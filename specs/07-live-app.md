@@ -91,7 +91,7 @@ The editor ships with a UI **light / dark mode** toggle, distinct from the per-t
 
 ## Share dialog
 
-The "Share this diagram" modal (`apps/live/components/ShareDialog.tsx`, opened from the header Share button, owner-only) follows the same dialog conventions as Settings / Shortcuts / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
+The "Share this diagram" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, owner-only) follows the same dialog conventions as Settings / Shortcuts / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
 
 Its sections are ordered by frequency of use, top to bottom:
 
@@ -105,8 +105,8 @@ Its sections are ordered by frequency of use, top to bottom:
 
 Every irreversible flow (delete a diagram, a folder, a tab, or an image gallery row) is gated by a branded confirmation. Two forms:
 
-- **Centre modal** — `apps/live/components/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/live/hooks/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
-- **Anchored popover** — `apps/live/components/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. **First use:** the tab menu's Delete row (the menu's own confirm now lives here; `deleteTab` performs the delete directly). Esc cancels, Enter confirms.
+- **Centre modal** — `apps/live/components/dialogs/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/live/hooks/ui/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
+- **Anchored popover** — `apps/live/components/primitives/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. **First use:** the tab menu's Delete row (the menu's own confirm now lives here; `deleteTab` performs the delete directly). Esc cancels, Enter confirms.
 
 We never fall back to `window.confirm()`: the OS-default chrome reads as a non-livediagram dialog and underplays the consequences.
 
@@ -120,7 +120,7 @@ The modal supports `danger` (rose-tinted confirm button) and `neutral` variants;
 
 ## Toasts
 
-Asynchronous failures that previously fell through to silent `catch` blocks (link-tab, gallery delete, image upload from a background flow) now surface through a bottom-right toast stack: `apps/live/hooks/useToast.tsx` (`ToastProvider` + `useToast`). Three tones: `error` (rose), `success` (emerald), `info` (slate). Each toast auto-dismisses after 4 seconds, can be closed early, and dedupes against an identical message already on-screen so a tight retry loop can't drown the surface.
+Asynchronous failures that previously fell through to silent `catch` blocks (link-tab, gallery delete, image upload from a background flow) now surface through a bottom-right toast stack: `apps/live/hooks/ui/useToast.tsx` (`ToastProvider` + `useToast`). Three tones: `error` (rose), `success` (emerald), `info` (slate). Each toast auto-dismisses after 4 seconds, can be closed early, and dedupes against an identical message already on-screen so a tight retry loop can't drown the surface.
 
 Toasts are NOT used for:
 
