@@ -7,15 +7,14 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { PlusIcon } from '@/components/panels/explorer-icons';
 import {
-  AccordionHeader,
   DiagramRow,
   FolderNode,
   SharedRow,
   UnsortedNode,
 } from '@/components/panels/explorer-views';
+import { ExplorerTabBar, type ExplorerTab } from '@/components/panels/ExplorerTabBar';
 import { TeamNode } from '@/components/panels/explorer-team-views';
 
 import type { ExplorerProps } from './Explorer.types';
@@ -51,7 +50,6 @@ function ExplorerImpl({
   teamFolders = [],
   teamDiagrams = [],
   onDismissShared,
-  defaultRecentOpen = false,
   onSize,
   dock,
   mobileOpenOverride,
@@ -88,27 +86,19 @@ function ExplorerImpl({
   // while the panel is open. Cheap when the panel is minimised (this
   // function returns early below before the interval is set up).
   useRelativeTimeTick();
-  // Default to collapsed so the panel stays compact when the user
-  // has lots of diagrams. The header badge surfaces the count even
-  // when the list isn't visible.
-  const [recentOpen, setRecentOpen] = useState(defaultRecentOpen);
-  // Auto-open Recent the first time `defaultRecentOpen` flips true.
-  // The /new page passes `defaultRecentOpen={diagramList.length > 0}`,
-  // but diagramList only populates after the API roundtrip, so the
-  // initial useState fires with `false` and Recent stays closed.
-  // Watching the prop with a one-shot guard means a returning user
-  // sees their library expanded the moment it loads, while a manual
-  // close later sticks (the ref blocks re-opens).
-  const autoOpenedRecentRef = useRef(defaultRecentOpen);
-  useEffect(() => {
-    if (defaultRecentOpen && !autoOpenedRecentRef.current) {
-      autoOpenedRecentRef.current = true;
-      setRecentOpen(true);
-    }
-  }, [defaultRecentOpen]);
-  const [foldersOpen, setFoldersOpen] = useState(false);
-  // Teams accordion (spec/35), collapsed by default like Folders.
-  const [teamsOpen, setTeamsOpen] = useState(false);
+  // The three sections (Recent / My Work / Teams) are a single tab bar
+  // instead of three stacked accordions, so only one list takes
+  // vertical space at a time. `selectedTab` is the user's pick; the
+  // section actually rendered falls back to the first available tab
+  // when the pick isn't currently shown (Teams hidden for a solo user,
+  // Recent empty on a fresh account), resolved just before the return.
+  const [selectedTab, setSelectedTab] = useState<string>('recent');
+  // Re-clicking the active tab collapses the section list (the tab bar
+  // stays put), like toggling an accordion shut; clicking any tab while
+  // collapsed reopens it. Selecting a different tab always expands.
+  // Starts collapsed so the panel opens compact — just the tab bar,
+  // no list — until the user picks a section.
+  const [tabsCollapsed, setTabsCollapsed] = useState(true);
   // Expansion state for each folder node + Unsorted (keyed by
   // folder id, or the literal 'unsorted' for the synthetic bucket).
   // Team rows + team folders share this map too (ids are globally
@@ -242,15 +232,6 @@ function ExplorerImpl({
   const toggleFolder = (key: string) =>
     setExpandedFolders((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const handleCreateRoot = async () => {
-    if (!onCreateFolder) return;
-    const folder = await onCreateFolder({ name: 'New folder', parentId: null });
-    if (folder) {
-      setFoldersOpen(true);
-      setPendingRenameFolderId(folder.id);
-    }
-  };
-
   const handleCreateChild = async (parentId: string) => {
     if (!onCreateFolder) return;
     const folder = await onCreateFolder({ name: 'New folder', parentId });
@@ -267,6 +248,32 @@ function ExplorerImpl({
     setMoveTargetDiagramId(diagramId);
   };
 
+  // Available section tabs, in display order. A section only earns a
+  // tab when it has something to show — these guards mirror the old
+  // per-accordion render conditions exactly, so nothing that used to
+  // appear disappears and an empty section never becomes dead chrome.
+  const sectionTabs: ExplorerTab[] = [];
+  if (loading || recents.length > 0) sectionTabs.push({ id: 'recent', label: 'Recent' });
+  if (!(diagrams.length === 0 && folders.length === 0))
+    sectionTabs.push({ id: 'work', label: 'My Work' });
+  if (teams.length > 0) sectionTabs.push({ id: 'teams', label: 'Teams' });
+  // Resolve the rendered tab: the user's pick when still available,
+  // else the first available section (null only on a blank account,
+  // where the whole tabbed card is hidden below).
+  const activeTab = sectionTabs.some((t) => t.id === selectedTab)
+    ? selectedTab
+    : (sectionTabs[0]?.id ?? null);
+  const handleSelectTab = (id: string) => {
+    if (tabsCollapsed) {
+      setTabsCollapsed(false);
+      setSelectedTab(id);
+    } else if (id === activeTab) {
+      setTabsCollapsed(true);
+    } else {
+      setSelectedTab(id);
+    }
+  };
+
   return (
     <MovablePanel
       title="Explorer"
@@ -279,6 +286,21 @@ function ExplorerImpl({
       width={isMobile ? 'w-auto' : 'w-64'}
       onReset={onReset}
       onMoveTo={onMoveTo}
+      // New-diagram action lives in the header, just left of the
+      // reset-position button (mr-1 spaces it away from that cluster).
+      // Compact "New" + icon so it fits the title row.
+      headerActions={
+        onNewDiagram ? (
+          <button
+            type="button"
+            onClick={onNewDiagram}
+            className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-brand-300 bg-brand-50 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-brand-700 transition hover:border-brand-400 hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-200 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20"
+          >
+            <PlusIcon />
+            New
+          </button>
+        ) : undefined
+      }
       {...dock}
       onSize={onSize}
       mobileOpenOverride={mobileOpenOverride}
@@ -297,17 +319,6 @@ function ExplorerImpl({
       collapsible
     >
       <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1">
-        {onNewDiagram ? (
-          <button
-            type="button"
-            onClick={onNewDiagram}
-            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition hover:border-brand-400 hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-200 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20"
-          >
-            <PlusIcon />
-            New diagram
-          </button>
-        ) : null}
-
         {(current ?? currentTeam ?? currentShared) ? (
           <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
             <p className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-white">
@@ -377,15 +388,22 @@ function ExplorerImpl({
           </div>
         ) : null}
 
-        {loading || recents.length > 0 ? (
-          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 transition-colors hover:bg-slate-100 dark:bg-slate-800/50 dark:ring-slate-700/60 dark:hover:bg-slate-700/50">
-            <AccordionHeader
-              label="Recent"
-              badge={loading ? null : recents.length}
-              open={recentOpen}
-              onToggle={() => setRecentOpen((v) => !v)}
+        {/* Recent / My Work / Teams as a single tab bar (was three
+            stacked accordions) so only one list takes vertical space.
+            Shared-with-you diagrams interleave into Recent (matching the
+            /explorer page); My Work holds the folder tree + Unsorted
+            (spec/15); Teams mirrors it per team (spec/35). The whole
+            card is hidden when no section has anything to show. */}
+        {sectionTabs.length > 0 && activeTab ? (
+          <div className="flex flex-col gap-2 rounded-xl bg-slate-50 p-1.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
+            <ExplorerTabBar
+              tabs={sectionTabs}
+              // Collapsed ⇒ no tab reads as selected; clicking any tab reopens.
+              activeId={tabsCollapsed ? '' : activeTab}
+              onSelect={handleSelectTab}
             />
-            {recentOpen ? (
+
+            {tabsCollapsed ? null : activeTab === 'recent' ? (
               loading ? (
                 <ul className="flex flex-col gap-1" aria-busy="true">
                   {[0, 1, 2].map((i) => (
@@ -456,47 +474,7 @@ function ExplorerImpl({
                   )}
                 </ul>
               )
-            ) : null}
-          </div>
-        ) : null}
-
-        {/* (The standalone "Shared with you" accordion was removed —
-            shared diagrams now interleave into Recent above, matching
-            the /explorer page, so a separate list was redundant.) */}
-
-        {/* Folders section (spec/15). Hidden entirely when the
-            owner has no diagrams AND no folders — an empty
-            Unsorted bucket inside an empty Folders accordion was
-            pure noise on a fresh account. Once any diagram exists
-            the section comes back so Unsorted has a home; user-
-            created folders also bring it back even before the
-            first diagram so the create-folder action sticks. */}
-        {diagrams.length === 0 && folders.length === 0 ? null : (
-          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 transition-colors hover:bg-slate-100 dark:bg-slate-800/50 dark:ring-slate-700/60 dark:hover:bg-slate-700/50">
-            <AccordionHeader
-              label="My Work"
-              badge={folders.length}
-              open={foldersOpen}
-              onToggle={() => setFoldersOpen((v) => !v)}
-              trailing={
-                onCreateFolder ? (
-                  <Tooltip title="New folder" description="Add a root-level folder.">
-                    <button
-                      type="button"
-                      aria-label="New folder"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        void handleCreateRoot();
-                      }}
-                      className="flex h-4 w-4 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-                    >
-                      <PlusIcon />
-                    </button>
-                  </Tooltip>
-                ) : null
-              }
-            />
-            {foldersOpen ? (
+            ) : activeTab === 'work' ? (
               <ul className="flex flex-col gap-0.5">
                 {(foldersByParent.get(null) ?? []).map((f) => (
                   <FolderNode
@@ -542,23 +520,7 @@ function ExplorerImpl({
                   />
                 ) : null}
               </ul>
-            ) : null}
-          </div>
-        )}
-
-        {/* Teams accordion (spec/35). Mirrors Folders: each team
-            expands to its folder tree; a click opens the full team
-            page (at that folder). Hidden entirely when the user is in
-            no teams (guests, solo users) so it isn't dead chrome. */}
-        {teams.length > 0 ? (
-          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 transition-colors hover:bg-slate-100 dark:bg-slate-800/50 dark:ring-slate-700/60 dark:hover:bg-slate-700/50">
-            <AccordionHeader
-              label="Teams"
-              badge={teams.length}
-              open={teamsOpen}
-              onToggle={() => setTeamsOpen((v) => !v)}
-            />
-            {teamsOpen ? (
+            ) : activeTab === 'teams' ? (
               <ul className="flex flex-col gap-0.5">
                 {teams.map((t) => (
                   <TeamNode

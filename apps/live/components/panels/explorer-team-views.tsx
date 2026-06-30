@@ -61,7 +61,7 @@ function TeamFolderNode({
   return (
     <li>
       <div
-        className="group flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800"
+        className="group flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800"
         style={{ paddingLeft: 4 + depth * 12 }}
       >
         <button
@@ -191,7 +191,7 @@ export function TeamNode({
   const isExpanded = expanded[team.id] ?? false;
   return (
     <li>
-      <div className="group flex items-center gap-1 rounded-md px-1 py-1 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800">
+      <div className="group flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800">
         <button
           type="button"
           onClick={() => onToggleExpanded(team.id)}
