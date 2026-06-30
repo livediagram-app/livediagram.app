@@ -25,7 +25,7 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'Your data is yours',
     description:
-      "Every diagram lives in your own row, scoped to your owner id. Export the whole thing to JSON or PNG whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
+      "Every diagram lives in your own row, scoped to your owner id. Export any tab to PNG, SVG, PDF, Markdown, or portable JSON whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
     art: <DataIsYoursArt />,
   },
   {

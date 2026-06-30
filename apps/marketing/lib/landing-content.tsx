@@ -249,9 +249,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Twenty-four starter templates',
+        title: 'Twenty-nine starter templates',
         description:
-          'Blank, mind map, org chart, retrospective, flowchart, Kanban, SWOT and timeline to start, plus Gantt, Venn, user journey, fishbone, pyramid, flywheel, prioritization matrix, comparison table, ER / sequence / system-architecture diagrams, logo design, a live card, and mobile / laptop / slide-deck wireframes. Pick one, edit it, or start blank.',
+          'Mind maps (radial, tree, and bubble), org charts, retrospectives, flowcharts — plus swimlane, decision-tree, approval, and data-flow variants — Kanban, SWOT, timelines, Gantt, Venn, user journeys, fishbone, pyramids, flywheels, prioritization matrices, comparison tables, ER / sequence / system-architecture diagrams, logo design, a live card, and mobile / laptop / slide-deck wireframes. Pick one, edit it, or start blank.',
       },
       {
         art: <ThemesArt />,
@@ -281,9 +281,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <FontsArt />,
         href: '/help/canvas/text-and-fonts/choosing-fonts/',
         group: 'Canvas & type',
-        title: 'Eight fonts',
+        title: 'Eleven fonts',
         description:
-          'Set the typeface per element or as a tab-wide default, from eight Google Fonts spanning sans, serif, slab, mono, and handwriting. New tabs inherit it, so a diagram reads consistently.',
+          'Set the typeface per element or as a tab-wide default, from eleven Google Fonts spanning sans, serif, slab, display, mono, and handwriting. New tabs inherit it, so a diagram reads consistently.',
       },
       {
         art: <ShapesArt />,
