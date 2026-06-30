@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { SettingsPopover, SettingsPopoverResetRow } from '@/components/primitives/SettingsPopover';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
 import type { UserPreferences } from '@/lib/user-preferences';
 
@@ -41,6 +42,11 @@ export function PaletteSettingsPopover({
   const alignment = settings.alignmentGuides !== false;
   const quickAddOnHover = settings.quickAddOnHover === true;
   const panelOpacity = settings.panelOpacity ?? 1;
+  // On a touch / mobile viewport these three controls don't apply and
+  // only confuse: there's no hover (quick-add on hover), the panels are
+  // already the compact dock so the minimal-panels toggle is moot, and
+  // the panel can't be dragged so it never needs a position reset.
+  const isMobile = useIsMobileViewport();
 
   // Persist the panel-opacity slider on release (not per drag tick):
   // writeUserPreferences fires a D1 PUT on every call, so the live drag
@@ -105,24 +111,26 @@ export function PaletteSettingsPopover({
               />
             }
           />
-          <SettingRow
-            label="Quick-add on hover"
-            hint="Open an element's + menu on hover, not a click."
-            checked={quickAddOnHover}
-            onToggle={() =>
-              apply(
-                { quickAddOnHover: !quickAddOnHover },
-                !quickAddOnHover ? 'QuickAddHoverOn' : 'QuickAddHoverOff',
-              )
-            }
-            help={
-              <HelpArticleLink
-                article="quickAddOnHover"
-                title="Quick-add on hover"
-                description="Open the element + menu by hovering instead of clicking."
-              />
-            }
-          />
+          {!isMobile ? (
+            <SettingRow
+              label="Quick-add on hover"
+              hint="Open an element's + menu on hover, not a click."
+              checked={quickAddOnHover}
+              onToggle={() =>
+                apply(
+                  { quickAddOnHover: !quickAddOnHover },
+                  !quickAddOnHover ? 'QuickAddHoverOn' : 'QuickAddHoverOff',
+                )
+              }
+              help={
+                <HelpArticleLink
+                  article="quickAddOnHover"
+                  title="Quick-add on hover"
+                  description="Open the element + menu by hovering instead of clicking."
+                />
+              }
+            />
+          ) : null}
           {!minimalPanels ? (
             <>
               {/* Separator: set the panel-opacity control apart. */}
@@ -140,7 +148,7 @@ export function PaletteSettingsPopover({
               />
             </>
           ) : null}
-          {onToggleMinimalPanels ? (
+          {!isMobile && onToggleMinimalPanels ? (
             <>
               {/* Separator: set the minimal-panels toggle apart. */}
               <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
@@ -160,7 +168,7 @@ export function PaletteSettingsPopover({
               />
             </>
           ) : null}
-          {onResetPosition ? (
+          {!isMobile && onResetPosition ? (
             <SettingsPopoverResetRow
               onReset={onResetPosition}
               resettable={!!resettable}

@@ -459,6 +459,23 @@ export function MovablePanel({
             className="absolute -top-[7px] h-3.5 w-3.5 rotate-45 rounded-tl-sm border-l border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
           />
         ) : null}
+        {/* The minimal/mobile popover has no draggable title row, so the
+            header options (panel title, headerExtra, and headerActions
+            like the Explorer's "New" button) lived only on the desktop
+            header and were unreachable here. Render a slim header band so
+            those stay accessible. Reset-position / drag affordances are
+            intentionally omitted — there's no drag in this layout. */}
+        <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
+          <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
+            {title}
+          </span>
+          {headerExtra || headerActions ? (
+            <div className="flex items-center gap-1">
+              {headerExtra}
+              {headerActions}
+            </div>
+          ) : null}
+        </div>
         <div className={`overflow-y-auto ${flushTop ? '' : 'pt-2'}`}>{children}</div>
       </div>
     );

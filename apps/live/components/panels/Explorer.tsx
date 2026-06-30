@@ -294,7 +294,10 @@ function ExplorerImpl({
           <button
             type="button"
             onClick={onNewDiagram}
-            className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-brand-300 bg-brand-50 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-brand-700 transition hover:border-brand-400 hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-200 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20"
+            // Icon + text match the panel title's slate (not brand) so
+            // the button reads as quiet header chrome; a subtle border +
+            // hover tint keep it recognisably a button.
+            className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <PlusIcon />
             New
