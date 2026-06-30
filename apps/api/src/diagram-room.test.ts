@@ -131,6 +131,45 @@ describe('DiagramRoom /broadcast endpoint', () => {
   });
 });
 
+describe('DiagramRoom presence broadcast', () => {
+  // Each client must NOT receive its own entry: the broadcast presence id is a
+  // fresh server-random (spec/61 §6), so a client can't recognise its own entry
+  // by id to filter it — including it makes the user show up as a participant
+  // twice (once here, once from the local self entry the editor always renders).
+  it('sends each client the roster minus its own entry', () => {
+    const room = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    room.sessions.set(a as unknown as WebSocket, presence('p-a', 'edit'));
+    room.sessions.set(b as unknown as WebSocket, presence('p-b', 'view'));
+
+    room.broadcastPresence();
+
+    const ids = (s: FakeSocket) =>
+      (
+        JSON.parse(s.sent.at(-1)!) as { kind: string; participants: ParticipantPresence[] }
+      ).participants.map((p) => p.id);
+    expect(ids(a)).toEqual(['p-b']);
+    expect(ids(b)).toEqual(['p-a']);
+  });
+
+  it('omits sessions that have not said hello yet (null presence)', () => {
+    const room = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    room.sessions.set(a as unknown as WebSocket, presence('p-a'));
+    // Connected but no hello yet: invisible to peers and shows no one itself.
+    room.sessions.set(b as unknown as WebSocket, null);
+
+    room.broadcastPresence();
+
+    const aFrame = JSON.parse(a.sent.at(-1)!) as { participants: ParticipantPresence[] };
+    const bFrame = JSON.parse(b.sent.at(-1)!) as { participants: ParticipantPresence[] };
+    expect(aFrame.participants).toEqual([]);
+    expect(bFrame.participants.map((p) => p.id)).toEqual(['p-a']);
+  });
+});
+
 describe('DiagramRoom non-WebSocket upgrades', () => {
   it('rejects plain HTTP requests on the WS path with 426', async () => {
     const room = newRoom();

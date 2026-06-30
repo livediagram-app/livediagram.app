@@ -197,10 +197,22 @@ export class DiagramRoom implements DurableObject {
   }
 
   broadcastPresence(): void {
-    const participants: ParticipantPresence[] = [];
-    for (const p of this.sessions.values()) {
-      if (p) participants.push(p);
+    // Send each client the roster MINUS its own entry. The broadcast presence
+    // id is a fresh server-random per session (spec/61 §6), so a client can't
+    // recognise its own entry by id to filter it out — including it makes the
+    // user show up as a participant twice (once from this list, once from the
+    // local self entry the editor always renders). The room is the only place
+    // that knows which presence belongs to which socket, so it excludes it here.
+    for (const ws of this.sessions.keys()) {
+      const others: ParticipantPresence[] = [];
+      for (const [peer, presence] of this.sessions) {
+        if (peer !== ws && presence) others.push(presence);
+      }
+      try {
+        ws.send(JSON.stringify({ kind: 'presence', participants: others } satisfies ServerMessage));
+      } catch {
+        this.sessions.delete(ws);
+      }
     }
-    this.broadcast({ kind: 'presence', participants });
   }
 }
