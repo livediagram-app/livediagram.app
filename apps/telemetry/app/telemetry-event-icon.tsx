@@ -149,6 +149,7 @@ const ACTION_GLYPH: Record<string, () => ReactElement> = {
   Copied: ClipboardGlyph,
   Imported: DownloadGlyph,
   Exported: UploadGlyph,
+  Loaded: OpenGlyph,
   Shared: ShareGlyph,
   Joined: PersonGlyph,
   Used: SparkGlyph,

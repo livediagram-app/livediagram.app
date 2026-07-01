@@ -7,6 +7,7 @@ import {
 } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import { apiLoadTab } from '@/lib/api-client';
+import { track } from '@/lib/telemetry';
 
 // Lazy per-tab content load (spec/13), lifted out of editor-page.tsx.
 // Hydration seeds the first tab; switching to a never-opened tab fires a
@@ -105,6 +106,13 @@ export function usePerTabLoad(opts: {
           return;
         }
         clearError();
+        // Telemetry (spec/22): a tab's content was fetched because the
+        // user switched to it. The first tab of each diagram is counted
+        // at hydration (useIdentityBootstrap), and it's already in the
+        // loaded-set here so this effect bails for it — no double count.
+        // The search prefetch (loadAllTabs below) deliberately doesn't
+        // emit: it's a background sweep, not a user viewing a tab.
+        track('Tab', 'Loaded');
         let didMerge = false;
         resetTabs((prev) =>
           prev.map((t) => {

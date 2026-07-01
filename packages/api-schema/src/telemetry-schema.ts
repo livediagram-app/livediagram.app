@@ -79,6 +79,10 @@ export const TELEMETRY_ACTIONS = [
   'Undone',
   'Redone',
   'Cleared',
+  // Diagram / Tab (spec/22): an existing diagram was opened, or a tab's
+  // content was fetched for viewing (incl. switching to it). Fires on
+  // every open, the counterpart to 'Created' — an engagement/opens signal.
+  'Loaded',
   'Opened',
   'Searched',
   'Selected',

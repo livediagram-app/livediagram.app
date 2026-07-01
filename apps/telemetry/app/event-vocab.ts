@@ -15,10 +15,10 @@ import { titleCase, type TelemetryCategory, type TelemetryCount } from '@livedia
 // strings via the `?? fallback` at the call site).
 export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Diagram:
-    'Whole-diagram lifecycle: creating, sharing, joining, exporting, undo/redo, moving between folders.',
+    'Whole-diagram lifecycle: opening, creating, sharing, joining, exporting, undo/redo, moving between folders.',
   Element:
     'Things on the canvas: shapes, text, stickies, arrows, images. Add, delete, group, link, layer order.',
-  Tab: 'Per-tab actions: create, rename, reorder, lock, import JSON, clear content, auto-align.',
+  Tab: 'Per-tab actions: open, create, rename, reorder, lock, import JSON, clear content, auto-align.',
   Theme: 'Diagram theme switches (the canvas-content palette: brand, slate, mint, etc.).',
   Canvas: 'Canvas background pattern changes and zoom controls (in, out, fit, reset).',
   Template: 'Template scaffolds picked when starting a new diagram or seeding a fresh tab.',
@@ -165,6 +165,8 @@ export function eventExplanation(category: string, action: string, type: string 
 
   // Category + action.
   if (category === 'Diagram') {
+    if (action === 'Loaded')
+      return 'An existing diagram was opened, counted on every open (including a page refresh).';
     if (action === 'Created') return 'A brand-new diagram was created.';
     if (action === 'Duplicated') return 'A diagram was duplicated into a new one.';
     if (action === 'Deleted') return 'A diagram was deleted.';
@@ -185,6 +187,8 @@ export function eventExplanation(category: string, action: string, type: string 
     if (action === 'Unlinked') return 'Someone cleared the link off an element.';
   }
   if (category === 'Tab') {
+    if (action === 'Loaded')
+      return "A tab's content was fetched for viewing (the first tab when a diagram opens, then each tab switched to).";
     if (action === 'Created') return 'A new tab was added to a diagram.';
     if (action === 'Deleted') return 'A tab was removed from a diagram.';
     if (action === 'Duplicated') return 'A tab was duplicated.';

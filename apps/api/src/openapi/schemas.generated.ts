@@ -3192,6 +3192,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Undone",
       "Redone",
       "Cleared",
+      "Loaded",
       "Opened",
       "Searched",
       "Selected",

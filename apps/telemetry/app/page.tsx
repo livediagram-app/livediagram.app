@@ -6,6 +6,7 @@ import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-sche
 import {
   ActivityGlyph,
   BrushGlyph,
+  DiagramGlyph,
   FileGlyph,
   LinkGlyph,
   ListGlyph,
@@ -20,6 +21,7 @@ import { StickyWindowBar } from './StickyWindowBar';
 import { ViewTabs } from './ViewTabs';
 import { HighlightsView } from './HighlightsView';
 import { AcquisitionView } from './AcquisitionView';
+import { ContentView } from './ContentView';
 import { RawView } from './RawView';
 import { LookAndFeelView } from './LookAndFeelView';
 import { PaletteView } from './PaletteView';
@@ -37,12 +39,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
 // Tab order follows the product funnel: who arrives (Acquisition), what they
-// build (Palette / Look & Feel), how they work together (Collaboration), how
-// they get unstuck (Help), how machines connect (External Connections), then
-// the power-user lenses (Search / Raw).
+// open + make (Content), what they build (Palette / Look & Feel), how they work
+// together (Collaboration), how they get unstuck (Help), how machines connect
+// (External Connections), then the power-user lenses (Search / Raw).
 type ViewKey =
   | 'highlights'
   | 'acquisition'
+  | 'content'
   | 'palette'
   | 'lookfeel'
   | 'help'
@@ -53,6 +56,7 @@ type ViewKey =
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'highlights', label: 'Highlights', icon: <SparkGlyph /> },
   { key: 'acquisition', label: 'Acquisition', icon: <PersonAddGlyph /> },
+  { key: 'content', label: 'Content', icon: <DiagramGlyph /> },
   { key: 'palette', label: 'Palette', icon: <PaletteGlyph /> },
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
@@ -157,6 +161,8 @@ export default function TelemetryDashboard() {
               <HighlightsView summary={summary} active={active} />
             ) : view === 'acquisition' ? (
               <AcquisitionView summary={summary} active={active} />
+            ) : view === 'content' ? (
+              <ContentView summary={summary} active={active} />
             ) : view === 'palette' ? (
               <PaletteView summary={summary} active={active} />
             ) : view === 'lookfeel' ? (

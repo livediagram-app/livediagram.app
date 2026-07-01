@@ -322,6 +322,9 @@ export function useIdentityBootstrap(opts: {
               placeholderTabs[0] = first;
               loadedTabIdsRef.current.add(firstSummary.id);
               setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
+              // Telemetry (spec/22): the first tab's content was fetched.
+              // Subsequent tabs count via usePerTabLoad on switch.
+              track('Tab', 'Loaded');
             }
           }
           resetTabs(placeholderTabs);
@@ -409,9 +412,13 @@ export function useIdentityBootstrap(opts: {
                   ],
             );
           }
-          // Telemetry (spec/22): a visitor joined a shared diagram.
-          // Owners opening their own share URL don't count as a join.
-          // `type` is the share role (Edit / View), a preset.
+          // Telemetry (spec/22): an existing diagram was opened via a
+          // share URL. Fires for every open (owner-via-share or visitor),
+          // the counterpart to Diagram/Created.
+          track('Diagram', 'Loaded');
+          // A visitor joined a shared diagram. Owners opening their own
+          // share URL don't count as a join. `type` is the share role
+          // (Edit / View), a preset.
           if (!isOwnerVisit) {
             track('Diagram', 'Joined', role === 'edit' ? 'Edit' : 'View');
           }
@@ -459,6 +466,9 @@ export function useIdentityBootstrap(opts: {
               placeholderTabs[0] = first;
               loadedTabIdsRef.current.add(firstSummary.id);
               setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
+              // Telemetry (spec/22): the first tab's content was fetched.
+              // Subsequent tabs count via usePerTabLoad on switch.
+              track('Tab', 'Loaded');
             }
           }
           resetTabs(placeholderTabs);
@@ -477,6 +487,9 @@ export function useIdentityBootstrap(opts: {
             setActiveId(pickFromHash ? hashedId! : (placeholderTabs[0]?.id ?? activeId));
           }
           setLoadedExistingDiagram(true);
+          // Telemetry (spec/22): an existing diagram was opened (owner URL
+          // / refresh). Fires on every open, the counterpart to Created.
+          track('Diagram', 'Loaded');
           setDiagramShareable(fetched.shareable);
           setDiagramTeamId(fetched.teamId ?? null);
           setDiagramShareCode(fetched.shareCode);
