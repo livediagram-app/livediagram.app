@@ -19,6 +19,36 @@ const GROUPS: MetricGroup[] = [
     ],
   },
   {
+    // Returning visitors, spec/22: the combined sum first (allTypes over
+    // Participant·Returned), then the guest / signed-in split from the
+    // Anonymous / Authenticated types, each with its own 30-day trend.
+    title: 'Returning visitors',
+    metrics: [
+      {
+        category: 'Participant',
+        action: 'Returned',
+        allTypes: true,
+        title: 'Returning Visitors',
+        blurb:
+          'Browsers that came back on a later day than their first visit, counted once per day. Sum of guests and signed-in users below.',
+      },
+      {
+        category: 'Participant',
+        action: 'Returned',
+        type: 'Anonymous',
+        title: 'Returning Guests',
+        blurb: 'Returning visitors who are not signed in.',
+      },
+      {
+        category: 'Participant',
+        action: 'Returned',
+        type: 'Authenticated',
+        title: 'Returning Signed-In',
+        blurb: 'Returning visitors who are signed in with an account.',
+      },
+    ],
+  },
+  {
     title: 'Account lifecycle',
     metrics: [
       { category: 'Session', action: 'SignedOut', type: null, title: 'Sign-Outs' },
@@ -43,7 +73,7 @@ export function AcquisitionView({
   return (
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
-        Who shows up and who signs up, for{' '}
+        Who shows up, who comes back, and who signs up, for{' '}
         <span className="font-medium">{windowLabel(active)}</span>. Account events only fire on
         deployments with sign-in configured.
       </p>

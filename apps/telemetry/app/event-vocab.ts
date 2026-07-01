@@ -31,7 +31,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   AI: 'The optional in-editor AI assistant: running its Build / Ask / Review / Clean requests on the current tab.',
   Team: 'Teams: creating and joining, renaming, role changes, member invites and removals, and the shared team library of diagrams.',
   Participant:
-    'A new browser identity being minted, counted once per fresh visitor: the daily new-visitors signal.',
+    'Visitor arrivals: a new browser identity minted (once per fresh visitor), and a returning browser reopening the app (once per day, split guest vs signed-in).',
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
   Token: 'API tokens: minted by hand or via an AI tool connecting through MCP, and revoked.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
@@ -227,6 +227,13 @@ export function eventExplanation(category: string, action: string, type: string 
   if (category === 'Participant') {
     if (action === 'Created')
       return 'A brand-new browser identity was minted: a first-time visitor.';
+    if (action === 'Returned') {
+      if (type === 'Anonymous')
+        return 'A returning guest (not signed in) reopened the app on a later day, counted once per day.';
+      if (type === 'Authenticated')
+        return 'A returning signed-in user reopened the app on a later day, counted once per day.';
+      return 'A returning visitor reopened the app on a later day than their first visit, counted once per day.';
+    }
   }
 
   // Generic fallback.

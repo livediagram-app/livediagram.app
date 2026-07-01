@@ -3211,7 +3211,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Voted",
       "View",
       "Helpful",
-      "Unhelpful"
+      "Unhelpful",
+      "Returned"
     ],
     "type": "string"
   },

@@ -99,7 +99,11 @@ function MetricCard({
   // An aggregate has no single type, so the icon + label drop the type.
   const iconType = m.allTypes ? null : (m.type ?? null);
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+    // `flex h-full flex-col` + `mt-auto` on the chart pins every trend line to
+    // the bottom of the card. Grid rows already stretch cards to equal height,
+    // so without this a longer blurb (e.g. an aggregate's) would push its chart
+    // down and misalign it with the shorter cards beside it in the same row.
+    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5">
           <span
@@ -125,7 +129,7 @@ function MetricCard({
         {m.blurb ?? eventExplanation(m.category, m.action, iconType)}
       </p>
       {days ? (
-        <div className="mt-4">
+        <div className="mt-auto pt-4">
           <TrendChart
             days={days}
             values={series ?? new Array(days.length).fill(0)}

@@ -11,6 +11,7 @@ import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
+import { trackDailyReturn } from '@/lib/daily-return';
 import { ensureGuestSelfId, markNameConfirmed } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@/lib/templates';
@@ -59,6 +60,9 @@ export default function NewDiagramPage() {
     // Wait for Clerk to settle so a signed-in user gets the Clerk
     // userId, not a freshly-minted guest UUID.
     if (!authLoaded) return;
+    // Daily-active-returns signal (spec/22): once-per-browser-per-UTC-day,
+    // gated inside the helper. Auth has settled, so guest vs signed-in is known.
+    trackDailyReturn(!!clerkUserId);
     const selfId = clerkUserId ?? ensureGuestSelfId();
     const local: Participant = {
       id: selfId,

@@ -42,6 +42,11 @@ const KEYS = {
   // identity prompt on subsequent diagram opens. Only meaningful
   // for guests; signed-in users derive their name from Clerk.
   nameConfirmed: `${NS}name-confirmed`,
+  // UTC day string (YYYY-MM-DD) of this browser's most recent app
+  // open. Gates the once-per-day 'Participant'/'Returned' telemetry
+  // signal (spec/22) so a returning visitor counts once per UTC day,
+  // not once per page load. Written by lib/daily-return.ts only.
+  lastActiveDay: `${NS}last-active-day`,
 } as const;
 
 export function getGuestSelfId(): string | null {
@@ -91,6 +96,17 @@ export function ensureGuestSelfId(): string {
   // doesn't fall back to this helper, so a visitor counts once.
   track('Participant', 'Created');
   return fresh;
+}
+
+// The UTC day this browser was last seen active, or null if never
+// recorded. The daily-return signal (spec/22) reads this to decide
+// whether it has already counted today. See lib/daily-return.ts.
+export function getLastActiveDay(): string | null {
+  return readLocalStorageSafe(KEYS.lastActiveDay);
+}
+
+export function setLastActiveDay(day: string): void {
+  writeLocalStorageSafe(KEYS.lastActiveDay, day);
 }
 
 export function hasConfirmedName(): boolean {

@@ -13,6 +13,7 @@ import {
   type SharedWithItem,
 } from '@/lib/api-client';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { trackDailyReturn } from '@/lib/daily-return';
 import { track } from '@/lib/telemetry';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
@@ -75,6 +76,15 @@ export function useExplorerState() {
     };
   }, [authLoaded, clerkUserId]);
   const ownerId: string | null = !authLoaded ? null : (clerkUserId ?? guestId);
+  // Daily-active-returns signal (spec/22): the Explorer is an app-open
+  // surface too, so count a returning visitor here. Gated once per
+  // browser per UTC day inside the helper (shared with the editor +
+  // /new bootstraps), so landing here and then the editor still counts
+  // once. Runs once auth has settled so guest vs signed-in is known.
+  useEffect(() => {
+    if (!authLoaded) return;
+    trackDailyReturn(!!clerkUserId);
+  }, [authLoaded, clerkUserId]);
   const [diagrams, setDiagrams] = useState<DiagramListItem[]>([]);
   const {
     folders,

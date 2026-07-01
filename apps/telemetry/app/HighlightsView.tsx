@@ -24,6 +24,14 @@ const GROUPS: MetricGroup[] = [
     title: 'Visitors',
     metrics: [
       { category: 'Participant', action: 'Created', type: null, title: 'New Visitors' },
+      {
+        category: 'Participant',
+        action: 'Returned',
+        allTypes: true,
+        title: 'Returning Visitors',
+        blurb:
+          'Browsers that came back on a later day than their first visit, counted once per day. Sum of guests and signed-in users.',
+      },
       { category: 'Session', action: 'SignedUp', type: null, title: 'Sign-Ups' },
       { category: 'Session', action: 'SignedIn', type: null, title: 'Sign-Ins' },
     ],

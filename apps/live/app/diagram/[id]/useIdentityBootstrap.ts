@@ -20,6 +20,7 @@ import {
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { hasConfirmedName } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { trackDailyReturn } from '@/lib/daily-return';
 import { track } from '@/lib/telemetry';
 import { placeholdersFromSummaries, resolveDiagramSession } from './editor-page-helpers';
 
@@ -132,6 +133,11 @@ export function useIdentityBootstrap(opts: {
     // subsequent diagram load uses the wrong owner. With this gate
     // the effect re-runs once `authLoaded` flips true.
     if (!authLoaded) return;
+    // Daily-active-returns signal (spec/22): once auth has settled we
+    // know whether this open is a guest or a signed-in user. Fire-and-
+    // forget, gated to once per browser per UTC day inside the helper,
+    // so it's safe to run on every editor mount.
+    trackDailyReturn(!!clerkUserId);
     // The post-mount hydration is async (the API is HTTP) so we run it
     // inside an IIFE. UI stays at the placeholder during the fetch;
     // the welcome modal is gated on `hydrated` so it doesn't flash the

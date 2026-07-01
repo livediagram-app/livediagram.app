@@ -32,7 +32,10 @@ export const TELEMETRY_CATEGORIES = [
   'Team',
   // Participant lifecycle (spec/22): 'Participant'/'Created' fires
   // once per fresh browser identity mint, the daily-new-visitors
-  // signal. Sign-in / sign-up / sign-out stay under 'Session'.
+  // signal; 'Participant'/'Returned' fires once per browser per UTC
+  // day when a returning visitor reopens the app, split guest vs
+  // signed-in via the type. Sign-in / sign-up / sign-out stay under
+  // 'Session'.
   'Participant',
   // Help centre (apps/help, spec/22 + spec/55): article views +
   // per-article helpful / not-really feedback. The second app (besides
@@ -100,6 +103,10 @@ export const TELEMETRY_ACTIONS = [
   'View',
   'Helpful',
   'Unhelpful',
+  // Participant (spec/22): a returning browser reopened the app on a
+  // later UTC day. Paired with 'Participant'/'Created', gated once per
+  // UTC day client-side; type is 'Anonymous' | 'Authenticated'.
+  'Returned',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 
