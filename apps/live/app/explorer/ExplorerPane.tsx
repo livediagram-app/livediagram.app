@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { useExplorer } from './ExplorerContext';
 import { NewTokenButton } from '@/components/panels/NewTokenButton';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ListView, PaneHeader, SharedList, SkeletonRows } from './views';
 import { CardView } from './CardView';
@@ -123,6 +124,7 @@ export function ExplorerPane() {
     declineInvite,
     refreshTeams,
   } = useExplorer();
+  const { signInHref } = useAuthHrefs();
 
   // A team you're not a member of 404s in TeamPane (it doesn't leak the
   // name). When that happens, drop the title/breadcrumb above it — there
@@ -236,7 +238,7 @@ export function ExplorerPane() {
               API tokens are an account feature for calling the API from your own scripts.
             </p>
             <a
-              href="/sign-in/"
+              href={signInHref}
               className="mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500"
             >
               Sign in

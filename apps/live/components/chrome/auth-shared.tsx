@@ -13,7 +13,8 @@
 // own auth surface this can be promoted to `packages/ui`.
 
 import { Brand } from '@livediagram/ui';
-import type { MutableRefObject, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 
 // ---------------------------------------------------------------------
@@ -278,4 +279,55 @@ export function resolveOAuthCompleteUrl(
   defaultDest: string = POST_AUTH_DEFAULT,
 ): string {
   return resolvePostAuthDestination(searchParams, defaultDest);
+}
+
+// ---------------------------------------------------------------------
+// Building auth hrefs (the OTHER half of the round-trip)
+//
+// The resolvers above CONSUME `?redirect_url` on the auth pages. These
+// build it, so every "Sign in" / "Create account" trigger sends the user
+// back where they started after auth. Same param name, same safety rules
+// (via isSafeInternalPath) — an unsafe or auth-page `returnTo` is simply
+// dropped, so the auth page falls back to its own default and we never
+// seed a redirect loop or an open redirect.
+// ---------------------------------------------------------------------
+
+// Compose an auth-route href carrying a return path as `?redirect_url`.
+export function authHrefWithReturn(
+  authPath: '/sign-in/' | '/get-started/',
+  returnTo: string | null | undefined,
+): string {
+  return isSafeInternalPath(returnTo)
+    ? `${authPath}?redirect_url=${encodeURIComponent(returnTo)}`
+    : authPath;
+}
+
+// The visitor's current same-origin location (path + query + hash), for
+// use as the auth return path. Recomputes on client navigation
+// (usePathname) and on hash changes, so a Sign in click always carries
+// the live location — including a diagram's `?query` and `#t=<tab>` hash
+// so you land back on the exact tab. SSR / first paint has no `window`,
+// so it starts at the bare pathname and upgrades on mount, well before
+// any click.
+export function useAuthReturnPath(): string {
+  const pathname = usePathname();
+  const [returnTo, setReturnTo] = useState(pathname);
+  useEffect(() => {
+    const read = () =>
+      setReturnTo(window.location.pathname + window.location.search + window.location.hash);
+    read();
+    window.addEventListener('hashchange', read);
+    return () => window.removeEventListener('hashchange', read);
+  }, [pathname]);
+  return returnTo;
+}
+
+// Both auth hrefs wired to the current location, for the sign-in /
+// create-account triggers. Cheap — destructure just the one you need.
+export function useAuthHrefs(): { signInHref: string; signUpHref: string } {
+  const returnTo = useAuthReturnPath();
+  return {
+    signInHref: authHrefWithReturn('/sign-in/', returnTo),
+    signUpHref: authHrefWithReturn('/get-started/', returnTo),
+  };
 }

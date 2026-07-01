@@ -31,6 +31,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import Link from 'next/link';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 
@@ -94,6 +95,7 @@ type SignInPromptProps = { fallback?: React.ReactNode };
 function SignInPromptEnabled({ fallback }: SignInPromptProps) {
   const { isLoaded, isSignedIn } = useAuth();
   const { dismissed, dismiss } = usePromptDismissed();
+  const { signInHref } = useAuthHrefs();
   if (!isLoaded || dismissed === null) return null;
   if (isSignedIn || dismissed) return <>{fallback ?? null}</>;
   return (
@@ -103,7 +105,7 @@ function SignInPromptEnabled({ fallback }: SignInPromptProps) {
       onDismiss={dismiss}
       action={
         <Link
-          href="/sign-in/"
+          href={signInHref}
           className="inline-flex w-full items-center justify-center rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
         >
           Sign in

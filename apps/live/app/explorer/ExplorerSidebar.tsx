@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from './ExplorerContext';
 import { useMemo } from 'react';
@@ -61,6 +62,7 @@ export function ExplorerSidebar() {
     createFolder,
     setTeamModalOpen,
   } = useExplorer();
+  const { signInHref } = useAuthHrefs();
 
   // Per-team folder tree, indexed by parentId, for the expandable
   // team subtrees (spec/35). Built from the lazy library sweep.
@@ -303,7 +305,7 @@ export function ExplorerSidebar() {
           auth is configured but the visitor is signed out. */}
       {clerkEnabled && !teamsEnabled ? (
         <Link
-          href="/sign-in/"
+          href={signInHref}
           className="mt-5 flex items-start gap-2 rounded-lg border border-slate-200 bg-gradient-to-br from-brand-50 to-white p-3 text-left transition hover:border-brand-300 hover:from-brand-100 dark:border-slate-700 dark:from-slate-800 dark:to-slate-800/40 dark:hover:border-brand-500/50"
         >
           <span className="mt-0.5 shrink-0 text-brand-600 dark:text-brand-400">

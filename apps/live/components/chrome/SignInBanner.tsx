@@ -13,6 +13,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
 import { track } from '@/lib/telemetry';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 
 // Lazy-load the reasons modal: the banner shows on every guest
@@ -42,6 +43,7 @@ export function SignInBanner({
   placementClassName?: string;
 }) {
   const [reasonsOpen, setReasonsOpen] = useState(false);
+  const { signInHref } = useAuthHrefs();
 
   return (
     <>
@@ -77,7 +79,7 @@ export function SignInBanner({
               Learn more
             </button>
             <Link
-              href="/sign-in/"
+              href={signInHref}
               onClick={() => track('UI', 'Selected', 'SignInBanner')}
               className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm transition hover:bg-brand-50"
             >

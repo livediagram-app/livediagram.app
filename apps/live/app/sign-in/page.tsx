@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import {
+  authHrefWithReturn,
   AuthCard,
   AuthDisabledNotice,
   CodeInputRow,
@@ -136,10 +137,17 @@ function SignInContent() {
         lower.includes('identifier is invalid') ||
         lower.includes('not found')
       ) {
+        // Carry both the typed email AND any incoming ?redirect_url onto
+        // sign-up, so an unknown-email bounce still returns the user where
+        // they started after they create the account. get-started
+        // re-validates redirect_url before using it.
         const trimmed = email.trim();
-        router.replace(
-          trimmed ? `/get-started?email=${encodeURIComponent(trimmed)}` : '/get-started',
-        );
+        const params = new URLSearchParams();
+        if (trimmed) params.set('email', trimmed);
+        const redirect = searchParams.get('redirect_url');
+        if (redirect) params.set('redirect_url', redirect);
+        const qs = params.toString();
+        router.replace(qs ? `/get-started?${qs}` : '/get-started');
         return;
       }
       setError(msg);
@@ -210,7 +218,10 @@ function SignInContent() {
       footer={
         <>
           New to livediagram?{' '}
-          <Link href="/get-started/" className="font-medium text-brand-600 hover:underline">
+          <Link
+            href={authHrefWithReturn('/get-started/', searchParams.get('redirect_url'))}
+            className="font-medium text-brand-600 hover:underline"
+          >
             Create an account
           </Link>
         </>

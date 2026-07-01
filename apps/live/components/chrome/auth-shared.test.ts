@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  authHrefWithReturn,
   POST_AUTH_DEFAULT,
   POST_AUTH_SIGNIN_DEFAULT,
   messageOf,
@@ -73,6 +74,48 @@ describe('resolveOAuthCompleteUrl', () => {
     expect(resolveOAuthCompleteUrl(params('redirect_url=/explorer/recent'))).toBe(
       '/explorer/recent',
     );
+  });
+});
+
+// authHrefWithReturn is the OTHER half of the round-trip: every Sign in
+// / Create account trigger builds its href with it, so the user returns
+// where they started. It MUST apply the same safety rules the resolver
+// consumes with (isSafeInternalPath) — otherwise a trigger could emit a
+// redirect_url the page then rejects (silent surprise) or, worse, an
+// open redirect. These pin that the builder drops exactly what the
+// resolver would refuse, and encodes what it keeps.
+describe('authHrefWithReturn', () => {
+  it('appends a safe same-origin return path as an encoded ?redirect_url', () => {
+    expect(authHrefWithReturn('/sign-in/', '/explorer/recent')).toBe(
+      '/sign-in/?redirect_url=%2Fexplorer%2Frecent',
+    );
+    // Query + hash survive so you land on the exact diagram tab.
+    expect(authHrefWithReturn('/get-started/', '/diagram/abc?x=1#t=t2')).toBe(
+      '/get-started/?redirect_url=%2Fdiagram%2Fabc%3Fx%3D1%23t%3Dt2',
+    );
+  });
+
+  it('round-trips through the resolver back to the original path', () => {
+    const href = authHrefWithReturn('/sign-in/', '/diagram/abc?x=1');
+    const qs = href.slice(href.indexOf('?') + 1);
+    expect(resolvePostAuthDestination(new URLSearchParams(qs), POST_AUTH_SIGNIN_DEFAULT)).toBe(
+      '/diagram/abc?x=1',
+    );
+  });
+
+  it('drops an unsafe / off-origin / auth-loop return path (bare auth href, no param)', () => {
+    expect(authHrefWithReturn('/sign-in/', 'https://evil.example')).toBe('/sign-in/');
+    expect(authHrefWithReturn('/sign-in/', '//evil.example')).toBe('/sign-in/');
+    expect(authHrefWithReturn('/sign-in/', '/\\evil.example')).toBe('/sign-in/');
+    expect(authHrefWithReturn('/sign-in/', 'evil.example')).toBe('/sign-in/');
+    // Loop guard: never point an auth page back at an auth page.
+    expect(authHrefWithReturn('/get-started/', '/sign-in?foo=bar')).toBe('/get-started/');
+  });
+
+  it('returns the bare auth path for a null / undefined / empty return path', () => {
+    expect(authHrefWithReturn('/sign-in/', null)).toBe('/sign-in/');
+    expect(authHrefWithReturn('/sign-in/', undefined)).toBe('/sign-in/');
+    expect(authHrefWithReturn('/get-started/', '')).toBe('/get-started/');
   });
 });
 

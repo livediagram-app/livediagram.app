@@ -17,6 +17,7 @@ import type { ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 
 type Reason = {
@@ -71,6 +72,8 @@ export function SignInReasonsModal({
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, open);
+  // Return to the current page after sign-in (before the early return).
+  const { signInHref } = useAuthHrefs();
 
   useEffect(() => {
     if (!open) return;
@@ -163,7 +166,7 @@ export function SignInReasonsModal({
               Maybe later
             </button>
             <Link
-              href="/sign-in/"
+              href={signInHref}
               onClick={onSignIn}
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 sm:w-auto"
             >

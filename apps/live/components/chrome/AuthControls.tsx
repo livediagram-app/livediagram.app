@@ -26,6 +26,7 @@ import { useRef, useState } from 'react';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { HEADER_ACTION_BTN } from '@/components/chrome/EditorHeader';
 
 // Shared tone for the (non-Share) header actions — slate text, subtle hover.
@@ -42,6 +43,8 @@ function AuthControlsEnabled() {
   const { signOut } = useClerk();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  // Return here after sign-in (must run before the early returns below).
+  const { signInHref } = useAuthHrefs();
 
   // Click-outside closes the menu. Listener installs only while
   // the menu is open so an inert button doesn't pay for it.
@@ -51,7 +54,7 @@ function AuthControlsEnabled() {
 
   if (!isSignedIn) {
     return (
-      <Link href="/sign-in/" className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}>
+      <Link href={signInHref} className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}>
         <SignInIcon />
         Sign in
       </Link>

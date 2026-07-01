@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import {
+  authHrefWithReturn,
   AuthCard,
   AuthDisabledNotice,
   CodeInputRow,
@@ -130,12 +131,14 @@ function GetStartedContent() {
       }
     } catch (err: unknown) {
       const msg = messageOf(err, 'Something went wrong');
-      // Email already in use → send them to sign-in instead.
+      // Email already in use → send them to sign-in instead, carrying any
+      // ?redirect_url so they still land where they started after signing
+      // in. sign-in re-validates the param before using it.
       if (
         msg.toLowerCase().includes('email address is taken') ||
         msg.toLowerCase().includes('that email address is taken')
       ) {
-        router.replace('/sign-in/');
+        router.replace(authHrefWithReturn('/sign-in/', searchParams.get('redirect_url')));
         return;
       }
       setError(msg);
@@ -216,7 +219,10 @@ function GetStartedContent() {
       footer={
         <>
           Already have an account?{' '}
-          <Link href="/sign-in/" className="font-medium text-brand-600 hover:underline">
+          <Link
+            href={authHrefWithReturn('/sign-in/', searchParams.get('redirect_url'))}
+            className="font-medium text-brand-600 hover:underline"
+          >
             Sign in
           </Link>
         </>

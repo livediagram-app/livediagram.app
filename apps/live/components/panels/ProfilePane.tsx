@@ -16,6 +16,7 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import {
@@ -214,6 +215,7 @@ function NotificationRow({
 // A guest who deep-links /explorer/profile: there's no account to show, so
 // nudge them to sign in (same shape as the Tokens pane's signed-out state).
 function SignInPrompt() {
+  const { signInHref } = useAuthHrefs();
   return (
     <div className="rounded-xl border border-dashed border-slate-300 px-6 py-10 text-center dark:border-slate-700">
       <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -223,7 +225,7 @@ function SignInPrompt() {
         Your profile, account, and notification settings live with your account.
       </p>
       <a
-        href="/sign-in/"
+        href={signInHref}
         className="mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500"
       >
         Sign in
