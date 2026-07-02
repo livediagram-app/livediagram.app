@@ -19,6 +19,7 @@ import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-control
 import { TableCellToolbar } from '@/components/canvas/TableCellToolbar';
 import { useTableStructure } from '@/components/canvas/useTableStructure';
 import { useTableEditing } from '@/components/canvas/useTableEditing';
+import { useLongPress } from '@/hooks/ui/useLongPress';
 import { describeLink } from '@/lib/link-label';
 
 // Cell font size per preset (element-space px; the canvas zoom scales
@@ -100,6 +101,12 @@ export function TableView({
   const [menu, setMenu] = useState<{ axis: 'col' | 'row'; index: number } | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
   const [cellMenu, setCellMenu] = useState<'text' | 'colours' | 'align' | null>(null);
+  // The per-cell toolbar is an EXPLICIT gesture (spec/09): right-click a
+  // cell on desktop, long-press on touch. A plain click only selects the
+  // cell (keyboard layer, type-to-edit), so the toolbar never floats over
+  // the table uninvited. Holds the cell the toolbar was opened for; any
+  // selection move / edit / deselect closes it.
+  const [cellToolbarAt, setCellToolbarAt] = useState<{ r: number; c: number } | null>(null);
   // Live widths while dragging a column divider (committed on release).
   const [resizeWidths, setResizeWidths] = useState<(number | null)[] | null>(null);
   const [resizeHeights, setResizeHeights] = useState<(number | null)[] | null>(null);
@@ -114,6 +121,17 @@ export function TableView({
   const gridRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<(number | null)[] | null>(null);
   const dragRowRef = useRef<(number | null)[] | null>(null);
+  // The cell under the current touch press, recorded by each cell's
+  // pointerdown so the grid-level long-press (touch's right-click, below)
+  // knows which cell to open the toolbar for.
+  const pressedCellRef = useRef<{ r: number; c: number } | null>(null);
+  const cellLongPress = useLongPress(() => {
+    const cell = pressedCellRef.current;
+    if (!cell || readOnly || element.locked) return;
+    setSelectedCell(cell);
+    setCellMenu(null);
+    setCellToolbarAt(cell);
+  });
 
   useEffect(() => {
     if (editing && (editing.r >= rows || editing.c >= cols)) setEditing(null);
@@ -122,13 +140,26 @@ export function TableView({
     // CSS track and target an out-of-range cell. Clamp it (which also
     // hides the toolbar) so it can't act on a cell that no longer exists.
     setSelectedCell((s) => (s && (s.r >= rows || s.c >= cols) ? null : s));
+    setCellToolbarAt((t) => (t && (t.r >= rows || t.c >= cols) ? null : t));
   }, [editing, rows, cols]);
+
+  // The cell toolbar follows its opening gesture only: once the selection
+  // moves off that cell (arrow keys, clicking another cell) or editing
+  // starts, it closes rather than trailing along.
+  useEffect(() => {
+    setCellToolbarAt((t) =>
+      t && (!selectedCell || selectedCell.r !== t.r || selectedCell.c !== t.c || editing)
+        ? null
+        : t,
+    );
+  }, [selectedCell, editing]);
 
   useEffect(() => {
     if (!isSelected) {
       setMenu(null);
       setSelectedCell(null);
       setCellMenu(null);
+      setCellToolbarAt(null);
     }
   }, [isSelected]);
 
@@ -447,6 +478,27 @@ export function TableView({
                       setCellMenu(null);
                     }
                   }}
+                  onContextMenu={(e) => {
+                    // Right-click opens the per-cell toolbar (spec/09) —
+                    // the explicit gesture on desktop; touch long-presses
+                    // instead (cellLongPress). Swallowed so the element
+                    // context menu doesn't also open over it.
+                    if (showControls && !isEditingCell) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedCell({ r, c });
+                      setCellMenu(null);
+                      setCellToolbarAt({ r, c });
+                    }
+                  }}
+                  onPointerDown={
+                    showControls && !isEditingCell
+                      ? (e) => {
+                          pressedCellRef.current = { r, c };
+                          cellLongPress.onPointerDown(e);
+                        }
+                      : undefined
+                  }
                   className="relative min-w-0 overflow-hidden"
                   style={{
                     padding: cellPad,
@@ -813,7 +865,7 @@ export function TableView({
       ) : null}
       <TableCellToolbar
         element={element}
-        selectedCell={selectedCell}
+        selectedCell={cellToolbarAt}
         editing={editing}
         showControls={showControls}
         cellMenu={cellMenu}
