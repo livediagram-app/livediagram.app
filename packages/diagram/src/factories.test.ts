@@ -461,6 +461,37 @@ describe('duplicateGroupedElements', () => {
     expect(dupMessage!.from).toEqual({ kind: 'on-arrow', arrowId: idMap.get('lifeline'), t: 0.4 });
   });
 
+  it('re-points an on-arrow endpoint at the ORIGINAL when its target arrow gets dropped mid-copy', () => {
+    // B pins to an element that neither copies nor exists, so B is
+    // dropped; A (earlier in the array) must NOT keep a remap to the
+    // never-created dup(B) — that endpoint would resolve to the canvas
+    // origin. The droppability fixpoint settles before any remap.
+    const messageA: ArrowElement = {
+      id: 'A',
+      type: 'arrow',
+      from: { kind: 'on-arrow', arrowId: 'B', t: 0.5 },
+      to: { kind: 'free', x: 100, y: 50 },
+    };
+    const lifelineB: ArrowElement = {
+      id: 'B',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'pinned', elementId: 'gone', anchor: 's' },
+    };
+    const { newElements, idMap } = duplicateGroupedElements(
+      [messageA, lifelineB],
+      new Set(['A', 'B']),
+      0,
+      0,
+    );
+    const arrows = newElements.filter((e): e is ArrowElement => e.type === 'arrow');
+    expect(arrows).toHaveLength(1);
+    // The copy of A follows the ORIGINAL B (still a real element in the
+    // source list), never a phantom duplicate id.
+    expect(arrows[0]!.from).toEqual({ kind: 'on-arrow', arrowId: 'B', t: 0.5 });
+    expect(idMap.has('B')).toBe(false);
+  });
+
   it('keeps an on-arrow endpoint on the original when the target arrow was not copied', () => {
     const lifeline: ArrowElement = {
       id: 'lifeline',

@@ -13,14 +13,17 @@
 
 import { useAuth, useClerk, useUser } from '@clerk/react';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import {
+  fetchUserPreferences,
+  PREFERENCES_CHANGED_EVENT,
   readUserPreferences,
+  STORAGE_KEY as PREFS_STORAGE_KEY,
   writeUserPreferences,
   type UserPreferences,
 } from '@/lib/user-preferences';
@@ -38,6 +41,34 @@ function ProfilePaneEnabled() {
   const { emailEnabled } = useCapabilities();
   const [prefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  // Keep the toggles in sync with the CANONICAL prefs: pull the server
+  // copy once (this device's localStorage can be empty / stale — a
+  // fresh device rendered everything ON, and the first flip then PUT
+  // that stale snapshot over the whole server blob, silently reverting
+  // opt-outs made elsewhere, telemetry included), and re-read on the
+  // same change events the telemetry cache listens for so any merge or
+  // cross-tab write repaints the pane.
+  const clerkUserId = user?.id ?? null;
+  useEffect(() => {
+    if (!clerkUserId) return;
+    const reread = () => setPrefs(readUserPreferences());
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === PREFS_STORAGE_KEY) reread();
+    };
+    window.addEventListener(PREFERENCES_CHANGED_EVENT, reread);
+    window.addEventListener('storage', onStorage);
+    // fetchUserPreferences merges the server copy into localStorage and
+    // fires PREFERENCES_CHANGED_EVENT, which the listener above turns
+    // into a repaint.
+    void fetchUserPreferences(clerkUserId).then((merged) => {
+      if (merged) reread();
+    });
+    return () => {
+      window.removeEventListener(PREFERENCES_CHANGED_EVENT, reread);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [clerkUserId]);
 
   // Render nothing until Clerk resolves so we don't flash the sign-in
   // prompt for a user who is in fact signed in.
@@ -71,9 +102,13 @@ function ProfilePaneEnabled() {
       | 'notifyMilestones',
     telemetryType: string,
   ) => {
-    const on = !(prefs[key] !== false);
+    // Base the write on the freshest stored prefs, not the render
+    // snapshot: writeUserPreferences PUTs the WHOLE blob, so a stale
+    // base would wipe every preference set since this pane mounted.
+    const current = readUserPreferences();
+    const on = !(current[key] !== false);
     track('UI', 'Toggled', on ? `${telemetryType}On` : `${telemetryType}Off`);
-    const next = { ...prefs, [key]: on };
+    const next = { ...current, [key]: on };
     setPrefs(next);
     writeUserPreferences(next, ownerId);
   };

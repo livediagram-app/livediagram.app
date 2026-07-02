@@ -73,7 +73,6 @@ export function useTeamLibrariesSweep(
       .sort()
       .join(',')}`;
     if (sweptKeyRef.current === key) return;
-    sweptKeyRef.current = key;
     let cancelled = false;
     void Promise.all(
       teams.map(async (team) => {
@@ -105,6 +104,12 @@ export function useTeamLibrariesSweep(
       }),
     ).then((perTeam) => {
       if (cancelled) return;
+      // Record the key only when results COMMIT: recording it up front
+      // meant a sweep cancelled mid-flight (teams refreshed to a new
+      // array identity with the same id set — accept-invite does exactly
+      // this) was never re-run, leaving the just-joined team's library
+      // empty until an unrelated nonce bump.
+      sweptKeyRef.current = key;
       setTeamFolders(perTeam.flatMap((t) => t.folders));
       setTeamDiagrams(perTeam.flatMap((t) => t.diagrams));
     });

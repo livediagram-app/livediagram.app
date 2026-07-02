@@ -54,6 +54,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { usePanelDock } from '@/hooks/ui/usePanelDock';
 import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
 import {
+  DEFAULT_PANEL_CORNER,
   PANEL_CORNERS,
   PANEL_IDS,
   STACK_GAP_PX,
@@ -364,14 +365,24 @@ export function CanvasChrome(props: CanvasChromeProps) {
     ): {
       position: { x: number; y: number } | null;
       onReset: () => void;
+      // True when the panel actually sits away from its default corner
+      // (free, or docked elsewhere) — drives the "Reset position"
+      // enablement, which spec/59 wants greyed when already home.
+      resettable: boolean;
       dock?: MovablePanelDockProps;
     } => {
-      if (!dockingActive) return { position: legacyPosition, onReset: legacyReset };
+      if (!dockingActive)
+        return {
+          position: legacyPosition,
+          onReset: legacyReset,
+          resettable: legacyPosition !== null,
+        };
       const placement = dock.placementOf(id);
       const dragging = dock.isDragging(id);
       return {
         position: placement.mode === 'free' ? placement.pos : null,
         onReset: () => dock.resetPanel(id),
+        resettable: placement.mode === 'free' || placement.corner !== DEFAULT_PANEL_CORNER[id],
         dock: {
           docked: placement.mode === 'corner' && !dragging,
           dockedCorner: placement.mode === 'corner' ? placement.corner : undefined,
@@ -508,7 +519,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             showSuggestions={settings.aiSuggestedPrompts !== false}
             onSetShowSuggestions={(v) => onChangeSettings({ ...settings, aiSuggestedPrompts: v })}
             onResetPosition={aiWiring.onReset}
-            resettable={aiWiring.position !== null || aiWiring.dock !== undefined}
+            resettable={aiWiring.resettable}
           />
         }
         mobileOpenOverride={activeMobilePanel === 'ai'}
@@ -522,6 +533,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <AiPanelContent
           contextElements={aiPanel.contextElements}
           focusIds={aiPanel.focusIds}
+          tabId={aiPanel.tabId}
           tabName={tabName}
           ownerId={aiPanel.ownerId}
           onApplyElements={aiPanel.onApplyElements}
@@ -626,7 +638,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         position={minimapWiring.position}
         onMove={props.onMoveMap}
         onResetPosition={minimapWiring.onReset}
-        resettable={minimapWiring.position !== null || minimapWiring.dock !== undefined}
+        resettable={minimapWiring.resettable}
         dock={minimapWiring.dock}
         enabled={mapEnabled}
         onSetEnabled={(v) => {

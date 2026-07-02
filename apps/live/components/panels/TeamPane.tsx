@@ -228,11 +228,17 @@ export function TeamPane({
     const result = await apiUpdateTeamMemberRole(ownerId, teamId, member.id, role).catch(
       () => null,
     );
-    if (result && !result.ok) {
+    // `null` is a thrown error (network / 5xx) — the role did NOT
+    // change; without a notice the select just silently reverts.
+    if (!result) {
+      setNotice('Could not change the role. Try again.');
+      return;
+    }
+    if (!result.ok) {
       setNotice('A team needs at least one Admin. Promote someone else first.');
       return;
     }
-    if (result?.ok) track('Team', 'Changed', 'Role');
+    track('Team', 'Changed', 'Role');
     await refresh();
   };
 
@@ -247,11 +253,21 @@ export function TeamPane({
     });
     if (!ok) return;
     const result = await apiRemoveTeamMember(ownerId, teamId, member.id).catch(() => null);
-    if (result && !result.ok) {
+    // `null` is a thrown error (network / 5xx) — nothing was removed.
+    // Falling through treated the failure as success: "Leave team"
+    // bounced the user to Recent while they were still a member
+    // (mirrors deleteTeam's guard directly above).
+    if (!result) {
+      setNotice(
+        isSelf ? 'Could not leave the team. Try again.' : 'Could not remove the member. Try again.',
+      );
+      return;
+    }
+    if (!result.ok) {
       setNotice('A team needs at least one Admin. Promote someone else first.');
       return;
     }
-    if (result?.ok) track('Team', 'Removed', isSelf ? 'Self' : 'Member');
+    track('Team', 'Removed', isSelf ? 'Self' : 'Member');
     onTeamsChanged();
     if (isSelf) {
       onLeftTeam();

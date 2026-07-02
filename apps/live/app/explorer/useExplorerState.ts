@@ -367,12 +367,19 @@ export function useExplorerState() {
   // lists either way, so the local row is dropped optimistically.
   const moveDiagramToTeam = (id: string, teamId: string, folderId: string | null = null) => {
     if (!ownerId) return;
+    const row = diagrams.find((d) => d.id === id) ?? null;
     // Re-sweep on success so the diagram appears under the team in
     // Recent / the sidebar / the move picker (the sibling team moves do
     // the same; omitting it left the row invisible until a later bump).
+    // On failure, roll the optimistic removal back and say so — the
+    // silent path left the diagram in neither list, looking deleted
+    // (mirrors moveDiagramToFolder's rollback).
     void apiSetDiagramFolder(ownerId, id, folderId, teamId)
       .then(() => refreshTeamLibraries())
-      .catch(() => {});
+      .catch(() => {
+        if (row) setDiagrams((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
+        toast.error('Could not move the diagram to the team. Please try again.');
+      });
     setDiagrams((prev) => prev.filter((d) => d.id !== id));
     track('Team', 'Added', 'Diagram');
   };

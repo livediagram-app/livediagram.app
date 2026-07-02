@@ -121,6 +121,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // (beginAnchorDrag), which never arms a checkpoint because it already
   // logged an "Added" entry via `commit` — so we don't double-log it.
   const logGestureRef = useRef(false);
+  // The undo-marker token of the current gesture's checkpoint, handed
+  // to the debounced log so its flush fills the right step.
+  const gestureTokenRef = useRef<number | undefined>(undefined);
 
   // Stash deps on every render so the move-effect always reads
   // fresh values without re-subscribing global pointer listeners.
@@ -216,7 +219,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // first flush it's a plain passthrough for the rest of the drag.
       const tick = (mapper: (els: Element[]) => Element[]) => {
         if (checkpointPendingRef.current) {
-          depsRef.current.markCheckpoint();
+          // Keep the checkpoint's marker token so the debounced log
+          // entry fills THIS gesture's undo step, even if another step
+          // lands before the 500ms flush (see lib/entry-history).
+          gestureTokenRef.current = depsRef.current.markCheckpoint();
           checkpointPendingRef.current = false;
           // A checkpoint was armed → this is an edit of existing
           // elements, so it earns an activity-log entry. (Arrow
@@ -228,7 +234,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         // lands once, after the gesture settles, diffing pre-gesture vs
         // final state. One shared key per drag → distinct gestures stay
         // distinct unless they overlap the window.
-        if (logGestureRef.current) depsRef.current.scheduleElementChangeLog('element-drag');
+        if (logGestureRef.current) {
+          depsRef.current.scheduleElementChangeLog('element-drag', {
+            fillToken: gestureTokenRef.current,
+          });
+        }
       };
       // Screen-pixel delta into canvas-coord delta (invert the
       // current zoom).

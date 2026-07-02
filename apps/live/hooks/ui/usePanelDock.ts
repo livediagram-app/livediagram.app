@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  DEFAULT_PANEL_CORNER,
+  PANEL_IDS,
   PANEL_LAYOUT_CHANGED_EVENT,
   STORAGE_KEY,
   dockPanel,
@@ -96,12 +98,26 @@ export function usePanelDock(): PanelDock {
     // The stored arrays are already the resolved order, but a panel
     // that's never been placed isn't in any array — fold those into
     // their default corner so the render order matches resolvePlacement.
+    // Without the fold, a panel id missing from a user's SAVED layout
+    // (any panel shipped after they last dragged one) would never
+    // render on desktop — the corner containers draw only from these
+    // stacks (spec/63's "adding a new panel never strands the UI").
     const stacks: Record<PanelCorner, PanelId[]> = {
       'top-left': [...layout.corners['top-left']],
       'top-right': [...layout.corners['top-right']],
       'bottom-left': [...layout.corners['bottom-left']],
       'bottom-right': [...layout.corners['bottom-right']],
     };
+    const placed = new Set<PanelId>([
+      ...stacks['top-left'],
+      ...stacks['top-right'],
+      ...stacks['bottom-left'],
+      ...stacks['bottom-right'],
+      ...(Object.keys(layout.free) as PanelId[]),
+    ]);
+    for (const id of PANEL_IDS) {
+      if (!placed.has(id)) stacks[DEFAULT_PANEL_CORNER[id]].push(id);
+    }
     return stacks;
   }, [layout]);
 

@@ -11,6 +11,10 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 type AiPanelProps = {
   contextElements: Element[]; // all tab elements
   focusIds: string[]; // selected element IDs (empty = whole tab)
+  // The conversation-reset key. The NAME below is payload only — keying
+  // the reset on it wiped the conversation on every rename and leaked
+  // history across two same-named tabs.
+  tabId: string;
   tabName: string;
   ownerId: string;
   onApplyElements: (elements: Element[], mode: 'clean') => void;
@@ -61,6 +65,7 @@ const MAX_HISTORY = 6;
 export function AiPanelContent({
   contextElements,
   focusIds,
+  tabId,
   tabName,
   ownerId,
   onApplyElements,
@@ -92,7 +97,8 @@ export function AiPanelContent({
   }, [mode]);
 
   // Clear all state including history when the active tab changes — the
-  // previous tab's conversation is irrelevant to the new diagram.
+  // previous tab's conversation is irrelevant to the new diagram. Keyed
+  // on the tab ID, not the name (see AiPanelProps).
   useEffect(() => {
     setReviewText('');
     setStatusMsg('');
@@ -100,7 +106,7 @@ export function AiPanelContent({
     setStatus('idle');
     setProgressCount(0);
     setHistory([]);
-  }, [tabName]);
+  }, [tabId]);
 
   const isLoading = status === 'loading';
 

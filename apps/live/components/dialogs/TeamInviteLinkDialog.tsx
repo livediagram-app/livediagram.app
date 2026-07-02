@@ -88,14 +88,17 @@ export function TeamInviteLinkDialog({
     const url = joinUrlFor(inviteLink.token);
     try {
       await navigator.clipboard.writeText(url);
+      // Confirmation + telemetry only on an actual copy — flipping to
+      // "Copied" after the catch told the user a blocked clipboard
+      // succeeded (mirrors ShareDialog.copy).
+      track('UI', 'Copied', 'TeamInviteLink'); // spec/22: mirrors ShareLink/EmbedCode copies
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
     } catch {
       // Clipboard blocked (insecure context / permissions): fall back
       // to selecting the field so the user can copy by hand.
       inputRef.current?.select();
     }
-    track('UI', 'Copied', 'TeamInviteLink'); // spec/22: mirrors ShareLink/EmbedCode copies
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
   };
 
   const url = inviteLink ? joinUrlFor(inviteLink.token) : '';

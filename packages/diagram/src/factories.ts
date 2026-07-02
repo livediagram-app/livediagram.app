@@ -456,7 +456,7 @@ export function duplicateGroupedElements(
   // the group / quick-connect case where an internal connector should
   // ride along with its group even if the marquee didn't catch the
   // arrow itself.
-  const arrowsToCopy: ArrowElement[] = [];
+  let arrowsToCopy: ArrowElement[] = [];
   for (const el of elements) {
     if (el.type !== 'arrow') continue;
     const bothEndsDuplicated =
@@ -467,6 +467,29 @@ export function duplicateGroupedElements(
     if (!ids.has(el.id) && !bothEndsDuplicated) continue;
     idMap.set(el.id, crypto.randomUUID());
     arrowsToCopy.push(el);
+  }
+
+  // Settle droppability to a FIXPOINT before building any copy: an arrow
+  // whose endpoint can't resolve (its pin target neither copies nor
+  // exists) is dropped, and dropping it can strand another copied
+  // arrow's on-arrow endpoint (spec/50) that had already resolved to its
+  // duplicate — which would commit an endpoint pointing at an arrow that
+  // never gets created (rendered at the canvas origin, then persisted).
+  // Repeat until no arrow drops, so every surviving remap is final.
+  const endpointResolvable = (end: ArrowElement['from']): boolean => {
+    if (end.kind === 'free') return true;
+    if (end.kind === 'on-arrow') return idMap.has(end.arrowId) || existingIds.has(end.arrowId);
+    return idMap.has(end.elementId) || existingIds.has(end.elementId);
+  };
+  for (;;) {
+    const surviving = arrowsToCopy.filter(
+      (el) => endpointResolvable(el.from) && endpointResolvable(el.to),
+    );
+    if (surviving.length === arrowsToCopy.length) break;
+    for (const el of arrowsToCopy) {
+      if (!surviving.includes(el)) idMap.delete(el.id);
+    }
+    arrowsToCopy = surviving;
   }
 
   // Re-point one endpoint of a duplicated arrow: a FREE end translates by

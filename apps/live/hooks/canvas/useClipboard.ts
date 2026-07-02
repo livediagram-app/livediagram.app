@@ -22,6 +22,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { duplicateGroupedElements, type Element, type Tab } from '@livediagram/diagram';
+import { anyModalOpen } from '@/lib/modal-guard';
 import { uploadImageFile } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -116,10 +117,11 @@ export function useClipboard(deps: ClipboardDeps) {
     // was deleted, the user pasted into a different tab, etc.).
     // Temporarily merge them in so duplicateGroupedElements can do
     // its id-remap + arrow-rewire. Only the freshly-minted copies
-    // get committed back, not the merged sources.
-    const existingIds = new Set(activeTab.elements.map((el) => el.id));
-    const novel = clipboard.filter((el) => !existingIds.has(el.id));
-    const merged = [...activeTab.elements, ...novel];
+    // get committed back, not the merged sources. The SNAPSHOT copy
+    // wins over a live element with the same id — pasting must
+    // reproduce what was copied, not the element as it has since
+    // been edited (that's what the copy-time deep clone is for).
+    const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...clipboard];
     const { newElements } = duplicateGroupedElements(merged, clipIds, offset, offset);
     if (newElements.length === 0) return;
     commit((els) => [...els, ...newElements]);
@@ -184,10 +186,14 @@ export function useClipboard(deps: ClipboardDeps) {
   useEffect(() => {
     if (typeof document === 'undefined') return;
     const onPaste = (e: ClipboardEvent) => {
+      // A modal dialog owns paste while open — Cmd+V with a dialog up
+      // must not drop elements on the canvas behind it.
+      if (anyModalOpen()) return;
       const target = e.target as Element | null;
       if (
         target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
         (target instanceof HTMLElement && target.isContentEditable)
       ) {
         return;

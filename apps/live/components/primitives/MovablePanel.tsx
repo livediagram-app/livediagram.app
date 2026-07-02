@@ -387,10 +387,27 @@ export function MovablePanel({
   // panels. Desktop stays at 16 (gap-4) so the stacked panels keep
   // breathing room.
   const stackGapPx = typeof window !== 'undefined' && isMobileViewportSync() ? 4 : 16;
+  // Clamp a persisted free position back into the live viewport: a
+  // panel dropped at x≈2200 on an external monitor renders fully
+  // clipped inside the overflow-hidden main on a laptop — invisible,
+  // with its only recovery affordance (the header's Reset) on the
+  // invisible panel itself. Keeping the header strip reachable makes
+  // any stale position self-recoverable.
+  const clampFree = (pos: { x: number; y: number }): { x: number; y: number } => {
+    if (typeof window === 'undefined') return pos;
+    const MIN_VISIBLE = 56;
+    return {
+      x: Math.min(Math.max(pos.x, 0), Math.max(0, window.innerWidth - MIN_VISIBLE)),
+      y: Math.min(Math.max(pos.y, 0), Math.max(0, window.innerHeight - MIN_VISIBLE)),
+    };
+  };
   const style: React.CSSProperties = dockControlledOpen
     ? {}
     : position
-      ? { left: position.x, top: position.y }
+      ? (() => {
+          const clamped = clampFree(position);
+          return { left: clamped.x, top: clamped.y };
+        })()
       : useDynamicStack
         ? { top: stackBelowY + stackGapPx }
         : isMobile && mobileTopOverridePx !== undefined && defaultCorner === 'top-right'

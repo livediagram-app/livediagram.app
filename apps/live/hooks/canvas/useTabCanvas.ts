@@ -79,15 +79,18 @@ type TabCanvasDeps = {
   // Non-history tab mutator + one-shot checkpoint, for the CONTINUOUS
   // slider setters: a commit per onChange tick flooded the bounded undo
   // stack in a single drag, so a gesture checkpoints once (when its
-  // debounce window opens) and ticks thereafter.
+  // debounce window opens) and ticks thereafter. The checkpoint returns
+  // its undo-marker token so the debounced log entry can fill the
+  // gesture's OWN step (see lib/entry-history).
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  markCheckpoint: () => void;
+  markCheckpoint: () => number;
   // Immediate activity-log entry for one-shot tab-meta edits.
   emitTabMeta: (tabId: string, summary: string) => void;
   // Debounced activity-log entry for the slider-driven appearance
-  // edits, keyed so rapid changes collapse to one line. Returns true
-  // when the call opened a fresh debounce window (gesture start).
-  scheduleTabMetaLog: (key: string, summary: string) => boolean;
+  // edits, keyed so rapid changes collapse to one line. Runs
+  // `onWindowStart` once per fresh window (gesture start) and fills
+  // the marker of the token it returns.
+  scheduleTabMetaLog: (key: string, summary: string, onWindowStart?: () => number) => void;
 };
 
 export function useTabCanvas(deps: TabCanvasDeps) {
@@ -104,11 +107,12 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   } = deps;
 
   // Shared body of the four slider setters: one undoable step per
-  // gesture (checkpoint when the log's debounce window opens), then
-  // history-less ticks for the rest of the drag.
+  // gesture (checkpoint when the log's debounce window opens, its
+  // token handed to the debouncer so the flushed entry fills THIS
+  // gesture's marker), then history-less ticks for the rest of the
+  // drag.
   const patchActiveTabDebounced = (key: string, summary: string, patch: (t: Tab) => Tab) => {
-    const startedWindow = scheduleTabMetaLog(key, summary);
-    if (startedWindow) markCheckpoint();
+    scheduleTabMetaLog(key, summary, markCheckpoint);
     tickTabs((ts) => ts.map((t) => (t.id === activeId ? patch(t) : t)));
   };
 

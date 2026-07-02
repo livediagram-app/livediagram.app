@@ -25,9 +25,10 @@ function harness(elements: Element[], selection: Set<string>) {
     commit: (map) => {
       committed = map(committed);
     },
-    commitTabs: (map) => {
+    tickTabs: (map) => {
       committed = map([{ ...tab, elements: committed }])[0]!.elements;
     },
+    markCheckpoint: () => 1,
     scheduleElementChangeLog: () => {},
   });
   return { style, result: () => committed };

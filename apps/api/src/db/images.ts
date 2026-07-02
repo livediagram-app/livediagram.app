@@ -144,12 +144,33 @@ export async function deleteOldUnusedImages(env: Env, cutoff: number): Promise<n
 
   // One pass over every tab body to learn which candidates are still
   // referenced. Store-wide (not owner-scoped) on purpose — see
-  // `unusedImageIds`.
-  const tabRows = await env.DB.prepare('SELECT data FROM tabs').all<{ data: string }>();
-  const unused = unusedImageIds(
-    candidateIds,
-    (tabRows.results ?? []).map((r) => r.data),
-  );
+  // `unusedImageIds`. Paged by rowid keyset so the sweep's memory is
+  // bounded by ONE page of tab bodies, not the whole store: tabs run up
+  // to MAX_TAB_BYTES each, so an unbounded `SELECT data FROM tabs`
+  // eventually exceeds the Worker memory ceiling — and the cron's
+  // catch-and-log would then silently disable image retention forever.
+  // The LIKE prefilter skips tabs that can't reference an image at all
+  // (candidates only ever leave the delete set, so a skipped tab can
+  // never cause a referenced image to be reaped — the filter can only
+  // keep MORE images alive if it ever over-matched).
+  const SCAN_PAGE = 200;
+  let unused = candidateIds;
+  let lastRowId = 0;
+  while (unused.length > 0) {
+    const page = await env.DB.prepare(
+      `SELECT rowid AS rid, data FROM tabs WHERE rowid > ? AND data LIKE '%"imageId"%' ORDER BY rowid LIMIT ?`,
+    )
+      .bind(lastRowId, SCAN_PAGE)
+      .all<{ rid: number; data: string }>();
+    const rows = page.results ?? [];
+    if (rows.length === 0) break;
+    lastRowId = rows[rows.length - 1]!.rid;
+    unused = unusedImageIds(
+      unused,
+      rows.map((r) => r.data),
+    );
+    if (rows.length < SCAN_PAGE) break;
+  }
   if (unused.length === 0) return 0;
 
   let deleted = 0;

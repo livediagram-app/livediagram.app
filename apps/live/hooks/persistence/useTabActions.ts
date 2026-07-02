@@ -176,6 +176,12 @@ export function useTabActions(deps: TabActionsDeps) {
               backgroundPattern: imported.backgroundPattern ?? t.backgroundPattern,
               backgroundOpacity: imported.backgroundOpacity ?? t.backgroundOpacity,
               patternColor: imported.patternColor ?? t.patternColor,
+              backgroundPatternScale: imported.backgroundPatternScale ?? t.backgroundPatternScale,
+              // Tab-level typography rides the export too (spec/66):
+              // without these an exported tab using a tab font came
+              // back rendering in the default face.
+              font: imported.font ?? t.font,
+              defaultTextSize: imported.defaultTextSize ?? t.defaultTextSize,
               templateChosen: true,
             }
           : t,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { graftCommentThreads, type Tab } from '@livediagram/diagram';
+import { graftLiveTabState, type Tab } from '@livediagram/diagram';
 
 // Bounded undo/redo over the tabs array. See specs/09 ("Undo / Redo").
 //
@@ -44,19 +44,19 @@ export function historyMarkCheckpoint(h: History): History {
   };
 }
 
-// Undo / redo re-graft the LIVE comment threads onto the restored
-// snapshot: comment mutations bypass this history entirely (spec/09 —
-// typing a comment then Ctrl+Z mustn't wipe it), so every snapshot's
-// threads are stale the moment a comment lands, and restoring one
-// verbatim silently dropped comments added since it was taken (then
-// autosave persisted + broadcast the comment-less tab).
+// Undo / redo re-graft the LIVE non-undoable state onto the restored
+// snapshot: comment threads (spec/09 — typing a comment then Ctrl+Z
+// mustn't wipe it) AND the session tools' `timer` / `vote` tab fields
+// (spec/39 — not undoable, mutated via tick so no snapshot ever holds
+// them). Restoring a snapshot verbatim silently dropped both (then
+// autosave persisted + broadcast the stripped tab to every peer).
 
 export function historyUndo(h: History): History {
   if (h.past.length === 0) return h;
   const prev = h.past[h.past.length - 1]!;
   return {
     past: h.past.slice(0, -1),
-    present: graftCommentThreads(h.present, prev),
+    present: graftLiveTabState(h.present, prev),
     future: [h.present, ...h.future].slice(0, HISTORY_LIMIT),
   };
 }
@@ -66,7 +66,7 @@ export function historyRedo(h: History): History {
   const next = h.future[0]!;
   return {
     past: [...h.past, h.present].slice(-HISTORY_LIMIT),
-    present: graftCommentThreads(h.present, next),
+    present: graftLiveTabState(h.present, next),
     future: h.future.slice(1),
   };
 }

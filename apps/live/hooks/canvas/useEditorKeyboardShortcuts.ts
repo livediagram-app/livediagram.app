@@ -17,6 +17,7 @@
 // silently no-op'd.
 
 import { useEffect, useRef } from 'react';
+import { anyModalOpen } from '@/lib/modal-guard';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { isMobileViewportSync } from '@/lib/responsive';
 
@@ -226,6 +227,9 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     )
       return;
     const onKey = (e: KeyboardEvent) => {
+      // A modal dialog owns the keyboard while open (its own Escape
+      // closes it); cancelling canvas modes behind it double-acts.
+      if (anyModalOpen()) return;
       if (e.key === 'Escape') {
         liveRef.current.setFormatSourceId(null);
         liveRef.current.setGroupSourceId(null);
@@ -254,11 +258,19 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   useEffect(() => {
     if (!deps.enabled) return;
     const onKey = (e: KeyboardEvent) => {
+      // A modal dialog owns the keyboard while open: its buttons /
+      // toggles aren't text inputs, so without this gate `R` dropped a
+      // rectangle (and Backspace deleted the selection) on the canvas
+      // BEHIND the modal.
+      if (anyModalOpen()) return;
       const live = liveRef.current;
       const target = e.target as Element | null;
+      // <select> included: a letter press there is the browser's
+      // type-ahead, not a canvas shortcut.
       const inText =
         target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
         (target instanceof HTMLElement && target.isContentEditable);
       // Any text input gets a wide berth, except for read-only
       // checks: even Delete / Backspace bail BEFORE preventDefault
@@ -269,9 +281,26 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const lower = key.toLowerCase();
 
       // --- Zen mode exit (spec/26) ---
-      // Escape leaves zen mode. Only when actually in zen and not mid-
-      // edit / typing (there Escape cancels the label edit instead).
-      if (key === 'Escape' && live.zenMode && !inText && live.editingId === null) {
+      // Escape leaves zen mode. Only when actually in zen, not mid-
+      // edit / typing (there Escape cancels the label edit instead),
+      // and with nothing MORE transient to peel first: an active mode
+      // (format / group / draw / isometric — the narrow effect above
+      // owns those) or a live selection each take their own Escape, so
+      // one press exits exactly one layer instead of snapping the whole
+      // stack back at once.
+      if (
+        key === 'Escape' &&
+        live.zenMode &&
+        !inText &&
+        live.editingId === null &&
+        live.formatSourceId === null &&
+        live.groupSourceId === null &&
+        live.pendingDraw === null &&
+        live.canvasTool !== 'format' &&
+        live.canvasTool !== 'isometric' &&
+        live.selectedId === null &&
+        live.multiSelectedIds.size === 0
+      ) {
         e.preventDefault();
         live.onToggleZen();
         return;

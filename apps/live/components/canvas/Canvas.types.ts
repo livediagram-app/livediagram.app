@@ -402,6 +402,11 @@ export type CanvasProps = {
     focusIds: string[];
     onApplyElements: (elements: Element[], mode: 'clean') => void;
     ownerId: string;
+    // The active tab's ID — the conversation-reset key. The NAME must
+    // not be the key: renaming a tab would wipe the conversation, and
+    // two same-named tabs wouldn't reset on switch (cross-tab history
+    // contamination).
+    tabId: string;
   };
   // Recent-images list for the Current Tab "Images" accordion (spec/19).
   // Forwarded through to TabSection unchanged.

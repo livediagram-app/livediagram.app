@@ -37,14 +37,18 @@ type EraserDeps = {
   // Element-level write WITHOUT a fresh history checkpoint (see
   // useEditorHistory.tick) — paired with one markCheckpoint() per gesture.
   tick: (mapElements: (els: Element[]) => Element[]) => void;
-  markCheckpoint: () => void;
+  // Returns the pushed step's undo-marker token (lib/entry-history).
+  markCheckpoint: () => number;
   // One activity-log entry for the gesture (diffs before → after). Same
-  // emitter the history-aware commit uses, so undo pops the entry in step.
+  // emitter the history-aware commit uses; the fill token routes the
+  // entry to the gesture's OWN undo step even if another step landed
+  // between the checkpoint and the release.
   emitChange: (
     tabId: string,
     before: Element[],
     after: Element[],
     override?: { kind: ChangeLogEntry['kind']; summary: string },
+    opts?: { fillToken?: number },
   ) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
@@ -63,8 +67,10 @@ export function useCanvasEraser(deps: EraserDeps) {
   // The pre-gesture element list, for the single end-of-gesture diff.
   const beforeRef = useRef<Element[]>([]);
   // Whether this gesture has taken its undo checkpoint yet (taken lazily
-  // on the first real deletion so an empty press is a no-op).
+  // on the first real deletion so an empty press is a no-op), and the
+  // checkpoint's marker token for the end-of-gesture log emit.
   const checkpointedRef = useRef(false);
+  const gestureTokenRef = useRef<number | undefined>(undefined);
 
   const eraseAtPoint = (clientX: number, clientY: number) => {
     const { activeTab, tick, markCheckpoint } = depsRef.current;
@@ -81,7 +87,7 @@ export function useCanvasEraser(deps: EraserDeps) {
     if (!changed) return;
     // First removal of the gesture: take the single undo checkpoint now.
     if (!checkpointedRef.current) {
-      markCheckpoint();
+      gestureTokenRef.current = markCheckpoint();
       checkpointedRef.current = true;
     }
     const ids = erasedRef.current;
@@ -116,7 +122,9 @@ export function useCanvasEraser(deps: EraserDeps) {
         // One activity entry for the whole gesture: diff the pre-gesture
         // list against the now-current one.
         const { activeId, activeTab: liveTab, emitChange } = depsRef.current;
-        emitChange(activeId, beforeRef.current, liveTab.elements);
+        emitChange(activeId, beforeRef.current, liveTab.elements, undefined, {
+          fillToken: gestureTokenRef.current,
+        });
       }
       erasedRef.current = new Set();
     };

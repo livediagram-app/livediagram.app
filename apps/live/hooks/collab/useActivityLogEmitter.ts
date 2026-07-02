@@ -35,10 +35,11 @@ type Deps = {
   // and caps at 30 (the panel's scroll window). Setter is the
   // setState dispatcher so React's batching applies.
   setChangeLog: React.Dispatch<React.SetStateAction<ChangeLogEntry[]>>;
-  // Undo / redo memory: one marker per history step (see
-  // lib/entry-history). The history mutators push null markers;
-  // each emit here fills the newest one in so undo deletes exactly
-  // the entry its step emitted.
+  // Undo / redo memory: one token-stamped marker per history step (see
+  // lib/entry-history). The history mutators push null markers; each
+  // emit here fills its step's marker (by `fillToken` for debounced
+  // emits, newest otherwise) so undo deletes exactly the entry its
+  // step emitted.
   entryHistoryRef: RefObject<EntryHistory>;
   // Share-code visitor scope (null for the owner). Threaded onto
   // the API call so edit-role visitors land their entries against
@@ -49,6 +50,15 @@ type Deps = {
   // Ref so a reconnect doesn't force the hook to re-run.
   roomRef: RefObject<RoomHandle | null>;
 };
+
+// `undoable: false` keeps the entry out of the undo pairing — for
+// emits whose mutation doesn't push history (spec/39 session tools), so
+// the entry can't glue itself onto an unrelated step's undo.
+// `fillToken` names the exact history step the entry belongs to (the
+// token its commit/checkpoint returned) — required for the DEBOUNCED
+// emitters, whose flush can land up to 500ms after the gesture, by
+// which time other steps may sit on top of the marker stack.
+export type EmitOpts = { undoable?: boolean; fillToken?: number };
 
 type Api = {
   // Emit an element-diff entry. Builds the diff via `diffElements`
@@ -61,28 +71,30 @@ type Api = {
     beforeElements: Element[],
     afterElements: Element[],
     override?: { kind: ChangeLogEntry['kind']; summary: string },
+    opts?: EmitOpts,
   ) => void;
   // Emit a tab-meta entry (no element diff payload). Used for
   // theme / canvas / pattern / lock changes that mutate Tab
-  // metadata rather than its elements. `undoable: false` keeps the
-  // entry out of the undo pairing — for emits whose mutation
-  // doesn't push history (spec/39 session tools), so the entry
-  // can't glue itself onto an unrelated step's undo.
-  emitTabMeta: (tabId: string, summary: string, opts?: { undoable?: boolean }) => void;
+  // metadata rather than its elements.
+  emitTabMeta: (tabId: string, summary: string, opts?: EmitOpts) => void;
 };
 
 export function useActivityLogEmitter(deps: Deps): Api {
   // Shared bookkeeping for any new log entry, regardless of
   // whether it came from an element diff or a tab-meta change.
   // Optimistic local append + fire-and-forget API + room
-  // broadcast + fill the newest undo marker so the entry pops
+  // broadcast + fill the step's undo marker so the entry pops
   // cleanly on undo (skipped for non-undoable emits).
-  const appendLogEntry = (entry: ChangeLogEntry, undoable = true) => {
+  const appendLogEntry = (entry: ChangeLogEntry, opts?: EmitOpts) => {
     // Cap the in-session list at the same limit the server hydrates
     // (spec/12), so the panel shows a consistent "most recent N".
     deps.setChangeLog((prev) => [entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
-    if (undoable) {
-      deps.entryHistoryRef.current = entryHistoryFill(deps.entryHistoryRef.current, entry);
+    if (opts?.undoable !== false) {
+      deps.entryHistoryRef.current = entryHistoryFill(
+        deps.entryHistoryRef.current,
+        entry,
+        opts?.fillToken,
+      );
     }
     if (deps.diagramId) {
       apiAppendChangeLogEntry(
@@ -95,7 +107,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
     deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry } });
   };
 
-  const emitChange: Api['emitChange'] = (tabId, beforeElements, afterElements, override) => {
+  const emitChange: Api['emitChange'] = (tabId, beforeElements, afterElements, override, opts) => {
     if (!deps.diagramId) return;
     const diff = diffElements(beforeElements, afterElements);
     if (!diff) return;
@@ -112,7 +124,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
       afterState: diff.afterState as Record<string, unknown>,
       createdAt: Date.now(),
     };
-    appendLogEntry(entry);
+    appendLogEntry(entry, opts);
   };
 
   // Emit a tab-meta entry. The entry carries no before/after
@@ -134,7 +146,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
       afterState: {},
       createdAt: Date.now(),
     };
-    appendLogEntry(entry, opts?.undoable !== false);
+    appendLogEntry(entry, opts);
   };
 
   return { emitChange, emitTabMeta };

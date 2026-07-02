@@ -66,6 +66,20 @@ export function activeCommentCount(thread: CommentThread | undefined): number {
 // per element id; elements that only exist in the snapshot (an undone
 // delete) keep the snapshot's thread.
 export function graftCommentThreads(from: Tab[], onto: Tab[]): Tab[] {
+  return graftLiveTabState(from, onto, { sessionFields: false });
+}
+
+// Full live-state graft for undo/redo: comment threads (above) PLUS the
+// per-tab session tools (spec/39 `timer` / `vote`), which also mutate
+// outside undo history — a timer start or a vote dot isn't undoable, so
+// a restored snapshot predates them and would silently wipe them for
+// the whole room (autosave persists + broadcasts the restored tab).
+export function graftLiveTabState(
+  from: Tab[],
+  onto: Tab[],
+  opts: { sessionFields?: boolean } = {},
+): Tab[] {
+  const sessionFields = opts.sessionFields !== false;
   return onto.map((tab) => {
     const src = from.find((t) => t.id === tab.id);
     if (!src) return tab;
@@ -87,6 +101,14 @@ export function graftCommentThreads(from: Tab[], onto: Tab[]): Tab[] {
       }
       return { ...el, commentThread: live } as Element;
     });
-    return changed ? { ...tab, elements } : tab;
+    let next = changed ? { ...tab, elements } : tab;
+    if (sessionFields && (src.timer !== tab.timer || src.vote !== tab.vote)) {
+      next = next === tab ? { ...tab } : next;
+      if (src.timer !== undefined) next.timer = src.timer;
+      else delete next.timer;
+      if (src.vote !== undefined) next.vote = src.vote;
+      else delete next.vote;
+    }
+    return next;
   });
 }

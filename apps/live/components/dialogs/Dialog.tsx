@@ -1,7 +1,8 @@
 'use client';
 
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
+import { modalClosed, modalOpened } from '@/lib/modal-guard';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 
@@ -58,6 +59,14 @@ export function Dialog({
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  // Register with the modal guard so the editor's window-level shortcut
+  // and paste listeners go quiet while any dialog is up (they otherwise
+  // mutate the canvas behind the modal — see lib/modal-guard).
+  useEffect(() => {
+    if (!open) return;
+    modalOpened();
+    return modalClosed;
+  }, [open]);
   useEscape(onClose, { enabled: open && closeOnEscape, preventDefault: true });
   // Trap focus inside the modal while open and hand it back on close — keeps
   // keyboard / screen-reader users out of the inert background. Re-engages on

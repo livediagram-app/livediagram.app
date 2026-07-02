@@ -7,7 +7,10 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 // Split out of ShareDialog.
 type SharePasswordSectionProps = {
   sharePassword: string | null;
-  onSetPassword: (password: string | null) => Promise<string | null> | void;
+  // Resolves to the stored value on success (`null` = cleared) and
+  // `undefined` on FAILURE — the two must stay distinct or a failed
+  // write renders the success UI (see useShareLinks).
+  onSetPassword: (password: string | null) => Promise<string | null | undefined> | void;
   busy: boolean;
   setBusy: (busy: boolean) => void;
   sectionLabel: string;
@@ -30,10 +33,16 @@ export function SharePasswordSection({
     setBusy(true);
     try {
       const next = pw.trim() ? pw : null;
-      const stored = await onSetPassword(next);
-      // onSetPassword returns the server-normalised value (or void in
-      // tests); reflect it so a whitespace-only entry visibly clears.
-      setPw(typeof stored === 'string' ? stored : (next ?? ''));
+      const result = onSetPassword(next);
+      // Sync (void) handlers — tests — count as success; a promise
+      // resolving to `undefined` is a FAILED write (the hook already
+      // toasted), so leave the field + button untouched rather than
+      // flashing "Saved" over a password that isn't stored.
+      const stored = result instanceof Promise ? await result : (next ?? null);
+      if (stored === undefined) return;
+      // Reflect the server-normalised value so a whitespace-only entry
+      // visibly clears.
+      setPw(stored ?? '');
       setPwSaved(true);
       window.setTimeout(() => setPwSaved(false), 1500);
     } finally {
@@ -44,7 +53,11 @@ export function SharePasswordSection({
   const removePassword = async () => {
     setBusy(true);
     try {
-      await onSetPassword(null);
+      const result = onSetPassword(null);
+      const stored = result instanceof Promise ? await result : null;
+      // Failed remove: the password still gates every link, so the
+      // field must keep showing it.
+      if (stored === undefined) return;
       setPw('');
     } finally {
       setBusy(false);

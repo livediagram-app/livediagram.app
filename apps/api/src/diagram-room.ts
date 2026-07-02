@@ -131,6 +131,20 @@ export class DiagramRoom implements DurableObject {
       } catch {
         return;
       }
+      // Per-session frame-rate cap (sliding 1s window) — applied to EVERY
+      // parsed frame, not just ops: a legitimate client sends one `hello`
+      // per connection, but each `hello` re-runs the O(N²) presence
+      // fanout, so an uncapped `hello` loop was a flood path through the
+      // exact door the cap was built to close.
+      const now = Date.now();
+      const rate = this.opRates.get(ws);
+      if (!rate || now - rate.windowStart >= 1000) {
+        this.opRates.set(ws, { count: 1, windowStart: now });
+      } else if (rate.count >= OP_RATE_CAP) {
+        return;
+      } else {
+        rate.count++;
+      }
       if (msg.kind === 'hello') {
         // Force the server-resolved role AND the server-assigned ephemeral id
         // onto the stored presence: the hello frame's own `role` / `id` are
@@ -163,16 +177,6 @@ export class DiagramRoom implements DurableObject {
           opKind === 'laser' ||
           opKind === 'tab-focus';
         if (sender.role !== 'edit' && !isPresenceOp) return;
-        // Per-session op-rate cap (sliding 1s window) — drop over-cap ops.
-        const now = Date.now();
-        const rate = this.opRates.get(ws);
-        if (!rate || now - rate.windowStart >= 1000) {
-          this.opRates.set(ws, { count: 1, windowStart: now });
-        } else if (rate.count >= OP_RATE_CAP) {
-          return;
-        } else {
-          rate.count++;
-        }
         // Remember the sender's current tab so a future joiner learns it
         // from the presence list (tab-focus ops only fire on a switch, so
         // they're invisible to anyone who joins afterwards). Stored on the

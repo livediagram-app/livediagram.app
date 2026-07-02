@@ -27,8 +27,9 @@ export type ShareDialogProps = {
   // Re-arm an expiring link for another round of its creation-time
   // duration (spec/34). Only rendered on inactive (expired) rows.
   onExtendLink: (code: string) => Promise<void> | void;
-  // Set (or clear, with null) the diagram's share password. Returns the
-  // stored value so the field can reflect what now gates access.
-  onSetPassword: (password: string | null) => Promise<string | null> | void;
+  // Set (or clear, with null) the diagram's share password. Resolves to
+  // the stored value on success (`null` = cleared) and `undefined` on
+  // FAILURE, so the field never reflects a write that didn't land.
+  onSetPassword: (password: string | null) => Promise<string | null | undefined> | void;
   onClose: () => void;
 };

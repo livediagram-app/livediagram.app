@@ -139,9 +139,14 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // Set or clear the diagram's share password (spec/24). A null / empty
   // value removes it. Persists through the api, reconciles page state
   // with the server-normalised value, and emits telemetry. Returns the
-  // stored value so the dialog can reflect exactly what now gates access.
-  const setDiagramSharePassword = async (password: string | null): Promise<string | null> => {
-    if (!diagramId) return null;
+  // stored value so the dialog can reflect exactly what now gates
+  // access — `null` means "no password stored" (a successful clear);
+  // FAILURE returns `undefined`, distinct from `null`, so the dialog
+  // never renders "Saved" / "No password" over a write that didn't land.
+  const setDiagramSharePassword = async (
+    password: string | null,
+  ): Promise<string | null | undefined> => {
+    if (!diagramId) return undefined;
     const trimmed = password && password.trim() ? password : null;
     try {
       const stored = await apiSetSharePassword(selfParticipant.id, diagramId, trimmed);
@@ -151,7 +156,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
       return stored;
     } catch {
       toast.error('Could not update the share password. Try again.');
-      return null;
+      return undefined;
     }
   };
 

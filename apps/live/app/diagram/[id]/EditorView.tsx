@@ -883,6 +883,7 @@ export function EditorView() {
                       : [],
                 onApplyElements: applyAiElements,
                 ownerId: selfParticipant.id,
+                tabId: activeTab.id,
               }
             : undefined
         }

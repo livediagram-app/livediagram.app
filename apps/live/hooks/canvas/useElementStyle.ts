@@ -60,12 +60,19 @@ type EditorElementStyleDeps = {
   editsBlocked: boolean;
   // History-aware element mutator (snapshots + emits the log).
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  // Tab mutator that does NOT push history — used by the high-
-  // frequency colour / opacity setters.
-  commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
+  // Non-history tab mutator + one-shot checkpoint for the high-
+  // frequency colour / opacity setters: one undoable step per picker
+  // gesture (a commit per onChange tick flooded the 3-deep undo stack
+  // in a single drag). The checkpoint returns its undo-marker token so
+  // the debounced log entry fills the gesture's own step.
+  tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
+  markCheckpoint: () => number;
   // Debounced activity-log emit for the bypassed colour / opacity
   // edits, keyed by field name.
-  scheduleElementChangeLog: (key: string) => void;
+  scheduleElementChangeLog: (
+    key: string,
+    opts?: { fillToken?: number; onWindowStart?: () => number },
+  ) => void;
 };
 
 export function useElementStyle(deps: EditorElementStyleDeps) {
@@ -77,7 +84,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     activeId,
     editsBlocked,
     commit,
-    commitTabs,
+    tickTabs,
+    markCheckpoint,
     scheduleElementChangeLog,
   } = deps;
 
@@ -227,24 +235,26 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Toggled', field.replace(/^text/, ''));
   };
 
-  // Debounced field write shared by the colour / opacity pickers: goes
-  // straight through commitTabs (bypassing commit's per-tick emitChange,
-  // see the file header) with a single debounced change-log entry, so
-  // dragging a picker doesn't spam the realtime channel. `update` maps one
-  // already-selected element, returning it unchanged for the element types
-  // the field doesn't apply to.
+  // Debounced field write shared by the colour / opacity pickers:
+  // one undoable step per gesture — the debounce window opening runs
+  // the checkpoint (its token routes the flushed log entry to this
+  // gesture's undo marker), then every tick mutates without history,
+  // so dragging a picker doesn't spam the realtime channel or flood
+  // the bounded undo stack. `update` maps one already-selected
+  // element, returning it unchanged for the element types the field
+  // doesn't apply to.
   const commitSelectedStyle = (logField: string, update: (el: Element) => Element) => {
     if (editsBlocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commitTabs((ts) =>
+    scheduleElementChangeLog(logField, { onWindowStart: markCheckpoint });
+    tickTabs((ts) =>
       ts.map((t) =>
         t.id === activeId
           ? { ...t, elements: t.elements.map((el) => (ids.has(el.id) ? update(el) : el)) }
           : t,
       ),
     );
-    scheduleElementChangeLog(logField);
   };
 
   // Hand-editing any colour breaks a shape's colour-preset binding (spec/48):

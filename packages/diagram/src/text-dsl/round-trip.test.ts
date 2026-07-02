@@ -172,6 +172,53 @@ describe('text DSL parsing (hand-authored)', () => {
     expect(isValidTab(tab)).toBe(true);
   });
 
+  it('accepts the spec/66 spaced position form (`@ 40,120`)', () => {
+    const src = `diagram "Spaced" {
+      login square "Log in" @ 40,120 220x90
+    }`;
+    const { tab, warnings } = parseTab(src);
+    expect(warnings).toEqual([]);
+    const login = tab.elements[0] as { x: number; y: number; width: number; height: number };
+    expect(login.x).toBe(40);
+    expect(login.y).toBe(120);
+    expect(login.width).toBe(220);
+    expect(login.height).toBe(90);
+  });
+
+  it('warns on a malformed position and never half-parses a NaN', () => {
+    const src = `diagram "Broken" {
+      a square "A" @ garbage
+      b square "B"
+    }`;
+    const { tab, warnings } = parseTab(src);
+    expect(warnings.some((w) => w.includes('malformed position'))).toBe(true);
+    // A NaN position must not count as explicit — the doc still
+    // auto-lays-out instead of stacking everything at (0,0).
+    const shapes = tab.elements.filter((e) => e.type === 'shape') as { x: number; y: number }[];
+    for (const s of shapes) {
+      expect(Number.isFinite(s.x)).toBe(true);
+      expect(Number.isFinite(s.y)).toBe(true);
+    }
+  });
+
+  it('applies the documented friendly edge attribute keys (spec/66)', () => {
+    // Positioned nodes: the auto-layout pass for position-less graphs
+    // deliberately re-anchors arrows as straight, which would mask the
+    // style alias under test.
+    const src = `diagram "Styled" {
+      a square "A" @0,0
+      b square "B" @400,0
+      a -> b "link" { ends: both, head: hollow-triangle, style: curved, line: dashed, width: thick }
+    }`;
+    const { tab } = parseTab(src);
+    const arrow = tab.elements.find((e) => e.type === 'arrow') as Record<string, unknown>;
+    expect(arrow.arrowEnds).toBe('both');
+    expect(arrow.arrowheadShape).toBe('hollow-triangle');
+    expect(arrow.arrowStyle).toBe('curved');
+    expect(arrow.strokeStyle).toBe('dashed');
+    expect(arrow.strokeWidth).toBe('thick');
+  });
+
   it('tolerates comments, blank lines, and forward references', () => {
     const src = `diagram "Tolerant" {
       # a leading comment

@@ -226,13 +226,27 @@ function parseNode(stmt: string, warnings: string[]): { el: Element; explicitPos
   let y: number | undefined;
   let width: number | undefined;
   let height: number | undefined;
-  for (const tok of tokenizeRest(rest)) {
+  const toks = tokenizeRest(rest);
+  for (let i = 0; i < toks.length; i++) {
+    const tok = toks[i]!;
     if (tok.startsWith('"')) {
       label = JSON.parse(tok) as string;
     } else if (tok.startsWith('@')) {
-      const [px, py] = tok.slice(1).split(',');
-      x = Number(px);
-      y = Number(py);
+      // Accept both `@40,120` (what the serializer writes) and the
+      // spec's spaced `@ 40,120` — a lone `@` consumes the next token
+      // as its coordinate pair. A malformed pair is a warning, never a
+      // half-parsed NaN position: `explicitPos` from a NaN silently
+      // disabled the auto-layout pass for the whole document.
+      const pair = tok === '@' ? (toks[++i] ?? '') : tok.slice(1);
+      const [px, py] = pair.split(',');
+      const nx = Number(px);
+      const ny = Number(py);
+      if (pair.includes(',') && Number.isFinite(nx) && Number.isFinite(ny)) {
+        x = nx;
+        y = ny;
+      } else {
+        warnings.push(`Ignored malformed position "@ ${pair}" on node "${id}".`);
+      }
     } else if (/^-?\d+(\.\d+)?x-?\d+(\.\d+)?$/.test(tok)) {
       const [w, h] = tok.split('x');
       width = Number(w);
@@ -398,6 +412,21 @@ function parseEndpoint(tok: string, warnings: string[]): EndpointDraft {
   return { kind: 'pinned-auto', elementId: tok };
 }
 
+// Friendly edge-attr alias -> real ArrowElement field (spec/66's
+// documented hand-author vocabulary: `{ ends: both, head:
+// hollow-triangle, style: curved, line: dashed, width: thick }`). The
+// serializer writes the real field names, so these only fire on
+// hand-authored input; unknown keys still pass through under their own
+// name, same as node attrs. Deliberately NOT applied to nodes, where
+// `width` must keep meaning the box width.
+const EDGE_ATTR_ALIASES: Record<string, string> = {
+  style: 'arrowStyle',
+  ends: 'arrowEnds',
+  head: 'arrowheadShape',
+  line: 'strokeStyle',
+  width: 'strokeWidth',
+};
+
 function buildArrow(
   draft: ArrowDraft,
   nodesById: Map<string, Element>,
@@ -415,7 +444,9 @@ function buildArrow(
     from: draftToEndpoint(draft.from),
     to: draftToEndpoint(draft.to),
   };
-  Object.assign(arrow, draft.attrs);
+  for (const [key, value] of Object.entries(draft.attrs)) {
+    arrow[EDGE_ATTR_ALIASES[key] ?? key] = value;
+  }
   if (draft.label !== undefined) arrow.label = draft.label;
   return arrow as unknown as ArrowElement;
 }
