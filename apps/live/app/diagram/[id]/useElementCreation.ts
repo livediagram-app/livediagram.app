@@ -266,8 +266,12 @@ export function useElementCreation(opts: {
             ...createShape('icon', x, y),
             iconId,
             // Tech icons land self-describing (S3, EKS, ...) on drag too,
-            // matching the click-to-add addTechIcon path.
-            ...(isTechIconId(iconId) ? { label: getTechIcon(iconId)?.label ?? '' } : {}),
+            // matching the click-to-add addTechIcon path — and unlocked:
+            // the mark renders at a fixed size (spec/41), so the aspect
+            // lock would only fight resizing the caption room.
+            ...(isTechIconId(iconId)
+              ? { label: getTechIcon(iconId)?.label ?? '', aspectLocked: false }
+              : {}),
           }
         : createShape(kind, x, y),
     );

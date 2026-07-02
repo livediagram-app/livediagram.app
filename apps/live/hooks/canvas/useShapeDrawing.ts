@@ -283,6 +283,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       ...(intent.type === 'shape' && intent.iconId
         ? { iconId: intent.iconId, ...(intent.label ? { label: intent.label } : {}) }
         : {}),
+      // Technology marks render at a fixed size (spec/41), so warping the
+      // box can't warp the mark — the aspect lock createShape('icon') bakes
+      // in would only fight resizing the caption room, so drop it.
+      ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
+        ? { aspectLocked: false }
+        : {}),
     } as typeof base;
     // Append so new elements default to the FRONT of z-order (see
     // addBoxed's note for the rationale). Frames don't need special-casing

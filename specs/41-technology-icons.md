@@ -26,7 +26,11 @@ icon; the only difference is the id resolves in the **tech-icon registry**
 instead of the line-art catalogue. The shared `createShape('icon', …)` already
 gives icons the two properties this feature needs:
 
-- `aspectLocked: true` — the brand mark never warps on resize.
+- `aspectLocked` — Technology icons drop **unlocked**: the mark renders at a
+  fixed pixel size (see Rendering below), so warping the box can't warp the
+  mark, and the lock would only fight resizing the caption room. (Line-art
+  icons keep `createShape('icon')`'s `aspectLocked: true` — their glyph
+  scales with the box.)
 - `textAlignY: 'bottom'` — the label sits in a band **below** the glyph, the
   architecture-diagram convention (icon on top, caption beneath). This is why
   double-clicking a Technology icon to type drops the text under it, which is

@@ -20,6 +20,7 @@ import {
   createText,
   type Element,
 } from '@livediagram/diagram';
+import { isTechIconId } from '@/lib/tech-icons';
 
 // A small but complete request path: a client hitting an API gateway
 // that fans out to two services, which in turn read a database and a
@@ -56,6 +57,10 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
     label,
     iconId,
     textSize: 'sm',
+    // Branded tiles render at a fixed mark size (spec/41), so they drop
+    // unlocked like every other tech icon; the line-art client glyph keeps
+    // the lock so it can't warp.
+    ...(isTechIconId(iconId) ? { aspectLocked: false } : {}),
   });
 
   const client = node(cx, clientY, 'Client', 'globe');
