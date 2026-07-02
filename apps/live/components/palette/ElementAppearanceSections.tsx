@@ -136,7 +136,7 @@ export function ElementAppearanceSections({
   const showAppearanceGroup = boxed || target.type === 'arrow';
   return (
     <>
-      {showAppearanceGroup ? <MenuGroupSeparator /> : null}
+      {showAppearanceGroup ? <MenuGroupSeparator label="Style" /> : null}
       {/* Presets (spec/48) — pinned at the top of the appearance group (above
             Animation). Regular shapes only (icon glyph / charts excluded, see
             shapeSupportsPresets); arrows get their own line-look presets. Both

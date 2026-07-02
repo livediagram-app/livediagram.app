@@ -242,7 +242,7 @@ export function ElementContentSections({
         </MenuAccordionSection>
       ) : null}
       {/* ── Collaboration group ── */}
-      {showCollaborateGroup ? <MenuGroupSeparator /> : null}
+      {showCollaborateGroup ? <MenuGroupSeparator label="Collaborate" /> : null}
       {/* Collaborate — link / note / comments. Boxed-only: arrows can't be
             linked, noted, or commented on. */}
       {boxed ? (

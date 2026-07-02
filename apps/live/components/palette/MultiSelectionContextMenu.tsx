@@ -47,6 +47,7 @@ import {
 } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
+  MenuGroupLabel,
   MenuGroupSeparator,
   MenuTile,
   MenuTileGrid,
@@ -168,6 +169,7 @@ export function MultiSelectionContextMenu({
         );
         return (
           <>
+            <MenuGroupLabel>Placement</MenuGroupLabel>
             {/* Layer — front/back, opacity and (for boxed members) the
                   aspect-ratio lock, selection-wide, mirroring the single
                   menu's pinned-first Layer section. */}
@@ -254,7 +256,7 @@ export function MultiSelectionContextMenu({
                 </div>
               </MenuAccordionSection>
             ) : null}
-            <MenuGroupSeparator />
+            <MenuGroupSeparator label="Style" />
             {/* Presets (spec/48) — pinned at the top of the appearance group,
                   same as the single-element menu; applies to every matching
                   member of the selection. */}
@@ -440,7 +442,9 @@ export function MultiSelectionContextMenu({
               </MenuAccordionSection>
             ) : null}
             {/* ── Content group: Line / Pointer / Text ── */}
-            {showMultiContent && showMultiAppearance ? <MenuGroupSeparator /> : null}
+            {showMultiContent && showMultiAppearance ? (
+              <MenuGroupSeparator label="Content" />
+            ) : null}
             {arrowSrc ? (
               <>
                 <MenuAccordionSection title="Line" icon={<LineGlyph />} {...sectionProps('m-line')}>
