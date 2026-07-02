@@ -518,6 +518,42 @@ describe('rebindArrowAnchorsAfterMove', () => {
     expect(a2.from.kind === 'pinned' && a2.from.anchor).toBe('s');
   });
 
+  it('keeps a whole tree fan on the hub bottom, heads into the children TOPS', () => {
+    // The reported org-tree scenario: a hub with five children in a row
+    // below. The wide children's lines naturally rank the hub's SIDE faces
+    // and their own side faces first (the slab-ray grazes them), which
+    // scattered the fan sideways. The sibling vote keeps every exit on the
+    // hub's bottom edge (s, or its corners for near-parallel neighbours)
+    // and the pairing pass points every head into the child's TOP.
+    const hub: ShapeElement = {
+      id: 'hub',
+      type: 'shape',
+      shape: 'square',
+      x: -50,
+      y: -50,
+      width: 100,
+      height: 100,
+    };
+    const xs = [-450, -250, -50, 150, 350];
+    const children: ShapeElement[] = xs.map((x, i) => ({ ...hub, id: `c${i}`, x, y: 170 }));
+    const arrows: ArrowElement[] = children.map((c, i) => ({
+      id: `arr${i}`,
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
+      to: { kind: 'pinned', elementId: c.id, anchor: 'n' },
+    }));
+    const out = rebindArrowAnchorsAfterMove([hub, ...children, ...arrows], new Set(['hub']));
+    for (let i = 0; i < arrows.length; i++) {
+      const next = out.find((e) => e.id === `arr${i}`) as ArrowElement;
+      const fromAnchor = next.from.kind === 'pinned' ? next.from.anchor : '?';
+      const toAnchor = next.to.kind === 'pinned' ? next.to.anchor : '?';
+      // Every exit stays on the hub's bottom edge...
+      expect(['s', 'se', 'sw']).toContain(fromAnchor);
+      // ...and every head enters its child's top.
+      expect(toAnchor).toBe('n');
+    }
+  });
+
   it("separates genuinely PARALLEL arrows to the same face's corner, not a side face", () => {
     // Two targets almost straight below (near-parallel lines): sharing
     // south would stack them, so the second slides to the south CORNER on

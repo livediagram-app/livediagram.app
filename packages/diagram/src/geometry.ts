@@ -487,7 +487,43 @@ export function rebindArrowAnchorsAfterMove(
     list.push(p);
   }
   const assigned = new Map<string, Anchor>();
+  // Face normals, for "does this line actually leave through that face"
+  // half-plane checks (used by the sibling vote + pairing below).
+  const FACE_NORMALS: Record<Cardinal, { x: number; y: number }> = {
+    n: { x: 0, y: -1 },
+    s: { x: 0, y: 1 },
+    e: { x: 1, y: 0 },
+    w: { x: -1, y: 0 },
+  };
+  const leavesThrough = (dir: number, f: Cardinal) =>
+    Math.cos(dir) * FACE_NORMALS[f].x + Math.sin(dir) * FACE_NORMALS[f].y > 0.15;
   for (const [elementId, eps] of byElement) {
+    // Sibling consistency vote (spec/09): a fan of arrows from one element
+    // should leave through ONE face when they can (a tree fans from the
+    // hub's bottom), not scatter to whichever face each line's slab-ray
+    // grazes. The face most siblings naturally rank first wins, and every
+    // sibling whose line genuinely leaves through it (half-plane check)
+    // adopts it as its best — the share/corner resolution below then fans
+    // them along that face.
+    if (eps.length > 1) {
+      const votes = new Map<Cardinal, number>();
+      for (const p of eps) votes.set(p.ranked[0]!, (votes.get(p.ranked[0]!) ?? 0) + 1);
+      let dominant: Cardinal | null = null;
+      let max = 0;
+      for (const [f, n] of votes) {
+        if (n > max) {
+          max = n;
+          dominant = f;
+        }
+      }
+      if (dominant && max * 2 > eps.length) {
+        for (const p of eps) {
+          if (p.ranked[0] !== dominant && leavesThrough(p.dir, dominant)) {
+            p.ranked = [dominant, ...p.ranked.filter((f) => f !== dominant)];
+          }
+        }
+      }
+    }
     const taken = new Set<Anchor>(reserved.get(elementId) ?? []);
     const ordered = [...eps].sort((a, b) =>
       a.commitment === b.commitment
@@ -562,6 +598,48 @@ export function rebindArrowAnchorsAfterMove(
       taken.add(face);
       recordDir(elementId, isCardinal(face) ? face : chosenFace, p.dir);
       assigned.set(`${p.arrowId}:${p.end}`, face);
+    }
+  }
+
+  // Pairing pass (spec/09): a connector reads best when its two faces
+  // OPPOSE each other (s -> n, e -> w). When the two ends landed on
+  // different axes — a wide tree child's lone arrow ranks its side face
+  // first even though the hub end leaves through the bottom — re-align the
+  // UNCONTESTED end (its element has just this one plan and no reserved
+  // faces) to oppose the other end, provided its line genuinely leaves
+  // through that face and the detour is not wildly worse (<= 3x the exit
+  // time of its natural face).
+  const OPPOSITE: Record<Cardinal, Cardinal> = { n: 's', s: 'n', e: 'w', w: 'e' };
+  const faceOf = (a: Anchor): Cardinal =>
+    isCardinal(a) ? a : a === 'ne' || a === 'nw' ? 'n' : 's';
+  const planFor = new Map<string, EndPlan>();
+  for (const p of plans) planFor.set(`${p.arrowId}:${p.end}`, p);
+  for (const el of elements) {
+    if (el.type !== 'arrow' || !reassigning.has(el.id)) continue;
+    const fromKey = `${el.id}:from`;
+    const toKey = `${el.id}:to`;
+    const fromFace = assigned.get(fromKey);
+    const toFace = assigned.get(toKey);
+    if (!fromFace || !toFace) continue;
+    if (faceOf(fromFace) === OPPOSITE[faceOf(toFace)]) continue;
+    for (const [key, otherFace] of [
+      [toKey, fromFace],
+      [fromKey, toFace],
+    ] as const) {
+      const p = planFor.get(key);
+      if (!p) continue;
+      const siblings = byElement.get(p.elementId) ?? [];
+      const contested = siblings.length > 1 || (reserved.get(p.elementId)?.size ?? 0) > 0;
+      if (contested) continue;
+      const want = OPPOSITE[faceOf(otherFace)];
+      const current = assigned.get(key)!;
+      if (faceOf(current) === want) break;
+      if (!leavesThrough(p.dir, want)) continue;
+      const tWant = p.times[want];
+      const tCurrent = p.times[faceOf(current)];
+      if (!Number.isFinite(tWant) || tWant > tCurrent * 3) continue;
+      assigned.set(key, want);
+      break;
     }
   }
 
