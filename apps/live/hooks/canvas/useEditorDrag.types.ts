@@ -27,6 +27,10 @@ export type EditorDragDeps = {
   // truth).
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
+  // Drill-in selection (spec/09 groups): solo the clicked member of an
+  // already-selected group instead of re-selecting the whole group.
+  soloSelectedId: string | null;
+  setSoloSelectedId: (id: string | null) => void;
   multiSelectedIds: Set<string>;
   editingId: string | null;
   isReadOnly: boolean;

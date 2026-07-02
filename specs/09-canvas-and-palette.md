@@ -907,6 +907,8 @@ type BoxedElement = ... & { groupId?: ElementId };
 
 Clicking any group member selects the **whole group** — all members receive the selection treatment. The selection popover's bounds are the **union** of all members' bounds.
 
+**Drill-in (click-through) selection.** With the group already selected, a further click on a member selects **just that member** — the familiar click-into-group pattern — so one element's settings, label, or position can be changed without ungrouping and regrouping. While drilled in, the member behaves exactly like a single selection: its own handles, popover, context-menu categories, style setters, quick-connect pluses, drag, and delete all act on the member alone. Clicking another member of the same group moves the solo to it; clicking anything outside the group (or the empty canvas) resets to normal selection, and the next click on the group selects the whole group again. Internally this is a `soloSelectedId` beside `selectedId` (entered only by the canvas click path; every consumer treats a stale value as "not solo"), so member resolution (`memberIdsOf`, `deriveCanvasSelection`, the drag set) collapses to the single member while soloed.
+
 ### Operations on a group
 
 | Operation                     | Behaviour                                                                                                                                                                                                                                             |

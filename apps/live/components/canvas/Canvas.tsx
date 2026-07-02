@@ -77,6 +77,7 @@ export function Canvas(props: CanvasProps) {
     setViewportZoom,
     elements,
     selectedId,
+    soloSelectedId,
     multiSelectedIds,
     onSelectMarquee,
     canvasTool,
@@ -189,6 +190,7 @@ export function Canvas(props: CanvasProps) {
       deriveCanvasSelection({
         elements,
         selectedId,
+        soloSelectedId,
         multiSelectedIds,
         editingId,
         isPaintMode,
@@ -199,6 +201,7 @@ export function Canvas(props: CanvasProps) {
     [
       elements,
       selectedId,
+      soloSelectedId,
       multiSelectedIds,
       editingId,
       isPaintMode,

@@ -24,6 +24,10 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // and the Canvas consume them.
 export function useElementHelpers(opts: {
   selectedId: string | null;
+  // Drill-in selection (spec/09 groups): when equal to selectedId, the
+  // selection is just that member, so member resolution must NOT expand
+  // to the whole group.
+  soloSelectedId: string | null;
   activeId: string;
   activeTab: Tab;
   editsBlocked: boolean;
@@ -40,6 +44,7 @@ export function useElementHelpers(opts: {
 }) {
   const {
     selectedId,
+    soloSelectedId,
     activeId,
     activeTab,
     editsBlocked,
@@ -129,6 +134,9 @@ export function useElementHelpers(opts: {
 
   const memberIdsOf = (id: string | null): Set<string> => {
     if (!id) return new Set();
+    // A drilled-in group member stands alone: setters / delete / duplicate
+    // act on just it, not its whole group.
+    if (id === soloSelectedId && id === selectedId) return new Set([id]);
     return new Set(selectionMembers(activeTab.elements, id));
   };
 

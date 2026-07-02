@@ -44,6 +44,10 @@ export function useSelectionEditing(opts: {
     setFormatSourceId: SetState<string | null>;
     setGroupSourceId: SetState<string | null>;
     setSelectedId: SetState<string | null>;
+    // Cleared on plain selects: drill-in solo (spec/09 groups) is only
+    // entered by clicking a member of an already-selected group on the
+    // canvas (useBoxedDragHandlers.beginDrag).
+    setSoloSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
     // Type-to-edit (spec/09) seeds the label with the first typed char,
     // so the editor must place the caret at the END rather than
@@ -80,6 +84,7 @@ export function useSelectionEditing(opts: {
     setFormatSourceId,
     setGroupSourceId,
     setSelectedId,
+    setSoloSelectedId,
     setEditingId,
     setEditCursorAtEnd,
     setMultiSelectedIds,
@@ -239,6 +244,7 @@ export function useSelectionEditing(opts: {
       setGroupSourceId(null);
       return;
     }
+    setSoloSelectedId(null);
     setSelectedId(id);
     // Clicking a single element always collapses any active multi-selection
     // down to that one element — the user's intent is unambiguous.

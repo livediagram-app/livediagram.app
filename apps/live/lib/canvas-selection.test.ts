@@ -199,6 +199,20 @@ describe('deriveCanvasSelection', () => {
     expect(derive({ elements: grouped, selectedId: 'u', readOnly: true }).showPlus).toBe(false);
   });
 
+  it('a drilled-in (solo) group member behaves as a single selection', () => {
+    const els: Element[] = [box('a', { groupId: 'g' }), box('b', { x: 200, groupId: 'g' })];
+    const s = derive({ elements: els, selectedId: 'a', soloSelectedId: 'a' });
+    expect(s.memberIds).toEqual(new Set(['a']));
+    expect(s.selectionScope).toBe('single');
+    expect(s.showHandlesFor('a')).toBe(true); // single-element handles
+    expect(s.showUnionResize).toBe(false);
+    expect(s.selectionBounds).toEqual({ x: 0, y: 0, width: 100, height: 60 });
+    // A stale solo id (selection moved on) is ignored: group rules apply.
+    const stale = derive({ elements: els, selectedId: 'a', soloSelectedId: 'b' });
+    expect(stale.memberIds.size).toBe(2);
+    expect(stale.selectionScope).toBe('group');
+  });
+
   it('a marquee multi-selection still suppresses the pluses', () => {
     const els: Element[] = [box('a'), box('b', { x: 200 })];
     const s = derive({ elements: els, multiSelectedIds: new Set(['a', 'b']) });

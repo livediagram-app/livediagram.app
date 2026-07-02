@@ -56,6 +56,21 @@ export function useBoxedDragHandlers({
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
+    // Drill-in selection (spec/09 groups): if the click lands on a member
+    // of the group that is ALREADY selected (via any of its members), the
+    // selection narrows to just that member — so one element's settings /
+    // position can change without ungrouping. The first click on a group
+    // still selects the whole group; a click elsewhere resets the solo.
+    const current = d.selectedId
+      ? d.activeTab.elements.find((el) => el.id === d.selectedId)
+      : undefined;
+    const drillIn = !!(
+      element.groupId &&
+      current &&
+      isBoxed(current) &&
+      current.groupId === element.groupId
+    );
+    d.setSoloSelectedId(drillIn ? elementId : null);
     d.setSelectedId(elementId);
     // Selection above still lands so viewers can inspect; the drag
     // itself is blocked for a locked element or a read-only session.
@@ -65,10 +80,11 @@ export function useBoxedDragHandlers({
     // 'move' the whole set translates together, for 'resize-*' the
     // whole set scales together (members reposition + resize
     // proportionally around the corner opposite the drag handle). A
-    // bare single-element drag falls through to the singleton set.
+    // bare single-element drag falls through to the singleton set. A
+    // drilled-in member drags alone, like any single element.
     const baseIds = d.multiSelectedIds.has(elementId)
       ? d.multiSelectedIds
-      : element.groupId
+      : element.groupId && !drillIn
         ? new Set(selectionMembers(d.activeTab.elements, elementId))
         : new Set<string>([elementId]);
 

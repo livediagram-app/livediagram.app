@@ -220,6 +220,7 @@ export function EditorView() {
     savedAt,
     saveStatus,
     selectedId,
+    soloSelectedId,
     selectElement,
     connectSourceId,
     cancelConnect,
@@ -567,6 +568,7 @@ export function EditorView() {
         distGuides={distGuides}
         snapTargets={snapTargets}
         selectedId={selectedId}
+        soloSelectedId={soloSelectedId}
         multiSelectedIds={multiSelectedIds}
         remoteSelectionsByElement={remoteSelectionsByElement}
         remoteCursors={remoteCursorRows}

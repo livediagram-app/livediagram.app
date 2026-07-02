@@ -70,6 +70,9 @@ export type CanvasProps = {
   // a shape, so the user can see exactly where it will snap. Empty otherwise.
   snapTargets: SnapTarget[];
   selectedId: string | null;
+  // Drill-in selection (spec/09 groups): when equal to selectedId the
+  // selection is just that member, not its whole group.
+  soloSelectedId: string | null;
   multiSelectedIds: Set<string>;
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;

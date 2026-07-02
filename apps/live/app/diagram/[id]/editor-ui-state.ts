@@ -13,6 +13,13 @@ import { useState } from 'react';
 export function useEditorUiState(initialActiveId: string) {
   const [activeId, setActiveId] = useState<string>(() => initialActiveId);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Drill-in selection (spec/09 groups): when set AND equal to selectedId,
+  // the selection is just that member, NOT its whole group — clicking a
+  // member of an already-selected group narrows to it so its settings can
+  // change without ungrouping. Any other selection change leaves this
+  // stale (≠ selectedId), which every consumer treats as "not solo", so
+  // only the drill-in path ever needs to set it.
+  const [soloSelectedId, setSoloSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   // True when the active label edit began via type-to-edit (spec/09): the
   // editor places the caret at the END instead of select-all, so the
@@ -41,6 +48,8 @@ export function useEditorUiState(initialActiveId: string) {
     setActiveId,
     selectedId,
     setSelectedId,
+    soloSelectedId,
+    setSoloSelectedId,
     editingId,
     setEditingId,
     editCursorAtEnd,

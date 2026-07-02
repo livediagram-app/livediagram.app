@@ -52,6 +52,11 @@ type CanvasSelection = {
 export function deriveCanvasSelection(input: {
   elements: Element[];
   selectedId: string | null;
+  // Drill-in selection (spec/09 groups): when equal to selectedId, the
+  // selection is just that member — the chrome shows single-element
+  // handles / popover instead of the group's union box. Stale values
+  // (≠ selectedId) mean "not solo".
+  soloSelectedId?: string | null;
   multiSelectedIds: Set<string>;
   editingId: string | null;
   isPaintMode: boolean;
@@ -62,6 +67,7 @@ export function deriveCanvasSelection(input: {
   const {
     elements,
     selectedId,
+    soloSelectedId,
     multiSelectedIds,
     editingId,
     isPaintMode,
@@ -71,7 +77,9 @@ export function deriveCanvasSelection(input: {
   } = input;
 
   const memberIds = selectedId
-    ? new Set(selectionMembers(elements, selectedId))
+    ? soloSelectedId === selectedId
+      ? new Set([selectedId])
+      : new Set(selectionMembers(elements, selectedId))
     : new Set<string>();
   const multiPrimaryId =
     multiSelectedIds.size > 0
