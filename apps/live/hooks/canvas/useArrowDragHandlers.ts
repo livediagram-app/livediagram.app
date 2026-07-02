@@ -6,7 +6,9 @@ import {
   curveAnchorPoints,
   curveControlPoint,
   endpointPosition,
+  type ArrowElement,
 } from '@livediagram/diagram';
+import { track } from '@/lib/telemetry';
 import { distToSegment } from '@/lib/drag-geometry';
 import type { ArrowEnd, DragState } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';
@@ -58,6 +60,11 @@ export function useArrowDragHandlers({
     });
   };
 
+  // Where a shift-drag fork's tail sits on the trunk (spec/50): far enough
+  // along that the shared trunk dominates and the fork reads as a Y near the
+  // head, not a second arrow from the source.
+  const FORK_T = 0.7;
+
   const beginEndpointDrag = (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => {
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
@@ -65,6 +72,36 @@ export function useArrowDragHandlers({
     d.setSelectedId(arrowId);
     if (arrow.locked === true || d.isReadOnly) return;
     const start = endpointPosition(end === 'from' ? arrow.from : arrow.to, d.activeTab.elements);
+    // Shift-drag on the HEAD forks a branch (spec/50): the arrow itself
+    // stays put; a NEW arrow starts with its tail connected on this line
+    // (~70% along) and its head following the drag — one trunk pointing at
+    // several targets instead of parallel near-duplicate arrows. The branch
+    // inherits the trunk's line look so the fork reads as one connector.
+    if (e.shiftKey && end === 'to') {
+      const branch: ArrowElement = {
+        id: crypto.randomUUID(),
+        type: 'arrow',
+        from: { kind: 'on-arrow', arrowId, t: FORK_T },
+        to: { kind: 'free', x: start.x, y: start.y },
+        ...(arrow.strokeColor ? { strokeColor: arrow.strokeColor } : {}),
+        ...(arrow.strokeWidth !== undefined ? { strokeWidth: arrow.strokeWidth } : {}),
+        ...(arrow.strokeStyle ? { strokeStyle: arrow.strokeStyle } : {}),
+      };
+      d.commit((els) => [...els, branch]);
+      d.setSelectedId(branch.id);
+      track('Element', 'Added', 'Arrow');
+      arrowConnectTrackedRef.current = false;
+      setDrag({
+        kind: 'arrow-endpoint',
+        arrowId: branch.id,
+        end: 'to',
+        startClientX: e.clientX,
+        startClientY: e.clientY,
+        startCanvasX: start.x,
+        startCanvasY: start.y,
+      });
+      return;
+    }
     // Arm a checkpoint; it is taken on the first real mutation (tick).
     checkpointPendingRef.current = true;
     arrowConnectTrackedRef.current = false;

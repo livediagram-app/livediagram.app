@@ -23,6 +23,14 @@ lifeline moves.
   endpoint (live snap dots as you drag), and **drawing a new arrow** (the arrow
   tool, or a pencil-recognised line) — a fresh arrow's ends connect to a nearby
   line at commit, so you don't have to drop it and nudge it after.
+- **Shift-drag the arrow HEAD forks a branch** (spec/09): holding Shift while
+  grabbing a selected arrow's head handle leaves the arrow untouched and
+  instead starts a NEW arrow whose tail is an `on-arrow` connection at ~70%
+  along the trunk's line; the branch's head follows the drag and lands like
+  any new arrow (anchor / arrow / free). One trunk can then point at several
+  targets — a Y-fork instead of parallel near-duplicate arrows — and the
+  branch inherits the trunk's stroke colour / weight / pattern so the fork
+  reads as one connector. Repositioning (the plain drag) is unchanged.
 
 ## Model
 
