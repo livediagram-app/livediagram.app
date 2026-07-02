@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ParticipantPresence } from '@livediagram/api-schema';
 import { DiagramRoom } from './diagram-room';
 
@@ -6,11 +6,12 @@ import { DiagramRoom } from './diagram-room';
 // Most of its surface is straightforward fan-out, but two pieces carry
 // real security weight:
 //
-//   1. `handleSession` hello frames: the server-resolved role (set by
-//      the api worker at the upgrade) MUST overwrite whatever role the
-//      client typed into its own hello payload. A regression here lets
-//      a view-role visitor display itself as Editor in peer presence,
-//      and the live-app Viewer / Editor badges become spoofable.
+//   1. The hello frame: the server-resolved role (set by the api worker
+//      at the upgrade, pinned in the socket attachment) MUST overwrite
+//      whatever role the client typed into its own hello payload. A
+//      regression here lets a view-role visitor display itself as
+//      Editor in peer presence, and the live-app Viewer / Editor badges
+//      become spoofable.
 //
 //   2. `/broadcast` POST endpoint: the api worker calls this from the
 //      share-revoke handler to push a `share-revoked` op into the
@@ -20,59 +21,108 @@ import { DiagramRoom } from './diagram-room';
 //
 // Both go without alternative coverage today (no integration test
 // exercises the DO and the route-level tests stub the room entirely).
-// Pinned here with a fake-WebSocket shim because constructing real
-// WebSocketPair in node-vitest isn't worth the setup; the class only
-// touches send / accept / addEventListener / close on its sockets.
+// Pinned here with fake WebSocket + DurableObjectState shims because
+// constructing real WebSocketPair / hibernatable sockets in node-vitest
+// isn't worth the setup. The room uses the HIBERNATION API, so the shims
+// cover exactly what it touches: `send` / `serializeAttachment` /
+// `deserializeAttachment` on sockets, `acceptWebSocket` / `getWebSockets`
+// on the state, and events are driven by calling the class-level
+// `webSocketMessage` handler directly (which is precisely what the
+// runtime does after a hibernation wake).
 
-// Minimal stub the DO interacts with. Captures sent payloads + the
-// listeners it registers so each test can simulate inbound frames and
-// observe the resulting outbound traffic.
+// Minimal socket stub. Captures sent payloads plus the serialized
+// attachment (the hibernation-proof per-session store) so tests can
+// simulate inbound frames and inspect both outbound traffic and what
+// the room decided to persist.
 type FakeSocket = {
   send: (data: string) => void;
-  accept: () => void;
-  addEventListener: (type: string, listener: (event: { data?: string }) => void) => void;
+  serializeAttachment: (value: unknown) => void;
+  deserializeAttachment: () => unknown;
   sent: string[];
-  listeners: Record<string, ((event: { data?: string }) => void)[]>;
+  attachment: unknown;
   // Toggle to make the next `send()` throw, mimicking a closed WS so
-  // the DO's dead-session cleanup branch can be exercised.
+  // the DO's dead-socket cleanup branch can be exercised.
   failSend?: boolean;
 };
 
+// Fake DurableObjectState covering the two hibernation members the room
+// uses. `getWebSockets()` is the runtime-managed connected set; the fake
+// simply returns everything accepted (the real runtime also prunes
+// closed sockets — that pruning is the runtime's job, not the room's).
+type FakeState = {
+  sockets: WebSocket[];
+  acceptWebSocket: (ws: WebSocket) => void;
+  getWebSockets: () => WebSocket[];
+};
+
+const asWs = (s: FakeSocket) => s as unknown as WebSocket;
+
 function makeSocket(): FakeSocket {
   const sent: string[] = [];
-  const listeners: Record<string, ((event: { data?: string }) => void)[]> = {};
   const socket: FakeSocket = {
     sent,
-    listeners,
+    attachment: null,
     send: (data) => {
       if (socket.failSend) throw new Error('socket closed');
       sent.push(data);
     },
-    accept: () => {},
-    addEventListener: (type, listener) => {
-      (listeners[type] ??= []).push(listener);
+    serializeAttachment: (value) => {
+      socket.attachment = value;
     },
+    deserializeAttachment: () => socket.attachment,
   };
   return socket;
 }
 
-function newRoom(): DiagramRoom {
-  // DurableObjectState isn't read anywhere in the class body (only
-  // stored), so a bare cast suffices for unit coverage.
-  return new DiagramRoom({} as never);
+function makeState(): FakeState {
+  const state: FakeState = {
+    sockets: [],
+    acceptWebSocket: (ws) => {
+      state.sockets.push(ws);
+    },
+    getWebSockets: () => [...state.sockets],
+  };
+  return state;
+}
+
+function newRoom(): { room: DiagramRoom; state: FakeState } {
+  const state = makeState();
+  // Only acceptWebSocket / getWebSockets are read off the state, so the
+  // fake above suffices for unit coverage.
+  return { room: new DiagramRoom(state as unknown as DurableObjectState), state };
 }
 
 function presence(id: string, role?: 'edit' | 'view'): ParticipantPresence {
   return { id, name: `Name ${id}`, color: '#abc', role };
 }
 
+// Seed a fully-established session directly (attachment + connected set),
+// the hibernation-API equivalent of the old `sessions.set(ws, presence)`.
+function seedSession(state: FakeState, ws: FakeSocket, p: ParticipantPresence | null): void {
+  ws.attachment = { presenceId: p?.id ?? 'pre-hello', verifiedRole: p?.role, presence: p };
+  state.sockets.push(asWs(ws));
+}
+
+// What the room persisted for this socket (the attachment's presence).
+function storedPresence(ws: FakeSocket): ParticipantPresence | null {
+  return (ws.attachment as { presence: ParticipantPresence | null }).presence;
+}
+
+function sendFrame(room: DiagramRoom, ws: FakeSocket, frame: unknown): void {
+  room.webSocketMessage(asWs(ws), JSON.stringify(frame));
+}
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('DiagramRoom /broadcast endpoint', () => {
   it('fans the op out to every connected session with from: "system"', async () => {
-    const room = newRoom();
+    const { room, state } = newRoom();
     const a = makeSocket();
     const b = makeSocket();
-    room.sessions.set(a as unknown as WebSocket, presence('p-a', 'edit'));
-    room.sessions.set(b as unknown as WebSocket, presence('p-b', 'view'));
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'view'));
 
     const res = await room.fetch(
       new Request('https://room/broadcast', {
@@ -95,7 +145,7 @@ describe('DiagramRoom /broadcast endpoint', () => {
   });
 
   it('returns 400 when the body is not valid JSON', async () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const res = await room.fetch(
       new Request('https://room/broadcast', { method: 'POST', body: 'not json at all' }),
     );
@@ -103,7 +153,7 @@ describe('DiagramRoom /broadcast endpoint', () => {
   });
 
   it('returns 400 when the body parses but is missing the op field', async () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const res = await room.fetch(
       new Request('https://room/broadcast', {
         method: 'POST',
@@ -114,20 +164,23 @@ describe('DiagramRoom /broadcast endpoint', () => {
     expect(res.status).toBe(400);
   });
 
-  it('drops dead sessions on broadcast when their send throws', () => {
-    const room = newRoom();
+  it('sheds a dead socket rate entry when its send throws', () => {
+    const { room, state } = newRoom();
     const live = makeSocket();
     const dead = makeSocket();
     dead.failSend = true;
-    room.sessions.set(live as unknown as WebSocket, presence('p-live'));
-    room.sessions.set(dead as unknown as WebSocket, presence('p-dead'));
+    seedSession(state, live, presence('p-live'));
+    seedSession(state, dead, presence('p-dead'));
+    // Simulate an in-flight rate window for the dead peer: the entry must
+    // not leak once its socket dies. (Under hibernation the connected set
+    // itself is runtime-managed — getWebSockets() prunes closed sockets —
+    // so the rate map is the only room-owned state left to reap.)
+    room.opRates.set(asWs(dead), { count: 3, windowStart: Date.now() });
 
     room.broadcastSystemOp({ kind: 'share-revoked', code: 'X' });
 
     expect(live.sent).toHaveLength(1);
-    expect(room.sessions.has(live as unknown as WebSocket)).toBe(true);
-    // The dead session is reaped so a second broadcast doesn't re-throw.
-    expect(room.sessions.has(dead as unknown as WebSocket)).toBe(false);
+    expect(room.opRates.has(asWs(dead))).toBe(false);
   });
 });
 
@@ -137,11 +190,11 @@ describe('DiagramRoom presence broadcast', () => {
   // by id to filter it — including it makes the user show up as a participant
   // twice (once here, once from the local self entry the editor always renders).
   it('sends each client the roster minus its own entry', () => {
-    const room = newRoom();
+    const { room, state } = newRoom();
     const a = makeSocket();
     const b = makeSocket();
-    room.sessions.set(a as unknown as WebSocket, presence('p-a', 'edit'));
-    room.sessions.set(b as unknown as WebSocket, presence('p-b', 'view'));
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'view'));
 
     room.broadcastPresence();
 
@@ -154,12 +207,12 @@ describe('DiagramRoom presence broadcast', () => {
   });
 
   it('omits sessions that have not said hello yet (null presence)', () => {
-    const room = newRoom();
+    const { room, state } = newRoom();
     const a = makeSocket();
     const b = makeSocket();
-    room.sessions.set(a as unknown as WebSocket, presence('p-a'));
+    seedSession(state, a, presence('p-a'));
     // Connected but no hello yet: invisible to peers and shows no one itself.
-    room.sessions.set(b as unknown as WebSocket, null);
+    seedSession(state, b, null);
 
     room.broadcastPresence();
 
@@ -168,11 +221,30 @@ describe('DiagramRoom presence broadcast', () => {
     expect(aFrame.participants).toEqual([]);
     expect(bFrame.participants.map((p) => p.id)).toEqual(['p-a']);
   });
+
+  it('excludes a departing socket from the roster it announces on close', () => {
+    const { room, state } = newRoom();
+    const leaver = makeSocket();
+    const stayer = makeSocket();
+    seedSession(state, leaver, presence('p-leaver', 'edit'));
+    seedSession(state, stayer, presence('p-stayer', 'edit'));
+    room.opRates.set(asWs(leaver), { count: 1, windowStart: Date.now() });
+
+    // The runtime may not have pruned the closing socket from
+    // getWebSockets() yet when webSocketClose fires (the fake never
+    // prunes), so the room must exclude it explicitly.
+    room.webSocketClose(asWs(leaver));
+
+    const frame = JSON.parse(stayer.sent.at(-1)!) as { participants: ParticipantPresence[] };
+    expect(frame.participants).toEqual([]);
+    // The close handler is also the rate-map cleanup point.
+    expect(room.opRates.has(asWs(leaver))).toBe(false);
+  });
 });
 
 describe('DiagramRoom non-WebSocket upgrades', () => {
   it('rejects plain HTTP requests on the WS path with 426', async () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const res = await room.fetch(new Request('https://room/ws'));
     expect(res.status).toBe(426);
   });
@@ -180,25 +252,22 @@ describe('DiagramRoom non-WebSocket upgrades', () => {
 
 describe('DiagramRoom hello frame role forcing', () => {
   it('overrides whatever role the client claims with the server-resolved role', () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const ws = makeSocket();
     // The api worker forwards X-Verified-Role='view' when the visitor
-    // joined with a view-only share code; the DO reads it and stamps
-    // it onto presence regardless of what the client claims below.
-    room.handleSession(ws as unknown as WebSocket, 'view');
+    // joined with a view-only share code; the DO reads it at the upgrade,
+    // pins it in the socket attachment, and stamps it onto presence
+    // regardless of what the client claims below.
+    room.acceptSession(asWs(ws), 'view');
 
     // Client tries to claim 'edit' (the spoof attempt that justified
     // the role-forcing in the first place).
-    const handler = ws.listeners['message']?.[0];
-    expect(handler).toBeDefined();
-    handler!({
-      data: JSON.stringify({
-        kind: 'hello',
-        participant: { id: 'lying-peer', name: 'L', color: '#000', role: 'edit' },
-      }),
+    sendFrame(room, ws, {
+      kind: 'hello',
+      participant: { id: 'lying-peer', name: 'L', color: '#000', role: 'edit' },
     });
 
-    const stored = room.sessions.get(ws as unknown as WebSocket);
+    const stored = storedPresence(ws);
     expect(stored?.role).toBe('view');
     // The client-claimed id is replaced by a server-assigned ephemeral id
     // (spec/61 §6), so the spoofed value never reaches presence.
@@ -207,38 +276,34 @@ describe('DiagramRoom hello frame role forcing', () => {
   });
 
   it('replaces the client participant id with a server-assigned ephemeral id', () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const ws = makeSocket();
     // The DO assigns each session a fresh ephemeral presence id (spec/61 §6):
     // the real owner id is never broadcast, and a client can't impersonate
     // another peer because its claimed id is discarded.
-    room.handleSession(ws as unknown as WebSocket, 'edit');
+    room.acceptSession(asWs(ws), 'edit');
 
-    ws.listeners['message']?.[0]?.({
-      data: JSON.stringify({
-        kind: 'hello',
-        participant: { id: 'victim-peer-id', name: 'L', color: '#000' },
-      }),
+    sendFrame(room, ws, {
+      kind: 'hello',
+      participant: { id: 'victim-peer-id', name: 'L', color: '#000' },
     });
 
-    const stored = room.sessions.get(ws as unknown as WebSocket);
+    const stored = storedPresence(ws);
     expect(stored?.id).not.toBe('victim-peer-id');
     expect(stored?.id).toBeTruthy();
   });
 
   it('leaves role undefined when the upgrade carried no X-Verified-Role', () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const ws = makeSocket();
-    room.handleSession(ws as unknown as WebSocket);
+    room.acceptSession(asWs(ws));
 
-    ws.listeners['message']?.[0]?.({
-      data: JSON.stringify({
-        kind: 'hello',
-        participant: { id: 'p', name: 'P', color: '#fff', role: 'edit' },
-      }),
+    sendFrame(room, ws, {
+      kind: 'hello',
+      participant: { id: 'p', name: 'P', color: '#fff', role: 'edit' },
     });
 
-    const stored = room.sessions.get(ws as unknown as WebSocket);
+    const stored = storedPresence(ws);
     // Owner sessions (no share code, just X-Owner-Id match) intentionally
     // arrive with no verified role; the editor surfaces no peer badge
     // for them rather than defaulting to 'edit', so this null case
@@ -246,28 +311,41 @@ describe('DiagramRoom hello frame role forcing', () => {
     expect(stored?.role).toBeUndefined();
   });
 
+  it('clamps an oversized hello name so the attachment stays under the size limit', () => {
+    const { room } = newRoom();
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit');
+
+    // serializeAttachment enforces a small per-socket limit, so the room
+    // length-clamps hello fields before persisting them. Without the
+    // clamp a hostile hello could make the persist throw.
+    sendFrame(room, ws, {
+      kind: 'hello',
+      participant: { id: 'p', name: 'x'.repeat(5000), color: '#fff' },
+    });
+
+    const stored = storedPresence(ws);
+    expect(stored?.name).toHaveLength(120);
+  });
+
   it('forwards op messages to peers but never echoes back to the sender', () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const sender = makeSocket();
     const peer = makeSocket();
-    room.handleSession(sender as unknown as WebSocket, 'edit');
-    room.handleSession(peer as unknown as WebSocket, 'view');
+    room.acceptSession(asWs(sender), 'edit');
+    room.acceptSession(asWs(peer), 'view');
 
-    // Sender introduces itself; the peer must be in the session map
-    // already (handleSession seeds it as null) so the op handler can
-    // find a recipient. The hello also registers `sender` properly so
+    // Sender introduces itself; the peer must already be in the connected
+    // set (acceptSession admits it with a null presence) so the op handler
+    // can find a recipient. The hello also registers `sender` properly so
     // the op handler can derive a non-null `from`.
-    sender.listeners['message']?.[0]?.({
-      data: JSON.stringify({
-        kind: 'hello',
-        participant: { id: 'sender', name: 'S', color: '#abc' },
-      }),
+    sendFrame(room, sender, {
+      kind: 'hello',
+      participant: { id: 'sender', name: 'S', color: '#abc' },
     });
-    peer.listeners['message']?.[0]?.({
-      data: JSON.stringify({
-        kind: 'hello',
-        participant: { id: 'peer', name: 'P', color: '#def' },
-      }),
+    sendFrame(room, peer, {
+      kind: 'hello',
+      participant: { id: 'peer', name: 'P', color: '#def' },
     });
 
     // Reset captured frames AFTER the hello presence broadcasts so the
@@ -275,9 +353,7 @@ describe('DiagramRoom hello frame role forcing', () => {
     sender.sent.length = 0;
     peer.sent.length = 0;
 
-    sender.listeners['message']?.[0]?.({
-      data: JSON.stringify({ kind: 'op', op: { kind: 'cursor', tabId: 't', x: 1, y: 2 } }),
-    });
+    sendFrame(room, sender, { kind: 'op', op: { kind: 'cursor', tabId: 't', x: 1, y: 2 } });
 
     // Sender must not see its own op (echo would re-render its cursor
     // for itself, and worse, fight with whatever local-first state the
@@ -288,21 +364,19 @@ describe('DiagramRoom hello frame role forcing', () => {
     expect(payload.kind).toBe('op');
     // `from` is the sender's server-assigned ephemeral id (not the claimed
     // 'sender'), so peers still get a stable per-session attribution key.
-    const senderId = room.sessions.get(sender as unknown as WebSocket)?.id;
+    const senderId = storedPresence(sender)?.id;
     expect(payload.from).toBe(senderId);
     expect(payload.from).not.toBe('sender');
   });
 
   it('ignores op messages from a session that never sent hello', () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const ws = makeSocket();
     const peer = makeSocket();
-    room.handleSession(ws as unknown as WebSocket, 'edit');
-    room.handleSession(peer as unknown as WebSocket, 'edit');
+    room.acceptSession(asWs(ws), 'edit');
+    room.acceptSession(asWs(peer), 'edit');
 
-    ws.listeners['message']?.[0]?.({
-      data: JSON.stringify({ kind: 'op', op: { kind: 'cursor', tabId: 't', x: 0, y: 0 } }),
-    });
+    sendFrame(room, ws, { kind: 'op', op: { kind: 'cursor', tabId: 't', x: 0, y: 0 } });
 
     // Without a hello, the sender has no participant id, so the op
     // can't be attributed and gets dropped silently. Critical because
@@ -317,15 +391,11 @@ describe('DiagramRoom op-role enforcement', () => {
   // role, returning a `sendOp` that pushes an op frame from it.
   function connect(room: DiagramRoom, id: string, role?: 'edit' | 'view') {
     const ws = makeSocket();
-    room.handleSession(ws as unknown as WebSocket, role);
-    const handler = ws.listeners['message']![0]!;
-    handler({
-      data: JSON.stringify({ kind: 'hello', participant: { id, name: id, color: '#000' } }),
-    });
+    room.acceptSession(asWs(ws), role);
+    sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
     return {
       ws,
-      sendOp: () =>
-        handler({ data: JSON.stringify({ kind: 'op', op: { kind: 'move', id, x: 1 } }) }),
+      sendOp: () => sendFrame(room, ws, { kind: 'op', op: { kind: 'move', id, x: 1 } }),
     };
   }
 
@@ -334,7 +404,7 @@ describe('DiagramRoom op-role enforcement', () => {
   }
 
   it('relays an op from an edit-role session to peers', () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
     const viewer = connect(room, 'viewer', 'view');
     editor.ws.sent.length = 0;
@@ -346,7 +416,7 @@ describe('DiagramRoom op-role enforcement', () => {
   });
 
   it('drops an op from a view-role session so it never reaches peers', () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
     const viewer = connect(room, 'viewer', 'view');
     editor.ws.sent.length = 0;
@@ -360,7 +430,7 @@ describe('DiagramRoom op-role enforcement', () => {
   });
 
   it('drops ops from a session the upgrade admitted with no role', () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
     const noRole = connect(room, 'no-role', undefined);
     editor.ws.sent.length = 0;
@@ -375,31 +445,78 @@ describe('DiagramRoom op-role enforcement', () => {
   // to peers — no cursor, no selection highlight, no "which tab they're on".
   for (const kind of ['cursor', 'select', 'tab-focus', 'laser'] as const) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
-      const room = newRoom();
+      const { room } = newRoom();
       const editor = connect(room, 'editor', 'edit');
       const viewer = connect(room, 'viewer', 'view');
       editor.ws.sent.length = 0;
 
-      viewer.ws.listeners['message']![0]!({
-        data: JSON.stringify({ kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } }),
-      });
+      sendFrame(room, viewer.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
 
       expect(opsReceived(editor.ws)).toHaveLength(1);
     });
   }
 
   it('still drops a mutation op from a view-role session', () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
     const viewer = connect(room, 'viewer', 'view');
     editor.ws.sent.length = 0;
 
     // A view-only visitor must not inject canvas edits into peers.
-    viewer.ws.listeners['message']![0]!({
-      data: JSON.stringify({ kind: 'op', op: { kind: 'tab', tabId: 't', tab: {} } }),
-    });
+    sendFrame(room, viewer.ws, { kind: 'op', op: { kind: 'tab', tabId: 't', tab: {} } });
 
     expect(opsReceived(editor.ws)).toHaveLength(0);
+  });
+
+  it("never relays 'share-revoked' from a client socket, even at edit role", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const victim = connect(room, 'victim', 'view');
+    victim.ws.sent.length = 0;
+
+    // share-revoked is system-only (worker /broadcast). An edit-role peer
+    // forging it with the code from their own URL would force-redirect
+    // every collaborator out of the session.
+    sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'share-revoked', code: 'CODE-1' } });
+
+    expect(opsReceived(victim.ws)).toHaveLength(0);
+  });
+
+  it('drops frames over the size cap before they fan out', () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const peer = connect(room, 'peer', 'edit');
+    peer.ws.sent.length = 0;
+
+    // Ops re-broadcast opaquely to every peer, so an uncapped frame lets
+    // one socket fan a multi-MB payload out to the whole room.
+    room.webSocketMessage(
+      asWs(editor.ws),
+      JSON.stringify({
+        kind: 'op',
+        op: { kind: 'cursor', tabId: 'x'.repeat(300 * 1024), x: 1, y: 2 },
+      }),
+    );
+
+    expect(opsReceived(peer.ws)).toHaveLength(0);
+  });
+
+  it('caps the per-session frame rate inside one sliding window', () => {
+    // Freeze the clock so every frame lands in a single 1s window and the
+    // over-cap count is deterministic.
+    vi.spyOn(Date, 'now').mockReturnValue(1_000_000);
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const peer = connect(room, 'peer', 'edit');
+    peer.ws.sent.length = 0;
+
+    // The hello above consumed 1 slot of the 240-frame window, so of 300
+    // ops only 239 relay; the rest silently drop (no disconnect).
+    for (let i = 0; i < 300; i++) {
+      sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'cursor', tabId: 't', x: i, y: 0 } });
+    }
+
+    expect(opsReceived(peer.ws)).toHaveLength(239);
   });
 });
 
@@ -409,30 +526,73 @@ describe('DiagramRoom tab-focus presence echo', () => {
   // session's current tab and echo it in presence, or joiners default
   // existing peers to the first tab until they next switch (the bug).
   it("remembers a session's tab-focus and echoes it in later presence frames", () => {
-    const room = newRoom();
+    const { room } = newRoom();
     const a = makeSocket();
-    room.handleSession(a as unknown as WebSocket, 'edit');
-    const aHandler = a.listeners['message']![0]!;
-    aHandler({
-      data: JSON.stringify({ kind: 'hello', participant: { id: 'p-a', name: 'A', color: '#abc' } }),
-    });
-    aHandler({ data: JSON.stringify({ kind: 'op', op: { kind: 'tab-focus', tabId: 'tab-2' } }) });
+    room.acceptSession(asWs(a), 'edit');
+    sendFrame(room, a, { kind: 'hello', participant: { id: 'p-a', name: 'A', color: '#abc' } });
+    sendFrame(room, a, { kind: 'op', op: { kind: 'tab-focus', tabId: 'tab-2' } });
 
-    // Stored on the session presence so future broadcasts carry it.
-    expect(room.sessions.get(a as unknown as WebSocket)?.tabId).toBe('tab-2');
+    // Persisted into the session ATTACHMENT (not memory) so future
+    // broadcasts still carry it after a hibernation cycle.
+    expect(storedPresence(a)?.tabId).toBe('tab-2');
 
     // A second peer joining triggers a presence broadcast; the frame it
     // receives must report A on tab-2, not the first-tab default.
     const b = makeSocket();
-    room.handleSession(b as unknown as WebSocket, 'edit');
-    b.listeners['message']![0]!({
-      data: JSON.stringify({ kind: 'hello', participant: { id: 'p-b', name: 'B', color: '#def' } }),
-    });
+    room.acceptSession(asWs(b), 'edit');
+    sendFrame(room, b, { kind: 'hello', participant: { id: 'p-b', name: 'B', color: '#def' } });
     // A's broadcast id is its server-assigned ephemeral id (spec/61 §6), not
     // the claimed 'p-a' — find its row by the stored id.
-    const aId = room.sessions.get(a as unknown as WebSocket)?.id;
+    const aId = storedPresence(a)?.id;
     const presenceFrames = b.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'presence');
     const aRow = presenceFrames.at(-1)!.participants.find((p: { id: string }) => p.id === aId);
     expect(aRow?.tabId).toBe('tab-2');
+  });
+});
+
+describe('DiagramRoom hibernation survival', () => {
+  // The whole point of the hibernation migration: the runtime may evict
+  // the DO between messages and re-construct it on the next frame. All
+  // per-session state (ephemeral id, verified role, presence incl. the
+  // remembered tab) must come back off the socket attachments; only the
+  // rate window resets. Simulated here by building a SECOND DiagramRoom
+  // over the same state + sockets — exactly what a wake-from-hibernation
+  // does — and asserting behaviour is unchanged.
+  it('keeps identity, role, and tab across a simulated eviction', () => {
+    const state = makeState();
+    const before = new DiagramRoom(state as unknown as DurableObjectState);
+    const viewer = makeSocket();
+    const editor = makeSocket();
+    before.acceptSession(asWs(viewer), 'view');
+    before.acceptSession(asWs(editor), 'edit');
+    sendFrame(before, viewer, {
+      kind: 'hello',
+      participant: { id: 'v', name: 'V', color: '#111' },
+    });
+    sendFrame(before, editor, {
+      kind: 'hello',
+      participant: { id: 'e', name: 'E', color: '#222' },
+    });
+    sendFrame(before, editor, { kind: 'op', op: { kind: 'tab-focus', tabId: 'tab-9' } });
+    const editorId = storedPresence(editor)?.id;
+
+    // --- hibernation: in-memory state is gone, attachments survive ---
+    const after = new DiagramRoom(state as unknown as DurableObjectState);
+    viewer.sent.length = 0;
+    editor.sent.length = 0;
+
+    // The viewer still can't inject a mutation op (verified role survived) ...
+    sendFrame(after, viewer, { kind: 'op', op: { kind: 'tab', tabId: 't', tab: {} } });
+    expect(editor.sent).toHaveLength(0);
+    // ... the editor still relays under the SAME ephemeral id ...
+    sendFrame(after, editor, { kind: 'op', op: { kind: 'cursor', tabId: 't', x: 1, y: 2 } });
+    const relayed = JSON.parse(viewer.sent.at(-1)!);
+    expect(relayed.from).toBe(editorId);
+    // ... and the remembered tab still reaches late joiners via presence.
+    const joiner = makeSocket();
+    after.acceptSession(asWs(joiner), 'edit');
+    sendFrame(after, joiner, { kind: 'hello', participant: { id: 'j', name: 'J', color: '#333' } });
+    const frame = JSON.parse(joiner.sent.at(-1)!) as { participants: ParticipantPresence[] };
+    expect(frame.participants.find((p) => p.id === editorId)?.tabId).toBe('tab-9');
   });
 });
