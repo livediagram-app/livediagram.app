@@ -9,7 +9,7 @@ import {
   type Anchor,
 } from '@livediagram/diagram';
 import type { QuickConnectDirection } from '@/lib/canvas';
-import { quickConnectSourceId } from '@/lib/quick-connect-source';
+import { quickConnectGroupStart, quickConnectSourceId } from '@/lib/quick-connect-source';
 import { track } from '@/lib/telemetry';
 import {
   getTheme,
@@ -310,6 +310,7 @@ export function EditorView() {
     openCellLinkPicker,
     setMultiSelectedIds,
     setOpacitySelected,
+    setIconSizeSelected,
     setPaddingSelected,
     setPalettePosition,
     setSearchOpen,
@@ -421,19 +422,23 @@ export function EditorView() {
   // end), reusing addArrow's connect-from-selection path.
   const handleStartArrow = (direction: QuickConnectDirection, e: ReactPointerEvent) => {
     if (selectedId === null) return;
-    // On a group the pluses ring the union bounds, so pin the arrow to the
-    // member nearest the picked side (a lone element resolves to itself).
+    // On a group the pluses ring the union bounds: the arrow starts FREE at
+    // the picked side's centre (the plus position — there's no element to pin
+    // to on the union box), inheriting its stroke from the member nearest
+    // that side. A lone element pins to its own anchor as ever.
     const sourceId = quickConnectSourceId(activeTab.elements, selectedId, direction);
+    const fromPoint =
+      quickConnectGroupStart(activeTab.elements, selectedId, direction) ?? undefined;
     const anchor: Anchor =
       direction === 'right' ? 'e' : direction === 'left' ? 'w' : direction === 'below' ? 's' : 'n';
     if (e.pointerType === 'touch') {
       // Touch: drop a free arrow running straight out from the anchor (~50px)
       // and select it, so the user can drag it where they want — no
       // tap-target step.
-      beginAnchorDrag(sourceId, anchor, e, { placeOutPx: 50 });
+      beginAnchorDrag(sourceId, anchor, e, { placeOutPx: 50, fromPoint });
       return;
     }
-    beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true });
+    beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true, fromPoint });
   };
   return (
     <div className="flex h-dvh flex-col">
@@ -1016,6 +1021,7 @@ export function EditorView() {
           onRemoveImage={removeImageFromElement}
           onRemoveLink={() => applyElementLink(null)}
           onSetIconPosition={dropIconOnElement}
+          onSetIconSize={setIconSizeSelected}
           onBringToFront={bringSelectedToFront}
           onSendToBack={sendSelectedToBack}
           onToggleAspectLock={toggleAspectLockSelected}

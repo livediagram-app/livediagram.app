@@ -424,9 +424,12 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
 
     // Text: drop a text element to the side and open it for editing — but
     // do NOT connect it with an arrow (a caption / label next to a node
-    // isn't a flow edge, so a connector would be noise).
+    // isn't a flow edge, so a connector would be noise). Spawned from a
+    // GROUP's plus ring, the text joins the group (spec/09): an element you
+    // grow a group by belongs to it, so it moves / locks with the rest.
     if (kind === 'text') {
-      const text = createText(baseBounds.x + dx, baseBounds.y + dy);
+      const created = createText(baseBounds.x + dx, baseBounds.y + dy);
+      const text = source.groupId !== undefined ? { ...created, groupId: source.groupId } : created;
       commit((els) => [...els, text]);
       setSelectedId(text.id);
       setEditingId(text.id);

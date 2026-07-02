@@ -116,13 +116,21 @@ export function useBoxedDragHandlers({
     elementId: string,
     anchor: Anchor,
     e: ReactPointerEvent,
-    opts?: { clickToPlace?: boolean; placeOutPx?: number },
+    // `fromPoint` (spec/09 group quick-connect): start the arrow as a FREE
+    // endpoint at this canvas point instead of pinning to the element's
+    // anchor — the group plus buttons sit on the union bounds, where there is
+    // no element to pin to, and the arrow should visibly leave the group's
+    // side centre. `elementId` still supplies the inherited stroke.
+    opts?: { clickToPlace?: boolean; placeOutPx?: number; fromPoint?: { x: number; y: number } },
   ) => {
     const d = depsRef.current;
     if (d.formatSourceId !== null || d.groupSourceId !== null || d.formatToolActive) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
-    const start = anchorPosition(element, anchor);
+    const start = opts?.fromPoint ?? anchorPosition(element, anchor);
+    const fromEnd: ArrowElement['from'] = opts?.fromPoint
+      ? { kind: 'free', x: start.x, y: start.y }
+      : { kind: 'pinned', elementId, anchor };
     // A connector drawn FROM a shape inherits that shape's stroke so it
     // visually belongs with it — and so it respects whatever theme the
     // shape already carries (the tab's `theme` field can lag a recolour,
@@ -148,7 +156,7 @@ export function useBoxedDragHandlers({
       const placed: ArrowElement = {
         id: crypto.randomUUID(),
         type: 'arrow',
-        from: { kind: 'pinned', elementId, anchor },
+        from: fromEnd,
         to: {
           kind: 'free',
           x: start.x + dir.x * opts.placeOutPx,
@@ -164,7 +172,7 @@ export function useBoxedDragHandlers({
     const arrow: ArrowElement = {
       id: crypto.randomUUID(),
       type: 'arrow',
-      from: { kind: 'pinned', elementId, anchor },
+      from: fromEnd,
       to: { kind: 'free', x: start.x, y: start.y },
       ...(inheritedStroke ? { strokeColor: inheritedStroke } : {}),
     };

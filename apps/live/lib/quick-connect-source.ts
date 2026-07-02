@@ -17,6 +17,21 @@ function sideMidpoint(b: Bounds, direction: QuickConnectDirection) {
   };
 }
 
+// Where a quick-connect arrow drawn from a GROUP should start: the midpoint
+// of the union bounds' picked side (the plus button's own position), so the
+// arrow visibly leaves the group's edge centre rather than some member's
+// anchor. Null for a lone element, whose arrow pins to its anchor as ever.
+export function quickConnectGroupStart(
+  elements: Element[],
+  selectedId: string,
+  direction: QuickConnectDirection,
+): { x: number; y: number } | null {
+  const memberIds = selectionMembers(elements, selectedId);
+  if (memberIds.length <= 1) return null;
+  const bounds = unionBoxedBounds(elements, new Set(memberIds));
+  return bounds ? sideMidpoint(bounds, direction) : null;
+}
+
 export function quickConnectSourceId(
   elements: Element[],
   selectedId: string,

@@ -1,6 +1,6 @@
 import { type Element, type ShapeElement } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
-import { quickConnectSourceId } from './quick-connect-source';
+import { quickConnectGroupStart, quickConnectSourceId } from './quick-connect-source';
 
 const box = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -36,5 +36,15 @@ describe('quickConnectSourceId', () => {
     const els: Element[] = [box('top', { groupId: 'g' }), box('bottom', { y: 300, groupId: 'g' })];
     expect(quickConnectSourceId(els, 'top', 'below')).toBe('bottom');
     expect(quickConnectSourceId(els, 'bottom', 'above')).toBe('top');
+  });
+});
+
+describe('quickConnectGroupStart', () => {
+  it('returns the union side midpoint for a group, null for a lone element', () => {
+    const els: Element[] = [box('a', { groupId: 'g' }), box('b', { x: 300, groupId: 'g' })];
+    // Union spans x 0..400, y 0..60.
+    expect(quickConnectGroupStart(els, 'a', 'right')).toEqual({ x: 400, y: 30 });
+    expect(quickConnectGroupStart(els, 'a', 'below')).toEqual({ x: 200, y: 60 });
+    expect(quickConnectGroupStart([box('solo')], 'solo', 'right')).toBeNull();
   });
 });

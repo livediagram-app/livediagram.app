@@ -124,7 +124,7 @@ export type EditorDragApi = {
     elementId: string,
     anchor: Anchor,
     e: ReactPointerEvent,
-    opts?: { clickToPlace?: boolean; placeOutPx?: number },
+    opts?: { clickToPlace?: boolean; placeOutPx?: number; fromPoint?: { x: number; y: number } },
   ) => void;
   beginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
   beginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
