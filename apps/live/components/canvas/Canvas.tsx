@@ -719,6 +719,10 @@ export function Canvas(props: CanvasProps) {
         className={`absolute inset-0 origin-center touch-none ${
           canvasTool === 'spotlight' || canvasTool === 'isometric' ? 'pointer-events-none' : ''
         } ${pendingDraw ? '' : cursorClass}`}
+        // Scopes the [data-iso] CSS (globals.css): frames settle just under
+        // the base plane while the camera orbits so they can't z-fight
+        // (flicker) with the coplanar contents above them.
+        data-iso={canvasTool === 'isometric' ? '' : undefined}
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.

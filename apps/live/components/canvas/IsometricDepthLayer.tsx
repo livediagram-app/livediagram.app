@@ -38,49 +38,57 @@ export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
       style={{ transformStyle: 'preserve-3d' }}
       aria-hidden
     >
-      {elements.filter(isBoxed).map((el) => {
-        const color = wallColor(el);
-        // Clip each extruded layer to the shape's own silhouette (circle,
-        // diamond, cylinder, …) so the column follows the outline instead of
-        // the bounding rectangle. Non-shape boxed elements (text / sticky /
-        // image / table / …) and shapes without a silhouette entry keep the
-        // default rounded rectangle.
-        const silhouette = el.type === 'shape' ? isoShapeSilhouette(el.shape) : {};
-        const layerRadius = silhouette.borderRadius;
-        // Computed once per element: a clip-path or explicit border-radius
-        // drives the silhouette, otherwise the default rounded rectangle.
-        const layerClass =
-          layerRadius === undefined ? 'absolute inset-0 rounded-md' : 'absolute inset-0';
-        return (
-          <div
-            key={el.id}
-            className="absolute"
-            style={{
-              left: el.x,
-              top: el.y,
-              width: el.width,
-              height: el.height,
-              transformStyle: 'preserve-3d',
-            }}
-          >
-            {DEPTH_LAYERS.map((z, i) => (
-              <div
-                key={i}
-                className={layerClass}
-                style={{
-                  transform: `translateZ(${z}px)`,
-                  background: color,
-                  clipPath: silhouette.clipPath,
-                  borderRadius: layerRadius,
-                  // Dim the element's colour toward the floor so the wall
-                  // reads with ambient shading instead of a flat tint.
-                  filter: `brightness(${isoLayerBrightness(i, DEPTH_LAYERS.length)})`,
-                }}
-              />
-            ))}
-          </div>
-        );
-      })}
+      {elements
+        .filter(isBoxed)
+        // Frames are section BACKDROPS, not solid blocks: extruding one
+        // raises a huge column of near-coplanar slabs under everything
+        // inside it, which z-fights with the contents while the camera
+        // orbits (the reported frame flicker). They stay flat on the
+        // floor plane (nudged just below it — see globals.css [data-iso]).
+        .filter((el) => !(el.type === 'shape' && el.shape === 'frame'))
+        .map((el) => {
+          const color = wallColor(el);
+          // Clip each extruded layer to the shape's own silhouette (circle,
+          // diamond, cylinder, …) so the column follows the outline instead of
+          // the bounding rectangle. Non-shape boxed elements (text / sticky /
+          // image / table / …) and shapes without a silhouette entry keep the
+          // default rounded rectangle.
+          const silhouette = el.type === 'shape' ? isoShapeSilhouette(el.shape) : {};
+          const layerRadius = silhouette.borderRadius;
+          // Computed once per element: a clip-path or explicit border-radius
+          // drives the silhouette, otherwise the default rounded rectangle.
+          const layerClass =
+            layerRadius === undefined ? 'absolute inset-0 rounded-md' : 'absolute inset-0';
+          return (
+            <div
+              key={el.id}
+              className="absolute"
+              style={{
+                left: el.x,
+                top: el.y,
+                width: el.width,
+                height: el.height,
+                transformStyle: 'preserve-3d',
+              }}
+            >
+              {DEPTH_LAYERS.map((z, i) => (
+                <div
+                  key={i}
+                  className={layerClass}
+                  style={{
+                    transform: `translateZ(${z}px)`,
+                    background: color,
+                    clipPath: silhouette.clipPath,
+                    borderRadius: layerRadius,
+                    // Dim the element's colour toward the floor so the wall
+                    // reads with ambient shading instead of a flat tint.
+                    filter: `brightness(${isoLayerBrightness(i, DEPTH_LAYERS.length)})`,
+                  }}
+                />
+              ))}
+            </div>
+          );
+        })}
     </div>
   );
 }

@@ -14,10 +14,16 @@ isometric (axonometric, parallel — no perspective) view:
 - The whole content layer tilts onto the isometric plane, so the diagram
   reads as a surface seen from above and to the side.
 - Each **boxed element** (shapes, text, tables, images, stickies, link
-  cards, annotations, frames) gains **extruded depth** — a solid raised
+  cards, annotations) gains **extruded depth** — a solid raised
   block standing off the floor — so the scene looks three-dimensional. The
   block's side walls paint in the **element's own colour** (its accent),
   shaded darker toward the floor, rather than a flat black slab.
+  **Frames are the exception**: a frame is a section backdrop, not a solid
+  block, so it gets no extrusion column and instead settles **just below
+  the base plane** (a -1px translateZ via the `[data-iso] [data-frame]`
+  rule) — its big surface would otherwise be exactly coplanar with the
+  contents drawn over it, and coplanar 3D layers z-fight (flicker) while
+  the camera orbits.
 - **Arrows, freehand strokes, and labels** stay on the base plane (they have
   no box to extrude); they ride the tilt with everything else.
 

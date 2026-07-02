@@ -1435,3 +1435,15 @@
     animation: none;
   }
 }
+
+/* Isometric mode (spec/45): frames settle just below the base plane.
+   Under preserve-3d every element sits at z=0, and a frame's big surface
+   is exactly coplanar with the contents drawn over it — coplanar 3D
+   layers z-fight while the camera orbits, which showed as the frame
+   flickering. A -1px translateZ is invisible at any tilt but gives the
+   GPU a stable depth order. (Frames don't rotate, so overriding the
+   wrapper transform is safe; their depth-extrusion column is skipped in
+   IsometricDepthLayer for the same reason.) */
+[data-iso] [data-frame] {
+  transform: translateZ(-1px);
+}

@@ -415,6 +415,11 @@ function BoxedElementViewImpl({
     <div
       ref={wrapperRef}
       data-element-id={element.id}
+      // Frames are tagged so isometric mode can settle them just under the
+      // base plane (globals.css [data-iso] rule): a frame's big surface is
+      // coplanar with its contents under preserve-3d, and coplanar layers
+      // z-fight (flicker) while the camera orbits.
+      data-frame={element.type === 'shape' && element.shape === 'frame' ? '' : undefined}
       onPointerDown={(e) => {
         longPress.onPointerDown(e);
         handleShapeDown(e);
