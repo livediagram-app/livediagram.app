@@ -81,6 +81,16 @@ export function entryHistoryUndo(h: EntryHistory): { next: EntryHistory; popped:
   };
 }
 
+// Paired with historyCancel (Escape aborts an in-flight gesture):
+// drop the newest marker outright — the cancelled step never happened,
+// so nothing moves to the redo side. The marker is null in practice
+// (the gesture's debounced log entry hasn't flushed yet, and after the
+// restore its diff is empty so it never will).
+export function entryHistoryCancel(h: EntryHistory): EntryHistory {
+  if (h.past.length === 0) return h;
+  return { ...h, past: h.past.slice(0, -1) };
+}
+
 // Paired with historyRedo: move one marker back; `shifted` is the
 // entry to re-append, if any.
 export function entryHistoryRedo(h: EntryHistory): { next: EntryHistory; shifted: EntryMarker } {

@@ -59,6 +59,9 @@ export type EditorDragDeps = {
   // Returns the undo-marker token of the pushed step (lib/entry-history)
   // so the gesture's debounced log entry can fill exactly that step.
   markCheckpoint: () => number;
+  // Escape-cancel: restore the gesture's checkpoint and discard the
+  // step + its marker (no redo entry — a cancelled drag never happened).
+  cancelToCheckpoint: () => void;
   // Debounced activity-log emitter (see useActivityLogDebounce). Called
   // on every mutating tick of an edit gesture; the per-key 500ms window
   // collapses the whole drag into ONE entry that diffs pre-gesture vs

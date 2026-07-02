@@ -199,6 +199,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       scheduleSnapTargets([]);
       checkpointPendingRef.current = false;
       logGestureRef.current = false;
+      gestureTokenRef.current = undefined;
     };
     // Cancel the drag immediately when a second touch finger lands — that
     // signals a pinch gesture, not a solo drag.
@@ -832,28 +833,43 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       scheduleGuides([]);
       scheduleSnapTargets([]);
     };
-    // Escape cancels follow mode, removing the half-drawn arrow.
+    // Escape aborts the gesture (spec/09). Capture phase + swallow so
+    // the editor-wide Escape handlers (deselect / zen exit) don't ALSO
+    // fire on the same press — one Escape does exactly one thing.
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      if (!(drag?.kind === 'arrow-endpoint' && drag.following)) return;
-      const arrowId = drag.arrowId;
-      depsRef.current.commit((els) => els.filter((el) => el.id !== arrowId));
-      depsRef.current.setSelectedId(null);
-      setDrag(null);
-      scheduleGuides([]);
-      scheduleSnapTargets([]);
+      if (e.key !== 'Escape' || !drag) return;
+      e.preventDefault();
+      e.stopPropagation();
+      // Follow mode: the half-drawn arrow is removed outright.
+      if (drag.kind === 'arrow-endpoint' && drag.following) {
+        const arrowId = drag.arrowId;
+        depsRef.current.commit((els) => els.filter((el) => el.id !== arrowId));
+        depsRef.current.setSelectedId(null);
+        cancelDrag();
+        return;
+      }
+      // An edit gesture that already mutated (move / resize / rotate /
+      // arrow-handle — its armed checkpoint was flushed on the first
+      // tick): restore the pre-drag state and discard the step, so the
+      // element snaps back to where the grab started and no undo entry
+      // is left behind. A press that never moved (checkpoint still
+      // armed) or a creation drag (never arms one) just ends the mode.
+      if (logGestureRef.current && !checkpointPendingRef.current) {
+        depsRef.current.cancelToCheckpoint();
+      }
+      cancelDrag();
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointerdown', onSecondTouch);
     window.addEventListener('pointerdown', onPlaceClick, true);
-    window.addEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointerdown', onSecondTouch);
       window.removeEventListener('pointerdown', onPlaceClick, true);
-      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keydown', onKey, true);
     };
   }, [drag, scheduleGuides, scheduleSnapTargets]);
 

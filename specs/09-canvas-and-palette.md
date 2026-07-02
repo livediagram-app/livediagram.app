@@ -621,7 +621,7 @@ The remaining shape kinds (hexagon, stadium, document, cloud, devices, …) have
 
 - **Delete** / **Backspace** removes the current selection (the cascading-delete rules in the Marquee section apply).
 - **Arrow keys** nudge the selection 1 px (10 px with `⇧`).
-- **`Escape`** cancels whichever transient mode is active — format painter, group-source, a pending draw-to-size, the Format / Isometric tools, or Zen — and, when none of those apply, **clears the current selection**.
+- **`Escape`** aborts an **in-flight drag first**: pressing it mid move / resize / rotate / arrow-handle gesture snaps the element back to its pre-drag state and leaves **no undo step** behind (the gesture's checkpoint is restored and discarded; mid-draw of a quick-connect arrow it removes the half-drawn arrow). With no drag active it cancels whichever transient mode is active — format painter, group-source, a pending draw-to-size, the Format / Isometric tools, or Zen — and, when none of those apply, **clears the current selection**. One press does exactly one of these.
 - **Space-tap** on a single selected element edits its label; **Space-drag** pans the canvas (the tap-vs-drag split lives in the hook).
 - **Type-to-edit**: a printable key on a single selected, label-bearing element opens its label editor seeded with that character, instead of firing the tool / add / number shortcuts (so selecting a shape and typing never accidentally drops new elements).
 - **`⇧`-Click** toggles an element in the multi-selection.

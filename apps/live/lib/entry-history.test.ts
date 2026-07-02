@@ -3,6 +3,7 @@ import type { ChangeLogEntry } from '@livediagram/api-schema';
 import { HISTORY_LIMIT } from '@/hooks/canvas/useDiagramHistory';
 import {
   emptyEntryHistory,
+  entryHistoryCancel,
   entryHistoryFill,
   entryHistoryPush,
   entryHistoryRedo,
@@ -109,6 +110,17 @@ describe('entry-history markers', () => {
     expect(second.shifted).toBeNull();
     expect(second.next.past).toHaveLength(2);
     expect(second.next.future).toEqual([]);
+  });
+
+  it('cancel drops the newest marker outright (no redo side)', () => {
+    let h = entryHistoryPush(emptyEntryHistory(), 1);
+    h = entryHistoryFill(h, entry('kept'), 1);
+    h = entryHistoryPush(h, 2); // the gesture's checkpoint
+    h = entryHistoryCancel(h);
+    expect(h.past).toHaveLength(1);
+    expect(h.past[0]!.entry).toMatchObject({ id: 'kept' });
+    expect(h.future).toEqual([]);
+    expect(entryHistoryCancel(emptyEntryHistory())).toEqual(emptyEntryHistory());
   });
 
   it('undo/redo are no-ops on empty stacks', () => {

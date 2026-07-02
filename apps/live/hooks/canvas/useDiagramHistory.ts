@@ -61,6 +61,21 @@ export function historyUndo(h: History): History {
   };
 }
 
+// Abort an in-flight gesture: restore the newest snapshot (the
+// checkpoint its first mutation pushed) into the present and DISCARD
+// that step — unlike undo, nothing lands on the redo side, because a
+// cancelled drag never happened. Live comment/session state grafts on
+// exactly as undo does.
+export function historyCancel(h: History): History {
+  if (h.past.length === 0) return h;
+  const prev = h.past[h.past.length - 1]!;
+  return {
+    past: h.past.slice(0, -1),
+    present: graftLiveTabState(h.present, prev),
+    future: h.future,
+  };
+}
+
 export function historyRedo(h: History): History {
   if (h.future.length === 0) return h;
   const next = h.future[0]!;
@@ -96,6 +111,7 @@ type DiagramHistory = {
   commit: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   tick: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   markCheckpoint: () => void;
+  cancelToCheckpoint: () => void;
   reset: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
   applyRemote: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
   undo: () => void;
@@ -125,6 +141,11 @@ export function useDiagramHistory(initialTabs: Tab[]): DiagramHistory {
     setHistory(historyUndo);
   };
 
+  // Abort-to-checkpoint for Escape during a drag (see historyCancel).
+  const cancelToCheckpoint = () => {
+    setHistory(historyCancel);
+  };
+
   const redo = () => {
     setHistory(historyRedo);
   };
@@ -149,6 +170,7 @@ export function useDiagramHistory(initialTabs: Tab[]): DiagramHistory {
     commit,
     tick,
     markCheckpoint,
+    cancelToCheckpoint,
     reset,
     applyRemote,
     undo,

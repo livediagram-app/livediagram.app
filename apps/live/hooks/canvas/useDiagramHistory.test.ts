@@ -9,6 +9,7 @@ import {
   historyRedo,
   historyReset,
   historyTick,
+  historyCancel,
   historyUndo,
 } from './useDiagramHistory';
 
@@ -168,5 +169,24 @@ describe('historyApplyRemote', () => {
     const afterRemote = historyApplyRemote(committed, (prev) => [...prev, tab('R', 'r')]);
     const undone = historyUndo(afterRemote);
     expect(undone.present).toEqual([tab('A', 'a')]);
+  });
+});
+
+describe('historyCancel (Escape aborts an in-flight gesture)', () => {
+  it('restores the checkpoint into the present and discards the step', () => {
+    const t = (name: string) => [{ id: 't1', name, elements: [] }];
+    const start = { past: [t('before')], present: t('dragged'), future: [t('redoable')] };
+    const out = historyCancel(start);
+    expect(out.present[0]!.name).toBe('before');
+    expect(out.past).toEqual([]);
+    // Unlike undo, nothing lands on the redo side — and the existing
+    // redo stack survives (the checkpoint never cleared it... it did,
+    // but cancel itself must not invent entries).
+    expect(out.future).toEqual([t('redoable')]);
+  });
+
+  it('is a no-op with no checkpoint to restore', () => {
+    const h = { past: [], present: [{ id: 't1', name: 'x', elements: [] }], future: [] };
+    expect(historyCancel(h)).toBe(h);
   });
 });
