@@ -755,6 +755,49 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         ),
       );
     };
+    // Shift-chaining (spec/09 quick-connect): landing a NEW arrow's endpoint
+    // with Shift held immediately starts ANOTHER arrow from the same source
+    // end, endpoint following the cursor — a hub fans out to several targets
+    // in one flow without reopening the ring. Only for freshly drawn arrows
+    // (never a reposition of an existing endpoint) whose source is pinned.
+    // Returns true when the chain took over the gesture.
+    const chainNextArrow = (e: PointerEvent): boolean => {
+      if (!e.shiftKey) return false;
+      if (drag?.kind !== 'arrow-endpoint' || drag.end !== 'to' || drag.reposition) return false;
+      const d = depsRef.current;
+      if (d.isReadOnly) return false;
+      const placed = d.activeTab.elements.find(
+        (el): el is ArrowElement => el.id === drag.arrowId && el.type === 'arrow',
+      );
+      if (!placed || (placed.from.kind !== 'pinned' && placed.from.kind !== 'pinned-group')) {
+        return false;
+      }
+      const cursor = {
+        x: drag.startCanvasX + (e.clientX - drag.startClientX) / d.zoomRef.current,
+        y: drag.startCanvasY + (e.clientY - drag.startClientY) / d.zoomRef.current,
+      };
+      const arrow: ArrowElement = {
+        id: crypto.randomUUID(),
+        type: 'arrow',
+        from: placed.from,
+        to: { kind: 'free', x: cursor.x, y: cursor.y },
+        ...(placed.strokeColor ? { strokeColor: placed.strokeColor } : {}),
+      };
+      d.commit((els) => [...els, arrow]);
+      d.setSelectedId(arrow.id);
+      track('Element', 'Added', 'Arrow');
+      setDrag({
+        kind: 'arrow-endpoint',
+        arrowId: arrow.id,
+        end: 'to',
+        startClientX: e.clientX,
+        startClientY: e.clientY,
+        startCanvasX: cursor.x,
+        startCanvasY: cursor.y,
+        following: true,
+      });
+      return true;
+    };
     const onUp = (e: PointerEvent) => {
       const d = depsRef.current;
       // Quick-connect arrow "click to place": if the arrow was started by a
@@ -771,6 +814,21 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           setDrag({ ...drag, clickToPlace: false, following: true });
           return;
         }
+      }
+      // Follow mode rides THROUGH pointer-ups: after a shift-chained
+      // placing click, the release of that same click arrives here with the
+      // fresh arrow already following — committing now would land it where
+      // it spawned. The gesture ends at the NEXT placing click, not on up.
+      if (drag?.kind === 'arrow-endpoint' && drag.following) return;
+      // Shift-release of a press-drag chains the next arrow (same rule as
+      // the placing click below). The landed endpoint is already committed
+      // by the drag ticks; close this gesture's bookkeeping and follow on.
+      if (drag?.kind === 'arrow-endpoint' && !drag.following && chainNextArrow(e)) {
+        scheduleGuides([]);
+        scheduleSnapTargets([]);
+        checkpointPendingRef.current = false;
+        logGestureRef.current = false;
+        return;
       }
       // Fold a dragged standalone icon shape into the shape it was
       // released over. Only on a real move (not a click), only when the
@@ -828,7 +886,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       e.preventDefault();
       e.stopPropagation();
       // The endpoint already tracks the cursor (last pointermove); this
-      // click just lands it. Clear guides and end the gesture.
+      // click just lands it. Shift chains straight into the next arrow
+      // from the same source (spec/09); otherwise clear and end.
+      if (chainNextArrow(e)) {
+        scheduleGuides([]);
+        scheduleSnapTargets([]);
+        return;
+      }
       setDrag(null);
       scheduleGuides([]);
       scheduleSnapTargets([]);
