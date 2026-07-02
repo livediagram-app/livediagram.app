@@ -55,8 +55,9 @@ type TechIconDef = {
   placeholder.
 - **The heavy data loads async.** `tech-icons.ts` is the synchronous API
   surface only (types, `TECH_ICON_DND_MIME`, `TECH_PROVIDERS`, `isTechIconId`);
-  the per-icon colour + glyph markup lives in `tech-icons-data.ts` and is
-  dynamic-imported (together with the line-art catalogue) by
+  the per-icon colour + glyph markup lives in
+  `packages/icons/src/tech-icon-catalog.ts` (the shared `@livediagram/icons`
+  package) and is dynamic-imported (together with the line-art catalogue) by
   `apps/live/lib/icon-registry.ts`, keeping ~25 kB of source out of the
   editor's first-load JS (see spec/09 "Catalogue loading"). `isTechIconId` —
   which gates hot paths that can't wait for the chunk (the coloured-vs-line-art
@@ -124,6 +125,18 @@ element has a label (glyph pinned to the top 60%, label band beneath) — the sa
 label-room trick `IconGlyph` uses, so the coloured and line-art icons place
 captions identically. No stroke tint is applied; the brand colour is the tile
 fill and the glyph is white.
+
+**Exports and headless renders draw the same art.** The shared SVG renderer
+(`packages/diagram/src/svg-render.ts`) takes an injected `resolveIconArt`
+resolver; with it, a `shape: 'icon'` element exports its real glyph — a
+Technology mark as its self-coloured tile, a line-art icon stroke-tinted, each
+with the caption in the bottom band — instead of the old box-with-caption
+fallback (which remains the output for an unknown id or a resolver-less
+caller). The in-app SVG / PNG / PDF export resolves from the loaded icon
+registry (`resolveIconArtLoaded`, awaited via `ensureIconCatalogs` in the
+Export dialog); the api worker's live image / Explorer thumbnail and the MCP
+worker's inline render resolve via `@livediagram/icons/resolve` (a static
+import of the catalogue data).
 
 ## Templates that seed brand tiles
 

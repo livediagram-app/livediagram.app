@@ -122,4 +122,45 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('rx="40" ry="40"');
     });
   });
+
+  describe('icon elements', () => {
+    const icon = (o: Partial<ShapeElement> = {}) =>
+      shape('ic', { shape: 'icon', iconId: 'server', width: 48, height: 48, ...o });
+
+    it('renders resolved line art as a nested svg tinted by the element stroke', () => {
+      const svg = renderElementsToSvg(tab([icon({ strokeColor: '#123456' })]), {
+        resolveIconArt: () => ({ markup: '<path d="M1 2"/>', colored: false }),
+      });
+      expect(svg).toContain('<path d="M1 2"/>');
+      expect(svg).toContain('viewBox="0 0 24 24"');
+      expect(svg).toContain('stroke="#123456"');
+      // 48px box over a 24-unit viewBox = 2x scale, so the 2px on-screen
+      // stroke exports as 1 glyph unit.
+      expect(svg).toContain('stroke-width="1"');
+    });
+
+    it('pins a captioned glyph to the top band (24x40 viewBox) with a bottom label', () => {
+      const svg = renderElementsToSvg(tab([icon({ label: 'API' })]), {
+        resolveIconArt: () => ({ markup: '<path d="M1 2"/>', colored: false }),
+      });
+      expect(svg).toContain('viewBox="0 0 24 40"');
+      expect(svg).toContain('>API</');
+    });
+
+    it('renders a colored (Technology) mark without recolouring it', () => {
+      const svg = renderElementsToSvg(tab([icon({ strokeColor: '#123456' })]), {
+        resolveIconArt: () => ({ markup: '<rect fill="#ED7100"/>', colored: true }),
+      });
+      expect(svg).toContain('<rect fill="#ED7100"/>');
+      // No stroke wrapper: the mark is self-coloured.
+      expect(svg).not.toContain('stroke="#123456"');
+    });
+
+    it('falls back to the box-with-label output without a resolver', () => {
+      const svg = renderElementsToSvg(tab([icon({ label: 'Server' })]));
+      expect(svg).toContain('<rect'); // the generic body
+      expect(svg).toContain('>Server</');
+      expect(svg).not.toContain('viewBox="0 0 24');
+    });
+  });
 });

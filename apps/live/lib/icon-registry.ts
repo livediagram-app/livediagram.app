@@ -1,9 +1,10 @@
 // Async loader + tiny subscription store for the two icon catalogues: the
-// line-art glyphs (icon-catalog-1/2.ts, spec/09 "Icons") and the Technology
-// brand marks (tech-icons-data.ts, spec/41). Together they are ~60 kB of pure
-// data that almost no first paint needs — a diagram with no icon elements
-// never touches them — so they are dynamic-imported here into an async chunk
-// instead of riding the editor's first-load JS.
+// line-art glyphs (spec/09 "Icons") and the Technology brand marks (spec/41),
+// both living as data modules in @livediagram/icons (shared with the Workers'
+// headless renders). Together they are ~60 kB of pure data that almost no
+// first paint needs — a diagram with no icon elements never touches them — so
+// they are dynamic-imported here into an async chunk instead of riding the
+// editor's first-load JS.
 //
 // Shape of the module:
 // - `ensureIconCatalogs()` kicks (or joins) the one memoized load. The editor
@@ -17,8 +18,13 @@
 //   chunk lands — callers fall back to a placeholder glyph / skeleton tile,
 //   never a blank, and never block render on a promise.
 
-import type { IconDef } from './icon-types';
-import type { TechIconDef } from './tech-icons';
+import {
+  iconPrimsMarkup,
+  techIconArtMarkup,
+  type IconDef,
+  type IconExportArt,
+  type TechIconDef,
+} from '@livediagram/icons';
 
 // Everything derived from the loaded chunks, assembled once. Kept in one
 // object (not four nullable module vars) so "loaded" is a single state flip —
@@ -46,9 +52,9 @@ const listeners = new Set<() => void>();
 export function ensureIconCatalogs(): Promise<void> {
   if (!loadPromise) {
     loadPromise = Promise.all([
-      import('./icon-catalog-1'),
-      import('./icon-catalog-2'),
-      import('./tech-icons-data'),
+      import('@livediagram/icons/icon-catalog-1'),
+      import('@livediagram/icons/icon-catalog-2'),
+      import('@livediagram/icons/tech-icon-catalog'),
     ])
       .then(([part1, part2, tech]) => {
         // Order matters for the line-art catalogue: part 1 then part 2, so
@@ -109,4 +115,18 @@ export function getLoadedIconCatalog(): IconDef[] {
 
 export function getLoadedTechIconCatalog(): TechIconDef[] {
   return loaded?.techIcons ?? [];
+}
+
+// Export-art resolver over the loaded catalogues (the editor-side
+// counterpart of @livediagram/icons/resolve, which static-imports the data
+// for the Workers). Passed to the shared SVG renderer / export pipeline so
+// icon elements export their real glyph. Undefined until the chunk lands
+// (or for an unknown id) — the renderer then falls back to its historical
+// box-with-label output. The export dialog awaits ensureIconCatalogs()
+// before rendering, so in practice the data is always there.
+export function resolveIconArtLoaded(iconId: string): IconExportArt | undefined {
+  const tech = loaded?.techIconById.get(iconId);
+  if (tech) return { markup: techIconArtMarkup(tech), colored: true };
+  const line = loaded?.iconById.get(iconId);
+  return line ? { markup: iconPrimsMarkup(line.prims), colored: false } : undefined;
 }

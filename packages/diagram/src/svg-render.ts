@@ -59,12 +59,16 @@ export type ExportLabel = {
 // dashed placeholder is drawn — e.g. a headless thumbnail with no bytes on
 // hand). `objectFit` / `radius` mirror the on-screen ImageElementView so cover
 // crops, contain letterboxes, and avatars clip to a circle. `none` is a
-// label-only element (text); the rest carry resolved fill + stroke.
+// label-only element (text); the rest carry resolved fill + stroke. `icon` is
+// a shape==='icon' element whose glyph a caller resolved (see ResolveIconArt);
+// it keeps fill/stroke so the isometric extrusion can tint its silhouette
+// column like any other box.
 export type ExportShape =
   | { kind: 'image'; href?: string; objectFit: 'cover' | 'contain'; radius: number }
   | { kind: 'ellipse'; fill: string; stroke: string }
   | { kind: 'diamond'; fill: string; stroke: string }
   | { kind: 'rect'; fill: string; stroke: string }
+  | { kind: 'icon'; art: ExportIconArt; fill: string; stroke: string }
   | { kind: 'none' };
 
 // Resolves an image element's `imageId` to a data URL to embed, or undefined
@@ -72,6 +76,19 @@ export type ExportShape =
 // (the browser export prefetches via the authenticated image API; a future
 // worker path could read R2), keeping this renderer free of any IO.
 export type ResolveImageHref = (imageId: string) => string | undefined;
+
+// Resolved glyph art for a shape==='icon' element, in a 0..24 art box.
+// `colored: false` is line art: the markup carries no colours and the
+// renderer wraps it with the element's stroke colour (icons tint + theme
+// like line drawings on the canvas). `colored: true` is a Technology brand
+// mark: the markup is self-coloured (brand tile + white glyph) and is never
+// recoloured. Matches @livediagram/icons' IconExportArt structurally — kept
+// structural so this package doesn't depend on the catalogue package; each
+// caller supplies a resolver (the editor from its async icon registry, the
+// Workers from @livediagram/icons/resolve). No resolver, or an unknown id,
+// falls back to the pre-icon output: a plain box with the centred label.
+export type ExportIconArt = { markup: string; colored: boolean };
+export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
 
 export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 
@@ -183,6 +200,7 @@ export function contentBounds(elements: Element[]): { x: number; y: number; w: n
 export function describeBoxedExport(
   el: BoxedElement,
   resolveImageHref?: ResolveImageHref,
+  resolveIconArt?: ResolveIconArt,
 ): BoxedExport {
   const opacity = el.opacity ?? 1;
   if (el.type === 'image') {
@@ -212,6 +230,37 @@ export function describeBoxedExport(
   }
   const fill = el.fillColor ?? defaultFillColor(el);
   const stroke = el.strokeColor ?? defaultStrokeColor(el);
+  // Icon elements (spec/09 "Icons" line art + spec/41 Technology marks): when
+  // a caller supplies the glyph resolver AND the id resolves, export the real
+  // art with the caption in the bottom band (mirroring IconGlyph /
+  // TechIconGlyph's glyph-above-caption layout). Otherwise fall through to
+  // the generic rect branch — the historical box-with-label output — so a
+  // resolver-less caller renders exactly what it always did.
+  const iconArt =
+    el.type === 'shape' && el.shape === 'icon' && el.iconId
+      ? resolveIconArt?.(el.iconId)
+      : undefined;
+  if (iconArt) {
+    const size = fontSizeFor(el.textSize);
+    return {
+      opacity,
+      shape: { kind: 'icon', art: iconArt, fill, stroke },
+      label: el.label
+        ? {
+            text: el.label,
+            x: el.x + el.width / 2,
+            // Bottom-aligned caption band, like the canvas: the glyph pins
+            // to the top of the box and the label sits just off the floor.
+            y: el.y + el.height - size,
+            anchor: 'middle',
+            color: el.textColor ?? defaultTextColor(el),
+            size,
+            bold: !!el.textBold,
+            italic: !!el.textItalic,
+          }
+        : null,
+    };
+  }
   const shape: ExportShape =
     (el.type === 'shape' && el.shape === 'circle') || el.type === 'annotation'
       ? { kind: 'ellipse', fill, stroke }
@@ -369,8 +418,41 @@ export function svgImageShape(
   );
 }
 
-export function svgBoxed(el: BoxedElement, resolveImageHref?: ResolveImageHref): string {
-  const { opacity, shape, label } = describeBoxedExport(el, resolveImageHref);
+// A shape==='icon' element's glyph as a nested <svg> positioned over the
+// element box — nesting reproduces the editor's scaling exactly (the canvas
+// renders the glyph as an absolutely-positioned svg over the element).
+// Line art: viewBox 0 0 24 24, or 0 0 24 40 with a label so the art pins to
+// the top ~60% and the caption band stays clear (IconGlyph). The stroke
+// width is divided by the glyph scale so it lands at ~2 rendered units —
+// the on-canvas glyph strokes are non-scaling 2px. Technology marks:
+// self-coloured tile art in the top band when captioned (TechIconGlyph).
+export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: string): string {
+  const hasLabel = !!el.label;
+  if (art.colored) {
+    const y = hasLabel ? el.y + el.height * 0.06 : el.y;
+    const h = hasLabel ? el.height * 0.58 : el.height;
+    return (
+      `<svg x="${r2(el.x)}" y="${r2(y)}" width="${r2(el.width)}" height="${r2(h)}"` +
+      ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible">${art.markup}</svg>`
+    );
+  }
+  const vbH = hasLabel ? 40 : 24;
+  const scale = Math.min(el.width / 24, el.height / vbH);
+  const strokeWidth = scale > 0 ? 2 / scale : 2;
+  return (
+    `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
+    ` viewBox="0 0 24 ${vbH}" preserveAspectRatio="xMidYMin meet" overflow="visible"` +
+    ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${r2(strokeWidth)}"` +
+    ` stroke-linecap="round" stroke-linejoin="round">${art.markup}</svg>`
+  );
+}
+
+export function svgBoxed(
+  el: BoxedElement,
+  resolveImageHref?: ResolveImageHref,
+  resolveIconArt?: ResolveIconArt,
+): string {
+  const { opacity, shape, label } = describeBoxedExport(el, resolveImageHref, resolveIconArt);
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
@@ -386,6 +468,8 @@ export function svgBoxed(el: BoxedElement, resolveImageHref?: ResolveImageHref):
     shapeStr = `<polygon points="${r2(cx)},${r2(el.y)} ${r2(el.x + el.width)},${r2(cy)} ${r2(cx)},${r2(el.y + el.height)} ${r2(el.x)},${r2(cy)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5" stroke-linejoin="round"/>`;
   } else if (shape.kind === 'rect') {
     shapeStr = `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
+  } else if (shape.kind === 'icon') {
+    shapeStr = svgIconShape(el, shape.art, shape.stroke);
   }
   const labelStr = !label
     ? ''
@@ -478,7 +562,12 @@ const isFrameEl = (el: Element): boolean => el.type === 'shape' && el.shape === 
 // This is the renderer the MCP worker rasterises for its inline images.
 export function renderElementsToSvg(
   tab: Tab,
-  opts: { padding?: number; background?: string; resolveImageHref?: ResolveImageHref } = {},
+  opts: {
+    padding?: number;
+    background?: string;
+    resolveImageHref?: ResolveImageHref;
+    resolveIconArt?: ResolveIconArt;
+  } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
   const bounds = contentBounds(tab.elements);
@@ -495,7 +584,7 @@ export function renderElementsToSvg(
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
   for (const el of ordered) {
-    if (el.type !== 'arrow') parts.push(svgBoxed(el, opts.resolveImageHref));
+    if (el.type !== 'arrow') parts.push(svgBoxed(el, opts.resolveImageHref, opts.resolveIconArt));
   }
   for (const el of tab.elements) {
     if (el.type === 'arrow') parts.push(svgArrow(el, tab.elements));

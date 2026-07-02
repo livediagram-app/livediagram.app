@@ -17,6 +17,9 @@ import {
   type Element,
   type Tab,
 } from '@livediagram/diagram';
+// Static-import icon resolver (Worker bundle, size not user-facing) so icon
+// elements render their real glyph in the inline image.
+import { resolveIconExportArt } from '@livediagram/icons/resolve';
 import { apiJson, postTelemetry } from './api';
 import type { Env } from './env';
 import { svgToPngBase64 } from './render';
@@ -53,7 +56,9 @@ function errorResult(message: string): ToolResult {
 }
 
 async function imageResult(value: unknown, tab: Tab): Promise<ToolResult> {
-  const png = await svgToPngBase64(renderElementsToSvg(tab));
+  const png = await svgToPngBase64(
+    renderElementsToSvg(tab, { resolveIconArt: resolveIconExportArt }),
+  );
   return {
     content: [
       { type: 'text', text: JSON.stringify(value, null, 2) },

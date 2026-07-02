@@ -13,6 +13,7 @@ import {
   loadTabImages,
 } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
+import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
@@ -86,6 +87,10 @@ export function ExportTabDialog({
       } else {
         // Visual formats embed image / avatar bitmaps. Fetch them once here
         // and share the loaded map across whichever format the user picked.
+        // Icon glyphs render from the async icon catalogues — awaiting the
+        // (memoized) load makes them deterministic rather than relying on the
+        // editor page having already fetched the chunk.
+        await ensureIconCatalogs();
         const images = imageContext ? await loadTabImages(tab, imageContext) : undefined;
         const opts = { isometric, pattern, images };
         if (format === 'png') {

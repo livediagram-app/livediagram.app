@@ -35,7 +35,10 @@ On a read of either delivery path:
 - **Stale** (or never rendered, or the object is missing): render the
   first tab with `renderElementsToSvg` (`@livediagram/diagram`, the same
   DOM-free renderer the MCP worker uses), write it to R2, stamp
-  `thumb_rendered_at`, and return it.
+  `thumb_rendered_at`, and return it. Icon elements render their real
+  glyph (line art + Technology brand tiles) via the
+  `@livediagram/icons/resolve` resolver the worker passes in — see
+  spec/41 "Rendering".
 
 This is **render-on-read**, not render-on-save, on purpose:
 

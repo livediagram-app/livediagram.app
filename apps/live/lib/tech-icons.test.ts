@@ -9,7 +9,7 @@ import {
 // The catalogue tests validate the DATA, so they import the data module
 // directly (in the app it only ever arrives via the registry's dynamic
 // import; tests are the sanctioned second importer).
-import { TECH_ICON_CATALOG } from './tech-icons-data';
+import { TECH_ICON_CATALOG } from '@livediagram/icons/tech-icon-catalog';
 import { ensureIconCatalogs } from './icon-registry';
 
 // getTechIcon / searchTechIcons read the async-loaded catalogue

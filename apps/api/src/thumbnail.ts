@@ -13,6 +13,10 @@
 // invalidates the snapshot uniformly because they all bump saved_at.
 
 import { renderElementsToSvg, type Tab } from '@livediagram/diagram';
+// Static-import icon resolver (bundle size is fine in a Worker) so icon
+// elements render their real glyph in the snapshot / live image instead of
+// the renderer's box-with-label fallback.
+import { resolveIconExportArt } from '@livediagram/icons/resolve';
 import {
   getFirstTabData,
   getTabData,
@@ -131,7 +135,10 @@ async function renderTabDataToSvg(
   // Inline referenced image bitmaps (read from R2) so the preview / live
   // image renders the actual photos, matching the in-app PNG/SVG export.
   const images = await loadEmbeddedImages(env, tab);
-  return renderElementsToSvg(tab, { resolveImageHref: (id) => images.get(id) });
+  return renderElementsToSvg(tab, {
+    resolveImageHref: (id) => images.get(id),
+    resolveIconArt: resolveIconExportArt,
+  });
 }
 
 // Read each image/avatar element's bytes from R2 and return them keyed by

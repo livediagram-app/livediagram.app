@@ -11,7 +11,7 @@
 // PLACEHOLDER glyph rather than vanishing.
 //
 // This module is the SYNCHRONOUS API surface only. The catalogue data
-// (icon-catalog-1/2.ts, ~36 kB of glyph geometry) loads as an async chunk
+// (@livediagram/icons icon-catalog-1/2, ~36 kB of glyph geometry) loads as an async chunk
 // through lib/icon-registry.ts, keeping it out of the editor's first-load
 // JS. Nothing here may import those data modules statically; until the
 // chunk lands, lookups fall back to PLACEHOLDER_ICON and list views come

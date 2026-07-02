@@ -44,6 +44,9 @@ importers:
       '@livediagram/diagram':
         specifier: workspace:*
         version: link:../../packages/diagram
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       jose:
         specifier: ^5.9.6
         version: 5.10.0
@@ -157,6 +160,9 @@ importers:
       '@livediagram/diagram':
         specifier: workspace:*
         version: link:../../packages/diagram
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -267,6 +273,9 @@ importers:
       '@livediagram/diagram':
         specifier: workspace:*
         version: link:../../packages/diagram
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)
@@ -426,6 +435,27 @@ importers:
       typescript-eslint:
         specifier: ^8.18.2
         version: 8.60.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+
+  packages/icons:
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@vitest/coverage-v8':
+        specifier: ^3.2.6
+        version: 3.2.6(vitest@3.2.6(@types/debug@4.1.13)(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0))
+      eslint:
+        specifier: ^9.17.0
+        version: 9.39.4(jiti@2.7.0)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.6
+        version: 3.2.6(@types/debug@4.1.13)(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)
 
   packages/prettier-config: {}
 

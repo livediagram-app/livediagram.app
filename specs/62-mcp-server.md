@@ -261,6 +261,13 @@ Worker (no DOM, no React).
   (the SVG export already does this), since embedding R2-hosted bitmaps is extra
   work. Acceptable for code/architecture/flow diagrams, which are shape+arrow+text.
   Embedding real images is a follow-up.
+- **Icon elements render their real glyph.** The renderer takes an injected
+  `resolveIconArt(iconId)` (like `resolveImageHref`); the MCP worker supplies
+  `resolveIconExportArt` from `@livediagram/icons/resolve` (a static import of
+  the catalogue data — fine in a Worker), so line-art icons draw stroke-tinted
+  and Technology marks draw their brand tile instead of the old
+  box-with-caption fallback. Without a resolver (or for an unknown id) the
+  renderer still emits that fallback, so resolver-less callers are unchanged.
 
 ## 6. Rollout
 

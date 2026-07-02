@@ -27,6 +27,7 @@ import {
 } from '@livediagram/diagram';
 import { framesFirst } from './canvas';
 import { backgroundPatternTile } from './canvas-backgrounds';
+import { resolveIconArtLoaded } from './icon-registry';
 import {
   isoCanvasMatrix,
   isoDepthLayers,
@@ -162,8 +163,42 @@ export async function renderTabToCanvas(
   // z-order on either end; framesFirst keeps frame sections behind
   // their contents (spec/09).
   const resolveImage = opts.images ? (id: string) => opts.images!.get(id)?.image : undefined;
+  // Icon elements rasterise via the SAME svg markup the SVG export emits
+  // (glyph + caption), so the PNG/PDF output can't drift from it — canvas 2D
+  // has no way to draw the glyph art natively. Pre-rendered async here (the
+  // draw loop below stays sync), with padding for stroke overflow. A failed
+  // rasterise falls back to drawBoxed's box-with-label, same as an
+  // unresolvable id.
+  const ICON_PAD = 2;
+  const iconImages = new Map<string, HTMLImageElement>();
+  for (const el of tab.elements) {
+    if (el.type !== 'shape' || el.shape !== 'icon' || !el.iconId) continue;
+    if (!resolveIconArtLoaded(el.iconId)) continue;
+    const w = el.width + ICON_PAD * 2;
+    const h = el.height + ICON_PAD * 2;
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(w * scale)}" height="${r2(h * scale)}"` +
+      ` viewBox="${r2(el.x - ICON_PAD)} ${r2(el.y - ICON_PAD)} ${r2(w)} ${r2(h)}">` +
+      `${svgBoxed(el, undefined, resolveIconArtLoaded)}</svg>`;
+    try {
+      iconImages.set(el.id, await svgToImage(svg));
+    } catch {
+      // Fall through to drawBoxed's placeholder box below.
+    }
+  }
   for (const el of framesFirst(tab.elements)) {
     if (el.type === 'arrow') continue;
+    const iconImg = iconImages.get(el.id);
+    if (iconImg) {
+      ctx.drawImage(
+        iconImg,
+        el.x - ICON_PAD,
+        el.y - ICON_PAD,
+        el.width + ICON_PAD * 2,
+        el.height + ICON_PAD * 2,
+      );
+      continue;
+    }
     drawBoxed(ctx, el, resolveImage);
   }
   for (const el of tab.elements) {
@@ -267,7 +302,7 @@ function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // framesFirst keeps frame sections behind their contents (spec/09).
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
   for (const el of framesFirst(tab.elements)) {
-    if (el.type !== 'arrow') parts.push(svgBoxed(el, resolveImageHref));
+    if (el.type !== 'arrow') parts.push(svgBoxed(el, resolveImageHref, resolveIconArtLoaded));
   }
   for (const el of tab.elements) {
     if (el.type === 'arrow') parts.push(svgArrow(el, tab.elements));

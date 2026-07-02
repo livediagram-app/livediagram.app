@@ -20,11 +20,17 @@
 // spec/06). Swapping in a vendor's official SVG later is a per-id edit.
 //
 // This module is the SYNCHRONOUS API surface only. The heavy per-icon data
-// (colour + SVG markup) lives in tech-icons-data.ts and loads as an async
-// chunk through lib/icon-registry.ts, keeping ~25 kB out of the editor's
-// first-load JS. Nothing here may import the data module statically.
+// (colour + SVG markup) lives in @livediagram/icons/tech-icon-catalog and
+// loads as an async chunk through lib/icon-registry.ts, keeping ~25 kB out
+// of the editor's first-load JS. Nothing here may import the data module
+// statically.
 
+import type { TechIconDef, TechProvider } from '@livediagram/icons';
 import { getLoadedTechIconCatalog, getTechIconLoaded } from './icon-registry';
+
+// The catalogue types live in @livediagram/icons (shared with the Workers'
+// headless renders); re-exported so existing import sites keep resolving.
+export type { TechIconDef, TechProvider } from '@livediagram/icons';
 
 // Drag-from-palette MIME for a Technology tile dropped on the canvas.
 // Distinct from ICON_DND_MIME so the tile creates a STANDALONE icon
@@ -32,28 +38,6 @@ import { getLoadedTechIconCatalog, getTechIconLoaded } from './icon-registry';
 // beside a shape's text is meaningless, and the inline-icon renderer only
 // knows line-art prims). Value carried = the tech-icon id.
 export const TECH_ICON_DND_MIME = 'application/x-livediagram-tech-icon';
-
-export type TechProvider = 'aws' | 'azure' | 'cloudflare' | 'firebase' | 'generic';
-
-export type TechIconDef = {
-  id: string;
-  label: string;
-  // Optional shorter caption for the palette tile, where a long label
-  // would truncate (and e.g. "Virtual Machine" / "Virtual Network" would
-  // clip to the same ambiguous prefix). The full `label` is still used for
-  // search, the aria-label, and the on-canvas element. Omit when `label`
-  // already fits.
-  short?: string;
-  provider: TechProvider;
-  // Extra search terms beyond the label (so "object storage" finds S3).
-  keywords: string;
-  // Tile fill — the service / brand colour.
-  color: string;
-  // Inner SVG markup in a 0..24 art box, drawn on top of the tile. The
-  // renderer wraps it in a white line-art group, so a bare <path>/<circle>
-  // strokes white; a filled mark sets fill="#fff" stroke="none" itself.
-  glyph: string;
-};
 
 // Provider display names for the palette filter + tooltips.
 export const TECH_PROVIDERS: { id: TechProvider; label: string }[] = [
@@ -65,7 +49,7 @@ export const TECH_PROVIDERS: { id: TechProvider; label: string }[] = [
 ];
 
 // Every tech-icon id, kept HERE (first-load) while the full defs live in the
-// async tech-icons-data.ts chunk. `isTechIconId` gates real-time paths that
+// async tech-icon-catalog chunk (@livediagram/icons). `isTechIconId` gates real-time paths that
 // cannot wait for that chunk — the render dispatch (coloured vs line-art), the
 // drag fold-into-shape exclusion, the draw-commit telemetry — and tech ids
 // carry no common prefix ('aws-*' but also bare 'k8s' / 'docker'), so a cheap
