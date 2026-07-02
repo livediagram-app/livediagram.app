@@ -15,12 +15,14 @@
 // silent one ("the painter just started copying my new field too").
 
 import type {
+  AnimationSpeed,
   ArrowElement,
   BorderRadius,
   BorderStroke,
   BorderStyle,
   BoxedElement,
   IconAnimation,
+  IconSize,
   TextRun,
 } from '@livediagram/diagram';
 
@@ -119,9 +121,12 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     // Looping animation (spec/09) is a cosmetic field, so paint it like the rest.
     animation: source.animation,
     animationSpeed: source.animationSpeed,
-    // Per-icon glyph animation (spec/09); cosmetic, painted alongside. Only
-    // ShapeElement carries it, so read it off a structural view of the union.
+    // Per-icon glyph animation + speed and the Technology mark's fixed
+    // size preset (spec/09 / spec/41); cosmetic, painted alongside. Only
+    // ShapeElement carries them, so read them off a structural view.
     iconAnimation: (source as { iconAnimation?: IconAnimation }).iconAnimation,
+    iconAnimationSpeed: (source as { iconAnimationSpeed?: AnimationSpeed }).iconAnimationSpeed,
+    iconSize: (source as { iconSize?: IconSize }).iconSize,
   });
 }
 

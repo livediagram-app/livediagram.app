@@ -728,7 +728,10 @@ export function EditorView() {
         onDeleteFolder={deleteFolder}
         onMoveDiagramToFolder={moveDiagramToFolder}
         onDeselect={() => {
-          // Clicking empty canvas also cancels an armed arrow-connect.
+          // Clicking empty canvas also cancels an armed arrow-connect, and
+          // wraps up the Format tool — restoring the pre-Format tool — so a
+          // background click is the quick way out of paint mode (spec/09).
+          if (canvasTool === 'format') exitFormatTool();
           cancelConnect();
           setSelectedId(null);
           setMultiSelectedIds(new Set());

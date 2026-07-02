@@ -213,14 +213,23 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // instant it armed, since that path runs with the Select tool active).
   const formatToolActive = canvasTool === 'format';
   const prevCanvasToolRef = useRef(canvasTool);
+  // The tool that was active when Format was entered, so wrapping up the
+  // Format tool returns the user to what they were doing (spec/09) rather
+  // than always dropping to Select.
+  const preFormatToolRef = useRef<typeof canvasTool>('select');
   useEffect(() => {
     const wasFormat = prevCanvasToolRef.current === 'format';
     if (wasFormat !== formatToolActive) setFormatSourceId(null);
+    if (!wasFormat && formatToolActive) preFormatToolRef.current = prevCanvasToolRef.current;
     prevCanvasToolRef.current = canvasTool;
   }, [canvasTool, formatToolActive, setFormatSourceId]);
-  // Wrap up the Format tool from the mode banner's "Done": drop back to
-  // Select (the boundary effect above clears the armed source).
-  const exitFormatTool = () => setCanvasTool('select');
+  // Wrap up the Format tool (the mode banner's "Done", or a click on the
+  // empty canvas): restore the tool that was active before Format, falling
+  // back to Select (the boundary effect above clears the armed source).
+  const exitFormatTool = () => {
+    const prev = preFormatToolRef.current;
+    setCanvasTool(prev === 'format' ? 'select' : prev);
+  };
   // templatePickerMode (from useEditorUiState) gates the derived
   // `identityOnlyScreenOpen` chrome flag; transitions live in
   // `openTemplatePicker` / `skipTemplatePicker` / `chooseTemplate`.

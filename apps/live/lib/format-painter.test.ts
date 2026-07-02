@@ -87,6 +87,29 @@ describe('paintableBoxedFields', () => {
     });
   });
 
+  it('carries the icon fields (glyph animation + speed, Technology mark size)', () => {
+    const out = paintableBoxedFields({
+      id: 'i',
+      type: 'shape',
+      shape: 'icon',
+      iconId: 'aws-ec2',
+      x: 0,
+      y: 0,
+      width: 128,
+      height: 128,
+      iconAnimation: 'spin',
+      iconAnimationSpeed: 'fast',
+      iconSize: 'xl',
+    });
+    // The union's Partial hides shape-only fields; read structurally.
+    const icon = out as { iconAnimation?: string; iconAnimationSpeed?: string; iconSize?: string };
+    expect(icon.iconAnimation).toBe('spin');
+    expect(icon.iconAnimationSpeed).toBe('fast');
+    expect(icon.iconSize).toBe('xl');
+    // Identity stays with the target: the glyph itself is never painted.
+    expect(out).not.toHaveProperty('iconId');
+  });
+
   it('omits identity, content and position fields so the target keeps its own', () => {
     const out = paintableBoxedFields(fullyStyledShape) as Record<string, unknown>;
     // Identity / position / content stay on the target — the painter

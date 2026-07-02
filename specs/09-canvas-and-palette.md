@@ -959,7 +959,7 @@ The same painter is also available as a **canvas tool** in the palette tool drop
 
 - Picking the tool enters a **two-phase** mode driven by the top-centre banner. **Phase 1** (no source armed) reads "Select a base element to copy its style"; the first element clicked becomes the **source**.
 - **Phase 2** (source armed) reads "Tap elements to paint this style onto them"; each subsequent element click applies the source's formatting and **keeps the source armed**, so the user can format target after target.
-- **Done** on the banner (or switching to any other tool) exits; leaving the tool **disarms** the source. Clicking the source itself is a no-op but keeps the mode going.
+- **Done** on the banner, **clicking the empty canvas**, or switching to any other tool exits; leaving the tool **disarms** the source and **restores the tool that was active before Format** (falling back to Select). Clicking the source itself is a no-op but keeps the mode going.
 - Mechanically this reuses the single-shot path: the click handler routes through `useEditorDrag` (`formatToolActive`) and calls the same `applyFormatFromSource`, passing `{ keepSource: true }` so the source survives the apply. The painted-field projections (below) are shared verbatim. The copy cursor shows in both phases.
 
 ### Properties copied
@@ -972,6 +972,7 @@ Between two **boxed** elements (shape, text, sticky, table, image, freehand, ann
 - `fillColor`, `strokeColor`, `textColor`.
 - All **label text styling**: `textSize`, `textAlignX`, `textAlignY`, `textBold`, `textItalic`, `textUnderline`, `textStrikethrough`, `font`, `padding`.
 - Border presets (shape / table): `strokeWidth`, `strokeStyle`, `borderRadius`.
+- Animation fields (`animation`, `animationSpeed`) and the icon fields: glyph animation + speed (`iconAnimation`, `iconAnimationSpeed`) and the Technology mark's fixed-size preset (`iconSize`, spec/41). The glyph identity (`iconId`) is never painted.
 
 **Whole-label rich-text collapse.** Selecting all of a label and bolding it stores the formatting as a single attributed `richText` run, not the element-level `textBold` flag (see [rich text](#text-size) / `hasRichFormatting`). The painter therefore reads the **effective** whole-label value: an attribute every run agrees on (uniform bold / colour / size) is painted onto the target's element-level field; a partially-styled label (runs disagree) has no single value, so that attribute falls back to the element field. `richText` itself is never painted — its runs are bound to the **source's** characters, not the target's.
 
