@@ -6,8 +6,7 @@
 
 import type { ShapeKind } from '@livediagram/diagram';
 import type { PaletteSearchItem } from '@/lib/search';
-import { ICON_CATALOG } from '@/lib/icons';
-import { TECH_ICON_CATALOG } from '@/lib/tech-icons';
+import { getLoadedIconCatalog, getLoadedTechIconCatalog } from '@/lib/icon-registry';
 
 // The shapes offered in the palette's Shapes tab, with search keywords so
 // e.g. "database" finds the cylinder and "decision" finds the diamond. Kept
@@ -31,24 +30,32 @@ const SHAPES: { kind: ShapeKind; name: string; keywords: string }[] = [
   { kind: 'frame', name: 'Frame', keywords: 'section container group region' },
 ];
 
-// Built once at module load (the catalogues are static).
-export const PALETTE_SEARCH_ITEMS: PaletteSearchItem[] = [
-  ...SHAPES.map((s) => ({
-    id: `shape:${s.kind}`,
-    name: s.name,
-    keywords: `shape ${s.keywords}`,
-    add: { type: 'shape' as const, shapeKind: s.kind },
-  })),
-  ...ICON_CATALOG.map((i) => ({
-    id: `icon:${i.id}`,
-    name: i.label,
-    keywords: `icon ${i.keywords}`,
-    add: { type: 'icon' as const, iconId: i.id },
-  })),
-  ...TECH_ICON_CATALOG.map((t) => ({
-    id: `tech:${t.id}`,
-    name: t.label,
-    keywords: `technology ${t.keywords}`,
-    add: { type: 'tech' as const, iconId: t.id },
-  })),
-];
+// A function, not a module-load constant: the icon catalogues load as an
+// async chunk (lib/icon-registry.ts), so the list must be rebuilt once they
+// land. The shape entries are always present; icon / tech entries appear as
+// soon as the chunk does. The caller (EditorSearchPanel) subscribes via
+// useIconCatalogs, so it re-renders — and rebuilds this list — on load; the
+// build is a few hundred tiny objects, cheap enough to run per open-panel
+// render without memoisation.
+export function buildPaletteSearchItems(): PaletteSearchItem[] {
+  return [
+    ...SHAPES.map((s) => ({
+      id: `shape:${s.kind}`,
+      name: s.name,
+      keywords: `shape ${s.keywords}`,
+      add: { type: 'shape' as const, shapeKind: s.kind },
+    })),
+    ...getLoadedIconCatalog().map((i) => ({
+      id: `icon:${i.id}`,
+      name: i.label,
+      keywords: `icon ${i.keywords}`,
+      add: { type: 'icon' as const, iconId: i.id },
+    })),
+    ...getLoadedTechIconCatalog().map((t) => ({
+      id: `tech:${t.id}`,
+      name: t.label,
+      keywords: `technology ${t.keywords}`,
+      add: { type: 'tech' as const, iconId: t.id },
+    })),
+  ];
+}

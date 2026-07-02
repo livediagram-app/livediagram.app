@@ -1,6 +1,7 @@
 // Icon catalogue data, part 2 of 2 (tech / people / security / files /
 // charts / ui / furniture / animated). See icon-catalog-1.ts for why this
-// is split; concatenated after part 1 in icons.ts.
+// is split and why it loads async; concatenated after part 1 by
+// lib/icon-registry.ts (import it ONLY through the registry).
 import type { IconDef } from './icon-types';
 
 export const ICON_CATALOG_2: IconDef[] = [

@@ -1,7 +1,9 @@
 // Icon catalogue data, part 1 of 2 (general / arrows / etc). Split from
 // icons.ts purely to keep each file under the ~1000-line budget; the two
-// parts are concatenated back into ICON_CATALOG in icons.ts. Order matters
-// (the first entry is the default icon), so part 1 stays first.
+// parts are concatenated back together by lib/icon-registry.ts, which
+// dynamic-imports them so this data ships as an async chunk instead of in
+// the editor's first-load JS (import it ONLY through the registry). Order
+// matters (the first entry is the default icon), so part 1 stays first.
 import type { IconDef } from './icon-types';
 
 export const ICON_CATALOG_1: IconDef[] = [

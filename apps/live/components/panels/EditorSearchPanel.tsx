@@ -2,10 +2,11 @@
 
 import dynamic from 'next/dynamic';
 
-import { PALETTE_SEARCH_ITEMS } from '@/lib/palette-search';
+import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 const SearchPanel = dynamic(() =>
   import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
@@ -36,6 +37,13 @@ export function EditorSearchPanel() {
     setSearchOpen,
   } = useEditorContext();
   const { commandItems, runCommand } = useEditorCommands();
+  // The icon catalogues load async (lib/icon-registry.ts); subscribing here
+  // re-renders the panel — and rebuilds the palette items below — the moment
+  // they land, so "Add to canvas" results go from shapes-only to the full
+  // shapes + icons + tech list without a reopen. (In practice the editor page
+  // kicked the load at mount, so by the time anyone opens search the data is
+  // almost always already in.)
+  useIconCatalogs();
 
   if (!searchOpen) return null;
 
@@ -82,7 +90,7 @@ export function EditorSearchPanel() {
         setActiveId(tabId);
         setSelectedId(elementId);
       }}
-      paletteItems={isReadOnly ? undefined : PALETTE_SEARCH_ITEMS}
+      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems()}
       onAddPaletteItem={
         isReadOnly
           ? undefined

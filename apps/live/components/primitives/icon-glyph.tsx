@@ -5,6 +5,7 @@
 import type { AnimationSpeed, IconAnimation } from '@livediagram/diagram';
 
 import { getIcon, iconAnimationClass, iconAnimationSpeedStyle, type IconPrim } from '@/lib/icons';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 // non-scaling-stroke keeps the line weight constant on screen at any
 // element size / zoom (matching the device-frame shapes), so a big icon
@@ -46,6 +47,11 @@ export function IconPrims({
   // Loop speed for the animation (slow / normal / fast); undefined = normal.
   animationSpeed?: AnimationSpeed;
 }) {
+  // The glyph catalogue loads as an async chunk (lib/icon-registry.ts). This
+  // subscription (a) kicks the load if nothing else has, and (b) re-renders
+  // this glyph when the data lands — until then `getIcon` serves the framed
+  // question-mark placeholder, so an icon element is never a blank flash.
+  useIconCatalogs();
   const prims = getIcon(iconId).prims.map((p, i) => <Prim key={i} p={p} />);
   // An animated icon wraps the glyph in a <g> that carries the looping CSS
   // class; transform-box: fill-box in globals.css keeps the spin / scale

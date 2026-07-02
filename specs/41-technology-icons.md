@@ -51,8 +51,24 @@ type TechIconDef = {
 ```
 
 - `iconId` stays a plain string in the data model (as today), so adding an icon
-  is a one-file change with no migration. An id present in neither catalogue
-  renders the existing placeholder.
+  needs no migration. An id present in neither catalogue renders the existing
+  placeholder.
+- **The heavy data loads async.** `tech-icons.ts` is the synchronous API
+  surface only (types, `TECH_ICON_DND_MIME`, `TECH_PROVIDERS`, `isTechIconId`);
+  the per-icon colour + glyph markup lives in `tech-icons-data.ts` and is
+  dynamic-imported (together with the line-art catalogue) by
+  `apps/live/lib/icon-registry.ts`, keeping ~25 kB of source out of the
+  editor's first-load JS (see spec/09 "Catalogue loading"). `isTechIconId` —
+  which gates hot paths that can't wait for the chunk (the coloured-vs-line-art
+  render dispatch, the drag fold-into-shape exclusion, telemetry typing) —
+  answers from a lightweight first-load id set, `TECH_ICON_IDS`; tech ids share
+  no common prefix (`aws-*` but also bare `k8s` / `docker`), so exact
+  membership needs the set. Adding an icon is therefore a **two-line change**
+  (the `TechIconDef` entry plus its id in the set), and a parity test pins the
+  two together so they can't drift. Before the chunk lands, a known tech id
+  renders a **muted skeleton tile** in the mark's rounded-square silhouette
+  (never a blank, and nothing jumps when the brand colours arrive); the
+  Technology picker shows a brief "Loading icons…" note.
 - The mark is a **brand-coloured rounded tile + a white line-art glyph** — the
   AWS resource-icon visual language, applied uniformly across AWS / Azure /
   generic for a cohesive palette, using each service's **official brand /

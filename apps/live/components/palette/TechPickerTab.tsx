@@ -12,6 +12,10 @@ type TechPickerTabProps = {
   setTechProvider: (p: TechProvider | 'all') => void;
   techFilters: { id: string; label: string }[];
   techResults: TechIconDef[];
+  // True while the async icon-catalogue chunk (lib/icon-registry.ts) is still
+  // in flight — the grid is empty then, so show a loading note instead of the
+  // misleading "no matches" empty state.
+  loading?: boolean;
 };
 
 // The command palette's Technology tab: a searchable, provider-filtered
@@ -26,6 +30,7 @@ export function TechPickerTab({
   setTechProvider,
   techFilters,
   techResults,
+  loading = false,
 }: TechPickerTabProps) {
   return (
     <>
@@ -125,7 +130,9 @@ export function TechPickerTab({
         ))}
         {techResults.length === 0 ? (
           <p className="col-span-4 px-1 py-2 text-center text-[11px] text-slate-400">
-            No technology icons match “{techQuery}”.
+            {/* While the catalogue chunk is loading, an empty grid means
+                "data not here yet", not "your search found nothing". */}
+            {loading ? 'Loading icons…' : `No technology icons match “${techQuery}”.`}
           </p>
         ) : null}
       </div>

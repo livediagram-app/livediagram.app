@@ -12,7 +12,8 @@
 import type { AnimationSpeed, IconAnimation } from '@livediagram/diagram';
 
 import { iconAnimationClass, iconAnimationSpeedStyle } from '@/lib/icons';
-import { getTechIcon } from '@/lib/tech-icons';
+import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 // The white line-art group the glyph markup sits in. A bare path/circle in
 // the markup strokes white; a filled mark sets fill="#fff" stroke="none"
@@ -31,8 +32,29 @@ const GLYPH_GROUP = {
 // caller owns the <svg> + viewBox so the same art renders at catalogue
 // thumbnail size and at element size.
 export function TechIconArt({ iconId }: { iconId: string | undefined }) {
+  // The colour/glyph data lives in the async catalogue chunk
+  // (lib/icon-registry.ts); subscribe so the brand mark pops in the moment it
+  // lands (and kick the load if this is the first icon surface to mount).
+  const catalogsLoaded = useIconCatalogs();
   const icon = getTechIcon(iconId);
-  if (!icon) return null;
+  if (!icon) {
+    // `isTechIconId` answers from a lightweight id set that is always in the
+    // first-load bundle, so we can tell the two undefined cases apart: a KNOWN
+    // tech id whose data is still in flight gets a muted skeleton tile (the
+    // same rounded-square silhouette as the real mark, so nothing jumps when
+    // the brand colours arrive); a genuinely unknown id stays null, leaving
+    // the caller's line-art-placeholder fallback in charge, exactly as before.
+    return !catalogsLoaded && isTechIconId(iconId) ? (
+      <rect
+        x="1.5"
+        y="1.5"
+        width="21"
+        height="21"
+        rx="4.5"
+        className="fill-slate-300 dark:fill-slate-600"
+      />
+    ) : null;
+  }
   return (
     <>
       <rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill={icon.color} />

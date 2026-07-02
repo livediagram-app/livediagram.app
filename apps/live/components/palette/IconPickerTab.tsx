@@ -12,6 +12,10 @@ type IconPickerTabProps = {
   setIconCategory: (c: string) => void;
   iconFilters: { id: string; label: string }[];
   iconResults: IconDef[];
+  // True while the async icon-catalogue chunk (lib/icon-registry.ts) is still
+  // in flight — the grid is empty then, so show a loading note instead of the
+  // misleading "no icons match" empty state.
+  loading?: boolean;
 };
 
 // The command palette's Icons tab: a searchable, category-filtered catalogue
@@ -26,6 +30,7 @@ export function IconPickerTab({
   setIconCategory,
   iconFilters,
   iconResults,
+  loading = false,
 }: IconPickerTabProps) {
   return (
     <>
@@ -135,7 +140,9 @@ export function IconPickerTab({
         ))}
         {iconResults.length === 0 ? (
           <p className="col-span-6 px-1 py-2 text-center text-[11px] text-slate-400">
-            No icons match “{iconQuery}”.
+            {/* While the catalogue chunk is loading, an empty grid means
+                "data not here yet", not "your search found nothing". */}
+            {loading ? 'Loading icons…' : `No icons match “${iconQuery}”.`}
           </p>
         ) : null}
       </div>

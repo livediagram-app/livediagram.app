@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
+import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
@@ -33,6 +34,18 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   useEffect(() => {
     if (embed) track('Session', 'Opened', 'Embed');
   }, [embed]);
+  // Prefetch the async icon-catalogue chunk (~60 kB of glyph data kept out of
+  // the first-load JS, see lib/icon-registry.ts) as soon as the editor
+  // mounts, so it downloads in parallel with the diagram fetch / hydration.
+  // By the time a diagram's icons render — or the user opens the Icons /
+  // Technology palette tab — the data is almost always already in, keeping
+  // the placeholder window to a first-paint blink at worst. Fire-and-forget:
+  // ensureIconCatalogs never rejects (a failure logs and retries on the next
+  // consumer mount), and every icon surface still self-loads via
+  // useIconCatalogs, so this is purely a head start.
+  useEffect(() => {
+    void ensureIconCatalogs();
+  }, []);
   // Tab title reflects the diagram: "<name> | livediagram" (falls back to
   // Untitled when the diagram has no name yet). Updates as the user renames.
   useEffect(() => {

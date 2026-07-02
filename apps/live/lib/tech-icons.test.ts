@@ -1,11 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import {
-  TECH_ICON_CATALOG,
+  TECH_ICON_IDS,
   TECH_PROVIDERS,
   getTechIcon,
   isTechIconId,
   searchTechIcons,
 } from './tech-icons';
+// The catalogue tests validate the DATA, so they import the data module
+// directly (in the app it only ever arrives via the registry's dynamic
+// import; tests are the sanctioned second importer).
+import { TECH_ICON_CATALOG } from './tech-icons-data';
+import { ensureIconCatalogs } from './icon-registry';
+
+// getTechIcon / searchTechIcons read the async-loaded catalogue
+// (lib/icon-registry.ts); load it once up front. Pre-load behaviour is
+// covered in icon-registry.test.ts.
+beforeAll(async () => {
+  await ensureIconCatalogs();
+});
 
 describe('tech-icon catalogue', () => {
   it('is non-empty and has unique ids', () => {
@@ -31,6 +43,17 @@ describe('tech-icon catalogue', () => {
         `no icons for provider "${id}"`,
       ).toBe(true);
     }
+  });
+
+  // TECH_ICON_IDS (tech-icons.ts) duplicates the ids so `isTechIconId` can
+  // answer synchronously before the data chunk loads. This parity check is
+  // what makes that duplication safe: an id present in one place but not the
+  // other fails here instead of silently mis-rendering (a data entry missing
+  // from the set would render as the line-art placeholder; a set entry with
+  // no data would skeleton forever).
+  it('TECH_ICON_IDS matches the data catalogue exactly', () => {
+    const dataIds = new Set(TECH_ICON_CATALOG.map((i) => i.id));
+    expect([...TECH_ICON_IDS].sort()).toEqual([...dataIds].sort());
   });
 });
 

@@ -13,8 +13,9 @@ import {
   PaletteToolsTab,
   PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
-import { ICON_CATALOG, ICON_CATEGORIES, iconsInCategory } from '@/lib/icons';
+import { getIconCatalog, ICON_CATEGORIES, iconsInCategory } from '@/lib/icons';
 import { searchTechIcons, TECH_PROVIDERS, type TechProvider } from '@/lib/tech-icons';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
@@ -191,9 +192,15 @@ export function CommandPalette({
   // search runs WITHIN the selected category. Picked from a dropdown beside
   // the search box (replacing the old chip row).
   const [iconCategory, setIconCategory] = useState<string>('all');
+  // Both icon catalogues load as one async chunk (lib/icon-registry.ts).
+  // Subscribing here re-renders the palette when the data lands, so the two
+  // result lists below re-derive from the populated catalogue; until then
+  // they're empty and the picker tabs show a brief "Loading icons" note
+  // (via `iconCatalogsLoaded`) instead of a false "no matches".
+  const iconCatalogsLoaded = useIconCatalogs();
   const iconFilters = [{ id: 'all', label: 'All' }, ...ICON_CATEGORIES];
   const iconResults = (
-    iconCategory === 'all' ? ICON_CATALOG : iconsInCategory(iconCategory)
+    iconCategory === 'all' ? getIconCatalog() : iconsInCategory(iconCategory)
   ).filter((i) => {
     const q = iconQuery.trim().toLowerCase();
     if (!q) return true;
@@ -424,6 +431,7 @@ export function CommandPalette({
                   setIconCategory={setIconCategory}
                   iconFilters={iconFilters}
                   iconResults={iconResults}
+                  loading={!iconCatalogsLoaded}
                 />
               ),
             },
@@ -460,6 +468,7 @@ export function CommandPalette({
                   setTechProvider={setTechProvider}
                   techFilters={techFilters}
                   techResults={techResults}
+                  loading={!iconCatalogsLoaded}
                 />
               ),
             },

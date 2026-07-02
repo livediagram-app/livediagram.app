@@ -9,6 +9,14 @@
 // string in the data model (NOT a closed enum) so adding an icon is a
 // one-file change with no schema migration; an unknown id renders the
 // PLACEHOLDER glyph rather than vanishing.
+//
+// This module is the SYNCHRONOUS API surface only. The catalogue data
+// (icon-catalog-1/2.ts, ~36 kB of glyph geometry) loads as an async chunk
+// through lib/icon-registry.ts, keeping it out of the editor's first-load
+// JS. Nothing here may import those data modules statically; until the
+// chunk lands, lookups fall back to PLACEHOLDER_ICON and list views come
+// back empty (the consumers subscribe via useIconCatalogs and re-render
+// when the data arrives).
 
 import type { CSSProperties } from 'react';
 import {
@@ -18,8 +26,7 @@ import {
 } from '@livediagram/diagram';
 
 import type { IconDef, IconPrim } from './icon-types';
-import { ICON_CATALOG_1 } from './icon-catalog-1';
-import { ICON_CATALOG_2 } from './icon-catalog-2';
+import { getIconLoaded, getLoadedIconCatalog } from './icon-registry';
 
 export type { IconDef, IconPrim };
 
@@ -32,10 +39,15 @@ export const ICON_DND_MIME = 'application/x-livediagram-icon';
 // element at that point. Value carried = the ShapeKind (shapes + devices).
 export const PALETTE_DND_MIME = 'application/x-livediagram-palette';
 
-// The full catalogue, assembled from the two data modules (split so each
-// data file stays well under the ~1000-line budget). Order is preserved:
-// part 1 then part 2, so ICON_CATALOG[0] is still the default icon.
-export const ICON_CATALOG: IconDef[] = [...ICON_CATALOG_1, ...ICON_CATALOG_2];
+// The full catalogue (part 1 then part 2, so index 0 is still the default
+// icon — the registry preserves that order when it assembles the parts).
+// Empty until the async catalogue chunk loads; callers that render the list
+// (the Icons picker, palette search) subscribe via useIconCatalogs so they
+// re-run once the data lands. A function rather than an exported const so
+// there is no stale module-level snapshot of the pre-load empty array.
+export function getIconCatalog(): IconDef[] {
+  return getLoadedIconCatalog();
+}
 
 // The globals.css class for an `lvd-{prefix}-{anim}` keyframe set (undefined
 // anim = static, no class). The shared shape behind the per-element animation
@@ -82,8 +94,10 @@ export function animSpeedVars(
 }
 
 // Fallback when an iconId isn't in the catalogue (e.g. a diagram saved
-// against a newer build): a simple framed question mark so the element
-// is still visibly an icon placeholder rather than empty space.
+// against a newer build) — and, since the catalogue went async, ALSO the
+// interim glyph every icon shows for the moment before the catalogue chunk
+// loads: a simple framed question mark so the element is still visibly an
+// icon placeholder rather than empty space (or a blank that pops in late).
 export const PLACEHOLDER_ICON: IconDef = {
   id: '__placeholder__',
   label: 'Unknown icon',
@@ -95,10 +109,12 @@ export const PLACEHOLDER_ICON: IconDef = {
   ],
 };
 
-const ICON_BY_ID = new Map(ICON_CATALOG.map((i) => [i.id, i]));
-
+// Resolves a glyph, falling back to the placeholder for unknown ids AND
+// while the catalogue chunk is still in flight — so the render path never
+// branches on load state; it just re-renders (via useIconCatalogs) once the
+// real glyph is available.
 export function getIcon(id: string | undefined): IconDef {
-  return (id && ICON_BY_ID.get(id)) || PLACEHOLDER_ICON;
+  return getIconLoaded(id) ?? PLACEHOLDER_ICON;
 }
 
 // Theme chips for the Icons accordion: a handful of categories so the
@@ -272,10 +288,11 @@ export const ICON_CATEGORIES: IconCategory[] = [
 ];
 
 // Icons in a category (existing catalogue entries only), in catalogue
-// order. Unknown category id → empty.
+// order. Unknown category id → empty; also empty until the catalogue
+// chunk loads (the picker subscribes and re-runs).
 export function iconsInCategory(categoryId: string): IconDef[] {
   const cat = ICON_CATEGORIES.find((c) => c.id === categoryId);
   if (!cat) return [];
   const ids = new Set(cat.iconIds);
-  return ICON_CATALOG.filter((i) => ids.has(i.id));
+  return getLoadedIconCatalog().filter((i) => ids.has(i.id));
 }
