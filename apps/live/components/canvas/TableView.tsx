@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   BORDER_STROKE_PX,
   clearCellStyle,
+  tableTrackSizes,
   defaultStrokeColor,
   defaultTextColor,
   isTabularClipboard,
@@ -349,6 +350,22 @@ export function TableView({
   // remaining width).
   const colTemplate = gridTrackTemplate(cols, resizeWidths ?? element.colWidths);
   const rowTemplate = gridTrackTemplate(rows, resizeHeights ?? element.rowHeights);
+  // The table's quick-connect pluses sit on the edge MIDPOINTS (spec/09),
+  // right where a centre column / row's ⋯ trigger would land now the
+  // triggers live outside the edges. When a trigger's centre falls under
+  // the plus, dodge it sideways / downwards by a screen-constant nudge.
+  const colSizes = tableTrackSizes(element.width, cols, resizeWidths ?? element.colWidths);
+  const rowSizes = tableTrackSizes(element.height, rows, resizeHeights ?? element.rowHeights);
+  const trackCentre = (sizes: number[], i: number) => {
+    let off = 0;
+    for (let k = 0; k < i; k++) off += sizes[k]!;
+    return off + (sizes[i] ?? 0) / 2;
+  };
+  // Clearance / nudge in screen px, converted to element space (the plus is
+  // a fixed screen size; the trigger counter-scales too).
+  const PLUS_CLEARANCE_PX = 40;
+  const dodgesPlus = (centre: number, mid: number) =>
+    Math.abs(centre - mid) < PLUS_CLEARANCE_PX * invScale;
 
   const { beginEdit, commitCell, commitAndAppendRow, moveTo, caretInfo } = useTableEditing({
     element,
@@ -995,7 +1012,14 @@ export function TableView({
                   {colOn ? (
                     <div
                       className="pointer-events-auto relative"
-                      style={{ transform: `scale(${invScale})`, transformOrigin: 'bottom center' }}
+                      style={{
+                        transform: `${
+                          dodgesPlus(trackCentre(colSizes, c), element.width / 2)
+                            ? `translateX(${34 * invScale}px) `
+                            : ''
+                        }scale(${invScale})`,
+                        transformOrigin: 'bottom center',
+                      }}
                       onMouseEnter={() => {
                         cancelHoverClear();
                         setHoveredCol(c);
@@ -1029,7 +1053,14 @@ export function TableView({
                   {rowOn ? (
                     <div
                       className="pointer-events-auto relative"
-                      style={{ transform: `scale(${invScale})`, transformOrigin: 'center right' }}
+                      style={{
+                        transform: `${
+                          dodgesPlus(trackCentre(rowSizes, r), element.height / 2)
+                            ? `translateY(${34 * invScale}px) `
+                            : ''
+                        }scale(${invScale})`,
+                        transformOrigin: 'center right',
+                      }}
                       onMouseEnter={() => {
                         cancelHoverClear();
                         setHoveredRow(r);

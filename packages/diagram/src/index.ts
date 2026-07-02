@@ -641,6 +641,7 @@ export * from './text-dsl';
 // Headless SVG renderer (spec/62 §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export * from './svg-render-table';
 
 // Theme engine (spec/29, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
