@@ -2,7 +2,6 @@ import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } 
 import type { Tab } from '@livediagram/diagram';
 import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
-import { getGuestSelfSig } from '@/lib/local-identity';
 import {
   apiCreateRoomTicket,
   connectRoom,
@@ -322,12 +321,6 @@ export function useRoomConnection(opts: {
           // it). A share-link visitor's id just won't match, and their
           // role comes from the code.
           ownerId: selfParticipant.id,
-          // Possession proof for `o` (spec/04): lets the worker bind the
-          // broadcast participant id to a verified value so a joiner can't
-          // spoof another participant's presence. A guest's sig matches their
-          // id; a signed-in user's `o` is their Clerk id (no guest sig), so they
-          // fall back to the owner-id match for the owner path.
-          signature: getGuestSelfSig(),
         },
       );
       roomRef.current = openedRoom;

@@ -9,7 +9,7 @@
 import type { Tab } from '@livediagram/diagram';
 import { apiFetchImageDataUrl } from './api/images';
 
-export type ExportImageEntry = {
+type ExportImageEntry = {
   // base64 data URL — embedded into the SVG export's <image href>.
   href: string;
   // Decoded element for the PNG/PDF canvas's ctx.drawImage.

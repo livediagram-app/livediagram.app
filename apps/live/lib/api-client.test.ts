@@ -8,7 +8,6 @@ import {
   apiDeleteTab,
   apiDismissSharedWith,
   apiFetchImageBlobUrl,
-  apiHeaders,
   apiListImages,
   apiLoadDiagram,
   apiLoadShared,
@@ -19,6 +18,7 @@ import {
   setSessionSharePassword,
   setTokenProvider,
 } from './api-client';
+import { apiHeaders } from './api/core';
 
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a

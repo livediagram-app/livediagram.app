@@ -32,7 +32,8 @@ The api accepts two equivalent ways of identifying the request owner, in this or
 The request handler computes the resolution once at the top of `fetch`:
 
 ```ts
-const clerkUserId = await getClerkUserId(env, request);
+const clerkIdentity = await getClerkIdentity(env, request);
+const clerkUserId = clerkIdentity?.userId ?? null;
 const resolveOwner = () => clerkUserId ?? request.headers.get('X-Owner-Id');
 ```
 

@@ -63,11 +63,6 @@ export type ExplorerProps = {
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
   onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
-  // Initial open state for the Recent accordion. Defaults to
-  // collapsed so the panel stays compact, but the welcome /
-  // /live/new surface flips this to true when there are recent
-  // diagrams so a returning user lands looking at their library.
-  defaultRecentOpen?: boolean;
   // Callback the Canvas wires up to track Explorer's bottom edge so
   // the Palette can stack beneath it on mobile (where Explorer
   // banner-pins to the top of the viewport rather than the left

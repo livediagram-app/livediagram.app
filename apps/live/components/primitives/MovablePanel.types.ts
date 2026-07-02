@@ -80,13 +80,6 @@ export type MovablePanelProps = {
   // pixels, applied as an inline `top` so it wins over the Tailwind
   // mobile class without disturbing the `sm:top-4` desktop class.
   mobileTopOverridePx?: number;
-  // When true the panel is forced expanded and tap-to-collapse on
-  // mobile is disabled. Used while the user is renaming a child row
-  // or working through a confirm modal — collapsing in the middle of
-  // those flows hides the rename input / the diagram context for the
-  // modal, which is disorienting on a phone. Caller tracks the
-  // "in-flight" state and flips this on for the duration.
-  lockOpen?: boolean;
   // CSS selector for DOM nodes that should be treated as inside the
   // panel even if they live outside `ref` (e.g. portal-mounted
   // submenus rendered to document.body). Without this, tapping an
@@ -111,13 +104,6 @@ export type MovablePanelProps = {
   // Comments panel ships closed so it doesn't compete with the
   // Palette above it).
   defaultCollapsed?: boolean;
-  // Counter the parent bumps whenever it wants to force the banner
-  // open (e.g. navigating to a theme accordion from an Activity row).
-  // Only meaningful with `collapsible`. On every change of this value
-  // the local collapsed state resets to false; mount value is ignored
-  // so the panel still picks its viewport-driven default on first
-  // render. Optional; callers that don't need imperative open omit it.
-  expandSignal?: number;
   // Mobile dock mode. When true: force the panel open and position it
   // below the dock bar (using mobileTopOverridePx as the top offset).
   // When false: render nothing on mobile so the dock button is the

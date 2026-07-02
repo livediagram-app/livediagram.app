@@ -99,7 +99,13 @@ export function useElementLinks(deps: ElementLinksDeps) {
                 // otherwise a redirect (trailing slash / https / www, which is
                 // most URLs) makes meta.url !== link.url and LinkCardView
                 // discards the preview, so the card looks like it lost its link.
-                { ...el, meta: { ...meta, url } }
+                // Cache ONLY the rendered fields — the unfurl response
+                // also carries siteName/description the card never draws,
+                // and spreading them here persisted them into every diagram.
+                {
+                  ...el,
+                  meta: { url, title: meta.title, image: meta.image, favicon: meta.favicon },
+                }
               : el,
           ),
         );

@@ -309,7 +309,7 @@ export function authHrefWithReturn(
 // so you land back on the exact tab. SSR / first paint has no `window`,
 // so it starts at the bare pathname and upgrades on mount, well before
 // any click.
-export function useAuthReturnPath(): string {
+function useAuthReturnPath(): string {
   const pathname = usePathname();
   const [returnTo, setReturnTo] = useState(pathname);
   useEffect(() => {

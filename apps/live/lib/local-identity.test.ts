@@ -5,7 +5,6 @@ import {
   getGuestSelfId,
   hasConfirmedName,
   markNameConfirmed,
-  setGuestSelfId,
 } from './local-identity';
 
 // These tests run in the `node` environment (no `window`), which is
@@ -19,12 +18,6 @@ describe('local-identity SSR-safety (no window)', () => {
 
   it('hasConfirmedName returns false when storage is unavailable', () => {
     expect(hasConfirmedName()).toBe(false);
-  });
-
-  it('setGuestSelfId is a no-op that does not throw', () => {
-    expect(() => setGuestSelfId('id-123')).not.toThrow();
-    // Still null — the write silently no-ops without a real Storage.
-    expect(getGuestSelfId()).toBeNull();
   });
 
   it('clearGuestSelfId is a no-op that does not throw', () => {

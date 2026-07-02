@@ -47,11 +47,9 @@ export function MovablePanel({
   stackBelowY,
   onSize,
   mobileTopOverridePx,
-  lockOpen = false,
   outsideExceptSelector,
   collapsible = false,
   defaultCollapsed = false,
-  expandSignal,
   mobileOpenOverride,
   forceDockMode = false,
   onMobileClose,
@@ -293,7 +291,7 @@ export function MovablePanel({
     // Tap-to-collapse on mobile, except while the parent has locked
     // the panel open or the dock is controlling this panel (dock
     // button is the collapse affordance in that case).
-    if (collapsible && e.pointerType === 'touch' && !lockOpen && mobileOpenOverride === undefined) {
+    if (collapsible && e.pointerType === 'touch' && mobileOpenOverride === undefined) {
       e.stopPropagation();
       setCollapsed(true);
       return;
@@ -333,19 +331,6 @@ export function MovablePanel({
   // Dock-controlled: hide when not active, force open when active.
   const effectiveCollapsed = dockControlledOpen ? false : collapsed;
 
-  // Imperative open from the parent. Whenever `expandSignal` changes
-  // (compared to the value cached in the ref) we reset the local
-  // collapsed state to false. The ref starts at the initial value so
-  // the first render doesn't fire the effect (which would override
-  // the viewport-driven mobile-default-collapsed initial state).
-  const lastExpandSignalRef = useRef(expandSignal);
-  useEffect(() => {
-    if (!collapsible) return;
-    if (expandSignal === lastExpandSignalRef.current) return;
-    lastExpandSignalRef.current = expandSignal;
-    setCollapsed(false);
-  }, [collapsible, expandSignal]);
-
   // Outside-tap auto-close. Active only on actual mobile, where the
   // small viewport makes tap-away-to-dismiss expected. On DESKTOP the
   // user is in control of when to close — including the minimal-layout
@@ -366,7 +351,7 @@ export function MovablePanel({
     },
     isMobile &&
       (dockControlledOpen ||
-        (collapsible && !effectiveCollapsed && !lockOpen && mobileOpenOverride === undefined)),
+        (collapsible && !effectiveCollapsed && mobileOpenOverride === undefined)),
     dockControlledOpen
       ? outsideExceptSelector
         ? `[data-mobile-dock],${outsideExceptSelector}`

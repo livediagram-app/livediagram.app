@@ -46,9 +46,9 @@ import type { ExportImageMap } from './export-tab-images';
 // fall back to the placeholder. Build it with loadTabImages (export-tab-images).
 export type ImageExportOpts = { isometric?: boolean; pattern?: boolean; images?: ExportImageMap };
 
-// Re-export so callers (the export dialog) get the loader + map type from the
-// same `@/lib/export-tab` barrel they already import the exporters from.
-export { loadTabImages, type ExportImageMap } from './export-tab-images';
+// Re-export so callers (the export dialog) get the loader from the same
+// `@/lib/export-tab` barrel they already import the exporters from.
+export { loadTabImages } from './export-tab-images';
 
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).

@@ -2054,16 +2054,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "LinkCardMeta": {
     "additionalProperties": false,
     "properties": {
-      "description": {
-        "type": "string"
-      },
       "favicon": {
         "type": "string"
       },
       "image": {
-        "type": "string"
-      },
-      "siteName": {
         "type": "string"
       },
       "title": {

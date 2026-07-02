@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3001",
     "build": "next build",
-    "start": "next start -p 3001",
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

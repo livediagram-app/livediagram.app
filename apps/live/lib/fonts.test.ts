@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_FONT_STACK, FONTS, googleFontsHref, resolveFontStack } from './fonts';
+import { FONTS, googleFontsHref, resolveFontStack } from './fonts';
 
 // The generic CSS families a stack is allowed to terminate in. spec/28:
 // fonts are a progressive enhancement, so every stack must end in one of
@@ -54,7 +54,7 @@ describe('resolveFontStack', () => {
   it('returns undefined (NOT the default stack) for unset / unknown ids', () => {
     // The element -> tab -> CSS-default fallback chain in the renderers
     // depends on this being undefined for an unchosen font, so a tab font
-    // can win over the editor default. Returning DEFAULT_FONT_STACK here
+    // can win over the editor default. Returning a default stack here
     // would silently pin every unstyled element to the editor default and
     // break per-tab fonts.
     expect(resolveFontStack(null)).toBeUndefined();
@@ -74,12 +74,5 @@ describe('googleFontsHref', () => {
 
   it('lists exactly one family= entry per catalogue font', () => {
     expect(googleFontsHref().match(/family=/g)?.length).toBe(FONTS.length);
-  });
-});
-
-describe('DEFAULT_FONT_STACK', () => {
-  it('is a pure system stack (no Google family) so unstyled text needs no fetch', () => {
-    expect(DEFAULT_FONT_STACK).toBe('ui-sans-serif, system-ui, sans-serif');
-    expect(DEFAULT_FONT_STACK).not.toContain("'");
   });
 });

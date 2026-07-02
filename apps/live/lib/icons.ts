@@ -95,8 +95,6 @@ export const PLACEHOLDER_ICON: IconDef = {
   ],
 };
 
-export const DEFAULT_ICON_ID = ICON_CATALOG[0]!.id;
-
 const ICON_BY_ID = new Map(ICON_CATALOG.map((i) => [i.id, i]));
 
 export function getIcon(id: string | undefined): IconDef {

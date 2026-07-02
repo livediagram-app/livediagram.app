@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  DEFAULT_ICON_ID,
-  ICON_CATALOG,
-  ICON_CATEGORIES,
-  PLACEHOLDER_ICON,
-  getIcon,
-  iconsInCategory,
-} from './icons';
+import { ICON_CATALOG, ICON_CATEGORIES, PLACEHOLDER_ICON, getIcon, iconsInCategory } from './icons';
 
 describe('icon catalogue', () => {
   it('is non-empty and has unique ids', () => {
@@ -20,10 +13,6 @@ describe('icon catalogue', () => {
       expect(icon.label.length).toBeGreaterThan(0);
       expect(icon.prims.length).toBeGreaterThan(0);
     }
-  });
-
-  it('DEFAULT_ICON_ID resolves to a catalogue entry', () => {
-    expect(ICON_CATALOG.some((i) => i.id === DEFAULT_ICON_ID)).toBe(true);
   });
 });
 

@@ -607,15 +607,16 @@ export type AnnotationElement = {
 // metadata rides the normal tab sync, so peers + reloads get it for free.
 // Resizable like a shape; carries the shared boxed fields (mostly
 // always-undefined, mirroring AnnotationElement) for the generic code paths.
+// Only the fields the card actually renders (title / image / favicon).
+// The unfurl endpoint also returns siteName + description, but nothing
+// draws them, so they aren't cached onto the element or persisted.
 export type LinkCardMeta = {
   // The URL this metadata was fetched for — guards against showing stale
   // preview after the link changes.
   url: string;
   title?: string;
-  siteName?: string;
   image?: string; // og:image URL (referenced directly, not stored)
   favicon?: string; // resolved favicon URL
-  description?: string;
 };
 
 export type LinkCardElement = {

@@ -7,7 +7,6 @@
     "dev": "node ../../scripts/next-dev.mjs --port 3002",
     "dev:webpack": "node ../../scripts/next-dev.mjs --port 3002 --webpack",
     "build": "next build",
-    "start": "next start -p 3002",
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

@@ -53,7 +53,7 @@ export function getGuestSelfId(): string | null {
   return readLocalStorageSafe(KEYS.selfId);
 }
 
-export function setGuestSelfId(id: string): void {
+function setGuestSelfId(id: string): void {
   writeLocalStorageSafe(KEYS.selfId, id);
 }
 

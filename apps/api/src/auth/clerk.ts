@@ -84,9 +84,3 @@ export async function getClerkIdentity(env: Env, request: Request): Promise<Cler
     return null;
   }
 }
-
-// Back-compat wrapper for the call sites that only care about the
-// user id (everything except teams).
-export async function getClerkUserId(env: Env, request: Request): Promise<string | null> {
-  return (await getClerkIdentity(env, request))?.userId ?? null;
-}

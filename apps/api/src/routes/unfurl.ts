@@ -69,7 +69,7 @@ export function parsePublicHttpUrl(raw: string): URL | null {
 }
 
 // The raw <head> fields HTMLRewriter collects; everything optional.
-export type CollectedMeta = {
+type CollectedMeta = {
   title?: string;
   ogTitle?: string;
   ogSiteName?: string;

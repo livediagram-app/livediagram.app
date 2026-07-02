@@ -3,8 +3,8 @@ import { roomQueryString } from './room';
 
 describe('roomQueryString (realtime auth params, spec/04 + spec/24)', () => {
   it('maps each identifier to its short key', () => {
-    expect(roomQueryString({ shareCode: 'C', ownerId: 'O', signature: 'G' }, 'P')).toBe(
-      's=C&o=O&g=G&p=P',
+    expect(roomQueryString({ shareCode: 'C', ownerId: 'O', ticket: 'T' }, 'P')).toBe(
+      't=T&s=C&o=O&p=P',
     );
   });
 
@@ -13,9 +13,7 @@ describe('roomQueryString (realtime auth params, spec/04 + spec/24)', () => {
   });
 
   it('strips null / undefined / empty values so the URL stays clean', () => {
-    expect(roomQueryString({ shareCode: null, ownerId: 'O', signature: undefined }, null)).toBe(
-      'o=O',
-    );
+    expect(roomQueryString({ shareCode: null, ownerId: 'O', ticket: undefined }, null)).toBe('o=O');
     expect(roomQueryString({ shareCode: '' }, '')).toBe('');
   });
 

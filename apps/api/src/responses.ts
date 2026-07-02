@@ -108,7 +108,7 @@ export function conflict(reason: string): Response {
 //   1. Pure-guest path with no `X-Owner-Id` header sent.
 //   2. A Bearer token was sent but verification failed silently
 //      (expired, invalid signature, JWKS unreachable, etc.):
-//      `getClerkUserId` returns null on any error so the guest path
+//      `getClerkIdentity` returns null on any error so the guest path
 //      still serves.
 //
 // Pre-Clerk this used to be a flat "missing X-Owner-Id" message,

@@ -58,7 +58,7 @@ type Deps = {
 // token its commit/checkpoint returned) — required for the DEBOUNCED
 // emitters, whose flush can land up to 500ms after the gesture, by
 // which time other steps may sit on top of the marker stack.
-export type EmitOpts = { undoable?: boolean; fillToken?: number };
+type EmitOpts = { undoable?: boolean; fillToken?: number };
 
 type Api = {
   // Emit an element-diff entry. Builds the diff via `diffElements`

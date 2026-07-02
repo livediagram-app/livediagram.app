@@ -23,7 +23,6 @@ export type RoomHandlers = {
 export type RoomAuthOptions = {
   shareCode?: string | null;
   ownerId?: string | null;
-  signature?: string | null;
   // One-time room ticket (spec/11), minted over authenticated REST via
   // apiCreateRoomTicket. The only leg that can admit a team member —
   // the worker doesn't trust a bare `o` for team membership.
@@ -39,19 +38,17 @@ export type RoomAuthOptions = {
 //     the authenticated REST access gates moments ago; required for
 //     team diagrams, where a bare owner id is not trusted.
 //   - `s` share code, `o` owner id (for diagrams the visitor owns)
-//   - `g` guest-id HMAC signature (spec/04): proves the connector
-//     possesses the owner id it claims in `o`, so the room can bind the
-//     broadcast participant id to a verified value instead of trusting
-//     the client's hello id (which would let a joiner impersonate another
-//     participant's presence).
 //   - `p` share password (spec/24) for a protected diagram's room.
+// (A `g` guest-signature param used to ride along for presence-identity
+// binding; the DO switched to server-random ephemeral presence ids —
+// spec/61 §6 — and the server-side read was removed, so the client
+// stopped sending it.)
 // Pure (sharePassword passed in) so the param mapping is unit-tested.
 export function roomQueryString(options: RoomAuthOptions, sharePassword: string | null): string {
   const params = new URLSearchParams();
   if (options.ticket) params.set('t', options.ticket);
   if (options.shareCode) params.set('s', options.shareCode);
   if (options.ownerId) params.set('o', options.ownerId);
-  if (options.signature) params.set('g', options.signature);
   if (sharePassword) params.set('p', sharePassword);
   return params.toString();
 }

@@ -112,11 +112,6 @@ export const FONTS: readonly FontOption[] = [
 
 const BY_ID = new Map(FONTS.map((f) => [f.id, f] as const));
 
-// The editor's default text font (when neither element nor tab sets one).
-// Matches the system stack the label renderers used before this feature,
-// so unstyled text is byte-identical.
-export const DEFAULT_FONT_STACK = 'ui-sans-serif, system-ui, sans-serif';
-
 // Map a stored font id to its CSS stack. Returns undefined for unset /
 // unknown ids so callers can fall back (element → tab → CSS default)
 // instead of forcing a family onto text that never chose one.

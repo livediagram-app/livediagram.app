@@ -12,7 +12,7 @@ import type { Env, ShareRole } from '../types';
 
 // Long enough to cover a slow page load between mint and upgrade; short
 // enough that a leaked ticket is useless almost immediately.
-export const WS_TICKET_TTL_MS = 60_000;
+const WS_TICKET_TTL_MS = 60_000;
 
 export async function createWsTicket(
   env: Env,

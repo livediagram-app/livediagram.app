@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3004 --webpack",
     "build": "next build",
-    "start": "next start -p 3004",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

@@ -105,7 +105,6 @@
   --animate-pop-out: pop-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
   --animate-fade-in: fade-in 260ms ease-out;
   --animate-fly-up-in: fly-up-in 420ms cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-fade-scale-in: fade-scale-in 260ms ease-out;
   --animate-slide-row-in: slide-row-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-row-out: slide-row-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
   --animate-slide-in-left: slide-in-left 240ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -215,16 +214,6 @@
   }
 }
 
-@keyframes fade-scale-in {
-  from {
-    transform: scale(0.92);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
 
 /*
  * Explorer diagram-row enter / exit. Used by the Explorer to make

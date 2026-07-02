@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3003",
     "build": "next build",
-    "start": "next start -p 3003",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next out node_modules .turbo"
