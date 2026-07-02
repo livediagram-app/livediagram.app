@@ -3,6 +3,7 @@
 // owner, so they live together rather than under any one resource.
 
 import { thumbnailKey } from './diagrams';
+import { detachUserFromTeams } from './teams';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
@@ -31,6 +32,13 @@ export async function deleteAccount(
   env: Env,
   ownerId: string,
 ): Promise<{ diagrams: number; folders: number; images: number }> {
+  // Teams first (spec/32/35): transfer the user's team-library diagrams
+  // to a remaining member, drop their memberships (promoting a new
+  // admin when they were the last one), and delete teams they were the
+  // last joined member of. MUST run before the diagrams DELETE below —
+  // that wipe would otherwise destroy shared team work, and the dead
+  // Clerk id would linger as a ghost (or sole-admin-blocking) member.
+  await detachUserFromTeams(env, ownerId);
   // R2 cleanup first. Enumerate the owner's image ids while the
   // index row still exists, then delete each from R2. If R2 is
   // unbound (self-host without R2), skip silently: the index rows
@@ -81,6 +89,11 @@ export async function deleteAccount(
   // email_lifecycle (spec/64): drop the onboarding-email row so the address
   // isn't retained and a re-signup starts the series fresh.
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
+  // shared_with rows POINTING AT this owner's diagrams die with the
+  // diagrams (FK cascade), but the rows this owner accumulated by
+  // visiting OTHER people's diagrams are keyed on their owner_id and
+  // need their own DELETE — same table migrateOwnerId already handles.
+  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(ownerId).run();
   return {
     diagrams: diagramsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,

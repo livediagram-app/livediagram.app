@@ -171,6 +171,12 @@ export class DiagramRoom implements DurableObject {
         // The role is the server-verified one (X-Verified-Role, re-stamped
         // in hello), not anything the client claims.
         const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
+        // System-only ops never relay from a client socket: they're
+        // emitted exclusively by the worker via /broadcast (stamped
+        // `from: 'system'`). Without this drop, any edit-role peer
+        // could forge `share-revoked` with the code from their own URL
+        // and force-redirect every collaborator out of the session.
+        if (opKind === 'share-revoked') return;
         const isPresenceOp =
           opKind === 'cursor' ||
           opKind === 'select' ||

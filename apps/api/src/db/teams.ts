@@ -408,6 +408,55 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
   return (results ?? []).map((r) => r.user_id);
 }
 
+// Account deletion (spec/65): detach a user from every team BEFORE
+// their rows are wiped. Without this the dead Clerk id lingered as a
+// ghost member — and when it was the only joined admin, the team
+// became permanently unmanageable (every admin-gated action counted
+// the dead row via countTeamAdmins), while the account wipe's
+// diagrams DELETE destroyed the team-library diagrams they created.
+//
+// Per team:
+//   - Last joined member → the team dies with the account
+//     (deleteTeam; nobody is left for its library to belong to).
+//   - Otherwise their team-library diagrams transfer to an HEIR (the
+//     longest-standing remaining joined member, admins first) so the
+//     shared work survives — mirroring deleteTeam's "never destroy
+//     members' work" rule — their membership row is removed, and the
+//     heir is promoted when no joined admin remains.
+export async function detachUserFromTeams(env: Env, userId: string): Promise<void> {
+  const memberships = await env.DB.prepare(
+    'SELECT id, team_id, status FROM team_members WHERE user_id = ?',
+  )
+    .bind(userId)
+    .all<{ id: string; team_id: string; status: string }>();
+  for (const m of memberships.results ?? []) {
+    const others = await env.DB.prepare(
+      `SELECT id, user_id, role FROM team_members
+        WHERE team_id = ? AND user_id != ? AND status = 'joined' AND user_id IS NOT NULL
+        ORDER BY created_at ASC, id ASC`,
+    )
+      .bind(m.team_id, userId)
+      .all<{ id: string; user_id: string; role: string }>();
+    const remaining = others.results ?? [];
+    if (m.status === 'joined' && remaining.length === 0) {
+      await deleteTeam(env, m.team_id);
+      continue;
+    }
+    const heir = remaining.find((r) => r.role === 'admin') ?? remaining[0];
+    if (heir) {
+      await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
+        .bind(heir.user_id, userId, m.team_id)
+        .run();
+    }
+    await env.DB.prepare('DELETE FROM team_members WHERE id = ?').bind(m.id).run();
+    if (heir && !remaining.some((r) => r.role === 'admin')) {
+      await env.DB.prepare(`UPDATE team_members SET role = 'admin' WHERE id = ?`)
+        .bind(heir.id)
+        .run();
+    }
+  }
+}
+
 // Joined-member count for a team (the public "N members" number the
 // invite-link landing shows). Excludes pending invites.
 export async function countJoinedMembers(env: Env, teamId: string): Promise<number> {

@@ -353,6 +353,17 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   if (prompt.length > MAX_PROMPT_CHARS) return badRequest('prompt too long');
   if (!Array.isArray(elements)) return badRequest('elements must be an array');
   if (elements.length > MAX_ELEMENTS) return badRequest('too many elements');
+  // Bound the remaining body fields that reach the system prompt —
+  // prompt/elements/history are capped above/below, but an unbounded
+  // focusIds or tabName near the 8 MB body cap would still build a
+  // multi-megabyte upstream prompt (pure operator-cost amplification).
+  if (!Array.isArray(focusIds) || focusIds.length > MAX_ELEMENTS) {
+    return badRequest('too many focusIds');
+  }
+  if (focusIds.some((id) => typeof id !== 'string' || id.length > 100)) {
+    return badRequest('invalid focusIds');
+  }
+  if (typeof tabName === 'string' && tabName.length > 200) return badRequest('tabName too long');
 
   const model = env.OPENAI_MODEL ?? 'gpt-4o';
   const isTextMode = mode === 'ask';

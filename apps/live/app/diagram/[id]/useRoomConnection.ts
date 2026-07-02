@@ -274,8 +274,16 @@ export function useRoomConnection(opts: {
           // to read; hard-redirect to the explorer so we don't sit
           // on stale state. The check is per-client: an owner who
           // revoked their own outbound link to a different visitor
-          // keeps their session.
-          if (sessionShareCodeRef.current && sessionShareCodeRef.current === op.code) {
+          // keeps their session. System-only: the worker emits this
+          // via the DO's /broadcast with `from: 'system'` (and the DO
+          // refuses to relay it from client sockets) — the sender
+          // check here is defence in depth against a peer forging a
+          // force-redirect.
+          if (
+            from === 'system' &&
+            sessionShareCodeRef.current &&
+            sessionShareCodeRef.current === op.code
+          ) {
             window.location.assign('/explorer/recent');
           }
         }

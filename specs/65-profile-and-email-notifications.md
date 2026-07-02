@@ -51,6 +51,16 @@ no drift). The dialog component itself is unchanged and simply reused — the
 confirmation flow (type your email, then Clerk re-verification, then wipe) is
 exactly as spec/64 describes.
 
+**Teams on deletion** (`detachUserFromTeams`, runs before the row wipe): the
+account's memberships are removed so no ghost member (or dead sole admin)
+lingers. If the user was the **last joined member**, the team is deleted
+outright. Otherwise their **team-library diagrams transfer to an heir** — the
+longest-standing remaining joined member, admins first — so shared team work
+survives the account (mirrors spec/35's "deleting a team must never destroy
+members' work"), and the heir is **promoted to admin** when the deleted user
+was the only one. The user's own `shared_with` references (rows for OTHER
+people's diagrams they visited) are wiped too.
+
 ## 2. Capabilities gains `emailEnabled`
 
 `GET /api/capabilities` (the fail-closed feature probe the client already
