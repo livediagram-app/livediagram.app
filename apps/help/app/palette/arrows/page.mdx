@@ -27,6 +27,11 @@ Arrows are how a diagram turns a pile of shapes into a flow, a hierarchy, or a r
 
 An arrow links two points on the canvas. An arrow's endpoint can sit freely, pin to a shape's connection anchor (so it tracks the shape as it moves), or attach along another arrow. Drag from a shape's edge to quick-connect, or drop a plain arrow from the palette and position its ends by hand.
 
+Two Shift tricks make fanning out fast:
+
+- **Shift-chain**: hold **Shift** while a quick-connect arrow's endpoint lands and a fresh arrow immediately starts from the same spot on the source, so a hub can point at several targets in one flow. A plain click places the last one.
+- **Shift-fork**: hold **Shift** and drag a selected arrow's **head** to peel a branch off its line, one trunk that splits toward a second target instead of a parallel near-duplicate arrow.
+
 <Figure caption="Arrows of different styles wiring shapes into a flow.">
   <ArrowsConnecting />
 </Figure>
