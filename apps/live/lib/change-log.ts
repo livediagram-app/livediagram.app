@@ -25,6 +25,11 @@ type ChangeDiff = {
 // level — JSON equivalence is sufficient because Element is a plain
 // data type with no hidden identity beyond what JSON captures.
 function elementEquals(a: Element, b: Element): boolean {
+  // Reference short-circuit first: commits are immutable updates, so an
+  // untouched element keeps its object identity — the debounced gesture
+  // flush was stringifying every element on the tab twice to conclude
+  // "unchanged" for all but the dragged ones.
+  if (a === b) return true;
   return JSON.stringify(a) === JSON.stringify(b);
 }
 

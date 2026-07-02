@@ -5,7 +5,7 @@
 
 import type { Tab } from '@livediagram/diagram';
 import { isValidTab } from '@livediagram/diagram';
-import { MAX_NAME_LEN, MAX_TAB_BYTES, byteLength } from '../limits';
+import { MAX_CHANGE_LOG_ENTRY_BYTES, MAX_NAME_LEN, MAX_TAB_BYTES, byteLength } from '../limits';
 import { parseChangeLogEntryBody } from '../change-log-body';
 import { timingSafeEqual } from '../auth/timing-safe';
 import {} from '../comments';
@@ -17,6 +17,7 @@ import {
   deleteChangeLogForTab,
   deleteDiagram,
   getDiagram,
+  getDiagramMeta,
   getDiagramSharePassword,
   countDiagramsByOwner,
   getFolder,
@@ -371,7 +372,9 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   // as every REST read/write, including the share-password gate.
   if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
     const id = segments[2]!;
-    const diagram = await getDiagram(env, id);
+    // Gate-only projection — 1 query instead of getDiagram's 3; this
+    // runs on every room join.
+    const diagram = await getDiagramMeta(env, id);
     if (!diagram) return notFound();
     let role: 'edit' | 'view' | null = null;
     if (await gateEdit(ctx, id, diagram.ownerId, diagram.teamId)) role = 'edit';
@@ -392,7 +395,8 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     // payload, so this header is the trust boundary.
     let role: 'edit' | 'view' | null = null;
     const claimedOwnerId = url.searchParams.get('o');
-    const diagram = await getDiagram(env, id);
+    // Gate-only projection — the upgrade uses only ownerId/teamId.
+    const diagram = await getDiagramMeta(env, id);
     // One-time ticket (spec/11): minted seconds ago over authenticated
     // REST, single-use and diagram-scoped, carrying the server-resolved
     // role. This is the ONLY leg that can admit a team member — the old
@@ -475,6 +479,12 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       return json({ entries: safe });
     }
     if (request.method === 'POST') {
+      // Per-entry byte cap: only the 8MB outer body cap applied before,
+      // so 30 huge entries could balloon the capped list response.
+      const lenHeader = Number(request.headers.get('content-length'));
+      if (Number.isFinite(lenHeader) && lenHeader > MAX_CHANGE_LOG_ENTRY_BYTES) {
+        return json({ error: 'payload_too_large' }, { status: 413 });
+      }
       const body = (await request.json()) as Partial<ChangeLogEntryDTO>;
       const entry = parseChangeLogEntryBody(body);
       if (!entry) return badRequest('missing change_log fields');

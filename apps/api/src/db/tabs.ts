@@ -84,27 +84,28 @@ export async function upsertTab(
   // follow-up migration drops them. The two writes are
   // independent — even if the link upsert no-ops (existing entry)
   // the tab body still gets updated.
-  await env.DB.prepare(
-    `INSERT INTO tabs (id, diagram_id, name, order_index, data, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET
-       name = excluded.name,
-       order_index = excluded.order_index,
-       data = excluded.data,
-       updated_at = excluded.updated_at`,
-  )
-    .bind(id, diagramId, name, orderIndex, data, now)
-    .run();
-  await env.DB.prepare(
-    `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
-     VALUES (?, ?, ?, ?)
-     ON CONFLICT (diagram_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
-  )
-    .bind(diagramId, id, orderIndex, now)
-    .run();
-  // Bump the diagram's saved_at so the Explorer's "Updated X ago"
-  // line stays accurate. Pure metadata write — no element JSON.
-  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
+  // One DB.batch instead of three sequential round trips: this runs
+  // once per 600ms per active editor (the autosave), so the two extra
+  // serial D1 hops were the single largest latency item on the path.
+  await env.DB.batch([
+    env.DB.prepare(
+      `INSERT INTO tabs (id, diagram_id, name, order_index, data, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         name = excluded.name,
+         order_index = excluded.order_index,
+         data = excluded.data,
+         updated_at = excluded.updated_at`,
+    ).bind(id, diagramId, name, orderIndex, data, now),
+    env.DB.prepare(
+      `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT (diagram_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
+    ).bind(diagramId, id, orderIndex, now),
+    // Bump the diagram's saved_at so the Explorer's "Updated X ago"
+    // line stays accurate. Pure metadata write — no element JSON.
+    env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId),
+  ]);
 }
 
 // Bulk-seed a fresh diagram's tabs in one batch (create path). The

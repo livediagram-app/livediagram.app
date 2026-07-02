@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import {
@@ -17,7 +18,10 @@ import { TabLockIcon, TabsLabelIcon } from '@/components/chrome/tab-bar-icons';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
-import { PortalMenu } from './TabPortalMenu';
+// Lazy: the tab context menu (and the 18 kB icon module it drags in)
+// only loads on the first right-click — it was the largest single
+// eager block left in the editor chunk after the dialogs went dynamic.
+const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalMenu));
 import { EllipsisMenuButton } from './EllipsisMenuButton';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu: change

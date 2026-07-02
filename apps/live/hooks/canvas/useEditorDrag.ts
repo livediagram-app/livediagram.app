@@ -288,12 +288,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // didn't already claim, so the element lands evenly spaced
             // between / beyond its neighbours. Alignment (edge / centre)
             // wins per axis when both are in range.
-            const dist = distributionSnap(
-              candidate,
-              activeTab.elements,
-              memberIds,
-              ALIGN_SNAP_THRESHOLD,
-            );
+            // Skip the O(k²) equal-spacing scan entirely when alignment
+            // already claimed BOTH axes — its result would be discarded
+            // below. This runs on every pointer-move of a boxed drag.
+            const dist =
+              snap.snappedX && snap.snappedY
+                ? { dx: 0, dy: 0, guides: [] }
+                : distributionSnap(candidate, activeTab.elements, memberIds, ALIGN_SNAP_THRESHOLD);
             // Distribution fills only the axes alignment didn't claim.
             // Keyed off snap.snappedX/Y (not snapDx === 0) so an EXACT
             // edge alignment, whose delta is 0, still wins over an

@@ -97,8 +97,16 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
         return badRequest('invalid tab');
       }
       // Byte cap on the single tab (the body cap bounds the whole request;
-      // this bounds one tab's element + comment tree specifically).
-      if (byteLength(JSON.stringify(body)) > MAX_TAB_BYTES) {
+      // this bounds one tab's element + comment tree specifically). The
+      // request body IS the tab JSON, so a declared Content-Length is the
+      // exact byte count — using it skips a full re-stringify + encode of
+      // up to 4 MB on the hottest write path (one PUT per 600ms per
+      // editor). Chunked bodies (no header) keep the stringify fallback.
+      const declaredLen = Number(request.headers.get('content-length'));
+      const tabBytes = Number.isFinite(declaredLen)
+        ? declaredLen
+        : byteLength(JSON.stringify(body));
+      if (tabBytes > MAX_TAB_BYTES) {
         return json({ error: 'payload_too_large' }, { status: 413 });
       }
       // Find the existing order index; append if new.
@@ -130,7 +138,20 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       // thread (see the spec/04 + spec/12 security audit
       // thread). Existing comments preserve their original
       // authors (compared by id against the prior tab).
-      const writerParticipant = await getParticipant(env, owner);
+      // getDiagram already joined the owner's participant row — reuse it
+      // when the writer IS the owner (the common autosave case) instead
+      // of re-fetching the same row every 600ms.
+      const writerParticipant =
+        owner === existing.ownerId && existing.ownerName !== null
+          ? {
+              id: owner,
+              name: existing.ownerName,
+              color: existing.ownerColor ?? '#0ea5e9',
+              // createdAt satisfies the ParticipantRecord shape; the
+              // rewrite only reads id/name/color.
+              createdAt: existing.createdAt,
+            }
+          : await getParticipant(env, owner);
       const sanitised = writerParticipant
         ? {
             ...body,
@@ -157,8 +178,22 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
           ),
         );
       }
-      const tab = await getTab(env, id, tabId);
-      return tab ? json({ tab }) : notFound();
+      // Echo what was just written instead of reading it back: the
+      // response contract (OpenAPI `Tab`) is unchanged, but the extra
+      // SELECT + JSON.parse of the full blob per autosave is gone. The
+      // row-derived fields are known here (folder is link metadata the
+      // client strips before persisting, so it is absent by design —
+      // matching what a read-back of a fresh write returns).
+      return json({
+        tab: {
+          ...sanitised,
+          id: tabId,
+          name: body.name,
+          diagramId: id,
+          orderIndex,
+          updatedAt: Date.now(),
+        },
+      });
     }
     if (request.method === 'DELETE') {
       await deleteTabRow(env, id, tabId);

@@ -96,7 +96,11 @@ export class DiagramRoom implements DurableObject {
       try {
         ws.send(serialized);
       } catch {
+        // Reap BOTH maps: leaving the opRates entry behind leaked one
+        // per dead socket until the DO restarted (only the close
+        // handler cleaned both).
         this.sessions.delete(ws);
+        this.opRates.delete(ws);
       }
     }
   }
@@ -221,7 +225,11 @@ export class DiagramRoom implements DurableObject {
       try {
         ws.send(JSON.stringify({ kind: 'presence', participants: others } satisfies ServerMessage));
       } catch {
+        // Reap BOTH maps: leaving the opRates entry behind leaked one
+        // per dead socket until the DO restarted (only the close
+        // handler cleaned both).
         this.sessions.delete(ws);
+        this.opRates.delete(ws);
       }
     }
   }

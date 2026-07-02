@@ -15,15 +15,9 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
-import {
-  normalizeFolderOrder,
-  parseTab,
-  tabFolderName,
-  type Element,
-  type Tab,
-} from '@livediagram/diagram';
+import { normalizeFolderOrder, tabFolderName, type Element, type Tab } from '@livediagram/diagram';
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
-import { parseImportedTab, pickTabFile, type ImportOutcome } from '@/lib/import-tab';
+import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -216,6 +210,12 @@ export function useTabActions(deps: TabActionsDeps) {
         : format === 'dsl'
           ? '.lvd,text/plain'
           : '.json,application/json';
+    // Lazy-load the whole import cluster on first use: its static chain
+    // (import-tab -> export-tab -> svg-render + the DSL parser) put
+    // ~28 kB min of parse/serialise code in the editor's FIRST LOAD for
+    // a user-action feature (same rationale as the markdown branch
+    // below and the template builders).
+    const { parseImportedTab, pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };
 
@@ -224,6 +224,7 @@ export function useTabActions(deps: TabActionsDeps) {
       // structurally broken file, so wrap it into the dialog's outcome shape.
       let parsed;
       try {
+        const { parseTab } = await import('@livediagram/diagram/text-dsl');
         parsed = parseTab(picked.text);
       } catch (e) {
         return { status: 'error', error: e instanceof Error ? e.message : 'Could not parse file.' };

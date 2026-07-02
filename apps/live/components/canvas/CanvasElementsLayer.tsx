@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import { buildElementIndex, isBoxed, isRailShape } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { framesFirst, type QuickConnectDirection } from '@/lib/canvas';
@@ -116,6 +118,44 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     setQuickRingOpen,
     settings,
   } = props;
+  // Identity-stable wrappers for every function prop the memoized
+  // element views receive. The editor's orchestration mints fresh
+  // closures per render (every drag tick, cursor packet, keystroke), so
+  // without this the views' React.memo never fired and dragging ONE
+  // element re-rendered all N views at pointer rate. See
+  // useStableHandlers; the conditional (read-only) handlers keep their
+  // presence/absence so children still branch on them.
+  const h = useStableHandlers({
+    handleArrowSelect,
+    handleElementContextSelect,
+    onBeginEndpointDrag,
+    onBeginEdit,
+    onCommitLabel,
+    onCancelEdit,
+    onBeginArrowTranslate,
+    onBeginArrowCurveDrag,
+    onBeginArrowCurvePointDrag,
+    onAddCurvePoint,
+    onDeleteCurvePoint,
+    onBeginArrowElbowDrag,
+    onBeginArrowLabelDrag,
+    onBeginDrag,
+    onShiftSelect,
+    onCastVote: readOnly ? undefined : onCastVote,
+    onRetractVote: readOnly ? undefined : onRetractVote,
+    onSetTextAlign: readOnly ? undefined : onSetTextAlign,
+    onSetPadding: readOnly ? undefined : onSetPadding,
+    onSetFont: readOnly ? undefined : onSetFont,
+    onSetTextSize: readOnly ? undefined : onSetTextSize,
+    onCommitTable,
+    onSetRailLabel,
+    onFollowLink,
+    onOpenComments,
+    onOpenNote,
+    onEditLink,
+    onDropIcon,
+    onLinkCell,
+  });
   // Resolved tab default font once; per-element falls back to it (spec/28).
   const tabFontStack = resolveFontStack(tabFont);
   // Highest dot count on the tab (spec/39), computed once so each element's
@@ -123,16 +163,24 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const voteMax = tabVote
     ? Object.values(tabVote.votes).reduce((m, ids) => Math.max(m, ids.length), 0)
     : 0;
-  // One id -> element index per render, shared by every ArrowView so
-  // each resolves its endpoints / label collisions with O(1) lookups
-  // instead of scanning the whole element list twice per arrow.
-  const elementIndex = hasArrows ? buildElementIndex(elements) : null;
+  // One id -> element index per ELEMENTS CHANGE (not per render),
+  // shared by every ArrowView so each resolves its endpoints / label
+  // collisions with O(1) lookups instead of scanning the whole element
+  // list twice per arrow. Memoised because it's a memo-compared prop of
+  // every ArrowView: a fresh Map per render (cursor packets, selection
+  // changes) defeated their React.memo and re-rendered every arrow at
+  // presence-message rate even when no element had changed.
+  const elementIndex = useMemo(
+    () => (hasArrows ? buildElementIndex(elements) : null),
+    [hasArrows, elements],
+  );
   // Frames are section backdrops: always render them FIRST (lowest in the
   // paint + DOM order) so their contents sit on top and stay clickable.
   // Otherwise a frame painted over its contents would swallow the clicks
   // meant for the elements inside it (spec/09). Same rule the exporters
-  // use, via the shared `framesFirst` helper.
-  const ordered = framesFirst(elements);
+  // use, via the shared `framesFirst` helper. Memoised for the same
+  // reason as the index (stable array identity when elements are).
+  const ordered = useMemo(() => framesFirst(elements), [elements]);
   // Whether the single selected element is a timeline rail — gates the rail's
   // "Add point" action on the quick-connect "+" (spec/51).
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
@@ -172,19 +220,19 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
                 tabLocked={tabLocked}
                 readOnly={readOnly}
-                onSelect={handleArrowSelect}
-                onContextSelect={handleElementContextSelect}
-                onBeginEndpointDrag={onBeginEndpointDrag}
-                onBeginEdit={onBeginEdit}
-                onCommitLabel={onCommitLabel}
-                onCancelEdit={onCancelEdit}
-                onBeginTranslate={onBeginArrowTranslate}
-                onBeginCurveDrag={onBeginArrowCurveDrag}
-                onBeginCurvePointDrag={onBeginArrowCurvePointDrag}
-                onAddCurvePoint={onAddCurvePoint}
-                onDeleteCurvePoint={onDeleteCurvePoint}
-                onBeginElbowDrag={onBeginArrowElbowDrag}
-                onBeginLabelDrag={onBeginArrowLabelDrag}
+                onSelect={h.handleArrowSelect}
+                onContextSelect={h.handleElementContextSelect}
+                onBeginEndpointDrag={h.onBeginEndpointDrag}
+                onBeginEdit={h.onBeginEdit}
+                onCommitLabel={h.onCommitLabel}
+                onCancelEdit={h.onCancelEdit}
+                onBeginTranslate={h.onBeginArrowTranslate}
+                onBeginCurveDrag={h.onBeginArrowCurveDrag}
+                onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
+                onAddCurvePoint={h.onAddCurvePoint}
+                onDeleteCurvePoint={h.onDeleteCurvePoint}
+                onBeginElbowDrag={h.onBeginArrowElbowDrag}
+                onBeginLabelDrag={h.onBeginArrowLabelDrag}
                 fontFamily={tabFontStack}
               />
             </svg>
@@ -209,31 +257,31 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             tabLocked={tabLocked}
             tabSummaries={tabSummaries}
             readOnly={readOnly}
-            onBeginDrag={onBeginDrag}
-            onShiftSelect={onShiftSelect}
+            onBeginDrag={h.onBeginDrag}
+            onShiftSelect={h.onShiftSelect}
             vote={tabVote}
             selfId={selfParticipant.id}
             voteMax={voteMax}
-            onCastVote={readOnly ? undefined : onCastVote}
-            onRetractVote={readOnly ? undefined : onRetractVote}
-            onBeginEdit={onBeginEdit}
-            onCommitLabel={onCommitLabel}
-            onSetTextAlign={readOnly ? undefined : onSetTextAlign}
-            onSetPadding={readOnly ? undefined : onSetPadding}
-            onSetFont={readOnly ? undefined : onSetFont}
-            onSetTextSize={readOnly ? undefined : onSetTextSize}
-            onCommitTable={onCommitTable}
-            onSetRailLabel={onSetRailLabel}
+            onCastVote={h.onCastVote}
+            onRetractVote={h.onRetractVote}
+            onBeginEdit={h.onBeginEdit}
+            onCommitLabel={h.onCommitLabel}
+            onSetTextAlign={h.onSetTextAlign}
+            onSetPadding={h.onSetPadding}
+            onSetFont={h.onSetFont}
+            onSetTextSize={h.onSetTextSize}
+            onCommitTable={h.onCommitTable}
+            onSetRailLabel={h.onSetRailLabel}
             chartPalette={chartPalette}
-            onCancelEdit={onCancelEdit}
-            onFollowLink={onFollowLink}
-            onOpenComments={onOpenComments}
-            onOpenNote={onOpenNote}
-            onEditLink={onEditLink}
-            onDropIcon={onDropIcon}
-            onLinkCell={onLinkCell}
+            onCancelEdit={h.onCancelEdit}
+            onFollowLink={h.onFollowLink}
+            onOpenComments={h.onOpenComments}
+            onOpenNote={h.onOpenNote}
+            onEditLink={h.onEditLink}
+            onDropIcon={h.onDropIcon}
+            onLinkCell={h.onLinkCell}
             imageContext={imageContext}
-            onContextSelect={handleElementContextSelect}
+            onContextSelect={h.handleElementContextSelect}
             fontFamily={resolveFontStack(element.font) ?? tabFontStack}
           />
         );

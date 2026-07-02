@@ -26,6 +26,12 @@ export const MAX_NAME_LEN = 500;
 // A custom theme's JSON definition (palette + per-shape colours).
 export const MAX_THEME_DEF_BYTES = 256 * 1024;
 
+// One change-log entry's JSON (spec/12). The before/after payloads are
+// per-gesture element diffs — a few KB in practice — so this bounds a
+// hostile near-8MB entry from bloating both storage and the capped list
+// response (30 entries per GET).
+export const MAX_CHANGE_LOG_ENTRY_BYTES = 256 * 1024;
+
 // Realtime presence identity, broadcast to every connected peer.
 export const MAX_PARTICIPANT_NAME_LEN = 120;
 export const MAX_COLOR_LEN = 64;

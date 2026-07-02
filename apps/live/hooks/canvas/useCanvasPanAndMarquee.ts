@@ -173,12 +173,27 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
   // marquees are treated as plain clicks (just deselect).
   useEffect(() => {
     if (!marquee) return;
+    // Coalesce marquee updates to one commit per animation frame, same
+    // as the pan handler above: a synchronous setMarquee per pointermove
+    // re-rendered the whole canvas layer per event, which pointer
+    // hardware fires faster than paint.
+    let rafId: number | null = null;
+    let pending: { x: number; y: number } | null = null;
+    const flush = () => {
+      rafId = null;
+      const pos = pending;
+      if (pos) setMarquee((m) => (m ? { ...m, currentX: pos.x, currentY: pos.y } : null));
+    };
     const onMove = (e: PointerEvent) => {
-      setMarquee((m) => (m ? { ...m, currentX: e.clientX, currentY: e.clientY } : null));
+      pending = { x: e.clientX, y: e.clientY };
+      if (rafId === null) rafId = requestAnimationFrame(flush);
     };
     const onUp = () => {
-      const m = marquee;
-      if (!m) return;
+      const base = marquee;
+      if (!base) return;
+      // Land on the final pointer position even if it's still pending
+      // in an uncommitted rAF (which the cleanup cancels).
+      const m = pending ? { ...base, currentX: pending.x, currentY: pending.y } : base;
       const d = depsRef.current;
       const dragWidth = Math.abs(m.currentX - m.startX);
       const dragHeight = Math.abs(m.currentY - m.startY);
@@ -245,6 +260,7 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };

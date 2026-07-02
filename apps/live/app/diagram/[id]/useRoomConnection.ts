@@ -85,6 +85,52 @@ export function useRoomConnection(opts: {
       setRemoteSelections(new Map());
       return;
     }
+    // Presence-packet coalescing: cursor / laser ops arrive at up to
+    // 30 Hz per peer, and committing state per packet re-rendered the
+    // whole editor tree per message (~90 renders/s with three peers,
+    // while the local user is idle). Buffer them in refs and commit ONE
+    // Map update per animation frame — the same rAF pattern the pan and
+    // snap-guide paths use. Buffers live per-effect-run so a reconnect
+    // starts clean.
+    const pendingCursors = new Map<string, { tabId: string; x: number; y: number } | null>();
+    const pendingLasers = new Map<string, LaserTrail>();
+    let presenceRafId: number | null = null;
+    const flushPresence = () => {
+      presenceRafId = null;
+      if (pendingCursors.size > 0) {
+        const moves = new Map(pendingCursors);
+        pendingCursors.clear();
+        setRemoteCursors((prev) => {
+          const next = new Map(prev);
+          for (const [id, pos] of moves) next.set(id, pos);
+          return next;
+        });
+      }
+      if (pendingLasers.size > 0) {
+        const trails = new Map(pendingLasers);
+        pendingLasers.clear();
+        setRemoteLaserTrails((prev) => {
+          const next = new Map(prev);
+          for (const [id, incoming] of trails) {
+            const existing = next.get(id);
+            // A tab switch resets the buffer for that participant —
+            // otherwise a peer who lasered on tab A then started
+            // lasering on tab B would briefly render an interpolated
+            // line across the gap.
+            const points =
+              existing && existing.tabId === incoming.tabId
+                ? trimLaserBuffer([...existing.points, ...incoming.points])
+                : incoming.points;
+            next.set(id, { tabId: incoming.tabId, points });
+          }
+          return next;
+        });
+      }
+    };
+    const schedulePresenceFlush = () => {
+      if (presenceRafId === null) presenceRafId = requestAnimationFrame(flushPresence);
+    };
+
     const handlers: RoomHandlers = {
       onPresence: (participants) => {
         const now = Date.now();
@@ -230,29 +276,27 @@ export function useRoomConnection(opts: {
             return next;
           });
         } else if (op.kind === 'cursor') {
-          setRemoteCursors((prev) => {
-            const next = new Map(prev);
-            next.set(
-              from,
-              op.x !== null && op.y !== null ? { tabId: op.tabId, x: op.x, y: op.y } : null,
-            );
-            return next;
-          });
+          // Coalesced: buffered into pendingCursors and committed once
+          // per animation frame (see flushPresence below). Cursor
+          // packets arrive at up to 30 Hz PER PEER, and a setState per
+          // packet re-rendered the whole editor tree per message.
+          pendingCursors.set(
+            from,
+            op.x !== null && op.y !== null ? { tabId: op.tabId, x: op.x, y: op.y } : null,
+          );
+          schedulePresenceFlush();
         } else if (op.kind === 'laser') {
-          setRemoteLaserTrails((prev) => {
-            const next = new Map(prev);
-            const existing = next.get(from);
-            // A tab switch resets the buffer for that participant —
-            // otherwise a peer who lasered on tab A then started
-            // lasering on tab B would briefly render an interpolated
-            // line across the gap.
-            const points =
-              existing && existing.tabId === op.tabId
-                ? trimLaserBuffer([...existing.points, { x: op.x, y: op.y, t: performance.now() }])
-                : [{ x: op.x, y: op.y, t: performance.now() }];
-            next.set(from, { tabId: op.tabId, points });
-            return next;
+          // Same coalescing as cursors; points accumulate in the buffer
+          // and land in one Map commit per frame.
+          const buffered = pendingLasers.get(from);
+          pendingLasers.set(from, {
+            tabId: op.tabId,
+            points: [
+              ...(buffered && buffered.tabId === op.tabId ? buffered.points : []),
+              { x: op.x, y: op.y, t: performance.now() },
+            ],
           });
+          schedulePresenceFlush();
         } else if (op.kind === 'tab-focus') {
           setRemoteTabFocus((prev) => {
             const next = new Map(prev);
@@ -327,6 +371,7 @@ export function useRoomConnection(opts: {
     })();
     return () => {
       cancelled = true;
+      if (presenceRafId !== null) cancelAnimationFrame(presenceRafId);
       openedRoom?.close();
       roomRef.current = null;
     };

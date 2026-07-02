@@ -51,6 +51,10 @@ async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
   return !result.success;
 }
 
+// Owners whose first-sighting write already ran in this isolate — see
+// the welcomeOnSighting call below.
+const sightedThisIsolate = new Set<string>();
+
 export default {
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
     if (request.method === 'OPTIONS') {
@@ -83,7 +87,13 @@ export default {
     // spec/64: first authenticated sighting => sign-up. Fire-and-forget (the
     // sighting + welcome run in the background) so it never delays the response;
     // a no-op when RESEND_API_KEY is unset.
-    if (clerkUserId && clerkEmail && emailEnabled(env)) {
+    if (clerkUserId && clerkEmail && emailEnabled(env) && !sightedThisIsolate.has(clerkUserId)) {
+      // Once per isolate, not per request: a signed-in editor autosaves
+      // every ~600ms, and each request was scheduling a (no-op after the
+      // first) INSERT OR IGNORE into email_lifecycle — ~100 wasted D1
+      // writes a minute. The INSERT stays idempotent, so a cold isolate
+      // simply pays it once more.
+      sightedThisIsolate.add(clerkUserId);
       executionCtx?.waitUntil(welcomeOnSighting(env, clerkUserId, clerkEmail));
     }
     // API token (spec/61): a `Bearer lvd_…` resolves to its owner — always a

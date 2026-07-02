@@ -85,6 +85,23 @@ const SHARE_CODE_EXPR =
 const DIAGRAM_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 const DIAGRAM_SUMMARY_COLS = DIAGRAM_COLS;
 
+// Gate-only projection: the columns access checks need (owner + team +
+// name for notifications) in ONE query — no participant join, no tab
+// summaries, no share-code subquery. getDiagram costs 3 queries; the
+// room-ticket mint and WS upgrade run on every room join and use none
+// of the extra data.
+export async function getDiagramMeta(
+  env: Env,
+  id: string,
+): Promise<{ id: string; ownerId: string; teamId: string | null; name: string } | null> {
+  const row = await env.DB.prepare('SELECT id, owner_id, team_id, name FROM diagrams WHERE id = ?')
+    .bind(id)
+    .first<{ id: string; owner_id: string; team_id: string | null; name: string }>();
+  return row
+    ? { id: row.id, ownerId: row.owner_id, teamId: row.team_id ?? null, name: row.name }
+    : null;
+}
+
 export async function getDiagram(env: Env, id: string): Promise<DiagramDTO | null> {
   const row = await env.DB.prepare(`SELECT ${DIAGRAM_COLS} FROM diagrams WHERE id = ?`)
     .bind(id)
