@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   BORDER_STROKE_PX,
   clearCellStyle,
@@ -105,7 +106,15 @@ export function TableView({
   // each control hangs from).
   const invScale = 1 / zoom;
   const [editing, setEditing] = useState<{ r: number; c: number } | null>(null);
-  const [menu, setMenu] = useState<{ axis: 'col' | 'row'; index: number } | null>(null);
+  // Column / row ⋯ menu: axis + index plus the trigger's screen anchor —
+  // the menu portals to document.body (fixed positioning) so nothing inside
+  // the canvas stacking context can paint over it.
+  const [menu, setMenu] = useState<{
+    axis: 'col' | 'row';
+    index: number;
+    x: number;
+    y: number;
+  } | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
   // Shift-click multi-cell selection (spec/09): extra cells beyond the
   // anchor `selectedCell`, keyed "r:c". Styling / clearing acts on the
@@ -134,8 +143,51 @@ export function TableView({
   // The cell under the current touch press, recorded by each cell's
   // pointerdown so the grid-level long-press (touch's right-click, below)
   // knows which cell to open the toolbar for.
+  // Place the cell context menu BESIDE the selected cells instead of over
+  // them (matching the element menus): at the right edge of the selection's
+  // screen rect, or the left when the right would spill off the viewport.
+  // The rect comes from the grid's live computed tracks (element-space px,
+  // like the resize logic) scaled by the rendered-to-element ratio, so it
+  // is exact at any zoom / pinned track sizes.
+  const menuPositionFor = (cells: { r: number; c: number }[]): { x: number; y: number } => {
+    const grid = gridRef.current;
+    const fallback = { x: 0, y: 0 };
+    if (!grid || cells.length === 0) return fallback;
+    const rect = grid.getBoundingClientRect();
+    const styles = getComputedStyle(grid);
+    const colPx = styles.gridTemplateColumns.split(' ').map(parseFloat);
+    const rowPx = styles.gridTemplateRows.split(' ').map(parseFloat);
+    const sx = element.width > 0 ? rect.width / element.width : 1;
+    const sy = element.height > 0 ? rect.height / element.height : 1;
+    const cum = (sizes: number[]) => {
+      const out = [0];
+      for (const v of sizes) out.push(out[out.length - 1]! + (Number.isFinite(v) ? v : 0));
+      return out;
+    };
+    const xs = cum(colPx);
+    const ys = cum(rowPx);
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    for (const cell of cells) {
+      minX = Math.min(minX, xs[cell.c] ?? 0);
+      maxX = Math.max(maxX, xs[cell.c + 1] ?? 0);
+      minY = Math.min(minY, ys[cell.r] ?? 0);
+    }
+    const left = rect.left + minX * sx;
+    const right = rect.left + maxX * sx;
+    const top = rect.top + minY * sy;
+    // ContextMenu is w-56 (224px); keep a small gap. Prefer the right side;
+    // fall back to the left when the right would spill off the viewport
+    // (the menu's own clamp would otherwise slide it back OVER the cells).
+    const MENU_W = 224;
+    const GAP = 8;
+    const x = right + GAP + MENU_W <= window.innerWidth ? right + GAP : left - GAP - MENU_W;
+    return { x: Math.max(8, x), y: Math.max(8, top) };
+  };
+
   const pressedCellRef = useRef<{ r: number; c: number } | null>(null);
-  const cellLongPress = useLongPress((clientX, clientY) => {
+  const cellLongPress = useLongPress(() => {
     const cell = pressedCellRef.current;
     if (!cell || readOnly || element.locked) return;
     // Long-press on a cell already in the multi-selection keeps the set (the
@@ -147,7 +199,7 @@ export function TableView({
       setExtraCells(new Set());
       setSelectedCell(cell);
     }
-    setCellMenuPos({ x: clientX, y: clientY });
+    setCellMenuPos(menuPositionFor(inSelection ? selectionCells() : [cell]));
   });
 
   useEffect(() => {
@@ -417,8 +469,14 @@ export function TableView({
   };
 
   const showControls = isSelected && !readOnly && !element.locked;
-  const toggle = (axis: 'col' | 'row', index: number) =>
-    setMenu((m) => (m && m.axis === axis && m.index === index ? null : { axis, index }));
+  const toggle = (axis: 'col' | 'row', index: number, e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const anchor =
+      axis === 'col'
+        ? { x: rect.left + rect.width / 2, y: rect.bottom + 4 }
+        : { x: rect.right + 4, y: rect.top + rect.height / 2 };
+    setMenu((m) => (m && m.axis === axis && m.index === index ? null : { axis, index, ...anchor }));
+  };
 
   // Drag the right divider of column c to pin its width; other columns
   // stay auto and reflow. Reads the live track sizes + the rendered-to-
@@ -547,20 +605,10 @@ export function TableView({
                   onClick={(e) => {
                     if (showControls && !isEditingCell) {
                       e.stopPropagation();
-                      if (e.shiftKey && selectedCell) {
-                        // Shift-click builds a multi-cell selection (spec/09):
-                        // toggle this cell in the extra set, anchor unchanged
-                        // (toggling the anchor itself is a no-op).
-                        if (r === selectedCell.r && c === selectedCell.c) return;
-                        setExtraCells((prev) => {
-                          const next = new Set(prev);
-                          const key = cellKey(r, c);
-                          if (next.has(key)) next.delete(key);
-                          else next.add(key);
-                          return next;
-                        });
-                        return;
-                      }
+                      // Shift presses were consumed at pointerdown (the
+                      // multi-cell toggle); the trailing click must not
+                      // collapse the selection it just built.
+                      if (e.shiftKey) return;
                       setSelectedCell({ r, c });
                       setExtraCells(new Set());
                     }
@@ -582,12 +630,36 @@ export function TableView({
                         setSelectedCell({ r, c });
                         setExtraCells(new Set());
                       }
-                      setCellMenuPos({ x: e.clientX, y: e.clientY });
+                      // Beside the acting selection (right, else left), never
+                      // over it — matching the element menus.
+                      setCellMenuPos(menuPositionFor(inSelection ? selectionCells() : [{ r, c }]));
                     }
                   }}
                   onPointerDown={
                     showControls && !isEditingCell
                       ? (e) => {
+                          if (e.shiftKey && e.button === 0) {
+                            // Shift-click multi-cell select happens HERE, on
+                            // pointerdown with the press claimed: the element
+                            // layer's own shift handler fires on pointerdown
+                            // too and would toggle the whole TABLE into the
+                            // canvas multi-select (tearing down the cell
+                            // selection) before a click ever arrived.
+                            e.stopPropagation();
+                            if (!selectedCell) {
+                              setSelectedCell({ r, c });
+                              return;
+                            }
+                            if (r === selectedCell.r && c === selectedCell.c) return;
+                            setExtraCells((prev) => {
+                              const next = new Set(prev);
+                              const key = cellKey(r, c);
+                              if (next.has(key)) next.delete(key);
+                              else next.add(key);
+                              return next;
+                            });
+                            return;
+                          }
                           pressedCellRef.current = { r, c };
                           cellLongPress.onPointerDown(e);
                         }
@@ -605,7 +677,10 @@ export function TableView({
                     justifyContent: cellJustify,
                     alignItems,
                     color: cs?.textColor ?? (isHeader ? headerTextColor : undefined),
-                    outline: isSelCell ? '2px solid rgb(14 165 233)' : undefined,
+                    // Selection outline in the table's own accent (its
+                    // stroke, which tracks the theme) rather than a fixed
+                    // light blue that clashes on non-default themes.
+                    outline: isSelCell ? `2px solid ${stroke}` : undefined,
                     outlineOffset: isSelCell ? '-2px' : undefined,
                     fontSize: cellFontPx,
                     fontWeight:
@@ -826,43 +901,6 @@ export function TableView({
             ))}
           </div>
 
-          {/* One-click append (spec/09): a slim + pill centred on the bottom /
-              right edge adds a row / column without the hover ⋯ menu dance —
-              the single most common structural edit. Counter-scaled like the
-              other floating chrome. */}
-          <Tooltip title="Add row" description="Append a row at the bottom.">
-            <button
-              type="button"
-              data-table-ui
-              onClick={() => addRow(rows)}
-              onPointerDown={(e) => e.stopPropagation()}
-              aria-label="Add row"
-              className="pointer-events-auto absolute -bottom-3 left-1/2 z-[var(--z-toolbar)] flex h-5 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
-              style={{
-                transform: `translateX(-50%) scale(${invScale})`,
-                transformOrigin: 'top center',
-              }}
-            >
-              <PlusGlyph />
-            </button>
-          </Tooltip>
-          <Tooltip title="Add column" description="Append a column on the right.">
-            <button
-              type="button"
-              data-table-ui
-              onClick={() => addCol(cols)}
-              onPointerDown={(e) => e.stopPropagation()}
-              aria-label="Add column"
-              className="pointer-events-auto absolute -right-3 top-1/2 z-[var(--z-toolbar)] flex h-9 w-5 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
-              style={{
-                transform: `translateY(-50%) scale(${invScale})`,
-                transformOrigin: 'center left',
-              }}
-            >
-              <PlusGlyph />
-            </button>
-          </Tooltip>
-
           {/* Column triggers laid out on a grid mirroring the column
               template so each stays centred over its column at any width
               (including while a column is being resized). */}
@@ -884,23 +922,8 @@ export function TableView({
                     >
                       <Trigger
                         open={menu?.axis === 'col' && menu.index === c}
-                        onClick={() => toggle('col', c)}
+                        onClick={(e) => toggle('col', c, e)}
                       />
-                      {menu?.axis === 'col' && menu.index === c ? (
-                        <div
-                          data-table-ui
-                          className="pointer-events-auto absolute left-1/2 top-7 z-[var(--z-chrome)] w-36 -translate-x-1/2 animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
-                        >
-                          <TableHeaderMenu
-                            axis="col"
-                            index={c}
-                            count={cols}
-                            onAdd={addCol}
-                            onMove={moveCol}
-                            onDelete={delCol}
-                          />
-                        </div>
-                      ) : null}
                     </div>
                   ) : null}
                 </div>
@@ -932,23 +955,8 @@ export function TableView({
                       <Trigger
                         vertical
                         open={menu?.axis === 'row' && menu.index === r}
-                        onClick={() => toggle('row', r)}
+                        onClick={(e) => toggle('row', r, e)}
                       />
-                      {menu?.axis === 'row' && menu.index === r ? (
-                        <div
-                          data-table-ui
-                          className="pointer-events-auto absolute left-7 top-1/2 z-[var(--z-chrome)] w-36 -translate-y-1/2 animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
-                        >
-                          <TableHeaderMenu
-                            axis="row"
-                            index={r}
-                            count={rows}
-                            onAdd={addRow}
-                            onMove={moveRow}
-                            onDelete={delRow}
-                          />
-                        </div>
-                      ) : null}
                     </div>
                   ) : null}
                 </div>
@@ -957,6 +965,41 @@ export function TableView({
           </div>
         </div>
       ) : null}
+      {/* The open column / row menu, portalled to <body>: rendered inline it
+          sat inside the canvas transform's stacking context, where later
+          siblings (other elements, floating chrome) could paint over it. */}
+      {menu && showControls
+        ? createPortal(
+            <div
+              data-table-ui
+              className={`pointer-events-auto fixed z-[var(--z-overlay)] w-36 animate-pop-in rounded-lg border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/90 ${
+                menu.axis === 'col' ? '-translate-x-1/2' : '-translate-y-1/2'
+              }`}
+              style={{ left: menu.x, top: menu.y }}
+            >
+              {menu.axis === 'col' ? (
+                <TableHeaderMenu
+                  axis="col"
+                  index={menu.index}
+                  count={cols}
+                  onAdd={addCol}
+                  onMove={moveCol}
+                  onDelete={delCol}
+                />
+              ) : (
+                <TableHeaderMenu
+                  axis="row"
+                  index={menu.index}
+                  count={rows}
+                  onAdd={addRow}
+                  onMove={moveRow}
+                  onDelete={delRow}
+                />
+              )}
+            </div>,
+            document.body,
+          )
+        : null}
       {cellMenuPos && selectedCell && showControls && !editing ? (
         <TableCellMenu
           element={element}
@@ -971,13 +1014,5 @@ export function TableView({
         />
       ) : null}
     </>
-  );
-}
-
-function PlusGlyph() {
-  return (
-    <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
-      <path d="M5 1v8M1 5h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
   );
 }

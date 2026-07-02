@@ -12,7 +12,7 @@ import {
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
-type TableMenu = { axis: 'col' | 'row'; index: number } | null;
+type TableMenu = { axis: 'col' | 'row'; index: number; x: number; y: number } | null;
 
 type TableStructureDeps = {
   element: TableElement;

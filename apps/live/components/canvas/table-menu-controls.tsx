@@ -18,7 +18,9 @@ export function Trigger({
 }: {
   open: boolean;
   vertical?: boolean;
-  onClick: () => void;
+  // Receives the click event so the caller can anchor the (portalled)
+  // menu to this trigger's screen rect.
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   return (
     <button
@@ -28,7 +30,7 @@ export function Trigger({
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => {
         e.stopPropagation();
-        onClick();
+        onClick(e);
       }}
       className={`pointer-events-auto flex items-center justify-center rounded-full border border-slate-200 shadow-sm transition dark:border-slate-700 ${
         open ? 'bg-brand-500 text-white' : 'bg-white text-brand-600 dark:bg-slate-800'
