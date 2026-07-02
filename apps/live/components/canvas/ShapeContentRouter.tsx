@@ -76,6 +76,8 @@ export function ShapeContentRouter({
       stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
       strokeWidth={remoteBorderColor ? 3 : 2}
       hasLabel={(element.label ?? '').trim().length > 0}
+      labelAlignX={element.textAlignX ?? 'center'}
+      labelAlignY={element.textAlignY ?? 'bottom'}
       // Per-icon looping animation (spec/09). Picked from the icon context
       // menu; undefined = static.
       animation={element.iconAnimation}

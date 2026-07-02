@@ -22,6 +22,7 @@ import {
 import { iconAnimationClass, iconAnimationSpeedStyle } from '@/lib/icons';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { iconBandClass } from '@/components/primitives/icon-band';
 
 // The white line-art group the glyph markup sits in. A bare path/circle in
 // the markup strokes white; a filled mark sets fill="#fff" stroke="none"
@@ -108,22 +109,7 @@ export function TechIconGlyph({
 }) {
   const animClass = iconAnimationClass(animation);
   const px = ICON_SIZE_PX[size ?? DEFAULT_ICON_SIZE];
-  // A horizontally-centred caption flips the mark vertically; a left/right
-  // caption flips it horizontally instead and shares the caption's row so
-  // the pair lines up (spec/41). Same geometry as techIconMarkBounds.
-  const vBand = labelAlignY === 'bottom' ? 'top-[6%] h-[58%]' : 'bottom-[6%] h-[58%]';
-  const vRow =
-    labelAlignY === 'top'
-      ? 'top-[6%] h-[58%]'
-      : labelAlignY === 'bottom'
-        ? 'bottom-[6%] h-[58%]'
-        : 'inset-y-0';
-  const band =
-    labelAlignX === 'left'
-      ? `left-1/2 right-[6%] ${vRow}`
-      : labelAlignX === 'right'
-        ? `left-[6%] right-1/2 ${vRow}`
-        : `inset-x-0 ${vBand}`;
+  const band = iconBandClass(labelAlignX, labelAlignY);
   return (
     <div
       className={`pointer-events-none absolute flex items-center justify-center ${

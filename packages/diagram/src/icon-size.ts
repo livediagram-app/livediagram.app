@@ -24,18 +24,55 @@ export function iconSizePx(size: IconSize | undefined, maxW: number, maxH: numbe
   return Math.max(0, Math.min(ICON_SIZE_PX[size ?? DEFAULT_ICON_SIZE], maxW, maxH));
 }
 
-// The rectangle the mark actually occupies inside a Technology icon
-// element: its fixed preset size, centred in the glyph band, clamped to the
-// box. The band sits OPPOSITE the caption (spec/41), so moving the text
-// never stacks it over the mark: a horizontally-centred caption flips the
-// mark vertically (bottom caption → top band, top/middle → bottom band); a
-// left/right caption flips it horizontally instead (left caption → right
-// half, right → left half) and keeps the mark on the caption's row (top /
-// middle / bottom of the box) so the two line up side by side. No label =
-// centred in the whole box. One implementation shared by the export
-// renderer (svgIconShape), the editor overlay (TechIconGlyph's CSS bands
-// mirror these numbers), and the connector geometry (arrows attach to the
-// mark, not the element box — the box can be much larger than the chip).
+// The glyph BAND inside an icon element: the region of the box the glyph
+// may occupy. The band sits OPPOSITE the caption (spec/41), so moving the
+// text never stacks it over the glyph: a horizontally-centred caption flips
+// the glyph vertically (bottom caption → top band, top/middle → bottom
+// band); a left/right caption flips it horizontally instead (left caption →
+// right half, right → left half) and keeps the glyph on the caption's row
+// (top / middle / bottom of the box) so the two line up side by side. No
+// label = the whole box. Shared by BOTH icon kinds: Technology marks centre
+// their fixed-size tile in it (techIconMarkBounds below) and line-art
+// glyphs scale to fill it (svgIconShape / IconGlyph).
+export function iconBandBounds(el: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label?: string;
+  textAlignX?: 'left' | 'center' | 'right';
+  textAlignY?: 'top' | 'middle' | 'bottom';
+}): { x: number; y: number; width: number; height: number } {
+  const hasLabel = !!el.label;
+  const ax = el.textAlignX ?? 'center';
+  const ay = el.textAlignY ?? 'bottom';
+  let bandX = el.x;
+  let bandW = el.width;
+  let bandY = el.y;
+  let bandH = el.height;
+  if (hasLabel && ax === 'center') {
+    // Vertical inverse: the caption owns its band, the glyph the other.
+    bandY = el.y + el.height * (ay === 'bottom' ? 0.06 : 0.36);
+    bandH = el.height * 0.58;
+  } else if (hasLabel) {
+    // Horizontal inverse: caption left → glyph in the right half (and vice
+    // versa), sharing the caption's row so the pair reads as one line.
+    bandX = ax === 'left' ? el.x + el.width * 0.5 : el.x + el.width * 0.06;
+    bandW = el.width * 0.44;
+    if (ay !== 'middle') {
+      bandY = el.y + el.height * (ay === 'top' ? 0.06 : 0.36);
+      bandH = el.height * 0.58;
+    }
+  }
+  return { x: bandX, y: bandY, width: bandW, height: bandH };
+}
+
+// The rectangle a Technology mark actually occupies inside its element: its
+// fixed preset size, centred in the glyph band, clamped to the box. One
+// implementation shared by the export renderer (svgIconShape), the editor
+// overlay (TechIconGlyph's CSS bands mirror these numbers), and the
+// connector geometry (arrows attach to the mark, not the element box — the
+// box can be much larger than the chip).
 export function techIconMarkBounds(el: {
   x: number;
   y: number;
@@ -46,31 +83,11 @@ export function techIconMarkBounds(el: {
   textAlignY?: 'top' | 'middle' | 'bottom';
   iconSize?: IconSize;
 }): { x: number; y: number; width: number; height: number } {
-  const hasLabel = !!el.label;
-  const ax = el.textAlignX ?? 'center';
-  const ay = el.textAlignY ?? 'bottom';
-  let bandX = el.x;
-  let bandW = el.width;
-  let bandY = el.y;
-  let bandH = el.height;
-  if (hasLabel && ax === 'center') {
-    // Vertical inverse: the caption owns its band, the mark the other.
-    bandY = el.y + el.height * (ay === 'bottom' ? 0.06 : 0.36);
-    bandH = el.height * 0.58;
-  } else if (hasLabel) {
-    // Horizontal inverse: caption left → mark in the right half (and vice
-    // versa), sharing the caption's row so the pair reads as one line.
-    bandX = ax === 'left' ? el.x + el.width * 0.5 : el.x + el.width * 0.06;
-    bandW = el.width * 0.44;
-    if (ay !== 'middle') {
-      bandY = el.y + el.height * (ay === 'top' ? 0.06 : 0.36);
-      bandH = el.height * 0.58;
-    }
-  }
-  const size = iconSizePx(el.iconSize, bandW, bandH);
+  const band = iconBandBounds(el);
+  const size = iconSizePx(el.iconSize, band.width, band.height);
   return {
-    x: bandX + (bandW - size) / 2,
-    y: bandY + (bandH - size) / 2,
+    x: band.x + (band.width - size) / 2,
+    y: band.y + (band.height - size) / 2,
     width: size,
     height: size,
   };

@@ -2,7 +2,9 @@
 // element (BoxedElementView, for shape==='icon') and the palette icon
 // picker so the on-canvas glyph and the picker thumbnail can't drift.
 
-import type { AnimationSpeed, IconAnimation } from '@livediagram/diagram';
+import type { AnimationSpeed, IconAnimation, TextAlignX, TextAlignY } from '@livediagram/diagram';
+
+import { iconBandClass } from '@/components/primitives/icon-band';
 
 import { getIcon, iconAnimationClass, iconAnimationSpeedStyle, type IconPrim } from '@/lib/icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -67,18 +69,19 @@ export function IconPrims({
 }
 
 // Full-box icon overlay for a shape==='icon' element. When the icon
-// carries a label the glyph is pinned to the TOP of a taller viewBox
-// (0..24 art in a 0..24..40 box ≈ top 60%) so the bottom-aligned label
-// drops into a clear band beneath the art with real breathing room
-// rather than crowding it; with no label the glyph fills the box
-// (square viewBox). The stroke is non-scaling so the line weight stays
-// crisp at any element size, and it picks up the element's stroke
-// colour so icons tint + theme like line drawings.
+// carries a label the glyph scales into the band OPPOSITE the caption
+// (iconBandClass — the same inverse-alignment bands as Technology
+// marks, spec/41), so moving the text never stacks it over the art;
+// with no label the glyph fills the box. The stroke is non-scaling so
+// the line weight stays crisp at any element size, and it picks up the
+// element's stroke colour so icons tint + theme like line drawings.
 export function IconGlyph({
   iconId,
   stroke,
   strokeWidth = 2,
   hasLabel = false,
+  labelAlignX = 'center',
+  labelAlignY = 'bottom',
   animation,
   animationSpeed,
 }: {
@@ -86,22 +89,32 @@ export function IconGlyph({
   stroke: string;
   strokeWidth?: number;
   hasLabel?: boolean;
+  // The label's alignment; the glyph takes the opposite band (see
+  // iconBandBounds in @livediagram/diagram, whose numbers the CSS mirrors).
+  labelAlignX?: TextAlignX;
+  labelAlignY?: TextAlignY;
   animation?: IconAnimation;
   animationSpeed?: AnimationSpeed;
 }) {
   return (
-    <svg
-      className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-      viewBox={hasLabel ? '0 0 24 40' : '0 0 24 24'}
-      preserveAspectRatio="xMidYMin meet"
-      fill="none"
-      stroke={stroke}
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <div
+      className={`pointer-events-none absolute ${
+        hasLabel ? iconBandClass(labelAlignX, labelAlignY) : 'inset-0'
+      }`}
       aria-hidden
     >
-      <IconPrims iconId={iconId} animation={animation} animationSpeed={animationSpeed} />
-    </svg>
+      <svg
+        className="h-full w-full overflow-visible"
+        viewBox="0 0 24 24"
+        preserveAspectRatio="xMidYMid meet"
+        fill="none"
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <IconPrims iconId={iconId} animation={animation} animationSpeed={animationSpeed} />
+      </svg>
+    </div>
   );
 }

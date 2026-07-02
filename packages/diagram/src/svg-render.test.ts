@@ -213,12 +213,21 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('stroke-width="1"');
     });
 
-    it('pins a captioned glyph to the top band (24x40 viewBox) with a bottom label', () => {
+    it('scales a captioned glyph into the band opposite the label (spec/41 bands)', () => {
+      // Bottom caption (the default): the glyph band is the top 6%..64% of
+      // the 48px box — y = 48*0.06, height = 48*0.58.
       const svg = renderElementsToSvg(tab([icon({ label: 'API' })]), {
         resolveIconArt: () => ({ markup: '<path d="M1 2"/>', colored: false }),
       });
-      expect(svg).toContain('viewBox="0 0 24 40"');
+      expect(svg).toContain('y="2.88"');
+      expect(svg).toContain('height="27.84"');
+      expect(svg).toContain('viewBox="0 0 24 24"');
       expect(svg).toContain('>API</');
+      // Top caption: the glyph flips to the bottom band (y = 48*0.36).
+      const flipped = renderElementsToSvg(tab([icon({ label: 'API', textAlignY: 'top' })]), {
+        resolveIconArt: () => ({ markup: '<path d="M1 2"/>', colored: false }),
+      });
+      expect(flipped).toContain('y="17.28"');
     });
 
     it('renders a colored (Technology) mark without recolouring it', () => {

@@ -23,7 +23,7 @@ import {
   defaultTextColor,
 } from './colors';
 import { endpointPosition } from './geometry';
-import { techIconMarkBounds } from './icon-size';
+import { iconBandBounds, techIconMarkBounds } from './icon-size';
 import { hasShapeSilhouette, svgFreehandShape, svgShapeSilhouette } from './svg-render-shapes';
 import { svgTableShape } from './svg-render-table';
 import { hasRichFormatting } from './rich-text';
@@ -380,13 +380,13 @@ export function svgImageShape(
 // A shape==='icon' element's glyph as a nested <svg> positioned over the
 // element box — nesting reproduces the editor's scaling exactly (the canvas
 // renders the glyph as an absolutely-positioned svg over the element).
-// Line art: viewBox 0 0 24 24, or 0 0 24 40 with a label so the art pins to
-// the top ~60% and the caption band stays clear (IconGlyph). The stroke
-// width is divided by the glyph scale so it lands at ~2 rendered units —
-// the on-canvas glyph strokes are non-scaling 2px. Technology marks:
-// self-coloured tile art in the top band when captioned (TechIconGlyph).
+// Line art: viewBox 0 0 24 24 scaled into the glyph band opposite the
+// caption (iconBandBounds — the same inverse-alignment bands as Technology
+// marks, mirroring IconGlyph). The stroke width is divided by the glyph
+// scale so it lands at ~2 rendered units — the on-canvas glyph strokes are
+// non-scaling 2px. Technology marks: self-coloured tile art at its fixed
+// preset size in the band (TechIconGlyph).
 export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: string): string {
-  const hasLabel = !!el.label;
   if (art.colored) {
     // A Technology mark renders at its fixed preset size (spec/41), centred
     // in the glyph band and clamped to the box — techIconMarkBounds is the
@@ -400,12 +400,12 @@ export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: strin
       ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible">${art.markup}</svg>`
     );
   }
-  const vbH = hasLabel ? 40 : 24;
-  const scale = Math.min(el.width / 24, el.height / vbH);
+  const band = iconBandBounds(el);
+  const scale = Math.min(band.width / 24, band.height / 24);
   const strokeWidth = scale > 0 ? 2 / scale : 2;
   return (
-    `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
-    ` viewBox="0 0 24 ${vbH}" preserveAspectRatio="xMidYMin meet" overflow="visible"` +
+    `<svg x="${r2(band.x)}" y="${r2(band.y)}" width="${r2(band.width)}" height="${r2(band.height)}"` +
+    ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible"` +
     ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${r2(strokeWidth)}"` +
     ` stroke-linecap="round" stroke-linejoin="round">${art.markup}</svg>`
   );

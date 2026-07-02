@@ -143,12 +143,16 @@ middle-aligned caption sends it to the bottom band. A **left- or
 right-aligned caption flips it horizontally instead** — left caption → mark
 in the right half, right caption → left half — and the mark stays on the
 caption's row (top / middle / bottom) so the pair reads as one line. Without
-a label the mark centres in the whole box. `techIconMarkBounds`
-(`packages/diagram/src/icon-size.ts`) is the single source of this geometry;
-the editor overlay's CSS bands mirror its numbers. Line-art
-icons are unaffected — they are drawings that keep scaling with their box.
+a label the mark centres in the whole box. `iconBandBounds` / `techIconMarkBounds`
+(`packages/diagram/src/icon-size.ts`) are the single source of this geometry;
+the editor overlay's CSS bands (`iconBandClass`) mirror their numbers.
+**Line-art icons share the same inverse band**: the glyph keeps scaling with
+its box (no fixed pixel preset), but a captioned glyph scales into the band
+opposite the caption's alignment exactly like a mark — bottom caption → top
+band, top/middle caption → bottom band, left/right caption → the other half
+on the caption's row — so moving the text never stacks it over the art.
 The exports / headless renders (`svgIconShape` in the shared renderer) apply
-the same fixed-size geometry so a resized mark exports exactly as drawn.
+the same band geometry so a captioned icon exports exactly as drawn.
 
 **Connectors attach to the mark, not the element box.** Because the box can
 be much larger than the visible chip, arrow anchors on a Technology icon are
