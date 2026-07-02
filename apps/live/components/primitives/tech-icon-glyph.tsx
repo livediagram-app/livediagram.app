@@ -9,7 +9,13 @@
 // this paints the tile fill from the catalogue and the glyph in white,
 // ignoring the element's stroke colour entirely.
 
-import type { AnimationSpeed, IconAnimation } from '@livediagram/diagram';
+import {
+  DEFAULT_ICON_SIZE,
+  ICON_SIZE_PX,
+  type AnimationSpeed,
+  type IconAnimation,
+  type IconSize,
+} from '@livediagram/diagram';
 
 import { iconAnimationClass, iconAnimationSpeedStyle } from '@/lib/icons';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
@@ -65,20 +71,25 @@ export function TechIconArt({ iconId }: { iconId: string | undefined }) {
   );
 }
 
-// Full-box brand-icon overlay for a shape==='icon' element whose id is a
-// tech icon. When the icon carries a label the art is pinned to the TOP of
-// a taller viewBox (0..24 art in a 0..24..40 box ≈ top 60%) so the
-// bottom-aligned label drops into a clear band beneath it — the same
-// label-room trick IconGlyph uses, so coloured and line-art icons caption
-// identically.
+// Brand-icon overlay for a shape==='icon' element whose id is a tech icon.
+// The mark renders at a FIXED pixel size (spec/41): `size` is the element's
+// `iconSize` preset (default 'md' = 48px), so resizing the element gives
+// the caption room without inflating the chip; the tile clamps to the box
+// via max-width/height when the box is smaller than the preset. When the
+// icon carries a label the mark centres in the TOP ~64% band so the
+// bottom-aligned label keeps a clear strip beneath it; with no label it
+// centres in the whole box.
 export function TechIconGlyph({
   iconId,
   hasLabel = false,
+  size,
   animation,
   animationSpeed,
 }: {
   iconId: string | undefined;
   hasLabel?: boolean;
+  // Fixed tile size preset (spec/41); undefined = the default ('md').
+  size?: IconSize;
   // Per-icon looping animation (spec/09); undefined = static. Wraps the whole
   // tile + glyph so a brand mark spins / beats as one.
   animation?: IconAnimation;
@@ -86,27 +97,28 @@ export function TechIconGlyph({
   animationSpeed?: AnimationSpeed;
 }) {
   const animClass = iconAnimationClass(animation);
-  // With a label, pin the art to the TOP ~62% band (leaving the bottom for the
-  // bottom-aligned label) rather than letterboxing a tall viewBox across the
-  // whole box — the latter scaled the icon only by height, so widening the
-  // element left the icon the same size. A percentage-height band scales with
-  // the element in both axes.
+  const px = ICON_SIZE_PX[size ?? DEFAULT_ICON_SIZE];
   return (
-    <svg
-      className={`pointer-events-none absolute overflow-visible ${
-        hasLabel ? 'inset-x-0 top-[6%] h-[58%] w-full' : 'inset-0 h-full w-full'
+    <div
+      className={`pointer-events-none absolute flex items-center justify-center ${
+        hasLabel ? 'inset-x-0 top-[6%] h-[58%]' : 'inset-0'
       }`}
-      viewBox="0 0 24 24"
-      preserveAspectRatio="xMidYMid meet"
       aria-hidden
     >
-      {animClass ? (
-        <g className={animClass} style={iconAnimationSpeedStyle(animationSpeed)}>
+      <svg
+        className="overflow-visible"
+        style={{ width: px, height: px, maxWidth: '100%', maxHeight: '100%' }}
+        viewBox="0 0 24 24"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {animClass ? (
+          <g className={animClass} style={iconAnimationSpeedStyle(animationSpeed)}>
+            <TechIconArt iconId={iconId} />
+          </g>
+        ) : (
           <TechIconArt iconId={iconId} />
-        </g>
-      ) : (
-        <TechIconArt iconId={iconId} />
-      )}
-    </svg>
+        )}
+      </svg>
+    </div>
   );
 }

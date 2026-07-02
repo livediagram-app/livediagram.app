@@ -23,6 +23,7 @@ import {
   defaultTextColor,
 } from './colors';
 import { endpointPosition } from './geometry';
+import { iconSizePx } from './icon-size';
 import { hasRichFormatting } from './rich-text';
 import type { ArrowElement, BoxedElement, Element, Tab, TextRun } from './index';
 
@@ -429,10 +430,16 @@ export function svgImageShape(
 export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: string): string {
   const hasLabel = !!el.label;
   if (art.colored) {
-    const y = hasLabel ? el.y + el.height * 0.06 : el.y;
-    const h = hasLabel ? el.height * 0.58 : el.height;
+    // A Technology mark renders at its fixed preset size (spec/41), centred
+    // in the glyph band (the top ~64% when captioned, the whole box when
+    // not) and clamped to the box — mirroring TechIconGlyph exactly.
+    const bandY = hasLabel ? el.y + el.height * 0.06 : el.y;
+    const bandH = hasLabel ? el.height * 0.58 : el.height;
+    const size = iconSizePx(el.type === 'shape' ? el.iconSize : undefined, el.width, bandH);
+    const x = el.x + (el.width - size) / 2;
+    const y = bandY + (bandH - size) / 2;
     return (
-      `<svg x="${r2(el.x)}" y="${r2(y)}" width="${r2(el.width)}" height="${r2(h)}"` +
+      `<svg x="${r2(x)}" y="${r2(y)}" width="${r2(size)}" height="${r2(size)}"` +
       ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible">${art.markup}</svg>`
     );
   }

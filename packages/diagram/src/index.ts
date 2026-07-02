@@ -609,6 +609,7 @@ export * from './shape-marker';
 export * from './comments';
 export * from './data-shapes';
 export * from './colors';
+export * from './icon-size';
 
 // Per-range label formatting (spec/09): the runs-as-delta model + pure
 // helpers shared by the canvas renderer and the contentEditable editor.

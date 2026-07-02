@@ -60,6 +60,7 @@ export function ShapeContentRouter({
     <TechIconGlyph
       iconId={element.iconId}
       hasLabel={(element.label ?? '').trim().length > 0}
+      size={element.iconSize}
       animation={element.iconAnimation}
       animationSpeed={element.iconAnimationSpeed}
     />

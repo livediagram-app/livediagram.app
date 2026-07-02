@@ -14,6 +14,7 @@ import type {
   ElementAnimation,
   IconAnimation,
   IconPosition,
+  IconSize,
   PieAnim,
   PieSlice,
   ProgressAnim,
@@ -173,6 +174,8 @@ export type EditorContextMenuProps = {
   // Re-place a shape's inline icon (reuses the drop handler: same iconId,
   // new side).
   onSetIconPosition: (elementId: string, iconId: string, position: IconPosition) => void;
+  // A Technology icon element's fixed tile-size preset (spec/41).
+  onSetIconSize: (size: IconSize) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   // The selected elements (multi-selection / group members), so the 'multi'

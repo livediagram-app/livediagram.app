@@ -1755,6 +1755,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "IconSize": {
+    "enum": [
+      "sm",
+      "md",
+      "lg",
+      "xl"
+    ],
+    "type": "string"
+  },
   "ImageElement": {
     "additionalProperties": false,
     "properties": {
@@ -2208,6 +2217,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "iconPosition": {
         "$ref": "#/components/schemas/IconPosition"
+      },
+      "iconSize": {
+        "$ref": "#/components/schemas/IconSize"
       },
       "id": {
         "$ref": "#/components/schemas/ElementId"

@@ -156,6 +156,21 @@ describe('renderElementsToSvg', () => {
       expect(svg).not.toContain('stroke="#123456"');
     });
 
+    it('draws a Technology mark at its fixed preset size, centred (spec/41)', () => {
+      const art = () => ({ markup: '<circle/>', colored: true });
+      // Default preset (md = 48px) in a 200x100 box, no label: centred.
+      const svg = renderElementsToSvg(tab([icon({ width: 200, height: 100 })]), {
+        resolveIconArt: art,
+      });
+      expect(svg).toContain('width="48" height="48"');
+      expect(svg).toContain('x="76" y="26"'); // (200-48)/2, (100-48)/2
+      // Explicit xl preset (96px) clamps to a smaller box.
+      const clamped = renderElementsToSvg(tab([icon({ width: 60, height: 60, iconSize: 'xl' })]), {
+        resolveIconArt: art,
+      });
+      expect(clamped).toContain('width="60" height="60" viewBox="0 0 24 24"');
+    });
+
     it('falls back to the box-with-label output without a resolver', () => {
       const svg = renderElementsToSvg(tab([icon({ label: 'Server' })]));
       expect(svg).toContain('<rect'); // the generic body

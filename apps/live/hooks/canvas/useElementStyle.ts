@@ -24,6 +24,7 @@ import {
   type AnimationSpeed,
   type ElementAnimation,
   type IconAnimation,
+  type IconSize,
   type Element,
   type Padding,
   type ShapeElement,
@@ -291,6 +292,19 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Changed', 'Padding');
   };
 
+  // A Technology icon's fixed tile-size preset (spec/41). Applies to every
+  // selected icon element (a no-op field elsewhere).
+  const setIconSizeSelected = (iconSize: IconSize) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'icon' ? { ...el, iconSize } : el,
+      ),
+    );
+    track('Element', 'Changed', 'IconSize');
+  };
+
   // Set arrow-only field(s) on every selected arrow. The straightforward
   // per-field arrow setters share this; setArrowStyleSelected stays separate
   // because it also has to drop curvePoints.
@@ -449,6 +463,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setTextColorSelected,
     setOpacitySelected,
     setPaddingSelected,
+    setIconSizeSelected,
     setArrowEndsSelected,
     setArrowThicknessSelected,
     setArrowheadSizeSelected,

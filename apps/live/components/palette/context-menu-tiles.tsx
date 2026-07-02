@@ -16,8 +16,10 @@ import {
   type AnimationSpeed,
   type ArrowFlow,
   type ChartLegendPosition,
+  ICON_SIZES,
   type ElementAnimation,
   type IconAnimation,
+  type IconSize,
 } from '@livediagram/diagram';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
@@ -283,6 +285,55 @@ export function LegendPositionTiles({
           onClick={() => (p === 'off' ? onSetOff() : onSetPosition(p))}
         >
           <TileLabel glyph={<LegendPosGlyph pos={p} />} label={p === 'bottom' ? 'Below' : p} />
+        </SizeButton>
+      ))}
+    </div>
+  );
+}
+
+// Icon-size picker (spec/41): a Technology icon's fixed tile size. Four
+// preset tiles, each a rounded-square chip glyph at a graduated size over
+// its caption — icon buttons, matching the other tile grids here.
+const ICON_SIZE_LABEL: Record<IconSize, string> = {
+  sm: 'Small',
+  md: 'Medium',
+  lg: 'Large',
+  xl: 'Huge',
+};
+
+function IconSizeGlyph({ size }: { size: IconSize }) {
+  // Chip edge lengths graduated per preset, all inside one 22x22 canvas so
+  // the row of glyphs reads as the same chip growing.
+  const edge = { sm: 8, md: 11, lg: 14, xl: 18 }[size];
+  const off = (22 - edge) / 2;
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
+      <rect
+        x={off}
+        y={off}
+        width={edge}
+        height={edge}
+        rx={edge * 0.22}
+        fill="currentColor"
+        opacity="0.85"
+      />
+    </svg>
+  );
+}
+
+export function IconSizeTiles({
+  value,
+  onSet,
+}: {
+  // The element's committed preset ('md' when unset).
+  value: IconSize;
+  onSet: (v: IconSize) => void;
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
+      {ICON_SIZES.map((s) => (
+        <SizeButton key={s} active={value === s} onClick={() => onSet(s)}>
+          <TileLabel glyph={<IconSizeGlyph size={s} />} label={ICON_SIZE_LABEL[s]} />
         </SizeButton>
       ))}
     </div>

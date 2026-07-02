@@ -15,6 +15,7 @@
 
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import {
+  DEFAULT_ICON_SIZE,
   defaultFillColor,
   defaultStrokeColor,
   defaultTextColor,
@@ -31,6 +32,7 @@ import {
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
+  type IconSize,
 } from '@livediagram/diagram';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
@@ -52,7 +54,8 @@ import {
   MenuTile,
 } from '@/components/primitives/PortalMenu';
 
-import {} from '@/components/palette/context-menu-tiles';
+import { IconSizeTiles } from '@/components/palette/context-menu-tiles';
+import { isTechIconId } from '@/lib/tech-icons';
 import {
   ArrowPresetsSection,
   ShapePresetsSection,
@@ -273,6 +276,24 @@ export function ElementAppearanceSections({
                 </BorderGrid>
               ) : null}
             </div>
+          </MenuAccordionSection>
+        </>
+      ) : null}
+      {/* Icon — a Technology icon element's fixed tile size (spec/41).
+            The mark renders at a preset pixel size regardless of the box;
+            these tiles pick the preset. */}
+      {isIcon && isTechIconId((target as { iconId?: string }).iconId) ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuAccordionSection
+            title="Icon"
+            icon={<IconCategoryGlyph />}
+            {...sectionProps('icon-size')}
+          >
+            <IconSizeTiles
+              value={(target as { iconSize?: IconSize }).iconSize ?? DEFAULT_ICON_SIZE}
+              onSet={props.onSetIconSize}
+            />
           </MenuAccordionSection>
         </>
       ) : null}

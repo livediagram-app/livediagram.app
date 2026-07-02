@@ -7,6 +7,7 @@ import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ShapeMarker } from './shape-marker';
+import type { IconSize } from './icon-size';
 import type {
   AnimationSpeed,
   ElementAnimation,
@@ -53,6 +54,12 @@ export type ShapeElement = {
   // (slow / normal / fast → a duration multiplier fed to the `lvd-icon-*`
   // keyframes via `--lvd-icon-anim-speed`). Undefined = normal.
   iconAnimationSpeed?: AnimationSpeed;
+  // Fixed render size for a Technology (brand) icon's tile (spec/41):
+  // the mark draws at ICON_SIZE_PX[iconSize] regardless of the element's
+  // box, so resizing the element never inflates the chip. Undefined = the
+  // default preset ('md'). Ignored by line-art icons, which keep scaling
+  // with their box.
+  iconSize?: IconSize;
   // Where the inline icon sits relative to the shape's text label (only
   // meaningful on a non-'icon' shape carrying an `iconId`). Defaults to
   // 'left' when unset. Chosen by which side of the shape the icon was

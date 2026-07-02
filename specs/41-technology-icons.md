@@ -120,11 +120,32 @@ icon-fold-into-shape gesture (`useEditorDrag`, which absorbs a dragged line-art
 ## Rendering — `apps/live/components/primitives/tech-icon-glyph.tsx`
 
 `TechIconGlyph` paints the brand-coloured tile + the icon's white `glyph` markup
-inside an `<svg>` whose viewBox expands from `0 0 24 24` to `0 0 24 40` when the
-element has a label (glyph pinned to the top 60%, label band beneath) — the same
-label-room trick `IconGlyph` uses, so the coloured and line-art icons place
-captions identically. No stroke tint is applied; the brand colour is the tile
-fill and the glyph is white.
+inside an `<svg>`. No stroke tint is applied; the brand colour is the tile fill
+and the glyph is white.
+
+**The mark renders at a fixed pixel size, not scaled to the element box.**
+Resizing a Technology icon element gives the caption more room / adds
+whitespace around the mark, but the tile itself stays the same size — an
+architecture diagram's brand marks read as a uniform set of chips, not blobs
+that grow with their boxes. The size comes from an optional `iconSize` preset
+on the element (`IconSize = 'sm' | 'md' | 'lg' | 'xl'` → 32 / 48 / 64 / 96 px,
+`ICON_SIZE_PX` in `packages/diagram/src/icon-size.ts`), defaulting to `md`
+(48 px); the tile clamps to the element box when the box is smaller than the
+preset. Layout: with a label the mark centres inside the top band (the top
+~64% of the box, matching the old banded geometry) and the caption keeps its
+bottom band; without a label the mark centres in the whole box. Line-art
+icons are unaffected — they are drawings that keep scaling with their box.
+The exports / headless renders (`svgIconShape` in the shared renderer) apply
+the same fixed-size geometry so a resized mark exports exactly as drawn.
+
+**Icon size presets in the context menu.** A Technology icon element's
+right-click menu gains an **Icon** category (single-element menu only, like
+the other type-specific categories): a 4-tile grid of size presets rendered
+as icon buttons — a rounded-square chip glyph at graduated sizes with a
+Small / Medium / Large / Huge caption under each (the `MenuTile` icon-over-
+label convention), the active preset highlighted. Picking one writes
+`iconSize` selection-wide (history-aware, `track('Element', 'Changed',
+'IconSize')`).
 
 **Exports and headless renders draw the same art.** The shared SVG renderer
 (`packages/diagram/src/svg-render.ts`) takes an injected `resolveIconArt`
