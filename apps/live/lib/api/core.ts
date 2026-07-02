@@ -122,6 +122,15 @@ type TokenProvider = () => Promise<string | null>;
 
 let currentTokenProvider: TokenProvider | null = null;
 
+// The most recent token the provider returned, kept for the ONE caller
+// that can't await: the `beforeunload` save beacon (flushDiagramSavesBeacon).
+// The provider is async (Clerk may refresh over the network), so during
+// page teardown it's unusable — but the editor autosaves every ~600ms
+// while editing, so this cache is at most seconds old exactly when the
+// beacon needs it. Cleared with the provider on sign-out/unmount so a
+// signed-out tab can't flush with a dead identity.
+let lastKnownToken: string | null = null;
+
 // Register / clear the Clerk token provider. Call sites:
 //   - `apps/live/app/diagram/[id]/editor-page.tsx`: useEffect with
 //     `setTokenProvider(() => getToken())` and a cleanup that clears
@@ -130,6 +139,14 @@ let currentTokenProvider: TokenProvider | null = null;
 // Pass `null` to clear (sign-out / unmount).
 export function setTokenProvider(provider: TokenProvider | null): void {
   currentTokenProvider = provider;
+  if (!provider) lastKnownToken = null;
+}
+
+// Synchronous read of the last token apiHeaders fetched — for the
+// unload beacon only. Everything else must go through apiHeaders (which
+// refreshes via the async provider).
+export function getLastKnownToken(): string | null {
+  return lastKnownToken;
 }
 
 // Share password for the current visitor session (spec/24). Same
@@ -184,6 +201,10 @@ export async function apiHeaders(
 ): Promise<HeadersInit> {
   const h: Record<string, string> = {};
   const token = currentTokenProvider ? await currentTokenProvider() : null;
+  // Mirror into the sync cache for the unload beacon (see
+  // getLastKnownToken) — including null, so a session that lapsed
+  // mid-page doesn't leave a stale Bearer for the flush.
+  lastKnownToken = token;
   if (token) {
     h['Authorization'] = `Bearer ${token}`;
   } else {

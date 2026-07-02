@@ -1,11 +1,18 @@
+// Runtime constants come from the './data-shapes' LEAF (not './index'):
+// SHAPE_DEFAULT_SIZE reads RAIL_* at module-init time, and a runtime
+// read through the index ⇄ factories cycle TDZ-crashes plain-Node ESM
+// consumers. `isBoxed` stays on './index' — it's only called inside
+// function bodies, after the cycle has settled.
 import {
-  isBoxed,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   PIE_DEFAULT_SLICES,
   RAIL_DEFAULT_POINTS,
   RAIL_POINT_STEP_PX,
   RATING_DEFAULT,
+} from './data-shapes';
+import {
+  isBoxed,
   type Anchor,
   type AnnotationElement,
   type LinkCardElement,

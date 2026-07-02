@@ -11,6 +11,7 @@ import {
   expectOk,
   expectOkOrNull,
   expectOkVoid,
+  getLastKnownToken,
   stripUiTabFields,
   type TabResponse,
 } from './core';
@@ -87,10 +88,10 @@ export async function apiSaveTab(
 // Why it can't reuse those async helpers: a `beforeunload` handler can't
 // await, and the Clerk token provider (apiHeaders) is async — so this
 // path builds headers synchronously and uses `keepalive: true` to let
-// each request outlive the teardown. The synchronous header is
-// `X-Owner-Id` (the guest identity); the Bearer token isn't retrievable
-// without awaiting, exactly as the previous inline version did it. The
-// debounced save carries the correct hybrid identity for the common
+// each request outlive the teardown. Identity comes from the sync
+// sources: the Bearer token apiHeaders cached on its last fetch for
+// signed-in sessions, else X-Owner-Id + guest signature. The debounced
+// save carries the freshly-fetched hybrid identity for the common
 // (non-unload) case. Callers pass an already-diffed change set
 // (computeTabSaveDiff); empty sets fire nothing.
 export function flushDiagramSavesBeacon(args: {
@@ -108,14 +109,24 @@ export function flushDiagramSavesBeacon(args: {
   name: string;
   tabs: Tab[];
 }): void {
-  const base: Record<string, string> = { 'X-Owner-Id': args.ownerId };
-  // The guest signature is a synchronous localStorage read, so unlike the
-  // Bearer token it CAN ride the unload beacon. Without it these writes
-  // 401 (signature_required) once guest-sig enforcement is on, silently
-  // losing the final debounce window's edits — the exact loss this flush
-  // exists to prevent.
-  const sig = getGuestSelfSig();
-  if (sig) base['X-Owner-Sig'] = sig;
+  // Identity, synchronously (a beforeunload handler can't await):
+  // signed-in sessions ride the token apiHeaders cached on its last
+  // fetch — the autosave loop refreshes it every ~600ms while editing,
+  // so it's seconds old at teardown. Guests ride X-Owner-Id plus the
+  // guest signature (a sync localStorage read); without the sig these
+  // writes 401 (signature_required) once guest-sig enforcement is on,
+  // silently losing the final debounce window's edits — the exact loss
+  // this flush exists to prevent. Bearer and X-Owner-Id stay mutually
+  // exclusive, matching apiHeaders.
+  const base: Record<string, string> = {};
+  const cachedToken = getLastKnownToken();
+  if (cachedToken) {
+    base['Authorization'] = `Bearer ${cachedToken}`;
+  } else {
+    base['X-Owner-Id'] = args.ownerId;
+    const sig = getGuestSelfSig();
+    if (sig) base['X-Owner-Sig'] = sig;
+  }
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
   const jsonHeaders = { ...base, 'Content-Type': 'application/json' };
   for (const t of args.changedTabs) {

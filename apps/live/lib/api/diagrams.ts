@@ -180,6 +180,31 @@ export async function apiDismissSharedWith(ownerId: string, diagramId: string): 
   });
 }
 
+// Mint a one-time WebSocket room ticket (spec/11). The WS upgrade
+// can't carry the Bearer token, so an identified caller (a signed-in
+// team member above all) proves access over normal authenticated REST
+// and rides the returned ticket on the upgrade URL as `?t=`. Returns
+// null on any failure — the connector falls back to the legacy
+// owner-id / share-code query params, which still cover every
+// non-team session.
+export async function apiCreateRoomTicket(
+  ownerId: string,
+  diagramId: string,
+  shareCode: string | null = null,
+): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_BASE}/diagrams/${diagramId}/room-ticket`, {
+      method: 'POST',
+      headers: await apiHeaders(ownerId, { share: shareCode }),
+    });
+    if (!res.ok) return null;
+    const { ticket } = (await res.json()) as { ticket?: string };
+    return typeof ticket === 'string' && ticket.length > 0 ? ticket : null;
+  } catch {
+    return null;
+  }
+}
+
 // Copy a diagram (typically one shared with the caller) into the
 // caller's own files. Returns the new diagram. Optional shareCode
 // covers the "visitor just arrived via share URL, no shared_with

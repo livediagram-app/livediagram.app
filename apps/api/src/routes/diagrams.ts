@@ -10,7 +10,9 @@ import { parseChangeLogEntryBody } from '../change-log-body';
 import { timingSafeEqual } from '../auth/timing-safe';
 import {} from '../comments';
 import {
+  consumeWsTicket,
   copyDiagram,
+  createWsTicket,
   deleteChangeLogEntry,
   deleteChangeLogForTab,
   deleteDiagram,
@@ -360,33 +362,55 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   // when we can't resolve (e.g. owner request with no share
   // code and no auth) — the DO leaves role undefined and the
   // UI hides the badge for that peer.
+  // POST /api/diagrams/<id>/room-ticket — mint a one-time WS room ticket
+  // (spec/11). The WS upgrade can't carry the Bearer token, so identified
+  // callers (team members above all: membership MUST be checked against
+  // the VERIFIED Clerk id, spec/35) prove their access here over normal
+  // authenticated REST and hand the resulting short-lived ticket to the
+  // upgrade as `?t=`. gateEdit/gateRead run the exact same access policy
+  // as every REST read/write, including the share-password gate.
+  if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
+    const id = segments[2]!;
+    const diagram = await getDiagram(env, id);
+    if (!diagram) return notFound();
+    let role: 'edit' | 'view' | null = null;
+    if (await gateEdit(ctx, id, diagram.ownerId, diagram.teamId)) role = 'edit';
+    else if (await gateRead(ctx, id, diagram.ownerId, diagram.teamId)) role = 'view';
+    if (!role) return notFound();
+    const ticket = await createWsTicket(env, id, role);
+    return json({ ticket });
+  }
+
   if (segments.length === 4 && segments[3] === 'ws') {
     const id = segments[2]!;
     const stub = env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(id));
     // Browsers can't put custom headers on a WebSocket upgrade,
-    // so the client passes its share code / owner id as query
-    // params (`?s=...&o=...`). We resolve role here and forward
-    // it to the Durable Object via X-Verified-Role; the DO
+    // so the client passes a one-time ticket / share code / owner id
+    // as query params (`?t=...&s=...&o=...`). We resolve role here and
+    // forward it to the Durable Object via X-Verified-Role; the DO
     // ignores any role the client might set in its own hello
     // payload, so this header is the trust boundary.
     let role: 'edit' | 'view' | null = null;
     const claimedOwnerId = url.searchParams.get('o');
     const diagram = await getDiagram(env, id);
+    // One-time ticket (spec/11): minted seconds ago over authenticated
+    // REST, single-use and diagram-scoped, carrying the server-resolved
+    // role. This is the ONLY leg that can admit a team member — the old
+    // fallback that granted edit to any `?o=` matching a JOINED member id
+    // trusted an unverified, teammate-visible value, so a removed member
+    // (or anyone who learned a member id) could keep joining the room.
+    const ticket = url.searchParams.get('t');
+    const ticketRole = ticket ? await consumeWsTicket(env, ticket, id) : null;
     const isOwnerUpgrade = !!(diagram && claimedOwnerId && claimedOwnerId === diagram.ownerId);
-    if (isOwnerUpgrade) {
+    if (ticketRole) {
+      role = ticketRole;
+    } else if (isOwnerUpgrade) {
       role = 'edit';
     } else {
       const code = url.searchParams.get('s');
       if (code) {
         const link = await getShareLink(env, code);
         if (link && link.diagramId === id) role = link.role;
-      }
-      // Team diagrams (spec/35): a claimed id that is a JOINED member
-      // of the diagram's team gets edit, same trust level as the
-      // owner-id match above (WS upgrades can't carry the Bearer).
-      if (!role && diagram?.teamId && claimedOwnerId) {
-        const membership = await getMembership(env, diagram.teamId, claimedOwnerId);
-        if (membership?.status === 'joined') role = 'edit';
       }
     }
     // Refuse the upgrade unless the caller is the owner or holds a valid
@@ -398,9 +422,12 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     // Password gate (spec/24): a non-owner joining the realtime room of
     // a password-protected diagram must carry the matching password on
     // the `p` query param (WS upgrades can't set headers). Owners
-    // bypass. A bad / missing password refuses the upgrade outright so
-    // the room never even sees the peer.
-    if (!isOwnerUpgrade) {
+    // bypass, and so do ticket holders — the mint already ran the full
+    // REST access policy, including this same password gate for
+    // share-code visitors (owners / team members read without it over
+    // REST, so the room matches). A bad / missing password refuses the
+    // upgrade outright so the room never even sees the peer.
+    if (!isOwnerUpgrade && !ticketRole) {
       const required = await getDiagramSharePassword(env, id);
       if (required && !(await timingSafeEqual(url.searchParams.get('p') ?? '', required)))
         return forbidden();

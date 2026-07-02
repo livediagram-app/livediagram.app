@@ -3,7 +3,12 @@ import type { Tab } from '@livediagram/diagram';
 import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { getGuestSelfSig } from '@/lib/local-identity';
-import { connectRoom, type ChangeLogEntry, type RoomHandlers } from '@/lib/api-client';
+import {
+  apiCreateRoomTicket,
+  connectRoom,
+  type ChangeLogEntry,
+  type RoomHandlers,
+} from '@/lib/api-client';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import { pruneMapToPresent } from './editor-page-helpers';
 
@@ -276,32 +281,49 @@ export function useRoomConnection(opts: {
         }
       },
     };
-    const room = connectRoom(
-      diagramId,
-      { id: selfParticipant.id, name: selfParticipant.name, color: selfParticipant.color },
-      handlers,
-      {
-        // The api worker resolves role from these on WS upgrade and
-        // stamps it into the participant row via X-Verified-Role so
-        // peers see a trustworthy Viewer / Editor badge.
-        shareCode: sessionShareCode,
-        // Always send our own id as `o`: the worker checks it against
-        // the diagram's owner AND (for a team diagram) team membership
-        // to resolve the edit role, so a joined member is admitted to
-        // the room without a share link. A share-link visitor's id just
-        // won't match either, and their role comes from the code.
-        ownerId: selfParticipant.id,
-        // Possession proof for `o` (spec/04): lets the worker bind the
-        // broadcast participant id to a verified value so a joiner can't
-        // spoof another participant's presence. A guest's sig matches their
-        // id; a signed-in user's `o` is their Clerk id (no guest sig), so they
-        // fall back to the owner-id match for the owner path.
-        signature: getGuestSelfSig(),
-      },
-    );
-    roomRef.current = room;
+    // Team diagrams need a one-time room ticket (spec/11): membership is
+    // keyed on the VERIFIED Clerk id, which a WS upgrade can't carry, so
+    // the ticket is minted over authenticated REST first. Personal /
+    // share-code sessions skip the extra round trip — their legacy query
+    // params (`o` exact-owner match, `s` share code) still resolve the
+    // role. Connect is async only for the ticket fetch; `cancelled`
+    // covers an unmount (or dep change) racing it.
+    let cancelled = false;
+    let openedRoom: ReturnType<typeof connectRoom> | null = null;
+    void (async () => {
+      const ticket = diagramTeamId
+        ? await apiCreateRoomTicket(selfParticipant.id, diagramId, sessionShareCode)
+        : null;
+      if (cancelled) return;
+      openedRoom = connectRoom(
+        diagramId,
+        { id: selfParticipant.id, name: selfParticipant.name, color: selfParticipant.color },
+        handlers,
+        {
+          // The api worker resolves role from these on WS upgrade and
+          // stamps it into the participant row via X-Verified-Role so
+          // peers see a trustworthy Viewer / Editor badge.
+          ticket,
+          shareCode: sessionShareCode,
+          // Always send our own id as `o`: the worker checks it against
+          // the diagram's owner to resolve the edit role (team membership
+          // rides the ticket above instead — a bare id isn't trusted for
+          // it). A share-link visitor's id just won't match, and their
+          // role comes from the code.
+          ownerId: selfParticipant.id,
+          // Possession proof for `o` (spec/04): lets the worker bind the
+          // broadcast participant id to a verified value so a joiner can't
+          // spoof another participant's presence. A guest's sig matches their
+          // id; a signed-in user's `o` is their Clerk id (no guest sig), so they
+          // fall back to the owner-id match for the owner path.
+          signature: getGuestSelfSig(),
+        },
+      );
+      roomRef.current = openedRoom;
+    })();
     return () => {
-      room.close();
+      cancelled = true;
+      openedRoom?.close();
       roomRef.current = null;
     };
     // selfParticipant.id is stable across the session; name/color
