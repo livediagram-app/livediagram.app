@@ -94,6 +94,15 @@ function MenuButton({
 // Delete), parameterized by axis. The column and row header triggers render
 // identical menus differing only by axis labels and icon directions, so they
 // share this one implementation.
+// Thin rule between the menu's action groups (insert · move · delete).
+function MenuSeparator() {
+  return (
+    <div className="my-1 px-1.5" role="separator" aria-hidden>
+      <div className="h-px bg-slate-200/90 dark:bg-slate-700/80" />
+    </div>
+  );
+}
+
 export function TableHeaderMenu({
   axis,
   index,
@@ -120,6 +129,7 @@ export function TableHeaderMenu({
       <MenuButton label={isCol ? 'Insert right' : 'Insert below'} onClick={() => onAdd(index + 1)}>
         <ArrowIcon dir={afterDir} />
       </MenuButton>
+      <MenuSeparator />
       <MenuButton
         label={isCol ? 'Move left' : 'Move up'}
         disabled={index === 0}
@@ -134,6 +144,7 @@ export function TableHeaderMenu({
       >
         <ArrowIcon dir={afterDir} />
       </MenuButton>
+      <MenuSeparator />
       <MenuButton
         label={isCol ? 'Delete column' : 'Delete row'}
         danger

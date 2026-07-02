@@ -140,6 +140,50 @@ export function TableView({
   const gridRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<(number | null)[] | null>(null);
   const dragRowRef = useRef<(number | null)[] | null>(null);
+  // Resize dividers arm only after a deliberate hover (spec/09): instantly
+  // interactive strips on every cell border kept swallowing clicks and
+  // flashing resize cursors while editing. A divider becomes draggable (and
+  // shows its line) only once the pointer has rested on it for a beat;
+  // leaving disarms it.
+  const [armedResize, setArmedResize] = useState<{ axis: 'col' | 'row'; index: number } | null>(
+    null,
+  );
+  const armTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const RESIZE_ARM_MS = 400;
+  const armResizeEnter = (axis: 'col' | 'row', index: number) => {
+    if (armTimerRef.current) clearTimeout(armTimerRef.current);
+    armTimerRef.current = setTimeout(() => setArmedResize({ axis, index }), RESIZE_ARM_MS);
+  };
+  // The column / row triggers sit OUTSIDE the table edges, so travelling
+  // from a cell to a trigger crosses a gap where the grid's mouse-leave
+  // fires. Clearing the hover after a short grace (cancelled when the
+  // trigger is reached) keeps the trigger mounted for the crossing.
+  const hoverClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelHoverClear = () => {
+    if (hoverClearRef.current) clearTimeout(hoverClearRef.current);
+    hoverClearRef.current = null;
+  };
+  const scheduleHoverClear = () => {
+    cancelHoverClear();
+    hoverClearRef.current = setTimeout(() => {
+      setHoveredCol(null);
+      setHoveredRow(null);
+    }, 250);
+  };
+  useEffect(() => cancelHoverClear, []);
+
+  const armResizeLeave = () => {
+    if (armTimerRef.current) clearTimeout(armTimerRef.current);
+    armTimerRef.current = null;
+    setArmedResize(null);
+  };
+  useEffect(
+    () => () => {
+      if (armTimerRef.current) clearTimeout(armTimerRef.current);
+    },
+    [],
+  );
+
   // The cell under the current touch press, recorded by each cell's
   // pointerdown so the grid-level long-press (touch's right-click, below)
   // knows which cell to open the toolbar for.
@@ -539,10 +583,7 @@ export function TableView({
     <>
       <div
         ref={gridRef}
-        onMouseLeave={() => {
-          setHoveredCol(null);
-          setHoveredRow(null);
-        }}
+        onMouseLeave={scheduleHoverClear}
         role="table"
         aria-label={`Table, ${rows} rows by ${cols} columns`}
         aria-rowcount={rows}
@@ -595,6 +636,7 @@ export function TableView({
                   }
                   aria-colindex={c + 1}
                   onMouseEnter={() => {
+                    cancelHoverClear();
                     setHoveredCol(c);
                     setHoveredRow(r);
                   }}
@@ -850,8 +892,17 @@ export function TableView({
                     description="Drag to set a fixed column width, or double-click to auto-fit."
                   >
                     <div
-                      onPointerDown={startColResize(c)}
+                      onPointerEnter={() => armResizeEnter('col', c)}
+                      onPointerLeave={armResizeLeave}
+                      onPointerDown={(e) => {
+                        // Only a rested (armed) divider starts a resize —
+                        // an instant strip on every border swallowed clicks
+                        // mid-edit.
+                        if (armedResize?.axis === 'col' && armedResize.index === c)
+                          startColResize(c)(e);
+                      }}
                       onDoubleClick={(e) => {
+                        if (!(armedResize?.axis === 'col' && armedResize.index === c)) return;
                         e.stopPropagation();
                         onCommitTable(element.id, {
                           colWidths: Array.from({ length: cols }, (_, i) =>
@@ -859,9 +910,19 @@ export function TableView({
                           ),
                         });
                       }}
-                      className="group pointer-events-auto absolute -right-1 bottom-0 top-0 z-[var(--z-toolbar)] w-2 cursor-col-resize"
+                      className={`pointer-events-auto absolute -right-1 bottom-0 top-0 z-[var(--z-toolbar)] w-2 ${
+                        armedResize?.axis === 'col' && armedResize.index === c
+                          ? 'cursor-col-resize'
+                          : ''
+                      }`}
                     >
-                      <div className="mx-auto h-full w-0.5 bg-brand-400/0 transition group-hover:bg-brand-400" />
+                      <div
+                        className={`mx-auto h-full w-0.5 transition ${
+                          armedResize?.axis === 'col' && armedResize.index === c
+                            ? 'bg-brand-400'
+                            : 'bg-brand-400/0'
+                        }`}
+                      />
                     </div>
                   </Tooltip>
                 ) : null}
@@ -882,8 +943,14 @@ export function TableView({
                     description="Drag to set a fixed row height, or double-click to auto-fit."
                   >
                     <div
-                      onPointerDown={startRowResize(r)}
+                      onPointerEnter={() => armResizeEnter('row', r)}
+                      onPointerLeave={armResizeLeave}
+                      onPointerDown={(e) => {
+                        if (armedResize?.axis === 'row' && armedResize.index === r)
+                          startRowResize(r)(e);
+                      }}
                       onDoubleClick={(e) => {
+                        if (!(armedResize?.axis === 'row' && armedResize.index === r)) return;
                         e.stopPropagation();
                         onCommitTable(element.id, {
                           rowHeights: Array.from({ length: rows }, (_, i) =>
@@ -891,9 +958,19 @@ export function TableView({
                           ),
                         });
                       }}
-                      className="group pointer-events-auto absolute -bottom-1 left-0 right-0 z-[var(--z-toolbar)] h-2 cursor-row-resize"
+                      className={`pointer-events-auto absolute -bottom-1 left-0 right-0 z-[var(--z-toolbar)] h-2 ${
+                        armedResize?.axis === 'row' && armedResize.index === r
+                          ? 'cursor-row-resize'
+                          : ''
+                      }`}
                     >
-                      <div className="my-auto h-0.5 w-full bg-brand-400/0 transition group-hover:bg-brand-400" />
+                      <div
+                        className={`my-auto h-0.5 w-full transition ${
+                          armedResize?.axis === 'row' && armedResize.index === r
+                            ? 'bg-brand-400'
+                            : 'bg-brand-400/0'
+                        }`}
+                      />
                     </div>
                   </Tooltip>
                 ) : null}
@@ -903,9 +980,11 @@ export function TableView({
 
           {/* Column triggers laid out on a grid mirroring the column
               template so each stays centred over its column at any width
-              (including while a column is being resized). */}
+              (including while a column is being resized). They sit OUTSIDE
+              the table's top edge so they never crowd the first row's
+              content. */}
           <div
-            className="pointer-events-none absolute inset-x-0 top-0.5 grid"
+            className="pointer-events-none absolute inset-x-0 -top-7 grid"
             style={{ gridTemplateColumns: colTemplate }}
           >
             {Array.from({ length: cols }, (_, c) => {
@@ -916,9 +995,12 @@ export function TableView({
                   {colOn ? (
                     <div
                       className="pointer-events-auto relative"
-                      style={{ transform: `scale(${invScale})`, transformOrigin: 'top center' }}
-                      onMouseEnter={() => setHoveredCol(c)}
-                      onMouseLeave={() => setHoveredCol(null)}
+                      style={{ transform: `scale(${invScale})`, transformOrigin: 'bottom center' }}
+                      onMouseEnter={() => {
+                        cancelHoverClear();
+                        setHoveredCol(c);
+                      }}
+                      onMouseLeave={scheduleHoverClear}
                     >
                       <Trigger
                         open={menu?.axis === 'col' && menu.index === c}
@@ -931,13 +1013,12 @@ export function TableView({
             })}
           </div>
 
-          {/* Row triggers along the left edge, on a grid mirroring the row
-              template (like the column triggers above) so each stays centred
-              in its row when heights are pinned to non-uniform values —
-              uniform percentage math put a trigger visually inside the
-              wrong row once any row was resized. */}
+          {/* Row triggers on a grid mirroring the row template (like the
+              column triggers above) so each stays centred in its row when
+              heights are pinned to non-uniform values. They sit OUTSIDE the
+              table's left edge so they never crowd the first column. */}
           <div
-            className="pointer-events-none absolute inset-y-0 left-0.5 grid"
+            className="pointer-events-none absolute inset-y-0 -left-7 grid"
             style={{ gridTemplateRows: rowTemplate }}
           >
             {Array.from({ length: rows }, (_, r) => {
@@ -948,9 +1029,12 @@ export function TableView({
                   {rowOn ? (
                     <div
                       className="pointer-events-auto relative"
-                      style={{ transform: `scale(${invScale})`, transformOrigin: 'left center' }}
-                      onMouseEnter={() => setHoveredRow(r)}
-                      onMouseLeave={() => setHoveredRow(null)}
+                      style={{ transform: `scale(${invScale})`, transformOrigin: 'center right' }}
+                      onMouseEnter={() => {
+                        cancelHoverClear();
+                        setHoveredRow(r);
+                      }}
+                      onMouseLeave={scheduleHoverClear}
                     >
                       <Trigger
                         vertical
