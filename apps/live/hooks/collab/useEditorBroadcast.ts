@@ -75,9 +75,10 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // session's tail. Same behaviour as the inline effect this
   // replaced.
   useEffect(() => {
-    if (deps.canvasTool !== 'laser') {
-      setLocalLaserTrail([]);
-    }
+    // Unconditional: a tab switch with the laser tool still active must
+    // clear too — the local trail carries no tabId, so the overlay would
+    // ghost the old tab's path onto the new one for the buffer TTL.
+    setLocalLaserTrail([]);
   }, [deps.canvasTool, deps.activeId]);
 
   const broadcastCursor = (pos: { x: number; y: number } | null) => {

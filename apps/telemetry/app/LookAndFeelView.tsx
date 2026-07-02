@@ -23,9 +23,11 @@ import { windowLabel } from './windows';
 // (created / applied / edited / deleted) as counts. Everything reflects
 // the global window; we can only show presets that have events in it.
 
-// The custom-theme builder's two applied/edited variants live under
-// Theme·Changed, so the built-in theme ranking excludes them.
-const CUSTOM_THEME_TYPES = new Set(['Custom', 'CustomEdited']);
+// Theme·Changed types that are NOT built-in theme picks, so the theme
+// ranking excludes them: the custom-theme builder's applied/edited
+// variants, and the one-shot "reset elements to theme" recolour
+// (`ResetElements`), which would otherwise compete in the leaderboard.
+const CUSTOM_THEME_TYPES = new Set(['Custom', 'CustomEdited', 'ResetElements']);
 
 export function LookAndFeelView({
   summary,

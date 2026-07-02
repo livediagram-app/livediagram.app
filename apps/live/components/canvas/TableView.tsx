@@ -271,7 +271,12 @@ export function TableView({
       .map((t) => parseFloat(t));
     const baseSizes = isCol ? element.colWidths : element.rowHeights;
     const base: (number | null)[] = Array.from({ length: count }, (_, i) => baseSizes?.[i] ?? null);
-    const startSizeElem = (tracks[index] ?? rectSize / count) / scale;
+    // Computed-style track sizes are already element-space px (ancestor
+    // transforms don't reach computed style), so they must NOT be divided
+    // by the render scale — only the rect-derived fallback is screen-space.
+    const startSizeElem = Number.isFinite(tracks[index]!)
+      ? tracks[index]!
+      : rectSize / count / scale;
     const startPos = isCol ? e.clientX : e.clientY;
     const minPx = isCol ? MIN_COL_PX : MIN_ROW_PX;
     const ref = isCol ? dragRef : dragRowRef;
@@ -657,46 +662,53 @@ export function TableView({
             })}
           </div>
 
-          {/* Row triggers along the left edge of the grid. */}
-          {Array.from({ length: rows }, (_, r) => {
-            const rowOn =
-              isMobile || hoveredRow === r || (menu?.axis === 'row' && menu.index === r);
-            if (!rowOn) return null;
-            return (
-              <div
-                key={`row-${r}`}
-                className="pointer-events-auto absolute left-0.5"
-                style={{
-                  top: `${((r + 0.5) / rows) * 100}%`,
-                  transform: `translateY(-50%) scale(${invScale})`,
-                  transformOrigin: 'left center',
-                }}
-                onMouseEnter={() => setHoveredRow(r)}
-                onMouseLeave={() => setHoveredRow(null)}
-              >
-                <Trigger
-                  vertical
-                  open={menu?.axis === 'row' && menu.index === r}
-                  onClick={() => toggle('row', r)}
-                />
-                {menu?.axis === 'row' && menu.index === r ? (
-                  <div
-                    data-table-ui
-                    className="pointer-events-auto absolute left-7 top-1/2 z-[var(--z-chrome)] w-36 -translate-y-1/2 animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
-                  >
-                    <TableHeaderMenu
-                      axis="row"
-                      index={r}
-                      count={rows}
-                      onAdd={addRow}
-                      onMove={moveRow}
-                      onDelete={delRow}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
+          {/* Row triggers along the left edge, on a grid mirroring the row
+              template (like the column triggers above) so each stays centred
+              in its row when heights are pinned to non-uniform values —
+              uniform percentage math put a trigger visually inside the
+              wrong row once any row was resized. */}
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0.5 grid"
+            style={{ gridTemplateRows: rowTemplate }}
+          >
+            {Array.from({ length: rows }, (_, r) => {
+              const rowOn =
+                isMobile || hoveredRow === r || (menu?.axis === 'row' && menu.index === r);
+              return (
+                <div key={`row-${r}`} className="flex min-h-0 items-center">
+                  {rowOn ? (
+                    <div
+                      className="pointer-events-auto relative"
+                      style={{ transform: `scale(${invScale})`, transformOrigin: 'left center' }}
+                      onMouseEnter={() => setHoveredRow(r)}
+                      onMouseLeave={() => setHoveredRow(null)}
+                    >
+                      <Trigger
+                        vertical
+                        open={menu?.axis === 'row' && menu.index === r}
+                        onClick={() => toggle('row', r)}
+                      />
+                      {menu?.axis === 'row' && menu.index === r ? (
+                        <div
+                          data-table-ui
+                          className="pointer-events-auto absolute left-7 top-1/2 z-[var(--z-chrome)] w-36 -translate-y-1/2 animate-pop-in rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800/90"
+                        >
+                          <TableHeaderMenu
+                            axis="row"
+                            index={r}
+                            count={rows}
+                            onAdd={addRow}
+                            onMove={moveRow}
+                            onDelete={delRow}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
         </div>
       ) : null}
       <TableCellToolbar

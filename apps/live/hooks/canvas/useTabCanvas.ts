@@ -72,19 +72,45 @@ type TabCanvasDeps = {
   // History-aware element mutator (snapshots + emits the log). Used by
   // auto-align, whose before/after diff IS the log entry.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  // Tab mutator that does NOT push history — the appearance setters
-  // pair it with an explicit activity-log emit instead.
+  // History-pushing tab mutator, for the DISCRETE tab-meta edits (theme
+  // / font / pattern picks) — each is one undoable step, paired with an
+  // explicit activity-log emit.
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
+  // Non-history tab mutator + one-shot checkpoint, for the CONTINUOUS
+  // slider setters: a commit per onChange tick flooded the bounded undo
+  // stack in a single drag, so a gesture checkpoints once (when its
+  // debounce window opens) and ticks thereafter.
+  tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
+  markCheckpoint: () => void;
   // Immediate activity-log entry for one-shot tab-meta edits.
   emitTabMeta: (tabId: string, summary: string) => void;
   // Debounced activity-log entry for the slider-driven appearance
-  // edits, keyed so rapid changes collapse to one line.
-  scheduleTabMetaLog: (key: string, summary: string) => void;
+  // edits, keyed so rapid changes collapse to one line. Returns true
+  // when the call opened a fresh debounce window (gesture start).
+  scheduleTabMetaLog: (key: string, summary: string) => boolean;
 };
 
 export function useTabCanvas(deps: TabCanvasDeps) {
-  const { editsBlocked, activeId, activeTab, commit, commitTabs, emitTabMeta, scheduleTabMetaLog } =
-    deps;
+  const {
+    editsBlocked,
+    activeId,
+    activeTab,
+    commit,
+    commitTabs,
+    tickTabs,
+    markCheckpoint,
+    emitTabMeta,
+    scheduleTabMetaLog,
+  } = deps;
+
+  // Shared body of the four slider setters: one undoable step per
+  // gesture (checkpoint when the log's debounce window opens), then
+  // history-less ticks for the rest of the drag.
+  const patchActiveTabDebounced = (key: string, summary: string, patch: (t: Tab) => Tab) => {
+    const startedWindow = scheduleTabMetaLog(key, summary);
+    if (startedWindow) markCheckpoint();
+    tickTabs((ts) => ts.map((t) => (t.id === activeId ? patch(t) : t)));
+  };
 
   // Per-setter debounce timers for the canvas colour / opacity
   // telemetry emits. Keyed by setter name so a colour drag and an
@@ -322,38 +348,38 @@ export function useTabCanvas(deps: TabCanvasDeps) {
 
   const setBackgroundColor = (color: string) => {
     if (editsBlocked) return;
-    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, backgroundColor: color } : t)));
-    scheduleTabMetaLog('backgroundColor', `Changed canvas colour to ${color}`);
+    patchActiveTabDebounced('backgroundColor', `Changed canvas colour to ${color}`, (t) => ({
+      ...t,
+      backgroundColor: color,
+    }));
     scheduleCanvasTelemetry('backgroundColor', 'BackgroundColor');
   };
 
   const setBackgroundOpacity = (opacity: number) => {
     if (editsBlocked) return;
-    commitTabs((ts) =>
-      ts.map((t) => (t.id === activeId ? { ...t, backgroundOpacity: opacity } : t)),
-    );
-    scheduleTabMetaLog(
+    patchActiveTabDebounced(
       'backgroundOpacity',
       `Changed background opacity to ${Math.round(opacity * 100)}%`,
+      (t) => ({ ...t, backgroundOpacity: opacity }),
     );
     scheduleCanvasTelemetry('backgroundOpacity', 'BackgroundOpacity');
   };
 
   const setPatternColor = (color: string) => {
     if (editsBlocked) return;
-    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, patternColor: color } : t)));
-    scheduleTabMetaLog('patternColor', `Changed pattern colour to ${color}`);
+    patchActiveTabDebounced('patternColor', `Changed pattern colour to ${color}`, (t) => ({
+      ...t,
+      patternColor: color,
+    }));
     scheduleCanvasTelemetry('patternColor', 'PatternColor');
   };
 
   const setBackgroundPatternScale = (scale: number) => {
     if (editsBlocked) return;
-    commitTabs((ts) =>
-      ts.map((t) => (t.id === activeId ? { ...t, backgroundPatternScale: scale } : t)),
-    );
-    scheduleTabMetaLog(
+    patchActiveTabDebounced(
       'backgroundPatternScale',
       `Changed pattern size to ${Math.round(scale * 100)}%`,
+      (t) => ({ ...t, backgroundPatternScale: scale }),
     );
     scheduleCanvasTelemetry('backgroundPatternScale', 'BackgroundPatternScale');
   };

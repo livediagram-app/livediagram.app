@@ -3,6 +3,7 @@
 import type { TabSummary } from '@livediagram/api-schema';
 import { normalizeTable, type Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
+import { getGuestSelfSig } from '../local-identity';
 import {
   API_BASE,
   apiDelete,
@@ -108,6 +109,13 @@ export function flushDiagramSavesBeacon(args: {
   tabs: Tab[];
 }): void {
   const base: Record<string, string> = { 'X-Owner-Id': args.ownerId };
+  // The guest signature is a synchronous localStorage read, so unlike the
+  // Bearer token it CAN ride the unload beacon. Without it these writes
+  // 401 (signature_required) once guest-sig enforcement is on, silently
+  // losing the final debounce window's edits — the exact loss this flush
+  // exists to prevent.
+  const sig = getGuestSelfSig();
+  if (sig) base['X-Owner-Sig'] = sig;
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
   const jsonHeaders = { ...base, 'Content-Type': 'application/json' };
   for (const t of args.changedTabs) {

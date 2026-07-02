@@ -24,6 +24,7 @@ export function EditorAnchoredPopovers() {
     commentThreadOpenId,
     activeTab,
     addComment,
+    replaceCommentId,
     isReadOnly,
     diagramId,
     selfParticipant,
@@ -50,7 +51,7 @@ export function EditorAnchoredPopovers() {
                 elementId={target.id}
                 thread={target.commentThread}
                 onAddComment={(text) => {
-                  addComment(target.id, text);
+                  const localId = addComment(target.id, text);
                   track('Comment', 'Added');
                   // View-role visitors don't autosave the tab, so
                   // their addComment via the local commit alone
@@ -58,7 +59,10 @@ export function EditorAnchoredPopovers() {
                   // dedicated POST /tabs/<id>/comments endpoint
                   // (the only write path open to view-role) so the
                   // viewer's contribution lives in D1 like an
-                  // owner / editor's would.
+                  // owner / editor's would — then adopt the
+                  // server-minted id, or the viewer's own delete
+                  // would send an id the server doesn't have and
+                  // the comment would resurrect on refresh.
                   if (isReadOnly && diagramId) {
                     void apiAddComment(
                       selfParticipant.id,
@@ -67,7 +71,11 @@ export function EditorAnchoredPopovers() {
                       target.id,
                       text,
                       sessionShareCode,
-                    ).catch(() => {});
+                    )
+                      .then((created) => {
+                        if (created?.id) replaceCommentId(target.id, localId, created.id);
+                      })
+                      .catch(() => {});
                   }
                 }}
                 onDeleteComment={(cid) => {

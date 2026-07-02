@@ -428,6 +428,86 @@ describe('duplicateGroupedElements', () => {
     };
     const { newElements } = duplicateGroupedElements([arrow], new Set(['arrow']), 0, 0);
     expect(newElements.some((e) => e.type === 'arrow')).toBe(false);
+    // The skipped arrow must not leave a phantom mapping behind.
+    const { idMap } = duplicateGroupedElements([arrow], new Set(['arrow']), 0, 0);
+    expect(idMap.has('arrow')).toBe(false);
+  });
+
+  it('remaps an on-arrow endpoint to the duplicate when the target arrow copies too (spec/50)', () => {
+    const a = shape('a');
+    const lifeline: ArrowElement = {
+      id: 'lifeline',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 's' },
+      to: { kind: 'free', x: 0, y: 300 },
+    };
+    const message: ArrowElement = {
+      id: 'message',
+      type: 'arrow',
+      from: { kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 },
+      to: { kind: 'free', x: 200, y: 120 },
+    };
+    const { newElements, idMap } = duplicateGroupedElements(
+      [a, lifeline, message],
+      new Set(['a', 'lifeline', 'message']),
+      10,
+      0,
+    );
+    const dupMessage = newElements.find(
+      (e): e is ArrowElement => e.type === 'arrow' && e.from.kind === 'on-arrow',
+    );
+    expect(dupMessage).toBeDefined();
+    // Follows the COPY of the lifeline, not the original.
+    expect(dupMessage!.from).toEqual({ kind: 'on-arrow', arrowId: idMap.get('lifeline'), t: 0.4 });
+  });
+
+  it('keeps an on-arrow endpoint on the original when the target arrow was not copied', () => {
+    const lifeline: ArrowElement = {
+      id: 'lifeline',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 0, y: 300 },
+    };
+    const message: ArrowElement = {
+      id: 'message',
+      type: 'arrow',
+      from: { kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 },
+      to: { kind: 'free', x: 200, y: 120 },
+    };
+    const { newElements } = duplicateGroupedElements(
+      [lifeline, message],
+      new Set(['message']),
+      0,
+      0,
+    );
+    const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
+    expect(dup!.from).toEqual({ kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 });
+  });
+
+  it('preserves the manual anchor flag when repinning to a duplicate', () => {
+    const a = shape('a');
+    const b = shape('b', { x: 100 });
+    const arrow: ArrowElement = {
+      id: 'arrow',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e', manual: true },
+      to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
+    };
+    const { newElements, idMap } = duplicateGroupedElements(
+      [a, b, arrow],
+      new Set(['a', 'b', 'arrow']),
+      0,
+      0,
+    );
+    const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
+    expect(dup!.from).toEqual({
+      kind: 'pinned',
+      elementId: idMap.get('a'),
+      anchor: 'e',
+      manual: true,
+    });
+    // Auto-managed ends stay auto-managed (no manual key invented).
+    expect(dup!.to).toEqual({ kind: 'pinned', elementId: idMap.get('b'), anchor: 'w' });
   });
 
   it('preserves arrow styling (stroke / ends / label) on copy', () => {

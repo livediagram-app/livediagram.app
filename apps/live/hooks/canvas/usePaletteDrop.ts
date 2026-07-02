@@ -5,7 +5,7 @@
 // point to world-space canvas coords, and dispatches onDropPalette. Returns the
 // onDragOver / onDrop handlers to spread onto the canvas <main>.
 
-import type { DragEvent as ReactDragEvent } from 'react';
+import type { DragEvent as ReactDragEvent, RefObject } from 'react';
 import type { ShapeKind } from '@livediagram/diagram';
 import { pointerToCanvas } from '@/lib/canvas';
 import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
@@ -14,10 +14,13 @@ import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 type PaletteDropDeps = {
   onDropPalette?: (kind: ShapeKind, canvasX: number, canvasY: number, iconId?: string) => void;
   viewportZoom: number;
-  viewportOffset: { x: number; y: number };
+  // The TRANSFORMED canvas wrapper (scale + translate applied), same as the
+  // double-click add path: its rect already bakes in zoom, pan AND the
+  // origin-center pivot, so dividing by zoom yields world coords directly.
+  wrapperRef: RefObject<HTMLElement | null>;
 };
 
-export function usePaletteDrop({ onDropPalette, viewportZoom, viewportOffset }: PaletteDropDeps) {
+export function usePaletteDrop({ onDropPalette, viewportZoom, wrapperRef }: PaletteDropDeps) {
   const onDragOver = (e: ReactDragEvent<HTMLElement>) => {
     // A drag back over a floating panel (the Palette itself) is a "changed my
     // mind" — show no-drop and don't let the drop below add anything. The
@@ -49,12 +52,12 @@ export function usePaletteDrop({ onDropPalette, viewportZoom, viewportOffset }: 
       e.dataTransfer.getData(ICON_DND_MIME) || e.dataTransfer.getData(TECH_ICON_DND_MIME);
     if (!shapeKind && !iconId) return;
     e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
-    // Canvas transform is scale(z) translate(o): invert to canvas coords, then
-    // subtract the pan offset for fully world-space coords.
-    const { x: px, y: py } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    const cx = px - viewportOffset.x;
-    const cy = py - viewportOffset.y;
+    // Invert via the transformed wrapper rect (like the double-click add):
+    // measuring the untransformed <main> instead misses the origin-center
+    // pivot term, landing drops off-cursor at any zoom other than 100%.
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const { x: cx, y: cy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
     if (iconId) onDropPalette?.('icon', cx, cy, iconId);
     else onDropPalette?.(shapeKind as ShapeKind, cx, cy);
   };

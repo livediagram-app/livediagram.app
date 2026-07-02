@@ -73,15 +73,11 @@ type ShapeDrawingDeps = {
   canvasTool: CanvasTool;
   setCanvasTool: (tool: CanvasTool) => void;
   activeTab: Tab;
-  activeId: string;
+  // Every draw lands through the functional `commit` (live elements +
+  // activity-log emit): the commit closure is frozen for the whole
+  // gesture, so a wholesale write of gesture-start elements would
+  // revert anything that landed mid-drag.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  // Tab patch helper (page-local) — used by the arrow / templateChosen
-  // commits that touch tab-level fields.
-  patchTab: (ts: Tab[], id: string, patch: Partial<Tab>) => Tab[];
-  // Activity-log emit for the commitTabs paths (commit() emits for
-  // element-only commits, but these also touch templateChosen).
-  emitChange: (tabId: string, before: Element[], after: Element[]) => void;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
   setEditingId: (id: string | null) => void;
@@ -99,11 +95,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     canvasTool,
     setCanvasTool,
     activeTab,
-    activeId,
     commit,
-    commitTabs,
-    patchTab,
-    emitChange,
     setSelectedId,
     setMultiSelectedIds,
     setEditingId,
@@ -198,12 +190,13 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         arrowEnds: 'none',
         strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
       };
-      const before = activeTab.elements;
-      // Append: new elements default to the FRONT of z-order
-      // (see addBoxed).
-      const after = [...before, arrow];
-      commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
-      emitChange(activeId, before, after);
+      // Append via the functional `commit` (live elements + emit), like
+      // the shape branch: this closure is frozen for the whole gesture,
+      // so writing `activeTab.elements + arrow` wholesale would revert
+      // any edit (a peer's, or our own via realtime) that landed
+      // mid-drag. New elements default to the FRONT of z-order (see
+      // addBoxed).
+      commit((els) => [...els, arrow]);
       setSelectedId(arrow.id);
       setPendingDraw(null);
       track('Element', 'Added', 'Arrow');
@@ -241,10 +234,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         const s = Math.min(8, Math.max(0.25, Math.max(dragW / def.width, dragH / def.height)));
         placed = scaleElements(made, centreX, centreY, s);
       }
-      const before = activeTab.elements;
-      const after = [...before, ...placed];
-      commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
-      emitChange(activeId, before, after);
+      // Functional commit for the same mid-gesture-staleness reason as
+      // the arrow branch above.
+      commit((els) => [...els, ...placed]);
       const primary = placed.find((el) => isBoxed(el) && el.groupId) ?? placed[0];
       if (primary) setSelectedId(primary.id);
       setPendingDraw(null);
@@ -414,10 +406,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
             arrowEnds: 'none',
             strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
           };
-          const before = activeTab.elements;
-          const after = [...before, arrow];
-          commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
-          emitChange(activeId, before, after);
+          // Functional commit for the same mid-gesture-staleness reason
+          // as the arrow branch above.
+          commit((els) => [...els, arrow]);
           setSelectedId(arrow.id);
           setPendingDraw(null);
           track('Element', 'Added', 'Arrow');

@@ -9,7 +9,7 @@ import {
 import type { Element } from '@livediagram/diagram';
 import { apiAppendChangeLogEntry } from '@/lib/api-client';
 import { diffElements } from '@/lib/change-log';
-import { HISTORY_LIMIT } from '@/hooks/canvas/useDiagramHistory';
+import { entryHistoryFill, type EntryHistory } from '@/lib/entry-history';
 
 // Activity-log entry emission lifted out of editor-page.tsx. The
 // trio is cohesive (`emitChange` for an element diff, `emitTabMeta`
@@ -35,10 +35,11 @@ type Deps = {
   // and caps at 30 (the panel's scroll window). Setter is the
   // setState dispatcher so React's batching applies.
   setChangeLog: React.Dispatch<React.SetStateAction<ChangeLogEntry[]>>;
-  // Append-only undo / redo memory: every new entry lands on
-  // `past`; the future stack clears on each new emit. Capped at
-  // HISTORY_LIMIT so the buffer can't grow without bound.
-  entryHistoryRef: RefObject<{ past: ChangeLogEntry[]; future: ChangeLogEntry[] }>;
+  // Undo / redo memory: one marker per history step (see
+  // lib/entry-history). The history mutators push null markers;
+  // each emit here fills the newest one in so undo deletes exactly
+  // the entry its step emitted.
+  entryHistoryRef: RefObject<EntryHistory>;
   // Share-code visitor scope (null for the owner). Threaded onto
   // the API call so edit-role visitors land their entries against
   // the correct diagram.
@@ -63,24 +64,26 @@ type Api = {
   ) => void;
   // Emit a tab-meta entry (no element diff payload). Used for
   // theme / canvas / pattern / lock changes that mutate Tab
-  // metadata rather than its elements.
-  emitTabMeta: (tabId: string, summary: string) => void;
+  // metadata rather than its elements. `undoable: false` keeps the
+  // entry out of the undo pairing — for emits whose mutation
+  // doesn't push history (spec/39 session tools), so the entry
+  // can't glue itself onto an unrelated step's undo.
+  emitTabMeta: (tabId: string, summary: string, opts?: { undoable?: boolean }) => void;
 };
 
 export function useActivityLogEmitter(deps: Deps): Api {
   // Shared bookkeeping for any new log entry, regardless of
   // whether it came from an element diff or a tab-meta change.
   // Optimistic local append + fire-and-forget API + room
-  // broadcast + push onto the undo / redo memory stack so the
-  // entry pops cleanly on undo.
-  const appendLogEntry = (entry: ChangeLogEntry) => {
+  // broadcast + fill the newest undo marker so the entry pops
+  // cleanly on undo (skipped for non-undoable emits).
+  const appendLogEntry = (entry: ChangeLogEntry, undoable = true) => {
     // Cap the in-session list at the same limit the server hydrates
     // (spec/12), so the panel shows a consistent "most recent N".
     deps.setChangeLog((prev) => [entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
-    deps.entryHistoryRef.current = {
-      past: [...deps.entryHistoryRef.current.past, entry].slice(-HISTORY_LIMIT),
-      future: [],
-    };
+    if (undoable) {
+      deps.entryHistoryRef.current = entryHistoryFill(deps.entryHistoryRef.current, entry);
+    }
     if (deps.diagramId) {
       apiAppendChangeLogEntry(
         deps.selfParticipant.id,
@@ -116,7 +119,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // payload (revert isn't supported for these in V1), so the
   // panel renders the row without a Revert button. Undo still
   // works because the matching state lives in useDiagramHistory.
-  const emitTabMeta: Api['emitTabMeta'] = (tabId, summary) => {
+  const emitTabMeta: Api['emitTabMeta'] = (tabId, summary, opts) => {
     if (!deps.diagramId) return;
     const entry: ChangeLogEntry = {
       id: crypto.randomUUID(),
@@ -131,7 +134,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
       afterState: {},
       createdAt: Date.now(),
     };
-    appendLogEntry(entry);
+    appendLogEntry(entry, opts?.undoable !== false);
   };
 
   return { emitChange, emitTabMeta };

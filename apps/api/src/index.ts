@@ -16,7 +16,7 @@ import { handleOauthExchange } from './routes/oauth';
 import { DiagramRoom } from './diagram-room';
 import { CORS_HEADERS, json, notFound, rateLimited } from './responses';
 import { clientIp } from './client-ip';
-import { MAX_BODY_BYTES } from './limits';
+import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAi } from './routes/ai';
 import { handleCapabilities } from './routes/capabilities';
@@ -145,7 +145,10 @@ export default {
     // in the routes catch the rest; this is the blunt outer bound.
     if (isWrite) {
       const len = Number(request.headers.get('content-length'));
-      if (Number.isFinite(len) && len > MAX_BODY_BYTES) {
+      // Image uploads carry raw bytes with their own, larger cap (spec/19);
+      // the route re-checks it and answers with file_too_large + limitBytes.
+      const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
+      if (Number.isFinite(len) && len > cap) {
         return json({ error: 'payload_too_large' }, { status: 413 });
       }
     }

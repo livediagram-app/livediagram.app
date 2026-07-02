@@ -186,18 +186,27 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     // Each new gesture starts un-engaged: a body move must cross
     // DRAG_ENGAGE_PX before it nudges anything (see the move branch).
     dragEngagedRef.current = false;
+    // Cancel the drag (mirroring onUp's full cleanup: snap dots gone,
+    // armed checkpoint + log flag disarmed so they can't leak into the
+    // next gesture — once drag is null this effect tears down and onUp
+    // never runs for this gesture).
+    const cancelDrag = () => {
+      setDrag(null);
+      scheduleGuides([]);
+      scheduleSnapTargets([]);
+      checkpointPendingRef.current = false;
+      logGestureRef.current = false;
+    };
     // Cancel the drag immediately when a second touch finger lands — that
     // signals a pinch gesture, not a solo drag.
     const onSecondTouch = (e: PointerEvent) => {
       if (e.pointerType === 'touch' && !e.isPrimary) {
-        setDrag(null);
-        scheduleGuides([]);
+        cancelDrag();
       }
     };
     const onMove = (e: PointerEvent) => {
       if (depsRef.current.isPinchingRef?.current) {
-        setDrag(null);
-        scheduleGuides([]);
+        cancelDrag();
         return;
       }
       const { activeTab, zoomRef } = depsRef.current;

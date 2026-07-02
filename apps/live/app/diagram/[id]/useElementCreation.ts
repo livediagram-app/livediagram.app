@@ -85,10 +85,11 @@ export function useElementCreation(opts: {
             ? t
             : {
                 ...t,
+                // Spread the LIVE element, not the render-time `sel`
+                // closure — writing `sel` back would clobber any change
+                // that landed on this element since the render.
                 elements: t.elements.map((e) =>
-                  e.id === sel.id
-                    ? { ...sel, iconId, iconPosition: sel.iconPosition ?? 'left' }
-                    : e,
+                  e.id === sel.id ? { ...e, iconId, iconPosition: sel.iconPosition ?? 'left' } : e,
                 ),
               },
         ),

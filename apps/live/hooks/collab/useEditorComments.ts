@@ -48,7 +48,15 @@ type EditorCommentsApi = {
   // popover (matches the existing behaviour).
   openComments: (elementId: string) => void;
   closeComments: () => void;
-  addComment: (elementId: string, text: string) => void;
+  // Returns the minted comment id so a caller persisting through the
+  // dedicated comment endpoint (view-role visitors) can reconcile it
+  // with the server-minted id via `replaceCommentId`.
+  addComment: (elementId: string, text: string) => string;
+  // Swap a comment's id in place — the view-role persist path gets the
+  // authoritative id back from POST /comments, and without adopting it
+  // the visitor's own delete sends an id the server doesn't have (the
+  // comment resurrects on refresh).
+  replaceCommentId: (elementId: string, oldId: string, newId: string) => void;
   deleteComment: (elementId: string, commentId: string) => void;
   resolveThread: (elementId: string) => void;
   unresolveThread: (elementId: string) => void;
@@ -95,21 +103,33 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
   };
   const closeComments = () => setCommentThreadOpenId(null);
 
-  const addComment = (elementId: string, text: string) => {
+  const addComment = (elementId: string, text: string): string => {
+    // Mint OUTSIDE the updater: state updaters must stay pure (strict
+    // mode re-invokes them), and the caller needs the id.
+    const comment = createComment(text, {
+      id: deps.selfParticipant.id,
+      name: deps.selfParticipant.name,
+      color: deps.selfParticipant.color,
+    });
     updateThread(elementId, (thread) => ({
-      comments: [
-        ...(thread?.comments ?? []),
-        createComment(text, {
-          id: deps.selfParticipant.id,
-          name: deps.selfParticipant.name,
-          color: deps.selfParticipant.color,
-        }),
-      ],
+      comments: [...(thread?.comments ?? []), comment],
       // Adding a comment unresolves a resolved thread, the new
       // message is itself a signal that the conversation isn't
       // done.
       resolved: false,
     }));
+    return comment.id;
+  };
+
+  const replaceCommentId = (elementId: string, oldId: string, newId: string) => {
+    updateThread(elementId, (thread) =>
+      thread
+        ? {
+            ...thread,
+            comments: thread.comments.map((c) => (c.id === oldId ? { ...c, id: newId } : c)),
+          }
+        : undefined,
+    );
   };
 
   const deleteComment = (elementId: string, commentId: string) => {
@@ -133,6 +153,7 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     openComments,
     closeComments,
     addComment,
+    replaceCommentId,
     deleteComment,
     resolveThread,
     unresolveThread,

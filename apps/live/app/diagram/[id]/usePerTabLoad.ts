@@ -182,21 +182,28 @@ export function usePerTabLoad(opts: {
       pending.map(async (targetId) => {
         try {
           const tab = await apiLoadTab(selfId, diagramId, targetId, sessionShareCode);
-          if (tab) {
-            let didMerge = false;
-            resetTabs((prev) =>
-              prev.map((t) => {
-                if (t.id !== tab.id) return t;
-                const userHasEdited = t.elements.length > 0 || t.templateChosen === true;
-                if (userHasEdited) return t;
-                didMerge = true;
-                return { ...tab, folder: t.folder };
-              }),
-            );
-            if (didMerge) remoteUpdateRef.current = true;
+          if (!tab) {
+            // A 404 is anomalous here for the same reason as the visit-time
+            // path above: the tab id came from the diagram summary, so a
+            // missing row is a transient / auth edge, NOT proof the tab is
+            // empty. Marking it loaded would arm the autosave to overwrite
+            // the real row with an empty body (X-Allow-Empty). Drop the
+            // optimistic id so the normal visit-time load (with its error
+            // overlay) retries when the user actually opens the tab.
+            loadedTabIds.delete(targetId);
+            return;
           }
-          // 404s count as loaded too, same as the visit-time path: the
-          // tab genuinely has no server content.
+          let didMerge = false;
+          resetTabs((prev) =>
+            prev.map((t) => {
+              if (t.id !== tab.id) return t;
+              const userHasEdited = t.elements.length > 0 || t.templateChosen === true;
+              if (userHasEdited) return t;
+              didMerge = true;
+              return { ...tab, folder: t.folder };
+            }),
+          );
+          if (didMerge) remoteUpdateRef.current = true;
           setLoadedTabIds((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
         } catch {
           loadedTabIds.delete(targetId);

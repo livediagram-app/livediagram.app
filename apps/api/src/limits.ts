@@ -9,6 +9,13 @@
 // a hostile payload never reaches a route's req.json().
 export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 
+// A single uploaded image's raw bytes (spec/19). Larger than MAX_BODY_BYTES,
+// so the pre-dispatch gate must use THIS cap on the image-upload route — an
+// 8 MB outer bound would silently make the documented 10 MB image limit
+// unreachable (and return the generic payload_too_large instead of the image
+// route's file_too_large + limitBytes envelope).
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
+
 // A single tab's serialized JSON (the element + comment tree). The body cap
 // above bounds one request; this bounds one tab specifically.
 export const MAX_TAB_BYTES = 4 * 1024 * 1024;

@@ -34,6 +34,7 @@ const MAX_BUFFER = 25;
 let buffer: TelemetryEvent[] = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 let listenersAttached = false;
+let preferenceListenersAttached = false;
 
 // User-preference opt-out (spec/20). Cached so the hot path doesn't
 // hit localStorage on every track() call (some events fire in bursts:
@@ -50,7 +51,11 @@ function readOptIn(): boolean {
 }
 
 function ensurePreferenceListeners(): void {
-  if (typeof window === 'undefined') return;
+  // Guard like ensureListeners: track() re-calls this after every cache
+  // invalidation, and without the flag each call stacked a fresh
+  // listener pair for the life of the page.
+  if (preferenceListenersAttached || typeof window === 'undefined') return;
+  preferenceListenersAttached = true;
   const invalidate = () => {
     cachedOptIn = null;
   };

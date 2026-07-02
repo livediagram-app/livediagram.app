@@ -23,9 +23,8 @@ import {
   json,
   notFound,
 } from '../responses';
+import { MAX_IMAGE_BYTES } from '../limits';
 import { gateRead, requireOwner, type RouteContext } from './context';
-
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB, see spec/19.
 
 // Parse a positive-integer cap from a wrangler.toml [vars] entry.
 // Returns null when the string is missing, blank, non-numeric, or

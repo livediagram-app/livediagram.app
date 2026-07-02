@@ -297,10 +297,13 @@ export function useExplorerState() {
     // No-op if we'd be moving into ourselves or a descendant — the
     // picker already filters these, this is belt-and-braces.
     if (parentId && descendantSet(id).has(parentId)) return;
-    void apiUpdateFolder(ownerId, id, { parentId }).catch(() => {});
-    // Folder moves are rare enough that one refresh round-trip is
-    // fine (useFolders owns the canonical list).
-    void refreshFolders();
+    // Folder moves are rare enough that one refresh round-trip is fine
+    // (useFolders owns the canonical list) — but it must run AFTER the
+    // update commits, or the GET can be served first and re-render the
+    // folder under its old parent with nothing left to reconcile it.
+    void apiUpdateFolder(ownerId, id, { parentId })
+      .then(() => refreshFolders())
+      .catch(() => {});
     track('Folder', 'Moved');
   };
 

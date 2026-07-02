@@ -46,7 +46,10 @@ type ActivityLogDebounceDeps = {
 };
 
 type ActivityLogDebounceApi = {
-  scheduleTabMetaLog: (key: string, summary: string) => void;
+  // Returns true when this call OPENED a fresh debounce window (no
+  // timer was pending for the key) — the caller's cue to snapshot
+  // undo history once per gesture rather than once per tick.
+  scheduleTabMetaLog: (key: string, summary: string) => boolean;
   scheduleElementChangeLog: (key: string) => void;
 };
 
@@ -68,14 +71,16 @@ export function useActivityLogDebounce(deps: ActivityLogDebounceDeps): ActivityL
     >
   >({});
 
-  const scheduleTabMetaLog = (key: string, summary: string) => {
+  const scheduleTabMetaLog = (key: string, summary: string): boolean => {
     const slots = tabMetaSlots.current;
+    const startedWindow = slots[key] === undefined;
     if (slots[key]) window.clearTimeout(slots[key]);
     const tabId = deps.activeId;
     slots[key] = window.setTimeout(() => {
       deps.emitTabMeta(tabId, summary);
       slots[key] = undefined;
     }, ACTIVITY_LOG_DEBOUNCE_MS);
+    return startedWindow;
   };
 
   const scheduleElementChangeLog = (key: string) => {

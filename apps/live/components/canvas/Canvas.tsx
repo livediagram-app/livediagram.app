@@ -171,7 +171,7 @@ export function Canvas(props: CanvasProps) {
   const paletteDrop = usePaletteDrop({
     onDropPalette: props.onDropPalette,
     viewportZoom,
-    viewportOffset,
+    wrapperRef,
   });
 
   const {

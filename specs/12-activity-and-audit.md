@@ -128,17 +128,28 @@ ops shouldn't ride a visitor's share code.
    what gates the drag-log), so a freshly drawn arrow is one entry,
    not an add + a move.
 
-2. `useDiagramHistory.undo` / `redo` are paired with the activity log:
-   - **Undo** removes the most recently emitted entry from the panel
-     and DELETEs it from D1. The popped entry is held in a redo stack
-     in memory so a subsequent Redo can reinstate it.
-   - **Redo** takes the top of the redo stack and re-POSTs the entry
-     verbatim (same id, summary, before/after). The Activity panel
-     ends up showing exactly what was visible before the undo.
-   - The pair-stacks are bounded by the same limit as
-     `useDiagramHistory` (3 steps) so they can't drift out of sync.
-     A fresh commit clears the redo stack — same semantics as the
+2. `useDiagramHistory.undo` / `redo` are paired with the activity log
+   via a **marker stack** (`lib/entry-history`): every history push
+   (commit / checkpoint) pushes a `null` marker, and an emit fills the
+   newest marker with its entry. History steps and log entries are NOT
+   1:1 — tab add/delete/reorder and no-op checkpoints push history
+   without emitting, and the debounced slider emitters attach one entry
+   to a burst of commits — so the pairing is per-step, not per-entry:
+   - **Undo** pops exactly one marker alongside the state snapshot. If
+     it holds an entry, that entry is removed from the panel and
+     DELETEd from D1; an entry-less step deletes nothing. The popped
+     marker is held on a redo stack so a subsequent Redo can replay it.
+   - **Redo** shifts one marker back and, when it holds an entry,
+     re-POSTs it verbatim (same id, summary, before/after). The
+     Activity panel ends up showing exactly what was visible before
+     the undo.
+   - The marker stacks are bounded by the same limit as
+     `useDiagramHistory` (3 steps) and mutate 1:1 with it (including
+     clearing on `reset`), so they can't drift out of sync. A fresh
+     commit clears the redo stack — same semantics as the
      state-snapshot history's `future`.
+   - Emits whose mutation doesn't push history (spec/39 session tools)
+     pass `undoable: false` and stay out of the pairing entirely.
 
 3. On a `Revert` click for entry E:
    - For each `elementId` in E, apply E's `before_state` to the

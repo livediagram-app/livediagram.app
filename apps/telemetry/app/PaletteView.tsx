@@ -39,7 +39,7 @@ const TOOLS = new Set([
   'Actor',
   'Frame',
   'Annotation',
-  'Link-card',
+  'LinkCard',
   'Timeline-rail',
   'Pie-chart',
   'Bar-chart',

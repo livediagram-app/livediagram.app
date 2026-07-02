@@ -7,7 +7,9 @@
 // All mutations go through `commitTabs` (which does NOT push undo
 // history) — a timer start or a vote dot shouldn't be undoable. The
 // facilitator lifecycle actions emit a one-shot activity-log line via
-// `emitTabMeta`; the high-frequency vote casts deliberately do NOT log.
+// `emitTabMeta` with `undoable: false` (no history step was pushed,
+// so the entry must stay out of the undo pairing); the high-frequency
+// vote casts deliberately do NOT log.
 
 import {
   timerDisplayMs,
@@ -25,7 +27,7 @@ type TabSessionDeps = {
   // Tab mutator that does NOT push undo history (same one the appearance
   // setters use); we pair the facilitator actions with an explicit log emit.
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  emitTabMeta: (tabId: string, summary: string) => void;
+  emitTabMeta: (tabId: string, summary: string, opts?: { undoable?: boolean }) => void;
   // The local participant id — whose dots a cast/retract adds or removes.
   selfId: string;
 };
@@ -49,6 +51,7 @@ export function useTabSession(deps: TabSessionDeps) {
     emitTabMeta(
       activeId,
       mode === 'countdown' ? 'Started a countdown timer' : 'Started a stopwatch',
+      { undoable: false },
     );
     track('Tab', 'Started', mode === 'countdown' ? 'CountdownTimer' : 'StopwatchTimer');
   };
@@ -114,6 +117,7 @@ export function useTabSession(deps: TabSessionDeps) {
     emitTabMeta(
       activeId,
       `Started a vote (${votesPerPerson} ${votesPerPerson === 1 ? 'dot' : 'dots'} each)`,
+      { undoable: false },
     );
     track('Tab', 'Started', 'Vote');
   };
@@ -121,14 +125,14 @@ export function useTabSession(deps: TabSessionDeps) {
   const endVote = () => {
     if (editsBlocked) return;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, active: false } } : t));
-    emitTabMeta(activeId, 'Ended the vote');
+    emitTabMeta(activeId, 'Ended the vote', { undoable: false });
     track('Tab', 'Ended', 'Vote');
   };
 
   const revealVote = () => {
     if (editsBlocked) return;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, revealed: true } } : t));
-    emitTabMeta(activeId, 'Revealed the vote results');
+    emitTabMeta(activeId, 'Revealed the vote results', { undoable: false });
     track('Tab', 'Revealed', 'Vote');
   };
 

@@ -7,7 +7,14 @@
 // and share-label maths that recur across the dashboard.
 export const pct = (part: number, whole: number): number => (part / whole) * 100;
 
-// "Month day" axis label shared by the trend charts.
+// "Month day" axis label shared by the trend charts. The api buckets
+// events by UTC day and hands back exact UTC midnights, so the label
+// must be UTC too — the viewer's local zone would shift every label
+// (and tooltip) by a day for anyone west of UTC.
 export function fmtDay(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return new Date(ms).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
 }

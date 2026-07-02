@@ -9,8 +9,8 @@ import {
   type ChangeLogEntry,
 } from '@/lib/api-client';
 import { applyRevert } from '@/lib/change-log';
+import { entryHistoryRedo, entryHistoryUndo, type EntryHistory } from '@/lib/entry-history';
 import { track } from '@/lib/telemetry';
-import { HISTORY_LIMIT } from '@/hooks/canvas/useDiagramHistory';
 import { patchTab } from './editor-page-helpers';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
@@ -35,7 +35,7 @@ export function useEditorHistory(opts: {
   redoHistory: () => void;
   refs: {
     roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
-    entryHistoryRef: MutableRefObject<{ past: ChangeLogEntry[]; future: ChangeLogEntry[] }>;
+    entryHistoryRef: MutableRefObject<EntryHistory>;
   };
   set: {
     setActiveId: SetState<string>;
@@ -151,22 +151,19 @@ export function useEditorHistory(opts: {
     );
   };
 
-  // Undo / redo are paired with the activity log: undoing a step
-  // removes the matching entry from the panel (and from D1), redoing
-  // re-inserts the same entry verbatim. The `canUndo` / `canRedo`
-  // guards keep this in sync with useDiagramHistory's bounded stacks
-  // — if the history is exhausted, our entry stacks stay put.
+  // Undo / redo are paired with the activity log through the marker
+  // stack (lib/entry-history): one marker per history step, holding
+  // the entry that step emitted or null. Popping markers 1:1 with the
+  // snapshot stack means undoing an entry-less step (add tab, no-op
+  // checkpoint) deletes nothing — the drift where a tab-add undo
+  // erased an unrelated edit's audit row from D1 and every peer.
   const undo = () => {
     if (!canUndo) return;
     track('Diagram', 'Undone');
     undoHistory();
-    const { past, future } = entryHistoryRef.current;
-    const popped = past[past.length - 1];
+    const { next, popped } = entryHistoryUndo(entryHistoryRef.current);
+    entryHistoryRef.current = next;
     if (popped) {
-      entryHistoryRef.current = {
-        past: past.slice(0, -1),
-        future: [popped, ...future].slice(0, HISTORY_LIMIT),
-      };
       setChangeLog((prev) => prev.filter((e) => e.id !== popped.id));
       if (diagramId) {
         apiDeleteChangeLogEntry(selfId, diagramId, popped.id, sessionShareCode).catch(() => {
@@ -186,22 +183,18 @@ export function useEditorHistory(opts: {
     if (!canRedo) return;
     track('Diagram', 'Redone');
     redoHistory();
-    const { past, future } = entryHistoryRef.current;
-    const next = future[0];
-    if (next) {
-      entryHistoryRef.current = {
-        past: [...past, next].slice(-HISTORY_LIMIT),
-        future: future.slice(1),
-      };
-      setChangeLog((prev) => [next, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
+    const { next: nextMarkers, shifted } = entryHistoryRedo(entryHistoryRef.current);
+    entryHistoryRef.current = nextMarkers;
+    if (shifted) {
+      setChangeLog((prev) => [shifted, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
       if (diagramId) {
         // Same entry id and content — D1 ends up with the same row
         // it had before the undo. Idempotent under network retries
         // (the API treats POST as insert; a re-insert of the same id
         // would fail loudly but we don't double-fire).
-        apiAppendChangeLogEntry(selfId, diagramId, next, sessionShareCode).catch(() => {});
+        apiAppendChangeLogEntry(selfId, diagramId, shifted, sessionShareCode).catch(() => {});
       }
-      roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry: next } });
+      roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry: shifted } });
     }
     setEditingId(null);
     setSelectedId(null);

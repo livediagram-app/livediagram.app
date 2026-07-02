@@ -30,7 +30,11 @@ export function useSelectionEditing(opts: {
   tabs: Tab[];
   activeTab: Tab;
   commit: (updater: (els: Element[]) => Element[]) => void;
-  commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
+  // Non-history tab mutator: the first-label tab auto-rename rides the
+  // label commit as a side effect, not as its own undo step — a second
+  // history frame made Cmd+Z look like a no-op (it undid only the
+  // invisible rename) and needed two undos for one action.
+  tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   applyFormatFromSource: (targetId: string) => void;
   // True when ANOTHER participant currently has this element selected
   // (concurrent-selection lock, spec/07). Blocks select / edit so two
@@ -67,7 +71,7 @@ export function useSelectionEditing(opts: {
     tabs,
     activeTab,
     commit,
-    commitTabs,
+    tickTabs,
     applyFormatFromSource,
     lockedByOther,
     set,
@@ -180,7 +184,7 @@ export function useSelectionEditing(opts: {
     if (trimmed && /^Tab \d+$/.test(activeTab.name)) {
       const firstEl = activeTab.elements[0];
       if (firstEl && firstEl.id === elementId) {
-        commitTabs((ts) => patchTab(ts, activeTab.id, { name: trimmed }));
+        tickTabs((ts) => patchTab(ts, activeTab.id, { name: trimmed }));
       }
     }
   };

@@ -135,12 +135,19 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       const d = depsRef.current;
       // Pinch zoom is active — let the pinch hook own viewportOffset.
       if (d.isPinchingRef?.current) return;
+      // The click-vs-pan judgment is a HAND-motion question, so it uses
+      // raw screen px (like the marquee's click test below) — judging
+      // the zoom-divided delta made jitter read as a pan at low zoom
+      // (click-to-deselect broke) and small real pans read as clicks at
+      // high zoom (deliberate pans deselected).
+      const rawDx = e.clientX - pan.startClientX;
+      const rawDy = e.clientY - pan.startClientY;
+      if (Math.abs(rawDx) > 3 || Math.abs(rawDy) > 3) pan.movedRef.current = true;
       // Pan offset is stored in canvas-coords; mouse delta is
       // screen-coords. Divide by zoom so a 100px screen drag
       // produces 100/zoom canvas-pixels of pan.
-      const dx = (e.clientX - pan.startClientX) / d.viewportZoom;
-      const dy = (e.clientY - pan.startClientY) / d.viewportZoom;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) pan.movedRef.current = true;
+      const dx = rawDx / d.viewportZoom;
+      const dy = rawDy / d.viewportZoom;
       pending = { x: pan.startOffsetX + dx, y: pan.startOffsetY + dy };
       if (rafId === null) rafId = requestAnimationFrame(flush);
     };

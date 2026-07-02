@@ -132,6 +132,14 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // through the selection in the existing group machinery.
   const groupMultiSelected = () => {
     if (multiSelectedIds.size < 2) return;
+    // Only boxed elements can carry a groupId. With fewer than two boxed
+    // members (e.g. an arrow-only marquee) the commit below would change
+    // nothing — yet still push an undo step, clear redo, and drop the
+    // selection. Bail before any of that.
+    const boxedCount = activeTab.elements.filter(
+      (el) => multiSelectedIds.has(el.id) && isBoxed(el),
+    ).length;
+    if (boxedCount < 2) return;
     const groupId = crypto.randomUUID();
     commit((els) =>
       els.map((el) => (multiSelectedIds.has(el.id) && isBoxed(el) ? { ...el, groupId } : el)),

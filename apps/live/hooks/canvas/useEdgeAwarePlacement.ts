@@ -59,13 +59,27 @@ export function useEdgeAwarePlacement(
         return;
       }
     }
+    // The measured rect already carries the current nudge (it rendered
+    // with `adjust` applied), so compute the fresh correction against
+    // the UN-nudged position — measuring the nudged box and storing the
+    // result as the absolute adjust made the toolbar alternate between
+    // clamped and un-clamped while dragging along an edge. The style
+    // applies `adjust` in canvas units inside the scale(zoom) wrapper,
+    // so its on-screen effect is adjust·zoom (and the screen-space
+    // correction below is divided back by zoom when stored).
+    const left = rect.left - adjust.x * zoom;
+    const right = rect.right - adjust.x * zoom;
+    const top = rect.top - adjust.y * zoom;
+    const bottom = rect.bottom - adjust.y * zoom;
     let dx = 0;
     let dy = 0;
-    if (rect.left < EDGE) dx = EDGE - rect.left;
-    else if (rect.right > window.innerWidth - EDGE) dx = window.innerWidth - EDGE - rect.right;
-    if (rect.top < EDGE) dy = EDGE - rect.top;
-    else if (rect.bottom > window.innerHeight - EDGE) dy = window.innerHeight - EDGE - rect.bottom;
-    if (dx !== adjust.x || dy !== adjust.y) setAdjust({ x: dx, y: dy });
+    if (left < EDGE) dx = EDGE - left;
+    else if (right > window.innerWidth - EDGE) dx = window.innerWidth - EDGE - right;
+    if (top < EDGE) dy = EDGE - top;
+    else if (bottom > window.innerHeight - EDGE) dy = window.innerHeight - EDGE - bottom;
+    const nx = dx / zoom;
+    const ny = dy / zoom;
+    if (nx !== adjust.x || ny !== adjust.y) setAdjust({ x: nx, y: ny });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bounds.x, bounds.y, bounds.width, bounds.height, canvasOffset.x, canvasOffset.y, placeAbove]);
 

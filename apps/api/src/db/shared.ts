@@ -46,10 +46,13 @@ export async function recordSharedAccess(
 // The shareCode is sourced via a correlated subquery against
 // share_links matching the same role the visitor was granted —
 // preferring the oldest still-alive code (matches the "primary
-// code" convention used everywhere else). Rows whose share has
-// been entirely revoked since the visit (no code left at the
-// matching role, or shareable flipped off) are filtered out so the
-// visitor doesn't see a list item they can't act on.
+// code" convention used everywhere else). Expired links are
+// excluded with the same predicate getShareLink enforces, so the
+// list never hands back a code that would 404 on click while a
+// newer live link exists. Rows whose share has been entirely
+// revoked since the visit (no live code left at the matching role,
+// or shareable flipped off) are filtered out so the visitor
+// doesn't see a list item they can't act on.
 export async function listSharedWith(env: Env, ownerId: string): Promise<SharedWithItem[]> {
   const res = await env.DB.prepare(
     `SELECT d.id, d.name, d.saved_at, s.role,
@@ -57,6 +60,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
                FROM share_links
               WHERE share_links.diagram_id = d.id
                 AND share_links.role = s.role
+                AND (share_links.expires_at IS NULL OR share_links.expires_at > ?)
               ORDER BY share_links.created_at ASC
               LIMIT 1) AS share_code,
             p.name  AS owner_name,
@@ -68,7 +72,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
         AND d.shareable = 1
       ORDER BY s.last_seen DESC`,
   )
-    .bind(ownerId)
+    .bind(Date.now(), ownerId)
     .all<{
       id: string;
       name: string;

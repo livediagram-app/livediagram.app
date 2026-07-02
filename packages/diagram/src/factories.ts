@@ -437,6 +437,31 @@ export function duplicateGroupedElements(
   });
 
   const existingIds = new Set(elements.map((e) => e.id));
+
+  // Decide which arrows copy, and mint their new ids into idMap BEFORE
+  // building any copy: an on-arrow endpoint (spec/50) can only follow
+  // its target's duplicate if that duplicate's id is already known when
+  // the endpoint is remapped. (Minting inline at push time left idMap
+  // arrow-less, so every copied arrow-on-arrow connection stayed pinned
+  // to the ORIGINAL arrow — or, cross-tab, to a dangling id.)
+  // An arrow copies when it's explicitly in the duplicated set, OR when
+  // both endpoints pin to elements that were duplicated — the latter is
+  // the group / quick-connect case where an internal connector should
+  // ride along with its group even if the marquee didn't catch the
+  // arrow itself.
+  const arrowsToCopy: ArrowElement[] = [];
+  for (const el of elements) {
+    if (el.type !== 'arrow') continue;
+    const bothEndsDuplicated =
+      el.from.kind === 'pinned' &&
+      el.to.kind === 'pinned' &&
+      idMap.has(el.from.elementId) &&
+      idMap.has(el.to.elementId);
+    if (!ids.has(el.id) && !bothEndsDuplicated) continue;
+    idMap.set(el.id, crypto.randomUUID());
+    arrowsToCopy.push(el);
+  }
+
   // Re-point one endpoint of a duplicated arrow: a FREE end translates by
   // (dx, dy) so a free-floating arrow copies in place like any boxed
   // element; a PINNED end follows its duplicate when the target was
@@ -454,30 +479,32 @@ export function duplicateGroupedElements(
       return existingIds.has(end.arrowId) ? end : null;
     }
     const dup = idMap.get(end.elementId);
-    if (dup) return { kind: 'pinned', elementId: dup, anchor: end.anchor };
+    // Preserve `manual`: a hand-placed anchor must stay fixed on the
+    // copy too, or the auto-rebind re-chooses the face on first move.
+    if (dup) {
+      return {
+        kind: 'pinned',
+        elementId: dup,
+        anchor: end.anchor,
+        ...(end.manual ? { manual: true } : {}),
+      };
+    }
     return existingIds.has(end.elementId) ? end : null;
   };
 
   const newArrows: ArrowElement[] = [];
-  for (const el of elements) {
-    if (el.type !== 'arrow') continue;
-    // An arrow copies when it's explicitly in the duplicated set, OR when
-    // both endpoints pin to elements that were duplicated — the latter is
-    // the group / quick-connect case where an internal connector should
-    // ride along with its group even if the marquee didn't catch the
-    // arrow itself.
-    const bothEndsDuplicated =
-      el.from.kind === 'pinned' &&
-      el.to.kind === 'pinned' &&
-      idMap.has(el.from.elementId) &&
-      idMap.has(el.to.elementId);
-    if (!ids.has(el.id) && !bothEndsDuplicated) continue;
+  for (const el of arrowsToCopy) {
     const from = remapEndpoint(el.from);
     const to = remapEndpoint(el.to);
-    if (!from || !to) continue;
+    // A dropped arrow must leave idMap too — callers use the map to
+    // select / wire the duplicates, and a phantom id would dangle.
+    if (!from || !to) {
+      idMap.delete(el.id);
+      continue;
+    }
     // Spread the source so styling (stroke, ends, dash, arrowhead, curve,
     // label) survives the copy; only the id + endpoints are replaced.
-    newArrows.push({ ...el, id: crypto.randomUUID(), from, to });
+    newArrows.push({ ...el, id: idMap.get(el.id)!, from, to });
   }
 
   return { newElements: [...finalBoxed, ...newArrows], idMap };
