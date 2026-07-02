@@ -7,13 +7,24 @@ import {
   defaultStrokeColor,
   defaultTextColor,
   isBoxed,
+  isChartShape,
+  isProgressShape,
+  isRailShape,
+  isRatingShape,
+  isSelfDrawingShape,
   supportsBorderControls,
   supportsColours,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
+  type ShapeElement,
+  type TextAlignX,
+  type TextAlignY,
   type TextSize,
 } from '@livediagram/diagram';
+import { isTechIconId } from '@/lib/tech-icons';
+import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
+import { AlignmentGrid, ToggleSwitch } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu } from '@/components/palette/ContextMenu';
@@ -21,16 +32,41 @@ import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-icons';
 import {
   AnimationMenuGlyph,
+  AspectLockMenuIcon,
   BorderGlyph,
+  IconCategoryGlyph,
+  LayerDownIcon,
+  LayersGlyph,
+  LayerUpIcon,
   LineGlyph,
   PaletteMenuIcon,
   PointerGlyph,
+  RotationGlyph,
+  SquareMenuIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
-import { AnimationTiles, FlowTiles } from '@/components/palette/context-menu-tiles';
-import { BorderGrid, ColourRow, TextSizeTiles } from '@/components/palette/context-menu-rows';
-import { BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
+import {
+  MenuAccordionSection,
+  MenuGroupSeparator,
+  MenuTile,
+  MenuTileGrid,
+} from '@/components/primitives/PortalMenu';
+import { AnimationTiles, FlowTiles, IconSizeTiles } from '@/components/palette/context-menu-tiles';
+import {
+  BorderGrid,
+  ColourRow,
+  MarkersMenuGlyph,
+  MarkerTiles,
+  OpacityRow,
+  TextSizeTiles,
+} from '@/components/palette/context-menu-rows';
+import { ShapeIcon } from '@/components/primitives/shape-icon';
+import {
+  BORDER_STROKES,
+  BORDER_STYLES,
+  COMMON_SHAPES,
+  ROTATION_ANGLES,
+} from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -92,10 +128,11 @@ export function MultiSelectionContextMenu({
           | undefined;
         const arrowSrc = arrowSel[0];
         if (!colourable && !borderableSel && !arrowSel.length) return null;
-        // Same grouping as the single-element menu: appearance (Animation /
-        // Colours / Border) · content (Line / Pointer / Text). Layer / Shape /
-        // Rotation / Icon / Image / Table / Link / Collaborate don't apply to a
-        // multi-selection, so those groups stay excluded.
+        // Same grouping as the single-element menu: placement (Layer / Shape
+        // / Rotation) · appearance (Presets / Animation / Colours / Border /
+        // Icon / Markers / Alignment) · content (Line / Pointer / Text).
+        // Image / Table / Link / Note / Comments stay excluded — those are
+        // per-element identity or content, not formatting.
         const showMultiAppearance =
           boxedSel.length > 0 || !!arrowSrc || colourable || borderableSel;
         const showMultiContent = !!arrowSrc || !!textSrc;
@@ -104,8 +141,120 @@ export function MultiSelectionContextMenu({
         // by kind only when both are present; on a single-kind selection the
         // plain "Animation" reads fine.
         const bothAnimated = boxedSel.length > 0 && !!arrowSrc;
+        // Menu parity with the single-element menu (spec/09): everything you
+        // can restyle on ONE element works on a selection / group too. Each
+        // section reads its display value off the first matching member and
+        // writes selection-wide (the setters already are).
+        const morphSrc = boxedSel.find(
+          (el) =>
+            el.type === 'shape' &&
+            el.shape !== 'icon' &&
+            el.shape !== 'frame' &&
+            !isSelfDrawingShape(el.shape),
+        ) as ShapeElement | undefined;
+        const markerSrc = boxedSel.find(
+          (el) =>
+            el.type === 'shape' &&
+            !isProgressShape(el.shape) &&
+            !isRailShape(el.shape) &&
+            !isRatingShape(el.shape) &&
+            !isChartShape(el.shape),
+        ) as ShapeElement | undefined;
+        const techIconSrc = boxedSel.find(
+          (el) => el.type === 'shape' && el.shape === 'icon' && isTechIconId(el.iconId),
+        ) as ShapeElement | undefined;
+        const alignSrc = boxedSel.find(
+          (el) => el.type !== 'image' && !(el.type === 'shape' && isSelfDrawingShape(el.shape)),
+        );
         return (
           <>
+            {/* Layer — front/back, opacity and (for boxed members) the
+                  aspect-ratio lock, selection-wide, mirroring the single
+                  menu's pinned-first Layer section. */}
+            <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('m-layer')}>
+              <MenuTileGrid cols={2}>
+                <MenuTile
+                  icon={<LayerUpIcon />}
+                  label="Bring to Front"
+                  onClick={props.onBringToFront}
+                />
+                <MenuTile
+                  icon={<LayerDownIcon />}
+                  label="Send to Back"
+                  onClick={props.onSendToBack}
+                />
+              </MenuTileGrid>
+              <OpacityRow
+                value={(sel[0] as { opacity?: number } | undefined)?.opacity ?? 1}
+                onChange={props.onSetOpacity}
+              />
+              {boxedSel.length ? (
+                <button
+                  type="button"
+                  onClick={props.onToggleAspectLock}
+                  aria-pressed={!!boxedSel[0]!.aspectLocked}
+                  className="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-slate-400 dark:text-slate-400">
+                      <AspectLockMenuIcon />
+                    </span>
+                    Lock aspect ratio
+                  </span>
+                  <ToggleSwitch
+                    presentational
+                    checked={!!boxedSel[0]!.aspectLocked}
+                    label="Lock aspect ratio"
+                  />
+                </button>
+              ) : null}
+            </MenuAccordionSection>
+            {/* Shape — morph every morphable member to a common kind. */}
+            {morphSrc ? (
+              <MenuAccordionSection
+                title="Shape"
+                icon={<SquareMenuIcon />}
+                {...sectionProps('m-shape')}
+              >
+                <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
+                  {COMMON_SHAPES.map((kind) => (
+                    <SizeButton
+                      key={kind}
+                      active={morphSrc.shape === kind}
+                      onClick={() => props.onSetShapeKind(kind)}
+                    >
+                      <ShapeIcon kind={kind} />
+                    </SizeButton>
+                  ))}
+                </div>
+              </MenuAccordionSection>
+            ) : null}
+            {/* Rotation — snap angles for every boxed member. */}
+            {boxedSel.length ? (
+              <MenuAccordionSection
+                title="Rotation"
+                icon={<RotationGlyph deg={45} />}
+                {...sectionProps('m-rotation')}
+              >
+                <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
+                  {ROTATION_ANGLES.map((deg) => (
+                    <SizeButton
+                      key={deg}
+                      active={(boxedSel[0]!.rotation ?? 0) % 360 === deg}
+                      onClick={() => props.onCommitRotation(deg)}
+                      onPointerEnter={onMouseHover(() => props.onPreviewRotation(deg))}
+                      onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
+                    >
+                      <span className="flex flex-col items-center gap-0.5">
+                        <RotationGlyph deg={deg} />
+                        <span className="text-[9px] leading-none tabular-nums">{deg}°</span>
+                      </span>
+                    </SizeButton>
+                  ))}
+                </div>
+              </MenuAccordionSection>
+            ) : null}
+            <MenuGroupSeparator />
             {/* Presets (spec/48) — pinned at the top of the appearance group,
                   same as the single-element menu; applies to every matching
                   member of the selection. */}
@@ -240,6 +389,53 @@ export function MultiSelectionContextMenu({
                       </SizeButton>
                     ))}
                   </BorderGrid>
+                </div>
+              </MenuAccordionSection>
+            ) : null}
+            {/* Icon — a Technology icon's fixed tile size (spec/41), when
+                  the selection holds any; applies to every tech icon in it. */}
+            {techIconSrc ? (
+              <MenuAccordionSection
+                title="Icon"
+                icon={<IconCategoryGlyph />}
+                {...sectionProps('m-icon-size')}
+              >
+                <IconSizeTiles value={techIconSrc.iconSize ?? 'md'} onSet={props.onSetIconSize} />
+              </MenuAccordionSection>
+            ) : null}
+            {/* Markers (spec/49) — for every marker-capable shape in the
+                  selection. */}
+            {markerSrc ? (
+              <MenuAccordionSection
+                title="Markers"
+                icon={<MarkersMenuGlyph />}
+                {...sectionProps('m-markers')}
+              >
+                <MarkerTiles
+                  marker={markerSrc.marker ?? null}
+                  size={markerSrc.markerSize ?? 'scale'}
+                  onSet={props.onSetMarker}
+                  onSetSize={props.onSetMarkerSize}
+                />
+              </MenuAccordionSection>
+            ) : null}
+            {/* Alignment — the text toolbar's 3x3 grid, selection-wide. */}
+            {alignSrc ? (
+              <MenuAccordionSection
+                title="Alignment"
+                icon={
+                  <AlignLinesIcon
+                    dir={(alignSrc as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                  />
+                }
+                {...sectionProps('m-text-align')}
+              >
+                <div className="px-2 py-1.5">
+                  <AlignmentGrid
+                    alignX={(alignSrc as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                    alignY={(alignSrc as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
+                    onChange={props.onSetTextAlign}
+                  />
                 </div>
               </MenuAccordionSection>
             ) : null}

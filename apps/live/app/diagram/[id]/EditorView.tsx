@@ -1030,6 +1030,7 @@ export function EditorView() {
           onRemoveLink={() => applyElementLink(null)}
           onSetIconPosition={dropIconOnElement}
           onSetIconSize={setIconSizeSelected}
+          onSetTextAlign={setTextAlignSelected}
           onBringToFront={bringSelectedToFront}
           onSendToBack={sendSelectedToBack}
           onToggleAspectLock={toggleAspectLockSelected}

@@ -15,6 +15,8 @@ import type {
   IconAnimation,
   IconPosition,
   IconSize,
+  TextAlignX,
+  TextAlignY,
   PieAnim,
   PieSlice,
   ProgressAnim,
@@ -176,6 +178,9 @@ export type EditorContextMenuProps = {
   onSetIconPosition: (elementId: string, iconId: string, position: IconPosition) => void;
   // A Technology icon element's fixed tile-size preset (spec/41).
   onSetIconSize: (size: IconSize) => void;
+  // Whole-element text alignment (the same 3x3 grid as the text toolbar's
+  // alignment dropdown — surfaced in both places for discovery, spec/09).
+  onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   // The selected elements (multi-selection / group members), so the 'multi'

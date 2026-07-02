@@ -1,4 +1,12 @@
-import { isBoxed, type Element } from '@livediagram/diagram';
+import {
+  isBoxed,
+  isSelfDrawingShape,
+  type Element,
+  type TextAlignX,
+  type TextAlignY,
+} from '@livediagram/diagram';
+import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
+import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
   BoldIcon,
@@ -111,6 +119,29 @@ export function ElementContentSections({
             {...colorProps('text')}
             presets={props.presetColors}
           />
+        </MenuAccordionSection>
+      ) : null}
+      {/* Alignment — the same 3x3 grid as the text toolbar's alignment
+            dropdown, here too for discovery (spec/09). Boxed elements with a
+            text slot only: images have no label, and the self-drawing data
+            shapes (progress / rail / rating / charts) have no label slot. */}
+      {boxed &&
+      target.type !== 'image' &&
+      !(target.type === 'shape' && isSelfDrawingShape(target.shape)) ? (
+        <MenuAccordionSection
+          title="Alignment"
+          icon={
+            <AlignLinesIcon dir={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'} />
+          }
+          {...sectionProps('text-align')}
+        >
+          <div className="px-2 py-1.5">
+            <AlignmentGrid
+              alignX={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+              alignY={(target as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
+              onChange={props.onSetTextAlign}
+            />
+          </div>
         </MenuAccordionSection>
       ) : null}
       {/* Image — pick / change / clear the bitmap (spec/19). */}
