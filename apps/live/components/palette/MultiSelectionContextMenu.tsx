@@ -121,6 +121,9 @@ export function MultiSelectionContextMenu({
                 props={props}
                 accordion={sectionProps('m-shape-presets')}
                 onClose={onClose}
+                // Mixed selection shows both preset sections — disambiguate
+                // by kind, same as the Animation sections below.
+                title={presetShapeSrc && arrowSrc ? 'Shape Presets' : 'Presets'}
               />
             ) : null}
             {arrowSrc ? (
@@ -129,6 +132,7 @@ export function MultiSelectionContextMenu({
                 props={props}
                 accordion={sectionProps('m-arrow-presets')}
                 onClose={onClose}
+                title={presetShapeSrc && arrowSrc ? 'Arrow Presets' : 'Presets'}
               />
             ) : null}
             {/* Animation (spec/09) — applies to every boxed member of the

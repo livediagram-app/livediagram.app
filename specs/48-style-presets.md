@@ -88,7 +88,10 @@ applies to every selected arrow at once.
   selection holds any preset-eligible shape and an arrow section when it holds
   any arrow, and the apply / reset handlers are already selection-wide
   (`applyShapeColorPresetSelected` / `applyArrowPresetSelected` walk every
-  selected element id).
+  selected element id). When a mixed selection shows **both** sections they are
+  titled **Shape Presets** / **Arrow Presets** to disambiguate (the same rule
+  the Animation sections use); a single-kind selection keeps the plain
+  **Presets** label.
 - Colour presets are theme-derived via `shapeColorPresets(theme)` in
   `apps/live/lib/themes.ts` (reusing the existing `tint` / `shade` /
   `isLightColor` colour helpers), so they always track the active theme like

@@ -38,6 +38,7 @@ export function ShapePresetsSection({
   props,
   accordion,
   onClose,
+  title = 'Presets',
 }: {
   // The shape's kind, so the preview tiles match it (a circle as a circle).
   shape: ShapeKind;
@@ -52,9 +53,13 @@ export function ShapePresetsSection({
   props: EditorContextMenuProps;
   accordion: AccordionProps;
   onClose: () => void;
+  // Section label. A mixed shape + arrow selection shows BOTH preset
+  // sections, so the caller disambiguates ("Shape Presets") the same way
+  // the Animation sections do; alone, the plain "Presets" reads fine.
+  title?: string;
 }) {
   return (
-    <MenuAccordionSection title="Presets" icon={<PresetsMenuGlyph />} {...accordion}>
+    <MenuAccordionSection title={title} icon={<PresetsMenuGlyph />} {...accordion}>
       <ShapePresets
         shape={shape}
         colorPresets={props.shapeColorPresets}
@@ -78,15 +83,18 @@ export function ArrowPresetsSection({
   props,
   accordion,
   onClose,
+  title = 'Presets',
 }: {
   // The arrow's current line style, to highlight a matching preset.
   current: { strokeStyle?: BorderStyle; flow?: ArrowFlow };
   props: EditorContextMenuProps;
   accordion: AccordionProps;
   onClose: () => void;
+  // See ShapePresetsSection: "Arrow Presets" when both sections show.
+  title?: string;
 }) {
   return (
-    <MenuAccordionSection title="Presets" icon={<PresetsMenuGlyph />} {...accordion}>
+    <MenuAccordionSection title={title} icon={<PresetsMenuGlyph />} {...accordion}>
       <ArrowPresets
         current={current}
         onApply={(p) => props.onApplyArrowPreset(p)}
