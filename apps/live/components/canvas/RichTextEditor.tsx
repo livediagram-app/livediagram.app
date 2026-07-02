@@ -100,6 +100,9 @@ export function RichTextEditor({
     computeActiveFormat(runsRef.current, null, element),
   );
   const [placeBelow, setPlaceBelow] = useState(false);
+  // Type-to-edit sessions must start with the caret at the END; see the
+  // mount effect. Consumed by the first beforeinput.
+  const needsEndCaretRef = useRef(false);
 
   const runSizePx = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
   const basePx = multiline
@@ -107,6 +110,14 @@ export function RichTextEditor({
     : textSize === 'scale'
       ? 16
       : FIXED_FONT_PX[textSize];
+
+  // Collapse the selection to the true end of the editor's painted content.
+  const placeCaretAtEnd = (el: HTMLElement) => {
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    r.collapse(false);
+    selectRange(r);
+  };
 
   // Render the current runs into the contentEditable as styled spans.
   const paintRuns = () => {
@@ -159,10 +170,18 @@ export function RichTextEditor({
       // seed char stays first and further typing appends. Done against the live
       // DOM (not the computed offset) so a stray empty / desynced run can't drop
       // the caret back to the start — the "Hello" -> "elloH" bug.
-      const r = document.createRange();
-      r.selectNodeContents(el);
-      r.collapse(false);
-      selectRange(r);
+      placeCaretAtEnd(el);
+      // The first commit around a freshly-opened caption can REMOUNT /
+      // MOVE this editor node (observed on icon captions: the wrapper
+      // swaps its label subtree as editing begins), and a DOM move
+      // silently drops the selection back to the start — the seeded first
+      // char then ends up typed AFTER the rest ("LOL" -> "OLL"). The
+      // mount-time placement above can't survive that, so `beforeinput`
+      // below re-asserts the end caret right before the FIRST keystroke
+      // applies — the last safe moment, immune to any churn in between. A
+      // deliberate click inside the text first cancels it (pointerdown
+      // handler below).
+      needsEndCaretRef.current = true;
     } else {
       // Double-click / Space edit: select all, so the next keystroke replaces.
       selectRange(offsetsToDomRange(el, 0, len));
@@ -420,7 +439,22 @@ export function RichTextEditor({
           composingRef.current = false;
           syncFromDom();
         }}
-        onPointerDown={(e) => e.stopPropagation()}
+        onBeforeInput={() => {
+          // Type-to-edit's end caret, re-asserted at the last safe moment
+          // (see the mount effect): the first keystroke lands at the end
+          // no matter what remounted / moved this node since mount.
+          if (needsEndCaretRef.current) {
+            needsEndCaretRef.current = false;
+            const el = editorRef.current;
+            if (el) placeCaretAtEnd(el);
+          }
+        }}
+        onPointerDown={(e) => {
+          // A deliberate click inside the text places its own caret — the
+          // pending type-to-edit end caret must not override it.
+          needsEndCaretRef.current = false;
+          e.stopPropagation();
+        }}
         onDoubleClick={(e) => e.stopPropagation()}
         style={{
           fontSize: `${basePx}px`,
