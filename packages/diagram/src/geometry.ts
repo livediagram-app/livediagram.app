@@ -588,8 +588,18 @@ export function rebindArrowAnchorsAfterMove(
         : face === 'ne' || face === 'nw'
           ? 'n'
           : 's';
+      // A corner only earns stability while it still sits on the LINE'S side
+      // of its face. A stale corner from an earlier layout (target since
+      // dragged across the box's centre line) would make the line exit one
+      // corner and cross to the other side — over a sibling that correctly
+      // holds the face's centre. Face times can't catch this (the corner
+      // shares its face's exit time), so test the side explicitly and let
+      // the freshly-computed face/corner win when it disagrees.
+      const cornerStillAgrees =
+        currentFace === null || isCardinal(p.current) || cornerFor(currentFace) === p.current;
       if (
         currentFace &&
+        cornerStillAgrees &&
         (!taken.has(p.current) || (isCardinal(p.current) && canShare(p.current))) &&
         p.times[currentFace] <= p.times[chosenFace] * (1 + ANCHOR_SWITCH_MARGIN)
       ) {

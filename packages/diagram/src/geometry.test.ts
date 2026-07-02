@@ -401,6 +401,60 @@ describe('rebindArrowAnchorsAfterMove', () => {
     }
   });
 
+  it('re-centres a stale wrong-side corner instead of crossing its sibling', () => {
+    // A hub over two children. The arrow to the RIGHT child carries a stale
+    // 'sw' anchor (picked while its child was still on the left); the arrow
+    // to the LEFT child sits on the shared bottom centre. Moving the right
+    // child must NOT keep the corner via the stability dead-band — the line
+    // now exits the wrong side of the face and crosses its sibling. It
+    // should join the shareable centre (the sibling already there was the
+    // indicator that 's' is the right exit).
+    const hub: ShapeElement = {
+      id: 'hub',
+      type: 'shape',
+      shape: 'square',
+      x: 200,
+      y: 0,
+      width: 120,
+      height: 120,
+    };
+    const left: ShapeElement = {
+      id: 'left',
+      type: 'shape',
+      shape: 'square',
+      x: 40,
+      y: 260,
+      width: 120,
+      height: 120,
+    };
+    const right: ShapeElement = {
+      id: 'right',
+      type: 'shape',
+      shape: 'square',
+      x: 360,
+      y: 260,
+      width: 120,
+      height: 120,
+    };
+    const arrLeft: ArrowElement = {
+      id: 'arr-left',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
+      to: { kind: 'pinned', elementId: 'left', anchor: 'n' },
+    };
+    const arrRight: ArrowElement = {
+      id: 'arr-right',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'hub', anchor: 'sw' },
+      to: { kind: 'pinned', elementId: 'right', anchor: 'n' },
+    };
+    const els: Element[] = [hub, left, right, arrLeft, arrRight];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['right']));
+    const next = out.find((e) => e.id === 'arr-right') as ArrowElement;
+    expect(next.from.kind === 'pinned' && next.from.anchor).toBe('s');
+    expect(next.to.kind === 'pinned' && next.to.anchor).toBe('n');
+  });
+
   it('flips both anchors when b moves above a (now a vertical arrow)', () => {
     // b at (90, -300) puts it directly above a, so a should point
     // north and b should point south.
