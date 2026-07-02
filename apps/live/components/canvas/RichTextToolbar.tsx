@@ -115,20 +115,28 @@ function OverflowMenu({
   active,
   currentFont,
   padding,
+  alignX,
+  alignY,
   onToggle,
   onApplyList,
   onSetFont,
   onSetPadding,
   onSize,
+  onSetAlign,
 }: {
   active: ActiveFormat;
   currentFont: string | null;
   padding: Padding;
+  // Whole-element alignment, mirrored from the toolbar's dropdown so the
+  // control is discoverable here too (spec/09).
+  alignX: TextAlignX;
+  alignY: TextAlignY;
   onToggle: (key: RunBoolKey) => void;
   onApplyList: (style: ListStyle) => void;
   onSetFont: (font: string | null) => void;
   onSetPadding: (padding: Padding) => void;
   onSize: (size: SizeKey) => void;
+  onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [openCat, setOpenCat] = useState<string | null>(null);
@@ -273,6 +281,18 @@ function OverflowMenu({
               ))}
             </MenuTileGrid>
           </MenuAccordionSection>
+          {/* Alignment — the toolbar dropdown's 3×3 grid, here too for
+              discovery (spec/09). Stays open after a pick (like the
+              dropdown) so a user can try corners. */}
+          <MenuAccordionSection
+            title="Alignment"
+            icon={<AlignLinesIcon dir={alignX} />}
+            {...catProps('align')}
+          >
+            <div className="px-2 py-1.5">
+              <AlignmentGrid alignX={alignX} alignY={alignY} onChange={onSetAlign} />
+            </div>
+          </MenuAccordionSection>
         </div>
       ) : null}
     </div>
@@ -402,10 +422,13 @@ export function RichTextToolbar({
         onApplyList={onApplyList}
         currentFont={currentFont}
         padding={padding}
+        alignX={alignX}
+        alignY={alignY}
         onToggle={onToggle}
         onSetFont={onSetFont}
         onSetPadding={onSetPadding}
         onSize={onSize}
+        onSetAlign={onSetAlign}
       />
       {divider}
       {toggles.map((t) => (
