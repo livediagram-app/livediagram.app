@@ -120,17 +120,15 @@ export function deriveCanvasSelection(input: {
     // A marquee multi-select stays suppressed: it's a transient selection,
     // not a unit you chain from.
     multiSelectedIds.size === 0 &&
-    // The per-type exclusions apply to a lone element only. Tables don't
-    // expose the pluses (connecting a connector to a grid is an unlikely
-    // flow, and they clash with the table's own in-cell controls); an
-    // annotation marker is a note, not a node to chain from; and a frame is
-    // a backdrop you draw around things (its pluses would float far out
-    // around the whole section). See spec/38 + spec/09. On a group the
-    // pluses belong to the union box, not any one member, so a grouped
-    // table/frame doesn't suppress them.
+    // The per-type exclusions apply to a lone element only: an annotation
+    // marker is a note, not a node to chain from, and a frame is a backdrop
+    // you draw around things (its pluses would float far out around the
+    // whole section). See spec/38 + spec/09. Tables DO show the pluses —
+    // with a slimmed table ring (Arrow + Add Row / Add Column, spec/09).
+    // On a group the pluses belong to the union box, not any one member,
+    // so a grouped annotation/frame doesn't suppress them.
     (memberIds.size > 1 ||
-      (selected.type !== 'table' &&
-        selected.type !== 'annotation' &&
+      (selected.type !== 'annotation' &&
         !(selected.type === 'shape' && selected.shape === 'frame'))) &&
     editingId !== selected.id &&
     !isPaintMode &&

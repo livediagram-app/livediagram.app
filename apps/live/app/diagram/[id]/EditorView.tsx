@@ -249,6 +249,8 @@ export function EditorView() {
     setMarkerSizeSelected,
     setRailCountSelected,
     addRailPointSelected,
+    appendTableRowSelected,
+    appendTableColumnSelected,
     setRailLabelSelected,
     setRatingSelected,
     setRatingAnimSelected,
@@ -802,6 +804,8 @@ export function EditorView() {
         onCommitLabel={commitLabel}
         onCommitTable={commitTable}
         onAddRailPoint={addRailPointSelected}
+        onAddTableRow={appendTableRowSelected}
+        onAddTableColumn={appendTableColumnSelected}
         onSetRailLabel={isReadOnly ? undefined : setRailLabelSelected}
         chartPalette={themeChartPalette(getTheme(activeTab.theme))}
         onCancelEdit={cancelEdit}

@@ -175,7 +175,7 @@ describe('deriveCanvasSelection', () => {
 
   it('group pluses ignore per-type exclusions but keep the mode/lock gates', () => {
     // A grouped table doesn't suppress the pluses — they belong to the
-    // union box, not the table — but a lone table still does.
+    // union box, not the table.
     const table = (id: string, overrides: Partial<Element> = {}): Element =>
       ({
         id,
@@ -189,7 +189,9 @@ describe('deriveCanvasSelection', () => {
       }) as Element;
     const grouped: Element[] = [box('t', { groupId: 'g' }), table('u', { groupId: 'g' })];
     expect(derive({ elements: grouped, selectedId: 'u' }).showPlus).toBe(true);
-    expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(false);
+    // A lone table shows the pluses too (the slimmed table ring, spec/09);
+    // annotations and frames stay excluded.
+    expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(true);
     // Locked / read-only still suppress group pluses.
     const locked: Element[] = [
       box('a', { groupId: 'g', locked: true }),

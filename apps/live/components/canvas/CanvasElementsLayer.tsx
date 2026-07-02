@@ -83,6 +83,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetTextSize,
     onCommitTable,
     onAddRailPoint,
+    onAddTableRow,
+    onAddTableColumn,
     onSetRailLabel,
     chartPalette,
     onSpawnConnect,
@@ -185,6 +187,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // "Add point" action on the quick-connect "+" (spec/51).
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
   const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
+  const selectedIsTable = selectedElement?.type === 'table';
   return (
     <>
       {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
@@ -364,6 +367,12 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               // Timeline rail (spec/51): the standard "+" gains an "Add point"
               // action instead of the rail drawing its own competing button.
               onAddRailPoint={selectedIsRail ? onAddRailPoint : undefined}
+              // Table ring (spec/09): Arrow + this side's structural add.
+              variant={selectedIsTable ? 'table' : 'default'}
+              onAddTableRow={selectedIsTable && placement === 'below' ? onAddTableRow : undefined}
+              onAddTableColumn={
+                selectedIsTable && placement === 'right' ? onAddTableColumn : undefined
+              }
             />
           ))
         : null}

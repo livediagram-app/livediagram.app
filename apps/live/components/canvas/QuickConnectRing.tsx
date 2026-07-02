@@ -45,6 +45,12 @@ type QuickConnectRingProps = {
   // Timeline rail (spec/51): when set (the selected element is a rail), the
   // ring gains an "Add point" action that appends a point to the rail.
   onAddRailPoint?: () => void;
+  // Table variant (spec/09): the ring slims down to Arrow plus the
+  // structural add for this side — Add Row on the bottom plus, Add Column
+  // on the right one. Duplicate / Pencil / Text don't apply to a grid.
+  variant?: 'default' | 'table';
+  onAddTableRow?: () => void;
+  onAddTableColumn?: () => void;
 };
 
 // The plus trigger stays in the shared floating-control family (matching
@@ -110,7 +116,7 @@ const MENU: Record<
 };
 
 type Option = {
-  kind: QuickConnectKind | 'arrow' | 'pencil' | 'add-point';
+  kind: QuickConnectKind | 'arrow' | 'pencil' | 'add-point' | 'add-row' | 'add-column';
   label: string;
   description: string;
   icon: ReactNode;
@@ -122,6 +128,20 @@ const ADD_POINT_OPTION: Option = {
   label: 'Add point',
   description: 'Add another point to the timeline rail.',
   icon: <AddPointIcon />,
+};
+
+// Table structural adds (spec/09): offered on the matching side's ring.
+const ADD_ROW_OPTION: Option = {
+  kind: 'add-row',
+  label: 'Add row',
+  description: 'Append a row at the bottom of the table.',
+  icon: <AddRowIcon />,
+};
+const ADD_COLUMN_OPTION: Option = {
+  kind: 'add-column',
+  label: 'Add column',
+  description: 'Append a column on the right of the table.',
+  icon: <AddColumnIcon />,
 };
 
 // Listed order matches the spec; they fan across the arc in this order.
@@ -166,10 +186,25 @@ export function QuickConnectRing({
   onArrowPointerDown,
   onPencil,
   onAddRailPoint,
+  variant = 'default',
+  onAddTableRow,
+  onAddTableColumn,
 }: QuickConnectRingProps) {
   // The rail "Add point" action only appears when the selected element is a
   // timeline rail (onAddRailPoint set), appended after the standard actions.
-  const options = onAddRailPoint ? [...OPTIONS, ADD_POINT_OPTION] : OPTIONS;
+  // The table variant slims to Arrow + this side's structural add (Add Row
+  // below, Add Column on the right — spec/09): Duplicate / Pencil / Text
+  // don't apply to a grid.
+  const options =
+    variant === 'table'
+      ? [
+          ...(onAddTableRow ? [ADD_ROW_OPTION] : []),
+          ...(onAddTableColumn ? [ADD_COLUMN_OPTION] : []),
+          OPTIONS.find((o) => o.kind === 'arrow')!,
+        ]
+      : onAddRailPoint
+        ? [...OPTIONS, ADD_POINT_OPTION]
+        : OPTIONS;
   // `rendered` keeps the options mounted through the exit transition;
   // `active` drives the per-option fade/scale (off → on for enter, on →
   // off for exit).
@@ -315,6 +350,8 @@ export function QuickConnectRing({
                       if (isArrow) return;
                       if (option.kind === 'pencil') onPencil();
                       else if (option.kind === 'add-point') onAddRailPoint?.();
+                      else if (option.kind === 'add-row') onAddTableRow?.();
+                      else if (option.kind === 'add-column') onAddTableColumn?.();
                       else onSpawn(option.kind as QuickConnectKind);
                       onClose();
                     }}
@@ -389,6 +426,28 @@ function AddPointIcon() {
       <path d="M2 11h12" />
       <circle cx="5.5" cy="7" r="1.6" fill="currentColor" stroke="none" />
       <path d="M11 4v4M9 6h4" />
+    </svg>
+  );
+}
+
+// A grid gaining a row along the bottom — "append a row".
+function AddRowIcon() {
+  return (
+    <svg {...iconProps()}>
+      <rect x="3" y="2.5" width="10" height="7" rx="1" />
+      <path d="M8 2.5v7M3 6h10" />
+      <path d="M8 11v3M6.5 12.5h3" />
+    </svg>
+  );
+}
+
+// A grid gaining a column on the right — "append a column".
+function AddColumnIcon() {
+  return (
+    <svg {...iconProps()}>
+      <rect x="2.5" y="3" width="7" height="10" rx="1" />
+      <path d="M2.5 8h7M6 3v10" />
+      <path d="M11 8h3M12.5 6.5v3" />
     </svg>
   );
 }

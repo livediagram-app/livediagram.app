@@ -294,6 +294,10 @@ export type CanvasProps = {
   // Append a point to the selected timeline rail (spec/51) — the rail's
   // "Add point" action on the quick-connect "+".
   onAddRailPoint: () => void;
+  // Table quick-connect ring (spec/09): append a row / column to the
+  // selected table from the bottom / right plus.
+  onAddTableRow: () => void;
+  onAddTableColumn: () => void;
   // Edit one timeline-rail point's label (spec/51). Omitted in read-only.
   onSetRailLabel?: (elementId: string, index: number, text: string) => void;
   // Default chart slice colours derived from the active theme (spec/53), used

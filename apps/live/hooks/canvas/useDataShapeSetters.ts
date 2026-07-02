@@ -1,4 +1,6 @@
 import {
+  addTableColumn,
+  addTableRow,
   clampPercent,
   clampRating,
   isChartShape,
@@ -84,6 +86,45 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     );
     track('Element', 'Changed', 'TimelineRail');
   };
+
+  // Append a row / column to each selected table — the table quick-connect
+  // ring's structural adds (spec/09). The helper returns the spliced cells
+  // PLUS the realigned side arrays; apply them together so pinned sizes and
+  // per-cell styles can't drift onto the wrong track.
+  const appendTableRowSelected = () => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    track('Element', 'Added', 'TableRow');
+    commit((els) =>
+      els.map((el) => {
+        if (!(ids.has(el.id) && el.type === 'table')) return el;
+        const next = addTableRow(el, el.cells.length);
+        return {
+          ...el,
+          cells: next.cells,
+          ...(next.rowHeights ? { rowHeights: next.rowHeights } : {}),
+          ...(next.cellStyles ? { cellStyles: next.cellStyles } : {}),
+        };
+      }),
+    );
+  };
+  const appendTableColumnSelected = () => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    track('Element', 'Added', 'TableColumn');
+    commit((els) =>
+      els.map((el) => {
+        if (!(ids.has(el.id) && el.type === 'table')) return el;
+        const next = addTableColumn(el, el.cells[0]?.length ?? 0);
+        return {
+          ...el,
+          cells: next.cells,
+          ...(next.colWidths ? { colWidths: next.colWidths } : {}),
+          ...(next.cellStyles ? { cellStyles: next.cellStyles } : {}),
+        };
+      }),
+    );
+  };
   // Edit one rail point's label (spec/51). Keyed by element id (the inline
   // editor lives on the element itself), committed on blur so it's one undo
   // step. Grows the labels array as needed; trailing empties are harmless.
@@ -162,6 +203,8 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     setProgressAnimRepeatSelected,
     setRailCountSelected,
     addRailPointSelected,
+    appendTableRowSelected,
+    appendTableColumnSelected,
     setRailLabelSelected,
     setRatingSelected,
     setRatingAnimSelected,
