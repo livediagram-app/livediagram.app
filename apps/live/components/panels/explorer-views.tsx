@@ -1,5 +1,7 @@
 'use client';
 
+import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+
 // Presentational primitives for the floating Explorer panel
 // (apps/live/components/Explorer.tsx). Lifted here so the
 // Explorer component itself can focus on data flow + the panel
@@ -23,12 +25,7 @@ import { useState } from 'react';
 import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import {
-  ChevronIcon,
-  RemoveIcon,
-  SharedDiagramIcon,
-  UnsortedIcon,
-} from '@/components/panels/explorer-icons';
+import { ChevronIcon, RemoveIcon, UnsortedIcon } from '@/components/panels/explorer-icons';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
 import { DiagramRow } from './DiagramRow';
 
@@ -170,11 +167,15 @@ export function UnsortedNode({
 export function SharedRow({
   item,
   active,
+  ownerId,
   onOpen,
   onDismiss,
 }: {
   item: SharedWithItem;
   active: boolean;
+  // Viewer identity for the thumbnail fetch (the share code authorises
+  // the read; see DiagramThumbnail).
+  ownerId: string | null;
   onOpen: () => void;
   onDismiss?: () => void;
 }) {
@@ -191,13 +192,15 @@ export function SharedRow({
             : 'hover:bg-slate-50 text-slate-700 dark:text-white dark:hover:bg-slate-800'
         }`}
       >
-        <span
-          className={
-            active ? 'text-brand-500 dark:text-brand-300' : 'text-slate-400 dark:text-slate-400'
-          }
-        >
-          <SharedDiagramIcon />
-        </span>
+        {/* The real preview, like every owned row — the share code
+            authorises the snapshot read, so shared rows are no longer a
+            generic glyph while the full-page Shared list shows previews. */}
+        <DiagramThumbnail
+          ownerId={ownerId}
+          diagramId={item.id}
+          version={item.savedAt}
+          shareCode={item.shareCode}
+        />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-xs font-medium">{item.name}</span>
           {/* Tight meta line: just the role + relative-time.

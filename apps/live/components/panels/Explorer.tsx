@@ -434,6 +434,7 @@ function ExplorerImpl({
                         key={entry.s.id}
                         item={entry.s}
                         active={false}
+                        ownerId={ownerId}
                         onOpen={() => onOpenDiagram(entry.s.id, entry.s.shareCode)}
                         onDismiss={onDismissShared ? () => onDismissShared(entry.s.id) : undefined}
                       />
