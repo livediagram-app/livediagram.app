@@ -139,7 +139,7 @@ export function TableCellMenu({
         </label>
       </MenuAccordionSection>
       <MenuAccordionSection
-        title="Alignment"
+        title="Text Alignment"
         icon={<AlignIcon dir={sc?.alignX ?? element.textAlignX ?? 'center'} />}
         {...section('align')}
       >

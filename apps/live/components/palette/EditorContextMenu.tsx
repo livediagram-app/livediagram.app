@@ -42,7 +42,6 @@ import {
 import {
   MenuAccordionSection,
   MenuActionButton,
-  MenuGroupLabel,
   MenuGroupSeparator,
   MenuTile,
   MenuTileGrid,
@@ -131,10 +130,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     const showCollaborateGroup = boxed;
     return (
       <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
-        {/* Band titles (spec/09): tiny uppercase labels naming each group
-            of categories. The first band has no separator, so it renders a
-            bare label; the rest ride their MenuGroupSeparator. */}
-        <MenuGroupLabel>Placement</MenuGroupLabel>
         {/* Layer — pinned FIRST in the menu (before the type-specific
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +
@@ -246,7 +241,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           fillColorHandlers={fillColorHandlers}
           strokeColorHandlers={strokeColorHandlers}
         />
-        {showContentGroup ? <MenuGroupSeparator label="Content" /> : null}
+        {showContentGroup ? <MenuGroupSeparator /> : null}
         {/* Line + Pointer — arrow stroke + arrowhead controls (shared
             ArrowLine/PointerControls). */}
         {target.type === 'arrow' ? (

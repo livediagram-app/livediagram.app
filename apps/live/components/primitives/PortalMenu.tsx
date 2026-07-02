@@ -197,29 +197,11 @@ export function MenuAccordionSection({
 // per-row hairline and slightly inset, so when rows render `flush` the
 // grouping reads at a glance. Pair with `flush` sections + parent-supplied
 // gating so an absent band leaves no dangling rule.
-export function MenuGroupSeparator({ label }: { label?: string }) {
+export function MenuGroupSeparator() {
   return (
-    <>
-      <div className="my-1.5 px-2" role="separator" aria-hidden>
-        <div className="h-px bg-slate-200/90 dark:bg-slate-700/80" />
-      </div>
-      {label ? <MenuGroupLabel>{label}</MenuGroupLabel> : null}
-    </>
-  );
-}
-
-// Tiny uppercase band title (spec/09): names the group of categories that
-// follows (Placement / Style / Content / Collaborate). Used under a
-// MenuGroupSeparator via its `label` prop, or bare for the menu's FIRST
-// band, which has no separator above it.
-export function MenuGroupLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p
-      aria-hidden
-      className="px-3 pb-0.5 pt-1 text-[9px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500"
-    >
-      {children}
-    </p>
+    <div className="my-1.5 px-2" role="separator" aria-hidden>
+      <div className="h-px bg-slate-200/90 dark:bg-slate-700/80" />
+    </div>
   );
 }
 

@@ -25,6 +25,7 @@ import {
   isProgressShape,
   isRailShape,
   isRatingShape,
+  isSelfDrawingShape,
   supportsBorderControls,
   supportsBorderRadius,
   supportsColours,
@@ -33,6 +34,8 @@ import {
   type BorderStyle,
   type BoxedElement,
   type IconSize,
+  type TextAlignX,
+  type TextAlignY,
 } from '@livediagram/diagram';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
@@ -56,6 +59,8 @@ import {
 
 import { IconSizeTiles } from '@/components/palette/context-menu-tiles';
 import { isTechIconId } from '@/lib/tech-icons';
+import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
+import { AlignmentGrid } from '@/components/palette/palette-controls';
 import {
   ArrowPresetsSection,
   ShapePresetsSection,
@@ -126,6 +131,14 @@ export function ElementAppearanceSections({
   const isRating = target.type === 'shape' && isRatingShape(target.shape);
   const isChart = target.type === 'shape' && isChartShape(target.shape);
   const isLine = target.type === 'shape' && isLineShape(target.shape);
+  // The Text band (spec/09): Markers + Alignment. Markers are regular-shape
+  // only (self-drawing shapes have no label slot); Alignment applies to any
+  // boxed element with a text slot.
+  const showMarkers = target.type === 'shape' && !isProgress && !isRail && !isRating && !isChart;
+  const showAlignment =
+    boxed &&
+    target.type !== 'image' &&
+    !(target.type === 'shape' && isSelfDrawingShape(target.shape));
   // The shape-only sections below (Marker / Progress / Rail / Rating / Data)
   // all render under a `target.type === 'shape'` guard, so this is non-null
   // wherever they read it — `shapeTarget?.field ?? default` reads the shape
@@ -136,7 +149,7 @@ export function ElementAppearanceSections({
   const showAppearanceGroup = boxed || target.type === 'arrow';
   return (
     <>
-      {showAppearanceGroup ? <MenuGroupSeparator label="Style" /> : null}
+      {showAppearanceGroup ? <MenuGroupSeparator /> : null}
       {/* Presets (spec/48) — pinned at the top of the appearance group (above
             Animation). Regular shapes only (icon glyph / charts excluded, see
             shapeSupportsPresets); arrows get their own line-look presets. Both
@@ -332,25 +345,40 @@ export function ElementAppearanceSections({
           </MenuAccordionSection>
         </>
       ) : null}
-      {/* ── Markers group (spec/49): its own band between Border and the
-            content / collaborate groups. Regular shapes only — the self-drawing
-            shapes (progress / rail / rating) have no label slot for a marker. ── */}
-      {target.type === 'shape' && !isProgress && !isRail && !isRating && !isChart ? (
-        <>
-          <MenuGroupSeparator />
-          <MenuAccordionSection
-            title="Markers"
-            icon={<MarkersMenuGlyph />}
-            {...sectionProps('markers')}
-          >
-            <MarkerTiles
-              marker={shapeTarget?.marker ?? null}
-              size={shapeTarget?.markerSize ?? 'scale'}
-              onSet={props.onSetMarker}
-              onSetSize={props.onSetMarkerSize}
+      {/* ── Text band (spec/09): Markers (spec/49) + Alignment, between the
+            Style band and the content / collaborate groups. ── */}
+      {showMarkers || showAlignment ? <MenuGroupSeparator /> : null}
+      {showMarkers ? (
+        <MenuAccordionSection
+          title="Markers"
+          icon={<MarkersMenuGlyph />}
+          {...sectionProps('markers')}
+        >
+          <MarkerTiles
+            marker={shapeTarget?.marker ?? null}
+            size={shapeTarget?.markerSize ?? 'scale'}
+            onSet={props.onSetMarker}
+            onSetSize={props.onSetMarkerSize}
+          />
+        </MenuAccordionSection>
+      ) : null}
+      {/* Alignment — the text toolbar's 3×3 grid, here too for discovery. */}
+      {showAlignment ? (
+        <MenuAccordionSection
+          title="Text Alignment"
+          icon={
+            <AlignLinesIcon dir={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'} />
+          }
+          {...sectionProps('text-align')}
+        >
+          <div className="px-2 py-1.5">
+            <AlignmentGrid
+              alignX={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+              alignY={(target as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
+              onChange={props.onSetTextAlign}
             />
-          </MenuAccordionSection>
-        </>
+          </div>
+        </MenuAccordionSection>
       ) : null}
       {/* ── Content group: Line / Pointer / Text / Icon / Image / Table / Link ── */}
     </>

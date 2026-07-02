@@ -47,7 +47,6 @@ import {
 } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
-  MenuGroupLabel,
   MenuGroupSeparator,
   MenuTile,
   MenuTileGrid,
@@ -169,7 +168,6 @@ export function MultiSelectionContextMenu({
         );
         return (
           <>
-            <MenuGroupLabel>Placement</MenuGroupLabel>
             {/* Layer — front/back, opacity and (for boxed members) the
                   aspect-ratio lock, selection-wide, mirroring the single
                   menu's pinned-first Layer section. */}
@@ -256,7 +254,7 @@ export function MultiSelectionContextMenu({
                 </div>
               </MenuAccordionSection>
             ) : null}
-            <MenuGroupSeparator label="Style" />
+            <MenuGroupSeparator />
             {/* Presets (spec/48) — pinned at the top of the appearance group,
                   same as the single-element menu; applies to every matching
                   member of the selection. */}
@@ -405,6 +403,8 @@ export function MultiSelectionContextMenu({
                 <IconSizeTiles value={techIconSrc.iconSize ?? 'md'} onSet={props.onSetIconSize} />
               </MenuAccordionSection>
             ) : null}
+            {/* ── Text band (spec/09): Markers + Alignment. ── */}
+            {markerSrc || alignSrc ? <MenuGroupSeparator /> : null}
             {/* Markers (spec/49) — for every marker-capable shape in the
                   selection. */}
             {markerSrc ? (
@@ -424,7 +424,7 @@ export function MultiSelectionContextMenu({
             {/* Alignment — the text toolbar's 3x3 grid, selection-wide. */}
             {alignSrc ? (
               <MenuAccordionSection
-                title="Alignment"
+                title="Text Alignment"
                 icon={
                   <AlignLinesIcon
                     dir={(alignSrc as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
@@ -442,9 +442,7 @@ export function MultiSelectionContextMenu({
               </MenuAccordionSection>
             ) : null}
             {/* ── Content group: Line / Pointer / Text ── */}
-            {showMultiContent && showMultiAppearance ? (
-              <MenuGroupSeparator label="Content" />
-            ) : null}
+            {showMultiContent && showMultiAppearance ? <MenuGroupSeparator /> : null}
             {arrowSrc ? (
               <>
                 <MenuAccordionSection title="Line" icon={<LineGlyph />} {...sectionProps('m-line')}>
