@@ -132,20 +132,25 @@ export function useBoxedDragHandlers({
     elementId: string,
     anchor: Anchor,
     e: ReactPointerEvent,
-    // `fromPoint` (spec/09 group quick-connect): start the arrow as a FREE
-    // endpoint at this canvas point instead of pinning to the element's
-    // anchor — the group plus buttons sit on the union bounds, where there is
-    // no element to pin to, and the arrow should visibly leave the group's
-    // side centre. `elementId` still supplies the inherited stroke.
-    opts?: { clickToPlace?: boolean; placeOutPx?: number; fromPoint?: { x: number; y: number } },
+    // `fromGroup` (spec/09 group quick-connect): start the arrow PINNED TO
+    // THE GROUP's union box (a `pinned-group` endpoint at this side's
+    // anchor) instead of an element anchor — the group plus buttons sit on
+    // the union bounds, and the arrow must track the group as it moves.
+    // `point` is where the endpoint currently resolves (the drag origin);
+    // `elementId` still supplies the inherited stroke.
+    opts?: {
+      clickToPlace?: boolean;
+      placeOutPx?: number;
+      fromGroup?: { groupId: string; point: { x: number; y: number } };
+    },
   ) => {
     const d = depsRef.current;
     if (d.formatSourceId !== null || d.groupSourceId !== null || d.formatToolActive) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
-    const start = opts?.fromPoint ?? anchorPosition(element, anchor);
-    const fromEnd: ArrowElement['from'] = opts?.fromPoint
-      ? { kind: 'free', x: start.x, y: start.y }
+    const start = opts?.fromGroup?.point ?? anchorPosition(element, anchor);
+    const fromEnd: ArrowElement['from'] = opts?.fromGroup
+      ? { kind: 'pinned-group', groupId: opts.fromGroup.groupId, anchor }
       : { kind: 'pinned', elementId, anchor };
     // A connector drawn FROM a shape inherits that shape's stroke so it
     // visually belongs with it — and so it respects whatever theme the

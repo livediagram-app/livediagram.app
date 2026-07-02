@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  boundsAnchorPoint,
   bringManyToFront,
   bringToFront,
+  freezeDanglingGroupEnds,
+  groupUnionBounds,
   joinGroups,
   selectionMembers,
   sendManyToBack,
@@ -191,5 +194,66 @@ describe('ungroup', () => {
     expect(groupOf(out, 'a')).toBeUndefined();
     expect(groupOf(out, 'b')).toBeUndefined();
     expect(groupOf(out, 'c')).toBe('g2');
+  });
+});
+
+describe('pinned-group arrow endpoints (spec/09 group quick-connect)', () => {
+  const groupArrow = (id: string, groupId: string): Element => ({
+    id,
+    type: 'arrow',
+    from: { kind: 'pinned-group', groupId, anchor: 's' },
+    to: { kind: 'free', x: 300, y: 300 },
+  });
+  const members = [box('a', { groupId: 'g' }), box('b', { x: 200, groupId: 'g' })];
+
+  it('groupUnionBounds spans the members, null once the group is empty', () => {
+    expect(groupUnionBounds(members, 'g')).toEqual({ x: 0, y: 0, width: 300, height: 100 });
+    expect(groupUnionBounds([box('loose')], 'g')).toBeNull();
+  });
+
+  it('boundsAnchorPoint resolves side midpoints and corners', () => {
+    const b = { x: 0, y: 0, width: 300, height: 100 };
+    expect(boundsAnchorPoint(b, 's')).toEqual({ x: 150, y: 100 });
+    expect(boundsAnchorPoint(b, 'e')).toEqual({ x: 300, y: 50 });
+    expect(boundsAnchorPoint(b, 'nw')).toEqual({ x: 0, y: 0 });
+  });
+
+  it('ungroup freezes group-pinned ends at their last position', () => {
+    const els = [...members, groupArrow('ar', 'g')];
+    const out = ungroup(els, 'g');
+    const ar = out.find((e) => e.id === 'ar');
+    expect(ar && ar.type === 'arrow' ? ar.from : null).toEqual({ kind: 'free', x: 150, y: 100 });
+    // Membership cleared too.
+    expect(groupOf(out, 'a')).toBeUndefined();
+  });
+
+  it('joinGroups re-points group-pinned ends at the surviving group id', () => {
+    const els = [
+      box('a', { groupId: 'g1' }),
+      box('b', { x: 200, groupId: 'g1' }),
+      box('c', { x: 400, groupId: 'g2' }),
+      box('d', { x: 600, groupId: 'g2' }),
+      groupArrow('ar', 'g2'),
+    ];
+    const out = joinGroups(els, 'a', 'c');
+    const merged = groupOf(out, 'a');
+    expect(merged).toBe('g1'); // source id wins
+    expect(groupOf(out, 'c')).toBe('g1');
+    const ar = out.find((e) => e.id === 'ar');
+    expect(
+      ar && ar.type === 'arrow' && ar.from.kind === 'pinned-group' ? ar.from.groupId : null,
+    ).toBe('g1');
+  });
+
+  it('freezeDanglingGroupEnds converts ends whose group lost its last member', () => {
+    const before = [...members, groupArrow('ar', 'g')];
+    const after = [groupArrow('ar', 'g')]; // both members deleted
+    const out = freezeDanglingGroupEnds(before, after);
+    const ar = out.find((e) => e.id === 'ar');
+    expect(ar && ar.type === 'arrow' ? ar.from : null).toEqual({ kind: 'free', x: 150, y: 100 });
+    // A group that still has members is left pinned.
+    const partial = freezeDanglingGroupEnds(before, [members[0]!, groupArrow('ar', 'g')]);
+    const still = partial.find((e) => e.id === 'ar');
+    expect(still && still.type === 'arrow' ? still.from.kind : null).toBe('pinned-group');
   });
 });

@@ -423,23 +423,26 @@ export function EditorView() {
   // end), reusing addArrow's connect-from-selection path.
   const handleStartArrow = (direction: QuickConnectDirection, e: ReactPointerEvent) => {
     if (selectedId === null) return;
-    // On a group the pluses ring the union bounds: the arrow starts FREE at
-    // the picked side's centre (the plus position — there's no element to pin
-    // to on the union box), inheriting its stroke from the member nearest
-    // that side. A lone element pins to its own anchor as ever.
+    // On a group the pluses ring the union bounds: the arrow starts PINNED
+    // TO THE GROUP's union box at the picked side's centre (a pinned-group
+    // endpoint, so it tracks the group as it moves), inheriting its stroke
+    // from the member nearest that side. A lone element pins to its own
+    // anchor as ever.
     const sourceId = quickConnectSourceId(activeTab.elements, selectedId, direction);
-    const fromPoint =
-      quickConnectGroupStart(activeTab.elements, selectedId, direction) ?? undefined;
+    const groupStart = quickConnectGroupStart(activeTab.elements, selectedId, direction);
+    const fromGroup = groupStart
+      ? { groupId: groupStart.groupId, point: { x: groupStart.x, y: groupStart.y } }
+      : undefined;
     const anchor: Anchor =
       direction === 'right' ? 'e' : direction === 'left' ? 'w' : direction === 'below' ? 's' : 'n';
     if (e.pointerType === 'touch') {
       // Touch: drop a free arrow running straight out from the anchor (~50px)
       // and select it, so the user can drag it where they want — no
       // tap-target step.
-      beginAnchorDrag(sourceId, anchor, e, { placeOutPx: 50, fromPoint });
+      beginAnchorDrag(sourceId, anchor, e, { placeOutPx: 50, fromGroup });
       return;
     }
-    beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true, fromPoint });
+    beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true, fromGroup });
   };
   return (
     <div className="flex h-dvh flex-col">

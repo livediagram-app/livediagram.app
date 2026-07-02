@@ -119,5 +119,6 @@ function endpointLabel(endpoint: ArrowElement['from'], boxed: BoxedElement[]): s
     return '?';
   }
   if (endpoint.kind === 'on-arrow') return '(arrow)';
+  if (endpoint.kind === 'pinned-group') return '(group)';
   return `(${Math.round(endpoint.x)}, ${Math.round(endpoint.y)})`;
 }

@@ -1550,6 +1550,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "t"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "$ref": "#/components/schemas/Anchor"
+          },
+          "groupId": {
+            "$ref": "#/components/schemas/ElementId"
+          },
+          "kind": {
+            "const": "pinned-group",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "groupId",
+          "anchor"
+        ],
+        "type": "object"
       }
     ]
   },

@@ -366,7 +366,14 @@ export type Endpoint =
   // position resolves dynamically from the target arrow's centreline, so it
   // tracks the target as it moves / reshapes (e.g. sequence-diagram messages
   // attached to a lifeline arrow). Resolved by `endpointPosition`.
-  | { kind: 'on-arrow'; arrowId: ElementId; t: number };
+  | { kind: 'on-arrow'; arrowId: ElementId; t: number }
+  // Pinned to a GROUP's union bounding box (spec/09 group quick-connect):
+  // resolves dynamically as the `anchor` point of the live union bounds of
+  // every member sharing `groupId`, so the arrow tracks the group as it
+  // moves / resizes / gains or loses members. Ungrouping (or deleting the
+  // group's last member) converts these ends to `free` at their last
+  // position — see `ungroup` / `freezeDanglingGroupEnds` in groups.ts.
+  | { kind: 'pinned-group'; groupId: ElementId; anchor: Anchor };
 
 // Cross-tab link on any element. `tab` jumps to another tab on the same
 // diagram; `diagram` navigates to a different diagram entirely (with

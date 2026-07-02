@@ -109,6 +109,8 @@ function isValidEndpoint(ep: unknown): boolean {
   if (ep.kind === 'free') return isNum(ep.x) && isNum(ep.y);
   if (ep.kind === 'pinned') return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string);
   if (ep.kind === 'on-arrow') return isNonEmptyStr(ep.arrowId) && isNum(ep.t);
+  if (ep.kind === 'pinned-group')
+    return isNonEmptyStr(ep.groupId) && ANCHORS.has(ep.anchor as string);
   return false;
 }
 

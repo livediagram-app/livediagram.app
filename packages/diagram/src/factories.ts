@@ -479,6 +479,10 @@ export function duplicateGroupedElements(
   const endpointResolvable = (end: ArrowElement['from']): boolean => {
     if (end.kind === 'free') return true;
     if (end.kind === 'on-arrow') return idMap.has(end.arrowId) || existingIds.has(end.arrowId);
+    // Group-pinned: the referenced group either came along (remapped to the
+    // copies' fresh group id) or still exists on the originals — never an
+    // orphan either way.
+    if (end.kind === 'pinned-group') return true;
     return idMap.has(end.elementId) || existingIds.has(end.elementId);
   };
   for (;;) {
@@ -501,6 +505,12 @@ export function duplicateGroupedElements(
   // whole arrow is skipped rather than left dangling.
   const remapEndpoint = (end: ArrowElement['from']): ArrowElement['from'] | null => {
     if (end.kind === 'free') return { kind: 'free', x: end.x + dx, y: end.y + dy };
+    // Group-pinned: when the group's members were copied too, follow the
+    // copies' fresh group id; otherwise stay pinned to the original group.
+    if (end.kind === 'pinned-group') {
+      const dupGroup = groupIdMap.get(end.groupId);
+      return dupGroup ? { ...end, groupId: dupGroup } : end;
+    }
     // Connected to another arrow's line (spec/50): follow the duplicate when
     // the target arrow was copied too, else keep the original, else drop.
     if (end.kind === 'on-arrow') {

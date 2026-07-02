@@ -169,6 +169,16 @@ describe('endpointPosition', () => {
     });
   });
 
+  it('resolves a pinned-group endpoint from the live union bounds (spec/09)', () => {
+    const els = [shape('a', { groupId: 'g' }), shape('b', { x: 200, y: 0, groupId: 'g' })];
+    const ep = { kind: 'pinned-group', groupId: 'g', anchor: 's' } as const;
+    // Union spans x 0..300, y 0..80 -> south midpoint (150, 80).
+    expect(endpointPosition(ep, els)).toEqual({ x: 150, y: 80 });
+    // Moving a member moves the resolved point: the arrow tracks the group.
+    const moved = els.map((el) => (el.id === 'b' ? { ...el, y: 100 } : el));
+    expect(endpointPosition(ep, moved)).toEqual({ x: 150, y: 180 });
+  });
+
   it('falls back to the origin when the on-arrow target is missing', () => {
     expect(endpointPosition({ kind: 'on-arrow', arrowId: 'gone', t: 0.5 }, [target])).toEqual({
       x: 0,

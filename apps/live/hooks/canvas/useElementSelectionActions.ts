@@ -10,6 +10,7 @@
 // behaviour change.
 
 import {
+  freezeDanglingGroupEnds,
   createText,
   duplicateGroupedElements,
   isBoxed,
@@ -79,16 +80,19 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // goes. If the whole selection is locked, the delete is a no-op.
     const targetIds = deletableIds(ids);
     if (targetIds.size === 0) return;
-    commit((els) =>
-      els.filter((el) => {
+    commit((els) => {
+      const survivors = els.filter((el) => {
         // Belt-and-suspenders: never drop a locked element, even via the
         // arrow cascade (a locked arrow survives its endpoint going).
         if (el.locked === true) return true;
         if (targetIds.has(el.id)) return false;
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
-      }),
-    );
+      });
+      // Arrows pinned to a group whose LAST member just went freeze to a
+      // free endpoint at the pre-delete position (spec/09 group pins).
+      return freezeDanglingGroupEnds(els, survivors);
+    });
     setSelectedId(null);
     setEditingId(null);
     track('Element', 'Deleted');
@@ -211,6 +215,9 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       // Connected to another arrow's line (spec/50): keep the copy attached to
       // the same line (arrow ids aren't remapped in this boxed-only copy path).
       if (e.kind === 'on-arrow') return e;
+      // Pinned to a group's union box (spec/09): the group persists, so the
+      // copy stays pinned to it.
+      if (e.kind === 'pinned-group') return e;
       return { kind: 'free', x: e.x + offset, y: e.y + offset };
     };
     const arrowCopies: ArrowElement[] = arrowSources.map((s) => ({
@@ -235,14 +242,17 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     const targetIds = deletableIds(multiSelectedIds);
     if (targetIds.size === 0) return;
     track('Element', 'Deleted'); // parity with single-element deleteSelected
-    commit((els) =>
-      els.filter((el) => {
+    commit((els) => {
+      const survivors = els.filter((el) => {
         if (el.locked === true) return true;
         if (targetIds.has(el.id)) return false;
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
-      }),
-    );
+      });
+      // See deleteSelected: freeze arrows whose group just lost its last
+      // member at the pre-delete position (spec/09 group pins).
+      return freezeDanglingGroupEnds(els, survivors);
+    });
     setMultiSelectedIds(new Set());
     setEditingId(null);
   };

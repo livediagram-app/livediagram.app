@@ -31,11 +31,13 @@ function num(n: number): string {
   return Number.isFinite(n) ? String(n) : '0';
 }
 
-// An endpoint in DSL syntax: `(x,y)` free, `arrowId@t` on-arrow, or
+// An endpoint in DSL syntax: `(x,y)` free, `arrowId@t` on-arrow,
+// `group:groupId.anchor` pinned to a group's union box (spec/09), or
 // `nodeId.anchor` pinned (`!` suffix marks a hand-set / manual anchor).
 function encodeEndpoint(ep: Endpoint): string {
   if (ep.kind === 'free') return `(${num(ep.x)},${num(ep.y)})`;
   if (ep.kind === 'on-arrow') return `${ep.arrowId}@${num(ep.t)}`;
+  if (ep.kind === 'pinned-group') return `group:${ep.groupId}.${ep.anchor}`;
   return `${ep.elementId}.${ep.anchor}${ep.manual ? '!' : ''}`;
 }
 

@@ -395,6 +395,17 @@ function parseEndpoint(tok: string, warnings: string[]): EndpointDraft {
     const at = tok.indexOf('@');
     return { kind: 'on-arrow', arrowId: tok.slice(0, at), t: Number(tok.slice(at + 1)) };
   }
+  // `group:groupId.anchor` — pinned to a group's union box (spec/09).
+  if (tok.startsWith('group:')) {
+    const rest = tok.slice('group:'.length);
+    const dot = rest.lastIndexOf('.');
+    const groupId = dot > 0 ? rest.slice(0, dot) : '';
+    const anchorPart = dot > 0 ? rest.slice(dot + 1) : '';
+    if (groupId && ANCHORS.has(anchorPart)) {
+      return { kind: 'pinned-group', groupId, anchor: anchorPart as Anchor };
+    }
+    warnings.push(`Malformed group endpoint "${tok}" — treated as a plain pin.`);
+  }
   if (tok.includes('.')) {
     const dot = tok.indexOf('.');
     const elementId = tok.slice(0, dot);

@@ -42,9 +42,10 @@ describe('quickConnectSourceId', () => {
 describe('quickConnectGroupStart', () => {
   it('returns the union side midpoint for a group, null for a lone element', () => {
     const els: Element[] = [box('a', { groupId: 'g' }), box('b', { x: 300, groupId: 'g' })];
-    // Union spans x 0..400, y 0..60.
-    expect(quickConnectGroupStart(els, 'a', 'right')).toEqual({ x: 400, y: 30 });
-    expect(quickConnectGroupStart(els, 'a', 'below')).toEqual({ x: 200, y: 60 });
+    // Union spans x 0..400, y 0..60; the groupId rides along so the
+    // arrow can pin to the group's union box (spec/09).
+    expect(quickConnectGroupStart(els, 'a', 'right')).toEqual({ groupId: 'g', x: 400, y: 30 });
+    expect(quickConnectGroupStart(els, 'a', 'below')).toEqual({ groupId: 'g', x: 200, y: 60 });
     expect(quickConnectGroupStart([box('solo')], 'solo', 'right')).toBeNull();
   });
 });

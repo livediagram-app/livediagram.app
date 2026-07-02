@@ -108,6 +108,13 @@ function fixture(): Tab {
       to: { kind: 'pinned', elementId: 's1', anchor: 'nw' },
       label: 'msg',
     },
+    // pinned-group -> free (a group quick-connect arrow, spec/09)
+    {
+      id: 'a4',
+      type: 'arrow',
+      from: { kind: 'pinned-group', groupId: 'grp-1', anchor: 's' },
+      to: { kind: 'free', x: 100, y: 900 },
+    },
   ];
   return {
     id: 'tab-fixture',

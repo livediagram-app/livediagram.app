@@ -2,6 +2,8 @@ import { isTechIconId } from '@livediagram/icons';
 import {
   arrowLabelAnchor,
   arrowStyleOf,
+  boundsAnchorPoint,
+  groupUnionBounds,
   isBoxed,
   type Anchor,
   type BoxedElement,
@@ -553,6 +555,16 @@ export function endpointPosition(
   depth = 0,
 ): Point {
   if (endpoint.kind === 'free') return { x: endpoint.x, y: endpoint.y };
+  // Group-pinned (spec/09 group quick-connect): the anchor point of the
+  // group's LIVE union bounds, so the arrow tracks the group as it moves /
+  // resizes / changes membership. A dissolved group resolves to the origin
+  // like any dangling reference — the ungroup / delete paths convert these
+  // ends to free before that can be observed.
+  if (endpoint.kind === 'pinned-group') {
+    const list = elements instanceof Map ? [...elements.values()] : (elements as Element[]);
+    const bounds = groupUnionBounds(list, endpoint.groupId);
+    return bounds ? boundsAnchorPoint(bounds, endpoint.anchor) : { x: 0, y: 0 };
+  }
   const lookup = (id: ElementId): Element | undefined =>
     elements instanceof Map ? elements.get(id) : (elements as Element[]).find((el) => el.id === id);
   if (endpoint.kind === 'on-arrow') {
