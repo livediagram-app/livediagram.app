@@ -299,6 +299,57 @@ describe('rebindArrowAnchorsAfterMove', () => {
     expect(out[2]).toEqual(els[2]);
   });
 
+  it('keeps the opposing e/w pair for side-by-side boxes with a vertical offset', () => {
+    // b sits to the right of a but 60px higher — their vertical spans
+    // still overlap, so the connection reads as a ROW. Aiming at b's
+    // CENTRE used to exit a through its top face (a.n), a visually
+    // wrong, inconsistent pair; the clamped aim keeps a.e -> b.w.
+    const els: Element[] = [a(), b({ y: -60 }), arrow()];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['b']));
+    const next = out[2] as ArrowElement;
+    expect(next.from.kind === 'pinned' && next.from.anchor).toBe('e');
+    expect(next.to.kind === 'pinned' && next.to.anchor).toBe('w');
+  });
+
+  it('keeps the opposing s/n pair for stacked boxes with a horizontal offset', () => {
+    // b below a, shifted 60px right — horizontal spans still overlap,
+    // so the connection reads as a COLUMN: a.s -> b.n.
+    const els: Element[] = [a(), b({ x: 60, y: 220 }), arrow()];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['b']));
+    const next = out[2] as ArrowElement;
+    expect(next.from.kind === 'pinned' && next.from.anchor).toBe('s');
+    expect(next.to.kind === 'pinned' && next.to.anchor).toBe('n');
+  });
+
+  it('gives every row sibling the same face pair (consistent connections)', () => {
+    // A hub with two right-hand neighbours at different heights, both
+    // overlapping the hub's vertical span: both connectors should use
+    // the SAME e -> w pair rather than one grabbing the hub's corner
+    // diagonal (distribution then steps the second endpoint to its
+    // next-best face, but the TARGET ends stay consistent w's).
+    const hub = a();
+    const top: ShapeElement = { ...b({ y: -50 }), id: 'top' };
+    const bottom: ShapeElement = { ...b({ y: 50 }), id: 'bottom' };
+    const arrTop: ArrowElement = {
+      id: 'arr-top',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'top', anchor: 'w' },
+    };
+    const arrBottom: ArrowElement = {
+      id: 'arr-bottom',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'bottom', anchor: 'w' },
+    };
+    const els: Element[] = [hub, top, bottom, arrTop, arrBottom];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['a']));
+    for (const id of ['arr-top', 'arr-bottom']) {
+      const next = out.find((e) => e.id === id) as ArrowElement;
+      expect(next.to.kind === 'pinned' && next.to.anchor).toBe('w');
+    }
+  });
+
   it('flips both anchors when b moves above a (now a vertical arrow)', () => {
     // b at (90, -300) puts it directly above a, so a should point
     // north and b should point south.

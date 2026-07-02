@@ -251,6 +251,27 @@ export function rankAnchorsTowards(
   return { ranked, commitment, times };
 }
 
+// Where one endpoint should AIM when re-choosing its face: the closest
+// point of the other box to this box's centre, not the other box's
+// centre. Aiming at the centre picked visually wrong, inconsistent
+// faces for elements that are mostly side-by-side but slightly offset —
+// the ray toward a higher box's centre exits through the TOP face even
+// though the boxes read as a row — so connectors attached to odd faces
+// and siblings in one layout got different face pairs. Clamping the aim
+// to the other box's nearest point makes any pair whose vertical spans
+// overlap choose the opposing e/w faces (and n/s for overlapping
+// horizontal spans): rows read as rows, columns as columns, and
+// template layouts keep consistent connections. Truly diagonal pairs
+// clamp to a corner, which preserves the ray behaviour they had. Falls
+// back to the other centre when the boxes overlap (the clamp would
+// return this centre itself — a degenerate ray).
+export function anchorAimPoint(other: BoxedElement, fromCentre: Point): Point {
+  const x = Math.min(Math.max(fromCentre.x, other.x), other.x + other.width);
+  const y = Math.min(Math.max(fromCentre.y, other.y), other.y + other.height);
+  if (x === fromCentre.x && y === fromCentre.y) return centreOf(other);
+  return { x, y };
+}
+
 // Re-pin arrows whose either endpoint is anchored to a moved box, pointing
 // each end at the face the connector now leaves through. Pure: takes the
 // already-translated element list and the set of ids that just moved,
@@ -319,7 +340,7 @@ export function rebindArrowAnchorsAfterMove(
         end: 'from',
         elementId: fromEl.id,
         current: el.from.anchor,
-        ...rankAnchorsTowards(fromEl, centreOf(toEl)),
+        ...rankAnchorsTowards(fromEl, anchorAimPoint(toEl, centreOf(fromEl))),
       });
     }
     if (!toManual) {
@@ -328,7 +349,7 @@ export function rebindArrowAnchorsAfterMove(
         end: 'to',
         elementId: toEl.id,
         current: el.to.anchor,
-        ...rankAnchorsTowards(toEl, centreOf(fromEl)),
+        ...rankAnchorsTowards(toEl, anchorAimPoint(fromEl, centreOf(toEl))),
       });
     }
   }

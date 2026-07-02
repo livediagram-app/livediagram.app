@@ -56,6 +56,20 @@ export default function NewDiagramPage() {
     document.title = 'New diagram | livediagram';
   }, []);
 
+  // Back/forward-cache restore: creating navigates away with
+  // `submitting === true` still set, and the browser Back button
+  // restores this page from bfcache exactly as frozen — leaving the
+  // Create button stuck on "Creating…" forever. `pageshow` with
+  // `persisted` is the restore signal; reset the transient submit
+  // state so the page is usable again.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setSubmitting(false);
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
+
   useLayoutEffect(() => {
     // Wait for Clerk to settle so a signed-in user gets the Clerk
     // userId, not a freshly-minted guest UUID.
