@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useRef, type Ref, type ReactElement } from 'react';
-import { endpointPosition, isBoxed, type Element } from '@livediagram/diagram';
-import { ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
-import { ShapeGlyph } from '@/components/primitives/shape-icon';
+import { useMemo, useRef, type Ref } from 'react';
+import { endpointPosition, isBoxed, svgArrow, svgBoxed, type Element } from '@livediagram/diagram';
+import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
+import { resolveIconArtLoaded } from '@/lib/icon-registry';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { MapSettingsPopover } from '@/components/canvas/MapSettingsPopover';
 
@@ -80,12 +81,15 @@ export function Minimap({
   // but the prop type allows a callback ref, so narrow defensively).
   const getMain = () => (mainRef && typeof mainRef !== 'function' ? mainRef.current : null);
 
-  // One pass over the elements builds the wireframe (shape silhouettes + arrow
-  // connectors) and the content bounds, recomputed only when elements change —
-  // panning/zooming re-renders just the viewport overlay below.
-  const { shapes, lines, bounds } = useMemo(() => {
-    const shapes: ReactElement[] = [];
-    const lines: ReactElement[] = [];
+  // Re-render once the async icon catalogues land so Technology marks pop in.
+  const iconsLoaded = useIconCatalogs();
+  // One pass builds the full-fidelity markup (the SAME headless renderer the
+  // exports / live image use — real colours, silhouettes, tables, freehand,
+  // icon glyphs, rotation, curved arrows) plus the content bounds; recomputed
+  // only when elements change — panning/zooming re-renders just the viewport
+  // overlay below. The markup is our own renderer's output (user text is
+  // xmlEscaped inside it), so injecting it is safe.
+  const { markup, bounds } = useMemo(() => {
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
@@ -98,63 +102,31 @@ export function Minimap({
       if (px > maxX) maxX = px;
       if (py > maxY) maxY = py;
     };
+    const parts: string[] = [];
+    // Boxed first (frames behind their contents), then arrows on top —
+    // matching the canvas z-order.
+    for (const el of framesFirst(elements)) {
+      if (el.type === 'arrow') continue;
+      if (!isBoxed(el)) continue;
+      parts.push(svgBoxed(el, undefined, resolveIconArtLoaded));
+      acc(el.x, el.y);
+      acc(el.x + el.width, el.y + el.height);
+    }
     for (const el of elements) {
-      if (isBoxed(el)) {
-        // Shape elements paint their real silhouette; other boxed kinds
-        // (images, embeds, …) have no `shape`, so a rounded rect stands in.
-        shapes.push(
-          'shape' in el && el.shape ? (
-            <ShapeGlyph
-              key={el.id}
-              kind={el.shape}
-              x={el.x}
-              y={el.y}
-              width={el.width}
-              height={el.height}
-              preserveAspectRatio="none"
-              fill="currentColor"
-              stroke="none"
-            />
-          ) : (
-            <rect
-              key={el.id}
-              x={el.x}
-              y={el.y}
-              width={el.width}
-              height={el.height}
-              rx={Math.min(el.width, el.height) * 0.08}
-              fill="currentColor"
-            />
-          ),
-        );
-        acc(el.x, el.y);
-        acc(el.x + el.width, el.y + el.height);
-      } else if (el.type === 'arrow') {
-        const a = endpointPosition(el.from, elements);
-        const b = endpointPosition(el.to, elements);
-        lines.push(
-          <line
-            key={el.id}
-            x1={a.x}
-            y1={a.y}
-            x2={b.x}
-            y2={b.y}
-            className="stroke-slate-400 dark:stroke-slate-500"
-            strokeWidth={1.25}
-            vectorEffect="non-scaling-stroke"
-            strokeLinecap="round"
-          />,
-        );
-        acc(a.x, a.y);
-        acc(b.x, b.y);
-      }
+      if (el.type !== 'arrow') continue;
+      parts.push(svgArrow(el, elements));
+      const a = endpointPosition(el.from, elements);
+      const b = endpointPosition(el.to, elements);
+      acc(a.x, a.y);
+      acc(b.x, b.y);
     }
     return {
-      shapes,
-      lines,
+      markup: parts.join(''),
       bounds: found ? { x: minX, y: minY, width: maxX - minX, height: maxY - minY } : null,
     };
-  }, [elements]);
+    // iconsLoaded re-runs the build when the catalogue chunk lands.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements, iconsLoaded]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;
@@ -262,9 +234,8 @@ export function Minimap({
           }}
           onWheel={onWheel}
         >
-          {/* Connectors first so they sit behind the shapes. */}
-          {lines}
-          {shapes}
+          {/* The tab's real rendering (see the markup build above). */}
+          <g dangerouslySetInnerHTML={{ __html: markup }} />
           {hasView ? (
             <>
               {/* Dim everything outside the current view (even-odd: outer box

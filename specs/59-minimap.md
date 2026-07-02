@@ -24,13 +24,15 @@ lets you jump the viewport anywhere with a tap or drag.
   header stays a single gear). Turning Enable off sets `showMinimap = false` and
   hides the panel; the master **Settings** dialog's "Show minimap" toggle switches
   it back on. (Replaces the earlier one-shot **×**.)
-- **What it shows.** A true-to-shape overview: every boxed element painted as
-  its **real silhouette** (a circle reads as a circle, a cylinder as a
-  cylinder — reusing `ShapeGlyph` stretched to the element's footprint) and
-  every arrow as a **connecting line** between its resolved endpoints. The area
-  **outside the current view is dimmed**, leaving a lit window (outlined in the
-  tab theme's accent, matching the on-canvas selection) that reads at a glance
-  as where you are.
+- **What it shows.** A **full-fidelity miniature of the tab**: the map is
+  drawn by the SAME headless renderer the exports / live image use
+  (`svgBoxed` / `svgArrow`, spec/62 §5), so every element appears with its
+  real colours, silhouette, table grid, freehand stroke, icon glyph (the
+  Technology marks pop in when the async catalogue lands), rotation, and
+  every arrow with its true curved / elbow path — not a grey wireframe. The
+  area **outside the current view is dimmed**, leaving a lit window (outlined
+  in the tab theme's accent, matching the on-canvas selection) that reads at
+  a glance as where you are.
 - **Navigation.** Tap a point to re-centre the canvas there; press-and-drag
   inside the map to pan continuously; **scroll** on it to zoom the canvas in/out
   centred on that spot. The viewport rectangle tracks live as you move. (Drags
