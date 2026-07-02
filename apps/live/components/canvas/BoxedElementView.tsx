@@ -1,4 +1,5 @@
 import {
+  useEffect,
   memo,
   useRef,
   useState,
@@ -405,11 +406,24 @@ function BoxedElementViewImpl({
       : undefined;
   const svgHandlesAnim =
     element.type === 'shape' && isSvgRenderedShape(element.shape) && svgAnim !== undefined;
+  // The pop-in entry animation must drop off the wrapper once it has run:
+  // CSS animations RESTART when a node is moved in the DOM, and layer
+  // reorders (bring to front / send to back) move every keyed sibling — so
+  // a lingering pop-in class made unrelated elements visibly re-enter.
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    // Comfortably past the pop-in duration; a plain timeout (not
+    // animationend) so reduced-motion sessions converge too.
+    const t = setTimeout(() => setEntered(true), 400);
+    return () => clearTimeout(t);
+  }, []);
   const wrapperAnimClass = element.animation
     ? svgHandlesAnim || isTextNativeAnim
       ? ''
       : `lvd-anim-${element.animation}`
-    : 'animate-pop-in';
+    : entered
+      ? ''
+      : 'animate-pop-in';
 
   return (
     <div

@@ -108,11 +108,9 @@ export function ElementAppearanceSections({
 }: ElementAppearanceSectionsProps) {
   const boxed = isBoxed(target);
   const isIcon = target.type === 'shape' && target.shape === 'icon';
-  // Border + colour controls apply to shapes / freehand / tables, including
-  // standalone icons — their wrapper paints fillColor as the box background
-  // and strokeColor as the border just like a square (the icon glyph sits on
-  // top). A brand icon's glyph stays fixed-colour, but its box background /
-  // border are the user's to set, so we offer the same controls.
+  // Border controls apply only where a wrapper border actually renders
+  // (shapes / freehand / tables — supportsBorderControls excludes icons,
+  // the actor, and the self-drawing data shapes, whose controls were dead).
   const borderable = supportsBorderControls(target);
   const borderStrokeVal: BorderStroke =
     (target as { strokeWidth?: BorderStroke }).strokeWidth ??
@@ -134,11 +132,21 @@ export function ElementAppearanceSections({
   // The Text band (spec/09): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
-  const showMarkers = target.type === 'shape' && !isProgress && !isRail && !isRating && !isChart;
+  // Markers decorate the LABEL (spec/49), so the category only shows once
+  // the element actually has text.
+  const showMarkers =
+    target.type === 'shape' &&
+    !isProgress &&
+    !isRail &&
+    !isRating &&
+    !isChart &&
+    (target.label ?? '').trim().length > 0;
+  // Like Markers, Text Alignment only shows once there's text to align.
   const showAlignment =
     boxed &&
     target.type !== 'image' &&
-    !(target.type === 'shape' && isSelfDrawingShape(target.shape));
+    !(target.type === 'shape' && isSelfDrawingShape(target.shape)) &&
+    ((target as { label?: string }).label ?? '').trim().length > 0;
   // The shape-only sections below (Marker / Progress / Rail / Rating / Data)
   // all render under a `target.type === 'shape'` guard, so this is non-null
   // wherever they read it — `shapeTarget?.field ?? default` reads the shape
@@ -217,9 +225,14 @@ export function ElementAppearanceSections({
                 presets={props.presetColors}
               />
             ) : null}
-            {defaultStrokeColor(target as BoxedElement) !== 'transparent' ? (
+            {/* Stroke swatch: hidden for Technology icons (the brand mark
+                  carries fixed colours, so strokeColor paints nothing) and
+                  relabelled "Icon" for line-art icons, whose stroke is the
+                  glyph tint rather than a border. */}
+            {defaultStrokeColor(target as BoxedElement) !== 'transparent' &&
+            !(isIcon && isTechIconId((target as { iconId?: string }).iconId)) ? (
               <ColourRow
-                label="Border"
+                label={isIcon ? 'Icon' : 'Border'}
                 value={
                   (target as { strokeColor?: string }).strokeColor ??
                   defaultStrokeColor(target as BoxedElement)

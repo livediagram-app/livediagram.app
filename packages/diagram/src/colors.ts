@@ -222,7 +222,20 @@ export function supportsBorder(element: Element): element is ShapeElement | Free
 export function supportsBorderControls(element: Element): boolean {
   if (element.type === 'table') return true;
   if (!supportsBorder(element)) return false;
-  return !(element.type === 'shape' && element.shape === 'actor');
+  // Kinds that render no wrapper border, so the controls would be dead:
+  // the actor stick figure, icons (a glyph, and a Technology mark carries
+  // fixed colours), and the self-drawing data shapes (rail / rating /
+  // charts paint their own content with no enclosing box).
+  return !(
+    element.type === 'shape' &&
+    (element.shape === 'actor' ||
+      element.shape === 'icon' ||
+      element.shape === 'timeline-rail' ||
+      element.shape === 'rating' ||
+      element.shape === 'pie-chart' ||
+      element.shape === 'bar-chart' ||
+      element.shape === 'line-chart')
+  );
 }
 
 // Whether a shape can carry an INLINE icon beside its label — i.e. whether

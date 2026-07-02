@@ -158,13 +158,20 @@ export function MultiSelectionContextMenu({
             !isProgressShape(el.shape) &&
             !isRailShape(el.shape) &&
             !isRatingShape(el.shape) &&
-            !isChartShape(el.shape),
+            !isChartShape(el.shape) &&
+            // Markers decorate the label (spec/49): only offer them when a
+            // member actually has text.
+            (el.label ?? '').trim().length > 0,
         ) as ShapeElement | undefined;
         const techIconSrc = boxedSel.find(
           (el) => el.type === 'shape' && el.shape === 'icon' && isTechIconId(el.iconId),
         ) as ShapeElement | undefined;
         const alignSrc = boxedSel.find(
-          (el) => el.type !== 'image' && !(el.type === 'shape' && isSelfDrawingShape(el.shape)),
+          (el) =>
+            el.type !== 'image' &&
+            !(el.type === 'shape' && isSelfDrawingShape(el.shape)) &&
+            // Only offer alignment when a member actually has text.
+            ((el as { label?: string }).label ?? '').trim().length > 0,
         );
         return (
           <>
