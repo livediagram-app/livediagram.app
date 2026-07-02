@@ -171,6 +171,18 @@ describe('renderElementsToSvg', () => {
       expect(clamped).toContain('width="60" height="60" viewBox="0 0 24 24"');
     });
 
+    it('sends a top-captioned Technology mark to the bottom band (spec/41)', () => {
+      const art = () => ({ markup: '<circle/>', colored: true });
+      const svg = renderElementsToSvg(
+        tab([icon({ width: 100, height: 100, label: 'EC2', textAlignY: 'top' })]),
+        { resolveIconArt: art },
+      );
+      // Band y0 = 36% of 100; the 48px mark centres inside the 58% band.
+      expect(svg).toContain('x="26" y="41" width="48" height="48"');
+      // The caption sits near the top instead of the floor.
+      expect(svg).toContain('y="14"'); // el.y + fontSize (default 14)
+    });
+
     it('falls back to the box-with-label output without a resolver', () => {
       const svg = renderElementsToSvg(tab([icon({ label: 'Server' })]));
       expect(svg).toContain('<rect'); // the generic body

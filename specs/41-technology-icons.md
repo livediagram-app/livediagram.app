@@ -135,9 +135,11 @@ that grow with their boxes. The size comes from an optional `iconSize` preset
 on the element (`IconSize = 'sm' | 'md' | 'lg' | 'xl'` → 32 / 48 / 64 / 96 px,
 `ICON_SIZE_PX` in `packages/diagram/src/icon-size.ts`), defaulting to `md`
 (48 px); the tile clamps to the element box when the box is smaller than the
-preset. Layout: with a label the mark centres inside the top band (the top
-~64% of the box, matching the old banded geometry) and the caption keeps its
-bottom band; without a label the mark centres in the whole box. Line-art
+preset. Layout: with a label the mark centres inside the band **opposite the
+caption's vertical alignment** — a bottom-aligned caption (the icon default)
+puts the mark in the top ~64% of the box, while a top- or middle-aligned
+caption sends it to the bottom band, so moving the text never stacks it over
+the mark; without a label the mark centres in the whole box. Line-art
 icons are unaffected — they are drawings that keep scaling with their box.
 The exports / headless renders (`svgIconShape` in the shared renderer) apply
 the same fixed-size geometry so a resized mark exports exactly as drawn.

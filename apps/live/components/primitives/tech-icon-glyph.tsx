@@ -15,6 +15,7 @@ import {
   type AnimationSpeed,
   type IconAnimation,
   type IconSize,
+  type TextAlignY,
 } from '@livediagram/diagram';
 
 import { iconAnimationClass, iconAnimationSpeedStyle } from '@/lib/icons';
@@ -76,13 +77,16 @@ export function TechIconArt({ iconId }: { iconId: string | undefined }) {
 // `iconSize` preset (default 'md' = 48px), so resizing the element gives
 // the caption room without inflating the chip; the tile clamps to the box
 // via max-width/height when the box is smaller than the preset. When the
-// icon carries a label the mark centres in the TOP ~64% band so the
-// bottom-aligned label keeps a clear strip beneath it; with no label it
-// centres in the whole box.
+// icon carries a label the mark centres in the band OPPOSITE the label's
+// vertical alignment — bottom-aligned caption (the default) puts the mark
+// in the top ~64%, a top- or middle-aligned label sends it to the bottom
+// band — so moving the text never stacks it over the mark. With no label
+// it centres in the whole box.
 export function TechIconGlyph({
   iconId,
   hasLabel = false,
   size,
+  labelAlignY = 'bottom',
   animation,
   animationSpeed,
 }: {
@@ -90,6 +94,8 @@ export function TechIconGlyph({
   hasLabel?: boolean;
   // Fixed tile size preset (spec/41); undefined = the default ('md').
   size?: IconSize;
+  // The label's vertical alignment; the mark takes the opposite band.
+  labelAlignY?: TextAlignY;
   // Per-icon looping animation (spec/09); undefined = static. Wraps the whole
   // tile + glyph so a brand mark spins / beats as one.
   animation?: IconAnimation;
@@ -98,10 +104,12 @@ export function TechIconGlyph({
 }) {
   const animClass = iconAnimationClass(animation);
   const px = ICON_SIZE_PX[size ?? DEFAULT_ICON_SIZE];
+  const band =
+    labelAlignY === 'bottom' ? 'inset-x-0 top-[6%] h-[58%]' : 'inset-x-0 bottom-[6%] h-[58%]';
   return (
     <div
       className={`pointer-events-none absolute flex items-center justify-center ${
-        hasLabel ? 'inset-x-0 top-[6%] h-[58%]' : 'inset-0'
+        hasLabel ? band : 'inset-0'
       }`}
       aria-hidden
     >

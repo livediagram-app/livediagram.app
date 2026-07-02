@@ -243,6 +243,16 @@ export function describeBoxedExport(
       : undefined;
   if (iconArt) {
     const size = fontSizeFor(el.textSize);
+    // The caption follows the element's vertical alignment (bottom is the
+    // icon default), sitting just off the top / floor; the glyph takes the
+    // opposite band (see svgIconShape).
+    const alignY = el.textAlignY ?? 'bottom';
+    const labelY =
+      alignY === 'top'
+        ? el.y + size
+        : alignY === 'middle'
+          ? el.y + el.height / 2
+          : el.y + el.height - size;
     return {
       opacity,
       shape: { kind: 'icon', art: iconArt, fill, stroke },
@@ -250,9 +260,7 @@ export function describeBoxedExport(
         ? {
             text: el.label,
             x: el.x + el.width / 2,
-            // Bottom-aligned caption band, like the canvas: the glyph pins
-            // to the top of the box and the label sits just off the floor.
-            y: el.y + el.height - size,
+            y: labelY,
             anchor: 'middle',
             color: el.textColor ?? defaultTextColor(el),
             size,
@@ -431,9 +439,13 @@ export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: strin
   const hasLabel = !!el.label;
   if (art.colored) {
     // A Technology mark renders at its fixed preset size (spec/41), centred
-    // in the glyph band (the top ~64% when captioned, the whole box when
-    // not) and clamped to the box — mirroring TechIconGlyph exactly.
-    const bandY = hasLabel ? el.y + el.height * 0.06 : el.y;
+    // in the glyph band and clamped to the box — mirroring TechIconGlyph
+    // exactly. The band sits OPPOSITE the caption's vertical alignment: a
+    // bottom caption (the default) puts the mark in the top ~64%, a top- or
+    // middle-aligned caption sends it to the bottom band, so moving the
+    // text never stacks it over the mark. No label = the whole box.
+    const labelBottom = (el.textAlignY ?? 'bottom') === 'bottom';
+    const bandY = hasLabel ? el.y + el.height * (labelBottom ? 0.06 : 0.36) : el.y;
     const bandH = hasLabel ? el.height * 0.58 : el.height;
     const size = iconSizePx(el.type === 'shape' ? el.iconSize : undefined, el.width, bandH);
     const x = el.x + (el.width - size) / 2;

@@ -61,6 +61,7 @@ export function ShapeContentRouter({
       iconId={element.iconId}
       hasLabel={(element.label ?? '').trim().length > 0}
       size={element.iconSize}
+      labelAlignY={element.textAlignY ?? 'bottom'}
       animation={element.iconAnimation}
       animationSpeed={element.iconAnimationSpeed}
     />
