@@ -9,6 +9,7 @@ import {
   type Anchor,
 } from '@livediagram/diagram';
 import type { QuickConnectDirection } from '@/lib/canvas';
+import { quickConnectSourceId } from '@/lib/quick-connect-source';
 import { track } from '@/lib/telemetry';
 import {
   getTheme,
@@ -420,16 +421,19 @@ export function EditorView() {
   // end), reusing addArrow's connect-from-selection path.
   const handleStartArrow = (direction: QuickConnectDirection, e: ReactPointerEvent) => {
     if (selectedId === null) return;
+    // On a group the pluses ring the union bounds, so pin the arrow to the
+    // member nearest the picked side (a lone element resolves to itself).
+    const sourceId = quickConnectSourceId(activeTab.elements, selectedId, direction);
     const anchor: Anchor =
       direction === 'right' ? 'e' : direction === 'left' ? 'w' : direction === 'below' ? 's' : 'n';
     if (e.pointerType === 'touch') {
       // Touch: drop a free arrow running straight out from the anchor (~50px)
       // and select it, so the user can drag it where they want — no
       // tap-target step.
-      beginAnchorDrag(selectedId, anchor, e, { placeOutPx: 50 });
+      beginAnchorDrag(sourceId, anchor, e, { placeOutPx: 50 });
       return;
     }
-    beginAnchorDrag(selectedId, anchor, e, { clickToPlace: true });
+    beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true });
   };
   return (
     <div className="flex h-dvh flex-col">

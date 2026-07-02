@@ -106,21 +106,24 @@ export function deriveCanvasSelection(input: {
   const showPlus = !!(
     selected &&
     selectedIsBoxed &&
-    // Quick-connect only makes sense for a single element: with a
-    // multi-select or a multi-member group there's no one shape to
-    // duplicate-and-connect from, so the plus buttons are suppressed.
+    // Quick-connect works on a single element OR a multi-member group (the
+    // pluses then ring the group's union bounds — spawn is already
+    // group-aware and an arrow pins to the member nearest the picked side).
+    // A marquee multi-select stays suppressed: it's a transient selection,
+    // not a unit you chain from.
     multiSelectedIds.size === 0 &&
-    memberIds.size === 1 &&
-    // Tables don't expose the quick-connect plus buttons (connecting a
-    // connector to a grid is an unlikely flow, and they clash with the
-    // table's own in-cell controls).
-    selected.type !== 'table' &&
-    // Annotation markers + frame sections don't get the quick-connect
-    // pluses either: a marker is a note, not a node to chain from, and a
-    // frame is a backdrop you draw around things (its pluses would float
-    // far out around the whole section). See spec/38 + spec/09.
-    selected.type !== 'annotation' &&
-    !(selected.type === 'shape' && selected.shape === 'frame') &&
+    // The per-type exclusions apply to a lone element only. Tables don't
+    // expose the pluses (connecting a connector to a grid is an unlikely
+    // flow, and they clash with the table's own in-cell controls); an
+    // annotation marker is a note, not a node to chain from; and a frame is
+    // a backdrop you draw around things (its pluses would float far out
+    // around the whole section). See spec/38 + spec/09. On a group the
+    // pluses belong to the union box, not any one member, so a grouped
+    // table/frame doesn't suppress them.
+    (memberIds.size > 1 ||
+      (selected.type !== 'table' &&
+        selected.type !== 'annotation' &&
+        !(selected.type === 'shape' && selected.shape === 'frame'))) &&
     editingId !== selected.id &&
     !isPaintMode &&
     !isGroupMode &&

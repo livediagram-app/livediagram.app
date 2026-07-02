@@ -167,6 +167,41 @@ describe('deriveCanvasSelection', () => {
     expect(s.showUnionResize).toBe(true);
     expect(s.unionResizePrimaryId).toBe('a');
     expect(s.showHandlesFor('a')).toBe(false); // memberIds.size !== 1
-    expect(s.showPlus).toBe(false); // multi-member group: no single shape to connect from
+    // Quick-connect pluses ring the group's union bounds (spec/09), and the
+    // bounds they anchor to are the union of both members.
+    expect(s.showPlus).toBe(true);
+    expect(s.selectionBounds).toEqual({ x: 0, y: 0, width: 300, height: 60 });
+  });
+
+  it('group pluses ignore per-type exclusions but keep the mode/lock gates', () => {
+    // A grouped table doesn't suppress the pluses — they belong to the
+    // union box, not the table — but a lone table still does.
+    const table = (id: string, overrides: Partial<Element> = {}): Element =>
+      ({
+        id,
+        type: 'table',
+        x: 200,
+        y: 0,
+        width: 100,
+        height: 60,
+        cells: [['', '']],
+        ...overrides,
+      }) as Element;
+    const grouped: Element[] = [box('t', { groupId: 'g' }), table('u', { groupId: 'g' })];
+    expect(derive({ elements: grouped, selectedId: 'u' }).showPlus).toBe(true);
+    expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(false);
+    // Locked / read-only still suppress group pluses.
+    const locked: Element[] = [
+      box('a', { groupId: 'g', locked: true }),
+      box('b', { groupId: 'g' }),
+    ];
+    expect(derive({ elements: locked, selectedId: 'a' }).showPlus).toBe(false);
+    expect(derive({ elements: grouped, selectedId: 'u', readOnly: true }).showPlus).toBe(false);
+  });
+
+  it('a marquee multi-selection still suppresses the pluses', () => {
+    const els: Element[] = [box('a'), box('b', { x: 200 })];
+    const s = derive({ elements: els, multiSelectedIds: new Set(['a', 'b']) });
+    expect(s.showPlus).toBe(false);
   });
 });
