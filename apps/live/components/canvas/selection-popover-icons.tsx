@@ -69,8 +69,12 @@ export function GroupIcon() {
       strokeLinejoin="round"
       aria-hidden
     >
-      <rect x="2.25" y="2.25" width="8" height="8" rx="1.25" />
-      <rect x="5.75" y="5.75" width="8" height="8" rx="1.25" fill="white" />
+      {/* A dashed selection bracket binding two small shapes — reads as
+          "grouped", and no longer mistakable for Duplicate's overlapping
+          squares (a reported misclick). */}
+      <rect x="1.5" y="1.5" width="13" height="13" rx="2" strokeDasharray="2.6 1.9" />
+      <circle cx="5.9" cy="6" r="2" fill="currentColor" stroke="none" />
+      <rect x="8.4" y="8.4" width="4.1" height="4.1" rx="0.9" fill="currentColor" stroke="none" />
     </svg>
   );
 }
