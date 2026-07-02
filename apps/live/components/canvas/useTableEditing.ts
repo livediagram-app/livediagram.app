@@ -1,5 +1,5 @@
 import type { Dispatch, RefObject, SetStateAction } from 'react';
-import { setTableCell, type TableElement } from '@livediagram/diagram';
+import { addTableRow, setTableCell, type TableElement } from '@livediagram/diagram';
 
 type Cell = { r: number; c: number } | null;
 
@@ -47,6 +47,21 @@ export function useTableEditing({
     setEditing({ r: nr, c: nc });
   };
 
+  // Tab in the LAST cell (Word / Docs convention): commit the text AND
+  // append a fresh row in ONE patch (two commits off the same stale base
+  // would drop one of them), then drop into the new row's first cell.
+  const commitAndAppendRow = (r: number, c: number, text: string) => {
+    const withText = { ...element, ...setTableCell(element, r, c, text) };
+    const appended = addTableRow(withText, withText.cells.length);
+    onCommitTable(element.id, {
+      cells: appended.cells,
+      ...(appended.rowHeights ? { rowHeights: appended.rowHeights } : {}),
+      ...(appended.cellStyles ? { cellStyles: appended.cellStyles } : {}),
+    });
+    initialTextRef.current = '';
+    setEditing({ r: r + 1, c: 0 });
+  };
+
   // Where the caret sits in the editor, for arrow-key cell navigation
   // (so arrows only move cells when they wouldn't fight the text caret).
   const caretInfo = () => {
@@ -69,5 +84,5 @@ export function useTableEditing({
     };
   };
 
-  return { beginEdit, commitCell, moveTo, caretInfo };
+  return { beginEdit, commitCell, commitAndAppendRow, moveTo, caretInfo };
 }

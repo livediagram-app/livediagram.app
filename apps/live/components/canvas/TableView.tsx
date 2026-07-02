@@ -3,7 +3,9 @@ import {
   BORDER_STROKE_PX,
   defaultStrokeColor,
   defaultTextColor,
+  isTabularClipboard,
   PADDING_PX,
+  parseClipboardTableText,
   pasteIntoTable,
   setTableCell,
   type ElementLink,
@@ -161,35 +163,6 @@ export function TableView({
     typeToEditRef.current = false;
   }, [editing]);
 
-  // Type-to-edit: with a cell selected (not yet editing), a printable
-  // key enters edit mode seeded with that char (like shapes); Backspace
-  // / Delete clears the cell; Enter / F2 edit the existing text.
-  useEffect(() => {
-    if (!selectedCell || editing || readOnly || element.locked) return;
-    const { r, c } = selectedCell;
-    const onKey = (e: KeyboardEvent) => {
-      const ae = document.activeElement as HTMLElement | null;
-      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable))
-        return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === 'Backspace' || e.key === 'Delete') {
-        e.preventDefault();
-        onCommitTable(element.id, { cells: setTableCell(element, r, c, '').cells });
-      } else if (e.key === 'Enter' || e.key === 'F2') {
-        e.preventDefault();
-        initialTextRef.current = element.cells[r]?.[c] ?? '';
-        setEditing({ r, c });
-      } else if (e.key.length === 1) {
-        e.preventDefault();
-        initialTextRef.current = e.key;
-        typeToEditRef.current = true;
-        setEditing({ r, c });
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [selectedCell, editing, readOnly, element, onCommitTable]);
-
   const stroke = element.strokeColor ?? defaultStrokeColor(element);
   const textColor = element.textColor ?? defaultTextColor(element);
   // Grid line width + pattern from the Border accordion (default thin
@@ -228,7 +201,7 @@ export function TableView({
   const colTemplate = gridTrackTemplate(cols, resizeWidths ?? element.colWidths);
   const rowTemplate = gridTrackTemplate(rows, resizeHeights ?? element.rowHeights);
 
-  const { beginEdit, commitCell, moveTo, caretInfo } = useTableEditing({
+  const { beginEdit, commitCell, commitAndAppendRow, moveTo, caretInfo } = useTableEditing({
     element,
     readOnly,
     onCommitTable,
@@ -243,6 +216,103 @@ export function TableView({
     onCommitTable,
     setMenu,
   });
+  // Selected-cell keyboard layer (spreadsheet-style, spec/09). With a cell
+  // selected (not yet editing): arrows move the selection, Tab / Shift+Tab
+  // walk cells (Tab in the very last cell appends a row), Escape steps back
+  // out to the plain table selection, Backspace / Delete clears the cell,
+  // Enter / F2 edit, and a printable key type-to-edits. Every handled key
+  // stops propagation so the editor's window-level shortcuts (arrow-key
+  // element nudge, Backspace element delete, Escape deselect) never
+  // double-handle a keystroke that was aimed at the cell — Backspace used
+  // to clear the cell AND delete the whole table.
+  useEffect(() => {
+    if (!selectedCell || editing || readOnly || element.locked) return;
+    const { r, c } = selectedCell;
+    const onKey = (e: KeyboardEvent) => {
+      const ae = document.activeElement as HTMLElement | null;
+      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable))
+        return;
+      const handled = () => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+      if (e.key === 'Tab') {
+        handled();
+        const flat = r * cols + c + (e.shiftKey ? -1 : 1);
+        if (flat >= rows * cols) {
+          // Tab off the end appends a row (Word / Docs convention) and
+          // lands on its first cell.
+          addRow(rows);
+          setSelectedCell({ r: rows, c: 0 });
+        } else if (flat >= 0) {
+          setSelectedCell({ r: Math.floor(flat / cols), c: flat % cols });
+        }
+        return;
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key.startsWith('Arrow')) {
+        const nr = r + (e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0);
+        const nc = c + (e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0);
+        handled();
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) setSelectedCell({ r: nr, c: nc });
+        return;
+      }
+      if (e.key === 'Escape') {
+        // Step out of the cell, keep the table selected — one Escape peels
+        // one layer (the canvas ladder then handles the next press).
+        handled();
+        setSelectedCell(null);
+        setCellMenu(null);
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        handled();
+        onCommitTable(element.id, { cells: setTableCell(element, r, c, '').cells });
+      } else if (e.key === 'Enter' || e.key === 'F2') {
+        handled();
+        initialTextRef.current = element.cells[r]?.[c] ?? '';
+        setEditing({ r, c });
+      } else if (e.key.length === 1) {
+        handled();
+        initialTextRef.current = e.key;
+        typeToEditRef.current = true;
+        setEditing({ r, c });
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [selectedCell, editing, readOnly, element, onCommitTable, rows, cols, addRow]);
+
+  // Paste into the SELECTED cell without entering the editor: spreadsheet /
+  // TSV text fills + grows the grid from that cell, a single value replaces
+  // the cell's text. Registered in the CAPTURE phase so it wins over the
+  // editor's document-level paste (which would drop copied elements /
+  // images on the canvas instead).
+  useEffect(() => {
+    if (!selectedCell || editing || readOnly || element.locked) return;
+    const { r, c } = selectedCell;
+    const onPaste = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      )
+        return;
+      const text = e.clipboardData?.getData('text/plain');
+      if (!text) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const grid = parseClipboardTableText(text);
+      if (isTabularClipboard(grid)) {
+        onCommitTable(element.id, { cells: pasteIntoTable(element, r, c, grid).cells });
+      } else {
+        onCommitTable(element.id, {
+          cells: setTableCell(element, r, c, grid[0]?.[0] ?? '').cells,
+        });
+      }
+    };
+    document.addEventListener('paste', onPaste, true);
+    return () => document.removeEventListener('paste', onPaste, true);
+  }, [selectedCell, editing, readOnly, element, onCommitTable]);
+
   const showControls = isSelected && !readOnly && !element.locked;
   const toggle = (axis: 'col' | 'row', index: number) =>
     setMenu((m) => (m && m.axis === axis && m.index === index ? null : { axis, index }));
@@ -416,20 +486,9 @@ export function TableView({
                       onPaste={(e) => {
                         const text = e.clipboardData.getData('text/plain');
                         if (!text) return;
-                        const grid = text
-                          .replace(/\r/g, '')
-                          .split('\n')
-                          .map((line) => line.split('\t'));
-                        while (
-                          grid.length > 1 &&
-                          grid[grid.length - 1]!.length === 1 &&
-                          grid[grid.length - 1]![0] === ''
-                        ) {
-                          grid.pop();
-                        }
-                        const tabular = grid.length > 1 || (grid[0]?.length ?? 0) > 1;
+                        const grid = parseClipboardTableText(text);
                         e.preventDefault();
-                        if (tabular) {
+                        if (isTabularClipboard(grid)) {
                           // Spreadsheet / TSV paste fills + grows the grid.
                           onCommitTable(element.id, {
                             cells: pasteIntoTable(element, r, c, grid).cells,
@@ -467,7 +526,11 @@ export function TableView({
                           const flat = r * cols + c + (e.shiftKey ? -1 : 1);
                           if (flat >= 0 && flat < rows * cols)
                             moveTo(r, c, Math.floor(flat / cols), flat % cols);
-                          else {
+                          else if (!e.shiftKey) {
+                            // Tab off the last cell appends a row and keeps
+                            // typing (Word / Docs convention).
+                            commitAndAppendRow(r, c, editorRef.current?.textContent ?? '');
+                          } else {
                             commitCell(r, c, editorRef.current?.textContent ?? '');
                             setEditing(null);
                           }
@@ -617,6 +680,43 @@ export function TableView({
             ))}
           </div>
 
+          {/* One-click append (spec/09): a slim + pill centred on the bottom /
+              right edge adds a row / column without the hover ⋯ menu dance —
+              the single most common structural edit. Counter-scaled like the
+              other floating chrome. */}
+          <Tooltip title="Add row" description="Append a row at the bottom.">
+            <button
+              type="button"
+              data-table-ui
+              onClick={() => addRow(rows)}
+              onPointerDown={(e) => e.stopPropagation()}
+              aria-label="Add row"
+              className="pointer-events-auto absolute -bottom-3 left-1/2 z-[var(--z-toolbar)] flex h-5 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+              style={{
+                transform: `translateX(-50%) scale(${invScale})`,
+                transformOrigin: 'top center',
+              }}
+            >
+              <PlusGlyph />
+            </button>
+          </Tooltip>
+          <Tooltip title="Add column" description="Append a column on the right.">
+            <button
+              type="button"
+              data-table-ui
+              onClick={() => addCol(cols)}
+              onPointerDown={(e) => e.stopPropagation()}
+              aria-label="Add column"
+              className="pointer-events-auto absolute -right-3 top-1/2 z-[var(--z-toolbar)] flex h-9 w-5 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+              style={{
+                transform: `translateY(-50%) scale(${invScale})`,
+                transformOrigin: 'center left',
+              }}
+            >
+              <PlusGlyph />
+            </button>
+          </Tooltip>
+
           {/* Column triggers laid out on a grid mirroring the column
               template so each stays centred over its column at any width
               (including while a column is being resized). */}
@@ -727,5 +827,13 @@ export function TableView({
         textColor={textColor}
       />
     </>
+  );
+}
+
+function PlusGlyph() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
+      <path d="M5 1v8M1 5h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
   );
 }

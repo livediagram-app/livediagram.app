@@ -189,6 +189,10 @@ export function useClipboard(deps: ClipboardDeps) {
       // A modal dialog owns paste while open — Cmd+V with a dialog up
       // must not drop elements on the canvas behind it.
       if (anyModalOpen()) return;
+      // A closer handler already claimed the paste (the table's
+      // selected-cell paste runs in the capture phase) — don't also drop
+      // the element clipboard on the canvas.
+      if (e.defaultPrevented) return;
       const target = e.target as Element | null;
       if (
         target instanceof HTMLInputElement ||

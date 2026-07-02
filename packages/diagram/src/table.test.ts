@@ -3,10 +3,12 @@ import { createTable } from './factories';
 import {
   addTableColumn,
   addTableRow,
-  normalizeTable,
   clearCellStyle,
+  isTabularClipboard,
   moveTableColumn,
   moveTableRow,
+  normalizeTable,
+  parseClipboardTableText,
   pasteIntoTable,
   removeTableColumn,
   removeTableRow,
@@ -162,5 +164,28 @@ describe('reorder', () => {
   it('moves a row carrying its cells', () => {
     const next = moveTableRow(setTableCell(t(), 0, 1, 'top'), 0, 2);
     expect(next.cells[2]![1]).toBe('top');
+  });
+});
+
+describe('parseClipboardTableText', () => {
+  it('splits TSV into a row-major grid and drops the trailing blank line', () => {
+    expect(parseClipboardTableText('a\tb\nc\td\n')).toEqual([
+      ['a', 'b'],
+      ['c', 'd'],
+    ]);
+  });
+
+  it('handles CRLF clipboards (Windows Excel)', () => {
+    expect(parseClipboardTableText('a\tb\r\nc\td\r\n')).toEqual([
+      ['a', 'b'],
+      ['c', 'd'],
+    ]);
+  });
+
+  it('keeps a plain single value as a 1x1 grid', () => {
+    expect(parseClipboardTableText('hello')).toEqual([['hello']]);
+    expect(isTabularClipboard([['hello']])).toBe(false);
+    expect(isTabularClipboard([['a', 'b']])).toBe(true);
+    expect(isTabularClipboard([['a'], ['b']])).toBe(true);
   });
 });

@@ -194,3 +194,31 @@ export function moveTableRow(t: TableElement, from: number, to: number): TableEl
   const cellStyles = t.cellStyles ? moveInArray(t.cellStyles, from, to) : t.cellStyles;
   return { ...t, cells, rowHeights, cellStyles };
 }
+
+// Parse plain clipboard text into the cell grid pasteIntoTable takes:
+// newline-separated rows, tab-separated cells (the TSV convention every
+// spreadsheet uses for plain-text copies). Trailing blank lines (the final
+// newline most spreadsheet copies carry) are dropped so pasting a 2x2
+// range doesn't grow the table by an empty row. Shared by the in-cell
+// editor's paste handler and the selected-cell paste (paste without
+// entering the editor), so the two can't drift.
+export function parseClipboardTableText(text: string): string[][] {
+  const grid = text
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => line.split('\t'));
+  while (
+    grid.length > 1 &&
+    grid[grid.length - 1]!.length === 1 &&
+    grid[grid.length - 1]![0] === ''
+  ) {
+    grid.pop();
+  }
+  return grid;
+}
+
+// True when the parsed clipboard grid spans more than one cell — the
+// paste should then fill + grow the table rather than land in one cell.
+export function isTabularClipboard(grid: string[][]): boolean {
+  return grid.length > 1 || (grid[0]?.length ?? 0) > 1;
+}

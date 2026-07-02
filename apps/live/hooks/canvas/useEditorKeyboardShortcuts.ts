@@ -230,6 +230,9 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // A modal dialog owns the keyboard while open (its own Escape
       // closes it); cancelling canvas modes behind it double-acts.
       if (anyModalOpen()) return;
+      // A closer handler already claimed this keystroke (e.g. the table's
+      // selected-cell layer) — don't double-act on it.
+      if (e.defaultPrevented) return;
       if (e.key === 'Escape') {
         liveRef.current.setFormatSourceId(null);
         liveRef.current.setGroupSourceId(null);
@@ -263,6 +266,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // rectangle (and Backspace deleted the selection) on the canvas
       // BEHIND the modal.
       if (anyModalOpen()) return;
+      // A closer handler already claimed this keystroke — the table's
+      // selected-cell layer prevents default on the keys it consumes
+      // (arrows / Backspace / Escape / type-to-edit), and acting on them
+      // again here nudged or even deleted the whole table mid-cell-edit.
+      if (e.defaultPrevented) return;
       const live = liveRef.current;
       const target = e.target as Element | null;
       // <select> included: a letter press there is the browser's
