@@ -144,6 +144,17 @@ icons are unaffected — they are drawings that keep scaling with their box.
 The exports / headless renders (`svgIconShape` in the shared renderer) apply
 the same fixed-size geometry so a resized mark exports exactly as drawn.
 
+**Connectors attach to the mark, not the element box.** Because the box can
+be much larger than the visible chip, arrow anchors on a Technology icon are
+computed on the mark's rectangle (`techIconMarkBounds`, the same geometry the
+renderers use): pinned endpoints touch the chip's edge, and the auto-attach
+face choice (`rankAnchorsTowards` / `anchorAimPoint` in
+`packages/diagram/src/geometry.ts`) answers for the chip — so an arrow to an
+element below leaves the mark's bottom centre instead of a box edge floating
+in whitespace. Line-art icons keep box anchors (their glyph scales with the
+box). The diagram package reads `isTechIconId` from `@livediagram/icons`
+(tech-icon-ids.ts, re-exported by `apps/live/lib/tech-icons.ts`).
+
 **Icon size presets in the context menu.** A Technology icon element's
 right-click menu gains an **Icon** category (single-element menu only, like
 the other type-specific categories): a 4-tile grid of size presets rendered

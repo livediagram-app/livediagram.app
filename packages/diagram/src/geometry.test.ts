@@ -48,6 +48,17 @@ describe('anchorPosition', () => {
     expect(anchorPosition(shape('a', { rotation: 0 }), 'e')).toEqual({ x: 100, y: 40 });
   });
 
+  it('anchors a Technology icon on its fixed-size mark, not the element box (spec/41)', () => {
+    // 200x100 box, no label: the md (48px) mark centres at (76..124, 26..74),
+    // so connectors touch the visible chip instead of floating on the box edge.
+    const tech = shape('t', { shape: 'icon', iconId: 'aws-ec2', width: 200, height: 100 });
+    expect(anchorPosition(tech, 'e')).toEqual({ x: 124, y: 50 });
+    expect(anchorPosition(tech, 's')).toEqual({ x: 100, y: 74 });
+    // A line-art icon keeps box anchors — its glyph scales with the box.
+    const line = shape('l', { shape: 'icon', iconId: 'server', width: 200, height: 100 });
+    expect(anchorPosition(line, 'e')).toEqual({ x: 200, y: 50 });
+  });
+
   it('projects diamond anchors onto the diamond outline (corners land on the slanted edge)', () => {
     const d = shape('d', { shape: 'diamond', x: 0, y: 0, width: 100, height: 100 });
     // Cardinal anchors are the diamond's tips already — unchanged.

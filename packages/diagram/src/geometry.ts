@@ -1,3 +1,4 @@
+import { isTechIconId } from '@livediagram/icons';
 import {
   arrowLabelAnchor,
   arrowStyleOf,
@@ -8,6 +9,7 @@ import {
   type ElementId,
   type Endpoint,
 } from './index';
+import { techIconMarkBounds } from './icon-size';
 
 // --- Geometry helpers ------------------------------------------------------
 
@@ -166,15 +168,31 @@ function projectAnchorToShape(
 // real outline (so a connector touches a diamond's edge, not the empty bbox
 // corner) before any rotation is applied.
 export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
-  const { x, y, width, height } = element;
-  let local = localAnchorPosition(x, y, width, height, anchor);
-  if (element.type === 'shape') {
-    const projected = projectAnchorToShape(element.shape, x, y, width, height, local);
+  const box = connectorBox(element);
+  let local = localAnchorPosition(box.x, box.y, box.width, box.height, anchor);
+  // Project onto the shape's real outline only when the connector box IS the
+  // element box — a Technology icon's mark is a plain rounded square, so its
+  // rect anchors are already on the visible edge.
+  if (element.type === 'shape' && box === element) {
+    const projected = projectAnchorToShape(
+      element.shape,
+      element.x,
+      element.y,
+      element.width,
+      element.height,
+      local,
+    );
     if (projected) local = projected;
   }
   const rotation = element.rotation ?? 0;
   if (!rotation) return local;
-  return rotatePoint(local, { x: x + width / 2, y: y + height / 2 }, rotation);
+  // Rotation is about the ELEMENT's centre (that's how the canvas rotates
+  // the whole box, mark included), not the connector box's own centre.
+  return rotatePoint(
+    local,
+    { x: element.x + element.width / 2, y: element.y + element.height / 2 },
+    rotation,
+  );
 }
 
 // How decisively the off-axis direction must win before an arrow that is
@@ -192,8 +210,27 @@ function isCardinal(anchor: Anchor): anchor is Cardinal {
   return anchor === 'n' || anchor === 'e' || anchor === 's' || anchor === 'w';
 }
 
+// The box connectors treat as an element's visual body: a Technology
+// icon's fixed-size mark (spec/41 — the element box can be much larger
+// than the visible chip, so box-edge anchors would float in whitespace
+// and face selection would answer for the wrong rectangle), the element
+// itself otherwise. Returns the element identity for the common case so
+// callers can cheaply tell the two apart.
+function connectorBox(el: BoxedElement): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+} {
+  if (el.type === 'shape' && el.shape === 'icon' && isTechIconId(el.iconId)) {
+    return techIconMarkBounds(el);
+  }
+  return el;
+}
+
 function centreOf(el: BoxedElement): Point {
-  return { x: el.x + el.width / 2, y: el.y + el.height / 2 };
+  const box = connectorBox(el);
+  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
 // For a centre->`towards` direction, the parametric distance `t` at which
@@ -219,8 +256,9 @@ function faceExitTimes(element: BoxedElement, towards: Point): Record<Cardinal, 
     dy = local.y;
   }
   // `|| 1` guards a degenerate zero dimension; real elements clamp to MIN_SIZE.
-  const halfWidth = element.width / 2 || 1;
-  const halfHeight = element.height / 2 || 1;
+  const box = connectorBox(element);
+  const halfWidth = box.width / 2 || 1;
+  const halfHeight = box.height / 2 || 1;
   return {
     e: dx > 0 ? halfWidth / dx : Infinity,
     w: dx < 0 ? halfWidth / -dx : Infinity,
@@ -266,8 +304,9 @@ export function rankAnchorsTowards(
 // back to the other centre when the boxes overlap (the clamp would
 // return this centre itself — a degenerate ray).
 export function anchorAimPoint(other: BoxedElement, fromCentre: Point): Point {
-  const x = Math.min(Math.max(fromCentre.x, other.x), other.x + other.width);
-  const y = Math.min(Math.max(fromCentre.y, other.y), other.y + other.height);
+  const box = connectorBox(other);
+  const x = Math.min(Math.max(fromCentre.x, box.x), box.x + box.width);
+  const y = Math.min(Math.max(fromCentre.y, box.y), box.y + box.height);
   if (x === fromCentre.x && y === fromCentre.y) return centreOf(other);
   return { x, y };
 }

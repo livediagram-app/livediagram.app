@@ -48,99 +48,12 @@ export const TECH_PROVIDERS: { id: TechProvider; label: string }[] = [
   { id: 'generic', label: 'Generic' },
 ];
 
-// Every tech-icon id, kept HERE (first-load) while the full defs live in the
-// async tech-icon-catalog chunk (@livediagram/icons). `isTechIconId` gates real-time paths that
-// cannot wait for that chunk — the render dispatch (coloured vs line-art), the
-// drag fold-into-shape exclusion, the draw-commit telemetry — and tech ids
-// carry no common prefix ('aws-*' but also bare 'k8s' / 'docker'), so a cheap
-// prefix test can't replace a membership check. ~68 short strings ≈ 1 kB: an
-// acceptable first-load cost for keeping those answers exact from the first
-// frame. A parity test (tech-icons.test.ts) pins this set to the data
-// catalogue's ids, so adding an icon without registering its id here fails CI
-// rather than silently rendering as the line-art placeholder.
-export const TECH_ICON_IDS: ReadonlySet<string> = new Set([
-  // ---- AWS ----
-  'aws-s3',
-  'aws-ec2',
-  'aws-lambda',
-  'aws-rds',
-  'aws-dynamodb',
-  'aws-apigateway',
-  'aws-cloudfront',
-  'aws-route53',
-  'aws-vpc',
-  'aws-sqs',
-  'aws-sns',
-  'aws-ecs',
-  'aws-eks',
-  'aws-cloudwatch',
-  'aws-iam',
-  // ---- Azure ----
-  'azure-vm',
-  'azure-blob',
-  'azure-appservice',
-  'azure-functions',
-  'azure-sql',
-  'azure-cosmosdb',
-  'azure-aks',
-  'azure-vnet',
-  'azure-loadbalancer',
-  'azure-servicebus',
-  'azure-keyvault',
-  'azure-monitor',
-  // ---- Generic infrastructure ----
-  'k8s',
-  'docker',
-  'postgres',
-  'mysql',
-  'redis',
-  'mongodb',
-  'kafka',
-  'nginx',
-  'rabbitmq',
-  'elasticsearch',
-  'graphql',
-  'github',
-  'gitlab',
-  'nodejs',
-  'react',
-  'vercel',
-  'supabase',
-  'terraform',
-  'cassandra',
-  'prometheus',
-  // ---- Cloudflare ----
-  'cf-workers',
-  'cf-pages',
-  'cf-r2',
-  'cf-d1',
-  'cf-kv',
-  'cf-durable-objects',
-  'cf-queues',
-  'cf-zero-trust',
-  'cf-cdn',
-  'cf-dns',
-  'cf-waf',
-  'cf-workers-ai',
-  'cf-images',
-  'cf-stream',
-  // ---- Firebase ----
-  'fb-firestore',
-  'fb-realtime-db',
-  'fb-auth',
-  'fb-functions',
-  'fb-hosting',
-  'fb-storage',
-  'fb-messaging',
-]);
-
-// True when the id resolves in this catalogue — the render path uses it to
-// pick the coloured brand renderer over the line-art one. Answered from the
-// lightweight id set above (NOT the async data), so drag / draw / render
-// dispatch is exact even before the catalogue chunk arrives.
-export function isTechIconId(id: string | undefined): boolean {
-  return !!id && TECH_ICON_IDS.has(id);
-}
+// The tech-icon id set + `isTechIconId` live in @livediagram/icons
+// (tech-icon-ids.ts) so the diagram package's connector geometry can use
+// them too (a tech icon's arrows attach to its fixed-size mark, spec/41);
+// re-exported so existing import sites keep resolving. Still a lightweight
+// first-load module — only the colour/glyph data waits on the async chunk.
+export { isTechIconId, TECH_ICON_IDS } from '@livediagram/icons';
 
 // Resolves the full definition (colour + glyph markup). Returns undefined for
 // an unknown id AND until the async catalogue chunk has loaded — check

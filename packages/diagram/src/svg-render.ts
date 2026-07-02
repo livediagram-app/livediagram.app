@@ -23,7 +23,7 @@ import {
   defaultTextColor,
 } from './colors';
 import { endpointPosition } from './geometry';
-import { iconSizePx } from './icon-size';
+import { techIconMarkBounds } from './icon-size';
 import { hasRichFormatting } from './rich-text';
 import type { ArrowElement, BoxedElement, Element, Tab, TextRun } from './index';
 
@@ -439,19 +439,14 @@ export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: strin
   const hasLabel = !!el.label;
   if (art.colored) {
     // A Technology mark renders at its fixed preset size (spec/41), centred
-    // in the glyph band and clamped to the box — mirroring TechIconGlyph
-    // exactly. The band sits OPPOSITE the caption's vertical alignment: a
-    // bottom caption (the default) puts the mark in the top ~64%, a top- or
-    // middle-aligned caption sends it to the bottom band, so moving the
-    // text never stacks it over the mark. No label = the whole box.
-    const labelBottom = (el.textAlignY ?? 'bottom') === 'bottom';
-    const bandY = hasLabel ? el.y + el.height * (labelBottom ? 0.06 : 0.36) : el.y;
-    const bandH = hasLabel ? el.height * 0.58 : el.height;
-    const size = iconSizePx(el.type === 'shape' ? el.iconSize : undefined, el.width, bandH);
-    const x = el.x + (el.width - size) / 2;
-    const y = bandY + (bandH - size) / 2;
+    // in the glyph band and clamped to the box — techIconMarkBounds is the
+    // single source of that geometry (shared with the connector anchors in
+    // geometry.ts), mirroring TechIconGlyph exactly. The band sits OPPOSITE
+    // the caption's vertical alignment so moving the text never stacks it
+    // over the mark; no label = the whole box.
+    const mark = techIconMarkBounds(el);
     return (
-      `<svg x="${r2(x)}" y="${r2(y)}" width="${r2(size)}" height="${r2(size)}"` +
+      `<svg x="${r2(mark.x)}" y="${r2(mark.y)}" width="${r2(mark.width)}" height="${r2(mark.height)}"` +
       ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible">${art.markup}</svg>`
     );
   }

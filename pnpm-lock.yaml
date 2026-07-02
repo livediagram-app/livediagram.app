@@ -395,6 +395,10 @@ importers:
         version: 5.9.3
 
   packages/diagram:
+    dependencies:
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../icons
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
