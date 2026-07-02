@@ -738,9 +738,13 @@ export function TableView({
                     color: cs?.textColor ?? (isHeader ? headerTextColor : undefined),
                     // Selection outline in the table's own accent (its
                     // stroke, which tracks the theme) rather than a fixed
-                    // light blue that clashes on non-default themes.
-                    outline: isSelCell ? `2px solid ${stroke}` : undefined,
-                    outlineOffset: isSelCell ? '-2px' : undefined,
+                    // light blue that clashes on non-default themes. Thin +
+                    // softened with transparency so it marks the cell
+                    // without shouting over the content.
+                    outline: isSelCell
+                      ? `1.5px solid color-mix(in srgb, ${stroke} 55%, transparent)`
+                      : undefined,
+                    outlineOffset: isSelCell ? '-1.5px' : undefined,
                     fontSize: cellFontPx,
                     fontWeight:
                       (cs?.bold ?? (isHeader || element.textBold)) ? (isHeader ? 700 : 600) : 400,
