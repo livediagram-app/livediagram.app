@@ -23,6 +23,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
 import { ResetIcon } from '@/components/palette/palette-icons';
 import { Portal } from '@/components/primitives/Portal';
+import { useModalGuard } from '@/hooks/ui/useModalGuard';
 
 export type CanvasThemeTab = 'canvas' | 'theme';
 
@@ -66,6 +67,9 @@ export function CanvasThemeDialog({
   onResetElementsToTheme,
   onClose,
 }: CanvasThemeDialogProps) {
+  // Mount-open modal: silence the canvas shortcut/paste listeners
+  // behind it (see lib/modal-guard).
+  useModalGuard(true);
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef);
   useEscape(onClose);

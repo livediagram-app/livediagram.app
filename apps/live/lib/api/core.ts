@@ -139,7 +139,11 @@ let lastKnownToken: string | null = null;
 // Pass `null` to clear (sign-out / unmount).
 export function setTokenProvider(provider: TokenProvider | null): void {
   currentTokenProvider = provider;
-  if (!provider) lastKnownToken = null;
+  // Clear on EVERY provider change, not just sign-out: a replaced
+  // provider means the cached token came from a session we no longer
+  // trust. The next request (autosave runs every ~600ms while editing)
+  // refills it from the new provider.
+  lastKnownToken = null;
 }
 
 // Synchronous read of the last token apiHeaders fetched — for the

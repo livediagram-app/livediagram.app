@@ -427,6 +427,21 @@ const EDGE_ATTR_ALIASES: Record<string, string> = {
   width: 'strokeWidth',
 };
 
+// Friendly VALUES for the aliased keys — mapping the key alone isn't
+// enough: spec/66 writes `head: hollow-triangle` where the model enum
+// is `triangle-hollow`, and `width` is a friendly thickness name while
+// the model's `strokeWidth` is raw px (ARROW_THICKNESS_PX). Unmapped
+// values pass through untouched (the model vocabulary is also valid
+// hand-authored input).
+const EDGE_ATTR_VALUE_ALIASES: Record<string, Record<string, unknown>> = {
+  head: {
+    'hollow-triangle': 'triangle-hollow',
+    'hollow-circle': 'circle-hollow',
+    'hollow-diamond': 'diamond-hollow',
+  },
+  width: { thin: 1, medium: 2, thick: 4, 'extra-thick': 7 },
+};
+
 function buildArrow(
   draft: ArrowDraft,
   nodesById: Map<string, Element>,
@@ -445,7 +460,9 @@ function buildArrow(
     to: draftToEndpoint(draft.to),
   };
   for (const [key, value] of Object.entries(draft.attrs)) {
-    arrow[EDGE_ATTR_ALIASES[key] ?? key] = value;
+    const mapped =
+      typeof value === 'string' ? (EDGE_ATTR_VALUE_ALIASES[key]?.[value] ?? value) : value;
+    arrow[EDGE_ATTR_ALIASES[key] ?? key] = mapped;
   }
   if (draft.label !== undefined) arrow.label = draft.label;
   return arrow as unknown as ArrowElement;

@@ -124,22 +124,34 @@ export function buildLaserTrailRows(input: {
   return rows;
 }
 
+// A peer's current selection: the element id plus the tab it lives on.
+// `tabId` is optional for wire compatibility (an older peer's frame
+// omits it and is treated as tab-unknown — visible everywhere, the old
+// behaviour).
+export type RemoteSelection = { elementId: string | null; tabId?: string };
+
 // Per-element map of which remote participants have it selected (for the
-// on-element badges). Drops self + null (deselected) entries.
+// on-element badges). Drops self + null (deselected) entries, and — like
+// cursors and lasers — entries scoped to a DIFFERENT tab: element ids
+// aren't unique across tabs in older diagrams (tab duplication used to
+// copy them verbatim), so an unscoped badge also LOCKED the same-id
+// element on other tabs via the spec/07 selection lock.
 export function buildRemoteSelectionsByElement(
-  remoteSelections: Map<string, string | null>,
+  remoteSelections: Map<string, RemoteSelection>,
   livePresenceById: Map<string, Participant>,
   selfId: string,
+  activeTabId: string,
 ): Map<string, RemoteSelector[]> {
   const out = new Map<string, RemoteSelector[]>();
-  for (const [participantId, elementId] of remoteSelections) {
-    if (!elementId) continue;
+  for (const [participantId, selection] of remoteSelections) {
+    if (!selection.elementId) continue;
+    if (selection.tabId !== undefined && selection.tabId !== activeTabId) continue;
     if (participantId === selfId) continue;
     const participant = livePresenceById.get(participantId);
     if (!participant) continue;
-    const list = out.get(elementId) ?? [];
+    const list = out.get(selection.elementId) ?? [];
     list.push({ id: participant.id, name: participant.name, color: participant.color });
-    out.set(elementId, list);
+    out.set(selection.elementId, list);
   }
   return out;
 }

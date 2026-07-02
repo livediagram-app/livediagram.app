@@ -12,6 +12,7 @@ import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
 import { CategoryCard, TemplateCard } from '@/components/palette/template-picker-cards';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { WizardSteps } from './template-picker-wizard';
 import {
   ArrowRightIcon,
@@ -79,6 +80,10 @@ export function TemplatePicker({
   busy = false,
   onOpenExisting,
 }: TemplatePickerProps) {
+  // Mount-open overlay: silence the canvas shortcut/paste listeners
+  // behind it (see lib/modal-guard). Harmless on /new, where no canvas
+  // listeners exist.
+  useModalGuard(true);
   useEscape(onSkip);
   const isWelcome = mode === 'welcome';
   const isIdentity = mode === 'identity';

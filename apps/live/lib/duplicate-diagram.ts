@@ -24,7 +24,7 @@
 // round-trip so it can stand alone.
 
 import type { Tab } from '@livediagram/diagram';
-import { apiCreateDiagram, apiLoadDiagram, apiLoadTab } from './api-client';
+import { apiCreateDiagram, apiLoadDiagram, apiLoadTab, apiSaveDiagramMeta } from './api-client';
 
 export async function duplicateDiagram(
   ownerId: string,
@@ -61,10 +61,27 @@ export async function duplicateDiagram(
     remappedTabs.push({ ...tab, id: newTabId, elements });
   }
   const newId = crypto.randomUUID();
-  await apiCreateDiagram(ownerId, {
-    id: newId,
-    name: `${src.name} copy`,
-    tabs: remappedTabs,
-  }).catch(() => undefined);
+  // A failed create must return undefined per the contract above —
+  // returning the id anyway made callers toast "Diagram duplicated"
+  // and navigate to a diagram that doesn't exist.
+  try {
+    await apiCreateDiagram(ownerId, {
+      id: newId,
+      name: `${src.name} copy`,
+      tabs: remappedTabs,
+    });
+  } catch {
+    return undefined;
+  }
+  // Tab-folder structure (spec/30) doesn't ride the create — the seed
+  // path strips per-tab `folder` — so it's re-applied via the same meta
+  // PUT the autosave uses. Best-effort: a copy with loose tabs beats no
+  // copy.
+  if (remappedTabs.some((t) => t.folder)) {
+    await apiSaveDiagramMeta(ownerId, {
+      id: newId,
+      tabs: remappedTabs.map((t) => ({ id: t.id, ...(t.folder ? { folder: t.folder } : {}) })),
+    }).catch(() => {});
+  }
   return newId;
 }

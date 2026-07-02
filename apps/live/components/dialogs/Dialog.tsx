@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
-import { modalClosed, modalOpened } from '@/lib/modal-guard';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
+import { useModalGuard } from '@/hooks/ui/useModalGuard';
 
 // The shared modal shell. Every editor dialog (ConfirmDialog,
 // TeamFormModal, ShareDialog, Import/Export, Settings, …) re-built the
@@ -62,11 +62,7 @@ export function Dialog({
   // Register with the modal guard so the editor's window-level shortcut
   // and paste listeners go quiet while any dialog is up (they otherwise
   // mutate the canvas behind the modal — see lib/modal-guard).
-  useEffect(() => {
-    if (!open) return;
-    modalOpened();
-    return modalClosed;
-  }, [open]);
+  useModalGuard(open);
   useEscape(onClose, { enabled: open && closeOnEscape, preventDefault: true });
   // Trap focus inside the modal while open and hand it back on close — keeps
   // keyboard / screen-reader users out of the inert background. Re-engages on

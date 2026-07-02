@@ -154,15 +154,34 @@ describe('buildRemoteSelectionsByElement', () => {
     const b = p('b');
     const out = buildRemoteSelectionsByElement(
       new Map([
-        ['a', 'el1'],
-        ['b', 'el1'],
-        ['me', 'el2'], // self -> dropped
-        ['c', null], // deselected -> dropped
+        ['a', { elementId: 'el1', tabId: 't1' }],
+        ['b', { elementId: 'el1', tabId: 't1' }],
+        ['me', { elementId: 'el2', tabId: 't1' }], // self -> dropped
+        ['c', { elementId: null, tabId: 't1' }], // deselected -> dropped
       ]),
       byId(a, b),
       'me',
+      't1',
     );
     expect(out.get('el1')!.map((x) => x.id)).toEqual(['a', 'b']);
     expect(out.has('el2')).toBe(false);
+  });
+
+  it('drops selections scoped to a different tab, keeps tab-unknown legacy frames', () => {
+    const a = p('a');
+    const b = p('b');
+    const out = buildRemoteSelectionsByElement(
+      new Map([
+        // Same element id living on ANOTHER tab (a duplicated tab's
+        // verbatim copy): must not badge or lock our copy.
+        ['a', { elementId: 'el1', tabId: 'other-tab' }],
+        // Older peer, no tabId: shown everywhere (the old behaviour).
+        ['b', { elementId: 'el1' }],
+      ]),
+      byId(a, b),
+      'me',
+      't1',
+    );
+    expect(out.get('el1')!.map((x) => x.id)).toEqual(['b']);
   });
 });

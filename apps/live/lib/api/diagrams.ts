@@ -192,17 +192,26 @@ export async function apiCreateRoomTicket(
   diagramId: string,
   shareCode: string | null = null,
 ): Promise<string | null> {
-  try {
-    const res = await fetch(`${API_BASE}/diagrams/${diagramId}/room-ticket`, {
-      method: 'POST',
-      headers: await apiHeaders(ownerId, { share: shareCode }),
-    });
-    if (!res.ok) return null;
-    const { ticket } = (await res.json()) as { ticket?: string };
-    return typeof ticket === 'string' && ticket.length > 0 ? ticket : null;
-  } catch {
-    return null;
+  // Retried with a short backoff: a team member whose mint fails has NO
+  // fallback (the legacy query params are personal/share-code only and
+  // the connector has no reconnect loop), so one transient blip would
+  // otherwise cost the whole page session its realtime.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 500 * attempt));
+    try {
+      const res = await fetch(`${API_BASE}/diagrams/${diagramId}/room-ticket`, {
+        method: 'POST',
+        headers: await apiHeaders(ownerId, { share: shareCode }),
+      });
+      if (res.status >= 400 && res.status < 500 && res.status !== 429) return null;
+      if (!res.ok) continue;
+      const { ticket } = (await res.json()) as { ticket?: string };
+      return typeof ticket === 'string' && ticket.length > 0 ? ticket : null;
+    } catch {
+      // Network error — retry.
+    }
   }
+  return null;
 }
 
 // Copy a diagram (typically one shared with the caller) into the

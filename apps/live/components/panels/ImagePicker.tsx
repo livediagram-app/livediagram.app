@@ -10,6 +10,7 @@ import { useEscape } from '@/hooks/ui/useEscape';
 import { TrashIcon } from '@/components/panels/explorer-icons';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
+import { useModalGuard } from '@/hooks/ui/useModalGuard';
 
 // Two-tab modal launched from the Image element's placeholder + the
 // "Upload image" palette button. Tab 1 (Upload) accepts a file via
@@ -50,6 +51,9 @@ export function ImagePicker({
   onSelect,
   onClose,
 }: ImagePickerProps) {
+  // Mount-open modal: silence the canvas shortcut/paste listeners
+  // behind it (see lib/modal-guard).
+  useModalGuard(true);
   const [tab, setTab] = useState<'upload' | 'gallery'>('upload');
   const [gallery, setGallery] = useState<ImageSummary[] | null>(null);
   const [galleryError, setGalleryError] = useState<string | null>(null);

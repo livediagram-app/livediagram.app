@@ -19,6 +19,7 @@ import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
+import { useModalGuard } from '@/hooks/ui/useModalGuard';
 
 type Reason = {
   icon: ReactNode;
@@ -70,6 +71,9 @@ export function SignInReasonsModal({
   // navigation itself is a real <Link> so it works without JS.
   onSignIn: () => void;
 }) {
+  // Silence the canvas shortcut/paste listeners behind the modal
+  // (see lib/modal-guard).
+  useModalGuard(open);
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, open);
   // Return to the current page after sign-in (before the early return).

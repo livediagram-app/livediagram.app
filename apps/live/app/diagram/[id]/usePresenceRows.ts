@@ -13,6 +13,7 @@ import {
   buildParticipantsByTab,
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
+  type RemoteSelection,
 } from '@/lib/presence-rows';
 
 type PresenceRowsDeps = {
@@ -26,7 +27,7 @@ type PresenceRowsDeps = {
   lastSeenRef: MutableRefObject<Map<string, number>>;
   remoteTabFocus: Map<string, string>;
   remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
-  remoteSelections: Map<string, string | null>;
+  remoteSelections: Map<string, RemoteSelection>;
   remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[] }>;
   localLaserTrail: LaserPoint[];
 };
@@ -117,8 +118,14 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     ],
   );
   const remoteSelectionsByElement = useMemo(
-    () => buildRemoteSelectionsByElement(remoteSelections, livePresenceById, selfParticipant.id),
-    [remoteSelections, livePresenceById, selfParticipant.id],
+    () =>
+      buildRemoteSelectionsByElement(
+        remoteSelections,
+        livePresenceById,
+        selfParticipant.id,
+        activeId,
+      ),
+    [remoteSelections, livePresenceById, selfParticipant.id, activeId],
   );
   // Concurrent-selection lock (spec/07): an element another participant
   // has selected is off-limits to the local user. buildRemoteSelections-

@@ -47,6 +47,11 @@ type TabActionsDeps = {
   // pull, so without this the canvas would flash its loading overlay
   // over the new (and never-resolving) tab.
   markTabLoaded: (id: string) => void;
+  // Whether a tab's content has actually been fetched (spec/13).
+  // Duplicate must refuse a still-loading source: copying the empty
+  // placeholder and marking the copy loaded persists a permanently
+  // empty tab.
+  isTabLoaded: (id: string) => boolean;
   setActiveId: (id: string) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
@@ -76,6 +81,7 @@ export function useTabActions(deps: TabActionsDeps) {
     commitTabs,
     emitTabMeta,
     markTabLoaded,
+    isTabLoaded,
     setActiveId,
     setSelectedId,
     setEditingId,
@@ -306,11 +312,23 @@ export function useTabActions(deps: TabActionsDeps) {
   const duplicateTab = (id: string) => {
     const src = tabs.find((t) => t.id === id);
     if (!src) return;
+    // A still-loading source is an empty placeholder — copying it (and
+    // marking the copy loaded below) would persist a permanently empty
+    // tab. The lazy fetch resolves in well under a second; asking the
+    // user to retry beats silently duplicating nothing.
+    if (!isTabLoaded(id)) {
+      toast.error('That tab is still loading — try again in a moment.');
+      return;
+    }
     const copy: Tab = {
       ...src,
       id: crypto.randomUUID(),
       name: `${src.name} copy`,
-      elements: src.elements.map((el) => ({ ...el })),
+      // Re-mint ids (arrow endpoints remapped): element ids must be
+      // unique per DIAGRAM, not just per tab — verbatim copies made a
+      // peer's selection of the original render (and lock, spec/07) on
+      // the copy too, since remote selections resolve by element id.
+      elements: remintElementIds(src.elements.map((el) => ({ ...el }))),
     };
     const srcIndex = tabs.findIndex((t) => t.id === id);
     commitTabs((ts) => {

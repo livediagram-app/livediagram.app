@@ -213,10 +213,13 @@ describe('text DSL parsing (hand-authored)', () => {
     const { tab } = parseTab(src);
     const arrow = tab.elements.find((e) => e.type === 'arrow') as Record<string, unknown>;
     expect(arrow.arrowEnds).toBe('both');
-    expect(arrow.arrowheadShape).toBe('hollow-triangle');
+    // Values map to the MODEL vocabulary, not just the keys: the spec's
+    // `hollow-triangle` is the enum's `triangle-hollow`, and `width`
+    // names a thickness preset stored as raw px.
+    expect(arrow.arrowheadShape).toBe('triangle-hollow');
     expect(arrow.arrowStyle).toBe('curved');
     expect(arrow.strokeStyle).toBe('dashed');
-    expect(arrow.strokeWidth).toBe('thick');
+    expect(arrow.strokeWidth).toBe(4);
   });
 
   it('tolerates comments, blank lines, and forward references', () => {

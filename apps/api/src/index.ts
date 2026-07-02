@@ -152,7 +152,15 @@ export default {
         return json({ error: 'payload_too_large' }, { status: 413 });
       }
     }
-    if (isWrite && url.pathname !== '/api/events') {
+    // Room-ticket mints (spec/11) are exempt like /api/events: the mint
+    // is the auth handshake for opening the realtime room, and a 429 —
+    // easily reached because it shares the per-owner budget with the
+    // ~600ms autosave PUTs — would silently cost a team member their
+    // whole session's realtime (the connector has no reconnect loop).
+    // Mint volume is one row per room join and the route does no
+    // unbounded work, so it isn't a quota-exhaustion vector.
+    const isRoomTicketMint = segments[1] === 'diagrams' && segments[3] === 'room-ticket';
+    if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
       // A token request rate-limits on the TOKEN id (spec/61 §3.5), so a
       // runaway integration is throttled independently of the owner's
       // interactive app use; everything else keys on the resolved owner.

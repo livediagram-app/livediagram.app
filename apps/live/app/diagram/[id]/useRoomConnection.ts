@@ -10,6 +10,7 @@ import {
   type RoomHandlers,
 } from '@/lib/api-client';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
+import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 
 type CursorPos = { tabId: string; x: number; y: number } | null;
@@ -43,7 +44,7 @@ export function useRoomConnection(opts: {
   // history on each would wipe undo continuously during a shared session).
   applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
   setLivePresence: Dispatch<SetStateAction<Participant[]>>;
-  setRemoteSelections: Dispatch<SetStateAction<Map<string, string | null>>>;
+  setRemoteSelections: Dispatch<SetStateAction<Map<string, RemoteSelection>>>;
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
   setRemoteTabFocus: Dispatch<SetStateAction<Map<string, string>>>;
   setRemoteLaserTrails: Dispatch<SetStateAction<Map<string, LaserTrail>>>;
@@ -224,7 +225,9 @@ export function useRoomConnection(opts: {
         } else if (op.kind === 'select') {
           setRemoteSelections((prev) => {
             const next = new Map(prev);
-            next.set(from, op.elementId);
+            // tabId scopes the badge + spec/07 lock to the sender's tab;
+            // absent (older peer) = tab-unknown, shown everywhere.
+            next.set(from, { elementId: op.elementId, tabId: op.tabId });
             return next;
           });
         } else if (op.kind === 'cursor') {

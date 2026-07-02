@@ -259,7 +259,14 @@ export function useTabCanvas(deps: TabCanvasDeps) {
         // treat them all as user overrides and recolour nothing — the tab
         // reads as "stuck on the deleted theme". Hard-reset to the new
         // theme instead so picking a theme always visibly applies.
-        const prevTheme = resolveTheme(t.theme);
+        //
+        // A tab whose theme was simply NEVER SET (a fresh diagram, an
+        // added tab, the Blank template) is NOT that case: its baseline
+        // is the default theme, and the preserve-customs walk against it
+        // works — hard-resetting here wiped a user's hand-picked colours
+        // on their FIRST theme pick. Only a named theme that fails to
+        // resolve takes the hard-reset branch.
+        const prevTheme = t.theme === undefined ? getTheme(undefined) : resolveTheme(t.theme);
         if (!prevTheme) {
           return {
             ...t,

@@ -29,10 +29,16 @@ export function usePresenceBroadcast({
   // Fires whenever `selectedId` changes (including to null). Skipped before
   // the room is open or before hydration; peers learn the initial selection
   // state via their own `select` ops when they happen, not from a snapshot.
+  // Carries the active tab so peers scope the badge (and the spec/07
+  // selection lock) to the right tab — element ids alone aren't unique
+  // across tabs in older diagrams.
   useEffect(() => {
     if (!hydrated || !diagramId || (!diagramShareable && !diagramTeamId)) return;
-    roomRef.current?.send({ kind: 'op', op: { kind: 'select', elementId: selectedId } });
-  }, [hydrated, diagramId, diagramShareable, diagramTeamId, selectedId, roomRef]);
+    roomRef.current?.send({
+      kind: 'op',
+      op: { kind: 'select', elementId: selectedId, tabId: activeId },
+    });
+  }, [hydrated, diagramId, diagramShareable, diagramTeamId, selectedId, activeId, roomRef]);
 
   // Fires both on initial room connect (when the dependencies first satisfy)
   // and on every local tab switch.

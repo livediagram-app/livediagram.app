@@ -401,7 +401,19 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     // (or anyone who learned a member id) could keep joining the room.
     const ticket = url.searchParams.get('t');
     const ticketRole = ticket ? await consumeWsTicket(env, ticket, id) : null;
-    const isOwnerUpgrade = !!(diagram && claimedOwnerId && claimedOwnerId === diagram.ownerId);
+    // The bare-`o` owner match is PERSONAL diagrams only, mirroring the
+    // REST access rule (auth/diagram-access.ts): a TEAM diagram's owner
+    // id is a Clerk id deliberately visible to every teammate, so a
+    // removed member could present it here — the exact hole the ticket
+    // closed for the membership leg. Team owners come in via the ticket
+    // (its mint admits them through the verified callerId === ownerId
+    // leg); a personal guest owner's id stays an unguessable UUID.
+    const isOwnerUpgrade = !!(
+      diagram &&
+      !diagram.teamId &&
+      claimedOwnerId &&
+      claimedOwnerId === diagram.ownerId
+    );
     if (ticketRole) {
       role = ticketRole;
     } else if (isOwnerUpgrade) {

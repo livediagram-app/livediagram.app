@@ -62,7 +62,14 @@ export type RoomOp =
       // an older peer that omits it is treated as loose — no parse break.
       tabs: { id: string; name: string; orderIndex: number; folder?: string }[];
     }
-  | { kind: 'select'; elementId: string | null }
+  // `tabId` scopes the selection to the tab it lives on: element ids
+  // are only unique per tab in older diagrams (tab duplication used to
+  // copy ids verbatim), so an unscoped selection rendered — and, via
+  // the spec/07 concurrent-selection lock, LOCKED — the same-id element
+  // on every other tab too. Optional for wire compatibility: a frame
+  // without it is treated as tab-unknown and shown everywhere (the old
+  // behaviour).
+  | { kind: 'select'; elementId: string | null; tabId?: string }
   // Cursor position in canvas coordinates. `null` means the cursor
   // left the canvas surface so peers can hide their indicator. The
   // active tab id is included so we only render cursors of

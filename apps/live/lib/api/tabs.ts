@@ -12,6 +12,7 @@ import {
   expectOkOrNull,
   expectOkVoid,
   getLastKnownToken,
+  getSessionSharePassword,
   stripUiTabFields,
   type TabResponse,
 } from './core';
@@ -128,6 +129,11 @@ export function flushDiagramSavesBeacon(args: {
     if (sig) base['X-Owner-Sig'] = sig;
   }
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
+  // The share password (spec/24) is a synchronous session read too —
+  // without it an edit-role visitor's flush 403s on a protected
+  // diagram, losing the final debounce window's edits.
+  const sharePassword = getSessionSharePassword();
+  if (sharePassword) base['X-Share-Password'] = sharePassword;
   const jsonHeaders = { ...base, 'Content-Type': 'application/json' };
   for (const t of args.changedTabs) {
     const headers = args.loadedTabIds.has(t.id)

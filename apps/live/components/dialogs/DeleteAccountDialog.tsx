@@ -25,6 +25,7 @@ import { apiDeleteAccount } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
+import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { messageOf } from '@/components/chrome/auth-shared';
 
 type Phase = 'idle' | 'submitting' | 'error';
@@ -38,6 +39,9 @@ export function DeleteAccountDialog({
   onClose: () => void;
   onDeleted: () => Promise<void> | void;
 }) {
+  // Silence the canvas shortcut/paste listeners behind the modal
+  // (see lib/modal-guard).
+  useModalGuard(open);
   const { user } = useUser();
   const expectedEmail = user?.primaryEmailAddress?.emailAddress ?? '';
   // Wrap `user.delete()` in Clerk's reverification flow — destructive

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { RemoteSelection } from '@/lib/presence-rows';
 import type { Participant } from '@/lib/identity';
 import type { LaserPoint } from '@/lib/laser-buffer';
 
@@ -39,7 +40,7 @@ export function usePresenceState() {
   // participant who drops out of presence. Drives the on-element badges
   // in BoxedElementView so users can see in real time what others are
   // working on.
-  const [remoteSelections, setRemoteSelections] = useState<Map<string, string | null>>(new Map());
+  const [remoteSelections, setRemoteSelections] = useState<Map<string, RemoteSelection>>(new Map());
   // Live cursor positions for every remote participant. Stored in
   // canvas-coords (pre-transform) so they pan / zoom correctly with
   // the canvas. `null` cursor means the participant moved off the
