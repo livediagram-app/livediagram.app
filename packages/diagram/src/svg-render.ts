@@ -243,9 +243,10 @@ export function describeBoxedExport(
       : undefined;
   if (iconArt) {
     const size = fontSizeFor(el.textSize);
-    // The caption follows the element's vertical alignment (bottom is the
-    // icon default), sitting just off the top / floor; the glyph takes the
-    // opposite band (see svgIconShape).
+    // The caption follows the element's alignment (bottom-centre is the
+    // icon default), sitting just off its edge; the glyph takes the
+    // opposite band (see svgIconShape / techIconMarkBounds).
+    const alignX = el.textAlignX ?? 'center';
     const alignY = el.textAlignY ?? 'bottom';
     const labelY =
       alignY === 'top'
@@ -253,15 +254,17 @@ export function describeBoxedExport(
         : alignY === 'middle'
           ? el.y + el.height / 2
           : el.y + el.height - size;
+    const labelX =
+      alignX === 'left' ? el.x + 8 : alignX === 'right' ? el.x + el.width - 8 : el.x + el.width / 2;
     return {
       opacity,
       shape: { kind: 'icon', art: iconArt, fill, stroke },
       label: el.label
         ? {
             text: el.label,
-            x: el.x + el.width / 2,
+            x: labelX,
             y: labelY,
-            anchor: 'middle',
+            anchor: alignX === 'left' ? 'start' : alignX === 'right' ? 'end' : 'middle',
             color: el.textColor ?? defaultTextColor(el),
             size,
             bold: !!el.textBold,

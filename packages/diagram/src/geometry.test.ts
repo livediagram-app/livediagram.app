@@ -59,6 +59,36 @@ describe('anchorPosition', () => {
     expect(anchorPosition(line, 'e')).toEqual({ x: 200, y: 50 });
   });
 
+  it("pushes a captioned tech icon's caption-side anchor to the element edge", () => {
+    // 200x100 box with a bottom caption: band y 6..64, so the 48px mark sits
+    // at (76, 11)..(124, 59). Side anchors stay on the chip; the SOUTH anchor
+    // (the caption's side) pushes to the element's bottom line so a downward
+    // connector starts under the text instead of crossing it.
+    const tech = shape('t', {
+      shape: 'icon',
+      iconId: 'aws-ec2',
+      width: 200,
+      height: 100,
+      label: 'EC2',
+    });
+    expect(anchorPosition(tech, 'e')).toEqual({ x: 124, y: 35 });
+    const n = anchorPosition(tech, 'n');
+    expect(n.x).toBe(100);
+    expect(n.y).toBeCloseTo(11);
+    expect(anchorPosition(tech, 's')).toEqual({ x: 100, y: 100 });
+    // Top-aligned caption mirrors: the NORTH anchor pushes to the top line.
+    const topCap = shape('t2', {
+      shape: 'icon',
+      iconId: 'aws-ec2',
+      width: 200,
+      height: 100,
+      label: 'EC2',
+      textAlignY: 'top',
+    });
+    expect(anchorPosition(topCap, 'n')).toEqual({ x: 100, y: 0 });
+    expect(anchorPosition(topCap, 's').y).toBeCloseTo(89); // mark bottom (band y 36..94, 48px mark centred)
+  });
+
   it('projects diamond anchors onto the diamond outline (corners land on the slanted edge)', () => {
     const d = shape('d', { shape: 'diamond', x: 0, y: 0, width: 100, height: 100 });
     // Cardinal anchors are the diamond's tips already — unchanged.

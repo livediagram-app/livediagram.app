@@ -136,10 +136,16 @@ on the element (`IconSize = 'sm' | 'md' | 'lg' | 'xl'` → 32 / 48 / 64 / 96 px,
 `ICON_SIZE_PX` in `packages/diagram/src/icon-size.ts`), defaulting to `md`
 (48 px); the tile clamps to the element box when the box is smaller than the
 preset. Layout: with a label the mark centres inside the band **opposite the
-caption's vertical alignment** — a bottom-aligned caption (the icon default)
-puts the mark in the top ~64% of the box, while a top- or middle-aligned
-caption sends it to the bottom band, so moving the text never stacks it over
-the mark; without a label the mark centres in the whole box. Line-art
+caption's alignment**, so moving the text never stacks it over the mark. A
+horizontally-centred caption flips the mark vertically: a bottom-aligned
+caption (the icon default) puts it in the top ~64% of the box, a top- or
+middle-aligned caption sends it to the bottom band. A **left- or
+right-aligned caption flips it horizontally instead** — left caption → mark
+in the right half, right caption → left half — and the mark stays on the
+caption's row (top / middle / bottom) so the pair reads as one line. Without
+a label the mark centres in the whole box. `techIconMarkBounds`
+(`packages/diagram/src/icon-size.ts`) is the single source of this geometry;
+the editor overlay's CSS bands mirror its numbers. Line-art
 icons are unaffected — they are drawings that keep scaling with their box.
 The exports / headless renders (`svgIconShape` in the shared renderer) apply
 the same fixed-size geometry so a resized mark exports exactly as drawn.
@@ -151,9 +157,20 @@ renderers use): pinned endpoints touch the chip's edge, and the auto-attach
 face choice (`rankAnchorsTowards` / `anchorAimPoint` in
 `packages/diagram/src/geometry.ts`) answers for the chip — so an arrow to an
 element below leaves the mark's bottom centre instead of a box edge floating
-in whitespace. Line-art icons keep box anchors (their glyph scales with the
-box). The diagram package reads `isTechIconId` from `@livediagram/icons`
+in whitespace. **Exception: the caption's side.** The caption sits between
+the mark and the element edge on its side, so the anchors on that side push
+out to the element edge — a connector leaving toward a bottom caption starts
+at the element's bottom line, under the text, instead of crossing it (and
+mirrored for top / left / right captions). Line-art icons keep box anchors
+(their glyph scales with the box). The diagram package reads `isTechIconId` from `@livediagram/icons`
 (tech-icon-ids.ts, re-exported by `apps/live/lib/tech-icons.ts`).
+
+**The format painter carries the icon fields.** Painting from one icon to
+another copies `iconSize` (the Technology mark's fixed-size preset),
+`iconAnimation` + `iconAnimationSpeed`, and every generic styling field
+(colours, border, text styling, alignment, size, opacity) — the glyph
+identity (`iconId`) never paints, same as labels. The usual painter contract
+applies: fields the source leaves unset don't overwrite the target's.
 
 **Icon size presets in the context menu.** A Technology icon element's
 right-click menu gains an **Icon** category (single-element menu only, like

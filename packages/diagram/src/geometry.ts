@@ -183,6 +183,31 @@ export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
       local,
     );
     if (projected) local = projected;
+  } else if (box !== element && element.label) {
+    // Tech icon with a caption: the caption sits between the mark and the
+    // element edge on its side, so the anchors on THAT side push out to the
+    // element edge — a connector leaving toward the caption starts past the
+    // text (under a bottom caption, above a top one, beyond a left/right
+    // one) instead of crossing it. The other sides stay on the chip.
+    const alignX = element.textAlignX ?? 'center';
+    const alignY = element.textAlignY ?? 'bottom';
+    if (alignX === 'left' && (anchor === 'w' || anchor === 'nw' || anchor === 'sw')) {
+      local = { x: element.x, y: local.y };
+    } else if (alignX === 'right' && (anchor === 'e' || anchor === 'ne' || anchor === 'se')) {
+      local = { x: element.x + element.width, y: local.y };
+    } else if (
+      alignX === 'center' &&
+      alignY === 'bottom' &&
+      (anchor === 's' || anchor === 'se' || anchor === 'sw')
+    ) {
+      local = { x: local.x, y: element.y + element.height };
+    } else if (
+      alignX === 'center' &&
+      alignY !== 'bottom' &&
+      (anchor === 'n' || anchor === 'ne' || anchor === 'nw')
+    ) {
+      local = { x: local.x, y: element.y };
+    }
   }
   const rotation = element.rotation ?? 0;
   if (!rotation) return local;

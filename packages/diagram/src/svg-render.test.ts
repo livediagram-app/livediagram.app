@@ -183,6 +183,27 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('y="14"'); // el.y + fontSize (default 14)
     });
 
+    it('sends a left-captioned mark to the right half, on the caption row (spec/41)', () => {
+      const art = () => ({ markup: '<circle/>', colored: true });
+      const svg = renderElementsToSvg(
+        tab([
+          icon({
+            width: 200,
+            height: 100,
+            label: 'EC2',
+            textAlignX: 'left',
+            textAlignY: 'middle',
+          }),
+        ]),
+        { resolveIconArt: art },
+      );
+      // Right half band x 100..188 (44% wide from 50%), full height (middle
+      // row): the 48px mark centres at (120, 26).
+      expect(svg).toContain('x="120" y="26" width="48" height="48"');
+      // Caption anchors left, vertically centred.
+      expect(svg).toContain('text-anchor="start"');
+    });
+
     it('falls back to the box-with-label output without a resolver', () => {
       const svg = renderElementsToSvg(tab([icon({ label: 'Server' })]));
       expect(svg).toContain('<rect'); // the generic body
