@@ -13,8 +13,8 @@ import {
   NumberedListIcon,
 } from './rich-text-toolbar-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
+import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import {
-  AlignIcon,
   BoldIcon,
   DotsIcon,
   ItalicIcon,
@@ -423,12 +423,15 @@ export function RichTextToolbar({
         </Tooltip>
       ))}
       {divider}
-      {/* Alignment — the shared 3×3 grid, reused. */}
+      {/* Alignment — the shared 3×3 grid, reused. The trigger is the
+          familiar word-processor glyph (stacked lines whose ends follow the
+          horizontal alignment), not the positional box-dot the grid cells
+          use, so the control reads as "alignment" at a glance. */}
       <ToolbarDropdown
         label="Alignment"
         description="Align the label inside the element."
         menuClassName="w-28 p-1.5"
-        trigger={<AlignIcon x={alignX} y={alignY} />}
+        trigger={<AlignLinesIcon dir={alignX} />}
       >
         <AlignmentGrid alignX={alignX} alignY={alignY} onChange={onSetAlign} />
       </ToolbarDropdown>
