@@ -19,6 +19,13 @@ import {
   type BorderStroke,
   type BorderStyle,
   type Element,
+  type IconPosition,
+  type IconSize,
+  type ShapeKind,
+  type ShapeMarker,
+  type TextAlignX,
+  type TextAlignY,
+  type TextSize,
 } from '@livediagram/diagram';
 import type { ShapeColorPreset } from './themes';
 
@@ -92,6 +99,54 @@ export function applyRotationToEl(el: Element, deg: number): Element {
   if (!isBoxed(el)) return el;
   const next = ((Math.round(deg) % 360) + 360) % 360;
   return { ...el, rotation: next === 0 ? undefined : next };
+}
+
+// Morph a shape into a different kind, preserving width / height / label /
+// colour overrides. Circle and diamond are 1:1 shapes — coming from a
+// non-square box, snap to the larger side so the result fits the original
+// footprint. No-op on non-shapes.
+export function applyShapeKindToEl(el: Element, kind: ShapeKind): Element {
+  if (el.type !== 'shape') return el;
+  const oneToOne = kind === 'circle' || kind === 'diamond';
+  if (oneToOne) {
+    const side = Math.max(el.width, el.height);
+    return { ...el, shape: kind, width: side, height: side };
+  }
+  return { ...el, shape: kind };
+}
+
+// A Technology icon's fixed tile-size preset (spec/41). Icon shapes only.
+export function applyIconSizeToEl(el: Element, iconSize: IconSize): Element {
+  return el.type === 'shape' && el.shape === 'icon' ? { ...el, iconSize } : el;
+}
+
+// Status markers (spec/49): the glyph shown inside the shape, left of its
+// label; `null` clears it. Shapes only.
+export function applyMarkerToEl(el: Element, marker: ShapeMarker | null): Element {
+  return el.type === 'shape' ? { ...el, marker: marker ?? undefined } : el;
+}
+
+export function applyMarkerSizeToEl(el: Element, size: TextSize): Element {
+  return el.type === 'shape' ? { ...el, markerSize: size } : el;
+}
+
+// Text alignment inside the box (the toolbar's 3×3 grid). Boxed elements only.
+export function applyTextAlignToEl(el: Element, x: TextAlignX, y: TextAlignY): Element {
+  return isBoxed(el) ? { ...el, textAlignX: x, textAlignY: y } : el;
+}
+
+// Label size preset. Boxed elements + arrows (arrow labels size too).
+export function applyTextSizeToEl(el: Element, size: TextSize): Element {
+  return isBoxed(el) || el.type === 'arrow' ? { ...el, textSize: size } : el;
+}
+
+// Re-place a shape's inline icon on another side (spec/09 icons). Regular
+// shapes only — the dedicated 'icon' shape has no inline-icon slot. Mirrors
+// dropIconOnElement in useInlineIconMutators.
+export function applyInlineIconToEl(el: Element, iconId: string, position: IconPosition): Element {
+  return el.type === 'shape' && el.shape !== 'icon'
+    ? { ...el, iconId, iconPosition: position }
+    : el;
 }
 
 // Apply a line preset (pattern × thickness × optional flow) to an arrow. A

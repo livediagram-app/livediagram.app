@@ -319,6 +319,8 @@ export function ElementAppearanceSections({
             <IconSizeTiles
               value={(target as { iconSize?: IconSize }).iconSize ?? DEFAULT_ICON_SIZE}
               onSet={props.onSetIconSize}
+              onPreview={props.onPreviewIconSize}
+              onPreviewEnd={props.onPreviewStyleEnd}
             />
           </MenuAccordionSection>
         </>
@@ -343,6 +345,14 @@ export function ElementAppearanceSections({
                   pos,
                 )
               }
+              onPreview={(pos) =>
+                props.onPreviewIconPosition(
+                  target.id,
+                  (target as { iconId?: string }).iconId ?? '',
+                  pos,
+                )
+              }
+              onPreviewEnd={props.onPreviewStyleEnd}
             />
             <ContextMenuDivider />
             <div className="px-2 py-1.5">
@@ -372,6 +382,9 @@ export function ElementAppearanceSections({
             size={shapeTarget?.markerSize ?? 'scale'}
             onSet={props.onSetMarker}
             onSetSize={props.onSetMarkerSize}
+            onPreview={props.onPreviewMarker}
+            onPreviewSize={props.onPreviewMarkerSize}
+            onPreviewEnd={props.onPreviewStyleEnd}
           />
         </MenuAccordionSection>
       ) : null}
@@ -389,6 +402,8 @@ export function ElementAppearanceSections({
               alignX={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
               alignY={(target as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
               onChange={props.onSetTextAlign}
+              onPreview={props.onPreviewTextAlign}
+              onPreviewEnd={props.onPreviewStyleEnd}
             />
           </div>
         </MenuAccordionSection>

@@ -243,10 +243,7 @@ export function EditorView() {
     setArrowStrokeStyleSelected,
     setArrowStyleSelected,
     setArrowThicknessSelected,
-    setShapeKindSelected,
     resetAspectRatioSelected,
-    setMarkerSelected,
-    setMarkerSizeSelected,
     setRailCountSelected,
     addRailPointSelected,
     appendTableRowSelected,
@@ -288,6 +285,20 @@ export function EditorView() {
     commitBorderRadius,
     previewRotation,
     commitRotation,
+    previewShapeKind,
+    commitShapeKind,
+    previewIconSize,
+    commitIconSize,
+    previewMarker,
+    commitMarker,
+    previewMarkerSize,
+    commitMarkerSize,
+    previewTextAlign,
+    commitTextAlign,
+    previewTextSize,
+    commitTextSize,
+    previewInlineIcon,
+    commitInlineIcon,
     resetShapeStyleSelected,
     resetArrowStyleSelected,
     setIconAnimationSpeedSelected,
@@ -313,7 +324,6 @@ export function EditorView() {
     openCellLinkPicker,
     setMultiSelectedIds,
     setOpacitySelected,
-    setIconSizeSelected,
     setPaddingSelected,
     setPalettePosition,
     setSearchOpen,
@@ -1032,9 +1042,12 @@ export function EditorView() {
           onOpenImagePicker={(id) => imageContext?.onOpenPicker?.(id)}
           onRemoveImage={removeImageFromElement}
           onRemoveLink={() => applyElementLink(null)}
-          onSetIconPosition={dropIconOnElement}
-          onSetIconSize={setIconSizeSelected}
-          onSetTextAlign={setTextAlignSelected}
+          onSetIconPosition={commitInlineIcon}
+          onPreviewIconPosition={previewInlineIcon}
+          onSetIconSize={commitIconSize}
+          onPreviewIconSize={previewIconSize}
+          onSetTextAlign={commitTextAlign}
+          onPreviewTextAlign={previewTextAlign}
           onBringToFront={bringSelectedToFront}
           onSendToBack={sendSelectedToBack}
           onToggleAspectLock={toggleAspectLockSelected}
@@ -1056,8 +1069,10 @@ export function EditorView() {
           onCommitBorderRadius={commitBorderRadius}
           onPreviewRotation={previewRotation}
           onCommitRotation={commitRotation}
-          onSetMarker={setMarkerSelected}
-          onSetMarkerSize={setMarkerSizeSelected}
+          onSetMarker={commitMarker}
+          onPreviewMarker={previewMarker}
+          onSetMarkerSize={commitMarkerSize}
+          onPreviewMarkerSize={previewMarkerSize}
           onSetRailCount={setRailCountSelected}
           onSetRating={setRatingSelected}
           onSetRatingAnim={setRatingAnimSelected}
@@ -1097,14 +1112,16 @@ export function EditorView() {
           onToggleTextItalic={() => toggleTextStyleSelected('textItalic')}
           onToggleTextUnderline={() => toggleTextStyleSelected('textUnderline')}
           onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
-          onSetTextSize={setTextSizeSelected}
+          onSetTextSize={commitTextSize}
+          onPreviewTextSize={previewTextSize}
           onSetArrowThickness={setArrowThicknessSelected}
           onSetArrowStyle={setArrowStyleSelected}
           onSetArrowStrokeStyle={setArrowStrokeStyleSelected}
           onSetArrowEnds={setArrowEndsSelected}
           onSetArrowheadSize={setArrowheadSizeSelected}
           onSetArrowheadShape={setArrowheadShapeSelected}
-          onSetShapeKind={setShapeKindSelected}
+          onSetShapeKind={commitShapeKind}
+          onPreviewShapeKind={previewShapeKind}
           onResetAspectRatio={resetAspectRatioSelected}
           presetColors={themePresetColors(getTheme(activeTab.theme))}
           onToggleTableHeaderRow={setTableHeaderRowSelected}

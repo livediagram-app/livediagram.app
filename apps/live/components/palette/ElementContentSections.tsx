@@ -102,7 +102,12 @@ export function ElementContentSections({
           <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
             Size
           </p>
-          <TextSizeTiles current={target.textSize ?? 'sm'} onSet={props.onSetTextSize} />
+          <TextSizeTiles
+            current={target.textSize ?? 'sm'}
+            onSet={props.onSetTextSize}
+            onPreview={props.onPreviewTextSize}
+            onPreviewEnd={props.onPreviewStyleEnd}
+          />
           <ContextMenuDivider />
           <ColourRow
             label="Colour"

@@ -55,12 +55,21 @@ input does not preview (a tap is the commit).
 
 ### Granular controls preview too
 
-The same hover-to-preview / click-commit flow extends to the **individual**
-appearance controls in the context menu, not just the preset tiles:
+The same hover-to-preview / click-commit flow extends to **every discrete tile
+control** in the context menus (single-element and multi-selection), not just
+the preset tiles:
 
 - the **colour swatches** (Text / Background / Border) in the Colours section,
-- the **Border** tiles (Strength / Pattern / Radius), and
-- the **Rotation** angle tiles.
+- the **Border** tiles (Strength / Pattern / Radius),
+- the **Rotation** angle tiles,
+- the **Shape** morph tiles (the single menu previews just the clicked
+  element, never its whole group; the multi menu previews every morphable
+  member),
+- the **Icon size** tiles on a Technology icon (spec/41),
+- the **Icon position** cross on a shape's inline icon,
+- the **Markers** tiles and their Size row (spec/49),
+- the **Text Alignment** 3×3 grid, and
+- the **Text size** tiles (Scale / S / M / L).
 
 Hovering any of these shows the value live on the selection and only commits on
 click, with the same ephemeral-preview / true-undo guarantees as the presets.

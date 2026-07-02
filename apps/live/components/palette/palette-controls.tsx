@@ -8,6 +8,7 @@ import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import { AlignIcon } from '@/components/palette/palette-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { onMouseHover } from '@/components/primitives/hover-preview';
 import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
 
@@ -142,10 +143,17 @@ export function AlignmentGrid({
   alignX,
   alignY,
   onChange,
+  onPreview,
+  onPreviewEnd,
 }: {
   alignX: TextAlignX;
   alignY: TextAlignY;
   onChange: (x: TextAlignX, y: TextAlignY) => void;
+  // Optional hover-preview pair (spec/48 flow), used by the context menus:
+  // hovering a cell aligns the text live, leaving reverts. The text toolbar
+  // omits them (its grid sits over the element being edited).
+  onPreview?: (x: TextAlignX, y: TextAlignY) => void;
+  onPreviewEnd?: () => void;
 }) {
   return (
     <div className="grid grid-cols-3 gap-1">
@@ -160,6 +168,8 @@ export function AlignmentGrid({
             <button
               type="button"
               onClick={() => onChange(x, y)}
+              onPointerEnter={onPreview ? onMouseHover(() => onPreview(x, y)) : undefined}
+              onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
               aria-label={alignLabel(x, y)}
               aria-pressed={active}
               className={

@@ -186,7 +186,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                 <SizeButton
                   key={kind}
                   active={target.type === 'shape' && target.shape === kind}
-                  onClick={() => props.onSetShapeKind(kind)}
+                  onClick={() => props.onSetShapeKind([target.id], kind)}
+                  onPointerEnter={onMouseHover(() => props.onPreviewShapeKind([target.id], kind))}
+                  onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
                 >
                   <ShapeIcon kind={kind} />
                 </SizeButton>

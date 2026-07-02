@@ -36,7 +36,14 @@ import type {
   Element,
   ElementAnimation,
   IconAnimation,
+  IconPosition,
+  IconSize,
+  ShapeKind,
+  ShapeMarker,
   Tab,
+  TextAlignX,
+  TextAlignY,
+  TextSize,
 } from '@livediagram/diagram';
 import {
   applyArrowPresetToEl,
@@ -45,9 +52,16 @@ import {
   applyBorderStyleToEl,
   applyColorPresetToEl,
   applyFillColorToEl,
+  applyIconSizeToEl,
+  applyInlineIconToEl,
+  applyMarkerSizeToEl,
+  applyMarkerToEl,
   applyRotationToEl,
+  applyShapeKindToEl,
   applyStrokeColorToEl,
+  applyTextAlignToEl,
   applyTextColorToEl,
+  applyTextSizeToEl,
 } from '@/lib/style-presets';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
@@ -89,10 +103,13 @@ export function useStylePreview(deps: {
   const elementsNow = (): Element[] =>
     tabsRef.current.find((t) => t.id === activeId)?.elements ?? [];
 
-  // Capture the originals for the current selection (once per preview session).
-  const ensureSnapshot = (): Snapshot | null => {
+  // Capture the originals for the current selection (once per preview
+  // session). `idsOverride` narrows the scope for controls that act on
+  // explicit elements rather than the resolved selection — shape morph and
+  // inline-icon placement target the clicked element, not its whole group.
+  const ensureSnapshot = (idsOverride?: Set<string>): Snapshot | null => {
     if (previewRef.current) return previewRef.current;
-    const ids = currentSelectionIds();
+    const ids = idsOverride ?? currentSelectionIds();
     if (ids.size === 0) return null;
     const originals = new Map<string, Element>();
     for (const el of elementsNow()) if (ids.has(el.id)) originals.set(el.id, el);
@@ -121,9 +138,9 @@ export function useStylePreview(deps: {
 
   // Ephemeral preview of `mapEl` over the selection. Maps from the captured
   // originals so consecutive hovers don't compound.
-  const previewStyle = (mapEl: (el: Element) => Element) => {
+  const previewStyle = (mapEl: (el: Element) => Element, ids?: Set<string>) => {
     if (editsBlocked) return;
-    const snap = ensureSnapshot();
+    const snap = ensureSnapshot(ids);
     if (!snap) return;
     // Mark the preview active so autosave ignores this (and any subsequent)
     // tick until the pointer leaves (clearPreview) or the user clicks (commit).
@@ -150,9 +167,13 @@ export function useStylePreview(deps: {
 
   // Commit `mapEl` as one history step + activity entry, from the true original
   // base (see the file header).
-  const commitStyle = (mapEl: (el: Element) => Element, telemetryType: string) => {
+  const commitStyle = (
+    mapEl: (el: Element) => Element,
+    telemetryType: string,
+    ids?: Set<string>,
+  ) => {
     if (editsBlocked) return;
-    const snap = ensureSnapshot();
+    const snap = ensureSnapshot(ids);
     if (!snap) return;
     previewRef.current = null;
     // The click commits for real: let autosave persist the result below.
@@ -204,6 +225,34 @@ export function useStylePreview(deps: {
     // Rotation angle tiles (fixed 45° steps).
     previewRotation: (deg: number) => previewStyle((el) => applyRotationToEl(el, deg)),
     commitRotation: (deg: number) => commitStyle((el) => applyRotationToEl(el, deg), 'Rotation'),
+    // Shape morph tiles. Id-scoped: the single menu morphs the clicked
+    // element only (not its group), the multi menu passes every morphable
+    // member — so the ids come from the caller, not the resolved selection.
+    previewShapeKind: (ids: string[], kind: ShapeKind) =>
+      previewStyle((el) => applyShapeKindToEl(el, kind), new Set(ids)),
+    commitShapeKind: (ids: string[], kind: ShapeKind) =>
+      commitStyle((el) => applyShapeKindToEl(el, kind), 'ShapeMorph', new Set(ids)),
+    // Tech-icon fixed tile size (spec/41).
+    previewIconSize: (v: IconSize) => previewStyle((el) => applyIconSizeToEl(el, v)),
+    commitIconSize: (v: IconSize) => commitStyle((el) => applyIconSizeToEl(el, v), 'IconSize'),
+    // Status markers (spec/49) + their size row.
+    previewMarker: (v: ShapeMarker | null) => previewStyle((el) => applyMarkerToEl(el, v)),
+    commitMarker: (v: ShapeMarker | null) => commitStyle((el) => applyMarkerToEl(el, v), 'Marker'),
+    previewMarkerSize: (v: TextSize) => previewStyle((el) => applyMarkerSizeToEl(el, v)),
+    commitMarkerSize: (v: TextSize) =>
+      commitStyle((el) => applyMarkerSizeToEl(el, v), 'MarkerSize'),
+    // Text alignment 3×3 grid + text size tiles.
+    previewTextAlign: (x: TextAlignX, y: TextAlignY) =>
+      previewStyle((el) => applyTextAlignToEl(el, x, y)),
+    commitTextAlign: (x: TextAlignX, y: TextAlignY) =>
+      commitStyle((el) => applyTextAlignToEl(el, x, y), 'TextAlign'),
+    previewTextSize: (v: TextSize) => previewStyle((el) => applyTextSizeToEl(el, v)),
+    commitTextSize: (v: TextSize) => commitStyle((el) => applyTextSizeToEl(el, v), 'TextSize'),
+    // Inline-icon placement (spec/09 icons). Id-scoped like shape morph.
+    previewInlineIcon: (elementId: string, iconId: string, position: IconPosition) =>
+      previewStyle((el) => applyInlineIconToEl(el, iconId, position), new Set([elementId])),
+    commitInlineIcon: (elementId: string, iconId: string, position: IconPosition) =>
+      commitStyle((el) => applyInlineIconToEl(el, iconId, position), 'Icon', new Set([elementId])),
     // Animation tiles (spec/09): the same hover-preview / click-commit flow,
     // each setting a single field on the matching member of the selection
     // (boxed `animation`, arrow `flow`, icon-shape `iconAnimation`). `null` is

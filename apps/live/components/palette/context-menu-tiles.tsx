@@ -324,15 +324,27 @@ function IconSizeGlyph({ size }: { size: IconSize }) {
 export function IconSizeTiles({
   value,
   onSet,
+  onPreview,
+  onPreviewEnd,
 }: {
   // The element's committed preset ('md' when unset).
   value: IconSize;
   onSet: (v: IconSize) => void;
+  // Optional hover-preview pair (spec/48 flow): hovering a tile shows the
+  // size live on the icon, leaving reverts.
+  onPreview?: (v: IconSize) => void;
+  onPreviewEnd?: () => void;
 }) {
   return (
     <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
       {ICON_SIZES.map((s) => (
-        <SizeButton key={s} active={value === s} onClick={() => onSet(s)}>
+        <SizeButton
+          key={s}
+          active={value === s}
+          onClick={() => onSet(s)}
+          onPointerEnter={onPreview ? onMouseHover(() => onPreview(s)) : undefined}
+          onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
+        >
           <TileLabel glyph={<IconSizeGlyph size={s} />} label={ICON_SIZE_LABEL[s]} />
         </SizeButton>
       ))}

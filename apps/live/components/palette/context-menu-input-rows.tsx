@@ -98,15 +98,23 @@ export function ColourRow({
 export function IconPositionGrid({
   current,
   onPick,
+  onPreview,
+  onPreviewEnd,
 }: {
   current: string;
   onPick: (pos: IconPosition) => void;
+  // Optional hover-preview pair (spec/48 flow): hovering a cell shows the
+  // icon on that side live, leaving reverts.
+  onPreview?: (pos: IconPosition) => void;
+  onPreviewEnd?: () => void;
 }) {
   const cell = (key: IconPosition, label: string, dir: 'up' | 'down' | 'left' | 'right') => (
     <button
       type="button"
       aria-pressed={current === key}
       onClick={() => onPick(key)}
+      onPointerEnter={onPreview ? onMouseHover(() => onPreview(key)) : undefined}
+      onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
       className={`flex items-center justify-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium transition ${
         current === key
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'

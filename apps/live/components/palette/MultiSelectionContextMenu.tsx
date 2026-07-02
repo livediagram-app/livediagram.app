@@ -145,13 +145,15 @@ export function MultiSelectionContextMenu({
         // can restyle on ONE element works on a selection / group too. Each
         // section reads its display value off the first matching member and
         // writes selection-wide (the setters already are).
-        const morphSrc = boxedSel.find(
+        const morphable = boxedSel.filter(
           (el) =>
             el.type === 'shape' &&
             el.shape !== 'icon' &&
             el.shape !== 'frame' &&
             !isSelfDrawingShape(el.shape),
-        ) as ShapeElement | undefined;
+        ) as ShapeElement[];
+        const morphSrc = morphable[0];
+        const morphIds = morphable.map((el) => el.id);
         const markerSrc = boxedSel.find(
           (el) =>
             el.type === 'shape' &&
@@ -228,7 +230,9 @@ export function MultiSelectionContextMenu({
                     <SizeButton
                       key={kind}
                       active={morphSrc.shape === kind}
-                      onClick={() => props.onSetShapeKind(kind)}
+                      onClick={() => props.onSetShapeKind(morphIds, kind)}
+                      onPointerEnter={onMouseHover(() => props.onPreviewShapeKind(morphIds, kind))}
+                      onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
                     >
                       <ShapeIcon kind={kind} />
                     </SizeButton>
@@ -407,7 +411,12 @@ export function MultiSelectionContextMenu({
                 icon={<IconCategoryGlyph />}
                 {...sectionProps('m-icon-size')}
               >
-                <IconSizeTiles value={techIconSrc.iconSize ?? 'md'} onSet={props.onSetIconSize} />
+                <IconSizeTiles
+                  value={techIconSrc.iconSize ?? 'md'}
+                  onSet={props.onSetIconSize}
+                  onPreview={props.onPreviewIconSize}
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
               </MenuAccordionSection>
             ) : null}
             {/* ── Text band (spec/09): Markers + Alignment. ── */}
@@ -425,6 +434,9 @@ export function MultiSelectionContextMenu({
                   size={markerSrc.markerSize ?? 'scale'}
                   onSet={props.onSetMarker}
                   onSetSize={props.onSetMarkerSize}
+                  onPreview={props.onPreviewMarker}
+                  onPreviewSize={props.onPreviewMarkerSize}
+                  onPreviewEnd={props.onPreviewStyleEnd}
                 />
               </MenuAccordionSection>
             ) : null}
@@ -444,6 +456,8 @@ export function MultiSelectionContextMenu({
                     alignX={(alignSrc as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
                     alignY={(alignSrc as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
                     onChange={props.onSetTextAlign}
+                    onPreview={props.onPreviewTextAlign}
+                    onPreviewEnd={props.onPreviewStyleEnd}
                   />
                 </div>
               </MenuAccordionSection>
@@ -494,6 +508,8 @@ export function MultiSelectionContextMenu({
                 <TextSizeTiles
                   current={(textSrc as { textSize?: TextSize }).textSize}
                   onSet={props.onSetTextSize}
+                  onPreview={props.onPreviewTextSize}
+                  onPreviewEnd={props.onPreviewStyleEnd}
                 />
               </MenuAccordionSection>
             ) : null}

@@ -17,6 +17,7 @@ import {
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
   applyColorPresetToEl,
+  applyShapeKindToEl,
 } from '@/lib/style-presets';
 import { track } from '@/lib/telemetry';
 
@@ -44,17 +45,7 @@ export function useShapeStyleSetters({
   // the result fits the original footprint.
   const setShapeKindSelected = (kind: ShapeKind) => {
     if (!selectedId) return;
-    commit((els) =>
-      els.map((el) => {
-        if (el.id !== selectedId || el.type !== 'shape') return el;
-        const oneToOne = kind === 'circle' || kind === 'diamond';
-        if (oneToOne) {
-          const side = Math.max(el.width, el.height);
-          return { ...el, shape: kind, width: side, height: side };
-        }
-        return { ...el, shape: kind };
-      }),
-    );
+    commit((els) => els.map((el) => (el.id === selectedId ? applyShapeKindToEl(el, kind) : el)));
     track('Element', 'Changed', 'ShapeMorph');
   };
 

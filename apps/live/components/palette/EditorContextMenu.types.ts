@@ -87,9 +87,12 @@ export type EditorContextMenuProps = {
   onCommitBorderRadius: (value: BorderRadius) => void;
   onPreviewRotation: (deg: number) => void;
   onCommitRotation: (deg: number) => void;
-  // Status markers (spec/49): set / clear the shape's marker glyph and its size.
+  // Status markers (spec/49): set / clear the shape's marker glyph and its
+  // size. Commit + hover-preview pairs, like the border tiles above.
   onSetMarker: (value: ShapeMarker | null) => void;
   onSetMarkerSize: (value: TextSize) => void;
+  onPreviewMarker: (value: ShapeMarker | null) => void;
+  onPreviewMarkerSize: (value: TextSize) => void;
   // Timeline rail (spec/51): set the rail's point count.
   onSetRailCount: (count: number) => void;
   // Rating (spec/52): the star score + its animation.
@@ -152,6 +155,7 @@ export type EditorContextMenuProps = {
   onToggleTextUnderline: () => void;
   onToggleTextStrikethrough: () => void;
   onSetTextSize: (size: TextSize) => void;
+  onPreviewTextSize: (size: TextSize) => void;
   // Arrow Line + Pointer controls (spec/09), surfaced for arrows via the
   // shared ArrowLine / Pointer controls.
   onSetArrowThickness: (v: ArrowThickness) => void;
@@ -160,8 +164,11 @@ export type EditorContextMenuProps = {
   onSetArrowEnds: (v: ArrowEnds) => void;
   onSetArrowheadSize: (v: ArrowheadSize) => void;
   onSetArrowheadShape: (v: ArrowheadShape) => void;
-  // Morph a shape element to another kind in place (preserving size/colour).
-  onSetShapeKind: (kind: ShapeKind) => void;
+  // Morph shape elements to another kind in place (preserving size/colour).
+  // Id-scoped: the single menu passes just the clicked element, the multi
+  // menu every morphable member. Commit + hover-preview pair.
+  onSetShapeKind: (ids: string[], kind: ShapeKind) => void;
+  onPreviewShapeKind: (ids: string[], kind: ShapeKind) => void;
   // Reset the shape back to its kind's default aspect ratio (keeps area,
   // snaps the width:height proportion back to the canonical look).
   onResetAspectRatio: () => void;
@@ -173,14 +180,19 @@ export type EditorContextMenuProps = {
   onToggleTableHeaderRow: () => void;
   onToggleTableHeaderColumn: () => void;
   onToggleTableZebra: () => void;
-  // Re-place a shape's inline icon (reuses the drop handler: same iconId,
-  // new side).
+  // Re-place a shape's inline icon (same iconId, new side). Commit +
+  // hover-preview pair.
   onSetIconPosition: (elementId: string, iconId: string, position: IconPosition) => void;
-  // A Technology icon element's fixed tile-size preset (spec/41).
+  onPreviewIconPosition: (elementId: string, iconId: string, position: IconPosition) => void;
+  // A Technology icon element's fixed tile-size preset (spec/41). Commit +
+  // hover-preview pair.
   onSetIconSize: (size: IconSize) => void;
+  onPreviewIconSize: (size: IconSize) => void;
   // Whole-element text alignment (the same 3x3 grid as the text toolbar's
   // alignment dropdown — surfaced in both places for discovery, spec/09).
+  // Commit + hover-preview pair.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
+  onPreviewTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   // The selected elements (multi-selection / group members), so the 'multi'

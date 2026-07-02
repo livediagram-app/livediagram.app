@@ -24,6 +24,7 @@ import {
 } from '@livediagram/diagram';
 
 import { SizeButton } from '@/components/palette/palette-controls';
+import { onMouseHover } from '@/components/primitives/hover-preview';
 import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
 import { ProgressAnimKindGlyph } from '@/components/palette/context-menu-icons';
 
@@ -92,17 +93,31 @@ export function MarkerTiles({
   size,
   onSet,
   onSetSize,
+  onPreview,
+  onPreviewSize,
+  onPreviewEnd,
 }: {
   marker: ShapeMarker | null;
   size: TextSize;
   onSet: (v: ShapeMarker | null) => void;
   onSetSize: (v: TextSize) => void;
+  // Optional hover-preview pair (spec/48 flow) for the marker tiles and the
+  // Size row: hovering shows the marker live, leaving reverts.
+  onPreview?: (v: ShapeMarker | null) => void;
+  onPreviewSize?: (v: TextSize) => void;
+  onPreviewEnd?: () => void;
 }) {
   return (
     <>
       <div className="grid grid-cols-3 gap-1 px-2 py-1.5">
         {withNone(SHAPE_MARKERS).map((v) => (
-          <SizeButton key={v ?? 'none'} active={marker === v} onClick={() => onSet(v)}>
+          <SizeButton
+            key={v ?? 'none'}
+            active={marker === v}
+            onClick={() => onSet(v)}
+            onPointerEnter={onPreview ? onMouseHover(() => onPreview(v)) : undefined}
+            onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
+          >
             <span className="flex flex-col items-center gap-0.5">
               {v ? <ShapeMarkerGlyph marker={v} size={18} /> : <NoMarkerGlyph />}
               <span className="text-[9px] leading-none">{v ? MARKER_LABELS[v] : 'None'}</span>
@@ -115,7 +130,12 @@ export function MarkerTiles({
           <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
             Size
           </p>
-          <TextSizeTiles current={size} onSet={onSetSize} />
+          <TextSizeTiles
+            current={size}
+            onSet={onSetSize}
+            onPreview={onPreviewSize}
+            onPreviewEnd={onPreviewEnd}
+          />
         </>
       ) : null}
     </>
@@ -465,9 +485,15 @@ export function TextToggle({
 export function TextSizeTiles({
   current,
   onSet,
+  onPreview,
+  onPreviewEnd,
 }: {
   current: TextSize | undefined;
   onSet: (size: TextSize) => void;
+  // Optional hover-preview pair (spec/48 flow): hovering a tile shows the
+  // size live, leaving reverts. Callers without preview (table cells) omit.
+  onPreview?: (size: TextSize) => void;
+  onPreviewEnd?: () => void;
 }) {
   return (
     <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
@@ -479,7 +505,13 @@ export function TextSizeTiles({
           ['lg', <DotsIcon key="3" count={3} />],
         ] as const
       ).map(([size, glyph]) => (
-        <SizeButton key={size} active={current === size} onClick={() => onSet(size)}>
+        <SizeButton
+          key={size}
+          active={current === size}
+          onClick={() => onSet(size)}
+          onPointerEnter={onPreview ? onMouseHover(() => onPreview(size)) : undefined}
+          onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
+        >
           {glyph}
         </SizeButton>
       ))}
