@@ -1,6 +1,6 @@
 import type { Element } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
+import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 
 // Shared styling for the toolbar's plain icon buttons (More / Duplicate / Group
 // / Export). Lock (active brand fill) and Delete (rose / disabled) compose
@@ -48,6 +48,10 @@ export function MultiSelectionToolbar({
   onExport,
   onOpenContextMenu,
 }: MultiSelectionToolbarProps) {
+  // SelectionFilterMenu renders nothing for a single-kind selection, so its
+  // trailing divider must share the SAME predicate — gating on `onFilter`
+  // alone leaves a stray divider when the funnel button self-hides.
+  const filterable = !!onFilter && buildFilterGroups(selectedElements).length >= 2;
   return (
     <>
       {onOpenContextMenu ? (
@@ -69,8 +73,13 @@ export function MultiSelectionToolbar({
           <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
         </>
       ) : null}
-      {onFilter ? (
-        <SelectionFilterMenu selectedElements={selectedElements} onFilter={onFilter} />
+      {filterable && onFilter ? (
+        <>
+          <SelectionFilterMenu selectedElements={selectedElements} onFilter={onFilter} />
+          {/* Filter narrows WHAT is selected; everything after acts on the
+              selection — the divider marks that boundary. */}
+          <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+        </>
       ) : null}
       <Tooltip title="Duplicate" description="Duplicate selected (arrows skipped).">
         <button
@@ -82,6 +91,10 @@ export function MultiSelectionToolbar({
           <DuplicateIcon />
         </button>
       </Tooltip>
+      {/* Duplicate copies the selection; everything after acts ON it
+          (group / lock / export / delete) — the divider marks that
+          boundary, same as the one after More above. */}
+      <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
       <Tooltip title="Group" description="Bind so they move and lock together.">
         <button
           type="button"
