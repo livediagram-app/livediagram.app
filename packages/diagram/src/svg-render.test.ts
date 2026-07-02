@@ -123,6 +123,80 @@ describe('renderElementsToSvg', () => {
     });
   });
 
+  describe('tables (spec/09)', () => {
+    const table = (o: Record<string, unknown> = {}) =>
+      ({
+        id: 'tb',
+        type: 'table',
+        x: 0,
+        y: 0,
+        width: 300,
+        height: 90,
+        cells: [
+          ['Name', 'Role'],
+          ['Ada', 'Engineer'],
+          ['Mary', 'Scientist'],
+        ],
+        ...o,
+      }) as Tab['elements'][number];
+
+    it('renders the real grid: cell text, dividers, and the outer frame', () => {
+      const svg = renderElementsToSvg(tab([table()]));
+      expect(svg).toContain('>Ada</');
+      expect(svg).toContain('>Scientist</');
+      // One vertical divider (x=150) + two horizontal (y=30, 60) + frame.
+      expect(svg).toContain('x1="150"');
+      expect(svg).toContain('y1="30"');
+      expect(svg).toContain('y1="60"');
+    });
+
+    it('tints the header band and honours pinned column widths', () => {
+      const svg = renderElementsToSvg(tab([table({ headerRow: true, colWidths: [100, null] })]));
+      // Header wash: stroke-coloured rect at 18% over the first row.
+      expect(svg).toContain('opacity="0.18"');
+      // Pinned first column: the divider sits at x=100, not the even 150.
+      expect(svg).toContain('x1="100"');
+    });
+  });
+
+  describe('freehand + silhouettes + rotation', () => {
+    it('renders a freehand sketch as its polyline, not a box', () => {
+      const el = {
+        id: 'fh',
+        type: 'freehand',
+        x: 10,
+        y: 10,
+        width: 100,
+        height: 100,
+        closed: false,
+        points: [
+          { nx: 0, ny: 0 },
+          { nx: 1, ny: 0.5 },
+        ],
+        strokeColor: '#333333',
+      } as Tab['elements'][number];
+      const svg = renderElementsToSvg(tab([el]));
+      expect(svg).toContain('M 10 10 L 110 60');
+      expect(svg).not.toContain('rx="6"');
+    });
+
+    it('renders a hexagon silhouette instead of a rectangle', () => {
+      const svg = renderElementsToSvg(tab([shape('h', { shape: 'hexagon' })]));
+      expect(svg).toContain('polygon points="25,0 75,0 100,50 75,100 25,100 0,50"');
+      expect(svg).toContain('preserveAspectRatio="none"');
+    });
+
+    it('renders a frame as outline only (contents show through)', () => {
+      const svg = renderElementsToSvg(tab([shape('f', { shape: 'frame' })]));
+      expect(svg).toContain('fill="none"');
+    });
+
+    it('applies element rotation about the centre', () => {
+      const svg = renderElementsToSvg(tab([shape('r', { rotation: 45 })]));
+      expect(svg).toContain('transform="rotate(45 50 40)"');
+    });
+  });
+
   describe('icon elements', () => {
     const icon = (o: Partial<ShapeElement> = {}) =>
       shape('ic', { shape: 'icon', iconId: 'server', width: 48, height: 48, ...o });

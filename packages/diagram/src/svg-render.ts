@@ -24,7 +24,30 @@ import {
 } from './colors';
 import { endpointPosition } from './geometry';
 import { techIconMarkBounds } from './icon-size';
+import { hasShapeSilhouette, svgFreehandShape, svgShapeSilhouette } from './svg-render-shapes';
+import { svgTableShape } from './svg-render-table';
 import { hasRichFormatting } from './rich-text';
+// Text/number primitives shared with the per-element emitters — re-exported
+// below so existing importers of this module keep resolving.
+import {
+  fontSizeFor,
+  LABEL_LINE_HEIGHT,
+  labelMaxWidth,
+  labelMeasure,
+  r2,
+  wrapLabel,
+  xmlEscape,
+} from './svg-render-primitives';
+
+export {
+  fontSizeFor,
+  LABEL_LINE_HEIGHT,
+  labelMaxWidth,
+  labelMeasure,
+  r2,
+  wrapLabel,
+  xmlEscape,
+} from './svg-render-primitives';
 import type { ArrowElement, BoxedElement, Element, Tab, TextRun } from './index';
 
 export const EXPORT_PADDING = 32;
@@ -32,7 +55,6 @@ export const EXPORT_BG = '#ffffff';
 export const EXPORT_IMAGE_FILL = '#f1f5f9'; // slate-100 placeholder body
 export const EXPORT_IMAGE_STROKE = '#94a3b8'; // slate-400 placeholder dashes
 export const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
-export const LABEL_LINE_HEIGHT = 1.25;
 
 // One resolved span of a rich label (run + element defaults).
 export type ExportRun = {
@@ -92,81 +114,6 @@ export type ExportIconArt = { markup: string; colored: boolean };
 export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
 
 export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
-
-export function r2(n: number): number {
-  return Math.round(n * 100) / 100;
-}
-
-// XML-escape for both text nodes and attribute values.
-export function xmlEscape(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-export function fontSizeFor(textSize: BoxedElement['textSize']): number {
-  return textSize === 'lg' ? 20 : textSize === 'sm' ? 12 : textSize === 'scale' ? 18 : 14;
-}
-
-// Horizontal room a label has inside its element (box width minus the ~8px
-// inset each side), so long labels wrap inside the element.
-export function labelMaxWidth(el: BoxedElement): number {
-  return Math.max(8, el.width - 16);
-}
-
-// Greedy word-wrap to a max pixel width, preserving explicit newlines.
-export function wrapLabel(
-  text: string,
-  maxWidth: number,
-  measure: (s: string) => number,
-): string[] {
-  const out: string[] = [];
-  for (const para of text.split('\n')) {
-    const words = para.split(/\s+/).filter(Boolean);
-    if (words.length === 0) {
-      out.push('');
-      continue;
-    }
-    let cur = words[0]!;
-    for (let i = 1; i < words.length; i++) {
-      const w = words[i]!;
-      if (measure(`${cur} ${w}`) <= maxWidth) cur += ` ${w}`;
-      else {
-        out.push(cur);
-        cur = w;
-      }
-    }
-    out.push(cur);
-  }
-  return out;
-}
-
-// A reusable measuring 2D context for the SVG path. Null in non-DOM
-// environments (Workers / jsdom), where we fall back to a rough
-// character-width estimate so wrapping degrades gracefully.
-type MeasureCtx = { measureText: (s: string) => { width: number }; font: string };
-let _labelMeasureCtx: MeasureCtx | null | undefined;
-export function labelMeasure(size: number, bold: boolean, italic: boolean): (s: string) => number {
-  if (_labelMeasureCtx === undefined) {
-    // Reach `document` via globalThis so this module typechecks under a no-DOM
-    // lib (the api / mcp Workers) and still uses the real canvas measure in the
-    // browser. Absent in Workers -> char-width fallback below.
-    const doc = (
-      globalThis as {
-        document?: { createElement(tag: string): { getContext(ctx: string): unknown } };
-      }
-    ).document;
-    _labelMeasureCtx = doc
-      ? (doc.createElement('canvas').getContext('2d') as MeasureCtx | null)
-      : null;
-  }
-  const ctx = _labelMeasureCtx;
-  if (!ctx) return (s) => s.length * size * 0.55;
-  ctx.font = `${bold ? '600' : '400'} ${italic ? 'italic ' : ''}${size}px system-ui, sans-serif`;
-  return (s) => ctx.measureText(s).width;
-}
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -471,9 +418,25 @@ export function svgBoxed(
 ): string {
   const { opacity, shape, label } = describeBoxedExport(el, resolveImageHref, resolveIconArt);
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
+  // Rotation applies to the whole element (body + label) about its centre,
+  // exactly like the canvas wrapper's CSS rotate.
+  const rotation = el.rotation ?? 0;
+  const rotAttr = rotation
+    ? ` transform="rotate(${r2(rotation)} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})"`
+    : '';
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
   let shapeStr = '';
+  if (el.type === 'table') {
+    // The real grid (tracks / headers / zebra / per-cell text), not a
+    // box-with-nothing. Tables carry no element label; the cells are the
+    // content.
+    return `<g${opAttr}${rotAttr}>${svgTableShape(el)}</g>`;
+  }
+  if (el.type === 'freehand' && shape.kind === 'rect') {
+    // The sketch's actual polyline instead of its bounding box.
+    return `<g${opAttr}${rotAttr}>${svgFreehandShape(el, shape.stroke, shape.fill)}</g>`;
+  }
   if (shape.kind === 'image') {
     shapeStr = shape.href
       ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
@@ -484,7 +447,19 @@ export function svgBoxed(
   } else if (shape.kind === 'diamond') {
     shapeStr = `<polygon points="${r2(cx)},${r2(el.y)} ${r2(el.x + el.width)},${r2(cy)} ${r2(cx)},${r2(el.y + el.height)} ${r2(el.x)},${r2(cy)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5" stroke-linejoin="round"/>`;
   } else if (shape.kind === 'rect') {
-    shapeStr = `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
+    // Shape silhouettes (hexagon / cylinder / document / devices / actor /
+    // frame ...) mirror the editor overlay's geometry; kinds without one
+    // (square / sticky / text-box / cards) stay a rounded rect, with the
+    // stadium's full pill radius as the one native special case.
+    const silhouette =
+      el.type === 'shape' && hasShapeSilhouette(el.shape)
+        ? svgShapeSilhouette(el, shape.fill, shape.stroke)
+        : null;
+    const rx =
+      el.type === 'shape' && el.shape === 'stadium' ? Math.min(el.width, el.height) / 2 : 6;
+    shapeStr =
+      silhouette ??
+      `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
   } else if (shape.kind === 'icon') {
     shapeStr = svgIconShape(el, shape.art, shape.stroke);
   }
@@ -506,7 +481,20 @@ export function svgBoxed(
           label.bold,
           label.italic,
         );
-  return `<g${opAttr}>${shapeStr}${labelStr}</g>`;
+  return `<g${opAttr}${rotAttr}>${shapeStr}${labelStr}</g>`;
+}
+
+// True when svgBoxed draws something the PNG canvas drawers (drawBoxed)
+// can't reproduce natively — the caller then rasterises this element's
+// svgBoxed markup instead. Tables, freehand sketches, shape silhouettes,
+// rotation, and resolved icon art all fall in.
+export function boxedNeedsSvgRaster(el: BoxedElement, resolveIconArt?: ResolveIconArt): boolean {
+  if (el.rotation) return true;
+  if (el.type === 'table' || el.type === 'freehand') return true;
+  if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
+  if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
+    return true;
+  return false;
 }
 
 export function svgArrowhead(

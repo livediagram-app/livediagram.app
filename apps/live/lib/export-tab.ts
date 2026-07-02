@@ -9,11 +9,12 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import { shade, type BoxedElement, type Tab } from '@livediagram/diagram';
+import { isBoxed, shade, type BoxedElement, type Tab } from '@livediagram/diagram';
 // Shared SVG render helpers (spec/62 §5): moved into the diagram package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
+  boxedNeedsSvgRaster,
   contentBounds,
   describeBoxedExport,
   EXPORT_BG,
@@ -163,39 +164,42 @@ export async function renderTabToCanvas(
   // z-order on either end; framesFirst keeps frame sections behind
   // their contents (spec/09).
   const resolveImage = opts.images ? (id: string) => opts.images!.get(id)?.image : undefined;
-  // Icon elements rasterise via the SAME svg markup the SVG export emits
-  // (glyph + caption), so the PNG/PDF output can't drift from it — canvas 2D
-  // has no way to draw the glyph art natively. Pre-rendered async here (the
-  // draw loop below stays sync), with padding for stroke overflow. A failed
-  // rasterise falls back to drawBoxed's box-with-label, same as an
-  // unresolvable id.
-  const ICON_PAD = 2;
-  const iconImages = new Map<string, HTMLImageElement>();
+  // Elements the canvas drawers can't reproduce (tables, freehand, shape
+  // silhouettes, rotation, icon glyphs — boxedNeedsSvgRaster) rasterise via
+  // the SAME svg markup the SVG export emits, so the PNG/PDF output can't
+  // drift from it. Pre-rendered async here (the draw loop below stays
+  // sync), padded for stroke overflow — and for the rotated bounding box
+  // when the element carries a rotation, since svgBoxed bakes the rotation
+  // into the markup and it sweeps outside the unrotated box. A failed
+  // rasterise falls back to drawBoxed's plain box.
+  const rasterImages = new Map<string, { image: HTMLImageElement; pad: number }>();
   for (const el of tab.elements) {
-    if (el.type !== 'shape' || el.shape !== 'icon' || !el.iconId) continue;
-    if (!resolveIconArtLoaded(el.iconId)) continue;
-    const w = el.width + ICON_PAD * 2;
-    const h = el.height + ICON_PAD * 2;
+    if (el.type === 'arrow' || !isBoxed(el)) continue;
+    if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded)) continue;
+    const diag = Math.hypot(el.width, el.height);
+    const pad = el.rotation ? (diag - Math.min(el.width, el.height)) / 2 + 2 : 2;
+    const w = el.width + pad * 2;
+    const h = el.height + pad * 2;
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(w * scale)}" height="${r2(h * scale)}"` +
-      ` viewBox="${r2(el.x - ICON_PAD)} ${r2(el.y - ICON_PAD)} ${r2(w)} ${r2(h)}">` +
+      ` viewBox="${r2(el.x - pad)} ${r2(el.y - pad)} ${r2(w)} ${r2(h)}">` +
       `${svgBoxed(el, undefined, resolveIconArtLoaded)}</svg>`;
     try {
-      iconImages.set(el.id, await svgToImage(svg));
+      rasterImages.set(el.id, { image: await svgToImage(svg), pad });
     } catch {
-      // Fall through to drawBoxed's placeholder box below.
+      // Fall through to drawBoxed's plain box below.
     }
   }
   for (const el of framesFirst(tab.elements)) {
     if (el.type === 'arrow') continue;
-    const iconImg = iconImages.get(el.id);
-    if (iconImg) {
+    const raster = rasterImages.get(el.id);
+    if (raster) {
       ctx.drawImage(
-        iconImg,
-        el.x - ICON_PAD,
-        el.y - ICON_PAD,
-        el.width + ICON_PAD * 2,
-        el.height + ICON_PAD * 2,
+        raster.image,
+        el.x - raster.pad,
+        el.y - raster.pad,
+        el.width + raster.pad * 2,
+        el.height + raster.pad * 2,
       );
       continue;
     }

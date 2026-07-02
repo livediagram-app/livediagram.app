@@ -261,6 +261,17 @@ Worker (no DOM, no React).
   (the SVG export already does this), since embedding R2-hosted bitmaps is extra
   work. Acceptable for code/architecture/flow diagrams, which are shape+arrow+text.
   Embedding real images is a follow-up.
+- **Element coverage.** The shared renderer draws tables as their real grid
+  (tracks / headers / zebra / per-cell text, `svg-render-table.ts`), freehand
+  sketches as their polyline, the full shape-silhouette vocabulary (hexagon /
+  cylinder / document / cloud / devices / actor / frame ... —
+  `svg-render-shapes.ts`, mirroring the editor's ShapeSvgOverlay geometry),
+  element rotation, and icon glyphs (above). The PNG/PDF canvas path
+  rasterises any element the canvas drawers can't reproduce from the SAME
+  svg markup (`boxedNeedsSvgRaster`), so the three visual exports can't
+  drift. Remaining gaps: the self-drawing data shapes (progress / rail /
+  rating / charts) and inline icons beside a shape's label still render as
+  plain boxes / label-only.
 - **Icon elements render their real glyph.** The renderer takes an injected
   `resolveIconArt(iconId)` (like `resolveImageHref`); the MCP worker supplies
   `resolveIconExportArt` from `@livediagram/icons/resolve` (a static import of
