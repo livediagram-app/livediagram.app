@@ -20,7 +20,7 @@
 // outside a ClerkProvider would throw, so the disabled branch never
 // touches Clerk.
 
-import { useAuth, useClerk, useUser } from '@clerk/react';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
@@ -38,9 +38,7 @@ const HEADER_ACTION_TONE =
 // home rather than hanging off this dropdown too.
 
 function AuthControlsEnabled() {
-  const { isLoaded: authLoaded, isSignedIn } = useAuth();
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   // Return here after sign-in (must run before the early returns below).
@@ -62,8 +60,7 @@ function AuthControlsEnabled() {
   }
 
   const initial = (user?.firstName ?? user?.username ?? '?').slice(0, 1).toUpperCase();
-  const displayName =
-    user?.fullName ?? user?.username ?? user?.primaryEmailAddress?.emailAddress ?? '';
+  const displayName = user?.fullName ?? user?.username ?? user?.email ?? '';
   // Pill label: first name only (or the username fallback). Last
   // names get truncated in account UIs because most users don't
   // need the full identity on screen — the avatar dot + first name
@@ -99,9 +96,8 @@ function AuthControlsEnabled() {
               <p className="truncate font-medium text-slate-900 dark:text-slate-100">
                 {displayName}
               </p>
-              {user?.primaryEmailAddress?.emailAddress &&
-              user.primaryEmailAddress.emailAddress !== displayName ? (
-                <p className="truncate">{user.primaryEmailAddress.emailAddress}</p>
+              {user?.email && user.email !== displayName ? (
+                <p className="truncate">{user.email}</p>
               ) : null}
             </div>
           ) : null}

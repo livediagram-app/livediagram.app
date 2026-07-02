@@ -16,12 +16,13 @@
 // Import from @clerk/react (framework-agnostic) so the static export
 // build doesn't pull in @clerk/nextjs's Server Actions — see
 // components/providers/ClerkProvider.tsx for the same rationale.
+import { StaticClerkProvider } from '@/components/providers/StaticClerkProvider';
 import { AuthenticateWithRedirectCallback } from '@clerk/react';
 import { AuthCard, AuthDisabledNotice } from '@/components/chrome/auth-shared';
 import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation';
 import { clerkEnabled } from '@/lib/clerk-config';
 
-export default function SSOCallbackPage() {
+function SSOCallbackPageInner() {
   if (!clerkEnabled) return <AuthDisabledNotice />;
   return (
     <AuthCard subtitle="Completing sign in…" error="">
@@ -31,5 +32,18 @@ export default function SSOCallbackPage() {
         signUpFallbackRedirectUrl="/new"
       />
     </AuthCard>
+  );
+}
+
+// The layout's ClerkProvider is now the DEFERRED one (no Clerk context
+// in the app tree — see components/providers/ClerkProvider.tsx), but
+// this page's hooks need the real thing, and Clerk IS this page — so
+// it wraps itself in the static provider and carries the library in
+// its own route bundle.
+export default function SSOCallbackPage() {
+  return (
+    <StaticClerkProvider>
+      <SSOCallbackPageInner />
+    </StaticClerkProvider>
   );
 }

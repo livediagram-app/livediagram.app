@@ -18,7 +18,7 @@
 // with data they can recover from; Clerk-first would leave orphan
 // rows behind that the user could no longer reach.
 
-import { useReverification, useUser } from '@clerk/react';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { Portal } from '@/components/primitives/Portal';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
@@ -42,20 +42,12 @@ export function DeleteAccountDialog({
   // Silence the canvas shortcut/paste listeners behind the modal
   // (see lib/modal-guard).
   useModalGuard(open);
-  const { user } = useUser();
-  const expectedEmail = user?.primaryEmailAddress?.emailAddress ?? '';
-  // Wrap `user.delete()` in Clerk's reverification flow — destructive
-  // actions require fresh step-up auth even for already-signed-in
-  // users (Clerk's "Reverification required" error came from this
-  // exact missing wrapper). `useReverification` automatically opens
-  // Clerk's pre-built modal, the user re-verifies (email code /
-  // OAuth / etc.), then the wrapped function runs with the fresh
-  // token. Capturing `user` in the closure is safe — useUser keeps
-  // it stable across renders.
-  const deleteUserReverified = useReverification(async () => {
-    if (!user) throw new Error('Not signed in');
-    await user.delete();
-  });
+  const { user, deleteAccount } = useDeferredAuth();
+  const expectedEmail = user?.email ?? '';
+  // `deleteAccount` wraps Clerk's `user.delete()` in the reverification
+  // flow (step-up auth modal, built inside ClerkBridge where the Clerk
+  // context lives) — destructive actions require fresh verification
+  // even for already-signed-in users.
 
   const [typed, setTyped] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -90,7 +82,7 @@ export function DeleteAccountDialog({
     expectedEmail.length > 0 && typed.trim().toLowerCase() === expectedEmail.toLowerCase();
 
   const handleDelete = async () => {
-    if (!emailsMatch || phase === 'submitting' || !user) return;
+    if (!emailsMatch || phase === 'submitting' || !user || !deleteAccount) return;
     setPhase('submitting');
     setErrorMsg('');
     const result = await apiDeleteAccount();
@@ -104,7 +96,7 @@ export function DeleteAccountDialog({
     // gone but before sign-out, so the opt-out itself still reaches the wire.
     track('Session', 'Deleted', 'Account');
     try {
-      await deleteUserReverified();
+      await deleteAccount();
     } catch (err) {
       // Backend data is already gone, so surface Clerk's actual
       // error rather than swallowing it. With the reverification

@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth, useUser } from '@clerk/react';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { apiMigrateGuestData, setTokenProvider } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
@@ -56,8 +56,13 @@ type BootstrapResult = {
 };
 
 function useClerkApiBootstrapEnabled(): BootstrapResult {
-  const { getToken, isSignedIn, isLoaded: clerkLoaded, userId: clerkUserId } = useAuth();
-  const { user } = useUser();
+  const {
+    getToken,
+    isSignedIn,
+    authLoaded: clerkLoaded,
+    userId: clerkUserId,
+    user,
+  } = useDeferredAuth();
 
   // If Clerk hasn't reported its state within 5 s, treat the session as
   // guest rather than hanging the canvas indefinitely. Corporate proxies

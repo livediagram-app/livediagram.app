@@ -17,6 +17,7 @@
 // (`{ signIn, errors, fetchStatus }`) — porting to it is a separate
 // effort. `/legacy` doesn't pull in any Server Actions, so static
 // export still builds.
+import { StaticClerkProvider } from '@/components/providers/StaticClerkProvider';
 import { useAuth } from '@clerk/react';
 import { useSignIn } from '@clerk/react/legacy';
 import Link from 'next/link';
@@ -323,7 +324,7 @@ function SignInContent() {
   );
 }
 
-export default function SignInPage() {
+function SignInPageInner() {
   // Clerk-disabled deployments (no NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
   // skip the form entirely and show the "guest-only" notice. The
   // useSignIn / useAuth calls inside SignInContent would throw
@@ -333,5 +334,18 @@ export default function SignInPage() {
     <Suspense fallback={<RedirectingCard />}>
       <SignInContent />
     </Suspense>
+  );
+}
+
+// The layout's ClerkProvider is now the DEFERRED one (no Clerk context
+// in the app tree — see components/providers/ClerkProvider.tsx), but
+// this page's hooks need the real thing, and Clerk IS this page — so
+// it wraps itself in the static provider and carries the library in
+// its own route bundle.
+export default function SignInPage() {
+  return (
+    <StaticClerkProvider>
+      <SignInPageInner />
+    </StaticClerkProvider>
   );
 }

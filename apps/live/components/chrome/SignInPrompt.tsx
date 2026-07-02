@@ -28,7 +28,7 @@
 // Clerk.
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@clerk/react';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
@@ -93,7 +93,7 @@ function PromptShell({
 type SignInPromptProps = { fallback?: React.ReactNode };
 
 function SignInPromptEnabled({ fallback }: SignInPromptProps) {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { authLoaded: isLoaded, isSignedIn } = useDeferredAuth();
   const { dismissed, dismiss } = usePromptDismissed();
   const { signInHref } = useAuthHrefs();
   if (!isLoaded || dismissed === null) return null;

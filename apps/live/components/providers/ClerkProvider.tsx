@@ -1,50 +1,36 @@
 'use client';
 
-// Use `@clerk/react`'s framework-agnostic provider instead of
-// `@clerk/nextjs`'s — the Next.js variant pulls Server Actions into
-// the build, and `output: 'export'` rejects that (matches MT's
-// pattern in apps/dashboard/components/providers/ClerkProvider.tsx).
-// The provider's runtime behaviour is identical; only the surrounding
-// SSR plumbing differs. Hook consumers (`useAuth`, `useSignIn`, etc.)
-// keep importing from `@clerk/nextjs` because those don't trigger
-// the Server Actions check.
-import { ClerkProvider as Clerk } from '@clerk/react';
-import type { ReactNode } from 'react';
-import { clerkEnabled, clerkPublishableKey } from '@/lib/clerk-config';
+// Deferred auth for the whole app tree (spec/04: auth is purely
+// additive; spec/03: Clerk is optional). This provider no longer
+// imports @clerk/react — the ~96 kB library used to ride EVERY
+// route's first load, including embeds and Clerk-less self-hosts.
+// Instead the children render immediately under DeferredAuthContext's
+// "not settled" defaults, and a lazily-loaded bridge (ClerkBridge, an
+// async chunk) mounts the real Clerk provider around a publisher that
+// pushes the distilled auth state into the context. Auth state
+// "pops in" once clerk-js resolves — which is exactly how it already
+// behaved, since clerk-js itself loads from CDN asynchronously.
+//
+// The auth pages (/sign-in, /get-started, /sso-callback) wrap
+// themselves in StaticClerkProvider instead; Clerk is the page there.
 
-// Wraps the live app with Clerk's React context so `useAuth` /
-// `useSignIn` / `useSignUp` work anywhere in the tree. Mirrors
-// Manager Toolkit's dashboard/components/providers/ClerkProvider —
-// same shape, livediagram routes.
-//
-// When `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` isn't set (self-host
-// without Clerk, per spec/03 + spec/04), the provider becomes a
-// no-op pass-through — children render directly. Every Clerk-aware
-// module reads the same `clerkEnabled` flag and short-circuits to a
-// guest-only path; the api worker independently degrades to guest
-// when `CLERK_JWKS_URL` is unset, so the two sides stay in sync.
-//
-// Hybrid mode (spec/04): even with Clerk enabled, nothing here gates
-// the editor — the canvas keeps working as a guest. Auth is purely
-// additive: when signed in, the editor sends a Bearer token instead
-// of `X-Owner-Id` (wired in `useClerkApiBootstrap`).
+import dynamic from 'next/dynamic';
+import { useState, type ReactNode } from 'react';
+import { clerkEnabled, clerkPublishableKey } from '@/lib/clerk-config';
+import { DEFERRED_AUTH_DEFAULT, DeferredAuthContext } from './deferred-auth';
+
+const LazyClerkBridge = dynamic(() => import('./ClerkBridge').then((m) => m.ClerkBridge), {
+  ssr: false,
+  loading: () => null,
+});
 
 export function ClerkProvider({ children }: { children: ReactNode }) {
-  if (!clerkEnabled || !clerkPublishableKey) {
-    // Pass-through. No Clerk context in the tree — every
-    // Clerk-aware consumer checks `clerkEnabled` before reaching
-    // for a hook so this doesn't crash anything.
-    return <>{children}</>;
-  }
-
+  const [authState, setAuthState] = useState(DEFERRED_AUTH_DEFAULT);
+  const configured = clerkEnabled && !!clerkPublishableKey;
   return (
-    <Clerk
-      publishableKey={clerkPublishableKey}
-      signInUrl="/sign-in/"
-      signUpUrl="/get-started/"
-      afterSignOutUrl="/"
-    >
+    <DeferredAuthContext.Provider value={authState}>
       {children}
-    </Clerk>
+      {configured ? <LazyClerkBridge onState={setAuthState} /> : null}
+    </DeferredAuthContext.Provider>
   );
 }

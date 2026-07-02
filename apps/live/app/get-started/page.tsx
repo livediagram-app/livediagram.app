@@ -14,6 +14,7 @@
 
 // See sign-in/page.tsx for why useSignUp comes from @clerk/react/legacy
 // while useAuth comes from the modern entry.
+import { StaticClerkProvider } from '@/components/providers/StaticClerkProvider';
 import { useAuth } from '@clerk/react';
 import { useSignUp } from '@clerk/react/legacy';
 import Link from 'next/link';
@@ -356,12 +357,25 @@ function GetStartedContent() {
   );
 }
 
-export default function GetStartedPage() {
+function GetStartedPageInner() {
   // Same gate as sign-in — see that file for the rationale.
   if (!clerkEnabled) return <AuthDisabledNotice />;
   return (
     <Suspense fallback={<RedirectingCard />}>
       <GetStartedContent />
     </Suspense>
+  );
+}
+
+// The layout's ClerkProvider is now the DEFERRED one (no Clerk context
+// in the app tree — see components/providers/ClerkProvider.tsx), but
+// this page's hooks need the real thing, and Clerk IS this page — so
+// it wraps itself in the static provider and carries the library in
+// its own route bundle.
+export default function GetStartedPage() {
+  return (
+    <StaticClerkProvider>
+      <GetStartedPageInner />
+    </StaticClerkProvider>
   );
 }

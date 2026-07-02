@@ -11,7 +11,7 @@
 // accounts, so the component is a no-op rather than calling Clerk hooks that
 // would throw outside a ClerkProvider.
 
-import { useAuth, useClerk, useUser } from '@clerk/react';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
@@ -35,9 +35,7 @@ const DeleteAccountDialog = dynamic(() =>
 );
 
 function ProfilePaneEnabled() {
-  const { isLoaded, isSignedIn } = useAuth();
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { authLoaded: isLoaded, isSignedIn, user, signOut } = useDeferredAuth();
   const { emailEnabled } = useCapabilities();
   const [prefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -76,9 +74,8 @@ function ProfilePaneEnabled() {
   if (!isSignedIn || !user) return <SignInPrompt />;
 
   const ownerId = user.id;
-  const name =
-    user.fullName ?? user.username ?? user.primaryEmailAddress?.emailAddress ?? 'Your account';
-  const email = user.primaryEmailAddress?.emailAddress ?? null;
+  const name = user.fullName ?? user.username ?? user.email ?? 'Your account';
+  const email = user.email;
   // Same initial-letter bubble as the header account button (AuthControls),
   // not the user's external (e.g. Google) avatar — keep the two consistent.
   const initial = (user.firstName ?? user.username ?? '?').slice(0, 1).toUpperCase();
