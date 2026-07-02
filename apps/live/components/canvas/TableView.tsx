@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   BORDER_STROKE_PX,
+  clearCellStyle,
   defaultStrokeColor,
   defaultTextColor,
   isTabularClipboard,
   PADDING_PX,
   parseClipboardTableText,
   pasteIntoTable,
+  setCellStyle,
   setTableCell,
   type ElementLink,
+  type TableCellStyle,
   type TableElement,
 } from '@livediagram/diagram';
 import { isMobileViewportSync } from '@/lib/responsive';
@@ -16,11 +19,12 @@ import { nearestCssBorderStyle } from '@/components/canvas/border-css';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-controls';
-import { TableCellToolbar } from '@/components/canvas/TableCellToolbar';
+import { TableCellMenu } from '@/components/canvas/TableCellMenu';
 import { useTableStructure } from '@/components/canvas/useTableStructure';
 import { useTableEditing } from '@/components/canvas/useTableEditing';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { describeLink } from '@/lib/link-label';
+import { track } from '@/lib/telemetry';
 
 // Cell font size per preset (element-space px; the canvas zoom scales
 // it like everything else). 'scale' has no per-element basis on a grid,
@@ -31,6 +35,9 @@ const CELL_FONT_PX: Record<string, number> = { sm: 11, md: 13, lg: 16, scale: 13
 // so it grows / shrinks as the table is resized. Shared by the table-wide
 // default and the per-cell override so the two can't drift.
 const scaleCellFontPx = (rowH: number): number => Math.max(9, Math.min(40, Math.round(rowH * 0.4)));
+
+// Key for the shift-click multi-cell selection set.
+const cellKey = (r: number, c: number): string => `${r}:${c}`;
 
 const MIN_COL_PX = 30;
 const MIN_ROW_PX = 24;
@@ -100,13 +107,16 @@ export function TableView({
   const [editing, setEditing] = useState<{ r: number; c: number } | null>(null);
   const [menu, setMenu] = useState<{ axis: 'col' | 'row'; index: number } | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
-  const [cellMenu, setCellMenu] = useState<'text' | 'colours' | 'align' | null>(null);
-  // The per-cell toolbar is an EXPLICIT gesture (spec/09): right-click a
-  // cell on desktop, long-press on touch. A plain click only selects the
-  // cell (keyboard layer, type-to-edit), so the toolbar never floats over
-  // the table uninvited. Holds the cell the toolbar was opened for; any
-  // selection move / edit / deselect closes it.
-  const [cellToolbarAt, setCellToolbarAt] = useState<{ r: number; c: number } | null>(null);
+  // Shift-click multi-cell selection (spec/09): extra cells beyond the
+  // anchor `selectedCell`, keyed "r:c". Styling / clearing acts on the
+  // whole set; keyboard navigation and plain clicks collapse it back to
+  // the anchor alone.
+  const [extraCells, setExtraCells] = useState<Set<string>>(new Set());
+  // The per-cell CONTEXT MENU (spec/09): right-click a cell on desktop,
+  // long-press on touch, opens the accordion menu at the pointer (screen
+  // coords — it portals out of the transformed canvas). A plain click only
+  // selects the cell.
+  const [cellMenuPos, setCellMenuPos] = useState<{ x: number; y: number } | null>(null);
   // Live widths while dragging a column divider (committed on release).
   const [resizeWidths, setResizeWidths] = useState<(number | null)[] | null>(null);
   const [resizeHeights, setResizeHeights] = useState<(number | null)[] | null>(null);
@@ -125,12 +135,19 @@ export function TableView({
   // pointerdown so the grid-level long-press (touch's right-click, below)
   // knows which cell to open the toolbar for.
   const pressedCellRef = useRef<{ r: number; c: number } | null>(null);
-  const cellLongPress = useLongPress(() => {
+  const cellLongPress = useLongPress((clientX, clientY) => {
     const cell = pressedCellRef.current;
     if (!cell || readOnly || element.locked) return;
-    setSelectedCell(cell);
-    setCellMenu(null);
-    setCellToolbarAt(cell);
+    // Long-press on a cell already in the multi-selection keeps the set (the
+    // menu then acts on all of it); elsewhere it re-anchors to that cell.
+    const inSelection =
+      (selectedCell && selectedCell.r === cell.r && selectedCell.c === cell.c) ||
+      extraCells.has(cellKey(cell.r, cell.c));
+    if (!inSelection) {
+      setExtraCells(new Set());
+      setSelectedCell(cell);
+    }
+    setCellMenuPos({ x: clientX, y: clientY });
   });
 
   useEffect(() => {
@@ -140,42 +157,47 @@ export function TableView({
     // CSS track and target an out-of-range cell. Clamp it (which also
     // hides the toolbar) so it can't act on a cell that no longer exists.
     setSelectedCell((s) => (s && (s.r >= rows || s.c >= cols) ? null : s));
-    setCellToolbarAt((t) => (t && (t.r >= rows || t.c >= cols) ? null : t));
+    setExtraCells((prev) => {
+      const next = new Set(
+        [...prev].filter((k) => {
+          const [r, c] = k.split(':').map(Number);
+          return (r ?? rows) < rows && (c ?? cols) < cols;
+        }),
+      );
+      return next.size === prev.size ? prev : next;
+    });
   }, [editing, rows, cols]);
 
-  // The cell toolbar follows its opening gesture only: once the selection
-  // moves off that cell (arrow keys, clicking another cell) or editing
-  // starts, it closes rather than trailing along.
+  // The cell menu belongs to its opening gesture: editing or losing the
+  // anchor closes it rather than leaving it over a stale cell. Editing also
+  // collapses the shift-click extras — a double-click edit targets one cell.
   useEffect(() => {
-    setCellToolbarAt((t) =>
-      t && (!selectedCell || selectedCell.r !== t.r || selectedCell.c !== t.c || editing)
-        ? null
-        : t,
-    );
+    if (!selectedCell || editing) setCellMenuPos(null);
+    if (editing) setExtraCells((prev) => (prev.size ? new Set() : prev));
   }, [selectedCell, editing]);
 
   useEffect(() => {
     if (!isSelected) {
       setMenu(null);
       setSelectedCell(null);
-      setCellMenu(null);
-      setCellToolbarAt(null);
+      setExtraCells(new Set());
+      setCellMenuPos(null);
     }
   }, [isSelected]);
 
-  // Close the column / row + cell menus on a click anywhere that
-  // isn't a table control (the triggers + menus carry data-table-ui).
+  // Close the column / row menus on a click anywhere that isn't a table
+  // control (the triggers + menus carry data-table-ui). The cell context
+  // menu manages its own outside-close (the shared ContextMenu does).
   useEffect(() => {
-    if (!menu && !cellMenu) return;
+    if (!menu) return;
     const onDown = (e: PointerEvent) => {
       const t = e.target as Element | null;
       if (t && t.closest('[data-table-ui]')) return;
       setMenu(null);
-      setCellMenu(null);
     };
     document.addEventListener('pointerdown', onDown);
     return () => document.removeEventListener('pointerdown', onDown);
-  }, [menu, cellMenu]);
+  }, [menu]);
 
   useEffect(() => {
     if (!editing) return;
@@ -242,7 +264,7 @@ export function TableView({
     setSelectedCell,
   });
 
-  const { applyCellStyle, moveCol, moveRow, addCol, delCol, addRow, delRow } = useTableStructure({
+  const { moveCol, moveRow, addCol, delCol, addRow, delRow } = useTableStructure({
     element,
     onCommitTable,
     setMenu,
@@ -257,7 +279,9 @@ export function TableView({
   // double-handle a keystroke that was aimed at the cell — Backspace used
   // to clear the cell AND delete the whole table.
   useEffect(() => {
-    if (!selectedCell || editing || readOnly || element.locked) return;
+    // While the cell context menu is open it owns the keyboard (its own
+    // Escape closes it), so the selection layer stands down.
+    if (!selectedCell || editing || readOnly || element.locked || cellMenuPos) return;
     const { r, c } = selectedCell;
     const onKey = (e: KeyboardEvent) => {
       const ae = document.activeElement as HTMLElement | null;
@@ -269,6 +293,7 @@ export function TableView({
       };
       if (e.key === 'Tab') {
         handled();
+        setExtraCells(new Set());
         const flat = r * cols + c + (e.shiftKey ? -1 : 1);
         if (flat >= rows * cols) {
           // Tab off the end appends a row (Word / Docs convention) and
@@ -285,6 +310,7 @@ export function TableView({
         const nr = r + (e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0);
         const nc = c + (e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0);
         handled();
+        setExtraCells(new Set());
         if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) setSelectedCell({ r: nr, c: nc });
         return;
       }
@@ -293,16 +319,24 @@ export function TableView({
         // one layer (the canvas ladder then handles the next press).
         handled();
         setSelectedCell(null);
-        setCellMenu(null);
+        setExtraCells(new Set());
       } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        // Clears EVERY selected cell (the anchor + any shift-clicked
+        // extras) in one commit.
         handled();
-        onCommitTable(element.id, { cells: setTableCell(element, r, c, '').cells });
+        let work = element;
+        for (const cell of selectionCells()) {
+          work = { ...work, ...setTableCell(work, cell.r, cell.c, '') };
+        }
+        onCommitTable(element.id, { cells: work.cells });
       } else if (e.key === 'Enter' || e.key === 'F2') {
         handled();
+        setExtraCells(new Set());
         initialTextRef.current = element.cells[r]?.[c] ?? '';
         setEditing({ r, c });
       } else if (e.key.length === 1) {
         handled();
+        setExtraCells(new Set());
         initialTextRef.current = e.key;
         typeToEditRef.current = true;
         setEditing({ r, c });
@@ -310,7 +344,7 @@ export function TableView({
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [selectedCell, editing, readOnly, element, onCommitTable, rows, cols, addRow]);
+  });
 
   // Paste into the SELECTED cell without entering the editor: spreadsheet /
   // TSV text fills + grows the grid from that cell, a single value replaces
@@ -343,6 +377,44 @@ export function TableView({
     document.addEventListener('paste', onPaste, true);
     return () => document.removeEventListener('paste', onPaste, true);
   }, [selectedCell, editing, readOnly, element, onCommitTable]);
+
+  // Every selected cell — the anchor first, then the shift-clicked extras
+  // (spec/09 multi-cell selection). The keyboard clear, the context menu's
+  // styling, and Clear Cells all act on this set.
+  const selectionCells = (): { r: number; c: number }[] => {
+    if (!selectedCell) return [];
+    const out = [selectedCell];
+    for (const key of extraCells) {
+      const [er, ec] = key.split(':').map(Number);
+      if (er !== undefined && ec !== undefined && !(er === selectedCell.r && ec === selectedCell.c))
+        out.push({ r: er, c: ec });
+    }
+    return out;
+  };
+
+  // Apply one style patch to EVERY selected cell in a single commit —
+  // sequential commits would each read the same stale element and clobber
+  // one another.
+  const applyStyleToSelection = (patch: Partial<TableCellStyle>) => {
+    const cells = selectionCells();
+    if (cells.length === 0) return;
+    let work = element;
+    for (const cell of cells) {
+      work = { ...work, cellStyles: setCellStyle(work, cell.r, cell.c, patch).cellStyles ?? [] };
+    }
+    track('Element', 'Changed', 'TableCell');
+    onCommitTable(element.id, { cellStyles: work.cellStyles ?? [] });
+  };
+
+  // Clear text + formatting of every selected cell, one commit.
+  const clearSelectionCells = () => {
+    let work = element;
+    for (const cell of selectionCells()) {
+      work = { ...work, ...setTableCell(work, cell.r, cell.c, '') };
+      work = { ...work, cellStyles: clearCellStyle(work, cell.r, cell.c).cellStyles ?? [] };
+    }
+    onCommitTable(element.id, { cells: work.cells, cellStyles: work.cellStyles ?? [] });
+  };
 
   const showControls = isSelected && !readOnly && !element.locked;
   const toggle = (axis: 'col' | 'row', index: number) =>
@@ -438,7 +510,8 @@ export function TableView({
                   ? `${stroke}11`
                   : null;
               const cs = element.cellStyles?.[r]?.[c] ?? null;
-              const isSelCell = selectedCell?.r === r && selectedCell?.c === c;
+              const isSelCell =
+                (selectedCell?.r === r && selectedCell?.c === c) || extraCells.has(cellKey(r, c));
               const cellAlignX = cs?.alignX ?? alignX;
               const cellJustify =
                 cellAlignX === 'left'
@@ -474,21 +547,42 @@ export function TableView({
                   onClick={(e) => {
                     if (showControls && !isEditingCell) {
                       e.stopPropagation();
+                      if (e.shiftKey && selectedCell) {
+                        // Shift-click builds a multi-cell selection (spec/09):
+                        // toggle this cell in the extra set, anchor unchanged
+                        // (toggling the anchor itself is a no-op).
+                        if (r === selectedCell.r && c === selectedCell.c) return;
+                        setExtraCells((prev) => {
+                          const next = new Set(prev);
+                          const key = cellKey(r, c);
+                          if (next.has(key)) next.delete(key);
+                          else next.add(key);
+                          return next;
+                        });
+                        return;
+                      }
                       setSelectedCell({ r, c });
-                      setCellMenu(null);
+                      setExtraCells(new Set());
                     }
                   }}
                   onContextMenu={(e) => {
-                    // Right-click opens the per-cell toolbar (spec/09) —
+                    // Right-click opens the per-cell context menu (spec/09) —
                     // the explicit gesture on desktop; touch long-presses
                     // instead (cellLongPress). Swallowed so the element
-                    // context menu doesn't also open over it.
+                    // context menu doesn't also open over it. On a cell
+                    // already in the multi-selection the set is kept (the
+                    // menu acts on all of it); elsewhere it re-anchors.
                     if (showControls && !isEditingCell) {
                       e.preventDefault();
                       e.stopPropagation();
-                      setSelectedCell({ r, c });
-                      setCellMenu(null);
-                      setCellToolbarAt({ r, c });
+                      const inSelection =
+                        (selectedCell?.r === r && selectedCell?.c === c) ||
+                        extraCells.has(cellKey(r, c));
+                      if (!inSelection) {
+                        setSelectedCell({ r, c });
+                        setExtraCells(new Set());
+                      }
+                      setCellMenuPos({ x: e.clientX, y: e.clientY });
                     }
                   }}
                   onPointerDown={
@@ -863,21 +957,19 @@ export function TableView({
           </div>
         </div>
       ) : null}
-      <TableCellToolbar
-        element={element}
-        selectedCell={cellToolbarAt}
-        editing={editing}
-        showControls={showControls}
-        cellMenu={cellMenu}
-        setCellMenu={setCellMenu}
-        applyCellStyle={applyCellStyle}
-        onCommitTable={onCommitTable}
-        onLinkCell={onLinkCell}
-        colTemplate={colTemplate}
-        rowTemplate={rowTemplate}
-        invScale={invScale}
-        textColor={textColor}
-      />
+      {cellMenuPos && selectedCell && showControls && !editing ? (
+        <TableCellMenu
+          element={element}
+          cells={selectionCells()}
+          anchor={selectedCell}
+          position={cellMenuPos}
+          onClose={() => setCellMenuPos(null)}
+          applyStyle={applyStyleToSelection}
+          onClear={clearSelectionCells}
+          onLinkCell={onLinkCell}
+          textColor={textColor}
+        />
+      ) : null}
     </>
   );
 }
