@@ -230,6 +230,13 @@ export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
 // target is clearly past the corner.
 const ANCHOR_SWITCH_MARGIN = 0.2;
 
+// Two lines leaving the same face are allowed to SHARE it when they diverge
+// by at least this angle (~30°): they fan out like a tree instead of
+// stacking, and bumping one to a perpendicular face reads far worse. Lines
+// closer than this genuinely overlap and get separated (same-face corner
+// first, then the next face).
+const FACE_SHARE_MIN_RAD = Math.PI / 6;
+
 type Cardinal = 'n' | 'e' | 's' | 'w';
 const CARDINALS: readonly Cardinal[] = ['n', 'e', 's', 'w'];
 
@@ -374,6 +381,10 @@ export function rebindArrowAnchorsAfterMove(
     end: 'from' | 'to';
     elementId: ElementId;
     current: Anchor;
+    // Direction (radians) from the element's centre toward this end's aim
+    // point — used to decide whether two arrows contesting one face can
+    // simply SHARE it (their lines diverge) or genuinely stack.
+    dir: number;
     ranked: Cardinal[];
     commitment: number;
     times: Record<Cardinal, number>;
@@ -401,21 +412,27 @@ export function rebindArrowAnchorsAfterMove(
     if (fromManual && toManual) continue;
     reassigning.add(el.id);
     if (!fromManual) {
+      const centre = centreOf(fromEl);
+      const aim = anchorAimPoint(toEl, centre);
       plans.push({
         arrowId: el.id,
         end: 'from',
         elementId: fromEl.id,
         current: el.from.anchor,
-        ...rankAnchorsTowards(fromEl, anchorAimPoint(toEl, centreOf(fromEl))),
+        dir: Math.atan2(aim.y - centre.y, aim.x - centre.x),
+        ...rankAnchorsTowards(fromEl, aim),
       });
     }
     if (!toManual) {
+      const centre = centreOf(toEl);
+      const aim = anchorAimPoint(fromEl, centre);
       plans.push({
         arrowId: el.id,
         end: 'to',
         elementId: toEl.id,
         current: el.to.anchor,
-        ...rankAnchorsTowards(toEl, anchorAimPoint(fromEl, centreOf(toEl))),
+        dir: Math.atan2(aim.y - centre.y, aim.x - centre.x),
+        ...rankAnchorsTowards(toEl, aim),
       });
     }
   }
@@ -423,12 +440,23 @@ export function rebindArrowAnchorsAfterMove(
 
   // Faces already occupied on an element by pinned arrows we are NOT
   // touching this pass, so the re-anchored arrows don't stack onto them.
+  // Alongside each occupied anchor we record the occupying line's outgoing
+  // DIRECTION, so the sharing test below can compare against it too.
   const reserved = new Map<ElementId, Set<Anchor>>();
-  const reserve = (id: ElementId, anchor: Anchor) => {
+  const faceDirs = new Map<ElementId, Map<Cardinal, number[]>>();
+  const recordDir = (id: ElementId, anchor: Anchor, dir: number) => {
     if (!isCardinal(anchor)) return;
+    let dirs = faceDirs.get(id);
+    if (!dirs) faceDirs.set(id, (dirs = new Map()));
+    let list = dirs.get(anchor);
+    if (!list) dirs.set(anchor, (list = []));
+    list.push(dir);
+  };
+  const reserve = (id: ElementId, anchor: Anchor, dir?: number) => {
     let set = reserved.get(id);
     if (!set) reserved.set(id, (set = new Set()));
     set.add(anchor);
+    if (dir !== undefined) recordDir(id, anchor, dir);
   };
   for (const el of elements) {
     if (el.type !== 'arrow') continue;
@@ -437,10 +465,16 @@ export function rebindArrowAnchorsAfterMove(
     // the re-anchored ends route around it rather than stacking onto it).
     const skip = reassigning.has(el.id);
     if (el.from.kind === 'pinned' && (!skip || el.from.manual === true)) {
-      reserve(el.from.elementId, el.from.anchor);
+      const host = byId.get(el.from.elementId);
+      const other = endpointPosition(el.to, byId);
+      const c = host && isBoxed(host) ? centreOf(host) : other;
+      reserve(el.from.elementId, el.from.anchor, Math.atan2(other.y - c.y, other.x - c.x));
     }
     if (el.to.kind === 'pinned' && (!skip || el.to.manual === true)) {
-      reserve(el.to.elementId, el.to.anchor);
+      const host = byId.get(el.to.elementId);
+      const other = endpointPosition(el.from, byId);
+      const c = host && isBoxed(host) ? centreOf(host) : other;
+      reserve(el.to.elementId, el.to.anchor, Math.atan2(other.y - c.y, other.x - c.x));
     }
   }
 
@@ -467,18 +501,66 @@ export function rebindArrowAnchorsAfterMove(
         : b.commitment - a.commitment,
     );
     for (const p of ordered) {
-      let face: Cardinal = p.ranked.find((f) => !taken.has(f)) ?? p.ranked[0]!;
-      // Stability: stay on the current face while it's still free and within
-      // the corner dead-band of the best free face, so a drag doesn't make
-      // the arrow hop faces under tiny direction changes.
+      // The geometrically best face for this line, regardless of occupancy.
+      const best: Cardinal = p.ranked[0]!;
+      // Occupied-best resolution (the "second arrow from the same box"
+      // problem): hopping to the next-ranked face put an arrow to a
+      // lower-left target on the WEST face — a sideways exit that reads
+      // wrong. Instead:
+      //   1. SHARE the best face when every line already on it diverges
+      //      from this one by a wide angle (the lines fan out from the
+      //      same edge, like a tree — they don't visually stack);
+      //   2. otherwise slide to the SAME face's corner toward this line's
+      //      side (s -> se/sw), staying on the edge the line actually
+      //      leaves through;
+      //   3. only when that corner is taken too, fall to the next free
+      //      ranked face as before.
+      const angleBetween = (a: number, b: number) => {
+        const d = Math.abs(a - b) % (Math.PI * 2);
+        return d > Math.PI ? Math.PI * 2 - d : d;
+      };
+      const dirsOn = (f: Cardinal) => faceDirs.get(elementId)?.get(f) ?? [];
+      const canShare = (f: Cardinal) =>
+        dirsOn(f).length > 0 &&
+        dirsOn(f).every((d) => angleBetween(d, p.dir) >= FACE_SHARE_MIN_RAD);
+      const cornerFor = (f: Cardinal): Anchor => {
+        if (f === 'n') return Math.cos(p.dir) >= 0 ? 'ne' : 'nw';
+        if (f === 's') return Math.cos(p.dir) >= 0 ? 'se' : 'sw';
+        if (f === 'e') return Math.sin(p.dir) >= 0 ? 'se' : 'ne';
+        return Math.sin(p.dir) >= 0 ? 'sw' : 'nw';
+      };
+      let face: Anchor;
+      if (!taken.has(best) || canShare(best)) {
+        face = best;
+      } else {
+        const corner = cornerFor(best);
+        face = !taken.has(corner) ? corner : (p.ranked.find((f) => !taken.has(f)) ?? best);
+      }
+      // Stability: stay on the current anchor while it's still available (or
+      // shareable) and within the dead-band of the chosen one, so a drag
+      // doesn't make the arrow hop under tiny direction changes. A corner
+      // `current` compares via its face's exit time.
+      const currentFace: Cardinal | null = isCardinal(p.current)
+        ? p.current
+        : p.current === 'ne' || p.current === 'nw'
+          ? 'n'
+          : p.current === 'se' || p.current === 'sw'
+            ? 's'
+            : null;
+      const chosenFace: Cardinal = isCardinal(face)
+        ? face
+        : face === 'ne' || face === 'nw'
+          ? 'n'
+          : 's';
       if (
-        isCardinal(p.current) &&
-        !taken.has(p.current) &&
-        p.times[p.current] <= p.times[face] * (1 + ANCHOR_SWITCH_MARGIN)
+        currentFace &&
+        (!taken.has(p.current) || (isCardinal(p.current) && canShare(p.current))) &&
+        p.times[currentFace] <= p.times[chosenFace] * (1 + ANCHOR_SWITCH_MARGIN)
       ) {
         face = p.current;
       }
       taken.add(face);
+      recordDir(elementId, isCardinal(face) ? face : chosenFace, p.dir);
       assigned.set(`${p.arrowId}:${p.end}`, face);
     }
   }

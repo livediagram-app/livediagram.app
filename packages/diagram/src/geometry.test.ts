@@ -482,13 +482,14 @@ describe('rebindArrowAnchorsAfterMove', () => {
     expect(next.to.kind === 'pinned' && next.to.elementId).toBe('b');
   });
 
-  it('distributes two arrows that both want the same face across free faces', () => {
-    // The Delight scenario: a hub (d) with two connectors whose far ends sit
-    // up-and-to-the-sides. Both ends geometrically prefer the hub's north
-    // face; the more head-on one (up-left, near vertical) keeps north and the
-    // more sideways one (up-right) steps aside to east instead of stacking.
-    const d: ShapeElement = {
-      id: 'd',
+  it('lets two DIVERGING arrows share a contested face (a tree fans, not hops)', () => {
+    // The reported tree scenario: a hub with two targets below-left and
+    // below-right. Both ends prefer the hub's south face, and their lines
+    // diverge widely — bumping one to a perpendicular face (the old
+    // behaviour) made it exit sideways and read wrong. They now SHARE
+    // south and fan out.
+    const hub: ShapeElement = {
+      id: 'hub',
       type: 'shape',
       shape: 'square',
       x: -50,
@@ -496,25 +497,67 @@ describe('rebindArrowAnchorsAfterMove', () => {
       width: 100,
       height: 100,
     };
-    const upLeft: ShapeElement = { ...d, id: 'u1', x: -50, y: -320, width: 40, height: 40 }; // centre (-30,-300)
-    const upRight: ShapeElement = { ...d, id: 'u2', x: 180, y: -280, width: 40, height: 40 }; // centre (200,-260)
+    const dl: ShapeElement = { ...hub, id: 'dl', x: -320, y: 260, width: 40, height: 40 };
+    const dr: ShapeElement = { ...hub, id: 'dr', x: 280, y: 260, width: 40, height: 40 };
     const arr1: ArrowElement = {
       id: 'arr1',
       type: 'arrow',
-      from: { kind: 'pinned', elementId: 'd', anchor: 'n' },
-      to: { kind: 'pinned', elementId: 'u1', anchor: 's' },
+      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
+      to: { kind: 'pinned', elementId: 'dl', anchor: 'n' },
     };
     const arr2: ArrowElement = {
       id: 'arr2',
       type: 'arrow',
-      from: { kind: 'pinned', elementId: 'd', anchor: 'n' },
-      to: { kind: 'pinned', elementId: 'u2', anchor: 's' },
+      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
+      to: { kind: 'pinned', elementId: 'dr', anchor: 'n' },
     };
-    const out = rebindArrowAnchorsAfterMove([d, upLeft, upRight, arr1, arr2], new Set(['d']));
+    const out = rebindArrowAnchorsAfterMove([hub, dl, dr, arr1, arr2], new Set(['hub']));
     const a1 = out[3] as ArrowElement;
     const a2 = out[4] as ArrowElement;
-    expect(a1.from.kind === 'pinned' && a1.from.anchor).toBe('n'); // up-left keeps north
-    expect(a2.from.kind === 'pinned' && a2.from.anchor).toBe('e'); // up-right bumped to east
+    expect(a1.from.kind === 'pinned' && a1.from.anchor).toBe('s');
+    expect(a2.from.kind === 'pinned' && a2.from.anchor).toBe('s');
+  });
+
+  it("separates genuinely PARALLEL arrows to the same face's corner, not a side face", () => {
+    // Two targets almost straight below (near-parallel lines): sharing
+    // south would stack them, so the second slides to the south CORNER on
+    // its side (se) — still leaving through the bottom edge — instead of
+    // hopping to east/west.
+    const hub: ShapeElement = {
+      id: 'hub',
+      type: 'shape',
+      shape: 'square',
+      x: -50,
+      y: -50,
+      width: 100,
+      height: 100,
+    };
+    const d1: ShapeElement = { ...hub, id: 'd1', x: -40, y: 360, width: 40, height: 40 };
+    const d2: ShapeElement = { ...hub, id: 'd2', x: 20, y: 360, width: 40, height: 40 };
+    const arr1: ArrowElement = {
+      id: 'arr1',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
+      to: { kind: 'pinned', elementId: 'd1', anchor: 'n' },
+    };
+    const arr2: ArrowElement = {
+      id: 'arr2',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
+      to: { kind: 'pinned', elementId: 'd2', anchor: 'n' },
+    };
+    const out = rebindArrowAnchorsAfterMove([hub, d1, d2, arr1, arr2], new Set(['hub']));
+    const anchors = [out[3], out[4]].map(
+      (el) =>
+        (el as ArrowElement).from.kind === 'pinned' &&
+        ((el as ArrowElement).from as { anchor: string }).anchor,
+    );
+    // One keeps the face, the other takes a same-face corner; neither
+    // lands on a perpendicular side.
+    expect(anchors).toContain('s');
+    expect(anchors.some((a) => a === 'se' || a === 'sw')).toBe(true);
+    expect(anchors).not.toContain('e');
+    expect(anchors).not.toContain('w');
   });
 
   it('routes a moved arrow around a face already held by an untouched arrow', () => {

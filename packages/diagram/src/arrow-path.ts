@@ -3,9 +3,13 @@ import { type ArrowStyle, type Endpoint } from './index';
 // The quadratic-Bezier control point a curved arrow uses. When
 // `curveOffset` is set, the user has dragged the curve handle and
 // the control point is `chordMidpoint + curveOffset`. When unset,
-// the historical auto-bow applies (¼-chord-length perpendicular to
-// the chord). Exposed as its own helper so the renderer + the
-// curve drag handle agree on the same point.
+// the auto-bow applies: ¼-chord-length perpendicular to the chord, on a
+// SCREEN-CONSISTENT side — the bow always points upward (and rightward
+// for vertical chords) regardless of which way the chord runs. The old
+// fixed left-of-chord side flipped with the chord's direction, so a fan
+// of arrows set to curved bowed half one way, half the other (the
+// reported half-curve-the-wrong-way). Exposed as its own helper so the
+// renderer + the curve drag handle agree on the same point.
 export function curveControlPoint(
   from: { x: number; y: number },
   to: { x: number; y: number },
@@ -18,8 +22,14 @@ export function curveControlPoint(
   const dy = to.y - from.y;
   const len = Math.hypot(dx, dy);
   if (len < 0.5) return { x: mx, y: my };
-  const nx = -dy / len;
-  const ny = dx / len;
+  let nx = -dy / len;
+  let ny = dx / len;
+  // Canonicalise the perpendicular: upward bows (ny < 0), and for exactly
+  // vertical chords a rightward bow, so mirrored chords bow symmetrically.
+  if (ny > 0 || (ny === 0 && nx < 0)) {
+    nx = -nx;
+    ny = -ny;
+  }
   const offset = len * 0.25;
   return { x: mx + nx * offset, y: my + ny * offset };
 }

@@ -71,10 +71,23 @@ describe('arrowPathMidpoint', () => {
 
 describe('curveControlPoint', () => {
   it('places the auto-bow perpendicular to the chord at the midpoint when no override is set', () => {
-    // 100-wide horizontal chord: auto-bow runs 25 units down (the
-    // perpendicular's positive direction in screen-space is +y).
+    // 100-wide horizontal chord: auto-bow runs 25 units UP — the default
+    // bow side is screen-consistent (upward; rightward for vertical
+    // chords) so mirrored chords bow symmetrically.
     const c = curveControlPoint({ x: 0, y: 0 }, { x: 100, y: 0 });
-    expect(c).toEqual({ x: 50, y: 25 });
+    expect(c).toEqual({ x: 50, y: -25 });
+  });
+
+  it('bows mirrored chords to the SAME screen side (a fan curves symmetrically)', () => {
+    // Right-going and left-going fan chords both bow upward instead of
+    // one up, one down (the reported half-the-fan-curves-wrong bug).
+    const right = curveControlPoint({ x: 0, y: 0 }, { x: 100, y: 100 });
+    const left = curveControlPoint({ x: 0, y: 0 }, { x: -100, y: 100 });
+    expect(right.y).toBeLessThan(50);
+    expect(left.y).toBeLessThan(50);
+    // A vertical chord bows rightward deterministically.
+    const vertical = curveControlPoint({ x: 0, y: 0 }, { x: 0, y: 100 });
+    expect(vertical.x).toBeGreaterThan(0);
   });
 
   it('uses the supplied offset from the chord midpoint when set', () => {
