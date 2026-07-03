@@ -195,6 +195,13 @@ export type EditorContextMenuProps = {
   onPreviewTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
+  // Assigned actions (spec/68): the Collaborate category's Assign Action
+  // tile. Opens the assign dialog (no action yet) or the action popover
+  // (one exists). `canAssignActions` gates the tile to signed-in users —
+  // the picker is built on teams (spec/32), so a guest has nobody to
+  // assign to and sees no tile rather than a sign-in wall (spec/04).
+  onAssignAction: (elementId: string) => void;
+  canAssignActions: boolean;
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
   // / Text / Border for boxed, Line + Pointer for arrows). The format setters

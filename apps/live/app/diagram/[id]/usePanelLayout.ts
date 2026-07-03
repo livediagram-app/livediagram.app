@@ -16,6 +16,7 @@ export function usePanelLayout() {
   const [activityPosition, setActivityPosition] = useState<Pos | null>(null);
   const [mapPosition, setMapPosition] = useState<Pos | null>(null);
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
+  const [actionsPanelPosition, setActionsPanelPosition] = useState<Pos | null>(null);
   const [aiPanelPosition, setAiPanelPosition] = useState<Pos | null>(null);
   const [aiPanelVisible, setAiPanelVisible] = useState(false);
   // Activity defaults to minimised: most users only peek at it
@@ -37,6 +38,8 @@ export function usePanelLayout() {
     setMapPosition,
     commentsPanelPosition,
     setCommentsPanelPosition,
+    actionsPanelPosition,
+    setActionsPanelPosition,
     aiPanelPosition,
     setAiPanelPosition,
     aiPanelVisible,

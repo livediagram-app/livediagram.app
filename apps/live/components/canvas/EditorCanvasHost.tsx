@@ -81,6 +81,8 @@ export function EditorCanvasHost() {
     clearVote,
     clerkDisplayName,
     clerkUserId,
+    actionRows,
+    actionsPanelPosition,
     commentRows,
     commentsPanelPosition,
     commitDraw,
@@ -137,6 +139,7 @@ export function EditorCanvasHost() {
     multiSelectedIds,
     narrowMultiSelection,
     newDiagram,
+    openActionPopover,
     openCellLinkPicker,
     openComments,
     openDiagram,
@@ -165,6 +168,7 @@ export function EditorCanvasHost() {
     setActivityPosition,
     setAiPanelPosition,
     setCanvasTool,
+    setActionsPanelPosition,
     setCommentsPanelPosition,
     setContextMenu,
     setDiagramList,
@@ -460,6 +464,14 @@ export function EditorCanvasHost() {
         setSelectedId(id);
         openComments(id);
       }}
+      actionRows={actionRows}
+      actionsPanelPosition={actionsPanelPosition}
+      onMoveActionsPanel={(x, y) => setActionsPanelPosition({ x, y })}
+      onResetActionsPanel={() => setActionsPanelPosition(null)}
+      onOpenActionForElement={(id) => {
+        setSelectedId(id);
+        openActionPopover(id);
+      }}
       onRevertChange={revertChange}
       onActivityRowClick={handleActivityRowClick}
       onClearActivity={isReadOnly ? undefined : clearActivityForActiveTab}
@@ -582,6 +594,7 @@ export function EditorCanvasHost() {
       onSetPadding={setPaddingSelected}
       onFollowLink={followLink}
       onOpenComments={openComments}
+      onOpenAction={openActionPopover}
       onOpenNote={openNote}
       onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
       imageContext={imageContext}

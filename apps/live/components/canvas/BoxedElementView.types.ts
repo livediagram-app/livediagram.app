@@ -63,6 +63,11 @@ export type BoxedElementViewProps = {
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (id: string) => void;
+  // Open the element's assigned-action popover (spec/68). The badge only
+  // renders while the element carries an OPEN action; everyone (including
+  // view-role visitors) may open the popover, so this is not optional the
+  // way onOpenNote is — mutations are gated inside the popover instead.
+  onOpenAction: (id: string) => void;
   // Image element context: the editor passes these so the inner
   // ImageElementView can fetch the bitmap with the right
   // owner / share / diagram identity (the bytes are auth-gated by

@@ -117,6 +117,8 @@ export type UserPreferences = {
   notifyComments?: boolean;
   notifyTips?: boolean;
   notifyMilestones?: boolean;
+  // "A teammate assigned me an action on a diagram element" (spec/68).
+  notifyActionAssigned?: boolean;
 };
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';

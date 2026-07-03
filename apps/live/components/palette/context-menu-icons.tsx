@@ -73,6 +73,28 @@ export function NoteMenuIcon() {
   );
 }
 
+// Clipboard-with-tick glyph for the Assign Action tile (spec/68), matching
+// the element badge's ActionBadgeIcon.
+export function ActionMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6 3h-1.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H10" />
+      <rect x="6" y="1.75" width="4" height="2.5" rx="0.75" />
+      <path d="M5.75 9.25 7.5 11l3-3.5" />
+    </svg>
+  );
+}
+
 export function CommentMenuIcon() {
   return (
     <svg

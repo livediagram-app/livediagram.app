@@ -45,7 +45,7 @@ import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiSaveSelf } from '@/lib/api-client';
+import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
 import {
   emptyEntryHistory,
   entryHistoryCancel,
@@ -53,6 +53,8 @@ import {
   type EntryHistory,
 } from '@/lib/entry-history';
 import { commentRowsFromElements } from '@/components/panels/CommentsPanel';
+import { actionRowsFromElements } from '@/components/panels/ActionsPanel';
+import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { createTab, deriveTabLoadState, mergeAiElements, patchTab } from './editor-page-helpers';
 import { useAutosave } from './useAutosave';
 import { usePerTabLoad } from './usePerTabLoad';
@@ -752,7 +754,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Server capabilities (spec/25). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
-  const { aiEnabled: aiCapable } = useCapabilities(sharePasswordGate === null);
+  const { aiEnabled: aiCapable, emailEnabled } = useCapabilities(sharePasswordGate === null);
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   const { isPinchingRef } = useCanvasPinchZoom({
@@ -821,6 +823,53 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     );
     return commentRowsFromElements(boxed);
   }, [activeTab.elements]);
+
+  // Assigned-action state + handlers (spec/68), the comments hook's
+  // sibling: the popover open-id, the Assign Action dialog target, and
+  // the save / complete / reopen / delete mutations. Mutations bypass
+  // history like comments (Cmd+Z must never silently unassign work).
+  // The email notify is fire-and-forget through the api worker, which
+  // re-verifies team membership + diagram access server-side.
+  const {
+    actionPopoverOpenId,
+    openActionPopover,
+    closeActionPopover,
+    assignActionFor,
+    openAssignActionDialog,
+    closeAssignActionDialog,
+    openAssignAction,
+    saveAction,
+    completeAction,
+    reopenAction,
+    deleteAction,
+  } = useEditorActions({
+    activeId,
+    tickTabs,
+    getAction: (elementId) => {
+      const el = activeTab.elements.find((e) => e.id === elementId);
+      return el && isBoxed(el) ? el.action : undefined;
+    },
+    self: { userId: clerkUserId ?? null, name: clerkDisplayName ?? null },
+    notify: (input) => {
+      if (!clerkUserId || !diagramId) return;
+      void apiNotifyActionAssigned(clerkUserId, input.teamId, {
+        assigneeUserId: input.assigneeUserId,
+        diagramId,
+        actionName: input.actionName,
+        ...(input.description ? { description: input.description } : {}),
+      }).catch(() => {});
+    },
+  });
+
+  // Open-action rows for the floating Actions panel (spec/68), the
+  // commentRows sibling: same memo key, same boxed-only walk. Rows
+  // assigned to the current user sort first.
+  const actionRows = useMemo(() => {
+    const boxed: BoxedElement[] = activeTab.elements.filter((el): el is BoxedElement =>
+      isBoxed(el),
+    );
+    return actionRowsFromElements(boxed, clerkUserId ?? null);
+  }, [activeTab.elements, clerkUserId]);
 
   // True only while the first-run welcome modal is up. Drives the chrome
   // hide rule (palette / explorer / dock / tab bar all suppressed so the
@@ -2053,6 +2102,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tabLoadErrors,
     tabs,
     tabSummaries,
+    diagramTeamId,
+    emailEnabled,
+    actionPopoverOpenId,
+    actionRows,
+    assignActionFor,
+    closeActionPopover,
+    closeAssignActionDialog,
+    completeAction,
+    deleteAction,
+    openActionPopover,
+    openAssignAction,
+    openAssignActionDialog,
+    reopenAction,
+    saveAction,
     teamFolders,
     teamDiagrams,
     teams,

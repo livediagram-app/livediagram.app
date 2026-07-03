@@ -173,6 +173,24 @@ export async function apiRemoveTeamMember(
   return { ok: true };
 }
 
+// Email a teammate about an action just assigned to them (spec/68).
+// Best-effort by contract: the assignment has already persisted via the
+// tab write, so callers fire-and-forget this and swallow failures. The
+// server re-verifies team membership + diagram access and resolves every
+// name/address itself; the body only says who and what.
+export async function apiNotifyActionAssigned(
+  ownerId: string,
+  teamId: string,
+  input: { assigneeUserId: string; diagramId: string; actionName: string; description?: string },
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/teams/${teamId}/notify-action`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId, { body: true }),
+    body: JSON.stringify(input),
+  });
+  await expectOk<{ ok: boolean }>(res, 'notify assigned action');
+}
+
 // --- Shareable invite link (spec/32) ----------------------------------
 
 // Admin: turn the link on (or rotate it), getting back the fresh token

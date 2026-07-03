@@ -96,7 +96,8 @@ function ProfilePaneEnabled() {
       | 'notifyInviteResponse'
       | 'notifyComments'
       | 'notifyTips'
-      | 'notifyMilestones',
+      | 'notifyMilestones'
+      | 'notifyActionAssigned',
     telemetryType: string,
   ) => {
     // Base the write on the freshest stored prefs, not the render
@@ -158,6 +159,12 @@ function ProfilePaneEnabled() {
               description="When someone leaves a comment on a diagram you own."
               checked={prefs.notifyComments !== false}
               onChange={() => setFlag('notifyComments', 'NotifyComments')}
+            />
+            <NotificationRow
+              title="Someone assigns me an action"
+              description="When a teammate assigns you an action on a diagram element."
+              checked={prefs.notifyActionAssigned !== false}
+              onChange={() => setFlag('notifyActionAssigned', 'NotifyActionAssigned')}
             />
             <NotificationRow
               title="Tips and check-ins"

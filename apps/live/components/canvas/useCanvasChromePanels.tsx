@@ -26,6 +26,12 @@ const CommentsPanel = dynamic(() =>
   import('@/components/panels/CommentsPanel').then((m) => m.CommentsPanel),
 );
 
+// Lazy for the same reason: the Actions panel (spec/68) only mounts when
+// the active tab has at least one element with an OPEN assigned action.
+const ActionsPanel = dynamic(() =>
+  import('@/components/panels/ActionsPanel').then((m) => m.ActionsPanel),
+);
+
 // The six floating panels as elements (spec/63), lifted out of
 // CanvasChrome: the stable handler bundles for the memo'd panels, the
 // docking-aware wiring per panel, the palette's theme tint + dock-mode
@@ -57,6 +63,8 @@ export function useCanvasChromePanels({
     canvasTool,
     changeLog,
     changeLogLoading,
+    actionRows,
+    actionsPanelPosition,
     commentRows,
     commentsPanelPosition,
     currentDiagramId,
@@ -94,17 +102,20 @@ export function useCanvasChromePanels({
     onDeleteFolder,
     onDismissShared,
     onDuplicateDiagram,
+    onMoveActionsPanel,
     onMoveActivity,
     onMoveCommentsPanel,
     onMoveDiagramToFolder,
     onMoveExplorer,
     onMovePalette,
     onNewDiagram,
+    onOpenActionForElement,
     onOpenCommentsForElement,
     onOpenDiagram,
     onRedo,
     onRenameCurrent,
     onRenameFolder,
+    onResetActionsPanel,
     onResetActivity,
     onResetCommentsPanel,
     onResetExplorer,
@@ -228,6 +239,7 @@ export function useCanvasChromePanels({
     activityHandlers.onResetActivity,
   );
   const commentsWiring = panelWiringFor('comments', commentsPanelPosition, onResetCommentsPanel);
+  const actionsWiring = panelWiringFor('actions', actionsPanelPosition, onResetActionsPanel);
   const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
@@ -278,6 +290,21 @@ export function useCanvasChromePanels({
           onReset={commentsWiring.onReset}
           dock={commentsWiring.dock}
           onRowClick={onOpenCommentsForElement}
+        />
+      </div>
+    ) : null;
+
+  const actionsEl =
+    !chromeHidden && !minimalPanels && actionRows.length > 0 ? (
+      <div className="hidden sm:contents">
+        <ActionsPanel
+          position={actionsWiring.position}
+          rows={actionRows}
+          stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+          onMoveTo={onMoveActionsPanel}
+          onReset={actionsWiring.onReset}
+          dock={actionsWiring.dock}
+          onRowClick={onOpenActionForElement}
         />
       </div>
     ) : null;
@@ -441,6 +468,7 @@ export function useCanvasChromePanels({
     explorer: explorerEl,
     palette: paletteEl,
     comments: commentsEl,
+    actions: actionsEl,
     ai: aiEl,
     activity: activityEl,
     minimap: minimapEl,

@@ -58,10 +58,13 @@ export function BadgeStrip({
   linkLabel,
   commentCount,
   hasNote,
+  hasOpenAction,
+  actionLabel,
   badgeColor,
   onFollowLink,
   onOpenComments,
   onOpenNote,
+  onOpenAction,
 }: {
   zoom: number;
   linked: boolean;
@@ -71,14 +74,20 @@ export function BadgeStrip({
   linkLabel?: string;
   commentCount: number;
   hasNote: boolean;
+  // Open assigned action (spec/68): shown only while the element's
+  // action has status 'open' — finished work should not shout.
+  hasOpenAction?: boolean;
+  // Hover tooltip body for the action badge ("Assigned to {name}").
+  actionLabel?: string;
   badgeColor: string;
   onFollowLink: () => void;
   onOpenComments: () => void;
   onOpenNote?: () => void;
+  onOpenAction?: () => void;
 }) {
   // Order (LTR inside the flex strip, which is anchored to the top-
-  // right of the element): link, note, comment. Comment sits at the
-  // far right because it's the highest-traffic affordance: an
+  // right of the element): link, note, action, comment. Comment sits at
+  // the far right because it's the highest-traffic affordance: an
   // unresolved comment count needs the most visible perch. Note sits
   // to its left, link to the far left.
   return (
@@ -98,6 +107,18 @@ export function BadgeStrip({
         <BadgeButton label="Open note" color={badgeColor} onClick={onOpenNote}>
           <NoteBadgeIcon />
         </BadgeButton>
+      ) : null}
+      {hasOpenAction && onOpenAction ? (
+        <Tooltip title="Open action" description={actionLabel ?? 'An assigned action is open.'}>
+          <BadgeButton
+            label="Open action"
+            color={badgeColor}
+            onClick={onOpenAction}
+            dataAttr="data-action-trigger"
+          >
+            <ActionBadgeIcon />
+          </BadgeButton>
+        </Tooltip>
       ) : null}
       {commentCount > 0 ? (
         <BadgeButton
@@ -186,6 +207,27 @@ function LinkBadgeIcon() {
       <path d="M7 4.5l1.5-1.5a3.25 3.25 0 0 1 4.6 4.6L11 9.5" />
       <path d="M9 11.5l-1.5 1.5a3.25 3.25 0 0 1-4.6-4.6L5 7" />
       <line x1="6" y1="10" x2="10" y2="6" />
+    </svg>
+  );
+}
+
+// Clipboard-with-tick glyph for the assigned-action badge (spec/68).
+function ActionBadgeIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6 3h-1.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H10" />
+      <rect x="6" y="1.75" width="4" height="2.5" rx="0.75" />
+      <path d="M5.75 9.25 7.5 11l3-3.5" />
     </svg>
   );
 }

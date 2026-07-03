@@ -229,6 +229,15 @@ export type CanvasProps = {
   onResetCommentsPanel: () => void;
   // Row click: editor selects the element + opens its thread popover.
   onOpenCommentsForElement: (elementId: string) => void;
+  // Floating Actions panel (spec/68). Mirrors the Comments panel: only
+  // mounted when actionRows is non-empty (at least one OPEN action on
+  // the active tab).
+  actionRows: import('@/components/panels/ActionsPanel').ActionRow[];
+  actionsPanelPosition: { x: number; y: number } | null;
+  onMoveActionsPanel: (x: number, y: number) => void;
+  onResetActionsPanel: () => void;
+  // Row click: editor selects the element + opens its action popover.
+  onOpenActionForElement: (elementId: string) => void;
   onRevertChange: (entry: ChangeLogEntry) => void;
   onActivityRowClick: (entry: ChangeLogEntry) => void;
   onClearActivity?: () => void;
@@ -323,6 +332,10 @@ export type CanvasProps = {
   onUngroup: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
+  // Open the element's assigned-action popover (spec/68). Available in
+  // read-only sessions too — visitors may read an action; the popover
+  // gates its mutations itself.
+  onOpenAction: (elementId: string) => void;
   onOpenNote?: (elementId: string) => void;
   // Drop a palette icon onto a shape: set its inline iconId and the
   // position (which side of the text) derived from where it was dropped.

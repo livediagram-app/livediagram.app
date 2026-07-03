@@ -18,7 +18,7 @@ describe('panel-layout', () => {
   it('default layout preserves the historical fixed arrangement', () => {
     const layout = defaultPanelLayout();
     expect(layout.corners['top-left']).toEqual(['explorer']);
-    expect(layout.corners['top-right']).toEqual(['palette', 'comments', 'ai']);
+    expect(layout.corners['top-right']).toEqual(['palette', 'comments', 'actions', 'ai']);
     expect(layout.corners['bottom-left']).toEqual(['activity', 'minimap']);
     expect(layout.corners['bottom-right']).toEqual([]);
     expect(layout.free).toEqual({});
@@ -27,7 +27,7 @@ describe('panel-layout', () => {
   it('docks a panel to the bottom of a corner stack, removing it from its old spot', () => {
     const next = dockPanel(defaultPanelLayout(), 'palette', 'bottom-right');
     // Left its old corner...
-    expect(next.corners['top-right']).toEqual(['comments', 'ai']);
+    expect(next.corners['top-right']).toEqual(['comments', 'actions', 'ai']);
     // ...and joined below whatever is in the target corner.
     expect(next.corners['bottom-right']).toEqual(['palette']);
   });
@@ -55,7 +55,7 @@ describe('panel-layout', () => {
   it('reflow: removing a stacked panel shifts the rest up', () => {
     // Move the top-right Palette away; comments should now lead the stack.
     const next = dockPanel(defaultPanelLayout(), 'palette', 'top-left');
-    expect(next.corners['top-right']).toEqual(['comments', 'ai']);
+    expect(next.corners['top-right']).toEqual(['comments', 'actions', 'ai']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {

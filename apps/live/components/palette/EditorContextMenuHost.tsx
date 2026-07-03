@@ -110,6 +110,8 @@ export function EditorContextMenuHost() {
     setTableZebraSelected,
     openNote,
     openComments,
+    openAssignAction,
+    clerkUserId,
   } = useEditorContext();
 
   if (!contextMenu || contextMenu.mode === 'canvas' || isReadOnly) return null;
@@ -224,6 +226,8 @@ export function EditorContextMenuHost() {
       onToggleTableZebra={setTableZebraSelected}
       onOpenNote={openNote}
       onOpenComments={openComments}
+      onAssignAction={openAssignAction}
+      canAssignActions={!!clerkUserId}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))
         .filter((e): e is NonNullable<typeof e> => e != null)}

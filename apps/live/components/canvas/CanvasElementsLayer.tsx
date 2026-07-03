@@ -92,6 +92,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onStartPencil,
     onFollowLink,
     onOpenComments,
+    onOpenAction,
     onOpenNote,
     onEditLink,
     onDropIcon,
@@ -153,6 +154,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetRailLabel,
     onFollowLink,
     onOpenComments,
+    onOpenAction,
     onOpenNote,
     onEditLink,
     onDropIcon,
@@ -279,6 +281,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onCancelEdit={h.onCancelEdit}
             onFollowLink={h.onFollowLink}
             onOpenComments={h.onOpenComments}
+            onOpenAction={h.onOpenAction}
             onOpenNote={h.onOpenNote}
             onEditLink={h.onEditLink}
             onDropIcon={h.onDropIcon}

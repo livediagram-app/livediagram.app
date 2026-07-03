@@ -3,6 +3,7 @@ import {
   acceptsInlineIcon,
   isVotable,
   activeCommentCount,
+  isOpenAction,
   ANIMATION_SPEED_FACTOR,
   BORDER_DASH_ARRAY,
   BORDER_RADIUS_PX,
@@ -76,6 +77,7 @@ function BoxedElementViewImpl({
   onCancelEdit,
   onFollowLink,
   onOpenComments,
+  onOpenAction,
   onOpenNote,
   onEditLink,
   vote,
@@ -184,6 +186,9 @@ function BoxedElementViewImpl({
   const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor);
 
   const commentCount = activeCommentCount(element.commentThread);
+  // Assigned action (spec/68): the badge shows only while the action is
+  // open; a done action stays on the element but stops shouting.
+  const hasOpenAction = isOpenAction(element.action);
   // Both 'tab' and 'diagram' kinds get the "linked" badge; the
   // follow-handler dispatches off the kind via the parent's
   // onFollowLink callback. 'element' kind is the spec'd
@@ -524,19 +529,29 @@ function BoxedElementViewImpl({
 
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}
-      {linked || commentCount > 0 || (element.note && onOpenNote && !isAnnotation) ? (
+      {linked ||
+      commentCount > 0 ||
+      hasOpenAction ||
+      (element.note && onOpenNote && !isAnnotation) ? (
         <BadgeStrip
           zoom={zoom}
           linked={linked}
           linkLabel={element.link ? describeLink(element.link, tabSummaries) : undefined}
           commentCount={commentCount}
           hasNote={!!element.note && !!onOpenNote && !isAnnotation}
+          hasOpenAction={hasOpenAction}
+          actionLabel={
+            hasOpenAction
+              ? `Assigned to ${element.action?.assignee.name?.trim() || 'a teammate'}`
+              : undefined
+          }
           badgeColor={badgeColor}
           onFollowLink={() => {
             if (element.link) onFollowLink(element.link);
           }}
           onOpenComments={() => onOpenComments(element.id)}
           onOpenNote={onOpenNote ? () => onOpenNote(element.id) : undefined}
+          onOpenAction={() => onOpenAction(element.id)}
         />
       ) : null}
 

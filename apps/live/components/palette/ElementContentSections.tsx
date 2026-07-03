@@ -7,6 +7,7 @@ import {
   UnderlineIcon,
 } from '@/components/palette/palette-icons';
 import {
+  ActionMenuIcon,
   CommentMenuIcon,
   ImageGlyph,
   LinkMenuIcon,
@@ -34,9 +35,10 @@ type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
 // The lower, content / metadata sections of the single-element context menu:
 // Text (labelled arrow / table cells), Image, Table structure, Link, and the
-// Collaborate group (comment / note). Split out of EditorContextMenu; shares
-// the accordion + colour scaffolding via props so only one section opens at a
-// time across the whole menu.
+// collaboration band's two categories (spec/68) — Collaborate (Assign Action
+// + Comments) and Resources (Link + Note). Split out of EditorContextMenu;
+// shares the accordion + colour scaffolding via props so only one section
+// opens at a time across the whole menu.
 type ElementContentSectionsProps = {
   props: EditorContextMenuProps;
   target: Element;
@@ -215,20 +217,62 @@ export function ElementContentSections({
           )}
         </MenuAccordionSection>
       ) : null}
-      {/* ── Collaboration group ── */}
+      {/* ── Collaboration group (spec/68): two categories — Collaborate
+            (the people tiles: Assign Action + Comments) then Resources
+            (the attached-material tiles: Link + Note). Both boxed-only:
+            arrows can't be linked, noted, commented on, or assigned. */}
       {showCollaborateGroup ? <MenuGroupSeparator /> : null}
-      {/* Collaborate — link / note / comments. Boxed-only: arrows can't be
-            linked, noted, or commented on. */}
       {boxed ? (
         <MenuAccordionSection
           title="Collaborate"
           icon={<CommentMenuIcon />}
           {...sectionProps('collaborate')}
         >
+          {/* Assign Action is signed-in only (the assignee picker is built
+                on teams); guests see Comments alone. */}
+          {props.canAssignActions ? (
+            <MenuTileGrid cols={2}>
+              <MenuTile
+                icon={<ActionMenuIcon />}
+                label={target.action ? 'View Action' : 'Assign Action'}
+                onClick={() => {
+                  props.onAssignAction(target.id);
+                  onClose();
+                }}
+              />
+              <MenuTile
+                icon={<CommentMenuIcon />}
+                label="Comments"
+                onClick={() => {
+                  props.onOpenComments(target.id);
+                  onClose();
+                }}
+              />
+            </MenuTileGrid>
+          ) : (
+            <div className="px-2 py-1.5">
+              <MenuTile
+                icon={<CommentMenuIcon />}
+                label="Comments"
+                onClick={() => {
+                  props.onOpenComments(target.id);
+                  onClose();
+                }}
+              />
+            </div>
+          )}
+        </MenuAccordionSection>
+      ) : null}
+      {boxed ? (
+        <MenuAccordionSection
+          title="Resources"
+          icon={<LinkMenuIcon />}
+          {...sectionProps('resources')}
+        >
           {/* Link-cards have their own Link category (set / change / remove),
                 so the generic "Add Link" is dropped here for them. */}
-          <MenuTileGrid cols={target.type === 'link-card' ? 2 : 3}>
-            {target.type !== 'link-card' ? (
+          {target.type !== 'link-card' ? (
+            <MenuTileGrid cols={2}>
               <MenuTile
                 icon={<LinkMenuIcon />}
                 label={target.link ? 'Edit Link' : 'Add Link'}
@@ -237,24 +281,27 @@ export function ElementContentSections({
                   onClose();
                 }}
               />
-            ) : null}
-            <MenuTile
-              icon={<NoteMenuIcon />}
-              label={target.note ? 'Edit Note' : 'Add Note'}
-              onClick={() => {
-                props.onOpenNote(target.id);
-                onClose();
-              }}
-            />
-            <MenuTile
-              icon={<CommentMenuIcon />}
-              label="Comments"
-              onClick={() => {
-                props.onOpenComments(target.id);
-                onClose();
-              }}
-            />
-          </MenuTileGrid>
+              <MenuTile
+                icon={<NoteMenuIcon />}
+                label={target.note ? 'Edit Note' : 'Add Note'}
+                onClick={() => {
+                  props.onOpenNote(target.id);
+                  onClose();
+                }}
+              />
+            </MenuTileGrid>
+          ) : (
+            <div className="px-2 py-1.5">
+              <MenuTile
+                icon={<NoteMenuIcon />}
+                label={target.note ? 'Edit Note' : 'Add Note'}
+                onClick={() => {
+                  props.onOpenNote(target.id);
+                  onClose();
+                }}
+              />
+            </div>
+          )}
         </MenuAccordionSection>
       ) : null}
     </>

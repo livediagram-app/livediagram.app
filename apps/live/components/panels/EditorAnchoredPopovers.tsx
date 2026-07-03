@@ -13,6 +13,12 @@ const CommentThreadPopover = dynamic(() =>
 const NotePopover = dynamic(() =>
   import('@/components/canvas/NotePopover').then((m) => m.NotePopover),
 );
+const ActionPopover = dynamic(() =>
+  import('@/components/panels/ActionPopover').then((m) => m.ActionPopover),
+);
+const AssignActionDialog = dynamic(() =>
+  import('@/components/dialogs/AssignActionDialog').then((m) => m.AssignActionDialog),
+);
 
 // Popovers anchored to a specific canvas element: the comment thread and
 // the per-element note editor. Each resolves its target off the active tab
@@ -36,6 +42,19 @@ export function EditorAnchoredPopovers() {
     noteOpenId,
     setNote,
     closeNote,
+    actionPopoverOpenId,
+    closeActionPopover,
+    assignActionFor,
+    openAssignActionDialog,
+    closeAssignActionDialog,
+    saveAction,
+    completeAction,
+    reopenAction,
+    deleteAction,
+    teams,
+    clerkUserId,
+    diagramTeamId,
+    emailEnabled,
   } = useEditorContext();
 
   return (
@@ -108,6 +127,53 @@ export function EditorAnchoredPopovers() {
                 onClose={closeComments}
                 readOnly={isReadOnly}
                 selfId={selfParticipant.id}
+              />
+            );
+          })()
+        : null}
+      {/* Assigned-action popover (spec/68): read for everyone, mutations
+          gated on edit access. Closes itself if the action vanished (a
+          collaborator deleted it, or its element was removed). */}
+      {actionPopoverOpenId !== null
+        ? (() => {
+            const target = activeTab.elements.find(
+              (el) => el.id === actionPopoverOpenId && isBoxed(el),
+            );
+            if (!target || !isBoxed(target) || !target.action) return null;
+            return (
+              <ActionPopover
+                elementId={target.id}
+                action={target.action}
+                onComplete={() => completeAction(target.id)}
+                onReopen={() => reopenAction(target.id)}
+                onEdit={() => openAssignActionDialog(target.id)}
+                onDelete={() => deleteAction(target.id)}
+                onClose={closeActionPopover}
+                readOnly={isReadOnly}
+                selfUserId={clerkUserId ?? null}
+              />
+            );
+          })()
+        : null}
+      {/* Assign Action dialog (spec/68 §2): create when the element has
+          no action, edit (prefilled) when it does. */}
+      {assignActionFor !== null
+        ? (() => {
+            const target = activeTab.elements.find(
+              (el) => el.id === assignActionFor && isBoxed(el),
+            );
+            if (!target || !isBoxed(target)) return null;
+            return (
+              <AssignActionDialog
+                open
+                existing={target.action ?? null}
+                teams={teams}
+                ownerId={clerkUserId ?? null}
+                selfUserId={clerkUserId ?? null}
+                diagramTeamId={diagramTeamId}
+                emailEnabled={emailEnabled}
+                onSubmit={(input) => saveAction(target.id, input)}
+                onClose={closeAssignActionDialog}
               />
             );
           })()
