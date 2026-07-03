@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button, TextInput } from '@livediagram/ui';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
@@ -184,13 +184,13 @@ export function ShareDialog({
               >
                 {initialsOf(effectiveName)}
               </div>
-              <input
+              <TextInput
                 id="share-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={participant.name}
                 aria-label="Your name"
-                className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="min-w-0 flex-1"
               />
               <Tooltip title="Shuffle name" description="Pick a different random name.">
                 <button
@@ -316,13 +316,9 @@ export function ShareDialog({
                           labelled button so it's discoverable; revoke
                           sits apart at the far edge. */}
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => copy(link.code)}
-                      className="rounded-md bg-brand-500 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm transition hover:bg-brand-600"
-                    >
+                    <Button onClick={() => copy(link.code)} size="xs" className="shadow-sm">
                       {copiedCode === link.code ? 'Copied' : 'Copy link'}
-                    </button>
+                    </Button>
                     {/* Embed (spec/33): copy the read-only embed as a raw
                             URL or an <iframe> snippet. */}
                     <ShareCopyMenu
@@ -452,14 +448,15 @@ export function ShareDialog({
                     title={`Extend ${link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}`}
                     description="Reactivates this link for another round of the lifetime chosen when it was created, counted from now."
                   >
-                    <button
-                      type="button"
+                    <Button
+                      variant="secondary"
+                      size="xs"
                       onClick={() => extend(link.code)}
                       disabled={busy}
-                      className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-brand-400 dark:hover:text-brand-300"
+                      className="whitespace-nowrap"
                     >
                       Extend {link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}
-                    </button>
+                    </Button>
                   </Tooltip>
                   <button
                     type="button"
