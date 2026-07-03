@@ -102,6 +102,10 @@ subject; one theme applies to all tabs in a create_diagram call.
 - Size sibling nodes consistently (e.g. every box 160x64).
 - Prefer pinned arrows (node -> node) so they track their shapes when moved.
 - Give every node an id and a short, clear label.
+- For a standard artefact (kanban, flowchart, SWOT, gantt, wireframe, ...),
+  don't rebuild it from raw elements: call list_templates and pass its kind as
+  "template" on create_diagram / add_tab, then personalise the labels with
+  update_diagram. The hand-tuned scaffold reads better than a from-scratch one.
 `;
 }
 
