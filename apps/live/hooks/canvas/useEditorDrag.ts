@@ -24,23 +24,18 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   acceptsInlineIcon,
-  arrowStyleOf,
-  curveAnchorPoints,
-  endpointPosition,
-  projectToArrow,
   isBoxed,
   rebindArrowAnchorsAfterMove,
-  snapArrowPoint,
-  type AlignmentGuide,
   type ArrowElement,
   type Element,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
-import { ALIGN_SNAP_THRESHOLD, iconDropSide, type DragState } from '@/lib/canvas';
+import { iconDropSide, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
+import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';
 import {
   resolveBoxedMove,
   resolveBoxedResize,
@@ -120,34 +115,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     beginArrowElbowDrag,
     beginArrowLabelDrag,
   } = useArrowDragHandlers({ depsRef, setDrag, checkpointPendingRef, arrowConnectTrackedRef });
-
-  const snapArrowControl = (
-    arrowId: string,
-    raw: { x: number; y: number },
-    pointIndex: number | null | undefined,
-  ): { point: { x: number; y: number }; guides: AlignmentGuide[] } => {
-    const els = depsRef.current.activeTab.elements;
-    const arrow = els.find((e): e is ArrowElement => e.id === arrowId && e.type === 'arrow');
-    if (!arrow) return { point: raw, guides: [] };
-    const from = endpointPosition(arrow.from, els);
-    const to = endpointPosition(arrow.to, els);
-    const anchors = arrow.curvePoints ? curveAnchorPoints(from, to, arrow.curvePoints) : [];
-    const poly = [from, ...anchors, to];
-    // The dragged vertex sits at poly[pointIndex + 1], so its neighbours are
-    // poly[pointIndex] and poly[pointIndex + 2]. Filter out any miss: if the
-    // point was removed mid-drag the index can fall off the end, and an
-    // undefined neighbour would crash snapArrowPoint reading `.x`.
-    const neighbours =
-      pointIndex != null && arrow.curvePoints
-        ? [poly[pointIndex], poly[pointIndex + 2]].filter(
-            (p): p is { x: number; y: number } => p != null,
-          )
-        : [from, to];
-    const exclude = new Set<string>();
-    if (arrow.from.kind === 'pinned') exclude.add(arrow.from.elementId);
-    if (arrow.to.kind === 'pinned') exclude.add(arrow.to.elementId);
-    return snapArrowPoint(raw, neighbours, els, ALIGN_SNAP_THRESHOLD, exclude);
-  };
 
   // Global pointer-move / pointer-up listeners. Attached once per
   // drag-start, torn down when the drag ends. Every fire reads
@@ -298,21 +265,20 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       }
 
       if (drag.kind === 'arrow-curve') {
-        // The control point should sit at `pointer + grab`, where
-        // grab is the pointer-to-control delta we captured on
-        // gesture start. Translating that into a curveOffset means
-        // subtracting the chord midpoint (also captured at start so
-        // a concurrent endpoint move doesn't yank the curve).
-        const rawX = drag.startMidX + drag.grabDx + dx;
-        const rawY = drag.startMidY + drag.grabDy + dy;
+        // Snap + offset math live in resolveArrowControlFrame; the base
+        // is the chord midpoint captured at gesture start.
         const pointIndex = drag.pointIndex;
-        const { point: snapped, guides } = snapArrowControl(
-          drag.arrowId,
-          { x: rawX, y: rawY },
+        const { offsetDx, offsetDy, guides } = resolveArrowControlFrame({
+          els: activeTab.elements,
+          arrowId: drag.arrowId,
+          baseX: drag.startMidX,
+          baseY: drag.startMidY,
+          grabDx: drag.grabDx,
+          grabDy: drag.grabDy,
+          dx,
+          dy,
           pointIndex,
-        );
-        const offsetDx = snapped.x - drag.startMidX;
-        const offsetDy = snapped.y - drag.startMidY;
+        });
         scheduleGuides((depsRef.current.alignmentGuidesRef.current ?? true) ? guides : []);
         tick((els) =>
           els.map((el) => {
@@ -332,21 +298,19 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       }
 
       if (drag.kind === 'arrow-elbow') {
-        // Same shape as arrow-curve, but for the angled-arrow elbow
-        // handle. The new elbow sits at `pointer + grab` (where
-        // grab is the cursor-to-elbow delta at gesture start), and
-        // we store it as a delta from the auto-elbow position so
-        // the bend survives concurrent endpoint moves the same way
-        // the curveOffset does.
-        const rawX = drag.startBaseX + drag.grabDx + dx;
-        const rawY = drag.startBaseY + drag.grabDy + dy;
-        const { point: snapped, guides } = snapArrowControl(
-          drag.arrowId,
-          { x: rawX, y: rawY },
-          null,
-        );
-        const offsetDx = snapped.x - drag.startBaseX;
-        const offsetDy = snapped.y - drag.startBaseY;
+        // Same shape as arrow-curve, but based at the auto-elbow
+        // position captured at gesture start.
+        const { offsetDx, offsetDy, guides } = resolveArrowControlFrame({
+          els: activeTab.elements,
+          arrowId: drag.arrowId,
+          baseX: drag.startBaseX,
+          baseY: drag.startBaseY,
+          grabDx: drag.grabDx,
+          grabDy: drag.grabDy,
+          dx,
+          dy,
+          pointIndex: null,
+        });
         scheduleGuides((depsRef.current.alignmentGuidesRef.current ?? true) ? guides : []);
         tick((els) =>
           els.map((el) =>
@@ -359,26 +323,16 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       }
 
       if (drag.kind === 'arrow-label') {
-        // The dragged point is the label's grab-time anchor plus the
-        // pointer delta; project it onto the line to get the new
-        // {t, offset} placement (stays attached to the line, either
-        // side). Resolve endpoints fresh so it survives endpoint moves.
-        const arrow = activeTab.elements.find((el) => el.id === drag.arrowId);
-        if (!arrow || arrow.type !== 'arrow') return;
-        const from = endpointPosition(arrow.from, activeTab.elements);
-        const to = endpointPosition(arrow.to, activeTab.elements);
-        const point = { x: drag.startAnchorX + dx, y: drag.startAnchorY + dy };
-        const labelOffset = projectToArrow(
-          arrowStyleOf(arrow),
-          from,
-          to,
-          arrow.from,
-          arrow.to,
-          arrow.curveOffset,
-          arrow.elbowOffset,
-          point,
-          arrow.curvePoints,
-        );
+        // Projection lives in resolveArrowLabelFrame; null = arrow gone.
+        const labelOffset = resolveArrowLabelFrame({
+          els: activeTab.elements,
+          arrowId: drag.arrowId,
+          startAnchorX: drag.startAnchorX,
+          startAnchorY: drag.startAnchorY,
+          dx,
+          dy,
+        });
+        if (!labelOffset) return;
         tick((els) =>
           els.map((el) =>
             el.id === drag.arrowId && el.type === 'arrow' ? { ...el, labelOffset } : el,
