@@ -32,37 +32,30 @@ import {
   projectToArrow,
   isBoxed,
   rebindArrowAnchorsAfterMove,
-  arrowSnapPoints,
   snapArrowPoint,
   snapResizeBounds,
   snapToAlignment,
-  snapToAnchor,
-  snapToArrowPoint,
   type AlignmentGuide,
   type ArrowElement,
   type Element,
-  type Endpoint,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import {
   ALIGN_SNAP_THRESHOLD,
-  ARROW_SNAP_REVEAL_PX,
-  ARROW_SNAP_THRESHOLD_PX,
   cornerOf,
   iconDropSide,
   snapModeOf,
   MIN_SIZE,
   nextBounds,
-  SNAP_THRESHOLD,
   unionOfBounds,
   unionResizeMember,
   type DragMode,
   type DragState,
 } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
-import { computeSnapTargets, NO_ALIGN_EXCLUDE } from '@/lib/drag-geometry';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
+import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 import { useSnapGuideState } from './useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
@@ -608,146 +601,24 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         return;
       }
 
-      // arrow-endpoint: pin to an anchor if the cursor is close,
-      // otherwise free + optional 45-degree angle snap from the
-      // other endpoint.
+      // arrow-endpoint: the snap ladder (element anchor > arrow line >
+      // angle lock + alignment) lives in resolveArrowEndpointDrag; this
+      // handler just feeds it the frame and applies the result.
       const cursor = { x: drag.startCanvasX + dx, y: drag.startCanvasY + dy };
-      const els0 = depsRef.current.activeTab.elements;
-      // Element anchor wins over angle / alignment snap: pinning to
-      // another shape is the strongest constraint and the most desirable
-      // outcome when both are plausible.
-      const anchorSnap = snapToAnchor(cursor, els0, SNAP_THRESHOLD);
-      // No element anchor nearby → look for a nearby arrow line to connect to
-      // (spec/50). REVEAL distance shows the line's snap dots as you approach;
-      // the tighter SNAP distance actually connects. Element anchors win.
-      const arrowHit = anchorSnap
-        ? null
-        : snapToArrowPoint(cursor, els0, ARROW_SNAP_REVEAL_PX, drag.arrowId);
-      const arrowSnap = arrowHit && arrowHit.dist <= ARROW_SNAP_THRESHOLD_PX ? arrowHit : null;
-      // Reveal the connection points of nearby shapes + arrows so the user can
-      // see where the endpoint will snap, highlighting the active one.
-      const targets = computeSnapTargets(
+      const { endpoint, guides, snapTargets, arrowConnected } = resolveArrowEndpointDrag({
         cursor,
-        els0,
-        anchorSnap?.elementId ?? null,
-        anchorSnap?.anchor ?? null,
-      );
-      if (arrowHit) {
-        const targetArrow = els0.find((e) => e.id === arrowHit.arrowId && e.type === 'arrow') as
-          | ArrowElement
-          | undefined;
-        if (targetArrow) {
-          for (const sp of arrowSnapPoints(targetArrow, els0)) {
-            targets.push({
-              x: sp.x,
-              y: sp.y,
-              active: !!arrowSnap && Math.abs(sp.t - arrowHit.t) < 1e-6,
-            });
-          }
-        }
-      }
-      scheduleSnapTargets(targets);
-      let endpoint: Endpoint;
-      if (anchorSnap) {
-        endpoint = {
-          kind: 'pinned',
-          elementId: anchorSnap.elementId,
-          anchor: anchorSnap.anchor,
-          // A hand-repositioned endpoint that lands on an anchor is a manual
-          // override; auto-rebind then leaves this end's face alone.
-          ...(drag.reposition ? { manual: true } : {}),
-        };
-        scheduleGuides([]);
-      } else if (arrowSnap) {
-        // Connect to a point along the target arrow's line; it resolves
-        // dynamically so it tracks the target as it moves (spec/50).
-        endpoint = { kind: 'on-arrow', arrowId: arrowSnap.arrowId, t: arrowSnap.t };
-        if (!arrowConnectTrackedRef.current) {
-          arrowConnectTrackedRef.current = true;
-          track('Element', 'Linked', 'ArrowPoint');
-        }
-        scheduleGuides([]);
-      } else {
-        // Angle snap: lock the arrow to 45-degree increments from its
-        // other endpoint when the cursor is within ~5 degrees of one.
-        // Keeps right-angle connectors easy to draw without fighting the
-        // cursor at oblique angles.
-        const arrow = els0.find((e) => e.id === drag.arrowId && e.type === 'arrow') as
-          | ArrowElement
-          | undefined;
-        let resolved = cursor;
-        let angleLocked = false;
-        let other: { x: number; y: number } | null = null;
-        if (arrow) {
-          const otherKey = drag.end === 'from' ? 'to' : 'from';
-          other = endpointPosition(arrow[otherKey], els0);
-          const ax = cursor.x - other.x;
-          const ay = cursor.y - other.y;
-          const len = Math.hypot(ax, ay);
-          if (len > 0) {
-            const angle = Math.atan2(ay, ax);
-            const STEP = Math.PI / 4;
-            const THRESH = (5 * Math.PI) / 180;
-            const nearest = Math.round(angle / STEP) * STEP;
-            if (Math.abs(angle - nearest) <= THRESH) {
-              resolved = {
-                x: other.x + Math.cos(nearest) * len,
-                y: other.y + Math.sin(nearest) * len,
-              };
-              angleLocked = true;
-            }
-          }
-        }
-        // Alignment snapping for the free endpoint (skipped once the 45°
-        // angle lock already constrains it): nudge the point to line up
-        // with nearby boxed elements' edges / centres AND with the arrow's
-        // OTHER endpoint (so it clicks into a perfectly horizontal /
-        // vertical line), showing the same faint guides a boxed move does.
-        const guidesOn = depsRef.current.alignmentGuidesRef.current ?? true;
-        if (!angleLocked && !noSnap) {
-          const boxSnap = snapToAlignment(
-            { x: resolved.x, y: resolved.y, width: 0, height: 0 },
-            els0,
-            NO_ALIGN_EXCLUDE,
-            ALIGN_SNAP_THRESHOLD,
-          );
-          resolved = { x: resolved.x + boxSnap.dx, y: resolved.y + boxSnap.dy };
-          const extraGuides: AlignmentGuide[] = [];
-          // Endpoint-to-other-endpoint alignment fills the axes the box
-          // snap didn't claim, so a near-straight arrow latches truly
-          // straight with a guide spanning the two ends.
-          if (other) {
-            if (!boxSnap.snappedX && Math.abs(resolved.x - other.x) <= ALIGN_SNAP_THRESHOLD) {
-              resolved = { x: other.x, y: resolved.y };
-              extraGuides.push({
-                axis: 'x',
-                position: other.x,
-                start: Math.min(other.y, resolved.y),
-                end: Math.max(other.y, resolved.y),
-              });
-            }
-            if (!boxSnap.snappedY && Math.abs(resolved.y - other.y) <= ALIGN_SNAP_THRESHOLD) {
-              resolved = { x: resolved.x, y: other.y };
-              extraGuides.push({
-                axis: 'y',
-                position: other.y,
-                start: Math.min(other.x, resolved.x),
-                end: Math.max(other.x, resolved.x),
-              });
-            }
-          }
-          const boxGuides = guidesOn
-            ? alignmentGuides(
-                { x: resolved.x, y: resolved.y, width: 0, height: 0 },
-                els0,
-                NO_ALIGN_EXCLUDE,
-              )
-            : [];
-          scheduleGuides(guidesOn ? [...boxGuides, ...extraGuides] : []);
-        } else {
-          scheduleGuides([]);
-        }
-        endpoint = { kind: 'free', x: resolved.x, y: resolved.y };
+        elements: depsRef.current.activeTab.elements,
+        arrowId: drag.arrowId,
+        end: drag.end,
+        reposition: drag.reposition === true,
+        noSnap,
+        guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+      });
+      scheduleSnapTargets(snapTargets);
+      scheduleGuides(guides);
+      if (arrowConnected && !arrowConnectTrackedRef.current) {
+        arrowConnectTrackedRef.current = true;
+        track('Element', 'Linked', 'ArrowPoint');
       }
       tick((els) =>
         els.map((el) =>
