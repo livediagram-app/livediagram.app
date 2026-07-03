@@ -5,7 +5,6 @@ import {
   arrowThicknessOf,
   defaultFillColor,
   defaultStrokeColor,
-  defaultTextColor,
   isBoxed,
   isChartShape,
   isProgressShape,
@@ -29,17 +28,12 @@ import { onMouseHover } from '@/components/primitives/hover-preview';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu } from '@/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
-import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-icons';
 import {
-  AnimationMenuGlyph,
   AspectLockMenuIcon,
-  BorderGlyph,
-  IconCategoryGlyph,
   LayerDownIcon,
   LayersGlyph,
   LayerUpIcon,
   LineGlyph,
-  PaletteMenuIcon,
   PointerGlyph,
   RotationGlyph,
   SquareMenuIcon,
@@ -51,24 +45,17 @@ import {
   MenuTile,
   MenuTileGrid,
 } from '@/components/primitives/PortalMenu';
-import { AnimationTiles, FlowTiles, IconSizeTiles } from '@/components/palette/context-menu-tiles';
 import {
-  BorderGrid,
-  ColourRow,
   MarkersMenuGlyph,
   MarkerTiles,
   OpacityRow,
   TextSizeTiles,
 } from '@/components/palette/context-menu-rows';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
-import {
-  BORDER_STROKES,
-  BORDER_STYLES,
-  COMMON_SHAPES,
-  ROTATION_ANGLES,
-} from './context-menu-constants';
+import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
+import { MultiStyleSections } from './MultiStyleSections';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 
 type MultiSelectionContextMenuProps = {
@@ -88,8 +75,8 @@ export function MultiSelectionContextMenu({
   onClose,
   anchorBottom,
 }: MultiSelectionContextMenuProps) {
-  const { sectionProps, colorProps, textColorHandlers, fillColorHandlers, strokeColorHandlers } =
-    useContextMenuScaffold(props);
+  const scaffold = useContextMenuScaffold(props);
+  const { sectionProps } = scaffold;
   // carries Duplicate / Group / Lock / Export / Delete, so this menu is
   // carries Duplicate / Group / Lock / Export / Delete, so this menu is
   // purely the type-aware formatting categories its ellipsis opens. A
@@ -295,130 +282,23 @@ export function MultiSelectionContextMenu({
                 title={presetShapeSrc && arrowSrc ? 'Arrow Presets' : 'Presets'}
               />
             ) : null}
-            {/* Animation (spec/09) — applies to every boxed member of the
-                  selection. */}
-            {boxedSel.length ? (
-              <MenuAccordionSection
-                title={bothAnimated ? 'Shape Animation' : 'Animation'}
-                icon={<AnimationMenuGlyph />}
-                {...sectionProps('m-animation')}
-              >
-                <AnimationTiles
-                  animation={boxedSel[0]!.animation ?? null}
-                  speed={boxedSel[0]!.animationSpeed ?? 'normal'}
-                  onSet={props.onSetAnimation}
-                  onSetSpeed={props.onSetAnimationSpeed}
-                  onPreview={props.onPreviewAnimation}
-                  onPreviewEnd={props.onAnimationPreviewEnd}
-                />
-              </MenuAccordionSection>
-            ) : null}
-            {arrowSrc ? (
-              <MenuAccordionSection
-                title={bothAnimated ? 'Arrow Animation' : 'Animation'}
-                icon={<AnimationMenuGlyph />}
-                {...sectionProps('m-flow')}
-              >
-                <FlowTiles
-                  flow={arrowSrc.flow ?? null}
-                  speed={arrowSrc.flowSpeed ?? 'normal'}
-                  onSet={props.onSetArrowFlow}
-                  onSetSpeed={props.onSetFlowSpeed}
-                  onPreview={props.onPreviewArrowFlow}
-                  onPreviewEnd={props.onAnimationPreviewEnd}
-                />
-              </MenuAccordionSection>
-            ) : null}
-            {colourable ? (
-              <MenuAccordionSection
-                title="Colours"
-                icon={<PaletteMenuIcon />}
-                {...sectionProps('m-colours')}
-              >
-                {textSrc ? (
-                  <ColourRow
-                    label="Text"
-                    value={
-                      (textSrc as { textColor?: string }).textColor ??
-                      defaultTextColor(textSrc as BoxedElement)
-                    }
-                    {...textColorHandlers}
-                    {...colorProps('m-text')}
-                    presets={props.presetColors}
-                  />
-                ) : null}
-                {fillSrc ? (
-                  <ColourRow
-                    label="Background"
-                    value={fillSrc.fillColor ?? defaultFillColor(fillSrc)}
-                    {...fillColorHandlers}
-                    {...colorProps('m-bg')}
-                    presets={props.presetColors}
-                  />
-                ) : null}
-                {strokeSrc ? (
-                  <ColourRow
-                    label="Border"
-                    value={strokeSrc.strokeColor ?? defaultStrokeColor(strokeSrc)}
-                    {...strokeColorHandlers}
-                    {...colorProps('m-border')}
-                    presets={props.presetColors}
-                  />
-                ) : null}
-              </MenuAccordionSection>
-            ) : null}
-            {borderableSel ? (
-              <MenuAccordionSection
-                title="Border"
-                icon={<BorderGlyph />}
-                {...sectionProps('m-border-style')}
-              >
-                <div className="px-2 py-1">
-                  <BorderGrid label="Strength" cols={5}>
-                    {BORDER_STROKES.map((v) => (
-                      <SizeButton
-                        key={v}
-                        active={(borderSrc?.strokeWidth ?? 'medium') === v}
-                        onClick={() => props.onCommitBorderStroke(v)}
-                        onPointerEnter={onMouseHover(() => props.onPreviewBorderStroke(v))}
-                        onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                      >
-                        <BorderStrokeIcon value={v} />
-                      </SizeButton>
-                    ))}
-                  </BorderGrid>
-                  <BorderGrid label="Pattern" cols={3}>
-                    {BORDER_STYLES.map((v) => (
-                      <SizeButton
-                        key={v}
-                        active={(borderSrc?.strokeStyle ?? 'solid') === v}
-                        onClick={() => props.onCommitBorderStyle(v)}
-                        onPointerEnter={onMouseHover(() => props.onPreviewBorderStyle(v))}
-                        onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                      >
-                        <BorderStyleIcon value={v} />
-                      </SizeButton>
-                    ))}
-                  </BorderGrid>
-                </div>
-              </MenuAccordionSection>
-            ) : null}
-            {/* Icon — a Technology icon's fixed tile size (spec/41), when
-                  the selection holds any; applies to every tech icon in it. */}
-            {techIconSrc ? (
-              <MenuAccordionSection
-                title="Icon"
-                icon={<IconCategoryGlyph />}
-                {...sectionProps('m-icon-size')}
-              >
-                <IconSizeTiles
-                  value={techIconSrc.iconSize ?? 'md'}
-                  onSet={props.onSetIconSize}
-                  onPreview={props.onPreviewIconSize}
-                  onPreviewEnd={props.onPreviewStyleEnd}
-                />
-              </MenuAccordionSection>
-            ) : null}
+            {/* Style band (Animation / Flow / Colours / Border / Icon) — see
+                  MultiStyleSections; folds into the same exclusive accordion
+                  set via the shared scaffold. */}
+            <MultiStyleSections
+              props={props}
+              scaffold={scaffold}
+              boxedSel={boxedSel}
+              arrowSrc={arrowSrc}
+              bothAnimated={bothAnimated}
+              colourable={colourable}
+              textSrc={textSrc}
+              fillSrc={fillSrc}
+              strokeSrc={strokeSrc}
+              borderableSel={borderableSel}
+              borderSrc={borderSrc}
+              techIconSrc={techIconSrc}
+            />
             {/* ── Text band (spec/09): Markers + Alignment. ── */}
             {markerSrc || alignSrc ? <MenuGroupSeparator /> : null}
             {/* Markers (spec/49) — for every marker-capable shape in the
