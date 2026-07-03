@@ -19,7 +19,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. spec/16 pins "30 templates (10 default + 20 extra)" and
+// site. spec/16 pins "44 templates (10 default + 34 extra)" and
 // spec/09 catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -59,17 +59,31 @@ describe('TEMPLATES catalogue', () => {
     'er-diagram',
     'sequence-diagram',
     'prioritization-matrix',
+    'roadmap',
+    'raci-matrix',
+    'user-story-map',
+    'affinity-map',
+    'business-model-canvas',
+    'empathy-map',
+    'funnel',
+    'okr-tree',
+    'sitemap',
+    'browser-wireframe',
+    'storyboard',
+    'cloud-architecture',
+    'uml-class',
+    'state-machine',
   ];
 
-  it('lists exactly 30 templates (10 default + 20 extra, matches spec/16 and spec/09)', () => {
-    expect(TEMPLATES).toHaveLength(30);
+  it('lists exactly 44 templates (10 default + 34 extra, matches spec/16 and spec/09)', () => {
+    expect(TEMPLATES).toHaveLength(44);
   });
 
-  it('splits cleanly into 10 default + 20 extra (the picker uses `extra` to gate behind "Show more")', () => {
+  it('splits cleanly into 10 default + 34 extra (the picker uses `extra` to gate behind "Show more")', () => {
     const defaults = TEMPLATES.filter((t) => !t.extra);
     const extras = TEMPLATES.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(20);
+    expect(extras).toHaveLength(34);
   });
 
   it('has no duplicate kinds (guards against accidental copy-paste in the catalogue)', () => {
@@ -389,6 +403,272 @@ describe('board templates', () => {
     // quadrants aren't empty frames.
     const bulletCount = labels.filter((l) => l.startsWith('•')).length;
     expect(bulletCount).toBeGreaterThan(0);
+  });
+});
+
+// Structural fingerprints for the later template batch (roadmap /
+// canvases / workshops / hierarchies / funnel / UML / cloud /
+// browser / storyboard / RACI). Same rationale as the wireframe and
+// board suites above: the catalogue-level "builds non-empty" check
+// can't tell a real scaffold from a gutted one, so each template pins
+// the labels and element mix that define it.
+
+const labelsOf = (kind: TemplateKind): string[] =>
+  buildTemplatedTab(kind, 'brand', `tab-${kind}`, kind)
+    .elements.map((el) => ('label' in el ? el.label : undefined))
+    .filter((l): l is string => Boolean(l));
+
+describe('planning + strategy templates', () => {
+  it('roadmap drops Now / Next / Later lanes of chip-tagged initiative cards', () => {
+    const labels = labelsOf('roadmap');
+    for (const lane of ['Now', 'Next', 'Later']) expect(labels).toContain(lane);
+    // Nine initiative cards, each with a workstream chip.
+    const chips = labels.filter((l) => /^(Growth|Platform|Quality)$/.test(l));
+    expect(chips).toHaveLength(9);
+    expect(new Set(chips).size).toBe(3);
+    // Chips keep their workstream tint under theming.
+    const tab = buildTemplatedTab('roadmap', 'slate', 'tab-r', 'roadmap');
+    const locked = tab.elements.filter(
+      (el) => (el as { themeLockFill?: boolean }).themeLockFill === true,
+    );
+    expect(locked).toHaveLength(9);
+  });
+
+  it('user story map drops an activity backbone over release-banded story stickies', () => {
+    const tab = buildTemplatedTab('user-story-map', 'brand', 'tab-1', 'usm');
+    const labels = labelsOf('user-story-map');
+    for (const activity of ['Browse products', 'Build a cart', 'Check out', 'Track my order']) {
+      expect(labels).toContain(activity);
+    }
+    expect(labels).toContain('MVP');
+    expect(labels).toContain('Release 2');
+    // Twelve story stickies: two MVP + one later per activity.
+    const stickies = tab.elements.filter((el) => el.type === 'sticky');
+    expect(stickies).toHaveLength(12);
+    // The release cut line is a headless dashed rule.
+    const rules = tab.elements.filter(
+      (el) => el.type === 'arrow' && el.arrowEnds === 'none' && el.strokeStyle === 'dashed',
+    );
+    expect(rules).toHaveLength(1);
+  });
+
+  it('affinity map drops dashed theme clusters of tilted stickies plus an unsorted pile', () => {
+    const tab = buildTemplatedTab('affinity-map', 'brand', 'tab-1', 'affinity');
+    const labels = labelsOf('affinity-map');
+    for (const cluster of ['Onboarding', 'Pricing clarity', 'Trust', 'Unsorted']) {
+      expect(labels).toContain(cluster);
+    }
+    const frames = tab.elements.filter(
+      (el) => el.type === 'shape' && el.shape === 'frame' && el.strokeStyle === 'dashed',
+    );
+    expect(frames).toHaveLength(3);
+    const stickies = tab.elements.filter((el) => el.type === 'sticky');
+    expect(stickies).toHaveLength(9);
+    // Every sticky carries the hand-placed tilt.
+    expect(stickies.every((s) => typeof (s as { rotation?: number }).rotation === 'number')).toBe(
+      true,
+    );
+  });
+
+  it('business model canvas drops all nine classic blocks with starter notes', () => {
+    const labels = labelsOf('business-model-canvas');
+    for (const block of [
+      'Key Partners',
+      'Key Activities',
+      'Key Resources',
+      'Value Propositions',
+      'Customer Relationships',
+      'Channels',
+      'Customer Segments',
+      'Cost Structure',
+      'Revenue Streams',
+    ]) {
+      expect(labels).toContain(block);
+    }
+    // Each block seeds at least two bullet starters.
+    expect(labels.filter((l) => l.startsWith('•')).length).toBeGreaterThanOrEqual(18);
+    // One role glyph per block.
+    const tab = buildTemplatedTab('business-model-canvas', 'brand', 'tab-1', 'bmc');
+    const icons = tab.elements.filter((el) => el.type === 'shape' && el.shape === 'icon');
+    expect(icons).toHaveLength(9);
+  });
+
+  it('empathy map drops the four quadrants and stickies around a persona', () => {
+    const tab = buildTemplatedTab('empathy-map', 'brand', 'tab-1', 'empathy');
+    const labels = labelsOf('empathy-map');
+    for (const quadrant of ['Says', 'Thinks', 'Does', 'Feels']) expect(labels).toContain(quadrant);
+    expect(tab.elements.filter((el) => el.type === 'sticky')).toHaveLength(8);
+    // The persona circle sits above the quadrants (pushed last).
+    const persona = tab.elements.filter((el) => el.type === 'shape').at(-1);
+    expect((persona as { label?: string })?.label).toContain('Priya');
+  });
+
+  it('funnel drops four narrowing flipped-trapezoid tiers with a count rail', () => {
+    const tab = buildTemplatedTab('funnel', 'brand', 'tab-1', 'funnel');
+    const labels = labelsOf('funnel');
+    for (const stage of ['Awareness', 'Interest', 'Decision', 'Action']) {
+      expect(labels).toContain(stage);
+    }
+    const tiers = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
+        el.type === 'shape' && el.shape === 'trapezoid',
+    );
+    expect(tiers).toHaveLength(4);
+    // Every tier is flipped wide-side-up and strictly narrower than the last.
+    expect(tiers.every((t) => t.rotation === 180)).toBe(true);
+    for (let i = 1; i < tiers.length; i++)
+      expect(tiers[i]!.width).toBeLessThan(tiers[i - 1]!.width);
+    expect(labels.some((l) => l.includes('visitors'))).toBe(true);
+    expect(labels.filter((l) => l.includes('convert'))).toHaveLength(3);
+  });
+});
+
+describe('hierarchy templates', () => {
+  it('okr tree drops an objective over three measurable KRs and six initiatives', () => {
+    const labels = labelsOf('okr-tree');
+    expect(labels.some((l) => l.startsWith('Objective'))).toBe(true);
+    const krs = labels.filter((l) => /^KR\d/.test(l));
+    expect(krs).toHaveLength(3);
+    // KRs carry baseline → target numbers, not vague goals.
+    expect(krs.some((l) => l.includes('→'))).toBe(true);
+    const tab = buildTemplatedTab('okr-tree', 'brand', 'tab-1', 'okr');
+    expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(9);
+  });
+
+  it('sitemap drops Home over four sections, leaf pages with route captions, elbow-wired', () => {
+    const tab = buildTemplatedTab('sitemap', 'brand', 'tab-1', 'sitemap');
+    const labels = labelsOf('sitemap');
+    for (const page of ['Home', 'Product', 'Pricing', 'Resources', 'About']) {
+      expect(labels).toContain(page);
+    }
+    // Route captions under the leaves.
+    expect(labels).toContain('/product/features');
+    expect(labels).toContain('/about/careers');
+    const arrows = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'arrow' }> => el.type === 'arrow',
+    );
+    expect(arrows).toHaveLength(12);
+    expect(arrows.every((a) => a.arrowStyle === 'angled')).toBe(true);
+  });
+});
+
+describe('technical templates (later batch)', () => {
+  it('cloud architecture wires branded AWS tiles from edge to data with a dashed control plane', () => {
+    const tab = buildTemplatedTab('cloud-architecture', 'brand', 'tab-1', 'cloud');
+    const labels = labelsOf('cloud-architecture');
+    for (const role of ['Users', 'DNS', 'CDN', 'API Gateway', 'Monitoring', 'Job Queue']) {
+      expect(labels).toContain(role);
+    }
+    const iconIds = tab.elements
+      .filter(
+        (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
+          el.type === 'shape' && el.shape === 'icon',
+      )
+      .map((el) => el.iconId);
+    expect(iconIds.filter((id) => id?.startsWith('aws-'))).toHaveLength(9);
+    const dashed = tab.elements.filter((el) => el.type === 'arrow' && el.strokeStyle === 'dashed');
+    expect(dashed).toHaveLength(2);
+  });
+
+  it('class diagram drops four two-compartment classes with UML arrowheads', () => {
+    const tab = buildTemplatedTab('uml-class', 'brand', 'tab-1', 'uml');
+    const tables = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'table' }> => el.type === 'table',
+    );
+    // Two flush-stacked tables per class (name+attributes over methods).
+    expect(tables).toHaveLength(8);
+    const cellText = tables.flatMap((t) => t.cells.flat());
+    for (const name of ['MediaItem', 'Playlist', 'Song', 'Podcast']) {
+      expect(cellText).toContain(name);
+    }
+    // Visibility markers survive.
+    expect(cellText.some((c) => c.startsWith('- '))).toBe(true);
+    expect(cellText.some((c) => c.startsWith('+ '))).toBe(true);
+    const heads = tab.elements
+      .filter(
+        (el): el is Extract<(typeof tab.elements)[number], { type: 'arrow' }> =>
+          el.type === 'arrow',
+      )
+      .map((a) => a.arrowheadShape);
+    expect(heads.filter((h) => h === 'triangle-hollow')).toHaveLength(2);
+    expect(heads.filter((h) => h === 'diamond-hollow')).toHaveLength(1);
+  });
+
+  it('state machine drops the order lifecycle with locked initial / final markers', () => {
+    const tab = buildTemplatedTab('state-machine', 'slate', 'tab-1', 'sm');
+    const labels = labelsOf('state-machine');
+    for (const state of ['Draft', 'Submitted', 'Paid', 'Shipped', 'Delivered', 'Cancelled']) {
+      expect(labels).toContain(state);
+    }
+    const events = tab.elements
+      .filter(
+        (el): el is Extract<(typeof tab.elements)[number], { type: 'arrow' }> =>
+          el.type === 'arrow',
+      )
+      .map((a) => a.label)
+      .filter(Boolean);
+    for (const event of ['submit', 'pay', 'ship', 'deliver', 'cancel', 'refund']) {
+      expect(events).toContain(event);
+    }
+    // Initial dot + final bullseye (ring + core) keep their ink under theming.
+    const locked = tab.elements.filter(
+      (el) => (el as { themeLockFill?: boolean }).themeLockFill === true,
+    );
+    expect(locked).toHaveLength(3);
+  });
+});
+
+describe('design + table templates (later batch)', () => {
+  it('browser wireframe drops a landing page inside one browser frame', () => {
+    const tab = buildTemplatedTab('browser-wireframe', 'brand', 'tab-1', 'web');
+    const browsers = tab.elements.filter((el) => el.type === 'shape' && el.shape === 'browser');
+    expect(browsers).toHaveLength(1);
+    const labels = labelsOf('browser-wireframe');
+    for (const bit of [
+      'Logo',
+      'Product',
+      'Pricing',
+      'Sign up',
+      'Design together, ship faster',
+      'Start free',
+      'Realtime',
+      'Templates',
+      'Share',
+    ]) {
+      expect(labels).toContain(bit);
+    }
+    expect(tab.elements.length).toBeGreaterThan(20);
+  });
+
+  it('storyboard drops six numbered captioned scene frames with glyph sketches', () => {
+    const tab = buildTemplatedTab('storyboard', 'brand', 'tab-1', 'story');
+    const labels = labelsOf('storyboard');
+    const numbers = labels.filter((l) => /^[1-6]$/.test(l));
+    expect(numbers).toHaveLength(6);
+    const captions = labels.filter((l) => /^[1-6] · /.test(l));
+    expect(captions).toHaveLength(6);
+    // Two sketch glyphs per scene.
+    const icons = tab.elements.filter((el) => el.type === 'shape' && el.shape === 'icon');
+    expect(icons).toHaveLength(12);
+  });
+
+  it('raci matrix drops the tasks-by-roles grid with one legend chip per letter', () => {
+    const tab = buildTemplatedTab('raci-matrix', 'brand', 'tab-1', 'raci');
+    const table = tab.elements.find(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'table' }> => el.type === 'table',
+    );
+    expect(table).toBeDefined();
+    expect(table!.headerRow).toBe(true);
+    expect(table!.headerColumn).toBe(true);
+    expect(table!.cells[0]).toEqual(['Task', 'Product', 'Design', 'Engineering', 'QA']);
+    // Every body row assigns an accountable owner.
+    for (const row of table!.cells.slice(1)) {
+      expect(row.some((cell) => cell.includes('A'))).toBe(true);
+    }
+    const labels = labelsOf('raci-matrix');
+    for (const chip of ['R · Responsible', 'A · Accountable', 'C · Consulted', 'I · Informed']) {
+      expect(labels).toContain(chip);
+    }
   });
 });
 

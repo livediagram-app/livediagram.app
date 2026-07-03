@@ -1,8 +1,9 @@
 // Technical / developer-diagram templates lifted out of
 // template-builders.ts: system architecture (request path through a
-// small service topology), ER diagram (entity tables wired by
-// relationship arrows), and sequence diagram (participant lifelines
-// with request / response messages). They share a building-block
+// small service topology), cloud architecture (its managed-cloud
+// sibling), ER diagram (entity tables wired by relationship arrows),
+// and sequence diagram (participant lifelines with request / response
+// messages). They share a building-block
 // vocabulary the rest of the catalogue already ships — full-colour
 // Technology icons (spec/41) for the infrastructure nodes, the table
 // element for entities, dashed arrows for lifelines / returns — so they
@@ -80,6 +81,70 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
   ];
 
   return [client, gateway, auth, app, db, cache, ...arrows];
+}
+
+// A managed-cloud topology, the vendor-flavoured sibling of the
+// generic system architecture above: traffic arrives through DNS + CDN,
+// crosses an API gateway into container + serverless compute, and lands
+// in managed data services, with monitoring watching from the side. AWS
+// marks (spec/41) because they're the most widely recognised cloud
+// iconography; swapping tiles for another provider is a per-node iconId
+// edit. Same conventions as buildSystemArchitecture: branded tiles keep
+// their own colours, captions ride beneath, pinned arrows wire the
+// request path, and dashed edges carry the control-plane relationships
+// (DNS resolution, metrics).
+export function buildCloudArchitecture(cx: number, cy: number): Element[] {
+  const tile = 128;
+  const colGap = 170; // half-distance between the two service columns
+  const wideGap = 340; // data-tier column offset
+
+  const usersY = cy - 480;
+  const edgeY = cy - 290;
+  const gatewayY = cy - 100;
+  const serviceY = cy + 90;
+  const dataY = cy + 280;
+
+  const node = (centerX: number, centerY: number, label: string, iconId: string): Element => ({
+    ...createShape('icon', centerX - tile / 2, centerY - tile / 2),
+    width: tile,
+    height: tile,
+    label,
+    iconId,
+    textSize: 'sm',
+    ...(isTechIconId(iconId) ? { aspectLocked: false } : {}),
+  });
+
+  const users = node(cx, usersY, 'Users', 'users');
+  const cdn = node(cx, edgeY, 'CDN', 'aws-cloudfront');
+  const dns = node(cx - wideGap, edgeY, 'DNS', 'aws-route53');
+  const gateway = node(cx, gatewayY, 'API Gateway', 'aws-apigateway');
+  const monitoring = node(cx + wideGap, gatewayY, 'Monitoring', 'aws-cloudwatch');
+  const app = node(cx - colGap, serviceY, 'App Service', 'aws-ecs');
+  const worker = node(cx + colGap, serviceY, 'Jobs Worker', 'aws-lambda');
+  const db = node(cx - wideGap, dataY, 'Database', 'aws-rds');
+  const queue = node(cx, dataY, 'Job Queue', 'aws-sqs');
+  const storage = node(cx + wideGap, dataY, 'Object Storage', 'aws-s3');
+
+  const arrows: Element[] = [
+    // Request path.
+    createPinnedArrow(users.id, 's', cdn.id, 'n'),
+    createPinnedArrow(cdn.id, 's', gateway.id, 'n'),
+    createPinnedArrow(gateway.id, 's', app.id, 'n'),
+    createPinnedArrow(gateway.id, 's', worker.id, 'n'),
+    createPinnedArrow(app.id, 's', db.id, 'n'),
+    { ...createPinnedArrow(app.id, 's', queue.id, 'n'), label: 'enqueue' },
+    { ...createPinnedArrow(queue.id, 'e', worker.id, 's'), label: 'consume' },
+    createPinnedArrow(worker.id, 's', storage.id, 'n'),
+    // Control plane, dashed so it reads as supporting relationships.
+    { ...createPinnedArrow(dns.id, 'e', cdn.id, 'w'), strokeStyle: 'dashed', label: 'resolves' },
+    {
+      ...createPinnedArrow(gateway.id, 'e', monitoring.id, 'w'),
+      strokeStyle: 'dashed',
+      label: 'metrics',
+    },
+  ];
+
+  return [users, dns, cdn, gateway, monitoring, app, worker, db, queue, storage, ...arrows];
 }
 
 // A canonical e-commerce schema: Users place Orders, Orders contain

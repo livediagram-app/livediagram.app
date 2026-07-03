@@ -56,6 +56,20 @@ const ALL_KINDS = [
   'er-diagram',
   'sequence-diagram',
   'prioritization-matrix',
+  'roadmap',
+  'raci-matrix',
+  'user-story-map',
+  'affinity-map',
+  'business-model-canvas',
+  'empathy-map',
+  'funnel',
+  'okr-tree',
+  'sitemap',
+  'browser-wireframe',
+  'storyboard',
+  'cloud-architecture',
+  'uml-class',
+  'state-machine',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from

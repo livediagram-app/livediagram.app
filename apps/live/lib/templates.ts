@@ -59,7 +59,50 @@ export type TemplateKind =
   // Impact / Effort prioritisation chart: crossed value / effort axes
   // with items scattered across the field to drag into the right
   // quadrant. A product / planning starter.
-  | 'prioritization-matrix';
+  | 'prioritization-matrix'
+  // Now / Next / Later product roadmap: three tinted lanes of initiative
+  // cards, each tagged with its theme. The strategic sibling of the
+  // date-driven Gantt.
+  | 'roadmap'
+  // RACI matrix: a tasks-by-roles table of R / A / C / I ownership
+  // chips plus a legend spelling each letter out.
+  | 'raci-matrix'
+  // User story mapping (agile): an activity backbone across the top with
+  // story stickies beneath, sliced into release bands.
+  | 'user-story-map'
+  // Affinity map: brainstorm stickies clustered into labelled themes,
+  // with an unsorted pile still to file.
+  | 'affinity-map'
+  // The classic nine-block Business Model Canvas, every block seeded
+  // with a prompt and starter notes.
+  | 'business-model-canvas'
+  // Empathy map: Says / Thinks / Does / Feels quadrants around a
+  // central persona.
+  | 'empathy-map'
+  // Conversion funnel: narrowing stages with stage counts and
+  // conversion-rate callouts down the side.
+  | 'funnel'
+  // OKR tree: an objective branching into measurable key results and
+  // the initiatives that move them.
+  | 'okr-tree'
+  // Sitemap: a website's page hierarchy (home, sections, sub-pages)
+  // drawn with elbow connectors.
+  | 'sitemap'
+  // Web page wireframe in a browser frame: nav, hero, feature cards and
+  // footer. The landing-page sibling of the mobile / laptop wireframes.
+  | 'browser-wireframe'
+  // Storyboard: numbered scene frames with captions for sketching a
+  // narrative sequence.
+  | 'storyboard'
+  // Cloud architecture (Technology icons, spec/41): an edge-to-data
+  // topology with CDN, load balancer, services, queue and stores.
+  | 'cloud-architecture'
+  // UML class diagram: compartmented classes wired by inheritance /
+  // composition / association arrows (uses the UML arrowhead shapes).
+  | 'uml-class'
+  // UML state machine: initial / final markers and stadium states wired
+  // by event-labelled transitions.
+  | 'state-machine';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -249,6 +292,90 @@ export const TEMPLATES: TemplateDescriptor[] = [
     description: 'Value vs Effort chart with crossed axes and items to scatter into quadrants.',
     extra: true,
   },
+  {
+    kind: 'roadmap',
+    title: 'Roadmap',
+    description: 'Now / Next / Later lanes of initiative cards, each tagged with its theme.',
+    extra: true,
+  },
+  {
+    kind: 'raci-matrix',
+    title: 'RACI matrix',
+    description: 'A tasks-by-roles grid of R / A / C / I ownership chips, with a legend.',
+    extra: true,
+  },
+  {
+    kind: 'user-story-map',
+    title: 'User story map',
+    description: 'An activity backbone with story cards beneath, sliced into release bands.',
+    extra: true,
+  },
+  {
+    kind: 'affinity-map',
+    title: 'Affinity map',
+    description: 'Brainstorm stickies clustered into labelled themes, plus an unsorted pile.',
+    extra: true,
+  },
+  {
+    kind: 'business-model-canvas',
+    title: 'Business Model Canvas',
+    description: 'The classic nine-block canvas, every block seeded with starter notes.',
+    extra: true,
+  },
+  {
+    kind: 'empathy-map',
+    title: 'Empathy map',
+    description: 'Says / Thinks / Does / Feels quadrants around a central persona.',
+    extra: true,
+  },
+  {
+    kind: 'funnel',
+    title: 'Funnel',
+    description: 'Four narrowing stages with counts and conversion rates down the side.',
+    extra: true,
+  },
+  {
+    kind: 'okr-tree',
+    title: 'OKR tree',
+    description: 'An objective branching into measurable key results and their initiatives.',
+    extra: true,
+  },
+  {
+    kind: 'sitemap',
+    title: 'Sitemap',
+    description: 'A website page hierarchy: home, sections and their sub-pages.',
+    extra: true,
+  },
+  {
+    kind: 'browser-wireframe',
+    title: 'Web page wireframe',
+    description: 'A browser frame with nav, hero, feature cards and footer for landing pages.',
+    extra: true,
+  },
+  {
+    kind: 'storyboard',
+    title: 'Storyboard',
+    description: 'Six numbered scene frames with captions for sketching a narrative.',
+    extra: true,
+  },
+  {
+    kind: 'cloud-architecture',
+    title: 'Cloud architecture',
+    description: 'An edge-to-data cloud topology: CDN, load balancer, services and stores.',
+    extra: true,
+  },
+  {
+    kind: 'uml-class',
+    title: 'Class diagram',
+    description: 'UML classes with attributes and methods, wired by inheritance arrows.',
+    extra: true,
+  },
+  {
+    kind: 'state-machine',
+    title: 'State machine',
+    description: 'States and labelled transitions tracing an order from draft to delivered.',
+    extra: true,
+  },
 ];
 
 // Picker grouping. Templates are organised into a handful of
@@ -283,7 +410,7 @@ export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string; descrip
   {
     id: 'hierarchies',
     label: 'Hierarchies',
-    description: 'Org charts, pyramids and cause-effect maps.',
+    description: 'Org charts, goal trees, sitemaps and pyramids.',
   },
   {
     // id stays 'planning' (nothing saved references it; label is the
@@ -327,17 +454,23 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'decision-tree': 'flowcharts',
   'approval-workflow': 'flowcharts',
   'data-flow': 'flowcharts',
-  // Hierarchies: top-down structure + cause-effect.
+  // Hierarchies: top-down structure, goal trees + cause-effect.
   orgchart: 'hierarchies',
   pyramid: 'hierarchies',
   fishbone: 'hierarchies',
-  // Planning: agile boards, retrospectives, prioritisation.
+  'okr-tree': 'hierarchies',
+  sitemap: 'hierarchies',
+  // Planning: agile boards, retrospectives, prioritisation, story maps.
   kanban: 'planning',
   retrospective: 'planning',
   'prioritization-matrix': 'planning',
-  // Project Management: time-ordered schedules + roadmaps.
+  'user-story-map': 'planning',
+  'affinity-map': 'planning',
+  // Project Management: time-ordered schedules, roadmaps + ownership.
   gantt: 'project-management',
   timeline: 'project-management',
+  roadmap: 'project-management',
+  'raci-matrix': 'project-management',
   // Strategy: business / product analysis, decision frameworks + set
   // relationships (Venn).
   swot: 'strategy',
@@ -345,16 +478,24 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   journey: 'strategy',
   'comparison-table': 'strategy',
   venn: 'strategy',
+  'business-model-canvas': 'strategy',
+  'empathy-map': 'strategy',
+  funnel: 'strategy',
   // Design: wireframes, slides + visual mock-ups.
   'mobile-wireframe': 'design',
   'laptop-wireframe': 'design',
+  'browser-wireframe': 'design',
   'slide-deck': 'design',
+  storyboard: 'design',
   'logo-design': 'design',
   'live-card': 'design',
   // Technical / developer diagrams.
   'system-architecture': 'technical',
+  'cloud-architecture': 'technical',
   'er-diagram': 'technical',
   'sequence-diagram': 'technical',
+  'uml-class': 'technical',
+  'state-machine': 'technical',
 };
 
 export function templateCategory(kind: TemplateKind): TemplateCategory {
@@ -419,6 +560,25 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'er-diagram': 'graph',
   'sequence-diagram': 'graph',
   'prioritization-matrix': 'graph',
+  // The later batch splits the same three ways: alignment-heavy scaffolds
+  // ride graph paper, sticky-note workshop boards pin the dot grid, and
+  // the funnel's clean stacked silhouette gets a blank canvas. The
+  // storyboard joins the slide deck on crosshatch so its scene frames
+  // read as cards on a textured board.
+  roadmap: 'graph',
+  'raci-matrix': 'graph',
+  'business-model-canvas': 'graph',
+  'okr-tree': 'graph',
+  sitemap: 'graph',
+  'browser-wireframe': 'graph',
+  'cloud-architecture': 'graph',
+  'uml-class': 'graph',
+  'state-machine': 'graph',
+  'user-story-map': 'grid',
+  'affinity-map': 'grid',
+  'empathy-map': 'grid',
+  funnel: 'blank',
+  storyboard: 'crosshatch',
 };
 
 // Canvas-level overrides a specific template ships with, applied on top

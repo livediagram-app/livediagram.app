@@ -14,10 +14,11 @@ import { type Element, type Tab } from '@livediagram/diagram';
 import { getTheme, recolourElementsForTheme } from './themes';
 import { templateCanvasOverrides, type TemplateKind } from './templates';
 import {
+  buildBrowserWireframe,
   buildLaptopWireframe,
   buildMobileWireframe,
-  buildSlideDeck,
 } from './template-builders-wireframes';
+import { buildSlideDeck, buildStoryboard } from './template-builders-slides';
 import {
   buildKanban,
   buildPrioritizationMatrix,
@@ -25,14 +26,21 @@ import {
   buildSwot,
 } from './template-builders-boards';
 import {
+  buildCloudArchitecture,
   buildErDiagram,
   buildSequenceDiagram,
   buildSystemArchitecture,
 } from './template-builders-technical';
+import { buildStateMachine, buildUmlClass } from './template-builders-uml';
+import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
+import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
+import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
+import { buildFunnel } from './template-builders-funnel';
+import { buildRoadmap } from './template-builders-roadmap';
 import { buildLogoDesign } from './template-builders-logo';
 import { buildGanttChart } from './template-builders-gantt';
 import { buildLiveCard } from './template-builders-livecard';
-import { buildComparisonTable } from './template-builders-table';
+import { buildComparisonTable, buildRaciMatrix } from './template-builders-table';
 import {
   buildFishbone,
   buildFlywheel,
@@ -144,6 +152,34 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildSequenceDiagram(cx, cy);
     case 'prioritization-matrix':
       return buildPrioritizationMatrix(cx, cy);
+    case 'roadmap':
+      return buildRoadmap(cx, cy);
+    case 'raci-matrix':
+      return buildRaciMatrix(cx, cy);
+    case 'user-story-map':
+      return buildUserStoryMap(cx, cy);
+    case 'affinity-map':
+      return buildAffinityMap(cx, cy);
+    case 'business-model-canvas':
+      return buildBusinessModelCanvas(cx, cy);
+    case 'empathy-map':
+      return buildEmpathyMap(cx, cy);
+    case 'funnel':
+      return buildFunnel(cx, cy);
+    case 'okr-tree':
+      return buildOkrTree(cx, cy);
+    case 'sitemap':
+      return buildSitemap(cx, cy);
+    case 'browser-wireframe':
+      return buildBrowserWireframe(cx, cy);
+    case 'storyboard':
+      return buildStoryboard(cx, cy);
+    case 'cloud-architecture':
+      return buildCloudArchitecture(cx, cy);
+    case 'uml-class':
+      return buildUmlClass(cx, cy);
+    case 'state-machine':
+      return buildStateMachine(cx, cy);
   }
 }
 

@@ -1,16 +1,17 @@
 // Wireframe templates lifted out of template-builders.ts to keep
 // that file focused on diagram primitives (mind map, flowchart,
-// boards, processes). The three wireframes here (mobile, laptop,
-// slide-deck) account for ~500 of the original 1666 lines and are
-// the largest single builders in the catalogue, so splitting them
-// out is the highest-leverage cut.
+// boards, processes). The three device wireframes here (mobile,
+// laptop, browser) are among the largest single builders in the
+// catalogue, so splitting them out is the highest-leverage cut. The
+// slide deck (a framed-panel design template, not a device wireframe)
+// moved on to template-builders-slides.ts beside the storyboard.
 //
 // Each function is still pure: takes a centre (cx, cy), returns a
 // fresh Element[]. Sizing constants stay inline so the geometry
 // remains self-describing alongside the shape it draws. See spec/09
 // "Templates" for the catalogue and per-template intent.
 
-import { createPinnedArrow, createShape, type Element } from '@livediagram/diagram';
+import { createShape, type Element } from '@livediagram/diagram';
 
 // Mobile wireframe: three fully-sketched phone screens side by side —
 // Login, Feed, Profile — a user-flow starter for mobile UI work. Each
@@ -215,107 +216,115 @@ export function buildLaptopWireframe(cx: number, cy: number): Element[] {
   return elements;
 }
 
-// Slide deck: four slides in a 2x2 grid, each a framed square with a
-// stadium heading band and slide-specific content — a title slide, a
-// numbered agenda, three feature cards, and a next-steps checklist —
-// wired by arrows in a TL -> TR -> BR -> BL loop. Geometry mirrors a
-// hand-built reference (562x400 slides), re-centred on the supplied
-// canvas point. Colours are left to the theme.
-export function buildSlideDeck(cx: number, cy: number): Element[] {
-  const slideW = 562;
-  const slideH = 400;
-  const hGap = 44;
-  const vGap = 41;
-  const totalW = 2 * slideW + hGap;
-  const totalH = 2 * slideH + vGap;
-  const startX = cx - totalW / 2;
-  const startY = cy - totalH / 2;
-  const tl = { x: startX, y: startY };
-  const tr = { x: startX + slideW + hGap, y: startY };
-  const bl = { x: startX, y: startY + slideH + vGap };
-  const br = { x: startX + slideW + hGap, y: startY + slideH + vGap };
+// Browser wireframe: a marketing landing page sketched inside the
+// browser device frame — top nav (logo, links, CTA), a hero split
+// between headline copy + buttons and an image placeholder, a
+// three-card feature row, and a footer strip. Same conventions as the
+// laptop wireframe above: geometry mirrors a hand-built reference
+// (1216x840 frame), offsets are relative to the frame's top-left, and
+// colours are left to the theme so the shell reads under light / dark
+// / multi-colour themes alike.
+export function buildBrowserWireframe(cx: number, cy: number): Element[] {
+  const browserW = 1216;
+  const browserH = 840;
+  const browserX = cx - browserW / 2;
+  const browserY = cy - browserH / 2;
 
-  const elements: Element[] = [];
-  type Origin = { x: number; y: number };
-  type Kind = 'square' | 'stadium' | 'circle';
-  type Opts = { label?: string; size?: 'sm' | 'md'; left?: boolean };
-  // Element at an offset from a slide's top-left. textSize defaults to
-  // 'sm'; pass size for the headings / cards.
-  const at = (
-    o: Origin,
-    kind: Kind,
-    rx: number,
-    ry: number,
-    w: number,
-    h: number,
-    opts: Opts = {},
-  ): Element => ({
-    ...createShape(kind, o.x + rx, o.y + ry),
+  type BoxOpts = {
+    label?: string;
+    size?: 'sm' | 'md' | 'lg';
+    left?: boolean;
+    bold?: boolean;
+    thin?: boolean;
+  };
+  const box = (rx: number, ry: number, w: number, h: number, o: BoxOpts = {}): Element => ({
+    ...createShape('square', browserX + rx, browserY + ry),
     width: w,
     height: h,
-    textSize: opts.size ?? 'sm',
-    ...(opts.label !== undefined ? { label: opts.label } : {}),
-    ...(opts.left ? { textAlignX: 'left' as const } : {}),
+    textSize: o.size ?? 'md',
+    ...(o.label !== undefined ? { label: o.label } : {}),
+    ...(o.left ? { textAlignX: 'left' as const } : {}),
+    ...(o.bold ? { textBold: true } : {}),
+    ...(o.thin ? { strokeWidth: 'thin' as const } : {}),
+  });
+  const pill = (rx: number, ry: number, w: number, h: number, label: string): Element => ({
+    ...createShape('stadium', browserX + rx, browserY + ry),
+    width: w,
+    height: h,
+    textSize: 'sm',
+    label,
+  });
+  const dot = (rx: number, ry: number, w: number, h: number): Element => ({
+    ...createShape('circle', browserX + rx, browserY + ry),
+    width: w,
+    height: h,
   });
 
-  // Frames first, so content layers on top and the ids are available
-  // to pin the connector arrows.
-  const fTL = at(tl, 'square', 0, 0, slideW, slideH);
-  const fTR = at(tr, 'square', 0, 0, slideW, slideH);
-  const fBL = at(bl, 'square', 0, 0, slideW, slideH);
-  const fBR = at(br, 'square', 0, 0, slideW, slideH);
-  elements.push(fTL, fTR, fBL, fBR);
-
-  // Heading band on every slide.
-  elements.push(at(tl, 'stadium', 24, 23, 515, 63, { label: 'Q3 Roadmap', size: 'md' }));
-  elements.push(at(tr, 'stadium', 24, 23, 515, 63, { label: 'Agenda', size: 'md' }));
-  // BR/BL carry the third/fourth slides so the TL -> TR -> BR -> BL snake
-  // visits them in presentation order (bets before next steps).
-  elements.push(at(br, 'stadium', 24, 23, 515, 63, { label: 'Three Q3 bets', size: 'md' }));
-  elements.push(at(bl, 'stadium', 24, 23, 515, 63, { label: 'Next steps', size: 'md' }));
-
-  // TL — title slide: subtitle + speaker tag.
-  elements.push(at(tl, 'square', 36, 111, 491, 43, { label: 'Team kick-off · 6 Aug', left: true }));
-  elements.push(at(tl, 'stadium', 36, 329, 296, 40, { label: 'Hosted by Alex Rivera' }));
-
-  // TR — agenda: numbered rows.
-  const agenda = [
-    'Where we landed in Q2',
-    'Three Q3 bets',
-    'Risks + dependencies',
-    'Open questions',
+  const elements: Element[] = [
+    { ...createShape('browser', browserX, browserY), width: browserW, height: browserH },
   ];
-  const rowY = [117, 172, 226, 280];
-  agenda.forEach((label, i) => {
-    elements.push(at(tr, 'square', 41, rowY[i]!, 41, 40, { label: `${i + 1}` }));
-    elements.push(at(tr, 'square', 95, rowY[i]!, 426, 40, { label, left: true }));
-  });
 
-  // BR — three feature cards (icon dot + label).
-  const bets = ['Self-serve onboarding', 'Realtime collaboration', 'Pricing experiment'];
-  const cardX = [24, 201, 379];
-  bets.forEach((label, i) => {
-    elements.push(at(br, 'square', cardX[i]!, 117, 160, 237, { size: 'md' }));
-    elements.push(at(br, 'circle', cardX[i]! + 56, 143, 47, 46, { size: 'md' }));
-    elements.push(at(br, 'square', cardX[i]! + 14, 269, 130, 54, { label }));
+  // Top nav: logo, three links, and the nav CTA on the right.
+  const navY = 92;
+  elements.push(box(64, navY, 96, 38, { label: 'Logo', size: 'sm' }));
+  ['Product', 'Pricing', 'Docs'].forEach((label, i) => {
+    elements.push(pill(430 + i * 112, navY, 98, 38, label));
   });
+  elements.push(pill(1042, navY, 110, 38, 'Sign up'));
 
-  // BL — next steps: checkbox + action pill per row.
-  const actions = [
-    'Lock scope by Friday',
-    'Eng + design pairing',
-    'Weekly review on Tuesdays',
-    'Send recap by EOD',
+  // Hero: headline + subcopy + button pair on the left, an image
+  // placeholder (framed box with a photo-corner dot) on the right.
+  elements.push(
+    box(64, 190, 520, 96, {
+      label: 'Design together, ship faster',
+      size: 'lg',
+      bold: true,
+      left: true,
+    }),
+  );
+  elements.push(
+    box(64, 298, 470, 54, {
+      label: 'One canvas for the whole team, from idea to launch.',
+      size: 'sm',
+      left: true,
+    }),
+  );
+  elements.push(pill(64, 386, 170, 52, 'Start free'));
+  elements.push(pill(254, 386, 170, 52, 'Watch demo'));
+  elements.push(box(664, 190, 488, 268, { thin: true }));
+  elements.push(dot(694, 220, 44, 44));
+
+  // Feature row: three cards, each an icon dot + title + copy line.
+  const cardY = 520;
+  const cardW = 352;
+  const cardX = [64, 432, 800];
+  const features: [string, string][] = [
+    ['Realtime', 'Cursors, comments and presence'],
+    ['Templates', 'Start from a working scaffold'],
+    ['Share', 'One link, no accounts needed'],
   ];
-  actions.forEach((label, i) => {
-    elements.push(at(bl, 'circle', 41, rowY[i]! + 6, 30, 29, { size: 'md' }));
-    elements.push(at(bl, 'stadium', 89, rowY[i]!, 432, 40, { label, left: true }));
+  features.forEach(([title, copy], i) => {
+    elements.push(box(cardX[i]!, cardY, cardW, 180, { thin: true }));
+    elements.push(dot(cardX[i]! + 24, cardY + 24, 40, 40));
+    elements.push(
+      box(cardX[i]! + 24, cardY + 80, cardW - 48, 34, {
+        label: title,
+        size: 'md',
+        bold: true,
+        left: true,
+      }),
+    );
+    elements.push(
+      box(cardX[i]! + 24, cardY + 122, cardW - 48, 34, { label: copy, size: 'sm', left: true }),
+    );
   });
 
-  // Connector arrows in the deck's reading order (TL -> TR -> BR -> BL).
-  elements.push(createPinnedArrow(fTL.id, 'e', fTR.id, 'w'));
-  elements.push(createPinnedArrow(fTR.id, 's', fBR.id, 'n'));
-  elements.push(createPinnedArrow(fBR.id, 'w', fBL.id, 'e'));
+  // Footer strip.
+  elements.push(box(64, 736, 1088, 64, { thin: true }));
+  elements.push(box(88, 752, 96, 32, { label: 'Logo', size: 'sm' }));
+  ['About', 'Blog', 'Contact'].forEach((label, i) => {
+    elements.push(box(848 + i * 104, 752, 92, 32, { label, size: 'sm' }));
+  });
 
   return elements;
 }
