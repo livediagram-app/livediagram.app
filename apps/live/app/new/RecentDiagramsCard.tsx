@@ -79,6 +79,16 @@ export function RecentDiagramsCard({ ownerId }: { ownerId: string | null }) {
             </li>
           ))}
         </ul>
+        {/* Footer: the card caps at 5 rows, so returning users with more
+            history get a way into the full library — the Explorer's
+            Recent page, the same list uncapped. */}
+        <a
+          href="/explorer/recent"
+          className="group flex items-center justify-center gap-1.5 rounded-b-2xl border-t border-slate-100 px-4 py-2.5 text-[11px] font-medium text-slate-500 transition hover:bg-brand-50 hover:text-brand-700 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-200"
+        >
+          Open Explorer
+          <ChevronRight />
+        </a>
       </div>
     </div>
   );

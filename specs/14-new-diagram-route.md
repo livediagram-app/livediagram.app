@@ -209,6 +209,18 @@ The TemplatePicker card (`apps/live/components/palette/TemplatePicker.tsx`) is t
 
 This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer / Activity, see [07-live-app](07-live-app.md)). Those are addressed separately.
 
+## Jump back in (recent diagrams card)
+
+Returning users get a **"Jump back in" card** pinned to the right of the
+centred wizard (desktop `xl+` only — below that the wizard owns the width):
+the 5 most recently-saved diagrams they own, each row opening that diagram
+directly, with a relative "saved N ago" line. It is a side affordance,
+deliberately separate from the create flow, and hidden entirely for someone
+with no diagrams yet (best-effort fetch — a failure just means no shortcut).
+A footer link **"Open Explorer"** goes to `/explorer/recent`, the same list
+uncapped, so users with more history than the card shows have a way into the
+full library. Component: `apps/live/app/new/RecentDiagramsCard.tsx`.
+
 ## Shuffled template + theme order
 
 The template and theme grids shuffle their order **once per open** of
