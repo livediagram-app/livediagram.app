@@ -1588,6 +1588,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // styling from `canvasTool`, not the drag state); only the four
   // begin-handlers below are passed through to Canvas as props.
   const {
+    drag,
     snapGuides,
     distGuides,
     snapTargets,
@@ -1808,6 +1809,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     deleteCurvePoint,
     beginArrowElbowDrag,
     beginArrowLabelDrag,
+    drag,
     beginArrowTranslate,
     beginDrag,
     beginEdit,

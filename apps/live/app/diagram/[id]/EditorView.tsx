@@ -31,6 +31,7 @@ import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs'
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
+import { ShiftHintBanner } from '@/components/chrome/ShiftHintBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
@@ -125,6 +126,7 @@ export function EditorView() {
     canUndo,
     canvasMainRef,
     canvasTool,
+    drag,
     beginErase,
     changeLog,
     changeLogLoading,
@@ -456,6 +458,16 @@ export function EditorView() {
     }
     beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true, fromGroup });
   };
+  // The primary selection's flavour for the shift hint's no-drag messages.
+  const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
+  const shiftSelectedKind = !shiftSelected
+    ? null
+    : shiftSelected.type === 'arrow'
+      ? ('arrow' as const)
+      : shiftSelected.type === 'table'
+        ? ('table' as const)
+        : ('other' as const);
+
   return (
     <div className="flex h-dvh flex-col">
       {/* Arrow click-to-connect hint (spec/09): shown while the gesture
@@ -1161,6 +1173,19 @@ export function EditorView() {
       {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner ? null : (
         <ThemeModeBanner themeId={activeTab.theme} />
       )}
+      {/* Shift hint (spec/09): names what holding Shift does right now.
+          Suppressed while a mode banner owns the top slot. */}
+      <ShiftHintBanner
+        drag={drag}
+        selectedKind={shiftSelectedKind}
+        hasElements={activeTab.elements.length > 0}
+        suppressed={
+          canvasTool === 'format' ||
+          formatSourceId !== null ||
+          groupSourceId !== null ||
+          pendingDraw !== null
+        }
+      />
     </div>
   );
 }

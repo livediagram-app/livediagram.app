@@ -567,6 +567,18 @@ All template elements are inserted via the history hook (commit), so they're und
 
 Below the templates, the theme picker (see the two-level browse described under [Theme](#current-tab-section)) lets the user pick a preset theme — exactly the same `THEMES` catalogue the palette's Theme accordion uses. Defaults to **Basic** (the `brand` id). Confirming with **Create diagram** applies the chosen theme to the new tab (background colour + pattern + pattern colour + theme id), which then affects the default colours of every element added afterwards.
 
+## Shift hint banner
+
+Shift is the editor's "power modifier" — it chains quick-connect arrows, forks a branch off an arrowhead, locks proportions while resizing or drawing-to-size, and grows multi-selections (elements and table cells). Those behaviours are invisible until tried, so while **Shift is held** a floating **hint pill** appears at the top of the canvas (the same `TopCenterBanner` chrome as the format-painter / group mode banners, but passive — no Cancel button) naming what Shift is doing right now. One concise message, picked by context, most specific first:
+
+1. Drawing a **new arrow's endpoint** (quick-connect drag or follow mode) → "Click places it and starts another arrow".
+2. **Resizing** an element, or a **draw-to-size** gesture in flight → "Proportions locked".
+3. No drag, an **arrow selected** → "Drag an arrowhead to split it into a branch".
+4. No drag, a **table selected** → "Click cells to select several".
+5. Otherwise (editable session with elements) → "Click elements to select several".
+
+The pill leads with a `⇧ Shift` key chip so the message reads as "while this key is down". It never shows while typing (a Shift press inside an input / contentEditable is just capitalisation), while another mode banner owns the top slot (format painter / group / draw), in read-only sessions, or on an empty canvas with nothing to act on. It renders from a shared `useShiftHeld` key-state subscription (one window listener, `useModKeyHeld`'s pattern) so holding Shift re-renders only the pill.
+
 ## Keyboard shortcuts
 
 The editor's global shortcuts are bound centrally in `useEditorKeyboardShortcuts` (wired from `useEditorState`) and catalogued for the user in the **Keyboard shortcuts** dialog (`ShortcutsDialog.tsx`). The dialog also carries a per-device on/off toggle (`useShortcutsEnabled`, localStorage) so a screen-reader user can hand every key back to the system. The bindings track the conventions shared by Excalidraw, tldraw, Figma / FigJam, and Miro so muscle memory carries over; where we diverge it is called out below. `⌘` = Cmd on macOS, Ctrl on Windows / Linux.
