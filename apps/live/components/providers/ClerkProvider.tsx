@@ -15,6 +15,7 @@
 // themselves in StaticClerkProvider instead; Clerk is the page there.
 
 import dynamic from 'next/dynamic';
+import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { clerkEnabled, clerkPublishableKey } from '@/lib/clerk-config';
 import { DEFERRED_AUTH_DEFAULT, DeferredAuthContext } from './deferred-auth';
@@ -24,9 +25,18 @@ const LazyClerkBridge = dynamic(() => import('./ClerkBridge').then((m) => m.Cler
   loading: () => null,
 });
 
+// The auth pages wrap themselves in StaticClerkProvider (Clerk IS the page
+// there), so the bridge must STAND DOWN on those routes — mounting a second
+// real Clerk provider under the layout threw @clerk/react's "multiple
+// ClerkProvider components" and crashed the page right after signing in
+// (the reported MCP-OAuth sign-in "client-side exception").
+const STATIC_CLERK_ROUTES = ['/sign-in', '/get-started', '/sso-callback'];
+
 export function ClerkProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState(DEFERRED_AUTH_DEFAULT);
-  const configured = clerkEnabled && !!clerkPublishableKey;
+  const pathname = usePathname();
+  const staticClerkRoute = STATIC_CLERK_ROUTES.some((r) => pathname?.startsWith(r));
+  const configured = clerkEnabled && !!clerkPublishableKey && !staticClerkRoute;
   return (
     <DeferredAuthContext.Provider value={authState}>
       {children}

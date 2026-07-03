@@ -25,6 +25,8 @@ The `clerkEnabled` flag (`apps/live/lib/clerk-config.ts`) is the single source o
 
 Because `NEXT_PUBLIC_*` vars are baked at build time, the choice is a compile-time constant — no per-render cost and Clerk-only code paths can be tree-shaken out of guest-only builds.
 
+**One real Clerk provider per page.** The root layout's `ClerkProvider` is deferred: the app tree consumes `DeferredAuthContext`, and a lazily-loaded `ClerkBridge` mounts the real `@clerk/react` provider as an async chunk. The auth pages (`/sign-in`, `/get-started`, `/sso-callback`) instead wrap themselves in `StaticClerkProvider` (Clerk IS the page there) — so the bridge **stands down on those routes**. Mounting both threw `@clerk/react`'s "multiple ClerkProvider components" and crashed the page right after signing in (bitten by the MCP OAuth consent flow, which routes through `/sign-in`).
+
 ## Hybrid identity
 
 The api worker accepts **two equivalent ways** of identifying the request owner, in this order of preference:
