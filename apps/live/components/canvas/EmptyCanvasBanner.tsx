@@ -56,10 +56,13 @@ export function EmptyCanvasBanner({
         </div>
         {readOnly ? null : (
           <div className="flex shrink-0 items-center gap-2">
+            {/* Same button language as Quick Start beside it (icon + label),
+                not a bare ? — the pair reads as two peer actions. */}
             <HelpArticleLink
               article="yourFirstDiagram"
               title="Your first diagram"
               description="A short walkthrough of building your first diagram."
+              variant="button"
             />
             <button
               type="button"
