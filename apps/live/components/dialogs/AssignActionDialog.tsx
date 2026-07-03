@@ -48,6 +48,10 @@ type AssignActionDialogProps = {
   open: boolean;
   // The element's current action when editing; null when assigning fresh.
   existing: ElementAction | null;
+  // The element's own text (label / first table cell), used as the
+  // default action name on create so it reads as the work item it sits
+  // on. Null for an unlabelled element (the field starts empty).
+  elementLabel: string | null;
   // Teams the current user has joined (useTeams already filters to
   // joined memberships server-side via listTeamsByUser).
   teams: TeamListItem[];
@@ -73,6 +77,7 @@ type AssignActionDialogProps = {
 export function AssignActionDialog({
   open,
   existing,
+  elementLabel,
   teams,
   ownerId,
   selfUserId,
@@ -116,17 +121,25 @@ export function AssignActionDialog({
   );
 
   // Re-seed per open: a reopened dialog must show the CURRENT action (or
-  // a blank form), never the previous attempt. The email offer
-  // re-defaults to on each time (spec/68: default on; it only renders
-  // for a non-self assignee anyway).
+  // the create defaults), never the previous attempt. Creating defaults
+  // the name to the element's own text (selected, so typing replaces it)
+  // and preselects Myself — the common self-assignment is zero-click.
+  // The email offer re-defaults to on each time (spec/68: default on; it
+  // only renders for a non-self assignee anyway).
+  // selfRow via a ref so a late identity settle (Clerk name resolving
+  // after the dialog opened) can't re-run the seed and wipe mid-typing
+  // edits.
+  const selfRowRef = useRef(selfRow);
+  selfRowRef.current = selfRow;
   useEffect(() => {
     if (!open) return;
-    setName(existing?.name ?? '');
+    setName(existing?.name ?? elementLabel ?? '');
     setDescription(existing?.description ?? '');
-    setAssignee(null);
+    setAssignee(existing ? null : selfRowRef.current);
     setNotifyEmail(true);
     nameRef.current?.focus();
-  }, [open, existing]);
+    nameRef.current?.select();
+  }, [open, existing, elementLabel]);
 
   // Signed-out impression: the Myself-only picker with the sign-in
   // nudge. One emit per open so the funnel is measurable (spec/22).

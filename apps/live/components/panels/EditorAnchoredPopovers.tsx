@@ -169,10 +169,21 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === assignActionFor && isBoxed(el),
             );
             if (!target || !isBoxed(target)) return null;
+            // Default action name (spec/68 §2): the element's own text —
+            // its label, or a table's first non-empty cell. Null when the
+            // element is unlabelled (the field just starts empty).
+            const targetLabel =
+              target.type === 'table'
+                ? (target.cells
+                    .flat()
+                    .find((c) => c.trim().length > 0)
+                    ?.trim() ?? null)
+                : (target.label?.trim() ?? null);
             return (
               <AssignActionDialog
                 open
                 existing={target.action ?? null}
+                elementLabel={targetLabel || null}
                 teams={teams}
                 ownerId={clerkUserId ?? null}
                 selfUserId={actionSelfId}

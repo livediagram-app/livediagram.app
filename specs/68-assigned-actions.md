@@ -101,11 +101,15 @@ Clicking it opens the **Assign Action dialog** (its own component under
   helpers), grouped by team when the user is in more than one, each row
   showing the member's avatar bubble and display name (email local-part
   fallback, as TeamPane does). Invited-but-not-joined members are
-  excluded (no `userId` yet, and possibly no account). A signed-in user
-  with **no joined teams** sees Myself plus a nudge linking to the
-  Explorer's Teams section; a signed-out user sees Myself plus the
-  sign-in nudge (§2).
-- **Action name**: required single-line text.
+  excluded (no `userId` yet, and possibly no account). **Myself is
+  preselected** when creating, so the common self-assignment is
+  zero-click and handing off is one. A signed-in user with **no joined
+  teams** sees Myself plus a nudge linking to the Explorer's Teams
+  section; a signed-out user sees Myself plus the sign-in nudge (§2).
+- **Action name**: required single-line text, **pre-filled from the
+  element's label** (a table's first non-empty cell) when creating, so
+  the default action reads as the work item it sits on; the text is
+  selected on focus so typing replaces it in one keystroke.
 - **Description**: optional multi-line text.
 - **"Email {name} about this action"**: the shared iOS-style toggle
   (`ToggleSwitch`, the same control every settings row uses), **default
