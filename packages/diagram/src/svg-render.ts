@@ -275,7 +275,7 @@ export function arrowHeadRefs(
     return { toRef: anchors[anchors.length - 1]!, fromRef: anchors[0]! };
   }
   if (style === 'curved') {
-    const c = curveControlPoint(from, to, arrow.curveOffset);
+    const c = curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to);
     return { toRef: c, fromRef: c };
   }
   if (style === 'angled') {

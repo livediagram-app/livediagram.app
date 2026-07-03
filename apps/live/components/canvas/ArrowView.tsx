@@ -228,7 +228,9 @@ function ArrowViewImpl({
       ? curveAnchorPoints(from, to, arrow.curvePoints)
       : null;
   const curveControl =
-    style === 'curved' && !curveAnchors ? curveControlPoint(from, to, arrow.curveOffset) : null;
+    style === 'curved' && !curveAnchors
+      ? curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to)
+      : null;
   // Single elbow handle for an angled arrow with no explicit points; the
   // per-point handles take over once the user adds a bend.
   const elbowPoint =

@@ -173,7 +173,7 @@ Control groups (rendered as context-menu categories, hidden when their gate does
   - See [Colours](#colours). Text elements show only the Text swatch; shapes and sticky notes show all three.
 - **Pointer** _(arrows only)_
   - **Line thickness** — four snapped presets (Thin / Medium / Thick / Extra-thick → 1 / 2 / 4 / 7 px on the arrow's `strokeWidth`). Snapping is one-way for display so legacy free-number widths still highlight the nearest preset.
-  - **Line style** — Straight / Curved / Angled. Drives the geometry (single line / quadratic bezier bowing ¼ of the chord / axis-aligned L-elbow). See [Arrows → Data model](#data-model-2).
+  - **Line style** — Straight / Curved / Angled. Drives the geometry (single line / quadratic bezier — elbow-corner control for pinned ends, ¼-chord bow for free ones / axis-aligned L-elbow). See [Arrows → Data model](#data-model-2).
   - **Line pattern** — Solid / Dashed / Dotted. Stored as `strokeStyle: BorderStyle` on the arrow (shares the union with the shape Border accordion's pattern row so future style additions, e.g. "long-dash", land on both surfaces with one schema change). The renderer maps to an SVG `strokeDasharray` via the same `BORDER_DASH_ARRAY` lookup the shape outlines use; the selection halo around a selected arrow stays solid for visibility.
   - **Arrowhead type** — Start only / End only / Both / No pointers. Stored as `arrowEnds`.
   - **Arrowhead size** — Small / Medium / Large / Extra-large (4 / 6 / 8.5 / 12 px marker size). Sits **below** Arrowhead type so the user picks whether they want a head before sizing it; hidden entirely when `arrowEnds === 'none'` (nothing to size).
@@ -398,8 +398,15 @@ type ArrowElement = {
     | 'diamond'
     | 'diamond-hollow';
   // Path geometry. 'straight' is a single line; 'curved' renders a
-  // quadratic bezier bowing perpendicular to the chord by ¼ of its
-  // length; 'angled' draws an axis-aligned L-connector with a single
+  // quadratic bezier whose DEFAULT control point depends on the ends:
+  // a PINNED end gets the elbow-corner control — the endpoints'
+  // bounding-box corner that strikes the pinned face straight-on (the
+  // head's face wins), so a fan from a hub's bottom hugs the hub's
+  // edge, drops vertically into each child's top, keeps an aligned
+  // pair straight, and can never balloon past its endpoints; free
+  // ends keep the ¼-chord perpendicular bow on a screen-consistent
+  // side (up; right for vertical chords) so mirrored chords match.
+  // 'angled' draws an axis-aligned L-connector with a single
   // right-angle bend. Pinned-endpoint anchors decide which leg of
   // the elbow runs first so the line leaves the element along its
   // anchor direction.

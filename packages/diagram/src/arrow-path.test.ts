@@ -97,6 +97,48 @@ describe('curveControlPoint', () => {
     expect(c).toEqual({ x: 90, y: 60 });
   });
 
+  it('uses the elbow-corner control for pinned ends (perpendicular entry)', () => {
+    // Fan chord: hub bottom (s) to a child's top (n), down-and-left. The
+    // control is the bounding-box corner sharing the head's x and the
+    // tail's y — flat exit along the hub's edge, vertical entry into the
+    // child, and no ballooning past the endpoints (spec/09).
+    const fromEp = { kind: 'pinned', elementId: 'hub', anchor: 's' } as const;
+    const toEp = { kind: 'pinned', elementId: 'kid', anchor: 'n' } as const;
+    const c = curveControlPoint({ x: 535, y: 175 }, { x: 110, y: 305 }, undefined, fromEp, toEp);
+    expect(c).toEqual({ x: 110, y: 175 });
+    // A head on a SIDE face (w) transposes: entry horizontal.
+    const side = { kind: 'pinned', elementId: 'kid', anchor: 'w' } as const;
+    const cSide = curveControlPoint({ x: 0, y: 0 }, { x: 200, y: 120 }, undefined, fromEp, side);
+    expect(cSide).toEqual({ x: 0, y: 120 });
+    // An aligned pair degenerates to the chord (renders straight), like
+    // the middle child of a fan.
+    const mid = curveControlPoint({ x: 535, y: 175 }, { x: 535, y: 305 }, undefined, fromEp, toEp);
+    expect(mid).toEqual({ x: 535, y: 175 });
+  });
+
+  it('keeps the perpendicular auto-bow for free ends and honours a user offset over faces', () => {
+    const fromEp = { kind: 'pinned', elementId: 'hub', anchor: 's' } as const;
+    const toEp = { kind: 'pinned', elementId: 'kid', anchor: 'n' } as const;
+    // Free-to-free: unchanged screen-consistent bow.
+    const c = curveControlPoint(
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      undefined,
+      free(0, 0),
+      free(100, 0),
+    );
+    expect(c).toEqual({ x: 50, y: -25 });
+    // A dragged handle always wins, pinned or not.
+    const dragged = curveControlPoint(
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { dx: 40, dy: 60 },
+      fromEp,
+      toEp,
+    );
+    expect(dragged).toEqual({ x: 90, y: 60 });
+  });
+
   it('returns the midpoint when the chord has zero length and no override is set', () => {
     // Degenerate case: a curved arrow whose endpoints coincide.
     const c = curveControlPoint({ x: 5, y: 5 }, { x: 5, y: 5 });

@@ -128,7 +128,7 @@ export function useArrowDragHandlers({
     if (arrow.locked === true || d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
-    const control = curveControlPoint(from, to, arrow.curveOffset);
+    const control = curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to);
     // Arm a checkpoint; it is taken on the first real mutation (tick).
     checkpointPendingRef.current = true;
     setDrag({
@@ -212,7 +212,7 @@ export function useArrowDragHandlers({
         ? arrow.curvePoints.slice()
         : currentStyle === 'curved'
           ? (() => {
-              const c = curveControlPoint(from, to, arrow.curveOffset);
+              const c = curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to);
               return [{ dx: c.x - mx, dy: c.y - my }];
             })()
           : currentStyle === 'angled'

@@ -1,23 +1,57 @@
-import { type ArrowStyle, type Endpoint } from './index';
+import { type Anchor, type ArrowStyle, type Endpoint } from './index';
+
+// The anchor a pinned end sits on, when the endpoint carries one
+// (element-pinned or group-pinned); null for free / on-arrow ends.
+const anchorOf = (ep?: Endpoint): Anchor | null =>
+  ep && (ep.kind === 'pinned' || ep.kind === 'pinned-group') ? ep.anchor : null;
+
+// Whether an anchor sits on a horizontal edge (top / bottom, corners
+// included) as opposed to a vertical side (e / w).
+const onHorizontalEdge = (a: Anchor): boolean => a !== 'e' && a !== 'w';
 
 // The quadratic-Bezier control point a curved arrow uses. When
-// `curveOffset` is set, the user has dragged the curve handle and
-// the control point is `chordMidpoint + curveOffset`. When unset,
-// the auto-bow applies: ¼-chord-length perpendicular to the chord, on a
-// SCREEN-CONSISTENT side — the bow always points upward (and rightward
-// for vertical chords) regardless of which way the chord runs. The old
-// fixed left-of-chord side flipped with the chord's direction, so a fan
-// of arrows set to curved bowed half one way, half the other (the
-// reported half-curve-the-wrong-way). Exposed as its own helper so the
-// renderer + the curve drag handle agree on the same point.
+// `curveOffset` is set, the user has dragged the curve handle and the
+// control point is `chordMidpoint + curveOffset`. When unset, the default
+// depends on what the ends are attached to:
+//
+// - A PINNED end gets the ELBOW-CORNER control — the corner of the
+//   endpoints' bounding box that strikes the pinned face straight-on
+//   (the head's face wins when both ends are pinned): a head entering a
+//   top/bottom face gets `(to.x, from.y)` (flat exit sliding along the
+//   source, vertical entry into the target), a side face the transpose.
+//   A fan from a hub's bottom then nests cleanly — every curve hugs the
+//   hub's edge and drops into its child's top, an aligned pair
+//   degenerates to a straight line, and no arc can balloon past its
+//   endpoints (the corner never leaves their bounding box). The old
+//   perpendicular ¼-chord bow pointed "screen-up", which for a
+//   down-and-sideways fan chord placed the control ABOVE the hub — the
+//   reported balloon-over-the-source mess.
+// - FREE ends keep that ¼-chord-length perpendicular auto-bow, on a
+//   SCREEN-CONSISTENT side (upward; rightward for vertical chords) so
+//   mirrored chords bow symmetrically.
+//
+// Exposed as its own helper so the renderer + the curve drag handle agree
+// on the same point.
 export function curveControlPoint(
   from: { x: number; y: number },
   to: { x: number; y: number },
   curveOffset?: { dx: number; dy: number },
+  fromEp?: Endpoint,
+  toEp?: Endpoint,
 ): { x: number; y: number } {
   const mx = (from.x + to.x) / 2;
   const my = (from.y + to.y) / 2;
   if (curveOffset) return { x: mx + curveOffset.dx, y: my + curveOffset.dy };
+  const toAnchor = anchorOf(toEp);
+  if (toAnchor) {
+    // Perpendicular ENTRY into the head's face.
+    return onHorizontalEdge(toAnchor) ? { x: to.x, y: from.y } : { x: from.x, y: to.y };
+  }
+  const fromAnchor = anchorOf(fromEp);
+  if (fromAnchor) {
+    // Head is free: perpendicular EXIT from the tail's face instead.
+    return onHorizontalEdge(fromAnchor) ? { x: from.x, y: to.y } : { x: to.x, y: from.y };
+  }
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const len = Math.hypot(dx, dy);
@@ -138,7 +172,7 @@ export function arrowPathD(
     const dy = to.y - from.y;
     const len = Math.hypot(dx, dy);
     if (len < 0.5 && !curveOffset) return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
-    const c = curveControlPoint(from, to, curveOffset);
+    const c = curveControlPoint(from, to, curveOffset, fromEp, toEp);
     return `M ${from.x} ${from.y} Q ${c.x} ${c.y} ${to.x} ${to.y}`;
   }
   // Angled: multi-bend renders as a straight polyline through the control
@@ -200,7 +234,7 @@ export function arrowPathMidpoint(
     return polylineAt(samples, 0.5).point;
   }
   if (style === 'curved') {
-    const c = curveControlPoint(from, to, curveOffset);
+    const c = curveControlPoint(from, to, curveOffset, fromEp, toEp);
     // t=0.5 point on the quadratic Bezier B(0.5) = 0.25*P0 + 0.5*P1
     // + 0.25*P2.
     return {
@@ -236,7 +270,7 @@ function arrowCenterline(
     return sampleCatmullRom([from, ...curveAnchorPoints(from, to, curvePoints), to]);
   }
   if (style === 'curved') {
-    const c = curveControlPoint(from, to, curveOffset);
+    const c = curveControlPoint(from, to, curveOffset, fromEp, toEp);
     const N = 24;
     const pts: Pt[] = [];
     for (let i = 0; i <= N; i++) {
