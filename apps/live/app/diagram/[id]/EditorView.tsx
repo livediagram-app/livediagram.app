@@ -1,23 +1,11 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useMemo, type PointerEvent as ReactPointerEvent } from 'react';
-import {
-  DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_PATTERN_COLOR,
-  selectionMembers,
-  type Anchor,
-} from '@livediagram/diagram';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, type Anchor } from '@livediagram/diagram';
 import type { QuickConnectDirection } from '@/lib/canvas';
 import { quickConnectGroupStart, quickConnectSourceId } from '@/lib/quick-connect-source';
 import { track } from '@/lib/telemetry';
-import {
-  getTheme,
-  shapeColorPresets,
-  themeChartPalette,
-  themePresetColors,
-  type ThemeId,
-} from '@/lib/themes';
+import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { Canvas } from '@/components/canvas/Canvas';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -28,6 +16,7 @@ import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
+import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
@@ -42,10 +31,6 @@ import { useEditorContext } from './EditorContext';
 // Long enough that it never greets someone the instant they open a
 // diagram; short enough to catch an invested session.
 const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
-
-const EditorContextMenu = dynamic(() =>
-  import('@/components/palette/EditorContextMenu').then((m) => m.EditorContextMenu),
-);
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read
@@ -67,7 +52,6 @@ export function EditorView() {
     addIcon,
     addTechIcon,
     dropIconOnElement,
-    removeIconFromElement,
     addShape,
     addSticky,
     addTable,
@@ -117,7 +101,6 @@ export function EditorView() {
     beginFormatPainter,
     beginFreehand,
     beginGroup,
-    bringSelectedToFront,
     broadcastCursor,
     broadcastLaser,
     cancelDrawShape,
@@ -191,7 +174,6 @@ export function EditorView() {
     isReadOnly,
     laserTrailRows,
     linkActiveTabTo,
-    openLinkPicker,
     livePresence,
     loadAllTabs,
     makeCopy,
@@ -209,14 +191,12 @@ export function EditorView() {
     redo,
     remoteCursorRows,
     remoteSelectionsByElement,
-    removeImageFromElement,
     renameFolder,
     renameTab,
     renameTabFolder,
     moveTabToFolder,
     removeTabFromFolder,
     reorderTabs,
-    resetColorsSelected,
     retryActiveTabLoad,
     revertChange,
     savedAt,
@@ -228,7 +208,6 @@ export function EditorView() {
     cancelConnect,
     selectMarquee,
     selfParticipant,
-    sendSelectedToBack,
     sessionRole,
     sessionShareCode,
     setActiveId,
@@ -236,80 +215,10 @@ export function EditorView() {
     setActivityPosition,
     setMapPosition,
     setAiPanelPosition,
-    setArrowEndsSelected,
-    setArrowheadSizeSelected,
-    setArrowheadShapeSelected,
-    setTableHeaderRowSelected,
-    setTableHeaderColumnSelected,
-    setTableZebraSelected,
-    setArrowStrokeStyleSelected,
-    setArrowStyleSelected,
-    setArrowThicknessSelected,
-    resetAspectRatioSelected,
-    setRailCountSelected,
     addRailPointSelected,
     appendTableRowSelected,
     appendTableColumnSelected,
     setRailLabelSelected,
-    setRatingSelected,
-    setRatingAnimSelected,
-    setRatingAnimSpeedSelected,
-    setRatingAnimRepeatSelected,
-    setPieDataSelected,
-    setPieAnimSelected,
-    setPieAnimSpeedSelected,
-    setPieAnimRepeatSelected,
-    setChartLegendSelected,
-    setChartLegendPositionSelected,
-    setLineDataOpenForId,
-    clearStylePreview,
-    previewShapeColorPreset,
-    commitShapeColorPreset,
-    previewArrowPreset,
-    commitArrowPreset,
-    previewAnimation,
-    commitAnimation,
-    previewArrowFlow,
-    commitArrowFlow,
-    previewIconAnimation,
-    commitIconAnimation,
-    previewFillColor,
-    commitFillColor,
-    previewStrokeColor,
-    commitStrokeColor,
-    previewTextColor,
-    commitTextColor,
-    previewBorderStroke,
-    commitBorderStroke,
-    previewBorderStyle,
-    commitBorderStyle,
-    previewBorderRadius,
-    commitBorderRadius,
-    previewRotation,
-    commitRotation,
-    previewShapeKind,
-    commitShapeKind,
-    previewIconSize,
-    commitIconSize,
-    previewMarker,
-    commitMarker,
-    previewMarkerSize,
-    commitMarkerSize,
-    previewTextAlign,
-    commitTextAlign,
-    previewTextSize,
-    commitTextSize,
-    previewInlineIcon,
-    commitInlineIcon,
-    resetShapeStyleSelected,
-    resetArrowStyleSelected,
-    setIconAnimationSpeedSelected,
-    setProgressSelected,
-    setProgressAnimSelected,
-    setProgressAnimSpeedSelected,
-    setProgressAnimRepeatSelected,
-    setAnimationSpeedSelected,
-    setFlowSpeedSelected,
     setCanvasTool,
     setCommentsPanelPosition,
     setContextMenu,
@@ -318,14 +227,11 @@ export function EditorView() {
     setExplorerPosition,
     setExportOpen,
     setExportScope,
-    setFillColorSelected,
     setFormatSourceId,
     setGroupSourceId,
     setLinkPickerOpenForId,
-    applyElementLink,
     openCellLinkPicker,
     setMultiSelectedIds,
-    setOpacitySelected,
     setPaddingSelected,
     setPalettePosition,
     setSearchOpen,
@@ -336,10 +242,8 @@ export function EditorView() {
     renameDiagramNonce,
     renameTabNonce,
     setShortcutsOpen,
-    setStrokeColorSelected,
     setTextAlignSelected,
     setFontSelected,
-    setTextColorSelected,
     setTextSizeSelected,
     setTabFont,
     setTabDefaultTextSize,
@@ -363,7 +267,6 @@ export function EditorView() {
     toggleInMultiSelect,
     toggleLockMultiSelected,
     toggleLockSelected,
-    toggleTextStyleSelected,
     undo,
     ungroupSelected,
     userPreferences,
@@ -377,19 +280,6 @@ export function EditorView() {
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the diagram (spec/42).
   useEditorAccent(activeTab.theme);
-  // Selection-context-menu wiring (right-click a multi-selection or group):
-  // resolve the member set, whether it's a group vs a marquee multi, count,
-  // and lock state, then route the actions to the multi- or group-aware
-  // handlers accordingly.
-  const ctxMultiActive = multiSelectedIds.size > 0;
-  const ctxSelectedEl = selectedId
-    ? (activeTab.elements.find((e) => e.id === selectedId) ?? null)
-    : null;
-  const ctxMemberIds = ctxMultiActive
-    ? [...multiSelectedIds]
-    : ctxSelectedEl
-      ? selectionMembers(activeTab.elements, ctxSelectedEl.id)
-      : [];
   // Guest sign-in nudge (spec/36): the same banner the Explorer shows,
   // but on the editor it waits ~5 minutes into the session before
   // appearing so it never interrupts someone the moment they open a
@@ -1043,108 +933,7 @@ export function EditorView() {
       <EditorSearchPanel />
       <EditorModals />
       <EditorAnchoredPopovers />
-      {contextMenu && contextMenu.mode !== 'canvas' && !isReadOnly ? (
-        <EditorContextMenu
-          menu={contextMenu}
-          elements={activeTab.elements}
-          onClose={closeContextMenu}
-          onLinkElement={openLinkPicker}
-          onRemoveIcon={removeIconFromElement}
-          onOpenImagePicker={(id) => imageContext?.onOpenPicker?.(id)}
-          onRemoveImage={removeImageFromElement}
-          onRemoveLink={() => applyElementLink(null)}
-          onSetIconPosition={commitInlineIcon}
-          onPreviewIconPosition={previewInlineIcon}
-          onSetIconSize={commitIconSize}
-          onPreviewIconSize={previewIconSize}
-          onSetTextAlign={commitTextAlign}
-          onPreviewTextAlign={previewTextAlign}
-          onBringToFront={bringSelectedToFront}
-          onSendToBack={sendSelectedToBack}
-          onToggleAspectLock={toggleAspectLockSelected}
-          onSetOpacity={setOpacitySelected}
-          onSetTextColor={setTextColorSelected}
-          onSetFillColor={setFillColorSelected}
-          onSetStrokeColor={setStrokeColorSelected}
-          onPreviewTextColor={previewTextColor}
-          onCommitTextColor={commitTextColor}
-          onPreviewFillColor={previewFillColor}
-          onCommitFillColor={commitFillColor}
-          onPreviewStrokeColor={previewStrokeColor}
-          onCommitStrokeColor={commitStrokeColor}
-          onPreviewBorderStroke={previewBorderStroke}
-          onCommitBorderStroke={commitBorderStroke}
-          onPreviewBorderStyle={previewBorderStyle}
-          onCommitBorderStyle={commitBorderStyle}
-          onPreviewBorderRadius={previewBorderRadius}
-          onCommitBorderRadius={commitBorderRadius}
-          onPreviewRotation={previewRotation}
-          onCommitRotation={commitRotation}
-          onSetMarker={commitMarker}
-          onPreviewMarker={previewMarker}
-          onSetMarkerSize={commitMarkerSize}
-          onPreviewMarkerSize={previewMarkerSize}
-          onSetRailCount={setRailCountSelected}
-          onSetRating={setRatingSelected}
-          onSetRatingAnim={setRatingAnimSelected}
-          onSetRatingAnimSpeed={setRatingAnimSpeedSelected}
-          onSetRatingAnimRepeat={setRatingAnimRepeatSelected}
-          onSetPieData={setPieDataSelected}
-          onSetPieAnim={setPieAnimSelected}
-          onSetPieAnimSpeed={setPieAnimSpeedSelected}
-          onSetPieAnimRepeat={setPieAnimRepeatSelected}
-          onSetChartLegend={setChartLegendSelected}
-          onSetChartLegendPosition={setChartLegendPositionSelected}
-          onEditLineData={setLineDataOpenForId}
-          shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
-          onApplyShapeColorPreset={commitShapeColorPreset}
-          onPreviewShapeColorPreset={previewShapeColorPreset}
-          onResetShapeStyle={resetShapeStyleSelected}
-          onApplyArrowPreset={commitArrowPreset}
-          onPreviewArrowPreset={previewArrowPreset}
-          onPreviewStyleEnd={clearStylePreview}
-          onResetArrowStyle={resetArrowStyleSelected}
-          onSetAnimation={commitAnimation}
-          onSetArrowFlow={commitArrowFlow}
-          onSetIconAnimation={commitIconAnimation}
-          onPreviewAnimation={previewAnimation}
-          onPreviewArrowFlow={previewArrowFlow}
-          onPreviewIconAnimation={previewIconAnimation}
-          onAnimationPreviewEnd={clearStylePreview}
-          onSetIconAnimationSpeed={setIconAnimationSpeedSelected}
-          onSetProgress={setProgressSelected}
-          onSetProgressAnim={setProgressAnimSelected}
-          onSetProgressAnimSpeed={setProgressAnimSpeedSelected}
-          onSetProgressAnimRepeat={setProgressAnimRepeatSelected}
-          onSetAnimationSpeed={setAnimationSpeedSelected}
-          onSetFlowSpeed={setFlowSpeedSelected}
-          onResetColors={resetColorsSelected}
-          onToggleTextBold={() => toggleTextStyleSelected('textBold')}
-          onToggleTextItalic={() => toggleTextStyleSelected('textItalic')}
-          onToggleTextUnderline={() => toggleTextStyleSelected('textUnderline')}
-          onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
-          onSetTextSize={commitTextSize}
-          onPreviewTextSize={previewTextSize}
-          onSetArrowThickness={setArrowThicknessSelected}
-          onSetArrowStyle={setArrowStyleSelected}
-          onSetArrowStrokeStyle={setArrowStrokeStyleSelected}
-          onSetArrowEnds={setArrowEndsSelected}
-          onSetArrowheadSize={setArrowheadSizeSelected}
-          onSetArrowheadShape={setArrowheadShapeSelected}
-          onSetShapeKind={commitShapeKind}
-          onPreviewShapeKind={previewShapeKind}
-          onResetAspectRatio={resetAspectRatioSelected}
-          presetColors={themePresetColors(getTheme(activeTab.theme))}
-          onToggleTableHeaderRow={setTableHeaderRowSelected}
-          onToggleTableHeaderColumn={setTableHeaderColumnSelected}
-          onToggleTableZebra={setTableZebraSelected}
-          onOpenNote={openNote}
-          onOpenComments={openComments}
-          selectionElements={ctxMemberIds
-            .map((id) => activeTab.elements.find((e) => e.id === id))
-            .filter((e): e is NonNullable<typeof e> => e != null)}
-        />
-      ) : null}
+      <EditorContextMenuHost />
       <EditorElementDialogs />
 
       {/* Guest sign-in nudge (spec/36), delayed ~5 min. Lifted above
