@@ -17,6 +17,7 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram": "workspace:*",
     "@livediagram/icons": "workspace:*",
+    "@livediagram/templates": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@resvg/resvg-wasm": "^2.6.2",
     "hono": "^4.12.0",

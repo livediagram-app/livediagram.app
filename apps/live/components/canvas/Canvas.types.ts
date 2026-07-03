@@ -17,7 +17,7 @@ import type {
 } from '@livediagram/diagram';
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
-import type { TemplateKind } from '@/lib/templates';
+import type { TemplateKind } from '@livediagram/templates';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';

@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@/lib/templates';
+import type { TemplateKind } from '@livediagram/templates';
 
 // Group 2 of 3 (agile / hierarchy / wireframes). Static SVG preview tiles for the TemplatePicker (one branch per
 // TemplateKind). Split out of template-preview.tsx to keep each file under the

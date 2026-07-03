@@ -15,6 +15,7 @@ packages/
   ui/             shared UI primitives (Brand, etc.)
   diagram/        diagram data model (Tab, Element types + helpers)
   icons/          icon catalogues (line-art + Technology marks) + SVG markup builders
+  templates/      template catalogue + pure element builders (editor Quick Start + MCP)
   api-schema/     wire-format DTOs the api worker emits + the live editor consumes
   eslint-config/  shared ESLint flat config
   prettier-config/shared Prettier config
@@ -49,6 +50,7 @@ Each app pulls these in via `workspace:*`:
 - **`@livediagram/api-schema`** owns the wire format between the api worker and the live editor: every request / response shape, plus the small shared pure helpers it backs (`sha256Hex` for image-upload dedupe, `titleCase` for display-casing preset values across the editor + telemetry dashboard). Adding a field on the server without updating the client used to be routine drift; the typechecker catches it now.
 - **`@livediagram/ui`** owns the cross-app UI primitives (`Brand`, the logo + wordmark, and `Tooltip`, the shared hover/focus tooltip; more arrive as common patterns emerge).
 - **`@livediagram/icons`** owns the two icon catalogues (the line-art glyphs and the Technology brand marks) plus pure SVG-markup builders for them. The editor dynamic-imports the data modules through its icon registry so they stay out of its first-load JS; the api + mcp workers static-import `@livediagram/icons/resolve` so headless renders (the live image, Explorer thumbnails, MCP inline images) draw the real glyphs.
+- **`@livediagram/templates`** owns the template library: the catalogue (kinds, titles, categories, per-template canvas overrides) and the pure per-template element builders. Two callers: the editor's Quick Start picker (which layers its theme recolour on top in `apps/live/lib/template-builders.ts`) and the mcp worker's `list_templates` / `template` tools (spec/62), so the scaffolds can't drift between them.
 - **`@livediagram/eslint-config`** / **`prettier-config`** / **`tailwind-config`** / **`vitest-config`** own the shared lint / format / theme / test configs so every workspace stays consistent.
 
 ## Tech stack

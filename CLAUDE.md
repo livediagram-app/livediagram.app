@@ -51,6 +51,7 @@ packages/
   ui/             # shared UI primitives (Brand, etc.)
   diagram/        # diagram data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology marks) + SVG markup builders
+  templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   eslint-config/  # shared ESLint flat config
   prettier-config/# shared Prettier config

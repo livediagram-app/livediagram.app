@@ -5,7 +5,7 @@
 // overview, the category detail view, and the flat search results
 // without the JSX being copy-pasted three times.
 
-import type { TemplateDescriptor, TemplateKind } from '@/lib/templates';
+import type { TemplateDescriptor, TemplateKind } from '@livediagram/templates';
 import { TemplatePreview } from '@/components/palette/template-preview';
 
 // A single selectable template tile. Click selects; double-click is the

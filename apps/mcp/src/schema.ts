@@ -118,7 +118,11 @@ or read another diagram to learn the schema. In short: use a unique "id" per
 element, make nodes "shape" elements (a labelled box) NOT "text" (text is only
 for titles/captions), position elements yourself for a deliberate shape (a cycle
 as a ring, a tree, a grid), prefer pinned arrows (node -> node), and do NOT set
-colours, the theme owns them.`;
+colours, the theme owns them. For a standard artefact (kanban, flowchart, SWOT,
+gantt, wireframe, ...) check list_templates first and pass its kind as
+"template" on create_diagram / add_tab — the hand-tuned scaffold beats
+rebuilding one from raw elements — then fill in real labels with
+update_diagram.`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---
@@ -130,6 +134,21 @@ const layoutField = z
   .optional()
   .describe(
     'How to position elements. "preserve" keeps the exact x/y you give — use it for a deliberate shape (a cycle as a ring, a tree, a grid). "auto" arranges a clean directed graph for you. Omit to auto-detect: a real arrangement is kept; nodes left piled at one point get laid out. Supporting text is always kept in place either way.',
+  );
+
+// Template kinds are validated at runtime against the shared catalogue
+// (@livediagram/templates) rather than a z.enum, so a new template is one
+// catalogue entry with no schema churn; list_templates is the discovery
+// surface.
+const templateField = z
+  .string()
+  .optional()
+  .describe(
+    'Start from a hand-tuned template scaffold instead of providing elements: a template ' +
+      'kind from list_templates (e.g. "kanban", "flowchart", "gantt"). The server ' +
+      'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
+      'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
+      'update_diagram mode "ops". Provide template OR elements, not both.',
   );
 
 const themeField = z
@@ -153,7 +172,8 @@ export const readDiagramShape = {
 
 const tabShape = z.object({
   name: z.string().describe('Name of the tab.'),
-  elements: elementArray,
+  elements: elementArray.optional(),
+  template: templateField,
 });
 
 export const createDiagramShape = {
@@ -180,7 +200,8 @@ export const addTabShape = {
     .string()
     .describe('The diagram to add a tab to (from find_diagrams / read_diagram).'),
   name: z.string().describe('Name of the new tab.'),
-  elements: elementArray,
+  elements: elementArray.optional(),
+  template: templateField,
   layout: layoutField,
   theme: themeField,
 };

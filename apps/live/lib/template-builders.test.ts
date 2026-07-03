@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { runsPlainText, type Element } from '@livediagram/diagram';
-import type { TemplateKind } from './templates';
+import type { TemplateKind } from '@livediagram/templates';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import { isTechIconId } from './tech-icons';
 

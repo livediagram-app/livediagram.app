@@ -27,7 +27,7 @@ well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no
 model of its own and makes no LLM calls.
 
-**Keep the surface small.** Five tools and one schema resource (see
+**Keep the surface small.** Six tools and one schema resource (see
 [§4](#4-tools)). Each tool is a thin wrapper over an existing `/api` route plus
 shared helpers from `packages/diagram`; the MCP adds no business logic that
 isn't reusable.
@@ -129,8 +129,9 @@ the MCP simply don't deploy `apps/mcp`; nothing else references it.
 
 ## 4. Tools
 
-Five tools. The search/view capability is two tools (find, then read); create,
-add_tab, and update are separate because their inputs and intent differ.
+Six tools. The search/view capability is two tools (find, then read); create,
+add_tab, and update are separate because their inputs and intent differ;
+list_templates exposes the template catalogue ([§4.5](#45-list_templates)).
 
 ### 4.1 `find_diagrams`
 
@@ -163,7 +164,12 @@ plus the deep-link `url`. So "show me my auth-flow diagram" → `find_diagrams` 
 Create a new diagram from elements the model produced. Input: `name`, `tabs:
 [{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
 diagram in one call — an overview plus a detail tab per subsystem), and the
-optional `layout`. The MCP:
+optional `layout`. Each tab may instead pass `template: TemplateKind` in place
+of `elements` — the server materialises the hand-tuned scaffold from
+`@livediagram/templates` ([§4.5](#45-list_templates)), keeping its curated
+layout (`layout` is ignored for a template tab) and applying that template's
+canvas overrides; the model then personalises labels via `update_diagram`'s
+`ops` mode. The MCP:
 
 1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
    a clear message naming the offending tab).
@@ -195,8 +201,9 @@ optional `layout`. The MCP:
 
 Add a **new tab** (its own canvas) to an existing diagram — the motivating case:
 "make a tab going into more detail on one part of this architecture." Input:
-`diagramId`, `name`, `elements`, optional `layout`. Validates + lays out exactly
-like a `create_diagram` tab, then `PUT /api/diagrams/:id/tabs/:newTabId` — which
+`diagramId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
+instead of `elements`, exactly like a `create_diagram` tab. Validates + lays out
+exactly like a `create_diagram` tab, then `PUT /api/diagrams/:id/tabs/:newTabId` — which
 is an upsert that also links the tab into the diagram and appends it, so a fresh
 tab id creates and orders the tab in one call. Returns the new `tabId`, `url`,
 and the rendered PNG. (Pair with `read_diagram`, which lists the diagram's
@@ -222,7 +229,20 @@ Edit an existing tab. **Two modes** (the user asked for both):
 Both modes re-read → apply → validate → write, and return the rendered PNG of the
 result. The model picks the mode: rebuild → `replace`; tweak → `ops`.
 
-### 4.5 Schema resource (not a tool)
+### 4.5 `list_templates`
+
+Browse the template library — the same hand-tuned catalogue the editor's
+Quick Start picker ships (spec/09), served from the shared
+`@livediagram/templates` package so the worker and the editor can't drift.
+No input. Returns the categories plus one row per template:
+`{ kind, title, description, category }` — enough for the model to pick a
+`kind` and pass it as `template` on `create_diagram` / `add_tab`. Deliberately
+metadata-only (no elements): the scaffold materialises server-side on create,
+so the model never has to re-emit — or accidentally mangle — a curated layout.
+The recommended flow for "make me a kanban board"-style asks: `list_templates`
+→ create with `template` → `update_diagram` (`ops`) to fill in real content.
+
+### 4.6 Schema resource (not a tool)
 
 A static, cacheable MCP **resource** — e.g. `livediagram://schema/elements` —
 returning a compact description of the element schema: the element types

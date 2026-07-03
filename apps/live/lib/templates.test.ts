@@ -7,7 +7,7 @@ import {
   templateCategory,
   untitledNameForTemplate,
   type TemplateKind,
-} from './templates';
+} from '@livediagram/templates';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome

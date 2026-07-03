@@ -14,7 +14,7 @@ import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { ensureGuestSelfId, markNameConfirmed } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
-import { untitledNameForTemplate, type TemplateKind } from '@/lib/templates';
+import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
 import { getTheme, THEMES } from '@/lib/themes';
 import { isCustomThemeId } from '@/lib/custom-theme-registry';
 

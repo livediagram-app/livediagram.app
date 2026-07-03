@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@/lib/templates';
+import type { TemplateKind } from '@livediagram/templates';
 
 // Group 4 of 4 (the roadmap / canvas / workshop / hierarchy / UML /
 // cloud batch). Static SVG preview tiles for the TemplatePicker (one

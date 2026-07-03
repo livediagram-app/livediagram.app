@@ -21,7 +21,7 @@ import {
   createText,
   type Element,
 } from '@livediagram/diagram';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@livediagram/icons';
 
 // A small but complete request path: a client hitting an API gateway
 // that fans out to two services, which in turn read a database and a

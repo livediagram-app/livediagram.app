@@ -41,6 +41,19 @@ describe('tool input shapes', () => {
     expect(s.parse({ name: 'x', tab: { name: 'a', elements: [] } }).tab).toBeTruthy();
   });
 
+  it('create/add_tab: a tab may pass template instead of elements', () => {
+    const c = z.object(createDiagramShape);
+    const viaTemplate = c.parse({ name: 'x', tabs: [{ name: 'Board', template: 'kanban' }] });
+    expect(viaTemplate.tabs?.[0]?.template).toBe('kanban');
+    expect(viaTemplate.tabs?.[0]?.elements).toBeUndefined();
+    const a = z.object(addTabShape);
+    expect(a.parse({ diagramId: 'd', name: 'Board', template: 'kanban' }).template).toBe('kanban');
+    // Kind validity is a runtime check against the shared catalogue
+    // (resolveTemplate in tools.ts), not a schema enum, so an arbitrary
+    // string still parses here.
+    expect(a.parse({ diagramId: 'd', name: 'Board', template: 'nope' }).template).toBe('nope');
+  });
+
   it('add_tab: requires diagramId + name + elements', () => {
     const s = z.object(addTabShape);
     expect(() => s.parse({ name: 't', elements: [] })).toThrow(); // missing diagramId

@@ -163,6 +163,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -276,6 +279,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)
@@ -464,6 +470,28 @@ importers:
   packages/prettier-config: {}
 
   packages/tailwind-config: {}
+
+  packages/templates:
+    dependencies:
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@livediagram/diagram':
+        specifier: workspace:*
+        version: link:../diagram
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../icons
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      eslint:
+        specifier: ^9.17.0
+        version: 9.39.4(jiti@2.7.0)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
   packages/ui:
     dependencies:

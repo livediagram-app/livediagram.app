@@ -20,6 +20,14 @@ import {
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
 import { resolveIconExportArt } from '@livediagram/icons/resolve';
+import {
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  buildTemplate,
+  templateCanvasOverrides,
+  templateCategory,
+  type TemplateKind,
+} from '@livediagram/templates';
 import { apiJson, postTelemetry } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
@@ -109,6 +117,29 @@ function buildTab(
   };
 }
 
+// Resolve a tool's `template` argument against the shared catalogue
+// (spec/62 §4.5). Returns null for an unknown kind — the caller answers
+// with the valid kinds so the model can self-correct without a round
+// trip to list_templates.
+function resolveTemplate(kind: string): TemplateKind | null {
+  return TEMPLATES.some((t) => t.kind === kind) ? (kind as TemplateKind) : null;
+}
+
+const validTemplateKinds = () => TEMPLATES.map((t) => t.kind).join(', ');
+
+// Materialise a template tab: the curated scaffold at its hand-tuned
+// coordinates (layout deliberately NOT run — that's the point of a
+// template), themed by buildTab like any other elements, plus the
+// template's canvas overrides + the templateChosen flag the editor's
+// Quick Start uses.
+function buildTemplateTab(tabId: string, name: string, kind: TemplateKind, themeId?: string): Tab {
+  return {
+    ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
+    templateChosen: true,
+    ...templateCanvasOverrides(kind),
+  };
+}
+
 export function registerTools(server: McpServer, env: Env): void {
   server.registerTool(
     'find_diagrams',
@@ -174,6 +205,33 @@ export function registerTools(server: McpServer, env: Env): void {
   );
 
   server.registerTool(
+    'list_templates',
+    {
+      title: 'List templates',
+      description:
+        'Browse the template library — the same hand-tuned scaffolds the editor\u2019s Quick ' +
+        'Start offers (kanban, flowchart, SWOT, gantt, wireframes, ...). Returns categories ' +
+        'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
+        'on create_diagram / add_tab to start from it, then personalise the labels with ' +
+        'update_diagram.',
+      inputSchema: {},
+    },
+    async (_args, extra) => {
+      requireToken(extra as Extra);
+      postTelemetry(env, 'Mcp', 'Used', 'ListTemplates');
+      return textResult({
+        categories: TEMPLATE_CATEGORIES,
+        templates: TEMPLATES.map((t) => ({
+          kind: t.kind,
+          title: t.title,
+          description: t.description,
+          category: templateCategory(t.kind),
+        })),
+      });
+    },
+  );
+
+  server.registerTool(
     'create_diagram',
     {
       title: 'Create a diagram',
@@ -181,9 +239,10 @@ export function registerTools(server: McpServer, env: Env): void {
         'Create a new diagram from elements you produce. The element format is described ' +
         'on the "tabs" argument below, so you have everything you need here (no need to ' +
         'look it up). Pass one tab, or several to build a multi-tab diagram in one call (an ' +
-        'overview plus detail tabs). The server validates, lays out each tab per the layout ' +
-        'arg, tags it as AI-generated so it shows in your "Generated" folder, and returns the ' +
-        'link + an inline PNG of the first tab.',
+        'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
+        'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
+        'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
+        '"Generated" folder, and returns the link + an inline PNG of the first tab.',
       inputSchema: createDiagramShape,
     },
     async (args, extra) => {
@@ -197,15 +256,29 @@ export function registerTools(server: McpServer, env: Env): void {
       const tabs: Tab[] = [];
       for (const t of inputTabs) {
         const tabId = crypto.randomUUID();
-        const candidate: unknown = { id: tabId, name: t.name, elements: t.elements };
-        if (!isValidTab(candidate)) {
+        // Template tab (spec/62 §4.5): materialise the curated scaffold
+        // instead of expecting elements.
+        if (t.template) {
+          const kind = resolveTemplate(t.template);
+          if (!kind) {
+            return errorResult(
+              `Unknown template "${t.template}" in tab "${t.name}". Valid kinds: ` +
+                `${validTemplateKinds()}.`,
+            );
+          }
+          tabs.push(buildTemplateTab(tabId, t.name, kind, args.theme));
+          continue;
+        }
+        const candidate: unknown = { id: tabId, name: t.name, elements: t.elements ?? [] };
+        if (!t.elements || !isValidTab(candidate)) {
           return errorResult(
-            `Invalid elements in tab "${t.name}". Check the livediagram://schema/elements ` +
-              'resource: every element needs id/type/x/y/width/height (arrows need from/to), ' +
-              'and arrays must be well-formed.',
+            `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +
+              'from list_templates). Check the livediagram://schema/elements resource: every ' +
+              'element needs id/type/x/y/width/height (arrows need from/to), and arrays must ' +
+              'be well-formed.',
           );
         }
-        tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, args.theme));
+        tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
       }
       const id = crypto.randomUUID();
       // Tag the diagram as MCP-generated (spec/15). The Explorer surfaces a
@@ -235,7 +308,8 @@ export function registerTools(server: McpServer, env: Env): void {
       title: 'Add a tab to a diagram',
       description:
         'Add a NEW tab (its own canvas) to an existing diagram — e.g. a detail view zooming ' +
-        'into one part of an architecture. Produce the elements like create_diagram; the ' +
+        'into one part of an architecture. Produce the elements like create_diagram (or pass ' +
+        '"template" instead of elements to start from a hand-tuned scaffold); the ' +
         'server validates, lays out per the layout arg, appends the tab, and returns an ' +
         'inline PNG. Run read_diagram first to see the diagram and its existing tabs.',
       inputSchema: addTabShape,
@@ -244,10 +318,19 @@ export function registerTools(server: McpServer, env: Env): void {
       const token = requireToken(extra as Extra);
       postTelemetry(env, 'Mcp', 'Used', 'AddTab');
       const tabId = crypto.randomUUID();
-      const candidate: unknown = { id: tabId, name: args.name, elements: args.elements };
-      if (!isValidTab(candidate)) {
+      // Template tab (spec/62 §4.5): resolved up front so an unknown kind
+      // fails before any network round trip.
+      const templateKind = args.template ? resolveTemplate(args.template) : null;
+      if (args.template && !templateKind) {
         return errorResult(
-          'Invalid elements. Check the livediagram://schema/elements resource: every element ' +
+          `Unknown template "${args.template}". Valid kinds: ${validTemplateKinds()}.`,
+        );
+      }
+      const candidate: unknown = { id: tabId, name: args.name, elements: args.elements ?? [] };
+      if (!templateKind && (!args.elements || !isValidTab(candidate))) {
+        return errorResult(
+          'Invalid elements. Provide "elements" (or a "template" kind from list_templates). ' +
+            'Check the livediagram://schema/elements resource: every element ' +
             'needs id/type/x/y/width/height (arrows need from/to), and arrays must be well-formed.',
         );
       }
@@ -276,7 +359,9 @@ export function registerTools(server: McpServer, env: Env): void {
           /* keep buildTab's default */
         }
       }
-      const tab = buildTab(tabId, args.name, candidate.elements, args.layout, themeId);
+      const tab = templateKind
+        ? buildTemplateTab(tabId, args.name, templateKind, themeId)
+        : buildTab(tabId, args.name, (candidate as Tab).elements, args.layout, themeId);
       await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
         method: 'PUT',
         body: JSON.stringify(tab),

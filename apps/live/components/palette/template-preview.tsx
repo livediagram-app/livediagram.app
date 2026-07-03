@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@/lib/templates';
+import type { TemplateKind } from '@livediagram/templates';
 import { templatePreviewGroup1 } from '@/components/palette/template-preview-1';
 import { templatePreviewGroup2 } from '@/components/palette/template-preview-2';
 import { templatePreviewGroup3 } from '@/components/palette/template-preview-3';

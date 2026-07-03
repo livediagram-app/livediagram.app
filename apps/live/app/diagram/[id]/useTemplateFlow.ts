@@ -3,7 +3,7 @@ import type { Tab } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop, THEMES } from '@/lib/themes';
 import { isCustomThemeId } from '@/lib/custom-theme-registry';
-import { templateCanvasOverrides, type TemplateKind } from '@/lib/templates';
+import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
 
