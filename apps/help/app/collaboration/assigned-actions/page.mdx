@@ -13,7 +13,7 @@ export const metadata = helpMetadata({
 
 An action attaches a named piece of work to an element and hands it to a teammate. Where a comment starts a conversation, an action assigns an outcome: it has a name, an optional description, an assignee, and a done state. Use them to turn a review into a to-do list that lives right on the diagram.
 
-Actions are built on teams, so they are for signed-in users: the people you can assign to are the joined members of the teams you have joined.
+Anyone can assign an action to **themselves** — signed in or not — so actions also work as personal to-dos on a diagram. Assigning to other people is built on teams: sign in, and the picker offers the joined members of every team you have joined.
 
 ## Assigning an action
 
@@ -22,8 +22,8 @@ Actions are built on teams, so they are for signed-in users: the people you can 
 </Step>
 
 <Step n={2}>
-  Pick a teammate from any of your teams, give the action a short name, and add a description if the
-  work needs more context. You can assign an action to yourself too.
+  Pick **Myself** or a teammate from any of your teams, give the action a short name, and add a
+  description if the work needs more context.
 </Step>
 
 <Step n={3}>
@@ -40,9 +40,9 @@ The element gains a small clipboard badge while the action is open. Anyone on th
 
 ## The Actions panel
 
-As soon as a tab has at least one outstanding action, an **Actions** panel appears with the other floating panels. It lists every open action on the tab, newest first, with anything assigned to you sorted to the top and marked **Assigned to you**. Click a row to jump to the element and open the action.
+As soon as a tab has any actions, an **Actions** panel appears with the other floating panels. A filter at the top switches between **Outstanding** and **Completed**; anything assigned to you sorts to the top and reads **You**. Click a row to jump to the element and open the action.
 
-Completed actions leave the panel (and the element badge) immediately, so the list only ever shows what still needs doing. When the last open action is completed or deleted, the panel disappears entirely.
+Completing an action moves it to the Completed filter and clears the element's badge, so Outstanding only ever shows what still needs doing. Deleting the last action removes the panel entirely.
 
 ## Completing, editing, and deleting
 

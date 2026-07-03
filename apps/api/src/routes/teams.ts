@@ -73,7 +73,7 @@ function normaliseEmail(raw: string): string {
 }
 
 export async function handleTeams(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, clerkUserId, clerkEmail, verifiedUserId } = ctx;
+  const { request, env, url, segments, clerkUserId, clerkEmail, verifiedUserId } = ctx;
   if (segments[1] !== 'teams') return notFound();
   // Identity for everything below: the verified Clerk account id, from a
   // session JWT or an API token (see the header comment). Mutations are
@@ -244,6 +244,40 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       return noContent();
     }
     return notFound();
+  }
+
+  // /api/teams/<id>/access-check — can this teammate open that diagram?
+  // (spec/68). Drives the Assign Action dialog's access hint: a REAL
+  // answer instead of a client-side guess. Same gates as notify-action
+  // below (caller + assignee joined members, caller can access the
+  // diagram, 404s that never probe); the answer covers the three legs
+  // the server can see — the assignee owns the diagram, is a joined
+  // member of its team-library team, or has opened it via a share link.
+  // A GET, so token callers pass too (read-only, team-scoped).
+  if (segments.length === 4 && segments[3] === 'access-check') {
+    if (request.method !== 'GET') return notFound();
+    if (me.status !== 'joined') return forbidden();
+    const assigneeUserId = url.searchParams.get('assigneeUserId') ?? '';
+    const diagramId = url.searchParams.get('diagramId') ?? '';
+    if (!assigneeUserId || !diagramId) return badRequest('missing assigneeUserId/diagramId');
+    const assignee = await getMembership(env, teamId, assigneeUserId);
+    if (!assignee || assignee.status !== 'joined') return notFound();
+    const diagram = await getDiagramMeta(env, diagramId);
+    if (!diagram) return notFound();
+    const callerIsOwner = diagram.ownerId === userId;
+    const callerViaTeam = diagram.teamId
+      ? (await getMembership(env, diagram.teamId, userId))?.status === 'joined'
+      : false;
+    const callerViaShare =
+      callerIsOwner || callerViaTeam ? false : await hasSharedAccess(env, userId, diagramId);
+    if (!callerIsOwner && !callerViaTeam && !callerViaShare) return notFound();
+    const canAccess =
+      diagram.ownerId === assigneeUserId ||
+      (diagram.teamId
+        ? (await getMembership(env, diagram.teamId, assigneeUserId))?.status === 'joined'
+        : false) ||
+      (await hasSharedAccess(env, assigneeUserId, diagramId));
+    return json({ canAccess });
   }
 
   // /api/teams/<id>/notify-action — email a teammate about an action just

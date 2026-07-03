@@ -1422,7 +1422,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "teamId": {
-        "type": "string"
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "updatedAt": {
         "type": "number"

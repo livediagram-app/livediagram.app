@@ -29,10 +29,16 @@ interface ElementAction {
   name: string; // required, short ("Confirm the retry budget")
   description: string; // optional detail, '' when empty
   assignee: {
-    userId: string; // Clerk user id: the stable key
+    // The stable key: a Clerk user id, or — for a SELF-assignment made
+    // while signed out — the guest participant id (spec/04 hybrid
+    // identity). Guests can only ever pick themselves, so a guest id
+    // here always means "the assigner's own browser identity".
+    userId: string;
     name: string | null; // display name at assign time (render fallback: "Teammate")
   };
-  teamId: string; // the team the assignee was picked from
+  // The team the assignee was picked from; null for a self-assignment
+  // (Myself is not a team row).
+  teamId: string | null;
   assignerId: string; // Clerk user id of who assigned it
   assignerName: string | null;
   status: 'open' | 'done';
@@ -72,38 +78,42 @@ are excluded just like today), each gets its own accordion section id
 (`'collaborate'`, `'resources'`), and the band separator rules are
 unchanged. The **Assign Action** tile:
 
-- **Always shows when the deployment has auth** (`clerkEnabled`). For a
-  signed-out user it opens the dialog in a **sign-in prompt state**
-  ("Sign in to assign actions to teammates", with the sign-in CTA) instead
-  of the picker — the feature stays discoverable without becoming a
-  sign-in wall on the canvas (spec/04; the spec/36 encouragement pattern).
-  Assigning itself remains signed-in only: the picker is built on teams
-  (spec/32). On a Clerk-less self-host the tile is hidden outright — with
-  no accounts there are no teams, so nothing could ever enable it, and
-  the Collaborate category shows Comments alone (spec/03).
+- **Always shows, for everyone.** The feature is not sign-in gated:
+  a signed-out user (or a Clerk-less self-host, spec/03) can assign an
+  action to **themselves** — the picker offers a pinned **Myself** row in
+  every session, so actions double as personal to-dos on the diagram.
+  Only assigning to OTHER people needs an account: teammates come from
+  teams (spec/32), so a signed-out picker shows Myself alone plus a
+  gentle "sign in and join a team to assign teammates" nudge with the
+  sign-in CTA (spec/36 encouragement, not a wall — spec/04). No email is
+  ever offered for a self-assignment (§4).
 - When the element already has an action, the tile reads **View Action**
   and opens that action's popover (§3) instead of the assign dialog, the
   same open-what-exists behaviour as the Add/Edit Link and Note tiles.
-  This works signed-out too — anyone who can see the element may read its
-  action.
 
 Clicking it opens the **Assign Action dialog** (its own component under
 `components/dialogs/`, per the no-god-files rule), with:
 
-- **Assignee**: a picker over the **joined members of every team the
-  current user has joined** (`GET /api/teams` then `GET /api/teams/<id>`
-  members, via the existing `useTeams` / api-client helpers), grouped by
-  team when the user is in more than one, each row showing the member's
-  avatar bubble, display name (email local-part fallback, as TeamPane does),
-  and team. Invited-but-not-joined members are excluded (no `userId` yet,
-  and possibly no account). Self-assignment is allowed: it is an ordinary
-  membership. A user with **no joined teams** sees an empty state linking to
-  the Explorer's Teams section instead of the picker.
+- **Assignee**: a pinned **Myself** row (every session — the signed-in
+  account, or the guest participant identity), then the **joined members
+  of every team the current user has joined** (`GET /api/teams` then
+  `GET /api/teams/<id>` members, via the existing `useTeams` / api-client
+  helpers), grouped by team when the user is in more than one, each row
+  showing the member's avatar bubble and display name (email local-part
+  fallback, as TeamPane does). Invited-but-not-joined members are
+  excluded (no `userId` yet, and possibly no account). A signed-in user
+  with **no joined teams** sees Myself plus a nudge linking to the
+  Explorer's Teams section; a signed-out user sees Myself plus the
+  sign-in nudge (§2).
 - **Action name**: required single-line text.
 - **Description**: optional multi-line text.
-- **"Email {name} about this action"**: a checkbox, **default checked**,
-  rendered only when `useCapabilities().emailEnabled` is true (spec/65 §2):
-  a self-host without Resend never advertises a send it can't perform.
+- **"Email {name} about this action"**: the shared iOS-style toggle
+  (`ToggleSwitch`, the same control every settings row uses), **default
+  on**, rendered only when `useCapabilities().emailEnabled` is true
+  (spec/65 §2): a self-host without Resend never advertises a send it
+  can't perform. **Hidden entirely for a self-assignment** (guest or
+  signed-in) — you don't email yourself about your own action, so the
+  row disappears rather than defaulting off.
 
 Confirming writes `el.action` (status `open`, assigner stamped from the
 current user), persists via the normal tab path (`tickTabs`, not `commit`,
@@ -119,14 +129,17 @@ blob. View-role visitors see actions read-only (§7).
 - **Badge**: the element-badges cluster (`element-badges.tsx`) gains an
   action badge alongside the comment badge, shown only while the element has
   an `open` action. Clicking it opens the action popover. Done actions show
-  no badge (finished work should not shout).
+  no badge (finished work should not shout). The cluster itself renders as
+  **one connected pill** — link / note / action / comment as segments with
+  hairline separators — rather than detached circles.
 - **Popover**: `ActionPopover`, anchored on the element like
-  `CommentThreadPopover`, showing the action name, description, assignee
-  (avatar bubble + name), who assigned it and when (relative time), and:
+  `CommentThreadPopover`: the action name + description up top, one calm
+  assignee/assigner meta row (avatar bubble, "Assigned to you"/name,
+  "by {assigner} · {relative time}"), and an icon-button footer:
   - **Complete**: sets `status: 'done'` (and `updatedAt`). The action drops
-    out of the panel and badge but stays on the element; the popover then
-    offers **Reopen** (back to `open`), mirroring resolve/unresolve on
-    comment threads.
+    out of the badge and moves to the panel's Completed filter, staying on
+    the element; the popover then offers **Reopen** (back to `open`),
+    mirroring resolve/unresolve on comment threads.
   - **Edit**: reopens the assign dialog prefilled to change the name,
     description, or assignee. Changing the assignee re-offers the email
     checkbox (default checked) so the **new** assignee can be notified; an
@@ -175,11 +188,21 @@ the mail is either the assigner's own words being delivered on their behalf
 or a diagram/team fact the two already share.
 
 **Access caveat:** assigning is allowed on any diagram the assigner can
-edit, including personal ones the assignee cannot open. When the picked
-team's library does not contain the diagram, the dialog shows a small hint
-("{name} may not be able to open this diagram: share it or move it to the
-team library"). Auto-sharing on assign is explicitly not done (v1): quietly
-widening access as a side effect of an assignment is worse than a dead CTA.
+edit, including ones the assignee cannot open. The dialog does a REAL
+check rather than guessing: picking an assignee fires
+`GET /api/teams/<teamId>/access-check?assigneeUserId=&diagramId=`, which
+applies the same gates as notify-action (caller + assignee joined members
+of the team, caller can access the diagram, 404s that never probe) and
+answers `{ canAccess }` from the three legs the server can actually see —
+the assignee owns the diagram, is a joined member of the diagram's
+team-library team, or has previously opened it through a share link
+(`shared_with`). Only a definite "no" shows the hint ("{name} can't open
+this diagram yet: share it or move it to the team library"); while the
+check is in flight nothing shows, and if it errors the dialog falls back
+to the old heuristic (picked team ≠ the diagram's team → hedged "may not
+be able to open" wording). Auto-sharing on assign is explicitly not done
+(v1): quietly widening access as a side effect of an assignment is worse
+than a dead CTA.
 
 ## 5. The Actions Panel
 
@@ -189,18 +212,21 @@ A new docked panel (spec/63) mirroring the Comments Panel:
   `top-right` stacked with Comments; `ActionsPanel.tsx` under
   `components/panels/` on `MovablePanel`, collapsible, default-collapsed,
   lazily imported and mounted from `useCanvasChromePanels.tsx`.
-- **Mounted only when the active tab has at least one element with an
-  `open` action.** No outstanding actions, no panel, exactly the
-  Comments Panel contract. Done actions never resurrect it.
+- **Mounted whenever the active tab has at least one element with an
+  action, open OR done** — no actions at all, no panel (the Comments
+  Panel contract). An **Outstanding / Completed segmented filter** (with
+  a count on each side) switches the list; it lands on Outstanding, or
+  Completed when nothing is outstanding, and each side has a quiet empty
+  state.
 - Rows (an `actionRowsFromElements(elements)` derivation beside
-  `commentRowsFromElements`): the element label (same "Untitled" fallbacks),
-  the action name, the assignee's avatar bubble + name, and relative
-  `createdAt` time, newest first. Rows whose assignee is the **current
-  user** carry an "Assigned to you" accent and sort first: the panel's
-  first job is "what's mine here".
+  `commentRowsFromElements`): the assignee's avatar bubble (brand-tinted
+  when it's **you**, whose rows sort first and read "You"), the action
+  name (struck through once done), a meta line of assignee + element
+  label (same "Untitled" fallbacks), and relative `createdAt` time,
+  newest first within the mine/others split.
 - **Row click selects the element and opens its action popover** (the
-  jump-to-element behaviour Comments rows have). Header shows the
-  outstanding count in the same brand-coloured pill.
+  jump-to-element behaviour Comments rows have). The panel header shows
+  the OUTSTANDING count in the brand-coloured pill (hidden at zero).
 
 ## 6. Preference + profile toggle
 
@@ -224,9 +250,10 @@ consent.
 ## 7. Permissions, guests, view role
 
 - **Assign / edit / complete / delete** require edit access to the diagram
-  (the mutation is a tab write) and a signed-in assigner (the picker is
-  teams). Every edit-role collaborator can complete or delete any action,
-  consistent with how all element content works today.
+  (the mutation is a tab write). Signed-out users can assign only to
+  themselves (their guest participant id); assigning to teammates needs
+  the signed-in team picker. Every edit-role collaborator can complete or
+  delete any action, consistent with how all element content works today.
 - **Guests and view-role visitors** still _see_ actions (badge, popover,
   panel): an assignee following a share link should find their action even
   before anyone grants them edit. They get no mutating controls. Dedicated
@@ -251,7 +278,9 @@ carries the events:
 - `Action`/`Opened` (the popover opened, from the tile, badge, or a
   panel row);
 - the profile toggle flip emits `UI`/`Toggled`/`NotifyActionAssigned{On,Off}`,
-  fired before persisting like every settings flip (spec/65).
+  fired before persisting like every settings flip (spec/65);
+- `UI`/`Opened`/`ActionSignInNudge` when a signed-out user opens the
+  dialog and sees the Myself-only picker with the sign-in nudge.
 
 Never the action name, description, or any identity: types are preset
 enum-ish tokens, not user content.

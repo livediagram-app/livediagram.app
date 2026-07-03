@@ -6,32 +6,42 @@ import type { ElementAction } from '@livediagram/diagram';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { apiGetTeam, type TeamListItem, type TeamMember } from '@/lib/api-client';
+import {
+  apiCheckAssigneeAccess,
+  apiGetTeam,
+  type TeamListItem,
+  type TeamMember,
+} from '@/lib/api-client';
 import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
 import { memberName } from '@/components/panels/team-pane-parts';
 import { initialsOf } from '@/lib/identity';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
+import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 
-// Assign Action dialog (spec/68 §2): pick a teammate from any team the
-// current user has JOINED, name the action, optionally describe it, and
-// optionally email the assignee. Also serves as the edit form (prefilled
-// from the element's existing action); on an edit that changes the
-// assignee the email checkbox is re-offered for the NEW assignee, and an
-// edit that keeps the assignee never sends email (the hook enforces it,
-// the checkbox hides to match).
+// Assign Action dialog (spec/68 §2). The picker always offers a pinned
+// **Myself** row (the feature is not sign-in gated: a signed-out user can
+// assign an action to themselves as a personal to-do), then the joined
+// members of every team the signed-in user has joined. Also serves as the
+// edit form (prefilled from the element's existing action); on an edit
+// that changes the assignee the email offer returns for the NEW assignee,
+// and an edit that keeps the assignee never sends email (the hook
+// enforces it, the control hides to match).
 //
-// Signed-out users get a SIGN-IN PROMPT state instead of the form: the
-// tile stays discoverable for everyone (spec/68 §2), assigning stays
-// signed-in only (the picker is built on teams), and the prompt is an
-// invitation, not a wall (spec/04, spec/36).
+// The email offer is the shared iOS-style ToggleSwitch, default on, and
+// is hidden entirely for a self-assignment — you don't email yourself
+// about your own action. Picking a teammate also fires a REAL access
+// check (spec/68 §4) so the "can't open this diagram" hint only shows
+// when the server says so.
 
 type PickableMember = {
   userId: string;
   name: string;
   email: string | null;
-  teamId: string;
-  teamName: string;
+  // Null for the pinned Myself row (no team involved, no email).
+  teamId: string | null;
+  teamName: string | null;
 };
 
 type AssignActionDialogProps = {
@@ -41,15 +51,19 @@ type AssignActionDialogProps = {
   // Teams the current user has joined (useTeams already filters to
   // joined memberships server-side via listTeamsByUser).
   teams: TeamListItem[];
-  // The signed-in caller (the tile is signed-in only, so both are set
-  // whenever the dialog can open).
+  // The signed-in Clerk id, or null for a guest session (guests get the
+  // Myself-only picker).
   ownerId: string | null;
+  // The assigner's identity: the Clerk account, or the guest participant
+  // identity (spec/04). Drives the Myself row.
   selfUserId: string | null;
-  // The diagram's team-library team (null for a personal diagram), for
-  // the access hint: an assignee picked from a team whose library does
-  // not hold this diagram may not be able to open it.
+  selfName: string | null;
+  // The diagram's id + team-library team (null team for a personal
+  // diagram). Drive the access check: picking a teammate asks the server
+  // whether they can actually open this diagram (spec/68 §4).
+  diagramId: string | null;
   diagramTeamId: string | null;
-  // capabilities.emailEnabled — hides the checkbox on a self-host
+  // capabilities.emailEnabled — hides the email offer on a self-host
   // without Resend (never advertise a send we can't perform).
   emailEnabled: boolean;
   onSubmit: (input: SaveActionInput) => void;
@@ -62,85 +76,8 @@ export function AssignActionDialog({
   teams,
   ownerId,
   selfUserId,
-  diagramTeamId,
-  emailEnabled,
-  onSubmit,
-  onClose,
-}: AssignActionDialogProps) {
-  // Signed-out: the tile is visible to everyone, but assigning needs an
-  // account (the picker is teams). Render the sign-in prompt instead of
-  // the form.
-  if (!selfUserId) return <AssignActionSignInPrompt open={open} onClose={onClose} />;
-  return (
-    <AssignActionForm
-      open={open}
-      existing={existing}
-      teams={teams}
-      ownerId={ownerId}
-      selfUserId={selfUserId}
-      diagramTeamId={diagramTeamId}
-      emailEnabled={emailEnabled}
-      onSubmit={onSubmit}
-      onClose={onClose}
-    />
-  );
-}
-
-// The guest-facing state: explain the feature, offer sign-in. One
-// impression emit per open so the funnel is measurable (spec/22).
-function AssignActionSignInPrompt({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { signInHref } = useAuthHrefs();
-  useEffect(() => {
-    if (open) track('UI', 'Opened', 'ActionSignInPrompt');
-  }, [open]);
-  return (
-    <Dialog open={open} onClose={onClose} titleId="assign-action-signin-title">
-      <div className="border-b border-slate-100 px-6 pb-5 pt-5 dark:border-slate-800">
-        <div className="flex items-start justify-between gap-3">
-          <h2
-            id="assign-action-signin-title"
-            className="text-lg font-semibold text-slate-900 dark:text-slate-50"
-          >
-            Sign in to assign actions
-          </h2>
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={onClose}
-            className="-mr-1.5 -mt-0.5 rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon size={14} />
-          </button>
-        </div>
-      </div>
-      <div className="px-6 py-5">
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          Actions attach a piece of work to an element and hand it to a teammate, with an optional
-          email nudge and an Actions panel tracking everything still open. Assignees come from your
-          teams, so you need a free account to use them.
-        </p>
-      </div>
-      <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
-        <Button type="button" variant="secondary" onClick={onClose}>
-          Not now
-        </Button>
-        <a
-          href={signInHref}
-          className="inline-flex items-center justify-center rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
-        >
-          Sign in
-        </a>
-      </div>
-    </Dialog>
-  );
-}
-
-function AssignActionForm({
-  open,
-  existing,
-  teams,
-  ownerId,
-  selfUserId,
+  selfName,
+  diagramId,
   diagramTeamId,
   emailEnabled,
   onSubmit,
@@ -150,12 +87,38 @@ function AssignActionForm({
   const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(true);
+  // Whether the picked teammate can actually open this diagram
+  // (spec/68 §4): asked of the server per selection. 'unknown' while in
+  // flight (show nothing); 'error' falls back to the picked-team
+  // heuristic with hedged wording.
+  const [assigneeAccess, setAssigneeAccess] = useState<'unknown' | 'yes' | 'no' | 'error'>(
+    'unknown',
+  );
   const [members, setMembers] = useState<PickableMember[] | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+  const { signInHref } = useAuthHrefs();
+
+  const signedIn = ownerId !== null;
+  // The pinned Myself row: every session has one once identity has
+  // hydrated (Clerk account or guest participant id).
+  const selfRow = useMemo<PickableMember | null>(
+    () =>
+      selfUserId
+        ? {
+            userId: selfUserId,
+            name: selfName?.trim() || 'Me',
+            email: null,
+            teamId: null,
+            teamName: null,
+          }
+        : null,
+    [selfUserId, selfName],
+  );
 
   // Re-seed per open: a reopened dialog must show the CURRENT action (or
-  // a blank form), never the previous attempt. The checkbox re-defaults
-  // to checked each time (spec/68: default on).
+  // a blank form), never the previous attempt. The email offer
+  // re-defaults to on each time (spec/68: default on; it only renders
+  // for a non-self assignee anyway).
   useEffect(() => {
     if (!open) return;
     setName(existing?.name ?? '');
@@ -165,11 +128,21 @@ function AssignActionForm({
     nameRef.current?.focus();
   }, [open, existing]);
 
-  // Load the joined members of every joined team once per open. Each
-  // team detail is one GET; failures just leave that team's members out
-  // (the dialog is not on any critical path).
+  // Signed-out impression: the Myself-only picker with the sign-in
+  // nudge. One emit per open so the funnel is measurable (spec/22).
   useEffect(() => {
-    if (!open || !ownerId) return;
+    if (open && !signedIn && clerkEnabled) track('UI', 'Opened', 'ActionSignInNudge');
+  }, [open, signedIn]);
+
+  // Load the joined members of every joined team once per open
+  // (signed-in only; a guest picker is Myself alone). Each team detail
+  // is one GET; failures just leave that team's members out.
+  useEffect(() => {
+    if (!open) return;
+    if (!ownerId) {
+      setMembers([]);
+      return;
+    }
     let cancelled = false;
     setMembers(null);
     void Promise.all(
@@ -177,11 +150,15 @@ function AssignActionForm({
         try {
           const detail = await apiGetTeam(ownerId, team.id);
           return detail.members
-            .filter((m: TeamMember) => m.status === 'joined' && m.userId !== null)
+            .filter(
+              // Joined, connected members only — and not the assigner
+              // themselves, whom the pinned Myself row already covers.
+              (m: TeamMember) => m.status === 'joined' && m.userId !== null && m.userId !== ownerId,
+            )
             .map(
               (m: TeamMember): PickableMember => ({
                 userId: m.userId!,
-                name: memberName(m, m.userId === selfUserId, null),
+                name: memberName(m, false, null),
                 email: m.email,
                 teamId: team.id,
                 teamName: team.name,
@@ -197,12 +174,18 @@ function AssignActionForm({
     return () => {
       cancelled = true;
     };
-  }, [open, ownerId, teams, selfUserId]);
+  }, [open, ownerId, teams]);
 
-  // Preselect the existing assignee on edit, once members have loaded
-  // (identity by userId; prefer the row from the action's own team).
+  // Preselect the existing assignee on edit: the Myself row when the
+  // action is self-assigned, else the matching member row once loaded
+  // (prefer the row from the action's own team).
   useEffect(() => {
-    if (!open || !existing || !members) return;
+    if (!open || !existing) return;
+    if (selfRow && existing.assignee.userId === selfRow.userId) {
+      setAssignee((cur) => cur ?? selfRow);
+      return;
+    }
+    if (!members) return;
     setAssignee(
       (cur) =>
         cur ??
@@ -212,12 +195,40 @@ function AssignActionForm({
         members.find((m) => m.userId === existing.assignee.userId) ??
         null,
     );
-  }, [open, existing, members]);
+  }, [open, existing, members, selfRow]);
+
+  // Ask the server whether the picked teammate can open this diagram.
+  // Self-assignment short-circuits to yes (the assigner is right here,
+  // editing it). Stale responses are ignored via the cancelled flag.
+  useEffect(() => {
+    if (!open || !assignee) return;
+    setAssigneeAccess('unknown');
+    if (assignee.userId === selfUserId) {
+      setAssigneeAccess('yes');
+      return;
+    }
+    if (!ownerId || !diagramId || !assignee.teamId) {
+      setAssigneeAccess('error');
+      return;
+    }
+    let cancelled = false;
+    void apiCheckAssigneeAccess(ownerId, assignee.teamId, {
+      assigneeUserId: assignee.userId,
+      diagramId,
+    }).then((canAccess) => {
+      if (cancelled) return;
+      setAssigneeAccess(canAccess === null ? 'error' : canAccess ? 'yes' : 'no');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, assignee, ownerId, diagramId, selfUserId]);
 
   const grouped = useMemo(() => {
     const byTeam = new Map<string, { teamName: string; members: PickableMember[] }>();
     for (const m of members ?? []) {
-      const bucket = byTeam.get(m.teamId) ?? { teamName: m.teamName, members: [] };
+      if (m.teamId === null) continue;
+      const bucket = byTeam.get(m.teamId) ?? { teamName: m.teamName ?? '', members: [] };
       bucket.members.push(m);
       byTeam.set(m.teamId, bucket);
     }
@@ -225,15 +236,25 @@ function AssignActionForm({
   }, [members]);
 
   const editing = existing !== null;
-  // The checkbox matters on create, and on an edit that picks a NEW
+  // The email offer matters on create, and on an edit that picks a NEW
   // assignee; an edit that keeps the assignee sends nothing (spec/68 §3).
+  // Hidden entirely for a self-assignment: you don't email yourself
+  // about your own action.
   const assigneeChanged =
     !editing || (assignee !== null && assignee.userId !== existing.assignee.userId);
-  const showEmailCheckbox = emailEnabled && assignee !== null && assigneeChanged;
-  // Access hint (spec/68 §4): assigning is allowed on any diagram the
-  // assigner can edit, but a teammate picked from a team whose library
-  // does not hold this diagram may not be able to open it.
-  const showAccessHint = assignee !== null && assignee.teamId !== diagramTeamId;
+  const showEmailControl =
+    emailEnabled &&
+    assignee !== null &&
+    assignee.teamId !== null &&
+    assignee.userId !== selfUserId &&
+    assigneeChanged;
+  // Access hint (spec/68 §4): a definite server "no" gets definite
+  // wording; a failed check falls back to the picked-team heuristic with
+  // hedged wording; in-flight / yes / Myself shows nothing.
+  const showAccessHint =
+    assignee !== null &&
+    assignee.userId !== selfUserId &&
+    (assigneeAccess === 'no' || (assigneeAccess === 'error' && assignee.teamId !== diagramTeamId));
 
   const canSubmit = name.trim().length > 0 && assignee !== null;
   const submit = () => {
@@ -246,8 +267,41 @@ function AssignActionForm({
       description: description.trim(),
       assignee: { userId: assignee.userId, name: assignee.name },
       teamId: assignee.teamId,
-      notifyEmail: showEmailCheckbox && notifyEmail,
+      notifyEmail: showEmailControl && notifyEmail,
     });
+  };
+
+  const assigneeRow = (m: PickableMember, isSelf: boolean) => {
+    const selected = assignee?.userId === m.userId && assignee.teamId === m.teamId;
+    return (
+      <button
+        key={`${m.teamId ?? 'self'}:${m.userId}`}
+        type="button"
+        onClick={() => setAssignee(m)}
+        aria-pressed={selected}
+        className={`flex w-full items-center gap-2.5 px-3 py-2 text-left transition ${
+          selected
+            ? 'bg-brand-50 dark:bg-brand-500/15'
+            : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+        }`}
+      >
+        <span
+          aria-hidden
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white"
+        >
+          {initialsOf(m.name)}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm text-slate-800 dark:text-slate-100">
+          {isSelf ? 'Myself' : m.name}
+          {isSelf ? <span className="text-slate-400 dark:text-slate-500"> ({m.name})</span> : null}
+        </span>
+        {selected ? (
+          <span className="shrink-0 text-xs font-medium text-brand-600 dark:text-brand-400">
+            Selected
+          </span>
+        ) : null}
+      </button>
+    );
   };
 
   return (
@@ -271,7 +325,7 @@ function AssignActionForm({
                 article="assignedActions"
                 variant="icon"
                 title="Assigned actions"
-                description="Assign work on an element to a teammate and track it until done."
+                description="Assign work on an element to yourself or a teammate and track it until done."
               />
               <button
                 type="button"
@@ -286,7 +340,7 @@ function AssignActionForm({
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {editing
               ? 'Change what needs doing, or hand it to someone else.'
-              : 'Attach a piece of work to this element and hand it to a teammate.'}
+              : 'Attach a piece of work to this element — for yourself, or a teammate.'}
           </p>
         </div>
 
@@ -320,96 +374,76 @@ function AssignActionForm({
 
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-slate-700 dark:text-slate-200">Assignee</span>
-            {teams.length === 0 ? (
-              // No joined teams: nobody to assign to. Point at the
-              // Explorer's Teams section rather than rendering a dead
-              // picker (spec/68 §2).
-              <p className="rounded-lg border border-dashed border-slate-300 px-3 py-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                You&apos;re not in a team yet. Actions are assigned to teammates —{' '}
+            <div className="max-h-52 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700">
+              {selfRow ? assigneeRow(selfRow, true) : null}
+              {grouped.map(([teamId, group]) => (
+                <div key={teamId}>
+                  <p className="sticky top-0 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    {group.teamName}
+                  </p>
+                  {group.members.map((m) => assigneeRow(m, false))}
+                </div>
+              ))}
+              {signedIn && members === null ? (
+                <p className="px-3 py-2 text-center text-xs text-slate-400 dark:text-slate-500">
+                  Loading teammates…
+                </p>
+              ) : null}
+            </div>
+            {/* Teammate nudges: sign in (guests), join a team (signed-in
+                with none), or invite (teams with no other joined member). */}
+            {!signedIn && clerkEnabled ? (
+              <p className="rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                <a
+                  href={signInHref}
+                  className="font-medium text-brand-600 underline dark:text-brand-400"
+                >
+                  Sign in
+                </a>{' '}
+                and join a team to assign actions to teammates.
+              </p>
+            ) : signedIn && teams.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
                 <a
                   href="/explorer/team"
                   className="font-medium text-brand-600 underline dark:text-brand-400"
                 >
-                  create or join a team
+                  Create or join a team
                 </a>{' '}
-                first.
+                to assign actions to teammates.
               </p>
-            ) : members === null ? (
-              <p className="px-1 py-3 text-center text-xs text-slate-400 dark:text-slate-500">
-                Loading teammates…
-              </p>
-            ) : members.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-slate-300 px-3 py-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+            ) : signedIn && members !== null && members.length === 0 && teams.length > 0 ? (
+              <p className="px-1 text-xs text-slate-400 dark:text-slate-500">
                 No joined teammates yet — invites that haven&apos;t been accepted can&apos;t be
                 assigned actions.
               </p>
-            ) : (
-              <div className="max-h-52 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700">
-                {grouped.map(([teamId, group]) => (
-                  <div key={teamId}>
-                    {grouped.length > 1 ? (
-                      <p className="sticky top-0 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                        {group.teamName}
-                      </p>
-                    ) : null}
-                    {group.members.map((m) => {
-                      const selected =
-                        assignee?.userId === m.userId && assignee.teamId === m.teamId;
-                      return (
-                        <button
-                          key={`${m.teamId}:${m.userId}`}
-                          type="button"
-                          onClick={() => setAssignee(m)}
-                          aria-pressed={selected}
-                          className={`flex w-full items-center gap-2.5 px-3 py-2 text-left transition ${
-                            selected
-                              ? 'bg-brand-50 dark:bg-brand-500/15'
-                              : 'hover:bg-slate-50 dark:hover:bg-slate-800'
-                          }`}
-                        >
-                          <span
-                            aria-hidden
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white"
-                          >
-                            {initialsOf(m.name)}
-                          </span>
-                          <span className="min-w-0 flex-1 truncate text-sm text-slate-800 dark:text-slate-100">
-                            {m.name}
-                            {m.userId === selfUserId ? (
-                              <span className="text-slate-400 dark:text-slate-500"> (you)</span>
-                            ) : null}
-                          </span>
-                          {selected ? (
-                            <span className="shrink-0 text-xs font-medium text-brand-600 dark:text-brand-400">
-                              Selected
-                            </span>
-                          ) : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            )}
+            ) : null}
           </div>
 
           {showAccessHint ? (
             <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
-              {assignee?.name} may not be able to open this diagram: share it or move it to the team
-              library.
+              {assignee?.name}{' '}
+              {assigneeAccess === 'no'
+                ? "can't open this diagram yet"
+                : 'may not be able to open this diagram'}
+              : share it or move it to the team library.
             </p>
           ) : null}
 
-          {showEmailCheckbox ? (
-            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-              <input
-                type="checkbox"
+          {showEmailControl ? (
+            <button
+              type="button"
+              onClick={() => setNotifyEmail((v) => !v)}
+              aria-pressed={notifyEmail}
+              className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <span>Email {assignee?.name ?? 'them'} about this action</span>
+              <ToggleSwitch
                 checked={notifyEmail}
-                onChange={(e) => setNotifyEmail(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-brand-600 accent-brand-500"
+                label={`Email ${assignee?.name ?? 'them'} about this action`}
+                presentational
               />
-              Email {assignee?.name ?? 'them'} about this action
-            </label>
+            </button>
           ) : null}
         </div>
 

@@ -47,11 +47,12 @@ export function RemoteSelectorsStrip({
   );
 }
 
-// Floating cluster at the top-right of the element. Holds the link badge
-// (if linked) and the comment badge (if there are unresolved comments) as
-// individual buttons inside a single rounded card — same shape language as
-// ZoomControls. Counter-scaled so the badges keep their on-screen size at
-// any canvas zoom.
+// Floating cluster at the top-right of the element. Link / note / action /
+// comment render as SEGMENTS of one connected pill — a single control,
+// with hairline separators between segments rather than detached circles —
+// so an element carrying several affordances reads as one tidy cluster.
+// Counter-scaled so the badges keep their on-screen size at any canvas
+// zoom.
 export function BadgeStrip({
   zoom,
   linked,
@@ -85,30 +86,39 @@ export function BadgeStrip({
   onOpenNote?: () => void;
   onOpenAction?: () => void;
 }) {
-  // Order (LTR inside the flex strip, which is anchored to the top-
-  // right of the element): link, note, action, comment. Comment sits at
-  // the far right because it's the highest-traffic affordance: an
-  // unresolved comment count needs the most visible perch. Note sits
-  // to its left, link to the far left.
-  return (
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'right top' }}
-      className="pointer-events-auto absolute -right-1 -top-1 flex items-center gap-0.5 rounded-full border border-slate-200 bg-white p-0.5 shadow-sm"
-    >
-      {linked ? (
+  // Order (LTR inside the pill, which is anchored to the top-right of
+  // the element): link, note, action, comment. Comment sits at the far
+  // right because it's the highest-traffic affordance: an unresolved
+  // comment count needs the most visible perch. Built as a uniform
+  // segment list so the hairline separators land between every pair
+  // regardless of which affordances are present.
+  const segments: { key: string; node: React.ReactNode }[] = [];
+  if (linked) {
+    segments.push({
+      key: 'link',
+      node: (
         <Tooltip title="Follow link" description={linkLabel ?? 'Open the linked destination.'}>
           <BadgeButton label="Follow link" color={badgeColor} onClick={onFollowLink}>
             <LinkBadgeIcon />
           </BadgeButton>
         </Tooltip>
-      ) : null}
-      {hasNote && onOpenNote ? (
+      ),
+    });
+  }
+  if (hasNote && onOpenNote) {
+    segments.push({
+      key: 'note',
+      node: (
         <BadgeButton label="Open note" color={badgeColor} onClick={onOpenNote}>
           <NoteBadgeIcon />
         </BadgeButton>
-      ) : null}
-      {hasOpenAction && onOpenAction ? (
+      ),
+    });
+  }
+  if (hasOpenAction && onOpenAction) {
+    segments.push({
+      key: 'action',
+      node: (
         <Tooltip title="Open action" description={actionLabel ?? 'An assigned action is open.'}>
           <BadgeButton
             label="Open action"
@@ -119,8 +129,13 @@ export function BadgeStrip({
             <ActionBadgeIcon />
           </BadgeButton>
         </Tooltip>
-      ) : null}
-      {commentCount > 0 ? (
+      ),
+    });
+  }
+  if (commentCount > 0) {
+    segments.push({
+      key: 'comment',
+      node: (
         <BadgeButton
           label={`Open ${commentCount} comment${commentCount === 1 ? '' : 's'}`}
           color={badgeColor}
@@ -128,11 +143,28 @@ export function BadgeStrip({
           dataAttr="data-comment-trigger"
         >
           <CommentBadgeIcon />
-          <span className="absolute -right-1 -top-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-semibold leading-none text-white">
+          <span className="absolute right-0 top-0 flex h-3 min-w-[12px] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[8px] font-semibold leading-none text-white">
             {commentCount}
           </span>
         </BadgeButton>
-      ) : null}
+      ),
+    });
+  }
+  return (
+    <div
+      onPointerDown={(e) => e.stopPropagation()}
+      style={{
+        transform: `scale(${1 / zoom})`,
+        transformOrigin: 'right top',
+        backgroundColor: badgeColor,
+      }}
+      className="pointer-events-auto absolute -right-1 -top-1 flex items-stretch overflow-hidden rounded-full shadow-sm ring-1 ring-white/60"
+    >
+      {segments.map((seg, i) => (
+        <span key={seg.key} className={`flex ${i > 0 ? 'border-l border-white/35' : ''}`}>
+          {seg.node}
+        </span>
+      ))}
     </div>
   );
 }
@@ -140,8 +172,8 @@ export function BadgeStrip({
 function NoteBadgeIcon() {
   return (
     <svg
-      width="11"
-      height="11"
+      width="13"
+      height="13"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -179,11 +211,11 @@ function BadgeButton({
         e.stopPropagation();
         onClick();
       }}
-      // Theme-driven background via inline style so any hex/rgb the
-      // theme provides works — Tailwind utility classes only cover the
-      // brand palette. Tailwind keeps the layout / shape.
+      // A SEGMENT of the connected pill (the wrapper owns the shared
+      // theme-coloured background + rounding): rectangular hit area,
+      // hover brightens just this segment.
       style={{ backgroundColor: color }}
-      className="relative flex h-5 w-5 items-center justify-center rounded-full text-white shadow-sm transition hover:brightness-110"
+      className="relative flex h-6 w-7 items-center justify-center text-white transition hover:brightness-110"
       {...extra}
     >
       {children}
@@ -194,8 +226,8 @@ function BadgeButton({
 function LinkBadgeIcon() {
   return (
     <svg
-      width="11"
-      height="11"
+      width="13"
+      height="13"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -215,8 +247,8 @@ function LinkBadgeIcon() {
 function ActionBadgeIcon() {
   return (
     <svg
-      width="11"
-      height="11"
+      width="13"
+      height="13"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -235,8 +267,8 @@ function ActionBadgeIcon() {
 function CommentBadgeIcon() {
   return (
     <svg
-      width="11"
-      height="11"
+      width="13"
+      height="13"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"

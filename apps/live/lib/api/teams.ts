@@ -173,6 +173,31 @@ export async function apiRemoveTeamMember(
   return { ok: true };
 }
 
+// Whether a joined teammate can open a diagram (spec/68): drives the
+// Assign Action dialog's access hint. Null on any failure so the caller
+// can fall back to its heuristic instead of showing a confident wrong
+// answer.
+export async function apiCheckAssigneeAccess(
+  ownerId: string,
+  teamId: string,
+  input: { assigneeUserId: string; diagramId: string },
+): Promise<boolean | null> {
+  try {
+    const params = new URLSearchParams({
+      assigneeUserId: input.assigneeUserId,
+      diagramId: input.diagramId,
+    });
+    const res = await fetch(`${API_BASE}/teams/${teamId}/access-check?${params}`, {
+      headers: await apiHeaders(ownerId),
+    });
+    if (!res.ok) return null;
+    const { canAccess } = (await res.json()) as { canAccess?: boolean };
+    return typeof canAccess === 'boolean' ? canAccess : null;
+  } catch {
+    return null;
+  }
+}
+
 // Email a teammate about an action just assigned to them (spec/68).
 // Best-effort by contract: the assignment has already persisted via the
 // tab write, so callers fire-and-forget this and swallow failures. The

@@ -53,9 +53,15 @@ export function EditorAnchoredPopovers() {
     deleteAction,
     teams,
     clerkUserId,
+    clerkDisplayName,
     diagramTeamId,
     emailEnabled,
   } = useEditorContext();
+
+  // The assigner/viewer identity for actions (spec/68): the Clerk
+  // account, or the guest participant identity — guests can self-assign.
+  const actionSelfId = clerkUserId ?? selfParticipant.id;
+  const actionSelfName = clerkDisplayName ?? selfParticipant.name;
 
   return (
     <>
@@ -150,7 +156,7 @@ export function EditorAnchoredPopovers() {
                 onDelete={() => deleteAction(target.id)}
                 onClose={closeActionPopover}
                 readOnly={isReadOnly}
-                selfUserId={clerkUserId ?? null}
+                selfUserId={actionSelfId}
               />
             );
           })()
@@ -169,7 +175,9 @@ export function EditorAnchoredPopovers() {
                 existing={target.action ?? null}
                 teams={teams}
                 ownerId={clerkUserId ?? null}
-                selfUserId={clerkUserId ?? null}
+                selfUserId={actionSelfId}
+                selfName={actionSelfName}
+                diagramId={diagramId}
                 diagramTeamId={diagramTeamId}
                 emailEnabled={emailEnabled}
                 onSubmit={(input) => saveAction(target.id, input)}

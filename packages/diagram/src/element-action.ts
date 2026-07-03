@@ -9,7 +9,10 @@
 // travel (share links, embeds, exports); the notify endpoint resolves the
 // address server-side from team membership at send time.
 export type ElementActionAssignee = {
-  // Clerk user id: the stable key.
+  // The stable key: a Clerk user id, or — for a SELF-assignment made
+  // while signed out — the guest participant id (spec/04). Guests can
+  // only pick themselves, so a guest id always means the assigner's own
+  // browser identity.
   userId: string;
   // Display name at assign time (render fallback: "Teammate").
   name: string | null;
@@ -22,9 +25,11 @@ export type ElementAction = {
   // Optional detail; '' when empty.
   description: string;
   assignee: ElementActionAssignee;
-  // The team the assignee was picked from.
-  teamId: string;
-  // Clerk user id of who assigned it.
+  // The team the assignee was picked from; null for a self-assignment
+  // (Myself is not a team row).
+  teamId: string | null;
+  // Who assigned it (Clerk user id, or a guest participant id for a
+  // signed-out self-assignment).
   assignerId: string;
   assignerName: string | null;
   status: 'open' | 'done';
@@ -36,7 +41,7 @@ export function createElementAction(input: {
   name: string;
   description: string;
   assignee: ElementActionAssignee;
-  teamId: string;
+  teamId: string | null;
   assigner: { id: string; name: string | null };
 }): ElementAction {
   const now = Date.now();

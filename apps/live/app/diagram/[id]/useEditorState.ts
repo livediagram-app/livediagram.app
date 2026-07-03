@@ -849,7 +849,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       const el = activeTab.elements.find((e) => e.id === elementId);
       return el && isBoxed(el) ? el.action : undefined;
     },
-    self: { userId: clerkUserId ?? null, name: clerkDisplayName ?? null },
+    // The signed-in account, or the hydrated guest participant identity
+    // (guests may self-assign, spec/68 §2). Null only pre-hydration.
+    self: {
+      userId: clerkUserId ?? (hydrated ? selfParticipant.id : null),
+      name: clerkDisplayName ?? (hydrated ? selfParticipant.name : null),
+    },
     notify: (input) => {
       if (!clerkUserId || !diagramId) return;
       void apiNotifyActionAssigned(clerkUserId, input.teamId, {
@@ -861,15 +866,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
   });
 
-  // Open-action rows for the floating Actions panel (spec/68), the
+  // Action rows (open AND done — the panel filters between Outstanding
+  // and Completed) for the floating Actions panel (spec/68), the
   // commentRows sibling: same memo key, same boxed-only walk. Rows
   // assigned to the current user sort first.
   const actionRows = useMemo(() => {
     const boxed: BoxedElement[] = activeTab.elements.filter((el): el is BoxedElement =>
       isBoxed(el),
     );
-    return actionRowsFromElements(boxed, clerkUserId ?? null);
-  }, [activeTab.elements, clerkUserId]);
+    return actionRowsFromElements(boxed, clerkUserId ?? selfParticipant.id);
+  }, [activeTab.elements, clerkUserId, selfParticipant.id]);
 
   // True only while the first-run welcome modal is up. Drives the chrome
   // hide rule (palette / explorer / dock / tab bar all suppressed so the

@@ -11,12 +11,12 @@ import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
-// Portal-rendered assigned-action panel (spec/68), anchored to the right
-// edge of the element like CommentThreadPopover. Shows the action's name,
-// description, assignee, and assigner + time, with Complete / Reopen,
-// Edit, and Delete. Read-only sessions see the card without the mutating
-// controls: an assignee following a share link should still find their
-// action.
+// Portal-rendered assigned-action card (spec/68), anchored to the right
+// edge of the element like CommentThreadPopover. Name + description up
+// top, one calm assignee/assigner meta row, and an icon-button footer:
+// Complete (check) / Reopen (undo), Edit (pencil), Delete (bin, two-step
+// confirm). Read-only sessions see the card without the footer — an
+// assignee following a share link should still find their action.
 
 type ActionPopoverProps = {
   elementId: string;
@@ -27,7 +27,8 @@ type ActionPopoverProps = {
   onDelete: () => void;
   onClose: () => void;
   readOnly?: boolean;
-  // The current user's Clerk id, for the "Assigned to you" accent.
+  // The current user's identity (Clerk id or guest participant id), for
+  // the "Assigned to you" line.
   selfUserId: string | null;
 };
 
@@ -76,6 +77,7 @@ export function ActionPopover({
 
   const done = action.status === 'done';
   const assigneeName = action.assignee.name?.trim() || 'Teammate';
+  const assignerName = action.assignerName?.trim() || null;
   const mine = selfUserId !== null && action.assignee.userId === selfUserId;
 
   return (
@@ -88,10 +90,16 @@ export function ActionPopover({
         style={{ left: pos.left, top: pos.top, width: WIDTH }}
       >
         <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-          <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100">Action</h3>
+          <h3 className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100">
+            <span className="text-slate-400 dark:text-slate-500">
+              <ClipboardIcon />
+            </span>
+            Action
+          </h3>
           <div className="flex items-center gap-1">
             {done ? (
-              <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
+              <span className="inline-flex items-center gap-1 rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
+                <CheckIcon size={9} />
                 Done
               </span>
             ) : null}
@@ -106,71 +114,191 @@ export function ActionPopover({
           </div>
         </header>
 
-        <div className={`px-3 py-2.5 ${done ? 'opacity-70' : ''}`}>
-          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{action.name}</p>
-          {action.description ? (
-            <p className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap text-xs text-slate-600 dark:text-slate-300">
-              {action.description}
+        <div className={`flex flex-col gap-2.5 px-3 py-3 ${done ? 'opacity-70' : ''}`}>
+          <div>
+            <p className="text-sm font-semibold leading-snug text-slate-800 dark:text-slate-100">
+              {action.name}
             </p>
-          ) : null}
-          <div className="mt-2.5 flex items-center gap-2">
+            {action.description ? (
+              <p className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                {action.description}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-2 dark:bg-slate-800/60">
             <span
               aria-hidden
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white"
             >
               {initialsOf(assigneeName)}
             </span>
-            <span className="min-w-0 flex-1 truncate text-xs text-slate-700 dark:text-slate-200">
-              {mine ? 'Assigned to you' : `Assigned to ${assigneeName}`}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-xs font-medium text-slate-700 dark:text-slate-200">
+                {mine ? 'Assigned to you' : `Assigned to ${assigneeName}`}
+              </span>
+              <span className="block truncate text-[10px] text-slate-400 dark:text-slate-500">
+                {assignerName ? `by ${assignerName} · ` : ''}
+                {formatRelativeTimeCompact(Date.now() - action.createdAt)}
+              </span>
             </span>
           </div>
-          <p className="mt-1.5 text-[10px] text-slate-400 dark:text-slate-400">
-            {action.assignerName?.trim() ? `By ${action.assignerName.trim()}, ` : ''}
-            {formatRelativeTimeCompact(Date.now() - action.createdAt)}
-          </p>
         </div>
 
         {!readOnly ? (
-          <footer className="flex items-center gap-1.5 border-t border-slate-100 p-2 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={done ? onReopen : onComplete}
-              className={
-                done
-                  ? 'rounded px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                  : 'rounded bg-emerald-600 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-emerald-700'
-              }
-            >
-              {done ? 'Reopen' : 'Complete'}
-            </button>
-            <button
-              type="button"
-              onClick={onEdit}
-              className="rounded px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-            >
-              Edit
-            </button>
+          <footer className="flex items-center gap-1.5 border-t border-slate-100 px-3 py-2 dark:border-slate-800">
+            {done ? (
+              <FooterButton onClick={onReopen} icon={<ReopenIcon />} label="Reopen" />
+            ) : (
+              <button
+                type="button"
+                onClick={onComplete}
+                className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-emerald-700"
+              >
+                <CheckIcon size={11} />
+                Complete
+              </button>
+            )}
+            <FooterButton onClick={onEdit} icon={<PencilIcon />} label="Edit" />
             <span className="flex-1" />
             {confirmingDelete ? (
               <button
                 type="button"
                 onClick={onDelete}
-                className="rounded bg-rose-600 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-rose-700"
+                className="inline-flex items-center gap-1.5 rounded-md bg-rose-600 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-rose-700"
               >
-                Confirm delete
+                <TrashIcon />
+                Confirm
               </button>
             ) : (
               <button
                 type="button"
+                aria-label="Delete action"
                 onClick={() => setConfirmingDelete(true)}
-                className="rounded px-2.5 py-1 text-[11px] font-medium text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15"
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15"
               >
-                Delete
+                <TrashIcon />
               </button>
             )}
           </footer>
         ) : null}
       </div>
     </Portal>
+  );
+}
+
+function FooterButton({
+  onClick,
+  icon,
+  label,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function CheckIcon({ size = 11 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.25"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2.5 8.5 6.5 12.5 13.5 4" />
+    </svg>
+  );
+}
+
+function ReopenIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2.5 6.5A6 6 0 1 1 2 9.5" />
+      <path d="M2.5 2.5v4h4" />
+    </svg>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M11.5 2.5a1.4 1.4 0 0 1 2 2L5 13l-2.75.75L3 11z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2.5 4h11" />
+      <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
+      <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
+    </svg>
+  );
+}
+
+// Clipboard-with-tick glyph, matching the element badge + menu tile.
+function ClipboardIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6 3h-1.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H10" />
+      <rect x="6" y="1.75" width="4" height="2.5" rx="0.75" />
+      <path d="M5.75 9.25 7.5 11l3-3.5" />
+    </svg>
   );
 }

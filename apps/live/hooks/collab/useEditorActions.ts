@@ -29,7 +29,8 @@ export type SaveActionInput = {
   name: string;
   description: string;
   assignee: ElementActionAssignee;
-  teamId: string;
+  // Null for a self-assignment (no team row involved, no email).
+  teamId: string | null;
   // The dialog's "Email {name} about this action" checkbox. Only consulted
   // when it can matter: on create, and on an edit that changes the assignee.
   notifyEmail: boolean;
@@ -42,8 +43,9 @@ type EditorActionsDeps = {
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   // Current action for an element on the active tab (undefined when none).
   getAction: (elementId: string) => ElementAction | undefined;
-  // The signed-in assigner. Null for guests — the Assign Action tile is
-  // hidden for them, but the guard here keeps the invariant local.
+  // The assigner: the signed-in account, or the guest participant
+  // identity for a signed-out self-assignment. Null only before the
+  // identity has hydrated.
   self: { userId: string | null; name: string | null };
   // Fire-and-forget notify request (POST /api/teams/<id>/notify-action).
   // Injected so the hook stays free of fetch plumbing; failures must never
@@ -141,7 +143,9 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
       });
       updateAction(elementId, () => action);
       track('Action', 'Created', input.notifyEmail ? 'EmailOn' : 'EmailOff');
-      if (input.notifyEmail) {
+      // Email needs a team context (the endpoint verifies shared
+      // membership); a self-assignment has none and never notifies.
+      if (input.notifyEmail && input.teamId) {
         deps.notify({
           teamId: input.teamId,
           assigneeUserId: input.assignee.userId,
@@ -165,8 +169,9 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
       );
       track('Action', 'Changed', reassigned ? 'Reassigned' : 'Edited');
       // Only a NEW assignee gets the email offer (spec/68 §3): an edit
-      // that keeps the assignee sends nothing.
-      if (reassigned && input.notifyEmail) {
+      // that keeps the assignee sends nothing, and a self-assignment
+      // has no team context to email through.
+      if (reassigned && input.notifyEmail && input.teamId) {
         deps.notify({
           teamId: input.teamId,
           assigneeUserId: input.assignee.userId,

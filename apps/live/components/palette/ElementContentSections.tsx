@@ -228,40 +228,26 @@ export function ElementContentSections({
           icon={<CommentMenuIcon />}
           {...sectionProps('collaborate')}
         >
-          {/* Assign Action shows whenever the deployment has auth; a
-                signed-out click opens the dialog's sign-in prompt. Only a
-                Clerk-less self-host (no teams possible) hides the tile. */}
-          {props.actionsAvailable ? (
-            <MenuTileGrid cols={2}>
-              <MenuTile
-                icon={<ActionMenuIcon />}
-                label={target.action ? 'View Action' : 'Assign Action'}
-                onClick={() => {
-                  props.onAssignAction(target.id);
-                  onClose();
-                }}
-              />
-              <MenuTile
-                icon={<CommentMenuIcon />}
-                label="Comments"
-                onClick={() => {
-                  props.onOpenComments(target.id);
-                  onClose();
-                }}
-              />
-            </MenuTileGrid>
-          ) : (
-            <div className="px-2 py-1.5">
-              <MenuTile
-                icon={<CommentMenuIcon />}
-                label="Comments"
-                onClick={() => {
-                  props.onOpenComments(target.id);
-                  onClose();
-                }}
-              />
-            </div>
-          )}
+          {/* Assign Action shows for everyone: signed-out users can
+                assign to themselves (spec/68 §2). */}
+          <MenuTileGrid cols={2}>
+            <MenuTile
+              icon={<ActionMenuIcon />}
+              label={target.action ? 'View Action' : 'Assign Action'}
+              onClick={() => {
+                props.onAssignAction(target.id);
+                onClose();
+              }}
+            />
+            <MenuTile
+              icon={<CommentMenuIcon />}
+              label="Comments"
+              onClick={() => {
+                props.onOpenComments(target.id);
+                onClose();
+              }}
+            />
+          </MenuTileGrid>
         </MenuAccordionSection>
       ) : null}
       {boxed ? (

@@ -516,6 +516,74 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
   });
 });
 
+describe('GET /api/teams/:id/access-check (spec/68)', () => {
+  const get = (qs: string, opts: Parameters<typeof makeCtx>[2] = {}) =>
+    handleTeams(makeCtx('GET', `/api/teams/t1/access-check?${qs}`, opts));
+  const QS = 'assigneeUserId=user-2&diagramId=d1';
+
+  const membershipByUser = (overrides: Record<string, TeamMember | null> = {}) => {
+    db.getMembership.mockImplementation(async (_env: Env, teamId: string, userId: string) => {
+      const key = `${teamId}:${userId}`;
+      if (key in overrides) return overrides[key];
+      if (userId === 'user-1') return member();
+      if (userId === 'user-2' && teamId === 't1')
+        return member({ id: 'm2', userId: 'user-2', role: 'member' });
+      return null;
+    });
+  };
+
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+    membershipByUser();
+    db.getDiagramMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
+    db.hasSharedAccess.mockResolvedValue(false);
+  });
+
+  it('false for a personal diagram the assignee has never opened', async () => {
+    const res = await get(QS);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ canAccess: false });
+  });
+
+  it('true when the assignee has opened it through a share link', async () => {
+    db.hasSharedAccess.mockImplementation(
+      async (_env: Env, ownerId: string) => ownerId === 'user-2',
+    );
+    expect(await (await get(QS)).json()).toEqual({ canAccess: true });
+  });
+
+  it('true when the assignee is a joined member of the diagram-library team', async () => {
+    db.getDiagramMeta.mockResolvedValue({ id: 'd1', ownerId: 'x', teamId: 't9', name: 'Q3' });
+    membershipByUser({
+      't9:user-1': member({ role: 'member' }),
+      't9:user-2': member({ id: 'm2', userId: 'user-2', role: 'member' }),
+    });
+    expect(await (await get(QS)).json()).toEqual({ canAccess: true });
+  });
+
+  it('true when the assignee owns the diagram', async () => {
+    db.getDiagramMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-2', teamId: null, name: 'Q3' });
+    db.hasSharedAccess.mockImplementation(
+      async (_env: Env, ownerId: string) => ownerId === 'user-1',
+    );
+    expect(await (await get(QS)).json()).toEqual({ canAccess: true });
+  });
+
+  it('400 on missing params, 404 on a non-member assignee or unreachable diagram', async () => {
+    expect((await get('assigneeUserId=user-2')).status).toBe(400);
+    membershipByUser({ 't1:user-2': null });
+    expect((await get(QS)).status).toBe(404);
+    membershipByUser();
+    db.getDiagramMeta.mockResolvedValue({ id: 'd1', ownerId: 'x', teamId: null, name: 'Q3' });
+    expect((await get(QS)).status).toBe(404);
+  });
+
+  it('allows an API-token caller (read surface)', async () => {
+    const res = await get(QS, { clerkUserId: null, verifiedUserId: 'user-1' });
+    expect(res.status).toBe(200);
+  });
+});
+
 describe('POST /api/teams/:id/notify-action (spec/68)', () => {
   const body = { assigneeUserId: 'user-2', diagramId: 'd1', actionName: 'Review the copy' };
   const post = (b: unknown = body, opts: Parameters<typeof makeCtx>[2] = {}) =>

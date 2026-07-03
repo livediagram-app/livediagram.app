@@ -862,6 +862,21 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [201, 400, 401, 403, 404, 409],
   },
   {
+    method: 'GET',
+    path: '/teams/{id}/access-check',
+    segment: 'teams',
+    tag: 'Teams',
+    summary:
+      'Whether a joined teammate can open a diagram the caller can access (spec/68): owner, team-library member, or prior share-link visitor.',
+    auth: 'clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { canAccess: { type: 'boolean' } },
+      required: ['canAccess'],
+    },
+    statuses: [200, 400, 401, 403, 404],
+  },
+  {
     method: 'POST',
     path: '/teams/{id}/notify-action',
     segment: 'teams',
