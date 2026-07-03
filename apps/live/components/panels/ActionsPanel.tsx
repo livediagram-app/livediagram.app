@@ -2,6 +2,7 @@
 
 import { isOpenAction, type BoxedElement } from '@livediagram/diagram';
 import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
+import { initialsOf } from '@/lib/identity';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 
 export type ActionRow = {
@@ -89,8 +90,16 @@ export function ActionsPanel({
               <p className="line-clamp-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                 {row.label}
               </p>
-              <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-400">
-                <span className="truncate">{row.mine ? 'You' : row.assigneeName}</span>
+              <div className="flex items-center justify-between gap-1.5 text-[10px] text-slate-400 dark:text-slate-400">
+                <span className="flex min-w-0 items-center gap-1">
+                  <span
+                    aria-hidden
+                    className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[6px] font-semibold text-white"
+                  >
+                    {initialsOf(row.assigneeName)}
+                  </span>
+                  <span className="truncate">{row.mine ? 'You' : row.assigneeName}</span>
+                </span>
                 <span>{formatRelativeTimeShort(Date.now() - row.createdAt)}</span>
               </div>
             </button>

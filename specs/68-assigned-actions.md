@@ -1,6 +1,6 @@
 # 68 — Assigned actions
 
-**Status: proposal.** Assign a piece of work to a teammate directly from a
+**Status: implemented.** Assign a piece of work to a teammate directly from a
 diagram element: a new **Assign Action** tile attaches a named, described,
 assigned action to the element, optionally emailing the assignee. To make
 room for it the context menu's collaboration band splits in two:
@@ -76,9 +76,9 @@ because the **Assign Action** tile is:
 - **Signed-in users only.** Teams are Clerk-gated (spec/32), so a guest has
   nobody to assign to; the tile is hidden for guests rather than dangling a
   sign-in wall off the canvas (spec/04).
-- When the element already has an action, the tile opens that action's
-  popover (§3) instead of the assign dialog, the same open-what-exists
-  behaviour as the Add/Edit Link and Note tiles.
+- When the element already has an action, the tile reads **View Action**
+  and opens that action's popover (§3) instead of the assign dialog, the
+  same open-what-exists behaviour as the Add/Edit Link and Note tiles.
 
 Clicking it opens the **Assign Action dialog** (its own component under
 `components/dialogs/`, per the no-god-files rule), with:
@@ -124,8 +124,9 @@ blob. View-role visitors see actions read-only (§7).
     description, or assignee. Changing the assignee re-offers the email
     checkbox (default checked) so the **new** assignee can be notified; an
     edit that keeps the assignee sends nothing.
-  - **Delete**: removes `el.action` after the same lightweight confirm the
-    comment delete uses. Deleting the element deletes its action with it.
+  - **Delete**: removes `el.action` after a two-step inline confirm (the
+    button re-arms as "Confirm delete", no nested dialog over a popover).
+    Deleting the element deletes its action with it.
 
 State + handlers live in their own hook (`useEditorActions` under
 `hooks/collab/`, beside `useEditorComments`), composed into the editor
@@ -230,13 +231,23 @@ consent.
 
 ## 8. Telemetry
 
-Per spec/22, one-liner `track` calls at the handlers, extending the closed
-enums only where no pair fits: assign, complete, reopen, delete, and edit
-events (types like `AssignAction` / `CompleteAction`), the dialog checkbox
-state at send time (`ActionEmailOn/Off`), and the profile toggle flip
-(`NotifyActionAssignedOn/Off`, fired before persisting like every settings
-flip). Never the action name or description: types are preset enum values,
-not user content.
+Per spec/22, one-liner `track` calls at the handlers. A dedicated
+**Action** category (added to the closed `TELEMETRY_CATEGORIES` enum)
+carries the events:
+
+- `Action`/`Created` with type `EmailOn`/`EmailOff` (the dialog checkbox
+  state at assign time);
+- `Action`/`Changed` with type `Reassigned` (the edit changed the
+  assignee) or `Edited` (name/description only);
+- `Action`/`Resolved` (completed), `Action`/`Unresolved` (reopened),
+  `Action`/`Deleted`;
+- `Action`/`Opened` (the popover opened, from the tile, badge, or a
+  panel row);
+- the profile toggle flip emits `UI`/`Toggled`/`NotifyActionAssigned{On,Off}`,
+  fired before persisting like every settings flip (spec/65).
+
+Never the action name, description, or any identity: types are preset
+enum-ish tokens, not user content.
 
 ## 9. Out of scope (v1)
 
