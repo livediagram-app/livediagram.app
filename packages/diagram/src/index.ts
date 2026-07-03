@@ -654,6 +654,7 @@ export * from './theme-presets';
 export * from './element-kind-label';
 
 export * from './geometry';
+export * from './arrow-rebind';
 export * from './geometry-snapping';
 export * from './geometry-guides';
 
