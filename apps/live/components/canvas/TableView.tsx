@@ -16,7 +16,11 @@ import { isMobileViewportSync } from '@/lib/responsive';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
-import { TableAxisMenuPortal, TableAxisTriggers } from '@/components/canvas/TableAxisControls';
+import {
+  TableAxisMenuPortal,
+  TableAxisTriggers,
+  TableResizeDividers,
+} from '@/components/canvas/TableAxisControls';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
 import { TableCellMenu } from '@/components/canvas/TableCellMenu';
 import { useTableStructure } from '@/components/canvas/useTableStructure';
@@ -641,94 +645,19 @@ export function TableView({
         // the per-cell toolbar layer (z-[var(--z-panel)] below), so an open insert/delete
         // menu isn't hidden behind the cell toolbar.
         <div className="pointer-events-none absolute inset-0 z-[var(--z-toolbar)]">
-          {/* Column-resize dividers (between columns). */}
-          <div
-            className="pointer-events-none absolute inset-0 grid"
-            style={{ gridTemplateColumns: colTemplate }}
-          >
-            {Array.from({ length: cols }, (_, c) => (
-              <div key={`rz-${c}`} className="relative">
-                {c < cols - 1 ? (
-                  <div
-                    onPointerEnter={() => armResizeEnter('col', c)}
-                    onPointerLeave={armResizeLeave}
-                    onPointerDown={(e) => {
-                      // Only a rested (armed) divider starts a resize —
-                      // an instant strip on every border swallowed clicks
-                      // mid-edit.
-                      if (armedResize?.axis === 'col' && armedResize.index === c)
-                        startColResize(c)(e);
-                    }}
-                    onDoubleClick={(e) => {
-                      if (!(armedResize?.axis === 'col' && armedResize.index === c)) return;
-                      e.stopPropagation();
-                      onCommitTable(element.id, {
-                        colWidths: Array.from({ length: cols }, (_, i) =>
-                          i === c ? null : (element.colWidths?.[i] ?? null),
-                        ),
-                      });
-                    }}
-                    className={`pointer-events-auto absolute -right-1 bottom-0 top-0 z-[var(--z-toolbar)] w-2 ${
-                      armedResize?.axis === 'col' && armedResize.index === c
-                        ? 'cursor-col-resize'
-                        : ''
-                    }`}
-                  >
-                    <div
-                      className={`mx-auto h-full w-0.5 transition ${
-                        armedResize?.axis === 'col' && armedResize.index === c
-                          ? 'bg-brand-400'
-                          : 'bg-brand-400/0'
-                      }`}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            ))}
-          </div>
-
-          {/* Row-resize dividers (between rows). */}
-          <div
-            className="pointer-events-none absolute inset-0 grid"
-            style={{ gridTemplateRows: rowTemplate }}
-          >
-            {Array.from({ length: rows }, (_, r) => (
-              <div key={`rzr-${r}`} className="relative">
-                {r < rows - 1 ? (
-                  <div
-                    onPointerEnter={() => armResizeEnter('row', r)}
-                    onPointerLeave={armResizeLeave}
-                    onPointerDown={(e) => {
-                      if (armedResize?.axis === 'row' && armedResize.index === r)
-                        startRowResize(r)(e);
-                    }}
-                    onDoubleClick={(e) => {
-                      if (!(armedResize?.axis === 'row' && armedResize.index === r)) return;
-                      e.stopPropagation();
-                      onCommitTable(element.id, {
-                        rowHeights: Array.from({ length: rows }, (_, i) =>
-                          i === r ? null : (element.rowHeights?.[i] ?? null),
-                        ),
-                      });
-                    }}
-                    className={`pointer-events-auto absolute -bottom-1 left-0 right-0 z-[var(--z-toolbar)] h-2 ${
-                      armedResize?.axis === 'row' && armedResize.index === r
-                        ? 'cursor-row-resize'
-                        : ''
-                    }`}
-                  >
-                    <div
-                      className={`my-auto h-0.5 w-full transition ${
-                        armedResize?.axis === 'row' && armedResize.index === r
-                          ? 'bg-brand-400'
-                          : 'bg-brand-400/0'
-                      }`}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            ))}
-          </div>
+          <TableResizeDividers
+            element={element}
+            rows={rows}
+            cols={cols}
+            colTemplate={colTemplate}
+            rowTemplate={rowTemplate}
+            armedResize={armedResize}
+            armResizeEnter={armResizeEnter}
+            armResizeLeave={armResizeLeave}
+            startColResize={startColResize}
+            startRowResize={startRowResize}
+            onCommitTable={onCommitTable}
+          />
 
           <TableAxisTriggers
             cols={cols}
