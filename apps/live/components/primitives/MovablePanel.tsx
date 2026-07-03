@@ -343,7 +343,9 @@ export function MovablePanel({
             </div>
           ) : null}
         </div>
-        <div className={`overflow-y-auto ${flushTop ? '' : 'pt-2'}`}>{children}</div>
+        <div className={`overflow-y-auto overflow-x-hidden ${flushTop ? '' : 'pt-2'}`}>
+          {children}
+        </div>
       </div>
     );
   }
@@ -516,6 +518,10 @@ export function MovablePanel({
       >
         <div
           style={!growBody && bodyMaxH !== null ? { maxHeight: bodyMaxH } : undefined}
+          // Horizontal overflow is always CLIPPED: panels are fixed-width by
+          // design, so any x-overflow is a row failing to truncate (e.g. a
+          // long diagram name), and a horizontal scrollbar would surface the
+          // bug instead of containing it.
           // `overflow-hidden` is required for the grid-rows-[0fr] collapse to
           // actually clip the body: without an overflow set, the grid item's
           // min-content height keeps the `0fr` track from shrinking, so a
@@ -527,7 +533,7 @@ export function MovablePanel({
           className={
             growBody
               ? 'overflow-hidden'
-              : 'overflow-y-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700'
+              : 'overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700'
           }
         >
           <div className={`flex flex-col ${flushTop ? '' : 'pt-1'}`}>{children}</div>

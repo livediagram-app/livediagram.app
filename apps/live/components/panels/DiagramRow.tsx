@@ -101,7 +101,7 @@ export function DiagramRow({
   // invalid HTML and browsers redirect focus to the parent button,
   // which is the original cause of the "rename input won't take
   // focus" bug.
-  const mainClass = `flex flex-1 items-start gap-1.5 rounded-md bg-transparent px-2 py-1.5 text-left text-xs ${active ? 'font-medium' : ''}`;
+  const mainClass = `flex min-w-0 flex-1 items-start gap-1.5 rounded-md bg-transparent px-2 py-1.5 text-left text-xs ${active ? 'font-medium' : ''}`;
   const mainInner = (
     <>
       <DiagramThumbnail
