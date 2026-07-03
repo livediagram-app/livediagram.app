@@ -110,7 +110,7 @@ export function buildUmlClass(cx: number, cy: number): Element[] {
   // Inheritance: hollow triangle pointing at the parent (UML
   // generalisation). The subclasses sit below MediaItem, so the arrows
   // rise from their header tables into the parent's methods
-  // compartment edge.
+  // compartment edge, converging on the shared bottom anchor.
   const parentMethods = methodsTableByName.get('MediaItem')!;
   for (const child of ['Song', 'Podcast']) {
     elements.push({

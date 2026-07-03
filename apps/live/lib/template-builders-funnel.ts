@@ -47,8 +47,10 @@ export function buildFunnel(cx: number, cy: number): Element[] {
       width: tierW,
       height: tierH,
       rotation: 180,
-      // The mouth of the funnel is the hero; lower tiers stay theme-plain.
-      ...(i === 0 ? { colorPreset: 'bold' } : {}),
+      // The mouth of the funnel gets a gentle tint; the stage names are
+      // separate overlay text, so the hero tier must stay light enough
+      // for default-ink text ('bold' navy would swallow the label).
+      ...(i === 0 ? { colorPreset: 'soft' } : {}),
     });
     // Stage name overlaid on the tier (the rotated shape can't carry
     // its own label the right way up).

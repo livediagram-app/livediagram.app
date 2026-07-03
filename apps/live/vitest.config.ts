@@ -13,6 +13,11 @@ import { defineProject } from '@livediagram/vitest-config';
 // fails at import time on any component-co-located pure helper whose
 // host module touches the alias.
 export default defineProject({
+  // Next compiles JSX with the automatic runtime (no React import in
+  // scope), so any .tsx module a test touches (e.g. the template
+  // preview switches) must be transformed the same way here or it
+  // throws "React is not defined" at render time.
+  esbuild: { jsx: 'automatic' },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./', import.meta.url)),

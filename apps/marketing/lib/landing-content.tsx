@@ -249,9 +249,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Twenty-nine starter templates',
+        title: 'Forty-three starter templates',
         description:
-          'Mind maps (radial, tree, and bubble), org charts, retrospectives, flowcharts — plus swimlane, decision-tree, approval, and data-flow variants — Kanban, SWOT, timelines, Gantt, Venn, user journeys, fishbone, pyramids, flywheels, prioritization matrices, comparison tables, ER / sequence / system-architecture diagrams, logo design, a live card, and mobile / laptop / slide-deck wireframes. Pick one, edit it, or start blank.',
+          'Mind maps (radial, tree, and bubble), org charts, retrospectives, flowcharts — plus swimlane, decision-tree, approval, and data-flow variants — Kanban, roadmaps, user story maps, affinity maps, RACI matrices, SWOT, empathy maps, Business Model Canvases, funnels, timelines, Gantt, Venn, user journeys, fishbone, pyramids, OKR trees, sitemaps, flywheels, prioritization matrices, comparison tables, storyboards, ER / sequence / class / state-machine / system- and cloud-architecture diagrams, logo design, a live card, and mobile / laptop / web-page / slide-deck wireframes. Pick one, edit it, or start blank.',
       },
       {
         art: <ThemesArt />,
