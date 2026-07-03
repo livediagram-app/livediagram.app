@@ -72,6 +72,13 @@ with its own run's size/weight (`wrapExportRuns`), so a mixed-format label
 breaks lines where the canvas does instead of running out of the element on
 one line. The PNG canvas drawer shares the same wrap + block-alignment math.
 
+**Arrowhead fidelity**: `svgArrowhead` reproduces all seven head-shape presets
+(triangle / hollow triangle / open-V line / dot / hollow dot / diamond / hollow
+diamond, spec/09) and scales with the `arrowheadSize` preset, so UML notation
+(hollow-triangle inheritance, hollow-diamond aggregation, e.g. the Class
+diagram template) survives export instead of flattening into generic filled
+triangles. Pinned by `svg-render.test.ts`.
+
 This is a sizeable extraction (it touches the export / canvas / isometric code
 paths), so it's tracked as its own change to keep it well-tested and the export
 regression-free. New top-level package ⇒ update `README.md` +

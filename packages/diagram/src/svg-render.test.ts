@@ -84,6 +84,61 @@ describe('renderElementsToSvg', () => {
     expect(svg).toContain('viewBox="-32 -32 664 464"');
   });
 
+  describe('arrowhead shapes (spec/09 UML notation)', () => {
+    // The canvas draws all seven head shapes via SVG markers; the export
+    // has to reproduce them or a class diagram's hollow-triangle
+    // inheritance / hollow-diamond aggregation flattens into generic
+    // filled triangles. Each case pins the emitted primitive.
+    const render = (o: Partial<ArrowElement>) =>
+      renderElementsToSvg(tab([shape('a'), shape('b', { x: 200 }), pinnedArrow('r', 'a', 'b', o)]));
+    // The default arrow stroke serialises as an rgb() token.
+    const INK = 'rgb\\(51 65 85\\)';
+
+    it('defaults to the filled triangle', () => {
+      const svg = render({});
+      expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="${INK}"/>`));
+    });
+
+    it('renders a hollow triangle as a white-filled stroked polygon', () => {
+      const svg = render({ arrowheadShape: 'triangle-hollow' });
+      expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="#ffffff" stroke="${INK}"`));
+    });
+
+    it('renders the open-V (line) head as an unfilled polyline', () => {
+      const svg = render({ arrowheadShape: 'line' });
+      expect(svg).toMatch(new RegExp(`<polyline points="[^"]+" fill="none" stroke="${INK}"`));
+    });
+
+    it('renders dot heads as circles (filled and hollow)', () => {
+      expect(render({ arrowheadShape: 'circle' })).toMatch(
+        new RegExp(`<circle[^/]+ fill="${INK}"/>`),
+      );
+      expect(render({ arrowheadShape: 'circle-hollow' })).toMatch(
+        new RegExp(`<circle[^/]+ fill="#ffffff" stroke="${INK}"`),
+      );
+    });
+
+    it('renders diamond heads as four-point polygons (filled and hollow)', () => {
+      const filled = render({ arrowheadShape: 'diamond' });
+      const filledHead = filled.match(new RegExp(`<polygon points="([^"]+)" fill="${INK}"/>`));
+      expect(filledHead?.[1]?.split(' ')).toHaveLength(4);
+      const hollow = render({ arrowheadShape: 'diamond-hollow' });
+      expect(hollow).toMatch(new RegExp(`<polygon points="[^"]+" fill="#ffffff" stroke="${INK}"`));
+    });
+
+    it('scales the head with the arrowheadSize preset', () => {
+      // An extra-large filled triangle spans twice the medium's reach:
+      // its trailing points sit further from the tip along x.
+      const headPoints = (svg: string) =>
+        svg.match(new RegExp(`<polygon points="([^"]+)" fill="${INK}"/>`))![1]!.split(' ');
+      const medium = headPoints(render({}));
+      const xl = headPoints(render({ arrowheadSize: 'extra-large' }));
+      const reach = (pts: string[]) =>
+        Math.abs(Number(pts[0]!.split(',')[0]) - Number(pts[1]!.split(',')[0]));
+      expect(reach(xl)).toBeGreaterThan(reach(medium) * 1.5);
+    });
+  });
+
   describe('image elements', () => {
     it('draws a dashed placeholder + alt label when no bytes are resolved', () => {
       const svg = renderElementsToSvg(tab([image('i', { alt: 'A photo' })]));
