@@ -24,6 +24,7 @@ import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-control
 import { TableCellMenu } from '@/components/canvas/TableCellMenu';
 import { useTableStructure } from '@/components/canvas/useTableStructure';
 import { useTableEditing } from '@/components/canvas/useTableEditing';
+import { useTableAxisResize } from '@/components/canvas/useTableAxisResize';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { describeLink } from '@/lib/link-label';
 import { track } from '@/lib/telemetry';
@@ -40,9 +41,6 @@ const scaleCellFontPx = (rowH: number): number => Math.max(9, Math.min(40, Math.
 
 // Key for the shift-click multi-cell selection set.
 const cellKey = (r: number, c: number): string => `${r}:${c}`;
-
-const MIN_COL_PX = 30;
-const MIN_ROW_PX = 24;
 
 // Build a CSS grid-template track list: an explicit `Npx` for each pinned
 // size, `minmax(0, 1fr)` for the rest, so unpinned tracks share the
@@ -127,9 +125,6 @@ export function TableView({
   // coords — it portals out of the transformed canvas). A plain click only
   // selects the cell.
   const [cellMenuPos, setCellMenuPos] = useState<{ x: number; y: number } | null>(null);
-  // Live widths while dragging a column divider (committed on release).
-  const [resizeWidths, setResizeWidths] = useState<(number | null)[] | null>(null);
-  const [resizeHeights, setResizeHeights] = useState<(number | null)[] | null>(null);
   // On desktop the column / row ⋯ trigger only shows while hovering
   // that column / row; on touch (no hover) they stay visible.
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
@@ -139,22 +134,16 @@ export function TableView({
   const initialTextRef = useRef('');
   const typeToEditRef = useRef(false);
   const gridRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<(number | null)[] | null>(null);
-  const dragRowRef = useRef<(number | null)[] | null>(null);
-  // Resize dividers arm only after a deliberate hover (spec/09): instantly
-  // interactive strips on every cell border kept swallowing clicks and
-  // flashing resize cursors while editing. A divider becomes draggable (and
-  // shows its line) only once the pointer has rested on it for a beat;
-  // leaving disarms it.
-  const [armedResize, setArmedResize] = useState<{ axis: 'col' | 'row'; index: number } | null>(
-    null,
-  );
-  const armTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const RESIZE_ARM_MS = 400;
-  const armResizeEnter = (axis: 'col' | 'row', index: number) => {
-    if (armTimerRef.current) clearTimeout(armTimerRef.current);
-    armTimerRef.current = setTimeout(() => setArmedResize({ axis, index }), RESIZE_ARM_MS);
-  };
+  const showControls = isSelected && !readOnly && !element.locked;
+  const {
+    resizeWidths,
+    resizeHeights,
+    armedResize,
+    armResizeEnter,
+    armResizeLeave,
+    startColResize,
+    startRowResize,
+  } = useTableAxisResize({ element, rows, cols, gridRef, enabled: showControls, onCommitTable });
   // The column / row triggers sit OUTSIDE the table edges, so travelling
   // from a cell to a trigger crosses a gap where the grid's mouse-leave
   // fires. Clearing the hover after a short grace (cancelled when the
@@ -172,18 +161,6 @@ export function TableView({
     }, 250);
   };
   useEffect(() => cancelHoverClear, []);
-
-  const armResizeLeave = () => {
-    if (armTimerRef.current) clearTimeout(armTimerRef.current);
-    armTimerRef.current = null;
-    setArmedResize(null);
-  };
-  useEffect(
-    () => () => {
-      if (armTimerRef.current) clearTimeout(armTimerRef.current);
-    },
-    [],
-  );
 
   // The cell under the current touch press, recorded by each cell's
   // pointerdown so the grid-level long-press (touch's right-click, below)
@@ -529,7 +506,6 @@ export function TableView({
     onCommitTable(element.id, { cells: work.cells, cellStyles: work.cellStyles ?? [] });
   };
 
-  const showControls = isSelected && !readOnly && !element.locked;
   const toggle = (axis: 'col' | 'row', index: number, e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const anchor =
@@ -546,55 +522,7 @@ export function TableView({
   // gestures differ only by axis (width / clientX / colWidths / MIN_COL_PX
   // vs height / clientY / rowHeights / MIN_ROW_PX). Keeping them as twin
   // handlers was a standing duplication; this is the single source.
-  const startAxisResize = (axis: 'col' | 'row') => (index: number) => (e: React.PointerEvent) => {
-    if (!showControls) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const grid = gridRef.current;
-    if (!grid) return;
-    const rect = grid.getBoundingClientRect();
-    const isCol = axis === 'col';
-    const elemSize = isCol ? element.width : element.height;
-    const rectSize = isCol ? rect.width : rect.height;
-    const scale = elemSize > 0 ? rectSize / elemSize : 1;
-    const count = isCol ? cols : rows;
-    const tracks = getComputedStyle(grid)
-      [isCol ? 'gridTemplateColumns' : 'gridTemplateRows'].split(' ')
-      .map((t) => parseFloat(t));
-    const baseSizes = isCol ? element.colWidths : element.rowHeights;
-    const base: (number | null)[] = Array.from({ length: count }, (_, i) => baseSizes?.[i] ?? null);
-    // Computed-style track sizes are already element-space px (ancestor
-    // transforms don't reach computed style), so they must NOT be divided
-    // by the render scale — only the rect-derived fallback is screen-space.
-    const startSizeElem = Number.isFinite(tracks[index]!)
-      ? tracks[index]!
-      : rectSize / count / scale;
-    const startPos = isCol ? e.clientX : e.clientY;
-    const minPx = isCol ? MIN_COL_PX : MIN_ROW_PX;
-    const ref = isCol ? dragRef : dragRowRef;
-    const setResize = isCol ? setResizeWidths : setResizeHeights;
-    const onMove = (ev: PointerEvent) => {
-      const delta = ((isCol ? ev.clientX : ev.clientY) - startPos) / scale;
-      const next = [...base];
-      next[index] = Math.max(minPx, Math.round(startSizeElem + delta));
-      ref.current = next;
-      setResize(next);
-    };
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      if (ref.current) {
-        if (isCol) onCommitTable(element.id, { colWidths: ref.current });
-        else onCommitTable(element.id, { rowHeights: ref.current });
-      }
-      ref.current = null;
-      setResize(null);
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-  };
-  const startColResize = startAxisResize('col');
-  const startRowResize = startAxisResize('row');
+  // Divider resizing (rest-to-arm + drag + commit) — see useTableAxisResize.
 
   return (
     <>
