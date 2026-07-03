@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -19,6 +19,7 @@ import { TeamNode } from '@/components/panels/explorer-team-views';
 
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
+import { useExplorerRowDelete } from './useExplorerRowDelete';
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
 // default. Symmetric to the Palette in shape and behaviour.
@@ -110,92 +111,17 @@ function ExplorerImpl({
   // Folder id newly created via the New folder button — used to drop
   // the row into rename mode immediately after the API returns.
   const [pendingRenameFolderId, setPendingRenameFolderId] = useState<string | null>(null);
-  // Diagrams currently mid slide-out animation. Adding the id to this
-  // set switches the row's <li> className from animate-slide-row-in to
-  // animate-slide-row-out for ~220ms, then we forward the real delete
-  // to the parent so the row is removed from the underlying
-  // `diagrams` prop. Without the delay the row disappears instantly
-  // and a fresh "5 with the same name" Explorer feels unresponsive.
-  const [exitingDiagramIds, setExitingDiagramIds] = useState<Set<string>>(new Set());
-  // Inline delete confirmation: the row's menu hands up the id + its menu
-  // button as the anchor; we open a ConfirmPopover beside it. Confirming
-  // runs the delete (skipping the modal — the popover IS the confirm) and
-  // slides the row out first via the beforeRemove hook.
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string } | null>(null);
-  const deleteAnchorRef = useRef<HTMLElement | null>(null);
-  // Team diagrams aren't in the personal `diagrams` prop, so the parent's
-  // delete (which prunes the personal list + fires a fire-and-forget API
-  // DELETE) can't drop a team row from view, and the team-library sweep
-  // won't re-fetch in time. Track confirmed team deletes locally and hide
-  // those rows optimistically; the set is pruned once the sweep catches up.
-  const [deletedTeamIds, setDeletedTeamIds] = useState<Set<string>>(new Set());
-  const openDeleteConfirm = onDeleteDiagram
-    ? (id: string, anchor: HTMLElement | null) => {
-        deleteAnchorRef.current = anchor;
-        setDeleteConfirm({ id });
-      }
-    : undefined;
-  const runDelete = (id: string) => {
-    if (!onDeleteDiagram) return;
-    // A team diagram lives in the swept library, not the personal list,
-    // so hide it locally on confirm (the parent's delete can't).
-    if (teamDiagrams.some((d) => d.id === id)) {
-      setDeletedTeamIds((prev) => {
-        const next = new Set(prev);
-        next.add(id);
-        return next;
-      });
-    }
-    void onDeleteDiagram(
-      id,
-      () =>
-        new Promise<void>((resolve) => {
-          setExitingDiagramIds((prev) => {
-            if (prev.has(id)) return prev;
-            const next = new Set(prev);
-            next.add(id);
-            return next;
-          });
-          window.setTimeout(resolve, 220);
-        }),
-      { skipConfirm: true },
-    );
-  };
-
-  // Once a deleted diagram actually leaves the list, drop its id from the
-  // exiting set. Pruning here (rather than clearing on the timeout) avoids a
-  // one-frame flicker where the row would slide back in just before unmount,
-  // and keeps the set from growing across repeated deletes.
-  useEffect(() => {
-    setExitingDiagramIds((prev) => {
-      if (prev.size === 0) return prev;
-      const present = new Set(diagrams.map((d) => d.id));
-      let changed = false;
-      const next = new Set<string>();
-      for (const id of prev) {
-        if (present.has(id)) next.add(id);
-        else changed = true;
-      }
-      return changed ? next : prev;
-    });
-  }, [diagrams]);
-
-  // Same pruning for team deletes: once the library sweep re-fetches
-  // without the deleted id, drop it from the local hide-set so the set
-  // can't grow unbounded.
-  useEffect(() => {
-    setDeletedTeamIds((prev) => {
-      if (prev.size === 0) return prev;
-      const present = new Set(teamDiagrams.map((d) => d.id));
-      let changed = false;
-      const next = new Set<string>();
-      for (const id of prev) {
-        if (present.has(id)) next.add(id);
-        else changed = true;
-      }
-      return changed ? next : prev;
-    });
-  }, [teamDiagrams]);
+  // Row delete lifecycle (confirm popover, exit animation, optimistic
+  // team-row hide + pruning) lives in useExplorerRowDelete.
+  const {
+    exitingDiagramIds,
+    deleteConfirm,
+    setDeleteConfirm,
+    deleteAnchorRef,
+    deletedTeamIds,
+    openDeleteConfirm,
+    runDelete,
+  } = useExplorerRowDelete({ diagrams, teamDiagrams, onDeleteDiagram });
 
   // (Previously: `if (hideOnMobile) return null;` — Explorer now
   // renders on mobile too, banner-collapsed by default. The panel
