@@ -197,6 +197,74 @@ describe('renderElementsToSvg', () => {
     });
   });
 
+  describe('label fidelity (spec/09)', () => {
+    it('anchors a top-aligned label at the element top, not its vertical centre', () => {
+      // A frame-style label (top + right): the text must export at the
+      // frame's top edge — it floated at the vertical centre before.
+      const svg = renderElementsToSvg(
+        tab([
+          shape('fr', {
+            shape: 'frame',
+            width: 400,
+            height: 300,
+            label: 'Change Events',
+            textAlignX: 'right',
+            textAlignY: 'top',
+          }),
+        ]),
+      );
+      const m = svg.match(/<text[^>]*y="([0-9.]+)"[^>]*>(?:<tspan[^>]*>)?Change Events/);
+      expect(m).not.toBeNull();
+      // Top pad + half the font size: well inside the top band (y=0..40),
+      // nowhere near the centre (150).
+      expect(parseFloat(m![1]!)).toBeLessThan(40);
+    });
+
+    it('wraps a rich (per-run) label to the element width', () => {
+      // Two runs whose combined width far exceeds the 120px box: the rich
+      // emitter must break lines (it used to lay every run on ONE line).
+      const svg = renderElementsToSvg(
+        tab([
+          shape('rt', {
+            width: 120,
+            height: 80,
+            label: 'getPartnerID (Discard other data)',
+            richText: [
+              { text: 'getPartnerID ', bold: true, size: 'lg' },
+              { text: '(Discard other data)', size: 'sm' },
+            ],
+          }),
+        ]),
+      );
+      // More than one positioned line-tspan (x + dy) means it wrapped.
+      const lineStarts = svg.match(/<tspan x="[0-9.]+" dy="/g) ?? [];
+      expect(lineStarts.length).toBeGreaterThan(0);
+    });
+
+    it('stacks a wrapped bottom caption upward into the box', () => {
+      // A long caption on a bottom-aligned icon element: the block's LAST
+      // line sits at the bottom anchor, so the first line's y moves UP —
+      // it used to centre on the anchor and spill below the element.
+      const svg = renderElementsToSvg(
+        tab([
+          shape('ic2', {
+            shape: 'icon',
+            iconId: 'server',
+            width: 64,
+            height: 64,
+            label: 'restaurant hygienerating updated',
+          }),
+        ]),
+        { resolveIconArt: () => ({ markup: '<path d="M1 2"/>', colored: false }) },
+      );
+      const m = svg.match(/<text[^>]*y="([0-9.]+)"[^>]*>(?:<tspan[^>]*>)?restaurant/);
+      expect(m).not.toBeNull();
+      // Bottom anchor is y=64-12=52; a 3-line block must start well above
+      // it and every line must stay inside the 64px box.
+      expect(parseFloat(m![1]!)).toBeLessThan(40);
+    });
+  });
+
   describe('icon elements', () => {
     const icon = (o: Partial<ShapeElement> = {}) =>
       shape('ic', { shape: 'icon', iconId: 'server', width: 48, height: 48, ...o });

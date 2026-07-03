@@ -32,8 +32,8 @@ import {
   describeBoxedExport,
   EXPORT_IMAGE_FILL,
   EXPORT_IMAGE_STROKE,
-  labelMaxWidth,
   LABEL_LINE_HEIGHT,
+  wrapExportRuns,
   wrapLabel,
   type ExportRun,
   type ExportShape,
@@ -167,29 +167,44 @@ export function drawBoxed(
   }
   if (label && !drewImage) {
     ctx.textBaseline = 'middle';
+    // A wrapped block hangs off label.y per the element's vertical
+    // alignment (label.valign) — a bottom caption's lines stack upward
+    // INTO the box, mirroring the SVG emitter's blockFirstY.
+    const firstY = (count: number, lineH: number) =>
+      label.valign === 'top'
+        ? label.y
+        : label.valign === 'bottom'
+          ? label.y - (count - 1) * lineH
+          : label.y - ((count - 1) * lineH) / 2;
     if (label.runs) {
-      // Per-range label: lay the spans on one baseline from the anchor
-      // point. Measure each span first (font must be set before measure),
-      // sum the widths, then derive the start x from the anchor.
+      // Per-range label: wrap the runs to the element width with their own
+      // styles (shared wrapExportRuns, so PNG breaks lines exactly where the
+      // SVG does), then lay each line's spans from its anchor-derived start.
       const fontFor = (r: ExportRun) =>
         `${r.bold ? '600' : '400'} ${r.italic ? 'italic ' : ''}${r.size}px system-ui, sans-serif`;
-      let total = 0;
-      for (const run of label.runs) {
-        ctx.font = fontFor(run);
-        total += ctx.measureText(run.text).width;
-      }
-      let x =
-        label.anchor === 'start'
-          ? label.x
-          : label.anchor === 'end'
-            ? label.x - total
-            : label.x - total / 2;
+      const lines = wrapExportRuns(label.runs, label.maxWidth);
+      const lineH = LABEL_LINE_HEIGHT * Math.max(...label.runs.map((r) => r.size));
+      let ly = firstY(lines.length, lineH);
       ctx.textAlign = 'left';
-      for (const run of label.runs) {
-        ctx.font = fontFor(run);
-        ctx.fillStyle = run.color;
-        ctx.fillText(run.text, x, label.y);
-        x += ctx.measureText(run.text).width;
+      for (const line of lines) {
+        let total = 0;
+        for (const run of line) {
+          ctx.font = fontFor(run);
+          total += ctx.measureText(run.text).width;
+        }
+        let x =
+          label.anchor === 'start'
+            ? label.x
+            : label.anchor === 'end'
+              ? label.x - total
+              : label.x - total / 2;
+        for (const run of line) {
+          ctx.font = fontFor(run);
+          ctx.fillStyle = run.color;
+          ctx.fillText(run.text, x, ly);
+          x += ctx.measureText(run.text).width;
+        }
+        ly += lineH;
       }
     } else {
       ctx.fillStyle = label.color;
@@ -197,10 +212,10 @@ export function drawBoxed(
       ctx.textAlign =
         label.anchor === 'end' ? 'right' : label.anchor === 'start' ? 'left' : 'center';
       // Wrap to the element width so long labels stay inside the box, then
-      // stack the lines centred on the label's vertical anchor.
-      const lines = wrapLabel(label.text, labelMaxWidth(el), (s) => ctx.measureText(s).width);
+      // stack the lines from the label's vertical anchor.
+      const lines = wrapLabel(label.text, label.maxWidth, (s) => ctx.measureText(s).width);
       const lineH = label.size * LABEL_LINE_HEIGHT;
-      let ly = label.y - ((lines.length - 1) * lineH) / 2;
+      let ly = firstY(lines.length, lineH);
       for (const line of lines) {
         ctx.fillText(line, label.x, ly);
         ly += lineH;

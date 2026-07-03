@@ -23,10 +23,11 @@ export function fontSizeFor(textSize: BoxedElement['textSize']): number {
   return textSize === 'lg' ? 20 : textSize === 'sm' ? 12 : textSize === 'scale' ? 18 : 14;
 }
 
-// Horizontal room a label has inside its element (box width minus the ~8px
-// inset each side), so long labels wrap inside the element.
-export function labelMaxWidth(el: BoxedElement): number {
-  return Math.max(8, el.width - 16);
+// Horizontal room a label has inside its element (box width minus the
+// inset each side — the element's padding when the caller resolves it,
+// else the historical ~8px), so long labels wrap inside the element.
+export function labelMaxWidth(el: BoxedElement, pad = 8): number {
+  return Math.max(8, el.width - pad * 2);
 }
 
 // Greedy word-wrap to a max pixel width, preserving explicit newlines.
