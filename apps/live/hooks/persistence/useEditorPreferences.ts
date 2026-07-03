@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
 import { usePanelOpacity } from '@/hooks/ui/usePanelOpacity';
 import {
+  autoRebindArrowsEnabled,
   readUserPreferences,
   fetchUserPreferences,
   type UserPreferences,
@@ -44,10 +45,11 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // minimal dock never reads the var.
   usePanelOpacity(userPreferences.panelOpacity);
   // Mirror the auto-rebind flag into its own ref so the drag move
-  // handler can read it without re-attaching listeners. Defaults
-  // to true (auto-rebind on) so a fresh session keeps today's UX.
-  const autoRebindArrowsRef = useRef<boolean>(userPreferences.autoRebindArrows !== false);
-  autoRebindArrowsRef.current = userPreferences.autoRebindArrows !== false;
+  // handler can read it without re-attaching listeners. Defaults to
+  // OFF (spec/20): a fresh session keeps arrow anchors where they
+  // were drawn; the palette toggle opts into rebinding.
+  const autoRebindArrowsRef = useRef<boolean>(autoRebindArrowsEnabled(userPreferences));
+  autoRebindArrowsRef.current = autoRebindArrowsEnabled(userPreferences);
   // Same mirror for the alignment-guide preference so the drag move
   // handler can gate the guide computation without re-attaching its
   // listeners. Defaults to true (guides on) so a fresh session shows
@@ -57,10 +59,11 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
 
   // Load the cached preferences once on mount. Missing or unparseable
   // entries collapse to `{}`; the per-flag default then depends on
-  // the consumer's comparison: `autoRebindArrows`, `telemetryEnabled`
-  // and `recogniseShapes` read via `!== false` so undefined = on, while
-  // `drawToAdd` reads via `=== true` so undefined = off (matches
-  // spec/20's "drop-at-centre" default).
+  // the consumer's comparison: `telemetryEnabled` and
+  // `recogniseShapes` read via `!== false` so undefined = on, while
+  // `autoRebindArrows` (via autoRebindArrowsEnabled) and `drawToAdd`
+  // read via `=== true` so undefined = off (matches spec/20's
+  // defaults).
   useEffect(() => {
     setUserPreferences(readUserPreferences());
   }, []);

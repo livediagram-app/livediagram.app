@@ -12,6 +12,7 @@ vi.mock('./api-client', () => ({
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import {
+  autoRebindArrowsEnabled,
   fetchUserPreferences,
   PREFERENCES_CHANGED_EVENT,
   readUserPreferences,
@@ -21,6 +22,21 @@ import {
 
 const mockedGet = vi.mocked(apiGetPreferences);
 const mockedPut = vi.mocked(apiPutPreferences);
+
+// "Auto-attach arrows" is opt-in (spec/20): a fresh profile (missing
+// key) must read as OFF, and only an explicit true enables the on-move
+// rebind pass. This helper is the single home for that default; the
+// palette settings popover and useEditorPreferences both consume it,
+// so pinning it here pins the shipped behaviour everywhere.
+describe('autoRebindArrowsEnabled', () => {
+  it('defaults to off for a fresh profile (missing key)', () => {
+    expect(autoRebindArrowsEnabled({})).toBe(false);
+  });
+  it('is on only when explicitly enabled', () => {
+    expect(autoRebindArrowsEnabled({ autoRebindArrows: true })).toBe(true);
+    expect(autoRebindArrowsEnabled({ autoRebindArrows: false })).toBe(false);
+  });
+});
 
 // Minimal in-memory `Storage` polyfill. Matches the parts of the
 // Web Storage interface this module actually uses (getItem /

@@ -19,9 +19,12 @@ import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 
 export type UserPreferences = {
-  // When `false`, the editor skips the auto arrow-rebind pass on
+  // When `true`, the editor runs the auto arrow-rebind pass on
   // move (spec/20's `rebindArrowAnchorsAfterMove` in
-  // packages/diagram). Missing / undefined === auto-rebind on.
+  // packages/diagram). Missing / undefined / false === auto-rebind
+  // OFF: anchors stay where the user chose them at draw time.
+  // Consumers derive the effective value via
+  // `autoRebindArrowsEnabled` below so the default lives here once.
   autoRebindArrows?: boolean;
   // When `false`, `track()` in lib/telemetry is a no-op (the user
   // opted out of analytics). Distinct from the build-time
@@ -118,6 +121,14 @@ export type UserPreferences = {
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
+
+// The effective "Auto-attach arrows" state (spec/20): opt-in, so only
+// an explicit `true` enables the on-move rebind pass. The single home
+// for the default — the palette settings popover and the
+// editor-preferences hook both call this instead of re-deriving it.
+export function autoRebindArrowsEnabled(prefs: UserPreferences): boolean {
+  return prefs.autoRebindArrows === true;
+}
 
 // Read the current preferences from localStorage. Returns `{}` on
 // missing key, an SSR / private-window environment without

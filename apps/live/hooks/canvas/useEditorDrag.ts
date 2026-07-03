@@ -262,7 +262,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // anchors stay frozen at whatever the user originally
             // chose. Read through a ref so a mid-drag flip lands
             // on the next pointermove without re-attaching.
-            const autoRebind = depsRef.current.autoRebindArrowsRef.current ?? true;
+            // ?? false mirrors spec/20's opt-in default should the
+            // ref somehow be unset.
+            const autoRebind = depsRef.current.autoRebindArrowsRef.current ?? false;
             return autoRebind ? rebindArrowAnchorsAfterMove(moved, drag.startBounds) : moved;
           });
         } else {

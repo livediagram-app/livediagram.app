@@ -92,12 +92,15 @@ stays viable.
 
 ```ts
 type UserPreferences = {
-  // When false, the live editor skips the "re-pin connected arrow
+  // When true, the live editor runs the "re-pin connected arrow
   // anchors as elements move" pass implemented in packages/diagram's
   // `rebindArrowAnchorsAfterMove` (pinned in
-  // packages/diagram/src/geometry.test.ts). Defaults to true so
-  // users see the magic by default; flipping it off freezes arrow
-  // anchors at whatever the user chose at draw time.
+  // packages/diagram/src/geometry.test.ts). Defaults to OFF: arrow
+  // anchors stay where the user chose them at draw time unless they
+  // opt in. (Flipped from a true default in July 2026: the
+  // auto-chosen faces surprised users more often than they helped,
+  // e.g. a midpoint-to-midpoint slant crossing a hand-anchored arrow
+  // between the same two boxes.)
   autoRebindArrows?: boolean;
 
   // When false, the live editor's `track()` helper is a no-op:
@@ -192,9 +195,13 @@ another version's flags.
 
 Missing key === undefined === default behaviour. Concretely:
 
-- `autoRebindArrows` undefined → arrows rebind (the default
-  behaviour). Setting it to `false` is the only state that
-  changes behaviour.
+- `autoRebindArrows` undefined → arrows do NOT rebind (the default:
+  anchors stay where they were drawn). Setting it to `true` is the
+  only state that changes behaviour. The derivation lives in ONE
+  place, `autoRebindArrowsEnabled(prefs)` in
+  `apps/live/lib/user-preferences.ts`, shared by the palette
+  settings popover and the editor-preferences hook so the default
+  can't drift between consumers.
   - Per-endpoint override: dragging an arrow's endpoint onto an
     anchor by hand marks that endpoint `manual` (a flag on the
     pinned `Endpoint` in `packages/diagram`). `rebindArrowAnchorsAfterMove`

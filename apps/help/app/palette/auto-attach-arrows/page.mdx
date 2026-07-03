@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("auto-attach-arrows")}
 >
 
-Auto-Attach Arrows is a toggle, and it is on by default. You will find it behind the gear (settings) icon in the header of the floating palette, which opens a small settings popover.
+Auto-Attach Arrows is a toggle, and it is off by default: arrows stay pinned exactly where you drew them until you opt in. You will find it behind the gear (settings) icon in the header of the floating palette, which opens a small settings popover.
 
 <Figure caption="The palette settings popover, with Auto-attach arrows highlighted and switched on.">
   <PaletteSettings highlight="auto-attach" />
@@ -32,8 +32,8 @@ When the setting is on, arrows re-pin to the nearest face or edge of a shape as 
   <AutoAttachArrows />
 </Figure>
 
-## When to turn it off
+## When to turn it on
 
-Switch it off if you want arrow endpoints to stay exactly where you put them. With the toggle off, an endpoint holds its position rather than re-attaching as a shape is dragged, which is handy when you have positioned a connector deliberately and do not want it to move.
+Switch it on if you move shapes around a lot and want connectors to keep pointing at the nearest face without tidying endpoints by hand. Leave it off (the default) when you have positioned connectors deliberately and want every endpoint to hold exactly where you put it as shapes are dragged.
 
 </ArticleLayout>

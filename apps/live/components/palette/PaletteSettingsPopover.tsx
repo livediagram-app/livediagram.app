@@ -6,7 +6,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { SettingsPopover, SettingsPopoverResetRow } from '@/components/primitives/SettingsPopover';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
-import type { UserPreferences } from '@/lib/user-preferences';
+import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
 
 // Palette-scoped settings, opened from a gear icon in the Palette header. The
 // first step in retiring the standalone Settings dialog (spec/20): canvas-
@@ -38,7 +38,8 @@ export function PaletteSettingsPopover({
   onResetPosition,
   resettable,
 }: PaletteSettingsPopoverProps) {
-  const autoRebind = settings.autoRebindArrows !== false;
+  // Opt-in per spec/20: unset reads as off.
+  const autoRebind = autoRebindArrowsEnabled(settings);
   const alignment = settings.alignmentGuides !== false;
   const quickAddOnHover = settings.quickAddOnHover === true;
   const panelOpacity = settings.panelOpacity ?? 1;
