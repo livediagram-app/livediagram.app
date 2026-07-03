@@ -954,7 +954,6 @@ export function EditorView() {
         <TabBar
           tabs={tabs}
           activeId={activeId}
-          diagramId={diagramId ?? ''}
           onMoveTabToFolder={moveTabToFolder}
           onRemoveTabFromFolder={removeTabFromFolder}
           onRenameFolder={renameTabFolder}

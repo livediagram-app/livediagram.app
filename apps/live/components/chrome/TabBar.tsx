@@ -72,9 +72,6 @@ type TabBarProps = {
   canvasActions?: CanvasMenuActions;
   tabs: Tab[];
   activeId: string;
-  // The current diagram id — used to key per-folder collapse state in
-  // localStorage (spec/30) so two diagrams don't share a toggle.
-  diagramId: string;
   // Folder membership actions (spec/30), menu-only. Move the active tab
   // into a folder by name (new or existing), make it loose again, or
   // rename a folder (rewrites every member).
@@ -155,7 +152,6 @@ type TabBarProps = {
 export function TabBar({
   tabs,
   activeId,
-  diagramId,
   onMoveTabToFolder,
   onRemoveTabFromFolder,
   onRenameFolder,
@@ -448,7 +444,6 @@ export function TabBar({
                 name={run.name}
                 tabs={run.tabs}
                 activeId={activeId}
-                diagramId={diagramId}
                 readOnly={readOnly}
                 renderTab={renderTabPill}
                 onReorder={onReorder}

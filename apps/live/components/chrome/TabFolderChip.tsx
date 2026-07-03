@@ -1,31 +1,24 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import type { Tab } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
-import { Tooltip } from '@/components/primitives/Tooltip';
 
-// One folder group in the tab bar (spec/30). Collapsed it shows just
-// the folder name + member count; expanded it shows the chip plus the
-// member tab pills, which are rendered by the parent via `renderTab`
-// so they're byte-for-byte the same pills loose tabs use (selection,
-// presence, drag-reorder, ellipsis menu). The folder is a contiguous
-// run of same-folder tabs — membership and ordering are owned upstream;
-// this component only handles the collapse affordance + rename.
-
-// Collapse state is UI-only and per-browser: never persisted to D1,
-// never broadcast. Keyed by diagram + folder so two diagrams (or two
-// folders) don't share a toggle.
-function collapseKey(diagramId: string, folder: string): string {
-  return `tabfolder:${diagramId}:${folder}`;
-}
+// One folder group in the tab bar (spec/30). The folder renders as a
+// compact chip (glyph + name + count) plus, when the ACTIVE tab lives in
+// the folder, that one member pill inline beside it — the rest of the
+// members stay off the bar so a big folder costs almost no horizontal
+// space. Clicking the chip fans the members UPWARD: a transient popover
+// above the bar listing every other member as the same pill loose tabs
+// use (selection, presence, drag-reorder, context menu), rendered by the
+// parent via `renderTab` so behaviour can't drift. Picking one switches
+// to it (it becomes the inline pill) and closes the fan.
 
 type TabFolderChipProps = {
   name: string;
   tabs: Tab[];
   activeId: string;
-  diagramId: string;
   readOnly: boolean;
   // Render one member pill — the parent's per-tab renderer, reused so
   // folder members behave exactly like loose tabs.
@@ -36,9 +29,9 @@ type TabFolderChipProps = {
   // head), but keeps the signature aligned with the parent's onReorder.
   onReorder: (sourceId: string, targetId: string, placeBefore?: boolean) => void;
   onRename: (oldName: string, newName: string) => void;
-  // Live presence per tab + the local participant, so a COLLAPSED folder
-  // can surface the participants viewing its (hidden) member tabs — when
-  // expanded, each member pill shows its own stack instead.
+  // Live presence per tab + the local participant, so the folder chip can
+  // surface the participants viewing its hidden member tabs (the inline
+  // active pill shows its own stack).
   participantsByTab: Map<string, Participant[]>;
   selfId: string;
   selfRole: 'edit' | 'view';
@@ -48,7 +41,6 @@ export function TabFolderChip({
   name,
   tabs,
   activeId,
-  diagramId,
   readOnly,
   renderTab,
   onReorder,
@@ -57,57 +49,58 @@ export function TabFolderChip({
   selfId,
   selfRole,
 }: TabFolderChipProps) {
-  // Default collapsed: opening a diagram shows every folder folded so the
-  // tab bar stays tidy. Starting true (rather than hydrating to it) also
-  // avoids an expand→collapse flash on first paint. The active tab's
-  // folder still force-expands via `containsActive` below.
-  const [collapsed, setCollapsed] = useState(true);
+  const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const chipRef = useRef<HTMLDivElement>(null);
+  // The fan's fixed-position anchor, captured when it opens (the tab strip
+  // scrolls horizontally, so the popover portals out of its clip).
+  const [anchor, setAnchor] = useState<{ left: number; bottom: number } | null>(null);
 
-  // Hydrate the persisted collapse state after mount (localStorage is
-  // client-only; reading during render would desync SSR/CSR markup).
-  // Only a folder the user EXPLICITLY expanded before (stored '0')
-  // reopens; anything else (never toggled, or explicitly collapsed)
-  // stays folded.
-  useEffect(() => {
-    setCollapsed(readLocalStorageSafe(collapseKey(diagramId, name)) !== '0');
-  }, [diagramId, name]);
-
-  const containsActive = tabs.some((t) => t.id === activeId);
-  // Force-expand while the active tab lives in this folder so the user
-  // can always see where they are (spec/30 edge case).
-  const showMembers = !collapsed || containsActive;
-
-  // Auto-collapse when the user navigates OUT of this folder: once the
-  // active tab leaves (and didn't move to another tab in here), fold the
-  // folder back up so the tab bar stays tidy — a folder only stays open
-  // while you're working inside it. Only acts on an expanded folder; a
-  // force-expanded one (collapsed already true) folds on its own as
-  // `containsActive` flips. Re-entering force-expands it again.
-  const wasActiveInside = useRef(containsActive);
-  useEffect(() => {
-    if (wasActiveInside.current && !containsActive && !collapsed) {
-      setCollapsed(true);
-      writeLocalStorageSafe(collapseKey(diagramId, name), '1');
-    }
-    wasActiveInside.current = containsActive;
-  }, [containsActive, collapsed, diagramId, name]);
+  const activeMember = tabs.find((t) => t.id === activeId) ?? null;
+  // The fan lists the members NOT already visible inline.
+  const fanTabs = tabs.filter((t) => t.id !== activeId);
 
   const toggle = () => {
-    const next = !collapsed;
-    setCollapsed(next);
-    writeLocalStorageSafe(collapseKey(diagramId, name), next ? '1' : '0');
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    const rect = chipRef.current?.getBoundingClientRect();
+    if (rect) setAnchor({ left: rect.left, bottom: window.innerHeight - rect.top + 8 });
+    setOpen(true);
   };
 
-  // Participants viewing the folder's member tabs, deduped by id. Only
-  // surfaced while collapsed: the member pills are hidden then, so their
-  // own presence stacks aren't visible and a viewer inside the folder
-  // would otherwise be invisible. Expanded, each pill shows its own.
+  // The fan is transient: any outside press or Escape closes it, and
+  // switching tabs (picking a member) closes it too.
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t?.closest('[data-tab-folder-fan]') || chipRef.current?.contains(t as Node)) return;
+      setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+  useEffect(() => {
+    setOpen(false);
+  }, [activeId]);
+
+  // Participants viewing the folder's HIDDEN member tabs, deduped by id —
+  // the inline active pill shows its own stack, so it's excluded here.
   const folderParticipants: Participant[] = [];
-  if (!showMembers) {
+  {
     const seen = new Set<string>();
     for (const t of tabs) {
+      if (t.id === activeId) continue;
       for (const p of participantsByTab.get(t.id) ?? []) {
         if (seen.has(p.id)) continue;
         seen.add(p.id);
@@ -118,9 +111,10 @@ export function TabFolderChip({
 
   return (
     <div
+      ref={chipRef}
       // A folder reads as a CONTAINER, clearly distinct from the tab pills
       // inside it: dashed boundary (the app's "grouping" cue) + a tinted
-      // inset surface the member pills sit on.
+      // inset surface the inline active pill sits on.
       className={`flex shrink-0 items-center gap-1 rounded-lg border border-dashed border-slate-300 bg-slate-100/70 px-1 py-0.5 dark:border-slate-600 dark:bg-slate-800/40 ${
         dragOver ? 'ring-2 ring-brand-400 ring-offset-1' : ''
       }`}
@@ -144,8 +138,8 @@ export function TabFolderChip({
               // Drop onto the folder chip JOINS the folder (spec/30):
               // onReorder adopts the target's folder, and the target is the
               // run's first member, so the dropped tab lands at the head of
-              // this folder's run as a member. Works on a collapsed folder
-              // too (the chip is always a drop target).
+              // this folder's run as a member. Works whether or not the fan
+              // is open (the chip is always a drop target).
               const firstMember = tabs[0];
               if (src && firstMember && src !== firstMember.id) onReorder(src, firstMember.id);
             }
@@ -163,41 +157,52 @@ export function TabFolderChip({
           className="w-28 rounded-md bg-white px-2 py-1 text-xs font-semibold text-slate-800 outline-none ring-1 ring-brand-300 dark:bg-slate-800 dark:text-slate-100 dark:ring-brand-400"
         />
       ) : (
-        <Tooltip
-          title={name}
-          description={`${tabs.length} ${tabs.length === 1 ? 'tab' : 'tabs'} · Click to ${
-            showMembers ? 'collapse' : 'expand'
-          }${readOnly ? '' : ' · Double-click to rename'}`}
+        <button
+          type="button"
+          onClick={toggle}
+          onDoubleClick={readOnly ? undefined : () => setEditing(true)}
+          aria-expanded={open}
+          aria-label={`${name} — ${tabs.length} ${tabs.length === 1 ? 'tab' : 'tabs'}`}
+          className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-100"
         >
-          <button
-            type="button"
-            onClick={toggle}
-            onDoubleClick={readOnly ? undefined : () => setEditing(true)}
-            className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-100"
-          >
-            <FolderGlyph open={showMembers} />
-            <span>{name}</span>
-            <span className="rounded-full bg-slate-200 px-1.5 py-px text-[10px] font-semibold leading-none text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-              {tabs.length}
-            </span>
-          </button>
-        </Tooltip>
+          <FolderGlyph open={open} />
+          <span>{name}</span>
+          <span className="rounded-full bg-slate-200 px-1.5 py-px text-[10px] font-semibold leading-none text-slate-500 dark:bg-slate-700 dark:text-slate-300">
+            {tabs.length}
+          </span>
+        </button>
       )}
-      {showMembers ? (
-        <div className="flex items-center gap-1">{tabs.map(renderTab)}</div>
-      ) : folderParticipants.length > 0 ? (
-        // Collapsed: show who's inside so a viewer on a hidden tab isn't
+      {/* Only the folder's OPEN tab sits in the bar; everyone else lives in
+          the upward fan, so a big folder stays one chip wide. */}
+      {activeMember ? renderTab(activeMember) : null}
+      {folderParticipants.length > 0 ? (
+        // Who's inside the hidden members, so a viewer on one isn't
         // invisible. The stack's own ml-2 spaces it off the count badge.
         <TabPresenceStack participants={folderParticipants} selfId={selfId} selfRole={selfRole} />
       ) : null}
+      {open && anchor && fanTabs.length > 0
+        ? createPortal(
+            <div
+              data-tab-folder-fan
+              className="fixed z-[var(--z-modal)] flex animate-fade-in flex-col items-start gap-1 rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+              style={{ left: anchor.left, bottom: anchor.bottom }}
+            >
+              {fanTabs.map((t) => (
+                <div key={t.id} className="flex w-full items-center">
+                  {renderTab(t)}
+                </div>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }
 
-// The folder itself carries the expand/collapse state: a closed folder
-// when collapsed, an open folder when its members are showing. Clearer
-// than a separate chevron (which, while a folder is force-expanded for the
-// active tab, was stuck pointing "open" with no way to act on it).
+// The folder glyph doubles as the fan's state: closed when the members
+// are tucked away, open while the fan is showing. Clearer than a separate
+// chevron.
 function FolderGlyph({ open }: { open: boolean }) {
   return (
     <svg
