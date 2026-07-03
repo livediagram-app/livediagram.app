@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@livediagram/ui';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
@@ -250,15 +251,10 @@ export function ShareDialog({
                 <option value="sixMonths">Expires in 6 months</option>
               </select>
             </Tooltip>
-            <button
-              type="button"
-              onClick={create}
-              disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
-            >
+            <Button onClick={create} disabled={busy} size="xs" className="shadow-sm">
               <LinkIcon />
               Create
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -490,13 +486,9 @@ export function ShareDialog({
       </div>
 
       <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
-        >
+        <Button variant="secondary" size="xs" onClick={onClose}>
           Done
-        </button>
+        </Button>
       </div>
     </Dialog>
   );

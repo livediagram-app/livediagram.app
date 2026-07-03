@@ -15,7 +15,7 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react';
 // can still add layout (w-full, mt-…) without re-stating the look.
 
 export type ButtonVariant = 'primary' | 'danger' | 'secondary';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
 const BASE =
   'inline-flex items-center justify-center gap-2 rounded-md font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
@@ -28,6 +28,8 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 
 const SIZES: Record<ButtonSize, string> = {
+  // The editor dialogs' compact action rhythm (Share / footer actions).
+  xs: 'px-3 py-1.5 text-xs',
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-4 py-2 text-sm',
   lg: 'px-6 py-3 text-base',
