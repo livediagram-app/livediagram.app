@@ -24,6 +24,7 @@ import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-control
 import { TableCellMenu } from '@/components/canvas/TableCellMenu';
 import { useTableStructure } from '@/components/canvas/useTableStructure';
 import { useTableEditing } from '@/components/canvas/useTableEditing';
+import { useTableCellInput } from '@/components/canvas/useTableCellInput';
 import { useTableAxisResize } from '@/components/canvas/useTableAxisResize';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { describeLink } from '@/lib/link-label';
@@ -359,114 +360,6 @@ export function TableView({
     onCommitTable,
     setMenu,
   });
-  // Selected-cell keyboard layer (spreadsheet-style, spec/09). With a cell
-  // selected (not yet editing): arrows move the selection, Tab / Shift+Tab
-  // walk cells (Tab in the very last cell appends a row), Escape steps back
-  // out to the plain table selection, Backspace / Delete clears the cell,
-  // Enter / F2 edit, and a printable key type-to-edits. Every handled key
-  // stops propagation so the editor's window-level shortcuts (arrow-key
-  // element nudge, Backspace element delete, Escape deselect) never
-  // double-handle a keystroke that was aimed at the cell — Backspace used
-  // to clear the cell AND delete the whole table.
-  useEffect(() => {
-    // While the cell context menu is open it owns the keyboard (its own
-    // Escape closes it), so the selection layer stands down.
-    if (!selectedCell || editing || readOnly || element.locked || cellMenuPos) return;
-    const { r, c } = selectedCell;
-    const onKey = (e: KeyboardEvent) => {
-      const ae = document.activeElement as HTMLElement | null;
-      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable))
-        return;
-      const handled = () => {
-        e.preventDefault();
-        e.stopPropagation();
-      };
-      if (e.key === 'Tab') {
-        handled();
-        setExtraCells(new Set());
-        const flat = r * cols + c + (e.shiftKey ? -1 : 1);
-        if (flat >= rows * cols) {
-          // Tab off the end appends a row (Word / Docs convention) and
-          // lands on its first cell.
-          addRow(rows);
-          setSelectedCell({ r: rows, c: 0 });
-        } else if (flat >= 0) {
-          setSelectedCell({ r: Math.floor(flat / cols), c: flat % cols });
-        }
-        return;
-      }
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key.startsWith('Arrow')) {
-        const nr = r + (e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0);
-        const nc = c + (e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0);
-        handled();
-        setExtraCells(new Set());
-        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) setSelectedCell({ r: nr, c: nc });
-        return;
-      }
-      if (e.key === 'Escape') {
-        // Step out of the cell, keep the table selected — one Escape peels
-        // one layer (the canvas ladder then handles the next press).
-        handled();
-        setSelectedCell(null);
-        setExtraCells(new Set());
-      } else if (e.key === 'Backspace' || e.key === 'Delete') {
-        // Clears EVERY selected cell (the anchor + any shift-clicked
-        // extras) in one commit.
-        handled();
-        let work = element;
-        for (const cell of selectionCells()) {
-          work = { ...work, ...setTableCell(work, cell.r, cell.c, '') };
-        }
-        onCommitTable(element.id, { cells: work.cells });
-      } else if (e.key === 'Enter' || e.key === 'F2') {
-        handled();
-        setExtraCells(new Set());
-        initialTextRef.current = element.cells[r]?.[c] ?? '';
-        setEditing({ r, c });
-      } else if (e.key.length === 1) {
-        handled();
-        setExtraCells(new Set());
-        initialTextRef.current = e.key;
-        typeToEditRef.current = true;
-        setEditing({ r, c });
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  });
-
-  // Paste into the SELECTED cell without entering the editor: spreadsheet /
-  // TSV text fills + grows the grid from that cell, a single value replaces
-  // the cell's text. Registered in the CAPTURE phase so it wins over the
-  // editor's document-level paste (which would drop copied elements /
-  // images on the canvas instead).
-  useEffect(() => {
-    if (!selectedCell || editing || readOnly || element.locked) return;
-    const { r, c } = selectedCell;
-    const onPaste = (e: ClipboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      )
-        return;
-      const text = e.clipboardData?.getData('text/plain');
-      if (!text) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const grid = parseClipboardTableText(text);
-      if (isTabularClipboard(grid)) {
-        onCommitTable(element.id, { cells: pasteIntoTable(element, r, c, grid).cells });
-      } else {
-        onCommitTable(element.id, {
-          cells: setTableCell(element, r, c, grid[0]?.[0] ?? '').cells,
-        });
-      }
-    };
-    document.addEventListener('paste', onPaste, true);
-    return () => document.removeEventListener('paste', onPaste, true);
-  }, [selectedCell, editing, readOnly, element, onCommitTable]);
 
   // Every selected cell — the anchor first, then the shift-clicked extras
   // (spec/09 multi-cell selection). The keyboard clear, the context menu's
@@ -481,6 +374,26 @@ export function TableView({
     }
     return out;
   };
+
+  // Selected-cell keyboard layer + capture-phase paste — see
+  // useTableCellInput.
+  useTableCellInput({
+    element,
+    rows,
+    cols,
+    selectedCell,
+    setSelectedCell,
+    setExtraCells,
+    editing,
+    setEditing,
+    suspended: cellMenuPos !== null,
+    readOnly: readOnly || element.locked === true,
+    addRow,
+    selectionCells,
+    onCommitTable,
+    initialTextRef,
+    typeToEditRef,
+  });
 
   // Apply one style patch to EVERY selected cell in a single commit —
   // sequential commits would each read the same stale element and clobber
