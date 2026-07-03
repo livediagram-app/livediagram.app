@@ -388,6 +388,11 @@ export function rebindArrowAnchorsAfterMove(
     ranked: Cardinal[];
     commitment: number;
     times: Record<Cardinal, number>;
+    // Set when the sibling vote re-ranked this plan onto the dominant
+    // face: it then SHARES that face outright (the fan's whole point is
+    // one exit) and the stability dead-band must not drag it back to the
+    // scattered face it used to sit on.
+    voteAdopted?: boolean;
   };
   const plans: EndPlan[] = [];
   const reassigning = new Set<ElementId>();
@@ -504,9 +509,21 @@ export function rebindArrowAnchorsAfterMove(
     // grazes. The face most siblings naturally rank first wins, and every
     // sibling whose line genuinely leaves through it (half-plane check)
     // adopts it as its best — the share/corner resolution below then fans
-    // them along that face.
-    if (eps.length > 1) {
-      const votes = new Map<Cardinal, number>();
+    // them along that face. Settled siblings vote too: the faces of pinned
+    // arrows NOT re-anchored this pass (recorded as reserved dirs) count,
+    // so a LONE re-anchored arrow — a freshly connected one, or one whose
+    // child just moved — still joins an established fan instead of taking
+    // whichever face its own chord grazes first.
+    const reservedVotes = faceDirs.get(elementId);
+    let reservedCount = 0;
+    const votes = new Map<Cardinal, number>();
+    if (reservedVotes) {
+      for (const [f, dirs] of reservedVotes) {
+        votes.set(f, dirs.length);
+        reservedCount += dirs.length;
+      }
+    }
+    if (eps.length + reservedCount > 1) {
       for (const p of eps) votes.set(p.ranked[0]!, (votes.get(p.ranked[0]!) ?? 0) + 1);
       let dominant: Cardinal | null = null;
       let max = 0;
@@ -516,10 +533,11 @@ export function rebindArrowAnchorsAfterMove(
           dominant = f;
         }
       }
-      if (dominant && max * 2 > eps.length) {
+      if (dominant && max * 2 > eps.length + reservedCount) {
         for (const p of eps) {
           if (p.ranked[0] !== dominant && leavesThrough(p.dir, dominant)) {
             p.ranked = [dominant, ...p.ranked.filter((f) => f !== dominant)];
+            p.voteAdopted = true;
           }
         }
       }
@@ -566,7 +584,7 @@ export function rebindArrowAnchorsAfterMove(
         return Math.sin(p.dir) >= 0 ? 'sw' : 'nw';
       };
       let face: Anchor;
-      if (!taken.has(best) || canShare(best)) {
+      if (!taken.has(best) || canShare(best) || p.voteAdopted === true) {
         face = best;
       } else {
         const corner = cornerFor(best);
@@ -597,9 +615,14 @@ export function rebindArrowAnchorsAfterMove(
       // the freshly-computed face/corner win when it disagrees.
       const cornerStillAgrees =
         currentFace === null || isCardinal(p.current) || cornerFor(currentFace) === p.current;
+      // A vote-adopted plan must MOVE to the fan's face — retaining the
+      // scattered face it used to sit on (whose raw exit time often wins)
+      // would defeat the vote every pass.
+      const voteAllowsStay = p.voteAdopted !== true || currentFace === chosenFace;
       if (
         currentFace &&
         cornerStillAgrees &&
+        voteAllowsStay &&
         (!taken.has(p.current) || (isCardinal(p.current) && canShare(p.current))) &&
         p.times[currentFace] <= p.times[chosenFace] * (1 + ANCHOR_SWITCH_MARGIN)
       ) {

@@ -2,6 +2,7 @@ import { useState, type Dispatch, type SetStateAction } from 'react';
 import {
   acceptsInlineIcon,
   bestAnchorTowards,
+  rebindArrowAnchorsAfterMove,
   createAnnotation,
   createLinkCard,
   createShape,
@@ -249,7 +250,18 @@ export function useElementCreation(opts: {
     };
     commitTabs((ts) =>
       ts.map((t) =>
-        t.id === activeId ? { ...t, elements: [...t.elements, arrow], templateChosen: true } : t,
+        t.id === activeId
+          ? {
+              ...t,
+              // Run the new arrow through the same distribution pass a move
+              // uses (spec/09), scoped to its target end: a fresh connector
+              // joins an established fan on the source (sibling vote over
+              // the settled arrows' faces) instead of keeping whichever
+              // face its own chord grazes first.
+              elements: rebindArrowAnchorsAfterMove([...t.elements, arrow], new Set([toId])),
+              templateChosen: true,
+            }
+          : t,
       ),
     );
     setSelectedId(arrow.id);

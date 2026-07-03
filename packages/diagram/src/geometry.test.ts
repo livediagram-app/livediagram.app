@@ -455,6 +455,62 @@ describe('rebindArrowAnchorsAfterMove', () => {
     expect(next.to.kind === 'pinned' && next.to.anchor).toBe('n');
   });
 
+  it('a lone re-anchored arrow adopts the face its settled siblings share', () => {
+    // Hub with four arrows already fanning from its bottom (NOT part of
+    // this pass — their faces are reserved), plus one arrow to a far-left
+    // child whose chord is more horizontal than vertical, so its own
+    // ranking says west. Re-anchoring just that arrow (its child moved)
+    // must join the established bottom fan — the reserved siblings vote
+    // too — and its head must oppose onto the child's top.
+    const hub: ShapeElement = {
+      id: 'hub',
+      type: 'shape',
+      shape: 'square',
+      x: 500,
+      y: 0,
+      width: 120,
+      height: 120,
+    };
+    const kid = (id: string, x: number): ShapeElement => ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x,
+      y: 280,
+      width: 100,
+      height: 100,
+    });
+    const fanArrow = (id: string, toId: string): ArrowElement => ({
+      id,
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
+      to: { kind: 'pinned', elementId: toId, anchor: 'n' },
+    });
+    const farLeft: ArrowElement = {
+      id: 'arr-far',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'hub', anchor: 'w' },
+      to: { kind: 'pinned', elementId: 'k0', anchor: 'e' },
+    };
+    const els: Element[] = [
+      hub,
+      kid('k0', 40),
+      kid('k1', 260),
+      kid('k2', 480),
+      kid('k3', 700),
+      kid('k4', 920),
+      fanArrow('arr-1', 'k1'),
+      fanArrow('arr-2', 'k2'),
+      fanArrow('arr-3', 'k3'),
+      fanArrow('arr-4', 'k4'),
+      farLeft,
+    ];
+    const out = rebindArrowAnchorsAfterMove(els, new Set(['k0']));
+    const next = out.find((e) => e.id === 'arr-far') as ArrowElement;
+    expect(next.from.kind === 'pinned' && next.from.anchor).toBe('s');
+    expect(next.to.kind === 'pinned' && next.to.anchor).toBe('n');
+  });
+
   it('flips both anchors when b moves above a (now a vertical arrow)', () => {
     // b at (90, -300) puts it directly above a, so a should point
     // north and b should point south.
