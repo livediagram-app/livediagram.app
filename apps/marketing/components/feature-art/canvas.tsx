@@ -211,6 +211,58 @@ export function CommentsArt() {
   );
 }
 
+export function AssignedActionsArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <rect
+          x="26"
+          y="34"
+          width="58"
+          height="30"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+      </svg>
+      {/* action badge on the element */}
+      <span className="absolute left-[34%] top-5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-500 text-white shadow">
+        <svg
+          viewBox="0 0 16 16"
+          className="h-3 w-3"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M6 3h-1.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H10" />
+          <rect x="6" y="1.75" width="4" height="2.5" rx="0.75" />
+          <path d="M5.75 9.25 7.5 11l3-3.5" />
+        </svg>
+      </span>
+      {/* action card */}
+      <div className="fa-fade absolute right-2 top-3 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md">
+        <div className="h-1.5 w-4/5 rounded bg-slate-200" />
+        <div className="mt-1 flex items-center gap-1">
+          <span
+            className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-[6px] font-bold text-white"
+            style={{ backgroundColor: PINK }}
+          >
+            AS
+          </span>
+          <span className="text-[7px] font-semibold text-slate-600">Assigned to Ana</span>
+        </div>
+        <span className="fa-pop mt-1 inline-block rounded bg-emerald-500 px-1 py-0.5 text-[7px] font-semibold text-white">
+          Complete
+        </span>
+      </div>
+    </Frame>
+  );
+}
+
 export function FormatPainterArt() {
   return (
     <Frame canvas>

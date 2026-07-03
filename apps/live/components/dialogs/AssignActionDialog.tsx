@@ -5,6 +5,7 @@ import { Button, TextInput } from '@livediagram/ui';
 import type { ElementAction } from '@livediagram/diagram';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { apiGetTeam, type TeamListItem, type TeamMember } from '@/lib/api-client';
 import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
 import { memberName } from '@/components/panels/team-pane-parts';
@@ -179,14 +180,22 @@ export function AssignActionDialog({
             >
               {editing ? 'Edit action' : 'Assign an action'}
             </h2>
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={onClose}
-              className="-mr-1.5 -mt-0.5 rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <CloseIcon size={14} />
-            </button>
+            <div className="-mr-1.5 -mt-0.5 flex items-center gap-0.5">
+              <HelpArticleLink
+                article="assignedActions"
+                variant="icon"
+                title="Assigned actions"
+                description="Assign work on an element to a teammate and track it until done."
+              />
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={onClose}
+                className="rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <CloseIcon size={14} />
+              </button>
+            </div>
           </div>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {editing

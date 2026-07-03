@@ -171,8 +171,8 @@ export const categories: Category[] = [
     slug: 'collaboration',
     title: 'Collaboration',
     description:
-      'Work together in real time: comments, live presence, teams, sharing, and session tools.',
-    articleCount: 5,
+      'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
+    articleCount: 6,
     kind: 'feature',
   },
   {
@@ -857,6 +857,13 @@ export const articles: Article[] = [
     slug: 'comments',
     title: 'Comments',
     description: 'Leave threaded comments on the canvas and resolve them.',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'assigned-actions',
+    title: 'Assigned Actions',
+    description: 'Assign work on an element to a teammate and track it until done.',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

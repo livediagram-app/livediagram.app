@@ -11,6 +11,7 @@ import {
   AutosaveArt,
   BorderStyleArt,
   CanvasBackdropArt,
+  AssignedActionsArt,
   CommentsArt,
   ComponentsArt,
   CustomThemesArt,
@@ -195,6 +196,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Comments on any element',
         description:
           "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
+      },
+      {
+        art: <AssignedActionsArt />,
+        href: '/help/collaboration/assigned-actions/',
+        group: 'Work together live',
+        title: 'Assign actions to teammates',
+        description:
+          'Turn any element into a piece of work: name the action, describe it, and hand it to a teammate from any of your teams, with an optional email nudge. An Actions panel tracks everything still open, with your own assignments on top.',
       },
       {
         art: <LaserArt />,

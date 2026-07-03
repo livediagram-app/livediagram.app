@@ -45,6 +45,7 @@ export const HELP_ARTICLES = {
   links: 'canvas/links',
   revertingChanges: 'activity-panel/reverting-changes',
   comments: 'collaboration/comments',
+  assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
   explorerPanel: 'explorer/explorer-panel',
   imageGallery: 'explorer/image-gallery',

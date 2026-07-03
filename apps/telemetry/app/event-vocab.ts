@@ -24,6 +24,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Template: 'Template scaffolds picked when starting a new diagram or seeding a fresh tab.',
   Comment: 'Per-element comment threads: add, delete, resolve, reopen, open the popover.',
   Note: 'Per-element notes (a single paragraph, no thread): add, edit, delete, open the popover.',
+  Action:
+    'Per-element assigned actions: assigning (with or without the email nudge), completing, reopening, editing / reassigning, deleting, opening the popover.',
   Search: 'Global search panel: open, query, picked-result kind.',
   UI: 'Editor chrome: light/dark toggle, dialogs (Settings, Shortcuts, Share, Activity), share-link copy, welcome dismiss.',
   Folder: 'Diagram folders: create, rename, delete, re-parent.',
@@ -52,6 +54,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Template: '#06b6d4',
   Comment: '#84cc16',
   Note: '#f97316',
+  Action: '#65a30d',
   Search: '#6366f1',
   UI: '#0891b2',
   Folder: '#a855f7',

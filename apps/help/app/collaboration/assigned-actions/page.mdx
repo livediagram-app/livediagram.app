@@ -1,0 +1,66 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Assigned Actions',
+  description:
+    'Assign a piece of work on a diagram element to a teammate, optionally email them about it, and track every outstanding action from the Actions panel.',
+  path: '/help/collaboration/assigned-actions/',
+});
+
+<ArticleLayout title="Assigned Actions" description="Turn any element into a piece of work: assign it to a teammate, describe what needs doing, and track it until it is done." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("assigned-actions")}>
+
+An action attaches a named piece of work to an element and hands it to a teammate. Where a comment starts a conversation, an action assigns an outcome: it has a name, an optional description, an assignee, and a done state. Use them to turn a review into a to-do list that lives right on the diagram.
+
+Actions are built on teams, so they are for signed-in users: the people you can assign to are the joined members of the teams you have joined.
+
+## Assigning an action
+
+<Step n={1}>
+  Right-click the element and open the **Collaborate** category, then choose **Assign Action**.
+</Step>
+
+<Step n={2}>
+  Pick a teammate from any of your teams, give the action a short name, and add a description if the
+  work needs more context. You can assign an action to yourself too.
+</Step>
+
+<Step n={3}>
+  Leave **Email them about this action** ticked if you want the assignee to get a notification with
+  a link back to the diagram, then assign it.
+</Step>
+
+The element gains a small clipboard badge while the action is open. Anyone on the diagram can click the badge to read the action; editors can also work with it from there.
+
+<Tip>
+  If the diagram is not in the team's shared library, the assignee may not be able to open it from
+  the email. Share it with them or move it into the team library first.
+</Tip>
+
+## The Actions panel
+
+As soon as a tab has at least one outstanding action, an **Actions** panel appears with the other floating panels. It lists every open action on the tab, newest first, with anything assigned to you sorted to the top and marked **Assigned to you**. Click a row to jump to the element and open the action.
+
+Completed actions leave the panel (and the element badge) immediately, so the list only ever shows what still needs doing. When the last open action is completed or deleted, the panel disappears entirely.
+
+## Completing, editing, and deleting
+
+Open an action to work with it:
+
+- **Complete** marks it done. The action stays on the element as a record and can be **reopened** if the work turns out not to be finished.
+- **Edit** changes the name, description, or assignee. Handing the action to a new person offers the email notification again, for the new assignee.
+- **Delete** removes the action from the element entirely, after a quick confirm.
+
+Actions are deliberately not undoable: pressing undo after assigning, completing, or deleting an action will not silently reverse it, the same way comments are protected.
+
+## Email notifications
+
+When an action is assigned to you (and your deployment has email enabled), you get a short email naming the action, who assigned it, and which diagram it is on, with a link straight to the diagram. You can turn these off any time from your profile page under **Email notifications**, with the "Someone assigns me an action" toggle.
+
+<Tip>
+  Keep action names short and outcome-shaped ("Confirm the retry budget", "Redraw the auth flow").
+  The description is the place for detail; the name is what teammates scan in the panel.
+</Tip>
+
+</ArticleLayout>
