@@ -147,9 +147,20 @@ export function AssignActionDialog({
     if (open && !signedIn && clerkEnabled) track('UI', 'Opened', 'ActionSignInNudge');
   }, [open, signedIn]);
 
-  // Load the joined members of every joined team once per open
-  // (signed-in only; a guest picker is Myself alone). Each team detail
-  // is one GET; failures just leave that team's members out.
+  // Only the team whose shared library holds this diagram is pickable
+  // (spec/68 §2): members of the user's other teams almost certainly
+  // can't open the diagram to complete the action, so offering them
+  // just manufactures the access warning. Empty for a personal diagram
+  // and for a share-link editor who isn't a member of the team.
+  const pickableTeams = useMemo(
+    () => teams.filter((t) => t.id === diagramTeamId),
+    [teams, diagramTeamId],
+  );
+  const memberOfDiagramTeam = pickableTeams.length > 0;
+
+  // Load the diagram team's joined members once per open (signed-in
+  // only; a guest picker is Myself alone). One GET per pickable team
+  // (zero or one); a failure just leaves its members out.
   useEffect(() => {
     if (!open) return;
     if (!ownerId) {
@@ -159,7 +170,7 @@ export function AssignActionDialog({
     let cancelled = false;
     setMembers(null);
     void Promise.all(
-      teams.map(async (team) => {
+      pickableTeams.map(async (team) => {
         try {
           const detail = await apiGetTeam(ownerId, team.id);
           return detail.members
@@ -187,7 +198,7 @@ export function AssignActionDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, ownerId, teams]);
+  }, [open, ownerId, pickableTeams]);
 
   // Preselect the existing assignee on edit: the Myself row when the
   // action is self-assigned, else the matching member row once loaded
@@ -397,7 +408,7 @@ export function AssignActionDialog({
                   {group.members.map((m) => assigneeRow(m, false))}
                 </div>
               ))}
-              {signedIn && members === null ? (
+              {signedIn && memberOfDiagramTeam && members === null ? (
                 <p className="px-3 py-2 text-center text-xs text-slate-400 dark:text-slate-500">
                   Loading teammates…
                 </p>
@@ -415,20 +426,29 @@ export function AssignActionDialog({
                 </a>{' '}
                 and join a team to assign actions to teammates.
               </p>
-            ) : signedIn && teams.length === 0 ? (
+            ) : signedIn && diagramTeamId === null ? (
+              // Personal diagram: teammates couldn't open it to complete the
+              // action, so the picker is Myself-only with the route out.
               <p className="rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                Actions assign to the diagram&apos;s team.{' '}
                 <a
                   href="/explorer/team"
                   className="font-medium text-brand-600 underline dark:text-brand-400"
                 >
-                  Create or join a team
+                  Move this diagram into a team library
                 </a>{' '}
-                to assign actions to teammates.
+                to assign teammates.
               </p>
-            ) : signedIn && members !== null && members.length === 0 && teams.length > 0 ? (
+            ) : signedIn && !memberOfDiagramTeam ? (
+              // Share-link editor on someone else's team diagram: they can
+              // edit, but only the team's members are assignable.
               <p className="px-1 text-xs text-slate-400 dark:text-slate-500">
-                No joined teammates yet — invites that haven&apos;t been accepted can&apos;t be
-                assigned actions.
+                Only members of this diagram&apos;s team can be assigned actions.
+              </p>
+            ) : signedIn && members !== null && members.length === 0 ? (
+              <p className="px-1 text-xs text-slate-400 dark:text-slate-500">
+                No other joined members in this team yet — invites that haven&apos;t been accepted
+                can&apos;t be assigned actions.
               </p>
             ) : null}
           </div>

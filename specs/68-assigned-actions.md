@@ -96,16 +96,22 @@ Clicking it opens the **Assign Action dialog** (its own component under
 
 - **Assignee**: a pinned **Myself** row (every session — the signed-in
   account, or the guest participant identity), then the **joined members
-  of every team the current user has joined** (`GET /api/teams` then
-  `GET /api/teams/<id>` members, via the existing `useTeams` / api-client
-  helpers), grouped by team when the user is in more than one, each row
-  showing the member's avatar bubble and display name (email local-part
-  fallback, as TeamPane does). Invited-but-not-joined members are
-  excluded (no `userId` yet, and possibly no account). **Myself is
-  preselected** when creating, so the common self-assignment is
-  zero-click and handing off is one. A signed-in user with **no joined
-  teams** sees Myself plus a nudge linking to the Explorer's Teams
-  section; a signed-out user sees Myself plus the sign-in nudge (§2).
+  of the team whose shared library holds this diagram** (`GET
+/api/teams/<diagramTeamId>` members, via the existing api-client
+  helper), each row showing the member's avatar bubble and display name
+  (email local-part fallback, as TeamPane does). Members of the user's
+  OTHER teams are deliberately not offered: they aren't members of this
+  diagram's team, so they almost certainly can't open the diagram to
+  complete the action — offering them just manufactures the §4 access
+  warning. Invited-but-not-joined members are excluded (no `userId` yet,
+  and possibly no account). **Myself is preselected** when creating, so
+  the common self-assignment is zero-click and handing off is one.
+  Myself-only states, each with its own nudge: a **personal diagram**
+  (no team library) explains that actions assign to the diagram's team
+  and links to moving it into one; a signed-in user **not a member of
+  the diagram's team** (a share-link editor) gets the same Myself-only
+  picker; a signed-out user sees Myself plus the sign-in nudge (§2).
+  The §4 access check stays as belt-and-braces on the picked assignee.
 - **Action name**: required single-line text, **pre-filled from the
   element's label** (a table's first non-empty cell) when creating, so
   the default action reads as the work item it sits on; the text is

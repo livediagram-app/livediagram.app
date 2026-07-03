@@ -13,7 +13,7 @@ export const metadata = helpMetadata({
 
 An action attaches a named piece of work to an element and hands it to a teammate. Where a comment starts a conversation, an action assigns an outcome: it has a name, an optional description, an assignee, and a done state. Use them to turn a review into a to-do list that lives right on the diagram.
 
-Anyone can assign an action to **themselves** — signed in or not — so actions also work as personal to-dos on a diagram. Assigning to other people is built on teams: sign in, and the picker offers the joined members of every team you have joined.
+Anyone can assign an action to **themselves** — signed in or not — so actions also work as personal to-dos on a diagram. Assigning to other people is built on teams: for a diagram in a [team's shared library](/help/collaboration/teams/team-shared-diagrams/), the picker offers that team's joined members — the people who can actually open the diagram to complete the action. A personal diagram is self-assign only; move it into a team library to hand work to teammates.
 
 ## Assigning an action
 
@@ -22,7 +22,7 @@ Anyone can assign an action to **themselves** — signed in or not — so action
 </Step>
 
 <Step n={2}>
-  Pick **Myself** or a teammate from any of your teams, give the action a short name, and add a
+  Pick **Myself** or a member of the diagram's team, give the action a short name, and add a
   description if the work needs more context.
 </Step>
 
@@ -34,8 +34,9 @@ Anyone can assign an action to **themselves** — signed in or not — so action
 The element gains a small clipboard badge while the action is open. Anyone on the diagram can click the badge to read the action; editors can also work with it from there.
 
 <Tip>
-  If the diagram is not in the team's shared library, the assignee may not be able to open it from
-  the email. Share it with them or move it into the team library first.
+  The picker only offers members of the team the diagram lives in, so the assignee can always
+  open it. If an older action's assignee has since left the team, they may no longer be able to —
+  reassign it from the action's popover.
 </Tip>
 
 ## The Actions panel
