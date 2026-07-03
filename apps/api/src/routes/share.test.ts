@@ -62,6 +62,7 @@ function imageCtx(code: string, tab?: string): RouteContext {
     url,
     segments: url.pathname.replace(/^\//, '').split('/'),
     clerkUserId: null,
+    verifiedUserId: null,
     clerkEmail: null,
     resolveOwner: () => null,
   };

@@ -18,6 +18,8 @@ const { db } = vi.hoisted(() => ({
     getTeamInviteLink: vi.fn(),
     getTeamMember: vi.fn(),
     joinTeamByInviteToken: vi.fn(),
+    listDiagramsByTeam: vi.fn(),
+    listFoldersByTeam: vi.fn(),
     listTeamMembers: vi.fn(),
     listTeamsByUser: vi.fn(),
     removeTeamMember: vi.fn(),
@@ -38,11 +40,18 @@ import { handleTeams } from './teams';
 function makeCtx(
   method: string,
   path: string,
-  opts: { clerkUserId?: string | null; clerkEmail?: string | null; body?: unknown } = {},
+  opts: {
+    clerkUserId?: string | null;
+    clerkEmail?: string | null;
+    // A token caller (spec/61): verified account id with NO Clerk session.
+    verifiedUserId?: string | null;
+    body?: unknown;
+  } = {},
 ): RouteContext {
   const url = new URL(`https://api.test${path}`);
   const segments = url.pathname.replace(/^\//, '').split('/');
   const clerkUserId = opts.clerkUserId === undefined ? 'user-1' : opts.clerkUserId;
+  const verifiedUserId = opts.verifiedUserId === undefined ? clerkUserId : opts.verifiedUserId;
   const clerkEmail = opts.clerkEmail === undefined ? null : opts.clerkEmail;
   const request = new Request(url, {
     method,
@@ -55,8 +64,9 @@ function makeCtx(
     url,
     segments,
     clerkUserId,
+    verifiedUserId,
     clerkEmail,
-    resolveOwner: () => clerkUserId ?? 'guest-1',
+    resolveOwner: () => verifiedUserId ?? 'guest-1',
   };
 }
 
@@ -87,6 +97,49 @@ describe('handleTeams Clerk-only gate (spec/32)', () => {
     const res = await handleTeams(makeCtx('GET', '/api/teams', { clerkUserId: null }));
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: 'sign_in_required' });
+  });
+});
+
+describe('API-token callers (spec/61 §3.4: read yes, manage no)', () => {
+  // A token request verifies to the Clerk account (verifiedUserId) but
+  // carries no interactive session (clerkUserId null).
+  const asToken = { clerkUserId: null, verifiedUserId: 'user-1' };
+
+  it('lists the caller’s teams', async () => {
+    db.listTeamsByUser.mockResolvedValue([{ ...team, myRole: 'member', memberCount: 2 }]);
+    const res = await handleTeams(makeCtx('GET', '/api/teams', asToken));
+    expect(res.status).toBe(200);
+    expect(db.listTeamsByUser).toHaveBeenCalledWith({}, 'user-1');
+  });
+
+  it('reads a joined team’s shared library', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    db.listFoldersByTeam.mockResolvedValue([]);
+    db.listDiagramsByTeam.mockResolvedValue([{ id: 'd1', name: 'Team doc' }]);
+    const res = await handleTeams(makeCtx('GET', '/api/teams/t1/library', asToken));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ folders: [], diagrams: [{ id: 'd1', name: 'Team doc' }] });
+  });
+
+  it('401s every mutation — token holders cannot manage teams', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    for (const [method, path, body] of [
+      ['POST', '/api/teams', { id: 't9', name: 'New' }],
+      ['PUT', '/api/teams/t1', { name: 'Renamed' }],
+      ['DELETE', '/api/teams/t1', undefined],
+      ['POST', '/api/teams/t1/members', { email: 'x@example.com' }],
+      ['POST', '/api/teams/t1/invite-link', undefined],
+    ] as const) {
+      const res = await handleTeams(makeCtx(method, path, { ...asToken, body }));
+      expect(res.status, `${method} ${path}`).toBe(401);
+    }
+    expect(db.createTeam).not.toHaveBeenCalled();
+    expect(db.updateTeam).not.toHaveBeenCalled();
+    expect(db.deleteTeam).not.toHaveBeenCalled();
+    expect(db.addTeamMember).not.toHaveBeenCalled();
+    expect(db.setTeamInviteLink).not.toHaveBeenCalled();
   });
 });
 

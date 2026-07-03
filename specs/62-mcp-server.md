@@ -134,11 +134,19 @@ add_tab, and update are separate because their inputs and intent differ.
 
 ### 4.1 `find_diagrams`
 
-Search/list the caller's diagrams. Input: optional `query` (name match), `limit`.
-Wraps `GET /api/diagrams`, filters by name. Returns a compact list:
-`{ id, name, tabs: [{ id, name }], updatedAt, url }` where `url` is the
-`livediagram.app` deep link to open it. **No image here** — kept lightweight so
-the model can scan many results cheaply, then `read_diagram` the one it wants.
+Search/list the caller's diagrams — the **personal library AND every joined
+team's shared library** ([spec/35](35-team-shared-diagrams.md)). A diagram
+filed into a team leaves its owner's personal list entirely, so the personal
+`GET /api/diagrams` alone is not "the user's diagrams": the tool sweeps
+`GET /api/teams` + `GET /api/teams/:id/library` alongside it (the api accepts
+the token identity on those reads — [spec/61 §3.4](61-public-api-and-tokens.md)),
+merges, and ranks newest-saved first. The team sweep is best-effort: a teams
+failure degrades to personal-only results, never an error. Input: optional
+`query` (name match), `limit`. Returns a compact list:
+`{ id, name, updatedAt, library, url }` where `library` is `personal` or the
+team's name and `url` is the `livediagram.app` deep link to open it. **No image
+here** — kept lightweight so the model can scan many results cheaply, then
+`read_diagram` the one it wants.
 
 ### 4.2 `read_diagram`
 
@@ -312,6 +320,10 @@ Worker (no DOM, no React).
 - **Folder / team / share management** via MCP — there are no tools to list,
   rename, or move folders (create_diagram only auto-files new diagrams under
   "Generated"); more `/api` surface can be wrapped later if demand appears.
+  (Team **content** is in scope: `find_diagrams` sweeps team shared libraries
+  and the other tools read/edit team diagrams through the ordinary access
+  gates — [§4.1](#41-find_diagrams), [spec/61 §3.4](61-public-api-and-tokens.md).
+  Managing teams themselves stays out, and the api refuses it to tokens.)
 - **Token-paste connector** as a supported path — OAuth is the chosen front door
   ([§3](#3-authentication-oauth-21)); a raw Bearer still works for local dev but
   isn't a documented user flow.

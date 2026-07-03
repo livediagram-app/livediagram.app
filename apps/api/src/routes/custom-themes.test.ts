@@ -48,6 +48,7 @@ function makeCtx(
     url,
     segments,
     clerkUserId: null,
+    verifiedUserId: null,
     clerkEmail: null,
     resolveOwner: () => owner,
   };

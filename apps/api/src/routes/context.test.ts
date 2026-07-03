@@ -35,6 +35,7 @@ function makeCtx(
     url,
     segments: url.pathname.replace(/^\//, '').split('/'),
     clerkUserId: null,
+    verifiedUserId: null,
     clerkEmail: null,
     resolveOwner: () => owner,
   };
@@ -121,5 +122,23 @@ describe('requireDiagramAccess', () => {
     await requireDiagramAccess(makeCtx({ owner: 'g' }), 'd1', 'edit');
     expect(access.canEditDiagram).toHaveBeenCalledOnce();
     expect(access.canReadDiagram).not.toHaveBeenCalled();
+  });
+
+  it('forwards verifiedUserId (session OR api token) to the team-membership check', async () => {
+    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: 'team-1' });
+    access.canReadDiagram.mockResolvedValue(true);
+    // A token caller: no Clerk session, but a server-verified account id.
+    const ctx = { ...makeCtx({ owner: 'user-9' }), verifiedUserId: 'user-9' };
+    await requireDiagramAccess(ctx, 'd1', 'read');
+    expect(access.canReadDiagram).toHaveBeenCalledWith(
+      ctx.env,
+      'd1',
+      'user-9',
+      null,
+      'other',
+      null,
+      'team-1',
+      'user-9',
+    );
   });
 });

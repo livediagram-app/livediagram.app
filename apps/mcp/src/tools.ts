@@ -22,6 +22,7 @@ import {
 import { resolveIconExportArt } from '@livediagram/icons/resolve';
 import { apiJson, postTelemetry } from './api';
 import type { Env } from './env';
+import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
 import { svgToPngBase64 } from './render';
 import {
   addTabShape,
@@ -114,21 +115,24 @@ export function registerTools(server: McpServer, env: Env): void {
     {
       title: 'Find diagrams',
       description:
-        'Search the user’s diagrams by name. Returns a compact list (id, name, ' +
-        'updated time, and a link to open it). Lightweight and image-free so you can ' +
-        'scan many results, then read_diagram the one you want.',
+        'Search the user’s diagrams by name — their personal library AND the shared ' +
+        'libraries of every team they belong to. Returns a compact list (id, name, ' +
+        'updated time, which library it lives in, and a link to open it). Lightweight ' +
+        'and image-free so you can scan many results, then read_diagram the one you want.',
       inputSchema: findDiagramsShape,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
       postTelemetry(env, 'Mcp', 'Used', 'FindDiagrams');
-      const { diagrams } = await apiJson<{ diagrams: DiagramSummary[] }>(env, token, '/diagrams');
-      const q = (args.query ?? '').toLowerCase();
-      const limit = args.limit ?? 20;
-      const matched = diagrams
-        .filter((d) => !q || d.name.toLowerCase().includes(q))
-        .slice(0, limit)
-        .map((d) => ({ id: d.id, name: d.name, updatedAt: d.savedAt, url: deepLink(d.id) }));
+      // Personal + team shared libraries (spec/35): a diagram filed into a
+      // team leaves the personal list, so both must be swept.
+      const [{ diagrams }, teamLibraries] = await Promise.all([
+        apiJson<{ diagrams: DiagramSummary[] }>(env, token, '/diagrams'),
+        fetchTeamLibraries(env, token),
+      ]);
+      const matched = matchDiagrams(diagrams, teamLibraries, args.query, args.limit ?? 20).map(
+        (d) => ({ ...d, url: deepLink(d.id) }),
+      );
       return textResult({ count: matched.length, diagrams: matched });
     },
   );

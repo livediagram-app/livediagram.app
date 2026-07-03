@@ -109,6 +109,11 @@ export default {
     }
     const resolveOwner = (): string | null =>
       clerkUserId ?? tokenAuth?.ownerId ?? request.headers.get('X-Owner-Id');
+    // Server-verified Clerk account id from either credential (session JWT
+    // or API token). Feeds the team-membership content gates + teams-surface
+    // reads (see RouteContext.verifiedUserId); administration surfaces keep
+    // reading `clerkUserId` directly.
+    const verifiedUserId = clerkUserId ?? tokenAuth?.ownerId ?? null;
 
     // Guest REST signature gate (spec/61 §4). On owner-scoped routes, a
     // presented `X-Owner-Id` must carry a valid HMAC signature once
@@ -205,6 +210,7 @@ export default {
       url,
       segments,
       clerkUserId,
+      verifiedUserId,
       clerkEmail,
       resolveOwner,
       waitUntil: (promise) => executionCtx?.waitUntil(promise),

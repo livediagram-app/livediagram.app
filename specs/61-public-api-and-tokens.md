@@ -135,6 +135,25 @@ read-only mode is a plausible future addition but has no clear use today, so
 it's deferred ([§7](#7-out-of-scope-for-now)). Hence no `scopes` column — when
 granular access lands it returns with the columns it needs.
 
+**Team content counts as "the same surface".** A token's owner is always a
+Clerk account ([§3.3](#33-resolution)), and both credentials — session JWT and
+token — are server-verified, so the token identity feeds the same
+team-membership checks the session does (`RouteContext.verifiedUserId`, used by
+`gateRead`/`gateEdit` and the team-scoped diagram/folder verbs). Concretely: a
+token can read and edit the diagrams in the shared libraries of the teams its
+owner has joined ([spec/35](35-team-shared-diagrams.md)), and can `GET` the
+teams surface (list its teams, team detail, a team's library). Without this, a
+diagram filed into a team was invisible to every external integration — the
+personal `GET /diagrams` excludes team diagrams by design.
+
+**Administration stays interactive-session-only.** Every teams MUTATION
+(create, invite, role change, join/accept/leave, invite links, team deletion)
+plus token management (`/api/tokens`), account deletion, and guest migration
+require a verified Clerk **session** (`clerkUserId`), never a token. Boundary
+rationale: a leaked token already exposes the owner's content (that's §3.4's
+deal, revocable + 6-month-capped), but it must not be able to escalate — mint
+further credentials, grant other people membership, or destroy the account.
+
 ### 3.5 Rate limiting
 
 Key the existing `WRITE_RATE_LIMITER` on the token id (not just the owner) so a

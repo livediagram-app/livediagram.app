@@ -199,8 +199,8 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const existing = await getDiagram(env, id);
       if (!existing) return notFound();
       let allowed = owner === existing.ownerId;
-      if (!allowed && existing.teamId && ctx.clerkUserId) {
-        const membership = await getMembership(env, existing.teamId, ctx.clerkUserId);
+      if (!allowed && existing.teamId && ctx.verifiedUserId) {
+        const membership = await getMembership(env, existing.teamId, ctx.verifiedUserId);
         allowed = membership?.status === 'joined';
       }
       if (!allowed) return forbidden();
@@ -275,7 +275,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const folderId = body.folderId ?? null;
       const teamId = body.teamId !== undefined ? body.teamId : existing.teamId;
       const isOwner = existing.ownerId === owner;
-      const caller = ctx.clerkUserId;
+      const caller = ctx.verifiedUserId;
 
       if (teamId !== existing.teamId) {
         // Changing scope.

@@ -80,6 +80,7 @@ function makeCtx(
     url,
     segments,
     clerkUserId: opts.clerkUserId ?? null,
+    verifiedUserId: opts.clerkUserId ?? null,
     clerkEmail: null,
     resolveOwner: () => owner,
   };

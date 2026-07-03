@@ -4,6 +4,14 @@
 // request here requires a verified Bearer token (401 otherwise). The
 // rest of the API keeps its hybrid guest path; this surface alone is
 // signed-in (the canvas never is — spec/04).
+//
+// Two verified credentials reach the READ surface (spec/61 §3.4): a
+// Clerk session JWT, or an `lvd_` API token (its owner is always a
+// Clerk account) — so an external integration can list the caller's
+// teams and read their shared libraries like the app does. Every
+// MUTATION (create, invites, roles, join/accept/leave, invite links,
+// deletion) additionally requires the interactive session: a leaked
+// token must not be able to manage membership.
 
 import type { TeamRole } from '@livediagram/api-schema';
 import {
@@ -59,8 +67,12 @@ function normaliseEmail(raw: string): string {
 }
 
 export async function handleTeams(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, clerkUserId, clerkEmail } = ctx;
+  const { request, env, segments, clerkUserId, clerkEmail, verifiedUserId } = ctx;
   if (segments[1] !== 'teams') return notFound();
+  // Identity for everything below: the verified Clerk account id, from a
+  // session JWT or an API token (see the header comment). Mutations are
+  // additionally gated on `clerkUserId` after the shared sign-in gate.
+  const userId = verifiedUserId;
 
   // /api/teams/invite-link/<token> — RESOLVE a shareable join link
   // (spec/32). Guest-accessible (sits ABOVE the sign-in gate): a token
@@ -72,20 +84,21 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     const team = await getTeamByInviteToken(env, segments[3]!);
     if (!team) return notFound();
     const memberCount = await countJoinedMembers(env, team.id);
-    const alreadyMember = clerkUserId
-      ? (await getMembership(env, team.id, clerkUserId)) !== null
-      : false;
+    const alreadyMember = userId ? (await getMembership(env, team.id, userId)) !== null : false;
     return json({ team, memberCount, alreadyMember });
   }
 
-  if (!clerkUserId) return signInRequired();
+  if (!userId) return signInRequired();
+  // Read vs manage (spec/61 §3.4): an API token passes the gate above for
+  // GETs, but every mutation needs the interactive Clerk session.
+  if (request.method !== 'GET' && !clerkUserId) return signInRequired();
 
   // /api/teams/invite-link/<token>/join — JOIN via the link (spec/32).
   // Signed-in only (above). Adds the caller as a joined member; the db
   // helper de-dupes against an existing membership / pending invite.
   if (segments.length === 5 && segments[2] === 'invite-link' && segments[4] === 'join') {
     if (request.method !== 'POST') return notFound();
-    const result = await joinTeamByInviteToken(env, segments[3]!, clerkUserId, clerkEmail);
+    const result = await joinTeamByInviteToken(env, segments[3]!, userId, clerkEmail);
     if (!result) return notFound();
     return json(result);
   }
@@ -96,8 +109,8 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // Lazy invite claim before listing, so a pending invite for the
       // caller's verified address becomes a membership in the same
       // round-trip that would render it.
-      if (clerkEmail) await connectInvitesByEmail(env, clerkUserId, clerkEmail);
-      const teams = await listTeamsByUser(env, clerkUserId);
+      if (clerkEmail) await connectInvitesByEmail(env, userId, clerkEmail);
+      const teams = await listTeamsByUser(env, userId);
       return json({ teams });
     }
     if (request.method === 'POST') {
@@ -116,7 +129,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const team = await createTeam(
         env,
         { id: body.id, name, organisation },
-        { userId: clerkUserId, email: clerkEmail },
+        { userId, email: clerkEmail },
       );
       return json({ team }, { status: 201 });
     }
@@ -129,8 +142,8 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   // lazy claim as the list so the two calls are order-independent.
   if (segments.length === 3 && segments[2] === 'invites') {
     if (request.method === 'GET') {
-      if (clerkEmail) await connectInvitesByEmail(env, clerkUserId, clerkEmail);
-      const invites = await listInvitesByUser(env, clerkUserId);
+      if (clerkEmail) await connectInvitesByEmail(env, userId, clerkEmail);
+      const invites = await listInvitesByUser(env, userId);
       return json({ invites });
     }
     return notFound();
@@ -145,7 +158,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const teamId = segments[2]!;
   const team = await getTeam(env, teamId);
   if (!team) return notFound();
-  const me = await getMembership(env, teamId, clerkUserId);
+  const me = await getMembership(env, teamId, userId);
   if (!me) return notFound();
   // Admin verbs need an accepted admin row: a pending invite that was
   // pre-promoted to admin manages nothing until they join.
@@ -252,7 +265,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (request.method !== 'POST') return notFound();
     const member = await getTeamMember(env, segments[4]!);
     if (!member || member.teamId !== teamId) return notFound();
-    if (member.userId === null || member.userId !== clerkUserId) {
+    if (member.userId === null || member.userId !== userId) {
       return forbidden('not_your_invite');
     }
     if (member.status === 'invited') {
@@ -261,9 +274,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // off the response path; no-op when email is off / admins opted out.
       const responder = member.email ?? clerkEmail;
       if (responder) {
-        ctx.waitUntil?.(
-          notifyInviteResponse(env, team, responder, true, clerkUserId).catch(() => {}),
-        );
+        ctx.waitUntil?.(notifyInviteResponse(env, team, responder, true, userId).catch(() => {}));
       }
     }
     const updated = await getTeamMember(env, member.id);
@@ -275,7 +286,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   if (segments.length === 5 && segments[3] === 'members') {
     const member = await getTeamMember(env, segments[4]!);
     if (!member || member.teamId !== teamId) return notFound();
-    const isSelf = member.userId !== null && member.userId === clerkUserId;
+    const isSelf = member.userId !== null && member.userId === userId;
 
     if (request.method === 'PUT') {
       if (!isAdmin) return adminRequired();
@@ -313,7 +324,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         const responder = member.email ?? clerkEmail;
         if (responder) {
           ctx.waitUntil?.(
-            notifyInviteResponse(env, team, responder, false, clerkUserId).catch(() => {}),
+            notifyInviteResponse(env, team, responder, false, userId).catch(() => {}),
           );
         }
       }

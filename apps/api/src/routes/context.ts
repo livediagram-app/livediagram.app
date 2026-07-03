@@ -22,6 +22,15 @@ export type RouteContext = {
   // read this directly rather than through `resolveOwner` so there's
   // no X-Owner-Id fallback.
   clerkUserId: string | null;
+  // The server-verified Clerk account id from EITHER credential: a Clerk
+  // session JWT, or an `lvd_` API token (whose owner is always a Clerk
+  // account, spec/61 §3.3). This is the identity for team-membership
+  // CONTENT access — gateRead/gateEdit and the teams-surface reads — so a
+  // token reaches the same diagrams the app does (spec/61 §3.4). Account
+  // and team ADMINISTRATION (team mutations, token management, account
+  // deletion, migration) keeps requiring `clerkUserId`: a leaked token
+  // must not be able to manage membership or mint further credentials.
+  verifiedUserId: string | null;
   // The verified `email` claim from the Clerk JWT (spec/32), or null
   // when Clerk is off, the caller is a guest, or the deployment's JWT
   // template doesn't carry the claim. Never read from a header — it
@@ -74,9 +83,10 @@ export function gateRead(
     diagramOwnerId,
     sharePasswordOf(ctx.request),
     diagramTeamId,
-    // Verified Clerk id for the team-membership check — never the
-    // unsigned X-Owner-Id header (spec/35 access trust boundary).
-    ctx.clerkUserId,
+    // Server-verified account id (Clerk session or API token) for the
+    // team-membership check — never the unsigned X-Owner-Id header
+    // (spec/35 access trust boundary).
+    ctx.verifiedUserId,
   );
 }
 
@@ -94,9 +104,10 @@ export function gateEdit(
     diagramOwnerId,
     sharePasswordOf(ctx.request),
     diagramTeamId,
-    // Verified Clerk id for the team-membership check — never the
-    // unsigned X-Owner-Id header (spec/35 access trust boundary).
-    ctx.clerkUserId,
+    // Server-verified account id (Clerk session or API token) for the
+    // team-membership check — never the unsigned X-Owner-Id header
+    // (spec/35 access trust boundary).
+    ctx.verifiedUserId,
   );
 }
 

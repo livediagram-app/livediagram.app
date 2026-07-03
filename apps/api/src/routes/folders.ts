@@ -20,11 +20,12 @@ import { requireOwner, type RouteContext } from './context';
 import { MAX_NAME_LEN } from '../limits';
 
 // Joined-member check for team-scoped folder verbs. Membership is
-// keyed by Clerk user id, so the guest path can never manage team
-// folders (consistent with spec/32's Clerk-only teams).
+// keyed by Clerk user id — carried by a session JWT or an API token
+// (both server-verified, spec/61 §3.4) — so the guest path can never
+// manage team folders (consistent with spec/32's Clerk-only teams).
 async function canManageTeamFolder(ctx: RouteContext, teamId: string): Promise<boolean> {
-  if (!ctx.clerkUserId) return false;
-  const membership = await getMembership(ctx.env, teamId, ctx.clerkUserId);
+  if (!ctx.verifiedUserId) return false;
+  const membership = await getMembership(ctx.env, teamId, ctx.verifiedUserId);
   return membership?.status === 'joined';
 }
 
