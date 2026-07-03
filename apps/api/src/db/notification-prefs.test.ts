@@ -24,6 +24,7 @@ describe('getNotificationPrefs (spec/65)', () => {
       notifyComments: true,
       notifyTips: true,
       notifyMilestones: true,
+      notifyActionAssigned: true,
     });
   });
 
@@ -35,6 +36,7 @@ describe('getNotificationPrefs (spec/65)', () => {
       notifyComments: true,
       notifyTips: true,
       notifyMilestones: true,
+      notifyActionAssigned: true,
     });
   });
 
@@ -49,6 +51,7 @@ describe('getNotificationPrefs (spec/65)', () => {
       notifyComments: true,
       notifyTips: true,
       notifyMilestones: true,
+      notifyActionAssigned: true,
     });
   });
 
@@ -60,6 +63,7 @@ describe('getNotificationPrefs (spec/65)', () => {
       notifyComments: true,
       notifyTips: true,
       notifyMilestones: true,
+      notifyActionAssigned: true,
     });
   });
 

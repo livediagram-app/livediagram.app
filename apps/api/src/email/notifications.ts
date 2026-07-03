@@ -23,12 +23,48 @@ import { emailEnabled, sendEmail } from './client';
 // burst of comments doesn't spam the owner.
 const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 import {
+  actionAssignedEmail,
   commentNotificationEmail,
   diagramJoinedEmail,
   inviteResponseEmail,
   firstShareEmail,
   milestoneEmail,
 } from './templates';
+
+// spec/68: a teammate assigned the recipient an action on a diagram element.
+// Fired by the notify-action route AFTER it has verified both parties are
+// joined members of the same team and resolved every string server-side.
+// Opt-out (notifyActionAssigned). The assignee's address prefers their
+// verified email_lifecycle row, falling back to the team_members invite
+// address (both trusted server state, never a client header).
+export async function notifyActionAssigned(
+  env: Env,
+  input: {
+    assigneeUserId: string;
+    assigneeFallbackEmail: string | null;
+    assignerName: string | null;
+    diagram: { id: string; name: string };
+    actionName: string;
+    description: string | null;
+  },
+): Promise<void> {
+  if (!emailEnabled(env)) return;
+  const to = (await getOwnerEmail(env, input.assigneeUserId)) ?? input.assigneeFallbackEmail;
+  if (!to) return;
+  const prefs = await getNotificationPrefs(env, input.assigneeUserId);
+  if (!prefs.notifyActionAssigned) return;
+  await sendEmail(env, {
+    to,
+    ...actionAssignedEmail(
+      env,
+      input.assignerName,
+      input.diagram.name,
+      input.diagram.id,
+      input.actionName,
+      input.description,
+    ),
+  });
+}
 
 // Someone opened one of an owner's shared diagrams for the FIRST time
 // (recordSharedAccess reported a new row). No-op unless email is on, the owner

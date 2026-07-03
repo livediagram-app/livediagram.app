@@ -250,6 +250,53 @@ export function inviteResponseEmail(
   };
 }
 
+// spec/68: someone assigned the recipient an action on a diagram element.
+// Sent to the assignee (a joined teammate of the assigner). Opt-out
+// (notifyActionAssigned). Everything user-influenced here (assigner name,
+// diagram name, action name, description) is either the assigner's own words
+// being delivered on their behalf or a diagram/team fact the two already
+// share (spec/64 §7), and all of it is escaped.
+const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
+
+export function actionAssignedEmail(
+  env: Env,
+  assignerName: string | null,
+  diagramName: string,
+  diagramId: string,
+  actionName: string,
+  description: string | null,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const who = assignerName && assignerName.trim() ? escapeHtml(assignerName.trim()) : 'A teammate';
+  const whoText =
+    assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
+  const diagram =
+    diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'a shared diagram';
+  const action = escapeHtml(actionName.trim());
+  const detail = description?.trim()
+    ? escapeHtml(
+        description.trim().length > ACTION_DESCRIPTION_PREVIEW_CHARS
+          ? `${description.trim().slice(0, ACTION_DESCRIPTION_PREVIEW_CHARS)}…`
+          : description.trim(),
+      )
+    : null;
+  return {
+    subject: `${whoText} assigned you an action`,
+    html: shell({
+      heading: 'You have a new action',
+      intro: `<strong>${who}</strong> assigned you an action on <strong>${diagram}</strong>: <strong>${action}</strong>.`,
+      ...(detail ? { outro: detail } : {}),
+      ctaText: 'Open the diagram',
+      ctaHref: `${base}/diagram/${encodeURIComponent(diagramId)}`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because a teammate assigned you an action.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
 // Minimal escaping for the one piece of user-influenced text in an email body
 // (the team name). HTML-escape for the body, and a plain-text variant for the
 // subject line.

@@ -614,6 +614,8 @@ export * from './arrow-style';
 export * from './border-style';
 export * from './shape-marker';
 export * from './comments';
+// Per-element assigned actions (spec/68).
+export * from './element-action';
 export * from './data-shapes';
 export * from './colors';
 export * from './icon-size';

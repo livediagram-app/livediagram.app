@@ -15,6 +15,7 @@ export type NotificationPrefs = {
   notifyComments: boolean;
   notifyTips: boolean;
   notifyMilestones: boolean;
+  notifyActionAssigned: boolean;
 };
 
 const DEFAULTS: NotificationPrefs = {
@@ -23,6 +24,7 @@ const DEFAULTS: NotificationPrefs = {
   notifyComments: true,
   notifyTips: true,
   notifyMilestones: true,
+  notifyActionAssigned: true,
 };
 
 // One SELECT + JSON.parse. Reads only the two notification keys; every other
@@ -46,6 +48,7 @@ export async function getNotificationPrefs(env: Env, ownerId: string): Promise<N
       notifyComments: blob.notifyComments !== false,
       notifyTips: blob.notifyTips !== false,
       notifyMilestones: blob.notifyMilestones !== false,
+      notifyActionAssigned: blob.notifyActionAssigned !== false,
     };
   } catch {
     return DEFAULTS;

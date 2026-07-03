@@ -5,6 +5,7 @@
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
+import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ShapeMarker } from './shape-marker';
 import type { IconSize } from './icon-size';
@@ -175,6 +176,9 @@ export type ShapeElement = {
   animationSpeed?: AnimationSpeed;
   link?: ElementLink;
   commentThread?: CommentThread;
+  // Assigned action (spec/68): at most one per element, non-undoable like
+  // the comment thread. See element-action.ts.
+  action?: ElementAction;
   // Optional plain-text note. Distinct from `commentThread`: one
   // note per element, no author / timestamp / multi-message
   // structure, just a multi-line paragraph the user can leave on
@@ -233,6 +237,9 @@ export type TextElement = {
   animationSpeed?: AnimationSpeed;
   link?: ElementLink;
   commentThread?: CommentThread;
+  // Assigned action (spec/68): at most one per element, non-undoable like
+  // the comment thread. See element-action.ts.
+  action?: ElementAction;
   // Optional plain-text note. Distinct from `commentThread`: one
   // note per element, no author / timestamp / multi-message
   // structure, just a multi-line paragraph the user can leave on
@@ -341,6 +348,9 @@ export type TableElement = {
   animationSpeed?: AnimationSpeed;
   link?: ElementLink;
   commentThread?: CommentThread;
+  // Assigned action (spec/68): at most one per element, non-undoable like
+  // the comment thread. See element-action.ts.
+  action?: ElementAction;
   note?: string;
   padding?: Padding;
 };
@@ -388,6 +398,9 @@ export type StickyElement = {
   animationSpeed?: AnimationSpeed;
   link?: ElementLink;
   commentThread?: CommentThread;
+  // Assigned action (spec/68): at most one per element, non-undoable like
+  // the comment thread. See element-action.ts.
+  action?: ElementAction;
   // Optional plain-text note. Distinct from `commentThread`: one
   // note per element, no author / timestamp / multi-message
   // structure, just a multi-line paragraph the user can leave on
@@ -478,6 +491,9 @@ export type ImageElement = {
   animationSpeed?: AnimationSpeed;
   link?: ElementLink;
   commentThread?: CommentThread;
+  // Assigned action (spec/68): at most one per element, non-undoable like
+  // the comment thread. See element-action.ts.
+  action?: ElementAction;
   note?: string;
 };
 
@@ -546,6 +562,9 @@ export type FreehandElement = {
   animationSpeed?: AnimationSpeed;
   link?: ElementLink;
   commentThread?: CommentThread;
+  // Assigned action (spec/68): at most one per element, non-undoable like
+  // the comment thread. See element-action.ts.
+  action?: ElementAction;
   note?: string;
 };
 
@@ -583,6 +602,9 @@ export type AnnotationElement = {
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
   commentThread?: CommentThread;
+  // Assigned action (spec/68): at most one per element, non-undoable like
+  // the comment thread. See element-action.ts.
+  action?: ElementAction;
   // Shared boxed-element fields that the generic union code paths (format
   // painter, geometry, search) read uniformly. An annotation doesn't expose
   // UI for these — it's a fixed, non-rotating marker with no inline text —
@@ -654,6 +676,9 @@ export type LinkCardElement = {
   animationSpeed?: AnimationSpeed;
   aspectLocked?: boolean;
   commentThread?: CommentThread;
+  // Assigned action (spec/68): at most one per element, non-undoable like
+  // the comment thread. See element-action.ts.
+  action?: ElementAction;
   note?: string;
   // Declared for the generic union code paths (format painter, geometry,
   // search), unused by the card UI — mirrors AnnotationElement.

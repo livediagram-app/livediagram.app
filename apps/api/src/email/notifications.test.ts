@@ -22,8 +22,13 @@ import {
   getOwnerEmail,
 } from '../db';
 import { sendEmail } from './client';
-import { commentNotificationEmail } from './templates';
-import { notifyFirstShare, notifyMilestone, notifyNewComment } from './notifications';
+import { actionAssignedEmail, commentNotificationEmail } from './templates';
+import {
+  notifyActionAssigned,
+  notifyFirstShare,
+  notifyMilestone,
+  notifyNewComment,
+} from './notifications';
 
 const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Env;
 const diagram = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
@@ -33,6 +38,7 @@ const allowAll = {
   notifyComments: true,
   notifyTips: true,
   notifyMilestones: true,
+  notifyActionAssigned: true,
 };
 
 afterEach(() => vi.clearAllMocks());
@@ -88,6 +94,84 @@ describe('notifyNewComment', () => {
   it('skips when the owner has no stored address (e.g. a guest)', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue(null);
     await notifyNewComment(env, diagram, 'Anna');
+    expect(getNotificationPrefs).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe('actionAssignedEmail (spec/68)', () => {
+  it('names the assigner, diagram, and action, links to the diagram', () => {
+    const e = actionAssignedEmail(env, 'Sam', 'Roadmap', 'd1', 'Review the copy', 'Hero only');
+    expect(e.subject).toMatch(/Sam/);
+    expect(e.html).toContain('Roadmap');
+    expect(e.html).toContain('Review the copy');
+    expect(e.html).toContain('Hero only');
+    expect(e.html).toContain('https://app.test/diagram/d1');
+    expect(e.unsubscribeUrl).toBe('https://app.test/explorer/profile');
+  });
+
+  it('escapes user-influenced strings and truncates a long description', () => {
+    const e = actionAssignedEmail(env, '<b>x</b>', 'Roadmap', 'd1', '<script>', 'y'.repeat(500));
+    expect(e.html).not.toContain('<script>');
+    expect(e.html).toContain('&lt;script&gt;');
+    expect(e.html).not.toContain('<b>x</b>');
+    expect(e.html).not.toContain('y'.repeat(201));
+    expect(e.html).toContain(`${'y'.repeat(200)}…`);
+  });
+
+  it('falls back when the assigner or diagram name is unknown', () => {
+    const e = actionAssignedEmail(env, null, '', 'd1', 'Do it', null);
+    expect(e.subject).toMatch(/A teammate/);
+    expect(e.html).toContain('a shared diagram');
+  });
+});
+
+describe('notifyActionAssigned (spec/68)', () => {
+  const input = {
+    assigneeUserId: 'u2',
+    assigneeFallbackEmail: 'invited@x.com',
+    assignerName: 'Sam',
+    diagram: { id: 'd1', name: 'Roadmap' },
+    actionName: 'Review the copy',
+    description: null,
+  };
+
+  it('does nothing when email is off', async () => {
+    await notifyActionAssigned({} as Env, input);
+    expect(getOwnerEmail).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('sends to the assignee’s verified address when opted in', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('assignee@x.com');
+    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    await notifyActionAssigned(env, input);
+    expect(sendEmail).toHaveBeenCalledOnce();
+    expect(vi.mocked(sendEmail).mock.calls[0]![1].to).toBe('assignee@x.com');
+  });
+
+  it('falls back to the team-member invite address when no lifecycle row exists', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue(null);
+    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    await notifyActionAssigned(env, input);
+    expect(vi.mocked(sendEmail).mock.calls[0]![1].to).toBe('invited@x.com');
+  });
+
+  it('skips when the assignee opted out', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('assignee@x.com');
+    vi.mocked(getNotificationPrefs).mockResolvedValue({
+      ...allowAll,
+      notifyActionAssigned: false,
+    });
+    await notifyActionAssigned(env, input);
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('skips when no address is resolvable at all', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue(null);
+    await notifyActionAssigned(env, { ...input, assigneeFallbackEmail: null });
     expect(getNotificationPrefs).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });

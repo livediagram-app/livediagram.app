@@ -863,6 +863,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/teams/{id}/notify-action',
+    segment: 'teams',
+    tag: 'Teams',
+    summary:
+      'Email a joined teammate that an action on a diagram element was assigned to them (spec/68). Best-effort; the assignee may have opted out.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        assigneeUserId: { type: 'string' },
+        diagramId: { type: 'string' },
+        actionName: { type: 'string' },
+        description: { type: 'string' },
+      },
+      required: ['assigneeUserId', 'diagramId', 'actionName'],
+    },
+    statuses: [202, 400, 401, 403, 404],
+  },
+  {
+    method: 'POST',
     path: '/teams/{id}/members/{memberId}/accept',
     segment: 'teams',
     tag: 'Teams',

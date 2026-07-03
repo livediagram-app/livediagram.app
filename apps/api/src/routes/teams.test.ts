@@ -6,6 +6,9 @@ const { db } = vi.hoisted(() => ({
   db: {
     acceptTeamMember: vi.fn(),
     addTeamMember: vi.fn(),
+    getDiagramMeta: vi.fn(),
+    getParticipant: vi.fn(),
+    hasSharedAccess: vi.fn(),
     listInvitesByUser: vi.fn(),
     connectInvitesByEmail: vi.fn(),
     countJoinedMembers: vi.fn(),
@@ -33,8 +36,14 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
+// Observe the spec/68 notify dispatch without exercising the email stack.
+vi.mock('../email/notifications', () => ({
+  notifyActionAssigned: vi.fn().mockResolvedValue(undefined),
+  notifyInviteResponse: vi.fn().mockResolvedValue(undefined),
+}));
 
 import type { RouteContext } from './context';
+import { notifyActionAssigned } from '../email/notifications';
 import { handleTeams } from './teams';
 
 function makeCtx(
@@ -67,6 +76,9 @@ function makeCtx(
     verifiedUserId,
     clerkEmail,
     resolveOwner: () => verifiedUserId ?? 'guest-1',
+    // Evaluate the deferred work inline so tests can observe the dispatch
+    // (`ctx.waitUntil?.(...)` skips its argument entirely when absent).
+    waitUntil: (p: Promise<unknown>) => void p.catch(() => {}),
   };
 }
 
@@ -501,5 +513,131 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
     db.countTeamAdmins.mockResolvedValue(1);
     const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m1'));
     expect(res.status).toBe(409);
+  });
+});
+
+describe('POST /api/teams/:id/notify-action (spec/68)', () => {
+  const body = { assigneeUserId: 'user-2', diagramId: 'd1', actionName: 'Review the copy' };
+  const post = (b: unknown = body, opts: Parameters<typeof makeCtx>[2] = {}) =>
+    handleTeams(makeCtx('POST', '/api/teams/t1/notify-action', { body: b, ...opts }));
+
+  // Caller (user-1) and assignee (user-2) both joined members by default.
+  const membershipByUser = (overrides: Record<string, TeamMember | null> = {}) => {
+    db.getMembership.mockImplementation(async (_env: Env, _teamId: string, userId: string) => {
+      if (userId in overrides) return overrides[userId];
+      if (userId === 'user-1') return member();
+      if (userId === 'user-2') return member({ id: 'm2', userId: 'user-2', role: 'member' });
+      return null;
+    });
+  };
+
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+    membershipByUser();
+    db.getDiagramMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
+    db.getParticipant.mockResolvedValue({ id: 'user-1', name: 'Sam', color: '#f00' });
+  });
+
+  it('202 + dispatches the email with server-derived names for the diagram owner', async () => {
+    const res = await post();
+    expect(res.status).toBe(202);
+    expect(notifyActionAssigned).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        assigneeUserId: 'user-2',
+        assigneeFallbackEmail: 'me@example.com',
+        assignerName: 'Sam',
+        diagram: { id: 'd1', name: 'Q3' },
+        actionName: 'Review the copy',
+      }),
+    );
+  });
+
+  it('ignores a body-supplied diagram name (name comes from D1)', async () => {
+    await post({ ...body, diagramName: 'Spoofed' });
+    const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
+    expect(input.diagram.name).toBe('Q3');
+  });
+
+  it('401 for a token caller (mutations need the interactive session)', async () => {
+    const res = await post(body, { clerkUserId: null, verifiedUserId: 'user-1' });
+    expect(res.status).toBe(401);
+    expect(notifyActionAssigned).not.toHaveBeenCalled();
+  });
+
+  it('404 when the caller is not a member of the team', async () => {
+    membershipByUser({ 'user-1': null });
+    const res = await post();
+    expect(res.status).toBe(404);
+  });
+
+  it('403 when the caller is still only invited', async () => {
+    membershipByUser({ 'user-1': member({ status: 'invited' }) });
+    const res = await post();
+    expect(res.status).toBe(403);
+  });
+
+  it('400 on a missing action name', async () => {
+    const res = await post({ assigneeUserId: 'user-2', diagramId: 'd1' });
+    expect(res.status).toBe(400);
+  });
+
+  it('404 when the assignee is not a joined member of this team (no user probing)', async () => {
+    membershipByUser({ 'user-2': null });
+    expect((await post()).status).toBe(404);
+    membershipByUser({ 'user-2': member({ id: 'm2', userId: 'user-2', status: 'invited' }) });
+    expect((await post()).status).toBe(404);
+    expect(notifyActionAssigned).not.toHaveBeenCalled();
+  });
+
+  it('404 when the diagram does not exist', async () => {
+    db.getDiagramMeta.mockResolvedValue(null);
+    const res = await post();
+    expect(res.status).toBe(404);
+  });
+
+  it('404 when the caller cannot access the diagram', async () => {
+    db.getDiagramMeta.mockResolvedValue({
+      id: 'd1',
+      ownerId: 'someone-else',
+      teamId: null,
+      name: 'Q3',
+    });
+    db.hasSharedAccess.mockResolvedValue(false);
+    const res = await post();
+    expect(res.status).toBe(404);
+    expect(notifyActionAssigned).not.toHaveBeenCalled();
+  });
+
+  it('allows a joined member of the diagram’s team-library team', async () => {
+    db.getDiagramMeta.mockResolvedValue({
+      id: 'd1',
+      ownerId: 'someone-else',
+      teamId: 't1',
+      name: 'Q3',
+    });
+    const res = await post();
+    expect(res.status).toBe(202);
+    expect(notifyActionAssigned).toHaveBeenCalled();
+  });
+
+  it('allows a caller who reached the diagram through a share link (shared_with)', async () => {
+    db.getDiagramMeta.mockResolvedValue({
+      id: 'd1',
+      ownerId: 'someone-else',
+      teamId: null,
+      name: 'Q3',
+    });
+    db.hasSharedAccess.mockResolvedValue(true);
+    const res = await post();
+    expect(res.status).toBe(202);
+    expect(db.hasSharedAccess).toHaveBeenCalledWith({}, 'user-1', 'd1');
+  });
+
+  it('falls back to the caller’s email claim when they have no participant profile', async () => {
+    db.getParticipant.mockResolvedValue(null);
+    await post(body, { clerkEmail: 'sam@x.com' });
+    const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
+    expect(input.assignerName).toBe('sam@x.com');
   });
 });

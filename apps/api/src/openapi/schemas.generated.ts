@@ -93,6 +93,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AnnotationElement": {
     "additionalProperties": false,
     "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -1384,6 +1387,80 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "ElementAction": {
+    "additionalProperties": false,
+    "properties": {
+      "assignee": {
+        "$ref": "#/components/schemas/ElementActionAssignee"
+      },
+      "assignerId": {
+        "type": "string"
+      },
+      "assignerName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "open",
+          "done"
+        ],
+        "type": "string"
+      },
+      "teamId": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "assignee",
+      "teamId",
+      "assignerId",
+      "assignerName",
+      "status",
+      "createdAt",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "ElementActionAssignee": {
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "userId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "userId",
+      "name"
+    ],
+    "type": "object"
+  },
   "ElementAnimation": {
     "enum": [
       "pulse",
@@ -1619,6 +1696,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FreehandElement": {
     "additionalProperties": false,
     "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -1788,6 +1868,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ImageElement": {
     "additionalProperties": false,
     "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
       "alt": {
         "type": "string"
       },
@@ -1979,6 +2062,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "LinkCardElement": {
     "additionalProperties": false,
     "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -2191,6 +2277,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ShapeElement": {
     "additionalProperties": false,
     "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -2542,6 +2631,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "StickyElement": {
     "additionalProperties": false,
     "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -2831,6 +2923,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TableElement": {
     "additionalProperties": false,
     "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -3254,6 +3349,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Template",
       "Comment",
       "Note",
+      "Action",
       "Search",
       "UI",
       "Folder",
@@ -3436,6 +3532,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TextElement": {
     "additionalProperties": false,
     "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },

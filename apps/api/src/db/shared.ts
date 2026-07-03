@@ -36,6 +36,22 @@ export async function recordSharedAccess(
   return existing === null;
 }
 
+// Whether this owner has ever opened the diagram through a share link
+// (a shared_with row exists). Used by the notify-action route (spec/68)
+// as the "shared-with" leg of its caller-can-access-the-diagram check.
+export async function hasSharedAccess(
+  env: Env,
+  ownerId: string,
+  diagramId: string,
+): Promise<boolean> {
+  const row = await env.DB.prepare(
+    'SELECT 1 AS one FROM shared_with WHERE owner_id = ? AND diagram_id = ? LIMIT 1',
+  )
+    .bind(ownerId, diagramId)
+    .first<{ one: number }>();
+  return row !== null;
+}
+
 // List diagrams shared with this owner, newest interaction first.
 // Joins through `diagrams` for the name + owner-side savedAt; also
 // surfaces a still-live `shareCode` for each row so the client can

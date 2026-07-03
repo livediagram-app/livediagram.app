@@ -24,6 +24,11 @@ export const TELEMETRY_CATEGORIES = [
   'Template',
   'Comment',
   'Note',
+  // Assigned actions (spec/68): assign / complete / reopen / edit / delete
+  // on an element's action, plus the popover open. `type` carries the
+  // email-checkbox state on create ('EmailOn'/'EmailOff') and the edit
+  // flavour on change ('Reassigned'/'Edited') — never action content.
+  'Action',
   'Search',
   'UI',
   'Folder',
