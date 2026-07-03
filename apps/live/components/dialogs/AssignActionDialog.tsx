@@ -10,6 +10,8 @@ import { apiGetTeam, type TeamListItem, type TeamMember } from '@/lib/api-client
 import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
 import { memberName } from '@/components/panels/team-pane-parts';
 import { initialsOf } from '@/lib/identity';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
+import { track } from '@/lib/telemetry';
 
 // Assign Action dialog (spec/68 §2): pick a teammate from any team the
 // current user has JOINED, name the action, optionally describe it, and
@@ -18,6 +20,11 @@ import { initialsOf } from '@/lib/identity';
 // assignee the email checkbox is re-offered for the NEW assignee, and an
 // edit that keeps the assignee never sends email (the hook enforces it,
 // the checkbox hides to match).
+//
+// Signed-out users get a SIGN-IN PROMPT state instead of the form: the
+// tile stays discoverable for everyone (spec/68 §2), assigning stays
+// signed-in only (the picker is built on teams), and the prompt is an
+// invitation, not a wall (spec/04, spec/36).
 
 type PickableMember = {
   userId: string;
@@ -50,6 +57,85 @@ type AssignActionDialogProps = {
 };
 
 export function AssignActionDialog({
+  open,
+  existing,
+  teams,
+  ownerId,
+  selfUserId,
+  diagramTeamId,
+  emailEnabled,
+  onSubmit,
+  onClose,
+}: AssignActionDialogProps) {
+  // Signed-out: the tile is visible to everyone, but assigning needs an
+  // account (the picker is teams). Render the sign-in prompt instead of
+  // the form.
+  if (!selfUserId) return <AssignActionSignInPrompt open={open} onClose={onClose} />;
+  return (
+    <AssignActionForm
+      open={open}
+      existing={existing}
+      teams={teams}
+      ownerId={ownerId}
+      selfUserId={selfUserId}
+      diagramTeamId={diagramTeamId}
+      emailEnabled={emailEnabled}
+      onSubmit={onSubmit}
+      onClose={onClose}
+    />
+  );
+}
+
+// The guest-facing state: explain the feature, offer sign-in. One
+// impression emit per open so the funnel is measurable (spec/22).
+function AssignActionSignInPrompt({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { signInHref } = useAuthHrefs();
+  useEffect(() => {
+    if (open) track('UI', 'Opened', 'ActionSignInPrompt');
+  }, [open]);
+  return (
+    <Dialog open={open} onClose={onClose} titleId="assign-action-signin-title">
+      <div className="border-b border-slate-100 px-6 pb-5 pt-5 dark:border-slate-800">
+        <div className="flex items-start justify-between gap-3">
+          <h2
+            id="assign-action-signin-title"
+            className="text-lg font-semibold text-slate-900 dark:text-slate-50"
+          >
+            Sign in to assign actions
+          </h2>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="-mr-1.5 -mt-0.5 rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <CloseIcon size={14} />
+          </button>
+        </div>
+      </div>
+      <div className="px-6 py-5">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          Actions attach a piece of work to an element and hand it to a teammate, with an optional
+          email nudge and an Actions panel tracking everything still open. Assignees come from your
+          teams, so you need a free account to use them.
+        </p>
+      </div>
+      <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+        <Button type="button" variant="secondary" onClick={onClose}>
+          Not now
+        </Button>
+        <a
+          href={signInHref}
+          className="inline-flex items-center justify-center rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
+        >
+          Sign in
+        </a>
+      </div>
+    </Dialog>
+  );
+}
+
+function AssignActionForm({
   open,
   existing,
   teams,

@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { selectionMembers } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { clerkEnabled } from '@/lib/clerk-config';
 import { getTheme, shapeColorPresets, themePresetColors } from '@/lib/themes';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
@@ -111,7 +112,6 @@ export function EditorContextMenuHost() {
     openNote,
     openComments,
     openAssignAction,
-    clerkUserId,
   } = useEditorContext();
 
   if (!contextMenu || contextMenu.mode === 'canvas' || isReadOnly) return null;
@@ -227,7 +227,7 @@ export function EditorContextMenuHost() {
       onOpenNote={openNote}
       onOpenComments={openComments}
       onAssignAction={openAssignAction}
-      canAssignActions={!!clerkUserId}
+      actionsAvailable={clerkEnabled}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))
         .filter((e): e is NonNullable<typeof e> => e != null)}

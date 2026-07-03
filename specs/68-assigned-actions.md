@@ -70,15 +70,22 @@ collaboration band** (spec/09 band 4), in this order:
 Both categories keep the old section's gate (boxed elements only, so arrows
 are excluded just like today), each gets its own accordion section id
 (`'collaborate'`, `'resources'`), and the band separator rules are
-unchanged. For a guest the Collaborate category simply shows Comments alone,
-because the **Assign Action** tile is:
+unchanged. The **Assign Action** tile:
 
-- **Signed-in users only.** Teams are Clerk-gated (spec/32), so a guest has
-  nobody to assign to; the tile is hidden for guests rather than dangling a
-  sign-in wall off the canvas (spec/04).
+- **Always shows when the deployment has auth** (`clerkEnabled`). For a
+  signed-out user it opens the dialog in a **sign-in prompt state**
+  ("Sign in to assign actions to teammates", with the sign-in CTA) instead
+  of the picker — the feature stays discoverable without becoming a
+  sign-in wall on the canvas (spec/04; the spec/36 encouragement pattern).
+  Assigning itself remains signed-in only: the picker is built on teams
+  (spec/32). On a Clerk-less self-host the tile is hidden outright — with
+  no accounts there are no teams, so nothing could ever enable it, and
+  the Collaborate category shows Comments alone (spec/03).
 - When the element already has an action, the tile reads **View Action**
   and opens that action's popover (§3) instead of the assign dialog, the
   same open-what-exists behaviour as the Add/Edit Link and Note tiles.
+  This works signed-out too — anyone who can see the element may read its
+  action.
 
 Clicking it opens the **Assign Action dialog** (its own component under
 `components/dialogs/`, per the no-god-files rule), with:

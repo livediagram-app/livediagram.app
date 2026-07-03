@@ -197,11 +197,11 @@ export type EditorContextMenuProps = {
   onOpenComments: (elementId: string) => void;
   // Assigned actions (spec/68): the Collaborate category's Assign Action
   // tile. Opens the assign dialog (no action yet) or the action popover
-  // (one exists). `canAssignActions` gates the tile to signed-in users —
-  // the picker is built on teams (spec/32), so a guest has nobody to
-  // assign to and sees no tile rather than a sign-in wall (spec/04).
+  // (one exists); signed-out users get the dialog's sign-in prompt state.
+  // `actionsAvailable` hides the tile only on Clerk-less deployments,
+  // where there are no accounts, hence no teams, hence no assignees ever.
   onAssignAction: (elementId: string) => void;
-  canAssignActions: boolean;
+  actionsAvailable: boolean;
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
   // / Text / Border for boxed, Line + Pointer for arrows). The format setters

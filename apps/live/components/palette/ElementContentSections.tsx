@@ -228,9 +228,10 @@ export function ElementContentSections({
           icon={<CommentMenuIcon />}
           {...sectionProps('collaborate')}
         >
-          {/* Assign Action is signed-in only (the assignee picker is built
-                on teams); guests see Comments alone. */}
-          {props.canAssignActions ? (
+          {/* Assign Action shows whenever the deployment has auth; a
+                signed-out click opens the dialog's sign-in prompt. Only a
+                Clerk-less self-host (no teams possible) hides the tile. */}
+          {props.actionsAvailable ? (
             <MenuTileGrid cols={2}>
               <MenuTile
                 icon={<ActionMenuIcon />}
