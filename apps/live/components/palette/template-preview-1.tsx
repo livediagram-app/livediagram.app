@@ -61,7 +61,10 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             stroke="rgb(14 165 233)"
             strokeWidth="1.25"
           />
-          {[8, 25, 42].map((y) => (
+          {/* Branch rows sized to keep the bottom box (y + 9 + stroke)
+              inside the 50-unit viewBox; the middle connector runs
+              horizontally out of the root's midline. */}
+          {[7, 21, 35].map((y) => (
             <g key={y}>
               <line x1="22" y1="25" x2="40" y2={y + 4} stroke="rgb(100 116 139)" strokeWidth="1" />
               <rect

@@ -549,6 +549,11 @@ describe('hierarchy templates', () => {
     );
     expect(arrows).toHaveLength(12);
     expect(arrows.every((a) => a.arrowStyle === 'angled')).toBe(true);
+    // Each connector rakes down-across-down via two waypoints on the row
+    // midline, so the head arrives vertically at the child's top anchor
+    // (a bare single-elbow angled arrow would arrive sideways along it).
+    expect(arrows.every((a) => a.curvePoints?.length === 2)).toBe(true);
+    expect(arrows.every((a) => a.curvePoints!.every((p) => p.dy === 0))).toBe(true);
   });
 });
 

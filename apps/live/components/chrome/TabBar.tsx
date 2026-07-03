@@ -434,7 +434,13 @@ export function TabBar({
           <TabsLabelIcon />
           Tabs
         </span>
-        <div className="scrollbar-slim flex flex-1 items-center gap-1 overflow-x-auto">
+        {/* -m-1/p-1 gives the scroll clip 4px of clearance on every side
+            without moving the content: the active pill's accent ring and
+            drop shadow are box-shadows, which an overflow container clips
+            at its padding edge, so with zero padding the ring vanished
+            along whichever edges the pill touched (bottom + first pill's
+            left). */}
+        <div className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto p-1">
           {groupTabsIntoRuns(tabs).map((run) =>
             run.kind === 'loose' ? (
               renderTabPill(run.tab)

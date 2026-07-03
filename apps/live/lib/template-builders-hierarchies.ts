@@ -94,9 +94,30 @@ export function buildOkrTree(cx: number, cy: number): Element[] {
 
 // Sitemap: a website's page hierarchy from Home down through four
 // sections to their sub-pages. Same tree bones as the org chart, but
-// wired with angled (elbow) connectors, the sitemap convention, and
+// wired with orthogonal rake connectors, the sitemap convention, and
 // path captions under each leaf so the boxes read as routes rather
 // than people.
+//
+// A bare `angled` arrow has a single auto elbow, so a parent-bottom to
+// child-top edge would arrive at the child travelling SIDEWAYS along
+// its top edge (the head floats mid-air pointing at nothing). Each
+// connector instead carries two waypoints on the row midline, giving
+// the classic down-across-down rake that arrives vertically at the
+// child's top anchor. Waypoints are chord-midpoint-relative
+// (`curvePoints`), and the row midline IS the chord's mid-Y for a
+// vertical tier pair, so the deltas are purely horizontal and the
+// route translates cleanly when a box is dragged.
+const rakeWaypoints = (
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): { dx: number; dy: number }[] => {
+  const chordMidX = (from.x + to.x) / 2;
+  return [
+    { dx: from.x - chordMidX, dy: 0 },
+    { dx: to.x - chordMidX, dy: 0 },
+  ];
+};
+
 export function buildSitemap(cx: number, cy: number): Element[] {
   const homeW = 220;
   const homeH = 76;
@@ -149,6 +170,7 @@ export function buildSitemap(cx: number, cy: number): Element[] {
     arrows.push({
       ...createPinnedArrow(home.id, 's', sectionEl.id, 'n'),
       arrowStyle: 'angled',
+      curvePoints: rakeWaypoints({ x: cx, y: homeY + homeH }, { x: sectionCenterX, y: sectionY }),
     });
 
     section.leaves.forEach((leaf, j) => {
@@ -174,6 +196,10 @@ export function buildSitemap(cx: number, cy: number): Element[] {
       arrows.push({
         ...createPinnedArrow(sectionEl.id, 's', leafEl.id, 'n'),
         arrowStyle: 'angled',
+        curvePoints: rakeWaypoints(
+          { x: sectionCenterX, y: sectionY + sectionH },
+          { x: leafCenterX, y: leafY },
+        ),
       });
     });
   });
