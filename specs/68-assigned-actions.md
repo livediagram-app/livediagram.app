@@ -1,11 +1,13 @@
 # 68 — Assigned actions
 
 **Status: proposal.** Assign a piece of work to a teammate directly from a
-diagram element: the element context menu's Collaborate section gains an
-**Assign Action** tile that attaches a named, described, assigned action to
-the element, optionally emailing the assignee. An **Actions Panel** (the
-Comments Panel pattern, spec/63 docking) lists the tab's outstanding actions
-and jumps to them. Builds on teams (spec/32) for the assignee picker, the
+diagram element: a new **Assign Action** tile attaches a named, described,
+assigned action to the element, optionally emailing the assignee. To make
+room for it the context menu's collaboration band splits in two:
+**Collaborate** (Assign Action + Comments, the people tiles) and
+**Resources** (Link + Note, the attached-material tiles). An **Actions
+Panel** (the Comments Panel pattern, spec/63 docking) lists the tab's
+outstanding actions and jumps to them. Builds on teams (spec/32) for the assignee picker, the
 comment-thread element-data pattern (see `commentThread`), transactional
 email (spec/64), and the profile notification toggles (spec/65).
 
@@ -52,18 +54,31 @@ Assignee/assigner identity here is informational (who to render), not a
 permission: anyone with edit access can complete, edit, or delete an action,
 the same way they can edit any element content.
 
-## 2. Assigning: the context-menu tile + dialog
+## 2. The context-menu split, the tile, and the dialog
 
-The Collaborate section (`ElementContentSections.tsx`, boxed elements only,
-so arrows are excluded just like comments and notes) gains a fourth
-`MenuTile`: **Assign Action**. Visibility:
+Today's single Collaborate category (`ElementContentSections.tsx`: Add/Edit
+Link, Add/Edit Note, Comments) splits into **two categories in the same
+collaboration band** (spec/09 band 4), in this order:
+
+1. **Collaborate** (comment icon): the people tiles — **Assign Action**
+   (new) and **Comments**.
+2. **Resources** (link icon): the attached-material tiles — **Add/Edit
+   Link** and **Add/Edit Note**. Link-cards keep their existing carve-out
+   (their Link lives in its own category), so a link-card's Resources shows
+   Note alone.
+
+Both categories keep the old section's gate (boxed elements only, so arrows
+are excluded just like today), each gets its own accordion section id
+(`'collaborate'`, `'resources'`), and the band separator rules are
+unchanged. For a guest the Collaborate category simply shows Comments alone,
+because the **Assign Action** tile is:
 
 - **Signed-in users only.** Teams are Clerk-gated (spec/32), so a guest has
   nobody to assign to; the tile is hidden for guests rather than dangling a
   sign-in wall off the canvas (spec/04).
 - When the element already has an action, the tile opens that action's
-  popover (§3) instead of the assign dialog, matching the "Add/Edit" spirit
-  of the neighbouring Link and Note tiles.
+  popover (§3) instead of the assign dialog, the same open-what-exists
+  behaviour as the Add/Edit Link and Note tiles.
 
 Clicking it opens the **Assign Action dialog** (its own component under
 `components/dialogs/`, per the no-god-files rule), with:

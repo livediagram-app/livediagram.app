@@ -147,7 +147,7 @@ When an element is selected, these per-element controls are available from its *
 1. **Placement** — Layer, Shape, Rotation.
 2. **Appearance** — Progress, Animation, Colours, Border.
 3. **Content** — Line, Pointer, Text, Icon, Image, Table, Link.
-4. **Collaboration** — Collaborate (link / note / comments).
+4. **Collaboration** — Collaborate (link / note / comments). Spec/68 (proposal) splits this into two categories: Collaborate (assign action / comments) followed by Resources (link / note).
 
 Every category renders conditionally (hidden when its gate doesn't apply), but a shown category always lands in this order, so the menu never reshuffles between element kinds. The multi-selection menu has **parity with the single-element menu for every formatting category** — Layer (front/back, opacity, aspect lock), Shape morph, Rotation, Presets, Animation, Colours, Border, Icon size, Markers, Text Alignment, and the arrow Line / Pointer / Text categories all appear when any member of the selection matches, each applying selection-wide (display values read off the first matching member) — so anything you can restyle on one element works on a marquee or group too. Only the per-element identity/content categories (Image, Table structure, Link, Note, Comments, and the data-shape editors) stay single-element.
 
