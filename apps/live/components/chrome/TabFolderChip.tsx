@@ -118,7 +118,10 @@ export function TabFolderChip({
 
   return (
     <div
-      className={`flex shrink-0 items-center gap-1 rounded-md border border-slate-200 px-1 py-0.5 dark:border-slate-700 ${
+      // A folder reads as a CONTAINER, clearly distinct from the tab pills
+      // inside it: dashed boundary (the app's "grouping" cue) + a tinted
+      // inset surface the member pills sit on.
+      className={`flex shrink-0 items-center gap-1 rounded-lg border border-dashed border-slate-300 bg-slate-100/70 px-1 py-0.5 dark:border-slate-600 dark:bg-slate-800/40 ${
         dragOver ? 'ring-2 ring-brand-400 ring-offset-1' : ''
       }`}
       onDragOver={
@@ -170,7 +173,7 @@ export function TabFolderChip({
             type="button"
             onClick={toggle}
             onDoubleClick={readOnly ? undefined : () => setEditing(true)}
-            className="flex items-center gap-1 rounded px-1.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-100"
           >
             <FolderGlyph open={showMembers} />
             <span>{name}</span>

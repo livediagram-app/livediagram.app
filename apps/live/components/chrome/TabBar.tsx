@@ -350,12 +350,24 @@ export function TabBar({
                 setMenuFor(tab.id);
               }
         }
-        style={{
-          color: legibleTabAccent(tab, isDark),
-          ...(isActive ? { backgroundColor: `${legibleTabAccent(tab, isDark)}1a` } : {}),
-        }}
-        className={`relative flex shrink-0 items-center gap-1 rounded-md px-2 transition ${
-          isActive ? '' : 'hover:bg-slate-100'
+        // Active tab: a raised card (bar-contrasting surface + accent ring +
+        // accent text) so it can't blend into the bar; inactive tabs use
+        // neutral slate text — readable on the bar whatever the tab's theme —
+        // with the theme accent kept as the identity dot inside the label.
+        // color-mix keeps the ring legible for non-hex accents too.
+        style={
+          isActive
+            ? {
+                color: legibleTabAccent(tab, isDark),
+                backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                boxShadow: `0 0 0 1px color-mix(in srgb, ${legibleTabAccent(tab, isDark)} 45%, transparent), 0 1px 3px rgb(0 0 0 / ${isDark ? '0.45' : '0.12'})`,
+              }
+            : undefined
+        }
+        className={`relative flex shrink-0 items-center gap-1 rounded-lg px-2.5 transition ${
+          isActive
+            ? ''
+            : 'bg-slate-200/50 text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
         }`}
       >
         {/* Insertion caret: a vertical bar in the gap on the side the tab
@@ -382,8 +394,15 @@ export function TabBar({
             onClick={() => onSelect(tab.id)}
             onDoubleClick={readOnly ? undefined : () => isActive && setEditingId(tab.id)}
             aria-current={isActive ? 'page' : undefined}
-            className="flex items-center gap-1 rounded-md py-1.5 text-sm font-medium"
+            className="flex items-center gap-1.5 rounded-lg py-1 text-sm font-medium"
           >
+            {/* The tab theme's accent as a small identity dot — the pill text
+                itself stays neutral so it reads on the bar for ANY theme. */}
+            <span
+              aria-hidden
+              className="h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ backgroundColor: legibleTabAccent(tab, isDark) }}
+            />
             {tab.locked ? <TabLockIcon /> : null}
             {tab.name}
           </button>
@@ -410,7 +429,7 @@ export function TabBar({
     <>
       <div
         data-editor-tabbar
-        className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900"
+        className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 px-3 dark:border-slate-800 dark:bg-slate-900"
       >
         <span
           className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:flex dark:text-slate-400"

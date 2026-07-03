@@ -47,13 +47,22 @@ export function useEdgeAwarePlacement(
       flippedRef.current = false;
     }
     const rect = node.getBoundingClientRect();
+    // The flip / nudge boundaries are the CANVAS AREA's edges, not the raw
+    // viewport: the header band sits above <main> and the tab bar below it,
+    // so a viewport-relative test let the box pass while tucked under the
+    // header (the reported stuck-under-the-header toolbar). Measured live,
+    // so zen mode (no header) naturally widens the area back out.
+    const host = node.closest('main');
+    const area = host
+      ? host.getBoundingClientRect()
+      : { top: 0, bottom: window.innerHeight, left: 0, right: window.innerWidth };
     if (!flippedRef.current) {
-      if (placeAbove && rect.top < EDGE) {
+      if (placeAbove && rect.top < area.top + EDGE) {
         flippedRef.current = true;
         setPlaceAbove(false);
         return;
       }
-      if (!placeAbove && rect.bottom > window.innerHeight - EDGE) {
+      if (!placeAbove && rect.bottom > area.bottom - EDGE) {
         flippedRef.current = true;
         setPlaceAbove(true);
         return;
@@ -73,10 +82,10 @@ export function useEdgeAwarePlacement(
     const bottom = rect.bottom - adjust.y * zoom;
     let dx = 0;
     let dy = 0;
-    if (left < EDGE) dx = EDGE - left;
-    else if (right > window.innerWidth - EDGE) dx = window.innerWidth - EDGE - right;
-    if (top < EDGE) dy = EDGE - top;
-    else if (bottom > window.innerHeight - EDGE) dy = window.innerHeight - EDGE - bottom;
+    if (left < area.left + EDGE) dx = area.left + EDGE - left;
+    else if (right > area.right - EDGE) dx = area.right - EDGE - right;
+    if (top < area.top + EDGE) dy = area.top + EDGE - top;
+    else if (bottom > area.bottom - EDGE) dy = area.bottom - EDGE - bottom;
     const nx = dx / zoom;
     const ny = dy / zoom;
     if (nx !== adjust.x || ny !== adjust.y) setAdjust({ x: nx, y: ny });
