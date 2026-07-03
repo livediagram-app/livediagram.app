@@ -836,44 +836,39 @@ export function TableView({
             {Array.from({ length: cols }, (_, c) => (
               <div key={`rz-${c}`} className="relative">
                 {c < cols - 1 ? (
-                  <Tooltip
-                    title="Resize column"
-                    description="Drag to set a fixed column width, or double-click to auto-fit."
+                  <div
+                    onPointerEnter={() => armResizeEnter('col', c)}
+                    onPointerLeave={armResizeLeave}
+                    onPointerDown={(e) => {
+                      // Only a rested (armed) divider starts a resize —
+                      // an instant strip on every border swallowed clicks
+                      // mid-edit.
+                      if (armedResize?.axis === 'col' && armedResize.index === c)
+                        startColResize(c)(e);
+                    }}
+                    onDoubleClick={(e) => {
+                      if (!(armedResize?.axis === 'col' && armedResize.index === c)) return;
+                      e.stopPropagation();
+                      onCommitTable(element.id, {
+                        colWidths: Array.from({ length: cols }, (_, i) =>
+                          i === c ? null : (element.colWidths?.[i] ?? null),
+                        ),
+                      });
+                    }}
+                    className={`pointer-events-auto absolute -right-1 bottom-0 top-0 z-[var(--z-toolbar)] w-2 ${
+                      armedResize?.axis === 'col' && armedResize.index === c
+                        ? 'cursor-col-resize'
+                        : ''
+                    }`}
                   >
                     <div
-                      onPointerEnter={() => armResizeEnter('col', c)}
-                      onPointerLeave={armResizeLeave}
-                      onPointerDown={(e) => {
-                        // Only a rested (armed) divider starts a resize —
-                        // an instant strip on every border swallowed clicks
-                        // mid-edit.
-                        if (armedResize?.axis === 'col' && armedResize.index === c)
-                          startColResize(c)(e);
-                      }}
-                      onDoubleClick={(e) => {
-                        if (!(armedResize?.axis === 'col' && armedResize.index === c)) return;
-                        e.stopPropagation();
-                        onCommitTable(element.id, {
-                          colWidths: Array.from({ length: cols }, (_, i) =>
-                            i === c ? null : (element.colWidths?.[i] ?? null),
-                          ),
-                        });
-                      }}
-                      className={`pointer-events-auto absolute -right-1 bottom-0 top-0 z-[var(--z-toolbar)] w-2 ${
+                      className={`mx-auto h-full w-0.5 transition ${
                         armedResize?.axis === 'col' && armedResize.index === c
-                          ? 'cursor-col-resize'
-                          : ''
+                          ? 'bg-brand-400'
+                          : 'bg-brand-400/0'
                       }`}
-                    >
-                      <div
-                        className={`mx-auto h-full w-0.5 transition ${
-                          armedResize?.axis === 'col' && armedResize.index === c
-                            ? 'bg-brand-400'
-                            : 'bg-brand-400/0'
-                        }`}
-                      />
-                    </div>
-                  </Tooltip>
+                    />
+                  </div>
                 ) : null}
               </div>
             ))}
@@ -887,41 +882,36 @@ export function TableView({
             {Array.from({ length: rows }, (_, r) => (
               <div key={`rzr-${r}`} className="relative">
                 {r < rows - 1 ? (
-                  <Tooltip
-                    title="Resize row"
-                    description="Drag to set a fixed row height, or double-click to auto-fit."
+                  <div
+                    onPointerEnter={() => armResizeEnter('row', r)}
+                    onPointerLeave={armResizeLeave}
+                    onPointerDown={(e) => {
+                      if (armedResize?.axis === 'row' && armedResize.index === r)
+                        startRowResize(r)(e);
+                    }}
+                    onDoubleClick={(e) => {
+                      if (!(armedResize?.axis === 'row' && armedResize.index === r)) return;
+                      e.stopPropagation();
+                      onCommitTable(element.id, {
+                        rowHeights: Array.from({ length: rows }, (_, i) =>
+                          i === r ? null : (element.rowHeights?.[i] ?? null),
+                        ),
+                      });
+                    }}
+                    className={`pointer-events-auto absolute -bottom-1 left-0 right-0 z-[var(--z-toolbar)] h-2 ${
+                      armedResize?.axis === 'row' && armedResize.index === r
+                        ? 'cursor-row-resize'
+                        : ''
+                    }`}
                   >
                     <div
-                      onPointerEnter={() => armResizeEnter('row', r)}
-                      onPointerLeave={armResizeLeave}
-                      onPointerDown={(e) => {
-                        if (armedResize?.axis === 'row' && armedResize.index === r)
-                          startRowResize(r)(e);
-                      }}
-                      onDoubleClick={(e) => {
-                        if (!(armedResize?.axis === 'row' && armedResize.index === r)) return;
-                        e.stopPropagation();
-                        onCommitTable(element.id, {
-                          rowHeights: Array.from({ length: rows }, (_, i) =>
-                            i === r ? null : (element.rowHeights?.[i] ?? null),
-                          ),
-                        });
-                      }}
-                      className={`pointer-events-auto absolute -bottom-1 left-0 right-0 z-[var(--z-toolbar)] h-2 ${
+                      className={`my-auto h-0.5 w-full transition ${
                         armedResize?.axis === 'row' && armedResize.index === r
-                          ? 'cursor-row-resize'
-                          : ''
+                          ? 'bg-brand-400'
+                          : 'bg-brand-400/0'
                       }`}
-                    >
-                      <div
-                        className={`my-auto h-0.5 w-full transition ${
-                          armedResize?.axis === 'row' && armedResize.index === r
-                            ? 'bg-brand-400'
-                            : 'bg-brand-400/0'
-                        }`}
-                      />
-                    </div>
-                  </Tooltip>
+                    />
+                  </div>
                 ) : null}
               </div>
             ))}
