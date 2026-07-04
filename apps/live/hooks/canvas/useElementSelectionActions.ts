@@ -26,6 +26,7 @@ import {
   type QuickConnectDirection,
   type QuickConnectKind,
 } from '@/lib/canvas';
+import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { track, titleCaseType } from '@/lib/telemetry';
 
 type EditorSelectionActionsDeps = {
@@ -348,73 +349,14 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       width: source.width,
       height: source.height,
     };
-    // Match the gap to the nearest in-line neighbour so a duplicated chain
-    // keeps the same spacing as existing siblings, instead of always using a
-    // fixed gap the user then has to nudge into line. "In-line" = an element
-    // whose perpendicular extent overlaps the source's (the same row when
-    // duplicating left/right, the same column when up/down); the gap is the
-    // edge-to-edge distance to the nearest such element on either side. Falls
-    // back to DEFAULT_GAP when the source stands alone in that direction.
-    const DEFAULT_GAP = 40;
-    const horizontal = direction === 'right' || direction === 'left';
-    let nearestGap: number | null = null;
-    for (const el of activeTab.elements) {
-      if (!isBoxed(el) || ids.has(el.id)) continue;
-      if (horizontal) {
-        const sharesRow = !(
-          baseBounds.y + baseBounds.height <= el.y || el.y + el.height <= baseBounds.y
-        );
-        if (!sharesRow) continue;
-        const g =
-          el.x >= baseBounds.x + baseBounds.width
-            ? el.x - (baseBounds.x + baseBounds.width)
-            : baseBounds.x - (el.x + el.width);
-        if (g >= 0 && (nearestGap === null || g < nearestGap)) nearestGap = g;
-      } else {
-        const sharesCol = !(
-          baseBounds.x + baseBounds.width <= el.x || el.x + el.width <= baseBounds.x
-        );
-        if (!sharesCol) continue;
-        const g =
-          el.y >= baseBounds.y + baseBounds.height
-            ? el.y - (baseBounds.y + baseBounds.height)
-            : baseBounds.y - (el.y + el.height);
-        if (g >= 0 && (nearestGap === null || g < nearestGap)) nearestGap = g;
-      }
-    }
-    const gap = nearestGap ?? DEFAULT_GAP;
-    const w = baseBounds.width + gap;
-    const h = baseBounds.height + gap;
-    const step = {
-      x: direction === 'right' ? w : direction === 'left' ? -w : 0,
-      y: direction === 'below' ? h : direction === 'above' ? -h : 0,
-    };
-    // Step further in the same direction until the new element's bounding
-    // box doesn't overlap any existing element. Keeps long chains properly
-    // spaced even if the user clicks faster than the selection visually
-    // catches up.
-    let dx = step.x;
-    let dy = step.y;
-    for (let attempt = 0; attempt < 20; attempt++) {
-      const proposed = {
-        x: baseBounds.x + dx,
-        y: baseBounds.y + dy,
-        width: baseBounds.width,
-        height: baseBounds.height,
-      };
-      const overlaps = activeTab.elements.some((el) => {
-        if (!isBoxed(el) || ids.has(el.id)) return false;
-        return !(
-          proposed.x + proposed.width <= el.x ||
-          el.x + el.width <= proposed.x ||
-          proposed.y + proposed.height <= el.y ||
-          el.y + el.height <= proposed.y
-        );
-      });
-      if (!overlaps) break;
-      dx += step.x;
-      dy += step.y;
-    }
+    // Nearest in-line gap matching + step-until-clear placement — pure
+    // geometry, lifted to lib/quick-add-placement.ts.
+    const { dx, dy } = quickAddPlacement({
+      elements: activeTab.elements,
+      ids,
+      baseBounds,
+      direction,
+    });
     if (kind === 'duplicate') {
       // Clone only, no connector arrow. Most duplicates don't need an arrow,
       // so adding one was usually noise to delete; draw one with the + menu's
