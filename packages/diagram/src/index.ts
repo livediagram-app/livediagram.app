@@ -656,6 +656,7 @@ export * from './theme-presets';
 // used by selection captions and any surface that names what's selected.
 export * from './element-kind-label';
 
+export * from './anchor-choice';
 export * from './geometry';
 export * from './arrow-rebind';
 export * from './geometry-snapping';

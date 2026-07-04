@@ -3,13 +3,11 @@ import {
   ANCHOR_SWITCH_MARGIN,
   FACE_SHARE_MIN_RAD,
   anchorAimPoint,
-  buildElementIndex,
-  centreOf,
-  endpointPosition,
   isCardinal,
   rankAnchorsTowards,
   type Cardinal,
-} from './geometry';
+} from './anchor-choice';
+import { buildElementIndex, centreOf, endpointPosition } from './geometry';
 
 // Re-pin arrows whose either endpoint is anchored to a moved box, pointing
 // each end at the face the connector now leaves through. Pure: takes the
