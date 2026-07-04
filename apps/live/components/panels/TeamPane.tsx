@@ -13,12 +13,11 @@ import {
 } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
 import { useConfirm } from '@/hooks/ui/useConfirm';
-import { colorForKey, initialsOf } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import { SignInIcon } from '@/components/chrome/AuthControls';
-import { PencilIcon, PlusIcon, RemoveIcon, TrashIcon } from '@/components/panels/explorer-icons';
+import { PencilIcon, PlusIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
-import { EllipsisIcon, LinkIcon, memberName, RolePill } from './team-pane-parts';
+import { EllipsisIcon, LinkIcon, memberName, TeamMemberRow } from './team-pane-parts';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
 import { TeamSharedDiagrams } from '@/components/panels/TeamSharedDiagrams';
@@ -358,84 +357,18 @@ export function TeamPane({
 
         {/* ---------- Members ---------- */}
         <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
-          {members.map((m) => {
-            const isSelf = m.userId !== null && m.userId === clerkUserId;
-            const name = memberName(m, isSelf, clerkDisplayName);
-            // Pending = hasn't accepted (spec/32 handshake), regardless
-            // of whether the lazy claim has identified them yet.
-            const pending = m.status === 'invited';
-            const pinnedAdmin = isLastAdmin(m);
-            const removable = isAdmin && !isSelf && !pinnedAdmin;
-            return (
-              <li key={m.id} className="group flex items-center gap-3 px-4 py-2.5">
-                <span
-                  aria-hidden
-                  style={{ backgroundColor: colorForKey(m.email ?? m.userId ?? m.id) }}
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${
-                    pending ? 'opacity-50' : ''
-                  }`}
-                >
-                  {initialsOf(name)}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {name}
-                    </span>
-                    {isSelf ? (
-                      <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[10px] font-medium text-slate-500 ring-1 ring-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:ring-slate-600">
-                        you
-                      </span>
-                    ) : null}
-                    {pending ? (
-                      <span className="shrink-0 rounded-full bg-amber-100 px-1.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
-                        Invited
-                      </span>
-                    ) : null}
-                  </span>
-                  {/* Email under the name for every member (spec/32) — the
-                      recognisable identifier alongside the display name.
-                      `truncate` keeps long addresses from breaking the row
-                      layout on mobile. Pending rows that somehow carry no
-                      address fall back to the waiting hint. */}
-                  {m.email ? (
-                    <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                      {m.email}
-                    </span>
-                  ) : pending ? (
-                    <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
-                      Waiting for them to accept
-                    </span>
-                  ) : null}
-                </span>
-                {isAdmin && !pinnedAdmin ? (
-                  <select
-                    value={m.role}
-                    onChange={(e) => void changeRole(m, e.target.value as TeamRole)}
-                    aria-label={`Role for ${name}`}
-                    className="shrink-0 cursor-pointer rounded-md border border-transparent bg-transparent px-1.5 py-1 text-xs font-medium text-slate-600 outline-none transition hover:border-slate-200 hover:bg-white focus:border-brand-400 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:[&>option]:bg-slate-800"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="member">Member</option>
-                  </select>
-                ) : (
-                  <RolePill member={m} pinned={pinnedAdmin && isAdmin} />
-                )}
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center">
-                  {removable ? (
-                    <button
-                      type="button"
-                      onClick={() => void removeMember(m, false)}
-                      aria-label={`Remove ${name}`}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:opacity-100 group-hover:opacity-100 dark:text-slate-600 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
-                    >
-                      <RemoveIcon />
-                    </button>
-                  ) : null}
-                </span>
-              </li>
-            );
-          })}
+          {members.map((m) => (
+            <TeamMemberRow
+              key={m.id}
+              m={m}
+              clerkUserId={clerkUserId}
+              clerkDisplayName={clerkDisplayName}
+              isAdmin={isAdmin}
+              pinnedAdmin={isLastAdmin(m)}
+              onChangeRole={(member, role) => void changeRole(member, role)}
+              onRemove={(member) => void removeMember(member, false)}
+            />
+          ))}
         </ul>
 
         {/* ---------- Notice + invite footer ---------- */}
