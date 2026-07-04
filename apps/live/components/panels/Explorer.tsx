@@ -8,14 +8,8 @@ import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { PlusIcon } from '@/components/panels/explorer-icons';
-import {
-  DiagramRow,
-  FolderNode,
-  SharedRow,
-  UnsortedNode,
-} from '@/components/panels/explorer-views';
-import { ExplorerTabBar, type ExplorerTab } from '@/components/panels/ExplorerTabBar';
-import { TeamNode } from '@/components/panels/explorer-team-views';
+import { DiagramRow } from '@/components/panels/explorer-views';
+import { ExplorerSections } from '@/components/panels/ExplorerSections';
 
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
@@ -87,19 +81,6 @@ function ExplorerImpl({
   // while the panel is open. Cheap when the panel is minimised (this
   // function returns early below before the interval is set up).
   useRelativeTimeTick();
-  // The three sections (Recent / My Work / Teams) are a single tab bar
-  // instead of three stacked accordions, so only one list takes
-  // vertical space at a time. `selectedTab` is the user's pick; the
-  // section actually rendered falls back to the first available tab
-  // when the pick isn't currently shown (Teams hidden for a solo user,
-  // Recent empty on a fresh account), resolved just before the return.
-  const [selectedTab, setSelectedTab] = useState<string>('recent');
-  // Re-clicking the active tab collapses the section list (the tab bar
-  // stays put), like toggling an accordion shut; clicking any tab while
-  // collapsed reopens it. Selecting a different tab always expands.
-  // Starts collapsed so the panel opens compact — just the tab bar,
-  // no list — until the user picks a section.
-  const [tabsCollapsed, setTabsCollapsed] = useState(true);
   // Expansion state for each folder node + Unsorted (keyed by
   // folder id, or the literal 'unsorted' for the synthetic bucket).
   // Team rows + team folders share this map too (ids are globally
@@ -172,32 +153,6 @@ function ExplorerImpl({
   // a centred modal now (spec/15) and ignores it.
   const openMovePicker = (diagramId: string) => {
     setMoveTargetDiagramId(diagramId);
-  };
-
-  // Available section tabs, in display order. A section only earns a
-  // tab when it has something to show — these guards mirror the old
-  // per-accordion render conditions exactly, so nothing that used to
-  // appear disappears and an empty section never becomes dead chrome.
-  const sectionTabs: ExplorerTab[] = [];
-  if (loading || recents.length > 0) sectionTabs.push({ id: 'recent', label: 'Recent' });
-  if (!(diagrams.length === 0 && folders.length === 0))
-    sectionTabs.push({ id: 'work', label: 'My Work' });
-  if (teams.length > 0) sectionTabs.push({ id: 'teams', label: 'Teams' });
-  // Resolve the rendered tab: the user's pick when still available,
-  // else the first available section (null only on a blank account,
-  // where the whole tabbed card is hidden below).
-  const activeTab = sectionTabs.some((t) => t.id === selectedTab)
-    ? selectedTab
-    : (sectionTabs[0]?.id ?? null);
-  const handleSelectTab = (id: string) => {
-    if (tabsCollapsed) {
-      setTabsCollapsed(false);
-      setSelectedTab(id);
-    } else if (id === activeTab) {
-      setTabsCollapsed(true);
-    } else {
-      setSelectedTab(id);
-    }
   };
 
   return (
@@ -321,160 +276,36 @@ function ExplorerImpl({
             stacked accordions) so only one list takes vertical space.
             Shared-with-you diagrams interleave into Recent (matching the
             /explorer page); My Work holds the folder tree + Unsorted
-            (spec/15); Teams mirrors it per team (spec/35). The whole
-            card is hidden when no section has anything to show. */}
-        {sectionTabs.length > 0 && activeTab ? (
-          <div className="flex flex-col gap-2 rounded-xl bg-slate-50 p-1.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
-            <ExplorerTabBar
-              tabs={sectionTabs}
-              // Collapsed ⇒ no tab reads as selected; clicking any tab reopens.
-              activeId={tabsCollapsed ? '' : activeTab}
-              onSelect={handleSelectTab}
-            />
-
-            {tabsCollapsed ? null : activeTab === 'recent' ? (
-              loading ? (
-                <ul className="flex flex-col gap-1" aria-busy="true">
-                  {[0, 1, 2].map((i) => (
-                    <li
-                      key={i}
-                      className="flex items-center gap-1.5 rounded-md px-2 py-1.5"
-                      aria-hidden
-                    >
-                      <span className="h-3 w-3 shrink-0 animate-pulse rounded-sm bg-slate-200" />
-                      <span
-                        className="h-3 animate-pulse rounded bg-slate-200"
-                        style={{ width: `${70 - i * 12}%` }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <ul className="scrollbar-slim flex max-h-60 flex-col gap-0.5 overflow-y-auto">
-                  {recents.map((entry) =>
-                    entry.kind === 'shared' ? (
-                      // A diagram shared with you: opens on the share
-                      // link, dismissable — never the viewer's to
-                      // rename / move / delete.
-                      <SharedRow
-                        key={entry.s.id}
-                        item={entry.s}
-                        active={false}
-                        ownerId={ownerId}
-                        onOpen={() => onOpenDiagram(entry.s.id, entry.s.shareCode)}
-                        onDismiss={onDismissShared ? () => onDismissShared(entry.s.id) : undefined}
-                      />
-                    ) : (
-                      <li
-                        key={entry.d.id}
-                        className={
-                          exitingDiagramIds.has(entry.d.id)
-                            ? 'animate-slide-row-out overflow-hidden'
-                            : 'animate-slide-row-in overflow-hidden'
-                        }
-                      >
-                        <DiagramRow
-                          item={entry.d}
-                          ownerId={ownerId}
-                          active={false}
-                          // Team diagrams (spec/35) open for any joined
-                          // member; their rename / move / delete live
-                          // on the /explorer page + team page, so the
-                          // panel keeps team rows open-only.
-                          draggable={entry.kind === 'own' && !!onMoveDiagramToFolder}
-                          onOpen={() => onOpenDiagram(entry.d.id)}
-                          onDelete={
-                            entry.kind === 'own' && openDeleteConfirm
-                              ? (anchor) => openDeleteConfirm(entry.d.id, anchor)
-                              : undefined
-                          }
-                          onDuplicate={
-                            entry.kind === 'own' && onDuplicateDiagram
-                              ? () => onDuplicateDiagram(entry.d.id)
-                              : undefined
-                          }
-                          onMoveRequest={
-                            entry.kind === 'own' && onMoveDiagramToFolder
-                              ? () => openMovePicker(entry.d.id)
-                              : undefined
-                          }
-                        />
-                      </li>
-                    ),
-                  )}
-                </ul>
-              )
-            ) : activeTab === 'work' ? (
-              <ul className="flex flex-col gap-0.5">
-                {(foldersByParent.get(null) ?? []).map((f) => (
-                  <FolderNode
-                    key={f.id}
-                    folder={f}
-                    ownerId={ownerId}
-                    depth={0}
-                    foldersByParent={foldersByParent}
-                    diagramsByFolder={diagramsByFolder}
-                    expanded={expandedFolders}
-                    onToggleExpanded={toggleFolder}
-                    currentDiagramId={currentDiagramId}
-                    pendingRenameId={pendingRenameFolderId}
-                    onRenameFolderCommitted={() => setPendingRenameFolderId(null)}
-                    onOpenDiagram={onOpenDiagram}
-                    onRenameFolder={onRenameFolder}
-                    onDeleteFolder={onDeleteFolder}
-                    onCreateChild={handleCreateChild}
-                    onDeleteDiagram={openDeleteConfirm}
-                    exitingDiagramIds={exitingDiagramIds}
-                    onDuplicateDiagram={onDuplicateDiagram}
-                    onMoveDiagramRequest={
-                      onMoveDiagramToFolder ? (id) => openMovePicker(id) : undefined
-                    }
-                    onMoveDiagramToFolder={onMoveDiagramToFolder}
-                  />
-                ))}
-                {(diagramsByFolder.get(null) ?? []).length > 0 ? (
-                  <UnsortedNode
-                    ownerId={ownerId}
-                    expanded={expandedFolders}
-                    onToggleExpanded={toggleFolder}
-                    diagrams={diagramsByFolder.get(null) ?? []}
-                    currentDiagramId={currentDiagramId}
-                    onOpenDiagram={onOpenDiagram}
-                    onDeleteDiagram={openDeleteConfirm}
-                    exitingDiagramIds={exitingDiagramIds}
-                    onDuplicateDiagram={onDuplicateDiagram}
-                    onMoveDiagramRequest={
-                      onMoveDiagramToFolder ? (id) => openMovePicker(id) : undefined
-                    }
-                    onMoveDiagramToFolder={onMoveDiagramToFolder}
-                  />
-                ) : null}
-              </ul>
-            ) : activeTab === 'teams' ? (
-              <ul className="flex flex-col gap-0.5">
-                {teams.map((t) => (
-                  <TeamNode
-                    key={t.id}
-                    team={t}
-                    ownerId={ownerId}
-                    folders={foldersByTeam.get(t.id) ?? []}
-                    diagrams={diagramsByTeam.get(t.id) ?? []}
-                    currentDiagramId={currentDiagramId}
-                    expanded={expandedFolders}
-                    onToggleExpanded={toggleFolder}
-                    onOpenDiagram={(id) => onOpenDiagram(id)}
-                    onOpenTeam={(teamId) =>
-                      window.location.assign(`/explorer/team?id=${encodeURIComponent(teamId)}`)
-                    }
-                    // Hard delete on team-library rows, any joined
-                    // member (spec/35); the api enforces membership.
-                    onDeleteDiagram={openDeleteConfirm}
-                  />
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        ) : null}
+            (spec/15); Teams mirrors it per team (spec/35). The card owns
+            its own tab state and hides itself when no section has
+            anything to show — see ExplorerSections. */}
+        <ExplorerSections
+          loading={loading}
+          ownerId={ownerId}
+          currentDiagramId={currentDiagramId}
+          diagrams={diagrams}
+          folders={folders}
+          teams={teams}
+          recents={recents}
+          foldersByParent={foldersByParent}
+          diagramsByFolder={diagramsByFolder}
+          foldersByTeam={foldersByTeam}
+          diagramsByTeam={diagramsByTeam}
+          expandedFolders={expandedFolders}
+          onToggleFolder={toggleFolder}
+          pendingRenameFolderId={pendingRenameFolderId}
+          onRenameFolderCommitted={() => setPendingRenameFolderId(null)}
+          exitingDiagramIds={exitingDiagramIds}
+          onOpenDiagram={onOpenDiagram}
+          onDismissShared={onDismissShared}
+          onRenameFolder={onRenameFolder}
+          onDeleteFolder={onDeleteFolder}
+          onCreateChild={handleCreateChild}
+          onDeleteDiagram={openDeleteConfirm}
+          onDuplicateDiagram={onDuplicateDiagram}
+          onMoveDiagramRequest={onMoveDiagramToFolder ? openMovePicker : undefined}
+          onMoveDiagramToFolder={onMoveDiagramToFolder}
+        />
 
         {/* Sign-in prompt for signed-out guests. */}
         <SignInPrompt />
