@@ -4,6 +4,7 @@ import { useMemo, type PointerEvent as ReactPointerEvent } from 'react';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, type Anchor } from '@livediagram/diagram';
 import type { QuickConnectDirection } from '@/lib/canvas';
 import { quickConnectGroupStart, quickConnectSourceId } from '@/lib/quick-connect-source';
+import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { track } from '@/lib/telemetry';
 import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
 import type { UserPreferences } from '@/lib/user-preferences';
@@ -267,43 +268,16 @@ export function EditorCanvasHost() {
       tabSummaries={tabSummaries}
       tabLocked={activeTabLocked}
       readOnly={isReadOnly}
-      ownerParticipant={(() => {
-        // Three-tier resolution for the top-middle "Owner" badge:
-        //   1. Self IS the owner -> always have name + colour.
-        //   2. Owner is currently in the room -> use the live
-        //      presence row so the avatar (and its online dot)
-        //      matches what visitors see in the TabBar.
-        //   3. Owner is offline -> fall back to the joined name
-        //      + colour we got from the diagram fetch
-        //      (api worker LEFT JOINs participants on owner_id).
-        // Returning null only when the owner truly has no
-        // participant record on the server.
-        if (isOwner) return selfParticipant;
-        // The share endpoint redacts ownerId to '' for visitors (so an
-        // observer can't learn + claim a guest's owner-id), so a
-        // visitor can't match the owner's live presence row by id.
-        // When we have the real id (owner opening their own link) match
-        // on it; otherwise fall back to the joined owner name + colour,
-        // which is the same identity the fetch already trusts. Without
-        // this, an online owner always resolved to the offline branch
-        // below and showed a red (offline) dot to viewers.
-        const live = diagramOwnerId
-          ? livePresence.find((p) => p.id === diagramOwnerId)
-          : livePresence.find((p) => p.name === diagramOwnerName && p.color === diagramOwnerColor);
-        if (live) return live;
-        // Owner not in the room: key the badge off the NAME, not the
-        // (blanked) id, or viewers never get the badge at all. The id
-        // here is display-only, so a synthetic fallback is fine.
-        if (diagramOwnerName) {
-          return {
-            id: diagramOwnerId || 'owner',
-            name: diagramOwnerName,
-            color: diagramOwnerColor ?? '#94a3b8',
-            status: 'offline' as const,
-          };
-        }
-        return null;
-      })()}
+      // Three-tier owner-badge resolution (self / live presence row /
+      // joined fetch fallback) — see resolveOwnerBadge in presence-rows.
+      ownerParticipant={resolveOwnerBadge({
+        isOwner,
+        selfParticipant,
+        livePresence,
+        diagramOwnerId,
+        diagramOwnerName,
+        diagramOwnerColor,
+      })}
       isOwner={isOwner}
       diagramName={diagramName}
       tabBackgroundPattern={activeTab.backgroundPattern ?? 'grid'}
