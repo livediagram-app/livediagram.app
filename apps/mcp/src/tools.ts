@@ -1,37 +1,28 @@
-// The five MCP tools (spec/62 §4). Each is a thin wrapper over the api worker
+// The MCP tools (spec/62 §4). Each is a thin wrapper over the api worker
 // plus the shared diagram helpers (validate / auto-layout / renderElementsToSvg)
 // — no business logic the editor doesn't already own. The calling LLM produces
-// the elements; these tools validate, lay out, persist, and render.
+// the elements; these tools validate, lay out, persist, and render. The
+// shared result / auth / tab-building plumbing lives in tool-helpers.ts.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import type { Diagram, DiagramSummary, TabRecord } from '@livediagram/api-schema';
-import {
-  autoLayoutElements,
-  coerceShapeKind,
-  getBuiltInTheme,
-  isLayoutCandidate,
-  isValidTab,
-  nodesLookUnplaced,
-  recolourElementsForTheme,
-  renderElementsToSvg,
-  type Element,
-  type Tab,
-} from '@livediagram/diagram';
-// Static-import icon resolver (Worker bundle, size not user-facing) so icon
-// elements render their real glyph in the inline image.
-import { resolveIconExportArt } from '@livediagram/icons/resolve';
-import {
-  TEMPLATES,
-  TEMPLATE_CATEGORIES,
-  buildTemplate,
-  templateCanvasOverrides,
-  templateCategory,
-  type TemplateKind,
-} from '@livediagram/templates';
+import { coerceShapeKind, isValidTab, type Element, type Tab } from '@livediagram/diagram';
+import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
 import { apiJson, postTelemetry } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
-import { svgToPngBase64 } from './render';
+import {
+  applyLayout,
+  buildTab,
+  buildTemplateTab,
+  deepLink,
+  errorResult,
+  imageResult,
+  requireToken,
+  resolveTemplate,
+  textResult,
+  validTemplateKinds,
+  type Extra,
+} from './tool-helpers';
 import {
   addTabShape,
   createDiagramShape,
@@ -39,106 +30,6 @@ import {
   readDiagramShape,
   updateDiagramShape,
 } from './schema';
-
-type Extra = RequestHandlerExtra<never, never>;
-type ToolResult = {
-  content: Array<
-    { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
-  >;
-  isError?: boolean;
-};
-
-const deepLink = (id: string) => `https://livediagram.app/diagram/${id}`;
-
-function requireToken(extra: Extra): string {
-  const token = extra.authInfo?.token;
-  if (!token) throw new Error('unauthorized: no bearer token');
-  return token;
-}
-
-function textResult(value: unknown): ToolResult {
-  return { content: [{ type: 'text', text: JSON.stringify(value, null, 2) }] };
-}
-
-function errorResult(message: string): ToolResult {
-  return { content: [{ type: 'text', text: message }], isError: true };
-}
-
-async function imageResult(value: unknown, tab: Tab): Promise<ToolResult> {
-  const png = await svgToPngBase64(
-    renderElementsToSvg(tab, { resolveIconArt: resolveIconExportArt }),
-  );
-  return {
-    content: [
-      { type: 'text', text: JSON.stringify(value, null, 2) },
-      { type: 'image', data: png, mimeType: 'image/png' },
-    ],
-  };
-}
-
-// Layout is the model's call (spec/62 §4.3). 'preserve' keeps the coordinates
-// it gave (a ring for a cycle, a tree, a grid); 'auto' forces a clean server
-// layout; omitted = preserve a real arrangement, but auto-lay-out when the
-// model left everything piled at one spot. Either way the connected graph is
-// the only thing arranged — edgeless content keeps its place.
-function applyLayout(layout: 'auto' | 'preserve' | undefined, elements: Element[]): Element[] {
-  const shouldLayout =
-    layout === 'auto' ? true : layout === 'preserve' ? false : nodesLookUnplaced(elements);
-  return shouldLayout && isLayoutCandidate(elements) ? autoLayoutElements(elements) : elements;
-}
-
-// Build a finished, persistable Tab from validated elements: apply the layout,
-// then paint the chosen preset theme onto the elements + the canvas backdrop —
-// the same engine the editor uses (spec/62). `themeId` defaults to brand;
-// unknown ids fall back to it. `elements` must already be a valid Element[].
-function buildTab(
-  tabId: string,
-  name: string,
-  elements: Element[],
-  layout: 'auto' | 'preserve' | undefined,
-  themeId: string | undefined,
-): Tab {
-  const theme = getBuiltInTheme(themeId);
-  // Coerce off-vocabulary shape kinds (e.g. a model emitting "rectangle", which
-  // isn't a kind — the box is "square") so every node actually renders a box.
-  const coerced = elements.map((el) =>
-    el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
-  );
-  const laidOut = applyLayout(layout, coerced);
-  return {
-    id: tabId,
-    name,
-    elements: recolourElementsForTheme(laidOut, theme),
-    theme: theme.id,
-    backgroundColor: theme.backgroundColor,
-    backgroundPattern: theme.backgroundPattern,
-    patternColor: theme.patternColor,
-    ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
-  };
-}
-
-// Resolve a tool's `template` argument against the shared catalogue
-// (spec/62 §4.5). Returns null for an unknown kind — the caller answers
-// with the valid kinds so the model can self-correct without a round
-// trip to list_templates.
-function resolveTemplate(kind: string): TemplateKind | null {
-  return TEMPLATES.some((t) => t.kind === kind) ? (kind as TemplateKind) : null;
-}
-
-const validTemplateKinds = () => TEMPLATES.map((t) => t.kind).join(', ');
-
-// Materialise a template tab: the curated scaffold at its hand-tuned
-// coordinates (layout deliberately NOT run — that's the point of a
-// template), themed by buildTab like any other elements, plus the
-// template's canvas overrides + the templateChosen flag the editor's
-// Quick Start uses.
-function buildTemplateTab(tabId: string, name: string, kind: TemplateKind, themeId?: string): Tab {
-  return {
-    ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
-    templateChosen: true,
-    ...templateCanvasOverrides(kind),
-  };
-}
 
 export function registerTools(server: McpServer, env: Env): void {
   server.registerTool(
