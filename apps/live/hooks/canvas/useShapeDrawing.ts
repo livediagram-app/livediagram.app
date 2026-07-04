@@ -20,24 +20,18 @@
 // hook. Verbatim relocation — no behaviour change.
 
 import { useRef, useState } from 'react';
-import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
+import { ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
 import {
-  COMPONENT_SIZE,
-  createComponent,
   createFreehand,
-  createImage,
   createShape,
-  createSticky,
-  createText,
-  isBoxed,
-  recogniseShape,
-  scaleElements,
-  simplifyPolyline,
   snapToArrowPoint,
   type ArrowElement,
+  type Endpoint,
+  isBoxed,
+  recogniseShape,
+  simplifyPolyline,
   type ComponentKind,
   type Element,
-  type Endpoint,
   type ShapeElement,
   type Tab,
 } from '@livediagram/diagram';
@@ -45,14 +39,13 @@ import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import type { PendingDraw } from '@/lib/draw-mode';
+import {
+  buildDrawnArrow,
+  buildDrawnBoxed,
+  buildDrawnComponent,
+  NEW_ARROW_THEME_STROKE_FALLBACK,
+} from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
-
-// Stroke for a new arrow when the active theme has no explicit
-// `elementStroke` (the Brand theme). brand-500 — matches the shape
-// default stroke (`defaultStrokeColor`) so an added arrow reads as the
-// accent like every other new element, instead of ArrowView's slate-700
-// fallback (which looked like an un-themed black line + arrowhead).
-const NEW_ARROW_THEME_STROKE_FALLBACK = '#0ea5e9';
 
 // Telemetry `type` per component kind (closed vocabulary, no user content).
 const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
@@ -154,48 +147,22 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       setPendingDraw(null);
       return;
     }
+    // The element construction per intent kind lives in lib/draw-commit
+    // (pure, testable); this dispatcher owns the functional commit,
+    // selection, telemetry, and follow-ups. Every append lands through
+    // the functional `commit` (live elements + emit): this closure is
+    // frozen for the whole gesture, so writing gesture-start elements
+    // wholesale would revert anything that landed mid-drag. New
+    // elements default to the FRONT of z-order (see addBoxed).
     if (intent.type === 'arrow') {
-      const dx = endX - startX;
-      const dy = endY - startY;
-      // Stray click on the canvas while pendingDraw is set: less
-      // than 16 canvas-px in either axis is treated as "I didn't
-      // really mean to draw an arrow", produce a default-sized
-      // horizontal one centred on the start point instead so the
-      // user isn't left wondering why nothing appeared.
-      const isClick = Math.abs(dx) < 16 && Math.abs(dy) < 16;
-      // Stray click: lay the default 160px horizontal arrow across
-      // the click point. Real drag: use the dragged endpoints as-is.
-      // Y is always anchored at startY in both branches (a click
-      // wants a flat line, a drag's endY only matters for non-stray
-      // gestures), so it stays a plain assignment, not a ternary.
-      const arrowStartX = isClick ? startX - 80 : startX;
-      const arrowEndX = isClick ? startX + 80 : endX;
-      const arrowEndY = isClick ? startY : endY;
-      const theme = getTheme(activeTab.theme);
-      // Snap each endpoint onto a nearby arrow's line at draw time (spec/50), so
-      // drawing a message onto another arrow connects immediately rather than
-      // landing free and needing a follow-up nudge. A stray click lays the
-      // placeholder arrow free (no snapping). Element-anchor snapping on draw
-      // stays as-is (free); this only adds the arrow-line connection.
-      const snapDrawn = (x: number, y: number): Endpoint => {
-        if (isClick) return { kind: 'free', x, y };
-        const hit = snapToArrowPoint({ x, y }, activeTab.elements, ARROW_SNAP_THRESHOLD_PX, '');
-        return hit ? { kind: 'on-arrow', arrowId: hit.arrowId, t: hit.t } : { kind: 'free', x, y };
-      };
-      const arrow: ArrowElement = {
-        id: crypto.randomUUID(),
-        type: 'arrow',
-        from: snapDrawn(arrowStartX, startY),
-        to: snapDrawn(arrowEndX, arrowEndY),
-        arrowEnds: 'none',
-        strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
-      };
-      // Append via the functional `commit` (live elements + emit), like
-      // the shape branch: this closure is frozen for the whole gesture,
-      // so writing `activeTab.elements + arrow` wholesale would revert
-      // any edit (a peer's, or our own via realtime) that landed
-      // mid-drag. New elements default to the FRONT of z-order (see
-      // addBoxed).
+      const arrow = buildDrawnArrow(
+        startX,
+        startY,
+        endX,
+        endY,
+        activeTab.elements,
+        getTheme(activeTab.theme),
+      );
       commit((els) => [...els, arrow]);
       setSelectedId(arrow.id);
       setPendingDraw(null);
@@ -204,97 +171,41 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     }
     // Freehand never reaches commitDraw, it routes through
     // commitFreehand (with the polyline). If a future regression
-    // mis-routes it here, bail rather than fall through the
-    // ternary into createImage and mint a phantom image element
-    // where the user expected a sketch.
+    // mis-routes it here, bail rather than fall through into the boxed
+    // branch and mint a phantom element where the user expected a sketch.
     if (intent.type === 'freehand') {
       setPendingDraw(null);
       return;
     }
-    // Component (spec/09): build the composite at the theme's colours, then a
-    // tap drops it at its natural size centred on the tap, while a drag scales
-    // the whole group uniformly to fill the dragged box (keeps proportions;
-    // pinned connectors follow). Selects the group's primary member.
     if (intent.type === 'component') {
-      const theme = getTheme(activeTab.theme);
-      const colors = {
-        accent: theme.elementStroke ?? '#0284c7',
-        surface: theme.elementFill ?? '#ffffff',
-        ink: theme.elementText ?? '#0f172a',
-      };
-      const def = COMPONENT_SIZE[intent.kind];
-      const isTap = Math.abs(endX - startX) < 16 && Math.abs(endY - startY) < 16;
-      const centreX = isTap ? startX : (startX + endX) / 2;
-      const centreY = isTap ? startY : (startY + endY) / 2;
-      const made = createComponent(intent.kind, centreX, centreY, colors);
-      let placed = made;
-      if (!isTap) {
-        const dragW = Math.max(16, Math.abs(endX - startX));
-        const dragH = Math.max(16, Math.abs(endY - startY));
-        const s = Math.min(8, Math.max(0.25, Math.max(dragW / def.width, dragH / def.height)));
-        placed = scaleElements(made, centreX, centreY, s);
-      }
-      // Functional commit for the same mid-gesture-staleness reason as
-      // the arrow branch above.
+      const placed = buildDrawnComponent(
+        intent.kind,
+        startX,
+        startY,
+        endX,
+        endY,
+        getTheme(activeTab.theme),
+      );
       commit((els) => [...els, ...placed]);
+      // Selects the group's primary member.
       const primary = placed.find((el) => isBoxed(el) && el.groupId) ?? placed[0];
       if (primary) setSelectedId(primary.id);
       setPendingDraw(null);
       track('Element', 'Added', COMPONENT_TELEMETRY[intent.kind]);
       return;
     }
-    // Tap vs drag (the combined add mode): a press with under 16px of
-    // travel in either axis is a tap — drop the element centred on the tap
-    // at its inherited size (the armed-time selection's size, else the
-    // factory default; circle/diamond stay square). A real drag sizes it
-    // to the dragged box (16px floor). Mirrors the arrow branch's
-    // stray-click handling.
-    const isTap = Math.abs(endX - startX) < 16 && Math.abs(endY - startY) < 16;
-    const base =
-      intent.type === 'shape'
-        ? createShape(intent.kind, startX, startY)
-        : intent.type === 'text'
-          ? createText(startX, startY)
-          : intent.type === 'sticky'
-            ? createSticky(startX, startY)
-            : createImage(startX, startY);
-    const tapSize = inheritedSizeFor(base, inheritSizeRef.current);
-    const width = isTap ? tapSize.width : Math.max(16, Math.abs(endX - startX));
-    const height = isTap ? tapSize.height : Math.max(16, Math.abs(endY - startY));
-    const x = isTap ? startX - width / 2 : Math.min(startX, endX);
-    const y = isTap ? startY - height / 2 : Math.min(startY, endY);
-    const colours = deriveNewBoxedColours(base, {
-      backgroundColor: activeTab.backgroundColor,
-      patternColor: activeTab.patternColor,
-      theme: activeTab.theme,
-    });
-    // Seed the tab's default text size onto the new element (spec/28).
-    const sized = {
-      ...base,
-      ...colours,
-      x,
-      y,
-      width,
-      height,
-      ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
-      // Icon draw intent: carry the chosen glyph id + seed label onto the
-      // freshly-drawn 'icon' shape (so palette icons / tech icons draw to
-      // size like any shape, see draw-mode.ts).
-      ...(intent.type === 'shape' && intent.iconId
-        ? { iconId: intent.iconId, ...(intent.label ? { label: intent.label } : {}) }
-        : {}),
-      // Technology marks render at a fixed size (spec/41), so warping the
-      // box can't warp the mark — the aspect lock createShape('icon') bakes
-      // in would only fight resizing the caption room, so drop it.
-      ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
-        ? { aspectLocked: false }
-        : {}),
-    } as typeof base;
-    // Append so new elements default to the FRONT of z-order (see
-    // addBoxed's note for the rationale). Frames don't need special-casing
-    // here: the canvas + exporters route through `framesFirst`, which keeps
-    // every frame painted behind its contents regardless of array position
-    // (spec/09), so a frame stays a section backdrop wherever it lands.
+    const sized = buildDrawnBoxed(
+      intent,
+      startX,
+      startY,
+      endX,
+      endY,
+      inheritSizeRef.current,
+      activeTab,
+    );
+    // Frames don't need special-casing here: the canvas + exporters
+    // route through `framesFirst`, which keeps every frame painted
+    // behind its contents regardless of array position (spec/09).
     commit((els) => [...els, sized]);
     setSelectedId(sized.id);
     // A freshly added text element drops straight into typing mode
