@@ -549,7 +549,7 @@ export function Canvas(props: CanvasProps) {
         onIsoOrbit={isoCamera.startOrbit}
         onIsoReset={isoCamera.reset}
       />
-      {/* Lazy per-tab load (spec/13). Last child + z-[var(--z-modal)] so it covers the
+      {/* Lazy per-tab load (spec/13). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
           otherwise overwrite an unfetched tab's real content. */}
       {tabLoadState && tabLoadState !== 'ready' ? (

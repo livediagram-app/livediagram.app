@@ -16,6 +16,12 @@ import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 // `relative`), so `absolute inset-0` covers the whole surface including
 // the floating palette. The header + TabBar live outside <main>, so they
 // stay live — the user can still switch tabs or navigate away.
+//
+// z-overlay, NOT z-modal: everything this must cover inside <main>
+// (panels / toolbars / chrome) sits at 40 or below, while the
+// EditorHeader is z-modal — an equal z-modal here let this later-DOM
+// overlay paint over the header's ProductNav dropdown, so the one menu
+// that navigates away from a failed load opened invisibly behind it.
 export function TabLoadOverlay({
   state,
   onRetry,
@@ -29,7 +35,7 @@ export function TabLoadOverlay({
     // clicks can't reach the palette / canvas. ApiErrorPage supplies the
     // card + Retry on top.
     return (
-      <div className="absolute inset-0 z-[var(--z-modal)] bg-slate-50 dark:bg-slate-950">
+      <div className="absolute inset-0 z-[var(--z-overlay)] bg-slate-50 dark:bg-slate-950">
         <ApiErrorPage
           onRetry={onRetry}
           title="Couldn’t load this tab"
@@ -40,7 +46,7 @@ export function TabLoadOverlay({
     );
   }
   return (
-    <div className="absolute inset-0 z-[var(--z-modal)] flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+    <div className="absolute inset-0 z-[var(--z-overlay)] flex items-center justify-center bg-slate-50 dark:bg-slate-950">
       <div className="flex flex-col items-center gap-3">
         <svg
           width="32"
