@@ -6,7 +6,6 @@ import {
   apiLoadDiagram,
   apiLoadSelf,
   apiLoadShared,
-  apiLoadTab,
   apiSaveSelf,
   getSessionSharePassword,
   readCachedSharePassword,
@@ -22,7 +21,8 @@ import { hasConfirmedName } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { track } from '@/lib/telemetry';
-import { placeholdersFromSummaries, resolveDiagramSession } from './editor-page-helpers';
+import { resolveDiagramSession } from './editor-page-helpers';
+import { makeSeedFetchedDiagram } from './seed-fetched-diagram';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -124,6 +124,26 @@ export function useIdentityBootstrap(opts: {
     setSharePasswordGate,
     setTemplatePickerMode,
   } = set;
+
+  // The tab-seeding + owner-field body both arrival branches share —
+  // see seed-fetched-diagram.ts.
+  const seedFetchedDiagram = makeSeedFetchedDiagram({
+    activeId,
+    resetTabs,
+    lastSavedTabsRef,
+    lastSavedNameRef,
+    loadedTabIdsRef,
+    setActiveId,
+    setDiagramName,
+    setDiagramOwnerColor,
+    setDiagramOwnerId,
+    setDiagramOwnerName,
+    setDiagramShareable,
+    setDiagramShareCode,
+    setDiagramTeamId,
+    setLoadedExistingDiagram,
+    setLoadedTabIds,
+  });
 
   useLayoutEffect(() => {
     if (hydrated) return;
@@ -297,64 +317,12 @@ export function useIdentityBootstrap(opts: {
             shareCodeParam,
           });
           const codeForVisitor = session.sessionShareCode;
-          // Lazy per-tab fetch (spec/13): the active tab (first in the
-          // summaries) gets its full payload inline so the first paint
-          // has real content; the rest land as placeholders and a
-          // useEffect below fetches each one when the user switches.
-          const placeholderTabs: Tab[] = placeholdersFromSummaries(fetched.tabs);
-          const firstSummary = fetched.tabs[0];
-          if (firstSummary) {
-            const first = await apiLoadTab(
-              self.id,
-              fetched.id,
-              firstSummary.id,
-              codeForVisitor,
-            ).catch(() => null);
-            // Only mark the tab loaded when the eager fetch actually
-            // returned content. If it failed (e.g. a transient 403 from
-            // a request that raced ahead of the Clerk token / session
-            // share code being wired up), leave it OUT of the loaded set
-            // so the lazy-load effect below retries it once auth is in
-            // place. Marking it loaded regardless used to leave the
-            // first tab permanently blank while later tabs — fetched
-            // through that effect after bootstrap — loaded fine.
-            if (first) {
-              placeholderTabs[0] = first;
-              loadedTabIdsRef.current.add(firstSummary.id);
-              setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
-              // Telemetry (spec/22): the first tab's content was fetched.
-              // Subsequent tabs count via usePerTabLoad on switch.
-              track('Tab', 'Loaded');
-            }
-          }
-          resetTabs(placeholderTabs);
-          // Seed the autosave's "last saved" mirror with the hydrated
-          // state so the first save-cycle treats it as unchanged.
-          // Otherwise the autosave would diff the EMPTY-elements
-          // placeholders against an empty [] baseline and PUT them
-          // back to the server, wiping every other tab's content
-          // before the lazy-load could populate it.
-          lastSavedTabsRef.current = placeholderTabs;
-          lastSavedNameRef.current = fetched.name;
-          setDiagramName(fetched.name);
-          // Prefer the tab id pinned in the URL fragment (#t=<id>) when
-          // it points at a real loaded tab — round-trips the user back
-          // to whichever tab they last had open before a refresh.
-          {
-            const hashMatch = window.location.hash.match(/t=([^&]+)/);
-            const hashedId = hashMatch ? hashMatch[1] : null;
-            const pickFromHash = hashedId && placeholderTabs.some((t) => t.id === hashedId);
-            setActiveId(pickFromHash ? hashedId! : (placeholderTabs[0]?.id ?? activeId));
-          }
-          setLoadedExistingDiagram(true);
+          // Tab seeding + name + owner fields (shared with the owner-URL
+          // branch below) — see seed-fetched-diagram.ts. Visitors present
+          // their session share code on the eager first-tab fetch.
+          await seedFetchedDiagram(self.id, fetched, codeForVisitor);
           setDiagramId(fetched.id);
-          setDiagramShareable(fetched.shareable);
-          setDiagramTeamId(fetched.teamId ?? null);
-          setDiagramShareCode(fetched.shareCode);
           setIsOwner(session.isOwner);
-          setDiagramOwnerId(fetched.ownerId);
-          setDiagramOwnerName(fetched.ownerName ?? null);
-          setDiagramOwnerColor(fetched.ownerColor ?? null);
           // Visitors inherit the role from their share code; owners are
           // always 'edit' (see resolveDiagramSession).
           setSessionRole(session.sessionRole);
@@ -412,10 +380,6 @@ export function useIdentityBootstrap(opts: {
                   ],
             );
           }
-          // Telemetry (spec/22): an existing diagram was opened via a
-          // share URL. Fires for every open (owner-via-share or visitor),
-          // the counterpart to Diagram/Created.
-          track('Diagram', 'Loaded');
           // A visitor joined a shared diagram. Owners opening their own
           // share URL don't count as a join. `type` is the share role
           // (Edit / View), a preset.
@@ -451,52 +415,11 @@ export function useIdentityBootstrap(opts: {
           return;
         }
         if (fetched) {
-          // Lazy per-tab fetch — see the share branch above for
-          // rationale.
-          const placeholderTabs: Tab[] = placeholdersFromSummaries(fetched.tabs);
-          const firstSummary = fetched.tabs[0];
-          if (firstSummary) {
-            const first = await apiLoadTab(self.id, fetched.id, firstSummary.id, null).catch(
-              () => null,
-            );
-            // Only mark loaded on success, so a failed eager fetch falls
-            // through to the lazy-load effect's retry (see the visitor
-            // branch above for the full rationale).
-            if (first) {
-              placeholderTabs[0] = first;
-              loadedTabIdsRef.current.add(firstSummary.id);
-              setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
-              // Telemetry (spec/22): the first tab's content was fetched.
-              // Subsequent tabs count via usePerTabLoad on switch.
-              track('Tab', 'Loaded');
-            }
-          }
-          resetTabs(placeholderTabs);
-          // Seed the autosave's "last saved" mirror with the hydrated
-          // state — same rationale as the visitor branch above.
-          lastSavedTabsRef.current = placeholderTabs;
-          lastSavedNameRef.current = fetched.name;
-          setDiagramName(fetched.name);
-          // Prefer the tab id pinned in the URL fragment (#t=<id>) when
-          // it points at a real loaded tab — round-trips the user back
-          // to whichever tab they last had open before a refresh.
-          {
-            const hashMatch = window.location.hash.match(/t=([^&]+)/);
-            const hashedId = hashMatch ? hashMatch[1] : null;
-            const pickFromHash = hashedId && placeholderTabs.some((t) => t.id === hashedId);
-            setActiveId(pickFromHash ? hashedId! : (placeholderTabs[0]?.id ?? activeId));
-          }
-          setLoadedExistingDiagram(true);
-          // Telemetry (spec/22): an existing diagram was opened (owner URL
-          // / refresh). Fires on every open, the counterpart to Created.
-          track('Diagram', 'Loaded');
-          setDiagramShareable(fetched.shareable);
-          setDiagramTeamId(fetched.teamId ?? null);
-          setDiagramShareCode(fetched.shareCode);
+          // Tab seeding + name + owner fields (shared with the visitor
+          // branch above) — see seed-fetched-diagram.ts. The owner's
+          // eager first-tab fetch presents no share code.
+          await seedFetchedDiagram(self.id, fetched, null);
           setIsOwner(fetched.ownerId === self.id);
-          setDiagramOwnerId(fetched.ownerId);
-          setDiagramOwnerName(fetched.ownerName ?? null);
-          setDiagramOwnerColor(fetched.ownerColor ?? null);
           setSessionRole('edit');
           // If we own the diagram, prefetch its full share-link list so
           // the dialog opens populated.
