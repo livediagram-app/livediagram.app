@@ -17,17 +17,11 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
-  applyFormatToRange,
-  applyListStyle,
   defaultPadding,
   normalizeRuns,
   runsFromPlainText,
   runsPlainText,
-  toggleFormatInRange,
-  type ListStyle,
   type RunBoolKey,
-  type RunPatch,
-  type RunSize,
   type TextRun,
 } from '@livediagram/diagram';
 import {
@@ -48,9 +42,9 @@ import {
   selectRange,
 } from '@/components/canvas/rich-text-dom';
 import { RichTextToolbar, type ActiveFormat } from '@/components/canvas/RichTextToolbar';
-import { track } from '@/lib/telemetry';
 import type { RichTextEditorProps } from './RichTextEditor.types';
-import { applyCss, BOOL_DEFAULT, computeActiveFormat } from './rich-text-editor-helpers';
+import { applyCss, computeActiveFormat } from './rich-text-editor-helpers';
+import { useRichTextFormatActions } from './useRichTextFormatActions';
 
 // Apply a React.CSSProperties object onto a live DOM style declaration,
 // skipping undefined so we don't write the string "undefined".
@@ -285,73 +279,17 @@ export function RichTextEditor({
     onCancel();
   };
 
-  // Resolve the range to format: the live selection, or — when the caret is
-  // collapsed (nothing selected) — the WHOLE text, so a format applied with
-  // no selection affects everything. Returns null to no-op.
-  const targetRange = (): { start: number; end: number } | null => {
-    const el = editorRef.current;
-    if (!el) return null;
-    const sel = domSelectionToOffsets(el) ?? selectionRef.current;
-    if (!sel) return null;
-    if (sel.start !== sel.end) return sel;
-    return { start: 0, end: runsPlainText(runsRef.current).length };
-  };
-
-  const applyAndRepaint = (next: TextRun[], range: { start: number; end: number }) => {
-    runsRef.current = next;
-    pendingSelectionRef.current = range;
-    setVersion((v) => v + 1);
-    track('Element', 'Changed', 'TextFormat');
-  };
-
-  const onToggle = (key: RunBoolKey) => {
-    const range = targetRange();
-    if (!range) return;
-    const next = toggleFormatInRange(
-      runsRef.current,
-      range.start,
-      range.end,
-      key,
-      BOOL_DEFAULT[key](element),
-    );
-    applyAndRepaint(next, range);
-  };
-
-  const onPatch = (patch: RunPatch) => {
-    const range = targetRange();
-    if (!range) return;
-    applyAndRepaint(applyFormatToRange(runsRef.current, range.start, range.end, patch), range);
-  };
-
-  // Size dropdown: sm/md/lg are per-range; 'scale' is whole-element auto-fit
-  // (no per-run meaning), so it clears every run's size override and sets the
-  // element back to 'scale'.
-  const chooseSize = (size: RunSize | 'scale') => {
-    if (size === 'scale') {
-      const len = runsPlainText(runsRef.current).length;
-      runsRef.current = applyFormatToRange(runsRef.current, 0, len, { size: undefined });
-      pendingSelectionRef.current = selectionRef.current ?? { start: 0, end: len };
-      setVersion((v) => v + 1);
-      onSetTextSize?.('scale');
-      track('Element', 'Changed', 'TextFormat');
-      return;
-    }
-    onPatch({ size });
-  };
-
-  // Bullet / numbered list (prepends line markers, renumbering). Scoped to
-  // the selected lines when there's a selection; whole text on a bare caret.
-  const applyList = (style: ListStyle) => {
-    const el = editorRef.current;
-    const sel = (el ? domSelectionToOffsets(el) : null) ?? selectionRef.current;
-    const range = sel && sel.start !== sel.end ? sel : undefined;
-    const next = applyListStyle(runsRef.current, style, range);
-    runsRef.current = next;
-    const len = runsPlainText(next).length;
-    pendingSelectionRef.current = range ?? { start: len, end: len };
-    setVersion((v) => v + 1);
-    track('Element', 'Changed', 'TextFormat');
-  };
+  // Formatting command dispatch (toggles / patches / size / lists) lives
+  // in useRichTextFormatActions; a bump repaints via the version effect.
+  const { onToggle, onPatch, chooseSize, applyList } = useRichTextFormatActions({
+    editorRef,
+    runsRef,
+    selectionRef,
+    pendingSelectionRef,
+    bumpVersion: () => setVersion((v) => v + 1),
+    element,
+    onSetTextSize,
+  });
 
   return (
     <div
