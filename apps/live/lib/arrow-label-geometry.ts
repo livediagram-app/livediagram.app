@@ -10,6 +10,11 @@ const LABEL_HEIGHT_PX = 16;
 const LABEL_CHAR_WIDTH_PX = 7;
 const LABEL_GAP_PX = 8;
 
+// Approximate label dimensions for collision avoidance. The rendered
+// SVG <text> doesn't have a stable width until paint, so we estimate
+// from the text length. The numbers are conservative — slightly
+// overshooting means the placement leaves a comfortable gap rather
+// than colliding.
 export function labelSize(text: string, fontSize = 12): { width: number; height: number } {
   const trimmed = text || ' ';
   const scale = fontSize / 12;
