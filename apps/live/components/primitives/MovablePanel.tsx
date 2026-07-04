@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
-import { Tooltip } from '@/components/primitives/Tooltip';
-import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
 
 // The corner-docking props bundle (spec/63). CanvasChrome builds one of
 // these per panel when docking is active and panel wrappers spread it
@@ -13,6 +11,7 @@ import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
 // (non-docking) drag path.
 import type { MovablePanelDockProps, MovablePanelProps } from './MovablePanel.types';
 import { useMovablePanelDrag } from './useMovablePanelDrag';
+import { MovablePanelHeader } from './MovablePanelHeader';
 
 export type { MovablePanelDockProps };
 
@@ -377,128 +376,21 @@ export function MovablePanel({
       // static flex child of its corner stack (no absolute / corner class).
       className={`pointer-events-auto ${positionClass} z-[var(--z-panel)] flex animate-pop-in cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${finalCornerClass}`}
     >
-      <div
-        ref={headerRef}
-        onPointerDown={beginDrag}
-        className={`flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 pt-2 pb-1.5 dark:border-slate-800 ${drag ? 'cursor-grabbing' : 'cursor-grab'}`}
-      >
-        <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
-          {title}
-        </span>
-        {headerExtra ? (
-          <div
-            onPointerDown={(e) => e.stopPropagation()}
-            className="ml-auto mr-1 flex items-center"
-          >
-            {headerExtra}
-          </div>
-        ) : null}
-        <div className="flex items-center gap-1">
-          {headerActions ? (
-            <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center gap-1">
-              {headerActions}
-            </div>
-          ) : null}
-          {onReset ? (
-            // Hidden on mobile: drag-to-move isn't available on touch
-            // (the title row is repurposed as a tap-to-collapse target,
-            // see beginDrag above), so a reset-position affordance has
-            // nothing to reset. The button reappears on `sm:` and up
-            // where dragging the title row pans the panel.
-            <Tooltip title="Reset position" description="Snap back to the default corner.">
-              <button
-                type="button"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={onReset}
-                aria-label={`Reset ${title.toLowerCase()} position`}
-                className="hidden h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 sm:flex dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-              >
-                {/* className="" so the glyph inherits the button's
-                    currentColor (and its hover), not the fixed slate. */}
-                <ResetPositionGlyph size={12} className="" />
-              </button>
-            </Tooltip>
-          ) : null}
-          <Tooltip
-            title={
-              collapsible
-                ? effectiveCollapsed
-                  ? `Expand ${title.toLowerCase()}`
-                  : `Collapse ${title.toLowerCase()}`
-                : `Minimize ${title.toLowerCase()}`
-            }
-            description={
-              collapsible
-                ? effectiveCollapsed
-                  ? 'Show the panel body.'
-                  : 'Hide the panel body, keep the banner.'
-                : 'Collapse to a dock button.'
-            }
-          >
-            <button
-              type="button"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => {
-                if (dockControlledOpen) {
-                  onMobileClose?.();
-                  return;
-                }
-                if (collapsible) {
-                  setCollapsed((v) => !v);
-                  return;
-                }
-                onMinimize?.();
-              }}
-              aria-label={
-                collapsible
-                  ? effectiveCollapsed
-                    ? `Expand ${title.toLowerCase()}`
-                    : `Collapse ${title.toLowerCase()}`
-                  : `Minimize ${title.toLowerCase()}`
-              }
-              className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            >
-              {collapsible && effectiveCollapsed ? (
-                // Plus glyph: expand the body. Same 12 x 12 grid as
-                // the dash so the button slot doesn't visually
-                // jitter when the icon flips.
-                <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-                  <line
-                    x1="6"
-                    y1="2.5"
-                    x2="6"
-                    y2="9.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <line
-                    x1="2.5"
-                    y1="6"
-                    x2="9.5"
-                    y2="6"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ) : (
-                <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-                  <line
-                    x1="2.5"
-                    y1="6"
-                    x2="9.5"
-                    y2="6"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              )}
-            </button>
-          </Tooltip>
-        </div>
-      </div>
+      <MovablePanelHeader
+        headerRef={headerRef}
+        beginDrag={beginDrag}
+        dragging={drag !== null}
+        title={title}
+        headerExtra={headerExtra}
+        headerActions={headerActions}
+        onReset={onReset}
+        collapsible={collapsible}
+        effectiveCollapsed={effectiveCollapsed}
+        dockControlledOpen={dockControlledOpen}
+        onMobileClose={onMobileClose}
+        onToggleCollapsed={() => setCollapsed((v) => !v)}
+        onMinimize={onMinimize}
+      />
       {/* Body. Children can use flex utilities to lay themselves out
           inside the panel's intrinsic width. Each panel handles its
           own internal scrolling so the body doesn't grow unbounded
