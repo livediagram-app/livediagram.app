@@ -8,28 +8,20 @@
 // level state, no api calls. The page wires them together.
 
 import Link from 'next/link';
-import { useRef, useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
-import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DiagramRow } from './explorer-route-diagram-row';
+import { FolderRow } from './folder-row';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import {
-  CloseIcon,
-  EllipsisIcon,
-  FolderIcon,
-  MenuFolderIcon,
-  MenuPencilIcon,
-  MenuTrashIcon,
-  PlusIcon,
-  SparkleIcon,
-} from './icons';
+import { CloseIcon, FolderIcon, SparkleIcon } from './icons';
 
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
 export { PaneHeader } from './PaneHeader';
+export { FolderMenuItems } from './folder-row';
+export { FolderRow };
 
 // Diagram rows render the api client's DiagramListItem directly
 // (same rows the floating Explorer panel uses), so the two explorer
@@ -248,167 +240,6 @@ export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => vo
 function GeneratedRow({ count, onOpen }: { count: number; onOpen: () => void }) {
   return (
     <SyntheticFolderRow icon={<SparkleIcon />} label="Generated" count={count} onOpen={onOpen} />
-  );
-}
-
-export function FolderRow({
-  folder,
-  renaming,
-  childCount,
-  onOpen,
-  onCommitRename,
-  onCancelRename,
-  getActionsForAnchor,
-}: {
-  folder: Folder;
-  renaming: boolean;
-  childCount: number;
-  onOpen: () => void;
-  onCommitRename: (name: string) => void;
-  onCancelRename: () => void;
-  getActionsForAnchor: (anchor: HTMLElement | null) => {
-    rename: () => void;
-    newSubfolder: () => void;
-    move: () => void;
-    delete: () => void;
-  };
-}) {
-  useRelativeTimeTick();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLButtonElement>(null);
-
-  // When renaming, the label area is a plain div so the <input>
-  // inside it isn't nested in a <button> (which steals focus).
-  const labelInner = (
-    <>
-      <span className="shrink-0 text-amber-500">
-        <FolderIcon open={false} />
-      </span>
-      {renaming ? (
-        <InlineRenameInput
-          initial={folder.name}
-          onCommit={onCommitRename}
-          onCancel={onCancelRename}
-          className="rounded border border-brand-300 bg-white px-1 py-0 text-sm font-medium text-slate-900 dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
-        />
-      ) : (
-        <span className="truncate text-sm font-medium text-slate-900 group-hover:text-brand-700 dark:text-slate-100 dark:group-hover:text-brand-300">
-          {folder.name}
-        </span>
-      )}
-      {childCount > 0 ? (
-        <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-          {childCount}
-        </span>
-      ) : null}
-    </>
-  );
-  return (
-    <li
-      className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700"
-      // Right-click anywhere on the row opens the same actions menu as the
-      // ellipsis button (anchored to it).
-      onContextMenu={
-        renaming
-          ? undefined
-          : (e) => {
-              e.preventDefault();
-              setMenuOpen(true);
-            }
-      }
-    >
-      {renaming ? (
-        <div className="flex min-w-0 items-center gap-2">{labelInner}</div>
-      ) : (
-        <button
-          type="button"
-          onDoubleClick={onOpen}
-          onClick={onOpen}
-          className="flex min-w-0 items-center gap-2 text-left"
-        >
-          {labelInner}
-        </button>
-      )}
-      <span className="hidden sm:block" />
-      <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
-        {relativeSince(folder.updatedAt)}
-      </span>
-      {renaming ? (
-        <span />
-      ) : (
-        <button
-          ref={menuRef}
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setMenuOpen((o) => !o);
-          }}
-          aria-label={`Menu for ${folder.name}`}
-          className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-        >
-          <EllipsisIcon />
-        </button>
-      )}
-      {menuOpen ? (
-        <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
-          <FolderMenuItems
-            actions={getActionsForAnchor(menuRef.current)}
-            close={() => setMenuOpen(false)}
-          />
-        </PortalMenu>
-      ) : null}
-    </li>
-  );
-}
-
-export function FolderMenuItems({
-  actions,
-  close,
-}: {
-  actions: {
-    rename: () => void;
-    newSubfolder: () => void;
-    move: () => void;
-    delete: () => void;
-  };
-  close: () => void;
-}) {
-  return (
-    <>
-      <MenuItem
-        icon={<MenuPencilIcon />}
-        label="Rename"
-        onClick={() => {
-          actions.rename();
-          close();
-        }}
-      />
-      <MenuItem
-        icon={<PlusIcon />}
-        label="New subfolder"
-        onClick={() => {
-          actions.newSubfolder();
-          close();
-        }}
-      />
-      <MenuItem
-        icon={<MenuFolderIcon />}
-        label="Change Folder"
-        onClick={() => {
-          actions.move();
-          close();
-        }}
-      />
-      <MenuItem
-        icon={<MenuTrashIcon />}
-        label="Delete"
-        danger
-        onClick={() => {
-          actions.delete();
-          close();
-        }}
-      />
-    </>
   );
 }
 
