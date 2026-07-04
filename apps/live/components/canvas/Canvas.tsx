@@ -6,8 +6,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { isAnimatedPattern, isBoxed, unionBoxedBounds } from '@livediagram/diagram';
-import { isoPivot, isoTransform } from '@/lib/isometric';
+import { isAnimatedPattern, isBoxed } from '@livediagram/diagram';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { pointerToCanvas } from '@/lib/canvas';
@@ -41,7 +40,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
-import { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
+import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
@@ -222,23 +221,11 @@ export function Canvas(props: CanvasProps) {
   // because Canvas stays mounted.
   const spotlight = useSpotlight();
 
-  // Isometric camera (spec/45): the orbit-able view angle. Local, non-synced
-  // view state; Shift-drag on the canvas spins / tilts it (see the <main>
-  // pointerdown handler).
-  const isoCamera = useIsometricCamera();
-
-  // Centre of the boxed content, in canvas px — the point the isometric
-  // tilt pivots around so the diagram tilts in place (and stays put as you
-  // orbit) instead of swinging off-screen. Only computed while the tool is
-  // active; null when there's no boxed element to centre on.
-  const isoContentCenter = useMemo(() => {
-    if (canvasTool !== 'isometric') return null;
-    const boxedIds = new Set(elements.filter(isBoxed).map((el) => el.id));
-    if (boxedIds.size === 0) return null;
-    const bb = unionBoxedBounds(elements, boxedIds);
-    if (!bb) return null;
-    return { x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 };
-  }, [canvasTool, elements]);
+  // Isometric view (spec/45): the orbit-able camera + the innermost
+  // transform fragment, pivoted on the content centre — see
+  // useIsometricView. Shift-drag on the canvas spins / tilts it (see
+  // the <main> pointerdown handler).
+  const { isoCamera, isoFragment } = useIsometricView({ canvasTool, elements, mainRef });
 
   const cursorClass = canvasCursorClass({
     pendingDraw: !!pendingDraw,
@@ -376,23 +363,6 @@ export function Canvas(props: CanvasProps) {
     },
     [onSelect, onShiftSelect],
   );
-
-  // Isometric tilt fragment, appended innermost to the wrapper transform.
-  // The pivot (content centre relative to the wrapper centre) makes the
-  // tilt rotate around the diagram rather than the wrapper centre, so the
-  // content tilts in place and stays centred as the camera orbits. The
-  // wrapper's unscaled size = the main canvas rect (it's `absolute inset-0`
-  // and untransformed itself), read here rather than tracked in state
-  // because the transform recomputes on every pan / orbit render anyway.
-  let isoFragment = '';
-  if (canvasTool === 'isometric') {
-    const node = mainRef && 'current' in mainRef ? mainRef.current : null;
-    const rect = node?.getBoundingClientRect();
-    const pivot = rect
-      ? isoPivot(isoContentCenter, { width: rect.width, height: rect.height })
-      : null;
-    isoFragment = ` ${isoTransform(isoCamera.azimuth, isoCamera.elevation, pivot ?? undefined)}`;
-  }
 
   return (
     <main
