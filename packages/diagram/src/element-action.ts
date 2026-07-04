@@ -12,8 +12,14 @@ export type ElementActionAssignee = {
   // The stable key: a Clerk user id, or — for a SELF-assignment made
   // while signed out — the guest participant id (spec/04). Guests can
   // only pick themselves, so a guest id always means the assigner's own
-  // browser identity.
-  userId: string;
+  // browser identity. Null for an INVITED member the lazy claim hasn't
+  // identified with an account yet — `memberId` is their key then.
+  userId: string | null;
+  // The team membership row id, set when the assignee was picked from a
+  // team (joined or invited). For an invited member it is the only
+  // stable key: the notify endpoint resolves their invite email from
+  // the membership row at send time, so no address enters the blob.
+  memberId?: string;
   // Display name at assign time (render fallback: "Teammate").
   name: string | null;
 };

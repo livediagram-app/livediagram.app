@@ -650,12 +650,37 @@ describe('POST /api/teams/:id/notify-action (spec/68)', () => {
     expect(res.status).toBe(400);
   });
 
-  it('404 when the assignee is not a joined member of this team (no user probing)', async () => {
+  it('404 when the assignee is not a member of this team (no user probing)', async () => {
     membershipByUser({ 'user-2': null });
     expect((await post()).status).toBe(404);
-    membershipByUser({ 'user-2': member({ id: 'm2', userId: 'user-2', status: 'invited' }) });
-    expect((await post()).status).toBe(404);
     expect(notifyActionAssigned).not.toHaveBeenCalled();
+  });
+
+  it('202 for an INVITED assignee — by userId when claimed, by memberId otherwise (spec/68)', async () => {
+    // Claimed invitee: has a userId despite the pending status.
+    membershipByUser({
+      'user-2': member({ id: 'm2', userId: 'user-2', status: 'invited', email: 'b@x.com' }),
+    });
+    expect((await post()).status).toBe(202);
+    expect(notifyActionAssigned).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ assigneeUserId: 'user-2', assigneeFallbackEmail: 'b@x.com' }),
+    );
+    vi.mocked(notifyActionAssigned).mockClear();
+    // Unclaimed invitee: no account yet, keyed by the membership row id.
+    db.listTeamMembers.mockResolvedValue([
+      member({ id: 'm3', userId: null, status: 'invited', email: 'c@x.com' }),
+    ]);
+    const res = await post({
+      assigneeMemberId: 'm3',
+      diagramId: 'd1',
+      actionName: 'Review the copy',
+    });
+    expect(res.status).toBe(202);
+    expect(notifyActionAssigned).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ assigneeUserId: null, assigneeFallbackEmail: 'c@x.com' }),
+    );
   });
 
   it('404 when the diagram does not exist', async () => {

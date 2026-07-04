@@ -4,7 +4,13 @@ import { clerkEnabled } from '@/lib/clerk-config';
 // One pickable assignee (spec/68): the pinned Myself row, or a joined
 // member of the diagram's team.
 export type PickableMember = {
-  userId: string;
+  // Null for an invited member the lazy claim hasn't identified with an
+  // account yet — memberId is their key then.
+  userId: string | null;
+  // The team membership row id (undefined only for the Myself row).
+  memberId?: string;
+  // True while the member hasn't accepted the team invite (spec/32).
+  pending?: boolean;
   name: string;
   email: string | null;
   // Null for the pinned Myself row (no team involved, no email).
@@ -40,10 +46,14 @@ export function AssigneePicker({
   signInHref: string;
 }) {
   const row = (m: PickableMember, isSelf: boolean) => {
-    const selected = assignee?.userId === m.userId && assignee.teamId === m.teamId;
+    // Key by membership row when there is one (stable for invited
+    // members, whose userId can be null); the Myself row keys by userId.
+    const selected = m.memberId
+      ? assignee?.memberId === m.memberId
+      : assignee?.userId === m.userId && assignee?.teamId === m.teamId;
     return (
       <button
-        key={`${m.teamId ?? 'self'}:${m.userId}`}
+        key={`${m.teamId ?? 'self'}:${m.memberId ?? m.userId}`}
         type="button"
         onClick={() => onPick(m)}
         aria-pressed={selected}
@@ -59,9 +69,19 @@ export function AssigneePicker({
         >
           {initialsOf(m.name)}
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm text-slate-800 dark:text-slate-100">
-          {isSelf ? 'Myself' : m.name}
-          {isSelf ? <span className="text-slate-400 dark:text-slate-500"> ({m.name})</span> : null}
+        <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-sm text-slate-800 dark:text-slate-100">
+          <span className="truncate">
+            {isSelf ? 'Myself' : m.name}
+            {isSelf ? (
+              <span className="text-slate-400 dark:text-slate-500"> ({m.name})</span>
+            ) : null}
+          </span>
+          {m.pending ? (
+            // Same amber badge the team pane uses for pending invites.
+            <span className="shrink-0 rounded-full bg-amber-100 px-1.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
+              Invited
+            </span>
+          ) : null}
         </span>
         {selected ? (
           <span className="shrink-0 text-xs font-medium text-brand-600 dark:text-brand-400">

@@ -90,9 +90,9 @@ export function AssignActionDialog({
   // (spec/68 §4): asked of the server per selection. 'unknown' while in
   // flight (show nothing); 'error' falls back to the picked-team
   // heuristic with hedged wording.
-  const [assigneeAccess, setAssigneeAccess] = useState<'unknown' | 'yes' | 'no' | 'error'>(
-    'unknown',
-  );
+  const [assigneeAccess, setAssigneeAccess] = useState<
+    'unknown' | 'yes' | 'no' | 'error' | 'invited'
+  >('unknown');
   const [members, setMembers] = useState<PickableMember[] | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const { signInHref } = useAuthHrefs();
@@ -169,13 +169,18 @@ export function AssignActionDialog({
           const detail = await apiGetTeam(ownerId, team.id);
           return detail.members
             .filter(
-              // Joined, connected members only — and not the assigner
-              // themselves, whom the pinned Myself row already covers.
-              (m: TeamMember) => m.status === 'joined' && m.userId !== null && m.userId !== ownerId,
+              // Everyone on the team — joined AND invited (spec/68: work
+              // gets divided while invites are in flight) — except the
+              // assigner themselves, whom the pinned Myself row covers.
+              (m: TeamMember) => m.userId !== ownerId,
             )
             .map(
               (m: TeamMember): PickableMember => ({
-                userId: m.userId!,
+                // Null for an invited member the lazy claim hasn't
+                // identified yet; memberId is their key then.
+                userId: m.userId,
+                memberId: m.id,
+                pending: m.status === 'invited',
                 name: memberName(m, false, null),
                 email: m.email,
                 teamId: team.id,
@@ -204,13 +209,19 @@ export function AssignActionDialog({
       return;
     }
     if (!members) return;
+    // Match by memberId first (stable across the invited -> joined
+    // transition), then by userId.
     setAssignee(
       (cur) =>
         cur ??
-        members.find(
-          (m) => m.userId === existing.assignee.userId && m.teamId === existing.teamId,
-        ) ??
-        members.find((m) => m.userId === existing.assignee.userId) ??
+        (existing.assignee.memberId
+          ? members.find((m) => m.memberId === existing.assignee.memberId)
+          : undefined) ??
+        (existing.assignee.userId
+          ? (members.find(
+              (m) => m.userId === existing.assignee.userId && m.teamId === existing.teamId,
+            ) ?? members.find((m) => m.userId === existing.assignee.userId))
+          : undefined) ??
         null,
     );
   }, [open, existing, members, selfRow]);
@@ -221,11 +232,18 @@ export function AssignActionDialog({
   useEffect(() => {
     if (!open || !assignee) return;
     setAssigneeAccess('unknown');
-    if (assignee.userId === selfUserId) {
+    if (assignee.userId !== null && assignee.userId === selfUserId) {
       setAssigneeAccess('yes');
       return;
     }
-    if (!ownerId || !diagramId || !assignee.teamId) {
+    // Invited member: there may be no account to ask about, and the
+    // answer is knowable without the server — they get access when they
+    // accept the invite. The hint below says exactly that.
+    if (assignee.pending) {
+      setAssigneeAccess('invited');
+      return;
+    }
+    if (!ownerId || !diagramId || !assignee.teamId || !assignee.userId) {
       setAssigneeAccess('error');
       return;
     }
@@ -259,20 +277,25 @@ export function AssignActionDialog({
   // Hidden entirely for a self-assignment: you don't email yourself
   // about your own action.
   const assigneeChanged =
-    !editing || (assignee !== null && assignee.userId !== existing.assignee.userId);
+    !editing ||
+    (assignee !== null &&
+      (assignee.userId !== existing.assignee.userId ||
+        assignee.memberId !== existing.assignee.memberId));
   const showEmailControl =
     emailEnabled &&
     assignee !== null &&
     assignee.teamId !== null &&
-    assignee.userId !== selfUserId &&
+    !(assignee.userId !== null && assignee.userId === selfUserId) &&
     assigneeChanged;
   // Access hint (spec/68 §4): a definite server "no" gets definite
   // wording; a failed check falls back to the picked-team heuristic with
   // hedged wording; in-flight / yes / Myself shows nothing.
   const showAccessHint =
     assignee !== null &&
-    assignee.userId !== selfUserId &&
-    (assigneeAccess === 'no' || (assigneeAccess === 'error' && assignee.teamId !== diagramTeamId));
+    !(assignee.userId !== null && assignee.userId === selfUserId) &&
+    (assigneeAccess === 'no' ||
+      assigneeAccess === 'invited' ||
+      (assigneeAccess === 'error' && assignee.teamId !== diagramTeamId));
 
   const canSubmit = name.trim().length > 0 && assignee !== null;
   const submit = () => {
@@ -283,7 +306,11 @@ export function AssignActionDialog({
     onSubmit({
       name: name.trim(),
       description: description.trim(),
-      assignee: { userId: assignee.userId, name: assignee.name },
+      assignee: {
+        userId: assignee.userId,
+        ...(assignee.memberId ? { memberId: assignee.memberId } : {}),
+        name: assignee.name,
+      },
       teamId: assignee.teamId,
       notifyEmail: showEmailControl && notifyEmail,
     });
@@ -371,11 +398,22 @@ export function AssignActionDialog({
 
           {showAccessHint ? (
             <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
-              {assignee?.name}{' '}
-              {assigneeAccess === 'no'
-                ? "can't open this diagram yet"
-                : 'may not be able to open this diagram'}
-              : share it or move it to the team library.
+              {assigneeAccess === 'invited' ? (
+                // Informational, not a warning: access arrives with the
+                // invite acceptance, no owner action needed.
+                <>
+                  {assignee?.name} hasn&apos;t accepted the team invite yet — they&apos;ll get
+                  access to this diagram when they join.
+                </>
+              ) : (
+                <>
+                  {assignee?.name}{' '}
+                  {assigneeAccess === 'no'
+                    ? "can't open this diagram yet"
+                    : 'may not be able to open this diagram'}
+                  : share it or move it to the team library.
+                </>
+              )}
             </p>
           ) : null}
 

@@ -1448,6 +1448,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ElementActionAssignee": {
     "additionalProperties": false,
     "properties": {
+      "memberId": {
+        "type": "string"
+      },
       "name": {
         "type": [
           "string",
@@ -1455,7 +1458,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ]
       },
       "userId": {
-        "type": "string"
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "required": [

@@ -859,6 +859,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       if (!clerkUserId || !diagramId) return;
       void apiNotifyActionAssigned(clerkUserId, input.teamId, {
         assigneeUserId: input.assigneeUserId,
+        assigneeMemberId: input.assigneeMemberId,
         diagramId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),

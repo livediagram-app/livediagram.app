@@ -40,7 +40,10 @@ import {
 export async function notifyActionAssigned(
   env: Env,
   input: {
-    assigneeUserId: string;
+    // Null for an invited member with no identified account yet — the
+    // fallback (their membership invite address) is the destination
+    // then, and prefs default to on (no account, no prefs row).
+    assigneeUserId: string | null;
     assigneeFallbackEmail: string | null;
     assignerName: string | null;
     diagram: { id: string; name: string };
@@ -49,10 +52,14 @@ export async function notifyActionAssigned(
   },
 ): Promise<void> {
   if (!emailEnabled(env)) return;
-  const to = (await getOwnerEmail(env, input.assigneeUserId)) ?? input.assigneeFallbackEmail;
+  const to = input.assigneeUserId
+    ? ((await getOwnerEmail(env, input.assigneeUserId)) ?? input.assigneeFallbackEmail)
+    : input.assigneeFallbackEmail;
   if (!to) return;
-  const prefs = await getNotificationPrefs(env, input.assigneeUserId);
-  if (!prefs.notifyActionAssigned) return;
+  if (input.assigneeUserId) {
+    const prefs = await getNotificationPrefs(env, input.assigneeUserId);
+    if (!prefs.notifyActionAssigned) return;
+  }
   await sendEmail(env, {
     to,
     ...actionAssignedEmail(

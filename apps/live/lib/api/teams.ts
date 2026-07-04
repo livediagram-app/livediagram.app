@@ -206,7 +206,15 @@ export async function apiCheckAssigneeAccess(
 export async function apiNotifyActionAssigned(
   ownerId: string,
   teamId: string,
-  input: { assigneeUserId: string; diagramId: string; actionName: string; description?: string },
+  input: {
+    // One of the two keys: userId for identified members, memberId (the
+    // membership row id) for invited members with no account yet.
+    assigneeUserId: string | null;
+    assigneeMemberId?: string;
+    diagramId: string;
+    actionName: string;
+    description?: string;
+  },
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/teams/${teamId}/notify-action`, {
     method: 'POST',

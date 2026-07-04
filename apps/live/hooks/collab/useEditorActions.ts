@@ -52,7 +52,9 @@ type EditorActionsDeps = {
   // block or roll back the assignment.
   notify: (input: {
     teamId: string;
-    assigneeUserId: string;
+    assigneeUserId: string | null;
+    // The membership row id, for an invited assignee (spec/68).
+    assigneeMemberId?: string;
     actionName: string;
     description: string;
   }) => void;
@@ -149,12 +151,17 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
         deps.notify({
           teamId: input.teamId,
           assigneeUserId: input.assignee.userId,
+          assigneeMemberId: input.assignee.memberId,
           actionName: name,
           description: input.description.trim(),
         });
       }
     } else {
-      const reassigned = existing.assignee.userId !== input.assignee.userId;
+      // Compare BOTH keys: two invited members share a null userId, and
+      // an invited member later claimed keeps the same memberId.
+      const reassigned =
+        existing.assignee.userId !== input.assignee.userId ||
+        existing.assignee.memberId !== input.assignee.memberId;
       updateAction(elementId, (action) =>
         action
           ? {
@@ -175,6 +182,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
         deps.notify({
           teamId: input.teamId,
           assigneeUserId: input.assignee.userId,
+          assigneeMemberId: input.assignee.memberId,
           actionName: name,
           description: input.description.trim(),
         });

@@ -293,25 +293,34 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (me.status !== 'joined') return forbidden();
     const body = (await request.json().catch(() => null)) as {
       assigneeUserId?: string;
+      // The membership row id — the key for an INVITED member the lazy
+      // claim hasn't identified with an account yet (spec/68).
+      assigneeMemberId?: string;
       diagramId?: string;
       actionName?: string;
       description?: string;
     } | null;
     const assigneeUserId = typeof body?.assigneeUserId === 'string' ? body.assigneeUserId : '';
+    const assigneeMemberId =
+      typeof body?.assigneeMemberId === 'string' ? body.assigneeMemberId : '';
     const diagramId = typeof body?.diagramId === 'string' ? body.diagramId : '';
     const actionName = typeof body?.actionName === 'string' ? body.actionName.trim() : '';
     const description = typeof body?.description === 'string' ? body.description : null;
-    if (!assigneeUserId || !diagramId || !actionName) {
+    if ((!assigneeUserId && !assigneeMemberId) || !diagramId || !actionName) {
       return badRequest('missing assigneeUserId/diagramId/actionName');
     }
     if (actionName.length > ACTION_NAME_MAX) return badRequest('actionName too long');
     if (description && description.length > ACTION_DESCRIPTION_MAX) {
       return badRequest('description too long');
     }
-    // The assignee must be a joined member of this team. 404 (not 403)
-    // so the endpoint can't be used to probe which users exist.
-    const assignee = await getMembership(env, teamId, assigneeUserId);
-    if (!assignee || assignee.status !== 'joined') return notFound();
+    // The assignee must be a joined OR invited member of this team
+    // (spec/68 — work gets divided while invites are in flight). 404
+    // (not 403) so the endpoint can't be used to probe which users
+    // exist. An invited member resolves by membership row id.
+    const assignee = assigneeUserId
+      ? await getMembership(env, teamId, assigneeUserId)
+      : ((await listTeamMembers(env, teamId)).find((m) => m.id === assigneeMemberId) ?? null);
+    if (!assignee) return notFound();
     // The caller must be able to access the diagram: their own, in a team
     // library they've joined, or one they've opened through a share link.
     // The diagram NAME comes from this row, never the request body.
@@ -329,7 +338,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     const assignerName = (await getParticipant(env, userId))?.name ?? clerkEmail ?? null;
     ctx.waitUntil?.(
       notifyActionAssigned(env, {
-        assigneeUserId,
+        assigneeUserId: assignee.userId,
         assigneeFallbackEmail: assignee.email,
         assignerName,
         diagram: { id: diagram.id, name: diagram.name },

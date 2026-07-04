@@ -33,7 +33,14 @@ interface ElementAction {
     // while signed out — the guest participant id (spec/04 hybrid
     // identity). Guests can only ever pick themselves, so a guest id
     // here always means "the assigner's own browser identity".
-    userId: string;
+    // Null for an INVITED member who hasn't been identified with an
+    // account yet — `memberId` is their key then.
+    userId: string | null;
+    // The team membership row id — set when the assignee was picked
+    // from a team (joined or invited). For an invited member it is the
+    // only stable key: the server resolves their invite email from the
+    // membership row at send time (§4), so no address enters the blob.
+    memberId?: string;
     name: string | null; // display name at assign time (render fallback: "Teammate")
   };
   // The team the assignee was picked from; null for a self-assignment
@@ -51,10 +58,12 @@ action?: ElementAction;
 ```
 
 **No email address is ever stored in the element blob.** Diagrams travel
-(share links, embeds, exports); the blob carries only the Clerk `userId` and
-a display name, both already visible to anyone the assignee collaborates
-with. The assignee's address is resolved server-side at send time (§4),
-never denormalised.
+(share links, embeds, exports); the blob carries only the Clerk `userId` /
+membership `memberId` and a display name, all already visible to anyone the
+assignee collaborates with. The assignee's address is resolved server-side
+at send time (§4), never denormalised. An invited member's display name is
+the email local-part prettified (the same `memberName` the team pane
+shows), never the full address.
 
 Assignee/assigner identity here is informational (who to render), not a
 permission: anyone with edit access can complete, edit, or delete an action,
@@ -103,9 +112,16 @@ Clicking it opens the **Assign Action dialog** (its own component under
   OTHER teams are deliberately not offered: they aren't members of this
   diagram's team, so they almost certainly can't open the diagram to
   complete the action — offering them just manufactures the §4 access
-  warning. Invited-but-not-joined members are excluded (no `userId` yet,
-  and possibly no account). **Myself is preselected** when creating, so
-  the common self-assignment is zero-click and handing off is one.
+  warning. **Invited-but-not-joined members ARE offered** (with the same
+  amber "Invited" badge the team pane uses): work often gets divided up
+  while invites are still in flight. An invited member is keyed by their
+  membership `memberId` (their `userId` when the lazy claim has already
+  identified an account, else null), and picking one shows an
+  informational hint — "{name} hasn't accepted the team invite yet;
+  they'll get access when they join" — instead of the §4 access check,
+  which needs an account to ask about. **Myself is preselected** when
+  creating, so the common self-assignment is zero-click and handing off
+  is one.
   Myself-only states, each with its own nudge: a **personal diagram**
   (no team library) explains that actions assign to the diagram's team
   and links to moving it into one; a signed-in user **not a member of
@@ -169,14 +185,15 @@ A new **signed-in-only** endpoint on the api worker (Clerk JWT required,
 
 ```
 POST /api/teams/<teamId>/notify-action
-body: { assigneeUserId, diagramId, actionName, description? }
+body: { assigneeUserId?, assigneeMemberId?, diagramId, actionName, description? }
 ```
 
 The server, not the client, establishes every fact that matters:
 
 - verifies the **caller** is a joined member of `<teamId>`;
-- verifies the **assignee** (`assigneeUserId`) is a joined member of
-  `<teamId>` (404 otherwise, so there is no probing which users exist);
+- verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
+  an invited member) is a joined OR invited member of `<teamId>` (404
+  otherwise, so there is no probing which users exist);
 - verifies the caller can access `diagramId` (owner, team library, or
   shared-with), and reads the **diagram name from D1**, not the body;
 - resolves the assignee's address from trusted server state
@@ -185,7 +202,9 @@ The server, not the client, establishes every fact that matters:
 - resolves the assigner's display name from the caller's own identity, so a
   spoofed `assignerName` in a tab blob can never sign an email;
 - no-ops silently unless `emailEnabled(env)` and the assignee's
-  `notifyActionAssigned` pref (§6) is on.
+  `notifyActionAssigned` pref (§6) is on; an invited member with no
+  account has no prefs yet, so the pref defaults to on and the invite
+  email from the membership row is the destination.
 
 Then it sends the **action-assigned** email (new template in
 `email/templates.ts`, dispatcher in `email/notifications.ts` following the
@@ -196,6 +215,13 @@ user-influenced strings (action name, description, diagram name, assigner
 name) are HTML-escaped. The content stays within spec/64 §7: everything in
 the mail is either the assigner's own words being delivered on their behalf
 or a diagram/team fact the two already share.
+
+**Invited-assignee caveat:** the panel's / popover's "mine" match is by
+`userId`, so an action assigned to a not-yet-identified invitee (null
+`userId`) renders by name but won't join their Mine view even after they
+accept — acceptable v1: the action is still on the board, and reassigning
+(or completing) it works for anyone with edit access. Invitees the lazy
+claim already identified carry their real `userId` and match normally.
 
 **Access caveat:** assigning is allowed on any diagram the assigner can
 edit, including ones the assignee cannot open. The dialog does a REAL
