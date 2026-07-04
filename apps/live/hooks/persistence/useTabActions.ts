@@ -17,8 +17,8 @@
 
 import { normalizeFolderOrder, tabFolderName, type Element, type Tab } from '@livediagram/diagram';
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
-import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
+import { remintElementIds, useTabImport } from './useTabImport';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
 
@@ -129,131 +129,19 @@ export function useTabActions(deps: TabActionsDeps) {
     setTemplatePickerMode('templates');
   };
 
-  // Re-mint element ids (and remap pinned-arrow endpoints) so imported
-  // elements can't collide with anything already on the diagram.
-  const remintElementIds = (elements: Element[]): Element[] => {
-    const idMap = new Map<string, string>();
-    const next = elements.map((el) => {
-      const id = crypto.randomUUID();
-      idMap.set(el.id, id);
-      return { ...el, id };
-    });
-    for (const el of next) {
-      if (el.type === 'arrow') {
-        for (const end of ['from', 'to'] as const) {
-          const ep = el[end];
-          if (ep.kind === 'pinned') {
-            const mapped = idMap.get(ep.elementId);
-            if (mapped) el[end] = { ...ep, elementId: mapped };
-          } else if (ep.kind === 'on-arrow') {
-            // Arrow-to-arrow endpoints (spec/50) reference another arrow's id,
-            // so they need remapping too — otherwise a DSL / JSON import with a
-            // message hung off a lifeline points at the pre-remint id.
-            const mapped = idMap.get(ep.arrowId);
-            if (mapped) el[end] = { ...ep, arrowId: mapped };
-          }
-        }
-      }
-    }
-    return next;
-  };
-
-  // Replace the ACTIVE tab's content with an imported tab — its
-  // elements + theme/background, keeping the tab's own id and name.
-  // Goes through `commitTabs` so the whole replace is a single undo
-  // step (the warning in the Import dialog promises this). Selection /
-  // edit state is cleared so nothing dangles over the new content.
-  const replaceActiveTabContent = (imported: Tab) => {
-    setImportError(null);
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              elements: imported.elements,
-              theme: imported.theme ?? t.theme,
-              backgroundColor: imported.backgroundColor ?? t.backgroundColor,
-              backgroundPattern: imported.backgroundPattern ?? t.backgroundPattern,
-              backgroundOpacity: imported.backgroundOpacity ?? t.backgroundOpacity,
-              patternColor: imported.patternColor ?? t.patternColor,
-              backgroundPatternScale: imported.backgroundPatternScale ?? t.backgroundPatternScale,
-              // Tab-level typography rides the export too (spec/66):
-              // without these an exported tab using a tab font came
-              // back rendering in the default face.
-              font: imported.font ?? t.font,
-              defaultTextSize: imported.defaultTextSize ?? t.defaultTextSize,
-              templateChosen: true,
-            }
-          : t,
-      ),
-    );
-    setSelectedId(null);
-    setEditingId(null);
-    setFormatSourceId(null);
-    setGroupSourceId(null);
-  };
-
-  // Import a file INTO the active tab, replacing its contents (spec/27).
-  // The Import dialog passes the user's chosen format, which drives both
-  // the file-picker filter and the parser. Returns an outcome the dialog
-  // renders (close / stay / show error) rather than throwing.
-  const importIntoActiveTab = async (
-    format: 'json' | 'dsl' | 'markdown',
-  ): Promise<ImportOutcome> => {
-    const active = tabs.find((t) => t.id === activeId);
-    if (active?.locked) {
-      return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
-    }
-    const accept =
-      format === 'markdown'
-        ? 'text/markdown,.md,.markdown,.mdown,.mkd,text/plain'
-        : format === 'dsl'
-          ? '.lvd,text/plain'
-          : '.json,application/json';
-    // Lazy-load the whole import cluster on first use: its static chain
-    // (import-tab -> export-tab -> svg-render + the DSL parser) put
-    // ~28 kB min of parse/serialise code in the editor's FIRST LOAD for
-    // a user-action feature (same rationale as the markdown branch
-    // below and the template builders).
-    const { parseImportedTab, pickTabFile } = await import('@/lib/import-tab');
-    const picked = await pickTabFile(accept);
-    if (!picked) return { status: 'cancelled' };
-
-    if (format === 'dsl') {
-      // The DSL parser (spec/66) lives in @livediagram/diagram; it throws on a
-      // structurally broken file, so wrap it into the dialog's outcome shape.
-      let parsed;
-      try {
-        const { parseTab } = await import('@livediagram/diagram/text-dsl');
-        parsed = parseTab(picked.text);
-      } catch (e) {
-        return { status: 'error', error: e instanceof Error ? e.message : 'Could not parse file.' };
-      }
-      replaceActiveTabContent({ ...parsed.tab, elements: remintElementIds(parsed.tab.elements) });
-      track('Tab', 'Imported', 'Text');
-      return { status: 'done' };
-    }
-
-    if (format === 'markdown') {
-      // Lazy-load the parser so its ~300 lines stay out of the editor's
-      // initial bundle (same rationale as the template builders).
-      const { buildTabFromMarkdown } = await import('@/lib/markdown-import');
-      const result = buildTabFromMarkdown(picked.text, {
-        tabName: active?.name,
-        themeId: active?.theme,
-      });
-      if (!result.ok) return { status: 'error', error: result.error };
-      replaceActiveTabContent(result.tab);
-      track('Tab', 'Imported', 'Markdown');
-      return { status: 'done' };
-    }
-
-    const result = parseImportedTab(picked.text);
-    if (!result.ok) return { status: 'error', error: result.error };
-    replaceActiveTabContent({ ...result.tab, elements: remintElementIds(result.tab.elements) });
-    track('Tab', 'Imported', 'JSON');
-    return { status: 'done' };
-  };
+  // Import (id re-mint, content replace, JSON / DSL / Markdown parsing)
+  // lives in useTabImport; remintElementIds is shared with the
+  // cross-diagram link below.
+  const { importIntoActiveTab } = useTabImport({
+    tabs,
+    activeId,
+    commitTabs,
+    setSelectedId,
+    setEditingId,
+    setFormatSourceId,
+    setGroupSourceId,
+    setImportError,
+  });
 
   const toggleActiveTabLock = () => {
     const target = tabs.find((t) => t.id === activeId);
