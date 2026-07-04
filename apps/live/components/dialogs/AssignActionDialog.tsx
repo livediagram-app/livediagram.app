@@ -64,6 +64,11 @@ type AssignActionDialogProps = {
   // capabilities.emailEnabled — hides the email offer on a self-host
   // without Resend (never advertise a send we can't perform).
   emailEnabled: boolean;
+  // Inline personal-diagram fix (spec/68 §2): file the diagram into the
+  // picked team's library root so teammates become assignable without an
+  // Explorer round-trip. Resolves false on failure (the picker shows a
+  // retry-able error line).
+  onMoveToTeam?: (teamId: string) => Promise<boolean>;
   onSubmit: (input: SaveActionInput) => void;
   onClose: () => void;
 };
@@ -73,6 +78,7 @@ export function AssignActionDialog({
   existing,
   elementLabel,
   teams,
+  onMoveToTeam,
   ownerId,
   selfUserId,
   selfName,
@@ -94,6 +100,10 @@ export function AssignActionDialog({
     'unknown' | 'yes' | 'no' | 'error' | 'invited'
   >('unknown');
   const [members, setMembers] = useState<PickableMember[] | null>(null);
+  // The team id mid inline move (spec/68 §2 personal-diagram fix), and
+  // whether the last attempt failed.
+  const [movingToTeamId, setMovingToTeamId] = useState<string | null>(null);
+  const [moveFailed, setMoveFailed] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const { signInHref } = useAuthHrefs();
 
@@ -394,6 +404,22 @@ export function AssignActionDialog({
             assignee={assignee}
             onPick={setAssignee}
             signInHref={signInHref}
+            teams={teams}
+            movingToTeamId={movingToTeamId}
+            moveFailed={moveFailed}
+            onMoveToTeam={
+              onMoveToTeam
+                ? (teamId) => {
+                    setMoveFailed(false);
+                    setMovingToTeamId(teamId);
+                    void onMoveToTeam(teamId).then((ok) => {
+                      setMovingToTeamId(null);
+                      if (!ok) setMoveFailed(true);
+                      else track('Action', 'Moved', 'DiagramToTeam');
+                    });
+                  }
+                : undefined
+            }
           />
 
           {showAccessHint ? (

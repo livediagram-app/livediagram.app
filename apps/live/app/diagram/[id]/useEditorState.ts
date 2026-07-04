@@ -2110,6 +2110,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tabs,
     tabSummaries,
     diagramTeamId,
+    setDiagramTeamId,
     emailEnabled,
     actionPopoverOpenId,
     actionRows,

@@ -123,10 +123,15 @@ Clicking it opens the **Assign Action dialog** (its own component under
   creating, so the common self-assignment is zero-click and handing off
   is one.
   Myself-only states, each with its own nudge: a **personal diagram**
-  (no team library) explains that actions assign to the diagram's team
-  and links to moving it into one; a signed-in user **not a member of
-  the diagram's team** (a share-link editor) gets the same Myself-only
-  picker; a signed-out user sees Myself plus the sign-in nudge (§2).
+  (no team library) offers the fix INLINE — "Move this diagram into a
+  team library to assign teammates", with a button per joined team that
+  performs the spec/35 placement move (`PUT /api/diagrams/<id>/folder`
+  with the team id, landing at the team root) right from the dialog and
+  reloads the picker with that team's members, no Explorer round-trip; a
+  signed-in user with no teams gets the create-a-team link instead; a
+  signed-in user **not a member of the diagram's team** (a share-link
+  editor) gets a plain Myself-only picker; a signed-out user sees Myself
+  plus the sign-in nudge (§2).
   The §4 access check stays as belt-and-braces on the picked assignee.
 - **Action name**: required single-line text, **pre-filled from the
   element's label** (a table's first non-empty cell) when creating, so

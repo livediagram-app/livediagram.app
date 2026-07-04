@@ -34,6 +34,10 @@ export function AssigneePicker({
   assignee,
   onPick,
   signInHref,
+  teams,
+  movingToTeamId,
+  moveFailed,
+  onMoveToTeam,
 }: {
   signedIn: boolean;
   selfRow: PickableMember | null;
@@ -44,6 +48,13 @@ export function AssigneePicker({
   assignee: PickableMember | null;
   onPick: (m: PickableMember) => void;
   signInHref: string;
+  // The user's joined teams, for the personal-diagram inline move offer
+  // (spec/68 §2): pick a team and the diagram files into its library
+  // root, making that team's members assignable right here.
+  teams: { id: string; name: string }[];
+  movingToTeamId: string | null;
+  moveFailed: boolean;
+  onMoveToTeam?: (teamId: string) => void;
 }) {
   const row = (m: PickableMember, isSelf: boolean) => {
     // Key by membership row when there is one (stable for invited
@@ -122,17 +133,45 @@ export function AssigneePicker({
         </p>
       ) : signedIn && diagramTeamId === null ? (
         // Personal diagram: teammates couldn't open it to complete the
-        // action, so the picker is Myself-only with the route out.
-        <p className="rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          Actions assign to the diagram&apos;s team.{' '}
-          <a
-            href="/explorer/team"
-            className="font-medium text-brand-600 underline dark:text-brand-400"
-          >
-            Move this diagram into a team library
-          </a>{' '}
-          to assign teammates.
-        </p>
+        // action. With teams to offer, fix it INLINE — one click files
+        // the diagram into that team's library root and the members
+        // load right here (spec/68 §2). No teams -> create-team link.
+        <div className="flex flex-col gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+          {teams.length > 0 && onMoveToTeam ? (
+            <>
+              <p>Move this diagram into a team library to assign teammates:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {teams.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    disabled={movingToTeamId !== null}
+                    onClick={() => onMoveToTeam(t.id)}
+                    className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-300"
+                  >
+                    {movingToTeamId === t.id ? 'Moving…' : t.name}
+                  </button>
+                ))}
+              </div>
+              {moveFailed ? (
+                <p className="text-rose-600 dark:text-rose-400">
+                  Couldn&apos;t move the diagram — check your connection and try again.
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p>
+              Actions assign to the diagram&apos;s team.{' '}
+              <a
+                href="/explorer/team"
+                className="font-medium text-brand-600 underline dark:text-brand-400"
+              >
+                Create or join a team
+              </a>{' '}
+              and move it into that library to assign teammates.
+            </p>
+          )}
+        </div>
       ) : signedIn && !memberOfDiagramTeam ? (
         // Share-link editor on someone else's team diagram: they can
         // edit, but only the team's members are assignable.

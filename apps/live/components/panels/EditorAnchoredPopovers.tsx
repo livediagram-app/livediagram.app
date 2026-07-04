@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { apiSetDiagramFolder } from '@/lib/api-client';
 import { isBoxed } from '@livediagram/diagram';
 
 import { track } from '@/lib/telemetry';
@@ -53,6 +54,7 @@ export function EditorAnchoredPopovers() {
     deleteAction,
     teams,
     clerkUserId,
+    setDiagramTeamId,
     clerkDisplayName,
     diagramTeamId,
     emailEnabled,
@@ -191,6 +193,21 @@ export function EditorAnchoredPopovers() {
                 diagramId={diagramId}
                 diagramTeamId={diagramTeamId}
                 emailEnabled={emailEnabled}
+                // Inline personal-diagram fix (spec/68 §2): file the diagram
+                // into the picked team's library root so the picker can offer
+                // that team's members without an Explorer round-trip. The
+                // server enforces the spec/35 placement rules; on success the
+                // local team id flips and the member fetch re-runs.
+                onMoveToTeam={async (teamId) => {
+                  if (!clerkUserId || !diagramId) return false;
+                  try {
+                    await apiSetDiagramFolder(clerkUserId, diagramId, null, teamId);
+                  } catch {
+                    return false;
+                  }
+                  setDiagramTeamId(teamId);
+                  return true;
+                }}
                 onSubmit={(input) => saveAction(target.id, input)}
                 onClose={closeAssignActionDialog}
               />
