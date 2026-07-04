@@ -1,23 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  apiDeleteTeam,
-  apiGetTeam,
-  apiInviteTeamMember,
-  apiRemoveTeamMember,
-  apiUpdateTeam,
-  apiUpdateTeamMemberRole,
-  type TeamMember,
-  type TeamRole,
-} from '@/lib/api-client';
+import { apiGetTeam, type TeamMember } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
-import { useConfirm } from '@/hooks/ui/useConfirm';
-import { track } from '@/lib/telemetry';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { PencilIcon, PlusIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
-import { EllipsisIcon, LinkIcon, memberName, TeamMemberRow } from './team-pane-parts';
+import { EllipsisIcon, LinkIcon, TeamMemberRow } from './team-pane-parts';
+import { useTeamPaneActions } from './useTeamPaneActions';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
 import { TeamSharedDiagrams } from '@/components/panels/TeamSharedDiagrams';
@@ -61,10 +51,6 @@ export function TeamPane({
   const [linkOpen, setLinkOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteBusy, setInviteBusy] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
-  const confirm = useConfirm();
 
   const refresh = useCallback(async () => {
     try {
@@ -80,6 +66,21 @@ export function TeamPane({
     }
   }, [ownerId, teamId, onLoadResult]);
 
+  // Mutation handlers + the notice / invite-form state they own — see
+  // useTeamPaneActions.
+  const {
+    inviteEmail,
+    setInviteEmail,
+    inviteBusy,
+    notice,
+    setNotice,
+    submitEdit,
+    deleteTeam,
+    invite,
+    changeRole,
+    removeMember,
+  } = useTeamPaneActions({ ownerId, teamId, detail, refresh, onTeamsChanged, onLeftTeam });
+
   useEffect(() => {
     setDetail(null);
     setLoading(true);
@@ -87,6 +88,9 @@ export function TeamPane({
     setNotice(null);
     setInviteEmail('');
     void refresh();
+    // setNotice / setInviteEmail are stable useState setters from the
+    // actions hook; refresh is the only real dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh]);
 
   if (loading) {
@@ -159,121 +163,6 @@ export function TeamPane({
   // your row, and demoting yourself all disappear as options.
   const isLastAdmin = (m: TeamMember) => m.role === 'admin' && adminCount <= 1;
   const canLeave = selfRow !== null && !isLastAdmin(selfRow);
-
-  const submitEdit = async (values: { name: string; organisation: string | null }) => {
-    setEditOpen(false);
-    try {
-      await apiUpdateTeam(ownerId, teamId, values);
-    } catch {
-      // Don't leave the optimistic name on screen as if it saved: refresh back
-      // to the stored value and tell the user.
-      setNotice('Could not save the team. Try again.');
-      await refresh();
-      return;
-    }
-    track('Team', 'Changed');
-    await refresh();
-    onTeamsChanged();
-  };
-
-  const deleteTeam = async () => {
-    const ok = await confirm({
-      title: 'Delete team?',
-      message: `"${team.name}" and its member list will be permanently deleted. Diagrams are not affected.`,
-      confirmLabel: 'Delete team',
-    });
-    if (!ok) return;
-    // Only navigate away once the delete actually succeeds — a failed delete
-    // must not bounce the user out as though the team were gone.
-    try {
-      await apiDeleteTeam(ownerId, teamId);
-    } catch {
-      setNotice('Could not delete the team. Try again.');
-      return;
-    }
-    track('Team', 'Deleted');
-    onTeamsChanged();
-    onLeftTeam();
-  };
-
-  const invite = async () => {
-    const email = inviteEmail.trim();
-    if (!email || inviteBusy) return;
-    setInviteBusy(true);
-    setNotice(null);
-    try {
-      const result = await apiInviteTeamMember(ownerId, teamId, email);
-      if (!result.ok) {
-        setNotice(
-          result.reason === 'already_member'
-            ? 'That address is already on this team.'
-            : 'That does not look like an email address.',
-        );
-        return;
-      }
-      track('Team', 'Added', 'Member');
-      setInviteEmail('');
-      await refresh();
-      onTeamsChanged();
-    } catch {
-      setNotice('Invite failed. Try again.');
-    } finally {
-      setInviteBusy(false);
-    }
-  };
-
-  const changeRole = async (member: TeamMember, role: TeamRole) => {
-    if (role === member.role) return;
-    const result = await apiUpdateTeamMemberRole(ownerId, teamId, member.id, role).catch(
-      () => null,
-    );
-    // `null` is a thrown error (network / 5xx) — the role did NOT
-    // change; without a notice the select just silently reverts.
-    if (!result) {
-      setNotice('Could not change the role. Try again.');
-      return;
-    }
-    if (!result.ok) {
-      setNotice('A team needs at least one Admin. Promote someone else first.');
-      return;
-    }
-    track('Team', 'Changed', 'Role');
-    await refresh();
-  };
-
-  const removeMember = async (member: TeamMember, isSelf: boolean) => {
-    const label = isSelf ? null : memberName(member, false, null);
-    const ok = await confirm({
-      title: isSelf ? 'Leave team?' : 'Remove member?',
-      message: isSelf
-        ? `You will no longer be a member of "${team.name}".`
-        : `${label} will be removed from "${team.name}".`,
-      confirmLabel: isSelf ? 'Leave' : 'Remove',
-    });
-    if (!ok) return;
-    const result = await apiRemoveTeamMember(ownerId, teamId, member.id).catch(() => null);
-    // `null` is a thrown error (network / 5xx) — nothing was removed.
-    // Falling through treated the failure as success: "Leave team"
-    // bounced the user to Recent while they were still a member
-    // (mirrors deleteTeam's guard directly above).
-    if (!result) {
-      setNotice(
-        isSelf ? 'Could not leave the team. Try again.' : 'Could not remove the member. Try again.',
-      );
-      return;
-    }
-    if (!result.ok) {
-      setNotice('A team needs at least one Admin. Promote someone else first.');
-      return;
-    }
-    track('Team', 'Removed', isSelf ? 'Self' : 'Member');
-    onTeamsChanged();
-    if (isSelf) {
-      onLeftTeam();
-      return;
-    }
-    await refresh();
-  };
 
   const joinedCount = members.filter((m) => m.status === 'joined').length;
   const invitedCount = members.length - joinedCount;
@@ -419,7 +308,10 @@ export function TeamPane({
         title="Edit team"
         submitLabel="Save"
         initial={{ name: team.name, organisation: team.organisation }}
-        onSubmit={(values) => void submitEdit(values)}
+        onSubmit={(values) => {
+          setEditOpen(false);
+          void submitEdit(values);
+        }}
         onCancel={() => setEditOpen(false)}
       />
 
