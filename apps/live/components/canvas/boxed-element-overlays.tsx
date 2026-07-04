@@ -74,6 +74,13 @@ export function BrowserChrome({ stroke, zoom: _zoom }: { stroke: string; zoom: n
   );
 }
 
+// Renders a FreehandElement's stored polyline as a smooth SVG path.
+// Points are stored normalised into [0..1] within the element's
+// bounding box (see createFreehand), so the renderer maps them into
+// viewBox [0..100] and lets `preserveAspectRatio="none"` stretch the
+// curve when the user resizes. The stroke colour comes from theme
+// (with the per-element override), matching how other boxed elements
+// pick their accent.
 export function FreehandSvg({
   element,
   fill,
