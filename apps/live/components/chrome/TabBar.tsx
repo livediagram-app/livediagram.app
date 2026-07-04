@@ -17,6 +17,7 @@ import { legibleTabAccent } from '@/lib/tab-accent';
 import { TabLockIcon, TabsLabelIcon } from '@/components/chrome/tab-bar-icons';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
+import { useTabReorderDrag } from './useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
 // only loads on the first right-click — it was the largest single
@@ -199,15 +200,9 @@ export function TabBar({
   useEffect(() => {
     if (renameActiveNonce > 0 && !readOnly) setEditingId(activeId);
   }, [renameActiveNonce, readOnly, activeId]);
-  const [dragId, setDragId] = useState<string | null>(null);
-  // Where the dragged tab will land: a target pill + which side of it. The
-  // side is chosen from the pointer's position within the pill (left half =
-  // before, right half = after), so the drop is deterministic rather than
-  // direction-dependent, and a vertical caret renders in that gap so the
-  // user can see exactly where the tab will go before releasing (spec/30).
-  const [dropTarget, setDropTarget] = useState<{ id: string; side: 'before' | 'after' } | null>(
-    null,
-  );
+  // Drag-reorder machinery (which pill is dragged / hovered + the five
+  // per-pill handlers) lives in useTabReorderDrag.
+  const reorderDrag = useTabReorderDrag(onReorder);
   // Drives the per-tab accent's legibility guard: the bar is white in
   // light mode, slate-900 in dark, so a stroke that reads on one can
   // vanish on the other.
@@ -292,44 +287,14 @@ export function TabBar({
   const renderTabPill = (tab: Tab): ReactNode => {
     const isActive = tab.id === activeId;
     const isEditing = editingId === tab.id;
-    const isDragTarget = dropTarget?.id === tab.id && dragId != null && dragId !== tab.id;
-    const showCaretBefore = isDragTarget && dropTarget?.side === 'before';
-    const showCaretAfter = isDragTarget && dropTarget?.side === 'after';
+    const caret = reorderDrag.caretFor(tab.id);
+    const showCaretBefore = caret === 'before';
+    const showCaretAfter = caret === 'after';
     return (
       <div
         key={tab.id}
         draggable={!isEditing && !readOnly}
-        onDragStart={(e) => {
-          e.dataTransfer.setData('text/plain', tab.id);
-          e.dataTransfer.effectAllowed = 'move';
-          setDragId(tab.id);
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          if (dragId === tab.id) return;
-          // Pick the side from the pointer's position within the pill so the
-          // insertion caret sits exactly where the tab will land.
-          const rect = e.currentTarget.getBoundingClientRect();
-          const side = e.clientX < rect.left + rect.width / 2 ? 'before' : 'after';
-          if (dropTarget?.id !== tab.id || dropTarget.side !== side)
-            setDropTarget({ id: tab.id, side });
-        }}
-        onDragLeave={() => {
-          if (dropTarget?.id === tab.id) setDropTarget(null);
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          const src = e.dataTransfer.getData('text/plain');
-          const side = dropTarget?.id === tab.id ? dropTarget.side : 'before';
-          if (src && src !== tab.id) onReorder(src, tab.id, side === 'before');
-          setDragId(null);
-          setDropTarget(null);
-        }}
-        onDragEnd={() => {
-          setDragId(null);
-          setDropTarget(null);
-        }}
+        {...reorderDrag.handlersFor(tab.id)}
         onContextMenu={
           readOnly
             ? undefined
