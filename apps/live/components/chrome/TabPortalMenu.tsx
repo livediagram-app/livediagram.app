@@ -7,19 +7,15 @@ import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { PencilIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
 import {
-  BackIcon,
   ClearIcon,
   CopyIcon,
-  DiagramIcon,
   FolderMenuIcon,
-  FolderRemoveIcon,
   MoveIcon,
   TabLockIcon,
 } from '@/components/chrome/tab-bar-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,
-  MenuItem,
   MenuTile,
   MenuTileGrid,
   MenuToolbar,
@@ -28,6 +24,7 @@ import {
 import { TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import { SessionTimerSection, SessionVoteSection } from '@/components/panels/SessionToolsSection';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
+import { TabMenuCopyToView, TabMenuFolderView } from './tab-menu-views';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
 
 // The unified tab / canvas portal menu (actions, copy-to-diagram, and
@@ -110,7 +107,6 @@ export function PortalMenu({
   // portal so the existing positioning and outside-click handler both
   // work unchanged.
   const [view, setView] = useState<'actions' | 'copyTo' | 'folder'>('actions');
-  const [newFolder, setNewFolder] = useState('');
   // Which collapsible category is open in the actions view — at most one at a
   // time, all closed by default (matches the element context menu).
   const [openSection, setOpenSection] = useState<string | null>(null);
@@ -290,10 +286,7 @@ export function PortalMenu({
                 <MenuTile
                   icon={<FolderMenuIcon />}
                   label="Add to Folder"
-                  onClick={() => {
-                    setNewFolder('');
-                    setView('folder');
-                  }}
+                  onClick={() => setView('folder')}
                 />
                 <MenuTile
                   icon={<MoveIcon />}
@@ -360,92 +353,19 @@ export function PortalMenu({
             </MenuAccordionSection>
           </>
         ) : view === 'copyTo' ? (
-          <>
-            <button
-              type="button"
-              onClick={() => setView('actions')}
-              className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-            >
-              <BackIcon />
-              Back
-            </button>
-            <p className="px-2 pb-1 text-[10px] text-slate-400 dark:text-slate-400">
-              Pick a destination diagram
-            </p>
-            <div className="max-h-56 overflow-y-auto">
-              {otherDiagrams.map((d) => (
-                <MenuItem
-                  key={d.id}
-                  icon={<DiagramIcon />}
-                  label={d.name || 'Untitled diagram'}
-                  onClick={() => onCopyTo(d.id)}
-                />
-              ))}
-            </div>
-          </>
+          <TabMenuCopyToView
+            otherDiagrams={otherDiagrams}
+            onCopyTo={onCopyTo}
+            onBack={() => setView('actions')}
+          />
         ) : (
-          <>
-            <button
-              type="button"
-              onClick={() => setView('actions')}
-              className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-            >
-              <BackIcon />
-              Back
-            </button>
-            <p className="px-2 pb-1 text-[10px] text-slate-400 dark:text-slate-400">
-              Add this tab to a folder
-            </p>
-            {/* New-folder inline input: Enter (or the + button) commits.
-                Typing an existing name just moves the tab into it
-                (same name = same folder, spec/30). */}
-            <form
-              className="flex items-center gap-1 px-2 pb-1"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const name = newFolder.trim();
-                if (name) onMoveToFolder(name);
-              }}
-            >
-              <input
-                value={newFolder}
-                onChange={(e) => setNewFolder(e.target.value)}
-                placeholder="New folder…"
-                aria-label="New folder name"
-                className="min-w-0 flex-1 rounded bg-slate-100 px-2 py-1 text-xs text-slate-800 outline-none ring-brand-300 focus:ring-1 dark:bg-slate-800 dark:text-slate-100"
-              />
-              <button
-                type="submit"
-                aria-label="Create folder"
-                disabled={!newFolder.trim()}
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
-              >
-                +
-              </button>
-            </form>
-            {folderNames.length > 0 ? (
-              <div className="max-h-44 overflow-y-auto border-t border-slate-100 pt-1 dark:border-slate-800">
-                {folderNames.map((name) => (
-                  <MenuItem
-                    key={name}
-                    icon={<FolderMenuIcon />}
-                    label={name === currentFolder ? `${name} (current)` : name}
-                    onClick={() => onMoveToFolder(name)}
-                    disabled={name === currentFolder}
-                  />
-                ))}
-              </div>
-            ) : null}
-            {currentFolder ? (
-              <div className="border-t border-slate-100 pt-1 dark:border-slate-800">
-                <MenuItem
-                  icon={<FolderRemoveIcon />}
-                  label="Remove from folder"
-                  onClick={onRemoveFromFolder}
-                />
-              </div>
-            ) : null}
-          </>
+          <TabMenuFolderView
+            folderNames={folderNames}
+            currentFolder={currentFolder}
+            onMoveToFolder={onMoveToFolder}
+            onRemoveFromFolder={onRemoveFromFolder}
+            onBack={() => setView('actions')}
+          />
         )}
       </div>
       {confirmingDelete && deleteRowRef.current ? (
