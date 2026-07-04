@@ -268,14 +268,17 @@ which crowded the same corner:
   nothing is open, and each side has a quiet empty state.
 - Rows (the `actionRowsFromElements` + `commentRowsFromElements`
   derivations, both in `CollaboratePanel.tsx`; comment rows carry a
-  `resolved` flag): each row wears a small **kind chip** (Comment /
-  Action) so the mixed list scans by type. Action rows keep the
-  assignee avatar (brand-tinted when it's **you**, whose rows sort
-  first and read "You"), the action name (struck through once done),
-  and the assignee + element-label meta line; comment rows keep the
-  latest-author dot, count badge, and two-line preview. Everything else
-  interleaves newest-first on its own timestamp (an action's createdAt,
-  a thread's latest comment).
+  `resolved` flag) share ONE anatomy: a **kind glyph** far left (the
+  action clipboard / comment bubble, so the mixed list scans by type),
+  the **name + one-line description** in the middle (action name over
+  its element label, struck through once done; element label over the
+  latest comment preview, dimmed once resolved), and the **person** far
+  right — an avatar bubble (brand-tinted when the action is **yours**,
+  whose rows sort first; the comment author's colour otherwise) sitting
+  above the relative time, with the name (and the thread's comment
+  count) on the avatar's hover tooltip rather than spent inline.
+  Everything interleaves newest-first on its own timestamp (an action's
+  createdAt, a thread's latest comment).
 - **Row click selects the element and opens its matching popover**
   (comment thread / action). The panel header shows the OPEN count in
   the brand-coloured pill (hidden at zero).

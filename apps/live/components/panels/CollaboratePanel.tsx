@@ -5,14 +5,19 @@ import type { BoxedElement } from '@livediagram/diagram';
 import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { Tooltip } from '@/components/primitives/Tooltip';
+import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 
 // The floating COLLABORATE panel: the Comments and Actions panels
 // merged into one surface (they are the two ways work gets discussed /
 // divided on a diagram, and two stacked panels crowded the corner).
 // A segmented filter splits it into Open (open actions + unresolved
 // comment threads) and Resolved (completed actions + resolved threads —
-// which now surface here instead of hiding entirely). Each row carries
-// a kind chip so comments and actions stay distinguishable at a glance.
+// which now surface here instead of hiding entirely). Every row shares
+// one anatomy: a kind glyph (action clipboard / comment bubble) on the
+// far left, the name + description in the middle, and the person on the
+// far right — an avatar bubble above the relative time, with the name
+// on the avatar's hover tooltip rather than spent inline.
 // Click a row to jump to the element and open its popover (thread or
 // action, per kind).
 
@@ -179,101 +184,100 @@ export function CollaboratePanel({
   );
 }
 
-// Tiny kind chip so a mixed list scans by type without reading rows.
-function KindChip({ kind }: { kind: 'Comment' | 'Action' }) {
+// One shared row shell: kind glyph far left, name + description in the
+// middle, avatar-over-time far right. The avatar carries the person's
+// name in a tooltip (our custom popover) instead of an inline byline.
+function RowShell({
+  icon,
+  title,
+  titleClass,
+  description,
+  avatar,
+  at,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  titleClass: string;
+  description: string;
+  avatar: { name: string; detail?: string; colorClass?: string; color?: string };
+  at: number;
+  onClick: () => void;
+}) {
   return (
-    <span
-      className={`shrink-0 rounded px-1 text-[9px] font-semibold uppercase tracking-wide ${
-        kind === 'Action'
-          ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
-          : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-      }`}
-    >
-      {kind}
-    </span>
+    <li>
+      <button
+        type="button"
+        onClick={onClick}
+        className="group flex w-full items-start gap-2 rounded px-1.5 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
+      >
+        <span aria-hidden className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-500">
+          {icon}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className={`block truncate text-xs font-medium ${titleClass}`}>{title}</span>
+          <span className="line-clamp-1 text-[10px] text-slate-400 dark:text-slate-500">
+            {description}
+          </span>
+        </span>
+        <span className="flex shrink-0 flex-col items-end gap-0.5">
+          <Tooltip title={avatar.name} description={avatar.detail}>
+            <span
+              className={`flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-semibold text-white ${avatar.colorClass ?? ''}`}
+              style={avatar.color ? { backgroundColor: avatar.color } : undefined}
+            >
+              {initialsOf(avatar.name)}
+            </span>
+          </Tooltip>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">
+            {formatRelativeTimeShort(Date.now() - at)}
+          </span>
+        </span>
+      </button>
+    </li>
   );
 }
 
 function ActionRowItem({ row, onClick }: { row: ActionRow; onClick: () => void }) {
   return (
-    <li>
-      <button
-        type="button"
-        onClick={onClick}
-        className="group flex w-full items-center gap-2 rounded px-1.5 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
-      >
-        <span
-          aria-hidden
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold text-white ${
-            row.mine ? 'bg-brand-500' : 'bg-slate-400 dark:bg-slate-600'
-          }`}
-        >
-          {initialsOf(row.assigneeName)}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-1">
-            <span
-              className={`min-w-0 flex-1 truncate text-xs font-medium ${
-                row.status === 'done'
-                  ? 'text-slate-400 line-through dark:text-slate-500'
-                  : 'text-slate-800 dark:text-slate-100'
-              }`}
-            >
-              {row.actionName}
-            </span>
-            <KindChip kind="Action" />
-          </span>
-          <span className="block truncate text-[10px] text-slate-400 dark:text-slate-500">
-            {row.mine ? 'You' : row.assigneeName}
-            <span aria-hidden> · </span>
-            {row.label}
-          </span>
-        </span>
-        <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
-          {formatRelativeTimeShort(Date.now() - row.createdAt)}
-        </span>
-      </button>
-    </li>
+    <RowShell
+      icon={<ActionMenuIcon />}
+      title={row.actionName}
+      titleClass={
+        row.status === 'done'
+          ? 'text-slate-400 line-through dark:text-slate-500'
+          : 'text-slate-800 dark:text-slate-100'
+      }
+      description={row.label}
+      avatar={{
+        name: row.mine ? 'You' : row.assigneeName,
+        detail: 'Assignee',
+        colorClass: row.mine ? 'bg-brand-500' : 'bg-slate-400 dark:bg-slate-600',
+      }}
+      at={row.createdAt}
+      onClick={onClick}
+    />
   );
 }
 
 function CommentRowItem({ row, onClick }: { row: CommentRow; onClick: () => void }) {
   return (
-    <li>
-      <button
-        type="button"
-        onClick={onClick}
-        className="group flex w-full flex-col gap-1 rounded px-1.5 py-1.5 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
-      >
-        <div className="flex items-center gap-1.5">
-          <span
-            aria-hidden
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: row.latestAuthorColor }}
-          />
-          <span
-            className={`min-w-0 flex-1 truncate text-xs font-medium ${
-              row.resolved
-                ? 'text-slate-400 dark:text-slate-500'
-                : 'text-slate-800 dark:text-slate-100'
-            }`}
-          >
-            {row.label}
-          </span>
-          <KindChip kind="Comment" />
-          <span className="shrink-0 rounded bg-slate-100 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            {row.count}
-          </span>
-        </div>
-        <p className="line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          {row.latestText}
-        </p>
-        <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-400">
-          <span className="truncate">{row.latestAuthorName}</span>
-          <span>{formatRelativeTimeShort(Date.now() - row.latestAt)}</span>
-        </div>
-      </button>
-    </li>
+    <RowShell
+      icon={<CommentMenuIcon />}
+      title={row.label}
+      titleClass={
+        row.resolved ? 'text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100'
+      }
+      description={row.latestText}
+      avatar={{
+        name: row.latestAuthorName,
+        detail:
+          row.count === 1 ? '1 comment in this thread' : `${row.count} comments in this thread`,
+        color: row.latestAuthorColor,
+      }}
+      at={row.latestAt}
+      onClick={onClick}
+    />
   );
 }
 
