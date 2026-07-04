@@ -180,8 +180,8 @@ export function AssigneePicker({
         </p>
       ) : signedIn && members !== null && members.length === 0 ? (
         <p className="px-1 text-xs text-slate-400 dark:text-slate-500">
-          No other members in this team yet — invite teammates from the team page and they
-          become assignable here, even before they accept.
+          No other members in this team yet — invite teammates from the team page and they become
+          assignable here, even before they accept.
         </p>
       ) : null}
     </div>
