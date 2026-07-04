@@ -15,6 +15,7 @@ export * from './shared';
 export * from './change-log';
 export * from './folders';
 export * from './custom-themes';
+export * from './team-invites';
 export * from './teams';
 export * from './api-tokens';
 export * from './email-lifecycle';
