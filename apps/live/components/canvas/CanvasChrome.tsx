@@ -267,7 +267,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : (
         <>
           {panelEls.explorer}
-          {panelEls.comments}
+          {panelEls.collaborate}
           {panelEls.ai}
           {panelEls.activity}
           {panelEls.palette}

@@ -223,7 +223,7 @@ export type CanvasProps = {
   // non-empty: the panel exists to list discussion that already
   // exists, so on diagrams without it the panel stays out of the
   // chrome entirely.
-  commentRows: import('@/components/panels/CommentsPanel').CommentRow[];
+  commentRows: import('@/components/panels/CollaboratePanel').CommentRow[];
   commentsPanelPosition: { x: number; y: number } | null;
   onMoveCommentsPanel: (x: number, y: number) => void;
   onResetCommentsPanel: () => void;
@@ -232,10 +232,7 @@ export type CanvasProps = {
   // Floating Actions panel (spec/68). Mirrors the Comments panel: only
   // mounted when actionRows is non-empty (at least one OPEN action on
   // the active tab).
-  actionRows: import('@/components/panels/ActionsPanel').ActionRow[];
-  actionsPanelPosition: { x: number; y: number } | null;
-  onMoveActionsPanel: (x: number, y: number) => void;
-  onResetActionsPanel: () => void;
+  actionRows: import('@/components/panels/CollaboratePanel').ActionRow[];
   // Row click: editor selects the element + opens its action popover.
   onOpenActionForElement: (elementId: string) => void;
   onRevertChange: (entry: ChangeLogEntry) => void;

@@ -52,8 +52,11 @@ import {
   entryHistoryPush,
   type EntryHistory,
 } from '@/lib/entry-history';
-import { commentRowsFromElements } from '@/components/panels/CommentsPanel';
-import { actionRowsFromElements } from '@/components/panels/ActionsPanel';
+import {
+  actionRowsFromElements,
+  commentRowsFromElements,
+} from '@/components/panels/CollaboratePanel';
+
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { createTab, deriveTabLoadState, mergeAiElements, patchTab } from './editor-page-helpers';
 import { useAutosave } from './useAutosave';

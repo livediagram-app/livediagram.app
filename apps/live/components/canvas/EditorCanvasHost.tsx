@@ -82,7 +82,6 @@ export function EditorCanvasHost() {
     clerkDisplayName,
     clerkUserId,
     actionRows,
-    actionsPanelPosition,
     commentRows,
     commentsPanelPosition,
     commitDraw,
@@ -168,7 +167,6 @@ export function EditorCanvasHost() {
     setActivityPosition,
     setAiPanelPosition,
     setCanvasTool,
-    setActionsPanelPosition,
     setCommentsPanelPosition,
     setContextMenu,
     setDiagramList,
@@ -465,9 +463,6 @@ export function EditorCanvasHost() {
         openComments(id);
       }}
       actionRows={actionRows}
-      actionsPanelPosition={actionsPanelPosition}
-      onMoveActionsPanel={(x, y) => setActionsPanelPosition({ x, y })}
-      onResetActionsPanel={() => setActionsPanelPosition(null)}
       onOpenActionForElement={(id) => {
         setSelectedId(id);
         openActionPopover(id);

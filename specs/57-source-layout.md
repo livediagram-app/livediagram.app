@@ -33,7 +33,7 @@ exhaustive — each file lands in the bucket that owns its concern):
   `LinkCardView`, …), overlays, marquee, layers.
 - `dialogs/` — modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
   `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`, `TeamFormModal`).
-- `panels/` — side/floating panels (`ActivityPanel`, `CommentsPanel`,
+- `panels/` — side/floating panels (`ActivityPanel`, `CollaboratePanel`,
   `AiPanel`, `GalleryPane`, Explorer surfaces).
 - `palette/` — palette + context-menu tiles/rows.
 - `chrome/` — header, toolbars, docks, tab bar.

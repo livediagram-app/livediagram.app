@@ -17,14 +17,7 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // The floating panels that participate in docking. Every one is built
 // on the shared MovablePanel. The fixed zoom controls are deliberately
 // absent — they are not a MovablePanel and stay pinned bottom-right.
-export type PanelId =
-  | 'palette'
-  | 'explorer'
-  | 'activity'
-  | 'comments'
-  | 'actions'
-  | 'ai'
-  | 'minimap';
+export type PanelId = 'palette' | 'explorer' | 'activity' | 'collaborate' | 'ai' | 'minimap';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -37,8 +30,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'palette',
   'explorer',
   'activity',
-  'comments',
-  'actions',
+  'collaborate',
   'ai',
   'minimap',
 ];
@@ -63,8 +55,7 @@ export type PanelLayout = {
 export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   explorer: 'top-left',
   palette: 'top-right',
-  comments: 'top-right',
-  actions: 'top-right',
+  collaborate: 'top-right',
   ai: 'top-right',
   activity: 'bottom-left',
   minimap: 'bottom-left',
@@ -84,7 +75,7 @@ export function defaultPanelLayout(): PanelLayout {
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
   corners['top-left'] = ['explorer'];
-  corners['top-right'] = ['palette', 'comments', 'actions', 'ai'];
+  corners['top-right'] = ['palette', 'collaborate', 'ai'];
   corners['bottom-left'] = ['activity', 'minimap'];
   return { corners, free: {} };
 }

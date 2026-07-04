@@ -245,29 +245,40 @@ be able to open" wording). Auto-sharing on assign is explicitly not done
 (v1): quietly widening access as a side effect of an assignment is worse
 than a dead CTA.
 
-## 5. The Actions Panel
+## 5. The Collaborate Panel
 
-A new docked panel (spec/63) mirroring the Comments Panel:
+ONE docked panel (spec/63) for both ways work gets discussed / divided
+on a diagram — it replaced the separate Comments and Actions panels,
+which crowded the same corner:
 
-- New `PanelId` `'actions'` in `lib/panel-layout.ts`, default corner
-  `top-right` stacked with Comments; `ActionsPanel.tsx` under
-  `components/panels/` on `MovablePanel`, collapsible, default-collapsed,
-  lazily imported and mounted from `useCanvasChromePanels.tsx`.
-- **Mounted whenever the active tab has at least one element with an
-  action, open OR done** — no actions at all, no panel (the Comments
-  Panel contract). An **Outstanding / Completed segmented filter** (with
-  a count on each side) switches the list; it lands on Outstanding, or
-  Completed when nothing is outstanding, and each side has a quiet empty
-  state.
-- Rows (an `actionRowsFromElements(elements)` derivation beside
-  `commentRowsFromElements`): the assignee's avatar bubble (brand-tinted
-  when it's **you**, whose rows sort first and read "You"), the action
-  name (struck through once done), a meta line of assignee + element
-  label (same "Untitled" fallbacks), and relative `createdAt` time,
-  newest first within the mine/others split.
-- **Row click selects the element and opens its action popover** (the
-  jump-to-element behaviour Comments rows have). The panel header shows
-  the OUTSTANDING count in the brand-coloured pill (hidden at zero).
+- `PanelId` `'collaborate'` in `lib/panel-layout.ts` (replacing the old
+  `'comments'` + `'actions'` ids; stored layouts naming those are
+  dropped by the normaliser and the merged panel takes its default
+  corner), default corner `top-right` stacked under the Palette;
+  `CollaboratePanel.tsx` under `components/panels/` on `MovablePanel`,
+  collapsible, default-collapsed, lazily imported and mounted from
+  `useCanvasChromePanels.tsx`.
+- **Mounted whenever the active tab has at least one comment thread OR
+  one action** (open or not) — nothing to collaborate on, no panel. An
+  **Open / Resolved segmented filter** (with a count on each side)
+  switches the list: **Open** = open actions + unresolved comment
+  threads; **Resolved** = completed actions + RESOLVED comment threads,
+  which now surface here instead of hiding entirely (the thread still
+  reopens from its element badge). It lands on Open, or Resolved when
+  nothing is open, and each side has a quiet empty state.
+- Rows (the `actionRowsFromElements` + `commentRowsFromElements`
+  derivations, both in `CollaboratePanel.tsx`; comment rows carry a
+  `resolved` flag): each row wears a small **kind chip** (Comment /
+  Action) so the mixed list scans by type. Action rows keep the
+  assignee avatar (brand-tinted when it's **you**, whose rows sort
+  first and read "You"), the action name (struck through once done),
+  and the assignee + element-label meta line; comment rows keep the
+  latest-author dot, count badge, and two-line preview. Everything else
+  interleaves newest-first on its own timestamp (an action's createdAt,
+  a thread's latest comment).
+- **Row click selects the element and opens its matching popover**
+  (comment thread / action). The panel header shows the OPEN count in
+  the brand-coloured pill (hidden at zero).
 
 ## 6. Preference + profile toggle
 

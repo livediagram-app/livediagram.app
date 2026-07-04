@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { BoxedElement, Comment } from '@livediagram/diagram';
-import { commentRowsFromElements } from '@/components/panels/CommentsPanel';
+import { commentRowsFromElements } from '@/components/panels/CollaboratePanel';
 
 // commentRowsFromElements turns a tab's element list into the rows
 // the floating Comments panel renders (one per element-with-
@@ -110,9 +110,11 @@ describe('commentRowsFromElements', () => {
     expect(commentRowsFromElements([el])[0]!.label).toBe('My Node');
   });
 
-  it('excludes a resolved thread from the panel rows', () => {
+  it('includes a resolved thread, flagged, so the Resolved view can list it', () => {
     const el = mkShape('a', [mkComment('hi', 100)], { resolved: true });
-    expect(commentRowsFromElements([el])).toHaveLength(0);
+    const rows = commentRowsFromElements([el]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.resolved).toBe(true);
   });
 
   it('sorts rows newest-first by latestAt across many elements', () => {
@@ -129,13 +131,15 @@ describe('commentRowsFromElements', () => {
     expect(rows.map((r) => r.elementId)).toEqual(['new', 'mid', 'old']);
   });
 
-  it('hides resolved threads but keeps open ones', () => {
-    // A resolved thread's discussion is closed, so it drops out of the
-    // panel; the open thread still surfaces. The thread itself stays on
-    // the element and reopens from its comment badge.
+  it('flags resolved vs open threads so the panel can split its views', () => {
+    // Both surface (the Collaborate panel's Resolved view lists closed
+    // discussions); the flag is what routes each row to its view.
     const resolved = mkShape('r', [mkComment('done', 100)], { resolved: true });
     const open = mkShape('o', [mkComment('todo', 200)]);
     const rows = commentRowsFromElements([resolved, open]);
-    expect(rows.map((r) => r.elementId)).toEqual(['o']);
+    expect(rows.map((r) => [r.elementId, r.resolved])).toEqual([
+      ['o', false],
+      ['r', true],
+    ]);
   });
 });

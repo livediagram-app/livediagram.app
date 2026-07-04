@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Assigned Actions',
   description:
-    'Assign a piece of work on a diagram element to a teammate, optionally email them about it, and track every outstanding action from the Actions panel.',
+    'Assign a piece of work on a diagram element to a teammate, optionally email them about it, and track every open action from the Collaborate panel.',
   path: '/help/collaboration/assigned-actions/',
 });
 
@@ -39,11 +39,11 @@ The element gains a small clipboard badge while the action is open. Anyone on th
   reassign it from the action's popover.
 </Tip>
 
-## The Actions panel
+## The Collaborate panel
 
-As soon as a tab has any actions, an **Actions** panel appears with the other floating panels. A filter at the top switches between **Outstanding** and **Completed**; anything assigned to you sorts to the top and reads **You**. Click a row to jump to the element and open the action.
+As soon as a tab has any actions or comment threads, a **Collaborate** panel appears with the other floating panels. A filter at the top switches between **Open** (open actions and unresolved comment threads) and **Resolved** (completed actions and resolved threads); each row wears a small Comment or Action chip so the mixed list scans by type, and anything assigned to you sorts to the top and reads **You**. Click a row to jump to the element and open its thread or action.
 
-Completing an action moves it to the Completed filter and clears the element's badge, so Outstanding only ever shows what still needs doing. Deleting the last action removes the panel entirely.
+Completing an action (or resolving a thread) moves it to the Resolved filter and clears the element's badge, so Open only ever shows what still needs doing. Clearing the last action and comment removes the panel entirely.
 
 ## Completing, editing, and deleting
 

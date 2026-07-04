@@ -22,15 +22,12 @@ import type { CanvasChromeProps } from './CanvasChrome';
 // top-right panel). Most diagrams never accumulate comments, so deferring
 // the 164-line panel + its formatRelativeTimeShort + useRelativeTimeTick
 // dependencies keeps the editor's initial chunk lean.
-const CommentsPanel = dynamic(() =>
-  import('@/components/panels/CommentsPanel').then((m) => m.CommentsPanel),
+const CollaboratePanel = dynamic(() =>
+  import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
 );
 
 // Lazy for the same reason: the Actions panel (spec/68) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
-const ActionsPanel = dynamic(() =>
-  import('@/components/panels/ActionsPanel').then((m) => m.ActionsPanel),
-);
 
 // The six floating panels as elements (spec/63), lifted out of
 // CanvasChrome: the stable handler bundles for the memo'd panels, the
@@ -64,7 +61,6 @@ export function useCanvasChromePanels({
     changeLog,
     changeLogLoading,
     actionRows,
-    actionsPanelPosition,
     commentRows,
     commentsPanelPosition,
     currentDiagramId,
@@ -102,7 +98,6 @@ export function useCanvasChromePanels({
     onDeleteFolder,
     onDismissShared,
     onDuplicateDiagram,
-    onMoveActionsPanel,
     onMoveActivity,
     onMoveCommentsPanel,
     onMoveDiagramToFolder,
@@ -115,7 +110,6 @@ export function useCanvasChromePanels({
     onRedo,
     onRenameCurrent,
     onRenameFolder,
-    onResetActionsPanel,
     onResetActivity,
     onResetCommentsPanel,
     onResetExplorer,
@@ -238,8 +232,11 @@ export function useCanvasChromePanels({
     activityPosition,
     activityHandlers.onResetActivity,
   );
-  const commentsWiring = panelWiringFor('comments', commentsPanelPosition, onResetCommentsPanel);
-  const actionsWiring = panelWiringFor('actions', actionsPanelPosition, onResetActionsPanel);
+  const collaborateWiring = panelWiringFor(
+    'collaborate',
+    commentsPanelPosition,
+    onResetCommentsPanel,
+  );
   const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
@@ -279,32 +276,19 @@ export function useCanvasChromePanels({
     />
   );
 
-  const commentsEl =
-    !chromeHidden && !minimalPanels && commentRows.length > 0 ? (
+  const collaborateEl =
+    !chromeHidden && !minimalPanels && (commentRows.length > 0 || actionRows.length > 0) ? (
       <div className="hidden sm:contents">
-        <CommentsPanel
-          position={commentsWiring.position}
-          rows={commentRows}
+        <CollaboratePanel
+          position={collaborateWiring.position}
+          commentRows={commentRows}
+          actionRows={actionRows}
           stackBelowY={dockingActive ? undefined : legacyStackBelowY}
           onMoveTo={onMoveCommentsPanel}
-          onReset={commentsWiring.onReset}
-          dock={commentsWiring.dock}
-          onRowClick={onOpenCommentsForElement}
-        />
-      </div>
-    ) : null;
-
-  const actionsEl =
-    !chromeHidden && !minimalPanels && actionRows.length > 0 ? (
-      <div className="hidden sm:contents">
-        <ActionsPanel
-          position={actionsWiring.position}
-          rows={actionRows}
-          stackBelowY={dockingActive ? undefined : legacyStackBelowY}
-          onMoveTo={onMoveActionsPanel}
-          onReset={actionsWiring.onReset}
-          dock={actionsWiring.dock}
-          onRowClick={onOpenActionForElement}
+          onReset={collaborateWiring.onReset}
+          dock={collaborateWiring.dock}
+          onCommentRowClick={onOpenCommentsForElement}
+          onActionRowClick={onOpenActionForElement}
         />
       </div>
     ) : null;
@@ -467,8 +451,7 @@ export function useCanvasChromePanels({
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: explorerEl,
     palette: paletteEl,
-    comments: commentsEl,
-    actions: actionsEl,
+    collaborate: collaborateEl,
     ai: aiEl,
     activity: activityEl,
     minimap: minimapEl,

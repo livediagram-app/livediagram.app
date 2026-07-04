@@ -18,7 +18,7 @@ describe('panel-layout', () => {
   it('default layout preserves the historical fixed arrangement', () => {
     const layout = defaultPanelLayout();
     expect(layout.corners['top-left']).toEqual(['explorer']);
-    expect(layout.corners['top-right']).toEqual(['palette', 'comments', 'actions', 'ai']);
+    expect(layout.corners['top-right']).toEqual(['palette', 'collaborate', 'ai']);
     expect(layout.corners['bottom-left']).toEqual(['activity', 'minimap']);
     expect(layout.corners['bottom-right']).toEqual([]);
     expect(layout.free).toEqual({});
@@ -27,7 +27,7 @@ describe('panel-layout', () => {
   it('docks a panel to the bottom of a corner stack, removing it from its old spot', () => {
     const next = dockPanel(defaultPanelLayout(), 'palette', 'bottom-right');
     // Left its old corner...
-    expect(next.corners['top-right']).toEqual(['comments', 'actions', 'ai']);
+    expect(next.corners['top-right']).toEqual(['collaborate', 'ai']);
     // ...and joined below whatever is in the target corner.
     expect(next.corners['bottom-right']).toEqual(['palette']);
   });
@@ -53,9 +53,9 @@ describe('panel-layout', () => {
   });
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
-    // Move the top-right Palette away; comments should now lead the stack.
+    // Move the top-right Palette away; collaborate should now lead the stack.
     const next = dockPanel(defaultPanelLayout(), 'palette', 'top-left');
-    expect(next.corners['top-right']).toEqual(['comments', 'actions', 'ai']);
+    expect(next.corners['top-right']).toEqual(['collaborate', 'ai']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
@@ -83,10 +83,10 @@ describe('panel-layout', () => {
     it('keeps a valid free position but ignores a malformed one', () => {
       const layout = normalizePanelLayout({
         corners: {},
-        free: { ai: { x: 5, y: 6 }, comments: { x: 'nope' } },
+        free: { ai: { x: 5, y: 6 }, collaborate: { x: 'nope' } },
       });
       expect(layout.free.ai).toEqual({ x: 5, y: 6 });
-      expect(layout.free.comments).toBeUndefined();
+      expect(layout.free.collaborate).toBeUndefined();
     });
 
     it('falls back to the default layout for non-object input', () => {
