@@ -649,6 +649,7 @@ export * from './svg-render-table';
 // Theme engine (spec/29, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
 // MCP worker (spec/62). Custom-theme resolution stays in apps/live/lib/themes.ts.
+export * from './theme-graph';
 export * from './themes';
 export * from './theme-presets';
 
