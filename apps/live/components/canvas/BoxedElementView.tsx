@@ -1,9 +1,8 @@
-import { useEffect, memo, useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import {
   isVotable,
   activeCommentCount,
   isOpenAction,
-  ANIMATION_SPEED_FACTOR,
   BORDER_DASH_ARRAY,
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
@@ -31,6 +30,7 @@ import { AnnotationGlyph, AnnotationHoverNote } from '@/components/canvas/Annota
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
+import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { describeLink } from '@/lib/link-label';
 import { TableView } from '@/components/canvas/TableView';
@@ -207,20 +207,13 @@ function BoxedElementViewImpl({
   // so they skip it. Shares the icon+label flex layout below.
   const marker: ShapeMarker | undefined =
     element.type === 'shape' && !isSelfDrawingShape(element.shape) ? element.marker : undefined;
-  // A standalone text element has no fill or border, so the box-shadow / ring /
-  // background animations (glow / pulse / trace / gradient) would animate an
-  // invisible bounding rectangle around the words. For those, ride the rendered
-  // glyphs instead: the wrapper drops the box class (see wrapperAnimClass below)
-  // and the label content node gets the matching .lvd-anim-text-* class. The
-  // transform animations (bounce, float, swing, …) already move the text with
-  // the box, so they stay on the wrapper unchanged.
-  const isTextNativeAnim =
-    element.type === 'text' &&
-    (element.animation === 'glow' ||
-      element.animation === 'pulse' ||
-      element.animation === 'trace' ||
-      element.animation === 'gradient');
-  const labelAnimClass = isTextNativeAnim ? `lvd-anim-text-${element.animation}` : undefined;
+  // Which surface each looping animation rides (wrapper box vs text
+  // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
+  // properties the keyframes read (spec/09) — see useBoxedElementAnimation.
+  const { labelAnimClass, svgAnim, wrapperAnimClass, animStyle } = useBoxedElementAnimation(
+    element,
+    textColor,
+  );
 
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
@@ -250,42 +243,6 @@ function BoxedElementViewImpl({
   // IconDropPreview band renders while dragging over.
   const { acceptsIconDrop, dropSide, handleIconDragOver, handleIconDragLeave, handleIconDrop } =
     useIconDropTarget(element, onDropIcon);
-
-  // trace / gradient / pulse / glow on an SVG-rendered shape (diamond,
-  // triangle, hexagon, …) render against the true outline / fill / silhouette
-  // inside ShapeSvgOverlay, so the wrapper must NOT also paint its
-  // bounding-box version (pulse / glow as a box-shadow would ring the
-  // rectangle, not the shape; trace / gradient would double up). Every other
-  // animation — and these four on CSS-rendered shapes (circle / stadium /
-  // square / browser, where the wrapper's border-radius already matches the
-  // outline) and non-shape boxed elements — stays a wrapper class.
-  const svgAnim =
-    element.animation === 'trace' ||
-    element.animation === 'gradient' ||
-    element.animation === 'pulse' ||
-    element.animation === 'glow'
-      ? element.animation
-      : undefined;
-  const svgHandlesAnim =
-    element.type === 'shape' && isSvgRenderedShape(element.shape) && svgAnim !== undefined;
-  // The pop-in entry animation must drop off the wrapper once it has run:
-  // CSS animations RESTART when a node is moved in the DOM, and layer
-  // reorders (bring to front / send to back) move every keyed sibling — so
-  // a lingering pop-in class made unrelated elements visibly re-enter.
-  const [entered, setEntered] = useState(false);
-  useEffect(() => {
-    // Comfortably past the pop-in duration; a plain timeout (not
-    // animationend) so reduced-motion sessions converge too.
-    const t = setTimeout(() => setEntered(true), 400);
-    return () => clearTimeout(t);
-  }, []);
-  const wrapperAnimClass = element.animation
-    ? svgHandlesAnim || isTextNativeAnim
-      ? ''
-      : `lvd-anim-${element.animation}`
-    : entered
-      ? ''
-      : 'animate-pop-in';
 
   return (
     <div
@@ -320,27 +277,7 @@ function BoxedElementViewImpl({
         color: textColor,
         opacity: element.opacity ?? 1,
         ...variant.style,
-        // Pulse / glow rings take the element's accent (its stroke, else its
-        // text colour); the speed factor scales the keyframe duration. See
-        // .lvd-anim-* in globals.css.
-        ...(element.animation
-          ? ({
-              '--lvd-anim-color': element.strokeColor ?? textColor,
-              '--lvd-anim-speed': ANIMATION_SPEED_FACTOR[element.animationSpeed ?? 'normal'],
-              // The moving-gradient animation blends the fill into the accent;
-              // expose the fill (shared by the wrapper CSS gradient and the SVG
-              // <stop> cycle that ShapeSvgOverlay inherits).
-              ...(element.animation === 'gradient'
-                ? { '--lvd-anim-bg': element.fillColor ?? defaultFillColor(element) }
-                : {}),
-              // Text-native gradient blends the element's own text colour
-              // toward the accent (the box version blends the fill, which a
-              // text element doesn't have); see .lvd-anim-text-gradient.
-              ...(isTextNativeAnim && element.animation === 'gradient'
-                ? { '--lvd-anim-text': textColor }
-                : {}),
-            } as React.CSSProperties)
-          : {}),
+        ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).
         // Handles + anchors are children, so they rotate with the box.
         ...(isRotated ? { transform: `rotate(${rotation}deg)` } : {}),
