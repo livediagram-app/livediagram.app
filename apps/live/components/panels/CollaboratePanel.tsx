@@ -95,6 +95,13 @@ export function CollaboratePanel({
   dock,
 }: CollaboratePanelProps) {
   useRelativeTimeTick();
+  // Kind filter (left of the Open / Resolved control): All -> Comments
+  // -> Actions, cycled by one compact button so the narrow panel
+  // doesn't grow a second segmented row. Open/Resolved counts follow
+  // the active kind.
+  const [kindFilter, setKindFilter] = useState<'all' | 'comments' | 'actions'>('all');
+  const filteredComments = kindFilter === 'actions' ? [] : commentRows;
+  const filteredActions = kindFilter === 'comments' ? [] : actionRows;
   const merge = (comments: CommentRow[], actions: ActionRow[]): CollaborateRow[] =>
     [
       ...comments.map(
@@ -105,12 +112,12 @@ export function CollaboratePanel({
       ),
     ].sort((a, b) => (a.mine === b.mine ? b.at - a.at : a.mine ? -1 : 1));
   const open = merge(
-    commentRows.filter((c) => !c.resolved),
-    actionRows.filter((a) => a.status === 'open'),
+    filteredComments.filter((c) => !c.resolved),
+    filteredActions.filter((a) => a.status === 'open'),
   );
   const resolved = merge(
-    commentRows.filter((c) => c.resolved),
-    actionRows.filter((a) => a.status === 'done'),
+    filteredComments.filter((c) => c.resolved),
+    filteredActions.filter((a) => a.status === 'done'),
   );
   // Land on whichever side has content: Open normally, Resolved when
   // everything is already wrapped up (an empty default view helps no one).
@@ -141,24 +148,37 @@ export function CollaboratePanel({
       defaultCollapsed
     >
       <div className="px-2 pb-2">
-        {/* Open / Resolved segmented filter. */}
-        <div className="mb-1.5 grid grid-cols-2 gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800">
-          <FilterTab
-            label="Open"
-            count={open.length}
-            active={filter === 'open'}
-            onClick={() => setFilter('open')}
-          />
-          <FilterTab
-            label="Resolved"
-            count={resolved.length}
-            active={filter === 'resolved'}
-            onClick={() => setFilter('resolved')}
-          />
+        {/* Kind filter + Open / Resolved segmented filter. */}
+        <div className="mb-1.5 flex items-stretch gap-1">
+          <KindFilterButton value={kindFilter} onChange={setKindFilter} />
+          <div className="grid flex-1 grid-cols-2 gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800">
+            <FilterTab
+              label="Open"
+              count={open.length}
+              active={filter === 'open'}
+              onClick={() => setFilter('open')}
+            />
+            <FilterTab
+              label="Resolved"
+              count={resolved.length}
+              active={filter === 'resolved'}
+              onClick={() => setFilter('resolved')}
+            />
+          </div>
         </div>
         {shown.length === 0 ? (
           <p className="px-1.5 py-4 text-center text-[11px] text-slate-400 dark:text-slate-500">
-            {filter === 'open' ? 'Nothing open.' : 'Nothing resolved yet.'}
+            {kindFilter === 'comments'
+              ? filter === 'open'
+                ? 'No open comments.'
+                : 'No resolved comments yet.'
+              : kindFilter === 'actions'
+                ? filter === 'open'
+                  ? 'No open actions.'
+                  : 'No completed actions yet.'
+                : filter === 'open'
+                  ? 'Nothing open.'
+                  : 'Nothing resolved yet.'}
           </p>
         ) : (
           <ul className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
@@ -181,6 +201,66 @@ export function CollaboratePanel({
         )}
       </div>
     </MovablePanel>
+  );
+}
+
+// The kind filter: one compact button cycling All -> Comments ->
+// Actions. A funnel glyph for All; the matching kind glyph +
+// brand-tint while filtered, so the narrowed state is visible at a
+// glance without a second segmented row.
+function KindFilterButton({
+  value,
+  onChange,
+}: {
+  value: 'all' | 'comments' | 'actions';
+  onChange: (next: 'all' | 'comments' | 'actions') => void;
+}) {
+  const next = value === 'all' ? 'comments' : value === 'comments' ? 'actions' : 'all';
+  const label =
+    value === 'all'
+      ? 'Showing everything'
+      : value === 'comments'
+        ? 'Showing comments only'
+        : 'Showing actions only';
+  return (
+    <Tooltip title={label} description="Click to filter by comments or actions.">
+      <button
+        type="button"
+        onClick={() => onChange(next)}
+        aria-label={`${label} — click to change the filter`}
+        className={`flex w-8 shrink-0 items-center justify-center rounded-lg transition ${
+          value === 'all'
+            ? 'bg-slate-100 text-slate-500 hover:text-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+            : 'bg-brand-50 text-brand-600 ring-1 ring-brand-200 dark:bg-brand-500/15 dark:text-brand-300 dark:ring-brand-500/30'
+        }`}
+      >
+        {value === 'comments' ? (
+          <CommentMenuIcon />
+        ) : value === 'actions' ? (
+          <ActionMenuIcon />
+        ) : (
+          <FunnelGlyph />
+        )}
+      </button>
+    </Tooltip>
+  );
+}
+
+function FunnelGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 3h12l-4.5 5v4.5l-3 1.5V8z" />
+    </svg>
   );
 }
 

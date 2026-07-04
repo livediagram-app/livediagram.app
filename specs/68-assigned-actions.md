@@ -265,7 +265,11 @@ which crowded the same corner:
   threads; **Resolved** = completed actions + RESOLVED comment threads,
   which now surface here instead of hiding entirely (the thread still
   reopens from its element badge). It lands on Open, or Resolved when
-  nothing is open, and each side has a quiet empty state.
+  nothing is open, and each side has a quiet empty state. To the LEFT of
+  the segmented control sits a compact **kind filter** button cycling
+  All → Comments → Actions (funnel glyph for All; the kind glyph,
+  brand-tinted, while narrowed) — the Open/Resolved counts and empty
+  states follow the active kind.
 - Rows (the `actionRowsFromElements` + `commentRowsFromElements`
   derivations, both in `CollaboratePanel.tsx`; comment rows carry a
   `resolved` flag) share ONE anatomy: a **kind glyph** far left (the
