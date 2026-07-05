@@ -2,6 +2,7 @@ import { drawBannerMessage } from '@/lib/draw-mode';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
+import { GroupIcon } from '@/components/canvas/selection-popover-icons';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -126,7 +127,7 @@ export function TopCenterChrome({
 
         {isGroupMode ? (
           <ModeBanner
-            icon={<GroupIcon />}
+            icon={<GroupIcon size={14} />}
             message="Click another element to add to the group"
             actionLabel="Done"
             onAction={onCancelGroup}
@@ -232,28 +233,6 @@ function PaintIcon() {
       <path d="M13.5 2.5l-6 6" />
       <path d="M7 8l1.5 1.5" />
       <path d="M6.5 9.5a3 3 0 1 0 1 4.5c.5-.6.5-1.4 0-2-.6-.5-1.4-.5-2 0" />
-    </svg>
-  );
-}
-
-function GroupIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      {/* A dashed selection bracket binding two small shapes — reads as
-          "grouped", and no longer mistakable for Duplicate's overlapping
-          squares (a reported misclick). */}
-      <rect x="1.5" y="1.5" width="13" height="13" rx="2" strokeDasharray="2.6 1.9" />
-      <circle cx="5.9" cy="6" r="2" fill="currentColor" stroke="none" />
-      <rect x="8.4" y="8.4" width="4.1" height="4.1" rx="0.9" fill="currentColor" stroke="none" />
     </svg>
   );
 }

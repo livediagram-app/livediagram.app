@@ -1,6 +1,7 @@
 import type { Element } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
+import { GroupIcon } from '@/components/canvas/selection-popover-icons';
 
 // Shared styling for the toolbar's plain icon buttons (More / Duplicate / Group
 // / Export). Lock (active brand fill) and Delete (rose / disabled) compose
@@ -102,7 +103,7 @@ export function MultiSelectionToolbar({
           aria-label="Group selected elements"
           className={TOOLBAR_BTN}
         >
-          <GroupIcon />
+          <GroupIcon size={14} />
         </button>
       </Tooltip>
       <Tooltip
@@ -182,28 +183,6 @@ function DuplicateIcon() {
     >
       <rect x="2.5" y="2.5" width="8" height="8" rx="1.5" />
       <path d="M5.5 13.5h6a1.5 1.5 0 0 0 1.5-1.5v-6" />
-    </svg>
-  );
-}
-
-function GroupIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      {/* A dashed selection bracket binding two small shapes — reads as
-          "grouped", and no longer mistakable for Duplicate's overlapping
-          squares (a reported misclick). */}
-      <rect x="1.5" y="1.5" width="13" height="13" rx="2" strokeDasharray="2.6 1.9" />
-      <circle cx="5.9" cy="6" r="2" fill="currentColor" stroke="none" />
-      <rect x="8.4" y="8.4" width="4.1" height="4.1" rx="0.9" fill="currentColor" stroke="none" />
     </svg>
   );
 }
