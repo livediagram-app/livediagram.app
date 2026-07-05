@@ -1,4 +1,4 @@
-import { memo, type PointerEvent as ReactPointerEvent } from 'react';
+import { memo, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   angledElbow,
   arrowheadShapeOf,
@@ -18,6 +18,7 @@ import {
 } from '@livediagram/diagram';
 import type { ArrowEnd } from '@/lib/canvas';
 import { arrowLabelFontSize, placeLabel } from '@/lib/arrow-label-geometry';
+import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { arrowheadMarkerId } from './arrow-defs';
 import { ArrowLabel } from './ArrowLabel';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
@@ -123,9 +124,20 @@ function ArrowViewImpl({
   fontFamily,
 }: ArrowViewProps) {
   const isLocked = arrow.locked === true || tabLocked;
+  // Open the context menu beside the arrow rather than under the cursor /
+  // finger, mirroring boxed elements: `elementMenuAnchor` owns the top-right
+  // corner + flip-to-left + gap rule, applied to the arrow's on-screen
+  // bounding box (the wide hit band's rect, so zoom / pan are baked in).
+  // Falls back to the pointer position if the hit band can't be measured.
+  const hitBandRef = useRef<SVGPathElement | null>(null);
+  const contextSelectBeside = (x: number, y: number) => {
+    const rect = hitBandRef.current?.getBoundingClientRect();
+    const anchor = rect ? elementMenuAnchor(rect) : { x, y };
+    onContextSelect(arrow.id, anchor.x, anchor.y);
+  };
   // Touch long-press opens the arrow's context menu (touch has no
   // right-click); a press that moves becomes a select / drag instead.
-  const longPress = useLongPress((x, y) => onContextSelect(arrow.id, x, y));
+  const longPress = useLongPress(contextSelectBeside);
   const from = endpointPosition(arrow.from, elementIndex);
   const to = endpointPosition(arrow.to, elementIndex);
   const markerUrl = `url(#${arrowheadMarkerId(arrowheadShapeOf(arrow), arrowheadSizeOf(arrow))})`;
@@ -290,6 +302,7 @@ function ArrowViewImpl({
         // hit-testing (the eraser's elementsFromPoint, spec/09) resolves an
         // arrow the same way it resolves a boxed element's wrapper.
         data-element-id={arrow.id}
+        ref={hitBandRef}
         d={pathD}
         fill="none"
         stroke="transparent"
@@ -297,7 +310,7 @@ function ArrowViewImpl({
         onContextMenu={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          onContextSelect(arrow.id, e.clientX, e.clientY);
+          contextSelectBeside(e.clientX, e.clientY);
         }}
         onPointerDown={(e) => {
           longPress.onPointerDown(e);
@@ -360,7 +373,7 @@ function ArrowViewImpl({
           onCommit={(next) => onCommitLabel(arrow.id, next)}
           onCancel={onCancelEdit}
           onSelect={(e) => onSelect(arrow.id, e)}
-          onContextMenu={(e) => onContextSelect(arrow.id, e.clientX, e.clientY)}
+          onContextMenu={(e) => contextSelectBeside(e.clientX, e.clientY)}
         />
       ) : null}
 

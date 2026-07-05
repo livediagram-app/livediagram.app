@@ -2,8 +2,10 @@
 // element at its top-right corner (so it never covers what you're editing),
 // flipping to the top-left when the fixed-width menu wouldn't fit to the right,
 // and held a few px off the edge so it clears the element's border. Shared by
-// the right-click / long-press handler (BoxedElementView) and the toolbar
-// "More" button (via Canvas) so every entry point opens the menu identically.
+// the right-click / long-press handler (BoxedElementView), the arrow's
+// right-click / long-press / label handlers (ArrowView, anchored on the hit
+// band's bounding box), and the toolbar "More" button (via Canvas) so every
+// entry point opens the menu identically.
 
 // ContextMenu renders at a fixed w-56 (14rem = 224px); used to decide whether
 // the menu fits to the right of the element before it would clip off-screen.
