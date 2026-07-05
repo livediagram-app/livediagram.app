@@ -12,6 +12,7 @@
 // keyboard / screen-reader users get the same modal semantics.
 
 import Link from 'next/link';
+import { SignInIcon } from '@/components/chrome/AuthControls';
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
@@ -174,7 +175,7 @@ export function SignInReasonsModal({
               onClick={onSignIn}
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 sm:w-auto"
             >
-              <SignInIcon />
+              <SignInIcon size={14} />
               Sign in
             </Link>
           </div>
@@ -277,26 +278,6 @@ function SparkleIcon() {
     >
       <path d="M8 1.5 9.2 5.4 13 6.6 9.2 7.8 8 11.7 6.8 7.8 3 6.6 6.8 5.4 8 1.5Z" />
       <path d="M13 10.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6.6-1.9Z" />
-    </svg>
-  );
-}
-
-function SignInIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M9 3h3.5A1.5 1.5 0 0 1 14 4.5v7A1.5 1.5 0 0 1 12.5 13H9" />
-      <path d="M2 8h7" />
-      <path d="M6 5l3 3-3 3" />
     </svg>
   );
 }

@@ -143,11 +143,11 @@ function AuthControlsDisabled() {
 // Sign-in pill reads as a peer of those buttons. Exported because the
 // Explorer's "Sign in to use teams" sidebar link (spec/32) renders
 // the same glyph so the two sign-in affordances read as one action.
-export function SignInIcon() {
+export function SignInIcon({ size = 13 }: { size?: number } = {}) {
   return (
     <svg
-      width="13"
-      height="13"
+      width={size}
+      height={size}
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
