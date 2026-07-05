@@ -28,7 +28,7 @@ export function article(label: string): 'a' | 'an' {
   return /^[aeiou]/i.test(label) ? 'an' : 'a';
 }
 
-export function pluralise(label: string): string {
+function pluralise(label: string): string {
   // 'Text' as a count noun ("2 texts") is awkward — promote to
   // "Text elements". Everything else: append 's'. Good enough for
   // V1; refine if a shape kind ends up needing irregular plural.

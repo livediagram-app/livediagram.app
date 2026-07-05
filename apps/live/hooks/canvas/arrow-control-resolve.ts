@@ -23,7 +23,7 @@ import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
 // poly[pointIndex + 2]. Filter out any miss: if the point was removed
 // mid-drag the index can fall off the end, and an undefined neighbour
 // would crash snapArrowPoint reading `.x`.
-export function snapArrowControlPoint(
+function snapArrowControlPoint(
   els: Element[],
   arrowId: string,
   raw: { x: number; y: number },

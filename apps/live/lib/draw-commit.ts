@@ -38,7 +38,7 @@ export const NEW_ARROW_THEME_STROKE_FALLBACK = '#0ea5e9';
 // same threshold so the two gestures can't disagree.
 const TAP_TRAVEL_PX = 16;
 
-export const isDrawTap = (startX: number, startY: number, endX: number, endY: number): boolean =>
+const isDrawTap = (startX: number, startY: number, endX: number, endY: number): boolean =>
   Math.abs(endX - startX) < TAP_TRAVEL_PX && Math.abs(endY - startY) < TAP_TRAVEL_PX;
 
 // Arrow branch. A stray click lays the default 160px horizontal arrow

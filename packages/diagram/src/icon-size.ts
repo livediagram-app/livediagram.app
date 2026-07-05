@@ -20,7 +20,7 @@ export const DEFAULT_ICON_SIZE: IconSize = 'md';
 
 // The preset's pixel size, clamped so the mark never overflows the room it
 // renders in (a small element box still shows the whole tile).
-export function iconSizePx(size: IconSize | undefined, maxW: number, maxH: number): number {
+function iconSizePx(size: IconSize | undefined, maxW: number, maxH: number): number {
   return Math.max(0, Math.min(ICON_SIZE_PX[size ?? DEFAULT_ICON_SIZE], maxW, maxH));
 }
 
