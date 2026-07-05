@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Button } from '@livediagram/ui';
 import type { TeamInviteLink } from '@livediagram/api-schema';
 import { apiGenerateTeamInviteLink, apiRevokeTeamInviteLink } from '@/lib/api-client';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -133,13 +134,9 @@ export function TeamInviteLinkDialog({
                 onFocus={(e) => e.currentTarget.select()}
                 className="min-w-0 flex-1 truncate rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               />
-              <button
-                type="button"
-                onClick={() => void copy()}
-                className="shrink-0 rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-600 sm:py-1.5"
-              >
+              <Button size="md" onClick={() => void copy()} className="shrink-0 sm:py-1.5">
                 {copied ? 'Copied' : 'Copy link'}
-              </button>
+              </Button>
             </div>
             <p className="mt-2 text-xs text-slate-400 dark:text-slate-400">
               {expiryLabel(inviteLink.expiresAt)}
@@ -147,15 +144,10 @@ export function TeamInviteLinkDialog({
           </div>
         ) : (
           <div className="mt-4">
-            <button
-              type="button"
-              onClick={() => void generate()}
-              disabled={busy}
-              className="inline-flex items-center gap-2 rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <Button size="md" onClick={() => void generate()} disabled={busy}>
               <LinkIcon />
               {busy ? 'Turning on…' : 'Turn on invite link'}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -175,13 +167,9 @@ export function TeamInviteLinkDialog({
         ) : (
           <span />
         )}
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
-        >
+        <Button variant="secondary" onClick={onClose}>
           Done
-        </button>
+        </Button>
       </div>
     </Dialog>
   );
