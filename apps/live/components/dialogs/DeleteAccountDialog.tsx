@@ -18,6 +18,7 @@
 // with data they can recover from; Clerk-first would leave orphan
 // rows behind that the user could no longer reach.
 
+import { Button } from '@livediagram/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { Portal } from '@/components/primitives/Portal';
 import { useEffect, useRef, useState } from 'react';
@@ -171,22 +172,17 @@ export function DeleteAccountDialog({
           </div>
 
           <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={phase === 'submitting'}
-              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
-            >
+            <Button variant="secondary" onClick={onClose} disabled={phase === 'submitting'}>
               Cancel
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="danger"
               onClick={handleDelete}
               disabled={!emailsMatch || phase === 'submitting'}
-              className="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-300"
+              className="shadow-sm"
             >
               {phase === 'submitting' ? 'Deleting…' : 'Delete account'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

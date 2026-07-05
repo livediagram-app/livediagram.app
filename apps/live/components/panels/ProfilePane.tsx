@@ -11,6 +11,7 @@
 // accounts, so the component is a no-op rather than calling Clerk hooks that
 // would throw outside a ClerkProvider.
 
+import { Button } from '@livediagram/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
@@ -192,13 +193,13 @@ function ProfilePaneEnabled() {
               Permanently removes your diagrams, folders, and account. This cannot be undone.
             </p>
           </div>
-          <button
-            type="button"
+          <Button
+            variant="danger"
             onClick={() => setDeleteOpen(true)}
-            className="shrink-0 rounded-md bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700"
+            className="shrink-0 shadow-sm"
           >
             Delete account
-          </button>
+          </Button>
         </div>
       </section>
 
