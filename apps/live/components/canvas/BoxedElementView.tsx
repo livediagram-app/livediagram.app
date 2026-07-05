@@ -1,6 +1,5 @@
 import { memo, useRef, useState } from 'react';
 import {
-  isVotable,
   activeCommentCount,
   isOpenAction,
   BORDER_DASH_ARRAY,
@@ -32,11 +31,11 @@ import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-lay
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
+import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { describeLink } from '@/lib/link-label';
 import { TableView } from '@/components/canvas/TableView';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { BrowserChrome, FreehandSvg } from '@/components/canvas/boxed-element-overlays';
-import { Tooltip } from '@/components/primitives/Tooltip';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 
@@ -119,15 +118,6 @@ function BoxedElementViewImpl({
   // engine's click-vs-drag test) opens the editable note popover.
   const isAnnotation = element.type === 'annotation';
   const [hovering, setHovering] = useState(false);
-
-  // Dot-vote tally for this element (spec/39): total dots, how many are
-  // mine (clicking the pill retracts one), and whether it's a revealed
-  // winner. The pill only shows once at least one dot has landed.
-  const voteTotal = vote ? (vote.votes[element.id]?.length ?? 0) : 0;
-  const myVotes =
-    vote && selfId ? (vote.votes[element.id]?.filter((id) => id === selfId).length ?? 0) : 0;
-  const showVotePill = !!vote && voteTotal > 0 && isVotable(element);
-  const isVoteWinner = !!vote?.revealed && voteTotal > 0 && voteTotal === (voteMax ?? 0);
 
   // Right-click selects the element + asks the page to open a
   // context menu at the cursor. The page also keeps showing the
@@ -447,43 +437,16 @@ function BoxedElementViewImpl({
         />
       ) : null}
 
-      {/* Dot-vote tally pill (spec/39): live count, brand-filled when it
-          holds your dots (click to retract one), amber-ringed if it's a
-          revealed winner. */}
-      {isVoteWinner ? (
-        <div
-          className="pointer-events-none absolute inset-0 ring-2 ring-amber-400"
-          style={{ borderRadius: 'inherit' }}
-        />
-      ) : null}
-      {showVotePill ? (
-        <div
-          className="absolute -bottom-1 -right-1 origin-bottom-right"
-          style={{ transform: `scale(${1 / zoom})` }}
-        >
-          <Tooltip
-            title={`${voteTotal} ${voteTotal === 1 ? 'vote' : 'votes'}`}
-            description={myVotes > 0 ? 'Click to remove one of your dots.' : undefined}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (myVotes > 0) onRetractVote?.(element.id);
-              }}
-              aria-label={`${voteTotal} votes`}
-              className={
-                'pointer-events-auto flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold shadow-sm ' +
-                (myVotes > 0
-                  ? 'bg-brand-500 text-white'
-                  : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100')
-              }
-            >
-              {voteTotal}
-            </button>
-          </Tooltip>
-        </div>
-      ) : null}
+      {/* Dot-vote tally pill + winner ring (spec/39) — see
+          ElementVoteOverlay. */}
+      <ElementVoteOverlay
+        element={element}
+        vote={vote}
+        selfId={selfId}
+        voteMax={voteMax}
+        zoom={zoom}
+        onRetractVote={onRetractVote}
+      />
 
       {showHandles || showAnchors ? (
         // Selection chrome (resize / rotate / arrow-anchor handles) rides
