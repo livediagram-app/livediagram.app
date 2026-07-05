@@ -1,3 +1,4 @@
+import { CtaLink } from '@/components/CtaLink';
 import type { LandingSection } from '@/lib/landing-content';
 import { SectionShowcase } from '@/components/SectionShowcase';
 
@@ -20,12 +21,7 @@ export function FeatureCategoryHero({ section }: { section: LandingSection }) {
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-slate-600">{section.description}</p>
           <div className="mt-8">
-            <a
-              href="/new"
-              className="inline-flex items-center justify-center rounded-md bg-brand-500 px-5 py-2.5 text-base font-medium text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-            >
-              Start drawing
-            </a>
+            <CtaLink href="/new">Start drawing</CtaLink>
           </div>
         </div>
 

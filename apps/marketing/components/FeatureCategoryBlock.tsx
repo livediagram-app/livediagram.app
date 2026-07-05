@@ -1,3 +1,4 @@
+import { CtaLink } from '@/components/CtaLink';
 import type { LandingSection } from '@/lib/landing-content';
 import { SectionShowcase } from '@/components/SectionShowcase';
 
@@ -50,10 +51,7 @@ export function FeatureCategoryBlock({
             ))}
           </ul>
 
-          <a
-            href={`/features/${section.id}`}
-            className="group mt-8 inline-flex items-center gap-2 rounded-md bg-brand-500 px-5 py-2.5 text-base font-medium text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-          >
+          <CtaLink href={`/features/${section.id}`} className="group mt-8 gap-2">
             {section.cta}
             <svg
               width="16"
@@ -69,7 +67,7 @@ export function FeatureCategoryBlock({
             >
               <path d="M6 3.5 10.5 8 6 12.5" />
             </svg>
-          </a>
+          </CtaLink>
         </div>
 
         {/* Taller showcase composed from the section's own feature mocks.

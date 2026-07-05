@@ -1,3 +1,4 @@
+import { CtaLink } from '@/components/CtaLink';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -76,12 +77,9 @@ export default function AlternativesIndexPage() {
         </ul>
         <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
           <p className="text-slate-700">Or just try it, no sign-up required.</p>
-          <a
-            href="/new"
-            className="mt-3 inline-flex items-center justify-center rounded-md bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-          >
+          <CtaLink href="/new" size="sm" className="mt-3">
             Start drawing
-          </a>
+          </CtaLink>
         </div>
       </main>
       <Footer />
