@@ -22,10 +22,25 @@ function handlers(): CommandHandlers {
     openTheme: vi.fn(),
     openCanvasOptions: vi.fn(),
     openShare: vi.fn(),
+    undo: vi.fn(),
+    redo: vi.fn(),
+    toggleZen: vi.fn(),
+    fitToScreen: vi.fn(),
+    autoLayout: vi.fn(),
+    autoAlign: vi.fn(),
+    openExport: vi.fn(),
+    openImport: vi.fn(),
+    openSettings: vi.fn(),
+    openShortcuts: vi.fn(),
+    openTemplates: vi.fn(),
   };
 }
 
 const base: CommandContext = {
+  isReadOnly: false,
+  canUndo: false,
+  canRedo: false,
+  zenMode: false,
   selectionCount: 0,
   singleIsBoxed: false,
   singleIsShape: false,
@@ -157,5 +172,53 @@ describe('buildEditorCommands — dispatch', () => {
     );
     cmds.find((c) => c.id === 'clear-marker')!.run();
     expect(h.setMarker).toHaveBeenCalledWith(null);
+  });
+});
+
+// Spec/70: the app-level command palette expansion.
+describe('buildEditorCommands — app-level commands (spec/70)', () => {
+  it('offers view / cleanup / dialog commands for editors', () => {
+    expect(ids(base)).toEqual(
+      expect.arrayContaining([
+        'zen',
+        'fit-to-screen',
+        'export',
+        'auto-layout',
+        'auto-align',
+        'import',
+        'browse-templates',
+        'settings',
+        'shortcuts',
+      ]),
+    );
+  });
+
+  it('offers Undo / Redo only when there is history to walk', () => {
+    expect(ids(base)).not.toContain('undo');
+    expect(ids(base)).not.toContain('redo');
+    expect(ids({ ...base, canUndo: true })).toContain('undo');
+    expect(ids({ ...base, canRedo: true })).toContain('redo');
+  });
+
+  it('read-only sessions get exactly the view-safe subset', () => {
+    expect(ids({ ...base, isReadOnly: true })).toEqual(['zen', 'fit-to-screen', 'export']);
+  });
+
+  it('names the zen command by its direction', () => {
+    const name = (zen: boolean) =>
+      buildEditorCommands({ ...base, zenMode: zen }, handlers()).find((c) => c.id === 'zen')!.name;
+    expect(name(false)).toBe('Enter zen mode');
+    expect(name(true)).toBe('Exit zen mode');
+  });
+
+  it('dispatches the app-level handlers', () => {
+    const h = handlers();
+    const cmds = buildEditorCommands({ ...base, canUndo: true, canRedo: true }, h);
+    cmds.find((c) => c.id === 'undo')!.run();
+    cmds.find((c) => c.id === 'auto-layout')!.run();
+    cmds.find((c) => c.id === 'export')!.run();
+    expect(h.undo).toHaveBeenCalledOnce();
+    expect(h.autoLayout).toHaveBeenCalledOnce();
+    expect(h.openExport).toHaveBeenCalledOnce();
   });
 });

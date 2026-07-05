@@ -72,7 +72,7 @@ const SECTIONS: ShortcutSection[] = [
   {
     heading: 'Navigate & select',
     rows: [
-      { keys: ['⌘', '.'], label: 'Search' },
+      { keys: ['⌘', 'K'], label: 'Search & commands  (or ⌘ .)' },
       { keys: ['⌘', '+'], label: 'Zoom in' },
       { keys: ['⌘', '-'], label: 'Zoom out' },
       { keys: ['⌘', '0'], label: 'Reset zoom to 100%' },

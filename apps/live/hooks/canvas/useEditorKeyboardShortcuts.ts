@@ -204,11 +204,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           live.onZoomReset();
           return;
         }
-        // Cmd/Ctrl+.: open the global search panel. Before the
-        // read-only gate — search only navigates. ('.' instead of 'T'
-        // because browsers reserve Cmd/Ctrl+T for "new tab" and won't
-        // let the page intercept it.)
-        if (key === '.') {
+        // Cmd/Ctrl+. and Cmd/Ctrl+K: open the global search panel.
+        // Before the read-only gate — search only navigates. ('.'
+        // instead of 'T' because browsers reserve Cmd/Ctrl+T for "new
+        // tab" and won't let the page intercept it; 'K' is the
+        // command-palette convention, spec/70.)
+        if (key === '.' || lower === 'k') {
           e.preventDefault();
           live.onOpenSearch();
           return;

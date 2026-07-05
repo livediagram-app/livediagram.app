@@ -18,6 +18,14 @@ export type EditorCommand = CommandSearchItem & { run: () => void };
 // What the builder needs to know about the current editor to decide which
 // commands apply. Kept primitive so the builder stays pure + cheap to test.
 export type CommandContext = {
+  // View-only session (spec/70): only the view-safe subset (zen / fit /
+  // export) is offered; every mutating command is withheld.
+  isReadOnly: boolean;
+  // Gate Undo / Redo on whether there's anything to un/redo.
+  canUndo: boolean;
+  canRedo: boolean;
+  // Names the zen command honestly ("Enter" vs "Exit").
+  zenMode: boolean;
   // 0 = nothing selected, 1 = single selection, >1 = multi-selection.
   selectionCount: number;
   // True when the single selection is a boxed element (rotation / note /
@@ -56,6 +64,17 @@ export type CommandHandlers = {
   openTheme: () => void;
   openCanvasOptions: () => void;
   openShare: () => void;
+  undo: () => void;
+  redo: () => void;
+  toggleZen: () => void;
+  fitToScreen: () => void;
+  autoLayout: () => void;
+  autoAlign: () => void;
+  openExport: () => void;
+  openImport: () => void;
+  openSettings: () => void;
+  openShortcuts: () => void;
+  openTemplates: () => void;
 };
 
 // Human-readable marker names for the "Add … marker" commands. The raw ids
@@ -69,6 +88,31 @@ const MARKER_LABEL: Record<ShapeMarker, string> = {
 };
 
 export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
+  // The view-safe subset (spec/70): navigation / presentation verbs that
+  // read-only visitors can run too. Everything below the read-only return
+  // mutates the diagram (or opens an edit surface) and stays editor-only.
+  const viewSafe: EditorCommand[] = [
+    {
+      id: 'zen',
+      name: ctx.zenMode ? 'Exit zen mode' : 'Enter zen mode',
+      keywords: 'zen focus distraction free full screen hide chrome presentation',
+      run: h.toggleZen,
+    },
+    {
+      id: 'fit-to-screen',
+      name: 'Fit to screen',
+      keywords: 'fit zoom overview centre center view all reset viewport',
+      run: h.fitToScreen,
+    },
+    {
+      id: 'export',
+      name: 'Export…',
+      keywords: 'export download png svg image markdown save file',
+      run: h.openExport,
+    },
+  ];
+  if (ctx.isReadOnly) return viewSafe;
+
   const out: EditorCommand[] = [];
   const hasSelection = ctx.selectionCount > 0;
   const isSingle = ctx.selectionCount === 1;
@@ -172,6 +216,25 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     }
   }
 
+  // History. Offered only when there's actually something to un/redo, so
+  // the palette never lists a dead verb.
+  if (ctx.canUndo) {
+    out.push({
+      id: 'undo',
+      name: 'Undo',
+      keywords: 'undo revert back history mistake',
+      run: h.undo,
+    });
+  }
+  if (ctx.canRedo) {
+    out.push({
+      id: 'redo',
+      name: 'Redo',
+      keywords: 'redo repeat forward history',
+      run: h.redo,
+    });
+  }
+
   // --- Diagram / tab commands. Always available in-diagram (independent of
   // the selection), so a power user can share / rename / theme without first
   // clearing what's selected.
@@ -219,6 +282,47 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.openShare,
     });
   }
+
+  // Cleanup (spec/47's tab-menu band) + the app-level dialogs, then the
+  // view-safe verbs last so selection / diagram commands keep the better
+  // ranks for ambiguous queries.
+  out.push({
+    id: 'auto-layout',
+    name: 'Auto Layout (tidy up)',
+    keywords: 'auto layout tidy arrange clean cleanup organise organize graph',
+    run: h.autoLayout,
+  });
+  out.push({
+    id: 'auto-align',
+    name: 'Auto-align to grid',
+    keywords: 'align grid snap straighten cleanup arrange',
+    run: h.autoAlign,
+  });
+  out.push({
+    id: 'import',
+    name: 'Import…',
+    keywords: 'import markdown upload load open file',
+    run: h.openImport,
+  });
+  out.push({
+    id: 'browse-templates',
+    name: 'Browse templates',
+    keywords: 'template quick start starter scaffold gallery',
+    run: h.openTemplates,
+  });
+  out.push({
+    id: 'settings',
+    name: 'Open settings',
+    keywords: 'settings preferences options notifications',
+    run: h.openSettings,
+  });
+  out.push({
+    id: 'shortcuts',
+    name: 'Keyboard shortcuts',
+    keywords: 'keyboard shortcuts keys hotkeys bindings cheatsheet',
+    run: h.openShortcuts,
+  });
+  out.push(...viewSafe);
 
   return out;
 }

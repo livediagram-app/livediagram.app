@@ -5,8 +5,9 @@
 // panel matches against plus a `runCommand` dispatcher.
 //
 // Each handler delegates to the SAME editor action the context menu / toolbar
-// / header uses (so behaviour + telemetry can't drift); commands are withheld
-// entirely from view-only sessions, mirroring the palette's read-only gate.
+// / header uses (so behaviour + telemetry can't drift); view-only sessions
+// get the view-safe subset only (zen / fit / export, spec/70), with every
+// mutating command withheld inside the pure builder.
 
 import { useCallback, useMemo } from 'react';
 import { isBoxed } from '@livediagram/diagram';
@@ -49,6 +50,21 @@ export function useEditorCommands(): {
     setCanvasThemeTab,
     requestRenameDiagram,
     requestRenameTab,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    zenMode,
+    toggleZenMode,
+    fitToScreen,
+    autoLayoutTab,
+    autoAlignTab,
+    setExportOpen,
+    setExportScope,
+    setImportOpen,
+    setSettingsOpen,
+    setShortcutsOpen,
+    openTemplatePicker,
   } = ctx;
 
   const isMulti = multiSelectedIds.size > 0;
@@ -67,11 +83,13 @@ export function useEditorCommands(): {
     : false;
 
   const commands = useMemo(() => {
-    // View-only visitors can't mutate, so they get no action palette (their
-    // navigation + help search stays intact). Mirrors EditorView gating the
-    // palette items on `!isReadOnly`.
-    if (isReadOnly) return [];
+    // Read-only gating happens inside the pure builder (spec/70): view-only
+    // visitors keep the view-safe subset, editors get the full catalogue.
     const cmdCtx: CommandContext = {
+      isReadOnly,
+      canUndo,
+      canRedo,
+      zenMode,
       selectionCount,
       singleIsBoxed,
       singleIsShape,
@@ -119,6 +137,29 @@ export function useEditorCommands(): {
         setShareDialogOpen(true);
         track('UI', 'Opened', 'Share');
       },
+      // The remaining handlers track internally (undo/redo, zen, fit,
+      // auto layout/align) or have untracked entry points everywhere
+      // (export / import / templates), so no extra telemetry here.
+      undo,
+      redo,
+      toggleZen: toggleZenMode,
+      fitToScreen,
+      autoLayout: autoLayoutTab,
+      autoAlign: autoAlignTab,
+      openExport: () => {
+        setExportScope('tab');
+        setExportOpen(true);
+      },
+      openImport: () => setImportOpen(true),
+      openSettings: () => {
+        setSettingsOpen(true);
+        track('UI', 'Opened', 'Settings');
+      },
+      openShortcuts: () => {
+        setShortcutsOpen(true);
+        track('UI', 'Opened', 'Shortcuts');
+      },
+      openTemplates: openTemplatePicker,
     });
     // The handlers are stable enough (editor action callbacks); the gating
     // inputs are what actually change the catalogue.
@@ -135,6 +176,9 @@ export function useEditorCommands(): {
     singleIsShape,
     hasAnimation,
     marker,
+    canUndo,
+    canRedo,
+    zenMode,
   ]);
 
   const runCommand = useCallback(
