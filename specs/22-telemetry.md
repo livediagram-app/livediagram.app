@@ -94,9 +94,9 @@ The dashboard surfaces three fixed windows that top out at **30 days** (Last mon
 
 Residual risk: a distributed botnet across many IPs could still nudge the numbers. Accepted — that's a lot of effort to juice an anonymous usage chart. If it ever matters, a global daily insert ceiling is the backstop.
 
-## Emitting (live editor only)
+## Emitting
 
-A `track(category, action, type?)` helper in `apps/live/lib` buffers events and flushes them batched on an interval and on `visibilitychange`/unload via `navigator.sendBeacon`. Fire-and-forget; failures are swallowed (telemetry must never affect the editor). Gated by `NEXT_PUBLIC_TELEMETRY_ENABLED`. Instrumented only in the **editor** (`apps/live`), never the static marketing site, so the marketing "0 trackers" claim stays literally true. Call sites are one-liners, e.g. `track('Element', 'Added', 'Square')`.
+A `track(category, action, type?)` helper buffers events and flushes them batched on an interval and on `visibilitychange`/unload via `navigator.sendBeacon`. Fire-and-forget; failures are swallowed (telemetry must never affect the host app). The buffering engine is the shared `@livediagram/telemetry-client`; each emitting app wraps it with its own policy (the `NEXT_PUBLIC_TELEMETRY_ENABLED` build gate + the spec/20 opt-out). Four surfaces emit: the **editor** (`apps/live`), the **help centre** (`apps/help`, the `Help` category), the **MCP worker** (`apps/mcp`, the `Mcp` category), and the **api worker itself** (server-side `Error·Api·Internal` self-reports, written straight to the events table). Never the static marketing site, so the marketing "0 trackers" claim stays literally true. Call sites are one-liners, e.g. `track('Element', 'Added', 'Square')`.
 
 The aim is to cover every meaningful interaction a person has with a diagram (discrete feature actions, never continuous gestures like drag/resize/pan/zoom or raw colour tweaks, which would just be noise). Current taxonomy:
 
