@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { TextInput } from '@livediagram/ui';
 
 type SharePasswordGateProps = {
   // True when the visitor already submitted a wrong password (vs the
@@ -48,7 +49,7 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
               : 'Enter the password the owner set to open this diagram.'}
           </p>
         </div>
-        <input
+        <TextInput
           type="password"
           autoFocus
           value={value}
@@ -56,7 +57,6 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
           placeholder="Password"
           aria-label="Diagram password"
           aria-invalid={invalid}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         />
         {invalid ? (
           <p className="-mt-2 text-xs font-medium text-rose-600">

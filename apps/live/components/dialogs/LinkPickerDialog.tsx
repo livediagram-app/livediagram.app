@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TextInput } from '@livediagram/ui';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -176,7 +177,7 @@ export function LinkPickerDialog({
             <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
               Web address
             </label>
-            <input
+            <TextInput
               type="url"
               inputMode="url"
               autoFocus
@@ -189,7 +190,6 @@ export function LinkPickerDialog({
                   saveUrl();
                 }
               }}
-              className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
             <p className="text-[11px] text-slate-400 dark:text-slate-400">
               Opens in a new tab. We&apos;ll add https:// if you leave off the scheme.
