@@ -1,9 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useRef, type ReactNode } from 'react';
-import { getTheme } from '@/lib/themes';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { useCallback, type ReactNode } from 'react';
 import { track } from '@/lib/telemetry';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
@@ -14,6 +12,7 @@ import { CommandPalette } from '@/components/palette/CommandPalette';
 import { Explorer } from '@/components/panels/Explorer';
 import { Minimap } from '@/components/canvas/Minimap';
 import type { CanvasChromeProps } from './CanvasChrome';
+import { usePaletteChrome } from './usePaletteChrome';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
@@ -178,43 +177,16 @@ export function useCanvasChromePanels({
     setActiveMobilePanel(null);
     setActiveDockAnchor(null);
   }, [setActiveMobilePanel, setActiveDockAnchor]);
-  // Dock-mode palette reopen: when a draw tool is armed FROM the palette it
-  // closes so the user can draw; once the draw lands (pendingDraw clears),
-  // reopen the palette so they can pick the next thing without re-tapping.
-  const reopenPaletteAfterDrawRef = useRef(false);
-  const prevPendingDrawRef = useRef(pendingDraw);
-  // Keep the latest opener in a ref so the transition effect can stay keyed
-  // on pendingDraw without re-running every render.
-  const openDockPanelRef = useRef(handleDockButtonClick);
-  openDockPanelRef.current = handleDockButtonClick;
-  useEffect(() => {
-    const prev = prevPendingDrawRef.current;
-    prevPendingDrawRef.current = pendingDraw;
-    if (prev && !pendingDraw && reopenPaletteAfterDrawRef.current) {
-      reopenPaletteAfterDrawRef.current = false;
-      // Reopen via the dock handler so the popover anchor is recomputed
-      // from the dock button (the same path a manual tap takes) — setting
-      // the panel alone would reopen it at a stale/missing position.
-      if (minimalPanels || isMobileViewportSync()) openDockPanelRef.current('palette');
-    }
-  }, [pendingDraw, minimalPanels]);
-  // Theme tint for the palette tiles, so the palette previews the active
-  // tab theme: the boxed-shape tiles render filled in the theme's element
-  // fill + stroke, line-art tools + icons tint to the stroke. The Basic
-  // theme leaves elementStroke null, so we pass nothing and the palette
-  // keeps its default slate look. See spec/09.
-  const paletteTheme = getTheme(tabThemeId);
-  // A per-shape theme (UML / custom, spec/42 + spec/44) tints each shape
-  // tile by its own kind even when the base element stroke is unset, so
-  // surface the tint whenever there's a base stroke OR per-shape colours.
-  const paletteTint =
-    paletteTheme.elementStroke || paletteTheme.shapeColors
-      ? {
-          stroke: paletteTheme.elementStroke ?? undefined,
-          fill: paletteTheme.elementFill ?? undefined,
-          shapeColors: paletteTheme.shapeColors,
-        }
-      : undefined;
+  // Palette chrome behaviours (dock-mode reopen-after-draw + the theme
+  // tint for the tiles) — see usePaletteChrome.
+  const { paletteTheme, paletteTint, onPaletteDrawArmed } = usePaletteChrome({
+    tabThemeId,
+    pendingDraw,
+    minimalPanels,
+    activeMobilePanel,
+    handleDockButtonClick,
+  });
+
   // --- Floating panels as elements (spec/63) ---
   // Built once with docking-aware wiring, then rendered either inline
   // (legacy: mobile / minimal / zen) or distributed into corner stacks
@@ -370,11 +342,7 @@ export function useCanvasChromePanels({
         mobileOpenOverride={activeMobilePanel === 'palette'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
         forceDockMode={!!minimalPanels}
-        onDrawArmed={() => {
-          // Only remember to reopen if the palette was actually the open
-          // dock panel when the draw was armed.
-          reopenPaletteAfterDrawRef.current = activeMobilePanel === 'palette';
-        }}
+        onDrawArmed={onPaletteDrawArmed}
         onMobileClose={() => {
           setActiveMobilePanel(null);
           setActiveDockAnchor(null);
