@@ -5,6 +5,7 @@
 // open-href helper. Extracted so the two view modes can't drift on what
 // a diagram's badge says or which actions its menu offers.
 
+import { SharedDotIcon } from '@/components/chrome/share-state-icons';
 import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
 import {
   CloseIcon,
@@ -28,27 +29,6 @@ export function hrefForDiagram(diagram: PaneDiagram): string {
 const badgeBase =
   'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1';
 
-function SharedGlyph() {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 9 9"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="2" cy="4.5" r="1.4" />
-      <circle cx="7" cy="2" r="1.2" />
-      <circle cx="7" cy="7" r="1.2" />
-      <path d="M3.2 3.8L5.9 2.5M3.2 5.2L5.9 6.5" />
-    </svg>
-  );
-}
-
 // The visibility badge: Shared (a shared-with-me row, a share-link owned
 // row), Team, or Private. Same precedence the row has always used.
 export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
@@ -57,7 +37,7 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
       <span
         className={`${badgeBase} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
       >
-        <SharedGlyph />
+        <SharedDotIcon />
         Shared
       </span>
     );

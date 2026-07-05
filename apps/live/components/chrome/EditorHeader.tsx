@@ -1,3 +1,4 @@
+import { PrivateDotIcon, SharedDotIcon } from '@/components/chrome/share-state-icons';
 import { useEffect, useState } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import { Brand, ProductNav } from '@livediagram/ui';
@@ -219,46 +220,6 @@ function SharedBadge({ shareable, team }: { shareable: boolean; team?: boolean }
         {meta.label}
       </span>
     </Tooltip>
-  );
-}
-
-function SharedDotIcon() {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 9 9"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="2" cy="4.5" r="1.4" />
-      <circle cx="7" cy="2" r="1.2" />
-      <circle cx="7" cy="7" r="1.2" />
-      <path d="M3.2 3.8L5.9 2.5M3.2 5.2L5.9 6.5" />
-    </svg>
-  );
-}
-
-function PrivateDotIcon() {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 9 9"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2" y="4" width="5" height="3.5" rx="0.8" />
-      <path d="M3.25 4V3a1.25 1.25 0 0 1 2.5 0v1" />
-    </svg>
   );
 }
 
