@@ -6,15 +6,9 @@
 // (context-menu-icons / table-icons / tab-bar-icons). No behaviour change.
 // Colour comes from the parent via `currentColor`.
 
-export function EllipsisIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <circle cx="4" cy="8" r="1.4" fill="currentColor" />
-      <circle cx="8" cy="8" r="1.4" fill="currentColor" />
-      <circle cx="12" cy="8" r="1.4" fill="currentColor" />
-    </svg>
-  );
-}
+// The 16px overflow ellipsis, shared with the rich-text toolbar (the
+// same more-actions motif on the two floating canvas toolbars).
+export { EllipsisIcon } from '@/components/canvas/rich-text-toolbar-icons';
 
 // "Edit text" button — a serif capital T, the universal text glyph (matches
 // the palette's Add-text tile). Shown on the toolbar only when the selected
