@@ -39,6 +39,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
+import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
@@ -367,7 +368,15 @@ export function Canvas(props: CanvasProps) {
   return (
     <main
       ref={mainRef}
-      tabIndex={-1}
+      // In the tab order (spec/71): keyboard users Tab to the canvas as
+      // one stop, then Tab / Shift+Tab walk the elements (useCanvasA11y,
+      // engaged only while this surface itself is focused — the marker
+      // attribute below is how the hook recognises it). The role stays
+      // the main landmark (not "application") because the floating
+      // panels render inside it and must keep normal SR navigation.
+      tabIndex={0}
+      aria-label="Diagram canvas"
+      data-canvas-a11y-root=""
       onPointerMove={handlePointerMoveCanvas}
       onPointerLeave={handlePointerLeaveCanvas}
       onDragOver={paletteDrop.onDragOver}
@@ -376,7 +385,9 @@ export function Canvas(props: CanvasProps) {
       onContextMenuCapture={surface.onContextMenuCapture}
       onContextMenu={surface.onContextMenu}
       onPointerDown={surface.onPointerDown}
-      className={`relative flex-1 touch-none select-none overflow-hidden outline-none [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
+      // focus-visible ring only: pointer focus stays outline-free, but a
+      // keyboard user Tabbing to the canvas sees where they landed.
+      className={`relative flex-1 touch-none select-none overflow-hidden outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
         pendingDraw ? '' : cursorClass
       }`}
       style={{
@@ -397,6 +408,9 @@ export function Canvas(props: CanvasProps) {
         ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
       }}
     >
+      {/* SR-only polite live region (spec/71): selection / delete / undo
+          announcements land here. */}
+      <CanvasLiveRegion />
       {/* Animated backdrops (spec/09) paint as an ambient overlay behind the
           diagram content; the static patterns ride the <main> background
           above. tabBackgroundStyle returns just the backdrop colour for

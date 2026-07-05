@@ -10,8 +10,11 @@ delete, undo, label edit via Space) that already work on a selection.
 ## Keyboard traversal
 
 - The canvas `<main>` joins the tab order (`tabIndex=0`) with an
-  `aria-label` ("Diagram canvas") and `role="application"` (keys are handled
-  by the app, not the SR's virtual cursor).
+  `aria-label` ("Diagram canvas") and a keyboard focus ring
+  (`focus-visible` only, so pointer users see nothing new). It keeps its
+  main-landmark role rather than `role="application"`: the floating
+  panels (Palette, Explorer, Map, mobile dock) render inside it, and an
+  application role would strip them of normal screen-reader navigation.
 - **While focus is on / inside the canvas, Tab selects the next element and
   Shift+Tab the previous**, in render (z) order. The selection scrolls into
   view via the existing viewport `scrollIntoView` pan/zoom helper.

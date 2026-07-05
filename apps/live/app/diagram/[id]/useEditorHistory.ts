@@ -10,6 +10,7 @@ import {
 } from '@/lib/api-client';
 import { applyRevert } from '@/lib/change-log';
 import { entryHistoryRedo, entryHistoryUndo, type EntryHistory } from '@/lib/entry-history';
+import { announce } from '@/lib/announcer';
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
 
@@ -160,6 +161,7 @@ export function useEditorHistory(opts: {
   const undo = () => {
     if (!canUndo) return;
     track('Diagram', 'Undone');
+    announce('Undid the last change');
     undoHistory();
     const { next, popped } = entryHistoryUndo(entryHistoryRef.current);
     entryHistoryRef.current = next;
@@ -182,6 +184,7 @@ export function useEditorHistory(opts: {
   const redo = () => {
     if (!canRedo) return;
     track('Diagram', 'Redone');
+    announce('Redid the last change');
     redoHistory();
     const { next: nextMarkers, shifted } = entryHistoryRedo(entryHistoryRef.current);
     entryHistoryRef.current = nextMarkers;

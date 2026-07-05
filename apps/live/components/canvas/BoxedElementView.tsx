@@ -18,6 +18,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { renderLabel } from '@/components/canvas/element-labels';
+import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { EdgeResizeHandle, LockBadge, ResizeHandles } from '@/components/canvas/element-parts';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
@@ -247,6 +248,10 @@ function BoxedElementViewImpl({
     <div
       ref={wrapperRef}
       data-element-id={element.id}
+      // Screen-reader name (spec/71): same naming the change log uses,
+      // so 'Square "Login"' reads consistently across both surfaces.
+      role="img"
+      aria-label={elementAriaLabel(element)}
       // Frames are tagged so isometric mode can settle them just under the
       // base plane (globals.css [data-iso] rule): a frame's big surface is
       // coplanar with its contents under preserve-3d, and coplanar layers

@@ -7,6 +7,7 @@
 // summary, element ids, before / after maps).
 
 import type { BoxedElement, Element } from '@livediagram/diagram';
+import { describeMany, describeOne, kindLabel } from './element-names';
 import type { ChangeLogKind } from './api-client';
 
 // What the diff function returns. The caller wraps this with the
@@ -31,70 +32,6 @@ function elementEquals(a: Element, b: Element): boolean {
   // "unchanged" for all but the dragged ones.
   if (a === b) return true;
   return JSON.stringify(a) === JSON.stringify(b);
-}
-
-// Display kind for an element — capitalised, no article. Shapes
-// surface their concrete sub-kind ('Square', 'Diamond'…) so log
-// entries read as "Added a Square" rather than the abstract "Shape".
-function kindLabel(el: Element): string {
-  if (el.type === 'arrow') return 'Arrow';
-  if (el.type === 'text') return 'Text';
-  if (el.type === 'sticky') return 'Sticky note';
-  if (el.type === 'table') return 'Table';
-  if (el.type === 'image') return 'Image';
-  if (el.type === 'shape') {
-    const s = el.shape;
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }
-  return 'Element';
-}
-
-function article(label: string): 'a' | 'an' {
-  return /^[aeiou]/i.test(label) ? 'an' : 'a';
-}
-
-function pluralise(label: string): string {
-  // 'Text' as a count noun ("2 texts") is awkward — promote to
-  // "Text elements". Everything else: append 's'. Good enough for
-  // V1; refine if a shape kind ends up needing irregular plural.
-  if (label === 'Text') return 'Text elements';
-  return `${label}s`;
-}
-
-// One-element description for verbs that act on a single target:
-// "Added 'API'", "Added a Square", "Moved an Arrow". Quoted labels
-// win when the element has one; otherwise we fall back to the
-// articled kind.
-function describeOne(el: Element): string {
-  // Tables + images don't carry a meaningful single label (a table's
-  // content is in `cells`, not `label`), so naming them by label
-  // produced nonsense like "Edited 'C'" after a cell edit. Name them
-  // by kind ("a Table" / "an Image") instead. Arrows already opt out.
-  if (el.type !== 'arrow' && el.type !== 'table' && el.type !== 'image') {
-    const trimmed = ((el as BoxedElement).label ?? '').trim();
-    if (trimmed) return `'${trimmed}'`;
-  }
-  const k = kindLabel(el);
-  return `${article(k)} ${k}`;
-}
-
-// Multi-element description grouping by kind: "a Square & an Arrow",
-// "3 Squares, 2 Arrows & a Circle". Order follows first-seen so the
-// summary stays stable across renders.
-function describeMany(elements: Element[]): string {
-  const counts = new Map<string, number>();
-  for (const el of elements) {
-    const k = kindLabel(el);
-    counts.set(k, (counts.get(k) ?? 0) + 1);
-  }
-  const parts: string[] = [];
-  for (const [k, n] of counts) {
-    parts.push(n === 1 ? `${article(k)} ${k}` : `${n} ${pluralise(k)}`);
-  }
-  if (parts.length === 0) return '';
-  if (parts.length === 1) return parts[0]!;
-  if (parts.length === 2) return `${parts[0]} & ${parts[1]}`;
-  return `${parts.slice(0, -1).join(', ')} & ${parts[parts.length - 1]}`;
 }
 
 // Set of keys that differ between two snapshots of the same element.

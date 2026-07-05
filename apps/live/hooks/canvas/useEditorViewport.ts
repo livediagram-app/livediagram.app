@@ -69,6 +69,10 @@ type EditorViewportApi = {
   // viewport. Idempotent (the lastFittedTabRef gate in
   // editor-page.tsx still controls WHEN this runs).
   fitToScreen: () => void;
+  // Pan (and zoom out if needed) until the given canvas-coord bounds
+  // are fully on screen. Used by the mobile add-element reveal and the
+  // keyboard traversal's focus-follows-selection (spec/71).
+  scrollIntoView: (bx: number, by: number, bw: number, bh: number) => void;
 };
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
@@ -238,5 +242,6 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     canvasMainRef,
     getViewportCenter,
     fitToScreen,
+    scrollIntoView,
   };
 }

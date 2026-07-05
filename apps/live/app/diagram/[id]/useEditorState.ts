@@ -13,6 +13,7 @@ import { useDiagramActions } from '@/hooks/canvas/useDiagramActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useDiagramHistory } from '@/hooks/canvas/useDiagramHistory';
+import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useConfirm } from '@/hooks/ui/useConfirm';
@@ -753,6 +754,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canvasMainRef,
     getViewportCenter,
     fitToScreen,
+    scrollIntoView,
   } = useEditorViewport({ activeTab, selectedId });
 
   // Server capabilities (spec/25). Fetched once at mount; determines
@@ -1620,6 +1622,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setDiagramName,
       setContextMenu,
     },
+  });
+
+  // Canvas accessibility baseline (spec/71): Tab / Shift+Tab element
+  // traversal while the canvas surface is focused, plus SR live-region
+  // announcements on selection changes. See useCanvasA11y.
+  useCanvasA11y({
+    enabled: shortcutsEnabled,
+    elements: activeTab.elements,
+    selectedId,
+    multiSelectedIds,
+    editingId,
+    selectElement,
+    lockedByOther,
+    scrollIntoView,
   });
 
   // Keyboard nudge (spec/09 Move). See useNudgeSelection for the

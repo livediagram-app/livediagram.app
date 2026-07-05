@@ -77,6 +77,7 @@ const SECTIONS: ShortcutSection[] = [
       { keys: ['⌘', '-'], label: 'Zoom out' },
       { keys: ['⌘', '0'], label: 'Reset zoom to 100%' },
       { keys: ['⇧', '1'], label: 'Zoom to fit' },
+      { keys: ['Tab'], label: 'Select next element  (Shift: previous)' },
       { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
       { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
       { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },

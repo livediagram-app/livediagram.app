@@ -19,6 +19,7 @@ import {
 import type { ArrowEnd } from '@/lib/canvas';
 import { arrowLabelFontSize, placeLabel } from '@/lib/arrow-label-geometry';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { elementAriaLabel } from '@/lib/element-names';
 import { arrowheadMarkerId } from './arrow-defs';
 import { ArrowLabel } from './ArrowLabel';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
@@ -241,7 +242,9 @@ function ArrowViewImpl({
   // than a chained `currentColor` keyword that ends up resolving on
   // the marker's own colour property.
   return (
-    <g style={{ opacity }}>
+    // Screen-reader name (spec/71): arrows are SVG, so the group carries
+    // the same kind-plus-label name a boxed element's wrapper does.
+    <g style={{ opacity }} role="img" aria-label={elementAriaLabel(arrow)}>
       {isSelected ? (
         <path
           d={pathD}

@@ -27,6 +27,8 @@ import {
 import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';
 import { track, titleCaseType } from '@/lib/telemetry';
+import { announce } from '@/lib/announcer';
+import { describeMany, describeOne } from '@/lib/element-names';
 
 type EditorSelectionActionsDeps = {
   // The active selection resolved to ids (single selection expands to
@@ -109,6 +111,16 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setSelectedId(null);
     setEditingId(null);
     track('Element', 'Deleted');
+    announceDeleted(targetIds);
+  };
+
+  // SR announcement for a delete (spec/71), named like the change log
+  // ("Deleted 'Login'", "Deleted 2 Squares & an Arrow"). Reads the
+  // pre-commit elements so the deleted ones are still resolvable.
+  const announceDeleted = (targetIds: Set<string>) => {
+    const deleted = activeTab.elements.filter((el) => targetIds.has(el.id));
+    if (deleted.length === 0) return;
+    announce(`Deleted ${deleted.length === 1 ? describeOne(deleted[0]!) : describeMany(deleted)}`);
   };
 
   // The deletable subset of a selection: ids whose element isn't locked.
@@ -199,6 +211,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     const targetIds = deletableIds(multiSelectedIds);
     if (targetIds.size === 0) return;
     track('Element', 'Deleted'); // parity with single-element deleteSelected
+    announceDeleted(targetIds);
     commit((els) => {
       const survivors = els.filter((el) => {
         if (el.locked === true) return true;
