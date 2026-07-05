@@ -2,18 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { useEscape } from '@/hooks/ui/useEscape';
 import type { Participant } from '@/lib/identity';
-import { initialsOf, randomName } from '@/lib/identity';
 import { shufflePinned } from '@/lib/shuffle';
 import type { TemplateCategory, TemplateKind } from '@livediagram/templates';
 import { TEMPLATE_CATEGORIES, TEMPLATES, templateCategory } from '@livediagram/templates';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
 import { TemplatePickerBrowse } from '@/components/palette/TemplatePickerBrowse';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { TemplatePickerFooter } from './TemplatePickerFooter';
+import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { WizardSteps } from './template-picker-wizard';
-import { RefreshIcon } from './template-picker-icons';
 
 type TemplatePickerProps = {
   // 'welcome' — first-run modal: identity, template, theme, confirm.
@@ -271,61 +269,19 @@ export function TemplatePicker({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pt-5 pb-8">
-          {/* Identity row — first-run welcome + join-existing-diagram flows. */}
+          {/* Identity row — first-run welcome + join-existing-diagram
+              flows. See TemplatePickerIdentityRow. */}
           {showIdentity ? (
-            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
-              <div
-                role="img"
-                aria-label={`Your avatar colour: ${participant.color}`}
-                style={{ backgroundColor: participant.color }}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
-              >
-                {initialsOf(effectiveName)}
-              </div>
-              <div className="flex-1">
-                <label
-                  htmlFor="welcome-name"
-                  className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >
-                  Your name
-                </label>
-                <input
-                  id="welcome-name"
-                  value={name}
-                  onChange={(e) => {
-                    nameEdited.current = true;
-                    setName(e.target.value);
-                  }}
-                  placeholder={participant.name}
-                  readOnly={nameLocked}
-                  aria-readonly={nameLocked}
-                  // Locked: the value comes from Clerk; greying it out
-                  // + removing focus affordance makes it visually
-                  // obvious it isn't editable, but the input stays
-                  // present so the name is still visible.
-                  className={
-                    nameLocked
-                      ? 'mt-0.5 w-full cursor-default bg-transparent text-sm text-slate-500 outline-none dark:text-slate-400'
-                      : 'mt-0.5 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500'
-                  }
-                />
-              </div>
-              {nameLocked ? null : (
-                <Tooltip title="Shuffle name" description="Pick a different random name.">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      nameEdited.current = true;
-                      setName(randomName());
-                    }}
-                    aria-label="Generate a different name"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                  >
-                    <RefreshIcon />
-                  </button>
-                </Tooltip>
-              )}
-            </div>
+            <TemplatePickerIdentityRow
+              participant={participant}
+              name={name}
+              effectiveName={effectiveName}
+              nameLocked={nameLocked}
+              onChangeName={(next) => {
+                nameEdited.current = true;
+                setName(next);
+              }}
+            />
           ) : null}
 
           {/* Wizard phases slide in / out directionally (forward from the
