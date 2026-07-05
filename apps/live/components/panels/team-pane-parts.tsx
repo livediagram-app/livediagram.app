@@ -53,16 +53,6 @@ export function RolePill({ member, pinned }: { member: TeamMember; pinned: boole
   );
 }
 
-export function EllipsisIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-      <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-      <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-    </svg>
-  );
-}
-
 export function LinkIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>

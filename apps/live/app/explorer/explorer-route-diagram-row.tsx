@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRef, useState } from 'react';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { EllipsisIcon } from './icons';
 import type { PaneDiagram } from './views';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { DiagramActionsMenu, hrefForDiagram, VisibilityBadge } from './diagram-row-shared';
@@ -108,18 +108,14 @@ export function DiagramRow({
       {renaming ? (
         <span />
       ) : (
-        <button
+        <EllipsisTriggerButton
           ref={menuRef}
-          type="button"
+          label={`Menu for ${diagram.name}`}
           onClick={(e) => {
             e.stopPropagation();
             setMenuOpen((o) => !o);
           }}
-          aria-label={`Menu for ${diagram.name}`}
-          className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-        >
-          <EllipsisIcon />
-        </button>
+        />
       )}
       {menuOpen ? (
         <DiagramActionsMenu

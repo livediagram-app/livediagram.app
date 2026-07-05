@@ -7,11 +7,12 @@
 // menu come from diagram-row-shared, so list and card can't drift.
 
 import Link from 'next/link';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRef, useState } from 'react';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import { EllipsisIcon, FolderIcon, SparkleIcon } from './icons';
+import { FolderIcon, SparkleIcon } from './icons';
 import { DiagramActionsMenu, hrefForDiagram, VisibilityBadge } from './diagram-row-shared';
 import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
 import type { Folder } from '@/lib/api-client';
@@ -222,18 +223,15 @@ function DiagramCard({
             </Link>
           )}
           {renaming ? null : (
-            <button
+            <EllipsisTriggerButton
               ref={menuRef}
-              type="button"
+              tuck
+              label={`Menu for ${diagram.name}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setMenuOpen((o) => !o);
               }}
-              aria-label={`Menu for ${diagram.name}`}
-              className="-mr-1 -mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-            >
-              <EllipsisIcon />
-            </button>
+            />
           )}
         </div>
         {/* Keep every column the list shows: owner, visibility, updated. */}

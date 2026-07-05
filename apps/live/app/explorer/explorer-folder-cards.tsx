@@ -6,16 +6,10 @@
 // class constants every card shares (DiagramCard imports them back).
 
 import { useRef, useState, type ReactNode } from 'react';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
-import {
-  EllipsisIcon,
-  FolderIcon,
-  MenuFolderIcon,
-  MenuPencilIcon,
-  MenuTrashIcon,
-  PlusIcon,
-} from './icons';
+import { FolderIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
 import type { Folder } from '@/lib/api-client';
 
 export const cardShell =
@@ -99,18 +93,15 @@ export function FolderCard({
           </button>
         )}
         {renaming ? null : (
-          <button
+          <EllipsisTriggerButton
             ref={menuRef}
-            type="button"
+            tuck
+            label={`Menu for folder ${folder.name}`}
             onClick={(e) => {
               e.stopPropagation();
               setMenuOpen((o) => !o);
             }}
-            aria-label={`Menu for folder ${folder.name}`}
-            className="-mr-1 -mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-          >
-            <EllipsisIcon />
-          </button>
+          />
         )}
       </div>
       {menuOpen ? (

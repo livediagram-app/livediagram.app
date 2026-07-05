@@ -1,16 +1,10 @@
 import { useRef, useState } from 'react';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import type { Folder } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
-import {
-  EllipsisIcon,
-  FolderIcon,
-  MenuFolderIcon,
-  MenuPencilIcon,
-  MenuTrashIcon,
-  PlusIcon,
-} from './icons';
+import { FolderIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
 
 // The Explorer's folder row (spec/15) + its shared actions menu, lifted
 // out of views.tsx: the list row (icon, inline rename, child-count
@@ -103,18 +97,14 @@ export function FolderRow({
       {renaming ? (
         <span />
       ) : (
-        <button
+        <EllipsisTriggerButton
           ref={menuRef}
-          type="button"
+          label={`Menu for ${folder.name}`}
           onClick={(e) => {
             e.stopPropagation();
             setMenuOpen((o) => !o);
           }}
-          aria-label={`Menu for ${folder.name}`}
-          className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-        >
-          <EllipsisIcon />
-        </button>
+        />
       )}
       {menuOpen ? (
         <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>

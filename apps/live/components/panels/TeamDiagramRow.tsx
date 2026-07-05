@@ -1,8 +1,8 @@
 import Link from 'next/link';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRef, useState } from 'react';
 import type { DiagramSummary } from '@livediagram/api-schema';
 import {
-  EllipsisIcon,
   MenuDuplicateIcon,
   MenuFolderIcon,
   MenuPencilIcon,
@@ -69,18 +69,14 @@ export function TeamDiagramRow({
       {renaming ? (
         <span />
       ) : (
-        <button
+        <EllipsisTriggerButton
           ref={menuRef}
-          type="button"
+          label={`Menu for ${diagram.name}`}
           onClick={(e) => {
             e.stopPropagation();
             setMenuOpen((o) => !o);
           }}
-          aria-label={`Menu for ${diagram.name}`}
-          className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-        >
-          <EllipsisIcon />
-        </button>
+        />
       )}
       {menuOpen ? (
         <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>

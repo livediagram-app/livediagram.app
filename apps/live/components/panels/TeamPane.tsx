@@ -1,12 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { apiGetTeam, type TeamMember } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { PencilIcon, PlusIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
-import { EllipsisIcon, LinkIcon, TeamMemberRow } from './team-pane-parts';
+import { LinkIcon, TeamMemberRow } from './team-pane-parts';
 import { useTeamPaneActions } from './useTeamPaneActions';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
@@ -192,16 +193,12 @@ export function TeamPane({
                 <span className="hidden sm:inline">Invite by link</span>
               </button>
             ) : null}
-            <button
+            <EllipsisTriggerButton
               ref={menuRef}
-              type="button"
+              label="Team actions"
+              expanded={menuOpen}
               onClick={() => setMenuOpen((o) => !o)}
-              aria-label="Team actions"
-              aria-expanded={menuOpen}
-              className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-            >
-              <EllipsisIcon />
-            </button>
+            />
           </div>
           {menuOpen ? (
             <PortalMenu
