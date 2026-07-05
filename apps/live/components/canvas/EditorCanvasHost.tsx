@@ -1,11 +1,10 @@
 'use client';
 
-import { useMemo, type PointerEvent as ReactPointerEvent } from 'react';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, type Anchor } from '@livediagram/diagram';
-import type { QuickConnectDirection } from '@/lib/canvas';
-import { quickConnectGroupStart, quickConnectSourceId } from '@/lib/quick-connect-source';
+import { useMemo } from 'react';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/diagram';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
+import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { track } from '@/lib/telemetry';
 import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -232,35 +231,8 @@ export function EditorCanvasHost() {
   // gates editsBlocked there, so the pointer overlay and the edit lock
   // can't disagree); consumed here for the overlay.
   const tabLoadState = activeTabLoadState;
-  // Quick add + connect Arrow option (spec/09). Desktop (mouse / pen): make
-  // a pinned→free arrow from the picked side's anchor in click-to-place
-  // mode — a plain click then has the endpoint trail the cursor until the
-  // next click lands it (a press-drag still works too). Touch: no hover, so
-  // arm the click-to-connect gesture (the next shape tap sets the other
-  // end), reusing addArrow's connect-from-selection path.
-  const handleStartArrow = (direction: QuickConnectDirection, e: ReactPointerEvent) => {
-    if (selectedId === null) return;
-    // On a group the pluses ring the union bounds: the arrow starts PINNED
-    // TO THE GROUP's union box at the picked side's centre (a pinned-group
-    // endpoint, so it tracks the group as it moves), inheriting its stroke
-    // from the member nearest that side. A lone element pins to its own
-    // anchor as ever.
-    const sourceId = quickConnectSourceId(activeTab.elements, selectedId, direction);
-    const groupStart = quickConnectGroupStart(activeTab.elements, selectedId, direction);
-    const fromGroup = groupStart
-      ? { groupId: groupStart.groupId, point: { x: groupStart.x, y: groupStart.y } }
-      : undefined;
-    const anchor: Anchor =
-      direction === 'right' ? 'e' : direction === 'left' ? 'w' : direction === 'below' ? 's' : 'n';
-    if (e.pointerType === 'touch') {
-      // Touch: drop a free arrow running straight out from the anchor (~50px)
-      // and select it, so the user can drag it where they want — no
-      // tap-target step.
-      beginAnchorDrag(sourceId, anchor, e, { placeOutPx: 50, fromGroup });
-      return;
-    }
-    beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true, fromGroup });
-  };
+  // Quick add + connect Arrow starter (spec/09) — see useQuickConnectStart.
+  const { handleStartArrow } = useQuickConnectStart({ selectedId, activeTab, beginAnchorDrag });
 
   // Preference writes (Settings save + the two quick toggles) — see
   // usePreferenceHandlers.
