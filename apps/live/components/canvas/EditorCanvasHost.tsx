@@ -5,9 +5,9 @@ import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, type Anchor } from '@l
 import type { QuickConnectDirection } from '@/lib/canvas';
 import { quickConnectGroupStart, quickConnectSourceId } from '@/lib/quick-connect-source';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
+import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
 import { track } from '@/lib/telemetry';
 import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
-import type { UserPreferences } from '@/lib/user-preferences';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 
@@ -214,7 +214,6 @@ export function EditorCanvasHost() {
     userPreferences,
     viewportOffset,
     viewportZoom,
-    writeUserPreferences,
     zenMode,
   } = useEditorContext();
   // Stable references for the two list-shaped props the Explorer +
@@ -262,6 +261,15 @@ export function EditorCanvasHost() {
     }
     beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true, fromGroup });
   };
+
+  // Preference writes (Settings save + the two quick toggles) — see
+  // usePreferenceHandlers.
+  const { onChangeSettings, onToggleMinimalPanels, onToggleRecogniseShapes } =
+    usePreferenceHandlers({
+      userPreferences,
+      setUserPreferences,
+      selfParticipantId: selfParticipant?.id ?? null,
+    });
   return (
     <Canvas
       tabName={activeTab.name}
@@ -362,36 +370,10 @@ export function EditorCanvasHost() {
       onCommitFreehand={commitFreehand}
       recogniseShapes={userPreferences.recogniseShapes !== false}
       settings={userPreferences}
-      onChangeSettings={(next) => {
-        setUserPreferences(next);
-        writeUserPreferences(next, selfParticipant?.id ?? null);
-      }}
+      onChangeSettings={onChangeSettings}
       minimalPanels={userPreferences.minimalPanels === true}
-      onToggleMinimalPanels={() => {
-        const next: UserPreferences = {
-          ...userPreferences,
-          minimalPanels: !(userPreferences.minimalPanels === true),
-        };
-        track('UI', 'Toggled', next.minimalPanels ? 'MinimalPanelsOn' : 'MinimalPanelsOff');
-        setUserPreferences(next);
-        writeUserPreferences(next, selfParticipant?.id ?? null);
-      }}
-      onToggleRecogniseShapes={() => {
-        const next: UserPreferences = {
-          ...userPreferences,
-          // Default-on: undefined / true read as on, so toggling off
-          // stores an explicit false.
-          recogniseShapes: userPreferences.recogniseShapes === false,
-        };
-        // Telemetry (spec/22): emit BEFORE persistence so the
-        // flip itself reaches the wire even when the new state
-        // would suppress emission later (matches how
-        // TelemetryOn / TelemetryOff are handled in the
-        // Settings dialog).
-        track('UI', 'Toggled', next.recogniseShapes ? 'RecogniseShapesOn' : 'RecogniseShapesOff');
-        setUserPreferences(next);
-        writeUserPreferences(next, selfParticipant?.id ?? null);
-      }}
+      onToggleMinimalPanels={onToggleMinimalPanels}
+      onToggleRecogniseShapes={onToggleRecogniseShapes}
       onCancelDraw={cancelDrawShape}
       onUndo={undo}
       onRedo={redo}
