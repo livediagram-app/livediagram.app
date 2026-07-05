@@ -9,12 +9,10 @@ import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { ActivityPanel } from '@/components/panels/ActivityPanel';
-import { AiPanelContent } from '@/components/panels/AiPanel';
-import { AiSettingsPopover } from '@/components/panels/AiSettingsPopover';
+import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
 import { Explorer } from '@/components/panels/Explorer';
 import { Minimap } from '@/components/canvas/Minimap';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { CanvasChromeProps } from './CanvasChrome';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
@@ -295,50 +293,18 @@ export function useCanvasChromePanels({
 
   const aiEl =
     !chromeHidden && aiPanel && aiWiring ? (
-      <MovablePanel
-        title="AI Assistant"
-        position={aiWiring.position}
-        defaultCorner="top-right-stacked"
+      <CanvasAiPanel
+        aiPanel={aiPanel}
+        wiring={aiWiring}
         stackBelowY={dockingActive ? undefined : legacyStackBelowY}
-        width="w-auto sm:w-64"
-        collapsible
-        // No header reset button here (unlike the other panels): the AI
-        // panel's Settings popover already carries a "Reset position" item,
-        // so a second one in the title row was redundant. Drag-to-move still
-        // works via onMoveTo; the popover handles the reset.
-        onMoveTo={aiPanel.onMove}
-        {...aiWiring.dock}
-        headerActions={
-          <AiSettingsPopover
-            enabled={settings.aiAssistanceEnabled === true}
-            onSetEnabled={(v) => {
-              track('AI', 'Toggled', v ? 'AiOn' : 'AiOff');
-              onChangeSettings({ ...settings, aiAssistanceEnabled: v });
-            }}
-            showSuggestions={settings.aiSuggestedPrompts !== false}
-            onSetShowSuggestions={(v) => onChangeSettings({ ...settings, aiSuggestedPrompts: v })}
-            onResetPosition={aiWiring.onReset}
-            resettable={aiWiring.resettable}
-          />
-        }
-        mobileOpenOverride={activeMobilePanel === 'ai'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={() => {
-          setActiveMobilePanel(null);
-          setActiveDockAnchor(null);
-        }}
-      >
-        <AiPanelContent
-          contextElements={aiPanel.contextElements}
-          focusIds={aiPanel.focusIds}
-          tabId={aiPanel.tabId}
-          tabName={tabName}
-          ownerId={aiPanel.ownerId}
-          onApplyElements={aiPanel.onApplyElements}
-          showSuggestions={settings.aiSuggestedPrompts !== false}
-        />
-      </MovablePanel>
+        tabName={tabName}
+        settings={settings}
+        onChangeSettings={onChangeSettings}
+        minimalPanels={!!minimalPanels}
+        activeMobilePanel={activeMobilePanel}
+        activeDockAnchor={activeDockAnchor ?? undefined}
+        onMobileClose={closeMobilePanel}
+      />
     ) : null;
 
   const activityEl = chromeHidden ? null : (
