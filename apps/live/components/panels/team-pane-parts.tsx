@@ -29,7 +29,7 @@ function prettifyEmailLocalPart(email: string): string {
   return words.map((w) => w[0]!.toUpperCase() + w.slice(1)).join(' ');
 }
 
-export function RolePill({ member, pinned }: { member: TeamMember; pinned: boolean }) {
+function RolePill({ member, pinned }: { member: TeamMember; pinned: boolean }) {
   const pill = (
     <span
       className={`inline-flex w-fit shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1 ${

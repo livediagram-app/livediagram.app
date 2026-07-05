@@ -26,20 +26,6 @@ export function ArrowIcon({ dir }: { dir: 'left' | 'right' | 'up' | 'down' }) {
   );
 }
 
-export function Chevron() {
-  return (
-    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden>
-      <path
-        d="M1.5 3l2.5 2.5L6.5 3"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function AlignIcon({ dir }: { dir: 'left' | 'center' | 'right' }) {
   const lines =
     dir === 'left'
