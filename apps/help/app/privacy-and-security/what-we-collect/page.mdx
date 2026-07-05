@@ -23,6 +23,8 @@ When telemetry is enabled, the editor records small product events made of just 
 
 Because the server only accepts values from that fixed vocabulary, the data can only ever describe known, safe actions.
 
+The same rules apply to error tracking. When something breaks, the event records only a generic token: an HTTP status like "Http500" for a failed request, or a fixed kind like "Uncaught" for a browser-side exception. Never an error message, stack trace, URL, or anything about what you were working on. These show up on the dashboard's Exceptions view like everything else.
+
 ## The public dashboard
 
 Whatever is collected is published openly at the public [telemetry dashboard](/telemetry). It shows aggregate counts over Today, the last 7 days, and the last month, grouped by category and action. Old rows are swept automatically, so this is recent trend data, not a permanent archive. The whole point is transparency: anyone can see precisely what is measured.

@@ -30,7 +30,7 @@ We do not use tracking pixels, advertising, or third-party analytics SDKs. We do
 
 ## Anonymous product analytics
 
-To understand which features actually help, we record anonymous, first-party product events, for example "a diagram was created" or "a square was added". Each event is just three fixed labels: a category, an action, and an optional type like "Square" or "Edit". They never include anything that identifies you or your work: no names, no diagram or element content, no account id, no IP address.
+To understand which features actually help, we record anonymous, first-party product events, for example "a diagram was created" or "a square was added". Each event is just three fixed labels: a category, an action, and an optional type like "Square" or "Edit". They never include anything that identifies you or your work: no names, no diagram or element content, no account id, no IP address. Error health is counted the same way: a failed request or a browser-side exception is recorded only as a generic status or kind, never a message or stack trace.
 
 We collect this ourselves, store it in our own database, and use no third-party analytics vendors. The data is never sold or shared, and the only place it goes beyond our own use is our public [telemetry dashboard](/telemetry), where you can see exactly the same anonymous totals we do. You can turn it off for your browser at any time from Settings (see [What We Collect](/help/privacy-and-security/what-we-collect/)).
 
