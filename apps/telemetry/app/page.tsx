@@ -5,6 +5,7 @@ import { EmptyState, SiteFooter, SiteHeader } from '@livediagram/ui';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
   ActivityGlyph,
+  AlertGlyph,
   BrushGlyph,
   DiagramGlyph,
   FileGlyph,
@@ -28,6 +29,7 @@ import { PaletteView } from './PaletteView';
 import { HelpView } from './HelpView';
 import { ExternalConnectionsView } from './ExternalConnectionsView';
 import { CollaborationView } from './CollaborationView';
+import { ExceptionsView } from './ExceptionsView';
 import { MetricSearch } from './MetricSearch';
 
 // Same origin as the editor + api under the router (livediagram.app).
@@ -51,6 +53,7 @@ type ViewKey =
   | 'help'
   | 'external'
   | 'collaboration'
+  | 'exceptions'
   | 'search'
   | 'raw';
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
@@ -62,6 +65,7 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
   { key: 'external', label: 'External Connections', icon: <LinkGlyph /> },
   { key: 'collaboration', label: 'Collaboration', icon: <ShareGlyph /> },
+  { key: 'exceptions', label: 'Exceptions', icon: <AlertGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
   { key: 'raw', label: 'Raw', icon: <ListGlyph /> },
 ];
@@ -173,6 +177,8 @@ export default function TelemetryDashboard() {
               <ExternalConnectionsView summary={summary} active={active} />
             ) : view === 'collaboration' ? (
               <CollaborationView summary={summary} active={active} />
+            ) : view === 'exceptions' ? (
+              <ExceptionsView summary={summary} active={active} />
             ) : view === 'raw' ? (
               <RawView summary={summary} active={active} />
             ) : summary.daily ? (

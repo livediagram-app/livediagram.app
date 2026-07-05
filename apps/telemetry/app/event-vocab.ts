@@ -37,6 +37,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
   Token: 'API tokens: minted by hand or via an AI tool connecting through MCP, and revoked.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
+  Error:
+    'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) and client-side uncaught exceptions. Never a message, stack, or URL.',
 };
 
 // Per-category colour used by every chart so the category-share bar,
@@ -65,6 +67,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Help: '#14b8a6',
   Token: '#d946ef',
   Mcp: '#f43f5e',
+  Error: '#dc2626',
 };
 export const categoryColor = (c: string) => CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8';
 

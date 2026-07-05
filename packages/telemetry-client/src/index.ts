@@ -102,3 +102,42 @@ export function createTelemetryEmitter(opts: {
 
   return { track };
 }
+
+// ---------------------------------------------------------------------
+// Client error tracking (spec/22 'Error' category)
+// ---------------------------------------------------------------------
+//
+// Window-level uncaught exceptions + unhandled promise rejections,
+// counted GENERICALLY: only the fixed kind token is emitted — never the
+// message, stack, or URL. Capped per kind per page load so a render /
+// retry loop that throws every frame can't flood the pipeline (the
+// count signal saturates at the cap; the dashboard reads presence +
+// order of magnitude, not exact storm size). Shared by the editor and
+// the help centre; each passes its own policy-wrapped track().
+
+const ERROR_EMIT_CAP_PER_KIND = 10;
+
+let errorTrackingInstalled = false;
+
+export function installClientErrorTracking(
+  track: (category: 'Error', action: 'Client', type: string) => void,
+): void {
+  if (errorTrackingInstalled || typeof window === 'undefined') return;
+  errorTrackingInstalled = true;
+  const emitted: Record<string, number> = {};
+  const emit = (kind: 'Uncaught' | 'UnhandledRejection') => {
+    const n = emitted[kind] ?? 0;
+    if (n >= ERROR_EMIT_CAP_PER_KIND) return;
+    emitted[kind] = n + 1;
+    try {
+      track('Error', 'Client', kind);
+    } catch {
+      // Telemetry must never throw into the host app's error path —
+      // doubly so here, where we ARE the error path.
+    }
+  };
+  // Bubble-phase 'error' on window sees uncaught JS exceptions only
+  // (resource-load errors don't bubble), which is exactly the scope.
+  window.addEventListener('error', () => emit('Uncaught'));
+  window.addEventListener('unhandledrejection', () => emit('UnhandledRejection'));
+}

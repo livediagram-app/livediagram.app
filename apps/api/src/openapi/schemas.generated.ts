@@ -3344,7 +3344,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "View",
       "Helpful",
       "Unhelpful",
-      "Returned"
+      "Returned",
+      "Api",
+      "Client"
     ],
     "type": "string"
   },
@@ -3368,7 +3370,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Participant",
       "Help",
       "Token",
-      "Mcp"
+      "Mcp",
+      "Error"
     ],
     "type": "string"
   },

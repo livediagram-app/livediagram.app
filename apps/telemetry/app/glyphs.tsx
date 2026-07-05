@@ -561,3 +561,21 @@ export function DotGlyph() {
     </svg>
   );
 }
+
+export function AlertGlyph() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden
+    >
+      <path d="M8 2.2 14.4 13H1.6L8 2.2Z" strokeLinejoin="round" />
+      <path d="M8 6.6v3" strokeLinecap="round" />
+      <path d="M8 11.6h.01" strokeLinecap="round" />
+    </svg>
+  );
+}

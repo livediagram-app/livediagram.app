@@ -230,6 +230,25 @@ export async function apiHeaders(
   return h;
 }
 
+// Error telemetry hook (spec/22 'Error' category). This module can't
+// import lib/telemetry directly — it sits under the user-preferences ->
+// api-client import cycle that already forced the emitter lazy — so the
+// editor's boot registers a reporter instead (same module-level pattern
+// as setTokenProvider above). Reports the HTTP status of every ApiError
+// the helpers below throw; a no-op while unwired (SSR, tests, other
+// hosts of this lib).
+let apiErrorReporter: ((status: number) => void) | null = null;
+export function setApiErrorReporter(fn: ((status: number) => void) | null): void {
+  apiErrorReporter = fn;
+}
+function reportApiError(status: number): void {
+  try {
+    apiErrorReporter?.(status);
+  } catch {
+    // Telemetry can never throw into the caller's error handling.
+  }
+}
+
 // The error every non-2xx response throws. Carries the HTTP `status`
 // AND the api worker's `error` token (`code`) so callers can branch on
 // the specific rule that fired (`forbidden` vs `admin_required`,
@@ -274,7 +293,10 @@ async function readErrorCode(res: Response): Promise<string | null> {
 // otherwise parse JSON. The `action` string gets baked into the thrown
 // message so debugging keeps the caller's intent without a stack walk.
 export async function expectOk<T>(res: Response, action: string): Promise<T> {
-  if (!res.ok) throw new ApiError(action, res.status, await readErrorCode(res));
+  if (!res.ok) {
+    reportApiError(res.status);
+    throw new ApiError(action, res.status, await readErrorCode(res));
+  }
   return (await res.json()) as T;
 }
 
@@ -283,14 +305,20 @@ export async function expectOk<T>(res: Response, action: string): Promise<T> {
 // caller wants to handle (welcome flow, share-resolution etc.)
 export async function expectOkOrNull<T>(res: Response, action: string): Promise<T | null> {
   if (res.status === 404) return null;
-  if (!res.ok) throw new ApiError(action, res.status, await readErrorCode(res));
+  if (!res.ok) {
+    reportApiError(res.status);
+    throw new ApiError(action, res.status, await readErrorCode(res));
+  }
   return (await res.json()) as T;
 }
 
 // For endpoints with no response body (DELETE, write-only PUT). Same
 // error-on-non-ok contract; nothing to return.
 export async function expectOkVoid(res: Response, action: string): Promise<void> {
-  if (!res.ok) throw new ApiError(action, res.status, await readErrorCode(res));
+  if (!res.ok) {
+    reportApiError(res.status);
+    throw new ApiError(action, res.status, await readErrorCode(res));
+  }
 }
 
 // DELETE that tolerates 404 — used everywhere "remove this if it
@@ -298,6 +326,7 @@ export async function expectOkVoid(res: Response, action: string): Promise<void>
 // throw.
 async function expectOkOr404Void(res: Response, action: string): Promise<void> {
   if (!res.ok && res.status !== 404) {
+    reportApiError(res.status);
     throw new ApiError(action, res.status, await readErrorCode(res));
   }
 }

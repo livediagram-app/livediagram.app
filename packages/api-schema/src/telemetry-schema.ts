@@ -55,6 +55,12 @@ export const TELEMETRY_CATEGORIES = [
   // third app that reports telemetry, so usage shows up distinctly from the
   // in-editor AI panel.
   'Mcp',
+  // Error tracking (spec/22): generic failure counts. The action slot
+  // carries the SOURCE ('Api' | 'Client' — deliberate nouns in the verb
+  // slot); `type` is a fixed kind or status token ('Http500',
+  // 'Internal', 'Uncaught', 'UnhandledRejection') — never a message,
+  // stack, or URL.
+  'Error',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -116,6 +122,10 @@ export const TELEMETRY_ACTIONS = [
   // later UTC day. Paired with 'Participant'/'Created', gated once per
   // UTC day client-side; type is 'Anonymous' | 'Authenticated'.
   'Returned',
+  // Error source (spec/22): the two nouns the 'Error' category uses in
+  // the action slot — API failures vs client-side exceptions.
+  'Api',
+  'Client',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 

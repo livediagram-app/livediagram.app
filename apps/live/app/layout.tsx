@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { ClerkProvider } from '@/components/providers/ClerkProvider';
+import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@/lib/fonts';
@@ -120,6 +121,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             __html: `try{var p=JSON.parse(localStorage.getItem('${USER_PREFERENCES_STORAGE_KEY}')||'{}');if(p&&p.reduceMotion===true)document.documentElement.classList.add('reduce-motion')}catch(e){}`,
           }}
         />
+        <ErrorTelemetryBoot />
         <ClerkProvider>
           <ToastProvider>
             <ConfirmProvider>{children}</ConfirmProvider>

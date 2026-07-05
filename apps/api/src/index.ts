@@ -15,6 +15,7 @@ import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DiagramRoom } from './diagram-room';
 import { CORS_HEADERS, json, notFound, rateLimited } from './responses';
+import { insertTelemetryEvents } from './db/telemetry';
 import { clientIp } from './client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
@@ -263,6 +264,20 @@ export default {
       // client — internal error text can leak implementation details (table
       // names, stack hints). Return a generic body instead.
       console.error('api error', err);
+      // Self-report the crash to the events table (spec/22 'Error'
+      // category): the worker owns the D1 binding, so a server-side
+      // exception counts even when no client survives to report it.
+      // Same TELEMETRY_ENABLED gate as the ingest; off the response's
+      // critical path (waitUntil), and its own failure is swallowed —
+      // the 500 must still go out.
+      if (env.TELEMETRY_ENABLED === 'true') {
+        const report = insertTelemetryEvents(
+          env,
+          [{ category: 'Error', action: 'Api', type: 'Internal' }],
+          Date.now(),
+        ).catch(() => {});
+        executionCtx?.waitUntil?.(report);
+      }
       return json({ error: 'internal_error' }, { status: 500 });
     }
 

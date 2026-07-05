@@ -33,6 +33,7 @@ export { ApiError } from './api/core';
 export {
   API_BASE,
   DIAGRAM_LIST_LOAD_SAFETY_MS,
+  setApiErrorReporter,
   setTokenProvider,
   setSessionSharePassword,
   getSessionSharePassword,
