@@ -11,7 +11,7 @@ When zen mode is on, the editor hides:
 - the editor header (top bar),
 - the tab bar,
 - the palette (tools + add-element), the context / inspector
-  panel, the Explorer, the Activity panel, the comments panel, the AI
+  panel, the Explorer, the Activity panel, the Collaborate panel, the AI
   panel, the mobile dock, and the owner / role status badge,
 - the empty-canvas prompt and the undo/redo history dock.
 
