@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TextInput } from '@livediagram/ui';
+import { Button, TextInput } from '@livediagram/ui';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -194,14 +194,14 @@ export function LinkPickerDialog({
             <p className="text-[11px] text-slate-400 dark:text-slate-400">
               Opens in a new tab. We&apos;ll add https:// if you leave off the scheme.
             </p>
-            <button
-              type="button"
+            <Button
+              size="xs"
               onClick={saveUrl}
               disabled={!urlInput.trim()}
-              className="mt-1 self-start rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-1 self-start shadow-sm"
             >
               Save link
-            </button>
+            </Button>
           </div>
         )}
       </div>

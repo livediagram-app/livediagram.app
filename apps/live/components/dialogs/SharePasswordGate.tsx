@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TextInput } from '@livediagram/ui';
+import { Button, TextInput } from '@livediagram/ui';
 
 type SharePasswordGateProps = {
   // True when the visitor already submitted a wrong password (vs the
@@ -63,13 +63,9 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
             That password didn&apos;t match. Try again.
           </p>
         ) : null}
-        <button
-          type="submit"
-          disabled={!value.trim()}
-          className="w-full rounded-md bg-brand-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
-        >
+        <Button type="submit" size="md" disabled={!value.trim()} className="w-full shadow-sm">
           Open diagram
-        </button>
+        </Button>
       </form>
     </div>
   );
