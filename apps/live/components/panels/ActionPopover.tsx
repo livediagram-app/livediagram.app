@@ -1,5 +1,8 @@
 'use client';
 
+// The spec/68 clipboard-with-tick action glyph, shared with the context
+// menu's Assign Action tile so the two surfaces can't drift.
+import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
 import { useRef, useState } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
@@ -278,27 +281,6 @@ function TrashIcon() {
       <path d="M2.5 4h11" />
       <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
       <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
-    </svg>
-  );
-}
-
-// Clipboard-with-tick glyph, matching the element badge + menu tile.
-function ClipboardIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M6 3h-1.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H10" />
-      <rect x="6" y="1.75" width="4" height="2.5" rx="0.75" />
-      <path d="M5.75 9.25 7.5 11l3-3.5" />
     </svg>
   );
 }
