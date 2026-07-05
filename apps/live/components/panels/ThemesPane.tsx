@@ -10,13 +10,12 @@
 
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/ui/useConfirm';
-import { useEscape } from '@/hooks/ui/useEscape';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
 import { CustomThemeBuilder, type CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { EmptyState } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { Dialog } from '@/components/dialogs/Dialog';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
@@ -187,44 +186,29 @@ function BuilderModal({
   onSave: (draft: CustomThemeDraft) => void;
   onClose: () => void;
 }) {
-  useEscape(onClose);
   return (
-    <Portal>
-      <div
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose();
-        }}
-        className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-slate-950/60"
-      >
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={title}
-          className="flex max-h-[calc(100%-2rem)] w-[34rem] max-w-full flex-col overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-900"
-        >
-          {/* Normal modal header (title + close), since the builder's own
+    <Dialog open onClose={onClose} ariaLabel={title} size="lg" className="p-4">
+      {/* Normal modal header (title + close), since the builder's own
               BackBar is suppressed in modal variant. */}
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</h2>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
-            >
-              <CloseIcon size={16} strokeWidth={1.6} />
-            </button>
-          </div>
-          <CustomThemeBuilder
-            variant="modal"
-            initial={initial}
-            saving={saving}
-            onSave={onSave}
-            onCancel={onClose}
-          />
-        </div>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
+        >
+          <CloseIcon size={16} strokeWidth={1.6} />
+        </button>
       </div>
-    </Portal>
+      <CustomThemeBuilder
+        variant="modal"
+        initial={initial}
+        saving={saving}
+        onSave={onSave}
+        onCancel={onClose}
+      />
+    </Dialog>
   );
 }
 
