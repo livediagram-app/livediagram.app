@@ -21,21 +21,26 @@ new user pokes at a real diagram that teaches itself.
 
 ## The sample itself
 
-A compact scene centred on the viewport:
+A poster-composed scene centred on the viewport, in four zones:
 
-- A **title** text element ("Welcome to livediagram") and a caption
+- **Header**: a title text element ("Welcome to livediagram") and a caption
   explaining the one non-obvious mechanic: _hover the round note markers to
   learn the basics_.
-- **Three themed shapes connected by pinned arrows** (a mini flow), so
-  dragging a shape visibly drags its arrows with it.
-- A **sticky note** as a second element flavour.
-- **Annotation markers** (spec/38 circles), each placed beside the thing it
-  explains, teaching via their hover notes:
-  1. add elements from the Palette,
-  2. double-click a shape to edit its label,
-  3. drag from a shape's edge to draw an arrow,
-  4. right-click an element for colours and styling,
-  5. undo with Ctrl/Cmd+Z or from the Activity panel.
+- **An interactive flow row**: three themed shapes joined by pinned arrows
+  (drag one and its arrows follow), ending in a diamond reached by a
+  **labelled curved arrow with animated flow**, so arrow styling is visible,
+  not just described.
+- **"Make it yours"** (left): a slightly tilted sticky note plus two shapes
+  carrying status **shape markers** (spec/49, one green, one red with a
+  dashed border), giving the right-click styling note something concrete to
+  point at.
+- **"Beyond boxes"** (right): a progress bar, a progress ring, and a star
+  rating at their factory defaults, plus a **Pencil-drawn freehand ribbon**
+  between the clusters.
+- **Annotation markers** (spec/38 circles), one per lesson, placed beside
+  their subjects: the Palette, click / double-click / drag, drawing and
+  styling arrows, right-click styling + markers, the Pencil (and shape
+  recognition), the data shapes, themes + undo, and tabs + Share.
 
 The exact copy and layout live in the builder; the spec constraint is that
 every teaching note describes a real, currently-shipped interaction (if an
