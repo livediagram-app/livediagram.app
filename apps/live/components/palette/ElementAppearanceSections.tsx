@@ -13,12 +13,8 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { onMouseHover } from '@/components/primitives/hover-preview';
 import {
   DEFAULT_ICON_SIZE,
-  defaultFillColor,
-  defaultStrokeColor,
-  defaultTextColor,
   isBoxed,
   isChartShape,
   isLineShape,
@@ -27,32 +23,14 @@ import {
   isRatingShape,
   isSelfDrawingShape,
   supportsBorderControls,
-  supportsBorderRadius,
-  supportsColours,
-  type BorderRadius,
-  type BorderStroke,
-  type BorderStyle,
-  type BoxedElement,
   type IconSize,
   type TextAlignX,
   type TextAlignY,
 } from '@livediagram/diagram';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
-import { SizeButton } from '@/components/palette/palette-controls';
-import {
-  BorderRadiusIcon,
-  BorderStrokeIcon,
-  BorderStyleIcon,
-} from '@/components/palette/palette-icons';
-import {
-  BorderGlyph,
-  IconCategoryGlyph,
-  PaletteMenuIcon,
-  RemoveIconGlyph,
-} from '@/components/palette/context-menu-icons';
+import { IconCategoryGlyph, RemoveIconGlyph } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
-  MenuActionButton,
   MenuGroupSeparator,
   MenuTile,
 } from '@/components/primitives/PortalMenu';
@@ -67,8 +45,6 @@ import {
   shapeSupportsPresets,
 } from '@/components/palette/PresetSections';
 import {
-  BorderGrid,
-  ColourRow,
   IconPositionGrid,
   MarkersMenuGlyph,
   MarkerTiles,
@@ -76,8 +52,7 @@ import {
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ElementDataSections } from './ElementDataSections';
-
-import { BORDER_RADII, BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
+import { ElementColourBorderSections } from './ElementColourBorderSections';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -112,13 +87,6 @@ export function ElementAppearanceSections({
   // (shapes / freehand / tables — supportsBorderControls excludes icons,
   // the actor, and the self-drawing data shapes, whose controls were dead).
   const borderable = supportsBorderControls(target);
-  const borderStrokeVal: BorderStroke =
-    (target as { strokeWidth?: BorderStroke }).strokeWidth ??
-    (target.type === 'table' ? 'thin' : 'medium');
-  const borderStyleVal: BorderStyle =
-    (target as { strokeStyle?: BorderStyle }).strokeStyle ?? 'solid';
-  const borderRadiusVal: BorderRadius =
-    (target as { borderRadius?: BorderRadius }).borderRadius ?? 'sm';
   // A regular shape carrying an inline icon (drag-an-icon-onto-it
   // feature, spec/09) gets a "Remove icon" entry; the dedicated 'icon'
   // shape is its own glyph and excluded.
@@ -196,115 +164,21 @@ export function ElementAppearanceSections({
         boxed={boxed}
         sectionProps={sectionProps}
       />
-      {boxed && supportsColours(target) && !isChart ? (
-        <>
-          <MenuAccordionSection
-            title="Colours"
-            icon={<PaletteMenuIcon />}
-            {...sectionProps('colours')}
-          >
-            <ColourRow
-              label="Text"
-              value={
-                (target as { textColor?: string }).textColor ??
-                defaultTextColor(target as BoxedElement)
-              }
-              {...textColorHandlers}
-              {...colorProps('text')}
-              presets={props.presetColors}
-            />
-            {defaultFillColor(target as BoxedElement) !== 'transparent' ? (
-              <ColourRow
-                label="Background"
-                value={
-                  (target as { fillColor?: string }).fillColor ??
-                  defaultFillColor(target as BoxedElement)
-                }
-                {...fillColorHandlers}
-                {...colorProps('background')}
-                presets={props.presetColors}
-              />
-            ) : null}
-            {/* Stroke swatch: hidden for Technology icons (the brand mark
-                  carries fixed colours, so strokeColor paints nothing) and
-                  relabelled "Icon" for line-art icons, whose stroke is the
-                  glyph tint rather than a border. */}
-            {defaultStrokeColor(target as BoxedElement) !== 'transparent' &&
-            !(isIcon && isTechIconId((target as { iconId?: string }).iconId)) ? (
-              <ColourRow
-                label={isIcon ? 'Icon' : 'Border'}
-                value={
-                  (target as { strokeColor?: string }).strokeColor ??
-                  defaultStrokeColor(target as BoxedElement)
-                }
-                {...strokeColorHandlers}
-                {...colorProps('border')}
-                presets={props.presetColors}
-              />
-            ) : null}
-            <div className="px-2 pb-1 pt-1.5">
-              <MenuActionButton
-                label="Reset to theme"
-                onClick={() => {
-                  props.onResetColors();
-                  onClose();
-                }}
-              />
-            </div>
-          </MenuAccordionSection>
-        </>
-      ) : null}
-      {/* Border — strength / pattern / radius. Pie charts have no box border
-            to style, so they're excluded. */}
-      {borderable && !isChart ? (
-        <>
-          <MenuAccordionSection title="Border" icon={<BorderGlyph />} {...sectionProps('border')}>
-            <div className="px-2 py-1">
-              <BorderGrid label="Strength" cols={5}>
-                {BORDER_STROKES.map((v) => (
-                  <SizeButton
-                    key={v}
-                    active={borderStrokeVal === v}
-                    onClick={() => props.onCommitBorderStroke(v)}
-                    onPointerEnter={onMouseHover(() => props.onPreviewBorderStroke(v))}
-                    onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                  >
-                    <BorderStrokeIcon value={v} />
-                  </SizeButton>
-                ))}
-              </BorderGrid>
-              <BorderGrid label="Pattern" cols={3}>
-                {BORDER_STYLES.map((v) => (
-                  <SizeButton
-                    key={v}
-                    active={borderStyleVal === v}
-                    onClick={() => props.onCommitBorderStyle(v)}
-                    onPointerEnter={onMouseHover(() => props.onPreviewBorderStyle(v))}
-                    onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                  >
-                    <BorderStyleIcon value={v} />
-                  </SizeButton>
-                ))}
-              </BorderGrid>
-              {supportsBorderRadius(target) ? (
-                <BorderGrid label="Radius" cols={5}>
-                  {BORDER_RADII.map((v) => (
-                    <SizeButton
-                      key={v}
-                      active={borderRadiusVal === v}
-                      onClick={() => props.onCommitBorderRadius(v)}
-                      onPointerEnter={onMouseHover(() => props.onPreviewBorderRadius(v))}
-                      onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                    >
-                      <BorderRadiusIcon value={v} />
-                    </SizeButton>
-                  ))}
-                </BorderGrid>
-              ) : null}
-            </div>
-          </MenuAccordionSection>
-        </>
-      ) : null}
+      {/* Colours + Border accordions — see ElementColourBorderSections. */}
+      <ElementColourBorderSections
+        props={props}
+        target={target}
+        boxed={boxed}
+        isIcon={isIcon}
+        isChart={isChart}
+        borderable={borderable}
+        onClose={onClose}
+        sectionProps={sectionProps}
+        colorProps={colorProps}
+        textColorHandlers={textColorHandlers}
+        fillColorHandlers={fillColorHandlers}
+        strokeColorHandlers={strokeColorHandlers}
+      />
       {/* Icon — a Technology icon element's fixed tile size (spec/41).
             The mark renders at a preset pixel size regardless of the box;
             these tiles pick the preset. */}
