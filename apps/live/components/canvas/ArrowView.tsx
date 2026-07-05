@@ -1,23 +1,15 @@
 import { memo, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import {
-  angledElbow,
   arrowheadShapeOf,
   arrowheadSizeOf,
-  arrowLabelAnchor,
-  arrowPathD,
-  arrowPathMidpoint,
-  arrowStyleOf,
   BORDER_DASH_ARRAY,
-  curveAnchorPoints,
-  curveControlPoint,
   DEFAULT_BORDER_STYLE,
   defaultArrowStrokeColor,
-  endpointPosition,
   type ArrowElement,
   type ElementIndex,
 } from '@livediagram/diagram';
 import type { ArrowEnd } from '@/lib/canvas';
-import { arrowLabelFontSize, placeLabel } from '@/lib/arrow-label-geometry';
+import { deriveArrowViewFrame } from './arrow-view-frame';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
 import { arrowheadMarkerId } from './arrow-defs';
@@ -139,87 +131,17 @@ function ArrowViewImpl({
   // Touch long-press opens the arrow's context menu (touch has no
   // right-click); a press that moves becomes a select / drag instead.
   const longPress = useLongPress(contextSelectBeside);
-  const from = endpointPosition(arrow.from, elementIndex);
-  const to = endpointPosition(arrow.to, elementIndex);
   const markerUrl = `url(#${arrowheadMarkerId(arrowheadShapeOf(arrow), arrowheadSizeOf(arrow))})`;
-  const style = arrowStyleOf(arrow);
-  const pathD = arrowPathD(
-    style,
-    from,
-    to,
-    arrow.from,
-    arrow.to,
-    arrow.curveOffset,
-    arrow.elbowOffset,
-    arrow.curvePoints,
-  );
+  // Endpoints / path / midpoint / handle points / label placement — the
+  // pure per-render frame, resolved in arrow-view-frame.ts.
+  const { from, to, pathD, curveAnchors, curveControl, elbowPoint, labelText, labelPos } =
+    deriveArrowViewFrame(arrow, elementIndex, isEditing);
+  const showLabel = isEditing || labelText.length > 0;
   // Flow derivations + the phase-sync pinning (spec/09) live in
   // useArrowFlow; the visible path below mounts flowPathRef and the
   // travelling overlays render via ArrowFlowOverlays.
   const { flowFactor, flowPathClass, flowPathDash, flowPathRef, flowDotRef, flowCometRef } =
     useArrowFlow(arrow);
-  const midpoint = arrowPathMidpoint(
-    style,
-    from,
-    to,
-    arrow.from,
-    arrow.to,
-    arrow.curveOffset,
-    arrow.elbowOffset,
-    arrow.curvePoints,
-  );
-  // Bezier control point (only meaningful for curved arrows). The
-  // curve drag handle sits exactly on this point, not on the
-  // visual midpoint, since dragging the control point is what
-  // actually changes the curve shape (the midpoint is a derived
-  // by-product of the control point at t=0.5).
-  // Multi-bend control points (absolute), for curved (smooth spline) OR
-  // angled (polyline) arrows that carry explicit points. The single bow /
-  // elbow handles below are used only when there are no explicit points.
-  const curveAnchors =
-    (style === 'curved' || style === 'angled') && arrow.curvePoints && arrow.curvePoints.length > 0
-      ? curveAnchorPoints(from, to, arrow.curvePoints)
-      : null;
-  const curveControl =
-    style === 'curved' && !curveAnchors
-      ? curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to)
-      : null;
-  // Single elbow handle for an angled arrow with no explicit points; the
-  // per-point handles take over once the user adds a bend.
-  const elbowPoint =
-    style === 'angled' && !curveAnchors
-      ? angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset)
-      : null;
-  const labelText = arrow.label ?? '';
-  const showLabel = isEditing || labelText.length > 0;
-  // When the user has dragged the label, anchor it to their chosen
-  // {t, offset} on the line; otherwise auto-place it around the
-  // midpoint dodging nearby boxes.
-  const labelPos = !showLabel
-    ? { x: midpoint.x, y: midpoint.y }
-    : arrow.labelOffset
-      ? arrowLabelAnchor(
-          style,
-          from,
-          to,
-          arrow.from,
-          arrow.to,
-          arrow.curveOffset,
-          arrow.elbowOffset,
-          arrow.labelOffset,
-          arrow.curvePoints,
-        )
-      : placeLabel(
-          midpoint,
-          labelText,
-          elementIndex,
-          arrow.id,
-          arrowLabelFontSize(arrow.textSize),
-          {
-            dx: to.x - from.x,
-            dy: to.y - from.y,
-          },
-        );
   // The label box is draggable (and shows its dashed selection box)
   // when the arrow is selected and editable.
   const labelDraggable = isSelected && !isPaintMode && !readOnly && !isLocked && !isEditing;
