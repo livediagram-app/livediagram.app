@@ -17,6 +17,7 @@ packages/
   icons/          icon catalogues (line-art + Technology marks) + SVG markup builders
   templates/      template catalogue + pure element builders (editor Quick Start + MCP)
   api-schema/     wire-format DTOs the api worker emits + the live editor consumes
+  telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
   eslint-config/  shared ESLint flat config
   prettier-config/shared Prettier config
   tailwind-config/shared Tailwind theme (brand palette)

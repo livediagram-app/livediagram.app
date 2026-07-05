@@ -53,6 +53,7 @@ packages/
   icons/          # icon catalogues (line-art + Technology marks) + SVG markup builders
   templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
+  telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   eslint-config/  # shared ESLint flat config
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
@@ -195,4 +196,4 @@ Run a script in a single workspace: `pnpm --filter @livediagram/<name> <script>`
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
-- **Track key new functionality** via the anonymous-events schema (see [`specs/22-telemetry.md`](specs/22-telemetry.md)): when you ship a feature that meaningfully changes user behaviour (a new element kind, a new dialog, a new mode, a new shortcut surface, a new setting toggle), add a one-liner `track(category, action, type)` at the interaction's handler. Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums in `@livediagram/api-schema`, extending them only when no existing pair fits. The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content. The editor (`apps/live`) is the only app that emits, and settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.
+- **Track key new functionality** via the anonymous-events schema (see [`specs/22-telemetry.md`](specs/22-telemetry.md)): when you ship a feature that meaningfully changes user behaviour (a new element kind, a new dialog, a new mode, a new shortcut surface, a new setting toggle), add a one-liner `track(category, action, type)` at the interaction's handler. Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums in `@livediagram/api-schema`, extending them only when no existing pair fits. The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content. The editor (`apps/live`) and the help centre (`apps/help`) emit, both through the shared `@livediagram/telemetry-client` engine with app-owned enable/opt-out policy; settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.

@@ -1,25 +1,13 @@
 // Anonymous, first-party product telemetry emitter (spec/22).
 //
-// `track(category, action, type?)` records a three-field event into a
-// buffer that flushes — batched — to `POST /api/events` on a short
-// timer and on page-hide (via `navigator.sendBeacon`). It is strictly
-// fire-and-forget: every failure is swallowed, because telemetry must
-// never affect the editor.
-//
-// Privacy (spec/22): only the closed-vocabulary {category, action,
-// type} ever leaves the browser. NEVER pass user-generated content
-// (diagram/tab/participant names, element text, ids, share codes) as
-// `type` — the api worker also rejects anything outside the allowed
-// vocabulary, but the rule starts here. No owner id is sent either:
-// the ingest endpoint stores nothing identifying.
-//
-// Gated by NEXT_PUBLIC_TELEMETRY_ENABLED (baked at build): when it
-// isn't "true", `track()` is a no-op and nothing is sent, so OSS forks
-// / self-hosters and local dev emit nothing by default. The api
-// worker's TELEMETRY_ENABLED is the authoritative gate; this is the
-// client-side optimisation that avoids the request entirely.
+// The buffering / flush / page-hide engine lives in
+// @livediagram/telemetry-client (shared with the help centre); this
+// wrapper owns the editor's policy: the build-time
+// NEXT_PUBLIC_TELEMETRY_ENABLED gate and the cached spec/20 per-user
+// opt-out. See the package for the privacy rules — `type` is always a
+// closed-vocabulary token, never user content.
 
-import type { TelemetryAction, TelemetryCategory, TelemetryEvent } from '@livediagram/api-schema';
+import { createTelemetryEmitter, type TelemetryEmitter } from '@livediagram/telemetry-client';
 import { API_BASE } from './api-client';
 import {
   PREFERENCES_CHANGED_EVENT,
@@ -28,12 +16,7 @@ import {
 } from './user-preferences';
 
 const ENABLED = process.env.NEXT_PUBLIC_TELEMETRY_ENABLED === 'true';
-const FLUSH_DELAY_MS = 10_000;
-const MAX_BUFFER = 25;
 
-let buffer: TelemetryEvent[] = [];
-let flushTimer: ReturnType<typeof setTimeout> | null = null;
-let listenersAttached = false;
 let preferenceListenersAttached = false;
 
 // User-preference opt-out (spec/20). Cached so the hot path doesn't
@@ -51,9 +34,9 @@ function readOptIn(): boolean {
 }
 
 function ensurePreferenceListeners(): void {
-  // Guard like ensureListeners: track() re-calls this after every cache
-  // invalidation, and without the flag each call stacked a fresh
-  // listener pair for the life of the page.
+  // Guarded: track() re-consults this after every cache invalidation,
+  // and without the flag each call stacked a fresh listener pair for
+  // the life of the page.
   if (preferenceListenersAttached || typeof window === 'undefined') return;
   preferenceListenersAttached = true;
   const invalidate = () => {
@@ -65,68 +48,26 @@ function ensurePreferenceListeners(): void {
   });
 }
 
-function flush(useBeacon = false): void {
-  if (buffer.length === 0) return;
-  const events = buffer;
-  buffer = [];
-  if (flushTimer !== null) {
-    clearTimeout(flushTimer);
-    flushTimer = null;
-  }
-  const url = `${API_BASE}/events`;
-  const body = JSON.stringify({ events });
-  try {
-    if (
-      useBeacon &&
-      typeof navigator !== 'undefined' &&
-      typeof navigator.sendBeacon === 'function'
-    ) {
-      navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
-      return;
-    }
-    // `keepalive` lets the POST outlive a navigation the same way a
-    // beacon would, for the timer-driven flush path.
-    void fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body,
-      keepalive: true,
-    }).catch(() => {});
-  } catch {
-    // Swallow — telemetry can never throw into the editor.
-  }
-}
+// Constructed lazily on the first track(): this module sits inside an
+// import cycle (user-preferences -> api-client barrel), so reading
+// API_BASE at module scope hit the TDZ during Next's build. Deferring
+// to first use restores the old read-at-flush-time semantics.
+let emitter: TelemetryEmitter | null = null;
 
-// Flush on the first hidden/unload so the tail of a session isn't lost.
-function ensureListeners(): void {
-  if (listenersAttached || typeof document === 'undefined') return;
-  listenersAttached = true;
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flush(true);
+export const track: TelemetryEmitter['track'] = (category, action, type) => {
+  emitter ??= createTelemetryEmitter({
+    apiBase: API_BASE,
+    enabled: ENABLED,
+    isOptedIn: () => {
+      if (cachedOptIn === null) {
+        cachedOptIn = readOptIn();
+        ensurePreferenceListeners();
+      }
+      return cachedOptIn;
+    },
   });
-  window.addEventListener('pagehide', () => flush(true));
-}
-
-export function track(category: TelemetryCategory, action: TelemetryAction, type?: string): void {
-  if (!ENABLED || typeof window === 'undefined') return;
-  if (cachedOptIn === null) {
-    cachedOptIn = readOptIn();
-    ensurePreferenceListeners();
-  }
-  if (!cachedOptIn) return;
-  buffer.push({ category, action, type: type ?? null });
-  ensureListeners();
-  if (buffer.length >= MAX_BUFFER) {
-    flush();
-    return;
-  }
-  if (flushTimer === null) {
-    flushTimer = setTimeout(() => {
-      flushTimer = null;
-      flush();
-    }, FLUSH_DELAY_MS);
-  }
-}
+  emitter.track(category, action, type);
+};
 
 // Title-cases an app enum value for the `type` field so the dashboard
 // reads "Square" rather than "square". Safe for ASCII enum tokens
