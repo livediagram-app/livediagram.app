@@ -45,6 +45,14 @@ export function timerDone(timer: TabTimer, now: number): boolean {
   return timer.mode === 'countdown' && timerDisplayMs(timer, now) <= 0;
 }
 
+// m:ss readout for a timer's display ms — the one formatting rule the
+// floating TimerWidget (live ticking clock) and the Session tools
+// section (static snapshot) share; each used to carry its own copy.
+export function formatTimerClock(ms: number): string {
+  const s = Math.round(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
 // --- Voting (dot-voting on elements) ---------------------------------------
 
 export type TabVote = {

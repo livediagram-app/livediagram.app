@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { timerDisplayMs, timerDone, type TabTimer } from '@livediagram/diagram';
+import { timerDisplayMs, timerDone, type TabTimer, formatTimerClock } from '@livediagram/diagram';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 
 // Floating session-timer pill (spec/39). Renders the active tab's
@@ -9,11 +9,6 @@ import { TopCenterBanner } from '@/components/chrome/TopCenter';
 // (no per-second network traffic — all clients compute the same value).
 // Facilitators (edit-role) get pause/resume + reset inline; viewers see a
 // read-only clock. Start / duration / clear live in the Tab Settings.
-function fmt(ms: number): string {
-  const s = Math.round(ms / 1000);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
-
 export function TimerWidget({
   timer,
   readOnly,
@@ -49,7 +44,7 @@ export function TimerWidget({
       <span className="select-none text-[10px] font-medium uppercase tracking-wide opacity-70">
         {timer.mode === 'countdown' ? 'Timer' : 'Stopwatch'}
       </span>
-      <span className="select-none text-sm font-semibold tabular-nums">{fmt(ms)}</span>
+      <span className="select-none text-sm font-semibold tabular-nums">{formatTimerClock(ms)}</span>
       {!readOnly ? (
         <div className="flex items-center gap-0.5">
           {timer.running ? (

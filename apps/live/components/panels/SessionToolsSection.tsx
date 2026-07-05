@@ -8,7 +8,13 @@
 // BODY; the caller wraps it in its own MenuAccordionSection.
 
 import { useState } from 'react';
-import { timerDisplayMs, type TabTimer, type TabVote, type TimerMode } from '@livediagram/diagram';
+import {
+  timerDisplayMs,
+  type TabTimer,
+  type TabVote,
+  type TimerMode,
+  formatTimerClock,
+} from '@livediagram/diagram';
 
 const sessChip = (on: boolean) =>
   on
@@ -18,13 +24,6 @@ const sessBtn =
   'inline-flex w-full items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15';
 const sessBtnPrimary =
   'inline-flex w-full items-center justify-center gap-1 rounded-md bg-brand-500 px-2 py-1.5 text-[11px] font-semibold text-white transition hover:bg-brand-600';
-
-// m:ss for the active-timer readout (a static snapshot — the live ticking
-// countdown lives in the floating TimerWidget).
-function fmtClock(ms: number): string {
-  const s = Math.round(ms / 1000);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
 
 type TimerProps = {
   timer: TabTimer | null;
@@ -98,7 +97,7 @@ export function SessionTimerSection({
           <p className="text-[11px] text-slate-600 dark:text-slate-300">
             {timer.mode === 'countdown' ? 'Countdown' : 'Stopwatch'} ·{' '}
             <span className="font-semibold tabular-nums">
-              {fmtClock(timerDisplayMs(timer, Date.now()))}
+              {formatTimerClock(timerDisplayMs(timer, Date.now()))}
             </span>{' '}
             {timer.running ? 'running' : 'paused'}
           </p>
