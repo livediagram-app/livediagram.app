@@ -67,6 +67,57 @@ export function iconBandBounds(el: {
   return { x: bandX, y: bandY, width: bandW, height: bandH };
 }
 
+// The caption's band inside a captioned icon element: the complement of the
+// glyph band above, plus how the text anchors vertically INSIDE it. Keeping
+// the caption in its own band (instead of aligning it over the whole box, as
+// it used to be) is what stops a centre/middle caption landing on top of the
+// glyph and a long left/right caption running under the mark. Shared by the
+// editor's CSS bands (captionBandClass mirrors these numbers) and the export
+// renderer (describeBoxedExport), so a captioned icon exports exactly as
+// drawn.
+//
+// - Centre captions keep the full width and take the vertical band the glyph
+//   doesn't: top → the top 36% (top-anchored), bottom → the bottom 36%
+//   (bottom-anchored), middle → the top 36% bottom-anchored, so the text sits
+//   directly above the glyph band instead of overlapping it.
+// - Left/right captions get their half of the box (text wraps at the half,
+//   never under the glyph) and centre vertically on the glyph's row — the
+//   same 6–64% / full-height / 36–94% row iconBandBounds uses — so the
+//   caption and the mark always share a line.
+export function iconCaptionBand(el: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  textAlignX?: 'left' | 'center' | 'right';
+  textAlignY?: 'top' | 'middle' | 'bottom';
+}): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  valign: 'top' | 'middle' | 'bottom';
+} {
+  const ax = el.textAlignX ?? 'center';
+  const ay = el.textAlignY ?? 'bottom';
+  if (ax === 'center') {
+    return {
+      x: el.x,
+      width: el.width,
+      y: ay === 'bottom' ? el.y + el.height * 0.64 : el.y,
+      height: el.height * 0.36,
+      valign: ay === 'top' ? 'top' : 'bottom',
+    };
+  }
+  return {
+    x: ax === 'left' ? el.x : el.x + el.width * 0.5,
+    width: el.width * 0.5,
+    y: ay === 'middle' ? el.y : el.y + el.height * (ay === 'top' ? 0.06 : 0.36),
+    height: ay === 'middle' ? el.height : el.height * 0.58,
+    valign: 'middle',
+  };
+}
+
 // The rectangle a Technology mark actually occupies inside its element: its
 // fixed preset size, centred in the glyph band, clamped to the box. One
 // implementation shared by the export renderer (svgIconShape), the editor

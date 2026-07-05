@@ -410,6 +410,53 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('text-anchor="start"');
     });
 
+    it('keeps a middle-aligned caption above the glyph band (spec/41 caption band)', () => {
+      const art = () => ({ markup: '<circle/>', colored: true });
+      const svg = renderElementsToSvg(
+        tab([icon({ width: 100, height: 100, label: 'EC2', textAlignY: 'middle' })]),
+        { resolveIconArt: art },
+      );
+      // The mark takes the bottom band (36..94), centred: y = 36 + (58-48)/2.
+      expect(svg).toContain('y="41" width="48" height="48"');
+      // The caption anchors to its band's bottom edge (the 36% line), NOT the
+      // box's vertical centre — y = 36 - 14 (font size), clear of the mark.
+      // It used to render at h/2 = 50, on top of the art.
+      const m = svg.match(/<text[^>]*y="([0-9.]+)"/);
+      expect(m).not.toBeNull();
+      expect(parseFloat(m![1]!)).toBe(22);
+    });
+
+    it('centres a side caption on the glyph row and wraps it at its half (spec/41)', () => {
+      const art = () => ({ markup: '<circle/>', colored: true });
+      // Left caption on the top row: both the mark and the caption sit on the
+      // 6..64% row — the caption vertically centred on it (y = 6 + 58/2 = 35)
+      // instead of hugging the box's top edge.
+      const svg = renderElementsToSvg(
+        tab([
+          icon({ width: 200, height: 100, label: 'EC2', textAlignX: 'left', textAlignY: 'top' }),
+        ]),
+        { resolveIconArt: art },
+      );
+      expect(svg).toContain('x="120" y="11" width="48" height="48"'); // mark on the top row
+      expect(svg).toMatch(/<text[^>]*y="35"/);
+      // A long left caption wraps at its half of the box (maxWidth = 100-16)
+      // instead of running under the mark on one line.
+      const wrapped = renderElementsToSvg(
+        tab([
+          icon({
+            width: 200,
+            height: 100,
+            label: 'Application load balancer',
+            textAlignX: 'left',
+            textAlignY: 'middle',
+          }),
+        ]),
+        { resolveIconArt: art },
+      );
+      const lineStarts = wrapped.match(/<tspan x="[0-9.]+" dy="/g) ?? [];
+      expect(lineStarts.length).toBeGreaterThan(1);
+    });
+
     it('falls back to the box-with-label output without a resolver', () => {
       const svg = renderElementsToSvg(tab([icon({ label: 'Server' })]));
       expect(svg).toContain('<rect'); // the generic body

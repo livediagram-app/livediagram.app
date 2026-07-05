@@ -13,6 +13,7 @@ import {
   defaultTextColor,
 } from './colors';
 import { hasRichFormatting } from './rich-text';
+import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
@@ -109,19 +110,25 @@ export function describeBoxedExport(
       : undefined;
   if (iconArt) {
     const size = fontSizeFor(el.textSize);
-    // The caption follows the element's alignment (bottom-centre is the
-    // icon default), sitting just off its edge; the glyph takes the
-    // opposite band (see svgIconShape / techIconMarkBounds).
+    // The caption lives in its own band — the complement of the glyph band
+    // (iconCaptionBand, spec/41) — so it can never stack over the art: a
+    // centre caption takes the vertical band the glyph doesn't, a left/right
+    // caption its half of the box, centred on the glyph's row. Mirrors the
+    // editor's captionBandClass exactly.
     const alignX = el.textAlignX ?? 'center';
-    const alignY = el.textAlignY ?? 'bottom';
+    const band = iconCaptionBand(el);
     const labelY =
-      alignY === 'top'
-        ? el.y + size
-        : alignY === 'middle'
-          ? el.y + el.height / 2
-          : el.y + el.height - size;
+      band.valign === 'top'
+        ? band.y + size
+        : band.valign === 'bottom'
+          ? band.y + band.height - size
+          : band.y + band.height / 2;
     const labelX =
-      alignX === 'left' ? el.x + 8 : alignX === 'right' ? el.x + el.width - 8 : el.x + el.width / 2;
+      alignX === 'left'
+        ? band.x + 8
+        : alignX === 'right'
+          ? band.x + band.width - 8
+          : band.x + band.width / 2;
     return {
       opacity,
       shape: { kind: 'icon', art: iconArt, fill, stroke },
@@ -131,11 +138,13 @@ export function describeBoxedExport(
             x: labelX,
             y: labelY,
             anchor: alignX === 'left' ? 'start' : alignX === 'right' ? 'end' : 'middle',
-            // A multi-line caption stacks INTO the box from its anchored
-            // edge (the editor's band layout) — a bottom caption grows
-            // upward, not off the bottom of the element.
-            valign: alignY,
-            maxWidth: labelMaxWidth(el),
+            // A multi-line caption stacks INTO its band from its anchored
+            // edge — a bottom caption grows upward, not off the bottom of
+            // the element; a side caption centres on the glyph's row.
+            valign: band.valign,
+            // Wraps at the caption band, so a long side caption breaks at
+            // its half of the box instead of running under the glyph.
+            maxWidth: Math.max(24, band.width - 16),
             color: el.textColor ?? defaultTextColor(el),
             size,
             bold: !!el.textBold,

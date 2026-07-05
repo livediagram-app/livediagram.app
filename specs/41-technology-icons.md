@@ -154,6 +154,29 @@ on the caption's row — so moving the text never stacks it over the art.
 The exports / headless renders (`svgIconShape` in the shared renderer) apply
 the same band geometry so a captioned icon exports exactly as drawn.
 
+**The caption is confined to its own band too** (`iconCaptionBand` in
+`packages/diagram/src/icon-size.ts`, mirrored by the editor's
+`captionBandClass`). The caption used to align over the WHOLE element box
+while only the glyph moved bands, which broke several alignment combos: a
+centre/middle caption sat at 50% height — inside the glyph's bottom band, on
+top of the art — and a left/right caption spanned the full width (long text
+ran under the mark) while hugging the box's top/bottom edge instead of the
+mark's row, so the pair didn't line up. Now the caption gets the complement
+of the glyph band and aligns within it so every combo reads cleanly:
+
+- **Centre captions** keep the full width and take the vertical band the
+  glyph doesn't: top → the top 36%, top-anchored; bottom → the bottom 36%,
+  bottom-anchored; **middle → the top 36%, bottom-anchored**, so the text
+  sits directly above the glyph band's edge (a compact pair) instead of
+  overlapping the art.
+- **Left/right captions** are confined to their half of the box (text wraps
+  at the half, never under the glyph) and are **vertically centred on the
+  glyph's row** (the same 6–64% / full-height / 36–94% row the band uses for
+  top / middle / bottom), so the caption and the mark always share a line.
+
+The editor display + inline editor, the export renderer, and the CSS bands
+all read this one geometry, so a captioned icon exports exactly as drawn.
+
 **Connectors attach to the mark, not the element box.** Because the box can
 be much larger than the visible chip, arrow anchors on a Technology icon are
 computed on the mark's rectangle (`techIconMarkBounds`, the same geometry the

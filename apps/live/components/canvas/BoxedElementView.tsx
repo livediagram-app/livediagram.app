@@ -18,6 +18,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { renderLabel } from '@/components/canvas/element-labels';
+import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { EdgeResizeHandle, LockBadge, ResizeHandles } from '@/components/canvas/element-parts';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
@@ -205,6 +206,14 @@ function BoxedElementViewImpl({
     textColor,
   );
 
+  // An icon element's caption is confined to its own band — the complement
+  // of the glyph band (spec/41, iconCaptionBand) — so the text can never
+  // stack over the art. The label renders with the band's INTERNAL vertical
+  // anchor (side captions centre on the glyph's row) and the JSX below wraps
+  // it in the band container.
+  const iconCaptionBand =
+    element.type === 'shape' && element.shape === 'icon' ? captionBandClass(alignX, alignY) : null;
+
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -212,7 +221,7 @@ function BoxedElementViewImpl({
     label,
     textSize,
     alignX,
-    alignY,
+    iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
     PADDING_PX[element.padding ?? defaultPadding(element)],
     isEditing,
     (next, runs) => onCommitLabel(element.id, next, runs),
@@ -394,6 +403,11 @@ function BoxedElementViewImpl({
         // Progress / rail / rating / chart elements draw their own content, so
         // they render no standard editable label.
         <></>
+      ) : iconCaptionBand ? (
+        // Icon caption band (spec/41): the label (and the inline editor while
+        // typing) fills this positioned container instead of the whole box,
+        // so the caption stays clear of the glyph in every alignment combo.
+        <div className={`absolute ${iconCaptionBand}`}>{labelNode}</div>
       ) : (
         labelNode
       )}
