@@ -22,13 +22,15 @@ import { useModalGuard } from '@/hooks/ui/useModalGuard';
 // Width scale covering the values the hand-rolled dialogs actually used
 // (26 / 30 / 34 / 36rem) so every dialog snaps to one rung instead of a
 // bespoke `w-[..]`.
-type DialogSize = 'sm' | 'md' | 'lg' | 'xl';
+type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
 const WIDTHS: Record<DialogSize, string> = {
   sm: 'w-[26rem]',
   md: 'w-[30rem]',
   lg: 'w-[34rem]',
   xl: 'w-[36rem]',
+  // The image picker's two-column grid (640px = 40rem).
+  '2xl': 'w-[40rem]',
 };
 
 export type DialogProps = {
