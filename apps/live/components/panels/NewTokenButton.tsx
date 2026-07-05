@@ -6,6 +6,7 @@
 // has two states — the name form, then the one-time secret reveal (Copy + Done
 // side by side) once the token is minted. Reads/writes through the shared
 // TokensController so the list + sidebar badge update on create.
+import { Button } from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import type { TokensController } from '@/hooks/persistence/useTokens';
@@ -45,18 +46,18 @@ export function NewTokenButton({ tokens }: { tokens: TokensController }) {
 
   return (
     <>
-      <button
+      <Button
         ref={btnRef}
-        type="button"
+        size="xs"
         onClick={() => (open ? close() : setOpen(true))}
         disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+        className="shadow-sm"
       >
         <PlusIcon />
         New token
-      </button>
+      </Button>
       {open ? (
         <PortalMenu anchor={btnRef.current} placement="below" onClose={close}>
           <div className="px-3 py-2">

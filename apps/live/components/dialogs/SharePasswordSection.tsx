@@ -1,3 +1,4 @@
+import { Button } from '@livediagram/ui';
 import { useState } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
@@ -86,14 +87,14 @@ export function SharePasswordSection({
             spellCheck={false}
             className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
-          <button
-            type="button"
+          <Button
+            size="xs"
             onClick={savePassword}
             disabled={busy || pw === (sharePassword ?? '')}
-            className="inline-flex items-center rounded-md bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
+            className="shadow-sm"
           >
             {pwSaved ? 'Saved' : 'Save'}
-          </button>
+          </Button>
           {sharePassword ? (
             <button
               type="button"

@@ -2,7 +2,7 @@
 
 import type { TeamInvite } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
-import { EmptyState } from '@livediagram/ui';
+import { Button, EmptyState } from '@livediagram/ui';
 
 // Right-pane Invites view for the Explorer (spec/32 accept/decline):
 // one card per pending invite — team monogram, name, organisation,
@@ -63,13 +63,9 @@ export function TeamInvitesPane({
             >
               Decline
             </button>
-            <button
-              type="button"
-              onClick={() => onAccept(invite)}
-              className="shrink-0 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
-            >
+            <Button size="xs" onClick={() => onAccept(invite)} className="shrink-0 shadow-sm">
               Accept
-            </button>
+            </Button>
           </li>
         );
       })}

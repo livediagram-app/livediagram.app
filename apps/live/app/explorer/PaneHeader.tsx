@@ -5,6 +5,7 @@
 // a single Create dropdown (New diagram / New folder). Split out of views.tsx
 // so that barrel holds the list/row primitives while the header chrome (and
 // its private hamburger / caret icons) stands on its own.
+import { Button } from '@livediagram/ui';
 import { useRef, useState, type ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
@@ -144,18 +145,18 @@ export function PaneHeader({
             ) : null}
             {headerActions}
             {hasCreate ? (
-              <button
+              <Button
                 ref={createRef}
-                type="button"
+                size="xs"
                 onClick={() => setCreateOpen((o) => !o)}
                 aria-haspopup="menu"
                 aria-expanded={createOpen}
-                className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
+                className="shadow-sm"
               >
                 <PlusIcon />
                 Create
                 <CaretDownIcon />
-              </button>
+              </Button>
             ) : null}
             {showViewToggle ? <ViewToggle mode={viewMode!} onChange={onSetViewMode!} /> : null}
             {createOpen ? (
