@@ -12,10 +12,9 @@
 // so the two entry points can't drift. Purely a form: it owns a draft
 // and hands the finished { name, definition } back via onSave.
 
-import { useState, type CSSProperties } from 'react';
+import { useState } from 'react';
 import {
   deriveTextColorForBg,
-  elementKindLabel,
   isAnimatedPattern,
   isLightColor,
   shade,
@@ -27,42 +26,21 @@ import type { CustomThemeDefinition } from '@livediagram/api-schema';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { PATTERNS, PatternButton } from '@/components/palette/palette-controls';
 import {
-  ColorDot,
   ColorTile,
   ExpandRow,
   FieldLabel,
-  ResetGlyph,
   type Painter,
 } from '@/components/palette/custom-theme-builder-parts';
-import { ShapeIcon } from '@/components/primitives/shape-icon';
+import {
+  FALLBACK_FILL,
+  FALLBACK_STROKE,
+  FALLBACK_TEXT,
+  PerShapeColoursSection,
+} from './CustomThemeShapeColours';
 import { BackBar } from '@/components/palette/ThemeCategoryBrowser';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
-import { Tooltip } from '@/components/primitives/Tooltip';
-
-// The shape kinds offered in the per-shape editor: the flowchart /
-// diagram vocabulary where a per-kind colour is meaningful. Device
-// frames, the icon glyph, the frame container and the actor figure are
-// left out (their colour is intrinsic or not a fill/stroke box).
-const PER_SHAPE_KINDS: ShapeKind[] = [
-  'square',
-  'circle',
-  'diamond',
-  'stadium',
-  'parallelogram',
-  'hexagon',
-  'document',
-  'triangle',
-  'trapezoid',
-  'cylinder',
-  'cloud',
-  'star',
-];
 
 export type CustomThemeDraft = { name: string; definition: CustomThemeDefinition };
-
-const FALLBACK_FILL = '#dbeafe';
-const FALLBACK_STROKE = '#2563eb';
-const FALLBACK_TEXT = '#0f172a';
 
 // The pattern colour is derived from the BACKGROUND base colour (there's
 // no separate control): a subtle darker shade on a light backdrop, a
@@ -70,18 +48,6 @@ const FALLBACK_TEXT = '#0f172a';
 // the user picking a colour.
 function derivePatternColor(background: string): string {
   return isLightColor(background) ? shade(background, 0.16) : tint(background, 0.22);
-}
-
-function resolved(
-  def: CustomThemeDefinition,
-  kind: ShapeKind,
-): { fill: string; stroke: string; text: string } {
-  const o = def.shapeColors?.[kind];
-  return {
-    fill: o?.fill ?? def.elementFill ?? FALLBACK_FILL,
-    stroke: o?.stroke ?? def.elementStroke ?? FALLBACK_STROKE,
-    text: o?.text ?? def.elementText ?? FALLBACK_TEXT,
-  };
 }
 
 // The format painter's clipboard: a copied colour the user can paste
@@ -168,7 +134,6 @@ export function CustomThemeBuilder({
       return { ...d, shapeColors: Object.keys(next).length ? next : undefined };
     });
 
-  const customCount = def.shapeColors ? Object.keys(def.shapeColors).length : 0;
   // Materialise the draft so the live preview reuses the exact ThemeSwatch
   // scene the picker cards show.
   const previewTheme = materialiseCustomTheme({
@@ -313,89 +278,15 @@ export function CustomThemeBuilder({
         </div>
       </ExpandRow>
 
-      <ExpandRow
-        label="Per-shape colours"
-        badge={customCount > 0 ? String(customCount) : undefined}
+      {/* Per-shape overrides (like UML) — see CustomThemeShapeColours. */}
+      <PerShapeColoursSection
+        def={def}
+        painter={painter}
         open={shapesOpen}
         onToggle={() => setShapesOpen((o) => !o)}
-      >
-        <p className="mb-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
-          Give a shape kind its own colours (like UML). Leave a kind unset to use the base colours.
-        </p>
-        {/* Compact two-column rows: a shape preview + name, then its
-            three colour dots (fill / outline / text, tooltip'd). Dense
-            and scannable rather than a wall of big swatch blocks. */}
-        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-          {PER_SHAPE_KINDS.map((kind) => {
-            const o = def.shapeColors?.[kind];
-            const r = resolved(def, kind);
-            return (
-              <div
-                key={kind}
-                className="group flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 dark:border-slate-700 dark:bg-slate-800"
-              >
-                {/* Preview the shape on the THEME background; only the
-                    shape's interior takes the fill (stroke = currentColor).
-                    The CSS var overrides the icon paths' fill="none". */}
-                <span
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 dark:border-slate-700 [&_svg]:h-5 [&_svg]:w-5 [&_svg_*]:[fill:var(--shape-fill)]"
-                  style={
-                    {
-                      backgroundColor: def.backgroundColor,
-                      color: r.stroke,
-                      '--shape-fill': r.fill,
-                    } as CSSProperties
-                  }
-                >
-                  <ShapeIcon kind={kind} />
-                </span>
-                <span className="min-w-0 flex-1 truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-                  {elementKindLabel({ type: 'shape', shape: kind } as Parameters<
-                    typeof elementKindLabel
-                  >[0])}
-                </span>
-                <div className="flex shrink-0 items-center gap-1">
-                  <Tooltip title="Fill" description="The shape's interior colour.">
-                    <ColorDot
-                      label={`${kind} fill`}
-                      value={r.fill}
-                      onChange={(v) => setShapeColour(kind, 'fill', v)}
-                      painter={painter}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Outline" description="The shape's border colour.">
-                    <ColorDot
-                      label={`${kind} outline`}
-                      value={r.stroke}
-                      onChange={(v) => setShapeColour(kind, 'stroke', v)}
-                      painter={painter}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Text" description="The shape's label colour.">
-                    <ColorDot
-                      label={`${kind} text`}
-                      value={r.text}
-                      onChange={(v) => setShapeColour(kind, 'text', v)}
-                      painter={painter}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Reset" description="Use the base colours for this shape.">
-                    <button
-                      type="button"
-                      onClick={() => clearShape(kind)}
-                      disabled={!o}
-                      aria-label={`Reset ${kind} colours`}
-                      className="flex h-5 w-5 items-center justify-center rounded text-slate-400 opacity-0 transition hover:text-slate-600 group-hover:opacity-100 disabled:!opacity-0 dark:text-slate-500 dark:hover:text-slate-300"
-                    >
-                      <ResetGlyph />
-                    </button>
-                  </Tooltip>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </ExpandRow>
+        setShapeColour={setShapeColour}
+        clearShape={clearShape}
+      />
 
       {error ? (
         <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200">
