@@ -13,12 +13,12 @@
 // New-diagram picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useRef } from 'react';
 import type { BackgroundPattern } from '@livediagram/diagram';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
 import { ResetIcon } from '@/components/palette/palette-icons';
@@ -118,14 +118,7 @@ export function CanvasThemeDialog({
                   }
                 />
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close"
-                className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-              >
-                <CloseIcon size={16} strokeWidth={1.6} />
-              </button>
+              <DialogCloseButton compact onClick={onClose} />
             </div>
             <div className="flex w-full gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
               <TabButton

@@ -1,7 +1,7 @@
 'use client';
 
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useEffect, useState } from 'react';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { apiDeleteImage, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { ImageUploadError, uploadImageFile } from '@/lib/upload-image';
@@ -141,14 +141,7 @@ export function ImagePicker({
     >
       <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Image</h2>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-          aria-label="Close"
-        >
-          <CloseIcon size={16} strokeWidth={1.6} />
-        </button>
+        <DialogCloseButton compact onClick={onClose} />
       </header>
       <nav className="flex gap-1 border-b border-slate-200 px-4 pt-3 dark:border-slate-800">
         <TabButton active={tab === 'upload'} onClick={() => setTab('upload')}>

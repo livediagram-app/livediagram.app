@@ -8,12 +8,12 @@
 // reactive list + CRUD from CustomThemeProvider, which the Explorer shell
 // mounts.
 
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
 import { CustomThemeBuilder, type CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { EmptyState } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
@@ -192,14 +192,7 @@ function BuilderModal({
               BackBar is suppressed in modal variant. */}
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</h2>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
-        >
-          <CloseIcon size={16} strokeWidth={1.6} />
-        </button>
+        <DialogCloseButton compact onClick={onClose} />
       </div>
       <CustomThemeBuilder
         variant="modal"

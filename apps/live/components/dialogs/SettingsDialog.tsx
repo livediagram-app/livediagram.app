@@ -1,8 +1,8 @@
 'use client';
 
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useState, type ReactNode } from 'react';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
@@ -43,14 +43,7 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
     >
       <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Settings</h2>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-        >
-          <CloseIcon size={16} strokeWidth={1.6} />
-        </button>
+        <DialogCloseButton compact onClick={onClose} />
       </header>
       <div className="flex flex-col divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800">
         <SettingsGroup {...groupProps('Editor')}>
