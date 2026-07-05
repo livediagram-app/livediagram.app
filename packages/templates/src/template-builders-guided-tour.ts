@@ -1,200 +1,279 @@
-// "Show me around" guided-tour builder (spec/69). A poster-composed
-// sample scene whose annotation markers (spec/38) teach the core
-// interactions in place: a header, a connected flow to poke at, a
-// "Make it yours" styling cluster, a Pencil sketch, and a "Beyond
-// boxes" data cluster, with one marker beside each thing it explains.
-// Every note describes a real, shipped interaction; if an interaction
-// changes, this copy changes in the same PR. Only decorative accents
-// set colours; the applied theme owns the rest.
+// "Show me around" guided-tour builder (spec/69). Layout lifted from a
+// hand-arranged reference diagram: six large dashed section panels in a
+// two-column grid, walked in reading order by dashed-flow arrows
+// (Palette, Editing Elements, then down the right column to Arrows,
+// across to Collaboration, down to Selection Modes, across to
+// Explorer). Each section pairs demonstrative elements with small
+// captions, plus one annotation marker (spec/38) carrying the deeper
+// lesson. Every note describes a real, shipped interaction; if an
+// interaction changes, this copy changes in the same PR.
+//
+// The section panels pin their soft grey fill with `themeLockFill` so
+// they stay quiet containers under every theme; everything else takes
+// the applied theme's colours.
 
 import {
   createAnnotation,
-  createFreehand,
+  createImage,
   createPinnedArrow,
   createShape,
   createSticky,
   createText,
   type Element,
+  type ShapeKind,
 } from '@livediagram/diagram';
 
-// --- Layout ----------------------------------------------------------
-// One coordinate table so the composition is legible at a glance:
-// a centred header, the interactive flow row beneath it, then three
-// feature clusters (styling left, sketch centre, data right) and the
-// teaching markers pinned beside their subjects.
-const TITLE = { x: -300, y: -390, w: 600, h: 60 };
-const CAPTION = { x: -300, y: -322, w: 600, h: 36 };
-const NODE = { w: 170, h: 90 };
-const FLOW_Y = -220;
-const START_X = -600;
-const MIDDLE_X = -235;
-const END_X = 130;
-const DIAMOND = { x: 470, y: -235, w: 160, h: 120 };
-const LEFT_HEAD = { x: -600, y: -70, w: 240, h: 30 };
-const STICKY = { x: -600, y: -10, w: 190, h: 190 };
-const CIRCLE = { x: -360, y: -10, w: 120, h: 120 };
-const BLOCKED = { x: -360, y: 140, w: 150, h: 80 };
-const RIGHT_HEAD = { x: 260, y: -70, w: 240, h: 30 };
-const BAR = { x: 260, y: -10 };
-const RING = { x: 520, y: -30 };
-const STARS = { x: 260, y: 70, w: 220, h: 44 };
-// The Pencil wave: a hand-drawn sine ribbon between the two clusters.
-const WAVE = { x: -140, y: 90, span: 250, amp: 34, steps: 36 };
+// The reference diagram's grid: two 702x680 columns, three rows.
+const SECTION = { w: 702, h: 680 };
+const COL_X = [-661, 211] as const;
+const ROW_Y = [-702, 108, 978] as const;
+// The scene in reference coords spans x -661..913, y -901..1658; this
+// offset recentres it so buildTemplate's (cx, cy) is the visual middle.
+const OX = -126;
+const OY = -378;
 
-// Annotation placements + their teaching notes, in reading order. Kept
-// to one marker per lesson so the scene reads as guided, not littered.
-const MARKERS: { x: number; y: number; note: string }[] = [
-  {
-    x: -364,
-    y: -382,
-    note: 'Everything on this canvas came from the Palette. Tap a tile to drop an element, or drag on the canvas to draw it at the size you want.',
-  },
-  {
-    x: -172,
-    y: -290,
-    note: 'Click a shape to select it, and double-click to edit its label. Drag it around and watch its arrows follow.',
-  },
-  {
-    x: 335,
-    y: -145,
-    note: 'Hover a shape and drag one of the + handles that appear to draw an arrow. Right-click an arrow for curves, elbows, dashes, arrowheads and animated flow.',
-  },
-  {
-    x: -212,
-    y: 20,
-    note: 'Right-click any element to change its colours, border, layers and more. The status dots on these two are shape markers.',
-  },
-  {
-    x: 128,
-    y: 30,
-    note: 'This squiggle came from the Pencil tool (press P). Turn on shape recognition and your sketches snap into clean shapes.',
-  },
-  {
-    x: 500,
-    y: 130,
-    note: "More than boxes: progress bars, star ratings, pie charts and full icon sets live in the Palette's categories.",
-  },
-  {
-    x: -30,
-    y: 250,
-    note: 'Right-click empty canvas to change the theme, and everything recolours to match. Made a mess? Press Ctrl/Cmd+Z to undo, or use the buttons at the bottom of the Palette.',
-  },
-  {
-    x: 322,
-    y: -382,
-    note: 'Bigger ideas? Add tabs from the bar at the bottom. And when you are ready, Share (top right) gives you a live link anyone can join.',
-  },
-];
+const SECTION_FILL = '#f8fafc';
 
 export function buildGuidedTour(cx: number, cy: number): Element[] {
   const elements: Element[] = [];
+  const X = (x: number) => cx + OX + x;
+  const Y = (y: number) => cy + OY + y;
 
-  // Header.
-  elements.push({
-    ...createText(cx + TITLE.x, cy + TITLE.y),
-    width: TITLE.w,
-    height: TITLE.h,
-    label: 'Welcome to livediagram',
-    textSize: 'scale',
-    textBold: true,
-  });
-  elements.push({
-    ...createText(cx + CAPTION.x, cy + CAPTION.y),
-    width: CAPTION.w,
-    height: CAPTION.h,
-    label: 'Hover the small round markers to learn the basics, then make this canvas yours.',
-    textSize: 'sm',
-  });
-
-  // The interactive flow row. Labels double as invitations to interact;
-  // the last hop shows off a labelled curved arrow with animated flow.
-  const node = (shape: 'square' | 'stadium', x: number, label: string) => ({
-    ...createShape(shape, cx + x, cy + FLOW_Y),
-    width: NODE.w,
-    height: NODE.h,
-    label,
-  });
-  const start = node('square', START_X, 'Start here');
-  const middle = node('square', MIDDLE_X, 'Drag me around');
-  const end = node('stadium', END_X, 'Double-click me');
-  const branch = {
-    ...createShape('diamond', cx + DIAMOND.x, cy + DIAMOND.y),
-    width: DIAMOND.w,
-    height: DIAMOND.h,
-    label: 'Branch out',
+  // Small helpers, all in reference coords. `cap` is the little caption
+  // row under a group of samples; `icon` a palette icon tile.
+  const text = (
+    x: number,
+    y: number,
+    w: number,
+    label: string,
+    opts?: { textSize?: 'sm' | 'scale'; textBold?: boolean },
+  ) => {
+    elements.push({
+      ...createText(X(x), Y(y)),
+      width: w,
+      height: 36,
+      label,
+      textSize: 'sm' as const,
+      ...opts,
+    });
   };
-  elements.push(start, middle, end, branch);
-  elements.push(createPinnedArrow(start.id, 'e', middle.id, 'w'));
-  elements.push(createPinnedArrow(middle.id, 'e', end.id, 'w'));
-  elements.push({
-    ...createPinnedArrow(end.id, 'e', branch.id, 'w'),
-    label: 'curves too',
-    arrowStyle: 'curved' as const,
-    flow: 'dashes' as const,
-  });
+  const shape = (kind: ShapeKind, x: number, y: number, w: number, h: number, extra?: object) => {
+    const el = { ...createShape(kind, X(x), Y(y)), width: w, height: h, ...extra };
+    elements.push(el);
+    return el;
+  };
+  const icon = (iconId: string, x: number, y: number, size: number, label?: string) => {
+    shape('icon', x, y, size, size, {
+      iconId,
+      ...(label ? { label, textSize: 'sm' as const } : {}),
+    });
+  };
+  const note = (x: number, y: number, message: string) => {
+    elements.push({ ...createAnnotation(X(x), Y(y)), note: message });
+  };
+  // A section panel: the dashed container (fill pinned so it survives
+  // theming as a quiet wash) plus its one-line subtitle. Returns the
+  // panel so the guiding arrows can pin to it.
+  const section = (col: 0 | 1, row: 0 | 1 | 2, title: string, subtitle: string) => {
+    const panel = shape('square', COL_X[col], ROW_Y[row], SECTION.w, SECTION.h, {
+      label: title,
+      textSize: 'md' as const,
+      textBold: true,
+      strokeStyle: 'dashed' as const,
+      textAlignX: 'center' as const,
+      textAlignY: 'top' as const,
+      fillColor: SECTION_FILL,
+      themeLockFill: true,
+    });
+    text(COL_X[col] + 11, ROW_Y[row] + 47, 649, subtitle);
+    return panel;
+  };
 
-  // "Make it yours": sticky (tilted, like a real board), plus two shapes
-  // carrying status shape-markers (spec/49) so the styling note has a
-  // concrete thing to point at.
-  elements.push({
-    ...createText(cx + LEFT_HEAD.x, cy + LEFT_HEAD.y),
-    width: LEFT_HEAD.w,
-    height: LEFT_HEAD.h,
-    label: 'Make it yours',
-    textSize: 'sm',
-    textBold: true,
-  });
-  elements.push({
-    ...createSticky(cx + STICKY.x, cy + STICKY.y),
-    width: STICKY.w,
-    height: STICKY.h,
-    label: 'Sticky notes are perfect for quick thoughts.',
-    rotation: -3,
-  });
-  elements.push({
-    ...createShape('circle', cx + CIRCLE.x, cy + CIRCLE.y),
-    width: CIRCLE.w,
-    height: CIRCLE.h,
+  // --- Header ---------------------------------------------------------
+  text(-259, -901, 600, 'Welcome to livediagram', { textSize: 'scale', textBold: true });
+  text(
+    -259,
+    -831,
+    600,
+    'Hover over the small annotations to learn the basics, then make this canvas yours.',
+  );
+
+  // --- 1. Palette (top-left) -- the reference section, kept verbatim --
+  const palette = section(
+    0,
+    0,
+    'Palette',
+    'Add new items to the canvas from the Palette in the top right.',
+  );
+  const P = { x: COL_X[0], y: ROW_Y[0] };
+  shape('square', P.x + 30, P.y + 127, 76, 76);
+  shape('circle', P.x + 120, P.y + 127, 76, 76);
+  shape('diamond', P.x + 209, P.y + 127, 76, 76);
+  text(P.x + 26, P.y + 207, 259, 'Shapes');
+  elements.push({ ...createSticky(X(P.x + 409), Y(P.y + 127)), width: 76, height: 76 });
+  elements.push({ ...createImage(X(P.x + 502), Y(P.y + 128)), width: 118, height: 75 });
+  text(P.x + 401, P.y + 215, 273, 'Tools');
+  note(
+    P.x + 630,
+    P.y + 143,
+    'I am an annotation. Hover a marker like me to read a note pinned right where it matters.',
+  );
+  shape('browser', P.x + 30, P.y + 290, 217, 154);
+  shape('smartwatch', P.x + 279, P.y + 306, 148, 124);
+  shape('tablet', P.x + 453, P.y + 290, 202, 154);
+  text(P.x + 30, P.y + 457, 644, 'Devices');
+  icon('calendar', P.x + 31, P.y + 536, 61);
+  icon('mail', P.x + 107, P.y + 536, 61);
+  icon('check-circle', P.x + 184, P.y + 536, 61);
+  icon('map-pin', P.x + 262, P.y + 536, 61);
+  text(P.x + 30, P.y + 612, 292, 'Icons');
+  icon('aws-ec2', P.x + 409, P.y + 528, 84, 'EC2');
+  icon('aws-lambda', P.x + 494, P.y + 528, 84, 'Lambda');
+  icon('aws-apigateway', P.x + 578, P.y + 528, 84, 'Gateway');
+  text(P.x + 382, P.y + 620, 292, 'Technologies');
+
+  // --- 2. Editing Elements (top-right) ---------------------------------
+  const editing = section(
+    1,
+    0,
+    'Editing Elements',
+    'Select an existing element to edit its properties.',
+  );
+  const E = { x: COL_X[1], y: ROW_Y[0] };
+  shape('square', E.x + 30, E.y + 127, 180, 86, { label: 'Double-click me' });
+  shape('square', E.x + 250, E.y + 127, 150, 86, { label: 'Rotate me', rotation: 12 });
+  shape('circle', E.x + 450, E.y + 117, 106, 106, {
     label: 'Done',
     marker: 'green-circle' as const,
   });
-  elements.push({
-    ...createShape('square', cx + BLOCKED.x, cy + BLOCKED.y),
-    width: BLOCKED.w,
-    height: BLOCKED.h,
-    label: 'Blocked',
-    marker: 'red-circle' as const,
+  text(E.x + 30, E.y + 237, 640, 'Rename, rotate, and pin status markers');
+  shape('square', E.x + 30, E.y + 300, 150, 80, {
+    label: 'Dashed',
     strokeStyle: 'dashed' as const,
   });
-
-  // The Pencil sketch: a smooth sine ribbon, generated (not random) so
-  // the build stays deterministic and translation-invariant.
-  const wavePoints = Array.from({ length: WAVE.steps + 1 }, (_, i) => ({
-    x: cx + WAVE.x + (i / WAVE.steps) * WAVE.span,
-    y: cy + WAVE.y + Math.sin((i / WAVE.steps) * Math.PI * 3) * WAVE.amp,
-  }));
-  elements.push(createFreehand(wavePoints, false));
-
-  // "Beyond boxes": the data shapes (specs 46, 52) at their factory
-  // defaults so they animate in exactly as a palette drop would.
-  elements.push({
-    ...createText(cx + RIGHT_HEAD.x, cy + RIGHT_HEAD.y),
-    width: RIGHT_HEAD.w,
-    height: RIGHT_HEAD.h,
-    label: 'Beyond boxes',
-    textSize: 'sm',
-    textBold: true,
+  shape('square', E.x + 210, E.y + 300, 150, 80, { label: 'Thick', strokeWidth: 'thick' as const });
+  shape('square', E.x + 390, E.y + 300, 170, 80, {
+    label: 'Blocked',
+    marker: 'red-circle' as const,
   });
-  elements.push({ ...createShape('progress-bar', cx + BAR.x, cy + BAR.y), progress: 72 });
-  elements.push({ ...createShape('progress-ring', cx + RING.x, cy + RING.y), progress: 72 });
-  elements.push({
-    ...createShape('rating', cx + STARS.x, cy + STARS.y),
-    width: STARS.w,
-    height: STARS.h,
-  });
+  text(E.x + 30, E.y + 395, 640, 'Right-click any element for colours, borders and layers');
+  shape('progress-bar', E.x + 30, E.y + 470, 220, 44, { progress: 72 });
+  shape('rating', E.x + 280, E.y + 470, 200, 44);
+  shape('progress-ring', E.x + 520, E.y + 440, 120, 120, { progress: 72 });
+  text(E.x + 30, E.y + 545, 640, 'Data shapes update as you edit their values');
+  note(
+    E.x + 630,
+    E.y + 127,
+    'Select an element and right-click it: colours, borders, markers, animations and layer order all live in that menu.',
+  );
 
-  for (const m of MARKERS) {
-    elements.push({ ...createAnnotation(cx + m.x, cy + m.y), note: m.note });
+  // --- 3. Arrows (middle-right) -----------------------------------------
+  const arrows = section(1, 1, 'Arrows', 'Drag between shapes and the lines stay connected.');
+  const A = { x: COL_X[1], y: ROW_Y[1] };
+  const a1 = shape('square', A.x + 40, A.y + 140, 120, 80, { label: 'A' });
+  const a2 = shape('square', A.x + 330, A.y + 140, 120, 80, { label: 'B' });
+  elements.push({ ...createPinnedArrow(a1.id, 'e', a2.id, 'w'), label: 'drag my ends' });
+  text(A.x + 30, A.y + 250, 440, 'Hover a shape, drag a + handle to connect');
+  const a3 = shape('circle', A.x + 40, A.y + 330, 100, 100, { label: 'C' });
+  const a4 = shape('diamond', A.x + 330, A.y + 320, 130, 110, { label: 'D' });
+  elements.push({
+    ...createPinnedArrow(a3.id, 'e', a4.id, 'w'),
+    label: 'curved',
+    arrowStyle: 'curved' as const,
+    flow: 'dashes' as const,
+  });
+  text(A.x + 30, A.y + 460, 440, 'Curves, elbows, dashes and animated flow');
+  const a5 = shape('square', A.x + 40, A.y + 530, 110, 70, { label: 'E' });
+  const a6 = shape('square', A.x + 350, A.y + 545, 110, 70, { label: 'F' });
+  elements.push({ ...createPinnedArrow(a5.id, 'e', a6.id, 'w'), arrowStyle: 'angled' as const });
+  note(
+    A.x + 630,
+    A.y + 140,
+    'Move a shape and every pinned arrow re-routes itself. Double-click an arrow to give it a label.',
+  );
+
+  // --- 4. Collaboration (middle-left) -----------------------------------
+  const collab = section(0, 1, 'Collaboration', 'Work on the same canvas together, live.');
+  const C = { x: COL_X[0], y: ROW_Y[1] };
+  const you = shape('circle', C.x + 40, C.y + 150, 110, 110, { label: 'You' });
+  const sam = shape('circle', C.x + 300, C.y + 150, 110, 110, { label: 'Sam' });
+  elements.push({ ...createPinnedArrow(you.id, 'e', sam.id, 'w'), flow: 'beads' as const });
+  text(C.x + 30, C.y + 290, 420, 'Cursors, selections and edits appear as they happen');
+  elements.push({
+    ...createSticky(X(C.x + 470), Y(C.y + 140)),
+    width: 180,
+    height: 180,
+    label: 'Share a link. No sign-up needed to join.',
+  });
+  elements.push({
+    ...createSticky(X(C.x + 40), Y(C.y + 390)),
+    width: 200,
+    height: 200,
+    label: 'Comments and assigned actions live in the right-click menu.',
+    rotation: 2,
+  });
+  note(
+    C.x + 630,
+    C.y + 150,
+    'Share (top right) makes a live link, view-only or editable, with an optional password. Workshopping? The tab menu has a timer and dot-voting.',
+  );
+
+  // --- 5. Selection Modes (bottom-left) ---------------------------------
+  const selection = section(
+    0,
+    2,
+    'Selection Modes',
+    'Click one, shift-click more, or drag a box around many.',
+  );
+  const S = { x: COL_X[0], y: ROW_Y[2] };
+  shape('square', S.x + 40, S.y + 140, 110, 70, { label: 'One' });
+  shape('square', S.x + 180, S.y + 140, 110, 70, { label: 'Two' });
+  shape('square', S.x + 320, S.y + 140, 110, 70, { label: 'Three' });
+  text(S.x + 30, S.y + 250, 400, 'Drag on empty canvas to marquee-select these');
+  const groupId = crypto.randomUUID();
+  shape('circle', S.x + 480, S.y + 120, 90, 90, { groupId });
+  shape('square', S.x + 480, S.y + 230, 90, 60, { groupId });
+  text(S.x + 450, S.y + 310, 170, 'Grouped: moves as one');
+  shape('square', S.x + 40, S.y + 360, 140, 80, { label: 'Locked', locked: true });
+  text(S.x + 30, S.y + 460, 400, 'Locked elements stay put until unlocked');
+  note(
+    S.x + 630,
+    S.y + 140,
+    "Select several and press Cmd/Ctrl+G to group them. Cmd/Ctrl+Shift+L locks anything you don't want nudged.",
+  );
+
+  // --- 6. Explorer (bottom-right) ---------------------------------------
+  const explorer = section(
+    1,
+    2,
+    'Explorer',
+    'Every diagram you make, in the panel on the top left.',
+  );
+  const Q = { x: COL_X[1], y: ROW_Y[2] };
+  shape('document', Q.x + 40, Q.y + 140, 160, 110, { label: 'Roadmap' });
+  shape('document', Q.x + 230, Q.y + 140, 160, 110, { label: 'Retro board' });
+  shape('document', Q.x + 420, Q.y + 140, 160, 110, { label: 'Ideas' });
+  text(Q.x + 30, Q.y + 270, 550, 'Jump between diagrams and organise them into folders');
+  shape('cylinder', Q.x + 80, Q.y + 380, 180, 110, { label: 'Team library' });
+  shape('actor', Q.x + 330, Q.y + 360, 100, 130, { label: 'Teammates' });
+  text(Q.x + 30, Q.y + 510, 440, 'Teams share one library every member can edit');
+  note(
+    Q.x + 630,
+    Q.y + 140,
+    'Tabs live in the bar at the bottom: one diagram can hold many pages, grouped into folders.',
+  );
+
+  // --- The guided path: dashed-flow arrows walking the sections in
+  // reading order (a serpentine through the grid).
+  const path: [Element, 'n' | 'e' | 's' | 'w', Element, 'n' | 'e' | 's' | 'w'][] = [
+    [palette, 'e', editing, 'w'],
+    [editing, 's', arrows, 'n'],
+    [arrows, 'w', collab, 'e'],
+    [collab, 's', selection, 'n'],
+    [selection, 'e', explorer, 'w'],
+  ];
+  for (const [from, fa, to, ta] of path) {
+    elements.push({ ...createPinnedArrow(from.id, fa, to.id, ta), flow: 'dashes' as const });
   }
 
   return elements;

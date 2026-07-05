@@ -21,26 +21,30 @@ new user pokes at a real diagram that teaches itself.
 
 ## The sample itself
 
-A poster-composed scene centred on the viewport, in four zones:
+A hand-arranged reference layout (designed in the editor, then lifted into
+the builder): a header plus **six large dashed section panels** in a
+two-column grid, walked in reading order by **dashed-flow guide arrows** so
+the eye always knows where to go next. The panels pin their soft grey fill
+(`themeLockFill`) so they stay quiet containers under every theme.
 
-- **Header**: a title text element ("Welcome to livediagram") and a caption
-  explaining the one non-obvious mechanic: _hover the round note markers to
-  learn the basics_.
-- **An interactive flow row**: three themed shapes joined by pinned arrows
-  (drag one and its arrows follow), ending in a diamond reached by a
-  **labelled curved arrow with animated flow**, so arrow styling is visible,
-  not just described.
-- **"Make it yours"** (left): a slightly tilted sticky note plus two shapes
-  carrying status **shape markers** (spec/49, one green, one red with a
-  dashed border), giving the right-click styling note something concrete to
-  point at.
-- **"Beyond boxes"** (right): a progress bar, a progress ring, and a star
-  rating at their factory defaults, plus a **Pencil-drawn freehand ribbon**
-  between the clusters.
-- **Annotation markers** (spec/38 circles), one per lesson, placed beside
-  their subjects: the Palette, click / double-click / drag, drawing and
-  styling arrows, right-click styling + markers, the Pencil (and shape
-  recognition), the data shapes, themes + undo, and tabs + Share.
+1. **Palette**: sample shapes, a sticky + image placeholder + annotation
+   (the Tools), device frames, line-art icons, and Technology marks, each
+   row captioned.
+2. **Editing Elements**: rename / rotate demos, status shape markers
+   (spec/49), border styles, and the data shapes (progress bar + ring, star
+   rating).
+3. **Arrows**: three connected pairs showing a straight labelled arrow, a
+   curved arrow with animated flow, and an elbow arrow.
+4. **Collaboration**: two "participant" nodes joined by a beads-flow arrow,
+   plus stickies about live links, comments and assigned actions.
+5. **Selection Modes**: a marquee-bait row, a grouped pair, and a locked
+   element.
+6. **Explorer**: document shapes as diagrams-in-folders, plus a team
+   library.
+
+Each section carries **one annotation marker** (spec/38) with the deeper
+lesson; the header caption explains the mechanic ("Hover over the small
+annotations to learn the basics, then make this canvas yours.").
 
 The exact copy and layout live in the builder; the spec constraint is that
 every teaching note describes a real, currently-shipped interaction (if an
