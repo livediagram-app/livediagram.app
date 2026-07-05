@@ -1,6 +1,6 @@
 import type { ReactNode, RefObject } from 'react';
 
-export type DockPanelId = 'explorer' | 'palette' | 'ai';
+export type DockPanelId = 'explorer' | 'palette' | 'collaborate' | 'ai';
 
 // Top-right mobile dock (spec/07 "Mobile chrome"): a compact button row
 // that replaces the four full-width collapse banners on mobile, opening
@@ -11,6 +11,7 @@ export function CanvasMobileDock({
   welcomeOpen,
   minimalPanels,
   readOnly,
+  hasCollaborate,
   hasAi,
   activeMobilePanel,
   dockButtonRefs,
@@ -19,6 +20,9 @@ export function CanvasMobileDock({
   welcomeOpen: boolean;
   minimalPanels?: boolean;
   readOnly: boolean;
+  // True when the active tab has at least one comment thread or action —
+  // the same gate that mounts the Collaborate panel (spec/68 §5).
+  hasCollaborate: boolean;
   hasAi: boolean;
   activeMobilePanel: DockPanelId | null;
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
@@ -92,6 +96,30 @@ export function CanvasMobileDock({
                 },
               ]
             : []),
+          ...(hasCollaborate
+            ? [
+                {
+                  id: 'collaborate' as const,
+                  label: 'Collaborate',
+                  icon: (
+                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
+                      <path
+                        d="M2 4.2C2 3.26 2.76 2.5 3.7 2.5h6.6c.94 0 1.7.76 1.7 1.7v3.1c0 .94-.76 1.7-1.7 1.7H7.2L4.7 11V9H3.7C2.76 9 2 8.24 2 7.3V4.2z"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M4.8 5.75h4.4"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  ),
+                },
+              ]
+            : []),
           ...(!readOnly && hasAi
             ? [
                 {
@@ -112,7 +140,7 @@ export function CanvasMobileDock({
               ]
             : []),
         ] as {
-          id: 'explorer' | 'palette' | 'ai';
+          id: DockPanelId;
           label: string;
           icon: ReactNode;
         }[]

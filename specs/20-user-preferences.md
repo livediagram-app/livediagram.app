@@ -222,9 +222,11 @@ Missing key === undefined === default behaviour. Concretely:
 - `minimalPanels` undefined → floating panels on desktop (the
   default). Setting it to `true` switches desktop to the dock /
   popover layout. Mobile ignores the flag — it is always docked. In
-  this layout the floating Collaborate panel (the cheat sheet of
-  threads + actions) is suppressed entirely; the per-element comment /
-  action popovers stay available for viewing and replying.
+  this layout the Collaborate panel (the cheat sheet of threads +
+  actions) joins the dock as its own **Collaborate** button — shown
+  only while the active tab has at least one comment thread or action,
+  the same gate as the floating panel (spec/68 §5) — and opens as a
+  popover like the other panels.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.

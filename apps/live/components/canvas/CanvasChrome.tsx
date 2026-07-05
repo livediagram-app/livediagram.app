@@ -248,6 +248,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         welcomeOpen={chromeHidden}
         minimalPanels={minimalPanels}
         readOnly={readOnly}
+        hasCollaborate={props.commentRows.length > 0 || props.actionRows.length > 0}
         hasAi={!!aiPanel}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}

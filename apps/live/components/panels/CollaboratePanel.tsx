@@ -84,6 +84,13 @@ type CollaboratePanelProps = {
   onActionRowClick: (elementId: string) => void;
   // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
+  // Mobile / minimal-layout dock plumbing (spec/07 "Mobile chrome"): the
+  // panel has its own dock button, so it opens as a popover there like
+  // the Explorer / Palette / AI panels. All forwarded to MovablePanel.
+  mobileOpenOverride?: boolean;
+  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  forceDockMode?: boolean;
+  onMobileClose?: () => void;
 };
 
 export function CollaboratePanel({
@@ -96,6 +103,10 @@ export function CollaboratePanel({
   onCommentRowClick,
   onActionRowClick,
   dock,
+  mobileOpenOverride,
+  mobileDockAnchor,
+  forceDockMode,
+  onMobileClose,
 }: CollaboratePanelProps) {
   useRelativeTimeTick();
   // Kind filter (left of the Open / Resolved control): All -> Comments
@@ -143,6 +154,10 @@ export function CollaboratePanel({
       onReset={onReset}
       onMoveTo={onMoveTo}
       {...dock}
+      mobileOpenOverride={mobileOpenOverride}
+      mobileDockAnchor={mobileDockAnchor}
+      forceDockMode={forceDockMode}
+      onMobileClose={onMobileClose}
       collapsible
       // Default collapsed: an open panel would compete with the Palette
       // right above it. Users open it deliberately when they want to

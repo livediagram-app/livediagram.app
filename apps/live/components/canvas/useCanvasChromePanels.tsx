@@ -247,20 +247,22 @@ export function useCanvasChromePanels({
   );
 
   const collaborateEl =
-    !chromeHidden && !minimalPanels && (commentRows.length > 0 || actionRows.length > 0) ? (
-      <div className="hidden sm:contents">
-        <CollaboratePanel
-          position={collaborateWiring.position}
-          commentRows={commentRows}
-          actionRows={actionRows}
-          stackBelowY={dockingActive ? undefined : legacyStackBelowY}
-          onMoveTo={onMoveCommentsPanel}
-          onReset={collaborateWiring.onReset}
-          dock={collaborateWiring.dock}
-          onCommentRowClick={onOpenCommentsForElement}
-          onActionRowClick={onOpenActionForElement}
-        />
-      </div>
+    !chromeHidden && (commentRows.length > 0 || actionRows.length > 0) ? (
+      <CollaboratePanel
+        position={collaborateWiring.position}
+        commentRows={commentRows}
+        actionRows={actionRows}
+        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        onMoveTo={onMoveCommentsPanel}
+        onReset={collaborateWiring.onReset}
+        dock={collaborateWiring.dock}
+        onCommentRowClick={onOpenCommentsForElement}
+        onActionRowClick={onOpenActionForElement}
+        mobileOpenOverride={activeMobilePanel === 'collaborate'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
+      />
     ) : null;
 
   const aiEl =

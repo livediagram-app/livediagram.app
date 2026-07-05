@@ -260,7 +260,10 @@ which crowded the same corner:
   collapsible, default-collapsed, lazily imported and mounted from
   `useCanvasChromePanels.tsx`.
 - **Mounted whenever the active tab has at least one comment thread OR
-  one action** (open or not) — nothing to collaborate on, no panel. An
+  one action** (open or not) — nothing to collaborate on, no panel.
+  The same gate adds a **Collaborate** button to the mobile /
+  minimal-layout dock (spec/07 "Mobile chrome"), opening the panel as
+  a popover — the panel is not desktop-only. An
   **Open / Resolved segmented filter** (with a count on each side)
   switches the list: **Open** = open actions + unresolved comment
   threads; **Resolved** = completed actions + RESOLVED comment threads,

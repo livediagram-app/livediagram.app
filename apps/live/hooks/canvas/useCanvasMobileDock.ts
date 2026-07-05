@@ -10,7 +10,7 @@ import { computeDockAnchor } from '@/lib/canvas-chrome';
 
 const POPOVER_WIDTH = 256;
 
-export type MobilePanel = 'explorer' | 'palette' | 'ai';
+export type MobilePanel = 'explorer' | 'palette' | 'collaborate' | 'ai';
 
 export type DockAnchor = { left: number; top: number; arrowOffset: number };
 
