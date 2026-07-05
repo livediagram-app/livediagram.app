@@ -20,7 +20,7 @@ import {
 import { renderLabel } from '@/components/canvas/element-labels';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
-import { EdgeResizeHandle, LockBadge, ResizeHandles } from '@/components/canvas/element-parts';
+import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
@@ -467,46 +467,17 @@ function BoxedElementViewImpl({
         onRetractVote={onRetractVote}
       />
 
-      {showHandles || showAnchors ? (
-        // Selection chrome (resize / rotate / arrow-anchor handles) rides
-        // in its own layer ABOVE the elements. On plain selection the
-        // element wrapper is not a stacking context, so this z-index
-        // resolves at the canvas-elements level: the handles paint above
-        // neighbouring elements WITHOUT lifting this element's own content
-        // (lifting it would re-hide a container's contents — the whole
-        // point of not raising z on select). pointer-events-none keeps the
-        // body draggable; every handle re-enables pointer events on itself.
-        <div className="pointer-events-none absolute inset-0" style={{ zIndex: 30 }}>
-          {/* Annotations resize too (aspect-locked by default so the marker
-              stays round); they just keep rotation off — a tilted note marker
-              reads as a mistake. Corner handles show even when rotated — the
-              resize math projects the drag into the element's local frame
-              (useEditorDrag). */}
-          {showHandles ? (
-            <ResizeHandles
-              elementId={element.id}
-              zoom={zoom}
-              rotation={rotation}
-              onBeginDrag={onBeginDrag}
-            />
-          ) : null}
-
-          {showAnchors ? (
-            <>
-              {(['n', 'e', 's', 'w'] as const).map((a) => (
-                <EdgeResizeHandle
-                  key={a}
-                  anchor={a}
-                  elementId={element.id}
-                  zoom={zoom}
-                  rotation={rotation}
-                  onBeginDrag={onBeginDrag}
-                />
-              ))}
-            </>
-          ) : null}
-        </div>
-      ) : null}
+      {/* Selection chrome (resize / edge-grip handles) rides in its own
+          layer ABOVE the elements — see SelectionChromeLayer for the
+          stacking rationale. */}
+      <SelectionChromeLayer
+        elementId={element.id}
+        zoom={zoom}
+        rotation={rotation}
+        showHandles={showHandles}
+        showAnchors={showAnchors}
+        onBeginDrag={onBeginDrag}
+      />
 
       {/* Hover preview: float this annotation's note above every element
           (spec/38). Suppressed while selected — the click/edit popover owns
