@@ -12,7 +12,7 @@
 // no other workspace consumes it yet. If marketing later grows its
 // own auth surface this can be promoted to `packages/ui`.
 
-import { Brand } from '@livediagram/ui';
+import { Brand, buttonClassName } from '@livediagram/ui';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -101,10 +101,7 @@ export function AuthDisabledNotice() {
         at build time and redeploy.
       </p>
       <div className="mt-6 flex justify-center">
-        <a
-          href="/"
-          className="inline-flex items-center rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
-        >
+        <a href="/" className={buttonClassName({ size: 'md', className: 'shadow-sm' })}>
           Continue as guest
         </a>
       </div>

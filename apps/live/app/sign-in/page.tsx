@@ -35,7 +35,7 @@ import {
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
 } from '@/components/chrome/auth-shared';
-import { TextInput } from '@livediagram/ui';
+import { Button, TextInput } from '@livediagram/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 
@@ -244,13 +244,14 @@ function SignInContent() {
               }
             }}
           />
-          <button
+          <Button
             type="submit"
+            size="md"
             disabled={loading || codeDigits.join('').length !== 6}
-            className="w-full rounded-md bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full shadow-sm"
           >
             {loading ? 'Verifying…' : 'Verify'}
-          </button>
+          </Button>
           <div className="flex justify-between text-sm">
             <button
               type="button"
@@ -311,13 +312,9 @@ function SignInContent() {
               autoComplete="email"
             />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <Button type="submit" size="md" disabled={loading} className="w-full shadow-sm">
             {loading ? 'Sending code…' : 'Continue with email'}
-          </button>
+          </Button>
         </form>
       )}
     </AuthCard>
