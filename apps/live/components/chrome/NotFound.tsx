@@ -6,6 +6,8 @@
 // layout. Renders as an absolute overlay so the Explorer behind
 // stays interactive.
 
+import { Button } from '@livediagram/ui';
+
 type NotFoundProps = {
   onCreateNew: () => void;
 };
@@ -40,14 +42,10 @@ export function NotFound({ onCreateNew }: NotFoundProps) {
           This diagram doesn&apos;t exist or isn&apos;t yours. Open one from the Explorer or start
           fresh.
         </p>
-        <button
-          type="button"
-          onClick={onCreateNew}
-          className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
-        >
+        <Button size="md" onClick={onCreateNew} className="mt-6 shadow-sm">
           <SparkleIcon />
           Create a new diagram
-        </button>
+        </Button>
       </div>
     </div>
   );

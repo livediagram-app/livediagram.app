@@ -6,6 +6,8 @@
 // to drop into the same chrome as NotFound (EditorHeader above), and
 // renders as an absolute overlay so anything behind stays interactive.
 
+import { Button } from '@livediagram/ui';
+
 type ApiErrorPageProps = {
   // Re-attempt the action that failed (reload the editor, retry the
   // create, etc.). Wired by the caller so the same card serves the
@@ -47,14 +49,10 @@ export function ApiErrorPage({
         </p>
         <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{message}</p>
-        <button
-          type="button"
-          onClick={onRetry}
-          className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
-        >
+        <Button size="md" onClick={onRetry} className="mt-6 shadow-sm">
           <RetryIcon />
           {retryLabel}
-        </button>
+        </Button>
       </div>
     </div>
   );
