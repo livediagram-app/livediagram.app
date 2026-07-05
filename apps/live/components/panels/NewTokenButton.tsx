@@ -6,20 +6,13 @@
 // has two states — the name form, then the one-time secret reveal (Copy + Done
 // side by side) once the token is minted. Reads/writes through the shared
 // TokensController so the list + sidebar badge update on create.
+import { PlusIcon } from '@/components/panels/explorer-icons';
 import { Button } from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import type { TokensController } from '@/hooks/persistence/useTokens';
 
 const MAX_NAME = 60;
-
-function PlusIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" aria-hidden>
-      <path d="M6 1.5v9M1.5 6h9" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 export function NewTokenButton({ tokens }: { tokens: TokensController }) {
   const btnRef = useRef<HTMLButtonElement>(null);
