@@ -1,12 +1,5 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from 'react';
-import { isAnimatedPattern, isBoxed } from '@livediagram/diagram';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { isAnimatedPattern } from '@livediagram/diagram';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { pointerToCanvas } from '@/lib/canvas';
@@ -51,6 +44,7 @@ import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
+import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 
 export function Canvas(props: CanvasProps) {
   const {
@@ -265,48 +259,16 @@ export function Canvas(props: CanvasProps) {
     onCanvasPointerMove(null, null);
   };
 
-  // Stable wrapper for the element-right-click flow. BoxedElementView
-  // is memoed; passing inline arrows for `onContextSelect` would
-  // recreate them per element per render and invalidate the memo.
-  // useCallback gives it one identity across renders, so the memoed
-  // child sees the same function reference until `onSelect` or
-  // `onElementContextMenu` itself changes upstream.
-  const handleElementContextSelect = useCallback(
-    (id: string, sx: number, sy: number) => {
-      // Right-clicking a member of an active multi-selection keeps the whole
-      // selection and opens a selection-wide menu. Right-clicking a grouped
-      // element selects the group (which expands to all members) and opens
-      // the same menu. Otherwise it's a single element.
-      const inMarquee = multiSelectedIds.size > 1 && multiSelectedIds.has(id);
-      const el = elements.find((e) => e.id === id);
-      const grouped = !!el && isBoxed(el) && !!el.groupId;
-      if (inMarquee && onMultiContextMenu) {
-        onMultiContextMenu(sx, sy);
-        return;
-      }
-      if (grouped && onMultiContextMenu) {
-        onSelect(id);
-        onMultiContextMenu(sx, sy);
-        return;
-      }
-      onSelect(id);
-      onElementContextMenu?.(id, sx, sy);
-    },
-    [onSelect, onElementContextMenu, onMultiContextMenu, elements, multiSelectedIds],
-  );
-
-  // Stable wrapper for the arrow click flow. Same rationale as
-  // handleElementContextSelect: a per-arrow inline arrow at the
-  // call site would defeat ArrowView's memo on every render of the
-  // Canvas. Mirrors BoxedElementView's shift-modifier semantics so
-  // an arrow can join a marquee multi-selection via plain click
-  // (when one is active) or Shift-click. Reading the latest
-  // `multiSelectedIds` through a ref keeps this callback stable
-  // even as the selection set changes.
-  const multiSelectedIdsRef = useRef(multiSelectedIds);
-  useEffect(() => {
-    multiSelectedIdsRef.current = multiSelectedIds;
-  }, [multiSelectedIds]);
+  // Stable selection-routing wrappers for the memo'd element / arrow
+  // views — see useCanvasSelectHandlers.
+  const { handleElementContextSelect, handleArrowSelect } = useCanvasSelectHandlers({
+    elements,
+    multiSelectedIds,
+    onSelect,
+    onShiftSelect,
+    onElementContextMenu,
+    onMultiContextMenu,
+  });
 
   const { drawDrag, penPoints, drawHover, beginPendingDrawGesture } = useCanvasDrawGesture({
     pendingDraw,
@@ -352,19 +314,6 @@ export function Canvas(props: CanvasProps) {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
   }, [mainRef]);
-  const handleArrowSelect = useCallback(
-    (id: string, e: ReactPointerEvent) => {
-      const set = multiSelectedIdsRef.current;
-      const isMember = set.has(id);
-      if (e.shiftKey || (set.size > 0 && !isMember)) {
-        onShiftSelect(id);
-        return;
-      }
-      onSelect(id);
-    },
-    [onSelect, onShiftSelect],
-  );
-
   return (
     <main
       ref={mainRef}
