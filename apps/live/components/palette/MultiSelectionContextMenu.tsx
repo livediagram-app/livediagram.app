@@ -23,38 +23,19 @@ import {
 } from '@livediagram/diagram';
 import { isTechIconId } from '@/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
-import { AlignmentGrid, ToggleSwitch } from '@/components/palette/palette-controls';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu } from '@/components/palette/ContextMenu';
-import { SizeButton } from '@/components/palette/palette-controls';
-import {
-  AspectLockMenuIcon,
-  LayerDownIcon,
-  LayersGlyph,
-  LayerUpIcon,
-  LineGlyph,
-  PointerGlyph,
-  RotationGlyph,
-  SquareMenuIcon,
-  TextGlyph,
-} from '@/components/palette/context-menu-icons';
-import {
-  MenuAccordionSection,
-  MenuGroupSeparator,
-  MenuTile,
-  MenuTileGrid,
-} from '@/components/primitives/PortalMenu';
+import { LineGlyph, PointerGlyph, TextGlyph } from '@/components/palette/context-menu-icons';
+import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import {
   MarkersMenuGlyph,
   MarkerTiles,
-  OpacityRow,
   TextSizeTiles,
 } from '@/components/palette/context-menu-rows';
-import { ShapeIcon } from '@/components/primitives/shape-icon';
-import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
+import { MultiPlacementSections } from './MultiPlacementSections';
 import { MultiStyleSections } from './MultiStyleSections';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 
@@ -139,8 +120,6 @@ export function MultiSelectionContextMenu({
             el.shape !== 'frame' &&
             !isSelfDrawingShape(el.shape),
         ) as ShapeElement[];
-        const morphSrc = morphable[0];
-        const morphIds = morphable.map((el) => el.id);
         const markerSrc = boxedSel.find(
           (el) =>
             el.type === 'shape' &&
@@ -164,94 +143,15 @@ export function MultiSelectionContextMenu({
         );
         return (
           <>
-            {/* Layer — front/back, opacity and (for boxed members) the
-                  aspect-ratio lock, selection-wide, mirroring the single
-                  menu's pinned-first Layer section. */}
-            <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('m-layer')}>
-              <MenuTileGrid cols={2}>
-                <MenuTile
-                  icon={<LayerUpIcon />}
-                  label="Bring to Front"
-                  onClick={props.onBringToFront}
-                />
-                <MenuTile
-                  icon={<LayerDownIcon />}
-                  label="Send to Back"
-                  onClick={props.onSendToBack}
-                />
-              </MenuTileGrid>
-              <OpacityRow
-                value={(sel[0] as { opacity?: number } | undefined)?.opacity ?? 1}
-                onChange={props.onSetOpacity}
-              />
-              {boxedSel.length ? (
-                <button
-                  type="button"
-                  onClick={props.onToggleAspectLock}
-                  aria-pressed={!!boxedSel[0]!.aspectLocked}
-                  className="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="text-slate-400 dark:text-slate-400">
-                      <AspectLockMenuIcon />
-                    </span>
-                    Lock aspect ratio
-                  </span>
-                  <ToggleSwitch
-                    presentational
-                    checked={!!boxedSel[0]!.aspectLocked}
-                    label="Lock aspect ratio"
-                  />
-                </button>
-              ) : null}
-            </MenuAccordionSection>
-            {/* Shape — morph every morphable member to a common kind. */}
-            {morphSrc ? (
-              <MenuAccordionSection
-                title="Shape"
-                icon={<SquareMenuIcon />}
-                {...sectionProps('m-shape')}
-              >
-                <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-                  {COMMON_SHAPES.map((kind) => (
-                    <SizeButton
-                      key={kind}
-                      active={morphSrc.shape === kind}
-                      onClick={() => props.onSetShapeKind(morphIds, kind)}
-                      onPointerEnter={onMouseHover(() => props.onPreviewShapeKind(morphIds, kind))}
-                      onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                    >
-                      <ShapeIcon kind={kind} />
-                    </SizeButton>
-                  ))}
-                </div>
-              </MenuAccordionSection>
-            ) : null}
-            {/* Rotation — snap angles for every boxed member. */}
-            {boxedSel.length ? (
-              <MenuAccordionSection
-                title="Rotation"
-                icon={<RotationGlyph deg={45} />}
-                {...sectionProps('m-rotation')}
-              >
-                <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-                  {ROTATION_ANGLES.map((deg) => (
-                    <SizeButton
-                      key={deg}
-                      active={(boxedSel[0]!.rotation ?? 0) % 360 === deg}
-                      onClick={() => props.onCommitRotation(deg)}
-                      onPointerEnter={onMouseHover(() => props.onPreviewRotation(deg))}
-                      onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                    >
-                      <span className="flex flex-col items-center gap-0.5">
-                        <RotationGlyph deg={deg} />
-                        <span className="text-[9px] leading-none tabular-nums">{deg}°</span>
-                      </span>
-                    </SizeButton>
-                  ))}
-                </div>
-              </MenuAccordionSection>
-            ) : null}
+            {/* Placement group (Layer / Shape / Rotation) — see
+                  MultiPlacementSections. */}
+            <MultiPlacementSections
+              props={props}
+              sel={sel}
+              boxedSel={boxedSel}
+              morphable={morphable}
+              sectionProps={sectionProps}
+            />
             <MenuGroupSeparator />
             {/* Presets (spec/48) — pinned at the top of the appearance group,
                   same as the single-element menu; applies to every matching
