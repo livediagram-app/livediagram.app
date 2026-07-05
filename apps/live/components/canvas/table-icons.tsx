@@ -70,22 +70,6 @@ export function TrashIcon() {
   );
 }
 
-export function CellLinkIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M7 4.5l1.5-1.5a3.25 3.25 0 0 1 4.6 4.6L11 9.5" />
-      <path d="M9 11.5l-1.5 1.5a3.25 3.25 0 0 1-4.6-4.6L5 7" />
-      <line x1="6" y1="10" x2="10" y2="6" />
-    </svg>
-  );
-}
+// The element-link chain glyph (spec/09 links), shared with the context
+// menu's Link tile so the two linking surfaces can't drift.
+export { LinkMenuIcon as CellLinkIcon } from '@/components/palette/context-menu-icons';
