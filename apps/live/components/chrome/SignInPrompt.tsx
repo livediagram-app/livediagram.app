@@ -28,6 +28,7 @@
 // Clerk.
 
 import { useEffect, useState } from 'react';
+import { buttonClassName } from '@livediagram/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import Link from 'next/link';
@@ -106,7 +107,7 @@ function SignInPromptEnabled({ fallback }: SignInPromptProps) {
       action={
         <Link
           href={signInHref}
-          className="inline-flex w-full items-center justify-center rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600"
+          className={buttonClassName({ size: 'xs', className: 'w-full shadow-sm' })}
         >
           Sign in
         </Link>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { apiGetTeam, type TeamMember } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
@@ -143,13 +144,9 @@ export function TeamPane({
             This team doesn&apos;t exist, or you&apos;re not a member of it. Ask an admin for an
             invite, or head back to your own diagrams.
           </p>
-          <button
-            type="button"
-            onClick={onLeftTeam}
-            className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
-          >
+          <Button size="md" onClick={onLeftTeam} className="mt-6 shadow-sm">
             Back to your diagrams
-          </button>
+          </Button>
         </div>
       </div>
     );

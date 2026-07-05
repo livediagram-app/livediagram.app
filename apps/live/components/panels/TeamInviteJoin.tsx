@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TeamInviteLinkInfo } from '@livediagram/api-schema';
-import { Brand } from '@livediagram/ui';
+import { Brand, Button, buttonClassName } from '@livediagram/ui';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { ensureGuestSelfId } from '@/lib/local-identity';
@@ -154,17 +154,12 @@ export function TeamInviteJoin() {
         <p className="mt-3 text-sm text-rose-600 dark:text-rose-400">{joinError}</p>
       ) : null}
       <div className="mt-5 flex items-center justify-center gap-2">
-        <button
-          type="button"
-          onClick={() => void join()}
-          disabled={joining}
-          className="rounded-md bg-brand-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <Button size="md" onClick={() => void join()} disabled={joining}>
           {joining ? 'Joining…' : 'Join'}
-        </button>
+        </Button>
         <a
           href="/explorer/recent"
-          className="rounded-md border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          className={buttonClassName({ variant: 'secondary', size: 'md' })}
         >
           Decline
         </a>

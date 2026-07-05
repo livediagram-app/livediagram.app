@@ -35,20 +35,37 @@ const SIZES: Record<ButtonSize, string> = {
   lg: 'px-6 py-3 text-base',
 };
 
+// Class-string escape hatch for ANCHORS styled as buttons: Next's <Link>
+// (and plain <a>) can't render through the <button>-only primitive, so
+// link call sites (sign-in CTAs, join-page actions) compose the same
+// classes instead of re-typing the soup. Kept beside the variant tables
+// so the two can never drift; Button itself renders through it.
+export function buttonClassName({
+  variant = 'primary',
+  size = 'sm',
+  className,
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+} = {}): string {
+  return `${BASE} ${VARIANTS[variant]} ${SIZES[size]}${className ? ` ${className}` : ''}`;
+}
+
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'primary', size = 'sm', className, type = 'button', ...rest },
+  { variant, size, className, type = 'button', ...rest },
   ref,
 ) {
   return (
     <button
       ref={ref}
       type={type}
-      className={`${BASE} ${VARIANTS[variant]} ${SIZES[size]}${className ? ` ${className}` : ''}`}
+      className={buttonClassName({ variant, size, className })}
       {...rest}
     />
   );

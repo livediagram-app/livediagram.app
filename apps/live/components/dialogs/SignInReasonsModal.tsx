@@ -12,6 +12,7 @@
 // keyboard / screen-reader users get the same modal semantics.
 
 import Link from 'next/link';
+import { buttonClassName } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
@@ -173,7 +174,7 @@ export function SignInReasonsModal({
             <Link
               href={signInHref}
               onClick={onSignIn}
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 sm:w-auto"
+              className={buttonClassName({ size: 'md', className: 'w-full shadow-sm sm:w-auto' })}
             >
               <SignInIcon size={14} />
               Sign in
