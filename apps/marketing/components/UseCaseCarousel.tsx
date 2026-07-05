@@ -1,5 +1,6 @@
 'use client';
 
+import { buttonClassName } from '@livediagram/ui';
 import { useState } from 'react';
 import { Sketch, type SketchKind } from './use-case-sketches';
 
@@ -231,10 +232,7 @@ export function UseCaseCarousel() {
         </div>
 
         <div className="mt-10 flex justify-center">
-          <a
-            href="/new"
-            className="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-base font-medium text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
-          >
+          <a href="/new" className={buttonClassName({ size: 'lg', className: 'shadow-sm' })}>
             Start drawing
           </a>
         </div>

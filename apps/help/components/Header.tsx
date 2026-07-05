@@ -1,4 +1,4 @@
-import { Brand, ProductNav } from '@livediagram/ui';
+import { Brand, buttonClassName, ProductNav } from '@livediagram/ui';
 import { SearchInput } from '@/components/SearchInput';
 
 // Help-centre header. Brand links back to the marketing home; the editor
@@ -24,10 +24,7 @@ export function Header() {
             pins it to the far right even on mobile, where the centred search
             box (the flex-1 spacer) is hidden. */}
         <nav className="ml-auto flex shrink-0 items-center gap-1.5">
-          <a
-            href="/new"
-            className="inline-flex items-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-          >
+          <a href="/new" className={buttonClassName({ size: 'md', className: 'shadow-sm' })}>
             Start drawing
           </a>
         </nav>

@@ -1,3 +1,4 @@
+import { buttonClassName } from '@livediagram/ui';
 import { HeroIllustration } from './HeroIllustration';
 
 export function Hero() {
@@ -18,7 +19,7 @@ export function Hero() {
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
             href="/new"
-            className="inline-flex w-full items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-base font-medium text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 sm:w-auto"
+            className={buttonClassName({ size: 'lg', className: 'w-full shadow-sm sm:w-auto' })}
           >
             Start drawing
           </a>
