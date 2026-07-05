@@ -58,6 +58,11 @@ type TemplatePickerProps = {
   onOpenExisting?: () => void;
 };
 
+// The browsable catalogue: hidden templates (the guided tour, spec/69) are
+// buildable but never listed, so they're filtered out before any grid /
+// search / shuffle sees them.
+const LISTED_TEMPLATES = TEMPLATES.filter((t) => !t.hidden);
+
 // The "Start a new diagram" modal, also the welcome screen. In welcome
 // mode it's a two-step wizard (template, then theme); other modes keep a
 // single page. Picking is confirmed explicitly (Create / Apply / Join) so
@@ -156,9 +161,9 @@ export function TemplatePicker({
   // prerender AND at hydration with different Math.random results, so the
   // server HTML wouldn't match the client (a hydration error). Render the
   // stable catalogue order first, then shuffle on mount.
-  const [templates, setTemplates] = useState(TEMPLATES);
+  const [templates, setTemplates] = useState(LISTED_TEMPLATES);
   useEffect(() => {
-    setTemplates(shufflePinned(TEMPLATES, (t) => t.kind === 'blank'));
+    setTemplates(shufflePinned(LISTED_TEMPLATES, (t) => t.kind === 'blank'));
   }, []);
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
@@ -190,6 +195,10 @@ export function TemplatePicker({
   // Skip the wizard entirely: the documented shortcut is Blank template +
   // Basic theme (spec/14), committed straight away.
   const skipToDefaults = () => onPick('blank', effectiveName, 'brand');
+  // "Show me around" (spec/69): one click commits the guided-tour sample
+  // with the default theme, no theme step, so a first-time user lands on a
+  // living canvas immediately. Welcome mode only.
+  const startGuidedTour = () => onPick('guided-tour', effectiveName, 'brand');
   // Double-clicking a template advances to the theme step (the user still
   // needs to pick a theme) rather than committing the whole wizard.
   const onTemplateCommit = (kind: TemplateKind) => {
@@ -350,6 +359,7 @@ export function TemplatePicker({
                 templateKind={templateKind}
                 setTemplateKind={setTemplateKind}
                 onTemplateCommit={onTemplateCommit}
+                onGuidedTour={isWelcome ? startGuidedTour : undefined}
               />
             ) : null}
 

@@ -76,7 +76,8 @@ describe('TemplatePreview bounds', () => {
     // points that pull wider than the painted curve.
     const tolerance = 1.25;
     const spills: string[] = [];
-    for (const t of TEMPLATES) {
+    // Hidden templates (spec/69) ship no preview; only listed ones render.
+    for (const t of TEMPLATES.filter((x) => !x.hidden)) {
       const el = TemplatePreview({ kind: t.kind });
       expect(el, `missing preview for '${t.kind}'`).not.toBeNull();
       const svg = renderToStaticMarkup(el!);

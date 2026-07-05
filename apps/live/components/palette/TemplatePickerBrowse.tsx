@@ -2,7 +2,11 @@ import type { TemplateDescriptor, TemplateCategory, TemplateKind } from '@livedi
 import { TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { BackBar } from '@/components/palette/ThemeCategoryBrowser';
-import { CategoryCard, TemplateCard } from '@/components/palette/template-picker-cards';
+import {
+  CategoryCard,
+  GuidedTourCard,
+  TemplateCard,
+} from '@/components/palette/template-picker-cards';
 
 // The template step's browse surface, lifted out of TemplatePicker: the
 // search input plus the three-way body (flat search results / an open
@@ -24,6 +28,7 @@ export function TemplatePickerBrowse({
   templateKind,
   setTemplateKind,
   onTemplateCommit,
+  onGuidedTour,
 }: {
   // True when the identity row renders above (adds the separating margin).
   showIdentity: boolean;
@@ -39,6 +44,10 @@ export function TemplatePickerBrowse({
   templateKind: TemplateKind;
   setTemplateKind: (kind: TemplateKind) => void;
   onTemplateCommit: (kind: TemplateKind) => void;
+  // Welcome mode only (spec/69): renders the "Show me around" card on the
+  // overview beside Blank. One click commits the guided-tour sample with
+  // the default theme, skipping the theme step entirely.
+  onGuidedTour?: () => void;
 }) {
   return (
     <>
@@ -116,6 +125,7 @@ export function TemplatePickerBrowse({
                 onCommit={() => onTemplateCommit('blank')}
               />
             ) : null}
+            {onGuidedTour ? <GuidedTourCard onStart={onGuidedTour} /> : null}
             {TEMPLATE_CATEGORIES.map((cat) => {
               const items = categoryTemplates(cat.id);
               if (items.length === 0) return null;

@@ -58,5 +58,6 @@ interaction changes, the tour copy changes in the same PR).
 ## Telemetry
 
 Falls out of the existing template pipeline:
-`track('Template', 'Used', 'Guided Tour')` via the shared choose/commit
-paths (see [spec/22](22-telemetry.md)). No new categories or actions.
+`track('Template', 'Used', 'Guided-tour')` via the shared choose/commit
+paths (the standard `titleCaseType(kind)`, see [spec/22](22-telemetry.md)).
+No new categories or actions.

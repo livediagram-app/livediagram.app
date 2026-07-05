@@ -102,7 +102,11 @@ export type TemplateKind =
   | 'uml-class'
   // UML state machine: initial / final markers and stadium states wired
   // by event-labelled transitions.
-  | 'state-machine';
+  | 'state-machine'
+  // "Show me around" onboarding sample (spec/69): a small scene whose
+  // annotation markers teach the basics. Hidden from listings; reached
+  // only via the welcome wizard's dedicated card.
+  | 'guided-tour';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -112,6 +116,11 @@ export type TemplateDescriptor = {
   // toggle. Default templates render in the first batch; extras
   // unlock on click so the grid stays compact for first-time users.
   extra?: boolean;
+  // True for templates that never appear in listings (the picker's
+  // browse grids + search, the MCP list_templates catalogue) but stay
+  // buildable via buildTemplate. Used by dedicated entry points like
+  // the welcome wizard's guided tour (spec/69).
+  hidden?: boolean;
 };
 
 export const TEMPLATES: TemplateDescriptor[] = [
@@ -119,6 +128,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank',
     title: 'Blank diagram',
     description: 'An empty canvas to start with whatever you like.',
+  },
+  {
+    kind: 'guided-tour',
+    title: 'Guided tour',
+    description: 'A sample diagram whose markers teach the basics.',
+    hidden: true,
   },
   {
     kind: 'mindmap',
@@ -447,8 +462,10 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'mindmap-tree': 'mindmaps',
   'mindmap-bubble': 'mindmaps',
   // Flowcharts: process + decision flows. Blank lives here too (it's shown as
-  // a separate quick-pick in the picker, never inside a category grid).
+  // a separate quick-pick in the picker, never inside a category grid), as
+  // does the hidden guided tour (never listed, so the category is nominal).
   blank: 'flowcharts',
+  'guided-tour': 'flowcharts',
   flowchart: 'flowcharts',
   swimlane: 'flowcharts',
   'decision-tree': 'flowcharts',
