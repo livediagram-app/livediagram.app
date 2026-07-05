@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatIcon } from './export-format-icons';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
@@ -135,14 +135,7 @@ export function ExportTabDialog({
             title="Exporting diagrams"
             description="What each export format is for and how to use it."
           />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon />
-          </button>
+          <DialogCloseButton onClick={onClose} />
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-6 py-5">

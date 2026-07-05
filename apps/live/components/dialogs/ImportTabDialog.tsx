@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -58,14 +58,7 @@ export function ImportTabDialog({ tabName, onImport, onClose }: ImportTabDialogP
             title="Importing tabs"
             description="What you can import and how it replaces the tab."
           />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon />
-          </button>
+          <DialogCloseButton onClick={onClose} />
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-6 py-5">

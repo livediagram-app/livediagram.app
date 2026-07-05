@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button, TextInput } from '@livediagram/ui';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
@@ -147,14 +147,7 @@ export function ShareDialog({
             title="Sharing"
             description="Roles, real-time collaboration, and how share links work."
           />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon />
-          </button>
+          <DialogCloseButton onClick={onClose} />
         </div>
       </div>
 
