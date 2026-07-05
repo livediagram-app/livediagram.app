@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, TextInput } from '@livediagram/ui';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@/lib/url-safety';
 import type { ElementLink } from '@livediagram/diagram';
@@ -101,14 +101,7 @@ export function LinkPickerDialog({
                 : 'Linking elements to tabs, diagrams, and web addresses.'
             }
           />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon />
-          </button>
+          <DialogCloseButton onClick={onClose} />
         </div>
       </div>
 

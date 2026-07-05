@@ -24,8 +24,8 @@
 // only renders, filters, and collapses.
 
 import { Fragment, useState } from 'react';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { DestinationRow, FolderIcon, RootIcon, TeamIcon } from './move-to-folder-parts';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { matches } from '@/lib/search';
@@ -199,14 +199,7 @@ export function MoveToFolderDialog({
               : 'Pick a destination folder or team.'}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        >
-          <CloseIcon />
-        </button>
+        <DialogCloseButton onClick={onClose} />
       </div>
 
       <div className="border-b border-slate-100 px-5 py-2.5 dark:border-slate-800">
