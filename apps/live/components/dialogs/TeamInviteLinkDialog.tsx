@@ -5,6 +5,7 @@ import { Button } from '@livediagram/ui';
 import type { TeamInviteLink } from '@livediagram/api-schema';
 import { apiGenerateTeamInviteLink, apiRevokeTeamInviteLink } from '@/lib/api-client';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { LinkIcon } from '@/components/panels/team-pane-parts';
 import { track } from '@/lib/telemetry';
 
 // "Invite by link" (spec/32): the admin actively turns on a shareable
@@ -172,19 +173,5 @@ export function TeamInviteLinkDialog({
         </Button>
       </div>
     </Dialog>
-  );
-}
-
-function LinkIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 5.93M14 11a5 5 0 0 0-7.07 0L5.5 12.4a5 5 0 0 0 7.07 7.07L13.9 18.2"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
