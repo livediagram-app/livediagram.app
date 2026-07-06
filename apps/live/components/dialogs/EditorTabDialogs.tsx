@@ -31,6 +31,7 @@ export function EditorTabDialogs() {
     setExportOpen,
     importOpen,
     importIntoActiveTab,
+    importMermaidText,
     setImportOpen,
     shareDialogOpen,
     selfParticipant,
@@ -70,6 +71,7 @@ export function EditorTabDialogs() {
         <ImportTabDialog
           tabName={activeTab.name}
           onImport={importIntoActiveTab}
+          onImportMermaidText={importMermaidText}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

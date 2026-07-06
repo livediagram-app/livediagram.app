@@ -33,6 +33,32 @@ export function FormatIcon({ kind }: { kind: Format }) {
           </text>
         </svg>
       );
+    case 'mermaid':
+      return (
+        <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="18"
+            rx="2"
+            fill="none"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="16"
+            y="14"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="600"
+            fill="rgb(71 85 105)"
+          >
+            mmd
+          </text>
+        </svg>
+      );
     case 'pdf':
       return (
         <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden>

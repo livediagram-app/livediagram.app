@@ -835,14 +835,16 @@ export const articles: Article[] = [
   {
     slug: 'import-tabs',
     title: 'Importing a Tab',
-    description: 'Import a JSON or Markdown file into the active tab (it replaces the contents).',
+    description:
+      'Import a JSON file, a Mermaid flowchart, or a Markdown outline into the active tab (it replaces the contents).',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
   {
     slug: 'export-tabs',
     title: 'Exporting a Tab',
-    description: 'Export the active tab as PNG, SVG, PDF, Markdown, or a livediagram JSON file.',
+    description:
+      'Export the active tab as PNG, SVG, PDF, a Mermaid flowchart, Markdown, or a livediagram JSON file.',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

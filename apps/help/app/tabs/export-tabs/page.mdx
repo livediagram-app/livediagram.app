@@ -5,13 +5,13 @@ import { ExportMenu } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Exporting a Tab',
   description:
-    'Export the active tab as PNG, SVG, PDF, Markdown, or a livediagram JSON file. Image exports respect the isometric view and background pattern.',
+    'Export the active tab as PNG, SVG, PDF, a Mermaid flowchart, Markdown, or a livediagram JSON file. Image exports respect the isometric view and background pattern.',
   path: '/help/tabs/export-tabs/',
 });
 
 <ArticleLayout
   title="Exporting a Tab"
-  description="Take a tab out of livediagram: download it as an image, a PDF, an editable text file, a Markdown outline, or a JSON file you can import back."
+  description="Take a tab out of livediagram: download it as an image, a PDF, a Mermaid flowchart, a Markdown outline, or a JSON file you can import back."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -25,18 +25,19 @@ From the tab ellipsis menu, expand the **Content** section and choose **Export**
 - **PNG** — a raster image, good for pasting into docs and chat.
 - **SVG** — a crisp vector image that scales to any size.
 - **PDF** — a print-ready page of the tab.
-- **Markdown** — the tab's structure as a Markdown outline (a readable summary; unlike Text it does not preserve every connection).
+- **Mermaid** — the tab as [Mermaid](https://mermaid.js.org/) flowchart text, which keeps every connection (unlike Markdown). Pick it to open an editor: tweak the text and **copy** it, or **download** a `.mmd` file. Your edits there never change the tab.
+- **Markdown** — the tab's structure as a Markdown outline (a readable summary; it does not preserve every connection).
 - **JSON** — a portable `.livediagram-tab.json` file that [imports](/help/tabs/import-tabs/) back with full fidelity.
 
-The file downloads named after the tab, so exports stay easy to tell apart.
+Most formats download named after the tab, so exports stay easy to tell apart; Mermaid opens an editor first so you can copy or download.
 
-<Figure caption="The Export submenu lists every format: PNG, SVG, PDF, Markdown, and JSON.">
+<Figure caption="The Export submenu lists every format: PNG, SVG, PDF, Mermaid, Markdown, and JSON.">
   <ExportMenu />
 </Figure>
 
 ## What the image exports capture
 
-The PNG, SVG, and PDF exports show the tab as it looks, including its [isometric view](/help/palette/isometric-mode/) if that is on and the canvas background pattern, so what you download matches what you see. Text, JSON, and Markdown capture the underlying content rather than the picture you see.
+The PNG, SVG, and PDF exports show the tab as it looks, including its [isometric view](/help/palette/isometric-mode/) if that is on and the canvas background pattern, so what you download matches what you see. The Mermaid, JSON, and Markdown exports capture the underlying content rather than the picture you see.
 
 <Tip>
   Reach for **SVG** when the image might be resized or printed large, it stays sharp at any scale,

@@ -4,7 +4,7 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { ImportOutcome } from '@/lib/import-tab';
 
-type Format = 'json' | 'markdown';
+type Format = 'json' | 'markdown' | 'mermaid';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -14,14 +14,25 @@ type ImportTabDialogProps = {
   // parses, and replaces the active tab. Returns an outcome so this
   // dialog can close / stay open / show an error without throwing.
   onImport: (format: Format) => Promise<ImportOutcome>;
+  // Imports pasted/written Mermaid text (the "Paste or write" path),
+  // bypassing the file picker (spec/73).
+  onImportMermaidText: (text: string) => Promise<ImportOutcome>;
   onClose: () => void;
 };
 
 // Counterpart to ExportTabDialog: pick a format to import a file INTO
 // the current tab. Importing REPLACES the tab's contents (spec/27), so
-// the dialog leads with a warning before the format cards. Errors render
-// inline; on success the dialog closes and the canvas shows the result.
-export function ImportTabDialog({ tabName, onImport, onClose }: ImportTabDialogProps) {
+// the dialog leads with a warning before the format cards. Mermaid adds
+// a two-step flow (file or paste, spec/73); other formats stay one-click.
+// Errors render inline; on success the dialog closes and the canvas shows
+// the result.
+export function ImportTabDialog({
+  tabName,
+  onImport,
+  onImportMermaidText,
+  onClose,
+}: ImportTabDialogProps) {
+  const [view, setView] = useState<'grid' | 'mermaid'>('grid');
   const [busyFormat, setBusyFormat] = useState<Format | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +60,9 @@ export function ImportTabDialog({ tabName, onImport, onClose }: ImportTabDialogP
             Import to tab
           </h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Pick a format to import a file into the current tab.
+            {view === 'mermaid'
+              ? 'Import a Mermaid flowchart from a file, or paste one in.'
+              : 'Pick a format to import a file into the current tab.'}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
@@ -73,39 +86,139 @@ export function ImportTabDialog({ tabName, onImport, onClose }: ImportTabDialogP
             content. Undo (⌘Z / Ctrl&#8209;Z) brings it back.
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <ImportCard
-            kind="json"
-            title="livediagram file"
-            description="A .json tab exported from livediagram. Restores its elements exactly."
-            busy={busyFormat === 'json'}
-            onClick={() => void handle('json')}
+        {view === 'mermaid' ? (
+          <MermaidImportPanel
+            onImportText={onImportMermaidText}
+            onImportFile={() => onImport('mermaid')}
+            onDone={onClose}
+            onBack={() => setView('grid')}
           />
-          <ImportCard
-            kind="markdown"
-            title="Markdown"
-            description="A .md outline (headings + lists), e.g. exported from XMind. Becomes a themed tree."
-            busy={busyFormat === 'markdown'}
-            onClick={() => void handle('markdown')}
-          />
-        </div>
-        <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-          Importing a Markdown outline?{' '}
-          <HelpArticleLink
-            article="markdownImport"
-            variant="text"
-            label="See how it maps to a tree"
-            title="Markdown import"
-            description="How headings and lists become a themed tree diagram."
-          />
-        </p>
-        {error ? (
-          <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
-            {error}
-          </p>
-        ) : null}
+        ) : (
+          <>
+            <div className="grid grid-cols-3 gap-3">
+              <ImportCard
+                kind="json"
+                title="livediagram file"
+                description="A .json tab exported from livediagram. Restores its elements exactly."
+                busy={busyFormat === 'json'}
+                busyLabel="Choose a file…"
+                onClick={() => void handle('json')}
+              />
+              <ImportCard
+                kind="mermaid"
+                title="Mermaid"
+                description="A flowchart in Mermaid text. Keeps every connection. Paste it or pick a file."
+                busy={false}
+                onClick={() => {
+                  setError(null);
+                  setView('mermaid');
+                }}
+              />
+              <ImportCard
+                kind="markdown"
+                title="Markdown"
+                description="A .md outline (headings + lists), e.g. exported from XMind. Becomes a themed tree."
+                busy={busyFormat === 'markdown'}
+                busyLabel="Choose a file…"
+                onClick={() => void handle('markdown')}
+              />
+            </div>
+            <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
+              Importing a Markdown outline?{' '}
+              <HelpArticleLink
+                article="markdownImport"
+                variant="text"
+                label="See how it maps to a tree"
+                title="Markdown import"
+                description="How headings and lists become a themed tree diagram."
+              />
+            </p>
+            {error ? (
+              <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+                {error}
+              </p>
+            ) : null}
+          </>
+        )}
       </div>
     </Dialog>
+  );
+}
+
+// The Mermaid sub-view: a textarea to paste/write a flowchart, an Import
+// button, and a "pick a file instead" escape hatch (spec/73). Owns its own
+// text / busy / error so the grid stays simple.
+function MermaidImportPanel({
+  onImportText,
+  onImportFile,
+  onDone,
+  onBack,
+}: {
+  onImportText: (text: string) => Promise<ImportOutcome>;
+  onImportFile: () => Promise<ImportOutcome>;
+  onDone: () => void;
+  onBack: () => void;
+}) {
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const run = async (runner: () => Promise<ImportOutcome>) => {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    const outcome = await runner();
+    if (outcome.status === 'done') {
+      onDone();
+    } else {
+      if (outcome.status === 'error') setError(outcome.error);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        spellCheck={false}
+        placeholder={'flowchart TD\n  A([Start]) --> B{OK?}\n  B -->|yes| C[Ship]\n  B -->|no| A'}
+        className="h-56 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-xs leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-600 dark:focus:ring-brand-500/30"
+      />
+      {error ? (
+        <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+          {error}
+        </p>
+      ) : null}
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={busy}
+          className="text-xs font-medium text-slate-500 transition hover:text-slate-700 disabled:opacity-50 dark:text-slate-400 dark:hover:text-slate-200"
+        >
+          ← Back
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void run(onImportFile)}
+            disabled={busy}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition enabled:hover:border-brand-300 enabled:hover:bg-brand-50/40 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60"
+          >
+            Import a file instead
+          </button>
+          <button
+            type="button"
+            onClick={() => void run(() => onImportText(text))}
+            disabled={busy || text.trim().length === 0}
+            className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-semibold text-white transition enabled:hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {busy ? 'Importing…' : 'Import'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -114,12 +227,14 @@ function ImportCard({
   title,
   description,
   busy,
+  busyLabel,
   onClick,
 }: {
   kind: Format;
   title: string;
   description: string;
   busy: boolean;
+  busyLabel?: string;
   onClick: () => void;
 }) {
   return (
@@ -135,7 +250,7 @@ function ImportCard({
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">{title}</p>
         <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          {busy ? 'Choose a file…' : description}
+          {busy ? (busyLabel ?? 'Working…') : description}
         </p>
       </div>
     </button>
@@ -143,7 +258,7 @@ function ImportCard({
 }
 
 function FormatIcon({ kind }: { kind: Format }) {
-  if (kind === 'markdown') {
+  if (kind === 'markdown' || kind === 'mermaid') {
     return (
       <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
         <rect
@@ -165,7 +280,7 @@ function FormatIcon({ kind }: { kind: Format }) {
           fontWeight="600"
           fill="rgb(71 85 105)"
         >
-          md
+          {kind === 'mermaid' ? 'mmd' : 'md'}
         </text>
       </svg>
     );
