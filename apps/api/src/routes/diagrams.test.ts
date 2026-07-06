@@ -1,5 +1,6 @@
+import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DiagramDTO, Env } from '../types';
+import type { DiagramDTO } from '../types';
 
 // Characterisation tests for handleDiagrams' authorisation surface.
 // diagrams.ts is the security-critical resource: every owner-only and
@@ -56,7 +57,8 @@ vi.mock('../thumbnail', () => ({ getDiagramThumbnailSvg }));
 import type { RouteContext } from './context';
 import { handleDiagrams } from './diagrams';
 
-function makeCtx(
+// Guest-shaped context ('owner-1') with optional Clerk identity + headers.
+const makeCtx = (
   method: string,
   path: string,
   opts: {
@@ -65,26 +67,13 @@ function makeCtx(
     body?: unknown;
     headers?: Record<string, string>;
   } = {},
-): RouteContext {
-  const url = new URL(`https://api.test${path}`);
-  const segments = url.pathname.replace(/^\//, '').split('/');
-  const owner = opts.owner === undefined ? 'owner-1' : opts.owner;
-  const request = new Request(url, {
-    method,
-    headers: { 'Content-Type': 'application/json', ...opts.headers },
-    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+): RouteContext =>
+  makeTestRouteContext(method, path, {
+    body: opts.body,
+    headers: opts.headers,
+    clerkUserId: opts.clerkUserId,
+    owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
-  return {
-    request,
-    env: {} as Env,
-    url,
-    segments,
-    clerkUserId: opts.clerkUserId ?? null,
-    verifiedUserId: opts.clerkUserId ?? null,
-    clerkEmail: null,
-    resolveOwner: () => owner,
-  };
-}
 
 // Minimal DiagramDTO good enough for the authz branches under test.
 function fakeDiagram(ownerId: string, teamId: string | null = null): DiagramDTO {

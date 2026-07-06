@@ -1,3 +1,4 @@
+import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
@@ -34,29 +35,16 @@ function imagesBinding() {
   };
 }
 
-function makeCtx(
+// Guest-shaped context ('owner-1') with the IMAGES binding stubbed in.
+const makeCtx = (
   method: string,
   path: string,
   opts: { owner?: string | null; images?: unknown } = {},
-): RouteContext {
-  const url = new URL(`https://api.test${path}`);
-  const segments = url.pathname.replace(/^\//, '').split('/');
-  const owner = opts.owner === undefined ? 'owner-1' : opts.owner;
-  const env = {
-    IMAGES: opts.images === undefined ? imagesBinding() : opts.images,
-  } as unknown as Env;
-  const request = new Request(url, { method, headers: { 'Content-Type': 'application/json' } });
-  return {
-    request,
-    env,
-    url,
-    segments,
-    clerkUserId: null,
-    verifiedUserId: null,
-    clerkEmail: null,
-    resolveOwner: () => owner,
-  };
-}
+): RouteContext =>
+  makeTestRouteContext(method, path, {
+    owner: opts.owner === undefined ? 'owner-1' : opts.owner,
+    env: { IMAGES: opts.images === undefined ? imagesBinding() : opts.images } as unknown as Env,
+  });
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();

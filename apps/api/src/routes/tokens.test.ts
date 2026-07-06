@@ -1,5 +1,5 @@
+import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
 
 const { db } = vi.hoisted(() => ({
   db: {
@@ -15,30 +15,15 @@ vi.mock('../db', () => db);
 import type { RouteContext } from './context';
 import { handleTokens } from './tokens';
 
-function makeCtx(
+// Clerk-session context: signed in as 'user_1' unless overridden.
+const makeCtx = (
   method: string,
   path: string,
   opts: { clerkUserId?: string | null; body?: unknown } = {},
-): RouteContext {
-  const url = new URL(`https://api.test${path}`);
-  const segments = url.pathname.replace(/^\//, '').split('/');
-  const request = new Request(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
-  });
+): RouteContext => {
   const clerkUserId = opts.clerkUserId === undefined ? 'user_1' : opts.clerkUserId;
-  return {
-    request,
-    env: {} as Env,
-    url,
-    segments,
-    clerkUserId,
-    verifiedUserId: clerkUserId,
-    clerkEmail: null,
-    resolveOwner: () => clerkUserId,
-  };
-}
+  return makeTestRouteContext(method, path, { body: opts.body, clerkUserId, owner: clerkUserId });
+};
 
 beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();

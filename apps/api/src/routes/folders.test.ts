@@ -1,5 +1,5 @@
+import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
 
 // Characterisation tests for handleFolders' authorisation surface
 // (spec/15). The owner-scoped folder tree must reject: an unauthenticated
@@ -23,30 +23,16 @@ vi.mock('../db', () => db);
 import type { RouteContext } from './context';
 import { handleFolders } from './folders';
 
-function makeCtx(
+// Guest-shaped context: resolveOwner yields 'owner-1' unless overridden.
+const makeCtx = (
   method: string,
   path: string,
   opts: { owner?: string | null; body?: unknown } = {},
-): RouteContext {
-  const url = new URL(`https://api.test${path}`);
-  const segments = url.pathname.replace(/^\//, '').split('/');
-  const owner = opts.owner === undefined ? 'owner-1' : opts.owner;
-  const request = new Request(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+): RouteContext =>
+  makeTestRouteContext(method, path, {
+    body: opts.body,
+    owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
-  return {
-    request,
-    env: {} as Env,
-    url,
-    segments,
-    clerkUserId: null,
-    verifiedUserId: null,
-    clerkEmail: null,
-    resolveOwner: () => owner,
-  };
-}
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();

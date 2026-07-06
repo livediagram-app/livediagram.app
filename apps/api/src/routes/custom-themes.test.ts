@@ -1,5 +1,5 @@
+import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
 
 // Authorisation surface for handleCustomThemes (spec/44). Owner-scoped
 // like folders: an unauthenticated caller is rejected (400), a missing
@@ -29,30 +29,16 @@ const DEF = {
   elementText: '#1e3a8a',
 };
 
-function makeCtx(
+// Guest-shaped context: resolveOwner yields 'owner-1' unless overridden.
+const makeCtx = (
   method: string,
   path: string,
   opts: { owner?: string | null; body?: unknown } = {},
-): RouteContext {
-  const url = new URL(`https://api.test${path}`);
-  const segments = url.pathname.replace(/^\//, '').split('/');
-  const owner = opts.owner === undefined ? 'owner-1' : opts.owner;
-  const request = new Request(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+): RouteContext =>
+  makeTestRouteContext(method, path, {
+    body: opts.body,
+    owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
-  return {
-    request,
-    env: {} as Env,
-    url,
-    segments,
-    clerkUserId: null,
-    verifiedUserId: null,
-    clerkEmail: null,
-    resolveOwner: () => owner,
-  };
-}
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();

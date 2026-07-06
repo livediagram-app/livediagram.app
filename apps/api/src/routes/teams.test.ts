@@ -1,3 +1,4 @@
+import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TeamMember } from '@livediagram/api-schema';
 import type { Env } from '../types';
@@ -46,7 +47,9 @@ import type { RouteContext } from './context';
 import { notifyActionAssigned } from '../email/notifications';
 import { handleTeams } from './teams';
 
-function makeCtx(
+// Clerk-session context ('user-1'); verifiedUserId may diverge for the
+// token-caller shape (spec/61). resolveOwner falls back to 'guest-1'.
+const makeCtx = (
   method: string,
   path: string,
   opts: {
@@ -56,31 +59,20 @@ function makeCtx(
     verifiedUserId?: string | null;
     body?: unknown;
   } = {},
-): RouteContext {
-  const url = new URL(`https://api.test${path}`);
-  const segments = url.pathname.replace(/^\//, '').split('/');
+): RouteContext => {
   const clerkUserId = opts.clerkUserId === undefined ? 'user-1' : opts.clerkUserId;
   const verifiedUserId = opts.verifiedUserId === undefined ? clerkUserId : opts.verifiedUserId;
-  const clerkEmail = opts.clerkEmail === undefined ? null : opts.clerkEmail;
-  const request = new Request(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
-  });
-  return {
-    request,
-    env: {} as Env,
-    url,
-    segments,
+  return makeTestRouteContext(method, path, {
+    body: opts.body,
     clerkUserId,
     verifiedUserId,
-    clerkEmail,
-    resolveOwner: () => verifiedUserId ?? 'guest-1',
+    clerkEmail: opts.clerkEmail ?? null,
+    owner: verifiedUserId ?? 'guest-1',
     // Evaluate the deferred work inline so tests can observe the dispatch
     // (`ctx.waitUntil?.(...)` skips its argument entirely when absent).
     waitUntil: (p: Promise<unknown>) => void p.catch(() => {}),
-  };
-}
+  });
+};
 
 const team = { id: 't1', name: 'Crew', organisation: null, createdAt: 1, updatedAt: 1 };
 

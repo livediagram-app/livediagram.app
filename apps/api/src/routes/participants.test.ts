@@ -1,5 +1,5 @@
+import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
 
 // Characterisation tests for handleParticipants (spec/04). GET is
 // deliberately open (ids + display fields already leak through the WS
@@ -20,30 +20,16 @@ vi.mock('../db', () => db);
 import type { RouteContext } from './context';
 import { handleParticipants } from './participants';
 
-function makeCtx(
+// Guest-shaped context: resolveOwner yields 'owner-1' unless overridden.
+const makeCtx = (
   method: string,
   path: string,
   opts: { owner?: string | null; body?: unknown } = {},
-): RouteContext {
-  const url = new URL(`https://api.test${path}`);
-  const segments = url.pathname.replace(/^\//, '').split('/');
-  const owner = opts.owner === undefined ? 'owner-1' : opts.owner;
-  const request = new Request(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+): RouteContext =>
+  makeTestRouteContext(method, path, {
+    body: opts.body,
+    owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
-  return {
-    request,
-    env: {} as Env,
-    url,
-    segments,
-    clerkUserId: null,
-    verifiedUserId: null,
-    clerkEmail: null,
-    resolveOwner: () => owner,
-  };
-}
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
