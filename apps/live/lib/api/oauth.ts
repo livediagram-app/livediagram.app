@@ -14,11 +14,12 @@ export type OauthExchangeResult = {
 export async function apiExchangeOauthToken(
   ownerId: string,
   clientName: string,
+  readOnly = false,
 ): Promise<OauthExchangeResult> {
   const res = await fetch(`${API_BASE}/oauth/exchange`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ clientName }),
+    body: JSON.stringify({ clientName, readOnly }),
   });
   return expectOk<OauthExchangeResult>(res, 'oauth exchange');
 }

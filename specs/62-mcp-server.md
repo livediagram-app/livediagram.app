@@ -330,6 +330,21 @@ to the right tools and the graph-first path:
 Registered in `apps/mcp/src/prompts.ts`, wired in `buildServer` beside the tools
 and schema resource.
 
+### 4.11 Read-only tokens (the one scope)
+
+A trust story for cautious users: the MCP consent screen offers a **"read-only
+access"** checkbox. When ticked, the minted `lvd_` token carries `read_only = 1`
+(spec/61 §3.4, migration 0039), and the api worker rejects every write it
+presents — `POST`/`PUT`/`DELETE` → `403 read_only_token` — at a **single
+dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
+reached, present or future, with no per-route changes. The read tools
+(find_diagrams, read_diagram, both GETs) still work; every write tool
+(create/update/delete/share/add_tab/rename) is blocked server-side, which is the
+security boundary (the tool list is static, but the api is the enforcer). Clerk
+sessions and full tokens are unaffected. The token list in the Explorer shows a
+"Read-only" badge. This is a single boolean, not a general scopes system —
+finer grants stay deferred (spec/61 §7).
+
 ## 5. Visualise — inline image render
 
 `read_diagram`, `create_diagram`, and `update_diagram` all return an **inline
@@ -422,6 +437,6 @@ Worker (no DOM, no React).
 - **Token-paste connector** as a supported path — OAuth is the chosen front door
   ([§3](#3-authentication-oauth-21)); a raw Bearer still works for local dev but
   isn't a documented user flow.
-- **Read-only / scoped MCP tokens** — inherits spec/61's "full read+write, no
-  scopes yet" ([spec/61 §3.4](61-public-api-and-tokens.md)); a read-only token
-  would map cleanly to find/read-only MCP use if scopes ever land.
+- **Finer-grained scoped MCP tokens** — a **read-only** token now exists
+  ([§4.11](#411-read-only-tokens-the-one-scope), spec/61 §3.4); per-resource /
+  per-verb scopes beyond that stay deferred.

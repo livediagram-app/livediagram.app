@@ -21,7 +21,10 @@ export async function handleOauthExchange(ctx: RouteContext): Promise<Response> 
   if (segments[2] !== 'exchange' || request.method !== 'POST') return notFound();
   const owner = clerkUserId;
 
-  const body = (await request.json().catch(() => ({}))) as { clientName?: string };
+  const body = (await request.json().catch(() => ({}))) as {
+    clientName?: string;
+    readOnly?: boolean;
+  };
   const raw = typeof body.clientName === 'string' ? body.clientName.trim() : '';
   if (raw.length > MAX_NAME_LEN) return badRequest('client name too long');
   // Default name keeps the token identifiable in the user's token list even if
@@ -37,6 +40,7 @@ export async function handleOauthExchange(ctx: RouteContext): Promise<Response> 
   const now = Date.now();
   const id = crypto.randomUUID();
   const expiresAt = apiTokenExpiry(now);
+  const readOnly = body.readOnly === true;
   await createApiToken(env, {
     id,
     ownerId: owner,
@@ -44,8 +48,9 @@ export async function handleOauthExchange(ctx: RouteContext): Promise<Response> 
     tokenHash: await hashApiToken(secret),
     createdAt: now,
     expiresAt,
+    readOnly,
   });
   // The plaintext is returned ONCE; the MCP hands it to the client and never
   // stores it server-side (only the hash is persisted).
-  return json({ token: secret, id, name, expiresAt }, { status: 201 });
+  return json({ token: secret, id, name, expiresAt, readOnly }, { status: 201 });
 }

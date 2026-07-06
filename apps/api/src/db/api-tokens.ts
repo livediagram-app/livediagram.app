@@ -6,7 +6,8 @@ import { hashApiToken } from '../auth/api-token';
 import { rowToApiToken, type ApiTokenRow } from '../api-token-row';
 import type { ApiTokenDTO, Env } from '../types';
 
-const COLS = 'id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked';
+const COLS =
+  'id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only';
 
 // Hard cap on live tokens per account (spec/61): enough for any real
 // integration set, low enough to keep the list + table tidy.
@@ -40,13 +41,16 @@ export async function createApiToken(
     tokenHash: string;
     createdAt: number;
     expiresAt: number;
+    // Read-only token (spec/62 §4.11): may only GET/HEAD. Defaults to full
+    // read+write when omitted.
+    readOnly?: boolean;
   },
 ): Promise<void> {
   await env.DB.prepare(
-    `INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked)
-     VALUES (?, ?, ?, ?, ?, NULL, ?, 0)`,
+    `INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only)
+     VALUES (?, ?, ?, ?, ?, NULL, ?, 0, ?)`,
   )
-    .bind(t.id, t.ownerId, t.tokenHash, t.name, t.createdAt, t.expiresAt)
+    .bind(t.id, t.ownerId, t.tokenHash, t.name, t.createdAt, t.expiresAt, t.readOnly ? 1 : 0)
     .run();
 }
 
@@ -60,19 +64,19 @@ export async function createApiToken(
 export async function resolveApiToken(
   env: Env,
   token: string,
-): Promise<{ ownerId: string; tokenId: string } | null> {
+): Promise<{ ownerId: string; tokenId: string; readOnly: boolean } | null> {
   const hash = await hashApiToken(token);
   const now = Date.now();
   const row = await env.DB.prepare(
-    'SELECT id, owner_id FROM api_tokens WHERE token_hash = ? AND revoked = 0 AND expires_at > ?',
+    'SELECT id, owner_id, read_only FROM api_tokens WHERE token_hash = ? AND revoked = 0 AND expires_at > ?',
   )
     .bind(hash, now)
-    .first<{ id: string; owner_id: string }>();
+    .first<{ id: string; owner_id: string; read_only: number }>();
   if (!row) return null;
   await env.DB.prepare('UPDATE api_tokens SET last_used_at = ? WHERE id = ?')
     .bind(now, row.id)
     .run();
-  return { ownerId: row.owner_id, tokenId: row.id };
+  return { ownerId: row.owner_id, tokenId: row.id, readOnly: row.read_only === 1 };
 }
 
 // Revoke one of the owner's own tokens. Scoped by owner_id so a caller can

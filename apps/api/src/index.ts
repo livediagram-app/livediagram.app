@@ -102,7 +102,7 @@ export default {
     // JWT verified (a token and a JWT can't both be the bearer). The resolved
     // owner is the token's Clerk userId, so a token request flows through the
     // exact same ownership / gate checks as a signed-in one.
-    let tokenAuth: { ownerId: string; tokenId: string } | null = null;
+    let tokenAuth: { ownerId: string; tokenId: string; readOnly: boolean } | null = null;
     if (!clerkUserId) {
       const authz = request.headers.get('Authorization');
       const bearer = authz?.startsWith('Bearer ') ? authz.slice(7) : null;
@@ -156,6 +156,14 @@ export default {
     // its volume low instead.
     const isWrite =
       request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE';
+    // Read-only token enforcement (spec/62 §4.11): a token minted read-only may
+    // only GET/HEAD. Reject every write it presents at this single choke point
+    // — so no write route can be reached, present or future, with no per-route
+    // changes. Clerk sessions and full tokens are unaffected (tokenAuth is null
+    // or readOnly false). Guest header requests carry no tokenAuth either.
+    if (tokenAuth?.readOnly && isWrite) {
+      return json({ error: 'read_only_token' }, { status: 403 });
+    }
     // Reject oversized bodies up front (cheap Content-Length gate) so a hostile
     // payload never reaches a route's req.json(). The per-field / per-tab caps
     // in the routes catch the rest; this is the blunt outer bound.

@@ -67,6 +67,9 @@ function Consent() {
   const to = params.get('to');
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
+  // Read-only opt-in (spec/62 §4.11): grant the tool view-only access — it can
+  // find and read diagrams but not create / edit / delete / share.
+  const [readOnly, setReadOnly] = useState(false);
 
   // Checked first so Cancel works from any state (incl. the sign-in screen,
   // which otherwise returns before the later checks).
@@ -153,7 +156,7 @@ function Consent() {
   const approve = async () => {
     setStatus('connecting');
     try {
-      const { token, expiresAt } = await apiExchangeOauthToken(clerkUserId, client);
+      const { token, expiresAt } = await apiExchangeOauthToken(clerkUserId, client, readOnly);
       const res = await fetch(`${MCP_ORIGIN}/oauth/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -175,9 +178,22 @@ function Consent() {
       <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
-        access your livediagram diagrams (full read + write) on your behalf. Approving creates an
-        API token, which you can revoke any time from the Explorer’s API tokens page.
+        access your livediagram diagrams on your behalf. Approving creates an API token, which you
+        can revoke any time from the Explorer’s API tokens page.
       </p>
+      <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700">
+        <input
+          type="checkbox"
+          checked={readOnly}
+          onChange={(e) => setReadOnly(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
+        />
+        <span className="text-slate-600 dark:text-slate-300">
+          <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span> —
+          let it find and view your diagrams, but not create, edit, delete, or share them. Leave
+          unchecked for full read + write.
+        </span>
+      </label>
       {to ? (
         <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
           Access will be sent to{' '}

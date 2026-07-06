@@ -218,6 +218,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "string",
           "null"
         ]
+      },
+      "readOnly": {
+        "type": "boolean"
       }
     },
     "required": [
@@ -225,7 +228,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name",
       "createdAt",
       "lastUsedAt",
-      "expiresAt"
+      "expiresAt",
+      "readOnly"
     ],
     "type": "object"
   },

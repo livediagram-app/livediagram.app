@@ -214,6 +214,9 @@ export type ApiToken = {
   lastUsedAt: number | null;
   // Fixed at createdAt + 6 months (spec/61).
   expiresAt: number;
+  // Read-only token (spec/62 §4.11): may only make GET/HEAD requests; the api
+  // rejects its writes. Minted read-only via the MCP consent screen.
+  readOnly: boolean;
 };
 
 // ---------------------------------------------------------------------

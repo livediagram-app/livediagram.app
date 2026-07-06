@@ -12,6 +12,8 @@ export type ApiTokenRow = {
   last_used_at: number | null;
   expires_at: number;
   revoked: number;
+  // 1 = the token may only read (GET/HEAD); the api rejects its writes.
+  read_only: number;
 };
 
 // Row -> DTO for the management list. NEVER exposes `token_hash` (and the
@@ -23,5 +25,6 @@ export function rowToApiToken(row: ApiTokenRow): ApiTokenDTO {
     createdAt: row.created_at,
     lastUsedAt: row.last_used_at,
     expiresAt: row.expires_at,
+    readOnly: row.read_only === 1,
   };
 }

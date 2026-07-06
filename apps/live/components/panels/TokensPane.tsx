@@ -118,10 +118,17 @@ export function TokensPane({
                     >
                       {t.name || 'Untitled token'}
                     </p>
-                    <span
-                      className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}
-                    >
-                      {status.label}
+                    <span className="mt-1 inline-flex flex-wrap items-center gap-1">
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}
+                      >
+                        {status.label}
+                      </span>
+                      {t.readOnly ? (
+                        <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                          Read-only
+                        </span>
+                      ) : null}
                     </span>
                   </div>
                 </div>

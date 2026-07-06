@@ -127,13 +127,19 @@ ownership checks every route already enforces — so a token can only touch what
 its `owner_id` owns. No route changes for authorization; only the identity
 source changes.
 
-### 3.4 Access — full read + write (no scopes yet)
+### 3.4 Access — full read + write, with an optional read-only flag
 
 A token grants its owner's **full** access — read AND write, the same surface
-the app has. There is **no scope choice and no read-only token** for now: a
-read-only mode is a plausible future addition but has no clear use today, so
-it's deferred ([§7](#7-out-of-scope-for-now)). Hence no `scopes` column — when
-granular access lands it returns with the columns it needs.
+the app has — **unless** it was minted **read-only** (the one scope that
+exists): a `read_only` column (migration 0039) that, when set, restricts the
+token to `GET`/`HEAD`; the api worker rejects every write it presents at a
+single dispatch choke point with `403 read_only_token`
+([spec/62 §4.11](62-mcp-server.md)). Read-only tokens are minted through the MCP
+consent screen (a "read-only access" checkbox), giving a cautious user a way to
+let an AI tool VIEW their diagrams without granting edit. There is still no
+finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
+([§7](#7-out-of-scope-for-now)) — `read_only` is a single boolean, not a general
+scopes system.
 
 **Team content counts as "the same surface".** A token's owner is always a
 Clerk account ([§3.3](#33-resolution)), and both credentials — session JWT and
@@ -350,9 +356,10 @@ hardening landed first:
 
 ## 7. Out of scope (for now)
 
-Scopes of any kind — a **read-only token**, and per-diagram / per-folder grants
-([§3.4](#34-access--full-read--write-no-scopes-yet)) — plus OAuth /
-third-party app authorization, webhooks, and any billing or quota tiers (the
-product has no paid tier — [spec/03](03-open-source-and-business-model.md)).
-Every token inherits the owner's full read+write access; finer grants come
+Finer-grained scopes — per-diagram / per-folder grants, per-verb permissions —
+plus webhooks and any billing or quota tiers (the product has no paid tier —
+[spec/03](03-open-source-and-business-model.md)). (The one scope that DID land is
+the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);
+OAuth / third-party app authorization landed in [spec/62](62-mcp-server.md).)
+Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.
