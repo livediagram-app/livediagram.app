@@ -1,7 +1,7 @@
-// Tab import (spec/27 + spec/66), lifted out of useTabActions: the
+// Tab import (spec/27 + spec/73), lifted out of useTabActions: the
 // id re-mint imported elements go through, the single-undo-step content
 // replace, and the format-dispatched importer (JSON / DSL / Markdown)
-// with its lazy-loaded parser cluster.
+// with its lazy-loaded parser cluster (JSON / Markdown / Mermaid).
 
 import type { Element, Tab } from '@livediagram/diagram';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -79,7 +79,7 @@ export function useTabImport({
               backgroundOpacity: imported.backgroundOpacity ?? t.backgroundOpacity,
               patternColor: imported.patternColor ?? t.patternColor,
               backgroundPatternScale: imported.backgroundPatternScale ?? t.backgroundPatternScale,
-              // Tab-level typography rides the export too (spec/66):
+              // Tab-level typography rides the export too (spec/13):
               // without these an exported tab using a tab font came
               // back rendering in the default face.
               font: imported.font ?? t.font,
@@ -99,9 +99,7 @@ export function useTabImport({
   // The Import dialog passes the user's chosen format, which drives both
   // the file-picker filter and the parser. Returns an outcome the dialog
   // renders (close / stay / show error) rather than throwing.
-  const importIntoActiveTab = async (
-    format: 'json' | 'dsl' | 'markdown',
-  ): Promise<ImportOutcome> => {
+  const importIntoActiveTab = async (format: 'json' | 'markdown'): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
@@ -109,9 +107,7 @@ export function useTabImport({
     const accept =
       format === 'markdown'
         ? 'text/markdown,.md,.markdown,.mdown,.mkd,text/plain'
-        : format === 'dsl'
-          ? '.lvd,text/plain'
-          : '.json,application/json';
+        : '.json,application/json';
     // Lazy-load the whole import cluster on first use: its static chain
     // (import-tab -> export-tab -> svg-render + the DSL parser) put
     // ~28 kB min of parse/serialise code in the editor's FIRST LOAD for
@@ -120,21 +116,6 @@ export function useTabImport({
     const { parseImportedTab, pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };
-
-    if (format === 'dsl') {
-      // The DSL parser (spec/66) lives in @livediagram/diagram; it throws on a
-      // structurally broken file, so wrap it into the dialog's outcome shape.
-      let parsed;
-      try {
-        const { parseTab } = await import('@livediagram/diagram/text-dsl');
-        parsed = parseTab(picked.text);
-      } catch (e) {
-        return { status: 'error', error: e instanceof Error ? e.message : 'Could not parse file.' };
-      }
-      replaceActiveTabContent({ ...parsed.tab, elements: remintElementIds(parsed.tab.elements) });
-      track('Tab', 'Imported', 'Text');
-      return { status: 'done' };
-    }
 
     if (format === 'markdown') {
       // Lazy-load the parser so its ~300 lines stay out of the editor's

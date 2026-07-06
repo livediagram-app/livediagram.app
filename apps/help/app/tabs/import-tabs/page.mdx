@@ -5,13 +5,13 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a JSON, Text (.lvd), or Markdown file into the active tab. Importing replaces the tab contents, so the dialog warns you first.',
+    'Import a livediagram JSON file or a Markdown outline into the active tab. Importing replaces the tab contents, so the dialog warns you first.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from a file. Import a livediagram JSON export, an editable Text (.lvd) file, or a Markdown outline into the active tab."
+  description="Bring a tab's contents in from a file. Import a livediagram JSON export or a Markdown outline into the active tab."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -23,7 +23,6 @@ export const metadata = helpMetadata({
 From the tab ellipsis menu, expand the **Content** section and choose **Import**, then pick a format:
 
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
-- **Text** reads a `.lvd` text file: shapes and the connections between them, written as readable lines you can hand-edit. Nodes you leave without coordinates are arranged for you, so you can sketch a graph in text and let livediagram lay it out.
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
 
 After you pick a format, a file picker opens; choose the file and the tab updates.

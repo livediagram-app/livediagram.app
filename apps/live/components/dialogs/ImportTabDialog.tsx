@@ -4,7 +4,7 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { ImportOutcome } from '@/lib/import-tab';
 
-type Format = 'json' | 'dsl' | 'markdown';
+type Format = 'json' | 'markdown';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -82,13 +82,6 @@ export function ImportTabDialog({ tabName, onImport, onClose }: ImportTabDialogP
             onClick={() => void handle('json')}
           />
           <ImportCard
-            kind="dsl"
-            title="Text"
-            description="A .lvd text file (shapes + connections). Edit it anywhere and rebuild the diagram."
-            busy={busyFormat === 'dsl'}
-            onClick={() => void handle('dsl')}
-          />
-          <ImportCard
             kind="markdown"
             title="Markdown"
             description="A .md outline (headings + lists), e.g. exported from XMind. Becomes a themed tree."
@@ -150,28 +143,6 @@ function ImportCard({
 }
 
 function FormatIcon({ kind }: { kind: Format }) {
-  if (kind === 'dsl') {
-    return (
-      <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
-        <rect
-          x="1"
-          y="1"
-          width="30"
-          height="18"
-          rx="2"
-          fill="rgb(237 233 254)"
-          stroke="rgb(167 139 250)"
-          strokeWidth="1.25"
-        />
-        <path
-          d="M6 7h13M6 10h16M6 13h9"
-          stroke="rgb(124 58 237)"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
   if (kind === 'markdown') {
     return (
       <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>

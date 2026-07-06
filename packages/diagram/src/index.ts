@@ -639,9 +639,7 @@ export * from './validate';
 // Deterministic auto-layout for AI-generated diagrams (spec/25).
 export * from './auto-layout';
 
-// Human-editable round-trip text format (spec/66): serializeTab / parseTab.
 // Shared by the editor's text export + import and reusable by the api / MCP.
-export * from './text-dsl';
 
 // Headless SVG renderer (spec/62 §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.

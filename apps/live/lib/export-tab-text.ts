@@ -6,13 +6,7 @@
 // Re-exported from export-tab.ts so existing `@/lib/export-tab` import
 // paths keep resolving unchanged.
 
-import {
-  isBoxed,
-  serializeTab,
-  type ArrowElement,
-  type BoxedElement,
-  type Tab,
-} from '@livediagram/diagram';
+import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from '@livediagram/diagram';
 
 // ---------------------------------------------------------------------
 // File (JSON)
@@ -45,17 +39,8 @@ export function exportTabAsJson(tab: Tab): Blob {
 }
 
 // ---------------------------------------------------------------------
-// Text DSL (spec/66)
+// Text serialisation of a Tab
 // ---------------------------------------------------------------------
-
-// The human-editable round-trip format: a `.lvd` text document that keeps
-// every element's id and writes connections as `id: from -> to`, so the
-// graph survives (unlike the Markdown summary below). The serializer lives
-// in `@livediagram/diagram` (shared with import + the api / MCP); this is
-// just the Blob wrapper for the download path.
-export function exportTabAsDsl(tab: Tab): Blob {
-  return new Blob([serializeTab(tab)], { type: 'text/plain' });
-}
 
 // ---------------------------------------------------------------------
 // Markdown

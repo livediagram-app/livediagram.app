@@ -7,27 +7,6 @@ import type { Format } from './ExportTabDialog';
 
 export function FormatIcon({ kind }: { kind: Format }) {
   switch (kind) {
-    case 'text':
-      return (
-        <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
-          <rect
-            x="1"
-            y="1"
-            width="30"
-            height="18"
-            rx="2"
-            fill="rgb(237 233 254)"
-            stroke="rgb(167 139 250)"
-            strokeWidth="1.25"
-          />
-          <path
-            d="M6 7h13M6 10h16M6 13h9"
-            stroke="rgb(124 58 237)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      );
     case 'markdown':
       return (
         <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
