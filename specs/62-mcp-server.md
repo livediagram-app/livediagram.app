@@ -313,6 +313,23 @@ assistant to "rename that" or "delete the old one":
   clear message. Both inherit the ordinary owner/team authorization the routes
   already enforce ([spec/61 §3.4](61-public-api-and-tokens.md)).
 
+### 4.10 Prompts (discoverability)
+
+Registered MCP **prompts** — pre-canned templates a client surfaces as slash
+commands / quick actions, so a user finds what the server does without knowing
+the tool names. Pure text (no api calls, no auth to list); each steers the model
+to the right tools and the graph-first path:
+
+- **`diagram_this`** `{ description }` — create a diagram from a description via
+  create_diagram + the graph input, and return a link.
+- **`flowchart_from_steps`** `{ steps }` — turn an ordered step list (with
+  branches) into a flowchart (diamond decisions, labelled branch edges).
+- **`show_my_diagram`** `{ name }` — find a diagram by name and read_diagram it
+  inline.
+
+Registered in `apps/mcp/src/prompts.ts`, wired in `buildServer` beside the tools
+and schema resource.
+
 ## 5. Visualise — inline image render
 
 `read_diagram`, `create_diagram`, and `update_diagram` all return an **inline

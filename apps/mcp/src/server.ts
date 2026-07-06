@@ -6,6 +6,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
 import { elementSchemaDoc, SCHEMA_RESOURCE_URI, SERVER_INSTRUCTIONS } from './schema';
 import { registerTools } from './tools';
+import { registerPrompts } from './prompts';
 
 export function buildServer(env: Env): McpServer {
   const server = new McpServer(
@@ -29,5 +30,6 @@ export function buildServer(env: Env): McpServer {
   );
 
   registerTools(server, env);
+  registerPrompts(server);
   return server;
 }
