@@ -112,7 +112,7 @@ subject; one theme applies to all tabs in a create_diagram call.
 // Server-level instructions echo the essentials for clients that don't read
 // resources (spec/62 §4.5). The element format is carried inline on the tool
 // arguments, so these instructions tell the model NOT to look it up elsewhere.
-export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, and edit the user's livediagram diagrams.
+export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, and delete the user's livediagram diagrams.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
@@ -291,4 +291,24 @@ export const shareDiagramShape = {
     .enum(['never', 'week', 'month', 'sixMonths'])
     .optional()
     .describe('When the link stops working. Defaults to "never" (until revoked).'),
+};
+
+export const deleteDiagramShape = {
+  diagramId: z.string().describe('The diagram to delete (from find_diagrams / read_diagram).'),
+  tabId: z
+    .string()
+    .optional()
+    .describe(
+      'Delete only this ONE tab instead of the whole diagram. A diagram must keep at ' +
+        'least one tab, so deleting the last remaining tab is refused.',
+    ),
+};
+
+export const renameDiagramShape = {
+  diagramId: z.string().describe('The diagram to rename (from find_diagrams / read_diagram).'),
+  name: z.string().min(1).describe('The new name.'),
+  tabId: z
+    .string()
+    .optional()
+    .describe('Rename this tab within the diagram instead of the diagram itself.'),
 };

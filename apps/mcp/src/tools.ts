@@ -13,7 +13,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
-import { apiJson, postTelemetry } from './api';
+import { apiFetch, apiJson, postTelemetry } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
 import {
@@ -37,7 +37,9 @@ import {
   addTabShape,
   createDiagramShape,
   findDiagramsShape,
+  deleteDiagramShape,
   readDiagramShape,
+  renameDiagramShape,
   shareDiagramShape,
   updateDiagramShape,
 } from './schema';
@@ -391,6 +393,81 @@ export function registerTools(server: McpServer, env: Env): void {
         expiresAt: link.expiresAt,
         diagramUrl: deepLink(args.diagramId),
       });
+    },
+  );
+
+  server.registerTool(
+    'rename_diagram',
+    {
+      title: 'Rename a diagram or tab',
+      description:
+        'Rename a diagram, or (with tabId) one of its tabs. Non-destructive; returns the ' +
+        'updated name.',
+      inputSchema: renameDiagramShape,
+    },
+    async (args, extra) => {
+      const token = requireToken(extra as Extra);
+      postTelemetry(env, 'Mcp', 'Used', 'RenameDiagram');
+      if (args.tabId) {
+        // No tab-name-only endpoint: read the tab, then write it back with the
+        // new name (the api ignores UI-only fields on write).
+        const { tab } = await apiJson<{ tab: TabRecord }>(
+          env,
+          token,
+          `/diagrams/${args.diagramId}/tabs/${args.tabId}`,
+        );
+        await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${args.tabId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ ...tab, name: args.name }),
+        });
+        return textResult({ renamed: 'tab', tabId: args.tabId, name: args.name });
+      }
+      const { diagram } = await apiJson<{ diagram: Diagram }>(
+        env,
+        token,
+        `/diagrams/${args.diagramId}`,
+        { method: 'PUT', body: JSON.stringify({ name: args.name }) },
+      );
+      return textResult({
+        renamed: 'diagram',
+        id: diagram.id,
+        name: diagram.name,
+        url: deepLink(diagram.id),
+      });
+    },
+  );
+
+  server.registerTool(
+    'delete_diagram',
+    {
+      title: 'Delete a diagram or tab',
+      description:
+        'PERMANENTLY delete a diagram — or, with tabId, just one of its tabs. This cannot ' +
+        'be undone, so confirm with the user first. A diagram must keep at least one tab.',
+      inputSchema: deleteDiagramShape,
+    },
+    async (args, extra) => {
+      const token = requireToken(extra as Extra);
+      postTelemetry(env, 'Mcp', 'Used', 'DeleteDiagram');
+      const path = args.tabId
+        ? `/diagrams/${args.diagramId}/tabs/${args.tabId}`
+        : `/diagrams/${args.diagramId}`;
+      // DELETE returns 204 with no body, so use apiFetch (apiJson would choke
+      // parsing an empty response) and surface a clear message on failure.
+      const res = await apiFetch(env, token, path, { method: 'DELETE' });
+      if (!res.ok) {
+        return errorResult(
+          `Could not delete (${res.status}). ` +
+            (args.tabId
+              ? 'A diagram must keep at least one tab — you cannot delete the last one.'
+              : 'Check the diagram id and that you own it.'),
+        );
+      }
+      return textResult(
+        args.tabId
+          ? { deleted: 'tab', diagramId: args.diagramId, tabId: args.tabId }
+          : { deleted: 'diagram', diagramId: args.diagramId },
+      );
     },
   );
 }

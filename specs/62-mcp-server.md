@@ -27,7 +27,7 @@ well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no
 model of its own and makes no LLM calls.
 
-**Keep the surface small.** Six tools and one schema resource (see
+**Keep the surface small.** Nine tools and one schema resource (see
 [§4](#4-tools)). Each tool is a thin wrapper over an existing `/api` route plus
 shared helpers from `packages/diagram`; the MCP adds no business logic that
 isn't reusable.
@@ -296,6 +296,22 @@ shouldn't silently grant edit; the model passes `edit` to allow changes), and
 the api applies the same owner-only authorization every share route enforces, so
 a token can only share diagrams its account owns. `expiry` (spec/34) defaults to
 `never`.
+
+### 4.9 `rename_diagram` and `delete_diagram`
+
+CRUD completeness — the verbs a user will reach for the moment they ask their
+assistant to "rename that" or "delete the old one":
+
+- **`rename_diagram`** — `{ diagramId, name, tabId? }`. Renames the diagram
+  (`PUT /api/diagrams/<id>` `{ name }`), or one tab when `tabId` is given (no
+  tab-name-only route, so it reads the tab and writes it back with the new
+  name). Non-destructive.
+- **`delete_diagram`** — `{ diagramId, tabId? }`. Permanently deletes the
+  diagram (`DELETE /api/diagrams/<id>`) or one tab (`DELETE …/tabs/<tabId>`).
+  Irreversible, so the description tells the model to confirm with the user
+  first; the api refuses deleting a diagram's last remaining tab and surfaces a
+  clear message. Both inherit the ordinary owner/team authorization the routes
+  already enforce ([spec/61 §3.4](61-public-api-and-tokens.md)).
 
 ## 5. Visualise — inline image render
 
