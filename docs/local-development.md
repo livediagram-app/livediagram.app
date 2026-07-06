@@ -64,16 +64,17 @@ Workspace names follow the pattern `@livediagram/<app-or-package-folder-name>`.
 
 Run from the repo root:
 
-| Command             | What it does                                                     |
-| ------------------- | ---------------------------------------------------------------- |
-| `pnpm install`      | Install all workspace deps.                                      |
-| `pnpm dev`          | Start all dev servers in parallel (`turbo run dev`).             |
-| `pnpm build`        | Production build across the repo (`turbo run build`).            |
-| `pnpm lint`         | ESLint across the repo (`turbo run lint`).                       |
-| `pnpm typecheck`    | `tsc --noEmit` across every workspace (`turbo run typecheck`).   |
-| `pnpm test`         | Vitest across every workspace that has tests (`turbo run test`). |
-| `pnpm format`       | Prettier write across the repo.                                  |
-| `pnpm format:check` | Prettier check (this is what CI runs).                           |
+| Command                                    | What it does                                                                          |
+| ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `pnpm install`                             | Install all workspace deps.                                                           |
+| `pnpm dev`                                 | Start all dev servers in parallel (`turbo run dev`).                                  |
+| `pnpm build`                               | Production build across the repo (`turbo run build`).                                 |
+| `pnpm lint`                                | ESLint across the repo (`turbo run lint`).                                            |
+| `pnpm typecheck`                           | `tsc --noEmit` across every workspace (`turbo run typecheck`).                        |
+| `pnpm test`                                | Vitest across every workspace that has tests (`turbo run test`).                      |
+| `pnpm --filter @livediagram/live test:e2e` | Playwright smoke suite (spec/72); reuses a running `pnpm dev` or boots its own stack. |
+| `pnpm format`                              | Prettier write across the repo.                                                       |
+| `pnpm format:check`                        | Prettier check (this is what CI runs).                                                |
 
 Turbo caches results, so re-running with no changes is a no-op.
 

@@ -11,6 +11,11 @@ build/
 out/
 *.tsbuildinfo
 
+# Playwright e2e artifacts (spec/72)
+apps/live/test-results/
+apps/live/playwright-report/
+apps/live/.playwright/
+
 # Turbo
 .turbo/
 

@@ -49,6 +49,18 @@ When you add a feature, add tests for the critical paths. When you fix a bug, ad
 
 The bar isn't 100% line coverage; it's "the next regression on this code path fails CI before it ships."
 
+### End-to-end smoke tests
+
+A small [Playwright](https://playwright.dev) smoke suite (`apps/live/e2e`, [`specs/72`](../specs/72-e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It is **deliberately off the per-PR gate** because a browser run costs real CI minutes; it runs on push to `main` and on demand (the `E2E Smoke` workflow, `.github/workflows/e2e.yml`).
+
+Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3002` / `:8787`):
+
+```sh
+pnpm --filter @livediagram/live test:e2e
+```
+
+Without a dev stack, it builds the live app and boots its own (`scripts/e2e-stack.mjs`). Keep the suite tiny — add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
+
 ## PRs
 
 - **One change per PR**. A bug fix doesn't need surrounding cleanup; a one-shot operation doesn't need a helper. If you find yourself touching unrelated files, split into separate PRs.

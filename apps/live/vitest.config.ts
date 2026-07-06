@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url';
+import { configDefaults } from 'vitest/config';
 import { defineProject } from '@livediagram/vitest-config';
 
 // Node environment is enough for the current pure-logic tests (canvas
@@ -18,6 +19,10 @@ export default defineProject({
   // preview switches) must be transformed the same way here or it
   // throws "React is not defined" at render time.
   esbuild: { jsx: 'automatic' },
+  // The e2e/ Playwright smoke suite (spec/72) uses the same `.spec.ts`
+  // extension but runs under Playwright, not Vitest — keep it out of
+  // the unit run (it has its own `test:e2e` script).
+  test: { exclude: [...configDefaults.exclude, 'e2e/**'] },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./', import.meta.url)),

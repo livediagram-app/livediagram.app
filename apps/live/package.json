@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test --project=chromium",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .next-dev out node_modules .turbo coverage"
   },
@@ -29,6 +30,7 @@
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
