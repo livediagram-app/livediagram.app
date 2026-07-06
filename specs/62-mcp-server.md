@@ -257,6 +257,33 @@ input-schema field descriptions, so a client that ignores resources still gets
 enough. The schema text derives from `packages/diagram` types — single source of
 truth, no hand-maintained copy that can drift.
 
+### 4.7 Graph-first authoring (the low-burden path)
+
+Emitting raw `elements` with `x/y/width/height`, a shape vocabulary, and
+arrow-endpoint anchor objects is the biggest source of model error (it's why
+`coerceShapeKind`, the validation error paths, and auto-layout-on-replace all
+exist). So `create_diagram`, `add_tab`, and `update_diagram` (replace mode)
+accept an alternative **`graph`** input — the connection graph and nothing else:
+
+```
+graph: { nodes: [{ id, label?, shape? }], edges: [{ from, to, label? }] }
+```
+
+The server turns each node into a `shape` box and each edge into a pinned
+arrow, then **always auto-lays-it-out** (a graph carries no positions). The
+model expresses only intent — which nodes exist, what points at what — and
+never touches geometry, anchors, or endpoint shapes. Off-vocabulary shape kinds
+are coerced; an edge to an unknown node id is dropped rather than producing a
+broken arrow. This is the **preferred path for any node/edge diagram**
+(flowcharts, org charts, architecture, dependency graphs); `elements` stays for
+deliberate arrangements (a ring, a grid) and mixed non-node content.
+
+The translation (`graphToElements`) is a pure function in `packages/diagram`
+beside the layout it feeds, so the public API can adopt it later; the MCP tab
+builders (`buildGraphTab`) live in `apps/mcp/src/tab-builders.ts` — split out of
+`tool-helpers.ts` so they're render-free and unit-testable. Provide **one** of
+`graph` / `elements` / `template`, not several.
+
 ## 5. Visualise — inline image render
 
 `read_diagram`, `create_diagram`, and `update_diagram` all return an **inline

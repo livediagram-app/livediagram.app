@@ -5,24 +5,33 @@
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Diagram, DiagramSummary, TabRecord } from '@livediagram/api-schema';
-import { coerceShapeKind, isValidTab, type Element, type Tab } from '@livediagram/diagram';
+import {
+  coerceShapeKind,
+  graphToElements,
+  isValidTab,
+  type Element,
+  type Tab,
+} from '@livediagram/diagram';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
 import { apiJson, postTelemetry } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
 import {
-  applyLayout,
-  buildTab,
-  buildTemplateTab,
   deepLink,
   errorResult,
   imageResult,
   requireToken,
-  resolveTemplate,
   textResult,
-  validTemplateKinds,
   type Extra,
 } from './tool-helpers';
+import {
+  applyLayout,
+  buildTab,
+  buildGraphTab,
+  buildTemplateTab,
+  resolveTemplate,
+  validTemplateKinds,
+} from './tab-builders';
 import {
   addTabShape,
   createDiagramShape,
@@ -162,6 +171,12 @@ export function registerTools(server: McpServer, env: Env): void {
           tabs.push(buildTemplateTab(tabId, t.name, kind, args.theme));
           continue;
         }
+        // Graph-first (spec/62 §4.7): the server builds + lays out the boxes
+        // and arrows from a node/edge graph.
+        if (t.graph) {
+          tabs.push(buildGraphTab(tabId, t.name, t.graph, args.theme));
+          continue;
+        }
         const candidate: unknown = { id: tabId, name: t.name, elements: t.elements ?? [] };
         if (!t.elements || !isValidTab(candidate)) {
           return errorResult(
@@ -220,10 +235,10 @@ export function registerTools(server: McpServer, env: Env): void {
         );
       }
       const candidate: unknown = { id: tabId, name: args.name, elements: args.elements ?? [] };
-      if (!templateKind && (!args.elements || !isValidTab(candidate))) {
+      if (!templateKind && !args.graph && (!args.elements || !isValidTab(candidate))) {
         return errorResult(
-          'Invalid elements. Provide "elements" (or a "template" kind from list_templates). ' +
-            'Check the livediagram://schema/elements resource: every element ' +
+          'Invalid input. Provide a "graph" (nodes + edges), "elements", or a "template" kind ' +
+            'from list_templates. Check the livediagram://schema/elements resource: every element ' +
             'needs id/type/x/y/width/height (arrows need from/to), and arrays must be well-formed.',
         );
       }
@@ -254,7 +269,9 @@ export function registerTools(server: McpServer, env: Env): void {
       }
       const tab = templateKind
         ? buildTemplateTab(tabId, args.name, templateKind, themeId)
-        : buildTab(tabId, args.name, (candidate as Tab).elements, args.layout, themeId);
+        : args.graph
+          ? buildGraphTab(tabId, args.name, args.graph, themeId)
+          : buildTab(tabId, args.name, (candidate as Tab).elements, args.layout, themeId);
       await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
         method: 'PUT',
         body: JSON.stringify(tab),
@@ -293,9 +310,17 @@ export function registerTools(server: McpServer, env: Env): void {
       );
 
       let nextElements: unknown[];
+      // Graph-first replace (spec/62 §4.7): a node/edge graph the server builds
+      // + lays out, in place of hand-placed elements. Forces auto layout below.
+      const graphReplace = args.mode === 'replace' && !!args.graph;
       if (args.mode === 'replace') {
-        if (!args.elements) return errorResult('replace mode requires "elements".');
-        nextElements = args.elements;
+        if (args.graph) {
+          nextElements = graphToElements(args.graph);
+        } else if (args.elements) {
+          nextElements = args.elements;
+        } else {
+          return errorResult('replace mode requires "graph" or "elements".');
+        }
       } else {
         if (!args.ops) return errorResult('ops mode requires "ops".');
         const byId = new Map<string, unknown>(tab.elements.map((e) => [e.id, e as unknown]));
@@ -324,7 +349,8 @@ export function registerTools(server: McpServer, env: Env): void {
       );
       // Layout applies only on a full replace (the model decides via `layout`);
       // ops edits always keep the existing positions (spec/62 §4.4).
-      const elements: Element[] = args.mode === 'replace' ? applyLayout(args.layout, fixed) : fixed;
+      const elements: Element[] =
+        args.mode === 'replace' ? applyLayout(graphReplace ? 'auto' : args.layout, fixed) : fixed;
       const nextTab: Tab = { ...(tab as Tab), id: tabId, elements };
       await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
         method: 'PUT',

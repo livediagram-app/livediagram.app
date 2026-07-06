@@ -118,11 +118,14 @@ server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
 described inline on each tool's element argument, so you already have everything
 you need from the tool definitions: do NOT web-search, open the open-source repo,
-or read another diagram to learn the schema. In short: use a unique "id" per
-element, make nodes "shape" elements (a labelled box) NOT "text" (text is only
-for titles/captions), position elements yourself for a deliberate shape (a cycle
-as a ring, a tree, a grid), prefer pinned arrows (node -> node), and do NOT set
-colours, the theme owns them. For a standard artefact (kanban, flowchart, SWOT,
+or read another diagram to learn the schema. The EASIEST way to author a node/edge diagram (flowchart, org chart,
+architecture, dependency graph) is the "graph" argument: give just nodes + edges
+by id and the server builds the boxes + arrows and lays them out — no
+coordinates, no anchors. Reach for raw "elements" only for a deliberate
+arrangement (a cycle as a ring, a grid) or mixed non-node content. Either way:
+use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
+"text" (text is only for titles/captions), prefer pinned arrows (node -> node),
+and do NOT set colours, the theme owns them. For a standard artefact (kanban, flowchart, SWOT,
 gantt, wireframe, ...) check list_templates first and pass its kind as
 "template" on create_diagram / add_tab — the hand-tuned scaffold beats
 rebuilding one from raw elements — then fill in real labels with
@@ -164,6 +167,47 @@ const themeField = z
       'Defaults to "brand".',
   );
 
+// Graph-first authoring (spec/62 §4.7): the LOW-BURDEN path. Give just the
+// connection graph — nodes and edges by id — and the server builds the
+// boxes + arrows and lays them out for you. Prefer this over hand-placing
+// elements whenever the diagram is a node/edge graph (flowcharts, org
+// charts, architecture, dependency graphs): no x/y/width/height, no
+// anchors, far fewer mistakes. Use `elements` only when you need precise
+// control (a deliberate ring/grid, mixed free-text, non-node content).
+const graphField = z
+  .object({
+    nodes: z
+      .array(
+        z.object({
+          id: z.string().describe('Unique id the edges reference.'),
+          label: z.string().optional().describe('Text inside the box.'),
+          shape: z
+            .string()
+            .optional()
+            .describe(
+              `Shape kind (${shapeKinds}); default "square". Use "diamond" for a ` +
+                'decision, "cylinder" for a datastore, "stadium" for start/end.',
+            ),
+        }),
+      )
+      .min(1)
+      .describe('The nodes (boxes). Each needs a unique id.'),
+    edges: z
+      .array(
+        z.object({
+          from: z.string().describe('Source node id.'),
+          to: z.string().describe('Target node id.'),
+          label: z.string().optional().describe('Optional text on the arrow.'),
+        }),
+      )
+      .describe('Directed connections between node ids. An edge to an unknown id is dropped.'),
+  })
+  .optional()
+  .describe(
+    'A node/edge graph the server turns into laid-out boxes + arrows — the ' +
+      'easiest way to author. Provide graph OR elements OR template, not more than one.',
+  );
+
 export const findDiagramsShape = {
   query: z.string().optional().describe('Only diagrams whose name contains this text.'),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
@@ -176,6 +220,7 @@ export const readDiagramShape = {
 
 const tabShape = z.object({
   name: z.string().describe('Name of the tab.'),
+  graph: graphField,
   elements: elementArray.optional(),
   template: templateField,
 });
@@ -204,6 +249,7 @@ export const addTabShape = {
     .string()
     .describe('The diagram to add a tab to (from find_diagrams / read_diagram).'),
   name: z.string().describe('Name of the new tab.'),
+  graph: graphField,
   elements: elementArray.optional(),
   template: templateField,
   layout: layoutField,
@@ -214,6 +260,7 @@ export const updateDiagramShape = {
   diagramId: z.string(),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z.enum(['replace', 'ops']).describe('"replace" the whole tab, or apply granular "ops".'),
+  graph: graphField,
   elements: elementArray
     .optional()
     .describe(`Replace mode: the full new element list. ${ELEMENT_SCHEMA_HINT}`),

@@ -625,6 +625,7 @@ export * from './icon-size';
 export * from './rich-text';
 
 export * from './factories';
+export * from './graph-authoring';
 export * from './duplicate';
 export * from './polyline';
 export * from './component-factories';
