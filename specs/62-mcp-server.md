@@ -345,6 +345,17 @@ sessions and full tokens are unaffected. The token list in the Explorer shows a
 "Read-only" badge. This is a single boolean, not a general scopes system —
 finer grants stay deferred (spec/61 §7).
 
+### 4.12 Error telemetry
+
+Genuine tool failures reach the public **Exceptions** dashboard (spec/22 Error
+category), so we see WHERE the MCP breaks. `apiJson` reports a **5xx** from the
+api worker (`Error·Api·Http5xx`) and a **network fault** (the service binding
+threw — `Error·Api·Internal`), then rethrows; the `delete_diagram` raw-fetch
+path reports a 5xx too. A **4xx is deliberately NOT reported** — a bad id or
+malformed elements is expected, model-correctable input, not a fault, and
+reporting it would flood the view (an empty Exceptions view is the goal).
+Fire-and-forget, generic tokens only — never a message, stack, or user content.
+
 ## 5. Visualise — inline image render
 
 `read_diagram`, `create_diagram`, and `update_diagram` all return an **inline
@@ -373,10 +384,14 @@ Worker (no DOM, no React).
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
-- **Known limitation (v1).** Image elements render as placeholder rectangles
-  (the SVG export already does this), since embedding R2-hosted bitmaps is extra
-  work. Acceptable for code/architecture/flow diagrams, which are shape+arrow+text.
-  Embedding real images is a follow-up.
+- **Image-element embedding.** When a rendered tab has image elements,
+  `imageResult` prefetches their bytes (owner-authed via the caller's token,
+  `GET /api/images/:id`) and inlines them as base64 data URIs through the
+  renderer's `resolveImageHref` hook — resvg (WASM) can't fetch, so the bytes
+  must be inline. Each image is capped (2 MB) so a large upload doesn't bloat the
+  preview's own base64 payload; over the cap, or on any fetch failure, it falls
+  back to the placeholder rectangle (the structured elements still carry the id).
+  A tab with no images does no extra work.
 - **Element coverage.** The shared renderer draws tables as their real grid
   (tracks / headers / zebra / per-cell text, `svg-render-table.ts`), freehand
   sketches as their polyline, the full shape-silhouette vocabulary (hexagon /
@@ -424,7 +439,6 @@ Worker (no DOM, no React).
 ## 7. Out of scope (for now)
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
-- **Real image-element embedding** in renders ([§5](#5-visualise--inline-image-render)).
 - **Folder / team management** via MCP — there are no tools to list, rename, or
   move folders (create_diagram only auto-files new diagrams under "Generated");
   more `/api` surface can be wrapped later if demand appears. (Share-link

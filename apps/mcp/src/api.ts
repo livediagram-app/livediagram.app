@@ -49,14 +49,29 @@ export function postTelemetry(env: Env, category: string, action: string, type: 
 }
 
 // Fetch + parse JSON, throwing ApiError on a non-2xx so tools surface a clear,
-// model-correctable message.
+// model-correctable message. A genuine failure — the api worker 5xx'd, or the
+// request never completed — is reported to the Error telemetry category
+// (spec/62 §4.12) so the public Exceptions dashboard shows where the MCP
+// breaks. A 4xx is NOT reported: it's expected model-correctable input (a bad
+// id, malformed elements), not a fault, and would only flood the dashboard.
 export async function apiJson<T>(
   env: Env,
   token: string,
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
-  const res = await apiFetch(env, token, path, init);
-  if (!res.ok) throw new ApiError(res.status, (await res.text().catch(() => '')).slice(0, 500));
+  let res: Response;
+  try {
+    res = await apiFetch(env, token, path, init);
+  } catch (err) {
+    // The request never completed (service binding down, network fault): a real
+    // failure, not model-correctable. Report as an internal error, then rethrow.
+    postTelemetry(env, 'Error', 'Api', 'Internal');
+    throw err;
+  }
+  if (!res.ok) {
+    if (res.status >= 500) postTelemetry(env, 'Error', 'Api', `Http${res.status}`);
+    throw new ApiError(res.status, (await res.text().catch(() => '')).slice(0, 500));
+  }
   return (await res.json()) as T;
 }

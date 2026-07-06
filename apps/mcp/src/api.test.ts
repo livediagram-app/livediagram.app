@@ -47,3 +47,42 @@ describe('apiJson', () => {
     await expect(apiJson(env, 't', '/x')).rejects.toBeInstanceOf(ApiError);
   });
 });
+
+describe('apiJson error telemetry (spec/62 §4.12)', () => {
+  function eventsPosted(calls: Request[]): boolean {
+    return calls.some((r) => new URL(r.url).pathname === '/api/events');
+  }
+
+  it('reports a 5xx to the Error telemetry category, then throws', async () => {
+    const { env, calls } = envWith((req) =>
+      new URL(req.url).pathname === '/api/events'
+        ? new Response(null, { status: 204 })
+        : new Response('boom', { status: 503 }),
+    );
+    await expect(apiJson(env, 't', '/diagrams')).rejects.toBeInstanceOf(ApiError);
+    expect(eventsPosted(calls)).toBe(true);
+  });
+
+  it('does NOT report a 4xx (expected, model-correctable)', async () => {
+    const { env, calls } = envWith(() => new Response('nope', { status: 404 }));
+    await expect(apiJson(env, 't', '/diagrams/bad')).rejects.toBeInstanceOf(ApiError);
+    expect(eventsPosted(calls)).toBe(false);
+  });
+
+  it('reports a network failure (binding threw) as Internal, then rethrows', async () => {
+    const calls: Request[] = [];
+    const env = {
+      API: {
+        fetch: vi.fn(async (req: Request) => {
+          calls.push(req);
+          if (new URL(req.url).pathname === '/api/events')
+            return new Response(null, { status: 204 });
+          throw new Error('network down');
+        }),
+      } as unknown as Fetcher,
+      OAUTH_KV: {} as KVNamespace,
+    };
+    await expect(apiJson(env, 't', '/diagrams')).rejects.toThrow('network down');
+    expect(calls.some((r) => new URL(r.url).pathname === '/api/events')).toBe(true);
+  });
+});

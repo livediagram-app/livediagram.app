@@ -22,6 +22,18 @@ function ensureWasm(): Promise<void> {
   return _init;
 }
 
+// base64-encode raw bytes. Chunked so a large buffer doesn't blow the call
+// stack via String.fromCharCode(...spread). Shared by the PNG encoder and the
+// image-embedding path (spec/62 §5).
+export function bytesToBase64(bytes: Uint8Array): string {
+  let bin = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
+}
+
 export async function svgToPngBase64(svg: string): Promise<string> {
   await ensureWasm();
   const resvg = new Resvg(svg, {
@@ -30,7 +42,5 @@ export async function svgToPngBase64(svg: string): Promise<string> {
     font: { fontBuffers: [FONT_BUFFER], loadSystemFonts: false, defaultFontFamily: 'Inter' },
   });
   const png = resvg.render().asPng();
-  let bin = '';
-  for (let i = 0; i < png.length; i++) bin += String.fromCharCode(png[i]!);
-  return btoa(bin);
+  return bytesToBase64(png);
 }

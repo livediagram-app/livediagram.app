@@ -104,6 +104,7 @@ export function registerTools(server: McpServer, env: Env): void {
           url: deepLink(diagram.id),
         },
         tab,
+        { env, token },
       );
     },
   );
@@ -210,6 +211,7 @@ export function registerTools(server: McpServer, env: Env): void {
           url: deepLink(id),
         },
         tabs[0]!,
+        { env, token },
       );
     },
   );
@@ -283,6 +285,7 @@ export function registerTools(server: McpServer, env: Env): void {
       return imageResult(
         { diagramId: args.diagramId, tabId, name: args.name, url: deepLink(args.diagramId) },
         tab,
+        { env, token },
       );
     },
   );
@@ -360,7 +363,10 @@ export function registerTools(server: McpServer, env: Env): void {
         method: 'PUT',
         body: JSON.stringify(nextTab),
       });
-      return imageResult({ id: args.diagramId, tabId, url: deepLink(args.diagramId) }, nextTab);
+      return imageResult({ id: args.diagramId, tabId, url: deepLink(args.diagramId) }, nextTab, {
+        env,
+        token,
+      });
     },
   );
 
@@ -456,6 +462,9 @@ export function registerTools(server: McpServer, env: Env): void {
       // parsing an empty response) and surface a clear message on failure.
       const res = await apiFetch(env, token, path, { method: 'DELETE' });
       if (!res.ok) {
+        // A 5xx is a real failure worth surfacing on the Exceptions dashboard;
+        // a 4xx (bad id, last tab) is model-correctable and not reported.
+        if (res.status >= 500) postTelemetry(env, 'Error', 'Api', `Http${res.status}`);
         return errorResult(
           `Could not delete (${res.status}). ` +
             (args.tabId
