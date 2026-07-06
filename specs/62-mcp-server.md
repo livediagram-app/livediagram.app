@@ -284,6 +284,19 @@ builders (`buildGraphTab`) live in `apps/mcp/src/tab-builders.ts` — split out 
 `tool-helpers.ts` so they're render-free and unit-testable. Provide **one** of
 `graph` / `elements` / `template`, not several.
 
+### 4.8 `share_diagram`
+
+Create a shareable link so anyone with the URL can open a diagram without
+signing in — the verb that turns "the AI made a diagram" into "the AI made a
+diagram and here's a link to send the team." Wraps `POST /api/diagrams/<id>/share`
+(spec/24): `{ diagramId, role?, expiry? }` → the public URL
+(`/diagram/shared?s=<code>`), the granted role, and the expiry. `role` defaults
+to **`view`** (least privilege for an automated share — showing your work
+shouldn't silently grant edit; the model passes `edit` to allow changes), and
+the api applies the same owner-only authorization every share route enforces, so
+a token can only share diagrams its account owns. `expiry` (spec/34) defaults to
+`never`.
+
 ## 5. Visualise — inline image render
 
 `read_diagram`, `create_diagram`, and `update_diagram` all return an **inline
@@ -364,9 +377,11 @@ Worker (no DOM, no React).
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
 - **Real image-element embedding** in renders ([§5](#5-visualise--inline-image-render)).
-- **Folder / team / share management** via MCP — there are no tools to list,
-  rename, or move folders (create_diagram only auto-files new diagrams under
-  "Generated"); more `/api` surface can be wrapped later if demand appears.
+- **Folder / team management** via MCP — there are no tools to list, rename, or
+  move folders (create_diagram only auto-files new diagrams under "Generated");
+  more `/api` surface can be wrapped later if demand appears. (Share-link
+  creation IS in scope now — `share_diagram`, [§4.8](#48-share_diagram); managing
+  folders/teams themselves stays out.)
   (Team **content** is in scope: `find_diagrams` sweeps team shared libraries
   and the other tools read/edit team diagrams through the ordinary access
   gates — [§4.1](#41-find_diagrams), [spec/61 §3.4](61-public-api-and-tokens.md).

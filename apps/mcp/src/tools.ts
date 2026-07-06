@@ -4,7 +4,7 @@
 // the elements; these tools validate, lay out, persist, and render. The
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Diagram, DiagramSummary, TabRecord } from '@livediagram/api-schema';
+import type { Diagram, DiagramSummary, ShareLink, TabRecord } from '@livediagram/api-schema';
 import {
   coerceShapeKind,
   graphToElements,
@@ -21,6 +21,7 @@ import {
   errorResult,
   imageResult,
   requireToken,
+  shareUrl,
   textResult,
   type Extra,
 } from './tool-helpers';
@@ -37,6 +38,7 @@ import {
   createDiagramShape,
   findDiagramsShape,
   readDiagramShape,
+  shareDiagramShape,
   updateDiagramShape,
 } from './schema';
 
@@ -357,6 +359,38 @@ export function registerTools(server: McpServer, env: Env): void {
         body: JSON.stringify(nextTab),
       });
       return imageResult({ id: args.diagramId, tabId, url: deepLink(args.diagramId) }, nextTab);
+    },
+  );
+
+  server.registerTool(
+    'share_diagram',
+    {
+      title: 'Share a diagram',
+      description:
+        'Create a shareable link to a diagram so anyone with the URL can open it — no ' +
+        'sign-in required. Choose "view" (read-only, the default) or "edit". Returns the ' +
+        'link URL. Use after creating or finding a diagram to hand it to teammates.',
+      inputSchema: shareDiagramShape,
+    },
+    async (args, extra) => {
+      const token = requireToken(extra as Extra);
+      postTelemetry(env, 'Mcp', 'Used', 'ShareDiagram');
+      // Default to view (least privilege for an automated share): showing your
+      // work shouldn't silently grant edit. The api's own default is edit, so
+      // we send the role explicitly.
+      const role = args.role === 'edit' ? 'edit' : 'view';
+      const { link } = await apiJson<{ link: ShareLink }>(
+        env,
+        token,
+        `/diagrams/${args.diagramId}/share`,
+        { method: 'POST', body: JSON.stringify({ role, expiry: args.expiry ?? 'never' }) },
+      );
+      return textResult({
+        url: shareUrl(link.code),
+        role: link.role,
+        expiresAt: link.expiresAt,
+        diagramUrl: deepLink(args.diagramId),
+      });
     },
   );
 }

@@ -276,3 +276,19 @@ export const updateDiagramShape = {
     .optional()
     .describe('ops mode: ordered add / update / remove against existing element ids.'),
 };
+
+export const shareDiagramShape = {
+  diagramId: z.string().describe('The diagram to share (from find_diagrams / read_diagram).'),
+  role: z
+    .enum(['view', 'edit'])
+    .optional()
+    .describe(
+      'What the link grants. "view" (default) — recipients can open and read but ' +
+        'not change it; safest for just showing your work. "edit" — recipients ' +
+        'can also edit. No sign-in is needed to open either.',
+    ),
+  expiry: z
+    .enum(['never', 'week', 'month', 'sixMonths'])
+    .optional()
+    .describe('When the link stops working. Defaults to "never" (until revoked).'),
+};

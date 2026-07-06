@@ -20,6 +20,11 @@ export type ToolResult = {
 
 export const deepLink = (id: string) => `https://livediagram.app/diagram/${id}`;
 
+// A share link's public URL (spec/24): visitors land on /diagram/shared?s=<code>
+// and the app resolves the code to the diagram + granted role.
+export const shareUrl = (code: string) =>
+  `https://livediagram.app/diagram/shared?s=${encodeURIComponent(code)}`;
+
 export function requireToken(extra: Extra): string {
   const token = extra.authInfo?.token;
   if (!token) throw new Error('unauthorized: no bearer token');
