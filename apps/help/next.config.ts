@@ -37,4 +37,7 @@ const nextConfig: NextConfig = {
 // text. Also covers strikethrough, autolinks, and task lists.
 const withMDX = createMDX({ options: { remarkPlugins: [remarkGfm] } });
 
-export default withMDX(nextConfig);
+// Annotated so the inferred type doesn't reference a non-portable
+// node_modules path (TS2742) once dev deps shift the next package's hoist.
+const config: NextConfig = withMDX(nextConfig);
+export default config;
