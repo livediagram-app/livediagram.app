@@ -16,12 +16,16 @@ import { track } from '@/lib/telemetry';
 
 type UiMode = 'light' | 'dark';
 
-// Exported so the root layout's pre-hydration dark-mode script reads the
-// same key this hook writes, instead of hardcoding a copy that could drift.
-export const STORAGE_KEY = 'livediagram:v2:ui-mode';
+// The storage key lives in a plain (non-client) module so the server
+// layout's pre-hydration script can inline the real value — see
+// ui-mode-storage.ts for why. Re-exported here under the name this
+// hook's client consumers already import.
+import { UI_MODE_STORAGE_KEY } from './ui-mode-storage';
+
+export { UI_MODE_STORAGE_KEY as STORAGE_KEY };
 
 function read(): UiMode {
-  return readLocalStorageSafe(STORAGE_KEY) === 'dark' ? 'dark' : 'light';
+  return readLocalStorageSafe(UI_MODE_STORAGE_KEY) === 'dark' ? 'dark' : 'light';
 }
 
 function apply(mode: UiMode) {
@@ -53,7 +57,7 @@ export function useUiMode(): { mode: UiMode; toggle: () => void } {
     // is fine here: toggle is a single button click, never a rapid
     // race, so there's no stale-state risk.
     const next: UiMode = mode === 'dark' ? 'light' : 'dark';
-    writeLocalStorageSafe(STORAGE_KEY, next);
+    writeLocalStorageSafe(UI_MODE_STORAGE_KEY, next);
     apply(next);
     setMode(next);
     track('UI', 'Toggled', next === 'dark' ? 'Dark' : 'Light');

@@ -5,7 +5,7 @@ import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@/lib/fonts';
-import { STORAGE_KEY as UI_MODE_STORAGE_KEY } from '@/hooks/ui/useUiMode';
+import { UI_MODE_STORAGE_KEY } from '@/hooks/ui/ui-mode-storage';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
 import './globals.css';
 
