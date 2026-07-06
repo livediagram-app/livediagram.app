@@ -626,6 +626,7 @@ export * from './rich-text';
 
 export * from './factories';
 export * from './graph-authoring';
+export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './component-factories';
