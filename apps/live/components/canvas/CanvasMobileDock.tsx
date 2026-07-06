@@ -1,6 +1,5 @@
 import type { ReactNode, RefObject } from 'react';
-
-export type DockPanelId = 'explorer' | 'palette' | 'collaborate' | 'ai';
+import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 
 // Top-right mobile dock (spec/07 "Mobile chrome"): a compact button row
 // that replaces the four full-width collapse banners on mobile, opening
@@ -24,9 +23,9 @@ export function CanvasMobileDock({
   // the same gate that mounts the Collaborate panel (spec/68 §5).
   hasCollaborate: boolean;
   hasAi: boolean;
-  activeMobilePanel: DockPanelId | null;
+  activeMobilePanel: MobilePanel | null;
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
-  onDockButtonClick: (id: DockPanelId) => void;
+  onDockButtonClick: (id: MobilePanel) => void;
 }) {
   if (welcomeOpen) return null;
   return (
@@ -140,7 +139,7 @@ export function CanvasMobileDock({
               ]
             : []),
         ] as {
-          id: DockPanelId;
+          id: MobilePanel;
           label: string;
           icon: ReactNode;
         }[]
