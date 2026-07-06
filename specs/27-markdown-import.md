@@ -59,6 +59,8 @@ The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
 dialog**, the mirror of the Export dialog. The user picks the format:
 
 - **livediagram file** — a `.json` tab export, restored exactly.
+- **Mermaid** — a flowchart, from a file or pasted text, keeping every
+  connection ([spec/73](73-mermaid.md)).
 - **Markdown** — a `.md` outline, built into a themed tree as above.
 
 The chosen format drives both the file-picker's filter and which parser
@@ -78,18 +80,44 @@ and the whole ellipsis menu is hidden for view-only visitors. Emits
 tab — a format picker + an explicit "this overwrites the tab" warning is
 clearer than silently growing the tab list, and Undo makes it safe.)
 
+## Still useful after Mermaid? — yes, both, in distinct roles
+
+Mermaid ([spec/73](73-mermaid.md)) landed as the connection-preserving
+text format, which raised the question of whether Markdown import/export
+still earns its place. Reviewed against the code, both do — they solve a
+_different_ problem from Mermaid, so they stay:
+
+- **Markdown import — keep.** It ingests an **outline** (headings + nested
+  lists) from tools that emit exactly that (XMind, Obsidian/Logseq,
+  hand-written notes) and lays out the **hierarchy** as a themed tree with
+  parent→child connectors. That hierarchy _is_ preserved — the import is
+  not connectionless. Mermaid doesn't replace it: someone holding a
+  Markdown outline is not going to hand-author flowchart syntax, and a
+  tree-from-indentation is a genuinely different input from a node/edge
+  graph. Different source, different shape → distinct value.
+- **Markdown export — keep, repositioned.** It emits a flat, human-
+  readable **summary** (`## Elements` + `## Connections` bullet lists of
+  the _labelled_ content), sorted for reading, to drop into a doc, PR, or
+  notes. It is deliberately **lossy** — no nesting, unlabelled elements
+  omitted — because it's a summary, not a reconstruction. Mermaid is now
+  the **faithful** text export (rebuilds the graph); Markdown is the
+  **readable** one. The two coexist with clear, non-overlapping jobs, and
+  the export dialog + help copy say which is which.
+
 ## Boundaries / future
 
-- **Round-trip:** our own Markdown export (spec — `export-tab.ts`) imports
-  back as a structural tree (title → Elements/Connections sections), not
-  a byte-for-byte graph reconstruction. Markdown is a human _summary_;
-  the faithful round-trip text format is the native DSL in
-  [spec/66](66-text-dsl.md), which preserves the connection graph by id.
-- **Not in scope here:** Mermaid (` ```mermaid `) fl/ graph blocks →
-  real edge graphs, and Excalidraw `.excalidraw` JSON (that's JSON, not
-  Markdown; a separate importer). The parser deliberately skips code
-  fences today so a future Mermaid pass can claim them — tracked under
-  [spec/66](66-text-dsl.md) (Boundaries).
+- **Round-trip:** the faithful, connection-preserving text round-trip is
+  **Mermaid** ([spec/73](73-mermaid.md)) — serialise a tab to `flowchart`
+  text and parse it back into the same graph by id. Markdown export
+  stays the human _summary_ (see above), not a byte-for-byte
+  reconstruction. (This role used to belong to the `.lvd` text DSL,
+  spec/66, now removed in favour of Mermaid.)
+- **Not in scope here:** an inline ` ```mermaid ` fenced block _inside_ a
+  Markdown file → an edge graph (Mermaid import is its own format /
+  dialog path today, not a Markdown code-fence pass), and Excalidraw
+  `.excalidraw` JSON (that's JSON, not Markdown; a separate importer). The
+  parser deliberately skips code fences, so a future "Mermaid blocks
+  inside Markdown" pass could claim them.
 
 Implementation: `apps/live/lib/markdown-import.ts` (pure parser + layout +
 `buildTabFromMarkdown`, unit-tested), dynamically imported by

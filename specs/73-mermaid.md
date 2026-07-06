@@ -83,5 +83,11 @@ connection-preserving, round-trip) with a format the world already uses.
 
 ## Markdown (spec/27) — reassessed
 
-After Mermaid lands, the Markdown outline import is re-evaluated (it flattens to
-a tree and can't express arbitrary connections). Decision recorded in spec/27.
+After Mermaid landed, the Markdown import/export was re-evaluated against the
+code. **Decision: keep both** — they solve a different problem from Mermaid.
+Markdown import ingests an _outline_ (headings + nested lists, from XMind /
+Obsidian / notes) and lays out that hierarchy as a themed tree; Markdown export
+is a flat, human-readable _summary_ to paste into a doc. Mermaid is the
+connection-faithful text round-trip; Markdown is the outline-in / readable
+summary-out. Full reasoning in [spec/27](27-markdown-import.md) ("Still useful
+after Mermaid?").
