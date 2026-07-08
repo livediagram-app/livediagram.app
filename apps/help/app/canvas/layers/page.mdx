@@ -5,17 +5,19 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Layers',
   description:
-    'Organise a tab into Photoshop-style layers: add, rename, and restack layers from the Layers panel, hide or lock whole slices of a diagram, and move elements between layers.',
+    'Organise a tab into Photoshop-style layers: a dockable Layers panel with per-layer previews, an active layer that receives new elements, stacking bands, hiding, locking, opacity, merging, and smart naming.',
   path: '/help/canvas/layers/',
 });
 
-<ArticleLayout title="Layers" description="Split a tab into named stacking layers you can hide, lock, rename, and restack, managed from the Layers panel." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layers")}>
+<ArticleLayout title="Layers" description="Split a tab into named stacking layers you can hide, lock, dim, restack, and merge, managed from the Layers panel." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layers")}>
 
-Every tab starts with a single layer, and for many diagrams that's all you need. When a tab grows busy (a background grid, the main content, a pass of review notes), layers let you split it into named bands you can hide, lock, and restack independently, just like an image editor.
+Every tab starts with a single layer, and for many diagrams that's all you need. When a tab grows busy (a background grid, the main content, a pass of review notes), layers let you split it into named bands you can hide, lock, dim, and restack independently, just like an image editor. Layers are saved with the tab and sync live, so everyone sees the same stack.
 
-## The Layers panel
+## Opening the panel
 
-Open the panel with the **Layers button next to the zoom controls** (bottom-right). On a phone, or in the minimal panel layout, Layers lives in the compact dock row at the top-right instead, and opens as a popover.
+Open the panel with the **Layers button next to the zoom controls** (bottom-right). It floats like the other panels: drag it to any corner ([panel docking](/help/user-interface/panel-layout/)), tune it from its gear menu, and collapse it back into its button when you're done. On a phone, or in the minimal panel layout, Layers lives in the compact dock row at the top-right instead, and opens as a popover.
+
+## Reading the panel
 
 Each row is one layer, top of the stack first, and shows:
 
@@ -24,37 +26,33 @@ Each row is one layer, top of the stack first, and shows:
 - the layer's **name** (double-click to rename it inline), with a padlock mark when the layer is locked and an "Empty" tag when nothing lives on it,
 - an **ellipsis** opening the layer's menu.
 
-Click a row to make that layer **active** and drag rows to restack the bands. **Hovering a row temporarily shows only that layer** on the canvas, so you can check what lives where without touching visibility (switch this off in the panel's gear menu, which also resets the panel's position). The footer can **add a layer** (it lands directly above the active one), **delete the active layer**, or **merge the active layer** with the one above or below it (the neighbour keeps its name and settings).
+Click a row to make that layer **active**, and rest the pointer on one for a moment to temporarily see only that layer on the canvas ([more on the hover preview](/help/canvas/layers-visibility-and-locking/)). The footer holds **Merge Up** and **Merge Down** on the left, **Add** and **Delete** on the right; a new layer lands directly above the active one and becomes active itself.
 
-**Right-click a row (or click its ellipsis)** for the full menu, which opens beside the panel: rename and delete up top, then Layer (an **opacity slider** for the whole layer, Bring to Top, Send to Back, and **Hide Others**), Content (**lock** and **clear**), and Merge. Clearing empties the layer but keeps it around.
-
-One nicety: a layer still called "Layer 2" adopts the first name you finish typing onto one of its elements, so stacks name themselves as you work. Deleting a layer that still has elements asks you to confirm first, because the elements go with it; undo brings both back. The last remaining layer can't be deleted.
-
-The panel floats like the others: drag it to any corner ([panel docking](/help/user-interface/panel-layout/)) and collapse it back into its button when you're done.
+**Right-click a row (or click its ellipsis)** for the full menu, which opens beside the panel: rename and delete up top, then Layer (an opacity slider, Bring to Top, Send to Back, and Hide Others), Content (lock and clear), and Merge.
 
 ## The active layer
 
-Exactly one layer is always active, and **everything you add lands on it**: palette shapes, text, arrows, pastes, imports, AI-built elements. While the active layer is hidden or locked, adding is paused so you never create something you can't immediately see or touch.
+Exactly one layer is always active, and **everything you add lands on it**: palette shapes, text, arrows, pastes, imports, AI-built elements. While the active layer is hidden or locked, adding is paused (a notice explains why) so you never create something you can't immediately see or touch.
+
+Which layer is active is yours alone; a collaborator can work on a different layer of the same tab at the same time.
 
 ## Stacking, front, and back
 
-Layers are stacking bands: everything on a higher layer paints above everything on a lower one. **Bring to Front** and **Send to Back** work on layers too: Bring to Front moves the selection onto the top layer, creating a fresh one if the top layer holds anything else, and Send to Back mirrors that at the bottom. A layer those buttons empty out is cleaned up automatically, so casual reordering never litters the panel.
+Layers are stacking bands: everything on a higher layer paints above everything on a lower one. **Bring to Front** and **Send to Back** on elements work through layers too: the selection moves onto the top (or bottom) layer, creating a fresh one if that layer holds anything else, and a layer those buttons empty out is cleaned up automatically. To place elements deliberately, use the **Move to layer** tiles in the right-click menu's Layer category; each tile carries a live preview of its layer.
 
-To place elements deliberately, select them, right-click, and pick a layer from the **Move to layer** tiles in the Layer category; the whole selection moves there. (They appear once the tab has more than one layer.)
+For restacking layers themselves, moving elements between layers, merging, clearing, deleting, and the smart auto-naming that names a fresh layer after the first label you type onto it, see [Organising and Merging Layers](/help/canvas/layers-organising/).
 
-## Hiding and locking
+## Hiding, locking, and dimming
 
-- A **hidden** layer's elements disappear from the canvas for everyone (collaborators, viewers, and embeds included) and can't be selected or caught by a marquee.
-- A **locked** layer's elements stay visible but can't be selected, moved, edited, or deleted, like per-element [locking](/help/canvas/locking/) applied to the whole band.
+The eye hides a layer everywhere, including exports and embeds; the lock makes a layer's elements read-only; the opacity slider dims a whole layer; Hide Others solos one layer in a click. All of it is covered in depth in [Hiding, Locking, and Dimming Layers](/help/canvas/layers-visibility-and-locking/).
 
 ## Layers and exports
 
-Exports match what you see: hidden layers are left out of PNG, SVG, PDF, and Mermaid exports, and out of shared thumbnails. If you want a hidden layer included in an image export anyway, the export options screen offers a **Hidden layers** toggle whenever at least one layer is hidden.
+Exports match what you see: hidden layers are left out of PNG, SVG, PDF, and Mermaid [exports](/help/account-and-data/exporting-diagrams/), and out of shared thumbnails, while layer opacity carries through. If you want hidden layers included in an image export anyway, the export options screen offers a **Hidden layers** toggle whenever at least one layer is hidden.
 
 <Note>
-  Layers are saved with the tab and sync live, so everyone in the diagram sees the same stack. Which
-  layer is <em>active</em> is yours alone; a collaborator can work on a different layer at the same
-  time.
+  You never have to manage layers to use livediagram: a tab with one layer behaves exactly as it
+  always did, and Bring to Front / Send to Back quietly do the layering for you.
 </Note>
 
 <Tip>

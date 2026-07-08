@@ -298,6 +298,54 @@ export function LockArt() {
   );
 }
 
+// Three stacked layer planes (bottom -> top), each popping in with its
+// content, then an eye chip: the Layers panel's pitch in one glance —
+// bands you can stack and hide (spec/74).
+export function LayersArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        {/* Bottom plane + its square, always resting. */}
+        <g transform="translate(110 62)">
+          <path d="M-42 0 0 16 42 0 0 -16 Z" fill="#eef2f7" stroke="#94a3b8" strokeWidth="2" />
+          <rect x="-9" y="-7" width="18" height="12" rx="2" fill="#cbd5e1" />
+        </g>
+        {/* Middle plane, brand-tinted, pops in second. */}
+        <g className="fa-pop" style={{ animationDelay: '0.35s' }}>
+          <g transform="translate(110 44)">
+            <path d="M-42 0 0 16 42 0 0 -16 Z" fill="#e0edff" stroke="#3b82f6" strokeWidth="2" />
+            <circle cx="-6" cy="0" r="6" fill="#93c5fd" />
+            <rect x="4" y="-5" width="14" height="10" rx="2" fill="#3b82f6" />
+          </g>
+        </g>
+        {/* Top plane, amber sticky-note band, pops in last. */}
+        <g className="fa-pop" style={{ animationDelay: '0.7s' }}>
+          <g transform="translate(110 26)">
+            <path d="M-42 0 0 16 42 0 0 -16 Z" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2" />
+            <rect x="-8" y="-6" width="16" height="11" rx="2" fill="#fbbf24" />
+          </g>
+        </g>
+        {/* Eye chip beside the stack: the hide/show affordance. */}
+        <g className="fa-pop" style={{ animationDelay: '1.1s' }}>
+          <g transform="translate(178 26)">
+            <circle r="9" fill="#fff" stroke="#e2e8f0" strokeWidth="1.5" />
+            <path
+              d="M-4.5 0 C-2.5 -3 2.5 -3 4.5 0 C2.5 3 -2.5 3 -4.5 0 Z"
+              fill="none"
+              stroke="#475569"
+              strokeWidth="1.4"
+            />
+            <circle r="1.4" fill="#475569" />
+          </g>
+        </g>
+      </svg>
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        layers
+      </span>
+    </Frame>
+  );
+}
+
 export function AccountSyncArt() {
   // The same diagram on a laptop and phone, kept in sync via a free account.
   return (

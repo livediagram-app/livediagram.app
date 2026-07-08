@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Organising and Merging Layers',
+  description:
+    'Rename layers (or let them name themselves), restack them by dragging, move elements between layers, merge neighbours together, and clear or delete what you no longer need.',
+  path: '/help/canvas/layers-organising/',
+});
+
+<ArticleLayout title="Organising and Merging Layers" description="Naming, restacking, moving elements between layers, merging, clearing, and deleting." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layers-organising")}>
+
+A [layer](/help/canvas/layers/) stack tends to grow while you work: Bring to Front mints one, an experiment gets its own, a reviewer adds theirs. These are the tools that keep the stack tidy.
+
+## Naming layers
+
+Double-click a layer's name (or pick **Rename** from its menu) to rename it inline; Enter commits, Escape cancels.
+
+Layers also **name themselves**: while a layer still has its default name ("Layer 2"), the first label you finish typing onto one of its elements becomes the layer's name. Type "Checkout flow" onto the first shape of a fresh layer and the row reads "Checkout flow" too. Once a layer has a real name, from you or from auto-naming, it never renames itself again.
+
+## Restacking
+
+Layers paint bottom to top, and the panel lists them top first. To restack:
+
+- **Drag a row** up or down and drop it on the row whose place it should take. The drag starts from anywhere on the row; a plain click still just activates the layer.
+- Use **Bring to Top** or **Send to Back** in the layer's menu to jump a layer straight to either end of the stack.
+
+## Moving elements between layers
+
+Select any elements, right-click, and open the **Layer** category. The **Move to layer** tiles (one per layer, each with a live preview of what's on it) move the whole selection in one click; the tile that's highlighted is where the selection currently lives. Elements keep their relative order when they land.
+
+**Bring to Front** and **Send to Back** on elements are layer moves too: the selection jumps to the top (or bottom) layer, and if that layer holds anything else, a fresh one is created at the edge of the stack for it. A layer those two buttons empty out is removed automatically, so casual front-and-back shuffling never litters the panel. Layers you created from the panel are never auto-removed.
+
+## Merging layers
+
+**Merge Up** and **Merge Down** (footer buttons, bottom-left, and in each layer's menu as "With Layer Above" / "With Layer Below") fold the active layer into its neighbour:
+
+- The neighbour survives, keeping its name, visibility, lock, and opacity.
+- The merged elements keep their visual position: merging down places them on top of the lower layer's content, merging up tucks them beneath the upper layer's content.
+- The buttons disable when there's no neighbour in that direction.
+
+## Clearing and deleting
+
+- **Clear** (in the layer menu, with a confirmation) deletes everything on the layer but keeps the layer itself, ready to be refilled.
+- **Delete** (the red trash in the footer, or the menu's trash) removes the layer and everything on it. A populated layer asks first, quoting how many elements will go; the last remaining layer can't be deleted. Undo brings the layer and its contents back together.
+- Layers with nothing on them wear a small **Empty** tag, so stale ones are easy to spot and prune.
+
+<Note>
+  Every operation on this page is a normal edit: it syncs live to collaborators and undoes with
+  Cmd+Z / Ctrl+Z like anything else.
+</Note>
+
+<Tip>
+  Merging is the tidy end to an experiment: sketch alternatives on their own layers, delete the
+  losers, and merge the winner down into the main content.
+</Tip>
+
+</ArticleLayout>

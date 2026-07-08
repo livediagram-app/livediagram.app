@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Hiding, Locking, and Dimming Layers',
+  description:
+    'Control a whole layer at once: hide it from the canvas and exports, lock it against edits, dim it with layer opacity, solo it with Hide Others, and preview it on hover.',
+  path: '/help/canvas/layers-visibility-and-locking/',
+});
+
+<ArticleLayout title="Hiding, Locking, and Dimming Layers" description="Everything a layer can do to its elements as a group: visibility, locking, opacity, soloing, and the hover preview." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layers-visibility-and-locking")}>
+
+Every control on this page acts on a whole [layer](/help/canvas/layers/) at once. That is the point of layers: one click quiets an entire slice of the diagram instead of chasing individual elements.
+
+## Hiding a layer
+
+Click the **eye** on a layer's row to hide it. Hidden layers are gone in every sense that matters:
+
+- Their elements disappear from the canvas, for you and for everyone else in the diagram, including view-only visitors and [embeds](/help/collaboration/sharing/embeds/). Visibility is saved with the tab.
+- They can't be clicked, marquee-selected, caught by select-all, or reached with keyboard traversal. If some were selected when you hid the layer, they drop out of the selection.
+- They stay out of PNG, SVG, PDF, and Mermaid [exports](/help/account-and-data/exporting-diagrams/) and out of shared thumbnails. When at least one layer is hidden, the image export options screen offers a **Hidden layers** toggle for the times you want them included anyway.
+
+Click the eye again to bring everything back. Nothing is lost by hiding; it's a curtain, not a delete.
+
+## Locking a layer
+
+The **Lock** toggle lives in the layer's menu (right-click the row or click its ellipsis, then Content). A locked layer's elements stay visible but are inert: they can't be selected, moved, edited, erased, or deleted, and marquees and select-all pass over them. It is per-element [locking](/help/canvas/locking/) applied to the whole band, ideal for a background grid or an approved section nobody should nudge.
+
+A locked layer shows a small padlock on its row so you can see the state at a glance.
+
+## Layer opacity
+
+The same menu holds an **Opacity** slider that dims the entire layer, from solid to invisible. It multiplies with each element's own opacity, so a 50% element on a 50% layer renders at 25%. Layer opacity carries into image exports, shared thumbnails, and the panel's row previews, and a whole slider drag is a single undo step.
+
+Use it to ghost a reference layer behind the work, or to fade a proposal you're comparing against.
+
+## Hide Others
+
+**Hide Others** (in the layer menu) makes the clicked layer the only visible one, in a single step. It's the fastest way to isolate one slice for a screenshot or a focused edit; show the other layers again with their eye toggles.
+
+## Preview on hover
+
+Rest the pointer on a layer's row for a moment and the canvas temporarily shows **only that layer**, even if it's hidden. Move across rows and the preview follows instantly; move away and the full diagram returns. Nothing is written or synced, and exports never see it.
+
+If you'd rather not have the preview, switch **Preview layer on hover** off in the panel's gear menu.
+
+<Note>
+  While the <em>active</em> layer is hidden or locked, adding new elements is paused, since
+  anything you added would be invisible or untouchable the moment it landed. A notice appears when
+  this happens; show or unlock the layer, or switch to another one, and adding resumes.
+</Note>
+
+<Tip>
+  Hide Others plus the export dialog is a quick way to ship one slice of a busy tab: solo the
+  layer, export, then bring the rest back.
+</Tip>
+
+</ArticleLayout>

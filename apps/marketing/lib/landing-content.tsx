@@ -27,6 +27,7 @@ import {
   IconsArt,
   ImagesArt,
   LaserArt,
+  LayersArt,
   LinkCardArt,
   LivingBackgroundArt,
   NotesArt,
@@ -396,6 +397,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Lock anything in place',
         description:
           'Lock an element, or a whole tab, and it turns read-only, so a finished part of the diagram cannot be nudged or edited by accident.',
+      },
+      {
+        art: <LayersArt />,
+        href: '/help/canvas/layers/',
+        group: 'Select, group & lock',
+        title: 'Photoshop-style layers',
+        description:
+          'Split a tab into stacking layers with live previews: hide a slice, lock it, dim it, or merge it down, and keep review notes out of the export. Bring to Front quietly does the layering for you.',
       },
       {
         art: <FormatPainterArt />,

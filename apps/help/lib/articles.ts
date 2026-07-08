@@ -156,7 +156,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, layering, rotating, animating, locking, theming, and templating.',
-    articleCount: 13,
+    articleCount: 15,
     kind: 'feature',
   },
   {
@@ -1039,6 +1039,22 @@ export const articles: Article[] = [
     description: 'Split a tab into stacking layers you can hide, lock, rename, and restack.',
     category: 'Canvas',
     categorySlug: 'canvas',
+  },
+  {
+    slug: 'layers-visibility-and-locking',
+    title: 'Hiding, Locking, and Dimming Layers',
+    description: 'Hide, lock, dim, or solo a whole layer, and preview one on hover.',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    parentSlug: 'layers',
+  },
+  {
+    slug: 'layers-organising',
+    title: 'Organising and Merging Layers',
+    description: 'Rename, restack, merge, clear, and move elements between layers.',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    parentSlug: 'layers',
   },
   {
     slug: 'layer-order',
