@@ -520,23 +520,27 @@ export function LayersPanel({
 }
 
 // The dock-button glyph, exported so the CanvasChrome bottom-right
-// cluster (minimised state) and the mobile dock share it.
-export function LayersStackIcon() {
+// cluster (minimised state) and the mobile dock share it. Drawn on a
+// 20-unit grid and rendered 1:1 at the cluster's 20px icon size
+// (matching ActivityIcon's stroke weight) so it rasterises crisp — the
+// original 14-unit art scaled to 16px landed every stroke on fractional
+// pixels and read blurry. The mobile dock renders it at its own 16px.
+export function LayersStackIcon({ size = 20 }: { size?: number }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path
-        d="M7 2 12 4.6 7 7.2 2 4.6 7 2z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M2 7.3l5 2.6 5-2.6M2 9.9l5 2.6 5-2.6"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M10 3 17 6.6 10 10.2 3 6.6 10 3z" />
+      <path d="M3 10.4 10 14 17 10.4" />
+      <path d="M3 13.8 10 17.4 17 13.8" />
     </svg>
   );
 }

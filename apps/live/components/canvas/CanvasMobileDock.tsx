@@ -125,7 +125,7 @@ export function CanvasMobileDock({
                 {
                   id: 'layers' as const,
                   label: 'Layers',
-                  icon: <LayersStackIcon />,
+                  icon: <LayersStackIcon size={16} />,
                 },
               ]
             : []),
