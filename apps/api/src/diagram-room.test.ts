@@ -596,3 +596,166 @@ describe('DiagramRoom hibernation survival', () => {
     expect(frame.participants.find((p) => p.id === editorId)?.tabId).toBe('tab-9');
   });
 });
+
+describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () => {
+  // Drive an established edit-role session and expose helpers to push ops
+  // and read the frames a peer receives.
+  function editorAndPeer(room: DiagramRoom) {
+    const editor = makeSocket();
+    const peer = makeSocket();
+    room.acceptSession(asWs(editor), 'edit');
+    room.acceptSession(asWs(peer), 'edit');
+    sendFrame(room, editor, { kind: 'hello', participant: { id: 'e', name: 'E', color: '#000' } });
+    sendFrame(room, peer, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#111' } });
+    editor.sent.length = 0;
+    peer.sent.length = 0;
+    return { editor, peer };
+  }
+  const opFrames = (ws: FakeSocket) =>
+    ws.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'op');
+  const lastCatchup = (ws: FakeSocket) =>
+    ws.sent
+      .map((s) => JSON.parse(s))
+      .filter((m) => m.kind === 'catchup')
+      .at(-1);
+
+  it('stamps a monotonic seq + epoch on mutation ops as it relays them', () => {
+    const { room } = newRoom();
+    const { editor, peer } = editorAndPeer(room);
+
+    sendFrame(room, editor, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
+    });
+    sendFrame(room, editor, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'b' } },
+    });
+
+    const received = opFrames(peer);
+    expect(received.map((f) => f.seq)).toEqual([1, 2]);
+    expect(received[0].epoch).toBe(room.epoch);
+    expect(received[1].epoch).toBe(room.epoch);
+  });
+
+  it('never stamps a seq on an ephemeral presence op', () => {
+    const { room } = newRoom();
+    const { editor, peer } = editorAndPeer(room);
+
+    sendFrame(room, editor, { kind: 'op', op: { kind: 'cursor', tabId: 't', x: 1, y: 2 } });
+
+    const frame = opFrames(peer)[0];
+    expect(frame.seq).toBeUndefined();
+    expect(frame.epoch).toBeUndefined();
+    // A presence op must not advance the mutation sequence.
+    expect(room.seq).toBe(0);
+  });
+
+  it('replays the delta a same-epoch client missed on reconnect', () => {
+    const { room } = newRoom();
+    const { editor } = editorAndPeer(room);
+    // Three mutations land (seq 1..3).
+    for (const id of ['a', 'b', 'c']) {
+      sendFrame(room, editor, {
+        kind: 'op',
+        op: { kind: 'el', tabId: 't', op: { kind: 'remove', id } },
+      });
+    }
+    // A peer that had applied up to seq 1 reconnects and asks for the rest.
+    const back = makeSocket();
+    room.acceptSession(asWs(back), 'edit');
+    sendFrame(room, back, { kind: 'hello', participant: { id: 'b2', name: 'B', color: '#222' } });
+    back.sent.length = 0;
+
+    sendFrame(room, back, { kind: 'sync', epoch: room.epoch, lastSeq: 1 });
+
+    const catchup = lastCatchup(back);
+    expect(catchup.resync).toBe(false);
+    expect(catchup.seq).toBe(3);
+    expect(catchup.ops.map((o: { seq: number }) => o.seq)).toEqual([2, 3]);
+  });
+
+  it('returns an empty non-resync delta when the client is already current', () => {
+    const { room } = newRoom();
+    const { editor } = editorAndPeer(room);
+    sendFrame(room, editor, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
+    });
+    editor.sent.length = 0;
+
+    sendFrame(room, editor, { kind: 'sync', epoch: room.epoch, lastSeq: 1 });
+
+    const catchup = lastCatchup(editor);
+    expect(catchup.resync).toBe(false);
+    expect(catchup.ops).toEqual([]);
+  });
+
+  it('replays the whole log (idempotent) for a fresh client with no epoch', () => {
+    const { room } = newRoom();
+    const { editor } = editorAndPeer(room);
+    sendFrame(room, editor, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
+    });
+
+    const fresh = makeSocket();
+    room.acceptSession(asWs(fresh), 'edit');
+    sendFrame(room, fresh, { kind: 'hello', participant: { id: 'f', name: 'F', color: '#333' } });
+    fresh.sent.length = 0;
+
+    sendFrame(room, fresh, { kind: 'sync', epoch: null, lastSeq: 0 });
+
+    const catchup = lastCatchup(fresh);
+    expect(catchup.resync).toBe(false);
+    expect(catchup.ops.map((o: { seq: number }) => o.seq)).toEqual([1]);
+  });
+
+  it('tells a client from a previous room instance (stale epoch) to re-hydrate', () => {
+    const { room } = newRoom();
+    const { editor } = editorAndPeer(room);
+    sendFrame(room, editor, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
+    });
+    editor.sent.length = 0;
+
+    // A different epoch with prior progress can't be mapped onto our seq.
+    sendFrame(room, editor, { kind: 'sync', epoch: 'a-previous-epoch', lastSeq: 5 });
+
+    const catchup = lastCatchup(editor);
+    expect(catchup.resync).toBe(true);
+    expect(catchup.ops).toEqual([]);
+    expect(catchup.epoch).toBe(room.epoch);
+  });
+
+  it('re-hydrates a same-epoch client that fell behind the trimmed log floor', () => {
+    const { room } = newRoom();
+    const { editor } = editorAndPeer(room);
+    // Simulate a room whose bounded log has already trimmed its oldest ops:
+    // seq has advanced to 300 but the log only still holds 200.. onward.
+    // (Driving 300 real ops would hit the per-window rate cap; the floor
+    // logic is what's under test here, so seed it directly.)
+    room.seq = 300;
+    room.opLog = Array.from({ length: 100 }, (_, i) => ({
+      seq: 200 + i,
+      from: 'e',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: `n${i}` } },
+    }));
+    editor.sent.length = 0;
+
+    // lastSeq 1 is older than anything still in the log (floor 200) → resync.
+    sendFrame(room, editor, { kind: 'sync', epoch: room.epoch, lastSeq: 1 });
+
+    expect(lastCatchup(editor).resync).toBe(true);
+  });
+
+  it('gets a fresh epoch on a simulated hibernation wake', () => {
+    const state = makeState();
+    const before = new DiagramRoom(state as unknown as DurableObjectState);
+    const after = new DiagramRoom(state as unknown as DurableObjectState);
+    expect(before.epoch).not.toBe(after.epoch);
+    expect(after.seq).toBe(0);
+    expect(after.opLog).toEqual([]);
+  });
+});

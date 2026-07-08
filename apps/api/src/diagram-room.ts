@@ -48,6 +48,22 @@ const MAX_MESSAGE_CHARS = 256 * 1024;
 // note on SessionAttachment).
 const MAX_TAB_ID_LEN = 128;
 
+// How many recent mutation ops the room keeps for reconnect catch-up
+// (spec/75, Level 1). A reconnecting client within this many ops of the
+// live tail replays the delta; further behind, it re-hydrates from D1.
+// Bounded so an idle-but-connected room can't grow the buffer without end;
+// the log lives in memory (like opRates) and resets on hibernation, which
+// only ever forces the safe path (a resync), never data loss.
+const OP_LOG_LIMIT = 256;
+
+// Room op kinds that are ephemeral presence signals: they mutate no
+// diagram state, so they relay unordered (no seq) and from any role.
+const PRESENCE_OP_KINDS = new Set(['cursor', 'select', 'laser', 'tab-focus']);
+
+// One entry in the reconnect catch-up log: a mutation op plus the sequence
+// number the room assigned it within the current epoch.
+type LoggedOp = { seq: number; from: string; op: unknown };
+
 // Everything the room knows about one session, persisted in the socket's
 // serialized attachment so it SURVIVES HIBERNATION (an in-memory Map
 // would silently lose it on eviction, wiping roles and presence for
@@ -92,6 +108,22 @@ export class DiagramRoom implements DurableObject {
   // close / error / dead-send so the map can't leak across a long-lived
   // in-memory period.
   opRates: Map<WebSocket, { count: number; windowStart: number }> = new Map();
+
+  // Ordering state for reconnect catch-up (spec/75, Level 1). All three
+  // live in memory only — deliberately, like opRates. A hibernation wake
+  // re-runs the constructor: `seq` restarts at 0, `opLog` empties, and
+  // `epoch` becomes a fresh id. A client that stayed connected across the
+  // wake simply adopts the new epoch off the next op (it missed nothing —
+  // the socket stayed open). A client that RECONNECTS across a wake finds
+  // its epoch no longer matches and re-hydrates from D1 (the safe fallback).
+  // So the reset never loses data; it only ever forces a resync. Persisting
+  // would add a storage write per mutation for no correctness gain.
+  seq = 0;
+  opLog: LoggedOp[] = [];
+  // Random per DO instantiation. Scopes seq numbers: a client compares the
+  // epoch on an incoming op against the last it saw to know whether the
+  // room restarted (seq reset) versus advanced.
+  epoch: string = crypto.randomUUID();
 
   constructor(state: DurableObjectState) {
     this.state = state;
@@ -259,6 +291,14 @@ export class DiagramRoom implements DurableObject {
       this.broadcastPresence();
       return;
     }
+    if (msg.kind === 'sync') {
+      // A (re)connecting client asks what it missed (spec/75, Level 1).
+      // Answer from the in-memory op log or tell it to re-hydrate. Costs
+      // no state change, so it's allowed from any connected session
+      // (a view-only peer needs to catch up too).
+      this.sendCatchup(ws, msg.epoch, typeof msg.lastSeq === 'number' ? msg.lastSeq : 0);
+      return;
+    }
     if (msg.kind === 'op') {
       const sender = session.presence;
       if (!sender) return;
@@ -277,8 +317,7 @@ export class DiagramRoom implements DurableObject {
       // could forge `share-revoked` with the code from their own URL
       // and force-redirect every collaborator out of the session.
       if (opKind === 'share-revoked') return;
-      const isPresenceOp =
-        opKind === 'cursor' || opKind === 'select' || opKind === 'laser' || opKind === 'tab-focus';
+      const isPresenceOp = typeof opKind === 'string' && PRESENCE_OP_KINDS.has(opKind);
       if (sender.role !== 'edit' && !isPresenceOp) return;
       // Remember the sender's current tab so a future joiner learns it
       // from the presence list (tab-focus ops only fire on a switch, so
@@ -294,8 +333,56 @@ export class DiagramRoom implements DurableObject {
           ws.serializeAttachment({ ...session, presence: sender } satisfies SessionAttachment);
         }
       }
-      // Relay to every OTHER peer (exclude the sender — they already have it).
-      this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
+      // Presence ops relay unordered (ephemeral, no catch-up). Mutation
+      // ops get a monotonic seq within the epoch and land in the catch-up
+      // log so a reconnecting peer can replay the delta (spec/75, Level 1).
+      if (isPresenceOp) {
+        this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
+      } else {
+        const seq = ++this.seq;
+        this.opLog.push({ seq, from: sender.id, op: msg.op });
+        if (this.opLog.length > OP_LOG_LIMIT) this.opLog.shift();
+        this.broadcast({ kind: 'op', from: sender.id, op: msg.op, seq, epoch: this.epoch }, ws);
+      }
+    }
+  }
+
+  // Answer a client's `sync` (spec/75, Level 1): given the last epoch+seq it
+  // applied, either replay the ops it missed or tell it to re-hydrate.
+  //
+  //   - Same epoch, caught up (lastSeq >= seq) → empty delta.
+  //   - Same epoch, within the log window → replay ops after lastSeq.
+  //   - Same epoch but behind the trimmed log floor → resync (we no longer
+  //     hold the ops it missed).
+  //   - Fresh client (no epoch, lastSeq 0) → replay the whole current log;
+  //     element ops apply idempotently by id, so re-applying ops the client
+  //     already has from its D1 hydrate is harmless.
+  //   - Any other epoch mismatch with prior progress → resync: the client
+  //     saw a previous room instance and we can't map its seq onto ours.
+  private sendCatchup(ws: WebSocket, epoch: string | null, lastSeq: number): void {
+    const floor = this.opLog.length ? this.opLog[0]!.seq : this.seq + 1;
+    let ops: LoggedOp[] = [];
+    let resync = false;
+    if (epoch === this.epoch) {
+      if (lastSeq >= this.seq) ops = [];
+      else if (lastSeq + 1 >= floor) ops = this.opLog.filter((e) => e.seq > lastSeq);
+      else resync = true;
+    } else if (!epoch && lastSeq === 0) {
+      ops = this.opLog.slice();
+    } else {
+      resync = true;
+    }
+    const payload: ServerMessage = {
+      kind: 'catchup',
+      epoch: this.epoch,
+      seq: this.seq,
+      ops,
+      resync,
+    };
+    try {
+      ws.send(JSON.stringify(payload));
+    } catch {
+      this.opRates.delete(ws);
     }
   }
 

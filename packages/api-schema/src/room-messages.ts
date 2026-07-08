@@ -13,14 +13,35 @@ import type { ChangeLogEntry, ParticipantPresence } from './index';
 // `RoomOp` type and ignore frames they don't recognise.
 export type ServerMessage =
   | { kind: 'presence'; participants: ParticipantPresence[] }
-  | { kind: 'op'; from: string; op: unknown };
+  // `seq`/`epoch` ride mutation ops only (spec/75, Level 1): the room
+  // assigns each mutation a monotonic sequence within an `epoch` (a random
+  // id minted per DO instantiation) so a reconnecting client can ask what
+  // it missed. Presence ops (cursor/select/laser/tab-focus) carry neither —
+  // they're ephemeral and unordered. Both fields absent = an older room or
+  // a presence op; clients treat that as "no ordering info", unchanged.
+  | { kind: 'op'; from: string; op: unknown; seq?: number; epoch?: string }
+  // Reply to a client `sync` (spec/75, Level 1). Either a replayable delta
+  // (`ops` the client missed, in seq order, `resync: false`) or an
+  // instruction to fully re-hydrate (`resync: true`, `ops` empty) when the
+  // gap can't be bridged from the room's bounded in-memory op log.
+  | {
+      kind: 'catchup';
+      epoch: string;
+      seq: number;
+      ops: { from: string; op: unknown; seq: number }[];
+      resync: boolean;
+    };
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
 // mutation the client wants rebroadcast to peers.
 export type ClientMessage =
   | { kind: 'hello'; participant: ParticipantPresence }
-  | { kind: 'op'; op: unknown };
+  | { kind: 'op'; op: unknown }
+  // Sent right after re-connecting (spec/75, Level 1): "here's the last
+  // epoch+seq I applied — tell me what I missed, or that I must re-hydrate".
+  // `epoch` is null on a client that hasn't seen an ordered op yet.
+  | { kind: 'sync'; epoch: string | null; lastSeq: number };
 
 // ---------------------------------------------------------------------
 // Realtime room — op vocabulary (client view)
@@ -108,8 +129,16 @@ export type RoomOp =
 // stays at the worker boundary.
 export type RoomOutgoing =
   | { kind: 'hello'; participant: ParticipantPresence }
-  | { kind: 'op'; op: RoomOp };
+  | { kind: 'op'; op: RoomOp }
+  | { kind: 'sync'; epoch: string | null; lastSeq: number };
 
 export type RoomIncoming =
   | { kind: 'presence'; participants: ParticipantPresence[] }
-  | { kind: 'op'; from: string; op: RoomOp };
+  | { kind: 'op'; from: string; op: RoomOp; seq?: number; epoch?: string }
+  | {
+      kind: 'catchup';
+      epoch: string;
+      seq: number;
+      ops: { from: string; op: RoomOp; seq: number }[];
+      resync: boolean;
+    };

@@ -120,30 +120,44 @@ they're unit-tested without a socket.
 Make the DO authoritative for _ordering_, so all peers converge and reconnect is
 clean.
 
-- The DO holds the **live tab state** + a monotonic **op sequence** (`seq`). A
-  client sends an element op; the DO applies it to its state, assigns `seq`, and
-  rebroadcasts `{ op, seq }`. Optimistic clients reconcile their local state
-  against the authoritative order (rebase their un-acked ops on top).
-- **Catch-up / reconnect:** the DO keeps a bounded **op log** (last N ops) +
-  periodic snapshot. A reconnecting or late-joining client sends its last-seen
-  `seq`; the DO replays the delta (or ships a snapshot if the client is too far
-  behind), instead of a full D1 re-hydrate every time.
-- **Durability (decision 2):** the DO **flushes** its state to D1 debounced and
-  on last-peer-disconnect. Cold-start rehydrates from D1. D1 stays the system of
-  record; the DO's storage is a warm cache.
-- **Convergence guarantee:** because every mutation passes through one
-  single-threaded DO that assigns a total order, all peers end in the same
-  state. Still last-writer-wins per field, but with no divergence.
+- **Ordering.** The DO assigns every **mutation** op a monotonic **`seq`**
+  within an **`epoch`** (a random id minted per DO instantiation) and
+  rebroadcasts `{ op, seq, epoch }`. Because every mutation passes through one
+  single-threaded DO that assigns a total order, all peers converge. Ephemeral
+  presence ops (cursor/select/laser/tab-focus) stay unordered — they carry no
+  `seq` and relay from any role, exactly as before.
+- **Catch-up / reconnect.** The DO keeps a bounded in-memory **op log**
+  (`OP_LOG_LIMIT` recent ops). On reconnect a client sends `{ epoch, lastSeq }`;
+  the DO replays the delta (`ops` after `lastSeq`, `resync: false`) or, when it
+  can't bridge the gap — the client is behind the trimmed floor, or its epoch is
+  from a previous DO instance — answers `resync: true` and the client
+  re-hydrates from D1 (a full reload, the same recovery the editor's error
+  boundary uses). A `RealtimeResync` telemetry ping makes that fallback visible.
+- **Why in-memory (not DO storage).** The op log + `seq` + `epoch` live in
+  memory, like the existing `opRates`. A hibernation wake resets them (new
+  epoch, empty log); a client that stayed connected adopts the new epoch off the
+  next op (it missed nothing — the socket stayed open), and a client that
+  _reconnects_ across a wake finds its epoch stale and re-hydrates. So the reset
+  only ever forces the safe path, never loses data — and no per-op storage write
+  is paid.
+- **Durability (decision 2).** The principle holds unchanged: **D1 is the system
+  of record.** Persistence stays **client-driven** at this level (clients PUT
+  tabs to D1 as today); the DO's op log is a warm _catch-up_ cache, not a second
+  writer, so there's no double-write race against the REST saves. The stronger
+  form of decision 2 — the DO itself **flushing** its state to D1 — folds into
+  Level 2, where the persisted Yjs doc becomes the natural single authority the
+  DO writes. Keeping the DO out of the D1 write path here is what makes Level 1
+  shippable without touching the REST/export/guest durability paths.
 
-**Where it lives:** `apps/api/src/diagram-room.ts` grows a state model + op
-application (reusing the same `packages/diagram` apply functions from Level 0),
-op-log storage in DO storage, and the flush-to-D1 path (reusing the existing tab
-persistence in `apps/api/src/db/tabs.ts`). The client gains reconcile-on-seq
-logic.
+**Where it lives:** `apps/api/src/diagram-room.ts` (seq/epoch/op-log + the
+`sync` → `catchup` handler); `packages/api-schema/src/room-messages.ts` (`seq` /
+`epoch` on the op frame, the `sync` + `catchup` frames); `apps/live/lib/api/room.ts`
+(auto-reconnect with backoff, seq/epoch tracking, sync-on-reopen, catch-up
+application); `useRoomConnection.ts` (`onResync` → reload + telemetry).
 
-**Effort:** medium — real infra, but bounded (DOs are built for exactly this:
-single-threaded, per-diagram, with storage). Builds directly on Level 0's op
-format.
+**Effort:** medium — real infra, but bounded. Builds directly on Level 0's op
+format; no client-side op rebasing is needed because element ops already
+commute (Level 0) and the DO relays in a single total order.
 
 ---
 

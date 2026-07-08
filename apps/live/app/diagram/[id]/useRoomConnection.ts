@@ -9,6 +9,7 @@ import {
   type RoomHandlers,
 } from '@/lib/api-client';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
+import { track } from '@/lib/telemetry';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 
@@ -369,6 +370,15 @@ export function useRoomConnection(opts: {
             window.location.assign('/explorer/recent');
           }
         }
+      },
+      onResync: () => {
+        // The room couldn't bridge our reconnect gap from its op log
+        // (spec/75, Level 1) -- we fell too far behind or it restarted.
+        // Re-hydrate from D1 the same way the error boundary recovers: a
+        // full reload. Rare (only after a real disconnect), so the coarse
+        // recovery is acceptable; the telemetry makes regressions visible.
+        track('Error', 'Client', 'RealtimeResync');
+        window.location.reload();
       },
     };
     // Team diagrams need a one-time room ticket (spec/11): membership is
