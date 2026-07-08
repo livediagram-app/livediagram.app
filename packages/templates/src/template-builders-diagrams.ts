@@ -401,7 +401,9 @@ export function buildFlywheel(cx: number, cy: number): Element[] {
   // Style: curved so the connector arcs around the outside of the
   // wheel (a straight line between adjacent sectors cuts close to
   // the hub at this radius), and dashed so it reads as "ongoing
-  // momentum / repeat cycle" rather than a one-shot flow.
+  // momentum / repeat cycle" rather than a one-shot flow. A slow
+  // "dashes" flow animation runs by default so the momentum reads as
+  // motion the moment the template lands, not a static diagram.
   sectors.forEach((sector, i) => {
     const next = sectors[(i + 1) % sectors.length]!;
     const nextEl = sectorElements[(i + 1) % sectors.length]!;
@@ -409,6 +411,8 @@ export function buildFlywheel(cx: number, cy: number): Element[] {
       ...createPinnedArrow(sectorElements[i]!.id, sector.out, nextEl.id, next.into),
       arrowStyle: 'curved',
       strokeStyle: 'dashed',
+      flow: 'dashes',
+      flowSpeed: 'slow',
     });
   });
 
