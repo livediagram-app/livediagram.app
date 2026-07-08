@@ -132,7 +132,7 @@ export function useTabActions(deps: TabActionsDeps) {
   // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
   // lives in useTabImport; remintElementIds is shared with the
   // cross-diagram link below.
-  const { importIntoActiveTab, importMermaidText } = useTabImport({
+  const { importIntoActiveTab, importTextIntoActiveTab } = useTabImport({
     tabs,
     activeId,
     commitTabs,
@@ -347,7 +347,7 @@ export function useTabActions(deps: TabActionsDeps) {
   return {
     addTab,
     importIntoActiveTab,
-    importMermaidText,
+    importTextIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,

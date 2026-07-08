@@ -52,21 +52,31 @@ respects the Mermaid layout direction.
 
 ## Import & export UX — file **or** text
 
-Both dialogs (spec/27 Import, the Export tab dialog) currently fire a file
-action on a format card click. Mermaid adds a **two-step** flow, because
-pasting/copying text is as common as a file for this format:
+Mermaid introduced a **two-step** panel (pasting/copying text is as common as a
+file for a text format), and that panel is now the shared pattern for **every
+text format** in both dialogs (JSON, Mermaid, Markdown), not just Mermaid:
 
-- **Import → Mermaid** → choose **From a file** (`.mmd`/`.mermaid`/`.txt`
-  picker) **or** **Paste or write** (a textarea to type/paste Mermaid, with an
-  Import button). Either path runs `parseMermaid` → replace the active tab
-  (same single-undo-step replace as every import, spec/27).
-- **Export → Mermaid** → choose **Download a file** (`.mmd`) **or** **View &
-  copy** (a textarea pre-filled with `mermaidFromTab(tab)`, editable, with a
-  Copy button). **Edits in the textarea never touch the tab** — it's a
-  scratch view for copying, not a round-trip editor.
+- **Import → JSON / Mermaid / Markdown** → a panel with a textarea to
+  **paste or write** the content (Import button) **and** an **Import a file
+  instead** button (the format's file picker). Either path runs the format's
+  parser and replaces the active tab (same single-undo-step replace as every
+  import, spec/27). Shared component: `TextImportPanel`, driven by
+  `importTextIntoActiveTab(format, text)` which both the paste and file routes
+  call, so they can't diverge.
+- **Export → JSON / Mermaid / Markdown** → a panel with a textarea pre-filled
+  with the tab serialised to that format (`tabToJsonText` / `mermaidFromTab` /
+  `tabToMarkdownText`), editable, with **Copy** and **Download** buttons.
+  **Edits in the textarea never touch the tab** — it's a scratch view for
+  copying, not a round-trip editor. Shared component: `TextExportPanel`.
 
-The other formats keep their one-click behaviour. The Mermaid sub-step is a
-small in-dialog view swap, not a new dialog.
+The **image formats** (PNG / SVG / PDF) get their own second screen too
+(`ImageExportPanel`): the **Isometric view** and **Background pattern** toggles
+that used to sit permanently on the export grid now live behind the format
+card, since they only affect image output — so the main grid is just the six
+format cards, nothing format-specific bleeding onto it.
+
+Naming: the JSON export/import card is titled **"JSON"** (was "File" /
+"livediagram file"); the underlying format key stays `file`.
 
 ## Telemetry (spec/22)
 

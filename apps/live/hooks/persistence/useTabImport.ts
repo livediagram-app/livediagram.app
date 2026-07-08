@@ -95,38 +95,63 @@ export function useTabImport({
     setGroupSourceId(null);
   };
 
-  // Import Mermaid flowchart TEXT into the active tab (spec/73). Shared by
-  // the dialog's paste-editor path and the file path (which reads the file
-  // then hands the text here). Parses to the node/edge graph, builds +
-  // lays out elements honouring the flowchart direction, and replaces the
-  // tab. Uncoloured elements inherit the tab's theme at render, so no
-  // explicit recolour is needed. Never throws — returns the dialog outcome.
-  const importMermaidText = async (text: string): Promise<ImportOutcome> => {
+  // Import TEXT of a given format into the active tab (spec/27 + spec/73).
+  // Shared by the Import dialog's paste-editor path and the file path
+  // (which reads the file then hands the text here), so both routes run
+  // the exact same parse + replace. The parsers are lazy-loaded so their
+  // code stays out of the editor's initial bundle. Never throws — returns
+  // the outcome the dialog renders (close / stay / show error).
+  const importTextIntoActiveTab = async (
+    format: 'json' | 'markdown' | 'mermaid',
+    text: string,
+  ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
-    const { parseMermaid, graphToElements, autoLayoutElements } =
-      await import('@livediagram/diagram');
-    const parsed = parseMermaid(text);
-    if (!parsed.ok) return { status: 'error', error: parsed.error };
-    const elements = autoLayoutElements(graphToElements(parsed.graph), {
-      direction: parsed.direction,
-    });
-    replaceActiveTabContent({
-      id: activeId,
-      name: active?.name ?? '',
-      elements,
-      theme: active?.theme,
-    });
-    track('Tab', 'Imported', 'Mermaid');
+
+    if (format === 'mermaid') {
+      const { parseMermaid, graphToElements, autoLayoutElements } =
+        await import('@livediagram/diagram');
+      const parsed = parseMermaid(text);
+      if (!parsed.ok) return { status: 'error', error: parsed.error };
+      // Uncoloured elements inherit the tab's theme at render, so no
+      // explicit recolour is needed. autoLayout honours the flowchart
+      // direction (TB / LR).
+      const elements = autoLayoutElements(graphToElements(parsed.graph), {
+        direction: parsed.direction,
+      });
+      replaceActiveTabContent({
+        id: activeId,
+        name: active?.name ?? '',
+        elements,
+        theme: active?.theme,
+      });
+      track('Tab', 'Imported', 'Mermaid');
+      return { status: 'done' };
+    }
+
+    if (format === 'markdown') {
+      const { buildTabFromMarkdown } = await import('@/lib/markdown-import');
+      const result = buildTabFromMarkdown(text, { tabName: active?.name, themeId: active?.theme });
+      if (!result.ok) return { status: 'error', error: result.error };
+      replaceActiveTabContent(result.tab);
+      track('Tab', 'Imported', 'Markdown');
+      return { status: 'done' };
+    }
+
+    const { parseImportedTab } = await import('@/lib/import-tab');
+    const result = parseImportedTab(text);
+    if (!result.ok) return { status: 'error', error: result.error };
+    replaceActiveTabContent({ ...result.tab, elements: remintElementIds(result.tab.elements) });
+    track('Tab', 'Imported', 'JSON');
     return { status: 'done' };
   };
 
-  // Import a file INTO the active tab, replacing its contents (spec/27).
-  // The Import dialog passes the user's chosen format, which drives both
-  // the file-picker filter and the parser. Returns an outcome the dialog
-  // renders (close / stay / show error) rather than throwing.
+  // Import a FILE into the active tab (spec/27). Picks a file for the
+  // chosen format, then hands its text to importTextIntoActiveTab so the
+  // file and paste paths converge on one parser. Returns the dialog
+  // outcome; 'cancelled' when the file picker is dismissed.
   const importIntoActiveTab = async (
     format: 'json' | 'markdown' | 'mermaid',
   ): Promise<ImportOutcome> => {
@@ -140,39 +165,11 @@ export function useTabImport({
         : format === 'mermaid'
           ? '.mmd,.mermaid,.txt,text/plain'
           : '.json,application/json';
-    // Lazy-load the whole import cluster on first use: its static chain
-    // (import-tab -> export-tab -> svg-render + the DSL parser) put
-    // ~28 kB min of parse/serialise code in the editor's FIRST LOAD for
-    // a user-action feature (same rationale as the markdown branch
-    // below and the template builders).
-    const { parseImportedTab, pickTabFile } = await import('@/lib/import-tab');
+    const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };
-
-    if (format === 'markdown') {
-      // Lazy-load the parser so its ~300 lines stay out of the editor's
-      // initial bundle (same rationale as the template builders).
-      const { buildTabFromMarkdown } = await import('@/lib/markdown-import');
-      const result = buildTabFromMarkdown(picked.text, {
-        tabName: active?.name,
-        themeId: active?.theme,
-      });
-      if (!result.ok) return { status: 'error', error: result.error };
-      replaceActiveTabContent(result.tab);
-      track('Tab', 'Imported', 'Markdown');
-      return { status: 'done' };
-    }
-
-    if (format === 'mermaid') {
-      return importMermaidText(picked.text);
-    }
-
-    const result = parseImportedTab(picked.text);
-    if (!result.ok) return { status: 'error', error: result.error };
-    replaceActiveTabContent({ ...result.tab, elements: remintElementIds(result.tab.elements) });
-    track('Tab', 'Imported', 'JSON');
-    return { status: 'done' };
+    return importTextIntoActiveTab(format, picked.text);
   };
 
-  return { replaceActiveTabContent, importIntoActiveTab, importMermaidText };
+  return { replaceActiveTabContent, importIntoActiveTab, importTextIntoActiveTab };
 }

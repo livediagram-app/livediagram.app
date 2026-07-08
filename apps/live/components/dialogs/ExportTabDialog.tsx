@@ -2,16 +2,16 @@ import { useState } from 'react';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatIcon } from './export-format-icons';
-import { MermaidExportPanel } from './MermaidExportPanel';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { TextExportPanel } from './TextExportPanel';
+import { ImageExportPanel } from './ImageExportPanel';
 import { mermaidFromTab, type Tab } from '@livediagram/diagram';
 import {
   downloadBlob,
-  exportTabAsJson,
-  exportTabAsMarkdown,
   exportTabAsPng,
   exportTabAsSvg,
   loadTabImages,
+  tabToJsonText,
+  tabToMarkdownText,
 } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
@@ -21,12 +21,12 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 // Telemetry (spec/22): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
-  markdown: 'Markdown',
+  file: 'JSON',
   mermaid: 'Mermaid',
-  pdf: 'PDF',
+  markdown: 'Markdown',
   png: 'PNG',
   svg: 'SVG',
-  file: 'JSON',
+  pdf: 'PDF',
 };
 
 type ExportTabDialogProps = {
@@ -48,11 +48,85 @@ type ExportTabDialogProps = {
 
 export type Format = 'markdown' | 'mermaid' | 'pdf' | 'png' | 'svg' | 'file';
 
-// Welcome-style overlay: four export options laid out as a card grid,
-// matching the visual language of the TemplatePicker. One per format.
-// Each card kicks off the matching helper from lib/export-tab and
-// closes the dialog on success — the visible signal is the browser's
-// own download notification, so the modal doesn't need to linger.
+// The three text formats each open a view/edit/copy panel; the three image
+// formats each open an options-and-download panel (spec/48 / 73).
+type TextFormat = 'file' | 'mermaid' | 'markdown';
+type ImageFormat = 'png' | 'svg' | 'pdf';
+const isTextFormat = (f: Format): f is TextFormat =>
+  f === 'file' || f === 'mermaid' || f === 'markdown';
+
+// Grid card copy, in display order: text formats first, then image formats.
+const CARDS: { kind: Format; title: string; description: string }[] = [
+  {
+    kind: 'file',
+    title: 'JSON',
+    description: 'A livediagram file. Copy it or save a .json to import back with full fidelity.',
+  },
+  {
+    kind: 'mermaid',
+    title: 'Mermaid',
+    description:
+      'This tab as Mermaid flowchart text. Keeps every connection. Copy it or save a .mmd.',
+  },
+  {
+    kind: 'markdown',
+    title: 'Markdown',
+    description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
+  },
+  {
+    kind: 'png',
+    title: 'PNG',
+    description: 'A high-resolution image of this tab, for slides or screenshots.',
+  },
+  {
+    kind: 'svg',
+    title: 'SVG',
+    description: 'A scalable vector image, crisp at any size and editable in design tools.',
+  },
+  {
+    kind: 'pdf',
+    title: 'PDF',
+    description: 'A single-page PDF of this tab, ready to print or share.',
+  },
+];
+
+// Per-text-format panel config: the blurb, the download button label + file
+// extension + mime, and how to serialise the tab to the editable text.
+const TEXT_PANELS: Record<
+  TextFormat,
+  { blurb: string; downloadLabel: string; ext: string; mime: string; getText: (tab: Tab) => string }
+> = {
+  file: {
+    blurb:
+      "This tab as a livediagram JSON export. Edit it here to copy a variant — your edits don't change the tab.",
+    downloadLabel: 'Download .json',
+    ext: 'livediagram-tab.json',
+    mime: 'application/json',
+    getText: tabToJsonText,
+  },
+  mermaid: {
+    blurb:
+      "This tab as a Mermaid flowchart. Edit it here to copy a variant — your edits don't change the tab.",
+    downloadLabel: 'Download .mmd',
+    ext: 'mmd',
+    mime: 'text/plain',
+    getText: mermaidFromTab,
+  },
+  markdown: {
+    blurb:
+      "This tab as a Markdown outline. Edit it here to copy a variant — your edits don't change the tab.",
+    downloadLabel: 'Download .md',
+    ext: 'md',
+    mime: 'text/markdown',
+    getText: tabToMarkdownText,
+  },
+};
+
+// Welcome-style overlay: export options as a card grid. Text formats (JSON /
+// Mermaid / Markdown) open an editable view/copy panel; image formats
+// (PNG / SVG / PDF) open an options-and-download panel with the isometric +
+// background-pattern toggles. The main grid stays clean — no format-specific
+// options bleed onto it.
 export function ExportTabDialog({
   tab,
   diagramName,
@@ -60,57 +134,53 @@ export function ExportTabDialog({
   scope = 'tab',
   imageContext,
 }: ExportTabDialogProps) {
-  const [busyFormat, setBusyFormat] = useState<Format | null>(null);
+  // null = the format grid; otherwise the picked format's sub-panel.
+  const [active, setActive] = useState<Format | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // 'grid' is the format cards; 'mermaid' swaps in the view/edit/copy
-  // panel (spec/73), since Mermaid is a paste/copy format, not a one-click
-  // download like the rest.
-  const [view, setView] = useState<'grid' | 'mermaid'>('grid');
-  // Isometric export (spec/45 / 48): tilt the rendered image into the editor's
-  // isometric projection. Off by default — the standard export is flat top-down.
-  // Only affects the image formats (PNG / SVG / PDF); JSON / Markdown ignore it.
-  const [isometric, setIsometric] = useState(false);
-  // Backdrop pattern (spec/48): paint the tab's grid / dots / … pattern. On by
-  // default so the export matches the canvas; switch off for a clean backdrop.
-  const [pattern, setPattern] = useState(true);
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
   const baseName = sanitizeFilename(`${diagramName || 'diagram'} - ${tab.name || 'tab'}${suffix}`);
 
-  const handle = async (format: Format) => {
-    if (busyFormat) return;
-    setBusyFormat(format);
+  // Render + download an image format with the chosen options (spec/48).
+  const runImageExport = async (
+    format: ImageFormat,
+    opts: { isometric: boolean; pattern: boolean },
+  ) => {
+    if (busy) return;
+    setBusy(true);
     setError(null);
     try {
-      if (format === 'file') {
-        downloadBlob(exportTabAsJson(tab), `${baseName}.livediagram-tab.json`);
-      } else if (format === 'markdown') {
-        downloadBlob(exportTabAsMarkdown(tab), `${baseName}.md`);
+      // Visual formats embed image / avatar bitmaps. Icon glyphs render from
+      // the async icon catalogues — awaiting the (memoized) load makes them
+      // deterministic rather than relying on the editor page's earlier fetch.
+      await ensureIconCatalogs();
+      const images = imageContext ? await loadTabImages(tab, imageContext) : undefined;
+      const renderOpts = { ...opts, images };
+      if (format === 'png') {
+        downloadBlob(await exportTabAsPng(tab, renderOpts), `${baseName}.png`);
+      } else if (format === 'svg') {
+        downloadBlob(exportTabAsSvg(tab, renderOpts), `${baseName}.svg`);
       } else {
-        // Visual formats embed image / avatar bitmaps. Fetch them once here
-        // and share the loaded map across whichever format the user picked.
-        // Icon glyphs render from the async icon catalogues — awaiting the
-        // (memoized) load makes them deterministic rather than relying on the
-        // editor page having already fetched the chunk.
-        await ensureIconCatalogs();
-        const images = imageContext ? await loadTabImages(tab, imageContext) : undefined;
-        const opts = { isometric, pattern, images };
-        if (format === 'png') {
-          downloadBlob(await exportTabAsPng(tab, opts), `${baseName}.png`);
-        } else if (format === 'svg') {
-          downloadBlob(exportTabAsSvg(tab, opts), `${baseName}.svg`);
-        } else if (format === 'pdf') {
-          downloadBlob(await exportTabAsPdf(tab, opts), `${baseName}.pdf`);
-        }
+        downloadBlob(await exportTabAsPdf(tab, renderOpts), `${baseName}.pdf`);
       }
       track('Diagram', 'Exported', EXPORT_LABEL[format]);
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Export failed.');
-      setBusyFormat(null);
+      setBusy(false);
     }
   };
+
+  const activeCard = active ? CARDS.find((c) => c.kind === active) : null;
+  const subtitle = activeCard
+    ? isTextFormat(active!)
+      ? `Copy this tab as ${activeCard.title}, or download a file.`
+      : `Set the image options for ${activeCard.title}, then download.`
+    : isSelection
+      ? 'Pick a format to export the selected elements.'
+      : 'Pick a format to export the current tab.';
 
   return (
     <Dialog
@@ -125,13 +195,7 @@ export function ExportTabDialog({
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
             {isSelection ? 'Export selection' : 'Export tab'}
           </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {view === 'mermaid'
-              ? 'Copy this tab as Mermaid, or download a .mmd file.'
-              : isSelection
-                ? 'Pick a format to download the selected elements.'
-                : 'Pick a format to download the current tab.'}
-          </p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
           <HelpArticleLink
@@ -143,121 +207,45 @@ export function ExportTabDialog({
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-6 py-5">
-        {view === 'mermaid' ? (
-          <MermaidExportPanel
-            initialText={mermaidFromTab(tab)}
+        {active && isTextFormat(active) ? (
+          <TextExportPanel
+            initialText={TEXT_PANELS[active].getText(tab)}
+            blurb={TEXT_PANELS[active].blurb}
+            downloadLabel={TEXT_PANELS[active].downloadLabel}
             onDownload={(text) => {
-              downloadBlob(new Blob([text], { type: 'text/plain' }), `${baseName}.mmd`);
-              track('Diagram', 'Exported', 'Mermaid');
+              const cfg = TEXT_PANELS[active];
+              downloadBlob(new Blob([text], { type: cfg.mime }), `${baseName}.${cfg.ext}`);
+              track('Diagram', 'Exported', EXPORT_LABEL[active]);
             }}
-            onCopied={() => track('Diagram', 'Exported', 'Mermaid')}
-            onBack={() => setView('grid')}
+            onCopied={() => track('Diagram', 'Exported', EXPORT_LABEL[active])}
+            onBack={() => setActive(null)}
+          />
+        ) : active ? (
+          <ImageExportPanel
+            label={activeCard!.title}
+            busy={busy}
+            error={error}
+            onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
+            onBack={() => {
+              setError(null);
+              setActive(null);
+            }}
           />
         ) : (
-          <>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
+            {CARDS.map((c) => (
               <ExportCard
-                kind="markdown"
-                title="Markdown"
-                description="A text outline of this tab's elements and connections, ready to paste into a doc."
-                busy={busyFormat === 'markdown'}
-                onClick={() => void handle('markdown')}
-              />
-              <ExportCard
-                kind="mermaid"
-                title="Mermaid"
-                description="This tab as Mermaid flowchart text. Keeps every connection. Copy it or save a .mmd."
-                busy={false}
+                key={c.kind}
+                kind={c.kind}
+                title={c.title}
+                description={c.description}
                 onClick={() => {
                   setError(null);
-                  setView('mermaid');
+                  setActive(c.kind);
                 }}
               />
-              <ExportCard
-                kind="pdf"
-                title="PDF"
-                description="A single-page PDF of this tab, ready to print or share."
-                busy={busyFormat === 'pdf'}
-                onClick={() => void handle('pdf')}
-              />
-              <ExportCard
-                kind="png"
-                title="PNG"
-                description="A high-resolution image of this tab, for slides or screenshots."
-                busy={busyFormat === 'png'}
-                onClick={() => void handle('png')}
-              />
-              <ExportCard
-                kind="svg"
-                title="SVG"
-                description="A scalable vector image of this tab, crisp at any size and editable in design tools."
-                busy={busyFormat === 'svg'}
-                onClick={() => void handle('svg')}
-              />
-              <ExportCard
-                kind="file"
-                title="File"
-                description="A livediagram file. Drop it back into any diagram via Import to recreate this tab."
-                busy={busyFormat === 'file'}
-                onClick={() => void handle('file')}
-              />
-            </div>
-            {/* Image-format option: an iOS-style toggle to tilt PNG / SVG / PDF
-              into the isometric projection (spec/45 / 48). Off by default. */}
-            <div className="mt-3 flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  // Fire before the flip so an opt-out still reaches the wire.
-                  track('UI', 'Toggled', 'IsometricExport');
-                  setIsometric((v) => !v);
-                }}
-                aria-pressed={isometric}
-                className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
-              >
-                <span className="flex flex-col">
-                  <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                    Isometric view
-                  </span>
-                  <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-                    Tilt the PNG / SVG / PDF into the isometric projection.
-                  </span>
-                </span>
-                <ToggleSwitch presentational checked={isometric} label="Export isometric view" />
-              </button>
-              <HelpArticleLink
-                article="isometricMode"
-                title="Isometric view"
-                description="How the isometric projection works."
-              />
-            </div>
-            {/* Image-format option: paint the tab's backdrop pattern (grid / dots
-              / …). On by default so the export matches the canvas. */}
-            <button
-              type="button"
-              onClick={() => {
-                track('UI', 'Toggled', 'PatternExport');
-                setPattern((v) => !v);
-              }}
-              aria-pressed={pattern}
-              className="mt-2 flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
-            >
-              <span className="flex flex-col">
-                <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                  Background pattern
-                </span>
-                <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-                  Paint the tab's grid / dots / texture behind the diagram.
-                </span>
-              </span>
-              <ToggleSwitch presentational checked={pattern} label="Export background pattern" />
-            </button>
-            {error ? (
-              <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
-                {error}
-              </p>
-            ) : null}
-          </>
+            ))}
+          </div>
         )}
       </div>
     </Dialog>
@@ -268,21 +256,18 @@ function ExportCard({
   kind,
   title,
   description,
-  busy,
   onClick,
 }: {
   kind: Format;
   title: string;
   description: string;
-  busy: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={busy}
-      className="flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-3 text-left transition enabled:hover:border-brand-300 enabled:hover:bg-brand-50/40 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-brand-500/10"
+      className="flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
       <div className="flex h-12 w-full items-center justify-center rounded-md bg-slate-50 dark:bg-slate-200">
         <FormatIcon kind={kind} />
@@ -290,7 +275,7 @@ function ExportCard({
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">{title}</p>
         <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          {busy ? 'Exporting…' : description}
+          {description}
         </p>
       </div>
     </button>

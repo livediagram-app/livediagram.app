@@ -836,7 +836,7 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import a JSON file, a Mermaid flowchart, or a Markdown outline into the active tab (it replaces the contents).',
+      'Import JSON, a Mermaid flowchart, or a Markdown outline into the active tab by pasting text or picking a file (it replaces the contents).',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -844,7 +844,7 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
-      'Export the active tab as PNG, SVG, PDF, a Mermaid flowchart, Markdown, or a livediagram JSON file.',
+      'Export the active tab as JSON, a Mermaid flowchart, Markdown, PNG, SVG, or PDF — copy the text formats or set image options.',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

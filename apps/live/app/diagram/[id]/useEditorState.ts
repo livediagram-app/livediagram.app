@@ -1091,7 +1091,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     addTab,
     importIntoActiveTab,
-    importMermaidText,
+    importTextIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,
@@ -1954,7 +1954,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     imageContext,
     imagePickerOpenFor,
     importIntoActiveTab,
-    importMermaidText,
+    importTextIntoActiveTab,
     isPinchingRef,
     isReadOnly,
     laserTrailRows,

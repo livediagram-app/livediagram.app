@@ -28,14 +28,21 @@ export type ExportedTabEnvelope = {
   tab: Tab;
 };
 
-export function exportTabAsJson(tab: Tab): Blob {
+// The JSON envelope as a string — shared by the Blob download and the
+// export dialog's view/copy panel (spec/73), which shows the same text
+// in an editable box.
+export function tabToJsonText(tab: Tab): string {
   const envelope: ExportedTabEnvelope = {
     schemaVersion: TAB_SCHEMA_VERSION,
     kind: 'livediagram.tab',
     exportedAt: Date.now(),
     tab,
   };
-  return new Blob([JSON.stringify(envelope, null, 2)], { type: 'application/json' });
+  return JSON.stringify(envelope, null, 2);
+}
+
+export function exportTabAsJson(tab: Tab): Blob {
+  return new Blob([tabToJsonText(tab)], { type: 'application/json' });
 }
 
 // ---------------------------------------------------------------------
@@ -55,7 +62,9 @@ export function exportTabAsJson(tab: Tab): Blob {
 // keyed off their endpoints so the connection survives the
 // flattening. Unlabelled arrows are dropped — they're structural,
 // not content.
-export function exportTabAsMarkdown(tab: Tab): Blob {
+// The markdown outline as a string — shared by the Blob download and the
+// export dialog's view/copy panel (spec/73).
+export function tabToMarkdownText(tab: Tab): string {
   const lines: string[] = [];
   lines.push(`# ${tab.name || 'Untitled tab'}`);
   lines.push('');
@@ -94,7 +103,11 @@ export function exportTabAsMarkdown(tab: Tab): Blob {
   if (labelledBoxed.length === 0 && labelledArrows.length === 0) {
     lines.push('_No labelled content._');
   }
-  return new Blob([lines.join('\n')], { type: 'text/markdown' });
+  return lines.join('\n');
+}
+
+export function exportTabAsMarkdown(tab: Tab): Blob {
+  return new Blob([tabToMarkdownText(tab)], { type: 'text/markdown' });
 }
 
 function endpointLabel(endpoint: ArrowElement['from'], boxed: BoxedElement[]): string {

@@ -126,14 +126,28 @@ export function FormatIcon({ kind }: { kind: Format }) {
       );
     case 'file':
       return (
-        <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden>
-          <path
-            d="M3 1h11l5 5v20a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"
-            fill="rgb(241 245 249)"
+        <svg width="34" height="20" viewBox="0 0 34 20" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="32"
+            height="18"
+            rx="2"
+            fill="none"
             stroke="rgb(148 163 184)"
             strokeWidth="1.25"
           />
-          <path d="M14 1v6h5" fill="none" stroke="rgb(148 163 184)" strokeWidth="1.25" />
+          <text
+            x="17"
+            y="14"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="600"
+            fill="rgb(71 85 105)"
+          >
+            json
+          </text>
         </svg>
       );
   }

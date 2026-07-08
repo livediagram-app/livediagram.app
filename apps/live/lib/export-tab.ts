@@ -100,6 +100,8 @@ export {
   TAB_SCHEMA_VERSION,
   exportTabAsJson,
   exportTabAsMarkdown,
+  tabToJsonText,
+  tabToMarkdownText,
   type ExportedTabEnvelope,
 } from './export-tab-text';
 

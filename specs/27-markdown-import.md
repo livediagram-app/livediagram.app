@@ -58,13 +58,17 @@ locked import.
 The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
 dialog**, the mirror of the Export dialog. The user picks the format:
 
-- **livediagram file** — a `.json` tab export, restored exactly.
-- **Mermaid** — a flowchart, from a file or pasted text, keeping every
-  connection ([spec/73](73-mermaid.md)).
+- **JSON** — a `.json` tab export, restored exactly.
+- **Mermaid** — a flowchart, keeping every connection ([spec/73](73-mermaid.md)).
 - **Markdown** — a `.md` outline, built into a themed tree as above.
 
-The chosen format drives both the file-picker's filter and which parser
-runs (no content auto-detection — the user said which it is).
+Every format is text, so each card opens the **same two-step panel**
+(`TextImportPanel`, [spec/73](73-mermaid.md)): **paste or write** the
+content, or **import a file instead**. The chosen format drives the
+placeholder, the file-picker's filter, and which parser runs (no content
+auto-detection — the user said which it is). Both the paste and file
+routes go through one `importTextIntoActiveTab(format, text)` so they
+parse + replace identically.
 
 **Import replaces the current tab's contents** — its elements, theme, and
 background — keeping the tab's id and name. The dialog leads with a

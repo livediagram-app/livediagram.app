@@ -5,36 +5,36 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a livediagram JSON file, a Mermaid flowchart, or a Markdown outline into the active tab. Importing replaces the tab contents, so the dialog warns you first.',
+    'Import a JSON file, a Mermaid flowchart, or a Markdown outline into the active tab, either by pasting the text or picking a file. Importing replaces the tab contents, so the dialog warns you first.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from a file or pasted text. Import a livediagram JSON export, a Mermaid flowchart, or a Markdown outline into the active tab."
+  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid flowchart, or a Markdown outline into the active tab."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
-**Import** brings content into the active tab from a file. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab to a file from one diagram, import it into a tab somewhere else.
+**Import** brings content into the active tab from pasted text or a file. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab from one diagram, import it into a tab somewhere else.
 
 ## Import formats
 
 From the tab ellipsis menu, expand the **Content** section and choose **Import**, then pick a format:
 
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
-- **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`) and lays it out on the canvas, keeping every connection. Because Mermaid is text, you can either pick a `.mmd` file **or** paste / write the flowchart straight into an editor in the dialog. Only the flowchart diagram type is supported.
+- **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`) and lays it out on the canvas, keeping every connection. Only the flowchart diagram type is supported.
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
 
-For JSON and Markdown a file picker opens; choose the file and the tab updates. For Mermaid you first choose **Paste or write** or **a file**, then the tab updates.
+Because all three are text, each format opens the same two-step panel: **paste or write** the content into the editor and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
 
-<Figure caption="The Content section of the tab menu opens Import, offering JSON for a full-fidelity round trip or Markdown for an outline.">
+<Figure caption="The Content section of the tab menu opens Import, offering JSON, Mermaid, and Markdown. Each opens a panel to paste the text or pick a file.">
   <ImportMenu />
 </Figure>
 
 ## Import replaces the tab
 
-Importing **replaces the active tab's contents** with what comes in from the file, it does not merge. Because that is destructive, the dialog leads with a warning naming the tab about to be overwritten, so you can back out before committing. If you want to keep the current board, add a new tab first and import into that.
+Importing **replaces the active tab's contents** with what comes in, it does not merge. Because that is destructive, the dialog leads with a warning naming the tab about to be overwritten, so you can back out before committing. If you want to keep the current board, add a new tab first and import into that.
 
 Import is unavailable while a tab is locked, since a locked tab is protected from edits.
 
