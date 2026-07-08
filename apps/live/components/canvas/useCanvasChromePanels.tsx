@@ -334,6 +334,7 @@ export function useCanvasChromePanels({
         layers={layers}
         activeLayerId={activeLayerId}
         counts={layerCounts}
+        elements={elements}
         position={layersWiring.position}
         onMoveTo={onMoveLayersPanel}
         onReset={layersWiring.onReset}

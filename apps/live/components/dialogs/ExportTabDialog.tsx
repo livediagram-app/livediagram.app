@@ -4,7 +4,7 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
-import { mermaidFromTab, type Tab } from '@livediagram/diagram';
+import { isLayerVisible, tabLayers, mermaidFromTab, type Tab } from '@livediagram/diagram';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -174,7 +174,7 @@ export function ExportTabDialog({
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
   const renderPreview = useCallback(
-    (opts: { isometric: boolean; pattern: boolean }) =>
+    (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
       renderTabToSvg(tab, { ...opts, images: previewImages }),
     [tab, previewImages],
   );
@@ -182,7 +182,7 @@ export function ExportTabDialog({
   // Render + download an image format with the chosen options (spec/48).
   const runImageExport = async (
     format: ImageFormat,
-    opts: { isometric: boolean; pattern: boolean },
+    opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean },
   ) => {
     if (busy) return;
     setBusy(true);
@@ -264,6 +264,7 @@ export function ExportTabDialog({
             label={activeCard!.title}
             busy={busy}
             error={error}
+            hasHiddenLayers={tabLayers(tab.layers).some((l) => !isLayerVisible(l))}
             renderPreview={renderPreview}
             previewReady={previewReady}
             onExport={(opts) => void runImageExport(active as ImageFormat, opts)}

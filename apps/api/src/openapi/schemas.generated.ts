@@ -126,6 +126,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label": {
         "type": "string"
       },
+      "layerId": {
+        "type": "string"
+      },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
@@ -332,6 +335,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "offset"
         ],
         "type": "object"
+      },
+      "layerId": {
+        "type": "string"
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
@@ -1748,6 +1754,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label": {
         "type": "string"
       },
+      "layerId": {
+        "type": "string"
+      },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
@@ -1926,6 +1935,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label": {
         "type": "string"
       },
+      "layerId": {
+        "type": "string"
+      },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
@@ -2050,6 +2062,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "Layer": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      },
+      "visible": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
   "LineSeries": {
     "additionalProperties": false,
     "properties": {
@@ -2106,6 +2140,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/ElementId"
       },
       "label": {
+        "type": "string"
+      },
+      "layerId": {
         "type": "string"
       },
       "link": {
@@ -2348,6 +2385,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/ElementId"
       },
       "label": {
+        "type": "string"
+      },
+      "layerId": {
         "type": "string"
       },
       "lineCategories": {
@@ -2677,6 +2717,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label": {
         "type": "string"
       },
+      "layerId": {
+        "type": "string"
+      },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
@@ -2784,6 +2827,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "id": {
         "$ref": "#/components/schemas/TabId"
+      },
+      "layers": {
+        "items": {
+          "$ref": "#/components/schemas/Layer"
+        },
+        "type": "array"
       },
       "locked": {
         "type": "boolean"
@@ -3013,6 +3062,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/ElementId"
       },
       "label": {
+        "type": "string"
+      },
+      "layerId": {
         "type": "string"
       },
       "link": {
@@ -3368,6 +3420,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Search",
       "UI",
       "Folder",
+      "Layer",
       "Session",
       "AI",
       "Team",
@@ -3579,6 +3632,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/ElementId"
       },
       "label": {
+        "type": "string"
+      },
+      "layerId": {
         "type": "string"
       },
       "link": {

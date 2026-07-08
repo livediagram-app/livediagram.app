@@ -29,6 +29,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Search: 'Global search panel: open, query, picked-result kind.',
   UI: 'Editor chrome: light/dark toggle, dialogs (Settings, Shortcuts, Share, Activity), share-link copy, welcome dismiss.',
   Folder: 'Diagram folders: create, rename, delete, re-parent.',
+  Layer:
+    'Tab layers (Photoshop-style stacking bands): add, rename, delete, restack, show / hide, lock, move elements between layers, open the panel.',
   Session: 'Account-level events when Clerk auth is configured: sign-in, sign-up, sign-out.',
   AI: 'The optional in-editor AI assistant: running its Build / Ask / Review / Clean requests on the current tab.',
   Team: 'Teams: creating and joining, renaming, role changes, member invites and removals, and the shared team library of diagrams.',
@@ -60,6 +62,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Search: '#6366f1',
   UI: '#0891b2',
   Folder: '#a855f7',
+  Layer: '#7c3aed',
   Session: '#64748b',
   AI: '#eab308',
   Team: '#2563eb',
@@ -228,6 +231,21 @@ export function eventExplanation(category: string, action: string, type: string 
     if (action === 'Renamed') return 'A folder was renamed.';
     if (action === 'Deleted') return 'A folder was deleted (contained diagrams move to Unsorted).';
     if (action === 'Moved') return 'A folder was re-parented under another folder (or the root).';
+  }
+  if (category === 'Layer') {
+    if (action === 'Added') return 'A new layer was added in the Layers panel.';
+    if (action === 'Deleted') return 'A layer (and everything on it) was deleted.';
+    if (action === 'Renamed') return 'A layer was renamed.';
+    if (action === 'Reordered') return 'Someone dragged a layer to restack it.';
+    if (action === 'Selected') return 'Someone switched which layer is active.';
+    if (action === 'Moved') return 'A selection was moved onto another layer.';
+    if (action === 'Opened') return 'Someone expanded the Layers panel.';
+    if (action === 'Toggled') {
+      if (type === 'Hidden') return 'A layer was hidden.';
+      if (type === 'Shown') return 'A hidden layer was shown again.';
+      if (type === 'Locked') return 'A layer was locked (its elements become read-only).';
+      if (type === 'Unlocked') return 'A locked layer was unlocked.';
+    }
   }
   if (category === 'Session') {
     if (action === 'SignedIn') return 'A visitor just completed sign-in via Clerk.';

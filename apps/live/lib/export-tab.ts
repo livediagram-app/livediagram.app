@@ -9,7 +9,14 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import { isBoxed, shade, type BoxedElement, type Tab } from '@livediagram/diagram';
+import {
+  isBoxed,
+  orderByLayer,
+  shade,
+  visibleLayerElements,
+  type BoxedElement,
+  type Tab,
+} from '@livediagram/diagram';
 // Shared SVG render helpers (spec/62 §5): moved into the diagram package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
@@ -26,7 +33,6 @@ import {
   xmlEscape,
   type ExportShape,
 } from '@livediagram/diagram';
-import { framesFirst } from './canvas';
 import { backgroundPatternTile } from './canvas-backgrounds';
 import { resolveIconArtLoaded } from './icon-registry';
 import {
@@ -46,7 +52,14 @@ import type { ExportImageMap } from './export-tab-images';
 // `images` carries pre-loaded bitmaps (keyed by imageId) so image / avatar
 // elements embed their photo instead of a placeholder; absent ids (or no map)
 // fall back to the placeholder. Build it with loadTabImages (export-tab-images).
-export type ImageExportOpts = { isometric?: boolean; pattern?: boolean; images?: ExportImageMap };
+// `hiddenLayers` INCLUDES layers the user has hidden (spec/74); off by default
+// so the export matches what the canvas shows.
+export type ImageExportOpts = {
+  isometric?: boolean;
+  pattern?: boolean;
+  hiddenLayers?: boolean;
+  images?: ExportImageMap;
+};
 
 // Re-export so callers (the export dialog) get the loader from the same
 // `@/lib/export-tab` barrel they already import the exporters from.
@@ -114,7 +127,12 @@ export async function renderTabToCanvas(
   opts: { scale?: number } & ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
   const scale = opts.scale ?? 2; // default 2× for crisp output
-  const bounds = contentBounds(tab.elements);
+  // Hidden layers drop out of the export (bounds included) unless the
+  // dialog's include-hidden option is on (spec/74). `ordered` is the
+  // paint order: layer bands bottom -> top, frames first per band.
+  const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
+  const ordered = orderByLayer(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers });
+  const bounds = contentBounds(els);
   // Isometric export (spec/45 / 48): project the flat content through the iso
   // affine and size the canvas to the tilted footprint so nothing clips. The
   // matrix is applied to the drawing context after positioning, so every
@@ -157,7 +175,7 @@ export async function renderTabToCanvas(
   // depth sits behind all the element bodies (matching the editor's single
   // depth plane behind the element layer).
   if (iso) {
-    for (const el of framesFirst(tab.elements)) {
+    for (const el of ordered) {
       if (el.type !== 'arrow') drawBoxedExtrusion(ctx, el);
     }
   }
@@ -174,7 +192,7 @@ export async function renderTabToCanvas(
   // into the markup and it sweeps outside the unrotated box. A failed
   // rasterise falls back to drawBoxed's plain box.
   const rasterImages = new Map<string, { image: HTMLImageElement; pad: number }>();
-  for (const el of tab.elements) {
+  for (const el of els) {
     if (el.type === 'arrow' || !isBoxed(el)) continue;
     if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded)) continue;
     const diag = Math.hypot(el.width, el.height);
@@ -191,7 +209,7 @@ export async function renderTabToCanvas(
       // Fall through to drawBoxed's plain box below.
     }
   }
-  for (const el of framesFirst(tab.elements)) {
+  for (const el of ordered) {
     if (el.type === 'arrow') continue;
     const raster = rasterImages.get(el.id);
     if (raster) {
@@ -206,8 +224,10 @@ export async function renderTabToCanvas(
     }
     drawBoxed(ctx, el, resolveImage);
   }
-  for (const el of tab.elements) {
+  for (const el of els) {
     if (el.type !== 'arrow') continue;
+    // Endpoint resolution keeps the FULL list, so an arrow pinned to a
+    // hidden element still lands where the canvas draws it.
     drawArrow(ctx, el, tab.elements);
   }
   return canvas;
@@ -274,7 +294,10 @@ function svgBoxedExtrusion(el: BoxedElement): string {
 // rasterise the same content, so one SVG preview faithfully represents all
 // three image formats under the current isometric / pattern options.
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
-  const bounds = contentBounds(tab.elements);
+  // Same hidden-layer + band-order rules as the canvas renderer above.
+  const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
+  const ordered = orderByLayer(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers });
+  const bounds = contentBounds(els);
   // Isometric export: the viewBox spans the projected (tilted) footprint and a
   // <g matrix> applies the iso projection to the content, while the background
   // rect stays in viewBox space so it fills the whole frame.
@@ -303,17 +326,18 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   if (iso) {
     parts.push(`<g transform="matrix(${r2(iso.a)} ${r2(iso.b)} ${r2(iso.c)} ${r2(iso.d)} 0 0)">`);
     // All extrusion columns behind all element bodies (matching the canvas).
-    for (const el of framesFirst(tab.elements)) {
+    for (const el of ordered) {
       if (el.type !== 'arrow') parts.push(svgBoxedExtrusion(el));
     }
   }
   // Boxed elements first, then arrows on top (same z-order as the canvas).
-  // framesFirst keeps frame sections behind their contents (spec/09).
+  // `ordered` bands by layer with frame sections behind their band-mates
+  // (spec/74 + spec/09).
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
-  for (const el of framesFirst(tab.elements)) {
+  for (const el of ordered) {
     if (el.type !== 'arrow') parts.push(svgBoxed(el, resolveImageHref, resolveIconArtLoaded));
   }
-  for (const el of tab.elements) {
+  for (const el of els) {
     if (el.type === 'arrow') parts.push(svgArrow(el, tab.elements));
   }
   if (iso) parts.push('</g>');

@@ -10,6 +10,7 @@
 
 import type { DiagramGraph, GraphNode } from './graph-authoring';
 import type { Element } from './index';
+import { visibleLayerElements, type Layer } from './layers';
 
 export type MermaidDirection = 'TB' | 'LR';
 
@@ -194,8 +195,13 @@ function mermaidNodeText(id: string, label: string, shape: string): string {
   return `${id}${open}${label.replace(/"/g, '&quot;')}${close}`;
 }
 
-export function mermaidFromTab(tab: { elements: Element[] }): string {
-  const boxed = tab.elements.filter(
+export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): string {
+  // Hidden layers drop out of the export (spec/74): what you see on the
+  // canvas is what the flowchart describes. Arrows on hidden layers (or
+  // touching hidden nodes) vanish with them, since a hidden node never
+  // enters the id map below.
+  const elements = visibleLayerElements(tab.elements, tab.layers);
+  const boxed = elements.filter(
     (e): e is Element & { x: number; label?: string; shape?: string } =>
       e.type === 'shape' && 'x' in e,
   );
@@ -208,7 +214,7 @@ export function mermaidFromTab(tab: { elements: Element[] }): string {
     const label = (el.label ?? '').trim() || mid;
     lines.push(`  ${mermaidNodeText(mid, label, el.shape ?? 'square')}`);
   }
-  for (const el of tab.elements) {
+  for (const el of elements) {
     if (el.type !== 'arrow') continue;
     const from = el.from.kind === 'pinned' ? idMap.get(el.from.elementId) : undefined;
     const to = el.to.kind === 'pinned' ? idMap.get(el.to.elementId) : undefined;

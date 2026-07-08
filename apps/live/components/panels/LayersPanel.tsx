@@ -1,15 +1,31 @@
 'use client';
 
-import { useState, type DragEvent } from 'react';
-import { isLayerLocked, isLayerVisible, type Layer } from '@livediagram/diagram';
+import { useMemo, useState, type DragEvent } from 'react';
+import {
+  contentBounds,
+  isBoxed,
+  isLayerLocked,
+  isLayerVisible,
+  orderByLayer,
+  r2,
+  resolveLayerId,
+  svgArrow,
+  svgBoxed,
+  type Element,
+  type Layer,
+} from '@livediagram/diagram';
+import { resolveIconArtLoaded } from '@/lib/icon-registry';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel.types';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
 // The Layers panel (spec/74): one row per layer, TOP layer first (the
 // panel mirrors the paint stack like every design tool). Row = eye
-// toggle · name (double-click to rename inline) · element count · lock
-// toggle, with the whole row click setting the ACTIVE layer. Rows drag
+// toggle · a mini preview of just that layer's elements (all rows share
+// the whole tab's framing so content reads in place, like the Map) ·
+// name (double-click to rename inline) · element count · lock toggle,
+// with the whole row click setting the ACTIVE layer. Rows drag
 // to restack; the footer adds a layer above the active one or deletes
 // the active layer (inline confirm when it still has elements; the
 // last layer can't be deleted). Pure view: every mutation is a
@@ -19,6 +35,7 @@ export function LayersPanel({
   layers,
   activeLayerId,
   counts,
+  elements,
   position,
   onMoveTo,
   onReset,
@@ -40,6 +57,8 @@ export function LayersPanel({
   layers: Layer[];
   activeLayerId: string;
   counts: Map<string, number>;
+  // The tab's elements, for the per-row layer previews.
+  elements: Element[];
   position: { x: number; y: number } | null;
   onMoveTo: (x: number, y: number) => void;
   onReset?: () => void;
@@ -69,6 +88,39 @@ export function LayersPanel({
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
+  // Per-row layer previews: the SAME headless renderer the Map / exports
+  // use, split into one markup string per layer. Every row shares the
+  // whole tab's content bounds as its viewBox, so each preview shows its
+  // layer's elements where they actually sit. Hidden layers keep their
+  // preview (that's how you see what you're missing). Rebuilt only when
+  // the elements / stack change; the markup is our own renderer's output
+  // (user text xmlEscaped inside it), so injecting it is safe.
+  const iconsLoaded = useIconCatalogs();
+  const { thumbMarkup, thumbViewBox } = useMemo(() => {
+    if (elements.length === 0) {
+      return { thumbMarkup: new Map<string, string>(), thumbViewBox: null };
+    }
+    const boxedParts = new Map<string, string[]>(layers.map((l) => [l.id, []]));
+    const arrowParts = new Map<string, string[]>(layers.map((l) => [l.id, []]));
+    for (const el of orderByLayer(elements, layers, { includeHidden: true })) {
+      const lid = resolveLayerId(el.layerId, layers);
+      if (el.type === 'arrow') arrowParts.get(lid)?.push(svgArrow(el, elements));
+      else if (isBoxed(el))
+        boxedParts.get(lid)?.push(svgBoxed(el, undefined, resolveIconArtLoaded));
+    }
+    const markup = new Map(
+      layers.map((l) => [l.id, boxedParts.get(l.id)!.join('') + arrowParts.get(l.id)!.join('')]),
+    );
+    const b = contentBounds(elements);
+    const pad = 8;
+    return {
+      thumbMarkup: markup,
+      thumbViewBox: `${r2(b.x - pad)} ${r2(b.y - pad)} ${r2(b.w + pad * 2)} ${r2(b.h + pad * 2)}`,
+    };
+    // iconsLoaded re-runs the build when the catalogue chunk lands.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements, layers, iconsLoaded]);
+
   // Top layer first, matching the paint stack top-down.
   const rows = [...layers].reverse();
   const activeLayer = layers.find((l) => l.id === activeLayerId);
@@ -94,16 +146,9 @@ export function LayersPanel({
   return (
     <MovablePanel
       title="Layers"
-      headerExtra={
-        layers.length > 1 ? (
-          <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-            {layers.length}
-          </span>
-        ) : undefined
-      }
       position={position}
       defaultCorner="bottom-right"
-      width="w-56"
+      width="w-auto sm:w-64"
       onReset={onReset}
       onMoveTo={onMoveTo}
       {...dock}
@@ -184,6 +229,17 @@ export function LayersPanel({
                     {visible ? <EyeIcon /> : <EyeOffIcon />}
                   </button>
                 </Tooltip>
+                <span className="flex h-8 w-11 shrink-0 items-center justify-center overflow-hidden rounded border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
+                  {thumbViewBox && thumbMarkup.get(layer.id) ? (
+                    <svg
+                      viewBox={thumbViewBox}
+                      preserveAspectRatio="xMidYMid meet"
+                      className="h-full w-full"
+                      aria-hidden
+                      dangerouslySetInnerHTML={{ __html: thumbMarkup.get(layer.id)! }}
+                    />
+                  ) : null}
+                </span>
                 {renamingId === layer.id ? (
                   <input
                     autoFocus

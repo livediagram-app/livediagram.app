@@ -38,6 +38,7 @@ import { svgArrow } from './svg-render-arrows';
 
 export { arrowHeadRefs, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
+import { orderByLayer, visibleLayerElements } from './layers';
 
 // The export descriptor layer (constants, ExportShape / resolver types,
 // describeBoxedExport) lives in svg-render-describe.ts; re-exported so
@@ -250,13 +251,12 @@ export function boxedNeedsSvgRaster(el: BoxedElement, resolveIconArt?: ResolveIc
   return false;
 }
 
-const isFrameEl = (el: Element): boolean => el.type === 'shape' && el.shape === 'frame';
-
 // Render a tab's elements to a complete SVG string on a solid background, sized
-// to the content bounds with padding. Frame sections render behind their
-// contents, then boxed elements, then arrows on top. No isometric projection or
+// to the content bounds with padding. Layer bands paint bottom -> top with
+// frame sections behind their band-mates (spec/74 + spec/09), boxed elements
+// before arrows. Hidden layers are skipped, so server snapshots (spec/67) and
+// MCP inline images match what the canvas shows. No isometric projection or
 // backdrop pattern — those are in-app export extras (apps/live/lib/export-tab).
-// This is the renderer the MCP worker rasterises for its inline images.
 export function renderElementsToSvg(
   tab: Tab,
   opts: {
@@ -267,15 +267,14 @@ export function renderElementsToSvg(
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
-  const bounds = contentBounds(tab.elements);
+  const visible = visibleLayerElements(tab.elements, tab.layers);
+  const bounds = contentBounds(visible);
   const vbX = bounds.x - padding;
   const vbY = bounds.y - padding;
   const vbW = bounds.w + padding * 2;
   const vbH = bounds.h + padding * 2;
   const bg = opts.background ?? tab.backgroundColor ?? EXPORT_BG;
-  const ordered = tab.elements.some(isFrameEl)
-    ? [...tab.elements.filter(isFrameEl), ...tab.elements.filter((el) => !isFrameEl(el))]
-    : tab.elements;
+  const ordered = orderByLayer(tab.elements, tab.layers);
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
@@ -283,7 +282,7 @@ export function renderElementsToSvg(
   for (const el of ordered) {
     if (el.type !== 'arrow') parts.push(svgBoxed(el, opts.resolveImageHref, opts.resolveIconArt));
   }
-  for (const el of tab.elements) {
+  for (const el of visible) {
     if (el.type === 'arrow') parts.push(svgArrow(el, tab.elements));
   }
   parts.push('</svg>');
