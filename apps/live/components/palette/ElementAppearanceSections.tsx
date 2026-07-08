@@ -74,7 +74,6 @@ type ElementAppearanceSectionsProps = {
   target: EditorContextMenuProps['elements'][number];
   onClose: () => void;
   sectionProps: Scaffold['sectionProps'];
-  openSectionById: Scaffold['openSectionById'];
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
@@ -86,7 +85,6 @@ export function ElementAppearanceSections({
   target,
   onClose,
   sectionProps,
-  openSectionById,
   colorProps,
   textColorHandlers,
   fillColorHandlers,
@@ -258,16 +256,13 @@ export function ElementAppearanceSections({
             (spec/49) — grouped under one "Text" row that opens them in a side
             flyout, so they don't lengthen the menu's vertical stack. The row
             only shows when the element has text (showMarkers / showAlignment
-            both require a non-empty label). Opening the flyout auto-expands its
-            first sub-category. ── */}
+            both require a non-empty label). Sub-categories all start closed:
+            auto-expanding the first one flipped the shared one-open-section
+            scaffold, collapsing whichever inline accordion the user had open
+            in the host menu behind the flyout. ── */}
       {showMarkers || showAlignment ? <MenuGroupSeparator /> : null}
       {showMarkers || showAlignment ? (
-        <MenuFlyoutSection
-          title="Text"
-          icon={<TextGlyph />}
-          flush
-          onOpen={() => openSectionById(showAlignment ? 'font' : 'markers')}
-        >
+        <MenuFlyoutSection title="Text" icon={<TextGlyph />} flush>
           {/* Typography — Font / Size / Padding, shared with the rich-text
               toolbar's overflow menu. Applies to the element's whole label. */}
           {showAlignment ? (

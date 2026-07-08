@@ -73,6 +73,25 @@ export function MenuFlyoutSection({
     return () => ro.disconnect();
   }, [open, measure]);
 
+  // Track the TRIGGER while open. The host menu can grow or shrink under
+  // us with no scroll / resize event and no panel size change — expanding
+  // or collapsing one of its inline accordions re-lays the rows out, and
+  // a bottom-clamped menu then shifts wholesale — which left the flyout
+  // floating where its row USED to be. No observer fires for "an
+  // unrelated element moved", so poll the trigger's rect once per frame
+  // for the flyout's short open lifetime; measure() already no-ops the
+  // state write when nothing changed.
+  useEffect(() => {
+    if (!open) return;
+    let raf = 0;
+    const track = () => {
+      measure();
+      raf = window.requestAnimationFrame(track);
+    };
+    raf = window.requestAnimationFrame(track);
+    return () => window.cancelAnimationFrame(raf);
+  }, [open, measure]);
+
   // Close the flyout on a click that's neither on its trigger nor inside its
   // panel — i.e. another menu row, or off the menu entirely. The host menu
   // keeps itself open for clicks inside the panel via the data-menu-flyout

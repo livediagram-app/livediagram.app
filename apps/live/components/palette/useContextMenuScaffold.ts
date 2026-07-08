@@ -33,7 +33,6 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
   });
   // Open a specific section outright (not a toggle) — e.g. a submenu
   // auto-expanding its first sub-category when it opens.
-  const openSectionById = (id: string) => setOpenSection(id);
   // Which colour row's inline palette is open — at most one, toggled by
   // re-clicking the row so it never sticks open.
   const [openColor, setOpenColor] = useState<string | null>(null);
@@ -64,7 +63,6 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
   };
   return {
     sectionProps,
-    openSectionById,
     colorProps,
     textColorHandlers,
     fillColorHandlers,
