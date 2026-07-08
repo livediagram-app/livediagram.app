@@ -38,10 +38,10 @@ import {
 } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
-  MenuFlyoutSection,
   MenuGroupSeparator,
   MenuTile,
 } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { TypographySections } from './TypographySections';
 
 import { IconSizeTiles } from '@/components/palette/context-menu-tiles';
