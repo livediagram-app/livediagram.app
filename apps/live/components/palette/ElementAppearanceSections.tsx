@@ -253,7 +253,7 @@ export function ElementAppearanceSections({
             working exactly as before inside the flyout. ── */}
       {showMarkers || showAlignment ? <MenuGroupSeparator /> : null}
       {showMarkers || showAlignment ? (
-        <MenuFlyoutSection title="Text" icon={<TextGlyph />}>
+        <MenuFlyoutSection title="Text" icon={<TextGlyph />} flush>
           {showMarkers ? (
             <MenuAccordionSection
               title="Markers"

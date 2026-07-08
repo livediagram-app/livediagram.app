@@ -297,19 +297,12 @@ export function MenuFlyoutSection({
           <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
           {title}
         </span>
-        {/* Right chevron — signals the section opens to the side, not down. */}
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 12 12"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="M4.5 3 7.5 6 4.5 9" />
+        {/* Ellipsis — signals the row opens further sub-options (in a side
+            flyout), distinct from an accordion's chevron that expands inline. */}
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+          <circle cx="4" cy="8" r="1.15" />
+          <circle cx="8" cy="8" r="1.15" />
+          <circle cx="12" cy="8" r="1.15" />
         </svg>
       </button>
       {open ? (
