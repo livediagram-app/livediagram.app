@@ -239,7 +239,10 @@ export function eventExplanation(category: string, action: string, type: string 
       return type === 'MergedUp'
         ? 'A layer was merged into the one above it.'
         : 'A layer was merged into the one below it.';
-    if (action === 'Renamed') return 'A layer was renamed.';
+    if (action === 'Renamed')
+      return type === 'Adopted'
+        ? "A layer auto-named itself from an element's label (smart naming)."
+        : 'A layer was renamed by hand.';
     if (action === 'Reordered') return 'Someone dragged a layer to restack it.';
     if (action === 'Changed') return "A layer's opacity was adjusted.";
     if (action === 'Cleared') return 'A layer was emptied (its elements deleted, the layer kept).';

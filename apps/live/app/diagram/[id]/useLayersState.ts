@@ -134,7 +134,7 @@ export function useLayersState(opts: {
   const renameLayerNamed = (layerId: string, name: string) => {
     if (editsBlocked) return;
     commitActiveTab((t) => renameLayer(t, layerId, name));
-    track('Layer', 'Renamed');
+    track('Layer', 'Renamed', 'Manual');
   };
 
   // Delete the layer AND its elements (the panel owns the confirm
@@ -257,6 +257,9 @@ export function useLayersState(opts: {
     const name = label.split('\n')[0]!.slice(0, 40).trim();
     if (!name) return;
     tickTabs((ts) => ts.map((t) => (t.id === activeId ? renameLayer(t, layerId, name) : t)));
+    // Smart naming is a distinct feature from a manual rename (spec/74) —
+    // track it separately so its uptake is measurable.
+    track('Layer', 'Renamed', 'Adopted');
   };
 
   // The context menu's "move selection to layer" (single + multi).
