@@ -20,14 +20,14 @@ import type { Padding, TextSize } from '@livediagram/diagram';
 // after any pick (e.g. the toolbar closes its menu; the element menu stays
 // open for quick successive tweaks).
 
-export const TEXT_SIZE_OPTIONS: { key: TextSize; label: string; icon: ReactNode }[] = [
+const TEXT_SIZE_OPTIONS: { key: TextSize; label: string; icon: ReactNode }[] = [
   { key: 'scale', label: 'Scale', icon: <ScaleIcon /> },
   { key: 'sm', label: 'Small', icon: <DotsIcon count={1} /> },
   { key: 'md', label: 'Medium', icon: <DotsIcon count={2} /> },
   { key: 'lg', label: 'Large', icon: <DotsIcon count={3} /> },
 ];
 
-export const TEXT_PADDING_OPTIONS: { key: Padding; label: string }[] = [
+const TEXT_PADDING_OPTIONS: { key: Padding; label: string }[] = [
   { key: 'none', label: 'None' },
   { key: 'sm', label: 'Small' },
   { key: 'md', label: 'Medium' },
