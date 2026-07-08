@@ -112,8 +112,6 @@ function svgToImage(svg: string): Promise<HTMLImageElement> {
 // existing `@/lib/export-tab` import paths keep resolving unchanged.
 export {
   TAB_SCHEMA_VERSION,
-  exportTabAsJson,
-  exportTabAsMarkdown,
   tabToJsonText,
   tabToMarkdownText,
   type ExportedTabEnvelope,

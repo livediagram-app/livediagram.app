@@ -2,8 +2,8 @@ import type { ArrowElement, Element, Tab } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
 import {
   TAB_SCHEMA_VERSION,
-  exportTabAsJson,
-  exportTabAsMarkdown,
+  tabToJsonText,
+  tabToMarkdownText,
   type ExportedTabEnvelope,
 } from './export-tab-text';
 
@@ -21,12 +21,10 @@ const arrow = (id: string, over: Partial<ArrowElement> = {}): Element =>
 
 const tab = (name: string, elements: Element[]): Tab => ({ name, elements }) as Tab;
 
-describe('exportTabAsJson', () => {
-  it('wraps the tab in a versioned envelope', async () => {
+describe('tabToJsonText', () => {
+  it('wraps the tab in a versioned envelope', () => {
     const t = tab('My tab', [shape('a', { label: 'A' })]);
-    const blob = exportTabAsJson(t);
-    expect(blob.type).toBe('application/json');
-    const env = JSON.parse(await blob.text()) as ExportedTabEnvelope;
+    const env = JSON.parse(tabToJsonText(t)) as ExportedTabEnvelope;
     expect(env.schemaVersion).toBe(TAB_SCHEMA_VERSION);
     expect(env.kind).toBe('livediagram.tab');
     expect(typeof env.exportedAt).toBe('number');
@@ -34,23 +32,23 @@ describe('exportTabAsJson', () => {
   });
 });
 
-describe('exportTabAsMarkdown', () => {
-  const md = async (t: Tab) => (await exportTabAsMarkdown(t).text()).split('\n');
+describe('tabToMarkdownText', () => {
+  const md = (t: Tab) => tabToMarkdownText(t).split('\n');
 
-  it('titles with the tab name and tags shapes by kind', async () => {
-    const lines = await md(tab('Flow', [shape('a', { label: 'Start' })]));
+  it('titles with the tab name and tags shapes by kind', () => {
+    const lines = md(tab('Flow', [shape('a', { label: 'Start' })]));
     expect(lines[0]).toBe('# Flow');
     expect(lines).toContain('## Elements');
     expect(lines).toContain('- **Start** (square)');
   });
 
-  it('falls back to a default title when the tab is unnamed', async () => {
-    const lines = await md(tab('', [shape('a', { label: 'X' })]));
+  it('falls back to a default title when the tab is unnamed', () => {
+    const lines = md(tab('', [shape('a', { label: 'X' })]));
     expect(lines[0]).toBe('# Untitled tab');
   });
 
-  it('orders elements top-to-bottom then left-to-right', async () => {
-    const lines = await md(
+  it('orders elements top-to-bottom then left-to-right', () => {
+    const lines = md(
       tab('T', [
         shape('a', { label: 'Lower', x: 0, y: 100 }),
         shape('b', { label: 'UpperRight', x: 50, y: 10 }),
@@ -65,8 +63,8 @@ describe('exportTabAsMarkdown', () => {
     ]);
   });
 
-  it('drops unlabelled boxed elements and arrows', async () => {
-    const lines = await md(
+  it('drops unlabelled boxed elements and arrows', () => {
+    const lines = md(
       tab('T', [shape('a'), arrow('x')]), // no labels anywhere
     );
     expect(lines).toContain('_No labelled content._');
@@ -74,8 +72,8 @@ describe('exportTabAsMarkdown', () => {
     expect(lines).not.toContain('## Connections');
   });
 
-  it('renders labelled arrows with resolved endpoint labels', async () => {
-    const lines = await md(
+  it('renders labelled arrows with resolved endpoint labels', () => {
+    const lines = md(
       tab('T', [
         shape('a', { label: 'A' }),
         arrow('e', {
@@ -90,8 +88,8 @@ describe('exportTabAsMarkdown', () => {
     expect(lines).toContain('- *flows to*: A → (12, 31)');
   });
 
-  it('shows ? for an arrow pinned to a missing element', async () => {
-    const lines = await md(
+  it('shows ? for an arrow pinned to a missing element', () => {
+    const lines = md(
       tab('T', [
         arrow('e', {
           label: 'dangles',

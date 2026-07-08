@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { ArrowElement, FreehandElement, ShapeElement, Tab } from '@livediagram/diagram';
 import {
   TAB_SCHEMA_VERSION,
-  exportTabAsJson,
-  exportTabAsMarkdown,
   exportTabAsSvg,
+  tabToJsonText,
+  tabToMarkdownText,
   type ExportedTabEnvelope,
 } from './export-tab';
 import { parseImportedTab } from './import-tab';
@@ -58,6 +58,13 @@ const tab = (overrides: Partial<Tab> = {}): Tab => ({
 });
 
 const text = (blob: Blob) => blob.text();
+
+// The tab -> JSON / Markdown serialisers are strings (tabToJsonText /
+// tabToMarkdownText); these tests exercise them through a Blob (mime type +
+// async .text()), so they wrap the strings locally rather than the product
+// shipping unused Blob-returning helpers just for the test.
+const exportTabAsJson = (t: Tab) => new Blob([tabToJsonText(t)], { type: 'application/json' });
+const exportTabAsMarkdown = (t: Tab) => new Blob([tabToMarkdownText(t)], { type: 'text/markdown' });
 
 describe('exportTabAsJson', () => {
   it('wraps the tab in a versioned envelope', async () => {

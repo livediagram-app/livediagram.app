@@ -41,10 +41,6 @@ export function tabToJsonText(tab: Tab): string {
   return JSON.stringify(envelope, null, 2);
 }
 
-export function exportTabAsJson(tab: Tab): Blob {
-  return new Blob([tabToJsonText(tab)], { type: 'application/json' });
-}
-
 // ---------------------------------------------------------------------
 // Text serialisation of a Tab
 // ---------------------------------------------------------------------
@@ -104,10 +100,6 @@ export function tabToMarkdownText(tab: Tab): string {
     lines.push('_No labelled content._');
   }
   return lines.join('\n');
-}
-
-export function exportTabAsMarkdown(tab: Tab): Blob {
-  return new Blob([tabToMarkdownText(tab)], { type: 'text/markdown' });
 }
 
 function endpointLabel(endpoint: ArrowElement['from'], boxed: BoxedElement[]): string {
