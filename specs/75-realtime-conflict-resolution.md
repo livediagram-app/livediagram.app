@@ -68,27 +68,38 @@ simultaneous edits. The gap this spec closes is _same-tab, different-element_
 Replace the whole-tab op with granular, id-addressed element ops so different
 elements merge instead of clobbering. The DO stays a dumb relay.
 
-New `RoomOp` variants (added alongside the existing `tab` op, which stays for
-back-compat — see Rollout):
+The wire adds two `RoomOp` variants (alongside the existing `tab` op, which
+stays for back-compat — see Rollout); the element-op payload is a
+`packages/diagram` type so it's shared and unit-tested off-socket:
 
 ```ts
-| { kind: 'el-add'; tabId: string; element: Element; at?: number }
-| { kind: 'el-update'; tabId: string; id: string; patch: Partial<Element> }
-| { kind: 'el-remove'; tabId: string; id: string }
-| { kind: 'el-reorder'; tabId: string; id: string; toIndex: number }
+// @livediagram/api-schema RoomOp
+| { kind: 'el'; tabId: string; op: ElementOp }
 | { kind: 'tab-meta'; tabId: string; patch: Partial<Omit<Tab, 'elements'>> }
+
+// @livediagram/diagram ElementOp
+type ElementOp =
+  | { kind: 'add'; element: Element; at: number }      // insert at z-index
+  | { kind: 'update'; element: Element }                // full replace by id
+  | { kind: 'remove'; id: string }
+  | { kind: 'reorder'; ids: string[] }                  // new full z-order
 ```
 
 - **Derivation is free.** The editor already computes a before/after diff on
-  every commit to emit the change log (`apps/live/lib/change-log.ts`,
-  `emitChange`). Level 0 emits element ops from that **same diff** — added ids →
-  `el-add`, removed ids → `el-remove`, changed elements → `el-update` (shallow
-  field patch), z-order moves → `el-reorder`. No new diff engine.
-- **Apply by id.** Receivers apply the op to their local tab: merge the patch
-  into the element with the matching id, insert/remove/reorder by id. An op for
-  an unknown id (already deleted by a peer) is a safe no-op.
+  every commit to emit the change log (`apps/live/lib/change-log.ts`). Level 0
+  derives element ops from that **same before/after** via
+  `diffToElementOps(before, after)` — added ids → `add`, removed ids →
+  `remove`, changed elements → `update`, z-order moves → `reorder`. No new diff
+  engine.
+- **Apply by id.** Receivers call `applyElementOp(elements, op)`: replace the
+  element with the matching id, insert/remove/reorder by id. An op for an
+  unknown id (already deleted by a peer) is a safe no-op; a racing double-add
+  degrades to an update.
+- **`update` replaces the whole element** (simple + correct). Two peers editing
+  the same element still last-writer-wins — the selection lock covers that, and
+  **field-level merge of one element is deferred to the CRDT (Level 2)**.
 - **Conflict surface shrinks to one element.** Still last-writer-wins _per
-  element_ (both edit X → last `el-update` for X wins), but the common
+  element_ (both edit X → last `update` for X wins), but the common
   same-tab/different-element case now merges cleanly, and the selection lock
   already covers the same-element case.
 - **Undo (decision 1):** the local undo stack replays inverse element ops and
@@ -183,6 +194,7 @@ flag → cut over), keeping Levels 0–1 as the shipped behaviour until it's pro
 ## Telemetry (spec/22)
 
 Reuse the closed vocabulary. Track convergence health, not content:
+
 - `Element`/`Edited` already fires on edits; add a `type` distinguishing the
   transport where useful.
 - New: a coarse `Error`/`Client`/`RealtimeResync` when a client has to fall back

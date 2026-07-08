@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/diagram';
+import type { ElementOp, Tab } from '@livediagram/diagram';
 import type { ChangeLogEntry, ParticipantPresence } from './index';
 
 // ---------------------------------------------------------------------
@@ -49,8 +49,20 @@ export type RoomOp =
   | { kind: 'tab-focus'; tabId: string }
   // A single tab's content changed. The post-refactor replacement for
   // the heavyweight `tabs` op below — sender ships only the one tab
-  // they edited. Receivers merge by id.
+  // they edited. Receivers merge by id. Kept as a fallback for bulk
+  // changes and older peers; the granular `el` op (spec/75) supersedes it
+  // for the common single-element edit so concurrent different-element
+  // edits stop clobbering.
   | { kind: 'tab'; tabId: string; tab: Tab }
+  // A single element on a tab changed (spec/75, Level 0): add / update /
+  // remove / reorder, applied by id so a peer editing a DIFFERENT element
+  // on the same tab merges instead of overwriting the whole tab. `op`
+  // carries the element payload (see @livediagram/diagram ElementOp).
+  | { kind: 'el'; tabId: string; op: ElementOp }
+  // A tab's non-element metadata changed (name, background, font, …) —
+  // the element array is untouched, so this rides alongside `el` ops
+  // without shipping the whole tab.
+  | { kind: 'tab-meta'; tabId: string; patch: Partial<Omit<Tab, 'elements'>> }
   // Diagram-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the

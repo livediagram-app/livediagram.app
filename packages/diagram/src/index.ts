@@ -681,6 +681,10 @@ export * from './groups';
 // above, band-aware render ordering, and the pure layer operations.
 export * from './layers';
 
+// Element-level realtime ops (spec/75): the ElementOp type + the pure
+// diff/apply functions the realtime room uses to merge concurrent edits.
+export * from './element-ops';
+
 // Tab-folder grouping + order normalization (specs/30). One home
 // shared by the tab-bar renderer, the client save path, and the
 // server route so the contiguous-run invariant has a single
