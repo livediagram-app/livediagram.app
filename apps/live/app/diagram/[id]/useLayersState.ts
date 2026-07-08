@@ -227,21 +227,23 @@ export function useLayersState(opts: {
   };
 
   // Smart naming (spec/74), called from commitLabel alongside the
-  // diagram / tab auto-renames: when a label lands on an element whose
-  // layer still carries its default "Layer N" name — and the element's
-  // PRE-commit label was empty, and no other element on the layer is
-  // labelled — the layer adopts it. Reads the render-time snapshot for
-  // the pre-commit checks (the call runs synchronously in the same
-  // event as the label commit) and writes via tick, mirroring the tab
-  // auto-rename's no-history policy.
+  // diagram / tab auto-renames: when a label commit lands on an element
+  // whose layer still carries its default "Layer N" name, and no OTHER
+  // element on that layer is labelled, the layer adopts the committed
+  // text. Deliberately NO check of the edited element's own pre-commit
+  // label: the type-to-edit path commits the first keystroke before the
+  // user finishes ("Cloudflare" starts as a committed "C"), so a
+  // first-label-only guard would always see a non-empty label and never
+  // fire. Creation-seeded labels (tech icons, templates, paste, AI)
+  // can't reach here anyway — they never pass through commitLabel — and
+  // once a layer is named, isDefaultLayerName ends adoption for good.
+  // Writes via tick, mirroring the tab auto-rename's no-history policy.
   const adoptLayerNameFromLabel = (elementId: string, label: string) => {
     if (editsBlocked) return;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return;
     const labelOf = (candidate: (typeof activeTab.elements)[number]): string =>
       'label' in candidate && typeof candidate.label === 'string' ? candidate.label.trim() : '';
-    // Only the FIRST name typed onto the element, not later edits.
-    if (labelOf(el)) return;
     const layerId = resolveLayerId(el.layerId, layers);
     const layer = layers.find((l) => l.id === layerId);
     if (!layer || !isDefaultLayerName(layer.name)) return;

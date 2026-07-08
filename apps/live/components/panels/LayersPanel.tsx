@@ -265,6 +265,7 @@ export function LayersPanel({
             const active = layer.id === activeLayerId;
             const visible = isLayerVisible(layer);
             const locked = isLayerLocked(layer);
+            const empty = (counts.get(layer.id) ?? 0) === 0;
             return (
               <li
                 key={layer.id}
@@ -357,6 +358,14 @@ export function LayersPanel({
                     {layer.name}
                   </span>
                 )}
+                {/* Empty layers wear a quiet tag so they're easy to spot
+                    (and prune) at a glance — the blank preview alone
+                    doesn't read as "nothing here". */}
+                {empty && renamingId !== layer.id ? (
+                  <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                    Empty
+                  </span>
+                ) : null}
                 {locked ? (
                   <span
                     aria-label={`${layer.name} is locked`}
