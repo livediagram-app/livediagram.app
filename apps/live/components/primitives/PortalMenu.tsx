@@ -6,6 +6,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEventHandler,
   type ReactNode,
 } from 'react';
@@ -437,6 +438,7 @@ export function MenuToolButton({
 export function MenuTile({
   icon,
   label,
+  labelStyle,
   onClick,
   danger = false,
   disabled = false,
@@ -445,8 +447,13 @@ export function MenuTile({
   onPointerEnter,
   onPointerLeave,
 }: {
-  icon: ReactNode;
+  // Optional: omit for a label-only tile (e.g. a font name rendered in its
+  // own face via labelStyle, which needs no separate swatch).
+  icon?: ReactNode;
   label: string;
+  // Inline style for the label span — e.g. `{ fontFamily }` so a font tile
+  // previews itself.
+  labelStyle?: CSSProperties;
   onClick: () => void;
   danger?: boolean;
   disabled?: boolean;
@@ -474,18 +481,20 @@ export function MenuTile({
             : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
       }`}
     >
-      <span
-        className={
-          danger
-            ? 'text-rose-500 dark:text-rose-300'
-            : active
-              ? ''
-              : 'text-slate-400 dark:text-slate-400'
-        }
-      >
-        {icon}
-      </span>
-      <span>{label}</span>
+      {icon !== undefined ? (
+        <span
+          className={
+            danger
+              ? 'text-rose-500 dark:text-rose-300'
+              : active
+                ? ''
+                : 'text-slate-400 dark:text-slate-400'
+          }
+        >
+          {icon}
+        </span>
+      ) : null}
+      <span style={labelStyle}>{label}</span>
     </button>
   );
 }

@@ -88,16 +88,14 @@ export function TypographySections({
       <MenuAccordionSection title="Font" icon={<FontGlyph />} {...sectionProps('font')}>
         <MenuTileGrid cols={2}>
           {FONTS.map((f) => (
+            // No "Aa" swatch — the tile IS the font name rendered in its own
+            // face, which is both a truer preview and more compact.
             <MenuTile
               key={f.id}
               preserveFocus={preserveFocus}
               active={currentFont === f.id}
               label={f.label}
-              icon={
-                <span style={{ fontFamily: resolveFontStack(f.id) }} className="text-sm">
-                  Aa
-                </span>
-              }
+              labelStyle={{ fontFamily: resolveFontStack(f.id) }}
               {...hover(onPreviewFont, f.id)}
               onClick={() => {
                 onSetFont(f.id);
