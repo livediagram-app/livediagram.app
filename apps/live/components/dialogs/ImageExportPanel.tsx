@@ -34,33 +34,26 @@ export function ImageExportPanel({
   return (
     <div>
       {/* Isometric toggle. */}
-      <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          onClick={() => {
-            // Fire before the flip so an opt-out still reaches the wire.
-            track('UI', 'Toggled', 'IsometricExport');
-            setIsometric((v) => !v);
-          }}
-          aria-pressed={isometric}
-          className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
-        >
-          <span className="flex flex-col">
-            <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-              Isometric view
-            </span>
-            <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-              Tilt the export into the isometric projection.
-            </span>
+      <button
+        type="button"
+        onClick={() => {
+          // Fire before the flip so an opt-out still reaches the wire.
+          track('UI', 'Toggled', 'IsometricExport');
+          setIsometric((v) => !v);
+        }}
+        aria-pressed={isometric}
+        className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
+      >
+        <span className="flex flex-col">
+          <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+            Isometric view
           </span>
-          <ToggleSwitch presentational checked={isometric} label="Export isometric view" />
-        </button>
-        <HelpArticleLink
-          article="isometricMode"
-          title="Isometric view"
-          description="How the isometric projection works."
-        />
-      </div>
+          <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+            Tilt the export into the isometric projection.
+          </span>
+        </span>
+        <ToggleSwitch presentational checked={isometric} label="Export isometric view" />
+      </button>
       {/* Background-pattern toggle. */}
       <button
         type="button"
@@ -81,6 +74,17 @@ export function ImageExportPanel({
         </span>
         <ToggleSwitch presentational checked={pattern} label="Export background pattern" />
       </button>
+      {/* Help link as a quiet footnote (same pattern as the import dialog),
+          instead of a stray `?` circle crowding the toggle. */}
+      <div className="mt-2.5">
+        <HelpArticleLink
+          article="isometricMode"
+          variant="text"
+          label="What's the isometric view?"
+          title="Isometric view"
+          description="How the isometric projection works."
+        />
+      </div>
       {error ? (
         <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
           {error}
