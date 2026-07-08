@@ -78,7 +78,13 @@ function boxedSilhouettePath(
 // space so that, once the iso matrix is applied to the context, every copy
 // lands at the right SCREEN depth offset (0, z·sin(elevation)); inverting that
 // projection gives the element-space offset z·tan(elevation)·(sinAz, cosAz).
-export function drawBoxedExtrusion(ctx: CanvasRenderingContext2D, el: BoxedElement): void {
+// `alpha` is an extra opacity FACTOR (per-layer opacity, spec/74)
+// multiplied over the element's own — same rule on all three drawers.
+export function drawBoxedExtrusion(
+  ctx: CanvasRenderingContext2D,
+  el: BoxedElement,
+  alpha = 1,
+): void {
   const { shape, opacity } = describeBoxedExport(el);
   if (shape.kind === 'none') return; // text: no body to extrude
   const accent = shape.kind === 'image' ? EXPORT_IMAGE_STROKE : shape.stroke;
@@ -88,7 +94,7 @@ export function drawBoxedExtrusion(ctx: CanvasRenderingContext2D, el: BoxedEleme
   const oy = Math.cos(az);
   const layers = isoDepthLayers();
   ctx.save();
-  ctx.globalAlpha = opacity;
+  ctx.globalAlpha = opacity * alpha;
   // Deepest (floor) first so nearer, brighter copies paint over it.
   for (let i = layers.length - 1; i >= 0; i--) {
     const z = -layers[i]!; // positive depth (floor → just under the element)
@@ -133,10 +139,11 @@ export function drawBoxed(
   ctx: CanvasRenderingContext2D,
   el: BoxedElement,
   resolveImage?: (imageId: string) => HTMLImageElement | undefined,
+  alpha = 1,
 ): void {
   const { opacity, shape, label } = describeBoxedExport(el);
   ctx.save();
-  ctx.globalAlpha = opacity;
+  ctx.globalAlpha = opacity * alpha;
   ctx.lineWidth = 1.5;
   // True once a real bitmap is painted, so the alt-text label (which
   // describeBoxedExport returns for an image element) is suppressed — it's
@@ -255,6 +262,7 @@ export function drawArrow(
   ctx: CanvasRenderingContext2D,
   arrow: ArrowElement,
   elements: Element[],
+  alpha = 1,
 ): void {
   const from = endpointPosition(arrow.from, elements);
   const to = endpointPosition(arrow.to, elements);
@@ -262,7 +270,7 @@ export function drawArrow(
   const lineWidth = arrow.strokeWidth ?? 2;
   const style = arrowStyleOf(arrow);
   ctx.save();
-  ctx.globalAlpha = arrow.opacity ?? 1;
+  ctx.globalAlpha = (arrow.opacity ?? 1) * alpha;
   ctx.strokeStyle = stroke;
   ctx.fillStyle = stroke;
   ctx.lineWidth = lineWidth;

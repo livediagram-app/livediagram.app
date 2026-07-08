@@ -1056,7 +1056,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Layers domain slice (spec/74): the active layer, the panel /
   // context-menu ops, and the hidden / locked element-id sets every
   // interaction gate below reads.
-  const layersState = useLayersState({ activeId, activeTab, editsBlocked, commitActiveTab });
+  const layersState = useLayersState({
+    activeId,
+    activeTab,
+    editsBlocked,
+    commitActiveTab,
+    tickTabs,
+    markCheckpoint,
+    toastInfo: toast.info,
+  });
   const {
     layers,
     activeLayerId,
@@ -1692,6 +1700,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectedId,
     isReadOnly,
     layerInertIds,
+    adoptLayerName: layersState.adoptLayerNameFromLabel,
     formatSourceId,
     groupSourceId,
     multiSelectedIds,
@@ -1944,6 +1953,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toggleLayerVisibility: layersState.toggleLayerVisibility,
     toggleLayerLock: layersState.toggleLayerLock,
     reorderLayer: layersState.reorderLayer,
+    mergeActiveLayer: layersState.mergeActiveLayer,
+    setLayerOpacityLive: layersState.setLayerOpacityLive,
+    clearLayer: layersState.clearLayer,
+    hideOtherLayersOp: layersState.hideOthers,
+    layerPreviewId: layersState.previewLayerId,
+    setLayerPreviewId: layersState.setPreviewLayerId,
     // Menu-facing wrapper: moves the CURRENT selection (group-expanded)
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   addLayerAbove,
+  isDefaultLayerName,
+  clearLayerElements,
+  hideOtherLayers,
+  layerBands,
+  layerOpacityOf,
+  mergeLayerInto,
+  setLayerOpacity,
   bringElementsToFrontLayer,
   DEFAULT_LAYER_ID,
   DEFAULT_LAYER_NAME,
@@ -285,5 +292,86 @@ describe('layerElementCounts', () => {
     const counts = layerElementCounts(t);
     expect(counts.get(DEFAULT_LAYER_ID)).toBe(3);
     expect(counts.get('top')).toBe(1);
+  });
+});
+
+describe('mergeLayerInto', () => {
+  const stack = [L(DEFAULT_LAYER_ID), L('mid'), L('top')];
+
+  it('merge below restamps onto the lower layer, on top of its band', () => {
+    const t = tab([box('m', { layerId: 'mid' }), box('base')], stack);
+    const out = mergeLayerInto(t, 'mid', 'below');
+    expect(layerIds(out)).toEqual([DEFAULT_LAYER_ID, 'top']);
+    expect((out.elements.find((e) => e.id === 'm') as ShapeElement).layerId).toBe(DEFAULT_LAYER_ID);
+    // Joined at the TOP of the surviving band (array end), preserving
+    // the pre-merge visual stacking.
+    expect(ids(out.elements)).toEqual(['base', 'm']);
+  });
+
+  it('merge above restamps onto the upper layer, at the bottom of its band', () => {
+    const t = tab([box('t', { layerId: 'top' }), box('m', { layerId: 'mid' })], stack);
+    const out = mergeLayerInto(t, 'mid', 'above');
+    expect(layerIds(out)).toEqual([DEFAULT_LAYER_ID, 'top']);
+    expect((out.elements.find((e) => e.id === 'm') as ShapeElement).layerId).toBe('top');
+    expect(ids(out.elements)).toEqual(['m', 't']);
+  });
+
+  it('no-ops at the edges of the stack and on unknown layers', () => {
+    const t = tab([], stack);
+    expect(mergeLayerInto(t, 'top', 'above')).toBe(t);
+    expect(mergeLayerInto(t, DEFAULT_LAYER_ID, 'below')).toBe(t);
+    expect(mergeLayerInto(t, 'ghost', 'above')).toBe(t);
+  });
+});
+
+describe('layer opacity / clear / hide others', () => {
+  it('setLayerOpacity clamps and drops the key at full opacity', () => {
+    const t = materializeLayers(tab([]));
+    const dimmed = setLayerOpacity(t, DEFAULT_LAYER_ID, 0.4);
+    expect(dimmed.layers![0]!.opacity).toBe(0.4);
+    expect(layerOpacityOf(dimmed.layers![0]!)).toBe(0.4);
+    expect('opacity' in setLayerOpacity(dimmed, DEFAULT_LAYER_ID, 1).layers![0]!).toBe(false);
+    expect(setLayerOpacity(t, DEFAULT_LAYER_ID, 9).layers![0]!.opacity).toBeUndefined();
+    expect(setLayerOpacity(t, DEFAULT_LAYER_ID, -1).layers![0]!.opacity).toBe(0);
+  });
+
+  it('clearLayerElements empties the band (arrow cascade included) but keeps the layer', () => {
+    const pinned = arrow('ar', {
+      from: { kind: 'pinned', elementId: 'doomed', anchor: 'e' },
+    } as Partial<Element & { type: 'arrow' }>);
+    const t = tab(
+      [box('doomed', { layerId: 'top' }), box('safe'), pinned],
+      [L(DEFAULT_LAYER_ID), L('top')],
+    );
+    const out = clearLayerElements(t, 'top');
+    expect(layerIds(out)).toEqual([DEFAULT_LAYER_ID, 'top']);
+    expect(ids(out.elements)).toEqual(['safe']);
+    // Already-empty layer -> same reference back.
+    expect(clearLayerElements(out, 'top')).toBe(out);
+  });
+
+  it('hideOtherLayers leaves only the target visible', () => {
+    const t = tab([], [L('a'), L('b', { visible: false }), L('c')]);
+    const out = hideOtherLayers(t, 'b');
+    expect(out.layers!.map((l) => l.visible !== false)).toEqual([false, true, false]);
+    expect(hideOtherLayers(out, 'b')).toBe(out);
+  });
+
+  it('layerBands groups the paint order per layer', () => {
+    const ls = [L(DEFAULT_LAYER_ID), L('top', { opacity: 0.5 })];
+    const els = [box('t1', { layerId: 'top' }), box('base')];
+    const bands = layerBands(els, ls);
+    expect(bands.map((b) => b.layer.id)).toEqual([DEFAULT_LAYER_ID, 'top']);
+    expect(ids(bands[1]!.elements)).toEqual(['t1']);
+  });
+});
+
+describe('isDefaultLayerName', () => {
+  it('matches only the untouched "Layer N" pattern', () => {
+    expect(isDefaultLayerName('Layer 1')).toBe(true);
+    expect(isDefaultLayerName('Layer 42')).toBe(true);
+    expect(isDefaultLayerName('Sketch')).toBe(false);
+    expect(isDefaultLayerName('Layer')).toBe(false);
+    expect(isDefaultLayerName('layer 1')).toBe(false);
   });
 });

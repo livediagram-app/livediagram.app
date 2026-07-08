@@ -54,6 +54,7 @@ export function MultiPlacementSections({
         {/* Move the whole selection to a named layer (spec/74). */}
         <MoveToLayerRow
           layers={props.layers}
+          elements={props.elements}
           currentLayerId={props.selectionLayerId}
           onMove={props.onMoveSelectionToLayer}
         />

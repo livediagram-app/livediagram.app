@@ -1,7 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   addLayerAbove,
+  clearLayerElements,
   deleteLayer,
+  hideOtherLayers,
+  isDefaultLayerName,
+  mergeLayerInto,
   hiddenLayerElementIds,
   isLayerLocked,
   isLayerVisible,
@@ -12,7 +16,9 @@ import {
   nextLayerName,
   renameLayer,
   resolveActiveLayerId,
+  resolveLayerId,
   setLayerLock,
+  setLayerOpacity,
   setLayerVisibility,
   tabLayers,
   type Layer,
@@ -32,8 +38,24 @@ export function useLayersState(opts: {
   activeTab: Tab;
   editsBlocked: boolean;
   commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
+  // Non-history tab mutator + checkpoint, for the opacity slider: one
+  // undoable step per drag gesture instead of one per tick (the same
+  // policy the colour setters follow).
+  tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
+  markCheckpoint: () => number;
+  // Surfaces the "adding is paused" notice when the active layer goes
+  // hidden / locked — the block itself is silent by design.
+  toastInfo: (message: string) => void;
 }) {
-  const { activeId, activeTab, editsBlocked, commitActiveTab } = opts;
+  const {
+    activeId,
+    activeTab,
+    editsBlocked,
+    commitActiveTab,
+    tickTabs,
+    markCheckpoint,
+    toastInfo,
+  } = opts;
 
   // Remembered active layer per tab. Resolution falls back to the TOP
   // layer whenever the remembered one is missing (never chosen, or the
@@ -68,6 +90,30 @@ export function useLayersState(opts: {
     () => layerElementCounts({ elements: activeTab.elements, layers: activeTab.layers }),
     [activeTab.elements, activeTab.layers],
   );
+
+  // Adding while the active layer can't take elements is a silent no-op
+  // at the creation gates, so say WHY once, the moment it becomes true
+  // (hide/lock the active layer, or activate a hidden one).
+  const activeLayerHidden = !isLayerVisible(activeLayer);
+  useEffect(() => {
+    if (editsBlocked || !activeLayerBlocked) return;
+    toastInfo(
+      activeLayerHidden
+        ? 'The active layer is hidden, so adding elements is paused. Show it or switch layers.'
+        : 'The active layer is locked, so adding elements is paused. Unlock it or switch layers.',
+    );
+    // Fire on the rising edge / cause change only, not on unrelated renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLayerBlocked, activeLayerHidden, editsBlocked]);
+
+  // Hover-to-solo (spec/74): while a panel row is hovered the canvas
+  // renders ONLY that layer. Pure view state — never persisted, synced,
+  // or exported.
+  const [previewLayerId, setPreviewLayerId] = useState<string | null>(null);
+  useEffect(() => {
+    // A layer deleted (or tab switched) mid-hover must not strand the solo.
+    if (previewLayerId && !layers.some((l) => l.id === previewLayerId)) setPreviewLayerId(null);
+  }, [previewLayerId, layers]);
 
   const setActiveLayer = (layerId: string) => {
     if (layerId === activeLayerId || !layers.some((l) => l.id === layerId)) return;
@@ -124,6 +170,53 @@ export function useLayersState(opts: {
     track('Layer', 'Toggled', lock ? 'Locked' : 'Unlocked');
   };
 
+  // Merge the ACTIVE layer into its neighbour (spec/74): the neighbour
+  // survives (name + state) and becomes active, like Photoshop's Merge
+  // Down. No neighbour in that direction = no-op (the panel disables
+  // the button).
+  const mergeActiveLayer = (direction: 'above' | 'below') => {
+    if (editsBlocked) return;
+    const at = layers.findIndex((l) => l.id === activeLayerId);
+    const target = layers[direction === 'above' ? at + 1 : at - 1];
+    if (at < 0 || !target) return;
+    commitActiveTab((t) => mergeLayerInto(t, activeLayerId, direction));
+    setActiveLayerByTab((m) => ({ ...m, [activeId]: target.id }));
+    track('Layer', 'Removed', direction === 'above' ? 'MergedUp' : 'MergedDown');
+  };
+
+  // Whole-layer opacity, driven by the row menu's slider. Writes go
+  // through tick (no per-tick history snapshot); the FIRST tick of a
+  // gesture takes one checkpoint, and 600ms of idle ends the gesture.
+  const opacityGestureRef = useRef<number | null>(null);
+  const setLayerOpacityLive = (layerId: string, opacity: number) => {
+    if (editsBlocked) return;
+    if (opacityGestureRef.current === null) {
+      markCheckpoint();
+      track('Layer', 'Changed', 'Opacity');
+    } else {
+      window.clearTimeout(opacityGestureRef.current);
+    }
+    opacityGestureRef.current = window.setTimeout(() => {
+      opacityGestureRef.current = null;
+    }, 600);
+    tickTabs((ts) => ts.map((t) => (t.id === activeId ? setLayerOpacity(t, layerId, opacity) : t)));
+  };
+
+  // Empty a layer without removing it (the row menu's Clear, behind its
+  // confirm popover).
+  const clearLayer = (layerId: string) => {
+    if (editsBlocked) return;
+    commitActiveTab((t) => clearLayerElements(t, layerId));
+    track('Layer', 'Cleared');
+  };
+
+  // Make `layerId` the only visible layer (the row menu's Hide Others).
+  const hideOthers = (layerId: string) => {
+    if (editsBlocked) return;
+    commitActiveTab((t) => hideOtherLayers(t, layerId));
+    track('Layer', 'Toggled', 'OthersHidden');
+  };
+
   // Restack (the panel's drag-to-reorder). `toIndex` is in the
   // bottom->top layers array the data model stores; the panel converts
   // from its top-first row order before calling.
@@ -131,6 +224,37 @@ export function useLayersState(opts: {
     if (editsBlocked) return;
     commitActiveTab((t) => moveLayer(t, layerId, toIndex));
     track('Layer', 'Reordered');
+  };
+
+  // Smart naming (spec/74), called from commitLabel alongside the
+  // diagram / tab auto-renames: when a label lands on an element whose
+  // layer still carries its default "Layer N" name — and the element's
+  // PRE-commit label was empty, and no other element on the layer is
+  // labelled — the layer adopts it. Reads the render-time snapshot for
+  // the pre-commit checks (the call runs synchronously in the same
+  // event as the label commit) and writes via tick, mirroring the tab
+  // auto-rename's no-history policy.
+  const adoptLayerNameFromLabel = (elementId: string, label: string) => {
+    if (editsBlocked) return;
+    const el = activeTab.elements.find((e) => e.id === elementId);
+    if (!el) return;
+    const labelOf = (candidate: (typeof activeTab.elements)[number]): string =>
+      'label' in candidate && typeof candidate.label === 'string' ? candidate.label.trim() : '';
+    // Only the FIRST name typed onto the element, not later edits.
+    if (labelOf(el)) return;
+    const layerId = resolveLayerId(el.layerId, layers);
+    const layer = layers.find((l) => l.id === layerId);
+    if (!layer || !isDefaultLayerName(layer.name)) return;
+    const othersLabelled = activeTab.elements.some(
+      (other) =>
+        other.id !== elementId &&
+        labelOf(other) !== '' &&
+        resolveLayerId(other.layerId, layers) === layerId,
+    );
+    if (othersLabelled) return;
+    const name = label.split('\n')[0]!.slice(0, 40).trim();
+    if (!name) return;
+    tickTabs((ts) => ts.map((t) => (t.id === activeId ? renameLayer(t, layerId, name) : t)));
   };
 
   // The context menu's "move selection to layer" (single + multi).
@@ -155,6 +279,13 @@ export function useLayersState(opts: {
     toggleLayerVisibility,
     toggleLayerLock,
     reorderLayer,
+    mergeActiveLayer,
     moveSelectionToLayer,
+    setLayerOpacityLive,
+    clearLayer,
+    hideOthers,
+    adoptLayerNameFromLabel,
+    previewLayerId,
+    setPreviewLayerId,
   };
 }

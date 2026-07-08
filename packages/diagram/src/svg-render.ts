@@ -38,7 +38,7 @@ import { svgArrow } from './svg-render-arrows';
 
 export { arrowHeadRefs, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
-import { orderByLayer, visibleLayerElements } from './layers';
+import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 
 // The export descriptor layer (constants, ExportShape / resolver types,
 // describeBoxedExport) lives in svg-render-describe.ts; re-exported so
@@ -274,16 +274,24 @@ export function renderElementsToSvg(
   const vbW = bounds.w + padding * 2;
   const vbH = bounds.h + padding * 2;
   const bg = opts.background ?? tab.backgroundColor ?? EXPORT_BG;
-  const ordered = orderByLayer(tab.elements, tab.layers);
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
-  for (const el of ordered) {
-    if (el.type !== 'arrow') parts.push(svgBoxed(el, opts.resolveImageHref, opts.resolveIconArt));
-  }
-  for (const el of visible) {
-    if (el.type === 'arrow') parts.push(svgArrow(el, tab.elements));
+  // Per band: boxed first, then arrows; a dimmed layer wraps its band in
+  // a <g opacity> (spec/74).
+  for (const band of layerBands(tab.elements, tab.layers)) {
+    const inner: string[] = [];
+    for (const el of band.elements) {
+      if (el.type !== 'arrow') inner.push(svgBoxed(el, opts.resolveImageHref, opts.resolveIconArt));
+    }
+    for (const el of band.elements) {
+      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements));
+    }
+    const opacity = layerOpacityOf(band.layer);
+    parts.push(
+      opacity < 1 ? `<g opacity="${r2(opacity)}">${inner.join('\n')}</g>` : inner.join('\n'),
+    );
   }
   parts.push('</svg>');
   return parts.join('\n');

@@ -28,6 +28,10 @@ export type BoxedElementViewProps = {
   // Shift-click on an element fires this with the element id so the
   // page can toggle membership in the marquee multi-selection.
   onShiftSelect?: (id: string) => void;
+  // Whole-layer opacity (spec/74), multiplied over the element's own
+  // `opacity`. Undefined = 1 (kept undefined at full opacity so the
+  // memoised view's props stay stable).
+  layerOpacity?: number;
   // Element-id-bearing signatures so the parent can pass a single
   // stable callback per kind (rather than recreating a closure per
   // element on every render). The child has `element.id` in scope

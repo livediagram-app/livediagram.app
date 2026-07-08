@@ -1,6 +1,12 @@
 import { useMemo } from 'react';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
-import { buildElementIndex, isBoxed, isRailShape, orderByLayer } from '@livediagram/diagram';
+import {
+  buildElementIndex,
+  isBoxed,
+  isRailShape,
+  layerBands,
+  layerOpacityOf,
+} from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { resolveFontStack } from '@/lib/fonts';
@@ -58,6 +64,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     editingId,
     elements,
     tabLayers,
+    layerPreviewId,
     handleArrowSelect,
     handleElementContextSelect,
     hasArrows,
@@ -184,10 +191,24 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // array order within each band with frames hoisted to the front of
   // THEIR band (a frame is a section backdrop that must sit behind its
   // contents so they stay clickable). Hidden layers' elements drop out
-  // here entirely — no DOM, so no hit-testing either. Same rule the
-  // exporters use, via the shared `orderByLayer` helper. Memoised for
-  // the same reason as the index (stable identity when inputs are).
-  const ordered = useMemo(() => orderByLayer(elements, tabLayers), [elements, tabLayers]);
+  // here entirely — no DOM, so no hit-testing either. Same banding the
+  // exporters use. Each element carries its band's opacity so per-layer
+  // opacity multiplies over the element's own. While a Layers-panel row
+  // is hovered (`layerPreviewId`, spec/74 hover-solo) ONLY that band
+  // renders — hidden or not — at full band opacity so the preview is
+  // legible. Memoised for the same reason as the index (stable identity
+  // when inputs are).
+  const ordered = useMemo(() => {
+    if (layerPreviewId) {
+      return layerBands(elements, tabLayers, { includeHidden: true })
+        .filter((band) => band.layer.id === layerPreviewId)
+        .flatMap((band) => band.elements.map((element) => ({ element, layerOpacity: 1 })));
+    }
+    return layerBands(elements, tabLayers).flatMap((band) => {
+      const layerOpacity = layerOpacityOf(band.layer);
+      return band.elements.map((element) => ({ element, layerOpacity }));
+    });
+  }, [elements, tabLayers, layerPreviewId]);
   // Whether the single selected element is a timeline rail — gates the rail's
   // "Add point" action on the quick-connect "+" (spec/51).
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
@@ -211,13 +232,17 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-      {ordered.map((element) => {
+      {ordered.map(({ element, layerOpacity }) => {
         if (element.type === 'arrow') {
           return (
             <svg
               key={element.id}
               className="absolute inset-0 h-full w-full"
-              style={{ pointerEvents: 'none', overflow: 'visible' }}
+              style={{
+                pointerEvents: 'none',
+                overflow: 'visible',
+                ...(layerOpacity < 1 ? { opacity: layerOpacity } : {}),
+              }}
             >
               <ArrowView
                 arrow={element}
@@ -251,6 +276,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           <BoxedElementView
             key={element.id}
             element={element}
+            layerOpacity={layerOpacity < 1 ? layerOpacity : undefined}
             isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
             isMultiSelected={multiSelectedIds.has(element.id)}
             multiSelectActive={multiSelectedIds.size > 0}

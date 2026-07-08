@@ -21,11 +21,14 @@ Each row is one layer, top of the stack first, and shows:
 
 - an **eye** to hide or show the layer,
 - a **mini preview** of just that layer's elements, framed against the whole tab so you can see where its content sits,
-- the layer's **name** (double-click to rename it inline),
-- its **element count**,
-- a **padlock** to lock or unlock it.
+- the layer's **name** (double-click to rename it inline), with a padlock mark when the layer is locked,
+- an **ellipsis** opening the layer's menu.
 
-Click a row to make that layer **active**, drag rows to restack the bands, and use the footer to **add a layer** (it lands directly above the active one) or **delete the active layer**. Deleting a layer that still has elements asks you to confirm first, because the elements go with it; undo brings both back. The last remaining layer can't be deleted.
+Click a row to make that layer **active** and drag rows to restack the bands. **Hovering a row temporarily shows only that layer** on the canvas, so you can check what lives where without touching visibility (switch this off in the panel's gear menu, which also resets the panel's position). The footer can **add a layer** (it lands directly above the active one), **delete the active layer**, or **merge the active layer** with the one above or below it (the neighbour keeps its name and settings).
+
+**Right-click a row (or click its ellipsis)** for the full menu, which opens beside the panel: rename and delete up top, then Layer (an **opacity slider** for the whole layer, Bring to Top, Send to Back, and **Hide Others**), Content (**lock** and **clear**), and Merge. Clearing empties the layer but keeps it around.
+
+One nicety: a layer still called "Layer 2" adopts the first name you finish typing onto one of its elements, so stacks name themselves as you work. Deleting a layer that still has elements asks you to confirm first, because the elements go with it; undo brings both back. The last remaining layer can't be deleted.
 
 The panel floats like the others: drag it to any corner ([panel docking](/help/user-interface/panel-layout/)) and collapse it back into its button when you're done.
 
@@ -37,7 +40,7 @@ Exactly one layer is always active, and **everything you add lands on it**: pale
 
 Layers are stacking bands: everything on a higher layer paints above everything on a lower one. **Bring to Front** and **Send to Back** work on layers too: Bring to Front moves the selection onto the top layer, creating a fresh one if the top layer holds anything else, and Send to Back mirrors that at the bottom. A layer those buttons empty out is cleaned up automatically, so casual reordering never litters the panel.
 
-To place elements deliberately, select them, right-click, and use the **Move to** dropdown in the Layer category, and the whole selection moves to the layer you pick. (It appears once the tab has more than one layer.)
+To place elements deliberately, select them, right-click, and pick a layer from the **Move to layer** tiles in the Layer category; the whole selection moves there. (They appear once the tab has more than one layer.)
 
 ## Hiding and locking
 
@@ -49,9 +52,9 @@ To place elements deliberately, select them, right-click, and use the **Move to*
 Exports match what you see: hidden layers are left out of PNG, SVG, PDF, and Mermaid exports, and out of shared thumbnails. If you want a hidden layer included in an image export anyway, the export options screen offers a **Hidden layers** toggle whenever at least one layer is hidden.
 
 <Note>
-  Layers are saved with the tab and sync live, so everyone in the diagram sees the same stack.
-  Which layer is <em>active</em> is yours alone; a collaborator can work on a different layer at
-  the same time.
+  Layers are saved with the tab and sync live, so everyone in the diagram sees the same stack. Which
+  layer is <em>active</em> is yours alone; a collaborator can work on a different layer at the same
+  time.
 </Note>
 
 <Tip>

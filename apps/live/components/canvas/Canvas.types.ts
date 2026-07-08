@@ -246,6 +246,14 @@ export type CanvasProps = {
   onToggleLayerVisibility: (layerId: string) => void;
   onToggleLayerLock: (layerId: string) => void;
   onReorderLayer: (layerId: string, toIndex: number) => void;
+  onMergeLayer: (direction: 'above' | 'below') => void;
+  onSetLayerOpacity: (layerId: string, opacity: number) => void;
+  onClearLayer: (layerId: string) => void;
+  onHideOtherLayers: (layerId: string) => void;
+  // Hover-to-solo (spec/74): while set, the canvas renders ONLY this
+  // layer. Driven by hovering a Layers-panel row; pure view state.
+  layerPreviewId: string | null;
+  onPreviewLayer: (layerId: string | null) => void;
   // Floating Comments panel. Only mounted when commentRows is
   // non-empty: the panel exists to list discussion that already
   // exists, so on diagrams without it the panel stays out of the

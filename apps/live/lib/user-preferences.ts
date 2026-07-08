@@ -103,6 +103,11 @@ export type UserPreferences = {
   // the tab has a few elements, the Activity panel is minimised, and on
   // desktop). The minimap's own close button writes an explicit `false`.
   showMinimap?: boolean;
+  // Layers panel hover-solo (spec/74). When `false`, resting the pointer
+  // on a Layers-panel row no longer solos that layer on the canvas.
+  // Missing / undefined / true === on, the default. Flipped from the
+  // panel's settings gear (desktop-only chrome, like the hover itself).
+  layerHoverPreview?: boolean;
   // Email notifications (spec/65). Account-level settings flipped from the
   // Explorer profile page; the api worker reads them server-side before
   // sending the matching transactional email (spec/64). Distinct from

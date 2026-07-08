@@ -39,6 +39,12 @@ export function EditorCanvasHost() {
     toggleLayerVisibility,
     toggleLayerLock,
     reorderLayer,
+    mergeActiveLayer,
+    setLayerOpacityLive,
+    clearLayer,
+    hideOtherLayersOp,
+    layerPreviewId,
+    setLayerPreviewId,
     addAnnotation,
     addArrow,
     addAvatar,
@@ -418,6 +424,12 @@ export function EditorCanvasHost() {
       onToggleLayerVisibility={toggleLayerVisibility}
       onToggleLayerLock={toggleLayerLock}
       onReorderLayer={reorderLayer}
+      onMergeLayer={mergeActiveLayer}
+      onSetLayerOpacity={setLayerOpacityLive}
+      onClearLayer={clearLayer}
+      onHideOtherLayers={hideOtherLayersOp}
+      layerPreviewId={layerPreviewId}
+      onPreviewLayer={setLayerPreviewId}
       commentRows={commentRows}
       commentsPanelPosition={commentsPanelPosition}
       onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}

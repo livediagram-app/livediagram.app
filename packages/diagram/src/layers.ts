@@ -18,6 +18,10 @@ export type Layer = {
   // to inspect, but not movable / editable / deletable) and are skipped
   // by marquee + select-all. Absent = unlocked.
   locked?: boolean;
+  // Whole-layer opacity (0..1), multiplied over each member element's own
+  // opacity at render time by every renderer (canvas, exports, panel
+  // previews). Absent = 1.
+  opacity?: number;
 };
 
 // The lazily-materialised base layer. A FIXED sentinel id (not a random
@@ -42,6 +46,10 @@ export function isLayerVisible(layer: Layer): boolean {
 
 export function isLayerLocked(layer: Layer): boolean {
   return layer.locked === true;
+}
+
+export function layerOpacityOf(layer: Layer): number {
+  return layer.opacity ?? 1;
 }
 
 // Which layer an element belongs to, against a NORMALISED (non-empty)
@@ -74,16 +82,28 @@ export function orderByLayer(
   layers: Layer[] | undefined,
   opts?: { includeHidden?: boolean },
 ): Element[] {
+  return layerBands(elements, layers, opts).flatMap((band) => band.elements);
+}
+
+// The same paint order, kept grouped per layer — for renderers that wrap
+// each band (e.g. in a <g opacity> for per-layer opacity). Bands are
+// bottom -> top, each band's elements in paint order (frames first).
+// Hidden layers' bands are dropped unless `includeHidden`.
+export function layerBands(
+  elements: Element[],
+  layers: Layer[] | undefined,
+  opts?: { includeHidden?: boolean },
+): { layer: Layer; elements: Element[] }[] {
   const ls = tabLayers(layers);
   if (ls.length === 1) {
     if (!opts?.includeHidden && !isLayerVisible(ls[0]!)) return [];
-    return framesFirstIn(elements);
+    return [{ layer: ls[0]!, elements: framesFirstIn(elements) }];
   }
   const bands = bandsOf(elements, ls);
-  const out: Element[] = [];
+  const out: { layer: Layer; elements: Element[] }[] = [];
   ls.forEach((layer, i) => {
     if (!opts?.includeHidden && !isLayerVisible(layer)) return;
-    out.push(...framesFirstIn(bands[i]!));
+    out.push({ layer, elements: framesFirstIn(bands[i]!) });
   });
   return out;
 }
@@ -240,6 +260,33 @@ export function setLayerLock(tab: Tab, layerId: string, locked: boolean): Tab {
   });
 }
 
+// Whole-layer opacity (spec/74), clamped to 0..1; the key is dropped at
+// full opacity so untouched layers stay byte-light.
+export function setLayerOpacity(tab: Tab, layerId: string, opacity: number): Tab {
+  const clamped = Math.max(0, Math.min(1, opacity));
+  return patchLayer(materializeLayers(tab), layerId, (l) => {
+    const { opacity: _drop, ...rest } = l;
+    return clamped >= 1 ? rest : { ...rest, opacity: clamped };
+  });
+}
+
+// Hide every OTHER layer, making `layerId` the only visible one (the
+// row menu's "Hide Other Layers", spec/74).
+export function hideOtherLayers(tab: Tab, layerId: string): Tab {
+  const t = materializeLayers(tab);
+  const ls = t.layers!;
+  if (!ls.some((l) => l.id === layerId)) return tab;
+  let changed = false;
+  const layers = ls.map((l) => {
+    const show = l.id === layerId;
+    if (isLayerVisible(l) === show) return l;
+    changed = true;
+    const { visible: _drop, ...rest } = l;
+    return show ? rest : { ...rest, visible: false };
+  });
+  return changed ? { ...t, layers } : t;
+}
+
 function patchLayer(tab: Tab, layerId: string, patch: (l: Layer) => Layer): Tab {
   const ls = tab.layers;
   if (!ls?.some((l) => l.id === layerId)) return tab;
@@ -267,19 +314,59 @@ export function moveLayer(tab: Tab, layerId: string, toIndex: number): Tab {
 export function deleteLayer(tab: Tab, layerId: string): Tab {
   const ls = tab.layers;
   if (!ls || ls.length <= 1 || !ls.some((l) => l.id === layerId)) return tab;
+  return {
+    ...tab,
+    layers: ls.filter((l) => l.id !== layerId),
+    elements: withoutLayerElements(tab, layerId),
+  };
+}
+
+// Empty a layer without removing it (the row menu's "Clear", spec/74).
+export function clearLayerElements(tab: Tab, layerId: string): Tab {
+  const ls = tab.layers;
+  if (!ls?.some((l) => l.id === layerId)) return tab;
+  const elements = withoutLayerElements(tab, layerId);
+  return elements === tab.elements ? tab : { ...tab, elements };
+}
+
+// The tab's elements minus everything on `layerId`, with the same arrow
+// cascade + group-pin freezing as delete-selected.
+function withoutLayerElements(tab: Tab, layerId: string): Element[] {
+  const ls = tab.layers!;
   const doomed = new Set(
     tab.elements.filter((el) => resolveLayerId(el.layerId, ls) === layerId).map((el) => el.id),
   );
+  if (doomed.size === 0) return tab.elements;
   const survivors = tab.elements.filter((el) => {
     if (doomed.has(el.id)) return false;
     if (el.type === 'arrow' && arrowReferencesAny(el, doomed)) return false;
     return true;
   });
-  return {
-    ...tab,
-    layers: ls.filter((l) => l.id !== layerId),
-    elements: freezeDanglingGroupEnds(tab.elements, survivors),
-  };
+  return freezeDanglingGroupEnds(tab.elements, survivors);
+}
+
+// Merge a layer into its neighbour (spec/74): every element on `layerId`
+// is restamped onto the layer directly above / below it, and the merged
+// layer disappears (the neighbour survives, keeping its name + state,
+// like Photoshop's Merge Down). The merged-in elements keep their visual
+// position relative to the target band: they painted ABOVE a below-
+// neighbour (so they join the top of its band) and BELOW an above-
+// neighbour (bottom of its band). No neighbour in that direction = no-op.
+export function mergeLayerInto(tab: Tab, layerId: string, direction: 'above' | 'below'): Tab {
+  const ls = tab.layers;
+  const at = ls?.findIndex((l) => l.id === layerId) ?? -1;
+  if (!ls || at < 0) return tab;
+  const target = ls[direction === 'above' ? at + 1 : at - 1];
+  if (!target) return tab;
+  const moved = new Set(
+    tab.elements.filter((el) => resolveLayerId(el.layerId, ls) === layerId).map((el) => el.id),
+  );
+  const restamped = tab.elements.map((el) =>
+    moved.has(el.id) ? { ...el, layerId: target.id } : el,
+  );
+  const elements =
+    direction === 'below' ? bringManyToFront(restamped, moved) : sendManyToBack(restamped, moved);
+  return { ...tab, layers: ls.filter((l) => l.id !== layerId), elements };
 }
 
 // Move elements onto an EXISTING layer (the context menu's layer picker).
@@ -354,6 +441,14 @@ function layerEdgeMove(tab: Tab, ids: ReadonlySet<ElementId>, edge: 'front' | 'b
   );
 
   return { ...t, layers: ls, elements };
+}
+
+// A layer name the user never chose ("Layer 1", "Layer 2", ...). The
+// smart-naming path in the editor (a default-named layer adopts the
+// first label committed onto one of its elements, spec/74) only ever
+// replaces names matching this.
+export function isDefaultLayerName(name: string): boolean {
+  return /^Layer \d+$/.test(name);
 }
 
 // Stamp the active layer onto elements that appeared in a commit without

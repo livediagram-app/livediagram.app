@@ -86,6 +86,11 @@ export function useCanvasChromePanels({
     onToggleLayerVisibility,
     onToggleLayerLock,
     onReorderLayer,
+    onMergeLayer,
+    onSetLayerOpacity,
+    onClearLayer,
+    onHideOtherLayers,
+    onPreviewLayer,
     onActivityRowClick,
     onAddAnnotation,
     onAddArrow,
@@ -351,6 +356,18 @@ export function useCanvasChromePanels({
         onToggleVisibility={onToggleLayerVisibility}
         onToggleLock={onToggleLayerLock}
         onReorderLayer={onReorderLayer}
+        onMergeLayer={onMergeLayer}
+        onSetLayerOpacity={onSetLayerOpacity}
+        onClearLayer={onClearLayer}
+        onHideOtherLayers={onHideOtherLayers}
+        onPreviewLayer={onPreviewLayer}
+        hoverPreviewEnabled={settings?.layerHoverPreview !== false}
+        onSetHoverPreviewEnabled={(v) => {
+          // Settings flip fires BEFORE the persist (spec/22).
+          track('UI', 'Toggled', v ? 'LayerHoverPreviewOn' : 'LayerHoverPreviewOff');
+          onChangeSettings({ ...settings, layerHoverPreview: v });
+        }}
+        resettable={layersWiring.resettable}
       />
     ) : null;
 

@@ -11,7 +11,8 @@
 
 import {
   isBoxed,
-  orderByLayer,
+  layerBands,
+  layerOpacityOf,
   shade,
   visibleLayerElements,
   type BoxedElement,
@@ -129,9 +130,12 @@ export async function renderTabToCanvas(
   const scale = opts.scale ?? 2; // default 2× for crisp output
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (spec/74). `ordered` is the
-  // paint order: layer bands bottom -> top, frames first per band.
+  // paint order — layer bands bottom -> top, frames first per band —
+  // with each element carrying its band's opacity factor.
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
-  const ordered = orderByLayer(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers });
+  const ordered = layerBands(tab.elements, tab.layers, {
+    includeHidden: opts.hiddenLayers,
+  }).flatMap((band) => band.elements.map((el) => ({ el, alpha: layerOpacityOf(band.layer) })));
   const bounds = contentBounds(els);
   // Isometric export (spec/45 / 48): project the flat content through the iso
   // affine and size the canvas to the tilted footprint so nothing clips. The
@@ -175,8 +179,8 @@ export async function renderTabToCanvas(
   // depth sits behind all the element bodies (matching the editor's single
   // depth plane behind the element layer).
   if (iso) {
-    for (const el of ordered) {
-      if (el.type !== 'arrow') drawBoxedExtrusion(ctx, el);
+    for (const { el, alpha } of ordered) {
+      if (el.type !== 'arrow') drawBoxedExtrusion(ctx, el, alpha);
     }
   }
   // Boxed elements first so arrows draw over them with the right
@@ -209,10 +213,13 @@ export async function renderTabToCanvas(
       // Fall through to drawBoxed's plain box below.
     }
   }
-  for (const el of ordered) {
+  for (const { el, alpha } of ordered) {
     if (el.type === 'arrow') continue;
     const raster = rasterImages.get(el.id);
     if (raster) {
+      // The raster bakes the ELEMENT's opacity into its markup; the
+      // band's factor applies here.
+      ctx.globalAlpha = alpha;
       ctx.drawImage(
         raster.image,
         el.x - raster.pad,
@@ -220,15 +227,16 @@ export async function renderTabToCanvas(
         el.width + raster.pad * 2,
         el.height + raster.pad * 2,
       );
+      ctx.globalAlpha = 1;
       continue;
     }
-    drawBoxed(ctx, el, resolveImage);
+    drawBoxed(ctx, el, resolveImage, alpha);
   }
-  for (const el of els) {
+  for (const { el, alpha } of ordered) {
     if (el.type !== 'arrow') continue;
     // Endpoint resolution keeps the FULL list, so an arrow pinned to a
     // hidden element still lands where the canvas draws it.
-    drawArrow(ctx, el, tab.elements);
+    drawArrow(ctx, el, tab.elements, alpha);
   }
   return canvas;
 }
@@ -294,9 +302,14 @@ function svgBoxedExtrusion(el: BoxedElement): string {
 // rasterise the same content, so one SVG preview faithfully represents all
 // three image formats under the current isometric / pattern options.
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
-  // Same hidden-layer + band-order rules as the canvas renderer above.
+  // Same hidden-layer + band-order + band-opacity rules as the canvas
+  // renderer above; each band wraps in a <g opacity> when dimmed.
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
-  const ordered = orderByLayer(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers });
+  const bands = layerBands(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers });
+  const wrapBand = (layerOpacity: number, inner: string[]): string =>
+    layerOpacity < 1
+      ? `<g opacity="${r2(layerOpacity)}">${inner.join('\n')}</g>`
+      : inner.join('\n');
   const bounds = contentBounds(els);
   // Isometric export: the viewBox spans the projected (tilted) footprint and a
   // <g matrix> applies the iso projection to the content, while the background
@@ -326,19 +339,28 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   if (iso) {
     parts.push(`<g transform="matrix(${r2(iso.a)} ${r2(iso.b)} ${r2(iso.c)} ${r2(iso.d)} 0 0)">`);
     // All extrusion columns behind all element bodies (matching the canvas).
-    for (const el of ordered) {
-      if (el.type !== 'arrow') parts.push(svgBoxedExtrusion(el));
+    for (const band of bands) {
+      parts.push(
+        wrapBand(
+          layerOpacityOf(band.layer),
+          band.elements.filter((el) => el.type !== 'arrow').map((el) => svgBoxedExtrusion(el)),
+        ),
+      );
     }
   }
-  // Boxed elements first, then arrows on top (same z-order as the canvas).
-  // `ordered` bands by layer with frame sections behind their band-mates
-  // (spec/74 + spec/09).
+  // Within each band: boxed elements first, then arrows on top (same
+  // z-order as the canvas); bands stack bottom -> top with frame
+  // sections behind their band-mates (spec/74 + spec/09).
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
-  for (const el of ordered) {
-    if (el.type !== 'arrow') parts.push(svgBoxed(el, resolveImageHref, resolveIconArtLoaded));
-  }
-  for (const el of els) {
-    if (el.type === 'arrow') parts.push(svgArrow(el, tab.elements));
+  for (const band of bands) {
+    const inner: string[] = [];
+    for (const el of band.elements) {
+      if (el.type !== 'arrow') inner.push(svgBoxed(el, resolveImageHref, resolveIconArtLoaded));
+    }
+    for (const el of band.elements) {
+      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements));
+    }
+    parts.push(wrapBand(layerOpacityOf(band.layer), inner));
   }
   if (iso) parts.push('</g>');
   parts.push('</svg>');

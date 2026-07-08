@@ -63,6 +63,7 @@ function BoxedElementViewImpl({
   zoom,
   onBeginDrag,
   onShiftSelect,
+  layerOpacity,
   onBeginEdit,
   onCommitLabel,
   onSetTextAlign,
@@ -279,7 +280,7 @@ function BoxedElementViewImpl({
         width: element.width,
         height: element.height,
         color: textColor,
-        opacity: element.opacity ?? 1,
+        opacity: (element.opacity ?? 1) * (layerOpacity ?? 1),
         ...variant.style,
         ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).

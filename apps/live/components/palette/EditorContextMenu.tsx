@@ -156,6 +156,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               more than one layer (the row renders nothing otherwise). */}
           <MoveToLayerRow
             layers={props.layers}
+            elements={props.elements}
             currentLayerId={props.selectionLayerId}
             onMove={props.onMoveSelectionToLayer}
           />

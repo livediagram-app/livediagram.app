@@ -25,6 +25,9 @@ export function useSelectionEditing(opts: {
   isReadOnly: boolean;
   // Elements on a hidden or locked layer (spec/74): never selectable.
   layerInertIds: Set<string>;
+  // Smart layer naming (spec/74): called with every committed label so a
+  // default-named layer can adopt the first one typed onto it.
+  adoptLayerName: (elementId: string, label: string) => void;
   formatSourceId: string | null;
   groupSourceId: string | null;
   multiSelectedIds: Set<string>;
@@ -71,6 +74,7 @@ export function useSelectionEditing(opts: {
     selectedId,
     isReadOnly,
     layerInertIds,
+    adoptLayerName,
     formatSourceId,
     groupSourceId,
     multiSelectedIds,
@@ -195,6 +199,9 @@ export function useSelectionEditing(opts: {
         tickTabs((ts) => patchTab(ts, activeTab.id, { name: trimmed }));
       }
     }
+    // Layer counterpart (spec/74): a default-named layer adopts the first
+    // label committed onto one of its elements.
+    if (trimmed) adoptLayerName(elementId, trimmed);
   };
 
   const cancelEdit = () => setEditingId(null);
