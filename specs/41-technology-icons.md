@@ -223,7 +223,7 @@ import of the catalogue data).
 ## Templates that seed brand tiles
 
 The **System architecture** starter (spec/09 "Templates",
-`buildSystemArchitecture` in `apps/live/lib/template-builders-technical.ts`) is
+`buildSystemArchitecture` in `packages/templates/src/template-builders-technical.ts`) is
 the first catalogue consumer: it drops the gateway / service / datastore nodes
 as branded tiles (`nginx`, `docker`, `k8s`, `postgres`, `redis` from the
 vendor-neutral Generic set) so a developer audience lands on a diagram that
