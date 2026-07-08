@@ -16,6 +16,7 @@ import type {
   IconAnimation,
   IconPosition,
   IconSize,
+  Padding,
   TextAlignX,
   TextAlignY,
   PieAnim,
@@ -163,6 +164,10 @@ export type EditorContextMenuProps = {
   onToggleTextStrikethrough: () => void;
   onSetTextSize: (size: TextSize) => void;
   onPreviewTextSize: (size: TextSize) => void;
+  // Element-level typography for the "Text" flyout (spec/09): the label's font
+  // and box padding, applied to the whole selection (parallel to onSetTextSize).
+  onSetFont: (font: string | null) => void;
+  onSetPadding: (padding: Padding) => void;
   // Arrow Line + Pointer controls (spec/09), surfaced for arrows via the
   // shared ArrowLine / Pointer controls.
   onSetArrowThickness: (v: ArrowThickness) => void;

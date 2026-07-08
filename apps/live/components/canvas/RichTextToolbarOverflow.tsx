@@ -2,19 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import {
   BulletListIcon,
   EllipsisIcon,
-  FontGlyph,
   NoListIcon,
   NumberedListIcon,
 } from './rich-text-toolbar-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
-import {
-  DotsIcon,
-  NonePaddingIcon,
-  PaddingIcon,
-  ScaleIcon,
-  StrikethroughIcon,
-} from '@/components/palette/palette-icons';
+import { StrikethroughIcon } from '@/components/palette/palette-icons';
+import { TypographySections } from '@/components/palette/TypographySections';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import {
   MenuAccordionSection,
@@ -22,7 +16,6 @@ import {
   MenuTile,
   MenuTileGrid,
 } from '@/components/primitives/PortalMenu';
-import { FONTS, resolveFontStack } from '@/lib/fonts';
 import type { ListStyle, Padding, RunBoolKey, TextAlignX, TextAlignY } from '@livediagram/diagram';
 import type { ActiveFormat, SizeKey } from './RichTextToolbar';
 
@@ -37,20 +30,6 @@ const noFocusSteal = (e: React.MouseEvent) => e.preventDefault();
 
 // The editor's text-size control: a Scale (auto-fit) option + the
 // 1/2/3-dot small / medium / large glyphs.
-const SIZES: { key: SizeKey; label: string; icon: React.ReactNode }[] = [
-  { key: 'scale', label: 'Scale', icon: <ScaleIcon /> },
-  { key: 'sm', label: 'Small', icon: <DotsIcon count={1} /> },
-  { key: 'md', label: 'Medium', icon: <DotsIcon count={2} /> },
-  { key: 'lg', label: 'Large', icon: <DotsIcon count={3} /> },
-];
-
-const PADDINGS: { key: Padding; label: string }[] = [
-  { key: 'none', label: 'None' },
-  { key: 'sm', label: 'Small' },
-  { key: 'md', label: 'Medium' },
-  { key: 'lg', label: 'Large' },
-];
-
 // The ⋯ overflow menu: the less-common text options grouped into collapsible
 // category sections, matching the element / canvas context menus rather than a
 // flat list — a Format band (strikethrough + lists), then a separator, then a
@@ -167,67 +146,20 @@ export function OverflowMenu({
               />
             </MenuTileGrid>
           </MenuAccordionSection>
-          {/* ── Typography band: Font / Size / Padding ── */}
+          {/* ── Typography band: Font / Size / Padding (shared with the
+              element context menu's Text flyout) ── */}
           <MenuGroupSeparator />
-          <MenuAccordionSection title="Font" icon={<FontGlyph />} {...catProps('font')}>
-            <MenuTileGrid cols={2}>
-              {FONTS.map((f) => (
-                <MenuTile
-                  key={f.id}
-                  preserveFocus
-                  active={currentFont === f.id}
-                  label={f.label}
-                  icon={
-                    <span style={{ fontFamily: resolveFontStack(f.id) }} className="text-sm">
-                      Aa
-                    </span>
-                  }
-                  onClick={() => {
-                    onSetFont(f.id);
-                    close();
-                  }}
-                />
-              ))}
-            </MenuTileGrid>
-          </MenuAccordionSection>
-          <MenuAccordionSection title="Size" icon={<DotsIcon count={2} />} {...catProps('size')}>
-            <MenuTileGrid cols={2}>
-              {SIZES.map((s) => (
-                <MenuTile
-                  key={s.key}
-                  preserveFocus
-                  active={active.size === s.key}
-                  label={s.label}
-                  icon={s.icon}
-                  onClick={() => {
-                    onSize(s.key);
-                    close();
-                  }}
-                />
-              ))}
-            </MenuTileGrid>
-          </MenuAccordionSection>
-          <MenuAccordionSection
-            title="Padding"
-            icon={padding === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={padding} />}
-            {...catProps('padding')}
-          >
-            <MenuTileGrid cols={2}>
-              {PADDINGS.map((p) => (
-                <MenuTile
-                  key={p.key}
-                  preserveFocus
-                  active={padding === p.key}
-                  label={p.label}
-                  icon={p.key === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={p.key} />}
-                  onClick={() => {
-                    onSetPadding(p.key);
-                    close();
-                  }}
-                />
-              ))}
-            </MenuTileGrid>
-          </MenuAccordionSection>
+          <TypographySections
+            currentFont={currentFont}
+            currentSize={active.size}
+            padding={padding}
+            onSetFont={onSetFont}
+            onSetSize={onSize}
+            onSetPadding={onSetPadding}
+            sectionProps={catProps}
+            preserveFocus
+            onAfterPick={close}
+          />
           {/* Alignment — the toolbar dropdown's 3×3 grid, here too for
               discovery (spec/09). Stays open after a pick (like the
               dropdown) so a user can try corners. */}

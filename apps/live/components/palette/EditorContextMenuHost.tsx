@@ -98,6 +98,8 @@ export function EditorContextMenuHost() {
     toggleTextStyleSelected,
     commitTextSize,
     previewTextSize,
+    setFontSelected,
+    setPaddingSelected,
     setArrowThicknessSelected,
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
@@ -226,6 +228,8 @@ export function EditorContextMenuHost() {
       onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
       onSetTextSize={commitTextSize}
       onPreviewTextSize={previewTextSize}
+      onSetFont={setFontSelected}
+      onSetPadding={setPaddingSelected}
       onSetArrowThickness={setArrowThicknessSelected}
       onSetArrowStyle={setArrowStyleSelected}
       onSetArrowStrokeStyle={setArrowStrokeStyleSelected}

@@ -215,11 +215,15 @@ export function MenuFlyoutSection({
   // Match MenuAccordionSection: no top hairline where the parent bands rows
   // into groups with its own separators.
   flush = false,
+  // Fired each time the flyout opens — e.g. so the caller can auto-expand the
+  // first sub-category inside it.
+  onOpen,
 }: {
   title: string;
   icon: ReactNode;
   children: ReactNode;
   flush?: boolean;
+  onOpen?: () => void;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -282,8 +286,10 @@ export function MenuFlyoutSection({
         ref={triggerRef}
         type="button"
         onClick={() => {
+          const next = !open;
           setPos(null);
-          setOpen((v) => !v);
+          setOpen(next);
+          if (next) onOpen?.();
         }}
         aria-expanded={open}
         aria-haspopup="menu"

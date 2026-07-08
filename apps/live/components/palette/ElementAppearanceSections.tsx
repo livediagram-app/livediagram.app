@@ -15,6 +15,7 @@
 
 import {
   DEFAULT_ICON_SIZE,
+  defaultPadding,
   isBoxed,
   isChartShape,
   isLineShape,
@@ -24,8 +25,10 @@ import {
   isSelfDrawingShape,
   supportsBorderControls,
   type IconSize,
+  type Padding,
   type TextAlignX,
   type TextAlignY,
+  type TextSize,
 } from '@livediagram/diagram';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
@@ -39,6 +42,7 @@ import {
   MenuGroupSeparator,
   MenuTile,
 } from '@/components/primitives/PortalMenu';
+import { TypographySections } from './TypographySections';
 
 import { IconSizeTiles } from '@/components/palette/context-menu-tiles';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -70,6 +74,7 @@ type ElementAppearanceSectionsProps = {
   target: EditorContextMenuProps['elements'][number];
   onClose: () => void;
   sectionProps: Scaffold['sectionProps'];
+  openSectionById: Scaffold['openSectionById'];
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
@@ -81,6 +86,7 @@ export function ElementAppearanceSections({
   target,
   onClose,
   sectionProps,
+  openSectionById,
   colorProps,
   textColorHandlers,
   fillColorHandlers,
@@ -247,32 +253,35 @@ export function ElementAppearanceSections({
           </MenuAccordionSection>
         </>
       ) : null}
-      {/* ── Text band (spec/09): Markers (spec/49) + Alignment grouped under a
-            single "Text" row that opens them in a side flyout, so the two
-            categories don't lengthen the menu's vertical stack. Both keep
-            working exactly as before inside the flyout. ── */}
+      {/* ── Text band (spec/09): every text control for the element —
+            typography (Font / Size / Padding / Alignment) plus Markers
+            (spec/49) — grouped under one "Text" row that opens them in a side
+            flyout, so they don't lengthen the menu's vertical stack. The row
+            only shows when the element has text (showMarkers / showAlignment
+            both require a non-empty label). Opening the flyout auto-expands its
+            first sub-category. ── */}
       {showMarkers || showAlignment ? <MenuGroupSeparator /> : null}
       {showMarkers || showAlignment ? (
-        <MenuFlyoutSection title="Text" icon={<TextGlyph />} flush>
-          {showMarkers ? (
-            <MenuAccordionSection
-              title="Markers"
-              icon={<MarkersMenuGlyph />}
-              {...sectionProps('markers')}
-            >
-              <MarkerTiles
-                marker={shapeTarget?.marker ?? null}
-                size={shapeTarget?.markerSize ?? 'scale'}
-                onSet={props.onSetMarker}
-                onSetSize={props.onSetMarkerSize}
-                onPreview={props.onPreviewMarker}
-                onPreviewSize={props.onPreviewMarkerSize}
-                onPreviewEnd={props.onPreviewStyleEnd}
-              />
-            </MenuAccordionSection>
+        <MenuFlyoutSection
+          title="Text"
+          icon={<TextGlyph />}
+          flush
+          onOpen={() => openSectionById(showAlignment ? 'font' : 'markers')}
+        >
+          {/* Typography — Font / Size / Padding, shared with the rich-text
+              toolbar's overflow menu. Applies to the element's whole label. */}
+          {showAlignment ? (
+            <TypographySections
+              currentFont={(target as { font?: string }).font ?? null}
+              currentSize={(target as { textSize?: TextSize }).textSize ?? 'sm'}
+              padding={(target as { padding?: Padding }).padding ?? defaultPadding(target)}
+              onSetFont={props.onSetFont}
+              onSetSize={props.onSetTextSize}
+              onSetPadding={props.onSetPadding}
+              sectionProps={sectionProps}
+            />
           ) : null}
-          {/* Alignment — the text toolbar's 3×3 grid, here too for discovery.
-              Named just "Alignment" now that it lives under the Text flyout. */}
+          {/* Alignment — the text toolbar's 3×3 grid, here too for discovery. */}
           {showAlignment ? (
             <MenuAccordionSection
               title="Alignment"
@@ -292,6 +301,23 @@ export function ElementAppearanceSections({
                   onPreviewEnd={props.onPreviewStyleEnd}
                 />
               </div>
+            </MenuAccordionSection>
+          ) : null}
+          {showMarkers ? (
+            <MenuAccordionSection
+              title="Markers"
+              icon={<MarkersMenuGlyph />}
+              {...sectionProps('markers')}
+            >
+              <MarkerTiles
+                marker={shapeTarget?.marker ?? null}
+                size={shapeTarget?.markerSize ?? 'scale'}
+                onSet={props.onSetMarker}
+                onSetSize={props.onSetMarkerSize}
+                onPreview={props.onPreviewMarker}
+                onPreviewSize={props.onPreviewMarkerSize}
+                onPreviewEnd={props.onPreviewStyleEnd}
+              />
             </MenuAccordionSection>
           ) : null}
         </MenuFlyoutSection>
