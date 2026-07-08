@@ -1,0 +1,187 @@
+// Yjs document model for the diagram (spec/75, Level 2).
+//
+// This is the FOUNDATION of Level 2, not the cut-over: it defines how a
+// diagram maps to a Yjs CRDT and the pure read/write/apply helpers, so the
+// merge behaviour can be unit-tested off-editor. Wiring the editor's state
+// to project from this doc (behind a flag) is the separate, later step the
+// spec stages last — nothing here is imported by the live editor yet, and
+// it lives on the `./yjs` subpath so the core bundle never pulls in Yjs.
+//
+// Shape:
+//   ydoc.getArray('tabOrder')  -> Y.Array<tabId>        (diagram tab order)
+//   ydoc.getMap('tabs')        -> Y.Map<tabId, tabMap>
+//     tabMap                    -> meta fields (name, background…) as plain
+//                                  values + 'elements' + 'order'
+//       'elements'              -> Y.Map<elementId, elMap>
+//         elMap                 -> one entry per element field (x, y, …)
+//       'order'                 -> Y.Array<elementId>    (z-order on the tab)
+//
+// Why this shape: element FIELDS are individual Y.Map entries, so two peers
+// editing DIFFERENT fields of the same element both land (the Level 2 win
+// the whole-element `update` of Level 0 can't give). Z-order is a Y.Array of
+// ids so moves resolve deterministically without rewriting element bodies.
+
+import * as Y from 'yjs';
+import type { Element, Tab } from './index';
+import type { ElementOp } from './element-ops';
+
+const TAB_ORDER_KEY = 'tabOrder';
+const TABS_KEY = 'tabs';
+const ELEMENTS_KEY = 'elements';
+const ORDER_KEY = 'order';
+// Tab keys that are NOT plain meta: they have their own Y containers.
+const TAB_STRUCTURAL_KEYS = new Set<string>([ELEMENTS_KEY, ORDER_KEY]);
+
+function elementFields(el: Element): [string, unknown][] {
+  return Object.entries(el);
+}
+
+// Populate an (already-attached) element Y.Map from a plain element. Attach
+// first, then set fields, so every child is integrated exactly once.
+function fillElement(elMap: Y.Map<unknown>, el: Element): void {
+  for (const [k, v] of elementFields(el)) elMap.set(k, v);
+}
+
+function readElement(elMap: Y.Map<unknown>): Element {
+  const el: Record<string, unknown> = {};
+  for (const [k, v] of elMap.entries()) el[k] = v;
+  return el as unknown as Element;
+}
+
+// Overwrite the whole doc from a Tab[] (e.g. seeding from a D1 hydrate).
+// Runs in one transaction so observers see a single atomic change.
+export function writeDiagram(ydoc: Y.Doc, tabs: Tab[]): void {
+  const tabsMap = ydoc.getMap<Y.Map<unknown>>(TABS_KEY);
+  const tabOrder = ydoc.getArray<string>(TAB_ORDER_KEY);
+  ydoc.transact(() => {
+    tabsMap.clear();
+    tabOrder.delete(0, tabOrder.length);
+    for (const tab of tabs) {
+      const tabMap = new Y.Map<unknown>();
+      tabsMap.set(tab.id, tabMap); // attach before populating
+      for (const [k, v] of Object.entries(tab)) {
+        if (k === 'elements') continue;
+        tabMap.set(k, v);
+      }
+      const elsMap = new Y.Map<Y.Map<unknown>>();
+      tabMap.set(ELEMENTS_KEY, elsMap);
+      const order = new Y.Array<string>();
+      tabMap.set(ORDER_KEY, order);
+      for (const el of tab.elements) {
+        const elMap = new Y.Map<unknown>();
+        elsMap.set(el.id, elMap);
+        fillElement(elMap, el);
+        order.push([el.id]);
+      }
+      tabOrder.push([tab.id]);
+    }
+  });
+}
+
+// Project the doc back to the editor's Tab[] shape. This is what a doc
+// observer feeds into React state at cut-over.
+export function readDiagram(ydoc: Y.Doc): Tab[] {
+  const tabsMap = ydoc.getMap<Y.Map<unknown>>(TABS_KEY);
+  const tabOrder = ydoc.getArray<string>(TAB_ORDER_KEY);
+  // Fall back to the map's own key order if tabOrder wasn't populated.
+  const ids = tabOrder.length ? tabOrder.toArray() : [...tabsMap.keys()];
+  const tabs: Tab[] = [];
+  for (const tabId of ids) {
+    const tabMap = tabsMap.get(tabId);
+    if (!tabMap) continue;
+    tabs.push(readTab(tabId, tabMap));
+  }
+  return tabs;
+}
+
+function readTab(tabId: string, tabMap: Y.Map<unknown>): Tab {
+  const meta: Record<string, unknown> = {};
+  for (const [k, v] of tabMap.entries()) {
+    if (!TAB_STRUCTURAL_KEYS.has(k)) meta[k] = v;
+  }
+  const elsMap = tabMap.get(ELEMENTS_KEY) as Y.Map<Y.Map<unknown>> | undefined;
+  const order = tabMap.get(ORDER_KEY) as Y.Array<string> | undefined;
+  const elements: Element[] = [];
+  if (elsMap) {
+    const ids = order && order.length ? order.toArray() : [...elsMap.keys()];
+    const seen = new Set<string>();
+    for (const id of ids) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const elMap = elsMap.get(id);
+      if (elMap) elements.push(readElement(elMap));
+    }
+  }
+  return { ...meta, id: tabId, elements } as unknown as Tab;
+}
+
+// Apply a Level 0 ElementOp to a tab inside the doc. This is the bridge that
+// lets Level 0's op vocabulary drive the CRDT: the same ops already flowing
+// over the wire mutate the Yjs doc field-by-field. Unknown tab/id ops are
+// safe no-ops, matching applyElementOp's array semantics.
+export function applyElementOpToDoc(ydoc: Y.Doc, tabId: string, op: ElementOp): void {
+  const tabMap = ydoc.getMap<Y.Map<unknown>>(TABS_KEY).get(tabId);
+  if (!tabMap) return;
+  const elsMap = tabMap.get(ELEMENTS_KEY) as Y.Map<Y.Map<unknown>> | undefined;
+  const order = tabMap.get(ORDER_KEY) as Y.Array<string> | undefined;
+  if (!elsMap || !order) return;
+  ydoc.transact(() => {
+    switch (op.kind) {
+      case 'add': {
+        setElement(elsMap, op.element);
+        if (!order.toArray().includes(op.element.id)) {
+          order.insert(Math.max(0, Math.min(op.at, order.length)), [op.element.id]);
+        }
+        break;
+      }
+      case 'update': {
+        // Field-level: only touch the fields that actually changed, so a
+        // concurrent edit to a DIFFERENT field of this element survives.
+        const elMap = elsMap.get(op.element.id);
+        if (elMap) mergeElementFields(elMap, op.element);
+        else setElement(elsMap, op.element); // lost the race to a remove -> re-add
+        break;
+      }
+      case 'remove': {
+        elsMap.delete(op.id);
+        const i = order.toArray().indexOf(op.id);
+        if (i !== -1) order.delete(i, 1);
+        break;
+      }
+      case 'reorder': {
+        order.delete(0, order.length);
+        order.push(op.ids.slice());
+        break;
+      }
+    }
+  });
+}
+
+function setElement(elsMap: Y.Map<Y.Map<unknown>>, el: Element): void {
+  const elMap = new Y.Map<unknown>();
+  elsMap.set(el.id, elMap);
+  fillElement(elMap, el);
+}
+
+// Diff the element into the Y.Map field by field: set changed/added fields,
+// delete fields that vanished. Setting only what changed is what preserves a
+// peer's concurrent edit to an untouched field.
+function mergeElementFields(elMap: Y.Map<unknown>, el: Element): void {
+  const next = new Map(elementFields(el));
+  for (const key of [...elMap.keys()]) {
+    if (!next.has(key)) elMap.delete(key);
+  }
+  for (const [k, v] of next) {
+    if (JSON.stringify(elMap.get(k)) !== JSON.stringify(v)) elMap.set(k, v);
+  }
+}
+
+// Encode / apply updates: the transport primitives the DO relays + persists
+// at Level 2 (opaque binary; Level 1's op log generalises to an update log).
+export function encodeDiagramUpdate(ydoc: Y.Doc): Uint8Array {
+  return Y.encodeStateAsUpdate(ydoc);
+}
+
+export function applyDiagramUpdate(ydoc: Y.Doc, update: Uint8Array): void {
+  Y.applyUpdate(ydoc, update);
+}

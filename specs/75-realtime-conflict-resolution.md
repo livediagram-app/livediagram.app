@@ -190,6 +190,36 @@ central authority is needed for _convergence_ (the DO still relays + persists).
 last, incrementally (types + doc model → transport → editor projection behind a
 flag → cut over), keeping Levels 0–1 as the shipped behaviour until it's proven.
 
+**Status — foundation landed, cut-over pending.** The pure, tested pieces are in
+`packages/diagram/src/yjs-doc.ts` (imported via the `@livediagram/diagram/yjs`
+subpath so the core bundle never pulls in Yjs until the cut-over):
+
+- **Doc model** — `ydoc.getArray('tabOrder')` + `ydoc.getMap('tabs')`, each tab a
+  `Y.Map` of meta + an `elements` `Y.Map<id, Y.Map<field, value>>` + an `order`
+  `Y.Array<id>`. Element fields are individual `Y.Map` entries — the field-level
+  merge the Level 0 whole-element `update` can't give.
+- **Projection** — `writeDiagram(doc, tabs)` (seed from a D1 hydrate) and
+  `readDiagram(doc)` (the `Tab[]` a doc observer feeds React at cut-over).
+- **Op bridge** — `applyElementOpToDoc(doc, tabId, op)` maps Level 0's `ElementOp`
+  vocabulary into the doc field-by-field, so the same ops already on the wire
+  drive the CRDT. `update` diffs field-by-field so a concurrent edit to an
+  untouched field survives.
+- **Transport primitives** — `encodeDiagramUpdate` / `applyDiagramUpdate` (the
+  opaque binary the DO relays + persists).
+- **Tested** — round-trip, z-order, per-op apply, and the headline merge:
+  concurrent edits to different fields of the _same_ element converge with both
+  changes intact; concurrent adds to the same tab converge.
+
+**Remaining (the flagged cut-over, still ahead):** the editor projecting its
+state from the doc behind a flag (every mutation writes the doc, an observer
+produces React state); the DO relaying + persisting Yjs updates (Level 1's op
+log generalises to an update log, flushing the encoded doc to D1 — decision 2's
+stronger form lands here); a per-origin `Y.UndoManager` (decision 1); awareness
+for presence; and removing the selection lock (decision 3). These are the steps
+that must be proven incrementally against a running editor + two clients, so
+they are deliberately left for the verify-as-you-go pass rather than cut over
+blind.
+
 ---
 
 ## Rollout, back-compat, sequencing
