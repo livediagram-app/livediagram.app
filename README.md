@@ -31,6 +31,7 @@ marketing/   off-site copy + media for listings and promotion (see specs/23)
 - **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per diagram, backed by D1).
 - **Telemetry** at `/telemetry` is the public anonymous-events dashboard (off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
+- **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the diagram tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
 - **Router** stitches the five under one hostname.
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
