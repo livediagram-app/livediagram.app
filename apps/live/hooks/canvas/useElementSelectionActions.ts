@@ -10,6 +10,7 @@
 // behaviour change.
 
 import {
+  arrowReferencesAny,
   freezeDanglingGroupEnds,
   createText,
   duplicateGroupedElements,
@@ -19,11 +20,7 @@ import {
   type Element,
   type Tab,
 } from '@livediagram/diagram';
-import {
-  arrowReferencesAny,
-  type QuickConnectDirection,
-  type QuickConnectKind,
-} from '@/lib/canvas';
+import { type QuickConnectDirection, type QuickConnectKind } from '@/lib/canvas';
 import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';
 import { track, titleCaseType } from '@/lib/telemetry';

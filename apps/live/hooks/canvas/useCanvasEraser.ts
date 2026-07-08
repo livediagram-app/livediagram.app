@@ -25,8 +25,8 @@
 
 import { useRef } from 'react';
 import type { ChangeLogEntry } from '@livediagram/api-schema';
-import type { Element, Tab } from '@livediagram/diagram';
-import { arrowReferencesAny } from '@/lib/canvas';
+import { arrowReferencesAny, type Element, type Tab } from '@livediagram/diagram';
+
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import { track } from '@/lib/telemetry';
 

@@ -14,7 +14,9 @@ lets you jump the viewport anywhere with a tap or drag.
 - **When.** Shown when it's **enabled** (`showMinimap` preference, **on by
   default**), the tab has **at least 4 elements**, and **on desktop** (hidden on
   mobile, where the canvas is already edge-to-edge and the corner is the mobile
-  dock's). It **stacks** with the Activity panel in the bottom-left rather than
+  dock's). Also hidden entirely in the **minimal panel layout** (spec/09's
+  compact dock mode): minimal mode collapses panels to dock buttons, and a
+  free-floating map contradicts that intent, so it doesn't render there at all. It **stacks** with the Activity panel in the bottom-left rather than
   hiding behind it (the docking layout reflows them); the old "defer until
   Activity is minimised" rule is gone.
 - **Enable / disable + reset.** A **settings gear** in the panel header opens a

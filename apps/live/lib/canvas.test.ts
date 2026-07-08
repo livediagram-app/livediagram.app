@@ -1,4 +1,5 @@
 import {
+  arrowReferencesAny,
   createAnnotation,
   createArrow,
   createShape,
@@ -7,7 +8,6 @@ import {
 } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
 import {
-  arrowReferencesAny,
   cornerOf,
   framesFirst,
   inheritedSizeFor,

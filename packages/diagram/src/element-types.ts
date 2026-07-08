@@ -35,6 +35,11 @@ export type ChartLegendPosition = 'top' | 'right' | 'bottom' | 'left';
 export type ShapeElement = {
   id: ElementId;
   type: 'shape';
+  // Layer membership (spec/74): id of the Tab.layers entry this element
+  // renders inside. Absent / unknown = the tab's default layer, so every
+  // element authored before layers existed keeps rendering unchanged.
+  // Carried by every element variant (arrows included, see index.ts).
+  layerId?: string;
   shape: ShapeKind;
   // Registry key for the glyph (e.g. 'server', 'database', 'user'). Two
   // uses: when `shape === 'icon'` it IS the element (glyph above an
@@ -199,6 +204,8 @@ export type ShapeElement = {
 export type TextElement = {
   id: ElementId;
   type: 'text';
+  // Layer membership (spec/74) — see ShapeElement.layerId.
+  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -281,6 +288,8 @@ export type TableCellStyle = {
 export type TableElement = {
   id: ElementId;
   type: 'table';
+  // Layer membership (spec/74) — see ShapeElement.layerId.
+  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -360,6 +369,8 @@ export type TableElement = {
 export type StickyElement = {
   id: ElementId;
   type: 'sticky';
+  // Layer membership (spec/74) — see ShapeElement.layerId.
+  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -424,6 +435,8 @@ export type StickyElement = {
 export type ImageElement = {
   id: ElementId;
   type: 'image';
+  // Layer membership (spec/74) — see ShapeElement.layerId.
+  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -508,6 +521,8 @@ export type ImageElement = {
 export type FreehandElement = {
   id: ElementId;
   type: 'freehand';
+  // Layer membership (spec/74) — see ShapeElement.layerId.
+  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -581,6 +596,8 @@ export type FreehandElement = {
 export type AnnotationElement = {
   id: ElementId;
   type: 'annotation';
+  // Layer membership (spec/74) — see ShapeElement.layerId.
+  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -651,6 +668,8 @@ export type LinkCardMeta = {
 export type LinkCardElement = {
   id: ElementId;
   type: 'link-card';
+  // Layer membership (spec/74) — see ShapeElement.layerId.
+  layerId?: string;
   x: number;
   y: number;
   width: number;

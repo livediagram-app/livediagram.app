@@ -9,6 +9,11 @@
 // down via `export * from './session'`.
 import type { TabTimer, TabVote } from './session';
 
+// Layer type used by the `Tab.layers` field below (spec/74). Type-only
+// import for the same erasability reason as session; the runtime layer
+// helpers are re-exported lower down via `export * from './layers'`.
+import type { Layer } from './layers';
+
 // Per-range label formatting runs (spec/09). Type-only import so the
 // index <-> rich-text relationship stays erasable; the runtime helpers +
 // this type are re-exported lower down via `export * from './rich-text'`.
@@ -399,6 +404,8 @@ export type ArrowEnds = 'from' | 'to' | 'both' | 'none';
 export type ArrowElement = {
   id: ElementId;
   type: 'arrow';
+  // Layer membership (spec/74) — see ShapeElement.layerId.
+  layerId?: string;
   from: Endpoint;
   to: Endpoint;
   locked?: boolean;
@@ -571,6 +578,11 @@ export type Tab = {
   // facilitator starts one. See session.ts for the pure helpers.
   timer?: TabTimer;
   vote?: TabVote;
+  // Photoshop-style layers (spec/74), ordered BOTTOM -> TOP (index 0
+  // paints lowest). Absent = the tab behaves as one implicit default
+  // layer; the array is materialised lazily on the first layer
+  // operation (see layers.ts). Elements point in via `layerId`.
+  layers?: Layer[];
 };
 
 export type Diagram = {
@@ -664,6 +676,10 @@ export * from './geometry-snapping';
 export * from './geometry-guides';
 
 export * from './groups';
+
+// Photoshop-style layers (spec/74): the Layer type used by the Tab field
+// above, band-aware render ordering, and the pure layer operations.
+export * from './layers';
 
 // Tab-folder grouping + order normalization (specs/30). One home
 // shared by the tab-bar renderer, the client save path, and the

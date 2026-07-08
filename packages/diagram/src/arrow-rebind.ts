@@ -1,4 +1,4 @@
-import { isBoxed, type Anchor, type Element, type ElementId } from './index';
+import { isBoxed, type Anchor, type ArrowElement, type Element, type ElementId } from './index';
 import {
   ANCHOR_SWITCH_MARGIN,
   FACE_SHARE_MIN_RAD,
@@ -350,4 +350,18 @@ export function rebindArrowAnchorsAfterMove(
       to: toFace ? { ...el.to, anchor: toFace } : el.to,
     };
   });
+}
+
+// True when either of the arrow's endpoints is attached to one of the given
+// element ids — pinned to a box, or connected to another arrow's line
+// (spec/50). Used by the deletion / cascading-update paths (the editor's
+// delete-selected, the eraser, and layer deletion, spec/74) so arrows
+// attached to a removed box (or a removed arrow) are cleaned up alongside it.
+export function arrowReferencesAny(arrow: ArrowElement, ids: ReadonlySet<string>): boolean {
+  return (
+    (arrow.from.kind === 'pinned' && ids.has(arrow.from.elementId)) ||
+    (arrow.to.kind === 'pinned' && ids.has(arrow.to.elementId)) ||
+    (arrow.from.kind === 'on-arrow' && ids.has(arrow.from.arrowId)) ||
+    (arrow.to.kind === 'on-arrow' && ids.has(arrow.to.arrowId))
+  );
 }
