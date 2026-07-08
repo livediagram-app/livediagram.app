@@ -156,7 +156,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, layering, rotating, animating, locking, theming, and templating.',
-    articleCount: 12,
+    articleCount: 13,
     kind: 'feature',
   },
   {
@@ -1034,9 +1034,16 @@ export const articles: Article[] = [
     categorySlug: 'canvas',
   },
   {
+    slug: 'layers',
+    title: 'Layers',
+    description: 'Split a tab into stacking layers you can hide, lock, rename, and restack.',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
     slug: 'layer-order',
     title: 'Layer Order and Opacity',
-    description: 'Bring elements to front or back, and fade them with opacity.',
+    description: 'Send elements to the front or back layer, and fade them with opacity.',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

@@ -28,9 +28,14 @@ import {
   type TextAlignY,
 } from '@livediagram/diagram';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
-import { IconCategoryGlyph, RemoveIconGlyph } from '@/components/palette/context-menu-icons';
+import {
+  IconCategoryGlyph,
+  RemoveIconGlyph,
+  TextGlyph,
+} from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
+  MenuFlyoutSection,
   MenuGroupSeparator,
   MenuTile,
 } from '@/components/primitives/PortalMenu';
@@ -242,45 +247,54 @@ export function ElementAppearanceSections({
           </MenuAccordionSection>
         </>
       ) : null}
-      {/* ── Text band (spec/09): Markers (spec/49) + Alignment, between the
-            Style band and the content / collaborate groups. ── */}
+      {/* ── Text band (spec/09): Markers (spec/49) + Alignment grouped under a
+            single "Text" row that opens them in a side flyout, so the two
+            categories don't lengthen the menu's vertical stack. Both keep
+            working exactly as before inside the flyout. ── */}
       {showMarkers || showAlignment ? <MenuGroupSeparator /> : null}
-      {showMarkers ? (
-        <MenuAccordionSection
-          title="Markers"
-          icon={<MarkersMenuGlyph />}
-          {...sectionProps('markers')}
-        >
-          <MarkerTiles
-            marker={shapeTarget?.marker ?? null}
-            size={shapeTarget?.markerSize ?? 'scale'}
-            onSet={props.onSetMarker}
-            onSetSize={props.onSetMarkerSize}
-            onPreview={props.onPreviewMarker}
-            onPreviewSize={props.onPreviewMarkerSize}
-            onPreviewEnd={props.onPreviewStyleEnd}
-          />
-        </MenuAccordionSection>
-      ) : null}
-      {/* Alignment — the text toolbar's 3×3 grid, here too for discovery. */}
-      {showAlignment ? (
-        <MenuAccordionSection
-          title="Text Alignment"
-          icon={
-            <AlignLinesIcon dir={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'} />
-          }
-          {...sectionProps('text-align')}
-        >
-          <div className="px-2 py-1.5">
-            <AlignmentGrid
-              alignX={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
-              alignY={(target as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
-              onChange={props.onSetTextAlign}
-              onPreview={props.onPreviewTextAlign}
-              onPreviewEnd={props.onPreviewStyleEnd}
-            />
-          </div>
-        </MenuAccordionSection>
+      {showMarkers || showAlignment ? (
+        <MenuFlyoutSection title="Text" icon={<TextGlyph />}>
+          {showMarkers ? (
+            <MenuAccordionSection
+              title="Markers"
+              icon={<MarkersMenuGlyph />}
+              {...sectionProps('markers')}
+            >
+              <MarkerTiles
+                marker={shapeTarget?.marker ?? null}
+                size={shapeTarget?.markerSize ?? 'scale'}
+                onSet={props.onSetMarker}
+                onSetSize={props.onSetMarkerSize}
+                onPreview={props.onPreviewMarker}
+                onPreviewSize={props.onPreviewMarkerSize}
+                onPreviewEnd={props.onPreviewStyleEnd}
+              />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Alignment — the text toolbar's 3×3 grid, here too for discovery.
+              Named just "Alignment" now that it lives under the Text flyout. */}
+          {showAlignment ? (
+            <MenuAccordionSection
+              title="Alignment"
+              icon={
+                <AlignLinesIcon
+                  dir={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                />
+              }
+              {...sectionProps('text-align')}
+            >
+              <div className="px-2 py-1.5">
+                <AlignmentGrid
+                  alignX={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                  alignY={(target as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
+                  onChange={props.onSetTextAlign}
+                  onPreview={props.onPreviewTextAlign}
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+              </div>
+            </MenuAccordionSection>
+          ) : null}
+        </MenuFlyoutSection>
       ) : null}
       {/* ── Content group: Line / Pointer / Text / Icon / Image / Table / Link ── */}
     </>

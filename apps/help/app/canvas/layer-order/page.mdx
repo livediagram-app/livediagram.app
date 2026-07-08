@@ -6,13 +6,13 @@ import { LayerOrder } from '@/components/illustrations/element-properties';
 export const metadata = helpMetadata({
   title: 'Layer Order and Opacity',
   description:
-    'Control which elements sit in front and which sit behind with Bring to Front and Send to Back, and fade an element with the opacity slider.',
+    'Control which elements sit in front and which sit behind with Bring to Front and Send to Back, which move elements between layers, and fade an element with the opacity slider.',
   path: '/help/canvas/layer-order/',
 });
 
 <ArticleLayout title="Layer Order and Opacity" description="Decide what stacks on top of what, and fade an element back, from the Layer category of the right-click menu." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layer-order")}>
 
-When two elements overlap, one has to sit on top. livediagram paints boxed elements in the order they were added: the newest lands on top. The **Layer** controls let you change that order whenever you want, and fade an element so the content behind it shows through.
+When two elements overlap, one has to sit on top. livediagram paints boxed elements in the order they were added (the newest lands on top), stacked into the tab's [layers](/help/canvas/layers/). The **Layer** controls let you change that order whenever you want, and fade an element so the content behind it shows through.
 
 <Figure caption="The front card sits on top of the back one; the faded twin shows a lower opacity.">
   <LayerOrder />
@@ -22,15 +22,17 @@ When two elements overlap, one has to sit on top. livediagram paints boxed eleme
 
 Right-click an element (or use the floating toolbar) and open the **Layer** category:
 
-- **Bring to Front** moves the element on top of everything else, so nothing overlaps it.
-- **Send to Back** moves it behind everything else, so other elements paint over it.
+- **Bring to Front** moves the element onto the tab's top [layer](/help/canvas/layers/), so nothing overlaps it. If the top layer holds anything else, a fresh layer is created above it first.
+- **Send to Back** mirrors that at the bottom: the element lands on (or below) the bottom layer, so other elements paint over it.
+
+These two buttons are how layers accumulate even if you never open the Layers panel; a layer they empty out is removed automatically. The same category also has a **Move to** dropdown for placing the selection on a specific layer once the tab has more than one.
 
 Both also work from the keyboard while an element is selected:
 
 - **Cmd+Shift+]** brings the selection to the front.
 - **Cmd+Shift+[** sends it to the back.
 
-The menu stays open after each one, so you can nudge an element forward or back a few times in a row without reopening it. Layer changes are a single undoable step.
+The menu stays open after each one, so you can adjust several elements in a row without reopening it. Layer changes are a single undoable step.
 
 <Note>
   Newly added elements always land on top, which is what you usually want. Reach for Send to Back
@@ -42,10 +44,6 @@ The menu stays open after each one, so you can nudge an element forward or back 
 The same Layer category holds an **Opacity** slider, from 0 to 100%. Drag it to make an element semi-transparent so whatever sits behind it stays partly visible. It's useful for a background watermark, a frame that shouldn't compete with its contents, or a "ghosted" element you want present but quiet.
 
 Opacity is a cosmetic property, so the [format painter](/help/palette/format-painter/) copies it along with colours and borders, and it carries through to PNG and SVG [exports](/help/account-and-data/exporting-diagrams/).
-
-## A note on arrows
-
-Arrows always render in a single layer on top of every boxed element, so Bring to Front and Send to Back reorder shapes, text, stickies, and images relative to each other rather than relative to arrows.
 
 <Tip>
   Layer order and opacity both appear in the multi-select menu too, so you can push a whole group of

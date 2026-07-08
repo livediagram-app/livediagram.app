@@ -1,0 +1,62 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Layers',
+  description:
+    'Organise a tab into Photoshop-style layers: add, rename, and restack layers from the Layers panel, hide or lock whole slices of a diagram, and move elements between layers.',
+  path: '/help/canvas/layers/',
+});
+
+<ArticleLayout title="Layers" description="Split a tab into named stacking layers you can hide, lock, rename, and restack, managed from the Layers panel." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layers")}>
+
+Every tab starts with a single layer, and for many diagrams that's all you need. When a tab grows busy (a background grid, the main content, a pass of review notes), layers let you split it into named bands you can hide, lock, and restack independently, just like an image editor.
+
+## The Layers panel
+
+Open the panel with the **Layers button next to the zoom controls** (bottom-right). On a phone, or in the minimal panel layout, Layers lives in the compact dock row at the top-right instead, and opens as a popover.
+
+Each row is one layer, top of the stack first, and shows:
+
+- an **eye** to hide or show the layer,
+- a **mini preview** of just that layer's elements, framed against the whole tab so you can see where its content sits,
+- the layer's **name** (double-click to rename it inline),
+- its **element count**,
+- a **padlock** to lock or unlock it.
+
+Click a row to make that layer **active**, drag rows to restack the bands, and use the footer to **add a layer** (it lands directly above the active one) or **delete the active layer**. Deleting a layer that still has elements asks you to confirm first, because the elements go with it; undo brings both back. The last remaining layer can't be deleted.
+
+The panel floats like the others: drag it to any corner ([panel docking](/help/user-interface/panel-layout/)) and collapse it back into its button when you're done.
+
+## The active layer
+
+Exactly one layer is always active, and **everything you add lands on it**: palette shapes, text, arrows, pastes, imports, AI-built elements. While the active layer is hidden or locked, adding is paused so you never create something you can't immediately see or touch.
+
+## Stacking, front, and back
+
+Layers are stacking bands: everything on a higher layer paints above everything on a lower one. **Bring to Front** and **Send to Back** work on layers too: Bring to Front moves the selection onto the top layer, creating a fresh one if the top layer holds anything else, and Send to Back mirrors that at the bottom. A layer those buttons empty out is cleaned up automatically, so casual reordering never litters the panel.
+
+To place elements deliberately, select them, right-click, and use the **Move to** dropdown in the Layer category, and the whole selection moves to the layer you pick. (It appears once the tab has more than one layer.)
+
+## Hiding and locking
+
+- A **hidden** layer's elements disappear from the canvas for everyone (collaborators, viewers, and embeds included) and can't be selected or caught by a marquee.
+- A **locked** layer's elements stay visible but can't be selected, moved, edited, or deleted, like per-element [locking](/help/canvas/locking/) applied to the whole band.
+
+## Layers and exports
+
+Exports match what you see: hidden layers are left out of PNG, SVG, PDF, and Mermaid exports, and out of shared thumbnails. If you want a hidden layer included in an image export anyway, the export options screen offers a **Hidden layers** toggle whenever at least one layer is hidden.
+
+<Note>
+  Layers are saved with the tab and sync live, so everyone in the diagram sees the same stack.
+  Which layer is <em>active</em> is yours alone; a collaborator can work on a different layer at
+  the same time.
+</Note>
+
+<Tip>
+  Keep review feedback on its own layer. Reviewers can sketch and annotate freely, you can hide the
+  layer for a clean export, and one delete clears the whole pass when it's dealt with.
+</Tip>
+
+</ArticleLayout>

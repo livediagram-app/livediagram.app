@@ -75,8 +75,14 @@ export function ContextMenu({
       // A mousedown on the button that OPENED this menu must not trip the
       // outside-close, or the button's own click would just reopen it. The
       // trigger marks itself with data-context-menu-trigger and toggles the
-      // menu in its onClick instead. Clicks anywhere else close as usual.
-      if (e.target instanceof Element && e.target.closest('[data-context-menu-trigger]')) return;
+      // menu in its onClick instead. A MenuFlyoutSection's panel is portalled
+      // outside this menu but marks itself data-menu-flyout, so interacting
+      // with it counts as inside the menu. Clicks anywhere else close as usual.
+      if (
+        e.target instanceof Element &&
+        e.target.closest('[data-context-menu-trigger],[data-menu-flyout]')
+      )
+        return;
       onClose();
     };
     const onKey = (e: KeyboardEvent) => {
