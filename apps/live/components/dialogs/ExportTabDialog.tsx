@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatIcon } from './export-format-icons';
@@ -10,6 +10,7 @@ import {
   exportTabAsPng,
   exportTabAsSvg,
   loadTabImages,
+  renderTabToSvg,
   tabToJsonText,
   tabToMarkdownText,
 } from '@/lib/export-tab';
@@ -138,10 +139,45 @@ export function ExportTabDialog({
   const [active, setActive] = useState<Format | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Image / avatar bitmaps + icon catalogues loaded for the image-format
+  // preview (spec/48). Loaded once when an image format is picked, then
+  // reused for both the live preview and the actual export so nothing is
+  // fetched twice. `ready` gates the preview on the (async) load.
+  const [previewImages, setPreviewImages] = useState<
+    Awaited<ReturnType<typeof loadTabImages>> | undefined
+  >(undefined);
+  const [previewReady, setPreviewReady] = useState(false);
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
   const baseName = sanitizeFilename(`${diagramName || 'diagram'} - ${tab.name || 'tab'}${suffix}`);
+
+  // When an image format is picked, load the icon catalogues + image bitmaps
+  // so the preview (and export) renders the real glyphs, not placeholders.
+  useEffect(() => {
+    if (!active || isTextFormat(active)) return;
+    let cancelled = false;
+    setPreviewReady(false);
+    void (async () => {
+      await ensureIconCatalogs();
+      const images = imageContext ? await loadTabImages(tab, imageContext) : undefined;
+      if (cancelled) return;
+      setPreviewImages(images);
+      setPreviewReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [active, tab, imageContext]);
+
+  // Build the preview SVG for the current options — the same SVG the .svg
+  // export produces, which PNG / PDF rasterise, so it faithfully previews all
+  // three. Stable across renders so the panel can memoise on the toggles.
+  const renderPreview = useCallback(
+    (opts: { isometric: boolean; pattern: boolean }) =>
+      renderTabToSvg(tab, { ...opts, images: previewImages }),
+    [tab, previewImages],
+  );
 
   // Render + download an image format with the chosen options (spec/48).
   const runImageExport = async (
@@ -152,11 +188,14 @@ export function ExportTabDialog({
     setBusy(true);
     setError(null);
     try {
-      // Visual formats embed image / avatar bitmaps. Icon glyphs render from
-      // the async icon catalogues — awaiting the (memoized) load makes them
-      // deterministic rather than relying on the editor page's earlier fetch.
+      // Reuse the images already loaded for the preview when they're ready;
+      // otherwise load them now (icon glyphs come from the async catalogues).
       await ensureIconCatalogs();
-      const images = imageContext ? await loadTabImages(tab, imageContext) : undefined;
+      const images = previewReady
+        ? previewImages
+        : imageContext
+          ? await loadTabImages(tab, imageContext)
+          : undefined;
       const renderOpts = { ...opts, images };
       if (format === 'png') {
         downloadBlob(await exportTabAsPng(tab, renderOpts), `${baseName}.png`);
@@ -225,6 +264,8 @@ export function ExportTabDialog({
             label={activeCard!.title}
             busy={busy}
             error={error}
+            renderPreview={renderPreview}
+            previewReady={previewReady}
             onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
             onBack={() => {
               setError(null);

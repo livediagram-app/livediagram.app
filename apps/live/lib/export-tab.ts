@@ -269,7 +269,11 @@ function svgBoxedExtrusion(el: BoxedElement): string {
   return parts.join('');
 }
 
-function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
+// Exported so the export dialog can render a live preview of the image
+// export (spec/48): same SVG the .svg download produces, and PNG / PDF
+// rasterise the same content, so one SVG preview faithfully represents all
+// three image formats under the current isometric / pattern options.
+export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const bounds = contentBounds(tab.elements);
   // Isometric export: the viewBox spans the projected (tilted) footprint and a
   // <g matrix> applies the iso projection to the content, while the background

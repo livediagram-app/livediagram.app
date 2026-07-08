@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
@@ -6,12 +6,15 @@ import { track } from '@/lib/telemetry';
 // The options-and-download second screen for an image export format
 // (PNG / SVG / PDF). The isometric + background-pattern toggles used to sit
 // permanently on the main export grid; they only affect image formats, so
-// they now live here, behind the format card (spec/48). Owns the two toggle
-// states and hands them to the parent's renderer on Download.
+// they now live here, behind the format card (spec/48), above a live preview
+// of exactly what will be exported. Owns the two toggle states and hands them
+// to the parent's renderer on Download.
 export function ImageExportPanel({
   label,
   busy,
   error,
+  renderPreview,
+  previewReady,
   onExport,
   onBack,
 }: {
@@ -19,6 +22,12 @@ export function ImageExportPanel({
   label: string;
   busy: boolean;
   error: string | null;
+  // Build the preview SVG markup for the given options (same content the
+  // export produces). Called on each toggle change.
+  renderPreview: (opts: { isometric: boolean; pattern: boolean }) => string;
+  // False until the icon catalogues + image bitmaps have loaded, so the
+  // preview doesn't flash placeholder glyphs first.
+  previewReady: boolean;
   // Render + download the image with the chosen options. The parent owns the
   // rasteriser + telemetry; this panel just collects the two options.
   onExport: (opts: { isometric: boolean; pattern: boolean }) => void;
@@ -31,8 +40,27 @@ export function ImageExportPanel({
   // default so the export matches the canvas; switch off for a clean backdrop.
   const [pattern, setPattern] = useState(true);
 
+  // Rebuild the preview only when an option or the loaded assets change.
+  const previewSvg = useMemo(
+    () => (previewReady ? renderPreview({ isometric, pattern }) : ''),
+    [previewReady, renderPreview, isometric, pattern],
+  );
+
   return (
     <div>
+      {/* Live preview — exactly what Download produces under the current
+          options. The injected SVG is our own export output (no external
+          content); CSS fits it inside the frame. */}
+      <div className="mb-4 flex h-48 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900">
+        {previewSvg ? (
+          <div
+            className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
+            dangerouslySetInnerHTML={{ __html: previewSvg }}
+          />
+        ) : (
+          <span className="text-xs text-slate-400 dark:text-slate-500">Preparing preview…</span>
+        )}
+      </div>
       {/* Isometric toggle. */}
       <button
         type="button"
