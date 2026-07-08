@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { onMouseHover } from '@/components/primitives/hover-preview';
 import { FontGlyph } from '@/components/canvas/rich-text-toolbar-icons';
 import { DotsIcon, NonePaddingIcon, PaddingIcon, ScaleIcon } from './palette-icons';
 import { FONTS, resolveFontStack } from '@/lib/fonts';
@@ -50,6 +51,10 @@ export function TypographySections({
   sectionProps,
   preserveFocus = false,
   onAfterPick,
+  onPreviewFont,
+  onPreviewSize,
+  onPreviewPadding,
+  onPreviewEnd,
 }: {
   currentFont: string | null;
   // null = mixed / unset (no tile highlighted), e.g. a multi-run text selection.
@@ -61,8 +66,23 @@ export function TypographySections({
   sectionProps: (id: string) => AccordionProps;
   preserveFocus?: boolean;
   onAfterPick?: () => void;
+  // Optional hover-preview handlers (element menu wires them; the rich-text
+  // toolbar leaves them off — it edits live text, not a selection to preview).
+  onPreviewFont?: (font: string | null) => void;
+  onPreviewSize?: (size: TextSize) => void;
+  onPreviewPadding?: (padding: Padding) => void;
+  onPreviewEnd?: () => void;
 }) {
   const after = () => onAfterPick?.();
+  // Build the mouse-only hover handlers for a tile, or undefined when no
+  // preview handler was supplied (so touch never leaves a preview stuck).
+  const hover = <T,>(preview: ((v: T) => void) | undefined, value: T) =>
+    preview
+      ? {
+          onPointerEnter: onMouseHover(() => preview(value)),
+          onPointerLeave: onMouseHover(() => onPreviewEnd?.()),
+        }
+      : {};
   return (
     <>
       <MenuAccordionSection title="Font" icon={<FontGlyph />} {...sectionProps('font')}>
@@ -78,6 +98,7 @@ export function TypographySections({
                   Aa
                 </span>
               }
+              {...hover(onPreviewFont, f.id)}
               onClick={() => {
                 onSetFont(f.id);
                 after();
@@ -95,6 +116,7 @@ export function TypographySections({
               active={currentSize === s.key}
               label={s.label}
               icon={s.icon}
+              {...hover(onPreviewSize, s.key)}
               onClick={() => {
                 onSetSize(s.key);
                 after();
@@ -116,6 +138,7 @@ export function TypographySections({
               active={padding === p.key}
               label={p.label}
               icon={p.key === 'none' ? <NonePaddingIcon /> : <PaddingIcon size={p.key} />}
+              {...hover(onPreviewPadding, p.key)}
               onClick={() => {
                 onSetPadding(p.key);
                 after();

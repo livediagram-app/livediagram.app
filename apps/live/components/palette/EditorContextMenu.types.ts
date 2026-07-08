@@ -166,8 +166,12 @@ export type EditorContextMenuProps = {
   onPreviewTextSize: (size: TextSize) => void;
   // Element-level typography for the "Text" flyout (spec/09): the label's font
   // and box padding, applied to the whole selection (parallel to onSetTextSize).
+  // Preview variants apply the change ephemerally on hover; onPreviewStyleEnd
+  // (below) reverts it, matching the marker / alignment / colour tiles.
   onSetFont: (font: string | null) => void;
+  onPreviewFont: (font: string | null) => void;
   onSetPadding: (padding: Padding) => void;
+  onPreviewPadding: (padding: Padding) => void;
   // Arrow Line + Pointer controls (spec/09), surfaced for arrows via the
   // shared ArrowLine / Pointer controls.
   onSetArrowThickness: (v: ArrowThickness) => void;

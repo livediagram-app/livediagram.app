@@ -278,6 +278,10 @@ export function ElementAppearanceSections({
               onSetFont={props.onSetFont}
               onSetSize={props.onSetTextSize}
               onSetPadding={props.onSetPadding}
+              onPreviewFont={props.onPreviewFont}
+              onPreviewSize={props.onPreviewTextSize}
+              onPreviewPadding={props.onPreviewPadding}
+              onPreviewEnd={props.onPreviewStyleEnd}
               sectionProps={sectionProps}
             />
           ) : null}

@@ -1,6 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEventHandler,
+  type ReactNode,
+} from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { clampToViewport, VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
@@ -434,6 +442,8 @@ export function MenuTile({
   disabled = false,
   active = false,
   preserveFocus = false,
+  onPointerEnter,
+  onPointerLeave,
 }: {
   icon: ReactNode;
   label: string;
@@ -442,12 +452,18 @@ export function MenuTile({
   disabled?: boolean;
   active?: boolean;
   preserveFocus?: boolean;
+  // Optional hover-preview handlers (pointerenter previews, pointerleave
+  // reverts), matching the style-preset / marker tiles.
+  onPointerEnter?: PointerEventHandler<HTMLButtonElement>;
+  onPointerLeave?: PointerEventHandler<HTMLButtonElement>;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       onMouseDown={preserveFocus ? (e) => e.preventDefault() : undefined}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
       disabled={disabled}
       aria-pressed={active}
       className={`flex cursor-pointer flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition disabled:cursor-not-allowed disabled:opacity-40 ${

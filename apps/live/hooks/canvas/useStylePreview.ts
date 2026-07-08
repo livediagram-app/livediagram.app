@@ -38,6 +38,7 @@ import type {
   IconAnimation,
   IconPosition,
   IconSize,
+  Padding,
   ShapeKind,
   ShapeMarker,
   Tab,
@@ -52,10 +53,12 @@ import {
   applyBorderStyleToEl,
   applyColorPresetToEl,
   applyFillColorToEl,
+  applyFontToEl,
   applyIconSizeToEl,
   applyInlineIconToEl,
   applyMarkerSizeToEl,
   applyMarkerToEl,
+  applyPaddingToEl,
   applyRotationToEl,
   applyShapeKindToEl,
   applyStrokeColorToEl,
@@ -248,6 +251,12 @@ export function useStylePreview(deps: {
       commitStyle((el) => applyTextAlignToEl(el, x, y), 'TextAlign'),
     previewTextSize: (v: TextSize) => previewStyle((el) => applyTextSizeToEl(el, v)),
     commitTextSize: (v: TextSize) => commitStyle((el) => applyTextSizeToEl(el, v), 'TextSize'),
+    // Label font + box padding — same hover-preview / click-commit flow as the
+    // text-size tiles above, for the element menu's Text flyout.
+    previewFont: (v: string | null) => previewStyle((el) => applyFontToEl(el, v)),
+    commitFont: (v: string | null) => commitStyle((el) => applyFontToEl(el, v), 'Font'),
+    previewPadding: (v: Padding) => previewStyle((el) => applyPaddingToEl(el, v)),
+    commitPadding: (v: Padding) => commitStyle((el) => applyPaddingToEl(el, v), 'Padding'),
     // Inline-icon placement (spec/09 icons). Id-scoped like shape morph.
     previewInlineIcon: (elementId: string, iconId: string, position: IconPosition) =>
       previewStyle((el) => applyInlineIconToEl(el, iconId, position), new Set([elementId])),

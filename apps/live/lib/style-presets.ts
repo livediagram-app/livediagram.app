@@ -21,6 +21,7 @@ import {
   type Element,
   type IconPosition,
   type IconSize,
+  type Padding,
   type ShapeKind,
   type ShapeMarker,
   type TextAlignX,
@@ -138,6 +139,25 @@ export function applyTextAlignToEl(el: Element, x: TextAlignX, y: TextAlignY): E
 // Label size preset. Boxed elements + arrows (arrow labels size too).
 export function applyTextSizeToEl(el: Element, size: TextSize): Element {
   return isBoxed(el) || el.type === 'arrow' ? { ...el, textSize: size } : el;
+}
+
+// Label font. Boxed elements + arrows; `null` clears the override back to the
+// tab default. Mirrors setFontSelected so the hover-preview + click-commit path
+// applies the same change.
+export function applyFontToEl(el: Element, font: string | null): Element {
+  if (!(isBoxed(el) || el.type === 'arrow')) return el;
+  if (!font) {
+    const copy = { ...el };
+    delete (copy as { font?: string }).font;
+    return copy;
+  }
+  return { ...el, font };
+}
+
+// Box padding preset (space between the label and the element edge). Boxed
+// elements only.
+export function applyPaddingToEl(el: Element, padding: Padding): Element {
+  return isBoxed(el) ? { ...el, padding } : el;
 }
 
 // Re-place a shape's inline icon on another side (spec/09 icons). Regular
