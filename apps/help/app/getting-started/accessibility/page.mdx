@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Accessibility and Keyboard Navigation',
+  description:
+    'Reach and walk the canvas with the keyboard, hear your selection announced by a screen reader, and edit with keyboard verbs. livediagram’s accessibility baseline.',
+  path: '/help/getting-started/accessibility/',
+});
+
+<ArticleLayout
+  title="Accessibility and Keyboard Navigation"
+  description="Reach the canvas, walk its elements, and edit with the keyboard, with selection announced to screen readers."
+  categoryTitle="Getting Started"
+  categorySlug="getting-started"
+>
+
+You can work on the canvas without a mouse. This page covers the keyboard-navigation and screen-reader baseline: reaching the canvas, moving through its elements, and hearing what's selected. For the everyday shortcuts (tools, panning, zen mode), see [Keyboard Essentials](/help/getting-started/keyboard-essentials/).
+
+## Reaching the canvas
+
+The canvas is a focus stop in the normal `Tab` order, labelled **"Diagram canvas"**. Tab to it from the page and you'll see a focus ring (only when navigating by keyboard, so mouse users see nothing new). The floating panels, the [Palette](/help/tips-and-tricks/command-palette/), [Explorer](/help/explorer/the-explorer/), and the mini-map, stay reachable by the keyboard too.
+
+## Walking the elements
+
+Once focus is on the canvas:
+
+- **`Tab`** selects the **next** element, **`Shift`+`Tab`** the **previous**, in the order they're stacked on the board. The canvas scrolls the selected element into view as you go.
+- There's **no wrap and no trap**: pressing `Tab` past the last element (or `Shift`+`Tab` before the first) moves focus out of the canvas to the next thing on the page, so you can always keyboard your way onward.
+- The **selection ring is the focus indicator**, there's one highlighted element, not two competing outlines.
+- Elements **locked by someone else** are skipped, the same as when you click.
+
+This works even in read-only views, since it's just navigation.
+
+## Hearing what's selected
+
+Every element carries a name, so a screen reader can describe it, for example `Square "Login"`, `Sticky note`, or `Arrow "yes"`. A polite live region announces changes as they happen:
+
+- **Selection:** `Selected Square "Login"`, or a short summary when several are selected, or `Selection cleared`.
+- **Editing:** deleting an element, and **Undo** / **Redo**, are announced too.
+
+These announcements are separate from the on-screen notifications, so you'll hear them even if you've turned notifications off.
+
+## Editing from the keyboard
+
+With an element selected by keyboard, the usual keyboard verbs apply: arrow keys nudge it, `Delete` / `Backspace` removes it, `Space` edits its label, and `⌘`/`Ctrl`+`Z` undoes. The editing verbs are disabled in read-only views and while you're typing in a field. See [Keyboard Essentials](/help/getting-started/keyboard-essentials/) and the full [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) reference.
+
+<Tip>
+  This is a baseline, honest but not exhaustive: keyboard-only users can reach, traverse, and edit
+  the canvas. If something you rely on is hard to reach with the keyboard, tell us, it helps us
+  prioritise what to improve next.
+</Tip>
+
+</ArticleLayout>

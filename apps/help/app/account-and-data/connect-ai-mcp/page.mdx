@@ -29,7 +29,7 @@ The token it creates is an ordinary API token: it appears in the Explorer's **AP
 
 ## What the AI can do
 
-The connection exposes six tools:
+The connection exposes these tools:
 
 - **Find diagrams** — search your diagrams by name, across your personal library and the shared libraries of every [team](/help/collaboration/teams/) you belong to.
 - **Read a diagram** — get a tab's contents and an inline picture of it.
@@ -37,8 +37,18 @@ The connection exposes six tools:
 - **Create a diagram** — turn a request into a new diagram, with one tab or several. A tab can start from a template — ask for "a kanban board" and the AI can lay down the curated scaffold, then fill in your content.
 - **Add a tab** — add another tab (its own canvas) to an existing diagram, e.g. a detail view of one part. Tabs can start from a template too.
 - **Update a diagram** — rework a whole tab or make a small adjustment.
+- **Share a diagram** — turn a diagram into a [share link](/help/collaboration/sharing/) to hand to someone.
+- **Rename a diagram** and **Delete a diagram** — tidy your library from the AI tool.
 
-The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. New diagrams an AI creates land in a **"Generated"** folder in your Explorer (you can move them afterwards). A token has full read and write access to your diagrams — including the diagrams in your teams' shared libraries — so only connect tools you trust, and revoke the token if you stop using one. It can't manage your teams or your account: inviting members, changing roles, and deleting things other than diagrams stay in the app.
+For building the picture, the AI can just describe the **graph** — the nodes and what connects to what — and livediagram lays it out, so the tool doesn't have to work out coordinates. It only needs to say what exists and what links to what. Your AI tool may also surface a few ready-made **prompts** (like "Diagram this" or "Flowchart from steps") as quick actions, so you don't have to know the tool names.
+
+The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. New diagrams an AI creates land in a **"Generated"** folder in your Explorer (you can move them afterwards).
+
+## What a connection can and can't touch
+
+By default the token behind a connection has full read and write access to your diagrams — including the diagrams in your teams' shared libraries — so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, tick **read-only access** on the approval screen when you connect it: the connection can then find and read your diagrams but can't create, edit, share, rename, or delete anything (the block is enforced by our server, not just the tool). Its token shows a **Read-only** badge on the [API tokens](/help/account-and-data/api-tokens/) page.
+
+Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than diagrams stay in the app.
 
 <Tip>
   Connected a tool you no longer use? Open the Explorer’s API tokens page and revoke its token —

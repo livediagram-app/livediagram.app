@@ -59,7 +59,7 @@ export const categories: Category[] = [
     title: 'Getting Started',
     description:
       'Go from a blank canvas to a shared diagram in minutes, with the basics every new user needs.',
-    articleCount: 6,
+    articleCount: 7,
   },
   {
     slug: 'tips-and-tricks',
@@ -338,6 +338,14 @@ export const articles: Article[] = [
     slug: 'keyboard-essentials',
     title: 'Keyboard Essentials',
     description: 'The handful of shortcuts that make editing fast.',
+    category: 'Getting Started',
+    categorySlug: 'getting-started',
+  },
+  {
+    slug: 'accessibility',
+    title: 'Accessibility and Keyboard Navigation',
+    description:
+      'Reach and walk the canvas with the keyboard, with your selection announced to screen readers.',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -1460,6 +1468,15 @@ export const articles: Article[] = [
     slug: 'search-create-tab',
     title: 'Creating a Tab from Search',
     description: 'Spin up a new tab straight from the search panel with the Create new tab action.',
+    category: 'Search Panel',
+    categorySlug: 'search-panel/the-search-panel',
+    parentSlug: 'the-search-panel',
+  },
+  {
+    slug: 'command-palette',
+    title: 'The Command Palette (⌘K)',
+    description:
+      'Press Cmd/Ctrl+K to run any editor command by name: undo, auto layout, export, settings and more.',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',

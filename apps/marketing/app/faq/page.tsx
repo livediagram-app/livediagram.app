@@ -82,7 +82,11 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'Can I export my diagrams?',
-    a: 'Yes. Each tab can be exported as Markdown, PDF, PNG, SVG, or a portable .json file you can import into another diagram. The same Import / Export accordion in the Palette covers both directions.',
+    a: 'Yes. Each tab can be exported as a Mermaid flowchart, Markdown, PDF, PNG, SVG, or a portable .json file you can import into another diagram. Mermaid, Markdown, and JSON also import back (paste the text or pick a file), and Mermaid keeps every connection. The same Import / Export accordion in the Palette covers both directions.',
+  },
+  {
+    q: 'Does it work with Mermaid?',
+    a: 'Yes, both ways. Paste or open a Mermaid flowchart (graph / flowchart) and livediagram lays it out on the canvas, keeping every connection rather than flattening it to an outline. Export any tab back to Mermaid to copy the text or download a .mmd file. It is the diagram-as-code format your READMEs, issues, and AI tools already speak, so diagrams move in and out without lock-in. Flowcharts are supported today; other Mermaid diagram types are not yet.',
   },
   {
     q: 'Where is my data stored, and do you track me?',

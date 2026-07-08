@@ -856,3 +856,74 @@ export function MarkdownImportArt() {
     </Frame>
   );
 }
+
+// Mermaid interop: flowchart text on the left, a laid-out connected graph on
+// the right. Unlike the markdown outline (a tree), the graph keeps a real
+// cycle back to the start, the point being that Mermaid preserves every
+// connection, not just the hierarchy.
+export function MermaidArt() {
+  return (
+    <Frame canvas>
+      {/* left: mermaid flowchart source */}
+      <div className="absolute bottom-3 left-2 top-3 w-[40%] rounded-md border border-slate-200 bg-white p-1.5 shadow-sm">
+        <div className="flex items-center gap-1">
+          <span className="rounded-sm bg-slate-200 px-1 text-[6px] font-semibold text-slate-500">
+            mmd
+          </span>
+        </div>
+        <div className="mt-1.5 space-y-1.5">
+          <div className="h-1.5 w-4/5 rounded bg-slate-400" />
+          <div className="flex items-center gap-1">
+            <div className="h-1.5 w-2/5 rounded bg-slate-200" />
+            <span className="text-[6px] leading-none text-slate-400">→</span>
+            <div className="h-1.5 w-1/4 rounded bg-slate-200" />
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="h-1.5 w-1/4 rounded bg-slate-200" />
+            <span className="text-[6px] leading-none text-slate-400">→</span>
+            <div className="h-1.5 w-2/5 rounded bg-slate-200" />
+          </div>
+        </div>
+      </div>
+      {/* arrow + a connected graph (with a cycle) */}
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <line x1="96" y1="48" x2="120" y2="48" stroke="rgb(100 116 139)" strokeWidth="2" />
+        <polygon points="120,48 113,44 113,52" fill="rgb(100 116 139)" />
+        {/* edges: start -> a, a -> b, b back to start (a real cycle) */}
+        <line x1="143" y1="26" x2="176" y2="26" stroke={BLUE_STROKE} strokeWidth="1.5" />
+        <line x1="187" y1="36" x2="155" y2="60" stroke={BLUE_STROKE} strokeWidth="1.5" />
+        <line x1="144" y1="60" x2="134" y2="38" stroke={BLUE_STROKE} strokeWidth="1.5" />
+        <rect
+          x="122"
+          y="18"
+          width="22"
+          height="16"
+          rx="8"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="1.5"
+        />
+        <rect
+          x="176"
+          y="18"
+          width="22"
+          height="16"
+          rx="3"
+          fill="white"
+          stroke={BLUE_STROKE}
+          strokeWidth="1.25"
+        />
+        <rect
+          x="133"
+          y="58"
+          width="22"
+          height="16"
+          rx="3"
+          fill="white"
+          stroke={BLUE_STROKE}
+          strokeWidth="1.25"
+        />
+      </svg>
+    </Frame>
+  );
+}

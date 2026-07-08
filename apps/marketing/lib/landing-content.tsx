@@ -32,6 +32,7 @@ import {
   NotesArt,
   LockArt,
   MarkdownImportArt,
+  MermaidArt,
   MarqueeArt,
   McpArt,
   MinimalPanelArt,
@@ -639,14 +640,21 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore connecting your tools',
     title: 'Connect your tools and AI',
     description:
-      'livediagram is open at the edges. Drive it programmatically from your own scripts, or hand it to an AI that reads and builds your diagrams with full context, all on the same account, all revocable.',
+      'livediagram is open at the edges. Move diagrams in and out as the formats your tools already speak, drive it programmatically from your own scripts, or hand it to an AI that reads and builds your diagrams with full context, all on the same account, all revocable.',
     items: [
       {
         art: <McpArt />,
         href: '/help/account-and-data/connect-ai-mcp/',
         title: 'Build diagrams with AI',
         description:
-          'Hook livediagram up to Claude or any MCP client and let it find, read, create, and edit your diagrams for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token, so you can disconnect any time.',
+          'Hook livediagram up to Claude or any MCP client at mcp.livediagram.app and let it find, read, create, edit, and share your diagrams for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
+      },
+      {
+        art: <MermaidArt />,
+        href: '/help/tabs/import-tabs/',
+        title: 'Works with Mermaid',
+        description:
+          'Paste or open a Mermaid flowchart and livediagram lays it out on the canvas, keeping every connection, not just the outline. Export any tab back to Mermaid to copy or download. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
       },
       {
         art: <ApiArt />,

@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Command Palette (⌘K)',
+  description:
+    'Press Cmd/Ctrl+K to open the search panel and run any editor command by name: undo, auto layout, export, settings and more, without hunting through menus.',
+  path: '/help/search-panel/the-search-panel/command-palette/',
+});
+
+<ArticleLayout
+  title="The Command Palette (⌘K)"
+  description="Run any editor action by typing its name. The search panel doubles as a command palette on Cmd/Ctrl+K."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel/the-search-panel"
+>
+
+The [search panel](/help/search-panel/the-search-panel/) isn't only for finding things, it's also a **command palette**: type the name of an action and run it, without hunting through toolbars and menus. If you've used ⌘K in tools like VS Code, Linear, or Slack, this is the same idea.
+
+## Opening it
+
+- **Keyboard:** press `Cmd` / `Ctrl` + `K` from anywhere in the editor. This is the conventional command-palette shortcut, so it's the one to reach for. The older `Cmd` / `Ctrl` + `.` still opens the same panel, they're interchangeable.
+- It works in **[zen mode](/help/tools/zen-mode/)** and in **read-only** views too, just like opening search.
+
+The palette and search are one surface, so you can find a diagram and run a command from the same box.
+
+## Running a command
+
+Start typing and matching commands appear in an **Actions** group alongside any navigation results. Arrow to the one you want and press `Enter`, or click it. Commands only show once you've typed something, so an empty box just lists places to jump to, it never runs an action by accident.
+
+Every command does exactly what its menu item or shortcut does, it's the same action under a different name, so nothing behaves differently depending on how you reach it.
+
+## What you can run
+
+The palette reaches across the whole editor, including:
+
+- **History:** Undo and Redo (shown only when there's something to undo or redo).
+- **View:** Toggle zen mode, Fit to screen.
+- **Cleanup:** [Auto Layout and Auto-align](/help/canvas/layout-cleanup/) the current tab.
+- **Dialogs:** Export…, Import…, Settings, Keyboard shortcuts, and Browse templates.
+- **Selection and diagram actions:** the same verbs the panel already offered for a selected element or the current diagram.
+
+## In read-only views
+
+When you're viewing a diagram you can't edit (a view-only share link, someone else's board), the palette still offers the actions that make sense without editing, like toggling zen mode, fitting the diagram to the screen, and exporting. The actions that would change the diagram simply aren't listed.
+
+<Tip>
+  Forgotten a shortcut? Open the palette with `⌘K`, type the first few letters of what you want to
+  do (like "export" or "layout"), and run it, no need to remember where it lives.
+</Tip>
+
+</ArticleLayout>
