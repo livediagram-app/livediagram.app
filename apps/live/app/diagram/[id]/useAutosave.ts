@@ -17,6 +17,7 @@ import {
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { isDiagramDeleted } from '@/lib/diagram-tombstones';
 import { computeTabSaveDiff } from './editor-page-helpers';
+import { tabBroadcastOps } from './tab-broadcast-ops';
 
 // Per-tab autosave (spec/13), lifted out of editor-page.tsx. Two effects:
 // a debounced (600ms) save and a beforeunload flush so a fast edit ->
@@ -138,10 +139,15 @@ export function useAutosave(opts: {
             // the set, so it can't authorise its own wipe (spec/13).
             allowEmpty: loadedTabIdsRef.current.has(t.id),
           }).then(() => {
-            roomRef.current?.send({
-              kind: 'op',
-              op: { kind: 'tab', tabId: t.id, tab: t },
-            });
+            // Broadcast granular element ops (spec/75, Level 0) derived from
+            // the last state peers saw (lastSavedTabsRef, the "before") so
+            // concurrent different-element edits merge instead of the whole
+            // tab clobbering. Falls back to a whole-`tab` op for a new tab or
+            // a bulk change (see tabBroadcastOps).
+            const before = lastSavedTabsRef.current.find((s) => s.id === t.id);
+            for (const op of tabBroadcastOps(before, t)) {
+              roomRef.current?.send({ kind: 'op', op });
+            }
           }),
         );
       }

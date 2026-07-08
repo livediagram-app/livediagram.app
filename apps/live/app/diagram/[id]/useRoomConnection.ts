@@ -1,5 +1,5 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import type { Tab } from '@livediagram/diagram';
+import { applyElementOp, type Tab } from '@livediagram/diagram';
 import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import {
@@ -237,6 +237,42 @@ export function useRoomConnection(opts: {
             // local membership so a content edit can't clobber a
             // concurrent folder change.
             next[existing] = { ...op.tab, folder: next[existing]!.folder };
+            return next;
+          });
+        } else if (op.kind === 'el') {
+          // Peer changed a SINGLE element on a tab (spec/75, Level 0):
+          // add / update / remove / reorder, applied by id. Two peers
+          // editing different elements on the same tab now merge instead
+          // of the whole-tab `tab` op clobbering (see element-ops.ts). An
+          // op for a tab we don't have yet is dropped — a follow-up `tab`
+          // or `diagram-meta` op will bring the tab in whole.
+          remoteUpdateRef.current = true;
+          applyRemoteTabs((prev) => {
+            const i = prev.findIndex((t) => t.id === op.tabId);
+            if (i === -1) return prev;
+            const tab = prev[i]!;
+            const elements = applyElementOp(tab.elements, op.op);
+            // applyElementOp returns the same array reference on a no-op
+            // (e.g. update for an already-removed id); keep tab identity
+            // so the autosave content diff doesn't see a phantom change.
+            if (elements === tab.elements) return prev;
+            const next = [...prev];
+            next[i] = { ...tab, elements };
+            return next;
+          });
+        } else if (op.kind === 'tab-meta') {
+          // Peer changed a tab's non-element metadata (name, background,
+          // font, …) without touching its elements (spec/75, Level 0).
+          // Merge the patch; `folder` stays owned by diagram-meta (spec/30)
+          // so a content/meta edit can't clobber a concurrent folder move.
+          remoteUpdateRef.current = true;
+          applyRemoteTabs((prev) => {
+            const i = prev.findIndex((t) => t.id === op.tabId);
+            if (i === -1) return prev;
+            const tab = prev[i]!;
+            const { folder: _ignored, ...patch } = op.patch;
+            const next = [...prev];
+            next[i] = { ...tab, ...patch, folder: tab.folder };
             return next;
           });
         } else if (op.kind === 'diagram-meta') {
