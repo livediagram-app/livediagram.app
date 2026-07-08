@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
-import { buildElementIndex, isBoxed, isRailShape } from '@livediagram/diagram';
+import { buildElementIndex, isBoxed, isRailShape, orderByLayer } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { framesFirst, type QuickConnectDirection } from '@/lib/canvas';
+import { type QuickConnectDirection } from '@/lib/canvas';
 import { resolveFontStack } from '@/lib/fonts';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
@@ -57,6 +57,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     editCursorAtEnd,
     editingId,
     elements,
+    tabLayers,
     handleArrowSelect,
     handleElementContextSelect,
     hasArrows,
@@ -179,13 +180,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
-  // Frames are section backdrops: always render them FIRST (lowest in the
-  // paint + DOM order) so their contents sit on top and stay clickable.
-  // Otherwise a frame painted over its contents would swallow the clicks
-  // meant for the elements inside it (spec/09). Same rule the exporters
-  // use, via the shared `framesFirst` helper. Memoised for the same
-  // reason as the index (stable array identity when elements are).
-  const ordered = useMemo(() => framesFirst(elements), [elements]);
+  // Paint order (spec/74 + spec/09): layer bands bottom -> top, keeping
+  // array order within each band with frames hoisted to the front of
+  // THEIR band (a frame is a section backdrop that must sit behind its
+  // contents so they stay clickable). Hidden layers' elements drop out
+  // here entirely — no DOM, so no hit-testing either. Same rule the
+  // exporters use, via the shared `orderByLayer` helper. Memoised for
+  // the same reason as the index (stable identity when inputs are).
+  const ordered = useMemo(() => orderByLayer(elements, tabLayers), [elements, tabLayers]);
   // Whether the single selected element is a timeline rail — gates the rail's
   // "Add point" action on the quick-connect "+" (spec/51).
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;

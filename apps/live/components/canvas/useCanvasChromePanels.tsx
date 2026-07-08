@@ -7,6 +7,8 @@ import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { ActivityPanel } from '@/components/panels/ActivityPanel';
+import { LayersPanel } from '@/components/panels/LayersPanel';
+import { visibleLayerElements } from '@livediagram/diagram';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
 import { Explorer } from '@/components/panels/Explorer';
@@ -69,6 +71,21 @@ export function useCanvasChromePanels({
     folders,
     handleDockButtonClick,
     minimalPanels,
+    layers,
+    activeLayerId,
+    layerCounts,
+    layersPanelPosition,
+    layersMinimized,
+    onMoveLayersPanel,
+    onResetLayersPanel,
+    onToggleLayersMinimized,
+    onSelectLayer,
+    onAddLayer,
+    onRemoveLayer,
+    onRenameLayer,
+    onToggleLayerVisibility,
+    onToggleLayerLock,
+    onReorderLayer,
     onActivityRowClick,
     onAddAnnotation,
     onAddArrow,
@@ -208,6 +225,7 @@ export function useCanvasChromePanels({
     onResetCommentsPanel,
   );
   const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
+  const layersWiring = panelWiringFor('layers', layersPanelPosition, onResetLayersPanel);
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
   const legacyStackBelowY =
@@ -305,6 +323,36 @@ export function useCanvasChromePanels({
     />
   );
 
+  // Layers panel (spec/74). Edit sessions only (a viewer can't manage
+  // layers; visibility / lock still shape what they see via the render
+  // path). Desktop: hidden while minimised into its bottom-right dock
+  // button. Mobile / minimal: always mounted so the dock button can pop
+  // it open (mobileOpenOverride gates the actual render).
+  const layersEl =
+    !chromeHidden && !readOnly && (isMobile || minimalPanels ? true : !layersMinimized) ? (
+      <LayersPanel
+        layers={layers}
+        activeLayerId={activeLayerId}
+        counts={layerCounts}
+        position={layersWiring.position}
+        onMoveTo={onMoveLayersPanel}
+        onReset={layersWiring.onReset}
+        dock={layersWiring.dock}
+        onMinimize={onToggleLayersMinimized}
+        mobileOpenOverride={activeMobilePanel === 'layers'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
+        onSelectLayer={onSelectLayer}
+        onAddLayer={onAddLayer}
+        onRemoveLayer={onRemoveLayer}
+        onRenameLayer={onRenameLayer}
+        onToggleVisibility={onToggleLayerVisibility}
+        onToggleLock={onToggleLayerLock}
+        onReorderLayer={onReorderLayer}
+      />
+    ) : null;
+
   const paletteEl =
     chromeHidden || readOnly ? null : (
       <CommandPalette
@@ -360,10 +408,14 @@ export function useCanvasChromePanels({
   const mapEnabled = settings?.showMinimap !== false;
   const mapAccent = paletteTheme.elementStroke ?? '#0ea5e9';
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
+  // Hidden layers (spec/74) drop out of the miniature too, so the map
+  // matches the canvas. Not rendered at all in the minimal panel layout
+  // (spec/59): minimal collapses panels to dock buttons, and a
+  // free-floating map contradicts that.
   const minimapEl =
-    !chromeHidden && !isMobile && mapEnabled && elements.length >= 4 ? (
+    !chromeHidden && !isMobile && !minimalPanels && mapEnabled && elements.length >= 4 ? (
       <Minimap
-        elements={elements}
+        elements={visibleLayerElements(elements, props.tabLayers)}
         viewportOffset={props.viewportOffset}
         viewportZoom={viewportZoom}
         setViewportOffset={props.setViewportOffset}
@@ -391,6 +443,7 @@ export function useCanvasChromePanels({
     ai: aiEl,
     activity: activityEl,
     minimap: minimapEl,
+    layers: layersEl,
   };
   return { panelEls };
 }

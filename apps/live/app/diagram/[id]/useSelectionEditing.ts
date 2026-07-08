@@ -23,6 +23,8 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 export function useSelectionEditing(opts: {
   selectedId: string | null;
   isReadOnly: boolean;
+  // Elements on a hidden or locked layer (spec/74): never selectable.
+  layerInertIds: Set<string>;
   formatSourceId: string | null;
   groupSourceId: string | null;
   multiSelectedIds: Set<string>;
@@ -68,6 +70,7 @@ export function useSelectionEditing(opts: {
   const {
     selectedId,
     isReadOnly,
+    layerInertIds,
     formatSourceId,
     groupSourceId,
     multiSelectedIds,
@@ -230,8 +233,9 @@ export function useSelectionEditing(opts: {
     // element selected, so block it — for plain select AND for format-
     // paint / group targets, since both would mutate an element someone
     // else is working on. The not-allowed cursor + "Locked to <name>"
-    // tooltip on the element communicate why.
-    if (lockedByOther(id)) return;
+    // tooltip on the element communicate why. Hidden / locked-layer
+    // elements (spec/74) are equally untouchable.
+    if (lockedByOther(id) || layerInertIds.has(id)) return;
     if (formatSourceId !== null) {
       // Format-paint mode: apply the source's formatting to the
       // clicked target instead of selecting it. applyFormatFromSource
@@ -262,8 +266,9 @@ export function useSelectionEditing(opts: {
   // Toggling the last member out of the multi-set drops back to
   // empty selection.
   const toggleInMultiSelect = (id: string) => {
-    // Don't let a shift-click pull a remotely-held element into the set.
-    if (lockedByOther(id)) return;
+    // Don't let a shift-click pull a remotely-held element — or a
+    // hidden / locked-layer one (spec/74) — into the set.
+    if (lockedByOther(id) || layerInertIds.has(id)) return;
     const next = new Set(multiSelectedIds);
     if (selectedId && !next.has(selectedId)) next.add(selectedId);
     if (next.has(id)) next.delete(id);

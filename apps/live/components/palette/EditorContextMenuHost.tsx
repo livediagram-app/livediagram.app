@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { selectionMembers } from '@livediagram/diagram';
+import { resolveLayerId, selectionMembers } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { getTheme, shapeColorPresets, themePresetColors } from '@/lib/themes';
 
@@ -37,6 +37,8 @@ export function EditorContextMenuHost() {
     previewTextAlign,
     bringSelectedToFront,
     sendSelectedToBack,
+    layers,
+    moveSelectedToLayer,
     toggleAspectLockSelected,
     setOpacitySelected,
     setTextColorSelected,
@@ -128,6 +130,17 @@ export function EditorContextMenuHost() {
         ? selectionMembers(activeTab.elements, ctxSelectedEl.id)
         : [];
 
+  // The selection's layer for the Layer section's move-to dropdown
+  // (spec/74): the single resolved layer every member shares, or null
+  // when the selection spans layers.
+  const ctxLayerIds = new Set(
+    ctxMemberIds
+      .map((id) => activeTab.elements.find((e) => e.id === id))
+      .filter((e): e is NonNullable<typeof e> => e != null)
+      .map((el) => resolveLayerId(el.layerId, layers)),
+  );
+  const selectionLayerId = ctxLayerIds.size === 1 ? [...ctxLayerIds][0]! : null;
+
   return (
     <EditorContextMenu
       menu={contextMenu}
@@ -146,6 +159,9 @@ export function EditorContextMenuHost() {
       onPreviewTextAlign={previewTextAlign}
       onBringToFront={bringSelectedToFront}
       onSendToBack={sendSelectedToBack}
+      layers={layers}
+      selectionLayerId={selectionLayerId}
+      onMoveSelectionToLayer={moveSelectedToLayer}
       onToggleAspectLock={toggleAspectLockSelected}
       onSetOpacity={setOpacitySelected}
       onSetTextColor={setTextColorSelected}

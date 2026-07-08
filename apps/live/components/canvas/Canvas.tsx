@@ -262,6 +262,7 @@ export function Canvas(props: CanvasProps) {
   // Stable selection-routing wrappers for the memo'd element / arrow
   // views — see useCanvasSelectHandlers.
   const { handleElementContextSelect, handleArrowSelect } = useCanvasSelectHandlers({
+    inertIds: props.layerInertIds,
     elements,
     multiSelectedIds,
     onSelect,

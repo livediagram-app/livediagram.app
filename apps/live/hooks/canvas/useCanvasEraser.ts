@@ -32,6 +32,9 @@ import { track } from '@/lib/telemetry';
 
 type EraserDeps = {
   editsBlocked: boolean;
+  // Elements on a hidden or locked layer (spec/74): the eraser passes
+  // over them like element-locked ones.
+  layerInertIds: Set<string>;
   activeId: string;
   activeTab: Tab;
   // Element-level write WITHOUT a fresh history checkpoint (see
@@ -73,14 +76,14 @@ export function useCanvasEraser(deps: EraserDeps) {
   const gestureTokenRef = useRef<number | undefined>(undefined);
 
   const eraseAtPoint = (clientX: number, clientY: number) => {
-    const { activeTab, tick, markCheckpoint } = depsRef.current;
+    const { activeTab, tick, markCheckpoint, layerInertIds } = depsRef.current;
     let changed = false;
     for (const { id } of elementHostsAtPoint(clientX, clientY)) {
       if (erasedRef.current.has(id)) continue;
       const el = activeTab.elements.find((e) => e.id === id);
       // Skip unknown ids (a wrapper for something on another layer) and
-      // locked elements (protected from deletion).
-      if (!el || el.locked === true) continue;
+      // locked / hidden-or-locked-LAYER elements (protected, spec/74).
+      if (!el || el.locked === true || layerInertIds.has(id)) continue;
       erasedRef.current.add(id);
       changed = true;
     }
@@ -93,7 +96,7 @@ export function useCanvasEraser(deps: EraserDeps) {
     const ids = erasedRef.current;
     tick((els) =>
       els.filter((el) => {
-        if (el.locked === true) return true;
+        if (el.locked === true || depsRef.current.layerInertIds.has(el.id)) return true;
         if (ids.has(el.id)) return false;
         // Drop arrows pinned to an erased element, matching deleteSelected.
         if (el.type === 'arrow' && arrowReferencesAny(el, ids)) return false;

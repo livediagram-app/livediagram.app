@@ -34,6 +34,9 @@ export type EditorDragDeps = {
   multiSelectedIds: Set<string>;
   editingId: string | null;
   isReadOnly: boolean;
+  // Elements on a hidden or locked layer (spec/74): every gesture
+  // starter treats them as inert — no select, no drag, no new arrow.
+  layerInertIds: Set<string>;
   // Modal interaction state. When format-painter is active, a click
   // on an element applies the format instead of dragging; when
   // group-source is active, the click completes a grouping. The drag

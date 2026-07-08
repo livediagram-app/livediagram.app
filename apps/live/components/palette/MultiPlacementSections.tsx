@@ -12,6 +12,7 @@ import {
 } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
+import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -50,6 +51,12 @@ export function MultiPlacementSections({
           <MenuTile icon={<LayerUpIcon />} label="Bring to Front" onClick={props.onBringToFront} />
           <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
         </MenuTileGrid>
+        {/* Move the whole selection to a named layer (spec/74). */}
+        <MoveToLayerRow
+          layers={props.layers}
+          currentLayerId={props.selectionLayerId}
+          onMove={props.onMoveSelectionToLayer}
+        />
         <OpacityRow
           value={(sel[0] as { opacity?: number } | undefined)?.opacity ?? 1}
           onChange={props.onSetOpacity}

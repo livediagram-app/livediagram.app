@@ -52,6 +52,8 @@ function setup(elements: Element[], opts: { tabLocked?: boolean; selection?: str
     setFormatSourceId: () => {},
     setGroupSourceId: () => {},
     lockedByOther: () => false,
+    layerLockedIds: new Set<string>(),
+    layerInertIds: new Set<string>(),
   });
   return { actions, getResult: () => result };
 }

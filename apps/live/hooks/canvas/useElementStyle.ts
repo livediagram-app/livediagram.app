@@ -18,9 +18,9 @@
 // Keeping that policy in one file makes it auditable.
 
 import {
-  bringManyToFront,
+  bringElementsToFrontLayer,
   isBoxed,
-  sendManyToBack,
+  sendElementsToBackLayer,
   type AnimationSpeed,
   type ElementAnimation,
   type IconAnimation,
@@ -58,6 +58,10 @@ type EditorElementStyleDeps = {
   editsBlocked: boolean;
   // History-aware element mutator (snapshots + emits the log).
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // History-aware ACTIVE-TAB mutator, for the layer-aware Bring to
+  // Front / Send to Back (spec/74): they restack `tab.layers` as well
+  // as the elements array, which element-level `commit` can't reach.
+  commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
   // Non-history tab mutator + one-shot checkpoint for the high-
   // frequency colour / opacity setters: one undoable step per picker
   // gesture (a commit per onChange tick flooded the 3-deep undo stack
@@ -82,6 +86,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     activeId,
     editsBlocked,
     commit,
+    commitActiveTab,
     tickTabs,
     markCheckpoint,
     scheduleElementChangeLog,
@@ -182,17 +187,22 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Toggled', 'AspectLock');
   };
 
+  // Bring to Front / Send to Back are LAYER moves (spec/74): the
+  // selection lands on the top (resp. bottom) layer, minting a fresh
+  // edge layer when the current one holds anything else and pruning any
+  // layer the move emptied. These two buttons are how layers accrue for
+  // users who never open the Layers panel.
   const bringSelectedToFront = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) => bringManyToFront(els, ids));
+    commitActiveTab((t) => bringElementsToFrontLayer(t, ids));
     track('Element', 'Reordered', 'Front');
   };
 
   const sendSelectedToBack = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) => sendManyToBack(els, ids));
+    commitActiveTab((t) => sendElementsToBackLayer(t, ids));
     track('Element', 'Reordered', 'Back');
   };
 

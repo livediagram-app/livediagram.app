@@ -1,6 +1,5 @@
 import {
   isBoxed,
-  type ArrowElement,
   type BoxedElement,
   type Element,
   type IconPosition,

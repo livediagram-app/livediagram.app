@@ -21,6 +21,10 @@ export function usePanelLayout() {
   // Activity defaults to minimised: most users only peek at it
   // occasionally, and the dock button keeps it one click away.
   const [activityMinimized, setActivityMinimized] = useState(true);
+  // Layers panel (spec/74): same pattern — minimised into a bottom-right
+  // dock button until the user opts in, so default chrome is unchanged.
+  const [layersPanelPosition, setLayersPanelPosition] = useState<Pos | null>(null);
+  const [layersMinimized, setLayersMinimized] = useState(true);
   // Zen / focus mode (spec/26): hide all floating chrome (header, tab
   // bar, panels, docks) so only the canvas content + zoom controls
   // remain. Purely a view flag — not persisted, not synced.
@@ -43,6 +47,10 @@ export function usePanelLayout() {
     setAiPanelVisible,
     activityMinimized,
     setActivityMinimized,
+    layersPanelPosition,
+    setLayersPanelPosition,
+    layersMinimized,
+    setLayersMinimized,
     zenMode,
     setZenMode,
   };

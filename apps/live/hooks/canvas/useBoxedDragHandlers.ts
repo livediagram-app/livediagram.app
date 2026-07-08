@@ -56,6 +56,10 @@ export function useBoxedDragHandlers({
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
+    // A hidden / locked LAYER makes its elements fully inert (spec/74):
+    // unlike per-element `locked` (selectable to inspect, below), a
+    // press on one doesn't even land a selection.
+    if (d.layerInertIds.has(elementId)) return;
     // Drill-in selection (spec/09 groups): if the click lands on a member
     // of the group that is ALREADY selected (via any of its members), the
     // selection narrows to just that member — so one element's settings /
@@ -148,6 +152,7 @@ export function useBoxedDragHandlers({
     if (d.formatSourceId !== null || d.groupSourceId !== null || d.formatToolActive) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
+    if (d.layerInertIds.has(elementId)) return;
     const start = opts?.fromGroup?.point ?? anchorPosition(element, anchor);
     const fromEnd: ArrowElement['from'] = opts?.fromGroup
       ? { kind: 'pinned-group', groupId: opts.fromGroup.groupId, anchor }

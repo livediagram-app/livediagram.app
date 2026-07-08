@@ -51,6 +51,12 @@ type EditorSelectionActionsDeps = {
   // selection lock, spec/07). A marquee skips locked elements so a drag
   // box doesn't scoop up something someone else is editing.
   lockedByOther: (id: string) => boolean;
+  // Elements on a LOCKED layer (spec/74): protected from deletion like
+  // per-element `locked`.
+  layerLockedIds: Set<string>;
+  // Elements on a hidden OR locked layer (spec/74): a marquee never
+  // selects them.
+  layerInertIds: Set<string>;
 };
 
 export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
@@ -67,6 +73,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setFormatSourceId,
     setGroupSourceId,
     lockedByOther,
+    layerLockedIds,
+    layerInertIds,
   } = deps;
 
   // The duplicate family (single group-aware + marquee cluster with
@@ -96,7 +104,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       const survivors = els.filter((el) => {
         // Belt-and-suspenders: never drop a locked element, even via the
         // arrow cascade (a locked arrow survives its endpoint going).
-        if (el.locked === true) return true;
+        // A locked LAYER protects its elements the same way (spec/74).
+        if (el.locked === true || layerLockedIds.has(el.id)) return true;
         if (targetIds.has(el.id)) return false;
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
@@ -126,7 +135,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     const lockedIds = new Set(
       activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
     );
-    return new Set([...ids].filter((id) => !lockedIds.has(id)));
+    // Locked-layer members are protected exactly like element-locked ones.
+    return new Set([...ids].filter((id) => !lockedIds.has(id) && !layerLockedIds.has(id)));
   };
 
   // Marquee box-select committed by Canvas on pointer-up. Mutex with
@@ -134,9 +144,10 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // the popover/accordion still applies; 2+ → enter true multi-select.
   const selectMarquee = (rawIds: Set<string>) => {
     // Drop any element another participant currently holds — a marquee
-    // shouldn't pull a remotely-locked element into the selection.
+    // shouldn't pull a remotely-locked element into the selection — and
+    // anything on a hidden / locked layer (spec/74).
     const ids = new Set<string>();
-    for (const id of rawIds) if (!lockedByOther(id)) ids.add(id);
+    for (const id of rawIds) if (!lockedByOther(id) && !layerInertIds.has(id)) ids.add(id);
     if (ids.size === 0) {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -211,7 +222,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     announceDeleted(targetIds);
     commit((els) => {
       const survivors = els.filter((el) => {
-        if (el.locked === true) return true;
+        if (el.locked === true || layerLockedIds.has(el.id)) return true;
         if (targetIds.has(el.id)) return false;
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;

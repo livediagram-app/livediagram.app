@@ -11,7 +11,7 @@ import { useElementStyle } from './useElementStyle';
 
 function harness(elements: Element[], selection: Set<string>) {
   const tab: Tab = { id: 'tab1', name: 'Tab', elements };
-  let committed = elements;
+  let committed = tab;
   // useElementStyle builds plain closures from its deps (no internal React
   // hooks), so calling it outside a component is safe here.
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -19,19 +19,22 @@ function harness(elements: Element[], selection: Set<string>) {
     currentSelectionIds: () => new Set(selection),
     selectionPrimary: () => elements.find((e) => selection.has(e.id)) ?? null,
     selectedId: null, // multi-select: no single id
-    activeTab: { ...tab, elements: committed },
+    activeTab: committed,
     activeId: 'tab1',
     editsBlocked: false,
     commit: (map) => {
+      committed = { ...committed, elements: map(committed.elements) };
+    },
+    commitActiveTab: (map) => {
       committed = map(committed);
     },
     tickTabs: (map) => {
-      committed = map([{ ...tab, elements: committed }])[0]!.elements;
+      committed = map([committed])[0]!;
     },
     markCheckpoint: () => 1,
     scheduleElementChangeLog: () => {},
   });
-  return { style, result: () => committed };
+  return { style, result: () => committed.elements, tab: () => committed };
 }
 
 describe('useElementStyle selection-wide setters on a multi-selection', () => {
@@ -334,5 +337,34 @@ describe('useElementStyle arrow style presets (spec/48)', () => {
     expect(el.strokeWidth).toBeUndefined();
     expect(el.flow).toBeUndefined();
     expect(el.flowSpeed).toBeUndefined();
+  });
+});
+
+describe('useElementStyle bring to front / send to back as layer moves (spec/74)', () => {
+  it('bring to front mints a top layer holding the selection', () => {
+    const a = createShape('square', 0, 0);
+    const b = createShape('square', 200, 0);
+    const { style, tab } = harness([a, b], new Set([a.id]));
+
+    style.bringSelectedToFront();
+
+    const t = tab();
+    expect(t.layers).toHaveLength(2);
+    const topId = t.layers![1]!.id;
+    expect(t.elements.find((e) => e.id === a.id)?.layerId).toBe(topId);
+    // The other shape stays on the (default) bottom layer.
+    expect(t.elements.find((e) => e.id === b.id)?.layerId).toBeUndefined();
+  });
+
+  it('send to back mints a bottom layer holding the selection', () => {
+    const a = createShape('square', 0, 0);
+    const b = createShape('square', 200, 0);
+    const { style, tab } = harness([a, b], new Set([b.id]));
+
+    style.sendSelectedToBack();
+
+    const t = tab();
+    expect(t.layers).toHaveLength(2);
+    expect(t.elements.find((e) => e.id === b.id)?.layerId).toBe(t.layers![0]!.id);
   });
 });

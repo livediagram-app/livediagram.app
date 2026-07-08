@@ -20,7 +20,7 @@ describe('panel-layout', () => {
     expect(layout.corners['top-left']).toEqual(['explorer']);
     expect(layout.corners['top-right']).toEqual(['palette', 'collaborate', 'ai']);
     expect(layout.corners['bottom-left']).toEqual(['activity', 'minimap']);
-    expect(layout.corners['bottom-right']).toEqual([]);
+    expect(layout.corners['bottom-right']).toEqual(['layers']);
     expect(layout.free).toEqual({});
   });
 
@@ -29,7 +29,7 @@ describe('panel-layout', () => {
     // Left its old corner...
     expect(next.corners['top-right']).toEqual(['collaborate', 'ai']);
     // ...and joined below whatever is in the target corner.
-    expect(next.corners['bottom-right']).toEqual(['palette']);
+    expect(next.corners['bottom-right']).toEqual(['layers', 'palette']);
   });
 
   it('a panel lives in exactly one place (free clears its corner)', () => {

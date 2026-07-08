@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { isBoxed, type BoxedElement, type Element, type Tab } from '@livediagram/diagram';
+import {
+  isBoxed,
+  stampNewElementLayers,
+  type BoxedElement,
+  type Element,
+  type Tab,
+} from '@livediagram/diagram';
 
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
@@ -72,6 +78,7 @@ import { usePresenceState } from './usePresenceState';
 import { useEditorDialogs } from './useEditorDialogs';
 import { useElementHelpers } from './useElementHelpers';
 import { useElementCreation } from './useElementCreation';
+import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
@@ -132,10 +139,36 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // synchronous mutation.
   const entryHistoryRef = useRef<EntryHistory>(emptyEntryHistory());
   const historyTokenRef = useRef(0);
+  // Active-layer stamp for the commit choke point below (spec/74). A ref
+  // (not state): commitTabs is defined before the layers slice computes,
+  // so the slice refreshes this every render and the closure reads the
+  // latest value at commit time.
+  const activeLayerStampRef = useRef<{ tabId: string; layerId: string } | null>(null);
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]): number => {
     const token = ++historyTokenRef.current;
     entryHistoryRef.current = entryHistoryPush(entryHistoryRef.current, token);
-    rawCommitTabs(mapTabs);
+    // Layer stamping (spec/74): elements APPEARING in this commit without
+    // a valid layerId land on the active layer. One choke point, so no
+    // individual creation path (draw, paste, AI, template, Mermaid
+    // import) carries layer logic. stampNewElementLayers no-ops on tabs
+    // that never materialised `layers`, and on undo/remote applies (which
+    // bypass commitTabs entirely).
+    rawCommitTabs((ts) => {
+      const next = mapTabs(ts);
+      const stamp = activeLayerStampRef.current;
+      if (!stamp) return next;
+      return next.map((t) => {
+        if (t.id !== stamp.tabId) return t;
+        const prev = ts.find((p) => p.id === t.id);
+        const els = stampNewElementLayers(
+          prev?.elements ?? [],
+          t.elements,
+          t.layers,
+          stamp.layerId,
+        );
+        return els === t.elements ? t : { ...t, elements: els };
+      });
+    });
     return token;
   };
   const markCheckpoint = (): number => {
@@ -1005,6 +1038,52 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     emitChange(activeId, before, after);
   };
 
+  // Tab-level history commit scoped to the ACTIVE tab, for mutations
+  // that touch more than the elements array — the layer ops and the
+  // layer-aware Bring to Front / Send to Back also restack
+  // `tab.layers`. Reads the LIVE tab (same rationale as `commit`) and
+  // emits the element diff so a mass change (layer delete) reaches the
+  // activity log.
+  const commitActiveTab = (mapTab: (t: Tab) => Tab) => {
+    if (editsBlocked) return;
+    const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
+    const next = mapTab(liveTab);
+    if (next === liveTab) return;
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? mapTab(t) : t)));
+    emitChange(activeId, liveTab.elements, next.elements);
+  };
+
+  // Layers domain slice (spec/74): the active layer, the panel /
+  // context-menu ops, and the hidden / locked element-id sets every
+  // interaction gate below reads.
+  const layersState = useLayersState({ activeId, activeTab, editsBlocked, commitActiveTab });
+  const {
+    layers,
+    activeLayerId,
+    activeLayerBlocked,
+    layerHiddenIds,
+    layerLockedIds,
+    layerInertIds,
+  } = layersState;
+  // Refresh the commit choke point's stamp (see commitTabs above).
+  activeLayerStampRef.current = { tabId: activeId, layerId: activeLayerId };
+  // Element creation lands on the active layer, so it's additionally
+  // blocked while that layer is hidden or locked (spec/74).
+  const createBlocked = editsBlocked || activeLayerBlocked;
+
+  // A layer turning hidden or locked (locally or by a peer) drops its
+  // elements from any live selection — the same guarantee delete gives.
+  useEffect(() => {
+    if (layerInertIds.size === 0) return;
+    if (selectedId && layerInertIds.has(selectedId)) setSelectedId(null);
+    if ([...multiSelectedIds].some((id) => layerInertIds.has(id))) {
+      setMultiSelectedIds(new Set([...multiSelectedIds].filter((id) => !layerInertIds.has(id))));
+    }
+    // Selection state is read, not watched: this only needs to run when
+    // the inert set itself changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layerInertIds]);
+
   // Apply AI-returned elements as a single undo block (spec/25).
   // Generate handles both modifications and additions in one pass:
   //   - Elements whose ID matches an existing element → replace in place
@@ -1067,7 +1146,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     soloSelectedId,
     activeId,
     activeTab,
-    editsBlocked,
+    // Creation-only helpers: additionally blocked while the active layer
+    // is hidden / locked (spec/74).
+    editsBlocked: createBlocked,
     multiSelectedIds,
     formatSourceId,
     groupSourceId,
@@ -1324,7 +1405,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // keyboard hook. See useShapeDrawing.
   const { pendingDraw, beginDraw, commitDraw, cancelDrawShape, beginFreehand, commitFreehand } =
     useShapeDrawing({
-      editsBlocked,
+      editsBlocked: createBlocked,
       selectedId,
       canvasTool,
       setCanvasTool,
@@ -1361,7 +1442,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     connectArrowTo,
     cancelConnect,
   } = useElementCreation({
-    editsBlocked,
+    editsBlocked: createBlocked,
     activeId,
     activeTab,
     selectedId,
@@ -1414,6 +1495,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setFormatSourceId,
     setGroupSourceId,
     lockedByOther,
+    layerLockedIds,
+    layerInertIds,
   });
 
   // Eraser canvas tool (spec/09): press / drag to delete any element the
@@ -1421,6 +1504,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // from its capture-phase pointerdown. See useCanvasEraser.
   const { beginErase } = useCanvasEraser({
     editsBlocked,
+    layerInertIds,
     activeId,
     activeTab,
     tick,
@@ -1505,6 +1589,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     editsBlocked,
     commit,
+    commitActiveTab,
     tickTabs,
     markCheckpoint,
     scheduleElementChangeLog,
@@ -1602,6 +1687,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useSelectionEditing({
     selectedId,
     isReadOnly,
+    layerInertIds,
     formatSourceId,
     groupSourceId,
     multiSelectedIds,
@@ -1636,6 +1722,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     editingId,
     selectElement,
     lockedByOther,
+    layerInertIds,
     scrollIntoView,
   });
 
@@ -1680,6 +1767,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginArrowLabelDrag,
   } = useEditorDrag({
     activeTab,
+    layerInertIds,
     zoomRef,
     selectedId,
     setSelectedId,
@@ -1786,7 +1874,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       }
     },
     onSelectAll: () => {
-      const allIds = new Set(activeTab.elements.map((el) => el.id));
+      // Hidden / locked layers are excluded from select-all (spec/74).
+      const allIds = new Set(
+        activeTab.elements.map((el) => el.id).filter((id) => !layerInertIds.has(id)),
+      );
       if (allIds.size === 0) return;
       setSelectedId(null);
       setMultiSelectedIds(allIds);
@@ -1832,6 +1923,27 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ...realtime,
     activeTab,
     activeTabLocked,
+    // Layers (spec/74): the normalised stack, the session-scoped active
+    // layer, per-layer element counts, the interaction-gate id sets, and
+    // the panel / context-menu ops.
+    layers,
+    activeLayerId,
+    activeLayerBlocked,
+    layerHiddenIds,
+    layerLockedIds,
+    layerInertIds,
+    layerCounts: layersState.layerCounts,
+    setActiveLayer: layersState.setActiveLayer,
+    addLayer: layersState.addLayer,
+    renameLayer: layersState.renameLayer,
+    removeLayer: layersState.removeLayer,
+    toggleLayerVisibility: layersState.toggleLayerVisibility,
+    toggleLayerLock: layersState.toggleLayerLock,
+    reorderLayer: layersState.reorderLayer,
+    // Menu-facing wrapper: moves the CURRENT selection (group-expanded)
+    // onto the picked layer.
+    moveSelectedToLayer: (layerId: string) =>
+      layersState.moveSelectionToLayer(currentSelectionIds(), layerId),
     addArrow,
     addComment,
     replaceCommentId,

@@ -24,6 +24,21 @@ export function EditorCanvasHost() {
     activeTabLocked,
     activityMinimized,
     activityPosition,
+    layers,
+    activeLayerId,
+    layerInertIds,
+    layerCounts,
+    layersPanelPosition,
+    setLayersPanelPosition,
+    layersMinimized,
+    setLayersMinimized,
+    setActiveLayer,
+    addLayer,
+    renameLayer,
+    removeLayer,
+    toggleLayerVisibility,
+    toggleLayerLock,
+    reorderLayer,
     addAnnotation,
     addArrow,
     addAvatar,
@@ -277,6 +292,8 @@ export function EditorCanvasHost() {
       viewportOffset={viewportOffset}
       setViewportOffset={setViewportOffset}
       elements={activeTab.elements}
+      tabLayers={activeTab.layers}
+      layerInertIds={layerInertIds}
       snapGuides={snapGuides}
       distGuides={distGuides}
       snapTargets={snapTargets}
@@ -382,6 +399,25 @@ export function EditorCanvasHost() {
         setActivityMinimized((v) => !v);
       }}
       onResetActivity={() => setActivityPosition(null)}
+      layers={layers}
+      activeLayerId={activeLayerId}
+      layerCounts={layerCounts}
+      layersPanelPosition={layersPanelPosition}
+      layersMinimized={layersMinimized}
+      onMoveLayersPanel={(x, y) => setLayersPanelPosition({ x, y })}
+      onResetLayersPanel={() => setLayersPanelPosition(null)}
+      onToggleLayersMinimized={() => {
+        // Emit only the open transition, matching the Activity dock.
+        if (layersMinimized) track('Layer', 'Opened', 'Panel');
+        setLayersMinimized((v) => !v);
+      }}
+      onSelectLayer={setActiveLayer}
+      onAddLayer={addLayer}
+      onRemoveLayer={removeLayer}
+      onRenameLayer={renameLayer}
+      onToggleLayerVisibility={toggleLayerVisibility}
+      onToggleLayerLock={toggleLayerLock}
+      onReorderLayer={reorderLayer}
       commentRows={commentRows}
       commentsPanelPosition={commentsPanelPosition}
       onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}

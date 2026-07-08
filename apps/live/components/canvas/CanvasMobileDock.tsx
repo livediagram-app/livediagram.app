@@ -1,4 +1,5 @@
 import type { ReactNode, RefObject } from 'react';
+import { LayersStackIcon } from '@/components/panels/LayersPanel';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 
 // Top-right mobile dock (spec/07 "Mobile chrome"): a compact button row
@@ -116,6 +117,15 @@ export function CanvasMobileDock({
                       />
                     </svg>
                   ),
+                },
+              ]
+            : []),
+          ...(!readOnly
+            ? [
+                {
+                  id: 'layers' as const,
+                  label: 'Layers',
+                  icon: <LayersStackIcon />,
                 },
               ]
             : []),

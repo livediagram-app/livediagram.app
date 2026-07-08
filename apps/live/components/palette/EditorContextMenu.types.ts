@@ -11,6 +11,7 @@ import type {
   BorderStyle,
   ChartLegendPosition,
   Element,
+  Layer,
   ElementAnimation,
   IconAnimation,
   IconPosition,
@@ -57,6 +58,12 @@ export type EditorContextMenuProps = {
   onRemoveLink: () => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
+  // Layers (spec/74): the tab's normalised stack (bottom -> top) for the
+  // Layer section's move-to dropdown, the selection's resolved layer
+  // (null when members span layers), and the selection-wide move.
+  layers: Layer[];
+  selectionLayerId: string | null;
+  onMoveSelectionToLayer: (layerId: string) => void;
   // Toggle aspect-ratio lock + set opacity on the clicked element (boxed
   // only). Read the current values off the target below.
   onToggleAspectLock: () => void;

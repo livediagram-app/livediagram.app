@@ -194,16 +194,20 @@ export function nextLayerName(layers: Layer[]): string {
 
 // Insert a new empty layer directly ABOVE the given layer (Photoshop's
 // rule), or on top when the anchor is missing / unknown. Returns the new
-// layer's id so the caller can activate it.
+// layer's id so the caller can activate it. `preset` lets a caller mint
+// the Layer up front (id known before the commit lands, so the editor
+// can activate it optimistically); dropped if its id already exists.
 export function addLayerAbove(
   tab: Tab,
   anchorLayerId?: string | null,
+  preset?: Layer,
 ): { tab: Tab; layerId: string } {
   const t = materializeLayers(tab);
   const ls = t.layers!;
+  if (preset && ls.some((l) => l.id === preset.id)) return { tab: t, layerId: preset.id };
   const at = anchorLayerId != null ? ls.findIndex((l) => l.id === anchorLayerId) : -1;
   const idx = at >= 0 ? at + 1 : ls.length;
-  const layer: Layer = { id: crypto.randomUUID(), name: nextLayerName(ls) };
+  const layer: Layer = preset ?? { id: crypto.randomUUID(), name: nextLayerName(ls) };
   return {
     tab: { ...t, layers: [...ls.slice(0, idx), layer, ...ls.slice(idx)] },
     layerId: layer.id,

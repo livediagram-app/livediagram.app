@@ -17,7 +17,14 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // The floating panels that participate in docking. Every one is built
 // on the shared MovablePanel. The fixed zoom controls are deliberately
 // absent — they are not a MovablePanel and stay pinned bottom-right.
-export type PanelId = 'palette' | 'explorer' | 'activity' | 'collaborate' | 'ai' | 'minimap';
+export type PanelId =
+  | 'palette'
+  | 'explorer'
+  | 'activity'
+  | 'collaborate'
+  | 'ai'
+  | 'minimap'
+  | 'layers';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -33,6 +40,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'collaborate',
   'ai',
   'minimap',
+  'layers',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -59,6 +67,9 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   ai: 'top-right',
   activity: 'bottom-left',
   minimap: 'bottom-left',
+  // Layers (spec/74): the one panel homed bottom-right, above the fixed
+  // zoom cluster (that corner's inset already clears it).
+  layers: 'bottom-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';
@@ -77,6 +88,7 @@ export function defaultPanelLayout(): PanelLayout {
   corners['top-left'] = ['explorer'];
   corners['top-right'] = ['palette', 'collaborate', 'ai'];
   corners['bottom-left'] = ['activity', 'minimap'];
+  corners['bottom-right'] = ['layers'];
   return { corners, free: {} };
 }
 

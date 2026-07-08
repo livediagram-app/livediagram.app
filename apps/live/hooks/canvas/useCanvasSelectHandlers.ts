@@ -6,6 +6,7 @@ import { isBoxed, type Element } from '@livediagram/diagram';
 // ArrowView), so a Canvas re-render doesn't hand every element a fresh
 // closure and defeat the memo.
 export function useCanvasSelectHandlers({
+  inertIds,
   elements,
   multiSelectedIds,
   onSelect,
@@ -13,6 +14,9 @@ export function useCanvasSelectHandlers({
   onElementContextMenu,
   onMultiContextMenu,
 }: {
+  // Elements on a hidden or locked layer (spec/74): right-click and
+  // arrow-click route nowhere for them.
+  inertIds: Set<string>;
   elements: Element[];
   multiSelectedIds: Set<string>;
   onSelect: (id: string) => void;
@@ -28,6 +32,7 @@ export function useCanvasSelectHandlers({
   // `onElementContextMenu` itself changes upstream.
   const handleElementContextSelect = useCallback(
     (id: string, sx: number, sy: number) => {
+      if (inertIds.has(id)) return;
       // Right-clicking a member of an active multi-selection keeps the whole
       // selection and opens a selection-wide menu. Right-clicking a grouped
       // element selects the group (which expands to all members) and opens
@@ -47,7 +52,7 @@ export function useCanvasSelectHandlers({
       onSelect(id);
       onElementContextMenu?.(id, sx, sy);
     },
-    [onSelect, onElementContextMenu, onMultiContextMenu, elements, multiSelectedIds],
+    [onSelect, onElementContextMenu, onMultiContextMenu, elements, multiSelectedIds, inertIds],
   );
 
   // Stable wrapper for the arrow click flow. Same rationale as
@@ -65,6 +70,7 @@ export function useCanvasSelectHandlers({
 
   const handleArrowSelect = useCallback(
     (id: string, e: ReactPointerEvent) => {
+      if (inertIds.has(id)) return;
       const set = multiSelectedIdsRef.current;
       const isMember = set.has(id);
       if (e.shiftKey || (set.size > 0 && !isMember)) {
@@ -73,7 +79,7 @@ export function useCanvasSelectHandlers({
       }
       onSelect(id);
     },
-    [onSelect, onShiftSelect],
+    [onSelect, onShiftSelect, inertIds],
   );
 
   return { handleElementContextSelect, handleArrowSelect };

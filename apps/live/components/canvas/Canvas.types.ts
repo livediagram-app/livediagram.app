@@ -8,6 +8,7 @@ import type {
   BackgroundPattern,
   DistributionGuide,
   Element,
+  Layer,
   IconPosition,
   ShapeKind,
   TextAlignX,
@@ -59,6 +60,13 @@ export type CanvasProps = {
   onFitToScreen: () => void;
   isPinchingRef?: React.RefObject<boolean>;
   elements: Element[];
+  // The active tab's raw layers array (spec/74), undefined until the tab
+  // materialises one. Drives the band-aware paint order + hidden-layer
+  // filtering in CanvasElementsLayer and the Minimap.
+  tabLayers?: Layer[];
+  // Element ids on a hidden or locked layer (spec/74) — inert to every
+  // selection surface, including the right-click context menu.
+  layerInertIds: Set<string>;
   // Faint alignment guides for the active move / resize drag (the edge
   // / centre lines the dragged element shares with neighbours). Empty
   // when no snap is in effect. Rendered by CanvasChrome. See spec/09.
@@ -219,6 +227,25 @@ export type CanvasProps = {
   onMoveActivity: (x: number, y: number) => void;
   onToggleActivityMinimized: () => void;
   onResetActivity: () => void;
+  // Layers panel (spec/74). `layers` is the NORMALISED stack (bottom ->
+  // top, never empty) the panel renders; `tabLayers` above stays the raw
+  // field for the render-order helpers. Minimised by default into a
+  // bottom-right dock button, mirroring Activity.
+  layers: Layer[];
+  activeLayerId: string;
+  layerCounts: Map<string, number>;
+  layersPanelPosition: { x: number; y: number } | null;
+  layersMinimized: boolean;
+  onMoveLayersPanel: (x: number, y: number) => void;
+  onResetLayersPanel: () => void;
+  onToggleLayersMinimized: () => void;
+  onSelectLayer: (layerId: string) => void;
+  onAddLayer: () => void;
+  onRemoveLayer: (layerId: string) => void;
+  onRenameLayer: (layerId: string, name: string) => void;
+  onToggleLayerVisibility: (layerId: string) => void;
+  onToggleLayerLock: (layerId: string) => void;
+  onReorderLayer: (layerId: string, toIndex: number) => void;
   // Floating Comments panel. Only mounted when commentRows is
   // non-empty: the panel exists to list discussion that already
   // exists, so on diagrams without it the panel stays out of the

@@ -43,7 +43,7 @@ export function useArrowDragHandlers({
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
     if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
     d.setSelectedId(arrowId);
     // Arm a checkpoint; it is taken on the first real mutation (tick).
@@ -70,7 +70,7 @@ export function useArrowDragHandlers({
     if (!r) return;
     const { d, arrow } = r;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
     const start = endpointPosition(end === 'from' ? arrow.from : arrow.to, d.activeTab.elements);
     // Shift-drag on the HEAD forks a branch (spec/50): the arrow itself
     // stays put; a NEW arrow starts with its tail connected on this line
@@ -125,7 +125,7 @@ export function useArrowDragHandlers({
     const { d, arrow } = r;
     if (arrowStyleOf(arrow) !== 'curved') return;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     const control = curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to);
@@ -160,7 +160,7 @@ export function useArrowDragHandlers({
     // existence is the gate; the style no longer is.
     if (!arrow.curvePoints?.[index]) return;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     const anchor = curveAnchorPoints(from, to, arrow.curvePoints)[index]!;
@@ -196,7 +196,7 @@ export function useArrowDragHandlers({
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
     const els = d.activeTab.elements;
     const from = endpointPosition(arrow.from, els);
     const to = endpointPosition(arrow.to, els);
@@ -252,7 +252,13 @@ export function useArrowDragHandlers({
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
-    if (arrow.locked === true || d.isReadOnly || !arrow.curvePoints?.[index]) return;
+    if (
+      arrow.locked === true ||
+      d.layerInertIds.has(arrowId) ||
+      d.isReadOnly ||
+      !arrow.curvePoints?.[index]
+    )
+      return;
     const remaining = arrow.curvePoints.filter((_, i) => i !== index);
     d.commit((all) =>
       all.map((el) => {
@@ -287,7 +293,7 @@ export function useArrowDragHandlers({
     const { d, arrow } = r;
     if (arrowStyleOf(arrow) !== 'angled') return;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     const baseElbow = angledElbow(from, to, arrow.from, arrow.to);
@@ -317,7 +323,7 @@ export function useArrowDragHandlers({
     if (!r) return;
     const { d, arrow } = r;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     const anchor = arrowLabelAnchor(

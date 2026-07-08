@@ -32,6 +32,12 @@ export const TELEMETRY_CATEGORIES = [
   'Search',
   'UI',
   'Folder',
+  // Layers (spec/74): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
+  // 'Reordered' for the layer rows, 'Toggled' with `type`
+  // 'Hidden'/'Shown'/'Locked'/'Unlocked' for the eye + padlock,
+  // 'Selected' for an active-layer switch, 'Moved' for move-selection-
+  // to-layer, 'Opened' for the panel. Never layer names in `type`.
+  'Layer',
   'Session',
   'AI',
   'Team',
