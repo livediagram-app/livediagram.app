@@ -16,6 +16,7 @@ import {
 } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { isDiagramDeleted } from '@/lib/diagram-tombstones';
+import type { YjsMirror } from '@/lib/yjs-mirror';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 
@@ -45,6 +46,9 @@ export function useAutosave(opts: {
   // while this is set, and the click-commit clears it and saves normally.
   previewingRef: MutableRefObject<boolean>;
   roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
+  // Level 2 (spec/75): when set + seeded, commit the diagram into the shared
+  // Yjs doc (which broadcasts a `ydoc` op) instead of the `el`/`tab` ops.
+  yjsMirrorRef: MutableRefObject<YjsMirror | null>;
   setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
   setSavedAt: Dispatch<SetStateAction<number | null>>;
   setDiagramList: Dispatch<SetStateAction<DiagramListItem[]>>;
@@ -63,6 +67,7 @@ export function useAutosave(opts: {
     remoteUpdateRef,
     previewingRef,
     roomRef,
+    yjsMirrorRef,
     setSaveStatus,
     setSavedAt,
     setDiagramList,
@@ -139,6 +144,9 @@ export function useAutosave(opts: {
             // the set, so it can't authorise its own wipe (spec/13).
             allowEmpty: loadedTabIdsRef.current.has(t.id),
           }).then(() => {
+            // Level 2 (spec/75): the Yjs mirror handles its own broadcast on
+            // commit (below), so skip the element-op broadcast for that path.
+            if (yjsMirrorRef.current?.isSeeded) return;
             // Broadcast granular element ops (spec/75, Level 0) derived from
             // the last state peers saw (lastSavedTabsRef, the "before") so
             // concurrent different-element edits merge instead of the whole
@@ -165,6 +173,12 @@ export function useAutosave(opts: {
             },
             sessionShareCode,
           ).then(() => {
+            // Level 2 (spec/75): tab structure (add/remove/reorder) rides the
+            // shared doc's tabOrder + tabs map, so skip the diagram-meta
+            // broadcast on that path. (Diagram-name rename isn't modelled in
+            // the doc yet; it still persists to D1, just doesn't live-sync on
+            // the Yjs path -- a known gap of the experimental flag.)
+            if (yjsMirrorRef.current?.isSeeded) return;
             roomRef.current?.send({
               kind: 'op',
               op: {
@@ -181,6 +195,11 @@ export function useAutosave(opts: {
           }),
         );
       }
+      // Level 2 (spec/75): push the committed diagram into the shared Yjs doc
+      // once per save. The mirror diffs internally and broadcasts a `ydoc` op
+      // via its local-update hook; a no-op diff sends nothing. Guarded on
+      // `isSeeded` inside commit, so this is inert until the doc is shared.
+      yjsMirrorRef.current?.commit(tabs);
       Promise.all(writes)
         .then(() => {
           lastSavedTabsRef.current = tabs;

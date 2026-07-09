@@ -190,9 +190,47 @@ central authority is needed for _convergence_ (the DO still relays + persists).
 last, incrementally (types + doc model → transport → editor projection behind a
 flag → cut over), keeping Levels 0–1 as the shipped behaviour until it's proven.
 
-**Status — foundation landed, cut-over pending.** The pure, tested pieces are in
-`packages/diagram/src/yjs-doc.ts` (imported via the `@livediagram/diagram/yjs`
-subpath so the core bundle never pulls in Yjs until the cut-over):
+**Status — cut-over landed behind the `?yjs=1` flag (off by default).** The
+whole Level 2 path is wired end-to-end but gated, so the shipped behaviour stays
+Levels 0 + 1 until it's proven with two live clients. The pieces:
+
+**Shared-seed architecture (the crux).** Peers must share ONE Yjs doc history —
+if each client seeded its own doc from its D1 hydrate, the two docs would resolve
+_whole-key_ last-writer-wins, not per-field, and the merge would be a lie. So the
+**room holds the authoritative doc**: a joiner sends `ydoc-sync`, the room replies
+`ydoc-state` with the encoded doc (or `null` → the first client seeds from its
+hydrate and broadcasts that seed for the room + peers to adopt). Every commit
+broadcasts a `ydoc` update the room merges into its doc and relays. This is where
+decision 2's "DO holds live authority" concretely lands for Level 2; D1 stays the
+system of record via the unchanged tab autosave (the doc is the live layer).
+
+**Wired at the editor's two seams, not 30 hooks.** `useAutosave` commits the tabs
+into the `YjsMirror` on each save (which broadcasts the delta); `useRoomConnection`
+applies incoming `ydoc` / `ydoc-state` and projects back to `Tab[]`. So the
+editor's existing `tabs` state stays the working copy and the doc mirrors it at
+commit granularity — the observable Level 2 win (field-level same-element merge)
+without a full state-layer rewrite. A per-origin `Y.UndoManager` lives on the
+mirror (decision 1).
+
+**Where it lives:** `packages/diagram/src/yjs-doc.ts` (doc model + `syncDiagram` +
+transport); `apps/live/lib/yjs-mirror.ts` (the client doc + undo + broadcast/apply
+glue) + `yjs-flag.ts`; `apps/api/src/diagram-room.ts` (authoritative doc +
+`ydoc`/`ydoc-sync`/`ydoc-state`); the `ydoc*` frames in `room-messages.ts`. Unit
+tests cover the doc model, `syncDiagram`, the `YjsMirror` (incl. concurrent
+same-element field merge), and the DO's doc authority + seed.
+
+**Still ahead (needs the live pass):** wiring the mirror's `UndoManager` to the
+editor's undo/redo button; awareness for cursors/selection (still on the ad-hoc
+presence ops); **removing the selection lock** (decision 3 — kept for now so the
+flag is additive); the DO **flushing the doc to D1** (persistence is still via the
+tab autosave; a cold room re-seeds from a joiner's hydrate); and diagram **rename**
+sync (the doc models tabs, not the diagram name). None of these block the merge
+behaviour the flag demonstrates; they're the polish + the decision-3 removal that
+only make sense once two-client testing confirms the core.
+
+The pure model pieces are in `packages/diagram/src/yjs-doc.ts` (imported via the
+`@livediagram/diagram/yjs` subpath so the core bundle never pulls in Yjs unless
+the flag path is used):
 
 - **Doc model** — `ydoc.getArray('tabOrder')` + `ydoc.getMap('tabs')`, each tab a
   `Y.Map` of meta + an `elements` `Y.Map<id, Y.Map<field, value>>` + an `order`
@@ -206,19 +244,9 @@ subpath so the core bundle never pulls in Yjs until the cut-over):
   untouched field survives.
 - **Transport primitives** — `encodeDiagramUpdate` / `applyDiagramUpdate` (the
   opaque binary the DO relays + persists).
-- **Tested** — round-trip, z-order, per-op apply, and the headline merge:
-  concurrent edits to different fields of the _same_ element converge with both
-  changes intact; concurrent adds to the same tab converge.
-
-**Remaining (the flagged cut-over, still ahead):** the editor projecting its
-state from the doc behind a flag (every mutation writes the doc, an observer
-produces React state); the DO relaying + persisting Yjs updates (Level 1's op
-log generalises to an update log, flushing the encoded doc to D1 — decision 2's
-stronger form lands here); a per-origin `Y.UndoManager` (decision 1); awareness
-for presence; and removing the selection lock (decision 3). These are the steps
-that must be proven incrementally against a running editor + two clients, so
-they are deliberately left for the verify-as-you-go pass rather than cut over
-blind.
+- **Tested** — round-trip, z-order, per-op apply, `syncDiagram` (the local-commit
+  path), and the headline merge: concurrent edits to different fields of the
+  _same_ element converge with both changes intact; concurrent adds converge.
 
 ---
 

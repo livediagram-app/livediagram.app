@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 
 import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
+import { isYjsRealtimeEnabled } from '@/lib/yjs-flag';
+import { YjsMirror } from '@/lib/yjs-mirror';
 
 // Sharing, session-permission and realtime-room infrastructure for the
 // editor: the shareable / team / share-code flags that decide whether
@@ -21,6 +23,13 @@ export function useEditorRealtime() {
   // Single open room connection for the current diagram. Re-opens
   // whenever diagramId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
+  // Level 2 (spec/75): the shared Yjs doc mirror. Created once, only when
+  // the experimental flag is on; null keeps the editor on the L0/L1 op path
+  // with zero overhead. Lazy-init in a ref so the doc survives re-renders.
+  const yjsMirrorRef = useRef<YjsMirror | null>(null);
+  if (yjsMirrorRef.current === null && isYjsRealtimeEnabled()) {
+    yjsMirrorRef.current = new YjsMirror();
+  }
   // Sharing state for the current diagram. Mirrors the API row's
   // `shareable` + `shareCode` columns; refreshed on hydration, and
   // after share / unshare. Drives whether realtime (WS room) is
@@ -96,6 +105,7 @@ export function useEditorRealtime() {
   return {
     remoteUpdateRef,
     roomRef,
+    yjsMirrorRef,
     diagramShareable,
     setDiagramShareable,
     diagramTeamId,

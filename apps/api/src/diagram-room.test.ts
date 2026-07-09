@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ParticipantPresence } from '@livediagram/api-schema';
+import {
+  applyDiagramUpdate,
+  base64ToUpdate,
+  encodeDiagramUpdate,
+  newDiagramDoc,
+  readDiagram,
+  updateToBase64,
+  writeDiagram,
+} from '@livediagram/diagram/yjs';
 import { DiagramRoom } from './diagram-room';
 
 // The DiagramRoom Durable Object is the realtime hub for one diagram.
@@ -757,5 +766,97 @@ describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () =
     expect(before.epoch).not.toBe(after.epoch);
     expect(after.seq).toBe(0);
     expect(after.opLog).toEqual([]);
+  });
+});
+
+describe('DiagramRoom Yjs doc authority (spec/75, Level 2)', () => {
+  function editorAndPeer(room: DiagramRoom) {
+    const editor = makeSocket();
+    const peer = makeSocket();
+    room.acceptSession(asWs(editor), 'edit');
+    room.acceptSession(asWs(peer), 'edit');
+    sendFrame(room, editor, { kind: 'hello', participant: { id: 'e', name: 'E', color: '#000' } });
+    sendFrame(room, peer, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#111' } });
+    editor.sent.length = 0;
+    peer.sent.length = 0;
+    return { editor, peer };
+  }
+  const lastOp = (ws: FakeSocket) =>
+    ws.sent
+      .map((s) => JSON.parse(s))
+      .filter((m) => m.kind === 'op')
+      .at(-1);
+  // A base64 Yjs update for a one-tab diagram.
+  function seedUpdate(name: string) {
+    const doc = newDiagramDoc();
+    writeDiagram(doc, [{ id: 't1', name, elements: [] }]);
+    return updateToBase64(encodeDiagramUpdate(doc));
+  }
+
+  it('replies to ydoc-sync with a null state when the room holds no doc', () => {
+    const { room } = newRoom();
+    const { editor } = editorAndPeer(room);
+
+    sendFrame(room, editor, { kind: 'op', op: { kind: 'ydoc-sync' } });
+
+    const reply = lastOp(editor);
+    expect(reply.from).toBe('system');
+    expect(reply.op).toEqual({ kind: 'ydoc-state', update: null });
+  });
+
+  it('applies a ydoc update to its doc and relays it, without a seq', () => {
+    const { room } = newRoom();
+    const { editor, peer } = editorAndPeer(room);
+
+    sendFrame(room, editor, { kind: 'op', op: { kind: 'ydoc', update: seedUpdate('Hello') } });
+
+    // Relayed to the peer as-is...
+    expect(lastOp(peer).op.kind).toBe('ydoc');
+    // ...but Yjs converges on its own, so no seq/log is spent on it.
+    expect(room.seq).toBe(0);
+    expect(room.opLog).toEqual([]);
+    // The room's authoritative doc now carries the tab.
+    expect(readDiagram(room.ydoc!)).toEqual([{ id: 't1', name: 'Hello', elements: [] }]);
+  });
+
+  it('seeds a later joiner from the accumulated doc state', () => {
+    const { room } = newRoom();
+    const { editor } = editorAndPeer(room);
+    sendFrame(room, editor, { kind: 'op', op: { kind: 'ydoc', update: seedUpdate('Shared') } });
+
+    // A fresh client asks for the shared doc.
+    const joiner = makeSocket();
+    room.acceptSession(asWs(joiner), 'edit');
+    sendFrame(room, joiner, { kind: 'hello', participant: { id: 'j', name: 'J', color: '#222' } });
+    joiner.sent.length = 0;
+    sendFrame(room, joiner, { kind: 'op', op: { kind: 'ydoc-sync' } });
+
+    const reply = lastOp(joiner);
+    expect(reply.op.kind).toBe('ydoc-state');
+    // Applying the seed to a fresh doc reproduces the room's diagram.
+    const doc = newDiagramDoc();
+    applyDiagramUpdate(doc, base64ToUpdate(reply.op.update));
+    expect(readDiagram(doc)).toEqual([{ id: 't1', name: 'Shared', elements: [] }]);
+  });
+
+  it('drops a ydoc mutation from a view-role session but still answers its sync', () => {
+    const { room } = newRoom();
+    const editor = makeSocket();
+    const viewer = makeSocket();
+    room.acceptSession(asWs(editor), 'edit');
+    room.acceptSession(asWs(viewer), 'view');
+    sendFrame(room, editor, { kind: 'hello', participant: { id: 'e', name: 'E', color: '#000' } });
+    sendFrame(room, viewer, { kind: 'hello', participant: { id: 'v', name: 'V', color: '#111' } });
+    editor.sent.length = 0;
+
+    // A viewer can't write the doc...
+    sendFrame(room, viewer, { kind: 'op', op: { kind: 'ydoc', update: seedUpdate('Nope') } });
+    expect(editor.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'op')).toHaveLength(0);
+    expect(room.ydoc).toBeNull();
+
+    // ...but a viewer CAN read (sync) so it can render the shared doc.
+    viewer.sent.length = 0;
+    sendFrame(room, viewer, { kind: 'op', op: { kind: 'ydoc-sync' } });
+    expect(lastOp(viewer).op.kind).toBe('ydoc-state');
   });
 });

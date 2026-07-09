@@ -10,6 +10,7 @@ import {
 } from '@/lib/api-client';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import { track } from '@/lib/telemetry';
+import type { YjsMirror } from '@/lib/yjs-mirror';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 
@@ -39,6 +40,11 @@ export function useRoomConnection(opts: {
   remoteUpdateRef: MutableRefObject<boolean>;
   sessionShareCodeRef: MutableRefObject<string | null>;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
+  // Level 2 (spec/75): the shared Yjs doc mirror, non-null only when the
+  // flag is on. When set, the room seeds/syncs via `ydoc` ops instead of
+  // `el`/`tab` ops. `tabsRef` gives the current tabs for a from-hydrate seed.
+  yjsMirrorRef: MutableRefObject<YjsMirror | null>;
+  tabsRef: MutableRefObject<Tab[]>;
   // Merge a peer's tab / diagram-meta change into the present, PRESERVING
   // the local undo / redo stacks (peers autosave ~600ms, so clearing
   // history on each would wipe undo continuously during a shared session).
@@ -64,6 +70,8 @@ export function useRoomConnection(opts: {
     remoteUpdateRef,
     sessionShareCodeRef,
     roomRef,
+    yjsMirrorRef,
+    tabsRef,
     applyRemoteTabs,
     setLivePresence,
     setRemoteSelections,
@@ -276,6 +284,32 @@ export function useRoomConnection(opts: {
             next[i] = { ...tab, ...patch, folder: tab.folder };
             return next;
           });
+        } else if (op.kind === 'ydoc') {
+          // Level 2 (spec/75): a peer's Yjs update. Merge it into the shared
+          // doc and re-project the whole diagram. Field-level, so a
+          // concurrent local edit to a different field of the same element
+          // survives the merge.
+          const mirror = yjsMirrorRef.current;
+          if (mirror) {
+            const projected = mirror.applyRemote(op.update);
+            remoteUpdateRef.current = true;
+            applyRemoteTabs(() => projected);
+          }
+        } else if (op.kind === 'ydoc-state') {
+          // Level 2: the room's reply to our `ydoc-sync`. If it holds shared
+          // state, adopt it (so we share one doc history). If null, we're the
+          // first Level 2 client -> seed from our own hydrate, which the
+          // mirror broadcasts for the room + peers to adopt.
+          const mirror = yjsMirrorRef.current;
+          if (mirror && !mirror.isSeeded) {
+            if (op.update === null) {
+              mirror.seedFromHydrate(tabsRef.current);
+            } else {
+              const projected = mirror.adoptSharedState(op.update);
+              remoteUpdateRef.current = true;
+              applyRemoteTabs(() => projected);
+            }
+          }
         } else if (op.kind === 'diagram-meta') {
           // Peer renamed the diagram or reordered tabs (incl. add /
           // delete). Reorder locally to match; new ids land as
@@ -380,6 +414,14 @@ export function useRoomConnection(opts: {
         track('Error', 'Client', 'RealtimeResync');
         window.location.reload();
       },
+      onOpen: () => {
+        // Level 2 (spec/75): on every (re)connect, ask the room for the
+        // shared Yjs doc so we share one history before editing. The reply
+        // (`ydoc-state`) either seeds us or tells us to seed ourselves.
+        if (yjsMirrorRef.current) {
+          roomRef.current?.send({ kind: 'op', op: { kind: 'ydoc-sync' } });
+        }
+      },
     };
     // Team diagrams need a one-time room ticket (spec/11): membership is
     // keyed on the VERIFIED Clerk id, which a WS upgrade can't carry, so
@@ -414,6 +456,12 @@ export function useRoomConnection(opts: {
         },
       );
       roomRef.current = openedRoom;
+      // Level 2 (spec/75): route the mirror's local doc updates out as `ydoc`
+      // room ops. Reads roomRef.current at call time so it always uses the
+      // live socket (survives reconnects).
+      yjsMirrorRef.current?.onLocalUpdate((update) => {
+        roomRef.current?.send({ kind: 'op', op: { kind: 'ydoc', update } });
+      });
     })();
     return () => {
       cancelled = true;

@@ -370,6 +370,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     remoteUpdateRef,
     roomRef,
+    yjsMirrorRef,
     diagramShareable,
     setDiagramShareable,
     diagramTeamId,
@@ -569,6 +570,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // ref to skip the debounced save while a preview is showing.
   const previewingRef = useRef(false);
 
+  // Latest tabs mirrored to a ref so timer-driven callbacks (e.g.
+  // the opacity debounce below) can read the post-debounce state
+  // rather than whatever was in scope when the timer was scheduled.
+  // Declared before the realtime + autosave hooks so the Yjs seed
+  // (useRoomConnection) and loadAllTabs prefetch can read current tabs.
+  const tabsRef = useRef(tabs);
+  useEffect(() => {
+    tabsRef.current = tabs;
+  }, [tabs]);
+
   // Per-tab autosave (debounced + beforeunload flush). See useAutosave;
   // the last-saved mirror refs above are seeded by the hydration effect.
   useAutosave({
@@ -585,6 +596,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     remoteUpdateRef,
     previewingRef,
     roomRef,
+    yjsMirrorRef,
     setSaveStatus,
     setSavedAt,
     setDiagramList,
@@ -670,6 +682,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     remoteUpdateRef,
     sessionShareCodeRef,
     roomRef,
+    yjsMirrorRef,
+    tabsRef,
     applyRemoteTabs,
     setLivePresence,
     setRemoteSelections,
@@ -692,16 +706,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     roomRef,
   });
-
-  // Latest tabs mirrored to a ref so timer-driven callbacks (e.g.
-  // the opacity debounce below) can read the post-debounce state
-  // rather than whatever was in scope when the timer was scheduled.
-  // Declared before usePerTabLoad so its loadAllTabs prefetch can
-  // enumerate the current tab ids through the same mirror.
-  const tabsRef = useRef(tabs);
-  useEffect(() => {
-    tabsRef.current = tabs;
-  }, [tabs]);
 
   // Lazy fetch the active tab's full payload on first open, plus the
   // search panel's load-everything prefetch. See usePerTabLoad.

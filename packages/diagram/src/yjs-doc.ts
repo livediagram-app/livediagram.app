@@ -261,3 +261,33 @@ export function encodeDiagramUpdate(ydoc: Y.Doc): Uint8Array {
 export function applyDiagramUpdate(ydoc: Y.Doc, update: Uint8Array): void {
   Y.applyUpdate(ydoc, update);
 }
+
+// A fresh, empty diagram doc. Peers must share ONE doc history for
+// field-level merge to work (independently seeded docs would resolve
+// whole-key last-writer-wins, not per-field) — so the room holds the
+// authoritative doc and seeds joiners from it (spec/75, Level 2).
+export function newDiagramDoc(): Y.Doc {
+  return new Y.Doc();
+}
+
+// True when the doc carries no tabs yet — the room uses this to tell a
+// joiner "there's no shared doc, seed yourself from your D1 hydrate".
+export function isEmptyDiagramDoc(ydoc: Y.Doc): boolean {
+  return ydoc.getMap(TABS_KEY).size === 0;
+}
+
+// Yjs updates are binary; the room's wire frames are JSON, so updates ride
+// as base64. Kept here (with encode/apply) so both the worker DO and the
+// browser client share one binary<->text convention.
+export function updateToBase64(update: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < update.length; i++) binary += String.fromCharCode(update[i]!);
+  return btoa(binary);
+}
+
+export function base64ToUpdate(b64: string): Uint8Array {
+  const binary = atob(b64);
+  const update = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) update[i] = binary.charCodeAt(i);
+  return update;
+}
