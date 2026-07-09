@@ -167,9 +167,9 @@ function ExplorerImpl({
       width={isMobile ? 'w-auto' : 'w-64'}
       onReset={onReset}
       onMoveTo={onMoveTo}
-      // New-diagram + Browse actions live in the header, just left of
+      // New-diagram + Open actions live in the header, just left of
       // the reset-position button (mr-1 spaces the pair away from that
-      // cluster). Compact icon + text so they fit the title row; Browse
+      // cluster). Compact icon + text so they fit the title row; Open
       // navigates to the full-page Explorer's Recent list (the same
       // destination the /new page's "Open Explorer" footer uses).
       headerActions={
@@ -192,7 +192,7 @@ function ExplorerImpl({
             className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <OpenIcon />
-            Browse
+            Open
           </a>
         </>
       }
