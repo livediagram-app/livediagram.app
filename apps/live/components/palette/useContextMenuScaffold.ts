@@ -31,8 +31,19 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
     onToggle: () => setOpenSection((s) => (s === id ? null : id)),
     flush: true,
   });
-  // Open a specific section outright (not a toggle) — e.g. a submenu
-  // auto-expanding its first sub-category when it opens.
+  // Which side-flyout row (Style / Text / Tools) is open — at most one,
+  // SEPARATE from openSection so a flyout and an inline accordion (or a
+  // sub-accordion inside the flyout, which shares openSection's pool) can
+  // coexist. Lifted here rather than kept in MenuFlyoutSection's local
+  // state so the open flyout survives the menu retargeting to another
+  // element (conditional sibling sections can remount the flyout row,
+  // which wiped local state and collapsed the category mid-workflow).
+  const [openFlyout, setOpenFlyout] = useState<string | null>(null);
+  const flyoutProps = (id: string) => ({
+    open: openFlyout === id,
+    onToggle: () => setOpenFlyout((f) => (f === id ? null : id)),
+    flush: true,
+  });
   // Which colour row's inline palette is open — at most one, toggled by
   // re-clicking the row so it never sticks open.
   const [openColor, setOpenColor] = useState<string | null>(null);
@@ -63,6 +74,7 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
   };
   return {
     sectionProps,
+    flyoutProps,
     colorProps,
     textColorHandlers,
     fillColorHandlers,

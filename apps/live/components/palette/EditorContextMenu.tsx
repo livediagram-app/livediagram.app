@@ -77,8 +77,14 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   // cursor instead of running off-screen — matching the tab menu.
   const anchorBottom = typeof window !== 'undefined' && menu.y > window.innerHeight * 0.8;
   // Accordion + colour-row scaffolding, shared with the multi-selection branch.
-  const { sectionProps, colorProps, textColorHandlers, fillColorHandlers, strokeColorHandlers } =
-    useContextMenuScaffold(props);
+  const {
+    sectionProps,
+    flyoutProps,
+    colorProps,
+    textColorHandlers,
+    fillColorHandlers,
+    strokeColorHandlers,
+  } = useContextMenuScaffold(props);
   // Session-tool pickers (spec/39): the chosen timer mode + countdown length
   // and the votes-per-person budget, local until the facilitator hits Start
   // (mirrors the old tab editor's Session accordion).
@@ -247,6 +253,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           target={target}
           onClose={onClose}
           sectionProps={sectionProps}
+          flyoutProps={flyoutProps}
           colorProps={colorProps}
           textColorHandlers={textColorHandlers}
           fillColorHandlers={fillColorHandlers}

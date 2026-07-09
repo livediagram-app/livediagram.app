@@ -29,17 +29,37 @@ export function MenuFlyoutSection({
   // Fired each time the flyout opens — e.g. so the caller can auto-expand the
   // first sub-category inside it.
   onOpen,
+  // Controlled mode (the context-menu scaffold's flyoutProps): the open
+  // state lives in the caller so it survives this row remounting when the
+  // menu retargets to another element. Omit both to fall back to local
+  // state (open + onToggle travel together).
+  open: controlledOpen,
+  onToggle,
 }: {
   title: string;
   icon: ReactNode;
   children: ReactNode;
   flush?: boolean;
   onOpen?: () => void;
+  open?: boolean;
+  onToggle?: () => void;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
+  const controlled = controlledOpen !== undefined;
+  const open = controlled ? controlledOpen : localOpen;
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const setOpen = useCallback(
+    (next: boolean) => {
+      if (controlled) {
+        if (next !== open) onToggle?.();
+      } else {
+        setLocalOpen(next);
+      }
+    },
+    [controlled, open, onToggle],
+  );
 
   // Place the flyout beside the trigger row: to the right when it fits, else
   // to the left. Top-aligned with the row, clamped inside the viewport. Runs
@@ -102,11 +122,22 @@ export function MenuFlyoutSection({
       const t = e.target;
       if (!(t instanceof Node)) return;
       if (panelRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
+      // Clicking back into a text-edit session (the editor or its floating
+      // toolbar) keeps the flyout open — the context menu stays alongside
+      // the editor while a label is being edited (spec/09), and moving the
+      // caret shouldn't collapse the open category.
+      if (t instanceof Element && t.closest('[data-rich-text-session]')) return;
+      // Clicking a canvas ELEMENT retargets the host menu to it rather than
+      // dismissing it (spec/09 menu-follows-selection), so the open flyout
+      // must ride along too — collapsing it on every element switch broke
+      // the style-several-elements-in-a-row flow. Empty-canvas clicks still
+      // close the whole menu (the canvas handler), which unmounts this.
+      if (t instanceof Element && t.closest('[data-element-id]')) return;
       setOpen(false);
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
+  }, [open, setOpen]);
 
   return (
     <div

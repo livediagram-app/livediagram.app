@@ -76,6 +76,7 @@ type ElementAppearanceSectionsProps = {
   target: EditorContextMenuProps['elements'][number];
   onClose: () => void;
   sectionProps: Scaffold['sectionProps'];
+  flyoutProps: Scaffold['flyoutProps'];
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
@@ -87,6 +88,7 @@ export function ElementAppearanceSections({
   target,
   onClose,
   sectionProps,
+  flyoutProps,
   colorProps,
   textColorHandlers,
   fillColorHandlers,
@@ -153,7 +155,7 @@ export function ElementAppearanceSections({
             multi-selection menu, which still stacks them inline), all
             starting closed. ── */}
       {showStyle ? (
-        <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} flush>
+        <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
           {shapeSupportsPresets(target) ? (
             <ShapePresetsSection
               shape={target.shape}
@@ -204,6 +206,7 @@ export function ElementAppearanceSections({
         isIcon={isIcon}
         boxed={boxed}
         sectionProps={sectionProps}
+        flyoutProps={flyoutProps}
       />
       {/* Icon — a Technology icon element's fixed tile size (spec/41).
             The mark renders at a preset pixel size regardless of the box;
@@ -279,7 +282,7 @@ export function ElementAppearanceSections({
             in the host menu behind the flyout. Sits in the style band
             (no separator of its own), beside Style + Animation. ── */}
       {showMarkers || showAlignment ? (
-        <MenuFlyoutSection title="Text" icon={<TextGlyph />} flush>
+        <MenuFlyoutSection title="Text" icon={<TextGlyph />} {...flyoutProps('text')}>
           {/* Typography — Font / Size / Padding, shared with the rich-text
               toolbar's overflow menu. Applies to the element's whole label. */}
           {showAlignment ? (

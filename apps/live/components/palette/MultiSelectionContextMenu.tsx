@@ -78,7 +78,7 @@ export function MultiSelectionContextMenu({
   anchorBottom,
 }: MultiSelectionContextMenuProps) {
   const scaffold = useContextMenuScaffold(props);
-  const { sectionProps, colorProps, textColorHandlers } = scaffold;
+  const { sectionProps, flyoutProps, colorProps, textColorHandlers } = scaffold;
   // The selection toolbar carries Duplicate / Group / Lock / Export /
   // Delete, so this menu is purely the type-aware formatting categories
   // its ellipsis opens. It always renders: the placement band (Layer /
@@ -191,7 +191,7 @@ export function MultiSelectionContextMenu({
             {/* ── Style band (spec/09): Presets + Colours + Border behind one
                   "Style" flyout row, matching the single-element menu. ── */}
             {showStyleFlyout ? (
-              <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} flush>
+              <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
                 {presetShapeSrc ? (
                   <ShapePresetsSection
                     shape={presetShapeSrc.shape}
@@ -260,7 +260,7 @@ export function MultiSelectionContextMenu({
                   one "Text" flyout, matching the single-element menu. Sits in
                   the style band (no separator) like its single counterpart. ── */}
             {showTextFlyout ? (
-              <MenuFlyoutSection title="Text" icon={<TextGlyph />} flush>
+              <MenuFlyoutSection title="Text" icon={<TextGlyph />} {...flyoutProps('text')}>
                 {alignSrc ? (
                   <TypographySections
                     currentFont={(alignSrc as { font?: string }).font ?? null}

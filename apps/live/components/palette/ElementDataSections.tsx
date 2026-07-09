@@ -75,6 +75,7 @@ type ElementDataSectionsProps = {
   isIcon: boolean;
   boxed: boolean;
   sectionProps: Scaffold['sectionProps'];
+  flyoutProps: Scaffold['flyoutProps'];
 };
 
 export function ElementDataSections({
@@ -88,6 +89,7 @@ export function ElementDataSections({
   isIcon,
   boxed,
   sectionProps,
+  flyoutProps,
 }: ElementDataSectionsProps) {
   const shapeTarget = target.type === 'shape' ? target : null;
   // The Tools flyout (spec/09): the data-shape-specific controls —
@@ -100,7 +102,7 @@ export function ElementDataSections({
   return (
     <>
       {showTools ? (
-        <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} flush>
+        <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
           {/* Progress (spec/46) — the percentage + how the fill animates. Only
             for progress bars / rings. */}
           {isProgress ? (

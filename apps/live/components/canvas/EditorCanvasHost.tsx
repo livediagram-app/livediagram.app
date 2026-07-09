@@ -5,6 +5,7 @@ import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/di
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
+import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -251,6 +252,15 @@ export function EditorCanvasHost() {
   const tabLoadState = activeTabLoadState;
   // Quick add + connect Arrow starter (spec/09) — see useQuickConnectStart.
   const { handleStartArrow } = useQuickConnectStart({ selectedId, activeTab, beginAnchorDrag });
+
+  // While a label is being edited, ride the element context menu alongside
+  // the editor (spec/09) — see useEditModeContextMenu.
+  useEditModeContextMenu({
+    editingId,
+    elements: activeTab.elements,
+    isReadOnly,
+    setContextMenu,
+  });
 
   // Preference writes (Settings save + the two quick toggles) — see
   // usePreferenceHandlers.

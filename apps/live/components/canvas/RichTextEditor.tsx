@@ -74,6 +74,10 @@ export function RichTextEditor({
 
   return (
     <div
+      // Marks the whole editing session (editor + floating toolbar) so the
+      // context menu's outside-click dismiss ignores clicks in here — the
+      // menu rides alongside the editor while a label is edited (spec/09).
+      data-rich-text-session=""
       className={`pointer-events-none flex overflow-visible ${
         // Inline: a content-sized flex child (NOT flex-1), so the icon + editor
         // centre together as a group per the element's alignment, mirroring the
@@ -105,6 +109,17 @@ export function RichTextEditor({
             toolbarWrapRef.current &&
             e.relatedTarget &&
             toolbarWrapRef.current.contains(e.relatedTarget as Node)
+          ) {
+            return;
+          }
+          // Same for the context menu riding alongside the edit session
+          // (spec/09): its buttons preserve focus via the capture listener
+          // in useRichTextSession, but its form controls (the colour input,
+          // the opacity slider) legitimately take focus — that's a menu
+          // interaction, not a click-away.
+          if (
+            e.relatedTarget instanceof Element &&
+            e.relatedTarget.closest('[data-context-menu],[data-menu-flyout]')
           ) {
             return;
           }
