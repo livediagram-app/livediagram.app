@@ -10,6 +10,7 @@ import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { saveOfflineToCloud, takeCloudOffline } from '@/lib/offline/offline-convert';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 import {
   CloseIcon,
   DiagramIcon,
@@ -156,6 +157,7 @@ export function DiagramActionsMenu({
 }) {
   const href = hrefForDiagram(diagram);
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
+  const confirm = useConfirm();
   // Conversions (spec/76). Reload after so the list reflects the move.
   const syncToCloud = async () => {
     if (!ownerId) return;
@@ -170,9 +172,13 @@ export function DiagramActionsMenu({
   const takeOffline = async () => {
     if (!ownerId) return;
     onClose();
-    const ok = window.confirm(
-      `Take “${diagram.name}” offline?\n\nThis removes it from your account and every other device. It will exist only in this browser, with no backup.`,
-    );
+    const ok = await confirm({
+      title: `Take “${diagram.name}” offline?`,
+      message:
+        'This removes it from your account and every other device. It will exist only in this browser, with no backup.',
+      confirmLabel: 'Take Offline',
+      variant: 'danger',
+    });
     if (!ok) return;
     try {
       await takeCloudOffline(diagram.id, ownerId, diagram.shareCode ?? null);

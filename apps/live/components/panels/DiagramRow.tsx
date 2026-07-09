@@ -23,6 +23,7 @@ import {
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { saveOfflineToCloud, takeCloudOffline } from '@/lib/offline/offline-convert';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
 
 // Icons for the Offline section, matching the explorer-icons style
@@ -151,6 +152,7 @@ export function DiagramRow({
 
   // Offline Mode conversions (spec/76). Reload after so the list reflects the
   // moved diagram. Guarded on a resolved viewer id.
+  const confirm = useConfirm();
   const [converting, setConverting] = useState(false);
   const handleSaveToCloud = async () => {
     if (!ownerId || converting) return;
@@ -166,9 +168,13 @@ export function DiagramRow({
   const handleTakeOffline = async () => {
     if (!ownerId || converting) return;
     setMenuOpen(false);
-    const ok = window.confirm(
-      `Take “${item.name}” offline?\n\nThis removes it from your account and every other device. It will exist only in this browser, with no backup.`,
-    );
+    const ok = await confirm({
+      title: `Take “${item.name}” offline?`,
+      message:
+        'This removes it from your account and every other device. It will exist only in this browser, with no backup.',
+      confirmLabel: 'Take Offline',
+      variant: 'danger',
+    });
     if (!ok) return;
     setConverting(true);
     try {

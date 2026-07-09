@@ -110,6 +110,9 @@ export default function NewDiagramPage() {
   ) => {
     if (submitting) return;
     setSubmitting(true);
+    // "Show me around" (the guided tour, spec/69) is a throwaway sample — always
+    // create it offline (spec/76) so we don't pile guided-tour diagrams into D1.
+    offline = offline || templateKind === 'guided-tour';
     lastCreateArgs.current = { kind: templateKind, name, themeId, offline };
     // Identity persistence first so any subsequent room broadcasts
     // carry the chosen name + colour.
