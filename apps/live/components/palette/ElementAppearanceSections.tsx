@@ -279,7 +279,7 @@ export function ElementAppearanceSections({
             in the host menu behind the flyout. Sits in the style band
             (no separator of its own), beside Style + Animation. ── */}
       {showMarkers || showAlignment ? (
-        <MenuFlyoutSection title="Text" icon={<TextGlyph />}>
+        <MenuFlyoutSection title="Text" icon={<TextGlyph />} flush>
           {/* Typography — Font / Size / Padding, shared with the rich-text
               toolbar's overflow menu. Applies to the element's whole label. */}
           {showAlignment ? (

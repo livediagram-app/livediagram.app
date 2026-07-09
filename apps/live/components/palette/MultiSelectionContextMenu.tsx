@@ -260,7 +260,7 @@ export function MultiSelectionContextMenu({
                   one "Text" flyout, matching the single-element menu. Sits in
                   the style band (no separator) like its single counterpart. ── */}
             {showTextFlyout ? (
-              <MenuFlyoutSection title="Text" icon={<TextGlyph />}>
+              <MenuFlyoutSection title="Text" icon={<TextGlyph />} flush>
                 {alignSrc ? (
                   <TypographySections
                     currentFont={(alignSrc as { font?: string }).font ?? null}
