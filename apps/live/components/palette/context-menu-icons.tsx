@@ -496,6 +496,28 @@ export function AnimationMenuGlyph() {
 
 // A magic wand with a sparkle tip — the "Presets" category glyph (spec/48):
 // one-click styled looks. 12x12 stroke style of the shared context-menu icons.
+// The "Style" flyout row's glyph (spec/09): a paintbrush, distinct from
+// the Colours child's palette and the Presets child's wand so the parent
+// row and its children never wear the same icon side by side.
+export function StyleMenuGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M13.5 2.5c-2.4.8-5.1 2.9-6.6 4.9l1.7 1.7c2-1.5 4.1-4.2 4.9-6.6z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.4 8.1c-1 .2-1.8 1-2 2-.2 1-.9 1.6-1.9 1.9 1.2 1.3 3.4 1.4 4.6.2.8-.8 1-2 .6-3z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function PresetsMenuGlyph() {
   return (
     <svg

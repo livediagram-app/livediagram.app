@@ -24,6 +24,7 @@ import {
   isRatingShape,
   isSelfDrawingShape,
   supportsBorderControls,
+  supportsColours,
   type IconSize,
   type Padding,
   type TextAlignX,
@@ -34,6 +35,7 @@ import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
   IconCategoryGlyph,
   RemoveIconGlyph,
+  StyleMenuGlyph,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
 import {
@@ -132,34 +134,64 @@ export function ElementAppearanceSections({
   // The appearance group's divider shows whenever any appearance section will
   // render — boxed elements (shapes / freehand / tables / images) and arrows.
   const showAppearanceGroup = boxed || target.type === 'arrow';
+  // The Style flyout shows when any of its children would: presets
+  // (shapes with looks / arrow line looks), Colours, or Border — the
+  // same gates the sections carry inside.
+  const showStyle =
+    shapeSupportsPresets(target) ||
+    target.type === 'arrow' ||
+    (boxed && supportsColours(target) && !isChart) ||
+    (borderable && !isChart);
   return (
     <>
       {showAppearanceGroup ? <MenuGroupSeparator /> : null}
-      {/* Presets (spec/48) — pinned at the top of the appearance group (above
-            Animation). Regular shapes only (icon glyph / charts excluded, see
-            shapeSupportsPresets); arrows get their own line-look presets. Both
-            share the PresetSections components with the multi-selection menu. */}
-      {shapeSupportsPresets(target) ? (
-        <ShapePresetsSection
-          shape={target.shape}
-          current={{
-            fillColor: target.fillColor,
-            strokeColor: target.strokeColor,
-            textColor: target.textColor,
-            colorPreset: target.colorPreset,
-          }}
-          props={props}
-          accordion={sectionProps('presets')}
-          onClose={onClose}
-        />
-      ) : null}
-      {target.type === 'arrow' ? (
-        <ArrowPresetsSection
-          current={{ strokeStyle: target.strokeStyle, flow: target.flow }}
-          props={props}
-          accordion={sectionProps('presets')}
-          onClose={onClose}
-        />
+      {/* ── Style band (spec/09): Presets (spec/48) + Colours + Border,
+            grouped under one "Style" row that opens them in a side flyout —
+            the same fold the Text band uses — so the three style categories
+            take one slot in the menu's vertical stack. Inside the flyout
+            they're the same collapsible sections as before (shared with the
+            multi-selection menu, which still stacks them inline), all
+            starting closed. ── */}
+      {showStyle ? (
+        <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} flush>
+          {shapeSupportsPresets(target) ? (
+            <ShapePresetsSection
+              shape={target.shape}
+              current={{
+                fillColor: target.fillColor,
+                strokeColor: target.strokeColor,
+                textColor: target.textColor,
+                colorPreset: target.colorPreset,
+              }}
+              props={props}
+              accordion={sectionProps('presets')}
+              onClose={onClose}
+            />
+          ) : null}
+          {target.type === 'arrow' ? (
+            <ArrowPresetsSection
+              current={{ strokeStyle: target.strokeStyle, flow: target.flow }}
+              props={props}
+              accordion={sectionProps('presets')}
+              onClose={onClose}
+            />
+          ) : null}
+          {/* Colours + Border accordions — see ElementColourBorderSections. */}
+          <ElementColourBorderSections
+            props={props}
+            target={target}
+            boxed={boxed}
+            isIcon={isIcon}
+            isChart={isChart}
+            borderable={borderable}
+            onClose={onClose}
+            sectionProps={sectionProps}
+            colorProps={colorProps}
+            textColorHandlers={textColorHandlers}
+            fillColorHandlers={fillColorHandlers}
+            strokeColorHandlers={strokeColorHandlers}
+          />
+        </MenuFlyoutSection>
       ) : null}
       <ElementDataSections
         props={props}
@@ -172,21 +204,6 @@ export function ElementAppearanceSections({
         isIcon={isIcon}
         boxed={boxed}
         sectionProps={sectionProps}
-      />
-      {/* Colours + Border accordions — see ElementColourBorderSections. */}
-      <ElementColourBorderSections
-        props={props}
-        target={target}
-        boxed={boxed}
-        isIcon={isIcon}
-        isChart={isChart}
-        borderable={borderable}
-        onClose={onClose}
-        sectionProps={sectionProps}
-        colorProps={colorProps}
-        textColorHandlers={textColorHandlers}
-        fillColorHandlers={fillColorHandlers}
-        strokeColorHandlers={strokeColorHandlers}
       />
       {/* Icon — a Technology icon element's fixed tile size (spec/41).
             The mark renders at a preset pixel size regardless of the box;
