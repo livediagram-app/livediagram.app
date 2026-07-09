@@ -231,10 +231,6 @@ export function isOfflineIdSync(id: string): boolean {
   return idCache?.has(id) ?? false;
 }
 
-export async function listOfflineIds(): Promise<string[]> {
-  return [...(await loadIds())];
-}
-
 function rememberId(id: string): void {
   if (idCache) idCache.add(id);
 }
