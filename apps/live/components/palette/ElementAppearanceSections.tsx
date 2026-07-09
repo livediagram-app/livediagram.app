@@ -114,20 +114,20 @@ export function ElementAppearanceSections({
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
   // Markers decorate the LABEL (spec/49), so the category only shows once
-  // the element actually has text.
+  // the element actually has text — or while its text is being TYPED: in
+  // edit mode the label is still uncommitted (text commits on blur), and
+  // the menu riding alongside the editor (spec/09) must offer the text
+  // options for the words on screen, not the empty committed label.
+  const hasText =
+    ((target as { label?: string }).label ?? '').trim().length > 0 || props.editingId === target.id;
   const showMarkers =
-    target.type === 'shape' &&
-    !isProgress &&
-    !isRail &&
-    !isRating &&
-    !isChart &&
-    (target.label ?? '').trim().length > 0;
+    target.type === 'shape' && !isProgress && !isRail && !isRating && !isChart && hasText;
   // Like Markers, Text Alignment only shows once there's text to align.
   const showAlignment =
     boxed &&
     target.type !== 'image' &&
     !(target.type === 'shape' && isSelfDrawingShape(target.shape)) &&
-    ((target as { label?: string }).label ?? '').trim().length > 0;
+    hasText;
   // The shape-only sections below (Marker / Progress / Rail / Rating / Data)
   // all render under a `target.type === 'shape'` guard, so this is non-null
   // wherever they read it — `shapeTarget?.field ?? default` reads the shape

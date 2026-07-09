@@ -45,6 +45,12 @@ export type EditorContextMenuProps = {
   // (for the element menu) and read its link / note state.
   elements: Element[];
   onClose: () => void;
+  // The element currently in text-edit mode, if any. While the menu rides
+  // alongside the editor (spec/09) the target's label is still uncommitted
+  // (text commits on blur), so label-gated categories (Text: Typography /
+  // Alignment / Markers) treat "being edited" as having text — otherwise a
+  // fresh shape's menu hides exactly the options the user is typing for.
+  editingId: string | null;
   // Open the link picker for the element, optionally pre-selecting a mode
   // (webpage / tab / diagram) so the modal lands on the right tab.
   onLinkElement: (elementId: string, mode?: 'url' | 'tab' | 'diagram') => void;

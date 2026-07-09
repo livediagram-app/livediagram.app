@@ -22,6 +22,7 @@ export function EditorContextMenuHost() {
     activeTab,
     isReadOnly,
     selectedId,
+    editingId,
     multiSelectedIds,
     closeContextMenu,
     openLinkPicker,
@@ -148,6 +149,7 @@ export function EditorContextMenuHost() {
   return (
     <EditorContextMenu
       menu={contextMenu}
+      editingId={editingId}
       elements={activeTab.elements}
       onClose={closeContextMenu}
       onLinkElement={openLinkPicker}
