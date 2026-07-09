@@ -2,6 +2,7 @@
 // a diagram into (or out of) a folder.
 import type { Folder } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
+import { isOfflineId, offlineSetDiagramFolder } from '../offline/offline-store';
 import {
   API_BASE,
   apiDelete,
@@ -71,6 +72,14 @@ export async function apiSetDiagramFolder(
   folderId: string | null,
   teamId?: string | null,
 ): Promise<void> {
+  // Offline Mode (spec/76): the placement lives on the IndexedDB record.
+  // A team destination is impossible for an offline diagram (the shared
+  // library is server-side); the picker doesn't offer one, and throwing
+  // here keeps a stray call from reaching the server.
+  if (await isOfflineId(diagramId)) {
+    if (teamId) throw new Error('offline diagrams cannot join a team');
+    return offlineSetDiagramFolder(diagramId, folderId, Date.now());
+  }
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/folder`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),

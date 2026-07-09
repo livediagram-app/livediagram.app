@@ -25,6 +25,7 @@
 
 import type { Tab } from '@livediagram/diagram';
 import { apiCreateDiagram, apiLoadDiagram, apiLoadTab, apiSaveDiagramMeta } from './api-client';
+import { isOfflineId, offlineCreateDiagram } from './offline/offline-store';
 
 export async function duplicateDiagram(
   ownerId: string,
@@ -61,6 +62,21 @@ export async function duplicateDiagram(
     remappedTabs.push({ ...tab, id: newTabId, elements });
   }
   const newId = crypto.randomUUID();
+  // Offline Mode (spec/76): a copy of an offline diagram is another OFFLINE
+  // diagram. Creating it on the server instead would silently upload content
+  // the user explicitly chose to keep in this browser. Tabs are stored whole
+  // (per-tab `folder` included), so no follow-up meta write is needed.
+  if (await isOfflineId(sourceId)) {
+    try {
+      await offlineCreateDiagram(
+        { id: newId, name: `${src.name} copy`, tabs: remappedTabs },
+        Date.now(),
+      );
+      return newId;
+    } catch {
+      return undefined;
+    }
+  }
   // A failed create must return undefined per the contract above —
   // returning the id anyway made callers toast "Diagram duplicated"
   // and navigate to a diagram that doesn't exist.

@@ -2,6 +2,13 @@
 import type { ChangeLogEntry } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import {
+  offlineAppendChangeLogEntry,
+  offlineDeleteChangeLogEntry,
+  offlineDeleteChangeLogForTab,
+  offlineListChangeLog,
+} from '../offline/offline-change-log';
+import { isOfflineId } from '../offline/offline-store';
+import {
   API_BASE,
   apiDelete,
   apiHeaders,
@@ -20,6 +27,8 @@ async function _apiListChangeLog(
   id: string,
   shareCode?: string | null,
 ): Promise<ChangeLogEntry[]> {
+  // Offline Mode (spec/76): the log lives in the diagram's IndexedDB record.
+  if (await isOfflineId(id)) return offlineListChangeLog(id);
   const res = await fetch(`${API_BASE}/diagrams/${id}/log`, {
     headers: await apiHeaders(ownerId, { share: shareCode ?? null }),
   });
@@ -37,6 +46,7 @@ export async function apiAppendChangeLogEntry(
   entry: ChangeLogEntry,
   shareCode: string | null = null,
 ): Promise<ChangeLogEntry> {
+  if (await isOfflineId(diagramId)) return offlineAppendChangeLogEntry(diagramId, entry);
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/log`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
@@ -52,6 +62,7 @@ export async function apiDeleteChangeLogForTab(
   tabId: string,
   shareCode: string | null = null,
 ): Promise<void> {
+  if (await isOfflineId(diagramId)) return offlineDeleteChangeLogForTab(diagramId, tabId);
   return apiDelete(`${API_BASE}/diagrams/${diagramId}/log/tab/${tabId}`, ownerId, {
     action: 'delete change log',
     share: shareCode,
@@ -64,6 +75,7 @@ export async function apiDeleteChangeLogEntry(
   entryId: string,
   shareCode: string | null = null,
 ): Promise<void> {
+  if (await isOfflineId(diagramId)) return offlineDeleteChangeLogEntry(diagramId, entryId);
   return apiDelete(`${API_BASE}/diagrams/${diagramId}/log/${entryId}`, ownerId, {
     action: 'delete change log entry',
     share: shareCode,

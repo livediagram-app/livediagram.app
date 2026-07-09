@@ -16,6 +16,7 @@ import {
   type SharedWithItem,
   type ShareRole,
 } from '@/lib/api-client';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { hasConfirmedName } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
@@ -419,17 +420,27 @@ export function useIdentityBootstrap(opts: {
           // branch above) — see seed-fetched-diagram.ts. The owner's
           // eager first-tab fetch presents no share code.
           await seedFetchedDiagram(self.id, fetched, null);
-          setIsOwner(fetched.ownerId === self.id);
+          // An offline diagram (spec/76) is yours by construction — its
+          // ownerId is the local sentinel, never a participant id, so
+          // without this it would wrongly get visitor chrome (Make a
+          // copy, the owner badge row).
+          const offline = fetched.ownerId === OFFLINE_OWNER_ID;
+          setIsOwner(offline || fetched.ownerId === self.id);
           setSessionRole('edit');
-          // If we own the diagram, prefetch its full share-link list so
-          // the dialog opens populated.
-          if (fetched.ownerId === self.id) {
-            apiListShareLinks(self.id, fetched.id)
-              .then(({ links, password }) => {
-                setShareLinks(links);
-                setSharePassword(password);
-              })
-              .catch(() => {});
+          if (offline || fetched.ownerId === self.id) {
+            // Prefetch the share-link list so the dialog opens
+            // populated — cloud only; an offline diagram has nothing
+            // on the server to share.
+            if (!offline) {
+              apiListShareLinks(self.id, fetched.id)
+                .then(({ links, password }) => {
+                  setShareLinks(links);
+                  setSharePassword(password);
+                })
+                .catch(() => {});
+            }
+            // For an offline diagram this dispatches to the log kept in
+            // its IndexedDB record rather than the server.
             apiListChangeLog(self.id, fetched.id, null)
               .then((entries) => {
                 setChangeLog(entries);

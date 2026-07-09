@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { track } from '@/lib/telemetry';
-import { isOfflineId } from '@/lib/offline/offline-store';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { getTheme } from '@/lib/themes';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -20,6 +19,7 @@ import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { ShiftHintBanner } from '@/components/chrome/ShiftHintBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
+import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
 import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useEditorContext } from './EditorContext';
@@ -38,15 +38,7 @@ export function EditorView() {
   const ctx = useEditorContext();
   // Offline Mode (spec/76): a diagram saved only in this browser. Drives the
   // "Offline" header badge and hides server-only actions (Share).
-  const [isOffline, setIsOffline] = useState(false);
-  useEffect(() => {
-    let live = true;
-    if (ctx.diagramId) void isOfflineId(ctx.diagramId).then((v) => live && setIsOffline(v));
-    else setIsOffline(false);
-    return () => {
-      live = false;
-    };
-  }, [ctx.diagramId]);
+  const isOffline = useIsOfflineDiagram(ctx.diagramId);
   const {
     activeId,
     activeTab,
@@ -283,7 +275,14 @@ export function EditorView() {
           onEndVote={endVote}
           onRevealVote={revealVote}
           onClearVote={clearVote}
-          otherDiagrams={diagramList.filter((d) => d.id !== diagramId)}
+          otherDiagrams={
+            // Tab linking is a server-side row insert (spec/17), so neither an
+            // offline diagram's tabs nor an offline destination can take part
+            // (spec/76) — empty list disables the menu entry.
+            isOffline
+              ? []
+              : diagramList.filter((d) => d.id !== diagramId && d.ownerId !== OFFLINE_OWNER_ID)
+          }
           onCopyTabTo={linkActiveTabTo}
           onToggleLockTab={toggleActiveTabLock}
           onReorder={reorderTabs}

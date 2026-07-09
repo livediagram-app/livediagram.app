@@ -8,6 +8,7 @@ import {
   type Folder,
   type TeamListItem,
 } from '@/lib/api-client';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 
@@ -168,18 +169,24 @@ export function useExplorerMoves({
 
   // Team destinations for the move picker (diagram moves only): each
   // team with its folder tree, so a diagram can land in a team folder
-  // in one move. Folders carry parentId for the indented tree.
-  const moveTeamDests = useMemo(
-    () =>
-      teams.map((t) => ({
-        id: t.id,
-        name: t.name,
-        folders: teamFolders
-          .filter((f) => f.teamId === t.id)
-          .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
-      })),
-    [teams, teamFolders],
-  );
+  // in one move. Folders carry parentId for the indented tree. An
+  // offline diagram (spec/76) gets none — a team's shared library is
+  // server-side, so a team move could never land.
+  const moveTeamDests = useMemo(() => {
+    if (
+      moveTarget?.kind === 'diagram' &&
+      diagrams.find((d) => d.id === moveTarget.id)?.ownerId === OFFLINE_OWNER_ID
+    ) {
+      return [];
+    }
+    return teams.map((t) => ({
+      id: t.id,
+      name: t.name,
+      folders: teamFolders
+        .filter((f) => f.teamId === t.id)
+        .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
+    }));
+  }, [teams, teamFolders, moveTarget, diagrams]);
 
   return {
     moveTarget,

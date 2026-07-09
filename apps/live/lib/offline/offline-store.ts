@@ -10,7 +10,7 @@
 // offline ids IS the set of record keys, mirrored in an in-memory cache so the
 // dispatch can answer "is this id offline?" cheaply.
 
-import type { Diagram, DiagramSummary, TabSummary } from '@livediagram/api-schema';
+import type { ChangeLogEntry, Diagram, DiagramSummary, TabSummary } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/diagram';
 
 // Sentinel owner id stamped on offline diagrams. They have no server owner;
@@ -29,6 +29,10 @@ export type OfflineDiagramRecord = {
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
+  // Activity / change log, newest first (spec/76: local-only, kept in the
+  // diagram record). Optional so records written before the field existed
+  // stay valid. Managed by ./offline-change-log.ts.
+  log?: ChangeLogEntry[];
 };
 
 // ---------------------------------------------------------------------------
@@ -242,6 +246,22 @@ function forgetId(id: string): void {
 // Public operations — the local mirror of the diagram/tab api surface
 // ---------------------------------------------------------------------------
 
+// Every mutation below rewrites the WHOLE record after reading it, so two
+// concurrent ops (a tab autosave racing a change-log append, or a revert's
+// log wipe racing the reverted tab's save) could each read the same snapshot
+// and the later put would silently drop the earlier write. One module-level
+// chain serialises all read-modify-write ops; each is a couple of IndexedDB
+// round-trips, so queueing adds no perceptible latency.
+let writeChain: Promise<unknown> = Promise.resolve();
+export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
+  const next = writeChain.then(op, op);
+  writeChain = next.then(
+    () => undefined,
+    () => undefined,
+  );
+  return next;
+}
+
 export async function offlineListDiagrams(): Promise<DiagramSummary[]> {
   const recs = await backend.all();
   return recs.map(recordToSummary);
@@ -279,28 +299,49 @@ export async function offlineSaveDiagramMeta(
   patch: { name?: string; tabs?: { id: string; folder?: string }[] },
   now: number,
 ): Promise<void> {
-  const rec = await backend.get(id);
-  if (!rec) return;
-  await backend.put(applyMeta(rec, patch, now));
+  await serializeOfflineWrite(async () => {
+    const rec = await backend.get(id);
+    if (!rec) return;
+    await backend.put(applyMeta(rec, patch, now));
+  });
+}
+
+// Personal-folder placement for an offline diagram (spec/15). Folders are
+// server-side rows, but an offline record carries a folderId so its row can
+// sit in the Explorer's personal tree like any other.
+export async function offlineSetDiagramFolder(
+  id: string,
+  folderId: string | null,
+  now: number,
+): Promise<void> {
+  await serializeOfflineWrite(async () => {
+    const rec = await backend.get(id);
+    if (!rec) return;
+    await backend.put({ ...rec, folderId, savedAt: now });
+  });
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
-  const rec = (await backend.get(id)) ?? {
-    id,
-    name: 'Untitled',
-    folderId: null,
-    createdAt: now,
-    savedAt: now,
-    tabs: [],
-  };
-  await backend.put(upsertTab(rec, tab, now));
-  rememberId(id);
+  await serializeOfflineWrite(async () => {
+    const rec = (await backend.get(id)) ?? {
+      id,
+      name: 'Untitled',
+      folderId: null,
+      createdAt: now,
+      savedAt: now,
+      tabs: [],
+    };
+    await backend.put(upsertTab(rec, tab, now));
+    rememberId(id);
+  });
 }
 
 export async function offlineDeleteTab(id: string, tabId: string, now: number): Promise<void> {
-  const rec = await backend.get(id);
-  if (!rec) return;
-  await backend.put(removeTab(rec, tabId, now));
+  await serializeOfflineWrite(async () => {
+    const rec = await backend.get(id);
+    if (!rec) return;
+    await backend.put(removeTab(rec, tabId, now));
+  });
 }
 
 export async function offlineDeleteDiagram(id: string): Promise<void> {

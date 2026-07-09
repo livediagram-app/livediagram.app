@@ -12,6 +12,7 @@
 import { useCallback, useMemo } from 'react';
 import { isBoxed } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
 import { buildEditorCommands, type CommandContext } from '@/lib/editor-commands';
 import type { CommandSearchItem } from '@/lib/search';
 import { track } from '@/lib/telemetry';
@@ -67,6 +68,10 @@ export function useEditorCommands(): {
     openTemplatePicker,
   } = ctx;
 
+  // Offline diagrams (spec/76) have nothing on the server to share, so the
+  // Share command is withheld the same way the header hides its button.
+  const isOffline = useIsOfflineDiagram(diagramId);
+
   const isMulti = multiSelectedIds.size > 0;
   const selectionCount = isMulti ? multiSelectedIds.size : selectedId ? 1 : 0;
   // The single selection's element (null for a multi- or empty selection), so
@@ -96,6 +101,7 @@ export function useEditorCommands(): {
       hasAnimation,
       marker,
       isOwner,
+      isOffline,
     };
     return buildEditorCommands(cmdCtx, {
       deleteSelection: () => (isMulti ? deleteMultiSelected() : deleteSelected()),
@@ -167,6 +173,7 @@ export function useEditorCommands(): {
   }, [
     isReadOnly,
     isOwner,
+    isOffline,
     diagramId,
     isMulti,
     selectionCount,

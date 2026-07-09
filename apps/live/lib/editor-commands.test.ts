@@ -47,6 +47,7 @@ const base: CommandContext = {
   hasAnimation: false,
   marker: null,
   isOwner: true,
+  isOffline: false,
 };
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
@@ -68,6 +69,10 @@ describe('buildEditorCommands — diagram/tab commands', () => {
 
   it('hides Share for non-owners', () => {
     expect(ids({ ...base, isOwner: false })).not.toContain('share');
+  });
+
+  it('hides Share for offline diagrams (spec/76)', () => {
+    expect(ids({ ...base, isOffline: true })).not.toContain('share');
   });
 
   it('offers no selection commands when nothing is selected', () => {

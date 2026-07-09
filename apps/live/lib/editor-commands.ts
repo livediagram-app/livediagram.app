@@ -42,6 +42,9 @@ export type CommandContext = {
   // Owner-only: the Share command is hidden for non-owners (a visitor with
   // an edit link gets "Make a copy" instead, which isn't a palette command).
   isOwner: boolean;
+  // Offline diagram (spec/76): nothing on the server to share, so the Share
+  // command is withheld even though the session counts as the owner's.
+  isOffline: boolean;
 };
 
 // The handlers the commands call. Injected by useEditorCommands; each is the
@@ -274,7 +277,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'canvas background pattern grid options style backdrop',
     run: h.openCanvasOptions,
   });
-  if (ctx.isOwner) {
+  if (ctx.isOwner && !ctx.isOffline) {
     out.push({
       id: 'share',
       name: 'Share diagram',

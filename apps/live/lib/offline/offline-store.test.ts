@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
 import {
   __setOfflineBackend,
   applyMeta,
@@ -12,35 +11,14 @@ import {
   offlineLoadTab,
   offlineSaveDiagramMeta,
   offlineSaveTab,
+  offlineSetDiagramFolder,
   OFFLINE_OWNER_ID,
   recordToDiagram,
   removeTab,
   tabToSummary,
   upsertTab,
-  type OfflineBackend,
-  type OfflineDiagramRecord,
 } from './offline-store';
-
-const tab = (id: string, over: Partial<Tab> = {}): Tab => ({ id, name: id, elements: [], ...over });
-const rec = (over: Partial<OfflineDiagramRecord> = {}): OfflineDiagramRecord => ({
-  id: 'd1',
-  name: 'Doc',
-  folderId: null,
-  createdAt: 100,
-  savedAt: 100,
-  tabs: [tab('t1'), tab('t2')],
-  ...over,
-});
-
-function memBackend(): OfflineBackend {
-  const map = new Map<string, OfflineDiagramRecord>();
-  return {
-    get: async (id) => map.get(id),
-    put: async (r) => void map.set(r.id, r),
-    delete: async (id) => void map.delete(id),
-    all: async () => [...map.values()],
-  };
-}
+import { memBackend, testRecord as rec, testTab as tab } from './offline-test-utils';
 
 afterEach(() => __setOfflineBackend(null));
 
@@ -122,6 +100,15 @@ describe('offline store ops (in-memory backend)', () => {
 
     await offlineDeleteTab('d1', 't1', 170);
     expect(await offlineLoadTab('d1', 't1')).toBeNull();
+  });
+
+  it('setDiagramFolder updates the personal-tree placement', async () => {
+    __setOfflineBackend(memBackend());
+    await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [] }, 100);
+    await offlineSetDiagramFolder('d1', 'f1', 200);
+    expect((await offlineListDiagrams())[0]?.folderId).toBe('f1');
+    await offlineSetDiagramFolder('d1', null, 300);
+    expect((await offlineListDiagrams())[0]?.folderId).toBeNull();
   });
 
   it('saveDiagramMeta renames without touching tabs', async () => {
