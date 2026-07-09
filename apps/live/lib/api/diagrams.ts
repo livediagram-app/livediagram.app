@@ -4,6 +4,13 @@ import type { Diagram, DiagramSummary, SharedWithItem } from '@livediagram/api-s
 import type { Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
 import {
+  isOfflineId,
+  offlineDeleteDiagram,
+  offlineListDiagrams,
+  offlineLoadDiagram,
+  offlineSaveDiagramMeta,
+} from '../offline/offline-store';
+import {
   API_BASE,
   apiDelete,
   apiHeaders,
@@ -36,6 +43,9 @@ export type DiagramListItem = Pick<
 // in-flight promise instead of opening a second request to the
 // same diagram.
 async function _apiLoadDiagram(ownerId: string, id: string): Promise<Diagram | null> {
+  // Offline Mode (spec/76): a diagram registered offline loads from IndexedDB,
+  // never the API. Same for the save / delete / list paths below.
+  if (await isOfflineId(id)) return offlineLoadDiagram(id);
   const res = await fetch(`${API_BASE}/diagrams/${id}`, {
     headers: await apiHeaders(ownerId),
   });
@@ -59,6 +69,10 @@ export async function apiSaveDiagramMeta(
   },
   shareCode: string | null = null,
 ): Promise<void> {
+  if (await isOfflineId(d.id)) {
+    await offlineSaveDiagramMeta(d.id, { name: d.name, tabs: d.tabs }, Date.now());
+    return;
+  }
   const res = await fetch(`${API_BASE}/diagrams/${d.id}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
@@ -89,6 +103,7 @@ export async function apiCreateDiagram(
 }
 
 export async function apiDeleteDiagram(ownerId: string, id: string): Promise<void> {
+  if (await isOfflineId(id)) return offlineDeleteDiagram(id);
   // Owner-gated server-side as of the security fix — without the
   // identity headers the worker would 400 / 403. apiHeaders prefers
   // the Clerk Bearer when a token provider is registered, falls
@@ -97,11 +112,18 @@ export async function apiDeleteDiagram(ownerId: string, id: string): Promise<voi
 }
 
 async function _apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
-  const res = await fetch(`${API_BASE}/diagrams`, {
-    headers: await apiHeaders(ownerId),
-  });
-  const { diagrams } = await expectOk<ListResponse>(res, 'list');
-  return diagrams;
+  // Offline diagrams (spec/76) are browser-local; list them alongside the
+  // cloud ones. If the cloud fetch fails but offline diagrams exist (e.g. no
+  // network), still return those rather than failing the whole Explorer.
+  const offline = await offlineListDiagrams().catch(() => [] as DiagramSummary[]);
+  try {
+    const res = await fetch(`${API_BASE}/diagrams`, { headers: await apiHeaders(ownerId) });
+    const { diagrams } = await expectOk<ListResponse>(res, 'list');
+    return [...offline, ...diagrams];
+  } catch (e) {
+    if (offline.length > 0) return offline;
+    throw e;
+  }
 }
 export const apiListDiagrams = dedupeInFlight(_apiListDiagrams, (ownerId) => ownerId);
 

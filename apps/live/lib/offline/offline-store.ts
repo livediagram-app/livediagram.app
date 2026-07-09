@@ -219,6 +219,14 @@ export async function isOfflineId(id: string): Promise<boolean> {
   return (await loadIds()).has(id);
 }
 
+// Synchronous check off the already-loaded cache — for the `beforeunload`
+// beacon flush, which can't await. Returns false until the cache has loaded
+// (by which point any diagram being edited has already been through the async
+// path, so its id is cached).
+export function isOfflineIdSync(id: string): boolean {
+  return idCache?.has(id) ?? false;
+}
+
 export async function listOfflineIds(): Promise<string[]> {
   return [...(await loadIds())];
 }

@@ -5,6 +5,13 @@ import { normalizeTable, type Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
 import { getGuestSelfSig } from '../local-identity';
 import {
+  isOfflineId,
+  isOfflineIdSync,
+  offlineDeleteTab,
+  offlineLoadTab,
+  offlineSaveTab,
+} from '../offline/offline-store';
+import {
   API_BASE,
   apiDelete,
   apiHeaders,
@@ -26,6 +33,8 @@ async function _apiLoadTab(
   tabId: string,
   shareCode: string | null,
 ): Promise<Tab | null> {
+  // Offline Mode (spec/76): an offline diagram's tabs come from IndexedDB.
+  if (await isOfflineId(diagramId)) return offlineLoadTab(diagramId, tabId);
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, {
     headers: await apiHeaders(ownerId, { share: shareCode }),
   });
@@ -69,6 +78,7 @@ export async function apiSaveTab(
   shareCode: string | null = null,
   opts: { allowEmpty?: boolean } = {},
 ): Promise<void> {
+  if (await isOfflineId(diagramId)) return offlineSaveTab(diagramId, tab, Date.now());
   const headers = new Headers(await apiHeaders(ownerId, { share: shareCode, body: true }));
   if (opts.allowEmpty) headers.set('X-Allow-Empty', '1');
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tab.id}`, {
@@ -110,6 +120,15 @@ export function flushDiagramSavesBeacon(args: {
   name: string;
   tabs: Tab[];
 }): void {
+  // Offline Mode (spec/76): best-effort flush to IndexedDB. A beforeunload
+  // handler can't await, so these writes may not finish — the 600ms debounced
+  // autosave covers all but the final edit window. Sync id check off the cache.
+  if (isOfflineIdSync(args.diagramId)) {
+    const now = Date.now();
+    for (const t of args.changedTabs) void offlineSaveTab(args.diagramId, t, now);
+    for (const tabId of args.deletedIds) void offlineDeleteTab(args.diagramId, tabId, now);
+    return;
+  }
   // Identity, synchronously (a beforeunload handler can't await):
   // signed-in sessions ride the token apiHeaders cached on its last
   // fetch — the autosave loop refreshes it every ~600ms while editing,
@@ -257,6 +276,7 @@ export async function apiDeleteTab(
   tabId: string,
   shareCode: string | null = null,
 ): Promise<void> {
+  if (await isOfflineId(diagramId)) return offlineDeleteTab(diagramId, tabId, Date.now());
   return apiDelete(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, ownerId, {
     action: 'delete tab',
     share: shareCode,
