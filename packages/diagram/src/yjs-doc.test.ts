@@ -6,6 +6,7 @@ import {
   applyElementOpToDoc,
   encodeDiagramUpdate,
   readDiagram,
+  syncDiagram,
   writeDiagram,
 } from './yjs-doc';
 
@@ -76,6 +77,45 @@ describe('applyElementOpToDoc', () => {
     writeDiagram(doc, [tab()]);
     expect(() => applyElementOpToDoc(doc, 'nope', { kind: 'remove', id: 'a' })).not.toThrow();
     expect(readDiagram(doc)).toEqual([tab()]);
+  });
+});
+
+describe('syncDiagram (local-commit path)', () => {
+  it('projects back to the committed tabs after an incremental sync', () => {
+    const doc = new Y.Doc();
+    writeDiagram(doc, [tab({ elements: [el('a'), el('b')] })]);
+    // A later commit: edit a, drop b, add c, rename the tab.
+    const next = [tab({ name: 'Renamed', elements: [el('a', { x: 7 }), el('c')] })];
+    syncDiagram(doc, next);
+    expect(readDiagram(doc)).toEqual(next);
+  });
+
+  it('adds and removes whole tabs, keeping tab order', () => {
+    const doc = new Y.Doc();
+    writeDiagram(doc, [tab({ id: 't1' }), tab({ id: 't2' })]);
+    const next = [tab({ id: 't2' }), tab({ id: 't3' })];
+    syncDiagram(doc, next);
+    expect(readDiagram(doc).map((t) => t.id)).toEqual(['t2', 't3']);
+  });
+
+  it('touches only changed elements, so a peer edit to another element survives', () => {
+    // Peer A and B share [x, y]. A commits an edit to x via syncDiagram; B
+    // concurrently commits an edit to y. Both survive after the merge.
+    const a = new Y.Doc();
+    writeDiagram(a, [tab({ elements: [el('x', { x: 0 }), el('y', { y: 0 })] })]);
+    const b = new Y.Doc();
+    applyDiagramUpdate(b, encodeDiagramUpdate(a));
+
+    syncDiagram(a, [tab({ elements: [el('x', { x: 99 }), el('y', { y: 0 })] })]);
+    syncDiagram(b, [tab({ elements: [el('x', { x: 0 }), el('y', { y: 88 })] })]);
+
+    applyDiagramUpdate(a, encodeDiagramUpdate(b));
+    applyDiagramUpdate(b, encodeDiagramUpdate(a));
+
+    expect(readDiagram(a)).toEqual(readDiagram(b));
+    const [x, y] = readDiagram(a)[0]!.elements;
+    expect((x as { x: number }).x).toBe(99);
+    expect((y as { y: number }).y).toBe(88);
   });
 });
 

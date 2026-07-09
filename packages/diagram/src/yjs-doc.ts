@@ -23,7 +23,7 @@
 
 import * as Y from 'yjs';
 import type { Element, Tab } from './index';
-import type { ElementOp } from './element-ops';
+import { diffToElementOps, type ElementOp } from './element-ops';
 
 const TAB_ORDER_KEY = 'tabOrder';
 const TABS_KEY = 'tabs';
@@ -101,17 +101,7 @@ function readTab(tabId: string, tabMap: Y.Map<unknown>): Tab {
   }
   const elsMap = tabMap.get(ELEMENTS_KEY) as Y.Map<Y.Map<unknown>> | undefined;
   const order = tabMap.get(ORDER_KEY) as Y.Array<string> | undefined;
-  const elements: Element[] = [];
-  if (elsMap) {
-    const ids = order && order.length ? order.toArray() : [...elsMap.keys()];
-    const seen = new Set<string>();
-    for (const id of ids) {
-      if (seen.has(id)) continue;
-      seen.add(id);
-      const elMap = elsMap.get(id);
-      if (elMap) elements.push(readElement(elMap));
-    }
-  }
+  const elements = elsMap ? readElementsFrom(elsMap, order ?? new Y.Array<string>()) : [];
   return { ...meta, id: tabId, elements } as unknown as Tab;
 }
 
@@ -125,36 +115,122 @@ export function applyElementOpToDoc(ydoc: Y.Doc, tabId: string, op: ElementOp): 
   const elsMap = tabMap.get(ELEMENTS_KEY) as Y.Map<Y.Map<unknown>> | undefined;
   const order = tabMap.get(ORDER_KEY) as Y.Array<string> | undefined;
   if (!elsMap || !order) return;
+  ydoc.transact(() => applyOpToContainers(elsMap, order, op));
+}
+
+// The op-application core, containers passed in so both applyElementOpToDoc
+// (single op, its own transaction) and syncDiagram (many ops, one shared
+// transaction) reuse it.
+function applyOpToContainers(
+  elsMap: Y.Map<Y.Map<unknown>>,
+  order: Y.Array<string>,
+  op: ElementOp,
+): void {
+  switch (op.kind) {
+    case 'add': {
+      setElement(elsMap, op.element);
+      if (!order.toArray().includes(op.element.id)) {
+        order.insert(Math.max(0, Math.min(op.at, order.length)), [op.element.id]);
+      }
+      break;
+    }
+    case 'update': {
+      // Field-level: only touch the fields that actually changed, so a
+      // concurrent edit to a DIFFERENT field of this element survives.
+      const elMap = elsMap.get(op.element.id);
+      if (elMap) mergeElementFields(elMap, op.element);
+      else setElement(elsMap, op.element); // lost the race to a remove -> re-add
+      break;
+    }
+    case 'remove': {
+      elsMap.delete(op.id);
+      const i = order.toArray().indexOf(op.id);
+      if (i !== -1) order.delete(i, 1);
+      break;
+    }
+    case 'reorder': {
+      order.delete(0, order.length);
+      order.push(op.ids.slice());
+      break;
+    }
+  }
+}
+
+// Incrementally reshape the whole doc to match a `Tab[]` — the local-commit
+// path of the Level 2 cut-over. Unlike writeDiagram (clear + rebuild, which
+// throws away CRDT identity and would clobber a concurrent peer edit), this
+// diffs: it adds/removes tabs, syncs each tab's meta and elements field by
+// field via the same op core, and fixes tab order — so the emitted Yjs
+// update carries only what actually changed and merges cleanly with a peer.
+export function syncDiagram(ydoc: Y.Doc, tabs: Tab[]): void {
+  const tabsMap = ydoc.getMap<Y.Map<unknown>>(TABS_KEY);
+  const tabOrder = ydoc.getArray<string>(TAB_ORDER_KEY);
   ydoc.transact(() => {
-    switch (op.kind) {
-      case 'add': {
-        setElement(elsMap, op.element);
-        if (!order.toArray().includes(op.element.id)) {
-          order.insert(Math.max(0, Math.min(op.at, order.length)), [op.element.id]);
-        }
-        break;
+    const nextIds = new Set(tabs.map((t) => t.id));
+    for (const id of [...tabsMap.keys()]) {
+      if (!nextIds.has(id)) tabsMap.delete(id);
+    }
+    for (const tab of tabs) {
+      let tabMap = tabsMap.get(tab.id);
+      if (!tabMap) {
+        tabMap = new Y.Map<unknown>();
+        tabsMap.set(tab.id, tabMap);
+        tabMap.set(ELEMENTS_KEY, new Y.Map<Y.Map<unknown>>());
+        tabMap.set(ORDER_KEY, new Y.Array<string>());
       }
-      case 'update': {
-        // Field-level: only touch the fields that actually changed, so a
-        // concurrent edit to a DIFFERENT field of this element survives.
-        const elMap = elsMap.get(op.element.id);
-        if (elMap) mergeElementFields(elMap, op.element);
-        else setElement(elsMap, op.element); // lost the race to a remove -> re-add
-        break;
-      }
-      case 'remove': {
-        elsMap.delete(op.id);
-        const i = order.toArray().indexOf(op.id);
-        if (i !== -1) order.delete(i, 1);
-        break;
-      }
-      case 'reorder': {
-        order.delete(0, order.length);
-        order.push(op.ids.slice());
-        break;
-      }
+      syncTabMeta(tabMap, tab);
+      syncTabElements(tabMap, tab);
+    }
+    const desired = tabs.map((t) => t.id);
+    if (!sameStringOrder(tabOrder.toArray(), desired)) {
+      tabOrder.delete(0, tabOrder.length);
+      tabOrder.push(desired);
     }
   });
+}
+
+function sameStringOrder(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+// Diff a tab's non-structural meta into its Y.Map: set changed/added fields,
+// delete fields that vanished. `id` never changes; structural containers are
+// left alone.
+function syncTabMeta(tabMap: Y.Map<unknown>, tab: Tab): void {
+  const next = new Map<string, unknown>();
+  for (const [k, v] of Object.entries(tab)) {
+    if (k === 'elements' || k === 'id' || TAB_STRUCTURAL_KEYS.has(k)) continue;
+    next.set(k, v);
+  }
+  for (const key of [...tabMap.keys()]) {
+    if (key === 'id' || TAB_STRUCTURAL_KEYS.has(key)) continue;
+    if (!next.has(key)) tabMap.delete(key);
+  }
+  for (const [k, v] of next) {
+    if (JSON.stringify(tabMap.get(k)) !== JSON.stringify(v)) tabMap.set(k, v);
+  }
+}
+
+function syncTabElements(tabMap: Y.Map<unknown>, tab: Tab): void {
+  const elsMap = tabMap.get(ELEMENTS_KEY) as Y.Map<Y.Map<unknown>>;
+  const order = tabMap.get(ORDER_KEY) as Y.Array<string>;
+  const current = readElementsFrom(elsMap, order);
+  for (const op of diffToElementOps(current, tab.elements)) {
+    applyOpToContainers(elsMap, order, op);
+  }
+}
+
+function readElementsFrom(elsMap: Y.Map<Y.Map<unknown>>, order: Y.Array<string>): Element[] {
+  const ids = order.length ? order.toArray() : [...elsMap.keys()];
+  const out: Element[] = [];
+  const seen = new Set<string>();
+  for (const id of ids) {
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const elMap = elsMap.get(id);
+    if (elMap) out.push(readElement(elMap));
+  }
+  return out;
 }
 
 function setElement(elsMap: Y.Map<Y.Map<unknown>>, el: Element): void {
