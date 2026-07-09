@@ -1,7 +1,7 @@
 // The in-place rich-text editor (spec/09). Replaces the plain <textarea>
 // label editors for shape / text / sticky: a single contentEditable that
 // renders the label's runs as styled <span>s and shows a floating toolbar
-// for per-range bold / italic / underline / strikethrough / size / colour.
+// for per-range bold / italic / underline / strikethrough / lists / colour.
 //
 // Design notes:
 // - The contentEditable DOM is managed IMPERATIVELY (paintRuns), not via
@@ -19,7 +19,7 @@
 // commit lifecycle) lives in useRichTextSession; this file keeps the
 // JSX and its event handlers.
 
-import { defaultPadding, type RunBoolKey } from '@livediagram/diagram';
+import type { RunBoolKey } from '@livediagram/diagram';
 import { ALIGN_ITEMS, TEXT_ALIGN } from '@/components/canvas/label-style';
 import { insertTextAtCaret } from '@/components/canvas/rich-text-dom';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
@@ -43,10 +43,6 @@ export function RichTextEditor({
   onCommit,
   onCancel,
   onSetAlign,
-  onSetPadding,
-  onSetFont,
-  onSetTextSize,
-  currentFont = null,
   inline = false,
 }: RichTextEditorProps) {
   const {
@@ -64,7 +60,6 @@ export function RichTextEditor({
     handleCancel,
     onToggle,
     onPatch,
-    chooseSize,
     applyList,
   } = useRichTextSession({
     element,
@@ -75,11 +70,14 @@ export function RichTextEditor({
     cursorAtEnd,
     onCommit,
     onCancel,
-    onSetTextSize,
   });
 
   return (
     <div
+      // Marks the whole editing session (editor + floating toolbar) so the
+      // context menu's outside-click dismiss ignores clicks in here — the
+      // menu rides alongside the editor while a label is edited (spec/09).
+      data-rich-text-session=""
       className={`pointer-events-none flex overflow-visible ${
         // Inline: a content-sized flex child (NOT flex-1), so the icon + editor
         // centre together as a group per the element's alignment, mirroring the
@@ -111,6 +109,17 @@ export function RichTextEditor({
             toolbarWrapRef.current &&
             e.relatedTarget &&
             toolbarWrapRef.current.contains(e.relatedTarget as Node)
+          ) {
+            return;
+          }
+          // Same for the context menu riding alongside the edit session
+          // (spec/09): its buttons preserve focus via the capture listener
+          // in useRichTextSession, but its form controls (the colour input,
+          // the opacity slider) legitimately take focus — that's a menu
+          // interaction, not a click-away.
+          if (
+            e.relatedTarget instanceof Element &&
+            e.relatedTarget.closest('[data-context-menu],[data-menu-flyout]')
           ) {
             return;
           }
@@ -226,15 +235,10 @@ export function RichTextEditor({
           active={active}
           alignX={alignX}
           alignY={alignY}
-          padding={element.padding ?? defaultPadding(element)}
-          currentFont={currentFont}
           onToggle={onToggle}
           onApplyList={applyList}
-          onSize={chooseSize}
           onColor={(color) => onPatch({ color })}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}
-          onSetPadding={(p) => onSetPadding?.(p)}
-          onSetFont={(f) => onSetFont?.(f)}
         />
       </div>
     </div>

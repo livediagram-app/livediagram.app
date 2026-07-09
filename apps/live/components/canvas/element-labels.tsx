@@ -16,7 +16,6 @@
 import {
   hasRichFormatting,
   type BoxedElement,
-  type Padding,
   type TextAlignX,
   type TextAlignY,
   type TextRun,
@@ -42,17 +41,13 @@ export function renderLabel(
   // on-screen size inside the world transform.
   zoom: number,
   fontFamily?: string,
-  // Whole-element alignment + padding setters surfaced in the edit toolbar
-  // (spec/09). Operate on the current selection = the editing element.
+  // Whole-element alignment setter surfaced in the edit toolbar (spec/09).
+  // Operates on the current selection = the editing element.
   onSetAlign?: (x: TextAlignX, y: TextAlignY) => void,
-  onSetPadding?: (padding: Padding) => void,
-  // Whole-element font + size setters (the toolbar's Font submenu + the
-  // Scale size option).
-  onSetFont?: (font: string | null) => void,
-  onSetTextSize?: (size: TextSize) => void,
-  // When the element carries an inline icon, the editor renders as a flex
-  // child (not a full-box fill) so the icon stays visible beside it while
-  // typing; the inline-icon layout owns positioning + padding.
+  // When the element carries an inline icon or a status marker, the editor
+  // renders as a flex child (not a full-box fill) so the glyph stays in its
+  // place beside the text while typing; the inline-icon layout owns
+  // positioning + padding.
   inlineIcon = false,
   // Text-native animation class (spec/09): applied to the label content node
   // so glow / pulse / trace / gradient ride the glyphs rather than the
@@ -106,10 +101,6 @@ export function renderLabel(
         onCommit={onCommitLabel}
         onCancel={onCancelEdit}
         onSetAlign={onSetAlign}
-        onSetPadding={onSetPadding}
-        onSetFont={onSetFont}
-        onSetTextSize={onSetTextSize}
-        currentFont={(element as { font?: string }).font ?? null}
         inline={inlineIcon}
       />
     );

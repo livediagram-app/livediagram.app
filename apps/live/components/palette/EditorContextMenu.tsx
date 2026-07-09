@@ -79,7 +79,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   // Accordion + colour-row scaffolding, shared with the multi-selection branch.
   const {
     sectionProps,
-    openSectionById,
+    flyoutProps,
     colorProps,
     textColorHandlers,
     fillColorHandlers,
@@ -253,7 +253,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           target={target}
           onClose={onClose}
           sectionProps={sectionProps}
-          openSectionById={openSectionById}
+          flyoutProps={flyoutProps}
           colorProps={colorProps}
           textColorHandlers={textColorHandlers}
           fillColorHandlers={fillColorHandlers}

@@ -8,6 +8,7 @@
 // self-describing. See spec/09 "Templates" for the catalogue.
 
 import { createShape, createText, type Element } from '@livediagram/diagram';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Theme chips reuse the conventional tint pairs the retro / SWOT
 // boards established (green / blue / amber), keyed by workstream so
@@ -103,6 +104,7 @@ export function buildRoadmap(cx: number, cy: number): Element[] {
     label: 'Product roadmap · H2 2027',
     textSize: 'lg',
     textBold: true,
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
 
   lanes.forEach((lane, i) => {
@@ -115,6 +117,7 @@ export function buildRoadmap(cx: number, cy: number): Element[] {
       fillColor: lane.fill,
       strokeColor: lane.stroke,
       textSize: 'md',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     elements.push({
       ...createText(laneX + lanePad, lanesTop + lanePad),
@@ -124,6 +127,7 @@ export function buildRoadmap(cx: number, cy: number): Element[] {
       textSize: 'lg',
       textBold: true,
       textAlignX: 'left',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     elements.push({
       ...createText(laneX + lanePad, lanesTop + lanePad + headerH),
@@ -133,6 +137,7 @@ export function buildRoadmap(cx: number, cy: number): Element[] {
       textSize: 'sm',
       textAlignX: 'left',
       textColor: '#64748b',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
 
     const cardsTop = lanesTop + lanePad + headerH + subtitleH + 16;
@@ -145,6 +150,7 @@ export function buildRoadmap(cx: number, cy: number): Element[] {
         width: cardW,
         height: cardH,
         textSize: 'md',
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
       elements.push({
         ...createText(laneX + lanePad + 14, cardY + 10),
@@ -153,6 +159,7 @@ export function buildRoadmap(cx: number, cy: number): Element[] {
         label: card.label,
         textSize: 'sm',
         textAlignX: 'left',
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
       elements.push({
         ...createShape('stadium', laneX + lanePad + 14, cardY + cardH - 40),
@@ -164,6 +171,7 @@ export function buildRoadmap(cx: number, cy: number): Element[] {
         strokeColor: tint.stroke,
         textColor: tint.text,
         themeLockFill: true,
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     });
   });

@@ -87,9 +87,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCancelEdit,
     onCommitLabel,
     onSetTextAlign,
-    onSetPadding,
-    onSetFont,
-    onSetTextSize,
     onCommitTable,
     onAddRailPoint,
     onAddTableRow,
@@ -156,9 +153,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCastVote: readOnly ? undefined : onCastVote,
     onRetractVote: readOnly ? undefined : onRetractVote,
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
-    onSetPadding: readOnly ? undefined : onSetPadding,
-    onSetFont: readOnly ? undefined : onSetFont,
-    onSetTextSize: readOnly ? undefined : onSetTextSize,
     onCommitTable,
     onSetRailLabel,
     onFollowLink,
@@ -301,9 +295,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onBeginEdit={h.onBeginEdit}
             onCommitLabel={h.onCommitLabel}
             onSetTextAlign={h.onSetTextAlign}
-            onSetPadding={h.onSetPadding}
-            onSetFont={h.onSetFont}
-            onSetTextSize={h.onSetTextSize}
             onCommitTable={h.onCommitTable}
             onSetRailLabel={h.onSetRailLabel}
             chartPalette={chartPalette}

@@ -14,7 +14,6 @@ import type {
   TextAlignX,
   TextAlignY,
   TextRun,
-  TextSize,
 } from '@livediagram/diagram';
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -313,12 +312,9 @@ export type CanvasProps = {
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string, runs?: TextRun[]) => void;
-  // Inline label-editor (rich-text) controls, threaded through
+  // Inline label-editor (rich-text) alignment control, threaded through
   // CanvasElementsLayer to the in-place editor on the selected element.
-  onSetTextSize: (size: TextSize) => void;
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  onSetFont: (font: string | null) => void;
-  onSetPadding: (padding: import('@livediagram/diagram').Padding) => void;
   // Single combined table commit (cells + the parallel colWidths /
   // rowHeights / cellStyles arrays) applied in ONE commit, so structural
   // ops can't drop a side array or clobber each other off a stale base.

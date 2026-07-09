@@ -16,6 +16,7 @@
 // and the timeline would stop reading as separate tasks.
 
 import { createShape, createText, type Element } from '@livediagram/diagram';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 const STROKE = '#334155';
 const TEXT = '#0f172a';
@@ -124,11 +125,17 @@ function rect(x: number, y: number, w: number, h: number, fill: string, lockFill
   };
 }
 
+// The chart ships pre-layered (spec/74 "Layered templates"): the month
+// header + tracks + row labels form a fixed "Grid" scaffold layer, with
+// the duration bars users slide and stretch on a "Bars" content layer.
 export function buildGanttChart(cx: number, cy: number): Element[] {
   const elements: Element[] = [];
 
   // Header background + month column labels.
-  elements.push(rect(cx + HEADER.x, cy + HEADER.y, HEADER.w, HEADER.h, TRACK_FILL));
+  elements.push({
+    ...rect(cx + HEADER.x, cy + HEADER.y, HEADER.w, HEADER.h, TRACK_FILL),
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+  });
   MONTHS.forEach((m, i) => {
     elements.push({
       ...createText(cx + MONTH.x0 + i * MONTH.dx, cy + MONTH.y),
@@ -137,13 +144,17 @@ export function buildGanttChart(cx: number, cy: number): Element[] {
       label: m,
       textSize: 'md',
       textColor: TEXT,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
   });
 
   // Milestone rows: track, right-aligned label, then the duration bar
   // on top of the track.
   for (const r of ROWS) {
-    elements.push(rect(cx + TRACK.x, cy + r.trackY, TRACK.w, TRACK.h, TRACK_FILL));
+    elements.push({
+      ...rect(cx + TRACK.x, cy + r.trackY, TRACK.w, TRACK.h, TRACK_FILL),
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+    });
     elements.push({
       ...createText(cx + LABEL.x, cy + r.labelY),
       width: LABEL.w,
@@ -154,10 +165,14 @@ export function buildGanttChart(cx: number, cy: number): Element[] {
       textAlignX: 'right',
       textAlignY: 'middle',
       padding: 'md',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     const barX = MONTH.x0 + r.start * MONTH.dx;
     const barW = r.months * MONTH.dx;
-    elements.push(rect(cx + barX, cy + r.barY, barW, BAR_H, r.fill, true));
+    elements.push({
+      ...rect(cx + barX, cy + r.barY, barW, BAR_H, r.fill, true),
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
+    });
   }
 
   return elements;

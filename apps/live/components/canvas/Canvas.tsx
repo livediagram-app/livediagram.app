@@ -263,6 +263,7 @@ export function Canvas(props: CanvasProps) {
   // views — see useCanvasSelectHandlers.
   const { handleElementContextSelect, handleArrowSelect } = useCanvasSelectHandlers({
     inertIds: props.layerInertIds,
+    soloSelectedId: props.soloSelectedId,
     elements,
     multiSelectedIds,
     onSelect,

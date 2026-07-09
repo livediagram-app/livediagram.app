@@ -78,9 +78,13 @@ export function ContextMenu({
       // menu in its onClick instead. A MenuFlyoutSection's panel is portalled
       // outside this menu but marks itself data-menu-flyout, so interacting
       // with it counts as inside the menu. Clicks anywhere else close as usual.
+      // While a label is being edited the menu rides alongside the editor
+      // (spec/09): clicks inside the editing session (the contentEditable
+      // or its floating toolbar) must not dismiss it — the user is moving
+      // the caret / formatting text, not clicking away.
       if (
         e.target instanceof Element &&
-        e.target.closest('[data-context-menu-trigger],[data-menu-flyout]')
+        e.target.closest('[data-context-menu-trigger],[data-menu-flyout],[data-rich-text-session]')
       )
         return;
       onClose();
@@ -108,6 +112,10 @@ export function ContextMenu({
       <div
         ref={ref}
         role="menu"
+        // Marks the menu for the rich-text editor's focus-preservation
+        // capture listener (spec/09): mousedown inside is preventDefaulted
+        // while editing so menu clicks never blur the editor.
+        data-context-menu=""
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.preventDefault()}
         // lvd-menu-stagger cascades the direct children (categories / items)

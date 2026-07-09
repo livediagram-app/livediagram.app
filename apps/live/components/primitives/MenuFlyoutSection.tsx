@@ -29,17 +29,37 @@ export function MenuFlyoutSection({
   // Fired each time the flyout opens — e.g. so the caller can auto-expand the
   // first sub-category inside it.
   onOpen,
+  // Controlled mode (the context-menu scaffold's flyoutProps): the open
+  // state lives in the caller so it survives this row remounting when the
+  // menu retargets to another element. Omit both to fall back to local
+  // state (open + onToggle travel together).
+  open: controlledOpen,
+  onToggle,
 }: {
   title: string;
   icon: ReactNode;
   children: ReactNode;
   flush?: boolean;
   onOpen?: () => void;
+  open?: boolean;
+  onToggle?: () => void;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
+  const controlled = controlledOpen !== undefined;
+  const open = controlled ? controlledOpen : localOpen;
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const setOpen = useCallback(
+    (next: boolean) => {
+      if (controlled) {
+        if (next !== open) onToggle?.();
+      } else {
+        setLocalOpen(next);
+      }
+    },
+    [controlled, open, onToggle],
+  );
 
   // Place the flyout beside the trigger row: to the right when it fits, else
   // to the left. Top-aligned with the row, clamped inside the viewport. Runs
@@ -73,6 +93,25 @@ export function MenuFlyoutSection({
     return () => ro.disconnect();
   }, [open, measure]);
 
+  // Track the TRIGGER while open. The host menu can grow or shrink under
+  // us with no scroll / resize event and no panel size change — expanding
+  // or collapsing one of its inline accordions re-lays the rows out, and
+  // a bottom-clamped menu then shifts wholesale — which left the flyout
+  // floating where its row USED to be. No observer fires for "an
+  // unrelated element moved", so poll the trigger's rect once per frame
+  // for the flyout's short open lifetime; measure() already no-ops the
+  // state write when nothing changed.
+  useEffect(() => {
+    if (!open) return;
+    let raf = 0;
+    const track = () => {
+      measure();
+      raf = window.requestAnimationFrame(track);
+    };
+    raf = window.requestAnimationFrame(track);
+    return () => window.cancelAnimationFrame(raf);
+  }, [open, measure]);
+
   // Close the flyout on a click that's neither on its trigger nor inside its
   // panel — i.e. another menu row, or off the menu entirely. The host menu
   // keeps itself open for clicks inside the panel via the data-menu-flyout
@@ -83,11 +122,22 @@ export function MenuFlyoutSection({
       const t = e.target;
       if (!(t instanceof Node)) return;
       if (panelRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
+      // Clicking back into a text-edit session (the editor or its floating
+      // toolbar) keeps the flyout open — the context menu stays alongside
+      // the editor while a label is being edited (spec/09), and moving the
+      // caret shouldn't collapse the open category.
+      if (t instanceof Element && t.closest('[data-rich-text-session]')) return;
+      // Clicking a canvas ELEMENT retargets the host menu to it rather than
+      // dismissing it (spec/09 menu-follows-selection), so the open flyout
+      // must ride along too — collapsing it on every element switch broke
+      // the style-several-elements-in-a-row flow. Empty-canvas clicks still
+      // close the whole menu (the canvas handler), which unmounts this.
+      if (t instanceof Element && t.closest('[data-element-id]')) return;
       setOpen(false);
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
+  }, [open, setOpen]);
 
   return (
     <div

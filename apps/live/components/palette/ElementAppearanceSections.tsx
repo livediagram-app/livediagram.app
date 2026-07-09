@@ -24,6 +24,7 @@ import {
   isRatingShape,
   isSelfDrawingShape,
   supportsBorderControls,
+  supportsColours,
   type IconSize,
   type Padding,
   type TextAlignX,
@@ -34,6 +35,7 @@ import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
   IconCategoryGlyph,
   RemoveIconGlyph,
+  StyleMenuGlyph,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
 import {
@@ -74,7 +76,7 @@ type ElementAppearanceSectionsProps = {
   target: EditorContextMenuProps['elements'][number];
   onClose: () => void;
   sectionProps: Scaffold['sectionProps'];
-  openSectionById: Scaffold['openSectionById'];
+  flyoutProps: Scaffold['flyoutProps'];
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
@@ -86,7 +88,7 @@ export function ElementAppearanceSections({
   target,
   onClose,
   sectionProps,
-  openSectionById,
+  flyoutProps,
   colorProps,
   textColorHandlers,
   fillColorHandlers,
@@ -134,34 +136,64 @@ export function ElementAppearanceSections({
   // The appearance group's divider shows whenever any appearance section will
   // render — boxed elements (shapes / freehand / tables / images) and arrows.
   const showAppearanceGroup = boxed || target.type === 'arrow';
+  // The Style flyout shows when any of its children would: presets
+  // (shapes with looks / arrow line looks), Colours, or Border — the
+  // same gates the sections carry inside.
+  const showStyle =
+    shapeSupportsPresets(target) ||
+    target.type === 'arrow' ||
+    (boxed && supportsColours(target) && !isChart) ||
+    (borderable && !isChart);
   return (
     <>
       {showAppearanceGroup ? <MenuGroupSeparator /> : null}
-      {/* Presets (spec/48) — pinned at the top of the appearance group (above
-            Animation). Regular shapes only (icon glyph / charts excluded, see
-            shapeSupportsPresets); arrows get their own line-look presets. Both
-            share the PresetSections components with the multi-selection menu. */}
-      {shapeSupportsPresets(target) ? (
-        <ShapePresetsSection
-          shape={target.shape}
-          current={{
-            fillColor: target.fillColor,
-            strokeColor: target.strokeColor,
-            textColor: target.textColor,
-            colorPreset: target.colorPreset,
-          }}
-          props={props}
-          accordion={sectionProps('presets')}
-          onClose={onClose}
-        />
-      ) : null}
-      {target.type === 'arrow' ? (
-        <ArrowPresetsSection
-          current={{ strokeStyle: target.strokeStyle, flow: target.flow }}
-          props={props}
-          accordion={sectionProps('presets')}
-          onClose={onClose}
-        />
+      {/* ── Style band (spec/09): Presets (spec/48) + Colours + Border,
+            grouped under one "Style" row that opens them in a side flyout —
+            the same fold the Text band uses — so the three style categories
+            take one slot in the menu's vertical stack. Inside the flyout
+            they're the same collapsible sections as before (shared with the
+            multi-selection menu, which still stacks them inline), all
+            starting closed. ── */}
+      {showStyle ? (
+        <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
+          {shapeSupportsPresets(target) ? (
+            <ShapePresetsSection
+              shape={target.shape}
+              current={{
+                fillColor: target.fillColor,
+                strokeColor: target.strokeColor,
+                textColor: target.textColor,
+                colorPreset: target.colorPreset,
+              }}
+              props={props}
+              accordion={sectionProps('presets')}
+              onClose={onClose}
+            />
+          ) : null}
+          {target.type === 'arrow' ? (
+            <ArrowPresetsSection
+              current={{ strokeStyle: target.strokeStyle, flow: target.flow }}
+              props={props}
+              accordion={sectionProps('presets')}
+              onClose={onClose}
+            />
+          ) : null}
+          {/* Colours + Border accordions — see ElementColourBorderSections. */}
+          <ElementColourBorderSections
+            props={props}
+            target={target}
+            boxed={boxed}
+            isIcon={isIcon}
+            isChart={isChart}
+            borderable={borderable}
+            onClose={onClose}
+            sectionProps={sectionProps}
+            colorProps={colorProps}
+            textColorHandlers={textColorHandlers}
+            fillColorHandlers={fillColorHandlers}
+            strokeColorHandlers={strokeColorHandlers}
+          />
+        </MenuFlyoutSection>
       ) : null}
       <ElementDataSections
         props={props}
@@ -174,21 +206,7 @@ export function ElementAppearanceSections({
         isIcon={isIcon}
         boxed={boxed}
         sectionProps={sectionProps}
-      />
-      {/* Colours + Border accordions — see ElementColourBorderSections. */}
-      <ElementColourBorderSections
-        props={props}
-        target={target}
-        boxed={boxed}
-        isIcon={isIcon}
-        isChart={isChart}
-        borderable={borderable}
-        onClose={onClose}
-        sectionProps={sectionProps}
-        colorProps={colorProps}
-        textColorHandlers={textColorHandlers}
-        fillColorHandlers={fillColorHandlers}
-        strokeColorHandlers={strokeColorHandlers}
+        flyoutProps={flyoutProps}
       />
       {/* Icon — a Technology icon element's fixed tile size (spec/41).
             The mark renders at a preset pixel size regardless of the box;
@@ -258,16 +276,13 @@ export function ElementAppearanceSections({
             (spec/49) — grouped under one "Text" row that opens them in a side
             flyout, so they don't lengthen the menu's vertical stack. The row
             only shows when the element has text (showMarkers / showAlignment
-            both require a non-empty label). Opening the flyout auto-expands its
-            first sub-category. ── */}
-      {showMarkers || showAlignment ? <MenuGroupSeparator /> : null}
+            both require a non-empty label). Sub-categories all start closed:
+            auto-expanding the first one flipped the shared one-open-section
+            scaffold, collapsing whichever inline accordion the user had open
+            in the host menu behind the flyout. Sits in the style band
+            (no separator of its own), beside Style + Animation. ── */}
       {showMarkers || showAlignment ? (
-        <MenuFlyoutSection
-          title="Text"
-          icon={<TextGlyph />}
-          flush
-          onOpen={() => openSectionById(showAlignment ? 'font' : 'markers')}
-        >
+        <MenuFlyoutSection title="Text" icon={<TextGlyph />} {...flyoutProps('text')}>
           {/* Typography — Font / Size / Padding, shared with the rich-text
               toolbar's overflow menu. Applies to the element's whole label. */}
           {showAlignment ? (

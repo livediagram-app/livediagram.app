@@ -3,8 +3,11 @@ import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
   TEMPLATES,
   TEMPLATE_CATEGORIES,
+  TEMPLATE_CONTENT_LAYER_ID,
+  TEMPLATE_SCAFFOLD_LAYER_ID,
   templateCanvasOverrides,
   templateCategory,
+  templateLayers,
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livediagram/templates';
@@ -148,9 +151,19 @@ describe('templateCanvasOverrides', () => {
   it('gives alignment-heavy scaffolds a square graph paper backdrop', () => {
     expect(templateCanvasOverrides('flowchart')).toEqual({ backgroundPattern: 'graph' });
     expect(templateCanvasOverrides('orgchart')).toEqual({ backgroundPattern: 'graph' });
-    expect(templateCanvasOverrides('swot')).toEqual({ backgroundPattern: 'graph' });
-    expect(templateCanvasOverrides('gantt')).toEqual({ backgroundPattern: 'graph' });
-    expect(templateCanvasOverrides('mobile-wireframe')).toEqual({ backgroundPattern: 'graph' });
+    // Layered templates (spec/74) additionally carry their Tab.layers.
+    expect(templateCanvasOverrides('swot')).toEqual({
+      backgroundPattern: 'graph',
+      layers: templateLayers('swot'),
+    });
+    expect(templateCanvasOverrides('gantt')).toEqual({
+      backgroundPattern: 'graph',
+      layers: templateLayers('gantt'),
+    });
+    expect(templateCanvasOverrides('mobile-wireframe')).toEqual({
+      backgroundPattern: 'graph',
+      layers: templateLayers('mobile-wireframe'),
+    });
   });
 
   it('gives clean radial layouts a blank backdrop', () => {
@@ -159,20 +172,153 @@ describe('templateCanvasOverrides', () => {
   });
 
   it('gives the slide deck a crosshatch backdrop', () => {
-    expect(templateCanvasOverrides('slide-deck')).toEqual({ backgroundPattern: 'crosshatch' });
+    expect(templateCanvasOverrides('slide-deck')).toEqual({
+      backgroundPattern: 'crosshatch',
+      layers: templateLayers('slide-deck'),
+    });
   });
 
   it('gives the logo sheet a checkerboard design board and timelines ruled lines', () => {
     expect(templateCanvasOverrides('logo-design')).toEqual({ backgroundPattern: 'checkerboard' });
-    expect(templateCanvasOverrides('timeline')).toEqual({ backgroundPattern: 'lines' });
+    expect(templateCanvasOverrides('timeline')).toEqual({
+      backgroundPattern: 'lines',
+      layers: templateLayers('timeline'),
+    });
     expect(templateCanvasOverrides('journey')).toEqual({
       backgroundPattern: 'lines',
       backgroundOpacity: 0.8,
+      layers: templateLayers('journey'),
     });
   });
 
   it('leaves the blank template to inherit the theme backdrop', () => {
     expect(templateCanvasOverrides('blank')).toEqual({});
+  });
+
+  it('ships the kanban board with its Board / Cards layers (spec/74)', () => {
+    expect(templateCanvasOverrides('kanban')).toEqual({
+      backgroundPattern: 'graph',
+      layers: [
+        { id: TEMPLATE_SCAFFOLD_LAYER_ID, name: 'Board' },
+        { id: TEMPLATE_CONTENT_LAYER_ID, name: 'Cards' },
+      ],
+    });
+  });
+});
+
+// Layered templates (spec/74 "Layered templates"): a layered template's
+// builder pre-stamps `layerId` on every element, and the matching
+// `Tab.layers` rides templateCanvasOverrides, so the two can't be
+// allowed to drift apart — an element stamped with an id the layers
+// array doesn't know would silently fall back to the default layer.
+describe('layered templates (spec/74)', () => {
+  it('keeps every builder in lockstep with templateLayers across the catalogue', () => {
+    for (const kind of TEMPLATES.map((t) => t.kind)) {
+      const layers = templateLayers(kind);
+      const elements = buildTemplate(kind, 0, 0);
+      if (!layers) {
+        // Layerless templates must not stamp: a dangling layerId would
+        // resolve to the implicit default layer but bloat the JSON.
+        for (const el of elements) expect(el.layerId, kind).toBeUndefined();
+        continue;
+      }
+      // Layered templates stamp EVERY element with a known layer id.
+      const known = new Set(layers.map((l) => l.id));
+      expect(known.size).toBe(layers.length); // ids unique
+      for (const el of elements) {
+        expect(el.layerId, `${kind} element without a known layerId`).toBeDefined();
+        expect(known.has(el.layerId!), `${kind} stamped unknown id ${el.layerId}`).toBe(true);
+      }
+    }
+  });
+
+  it('kanban splits the stationary board from the tickets, cards on top', () => {
+    const layers = templateLayers('kanban')!;
+    // Cards LAST (top): the default active layer, so new elements land
+    // with the content, never under the scaffold (spec/74).
+    expect(layers.map((l) => l.name)).toEqual(['Board', 'Cards']);
+    const elements = buildTemplate('kanban', 0, 0);
+    const board = elements.filter((el) => el.layerId === TEMPLATE_SCAFFOLD_LAYER_ID);
+    const cards = elements.filter((el) => el.layerId === TEMPLATE_CONTENT_LAYER_ID);
+    // The split is by role, not accident: every lane header is on the
+    // board, every ticket line on the cards.
+    const labelsOn = (els: typeof elements) =>
+      els.map((el) => ('label' in el ? el.label : undefined)).filter(Boolean) as string[];
+    for (const lane of ['Todo List', 'In Progress', 'Under Review', 'Done']) {
+      expect(labelsOn(board)).toContain(lane);
+    }
+    expect(labelsOn(cards).filter((l) => l.startsWith('LIVE-'))).toHaveLength(12);
+  });
+
+  // Band membership per layered template: scaffold count / content count,
+  // plus the pair of display names (scaffold first, content on top). The
+  // counts pin the ROLE split — a new element silently landing on the
+  // wrong band shows up here as a count drift even though the lockstep
+  // test above still passes.
+  const LAYERED_BANDS: Partial<
+    Record<TemplateKind, { names: [string, string]; scaffold: number; content: number }>
+  > = {
+    kanban: { names: ['Board', 'Cards'], scaffold: 9, content: 36 },
+    retrospective: { names: ['Board', 'Stickies'], scaffold: 6, content: 9 },
+    'prioritization-matrix': { names: ['Axes', 'Items'], scaffold: 8, content: 5 },
+    'affinity-map': { names: ['Board', 'Stickies'], scaffold: 5, content: 9 },
+    'user-story-map': { names: ['Backbone', 'Stories'], scaffold: 7, content: 12 },
+    roadmap: { names: ['Lanes', 'Cards'], scaffold: 10, content: 27 },
+    gantt: { names: ['Grid', 'Bars'], scaffold: 25, content: 6 },
+    swot: { names: ['Quadrants', 'Notes'], scaffold: 12, content: 13 },
+    'business-model-canvas': { names: ['Canvas', 'Notes'], scaffold: 28, content: 19 },
+    'empathy-map': { names: ['Quadrants', 'Notes'], scaffold: 12, content: 9 },
+    'sequence-diagram': { names: ['Lifelines', 'Messages'], scaffold: 8, content: 6 },
+    'mobile-wireframe': { names: ['Frames', 'UI'], scaffold: 3, content: 40 },
+    'laptop-wireframe': { names: ['Frames', 'UI'], scaffold: 1, content: 21 },
+    'browser-wireframe': { names: ['Frames', 'UI'], scaffold: 1, content: 28 },
+    'slide-deck': { names: ['Frames', 'Content'], scaffold: 7, content: 31 },
+    storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 18 },
+    timeline: { names: ['Spine', 'Milestones'], scaffold: 1, content: 15 },
+    journey: { names: ['Stages', 'Notes'], scaffold: 9, content: 5 },
+  };
+
+  it('pins each layered template’s names and scaffold / content split', () => {
+    // Every layered kind has a table entry and vice versa, so adding a
+    // layered template forces a deliberate row here.
+    const layeredKinds = TEMPLATES.map((t) => t.kind).filter((k) => templateLayers(k));
+    expect(layeredKinds.sort()).toEqual(Object.keys(LAYERED_BANDS).sort());
+
+    for (const [kind, expected] of Object.entries(LAYERED_BANDS) as [
+      TemplateKind,
+      NonNullable<(typeof LAYERED_BANDS)[TemplateKind]>,
+    ][]) {
+      const layers = templateLayers(kind)!;
+      // Scaffold at the bottom, content LAST (top): the default active
+      // layer, so new elements land with the content (spec/74). Scaffold
+      // ships unlocked and visible: locking is one click away.
+      expect(
+        layers.map((l) => l.name),
+        kind,
+      ).toEqual(expected.names);
+      expect(layers.map((l) => l.id)).toEqual([
+        TEMPLATE_SCAFFOLD_LAYER_ID,
+        TEMPLATE_CONTENT_LAYER_ID,
+      ]);
+      for (const l of layers) {
+        expect(l.locked).toBeUndefined();
+        expect(l.visible).toBeUndefined();
+      }
+      const elements = buildTemplate(kind, 0, 0);
+      const scaffold = elements.filter((el) => el.layerId === TEMPLATE_SCAFFOLD_LAYER_ID);
+      const content = elements.filter((el) => el.layerId === TEMPLATE_CONTENT_LAYER_ID);
+      expect(scaffold.length, `${kind} scaffold`).toBe(expected.scaffold);
+      expect(content.length, `${kind} content`).toBe(expected.content);
+      expect(scaffold.length + content.length, kind).toBe(elements.length);
+    }
+  });
+
+  it('buildTemplatedTab lands the layers on the tab and theming keeps the stamps', () => {
+    const tab = buildTemplatedTab('kanban', 'slate', 'tab-1', 'kanban');
+    expect(tab.layers).toEqual(templateLayers('kanban'));
+    for (const el of tab.elements) {
+      expect([TEMPLATE_SCAFFOLD_LAYER_ID, TEMPLATE_CONTENT_LAYER_ID]).toContain(el.layerId);
+    }
   });
 });
 

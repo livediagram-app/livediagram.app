@@ -1,37 +1,34 @@
 // The floating WYSIWYG toolbar shown above an element while its label is
-// being edited (spec/09). Per-range bold / italic / underline (+ strikethrough
-// under the ⋯ menu) / size / colour, plus whole-element alignment + padding as
-// dropdowns. Rendered by RichTextEditor (which owns the selection + apply
-// handlers); this component is presentation + the focus-preservation detail.
+// being edited (spec/09). Per-range bold / italic / underline /
+// strikethrough + list controls as plain icon buttons, whole-element
+// alignment as a dropdown, and the selection colour swatch. Everything
+// else the old ⋯ overflow menu carried (Font / Size / Padding) lives in
+// the element context menu's Text flyout now, so the toolbar holds only
+// the live-selection verbs. Rendered by RichTextEditor (which owns the
+// selection + apply handlers); this component is presentation + the
+// focus-preservation detail.
 
 import { useEffect, useRef, useState } from 'react';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
-import { BoldIcon, ItalicIcon, UnderlineIcon } from '@/components/palette/palette-icons';
+import {
+  BoldIcon,
+  ItalicIcon,
+  StrikethroughIcon,
+  UnderlineIcon,
+} from '@/components/palette/palette-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { OverflowMenu } from './RichTextToolbarOverflow';
-import type {
-  ListStyle,
-  Padding,
-  RunBoolKey,
-  RunSize,
-  TextAlignX,
-  TextAlignY,
-} from '@livediagram/diagram';
-
-// Size key that includes 'scale' (whole-element auto-fit) alongside the
-// per-run sizes.
-export type SizeKey = RunSize | 'scale';
+import { BulletListIcon, NoListIcon, NumberedListIcon } from './rich-text-toolbar-icons';
+import type { ListStyle, RunBoolKey, TextAlignX, TextAlignY } from '@livediagram/diagram';
 
 // The resolved formatting of the current selection: each boolean is true
-// when EVERY character in the selection is effectively-on; size/color are
-// the uniform value across the selection, or null when mixed.
+// when EVERY character in the selection is effectively-on; color is the
+// uniform value across the selection, or null when mixed.
 export type ActiveFormat = {
   bold: boolean;
   italic: boolean;
   underline: boolean;
   strikethrough: boolean;
-  size: SizeKey | null;
   color: string | null;
 };
 
@@ -136,28 +133,18 @@ export function RichTextToolbar({
   active,
   alignX,
   alignY,
-  padding,
-  currentFont,
   onToggle,
   onApplyList,
-  onSize,
   onColor,
   onSetAlign,
-  onSetPadding,
-  onSetFont,
 }: {
   active: ActiveFormat;
   alignX: TextAlignX;
   alignY: TextAlignY;
-  padding: Padding;
-  currentFont: string | null;
   onToggle: (key: RunBoolKey) => void;
   onApplyList: (style: ListStyle) => void;
-  onSize: (size: SizeKey) => void;
   onColor: (color: string) => void;
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
-  onSetPadding: (padding: Padding) => void;
-  onSetFont: (font: string | null) => void;
 }) {
   const toggles: { key: RunBoolKey; label: string; description: string; icon: React.ReactNode }[] =
     [
@@ -174,7 +161,35 @@ export function RichTextToolbar({
         description: 'Underline the selected text.',
         icon: <UnderlineIcon />,
       },
+      {
+        key: 'strikethrough',
+        label: 'Strikethrough',
+        description: 'Strike through the selected text.',
+        icon: <StrikethroughIcon />,
+      },
     ];
+  // List controls (spec/09): applied to the selected lines. Plain icon
+  // buttons since the ⋯ menu that used to hold them is gone.
+  const lists: { style: ListStyle; label: string; description: string; icon: React.ReactNode }[] = [
+    {
+      style: 'bullet',
+      label: 'Bullet list',
+      description: 'Turn the selected lines into a bullet list.',
+      icon: <BulletListIcon />,
+    },
+    {
+      style: 'numbered',
+      label: 'Numbered list',
+      description: 'Turn the selected lines into a numbered list.',
+      icon: <NumberedListIcon />,
+    },
+    {
+      style: 'none',
+      label: 'Remove list',
+      description: 'Turn the selected lines back into plain text.',
+      icon: <NoListIcon />,
+    },
+  ];
   // Same spacer the element toolbar's Divider uses, so both read alike.
   const divider = (
     <span className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" aria-hidden />
@@ -182,22 +197,6 @@ export function RichTextToolbar({
 
   return (
     <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">
-      {/* ⋯ overflow menu (left) — the less-common Strikethrough / Font /
-          Padding, grouped into collapsible category sections. */}
-      <OverflowMenu
-        active={active}
-        onApplyList={onApplyList}
-        currentFont={currentFont}
-        padding={padding}
-        alignX={alignX}
-        alignY={alignY}
-        onToggle={onToggle}
-        onSetFont={onSetFont}
-        onSetPadding={onSetPadding}
-        onSize={onSize}
-        onSetAlign={onSetAlign}
-      />
-      {divider}
       {toggles.map((t) => (
         <Tooltip key={t.key} title={t.label} description={t.description}>
           <button
@@ -209,6 +208,20 @@ export function RichTextToolbar({
             className={btnClass(active[t.key])}
           >
             {t.icon}
+          </button>
+        </Tooltip>
+      ))}
+      {divider}
+      {lists.map((l) => (
+        <Tooltip key={l.style} title={l.label} description={l.description}>
+          <button
+            type="button"
+            aria-label={l.label}
+            onMouseDown={noFocusSteal}
+            onClick={() => onApplyList(l.style)}
+            className={btnClass(false)}
+          >
+            {l.icon}
           </button>
         </Tooltip>
       ))}

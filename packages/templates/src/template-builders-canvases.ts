@@ -9,6 +9,7 @@
 // self-describing. See spec/09 "Templates" for the catalogue.
 
 import { createShape, createSticky, createText, type Element } from '@livediagram/diagram';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // The classic Business Model Canvas: nine blocks in the canonical
 // Osterwalder arrangement (partners / activities+resources / value
@@ -140,6 +141,7 @@ export function buildBusinessModelCanvas(cx: number, cy: number): Element[] {
     label: 'Business Model Canvas · FreshBox meal kits',
     textSize: 'lg',
     textBold: true,
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
 
   const pad = 16;
@@ -157,6 +159,7 @@ export function buildBusinessModelCanvas(cx: number, cy: number): Element[] {
       height: b.h,
       textSize: 'md',
       strokeWidth: 'thin',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     elements.push({
       ...createText(bx + pad, by + pad),
@@ -166,12 +169,14 @@ export function buildBusinessModelCanvas(cx: number, cy: number): Element[] {
       textSize: 'md',
       textBold: true,
       textAlignX: 'left',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     elements.push({
       ...createShape('icon', bx + b.w - pad - iconSize, by + pad),
       width: iconSize,
       height: iconSize,
       iconId: b.icon,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     b.notes.forEach((note, i) => {
       elements.push({
@@ -181,6 +186,7 @@ export function buildBusinessModelCanvas(cx: number, cy: number): Element[] {
         label: `• ${note}`,
         textSize: 'sm',
         textAlignX: 'left',
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     });
   }
@@ -268,6 +274,7 @@ export function buildEmpathyMap(cx: number, cy: number): Element[] {
       fillColor: q.fill,
       strokeColor: q.stroke,
       textSize: 'md',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     elements.push({
       ...createText(x + pad, y + pad),
@@ -277,6 +284,7 @@ export function buildEmpathyMap(cx: number, cy: number): Element[] {
       textSize: 'lg',
       textAlignX: 'left',
       textColor: q.headerColor,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     elements.push({
       ...createShape('icon', x + cellW - pad - iconSize, y + pad),
@@ -284,6 +292,7 @@ export function buildEmpathyMap(cx: number, cy: number): Element[] {
       height: iconSize,
       iconId: q.icon,
       strokeColor: q.headerColor,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     q.notes.forEach((note, i) => {
       elements.push({
@@ -292,6 +301,7 @@ export function buildEmpathyMap(cx: number, cy: number): Element[] {
         height: stickyH,
         label: note,
         textSize: 'sm',
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     });
   }
@@ -307,6 +317,9 @@ export function buildEmpathyMap(cx: number, cy: number): Element[] {
     textSize: 'md',
     textBold: true,
     colorPreset: 'bold',
+    // Content layer (spec/74): the rename target rides with the notes, so
+    // it stays clickable when the quadrant scaffold is locked.
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
   });
 
   return elements;

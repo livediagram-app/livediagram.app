@@ -22,6 +22,7 @@ import {
   type Element,
 } from '@livediagram/diagram';
 import { isTechIconId } from '@livediagram/icons';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // A small but complete request path: a client hitting an API gateway
 // that fans out to two services, which in turn read a database and a
@@ -285,7 +286,9 @@ export function buildSequenceDiagram(cx: number, cy: number): Element[] {
 
   const elements: Element[] = [];
 
-  // Participant headers + their dashed lifelines.
+  // Participant headers + their dashed lifelines: the stationary
+  // skeleton, so they ride the scaffold layer (spec/74) while the
+  // messages users add and reorder live on the content layer above.
   participants.forEach((name, i) => {
     const centerX = centerXFor(i);
     elements.push({
@@ -295,11 +298,13 @@ export function buildSequenceDiagram(cx: number, cy: number): Element[] {
       label: name,
       textSize: 'md',
       textBold: true,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     elements.push({
       ...createArrow(centerX, lifelineTop, centerX, lifelineBottom),
       arrowEnds: 'none',
       strokeStyle: 'dashed',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
   });
 
@@ -319,6 +324,7 @@ export function buildSequenceDiagram(cx: number, cy: number): Element[] {
     const y = firstMessageY + i * stepGap;
     elements.push({
       ...createArrow(centerXFor(msg.from), y, centerXFor(msg.to), y),
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
       label: msg.label,
       // Lift the label clear of the line (default centres it ON the
       // arrow). The perpendicular direction flips with the arrow's

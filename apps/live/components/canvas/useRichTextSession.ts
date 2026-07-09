@@ -35,7 +35,6 @@ export function useRichTextSession({
   cursorAtEnd,
   onCommit,
   onCancel,
-  onSetTextSize,
 }: Pick<
   RichTextEditorProps,
   | 'element'
@@ -46,7 +45,6 @@ export function useRichTextSession({
   | 'cursorAtEnd'
   | 'onCommit'
   | 'onCancel'
-  | 'onSetTextSize'
 >) {
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarWrapRef = useRef<HTMLDivElement>(null);
@@ -197,9 +195,26 @@ export function useRichTextSession({
       pointerInToolbarRef.current = false;
     };
     document.addEventListener('pointerup', onUp);
+    // Focus preservation for the context menu riding alongside the edit
+    // session (spec/09): preventDefault on mousedown inside the element
+    // context menu (or one of its side flyouts) so clicking a menu control
+    // never blurs the editor or drops the live text selection — the same
+    // trick as the toolbar's noFocusSteal, applied at the document capture
+    // phase because the menu is portalled outside the editor's tree. Form
+    // controls are exempt (the colour input needs focus for its OS picker,
+    // the opacity slider needs the native drag); the editor's onBlur
+    // ignores focus landing inside the menu for exactly those.
+    const onMenuDown = (e: MouseEvent) => {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      if (t.closest('input,textarea,select')) return;
+      if (t.closest('[data-context-menu],[data-menu-flyout]')) e.preventDefault();
+    };
+    document.addEventListener('mousedown', onMenuDown, true);
     return () => {
       document.removeEventListener('selectionchange', onSel);
       document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('mousedown', onMenuDown, true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -256,16 +271,15 @@ export function useRichTextSession({
     onCancel();
   };
 
-  // Formatting command dispatch (toggles / patches / size / lists) lives
-  // in useRichTextFormatActions; a bump repaints via the version effect.
-  const { onToggle, onPatch, chooseSize, applyList } = useRichTextFormatActions({
+  // Formatting command dispatch (toggles / patches / lists) lives in
+  // useRichTextFormatActions; a bump repaints via the version effect.
+  const { onToggle, onPatch, applyList } = useRichTextFormatActions({
     editorRef,
     runsRef,
     selectionRef,
     pendingSelectionRef,
     bumpVersion: () => setVersion((v) => v + 1),
     element,
-    onSetTextSize,
   });
 
   return {
@@ -283,7 +297,6 @@ export function useRichTextSession({
     handleCancel,
     onToggle,
     onPatch,
-    chooseSize,
     applyList,
   };
 }

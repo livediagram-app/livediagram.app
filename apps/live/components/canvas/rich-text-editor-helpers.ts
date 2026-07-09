@@ -6,7 +6,6 @@ import {
   runsPlainText,
   type BoxedElement,
   type RunBoolKey,
-  type RunSize,
   type TextRun,
 } from '@livediagram/diagram';
 import {} from '@/components/canvas/label-style';
@@ -51,16 +50,11 @@ export function computeActiveFormat(
   range: { start: number; end: number } | null,
   el: BoxedElement,
 ): ActiveFormat {
-  // A run with no size override inherits the element's textSize; reflect
-  // that as the active size so the toolbar highlights the current size by
-  // default ('scale' is a first-class option now).
-  const sizeFallback: RunSize | 'scale' = el.textSize ?? 'scale';
   const empty: ActiveFormat = {
     bold: BOOL_DEFAULT.bold(el),
     italic: BOOL_DEFAULT.italic(el),
     underline: BOOL_DEFAULT.underline(el),
     strikethrough: BOOL_DEFAULT.strikethrough(el),
-    size: sizeFallback,
     color: el.textColor ?? null,
   };
   if (!range) return empty;
@@ -86,16 +80,11 @@ export function computeActiveFormat(
     const vals = covered.map((r) => pick(r) ?? fallback);
     return vals.every((v) => v === vals[0]) ? (vals[0] as T | null) : null;
   };
-  // Size resolves to each run's override or the element default ('scale'
-  // included), uniform across the selection or null when mixed.
-  const sizeVals = covered.map((r): RunSize | 'scale' => r.size ?? sizeFallback);
-  const size = sizeVals.every((v) => v === sizeVals[0]) ? (sizeVals[0] ?? null) : null;
   return {
     bold: allBool('bold'),
     italic: allBool('italic'),
     underline: allBool('underline'),
     strikethrough: allBool('strikethrough'),
-    size,
     color: uniform((r) => r.color, el.textColor ?? null),
   };
 }

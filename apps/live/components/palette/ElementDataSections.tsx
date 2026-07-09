@@ -28,8 +28,13 @@ import {
   type IconAnimation,
 } from '@livediagram/diagram';
 import {} from '@/components/palette/palette-icons';
-import { AnimationMenuGlyph, ProgressMenuGlyph } from '@/components/palette/context-menu-icons';
+import {
+  AnimationMenuGlyph,
+  ProgressMenuGlyph,
+  ToolsMenuGlyph,
+} from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 
 import {
   AnimationTiles,
@@ -70,6 +75,7 @@ type ElementDataSectionsProps = {
   isIcon: boolean;
   boxed: boolean;
   sectionProps: Scaffold['sectionProps'];
+  flyoutProps: Scaffold['flyoutProps'];
 };
 
 export function ElementDataSections({
@@ -83,102 +89,126 @@ export function ElementDataSections({
   isIcon,
   boxed,
   sectionProps,
+  flyoutProps,
 }: ElementDataSectionsProps) {
   const shapeTarget = target.type === 'shape' ? target : null;
+  // The Tools flyout (spec/09): the data-shape-specific controls —
+  // Progress (bar / ring), Timeline rail, Rating, and the chart Data +
+  // Chart sections — fold behind one "Tools" row, the same side-flyout
+  // pattern as Style and Text, so a data element's menu doesn't grow a
+  // band of bespoke rows. Animation stays top-level (every boxed
+  // element has it).
+  const showTools = isProgress || isRail || isRating || isChart;
   return (
     <>
-      {/* Progress (spec/46) — the percentage + how the fill animates. Only
+      {showTools ? (
+        <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
+          {/* Progress (spec/46) — the percentage + how the fill animates. Only
             for progress bars / rings. */}
-      {isProgress ? (
-        <MenuAccordionSection
-          title="Progress"
-          icon={<ProgressMenuGlyph />}
-          {...sectionProps('progress')}
-        >
-          <ProgressRow value={shapeTarget?.progress ?? 50} onChange={props.onSetProgress} />
-          <ProgressAnimTiles
-            anim={shapeTarget?.progressAnim ?? null}
-            speed={shapeTarget?.progressAnimSpeed ?? 'normal'}
-            repeat={animLoops(
-              shapeTarget?.progressAnim,
-              shapeTarget?.progressAnimRepeat,
-              PROGRESS_LOOPING_ANIMS,
-            )}
-            onSet={props.onSetProgressAnim}
-            onSetSpeed={props.onSetProgressAnimSpeed}
-            onSetRepeat={props.onSetProgressAnimRepeat}
-          />
-        </MenuAccordionSection>
-      ) : null}
-      {/* Timeline (spec/51) — how many points sit on the rail. The right-end
+          {isProgress ? (
+            <MenuAccordionSection
+              title="Progress"
+              icon={<ProgressMenuGlyph />}
+              {...sectionProps('progress')}
+            >
+              <ProgressRow value={shapeTarget?.progress ?? 50} onChange={props.onSetProgress} />
+              <ProgressAnimTiles
+                anim={shapeTarget?.progressAnim ?? null}
+                speed={shapeTarget?.progressAnimSpeed ?? 'normal'}
+                repeat={animLoops(
+                  shapeTarget?.progressAnim,
+                  shapeTarget?.progressAnimRepeat,
+                  PROGRESS_LOOPING_ANIMS,
+                )}
+                onSet={props.onSetProgressAnim}
+                onSetSpeed={props.onSetProgressAnimSpeed}
+                onSetRepeat={props.onSetProgressAnimRepeat}
+              />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Timeline (spec/51) — how many points sit on the rail. The right-end
             "+" on the canvas adds one too; this is the precise control. */}
-      {isRail ? (
-        <MenuAccordionSection
-          title="Timeline"
-          icon={<ProgressMenuGlyph />}
-          {...sectionProps('timeline')}
-        >
-          <RailPointsRow
-            value={shapeTarget?.railCount ?? RAIL_DEFAULT_POINTS}
-            onChange={props.onSetRailCount}
-          />
-        </MenuAccordionSection>
-      ) : null}
-      {/* Rating (spec/52) — the star score + a star-specific animation. */}
-      {isRating ? (
-        <MenuAccordionSection title="Rating" icon={<RatingMenuGlyph />} {...sectionProps('rating')}>
-          <RatingPickerRow
-            value={shapeTarget?.rating ?? RATING_DEFAULT}
-            onChange={props.onSetRating}
-          />
-          <RatingAnimTiles
-            anim={shapeTarget?.ratingAnim ?? null}
-            speed={shapeTarget?.ratingAnimSpeed ?? 'normal'}
-            repeat={animLoops(
-              shapeTarget?.ratingAnim,
-              shapeTarget?.ratingAnimRepeat,
-              RATING_LOOPING_ANIMS,
-            )}
-            onSet={props.onSetRatingAnim}
-            onSetSpeed={props.onSetRatingAnimSpeed}
-            onSetRepeat={props.onSetRatingAnimRepeat}
-          />
-        </MenuAccordionSection>
-      ) : null}
-      {/* Data (spec/53) — the chart's data. Pie / bar edit a single row of
+          {isRail ? (
+            <MenuAccordionSection
+              title="Timeline"
+              icon={<ProgressMenuGlyph />}
+              {...sectionProps('timeline')}
+            >
+              <RailPointsRow
+                value={shapeTarget?.railCount ?? RAIL_DEFAULT_POINTS}
+                onChange={props.onSetRailCount}
+              />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Rating (spec/52) — the star score + a star-specific animation. */}
+          {isRating ? (
+            <MenuAccordionSection
+              title="Rating"
+              icon={<RatingMenuGlyph />}
+              {...sectionProps('rating')}
+            >
+              <RatingPickerRow
+                value={shapeTarget?.rating ?? RATING_DEFAULT}
+                onChange={props.onSetRating}
+              />
+              <RatingAnimTiles
+                anim={shapeTarget?.ratingAnim ?? null}
+                speed={shapeTarget?.ratingAnimSpeed ?? 'normal'}
+                repeat={animLoops(
+                  shapeTarget?.ratingAnim,
+                  shapeTarget?.ratingAnimRepeat,
+                  RATING_LOOPING_ANIMS,
+                )}
+                onSet={props.onSetRatingAnim}
+                onSetSpeed={props.onSetRatingAnimSpeed}
+                onSetRepeat={props.onSetRatingAnimRepeat}
+              />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Data (spec/53) — the chart's data. Pie / bar edit a single row of
             label+value inline; the line chart's 2-D grid is too wide for the
             menu, so it summarises the series + opens a modal to edit. */}
-      {isChart ? (
-        <MenuAccordionSection title="Data" icon={<DataMenuGlyph />} {...sectionProps('pie-data')}>
-          {isLine ? (
-            <LineDataSummary
-              series={
-                shapeTarget?.lineSeries ??
-                LINE_DEFAULT_SERIES.map((s) => ({ ...s, values: [...s.values] }))
-              }
-              onEdit={() => target.type === 'shape' && props.onEditLineData(target.id)}
-            />
-          ) : (
-            <PieDataEditor
-              slices={shapeTarget?.pieSlices ?? PIE_DEFAULT_SLICES.map((s) => ({ ...s }))}
-              onChange={props.onSetPieData}
-            />
-          )}
-        </MenuAccordionSection>
-      ) : null}
-      {/* Chart (spec/53) — display options. Legend placement: Off + 4 sides. */}
-      {isChart ? (
-        <MenuAccordionSection title="Chart" icon={<ChartMenuGlyph />} {...sectionProps('chart')}>
-          <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-            Legend
-          </p>
-          <LegendPositionTiles
-            position={shapeTarget?.chartLegendPosition ?? 'right'}
-            show={shapeTarget?.chartLegend !== false}
-            onSetOff={() => props.onSetChartLegend(false)}
-            onSetPosition={props.onSetChartLegendPosition}
-          />
-        </MenuAccordionSection>
+          {isChart ? (
+            <MenuAccordionSection
+              title="Data"
+              icon={<DataMenuGlyph />}
+              {...sectionProps('pie-data')}
+            >
+              {isLine ? (
+                <LineDataSummary
+                  series={
+                    shapeTarget?.lineSeries ??
+                    LINE_DEFAULT_SERIES.map((s) => ({ ...s, values: [...s.values] }))
+                  }
+                  onEdit={() => target.type === 'shape' && props.onEditLineData(target.id)}
+                />
+              ) : (
+                <PieDataEditor
+                  slices={shapeTarget?.pieSlices ?? PIE_DEFAULT_SLICES.map((s) => ({ ...s }))}
+                  onChange={props.onSetPieData}
+                />
+              )}
+            </MenuAccordionSection>
+          ) : null}
+          {/* Chart (spec/53) — display options. Legend placement: Off + 4 sides. */}
+          {isChart ? (
+            <MenuAccordionSection
+              title="Chart"
+              icon={<ChartMenuGlyph />}
+              {...sectionProps('chart')}
+            >
+              <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                Legend
+              </p>
+              <LegendPositionTiles
+                position={shapeTarget?.chartLegendPosition ?? 'right'}
+                show={shapeTarget?.chartLegend !== false}
+                onSetOff={() => props.onSetChartLegend(false)}
+                onSetPosition={props.onSetChartLegendPosition}
+              />
+            </MenuAccordionSection>
+          ) : null}
+        </MenuFlyoutSection>
       ) : null}
       {/* Animation (spec/09) — a looping attention/status effect on the
             element. None clears it. Pie charts swap the boxed-element set for

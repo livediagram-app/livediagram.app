@@ -7,7 +7,7 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { PlusIcon } from '@/components/panels/explorer-icons';
+import { OpenIcon, PlusIcon } from '@/components/panels/explorer-icons';
 import { DiagramRow } from '@/components/panels/explorer-views';
 import { ExplorerSections } from '@/components/panels/ExplorerSections';
 
@@ -167,23 +167,34 @@ function ExplorerImpl({
       width={isMobile ? 'w-auto' : 'w-64'}
       onReset={onReset}
       onMoveTo={onMoveTo}
-      // New-diagram action lives in the header, just left of the
-      // reset-position button (mr-1 spaces it away from that cluster).
-      // Compact "New" + icon so it fits the title row.
+      // New-diagram + Open actions live in the header, just left of
+      // the reset-position button (mr-1 spaces the pair away from that
+      // cluster). Compact icon + text so they fit the title row; Open
+      // navigates to the full-page Explorer's Recent list (the same
+      // destination the /new page's "Open Explorer" footer uses).
       headerActions={
-        onNewDiagram ? (
-          <button
-            type="button"
-            onClick={onNewDiagram}
-            // Icon + text match the panel title's slate (not brand) so
-            // the button reads as quiet header chrome; a subtle border +
-            // hover tint keep it recognisably a button.
+        <>
+          {onNewDiagram ? (
+            <button
+              type="button"
+              onClick={onNewDiagram}
+              // Icon + text match the panel title's slate (not brand) so
+              // the button reads as quiet header chrome; a subtle border +
+              // hover tint keep it recognisably a button.
+              className="inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <PlusIcon />
+              New
+            </button>
+          ) : null}
+          <a
+            href="/explorer/recent"
             className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
-            <PlusIcon />
-            New
-          </button>
-        ) : undefined
+            <OpenIcon />
+            Open
+          </a>
+        </>
       }
       {...dock}
       onSize={onSize}
