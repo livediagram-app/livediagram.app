@@ -1,43 +1,45 @@
-// The 3-step wizard header for the template picker (theme -> template ->
-// name), plus its StepChip pill. Split out of TemplatePicker.tsx.
+import { Fragment } from 'react';
+
+type WizardStep = 'template' | 'theme' | 'settings';
+const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
+  { key: 'template', label: 'Template' },
+  { key: 'theme', label: 'Theme' },
+  { key: 'settings', label: 'Settings' },
+];
+
+// The 3-step wizard header for the template picker (Template -> Theme ->
+// Settings, spec/76), plus its StepChip pill. A compact, left-aligned
+// stepper: each chip jumps to that step, and the connector fills brand as
+// you advance so it reads as progress rather than a static rule.
 export function WizardSteps({
   step,
   onStep,
 }: {
-  step: 'template' | 'theme';
-  onStep: (s: 'template' | 'theme') => void;
+  step: WizardStep;
+  onStep: (s: WizardStep) => void;
 }) {
-  const onTheme = step === 'theme';
-  // A compact, left-aligned stepper. The old version stretched a
-  // full-width hairline between the two chips, leaving an awkward expanse
-  // of empty rule across the header; this keeps the chips together at the
-  // left with a short connector so it reads as a tidy "1 → 2" pair.
-  // The active chip's pill has a negative left margin so its text still
-  // lines up flush with the title above it.
+  const idx = WIZARD_STEPS.findIndex((s) => s.key === step);
   return (
-    <div className="flex items-center justify-start gap-1.5 -ml-2.5">
-      <StepChip
-        n={1}
-        label="Template"
-        state={onTheme ? 'done' : 'active'}
-        onClick={() => onStep('template')}
-      />
-      {/* A mini progress track between the chips: the brand fill grows
-          from 0 to full as you advance to step 2, so the connector reads
-          as progress rather than a static rule. */}
-      <div className="h-1.5 w-12 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-        <div
-          className={`h-full rounded-full bg-brand-500 transition-[width] duration-300 ease-out ${
-            onTheme ? 'w-full' : 'w-0'
-          }`}
-        />
-      </div>
-      <StepChip
-        n={2}
-        label="Theme"
-        state={onTheme ? 'active' : 'upcoming'}
-        onClick={() => onStep('theme')}
-      />
+    <div className="-ml-2.5 flex items-center justify-start gap-1.5">
+      {WIZARD_STEPS.map((s, i) => (
+        <Fragment key={s.key}>
+          {i > 0 ? (
+            <div className="h-1.5 w-9 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+              <div
+                className={`h-full rounded-full bg-brand-500 transition-[width] duration-300 ease-out ${
+                  i <= idx ? 'w-full' : 'w-0'
+                }`}
+              />
+            </div>
+          ) : null}
+          <StepChip
+            n={i + 1}
+            label={s.label}
+            state={i < idx ? 'done' : i === idx ? 'active' : 'upcoming'}
+            onClick={() => onStep(s.key)}
+          />
+        </Fragment>
+      ))}
     </div>
   );
 }

@@ -26,7 +26,6 @@ export function TemplatePickerBrowse({
   blankTemplate,
   categoryTemplates,
   templateKind,
-  setTemplateKind,
   onTemplateCommit,
   onGuidedTour,
 }: {
@@ -42,7 +41,8 @@ export function TemplatePickerBrowse({
   blankTemplate: TemplateDescriptor | undefined;
   categoryTemplates: (category: TemplateCategory) => TemplateDescriptor[];
   templateKind: TemplateKind;
-  setTemplateKind: (kind: TemplateKind) => void;
+  // Single-click a template card: select it AND advance to the theme step
+  // (spec/76). The same handler backs double-click, so either gesture works.
   onTemplateCommit: (kind: TemplateKind) => void;
   // Welcome mode only (spec/69): renders the "Show me around" card on the
   // overview beside Blank. One click commits the guided-tour sample with
@@ -88,7 +88,7 @@ export function TemplatePickerBrowse({
                   key={t.kind}
                   template={t}
                   active={templateKind === t.kind}
-                  onSelect={() => setTemplateKind(t.kind)}
+                  onSelect={() => onTemplateCommit(t.kind)}
                   onCommit={() => onTemplateCommit(t.kind)}
                 />
               ))}
@@ -109,7 +109,7 @@ export function TemplatePickerBrowse({
                   key={t.kind}
                   template={t}
                   active={templateKind === t.kind}
-                  onSelect={() => setTemplateKind(t.kind)}
+                  onSelect={() => onTemplateCommit(t.kind)}
                   onCommit={() => onTemplateCommit(t.kind)}
                 />
               ))}
@@ -121,7 +121,7 @@ export function TemplatePickerBrowse({
               <TemplateCard
                 template={blankTemplate}
                 active={templateKind === 'blank'}
-                onSelect={() => setTemplateKind('blank')}
+                onSelect={() => onTemplateCommit('blank')}
                 onCommit={() => onTemplateCommit('blank')}
               />
             ) : null}

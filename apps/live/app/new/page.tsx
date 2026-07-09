@@ -3,12 +3,19 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
-import { TemplatePicker } from '@/components/palette/TemplatePicker';
+import { TemplatePicker, type NewDiagramSettings } from '@/components/palette/TemplatePicker';
 import { RecentDiagramsCard } from './RecentDiagramsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
+import {
+  apiCreateDiagram,
+  apiListFolders,
+  apiListTeams,
+  apiLoadSelf,
+  apiSaveSelf,
+  apiSetDiagramFolder,
+} from '@/lib/api-client';
 import { offlineCreateDiagram } from '@/lib/offline/offline-store';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
@@ -47,9 +54,15 @@ export default function NewDiagramPage() {
     // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
     // theme id (spec/44) as well as a built-in one.
     themeId: string;
-    // Offline Mode (spec/76): the diagram is saved only in this browser.
-    offline: boolean;
+    // The Settings step's choices (spec/76): diagram name, placement, offline.
+    settings: NewDiagramSettings;
   } | null>(null);
+
+  // Personal folders + teams offered by the Settings step's placement picker
+  // (spec/76). Folders work for guests; teams are Clerk-only, so we only fetch
+  // them once signed in. Empty until the fetch settles / for signed-out users.
+  const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
+  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
 
   // Clerk wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
@@ -99,6 +112,29 @@ export default function NewDiagramPage() {
     })();
   }, [authLoaded, clerkUserId]);
 
+  // Load the placement options for the Settings step once identity resolves.
+  // Personal folders only (a team's folders live under their own optgroup);
+  // teams are Clerk-only so they're skipped for guests.
+  useEffect(() => {
+    if (self.id === 'pending') return;
+    let cancelled = false;
+    void (async () => {
+      const list = await apiListFolders(self.id).catch(() => []);
+      if (!cancelled) {
+        setFolders(list.filter((f) => f.teamId == null).map((f) => ({ id: f.id, name: f.name })));
+      }
+    })();
+    if (clerkUserId) {
+      void (async () => {
+        const list = await apiListTeams(self.id).catch(() => []);
+        if (!cancelled) setTeams(list.map((t) => ({ id: t.id, name: t.name })));
+      })();
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [self.id, clerkUserId]);
+
   // Single commit point, shared by the Create Diagram and Skip paths.
   // Submit passes a template + theme; Skip passes 'blank' + 'brand'. Either
   // way we persist the diagram so the editor route lands on a real row.
@@ -106,14 +142,17 @@ export default function NewDiagramPage() {
     templateKind: TemplateKind | null,
     name: string,
     themeId: string,
-    offline = false,
+    settings: NewDiagramSettings,
   ) => {
     if (submitting) return;
     setSubmitting(true);
     // "Show me around" (the guided tour, spec/69) is a throwaway sample — always
     // create it offline (spec/76) so we don't pile guided-tour diagrams into D1.
-    offline = offline || templateKind === 'guided-tour';
-    lastCreateArgs.current = { kind: templateKind, name, themeId, offline };
+    const offline = settings.offline || templateKind === 'guided-tour';
+    lastCreateArgs.current = { kind: templateKind, name, themeId, settings };
+    // The Settings step's name field wins; fall back to the per-template
+    // default when it's left blank (spec/76).
+    const diagramName = settings.diagramName?.trim() || untitledNameForTemplate(templateKind);
     // Identity persistence first so any subsequent room broadcasts
     // carry the chosen name + colour.
     const trimmed = name.trim() || self.name;
@@ -148,14 +187,11 @@ export default function NewDiagramPage() {
       if (offline) {
         // Offline Mode (spec/76): create the diagram in IndexedDB only. This
         // also registers its id so every later load / save routes local.
-        await offlineCreateDiagram(
-          { id: diagramId, name: untitledNameForTemplate(templateKind), tabs: [tab] },
-          Date.now(),
-        );
+        await offlineCreateDiagram({ id: diagramId, name: diagramName, tabs: [tab] }, Date.now());
       } else {
         await apiCreateDiagram(self.id, {
           id: diagramId,
-          name: untitledNameForTemplate(templateKind),
+          name: diagramName,
           tabs: [tab],
         });
       }
@@ -180,18 +216,19 @@ export default function NewDiagramPage() {
         themeId.charAt(0).toUpperCase() + themeId.slice(1));
     track('Theme', 'Changed', themeLabel);
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
-    // Placement context from the URL. /new?folder=<id> drops a fresh
-    // diagram straight into the folder the user was browsing;
-    // /new?team=<id>(&folder=<id>) sends it into that team's shared
-    // library (spec/35), scoped to the open team folder when one is set.
-    // Done as a follow-up PUT so the create endpoint signature stays
-    // stable and placement can fail independently (network glitch ->
-    // diagram lives in the personal Unsorted, user can move it later).
-    // Offline diagrams have no server folder / team placement — skip it.
+    // Placement. The Settings step's picker (spec/76) is authoritative when
+    // the user chose a folder or team; otherwise we fall back to the URL
+    // context (/new?folder=<id> drops the diagram into the folder the user
+    // was browsing, /new?team=<id>(&folder=<id>) into that team's shared
+    // library, spec/35). Done as a follow-up PUT so the create endpoint
+    // signature stays stable and placement can fail independently (a glitch
+    // just leaves it in the personal Unsorted, movable later). Offline
+    // diagrams have no server folder / team placement — skip it.
     if (!offline) {
       const params = new URLSearchParams(window.location.search);
-      const targetFolderId = params.get('folder');
-      const targetTeamId = params.get('team');
+      const chosePlacement = settings.folderId != null || settings.teamId != null;
+      const targetFolderId = chosePlacement ? (settings.folderId ?? null) : params.get('folder');
+      const targetTeamId = chosePlacement ? (settings.teamId ?? null) : params.get('team');
       if (targetTeamId) {
         await apiSetDiagramFolder(self.id, diagramId, targetFolderId, targetTeamId).catch(() => {});
       } else if (targetFolderId) {
@@ -219,7 +256,7 @@ export default function NewDiagramPage() {
             onRetry={() => {
               setCreateError(false);
               const a = lastCreateArgs.current;
-              if (a) void commitNewDiagram(a.kind, a.name, a.themeId, a.offline);
+              if (a) void commitNewDiagram(a.kind, a.name, a.themeId, a.settings);
             }}
           />
         </main>
@@ -254,11 +291,14 @@ export default function NewDiagramPage() {
             participant={self}
             currentThemeId="brand"
             busy={submitting}
+            folders={folders}
+            teams={teams}
+            defaultDiagramName={untitledNameForTemplate(null)}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
-            onPick={(kind, name, themeId, offline) =>
-              void commitNewDiagram(kind, name, themeId, offline)
+            onPick={(kind, name, themeId, settings) =>
+              void commitNewDiagram(kind, name, themeId, settings)
             }
-            onSkip={() => void commitNewDiagram('blank', self.name, 'brand')}
+            onSkip={() => void commitNewDiagram('blank', self.name, 'brand', { offline: false })}
           />
         </CustomThemeProvider>
         {/* Returning users get a "jump back in" shortcut beside the wizard

@@ -18,14 +18,14 @@ export function TemplatePickerFooter({
 }: {
   isIdentity: boolean;
   isWelcome: boolean;
-  step: 'template' | 'theme';
+  step: 'template' | 'theme' | 'settings';
   busy: boolean;
   onSkip: () => void;
   onOpenExisting?: () => void;
   skipToDefaults: () => void;
-  goToStep: (step: 'template' | 'theme') => void;
-  // Commit the current pick (template + name + theme) — Join in identity
-  // mode, Create / Apply on the theme step.
+  goToStep: (step: 'template' | 'theme' | 'settings') => void;
+  // Commit the current pick — Join in identity mode, Create on the welcome
+  // wizard's Settings step, Apply on the in-editor templates theme step.
   onCommit: () => void;
 }) {
   return (
@@ -98,10 +98,15 @@ export function TemplatePickerFooter({
               Skip
             </button>
           ) : null}
-          {step === 'template' ? (
+          {/* Advance vs commit. The welcome wizard has three steps
+            (template -> theme -> settings), so Next carries the user from
+            template to theme and from theme to settings, and only the
+            Settings step commits (Create). The in-editor templates flow
+            has no Settings step, so its theme step commits (Apply). */}
+          {step === 'template' || (step === 'theme' && isWelcome) ? (
             <button
               type="button"
-              onClick={() => goToStep('theme')}
+              onClick={() => goToStep(step === 'template' ? 'theme' : 'settings')}
               className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
             >
               Next

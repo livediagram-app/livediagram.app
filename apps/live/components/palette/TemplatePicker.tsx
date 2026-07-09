@@ -10,8 +10,18 @@ import { TemplatePickerBrowse } from '@/components/palette/TemplatePickerBrowse'
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { TemplatePickerFooter } from './TemplatePickerFooter';
+import { NewDiagramSettingsStep } from './template-picker-settings';
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { WizardSteps } from './template-picker-wizard';
+
+// What the welcome wizard's Settings step (spec/76) hands back on Create.
+export type NewDiagramSettings = {
+  offline: boolean;
+  diagramName?: string;
+  // Personal folder placement, or a team library. At most one is set.
+  folderId?: string | null;
+  teamId?: string | null;
+};
 
 type TemplatePickerProps = {
   // 'welcome' — first-run modal: identity, template, theme, confirm.
@@ -39,10 +49,16 @@ type TemplatePickerProps = {
   // different identity on someone else's diagram. Has no effect in
   // 'welcome' / 'templates' modes (no identity row to lock).
   lockedName?: string | null;
-  // `offline` (spec/76): create the diagram in this browser only, not on the
-  // server. Only ever true from the welcome wizard's "Save offline" toggle;
-  // other modes always pass false (the diagram already exists).
-  onPick: (kind: TemplateKind, name: string, themeId: string, offline: boolean) => void;
+  // The welcome wizard's Settings step (spec/76) collects these alongside the
+  // participant name + theme. Other modes pass just `{ offline: false }` (the
+  // diagram already exists, so name/folder/team don't apply).
+  onPick: (kind: TemplateKind, name: string, themeId: string, settings: NewDiagramSettings) => void;
+  // Personal folders + teams for the Settings step's placement picker (welcome
+  // mode). Empty when none / still loading.
+  folders?: { id: string; name: string }[];
+  teams?: { id: string; name: string }[];
+  // Default diagram name for the Settings step's name field (per template).
+  defaultDiagramName?: string;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
@@ -78,6 +94,9 @@ export function TemplatePicker({
   onSkip,
   busy = false,
   onOpenExisting,
+  folders = [],
+  teams = [],
+  defaultDiagramName = 'Untitled diagram',
 }: TemplatePickerProps) {
   // Mount-open overlay: silence the canvas shortcut/paste listeners
   // behind it (see lib/modal-guard). Harmless on /new, where no canvas
@@ -141,19 +160,36 @@ export function TemplatePicker({
   // only; threaded into every onPick so Skip / guided tour / Create all honour
   // it. False in non-welcome modes (the toggle never renders there).
   const [offline, setOffline] = useState(false);
+  // Settings step (spec/76): diagram name (defaults per template) + placement.
+  // `placement` is 'unsorted' | `folder:<id>` | `team:<id>` in one control.
+  const [diagramNameInput, setDiagramNameInput] = useState(defaultDiagramName);
+  const [placement, setPlacement] = useState('unsorted');
+  // The settings the wizard commits with. Diagram name defaults to the
+  // template's default when the field is left blank.
+  const settings = (): NewDiagramSettings => {
+    const name = diagramNameInput.trim() || defaultDiagramName;
+    if (placement.startsWith('folder:')) {
+      return { offline, diagramName: name, folderId: placement.slice(7), teamId: null };
+    }
+    if (placement.startsWith('team:')) {
+      return { offline, diagramName: name, folderId: null, teamId: placement.slice(5) };
+    }
+    return { offline, diagramName: name, folderId: null, teamId: null };
+  };
   // Welcome mode is a two-step wizard: pick a template, then a theme
   // (spec/14). Other modes keep the single-page layout. `themeBuilding`
   // tracks whether the theme step's custom-theme builder is open, so the
   // wizard hides its own Back / Create footer while the builder owns the
   // surface (the builder has its own Save / Cancel).
-  const [step, setStep] = useState<'template' | 'theme'>('template');
+  const [step, setStep] = useState<'template' | 'theme' | 'settings'>('template');
   // Direction of the last step change, so the incoming phase slides in
   // from the side it's travelling toward (forward = from the right, back
   // = from the left). Drives the tip-next / tip-prev slide animation on
   // the keyed step container below.
   const [stepDir, setStepDir] = useState<'forward' | 'backward'>('forward');
-  const goToStep = (next: 'template' | 'theme') => {
-    setStepDir(next === 'theme' ? 'forward' : 'backward');
+  const STEP_ORDER = ['template', 'theme', 'settings'] as const;
+  const goToStep = (next: 'template' | 'theme' | 'settings') => {
+    setStepDir(STEP_ORDER.indexOf(next) >= STEP_ORDER.indexOf(step) ? 'forward' : 'backward');
     setStep(next);
   };
   const [themeBuilding, setThemeBuilding] = useState(false);
@@ -199,17 +235,17 @@ export function TemplatePicker({
   const showThemeSection = showThemes && (!isWizard || step === 'theme');
   // Skip the wizard entirely: the documented shortcut is Blank template +
   // Basic theme (spec/14), committed straight away.
-  const skipToDefaults = () => onPick('blank', effectiveName, 'brand', offline);
+  const skipToDefaults = () => onPick('blank', effectiveName, 'brand', { offline });
   // "Show me around" (spec/69): one click commits the guided-tour sample
   // with the default theme, no theme step, so a first-time user lands on a
   // living canvas immediately. Welcome mode only.
-  const startGuidedTour = () => onPick('guided-tour', effectiveName, 'brand', offline);
+  const startGuidedTour = () => onPick('guided-tour', effectiveName, 'brand', { offline });
   // Double-clicking a template advances to the theme step (the user still
   // needs to pick a theme) rather than committing the whole wizard.
   const onTemplateCommit = (kind: TemplateKind) => {
     setTemplateKind(kind);
     if (isWizard) goToStep('theme');
-    else onPick(kind, effectiveName, themeId, offline);
+    else onPick(kind, effectiveName, themeId, { offline });
   };
 
   return (
@@ -241,7 +277,9 @@ export function TemplatePicker({
                 {isWizard
                   ? step === 'template'
                     ? 'Choose a template to start from.'
-                    : 'Pick a theme, or build your own.'
+                    : step === 'theme'
+                      ? 'Pick a theme, or build your own.'
+                      : 'Name your diagram and choose where it lives.'
                   : nameLocked
                     ? 'This is the name from your account; others will see it on this diagram.'
                     : 'Pick the name people will see while you collaborate on this diagram.'}
@@ -320,7 +358,6 @@ export function TemplatePicker({
                 blankTemplate={blankTemplate}
                 categoryTemplates={categoryTemplates}
                 templateKind={templateKind}
-                setTemplateKind={setTemplateKind}
                 onTemplateCommit={onTemplateCommit}
                 onGuidedTour={isWelcome ? startGuidedTour : undefined}
               />
@@ -335,35 +372,39 @@ export function TemplatePicker({
             {showThemeSection ? (
               <CustomThemePicker
                 themeId={themeId}
-                onSelect={setThemeId}
-                onCommit={(id) => onPick(templateKind, effectiveName, id, offline)}
+                // Single-click a theme (spec/76): in the welcome wizard,
+                // selecting a theme advances straight to the Settings step; in
+                // the in-editor templates flow (no Settings step) it just sets
+                // the theme, leaving Apply to commit.
+                onSelect={(id) => {
+                  setThemeId(id);
+                  if (isWelcome) goToStep('settings');
+                }}
+                onCommit={(id) => {
+                  setThemeId(id);
+                  if (isWelcome) goToStep('settings');
+                  else onPick(templateKind, effectiveName, id, { offline });
+                }}
                 onBuildingChange={setThemeBuilding}
                 browserClassName="mt-1"
               />
             ) : null}
+            {/* Settings step (spec/76): name, placement, offline. */}
+            {isWizard && step === 'settings' ? (
+              <NewDiagramSettingsStep
+                diagramName={diagramNameInput}
+                onDiagramName={setDiagramNameInput}
+                placeholder={defaultDiagramName}
+                placement={placement}
+                onPlacement={setPlacement}
+                folders={folders}
+                teams={teams}
+                offline={offline}
+                onOffline={setOffline}
+              />
+            ) : null}
           </div>
         </div>
-
-        {/* Offline Mode toggle (spec/76) — welcome wizard only. Sits just above
-            the footer so "Save offline" reads as part of the create action. */}
-        {isWelcome && !themeBuilding ? (
-          <label className="flex cursor-pointer items-center gap-2.5 border-t border-slate-100 px-5 py-2.5 dark:border-slate-800">
-            <input
-              type="checkbox"
-              checked={offline}
-              onChange={(e) => setOffline(e.target.checked)}
-              className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-brand-600 dark:border-slate-600"
-            />
-            <span className="flex flex-col leading-tight">
-              <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                Save offline, this browser only
-              </span>
-              <span className="text-[11px] text-slate-400 dark:text-slate-500">
-                Stays on this device. Not synced, not backed up.
-              </span>
-            </span>
-          </label>
-        ) : null}
 
         {/* Footer — see TemplatePickerFooter. Hidden entirely while the
             theme step's builder is open (it carries its own Save / Cancel). */}
@@ -377,7 +418,7 @@ export function TemplatePicker({
             onOpenExisting={onOpenExisting}
             skipToDefaults={skipToDefaults}
             goToStep={goToStep}
-            onCommit={() => onPick(templateKind, effectiveName, themeId, offline)}
+            onCommit={() => onPick(templateKind, effectiveName, themeId, settings())}
           />
         )}
       </div>
