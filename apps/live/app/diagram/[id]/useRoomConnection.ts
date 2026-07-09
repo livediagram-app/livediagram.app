@@ -304,7 +304,12 @@ export function useRoomConnection(opts: {
           // an idempotent Yjs merge, so a RECONNECT re-syncs whatever we
           // missed while disconnected instead of diverging (ydoc ops bypass
           // the L1 op-log, so this is the only catch-up path for them).
-          const mirror = yjsMirrorRef.current;
+          //
+          // System-only: the room stamps its seed reply `from: 'system'` and
+          // refuses to relay `ydoc-state` from a client socket. This check is
+          // defence in depth (like share-revoked) so a peer can't force us to
+          // adopt a crafted doc even if the server drop regresses.
+          const mirror = from === 'system' ? yjsMirrorRef.current : null;
           if (mirror) {
             if (op.update === null) {
               if (!mirror.isSeeded) mirror.seedFromHydrate(tabsRef.current);

@@ -861,4 +861,35 @@ describe('DiagramRoom Yjs doc authority (spec/75, Level 2)', () => {
     sendFrame(room, viewer, { kind: 'op', op: { kind: 'ydoc-sync' } });
     expect(lastOp(viewer).op.kind).toBe('ydoc-state');
   });
+
+  it('throttles rapid ydoc-sync so it can’t amplify full-doc encodes', () => {
+    const { room } = newRoom();
+    const { editor } = editorAndPeer(room);
+    // First sync answered; a second within the throttle window is ignored
+    // (back-to-back sends land in the same sub-1s window).
+    sendFrame(room, editor, { kind: 'op', op: { kind: 'ydoc-sync' } });
+    sendFrame(room, editor, { kind: 'op', op: { kind: 'ydoc-sync' } });
+    const replies = editor.sent
+      .map((s) => JSON.parse(s))
+      .filter((m) => m.op?.kind === 'ydoc-state');
+    expect(replies).toHaveLength(1);
+  });
+
+  it('never relays a client-forged ydoc-state (system-only, like share-revoked)', () => {
+    const { room } = newRoom();
+    const { editor, peer } = editorAndPeer(room);
+
+    // ydoc-state is the room's seed REPLY (from:'system'). An edit-role peer
+    // forging it must not reach peers, or it could make them adopt a crafted
+    // doc seed at will.
+    sendFrame(room, editor, {
+      kind: 'op',
+      op: { kind: 'ydoc-state', update: seedUpdate('evil') },
+    });
+
+    expect(peer.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'op')).toHaveLength(0);
+    // Dropped, not logged as a mutation either.
+    expect(room.seq).toBe(0);
+    expect(room.opLog).toEqual([]);
+  });
 });

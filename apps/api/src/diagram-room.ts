@@ -68,6 +68,13 @@ const OP_LOG_LIMIT = 256;
 // diagram state, so they relay unordered (no seq) and from any role.
 const PRESENCE_OP_KINDS = new Set(['cursor', 'select', 'laser', 'tab-focus']);
 
+// Min gap between `ydoc-sync` replies per session (spec/75, Level 2). A sync
+// forces a full-doc encode and is allowed from ANY role (viewers must read
+// the shared doc), so without this a view-only visitor could spam it to
+// amplify cheap requests into repeated full-doc encodes on the single-
+// threaded DO. Legit clients send it ~once per (re)connect, far under this.
+const YDOC_SYNC_MIN_INTERVAL_MS = 1000;
+
 // One entry in the reconnect catch-up log: a mutation op plus the sequence
 // number the room assigned it within the current epoch.
 type LoggedOp = { seq: number; from: string; op: unknown };
@@ -116,6 +123,12 @@ export class DiagramRoom implements DurableObject {
   // close / error / dead-send so the map can't leak across a long-lived
   // in-memory period.
   opRates: Map<WebSocket, { count: number; windowStart: number }> = new Map();
+
+  // Last `ydoc-sync` reply time per socket, to throttle the full-doc encode
+  // it triggers (see YDOC_SYNC_MIN_INTERVAL_MS). In-memory like opRates: a
+  // hibernation reset just re-opens the window, which is harmless for a flood
+  // gate. Cleaned on close/error so the map can't leak.
+  ydocSyncAt: Map<WebSocket, number> = new Map();
 
   // Ordering state for reconnect catch-up (spec/75, Level 1). All three
   // live in memory only — deliberately, like opRates. A hibernation wake
@@ -328,17 +341,23 @@ export class DiagramRoom implements DurableObject {
       // The role is the server-verified one (X-Verified-Role, re-stamped
       // in hello), not anything the client claims.
       const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
-      // System-only ops never relay from a client socket: they're
-      // emitted exclusively by the worker via /broadcast (stamped
-      // `from: 'system'`). Without this drop, any edit-role peer
-      // could forge `share-revoked` with the code from their own URL
-      // and force-redirect every collaborator out of the session.
-      if (opKind === 'share-revoked') return;
+      // System-only ops never relay from a client socket: they're emitted
+      // exclusively by the worker via /broadcast or by the room itself,
+      // stamped `from: 'system'`. Without this drop a peer could forge
+      // `share-revoked` (force-redirect every collaborator out) or
+      // `ydoc-state` (make peers adopt an attacker-crafted doc seed — the
+      // seed reply is the room's job, never a client's).
+      if (opKind === 'share-revoked' || opKind === 'ydoc-state') return;
       // A Level 2 joiner requesting the shared doc (spec/75). Read-only, so
       // allowed from any role and answered to the sender alone — never
-      // relayed to peers.
+      // relayed to peers. Throttled per session because it forces a full-doc
+      // encode (see YDOC_SYNC_MIN_INTERVAL_MS).
       if (opKind === 'ydoc-sync') {
-        this.sendYdocState(ws);
+        const last = this.ydocSyncAt.get(ws) ?? 0;
+        if (now - last >= YDOC_SYNC_MIN_INTERVAL_MS) {
+          this.ydocSyncAt.set(ws, now);
+          this.sendYdocState(ws);
+        }
         return;
       }
       const isPresenceOp = typeof opKind === 'string' && PRESENCE_OP_KINDS.has(opKind);
@@ -466,6 +485,7 @@ export class DiagramRoom implements DurableObject {
 
   private dropSession(ws: WebSocket): void {
     this.opRates.delete(ws);
+    this.ydocSyncAt.delete(ws);
     // Exclude the departing socket explicitly: depending on when the
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
