@@ -38,7 +38,9 @@ The unit of value is the team, not the individual. See [spec/00](../specs/00-pur
 
 ## What's still ahead
 
-- **Full CRDT edits.** Realtime conflict resolution has landed its first two levels — concurrent edits to _different_ elements now merge (granular element ops) and the room orders mutations so peers converge and reconnects catch up (see [spec/75](../specs/75-realtime-conflict-resolution.md)). Concurrent edits to the _same_ field still resolve last-writer-wins by default; a full Yjs-CRDT path that merges those field-by-field is implemented behind the experimental `?yjs=1` flag (off by default), pending two-client verification before it ships on.
+- **Finer-grained team permissions** (today every member can edit every team diagram).
+
+Realtime collaboration is in good shape: concurrent edits to _different_ elements merge, the room orders mutations so everyone converges, and a dropped connection catches up on reconnect (see [spec/75](../specs/75-realtime-conflict-resolution.md)). Two people editing the _same_ element at once is headed off by the selection lock (spec/07), so a full field-level CRDT isn't needed.
 
 ## Open source
 

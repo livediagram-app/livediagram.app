@@ -84,20 +84,6 @@ export type RoomOp =
   // the element array is untouched, so this rides alongside `el` ops
   // without shipping the whole tab.
   | { kind: 'tab-meta'; tabId: string; patch: Partial<Omit<Tab, 'elements'>> }
-  // A Yjs document update (spec/75, Level 2), base64-encoded. Broadcast on
-  // every commit when the Yjs-realtime flag is on; the room applies it to
-  // its authoritative doc and relays it. Supersedes `el`/`tab-meta`/`tab`
-  // for those sessions (field-level same-element merge). Older / flag-off
-  // peers ignore it, so mixed sessions simply don't share the doc path.
-  | { kind: 'ydoc'; update: string }
-  // A joining Level 2 client asks the room for the shared doc's current
-  // state (so every peer shares ONE doc history — the prerequisite for
-  // field-level merge). Handled by the room, never relayed to peers.
-  | { kind: 'ydoc-sync' }
-  // The room's reply to `ydoc-sync`: the encoded doc state, or `null` when
-  // the room holds no doc yet (the joiner then seeds from its D1 hydrate
-  // and broadcasts that seed so the room adopts it).
-  | { kind: 'ydoc-state'; update: string | null }
   // Diagram-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the

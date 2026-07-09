@@ -16,9 +16,6 @@ import { getSessionSharePassword, wsUrl } from './core';
 export type RoomHandlers = {
   onPresence: (participants: ParticipantPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
-  // Fired after hello is sent on every (re)open. The Level 2 path uses it to
-  // request the shared Yjs doc (`ydoc-sync`) each time the socket comes up.
-  onOpen?: () => void;
   onClose?: () => void;
   // The room could not bridge our reconnect gap from its op log (spec/75,
   // Level 1): we're too far behind, or it restarted. The caller re-hydrates
@@ -112,7 +109,6 @@ export function connectRoom(
         ws.send(JSON.stringify({ kind: 'sync', epoch: lastEpoch, lastSeq } satisfies RoomOutgoing));
       }
       opened = true;
-      handlers.onOpen?.();
     });
     ws.addEventListener('message', (e) => {
       try {

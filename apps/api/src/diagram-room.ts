@@ -1,12 +1,4 @@
 import type { ClientMessage, ParticipantPresence, ServerMessage } from './types';
-import {
-  applyDiagramUpdate,
-  base64ToUpdate,
-  encodeDiagramUpdate,
-  isEmptyDiagramDoc,
-  newDiagramDoc,
-  updateToBase64,
-} from '@livediagram/diagram/yjs';
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from './limits';
 
 // One Durable Object instance per diagram id. Holds the set of currently
@@ -68,13 +60,6 @@ const OP_LOG_LIMIT = 256;
 // diagram state, so they relay unordered (no seq) and from any role.
 const PRESENCE_OP_KINDS = new Set(['cursor', 'select', 'laser', 'tab-focus']);
 
-// Min gap between `ydoc-sync` replies per session (spec/75, Level 2). A sync
-// forces a full-doc encode and is allowed from ANY role (viewers must read
-// the shared doc), so without this a view-only visitor could spam it to
-// amplify cheap requests into repeated full-doc encodes on the single-
-// threaded DO. Legit clients send it ~once per (re)connect, far under this.
-const YDOC_SYNC_MIN_INTERVAL_MS = 1000;
-
 // One entry in the reconnect catch-up log: a mutation op plus the sequence
 // number the room assigned it within the current epoch.
 type LoggedOp = { seq: number; from: string; op: unknown };
@@ -124,12 +109,6 @@ export class DiagramRoom implements DurableObject {
   // in-memory period.
   opRates: Map<WebSocket, { count: number; windowStart: number }> = new Map();
 
-  // Last `ydoc-sync` reply time per socket, to throttle the full-doc encode
-  // it triggers (see YDOC_SYNC_MIN_INTERVAL_MS). In-memory like opRates: a
-  // hibernation reset just re-opens the window, which is harmless for a flood
-  // gate. Cleaned on close/error so the map can't leak.
-  ydocSyncAt: Map<WebSocket, number> = new Map();
-
   // Ordering state for reconnect catch-up (spec/75, Level 1). All three
   // live in memory only — deliberately, like opRates. A hibernation wake
   // re-runs the constructor: `seq` restarts at 0, `opLog` empties, and
@@ -145,15 +124,6 @@ export class DiagramRoom implements DurableObject {
   // epoch on an incoming op against the last it saw to know whether the
   // room restarted (seq reset) versus advanced.
   epoch: string = crypto.randomUUID();
-
-  // The authoritative Yjs doc for Level 2 sessions (spec/75), held in
-  // memory. Peers must share ONE doc history for field-level merge, so the
-  // room accumulates every `ydoc` update here and seeds each joiner from it
-  // (`ydoc-sync` -> `ydoc-state`). Null until the first Level 2 client
-  // arrives; rebuilt from clients' full-state updates after a hibernation
-  // wake (a quiet-room joiner just re-seeds from its D1 hydrate). Lazily
-  // created so a Level 0/1-only room never pays for Yjs.
-  ydoc: ReturnType<typeof newDiagramDoc> | null = null;
 
   constructor(state: DurableObjectState) {
     this.state = state;
@@ -341,36 +311,14 @@ export class DiagramRoom implements DurableObject {
       // The role is the server-verified one (X-Verified-Role, re-stamped
       // in hello), not anything the client claims.
       const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
-      // System-only ops never relay from a client socket: they're emitted
-      // exclusively by the worker via /broadcast or by the room itself,
-      // stamped `from: 'system'`. Without this drop a peer could forge
-      // `share-revoked` (force-redirect every collaborator out) or
-      // `ydoc-state` (make peers adopt an attacker-crafted doc seed — the
-      // seed reply is the room's job, never a client's).
-      if (opKind === 'share-revoked' || opKind === 'ydoc-state') return;
-      // A Level 2 joiner requesting the shared doc (spec/75). Read-only, so
-      // allowed from any role and answered to the sender alone — never
-      // relayed to peers. Throttled per session because it forces a full-doc
-      // encode (see YDOC_SYNC_MIN_INTERVAL_MS).
-      if (opKind === 'ydoc-sync') {
-        const last = this.ydocSyncAt.get(ws) ?? 0;
-        if (now - last >= YDOC_SYNC_MIN_INTERVAL_MS) {
-          this.ydocSyncAt.set(ws, now);
-          this.sendYdocState(ws);
-        }
-        return;
-      }
+      // System-only ops never relay from a client socket: they're
+      // emitted exclusively by the worker via /broadcast (stamped
+      // `from: 'system'`). Without this drop, any edit-role peer
+      // could forge `share-revoked` with the code from their own URL
+      // and force-redirect every collaborator out of the session.
+      if (opKind === 'share-revoked') return;
       const isPresenceOp = typeof opKind === 'string' && PRESENCE_OP_KINDS.has(opKind);
       if (sender.role !== 'edit' && !isPresenceOp) return;
-      // A Level 2 doc update (spec/75): merge it into the room's authoritative
-      // doc and relay it. No seq/op-log — Yjs updates are commutative and
-      // converge on their own, and Level 2 clients catch up via `ydoc-sync`
-      // (a full state resend), not the el-op sequence.
-      if (opKind === 'ydoc') {
-        this.applyYdocOp(msg.op);
-        this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
-        return;
-      }
       // Remember the sender's current tab so a future joiner learns it
       // from the presence list (tab-focus ops only fire on a switch, so
       // they're invisible to anyone who joins afterwards). Persisted to
@@ -438,40 +386,6 @@ export class DiagramRoom implements DurableObject {
     }
   }
 
-  // Merge a client `ydoc` update into the room's authoritative doc (spec/75,
-  // Level 2). Best-effort: a malformed / undecodable update is ignored so it
-  // can't wedge the room.
-  private applyYdocOp(op: unknown): void {
-    const update = (op as { update?: unknown }).update;
-    if (typeof update !== 'string') return;
-    try {
-      if (!this.ydoc) this.ydoc = newDiagramDoc();
-      applyDiagramUpdate(this.ydoc, base64ToUpdate(update));
-    } catch {
-      // Ignore a bad frame; the sender's next full-state update re-syncs.
-    }
-  }
-
-  // Answer a `ydoc-sync`: send the current shared doc state, or `null` when
-  // the room holds no doc yet (the joiner then seeds from its D1 hydrate and
-  // broadcasts that seed, which the room adopts via the `ydoc` path).
-  private sendYdocState(ws: WebSocket): void {
-    const update =
-      this.ydoc && !isEmptyDiagramDoc(this.ydoc)
-        ? updateToBase64(encodeDiagramUpdate(this.ydoc))
-        : null;
-    const payload: ServerMessage = {
-      kind: 'op',
-      from: 'system',
-      op: { kind: 'ydoc-state', update },
-    };
-    try {
-      ws.send(JSON.stringify(payload));
-    } catch {
-      this.opRates.delete(ws);
-    }
-  }
-
   // Hibernation event handlers for a session ending. The runtime removes
   // the socket from getWebSockets() itself; our job is only to shed the
   // rate window (so the map can't leak) and re-announce the roster.
@@ -485,7 +399,6 @@ export class DiagramRoom implements DurableObject {
 
   private dropSession(ws: WebSocket): void {
     this.opRates.delete(ws);
-    this.ydocSyncAt.delete(ws);
     // Exclude the departing socket explicitly: depending on when the
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
