@@ -293,7 +293,6 @@ export default function NewDiagramPage() {
             busy={submitting}
             folders={folders}
             teams={teams}
-            defaultDiagramName={untitledNameForTemplate(null)}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
             onPick={(kind, name, themeId, settings) =>
               void commitNewDiagram(kind, name, themeId, settings)

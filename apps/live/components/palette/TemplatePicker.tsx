@@ -4,7 +4,12 @@ import { useEscape } from '@/hooks/ui/useEscape';
 import type { Participant } from '@/lib/identity';
 import { shufflePinned } from '@/lib/shuffle';
 import type { TemplateCategory, TemplateKind } from '@livediagram/templates';
-import { TEMPLATE_CATEGORIES, TEMPLATES, templateCategory } from '@livediagram/templates';
+import {
+  TEMPLATE_CATEGORIES,
+  TEMPLATES,
+  templateCategory,
+  untitledNameForTemplate,
+} from '@livediagram/templates';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
 import { TemplatePickerBrowse } from '@/components/palette/TemplatePickerBrowse';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -57,8 +62,6 @@ type TemplatePickerProps = {
   // mode). Empty when none / still loading.
   folders?: { id: string; name: string }[];
   teams?: { id: string; name: string }[];
-  // Default diagram name for the Settings step's name field (per template).
-  defaultDiagramName?: string;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
@@ -96,7 +99,6 @@ export function TemplatePicker({
   onOpenExisting,
   folders = [],
   teams = [],
-  defaultDiagramName = 'Untitled diagram',
 }: TemplatePickerProps) {
   // Mount-open overlay: silence the canvas shortcut/paste listeners
   // behind it (see lib/modal-guard). Harmless on /new, where no canvas
@@ -162,12 +164,20 @@ export function TemplatePicker({
   const [offline, setOffline] = useState(false);
   // Settings step (spec/76): diagram name (defaults per template) + placement.
   // `placement` is 'unsorted' | `folder:<id>` | `team:<id>` in one control.
-  const [diagramNameInput, setDiagramNameInput] = useState(defaultDiagramName);
+  // The default name tracks the chosen template ("Untitled Mind Map", not a
+  // flat "Untitled diagram"); we keep syncing the field to it until the user
+  // types their own, so switching templates updates the suggestion.
+  const templateDefaultName = untitledNameForTemplate(templateKind);
+  const [diagramNameInput, setDiagramNameInput] = useState(() => untitledNameForTemplate('blank'));
+  const diagramNameEdited = useRef(false);
+  useEffect(() => {
+    if (!diagramNameEdited.current) setDiagramNameInput(untitledNameForTemplate(templateKind));
+  }, [templateKind]);
   const [placement, setPlacement] = useState('unsorted');
   // The settings the wizard commits with. Diagram name defaults to the
   // template's default when the field is left blank.
   const settings = (): NewDiagramSettings => {
-    const name = diagramNameInput.trim() || defaultDiagramName;
+    const name = diagramNameInput.trim() || templateDefaultName;
     if (placement.startsWith('folder:')) {
       return { offline, diagramName: name, folderId: placement.slice(7), teamId: null };
     }
@@ -393,8 +403,11 @@ export function TemplatePicker({
             {isWizard && step === 'settings' ? (
               <NewDiagramSettingsStep
                 diagramName={diagramNameInput}
-                onDiagramName={setDiagramNameInput}
-                placeholder={defaultDiagramName}
+                onDiagramName={(v) => {
+                  diagramNameEdited.current = true;
+                  setDiagramNameInput(v);
+                }}
+                placeholder={templateDefaultName}
                 placement={placement}
                 onPlacement={setPlacement}
                 folders={folders}
