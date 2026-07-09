@@ -67,9 +67,6 @@ function BoxedElementViewImpl({
   onBeginEdit,
   onCommitLabel,
   onSetTextAlign,
-  onSetPadding,
-  onSetFont,
-  onSetTextSize,
   onCommitTable,
   onSetRailLabel,
   chartPalette,
@@ -232,9 +229,6 @@ function BoxedElementViewImpl({
     zoom,
     fontFamily,
     onSetTextAlign,
-    onSetPadding,
-    onSetFont,
-    onSetTextSize,
     // Inline (flex-child) editor whenever the label shares its box with a
     // sibling glyph — an inline icon OR a status marker (spec/49). A
     // marker-only shape still lays out through ShapeInlineIconLayout, and

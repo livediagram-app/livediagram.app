@@ -196,18 +196,15 @@ export function EditorCanvasHost() {
     setExplorerPosition,
     setExportOpen,
     setExportScope,
-    setFontSelected,
     setFormatSourceId,
     setGroupSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
     setMultiSelectedIds,
-    setPaddingSelected,
     setPalettePosition,
     setRailLabelSelected,
     setSelectedId,
     setTextAlignSelected,
-    setTextSizeSelected,
     setUserPreferences,
     setViewportOffset,
     setViewportZoom,
@@ -559,10 +556,7 @@ export function EditorCanvasHost() {
       onBeginGroup={beginGroup}
       onCancelGroup={exitGroupMode}
       onUngroup={ungroupSelected}
-      onSetTextSize={setTextSizeSelected}
       onSetTextAlign={setTextAlignSelected}
-      onSetFont={setFontSelected}
-      onSetPadding={setPaddingSelected}
       onFollowLink={followLink}
       onOpenComments={openComments}
       onOpenAction={openActionPopover}

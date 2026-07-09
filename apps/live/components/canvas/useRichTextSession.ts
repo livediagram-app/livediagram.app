@@ -35,7 +35,6 @@ export function useRichTextSession({
   cursorAtEnd,
   onCommit,
   onCancel,
-  onSetTextSize,
 }: Pick<
   RichTextEditorProps,
   | 'element'
@@ -46,7 +45,6 @@ export function useRichTextSession({
   | 'cursorAtEnd'
   | 'onCommit'
   | 'onCancel'
-  | 'onSetTextSize'
 >) {
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarWrapRef = useRef<HTMLDivElement>(null);
@@ -256,16 +254,15 @@ export function useRichTextSession({
     onCancel();
   };
 
-  // Formatting command dispatch (toggles / patches / size / lists) lives
-  // in useRichTextFormatActions; a bump repaints via the version effect.
-  const { onToggle, onPatch, chooseSize, applyList } = useRichTextFormatActions({
+  // Formatting command dispatch (toggles / patches / lists) lives in
+  // useRichTextFormatActions; a bump repaints via the version effect.
+  const { onToggle, onPatch, applyList } = useRichTextFormatActions({
     editorRef,
     runsRef,
     selectionRef,
     pendingSelectionRef,
     bumpVersion: () => setVersion((v) => v + 1),
     element,
-    onSetTextSize,
   });
 
   return {
@@ -283,7 +280,6 @@ export function useRichTextSession({
     handleCancel,
     onToggle,
     onPatch,
-    chooseSize,
     applyList,
   };
 }

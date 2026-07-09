@@ -1,7 +1,7 @@
 // The in-place rich-text editor (spec/09). Replaces the plain <textarea>
 // label editors for shape / text / sticky: a single contentEditable that
 // renders the label's runs as styled <span>s and shows a floating toolbar
-// for per-range bold / italic / underline / strikethrough / size / colour.
+// for per-range bold / italic / underline / strikethrough / lists / colour.
 //
 // Design notes:
 // - The contentEditable DOM is managed IMPERATIVELY (paintRuns), not via
@@ -19,7 +19,7 @@
 // commit lifecycle) lives in useRichTextSession; this file keeps the
 // JSX and its event handlers.
 
-import { defaultPadding, type RunBoolKey } from '@livediagram/diagram';
+import type { RunBoolKey } from '@livediagram/diagram';
 import { ALIGN_ITEMS, TEXT_ALIGN } from '@/components/canvas/label-style';
 import { insertTextAtCaret } from '@/components/canvas/rich-text-dom';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
@@ -43,10 +43,6 @@ export function RichTextEditor({
   onCommit,
   onCancel,
   onSetAlign,
-  onSetPadding,
-  onSetFont,
-  onSetTextSize,
-  currentFont = null,
   inline = false,
 }: RichTextEditorProps) {
   const {
@@ -64,7 +60,6 @@ export function RichTextEditor({
     handleCancel,
     onToggle,
     onPatch,
-    chooseSize,
     applyList,
   } = useRichTextSession({
     element,
@@ -75,7 +70,6 @@ export function RichTextEditor({
     cursorAtEnd,
     onCommit,
     onCancel,
-    onSetTextSize,
   });
 
   return (
@@ -226,15 +220,10 @@ export function RichTextEditor({
           active={active}
           alignX={alignX}
           alignY={alignY}
-          padding={element.padding ?? defaultPadding(element)}
-          currentFont={currentFont}
           onToggle={onToggle}
           onApplyList={applyList}
-          onSize={chooseSize}
           onColor={(color) => onPatch({ color })}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}
-          onSetPadding={(p) => onSetPadding?.(p)}
-          onSetFont={(f) => onSetFont?.(f)}
         />
       </div>
     </div>

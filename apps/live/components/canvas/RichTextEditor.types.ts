@@ -1,11 +1,4 @@
-import type {
-  BoxedElement,
-  Padding,
-  TextAlignX,
-  TextAlignY,
-  TextRun,
-  TextSize,
-} from '@livediagram/diagram';
+import type { BoxedElement, TextAlignX, TextAlignY, TextRun, TextSize } from '@livediagram/diagram';
 
 export type RichTextEditorProps = {
   // The element being edited — its whole-element text* fields are the
@@ -35,8 +28,5 @@ export type RichTextEditorProps = {
   // Whole-element controls surfaced in the edit toolbar (they operate on the
   // current selection = the editing element).
   onSetAlign?: (x: TextAlignX, y: TextAlignY) => void;
-  onSetPadding?: (padding: Padding) => void;
-  onSetFont?: (font: string | null) => void;
   onSetTextSize?: (size: TextSize) => void;
-  currentFont?: string | null;
 };

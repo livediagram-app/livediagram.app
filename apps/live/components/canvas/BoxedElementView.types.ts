@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { BoxedElement, IconPosition, TextRun, TextSize } from '@livediagram/diagram';
+import type { BoxedElement, IconPosition, TextRun } from '@livediagram/diagram';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
@@ -48,9 +48,6 @@ export type BoxedElementViewProps = {
     x: import('@livediagram/diagram').TextAlignX,
     y: import('@livediagram/diagram').TextAlignY,
   ) => void;
-  onSetPadding?: (padding: import('@livediagram/diagram').Padding) => void;
-  onSetFont?: (font: string | null) => void;
-  onSetTextSize?: (size: TextSize) => void;
   onCommitTable: (
     id: string,
     patch: Partial<

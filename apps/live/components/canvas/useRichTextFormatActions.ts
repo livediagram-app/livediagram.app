@@ -7,9 +7,7 @@ import {
   type ListStyle,
   type RunBoolKey,
   type RunPatch,
-  type RunSize,
   type TextRun,
-  type TextSize,
   type BoxedElement,
 } from '@livediagram/diagram';
 import { domSelectionToOffsets } from '@/components/canvas/rich-text-dom';
@@ -18,8 +16,7 @@ import { BOOL_DEFAULT } from './rich-text-editor-helpers';
 
 // The RichTextEditor's formatting command dispatch (spec/09 rich
 // labels), lifted out of the component: resolving the target range,
-// the bold / italic / … toggles, run patches, the size dropdown
-// (per-range sm/md/lg vs whole-element 'scale'), and the bullet /
+// the bold / italic / … toggles, run patches, and the bullet /
 // numbered list apply. Everything React-shaped (the refs, the version
 // bump that triggers repaint-and-restore) is owned by the editor and
 // passed in.
@@ -30,7 +27,6 @@ export function useRichTextFormatActions({
   pendingSelectionRef,
   bumpVersion,
   element,
-  onSetTextSize,
 }: {
   editorRef: RefObject<HTMLDivElement | null>;
   runsRef: { current: TextRun[] };
@@ -40,7 +36,6 @@ export function useRichTextFormatActions({
   // restore pendingSelectionRef.
   bumpVersion: () => void;
   element: BoxedElement;
-  onSetTextSize?: (size: TextSize) => void;
 }) {
   // Resolve the range to format: the live selection, or — when the caret is
   // collapsed (nothing selected) — the WHOLE text, so a format applied with
@@ -80,22 +75,6 @@ export function useRichTextFormatActions({
     applyAndRepaint(applyFormatToRange(runsRef.current, range.start, range.end, patch), range);
   };
 
-  // Size dropdown: sm/md/lg are per-range; 'scale' is whole-element auto-fit
-  // (no per-run meaning), so it clears every run's size override and sets the
-  // element back to 'scale'.
-  const chooseSize = (size: RunSize | 'scale') => {
-    if (size === 'scale') {
-      const len = runsPlainText(runsRef.current).length;
-      runsRef.current = applyFormatToRange(runsRef.current, 0, len, { size: undefined });
-      pendingSelectionRef.current = selectionRef.current ?? { start: 0, end: len };
-      bumpVersion();
-      onSetTextSize?.('scale');
-      track('Element', 'Changed', 'TextFormat');
-      return;
-    }
-    onPatch({ size });
-  };
-
   // Bullet / numbered list (prepends line markers, renumbering). Scoped to
   // the selected lines when there's a selection; whole text on a bare caret.
   const applyList = (style: ListStyle) => {
@@ -110,5 +89,5 @@ export function useRichTextFormatActions({
     track('Element', 'Changed', 'TextFormat');
   };
 
-  return { onToggle, onPatch, chooseSize, applyList };
+  return { onToggle, onPatch, applyList };
 }
