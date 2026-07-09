@@ -39,7 +39,7 @@ const badgeBase =
 export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
   if (diagram.ownerId === OFFLINE_OWNER_ID) {
     return (
-      <Tooltip title="Offline" description="Saved only in this browser — not synced or backed up.">
+      <Tooltip title="Offline" description="Saved only in this browser. Not synced or backed up.">
         <span
           className={`${badgeBase} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30`}
         >
@@ -76,7 +76,10 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
   }
   if (diagram.team) {
     return (
-      <Tooltip title="Team" description="In a team library — every member of the team can open it.">
+      <Tooltip
+        title="Team"
+        description="In a team library, so every member of the team can open it."
+      >
         <span
           className={`${badgeBase} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
         >

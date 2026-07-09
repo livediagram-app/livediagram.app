@@ -356,7 +356,7 @@ export function TemplatePicker({
             />
             <span className="flex flex-col leading-tight">
               <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                Save offline — this browser only
+                Save offline, this browser only
               </span>
               <span className="text-[11px] text-slate-400 dark:text-slate-500">
                 Stays on this device. Not synced, not backed up.
