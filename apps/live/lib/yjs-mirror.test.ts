@@ -56,6 +56,31 @@ describe('YjsMirror', () => {
     expect(echoed).toBe(0); // an adopted remote state is not rebroadcast
   });
 
+  it('re-adopts a newer shared state on reconnect (idempotent merge)', () => {
+    // A seeds; B adopts the initial state, then "disconnects" (not linked).
+    const a = new YjsMirror();
+    a.seedFromHydrate([tab({ elements: [el('x')] })]);
+    const b = new YjsMirror();
+    b.adoptSharedState(a.encodeState());
+
+    // A keeps editing while B is away.
+    a.onLocalUpdate(() => {}); // A is seeded; allow commits
+    a.commit([tab({ elements: [el('x', { x: 9 }), el('y')] })]);
+
+    // B reconnects: re-adopting A's current full state must merge the misses,
+    // not be ignored because B is already seeded.
+    b.adoptSharedState(a.encodeState());
+    expect(b.mergeInto(skel())).toEqual(a.mergeInto(skel()));
+    expect(b.mergeInto(skel())[0]!.elements.map((e) => e.id)).toEqual(['x', 'y']);
+  });
+
+  it('exposes a single tab’s elements via elementsFor', () => {
+    const a = new YjsMirror();
+    a.seedFromHydrate([tab({ id: 't1', elements: [el('p'), el('q')] })]);
+    expect(a.elementsFor('t1')!.map((e) => e.id)).toEqual(['p', 'q']);
+    expect(a.elementsFor('missing')).toBeNull();
+  });
+
   it('merges concurrent edits to different fields of the same element', () => {
     const a = new YjsMirror();
     a.seedFromHydrate([tab({ elements: [el('x', { x: 0, y: 0 })] })]);

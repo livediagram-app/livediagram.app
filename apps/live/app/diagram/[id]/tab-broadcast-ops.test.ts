@@ -66,6 +66,15 @@ describe('tabBroadcastOps', () => {
     expect(tabBroadcastOps(before, after)).toEqual([{ kind: 'tab', tabId: 't1', tab: after }]);
   });
 
+  it('falls back to a whole-tab op when a meta field is cleared', () => {
+    // Clearing a field yields patch[k] = undefined, which JSON.stringify drops
+    // on the wire, so a granular tab-meta op could never carry the clear. The
+    // whole-tab op carries the field's absence instead.
+    const before = tab({ backgroundColor: '#111' });
+    const after = tab(); // backgroundColor removed
+    expect(tabBroadcastOps(before, after)).toEqual([{ kind: 'tab', tabId: 't1', tab: after }]);
+  });
+
   it('emits nothing when a changed tab turns out identical', () => {
     const before = tab();
     expect(tabBroadcastOps(before, tab())).toEqual([]);

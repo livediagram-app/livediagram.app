@@ -297,14 +297,17 @@ export function useRoomConnection(opts: {
             applyRemoteTabs((prev) => mirror.mergeInto(prev));
           }
         } else if (op.kind === 'ydoc-state') {
-          // Level 2: the room's reply to our `ydoc-sync`. If it holds shared
-          // state, adopt it (so we share one doc history). If null, we're the
-          // first Level 2 client -> seed from our own hydrate, which the
-          // mirror broadcasts for the room + peers to adopt.
+          // Level 2: the room's reply to our `ydoc-sync`, sent on every
+          // (re)connect. `null` means no shared doc yet -> seed from our own
+          // hydrate ONCE (the mirror broadcasts it for the room + peers to
+          // adopt). A non-null state we always merge: applying full state is
+          // an idempotent Yjs merge, so a RECONNECT re-syncs whatever we
+          // missed while disconnected instead of diverging (ydoc ops bypass
+          // the L1 op-log, so this is the only catch-up path for them).
           const mirror = yjsMirrorRef.current;
-          if (mirror && !mirror.isSeeded) {
+          if (mirror) {
             if (op.update === null) {
-              mirror.seedFromHydrate(tabsRef.current);
+              if (!mirror.isSeeded) mirror.seedFromHydrate(tabsRef.current);
             } else {
               mirror.adoptSharedState(op.update);
               remoteUpdateRef.current = true;
@@ -319,6 +322,7 @@ export function useRoomConnection(opts: {
           setDiagramName(op.name);
           applyRemoteTabs((prev) => {
             const localById = new Map(prev.map((t) => [t.id, t] as const));
+            const mirror = yjsMirrorRef.current;
             return op.tabs.map((summary) => {
               const local = localById.get(summary.id);
               // diagram-meta owns folder membership (spec/30). Apply
@@ -331,10 +335,17 @@ export function useRoomConnection(opts: {
                   ? local
                   : { ...local, folder };
               }
+              // Level 2 (spec/75): a tab this op just added may already have
+              // its elements in the shared doc (a peer's `ydoc` op that landed
+              // before the tab existed here). Seed them from the doc so it
+              // isn't stuck empty until the next edit. Only NEW tabs read the
+              // doc — existing tabs keep their local (possibly uncommitted)
+              // elements untouched.
+              const seeded = mirror?.isSeeded ? mirror.elementsFor(summary.id) : null;
               return {
                 id: summary.id,
                 name: summary.name,
-                elements: [],
+                elements: seeded ?? [],
                 folder: summary.folder,
               };
             });

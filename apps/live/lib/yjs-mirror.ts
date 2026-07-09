@@ -14,13 +14,14 @@
 // THIS client authored, never a peer's (spec/75 decision 1).
 
 import * as Y from 'yjs';
-import type { Tab } from '@livediagram/diagram';
+import type { Element, Tab } from '@livediagram/diagram';
 import {
   applyDiagramUpdate,
   base64ToUpdate,
   encodeDiagramUpdate,
   mergeElements,
   newDiagramDoc,
+  readTabElements,
   syncElements,
   updateToBase64,
   writeElements,
@@ -88,6 +89,13 @@ export class YjsMirror {
   // meta + order. The editor's projection on a remote update / seed.
   mergeInto(tabs: Tab[]): Tab[] {
     return mergeElements(this.doc, tabs);
+  }
+
+  // The doc's elements for a single tab, or null if the doc has none. Used to
+  // populate a tab the diagram-meta op just added whose elements are already
+  // in the doc (without touching other tabs' possibly-uncommitted state).
+  elementsFor(tabId: string): Element[] | null {
+    return readTabElements(this.doc, tabId);
   }
 
   // The doc's full state as a base64 update — the same encoding the room hands

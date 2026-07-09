@@ -28,9 +28,10 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
     const b = (before as Record<string, unknown>)[k];
     const a = (after as Record<string, unknown>)[k];
     // Tab meta fields are all plain scalars/enums, so a stable JSON compare
-    // is both correct and cheap. A key present in `before` but gone in
-    // `after` yields `patch[k] = undefined`, which the receiver spreads as
-    // "clear this field" — matching the whole-tab op it replaces.
+    // is both correct and cheap. A key present in `before` but gone in `after`
+    // yields `patch[k] = undefined`; the caller detects that and falls back to
+    // a whole-tab op, because JSON.stringify drops undefined-valued keys on
+    // the wire, so a cleared field could never propagate as a patch.
     if (JSON.stringify(b) !== JSON.stringify(a)) patch[k] = a;
   }
   return patch as Partial<Omit<Tab, 'elements'>>;
@@ -52,7 +53,15 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
 
   const ops: RoomOp[] = [];
   const patch = tabMetaPatch(before, after);
-  if (Object.keys(patch).length > 0) {
+  const patchKeys = Object.keys(patch);
+  if (patchKeys.length > 0) {
+    // A cleared field is `patch[k] = undefined`, and JSON.stringify drops
+    // undefined-valued keys, so the peer would never see the clear. Fall back
+    // to a whole-`tab` op (which carries the field's absence) whenever any
+    // field was cleared; ordinary value changes still ride the granular patch.
+    if (patchKeys.some((k) => (patch as Record<string, unknown>)[k] === undefined)) {
+      return [{ kind: 'tab', tabId: after.id, tab: after }];
+    }
     ops.push({ kind: 'tab-meta', tabId: after.id, patch });
   }
   for (const op of elOps) ops.push({ kind: 'el', tabId: after.id, op });
