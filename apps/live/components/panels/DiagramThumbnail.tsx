@@ -149,28 +149,15 @@ function OfflineIllustration() {
       viewBox="0 0 48 32"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.6"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
-      className="h-full w-full p-1 text-amber-500 dark:text-amber-400"
+      className="h-full w-full p-1.5 text-amber-500 dark:text-amber-400"
     >
-      {/* device / screen */}
-      <rect
-        x="4"
-        y="5"
-        width="40"
-        height="22"
-        rx="3"
-        className="fill-amber-100/60 dark:fill-transparent"
-      />
-      {/* a tiny diagram inside: two nodes + a link */}
-      <circle cx="18" cy="16" r="2.6" />
-      <circle cx="30" cy="16" r="2.6" />
-      <path d="M20.6 16h6.8" />
-      {/* cloud-off mark, bottom-right */}
-      <path d="M34 24.5h5.4a2.4 2.4 0 0 0 .3-4.78 3.4 3.4 0 0 0-5.9-1.4" />
-      <path d="M31.5 18.5l9 9" className="text-amber-600 dark:text-amber-300" />
+      {/* A cloud with a slash through it — the universal "offline" mark. */}
+      <path d="M16.5 22h12a4.8 4.8 0 0 0 .5-9.55 6.8 6.8 0 0 0-12.7-1.7A4.55 4.55 0 0 0 16.5 22Z" />
+      <path d="M11.5 8.5l25 16.5" />
     </svg>
   );
 }

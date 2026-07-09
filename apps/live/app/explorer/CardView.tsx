@@ -12,6 +12,7 @@ import { useRef, useState } from 'react';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { FolderIcon, SparkleIcon } from './icons';
 import { DiagramActionsMenu, hrefForDiagram, VisibilityBadge } from './diagram-row-shared';
 import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
@@ -190,6 +191,7 @@ function DiagramCard({
             diagramId={diagram.id}
             version={diagram.savedAt}
             shareCode={diagram.shared?.shareCode}
+            offline={diagram.ownerId === OFFLINE_OWNER_ID}
             className="h-full w-full"
           />
         </span>
@@ -200,6 +202,7 @@ function DiagramCard({
             diagramId={diagram.id}
             version={diagram.savedAt}
             shareCode={diagram.shared?.shareCode}
+            offline={diagram.ownerId === OFFLINE_OWNER_ID}
             className="h-full w-full"
           />
         </Link>
@@ -249,6 +252,7 @@ function DiagramCard({
         <DiagramActionsMenu
           diagram={diagram}
           anchor={menuRef.current}
+          ownerId={ownerId}
           onClose={() => setMenuOpen(false)}
           onStartRename={onStartRename}
           onDuplicate={onDuplicate}

@@ -7,6 +7,7 @@ import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import type { PaneDiagram } from './views';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { DiagramActionsMenu, hrefForDiagram, VisibilityBadge } from './diagram-row-shared';
 
 // One diagram row in the full-page /explorer list (open / rename / move /
@@ -89,6 +90,7 @@ export function DiagramRow({
           diagramId={diagram.id}
           version={diagram.savedAt}
           shareCode={diagram.shared?.shareCode}
+          offline={diagram.ownerId === OFFLINE_OWNER_ID}
         />
         {titleNode}
       </span>
@@ -121,6 +123,7 @@ export function DiagramRow({
         <DiagramActionsMenu
           diagram={diagram}
           anchor={menuRef.current}
+          ownerId={ownerId}
           onClose={() => setMenuOpen(false)}
           onStartRename={onStartRename}
           onDuplicate={onDuplicate}

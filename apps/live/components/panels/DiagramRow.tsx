@@ -25,6 +25,65 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { saveOfflineToCloud, takeCloudOffline } from '@/lib/offline/offline-convert';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
 
+// Icons for the Offline section, matching the explorer-icons style
+// (12×12, viewBox 14, 1.4 stroke) so the tiles read like the rest.
+function OfflineDotIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 10.5h5.4a2.2 2.2 0 0 0 .3-4.4 3 3 0 0 0-5.2-1.1A2.1 2.1 0 0 0 4 10.5Z" />
+      <path d="M2.5 2.5l9 9" />
+    </svg>
+  );
+}
+
+function CloudUpIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4.2 11h5.4a2.3 2.3 0 0 0 .3-4.6 3.1 3.1 0 0 0-5.8-.7A2.2 2.2 0 0 0 4.2 11Z" />
+      <path d="M7 9.5V6m0 0L5.7 7.3M7 6l1.3 1.3" />
+    </svg>
+  );
+}
+
+function TakeOfflineIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M7 2v5.5m0 0L4.9 5.4M7 7.5l2.1-2.1" />
+      <path d="M2.75 9.25v1.5a1 1 0 0 0 1 1h6.5a1 1 0 0 0 1-1v-1.5" />
+    </svg>
+  );
+}
+
 export function DiagramRow({
   item,
   ownerId,
@@ -156,14 +215,7 @@ export function DiagramRow({
             className="w-full rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-100"
           />
         ) : (
-          <span className="flex min-w-0 items-center gap-1.5">
-            <span className="min-w-0 truncate">{item.name}</span>
-            {offline ? (
-              <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                Offline
-              </span>
-            ) : null}
-          </span>
+          <span className="min-w-0 truncate">{item.name}</span>
         )}
         <span
           className={
@@ -342,14 +394,22 @@ export function DiagramRow({
           {ownerId ? (
             <MenuAccordionSection
               title="Offline"
-              icon={<SharedDiagramIcon />}
+              icon={<OfflineDotIcon />}
               {...sectionProps('offline')}
             >
               <div className="px-2 py-1.5">
                 {offline ? (
-                  <MenuTile label="Save to your account" onClick={() => void handleSaveToCloud()} />
+                  <MenuTile
+                    icon={<CloudUpIcon />}
+                    label="Sync Diagram"
+                    onClick={() => void handleSaveToCloud()}
+                  />
                 ) : (
-                  <MenuTile label="Take offline" danger onClick={() => void handleTakeOffline()} />
+                  <MenuTile
+                    icon={<TakeOfflineIcon />}
+                    label="Take Offline"
+                    onClick={() => void handleTakeOffline()}
+                  />
                 )}
               </div>
             </MenuAccordionSection>
