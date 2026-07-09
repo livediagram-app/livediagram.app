@@ -26,8 +26,14 @@ import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu } from '@/components/palette/ContextMenu';
-import { LineGlyph, PointerGlyph, TextGlyph } from '@/components/palette/context-menu-icons';
+import {
+  LineGlyph,
+  PointerGlyph,
+  StyleMenuGlyph,
+  TextGlyph,
+} from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import {
   MarkersMenuGlyph,
   MarkerTiles,
@@ -103,7 +109,6 @@ export function MultiSelectionContextMenu({
         // per-element identity or content, not formatting.
         const showMultiAppearance =
           boxedSel.length > 0 || !!arrowSrc || colourable || borderableSel;
-        const showMultiContent = !!arrowSrc || !!textSrc;
         // A mixed shape + arrow selection would otherwise show two
         // "Animation" categories (boxed animation + arrow flow). Disambiguate
         // by kind only when both are present; on a single-kind selection the
@@ -141,6 +146,13 @@ export function MultiSelectionContextMenu({
             // Only offer alignment when a member actually has text.
             ((el as { label?: string }).label ?? '').trim().length > 0,
         );
+        // The Style flyout shows when any of its children would — the
+        // preset sections, Colours, or Border (spec/09, mirroring the
+        // single-element menu's Style band).
+        const showStyleFlyout = !!presetShapeSrc || !!arrowSrc || colourable || borderableSel;
+        // The Text flyout groups Size + Alignment + Markers, mirroring
+        // the single-element menu's Text band.
+        const showTextFlyout = !!textSrc || !!markerSrc || !!alignSrc;
         return (
           <>
             {/* Placement group (Layer / Shape / Rotation) — see
@@ -153,39 +165,57 @@ export function MultiSelectionContextMenu({
               sectionProps={sectionProps}
             />
             <MenuGroupSeparator />
-            {/* Presets (spec/48) — pinned at the top of the appearance group,
-                  same as the single-element menu; applies to every matching
-                  member of the selection. */}
-            {presetShapeSrc ? (
-              <ShapePresetsSection
-                shape={presetShapeSrc.shape}
-                current={{
-                  fillColor: presetShapeSrc.fillColor,
-                  strokeColor: presetShapeSrc.strokeColor,
-                  textColor: presetShapeSrc.textColor,
-                  colorPreset: presetShapeSrc.colorPreset,
-                }}
-                props={props}
-                accordion={sectionProps('m-shape-presets')}
-                onClose={onClose}
-                // Mixed selection shows both preset sections — disambiguate
-                // by kind, same as the Animation sections below.
-                title={presetShapeSrc && arrowSrc ? 'Shape Presets' : 'Presets'}
-              />
+            {/* ── Style band (spec/09): Presets + Colours + Border behind one
+                  "Style" flyout row, matching the single-element menu. ── */}
+            {showStyleFlyout ? (
+              <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} flush>
+                {presetShapeSrc ? (
+                  <ShapePresetsSection
+                    shape={presetShapeSrc.shape}
+                    current={{
+                      fillColor: presetShapeSrc.fillColor,
+                      strokeColor: presetShapeSrc.strokeColor,
+                      textColor: presetShapeSrc.textColor,
+                      colorPreset: presetShapeSrc.colorPreset,
+                    }}
+                    props={props}
+                    accordion={sectionProps('m-shape-presets')}
+                    onClose={onClose}
+                    // Mixed selection shows both preset sections — disambiguate
+                    // by kind, same as the Animation sections below.
+                    title={presetShapeSrc && arrowSrc ? 'Shape Presets' : 'Presets'}
+                  />
+                ) : null}
+                {arrowSrc ? (
+                  <ArrowPresetsSection
+                    current={{ strokeStyle: arrowSrc.strokeStyle, flow: arrowSrc.flow }}
+                    props={props}
+                    accordion={sectionProps('m-arrow-presets')}
+                    onClose={onClose}
+                    title={presetShapeSrc && arrowSrc ? 'Arrow Presets' : 'Presets'}
+                  />
+                ) : null}
+                <MultiStyleSections
+                  part="style"
+                  props={props}
+                  scaffold={scaffold}
+                  boxedSel={boxedSel}
+                  arrowSrc={arrowSrc}
+                  bothAnimated={bothAnimated}
+                  colourable={colourable}
+                  textSrc={textSrc}
+                  fillSrc={fillSrc}
+                  strokeSrc={strokeSrc}
+                  borderableSel={borderableSel}
+                  borderSrc={borderSrc}
+                  techIconSrc={techIconSrc}
+                />
+              </MenuFlyoutSection>
             ) : null}
-            {arrowSrc ? (
-              <ArrowPresetsSection
-                current={{ strokeStyle: arrowSrc.strokeStyle, flow: arrowSrc.flow }}
-                props={props}
-                accordion={sectionProps('m-arrow-presets')}
-                onClose={onClose}
-                title={presetShapeSrc && arrowSrc ? 'Arrow Presets' : 'Presets'}
-              />
-            ) : null}
-            {/* Style band (Animation / Flow / Colours / Border / Icon) — see
-                  MultiStyleSections; folds into the same exclusive accordion
-                  set via the shared scaffold. */}
+            {/* Motion band (Animation / arrow Animation / tech-icon size) —
+                  top-level rows, same as the single-element menu. */}
             <MultiStyleSections
+              part="motion"
               props={props}
               scaffold={scaffold}
               boxedSel={boxedSel}
@@ -199,51 +229,70 @@ export function MultiSelectionContextMenu({
               borderSrc={borderSrc}
               techIconSrc={techIconSrc}
             />
-            {/* ── Text band (spec/09): Markers + Alignment. ── */}
-            {markerSrc || alignSrc ? <MenuGroupSeparator /> : null}
-            {/* Markers (spec/49) — for every marker-capable shape in the
-                  selection. */}
-            {markerSrc ? (
-              <MenuAccordionSection
-                title="Markers"
-                icon={<MarkersMenuGlyph />}
-                {...sectionProps('m-markers')}
-              >
-                <MarkerTiles
-                  marker={markerSrc.marker ?? null}
-                  size={markerSrc.markerSize ?? 'scale'}
-                  onSet={props.onSetMarker}
-                  onSetSize={props.onSetMarkerSize}
-                  onPreview={props.onPreviewMarker}
-                  onPreviewSize={props.onPreviewMarkerSize}
-                  onPreviewEnd={props.onPreviewStyleEnd}
-                />
-              </MenuAccordionSection>
+            {/* ── Text band (spec/09): Size + Alignment + Markers behind one
+                  "Text" flyout row, matching the single-element menu. ── */}
+            {showTextFlyout ? <MenuGroupSeparator /> : null}
+            {showTextFlyout ? (
+              <MenuFlyoutSection title="Text" icon={<TextGlyph />} flush>
+                {textSrc ? (
+                  <MenuAccordionSection
+                    title="Size"
+                    icon={<TextGlyph />}
+                    {...sectionProps('m-text-size')}
+                  >
+                    <TextSizeTiles
+                      current={(textSrc as { textSize?: TextSize }).textSize}
+                      onSet={props.onSetTextSize}
+                      onPreview={props.onPreviewTextSize}
+                      onPreviewEnd={props.onPreviewStyleEnd}
+                    />
+                  </MenuAccordionSection>
+                ) : null}
+                {/* Alignment — the text toolbar's 3x3 grid, selection-wide. */}
+                {alignSrc ? (
+                  <MenuAccordionSection
+                    title="Alignment"
+                    icon={
+                      <AlignLinesIcon
+                        dir={(alignSrc as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                      />
+                    }
+                    {...sectionProps('m-text-align')}
+                  >
+                    <div className="px-2 py-1.5">
+                      <AlignmentGrid
+                        alignX={(alignSrc as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                        alignY={(alignSrc as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
+                        onChange={props.onSetTextAlign}
+                        onPreview={props.onPreviewTextAlign}
+                        onPreviewEnd={props.onPreviewStyleEnd}
+                      />
+                    </div>
+                  </MenuAccordionSection>
+                ) : null}
+                {/* Markers (spec/49) — for every marker-capable shape in the
+                      selection. */}
+                {markerSrc ? (
+                  <MenuAccordionSection
+                    title="Markers"
+                    icon={<MarkersMenuGlyph />}
+                    {...sectionProps('m-markers')}
+                  >
+                    <MarkerTiles
+                      marker={markerSrc.marker ?? null}
+                      size={markerSrc.markerSize ?? 'scale'}
+                      onSet={props.onSetMarker}
+                      onSetSize={props.onSetMarkerSize}
+                      onPreview={props.onPreviewMarker}
+                      onPreviewSize={props.onPreviewMarkerSize}
+                      onPreviewEnd={props.onPreviewStyleEnd}
+                    />
+                  </MenuAccordionSection>
+                ) : null}
+              </MenuFlyoutSection>
             ) : null}
-            {/* Alignment — the text toolbar's 3x3 grid, selection-wide. */}
-            {alignSrc ? (
-              <MenuAccordionSection
-                title="Text Alignment"
-                icon={
-                  <AlignLinesIcon
-                    dir={(alignSrc as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
-                  />
-                }
-                {...sectionProps('m-text-align')}
-              >
-                <div className="px-2 py-1.5">
-                  <AlignmentGrid
-                    alignX={(alignSrc as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
-                    alignY={(alignSrc as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
-                    onChange={props.onSetTextAlign}
-                    onPreview={props.onPreviewTextAlign}
-                    onPreviewEnd={props.onPreviewStyleEnd}
-                  />
-                </div>
-              </MenuAccordionSection>
-            ) : null}
-            {/* ── Content group: Line / Pointer / Text ── */}
-            {showMultiContent && showMultiAppearance ? <MenuGroupSeparator /> : null}
+            {/* ── Content group: Line / Pointer ── */}
+            {arrowSrc && showMultiAppearance ? <MenuGroupSeparator /> : null}
             {arrowSrc ? (
               <>
                 <MenuAccordionSection title="Line" icon={<LineGlyph />} {...sectionProps('m-line')}>
@@ -275,23 +324,6 @@ export function MultiSelectionContextMenu({
                   </div>
                 </MenuAccordionSection>
               </>
-            ) : null}
-            {textSrc ? (
-              <MenuAccordionSection
-                title="Text"
-                icon={<TextGlyph />}
-                {...sectionProps('m-text-size')}
-              >
-                <p className="px-3 pb-1 pt-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                  Size
-                </p>
-                <TextSizeTiles
-                  current={(textSrc as { textSize?: TextSize }).textSize}
-                  onSet={props.onSetTextSize}
-                  onPreview={props.onPreviewTextSize}
-                  onPreviewEnd={props.onPreviewStyleEnd}
-                />
-              </MenuAccordionSection>
             ) : null}
           </>
         );

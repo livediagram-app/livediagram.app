@@ -50,9 +50,10 @@ export function renderLabel(
   // Scale size option).
   onSetFont?: (font: string | null) => void,
   onSetTextSize?: (size: TextSize) => void,
-  // When the element carries an inline icon, the editor renders as a flex
-  // child (not a full-box fill) so the icon stays visible beside it while
-  // typing; the inline-icon layout owns positioning + padding.
+  // When the element carries an inline icon or a status marker, the editor
+  // renders as a flex child (not a full-box fill) so the glyph stays in its
+  // place beside the text while typing; the inline-icon layout owns
+  // positioning + padding.
   inlineIcon = false,
   // Text-native animation class (spec/09): applied to the label content node
   // so glow / pulse / trace / gradient ride the glyphs rather than the

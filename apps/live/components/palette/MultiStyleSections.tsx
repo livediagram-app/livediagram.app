@@ -25,13 +25,17 @@ import { BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 
-// The multi-selection menu's style band (spec/09): Animation (boxed) /
-// arrow Animation / Colours / Border / tech-icon size, each applying
-// selection-wide with display values read off the first matching
-// member. Lifted out of MultiSelectionContextMenu; the parent derives
-// the per-kind sources once and passes them with the shared accordion /
-// colour scaffold so these sections fold into the same exclusive set.
+// The multi-selection menu's style + motion sections (spec/09), each
+// applying selection-wide with display values read off the first
+// matching member. Rendered in two parts so the parent can fold the
+// 'style' half (Colours / Border) into the Style side-flyout alongside
+// the preset sections — mirroring the single-element menu — while the
+// 'motion' half (Animation / arrow Animation / tech-icon size) stays a
+// top-level row set. The parent derives the per-kind sources once and
+// passes them with the shared accordion / colour scaffold so every
+// section folds into the same exclusive set.
 export function MultiStyleSections({
+  part,
   props,
   scaffold,
   boxedSel,
@@ -45,6 +49,7 @@ export function MultiStyleSections({
   borderSrc,
   techIconSrc,
 }: {
+  part: 'style' | 'motion';
   props: EditorContextMenuProps;
   scaffold: ReturnType<typeof useContextMenuScaffold>;
   boxedSel: BoxedElement[];
@@ -64,7 +69,7 @@ export function MultiStyleSections({
     <>
       {/* Animation (spec/09) — applies to every boxed member of the
           selection. */}
-      {boxedSel.length ? (
+      {part === 'motion' && boxedSel.length ? (
         <MenuAccordionSection
           title={bothAnimated ? 'Shape Animation' : 'Animation'}
           icon={<AnimationMenuGlyph />}
@@ -80,7 +85,7 @@ export function MultiStyleSections({
           />
         </MenuAccordionSection>
       ) : null}
-      {arrowSrc ? (
+      {part === 'motion' && arrowSrc ? (
         <MenuAccordionSection
           title={bothAnimated ? 'Arrow Animation' : 'Animation'}
           icon={<AnimationMenuGlyph />}
@@ -96,7 +101,7 @@ export function MultiStyleSections({
           />
         </MenuAccordionSection>
       ) : null}
-      {colourable ? (
+      {part === 'style' && colourable ? (
         <MenuAccordionSection
           title="Colours"
           icon={<PaletteMenuIcon />}
@@ -134,7 +139,7 @@ export function MultiStyleSections({
           ) : null}
         </MenuAccordionSection>
       ) : null}
-      {borderableSel ? (
+      {part === 'style' && borderableSel ? (
         <MenuAccordionSection
           title="Border"
           icon={<BorderGlyph />}
@@ -172,7 +177,7 @@ export function MultiStyleSections({
       ) : null}
       {/* Icon — a Technology icon's fixed tile size (spec/41), when
           the selection holds any; applies to every tech icon in it. */}
-      {techIconSrc ? (
+      {part === 'motion' && techIconSrc ? (
         <MenuAccordionSection
           title="Icon"
           icon={<IconCategoryGlyph />}
