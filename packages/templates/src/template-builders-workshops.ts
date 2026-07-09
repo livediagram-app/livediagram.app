@@ -16,6 +16,7 @@ import {
   createText,
   type Element,
 } from '@livediagram/diagram';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Affinity map: a research question up top, three dashed cluster frames
 // the team has already themed, and an unsorted pile still to file. The
@@ -71,6 +72,7 @@ export function buildAffinityMap(cx: number, cy: number): Element[] {
     label: 'Brainstorm · Why do sign-ups drop off?',
     textSize: 'lg',
     textBold: true,
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
 
   clusters.forEach((cluster, i) => {
@@ -82,6 +84,7 @@ export function buildAffinityMap(cx: number, cy: number): Element[] {
       label: cluster.label,
       strokeStyle: 'dashed',
       textSize: 'md',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     cluster.notes.forEach((note, j) => {
       elements.push({
@@ -92,6 +95,7 @@ export function buildAffinityMap(cx: number, cy: number): Element[] {
         textSize: 'sm',
         // Alternate a gentle tilt so the notes read as hand-placed.
         rotation: j % 2 === 0 ? -2 : 2,
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     });
   });
@@ -107,6 +111,7 @@ export function buildAffinityMap(cx: number, cy: number): Element[] {
     textSize: 'md',
     textAlignX: 'center',
     textColor: '#64748b',
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
   unsorted.forEach((note, i) => {
     elements.push({
@@ -116,6 +121,7 @@ export function buildAffinityMap(cx: number, cy: number): Element[] {
       label: note,
       textSize: 'sm',
       rotation: i % 2 === 0 ? 4 : -5,
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
     });
   });
 
@@ -190,6 +196,7 @@ export function buildUserStoryMap(cx: number, cy: number): Element[] {
       textSize: 'md',
       textBold: true,
       colorPreset: 'soft',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
   });
 
@@ -200,6 +207,7 @@ export function buildUserStoryMap(cx: number, cy: number): Element[] {
     arrowEnds: 'none',
     strokeStyle: 'dashed',
     strokeColor: '#94a3b8',
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
 
   // Left-rail band labels, one per slice.
@@ -212,6 +220,7 @@ export function buildUserStoryMap(cx: number, cy: number): Element[] {
     textBold: true,
     textAlignX: 'left',
     textColor: '#64748b',
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
   elements.push(bandLabel(mvpTop, mvpBandH, 'MVP'));
   elements.push(bandLabel(laterTop, laterBandH, 'Release 2'));
@@ -226,6 +235,7 @@ export function buildUserStoryMap(cx: number, cy: number): Element[] {
         height: stickyH,
         label: story,
         textSize: 'sm',
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     });
     activity.later.forEach((story, j) => {
@@ -235,6 +245,7 @@ export function buildUserStoryMap(cx: number, cy: number): Element[] {
         height: stickyH,
         label: story,
         textSize: 'sm',
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     });
   });

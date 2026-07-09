@@ -9,6 +9,7 @@
 // "Templates" for the catalogue and per-template intent.
 
 import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/diagram';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Slide deck: four slides in a 2x2 grid, each a framed square with a
 // stadium heading band and slide-specific content — a title slide, a
@@ -49,16 +50,19 @@ export function buildSlideDeck(cx: number, cy: number): Element[] {
     width: w,
     height: h,
     textSize: opts.size ?? 'sm',
+    // Everything on a slide is content (spec/74); the frames below
+    // override this onto the scaffold layer.
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
     ...(opts.label !== undefined ? { label: opts.label } : {}),
     ...(opts.left ? { textAlignX: 'left' as const } : {}),
   });
 
   // Frames first, so content layers on top and the ids are available
-  // to pin the connector arrows.
-  const fTL = at(tl, 'square', 0, 0, slideW, slideH);
-  const fTR = at(tr, 'square', 0, 0, slideW, slideH);
-  const fBL = at(bl, 'square', 0, 0, slideW, slideH);
-  const fBR = at(br, 'square', 0, 0, slideW, slideH);
+  // to pin the connector arrows. Frames are the deck's scaffold layer.
+  const fTL = { ...at(tl, 'square', 0, 0, slideW, slideH), layerId: TEMPLATE_SCAFFOLD_LAYER_ID };
+  const fTR = { ...at(tr, 'square', 0, 0, slideW, slideH), layerId: TEMPLATE_SCAFFOLD_LAYER_ID };
+  const fBL = { ...at(bl, 'square', 0, 0, slideW, slideH), layerId: TEMPLATE_SCAFFOLD_LAYER_ID };
+  const fBR = { ...at(br, 'square', 0, 0, slideW, slideH), layerId: TEMPLATE_SCAFFOLD_LAYER_ID };
   elements.push(fTL, fTR, fBL, fBR);
 
   // Heading band on every slide.
@@ -108,9 +112,19 @@ export function buildSlideDeck(cx: number, cy: number): Element[] {
   });
 
   // Connector arrows in the deck's reading order (TL -> TR -> BR -> BL).
-  elements.push(createPinnedArrow(fTL.id, 'e', fTR.id, 'w'));
-  elements.push(createPinnedArrow(fTR.id, 's', fBR.id, 'n'));
-  elements.push(createPinnedArrow(fBR.id, 'w', fBL.id, 'e'));
+  // Deck structure, so they ride the scaffold layer with the frames.
+  elements.push({
+    ...createPinnedArrow(fTL.id, 'e', fTR.id, 'w'),
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+  });
+  elements.push({
+    ...createPinnedArrow(fTR.id, 's', fBR.id, 'n'),
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+  });
+  elements.push({
+    ...createPinnedArrow(fBR.id, 'w', fBL.id, 'e'),
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+  });
 
   return elements;
 }
@@ -158,6 +172,7 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
     label: 'Storyboard · First-run demo',
     textSize: 'lg',
     textBold: true,
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
 
   scenes.forEach((scene, i) => {
@@ -166,12 +181,15 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
     const fx = x0 + col * (frameW + hGap);
     const fy = framesTop + row * rowPitch;
 
-    // Frame first, then its contents layer above it.
+    // Frame first, then its contents layer above it. Frames + their
+    // number chips are the storyboard's scaffold layer (spec/74); the
+    // sketch glyphs and captions users redraw ride the content layer.
     const frame = {
       ...createShape('square', fx, fy),
       width: frameW,
       height: frameH,
       textSize: 'md' as const,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     };
     elements.push(frame);
 
@@ -188,6 +206,7 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
         width: glyph,
         height: glyph,
         iconId,
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     });
 
@@ -201,6 +220,7 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
       textSize: 'sm',
       textBold: true,
       colorPreset: 'bold',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
 
     elements.push({
@@ -211,6 +231,7 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
       textSize: 'sm',
       textAlignX: 'center',
       textColor: '#64748b',
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
     });
   });
 

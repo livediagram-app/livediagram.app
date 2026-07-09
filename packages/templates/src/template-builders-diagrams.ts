@@ -12,6 +12,7 @@ import {
   type Anchor,
   type Element,
 } from '@livediagram/diagram';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Horizontal timeline with 5 milestone markers — circles on the line,
 // alternating labels above and below so they don't crowd. Each label
@@ -41,6 +42,9 @@ export function buildTimeline(cx: number, cy: number): Element[] {
     ...createArrow(startX, baseY, startX + lineLength, baseY),
     arrowEnds: 'none',
     strokeColor: '#64748b',
+    // The spine is the timeline's scaffold layer (spec/74); the
+    // milestone markers + labels ride the content layer above it.
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
 
   // Indicative date subtitles — months across the first three quarters
@@ -61,6 +65,7 @@ export function buildTimeline(cx: number, cy: number): Element[] {
       width: milestoneRadius * 2,
       height: milestoneRadius * 2,
       textSize: 'sm',
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
     });
     // Stack the title above the date. `blockTop` is the y of the
     // whole two-line block; the title fills the top half and the
@@ -75,6 +80,7 @@ export function buildTimeline(cx: number, cy: number): Element[] {
       label: title,
       textSize: 'md',
       textAlignX: 'center',
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
     });
     elements.push({
       ...createText(x - labelW / 2, blockTop + titleH + labelGap),
@@ -84,6 +90,7 @@ export function buildTimeline(cx: number, cy: number): Element[] {
       textSize: 'sm',
       textAlignX: 'center',
       textColor: '#64748b',
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
     });
   });
   return elements;
@@ -167,6 +174,8 @@ export function buildJourney(cx: number, cy: number): Element[] {
   const cardY = cy - blockH / 2;
   const stickyY = cardY + cardH + vGap;
 
+  // Stage cards + their connectors are the journey's scaffold layer
+  // (spec/74); the feeling stickies users rewrite ride the content layer.
   const cards: Element[] = [];
   const stickies: Element[] = [];
   stages.forEach((s, i) => {
@@ -177,6 +186,7 @@ export function buildJourney(cx: number, cy: number): Element[] {
       height: cardH,
       label: s.label,
       textSize: 'md',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     stickies.push({
       ...createSticky(x, stickyY),
@@ -184,13 +194,17 @@ export function buildJourney(cx: number, cy: number): Element[] {
       height: stickyH,
       label: s.feeling,
       textSize: 'sm',
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
     });
   });
   // Connectors PINNED between adjacent stage cards, so they reflow when
   // the user repositions a stage rather than floating free.
   const arrows: Element[] = [];
   for (let i = 0; i < cards.length - 1; i++) {
-    arrows.push(createPinnedArrow(cards[i]!.id, 'e', cards[i + 1]!.id, 'w'));
+    arrows.push({
+      ...createPinnedArrow(cards[i]!.id, 'e', cards[i + 1]!.id, 'w'),
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+    });
   }
   return [...cards, ...stickies, ...arrows];
 }

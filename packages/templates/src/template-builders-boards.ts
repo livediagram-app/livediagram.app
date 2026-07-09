@@ -20,7 +20,7 @@ import {
   type Element,
   type TextRun,
 } from '@livediagram/diagram';
-import { KANBAN_BOARD_LAYER_ID, KANBAN_CARDS_LAYER_ID } from './template-layers';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Classic "Mad / Sad / Glad" retro. Each column lives inside its own
 // tinted container shape (red / blue / green) so the framework's
@@ -97,6 +97,7 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
       fillColor: col.fill,
       strokeColor: col.stroke,
       textSize: 'md',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
 
     const innerX = centerX - colW / 2;
@@ -108,6 +109,7 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
       label: col.label,
       textSize: 'lg',
       textAlignX: 'center',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
 
     for (let j = 0; j < stickiesPerColumn; j++) {
@@ -118,6 +120,7 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
         height: stickyH,
         label: col.notes[j] ?? '',
         textSize: 'sm',
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     }
   });
@@ -206,7 +209,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
     label: 'Sprint 12 · September 2027',
     textSize: 'lg',
     textBold: true,
-    layerId: KANBAN_BOARD_LAYER_ID,
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
 
   lanes.forEach((lane, ci) => {
@@ -217,7 +220,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
       width: colW,
       height: colH,
       textSize: 'md',
-      layerId: KANBAN_BOARD_LAYER_ID,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     // Lane header.
     elements.push({
@@ -227,7 +230,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
       label: lane.header,
       textSize: 'lg',
       textAlignX: 'center',
-      layerId: KANBAN_BOARD_LAYER_ID,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
     // Cards: body + ticket text (bold id lead-in + summary) + priority chip.
     lane.cards.forEach((card, i) => {
@@ -237,7 +240,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
         width: 457,
         height: cardBodyH,
         textSize: 'md',
-        layerId: KANBAN_CARDS_LAYER_ID,
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
       const runs: TextRun[] = [{ text: `${card.id}:`, bold: true }, { text: ` ${card.summary}` }];
       elements.push({
@@ -248,7 +251,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
         richText: runs,
         textSize: 'sm',
         textAlignX: 'left',
-        layerId: KANBAN_CARDS_LAYER_ID,
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
       elements.push({
         ...createShape('square', colX + 30, cardTop + 76),
@@ -256,7 +259,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
         height: 28,
         label: `${card.priority} priority`,
         textSize: 'sm',
-        layerId: KANBAN_CARDS_LAYER_ID,
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     });
   });
@@ -348,6 +351,7 @@ export function buildSwot(cx: number, cy: number): Element[] {
       fillColor: q.fill,
       strokeColor: q.stroke,
       textSize: 'md',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
 
     // Header label rendered in the matching deeper hue so each
@@ -360,6 +364,7 @@ export function buildSwot(cx: number, cy: number): Element[] {
       textSize: 'lg',
       textAlignX: 'left',
       textColor: q.headerColor,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
 
     // Role glyph in the top-right corner, tinted to match the header.
@@ -369,6 +374,7 @@ export function buildSwot(cx: number, cy: number): Element[] {
       height: iconSize,
       iconId: q.icon,
       strokeColor: q.headerColor,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
 
     // Starter bullets sit under the header. Width matches the header
@@ -389,6 +395,7 @@ export function buildSwot(cx: number, cy: number): Element[] {
         richText: runs,
         textSize: 'md',
         textAlignX: 'left',
+        layerId: TEMPLATE_CONTENT_LAYER_ID,
       });
     });
   }
@@ -409,6 +416,9 @@ export function buildSwot(cx: number, cy: number): Element[] {
     textAlignX: 'center',
     // The subject under analysis ties all four quadrants together → hero preset.
     colorPreset: 'bold',
+    // Content layer (spec/74): the rename target rides with the notes, so
+    // it stays clickable when the quadrant scaffold is locked.
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
   });
 
   return elements;
@@ -434,6 +444,7 @@ export function buildPrioritizationMatrix(cx: number, cy: number): Element[] {
     ...createArrow(x1 + ox, y1 + oy, x2 + ox, y2 + oy),
     arrowEnds: ends,
     strokeColor: AXIS,
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
   elements.push(axis(394, 627, 1568, 627, 'both'));
   elements.push(axis(981, 1131, 981, 158, 'both'));
@@ -448,6 +459,7 @@ export function buildPrioritizationMatrix(cx: number, cy: number): Element[] {
     label: text,
     textSize: 'lg',
     textBold: true,
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
   elements.push(label(158, 183, 'High Value'));
   elements.push(label(158, 1107, 'Low Value'));
@@ -473,6 +485,7 @@ export function buildPrioritizationMatrix(cx: number, cy: number): Element[] {
       height: 49,
       label: it.label,
       textSize: 'sm',
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
     });
   }
 

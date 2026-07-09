@@ -12,6 +12,13 @@
 // "Templates" for the catalogue and per-template intent.
 
 import { createShape, type Element } from '@livediagram/diagram';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+
+// All three wireframes ship pre-layered (spec/74 "Layered templates"):
+// the device shells sit on a "Frames" scaffold layer, and every inner
+// placeholder box lands on a "UI" content layer, so rearranging the UI
+// never drags the device along. Each builder's local box / pill / dot
+// helpers stamp the content id; the device shapes carry the scaffold id.
 
 // Mobile wireframe: three fully-sketched phone screens side by side —
 // Login, Feed, Profile — a user-flow starter for mobile UI work. Each
@@ -57,6 +64,7 @@ export function buildMobileWireframe(cx: number, cy: number): Element[] {
     width: w,
     height: h,
     textSize: 'sm',
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
     ...(opts.label !== undefined ? { label: opts.label } : {}),
     ...(opts.left ? { textAlignX: 'left' as const } : {}),
   });
@@ -64,6 +72,7 @@ export function buildMobileWireframe(cx: number, cy: number): Element[] {
     ...createShape('circle', x, y),
     width: w,
     height: h,
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
   });
   const pill = (x: number, y: number, w: number, h: number, label: string): Element => ({
     ...createShape('stadium', x, y),
@@ -71,6 +80,7 @@ export function buildMobileWireframe(cx: number, cy: number): Element[] {
     height: h,
     textSize: 'sm',
     label,
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
   });
 
   const buildScreen = (label: (typeof screens)[number], x: number): Element[] => {
@@ -84,6 +94,7 @@ export function buildMobileWireframe(cx: number, cy: number): Element[] {
       // Large padding pushes the screen-name label clear of the
       // device's top bezel / notch so it reads as a screen title.
       padding: 'lg',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     };
     const inner: Element[] = [];
 
@@ -165,6 +176,7 @@ export function buildLaptopWireframe(cx: number, cy: number): Element[] {
     width: w,
     height: h,
     textSize: o.size ?? 'md',
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
     ...(o.label !== undefined ? { label: o.label } : {}),
     ...(o.left ? { textAlignX: 'left' as const } : {}),
     ...(o.rounded ? { borderRadius: 'md' as const } : {}),
@@ -176,15 +188,22 @@ export function buildLaptopWireframe(cx: number, cy: number): Element[] {
     height: h,
     textSize: 'sm',
     label,
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
   });
   const dot = (rx: number, ry: number, w: number, h: number): Element => ({
     ...createShape('circle', laptopX + rx, laptopY + ry),
     width: w,
     height: h,
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
   });
 
   const elements: Element[] = [
-    { ...createShape('laptop', laptopX, laptopY), width: laptopW, height: laptopH },
+    {
+      ...createShape('laptop', laptopX, laptopY),
+      width: laptopW,
+      height: laptopH,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+    },
   ];
 
   // Top nav bar + its chrome (logo, three nav pills, avatar).
@@ -242,6 +261,7 @@ export function buildBrowserWireframe(cx: number, cy: number): Element[] {
     width: w,
     height: h,
     textSize: o.size ?? 'md',
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
     ...(o.label !== undefined ? { label: o.label } : {}),
     ...(o.left ? { textAlignX: 'left' as const } : {}),
     ...(o.bold ? { textBold: true } : {}),
@@ -253,15 +273,22 @@ export function buildBrowserWireframe(cx: number, cy: number): Element[] {
     height: h,
     textSize: 'sm',
     label,
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
   });
   const dot = (rx: number, ry: number, w: number, h: number): Element => ({
     ...createShape('circle', browserX + rx, browserY + ry),
     width: w,
     height: h,
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
   });
 
   const elements: Element[] = [
-    { ...createShape('browser', browserX, browserY), width: browserW, height: browserH },
+    {
+      ...createShape('browser', browserX, browserY),
+      width: browserW,
+      height: browserH,
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+    },
   ];
 
   // Top nav: logo, three links, and the nav CTA on the right.
