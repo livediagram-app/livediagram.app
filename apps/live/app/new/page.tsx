@@ -9,6 +9,7 @@ import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
+import { offlineCreateDiagram } from '@/lib/offline/offline-store';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
@@ -46,6 +47,8 @@ export default function NewDiagramPage() {
     // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
     // theme id (spec/44) as well as a built-in one.
     themeId: string;
+    // Offline Mode (spec/76): the diagram is saved only in this browser.
+    offline: boolean;
   } | null>(null);
 
   // Clerk wiring (token provider + guest to authed migration), the same
@@ -103,10 +106,11 @@ export default function NewDiagramPage() {
     templateKind: TemplateKind | null,
     name: string,
     themeId: string,
+    offline = false,
   ) => {
     if (submitting) return;
     setSubmitting(true);
-    lastCreateArgs.current = { kind: templateKind, name, themeId };
+    lastCreateArgs.current = { kind: templateKind, name, themeId, offline };
     // Identity persistence first so any subsequent room broadcasts
     // carry the chosen name + colour.
     const trimmed = name.trim() || self.name;
@@ -138,25 +142,33 @@ export default function NewDiagramPage() {
           templateChosen: true,
         };
     try {
-      await apiCreateDiagram(self.id, {
-        id: diagramId,
-        name: untitledNameForTemplate(templateKind),
-        tabs: [tab],
-      });
+      if (offline) {
+        // Offline Mode (spec/76): create the diagram in IndexedDB only. This
+        // also registers its id so every later load / save routes local.
+        await offlineCreateDiagram(
+          { id: diagramId, name: untitledNameForTemplate(templateKind), tabs: [tab] },
+          Date.now(),
+        );
+      } else {
+        await apiCreateDiagram(self.id, {
+          id: diagramId,
+          name: untitledNameForTemplate(templateKind),
+          tabs: [tab],
+        });
+      }
     } catch {
-      // Create FAILED (network down / 5xx). Don't navigate to the editor
-      // for a diagram that was never persisted (that lands on a 404).
-      // Surface a retryable error card instead (Retry re-runs this exact
-      // create from lastCreateArgs).
+      // Create FAILED (network / 5xx for cloud, or no IndexedDB for offline).
+      // Don't navigate to an editor for a diagram that was never persisted
+      // (that lands on a 404). Surface a retryable error card instead (Retry
+      // re-runs this exact create from lastCreateArgs).
       setSubmitting(false);
       setCreateError(true);
       return;
     }
-    // Anonymous telemetry (spec/22): a diagram was created. No id or
-    // name is sent, just the event. The chosen theme is recorded
-    // alongside since the picker on this screen is the first place a
-    // theme gets set; later switches in the editor emit the same way.
-    track('Diagram', 'Created');
+    // Anonymous telemetry (spec/22): a diagram was created. No id or name is
+    // sent — the `type` records only whether it's an Offline or Cloud diagram
+    // (spec/76). The chosen theme is recorded separately below.
+    track('Diagram', 'Created', offline ? 'Offline' : 'Cloud');
     // Telemetry `type` must stay a preset, never user content, so a custom
     // theme reports the fixed 'Custom' rather than its name (spec/22, /44).
     const themeLabel = isCustomThemeId(themeId)
@@ -172,13 +184,16 @@ export default function NewDiagramPage() {
     // Done as a follow-up PUT so the create endpoint signature stays
     // stable and placement can fail independently (network glitch ->
     // diagram lives in the personal Unsorted, user can move it later).
-    const params = new URLSearchParams(window.location.search);
-    const targetFolderId = params.get('folder');
-    const targetTeamId = params.get('team');
-    if (targetTeamId) {
-      await apiSetDiagramFolder(self.id, diagramId, targetFolderId, targetTeamId).catch(() => {});
-    } else if (targetFolderId) {
-      await apiSetDiagramFolder(self.id, diagramId, targetFolderId).catch(() => {});
+    // Offline diagrams have no server folder / team placement — skip it.
+    if (!offline) {
+      const params = new URLSearchParams(window.location.search);
+      const targetFolderId = params.get('folder');
+      const targetTeamId = params.get('team');
+      if (targetTeamId) {
+        await apiSetDiagramFolder(self.id, diagramId, targetFolderId, targetTeamId).catch(() => {});
+      } else if (targetFolderId) {
+        await apiSetDiagramFolder(self.id, diagramId, targetFolderId).catch(() => {});
+      }
     }
     window.location.assign(`/diagram/${diagramId}`);
   };
@@ -201,7 +216,7 @@ export default function NewDiagramPage() {
             onRetry={() => {
               setCreateError(false);
               const a = lastCreateArgs.current;
-              if (a) void commitNewDiagram(a.kind, a.name, a.themeId);
+              if (a) void commitNewDiagram(a.kind, a.name, a.themeId, a.offline);
             }}
           />
         </main>
@@ -237,7 +252,9 @@ export default function NewDiagramPage() {
             currentThemeId="brand"
             busy={submitting}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
-            onPick={(kind, name, themeId) => void commitNewDiagram(kind, name, themeId)}
+            onPick={(kind, name, themeId, offline) =>
+              void commitNewDiagram(kind, name, themeId, offline)
+            }
             onSkip={() => void commitNewDiagram('blank', self.name, 'brand')}
           />
         </CustomThemeProvider>

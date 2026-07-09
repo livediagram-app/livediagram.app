@@ -39,7 +39,10 @@ type TemplatePickerProps = {
   // different identity on someone else's diagram. Has no effect in
   // 'welcome' / 'templates' modes (no identity row to lock).
   lockedName?: string | null;
-  onPick: (kind: TemplateKind, name: string, themeId: string) => void;
+  // `offline` (spec/76): create the diagram in this browser only, not on the
+  // server. Only ever true from the welcome wizard's "Save offline" toggle;
+  // other modes always pass false (the diagram already exists).
+  onPick: (kind: TemplateKind, name: string, themeId: string, offline: boolean) => void;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
@@ -134,6 +137,10 @@ export function TemplatePicker({
   // 'brand' (so Basic is pre-selected for a fresh diagram), while a new
   // tab copying an existing one passes that tab's theme.
   const [themeId, setThemeId] = useState<string>(currentThemeId);
+  // Offline Mode (spec/76): "Save offline — this browser only". Welcome wizard
+  // only; threaded into every onPick so Skip / guided tour / Create all honour
+  // it. False in non-welcome modes (the toggle never renders there).
+  const [offline, setOffline] = useState(false);
   // Welcome mode is a two-step wizard: pick a template, then a theme
   // (spec/14). Other modes keep the single-page layout. `themeBuilding`
   // tracks whether the theme step's custom-theme builder is open, so the
@@ -192,17 +199,17 @@ export function TemplatePicker({
   const showThemeSection = showThemes && (!isWizard || step === 'theme');
   // Skip the wizard entirely: the documented shortcut is Blank template +
   // Basic theme (spec/14), committed straight away.
-  const skipToDefaults = () => onPick('blank', effectiveName, 'brand');
+  const skipToDefaults = () => onPick('blank', effectiveName, 'brand', offline);
   // "Show me around" (spec/69): one click commits the guided-tour sample
   // with the default theme, no theme step, so a first-time user lands on a
   // living canvas immediately. Welcome mode only.
-  const startGuidedTour = () => onPick('guided-tour', effectiveName, 'brand');
+  const startGuidedTour = () => onPick('guided-tour', effectiveName, 'brand', offline);
   // Double-clicking a template advances to the theme step (the user still
   // needs to pick a theme) rather than committing the whole wizard.
   const onTemplateCommit = (kind: TemplateKind) => {
     setTemplateKind(kind);
     if (isWizard) goToStep('theme');
-    else onPick(kind, effectiveName, themeId);
+    else onPick(kind, effectiveName, themeId, offline);
   };
 
   return (
@@ -329,13 +336,34 @@ export function TemplatePicker({
               <CustomThemePicker
                 themeId={themeId}
                 onSelect={setThemeId}
-                onCommit={(id) => onPick(templateKind, effectiveName, id)}
+                onCommit={(id) => onPick(templateKind, effectiveName, id, offline)}
                 onBuildingChange={setThemeBuilding}
                 browserClassName="mt-1"
               />
             ) : null}
           </div>
         </div>
+
+        {/* Offline Mode toggle (spec/76) — welcome wizard only. Sits just above
+            the footer so "Save offline" reads as part of the create action. */}
+        {isWelcome && !themeBuilding ? (
+          <label className="flex cursor-pointer items-center gap-2.5 border-t border-slate-100 px-5 py-2.5 dark:border-slate-800">
+            <input
+              type="checkbox"
+              checked={offline}
+              onChange={(e) => setOffline(e.target.checked)}
+              className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-brand-600 dark:border-slate-600"
+            />
+            <span className="flex flex-col leading-tight">
+              <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                Save offline — this browser only
+              </span>
+              <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                Stays on this device. Not synced, not backed up.
+              </span>
+            </span>
+          </label>
+        ) : null}
 
         {/* Footer — see TemplatePickerFooter. Hidden entirely while the
             theme step's builder is open (it carries its own Save / Cancel). */}
@@ -349,7 +377,7 @@ export function TemplatePicker({
             onOpenExisting={onOpenExisting}
             skipToDefaults={skipToDefaults}
             goToStep={goToStep}
-            onCommit={() => onPick(templateKind, effectiveName, themeId)}
+            onCommit={() => onPick(templateKind, effectiveName, themeId, offline)}
           />
         )}
       </div>
