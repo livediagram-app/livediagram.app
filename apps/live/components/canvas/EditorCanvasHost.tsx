@@ -155,6 +155,7 @@ export function EditorCanvasHost() {
     isReadOnly,
     laserTrailRows,
     livePresence,
+    lockedByOther,
     mapPosition,
     moveDiagramToFolder,
     multiSelectedIds,
@@ -491,7 +492,13 @@ export function EditorCanvasHost() {
       onElementContextMenu={
         isReadOnly
           ? undefined
-          : (id, sx, sy) => setContextMenu({ mode: 'element', elementId: id, x: sx, y: sy })
+          : (id, sx, sy) => {
+              // Concurrent-selection lock (spec/07): a peer holds this element,
+              // so it can't be selected, dragged, or edited — don't pop a dead
+              // context menu on it either. Same gate as selectElement.
+              if (lockedByOther(id)) return;
+              setContextMenu({ mode: 'element', elementId: id, x: sx, y: sy });
+            }
       }
       onMultiContextMenu={
         isReadOnly

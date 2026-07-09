@@ -2177,6 +2177,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     retryActiveTabLoad,
     revertChange,
     revokeShareLink,
+    lockedByOther,
     selectElement,
     selectMarquee,
     selfParticipant,
