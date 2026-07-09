@@ -22,6 +22,7 @@ import {
 } from '@/components/panels/explorer-icons';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { saveOfflineToCloud, takeCloudOffline } from '@/lib/offline/offline-convert';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
 
 export function DiagramRow({
@@ -87,6 +88,36 @@ export function DiagramRow({
   const openShareSettings = () => {
     if (typeof window === 'undefined') return;
     window.location.assign(`${window.location.origin}/diagram/${item.id}?share=1`);
+  };
+
+  // Offline Mode conversions (spec/76). Reload after so the list reflects the
+  // moved diagram. Guarded on a resolved viewer id.
+  const [converting, setConverting] = useState(false);
+  const handleSaveToCloud = async () => {
+    if (!ownerId || converting) return;
+    setMenuOpen(false);
+    setConverting(true);
+    try {
+      await saveOfflineToCloud(item.id, ownerId);
+      window.location.reload();
+    } catch {
+      setConverting(false);
+    }
+  };
+  const handleTakeOffline = async () => {
+    if (!ownerId || converting) return;
+    setMenuOpen(false);
+    const ok = window.confirm(
+      `Take “${item.name}” offline?\n\nThis removes it from your account and every other device. It will exist only in this browser, with no backup.`,
+    );
+    if (!ok) return;
+    setConverting(true);
+    try {
+      await takeCloudOffline(item.id, ownerId, item.shareCode ?? null);
+      window.location.reload();
+    } catch {
+      setConverting(false);
+    }
   };
 
   const hasMenu = Boolean((onRename && active) || onDelete || onDuplicate || onMoveRequest);
@@ -306,6 +337,23 @@ export function DiagramRow({
               </div>
             </MenuAccordionSection>
           )}
+          {/* Offline Mode conversions (spec/76): move this diagram between the
+              cloud and this browser. Needs a resolved viewer id. */}
+          {ownerId ? (
+            <MenuAccordionSection
+              title="Offline"
+              icon={<SharedDiagramIcon />}
+              {...sectionProps('offline')}
+            >
+              <div className="px-2 py-1.5">
+                {offline ? (
+                  <MenuTile label="Save to your account" onClick={() => void handleSaveToCloud()} />
+                ) : (
+                  <MenuTile label="Take offline" danger onClick={() => void handleTakeOffline()} />
+                )}
+              </div>
+            </MenuAccordionSection>
+          ) : null}
         </PortalMenu>
       ) : null}
     </div>
