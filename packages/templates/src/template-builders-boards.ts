@@ -20,6 +20,7 @@ import {
   type Element,
   type TextRun,
 } from '@livediagram/diagram';
+import { KANBAN_BOARD_LAYER_ID, KANBAN_CARDS_LAYER_ID } from './template-layers';
 
 // Classic "Mad / Sad / Glad" retro. Each column lives inside its own
 // tinted container shape (red / blue / green) so the framework's
@@ -133,6 +134,11 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
 // hand-built reference (505x835 lanes, 457x112 cards), re-centred on the
 // supplied canvas point. Colours are left to the theme
 // (recolourElementsForTheme); cards read via their borders + the chip.
+// The board ships pre-layered (spec/74 "Layered templates"): the title,
+// lane containers and headers sit on a "Board" scaffold layer under a
+// "Cards" content layer holding the tickets, so cards drag between
+// lanes without grabbing the lane behind them. templateCanvasOverrides
+// carries the matching Tab.layers for these ids.
 export function buildKanban(cx: number, cy: number): Element[] {
   const colW = 505;
   const colH = 600;
@@ -200,6 +206,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
     label: 'Sprint 12 · September 2027',
     textSize: 'lg',
     textBold: true,
+    layerId: KANBAN_BOARD_LAYER_ID,
   });
 
   lanes.forEach((lane, ci) => {
@@ -210,6 +217,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
       width: colW,
       height: colH,
       textSize: 'md',
+      layerId: KANBAN_BOARD_LAYER_ID,
     });
     // Lane header.
     elements.push({
@@ -219,6 +227,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
       label: lane.header,
       textSize: 'lg',
       textAlignX: 'center',
+      layerId: KANBAN_BOARD_LAYER_ID,
     });
     // Cards: body + ticket text (bold id lead-in + summary) + priority chip.
     lane.cards.forEach((card, i) => {
@@ -228,6 +237,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
         width: 457,
         height: cardBodyH,
         textSize: 'md',
+        layerId: KANBAN_CARDS_LAYER_ID,
       });
       const runs: TextRun[] = [{ text: `${card.id}:`, bold: true }, { text: ` ${card.summary}` }];
       elements.push({
@@ -238,6 +248,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
         richText: runs,
         textSize: 'sm',
         textAlignX: 'left',
+        layerId: KANBAN_CARDS_LAYER_ID,
       });
       elements.push({
         ...createShape('square', colX + 30, cardTop + 76),
@@ -245,6 +256,7 @@ export function buildKanban(cx: number, cy: number): Element[] {
         height: 28,
         label: `${card.priority} priority`,
         textSize: 'sm',
+        layerId: KANBAN_CARDS_LAYER_ID,
       });
     });
   });

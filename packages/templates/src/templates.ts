@@ -1,5 +1,6 @@
 import type { BackgroundPattern, Tab } from '@livediagram/diagram';
 import { titleCase } from '@livediagram/api-schema';
+import { templateLayers } from './template-layers';
 
 export type TemplateKind =
   | 'blank'
@@ -598,11 +599,14 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   storyboard: 'crosshatch',
 };
 
-// Canvas-level overrides a specific template ships with, applied on top
+// Tab-level overrides a specific template ships with, applied on top
 // of whatever theme is selected. Each template carries its preferred
 // backdrop pattern (see TEMPLATE_PATTERNS); Mind map and User journey
 // additionally soften the canvas opacity so the pattern recedes behind
-// the radiating branches / the stage row.
+// the radiating branches / the stage row. Layered templates (spec/74)
+// also carry their `Tab.layers` here, matching the `layerId`s their
+// builder pre-stamps, so every application path lands scaffold and
+// layers in one commit.
 export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   const overrides: Partial<Tab> = {};
   const pattern = TEMPLATE_PATTERNS[kind];
@@ -614,5 +618,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
     kind === 'prioritization-matrix'
   )
     overrides.backgroundOpacity = 0.8;
+  const layers = templateLayers(kind);
+  if (layers) overrides.layers = layers;
   return overrides;
 }

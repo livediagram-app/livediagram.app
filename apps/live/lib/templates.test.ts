@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
+  KANBAN_BOARD_LAYER_ID,
+  KANBAN_CARDS_LAYER_ID,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   templateCanvasOverrides,
   templateCategory,
+  templateLayers,
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livediagram/templates';
@@ -173,6 +176,79 @@ describe('templateCanvasOverrides', () => {
 
   it('leaves the blank template to inherit the theme backdrop', () => {
     expect(templateCanvasOverrides('blank')).toEqual({});
+  });
+
+  it('ships the kanban board with its Board / Cards layers (spec/74)', () => {
+    expect(templateCanvasOverrides('kanban')).toEqual({
+      backgroundPattern: 'graph',
+      layers: [
+        { id: KANBAN_BOARD_LAYER_ID, name: 'Board' },
+        { id: KANBAN_CARDS_LAYER_ID, name: 'Cards' },
+      ],
+    });
+  });
+});
+
+// Layered templates (spec/74 "Layered templates"): a layered template's
+// builder pre-stamps `layerId` on every element, and the matching
+// `Tab.layers` rides templateCanvasOverrides, so the two can't be
+// allowed to drift apart — an element stamped with an id the layers
+// array doesn't know would silently fall back to the default layer.
+describe('layered templates (spec/74)', () => {
+  it('keeps every builder in lockstep with templateLayers across the catalogue', () => {
+    for (const kind of TEMPLATES.map((t) => t.kind)) {
+      const layers = templateLayers(kind);
+      const elements = buildTemplate(kind, 0, 0);
+      if (!layers) {
+        // Layerless templates must not stamp: a dangling layerId would
+        // resolve to the implicit default layer but bloat the JSON.
+        for (const el of elements) expect(el.layerId, kind).toBeUndefined();
+        continue;
+      }
+      // Layered templates stamp EVERY element with a known layer id.
+      const known = new Set(layers.map((l) => l.id));
+      expect(known.size).toBe(layers.length); // ids unique
+      for (const el of elements) {
+        expect(el.layerId, `${kind} element without a known layerId`).toBeDefined();
+        expect(known.has(el.layerId!), `${kind} stamped unknown id ${el.layerId}`).toBe(true);
+      }
+    }
+  });
+
+  it('kanban splits the stationary board from the tickets, cards on top', () => {
+    const layers = templateLayers('kanban')!;
+    // Cards LAST (top): the default active layer, so new elements land
+    // with the content, never under the scaffold (spec/74).
+    expect(layers.map((l) => l.name)).toEqual(['Board', 'Cards']);
+    // Scaffold ships unlocked and visible: locking is one click away.
+    for (const l of layers) {
+      expect(l.locked).toBeUndefined();
+      expect(l.visible).toBeUndefined();
+    }
+    const elements = buildTemplate('kanban', 0, 0);
+    const board = elements.filter((el) => el.layerId === KANBAN_BOARD_LAYER_ID);
+    const cards = elements.filter((el) => el.layerId === KANBAN_CARDS_LAYER_ID);
+    // Board: sprint title + 4 lane containers + 4 lane headers.
+    expect(board).toHaveLength(9);
+    // Cards: 12 tickets x (body + ticket text + priority chip).
+    expect(cards).toHaveLength(36);
+    expect(board.length + cards.length).toBe(elements.length);
+    // The split is by role, not accident: every lane header is on the
+    // board, every ticket line on the cards.
+    const labelsOn = (els: typeof elements) =>
+      els.map((el) => ('label' in el ? el.label : undefined)).filter(Boolean) as string[];
+    for (const lane of ['Todo List', 'In Progress', 'Under Review', 'Done']) {
+      expect(labelsOn(board)).toContain(lane);
+    }
+    expect(labelsOn(cards).filter((l) => l.startsWith('LIVE-'))).toHaveLength(12);
+  });
+
+  it('buildTemplatedTab lands the layers on the tab and theming keeps the stamps', () => {
+    const tab = buildTemplatedTab('kanban', 'slate', 'tab-1', 'kanban');
+    expect(tab.layers).toEqual(templateLayers('kanban'));
+    for (const el of tab.elements) {
+      expect([KANBAN_BOARD_LAYER_ID, KANBAN_CARDS_LAYER_ID]).toContain(el.layerId);
+    }
   });
 });
 
