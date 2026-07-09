@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { PortalMenu } from '@/components/primitives/PortalMenu';
 
 // Compact stack of participant initials, sitting between the tab
 // label and the ellipsis menu in TabBar. Rendered smaller than the
@@ -34,6 +34,9 @@ export function TabPresenceStack({
   const [rendered, setRendered] = useState<Slot[]>(() =>
     participants.map((p) => ({ p, leaving: false })),
   );
+  // The "+N" overflow badge opens a popover listing the participants it hides.
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const overflowBadgeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const incomingIds = new Set(participants.map((p) => p.id));
@@ -88,6 +91,8 @@ export function TabPresenceStack({
   const active = rendered.filter((s) => !s.leaving);
   const visibleCap = 3;
   const overflow = Math.max(0, active.length - visibleCap);
+  // The participants hidden behind the "+N" badge — listed in its popover.
+  const overflowParticipants = active.slice(visibleCap).map((s) => s.p);
   const shown = rendered
     .filter((s) => !s.leaving || rendered.indexOf(s) < visibleCap)
     .slice(0, visibleCap + leavingExtra(rendered, visibleCap));
@@ -122,14 +127,56 @@ export function TabPresenceStack({
         </span>
       ))}
       {overflow > 0 ? (
-        <Tooltip title={`${overflow} more`} description="Other participants on this tab.">
-          <span className="inline-flex h-4 w-4 animate-pop-in items-center justify-center rounded-full border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm">
+        <>
+          <button
+            ref={overflowBadgeRef}
+            type="button"
+            onClick={() => setOverflowOpen((v) => !v)}
+            aria-haspopup="dialog"
+            aria-expanded={overflowOpen}
+            aria-label={`${overflow} more participant${overflow === 1 ? '' : 's'} on this tab`}
+            className="inline-flex h-4 w-4 animate-pop-in cursor-pointer items-center justify-center rounded-full border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-300 dark:border-slate-800 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+          >
             +{overflow}
-          </span>
-        </Tooltip>
+          </button>
+          {overflowOpen ? (
+            <PortalMenu
+              anchor={overflowBadgeRef.current}
+              placement="above"
+              onClose={() => setOverflowOpen(false)}
+            >
+              <div className="scrollbar-slim max-h-64 overflow-y-auto px-1 py-1">
+                {overflowParticipants.map((p) => {
+                  const role = participantRole(p, selfId, selfRole);
+                  return (
+                    <div key={p.id} className="flex items-center gap-2 px-2 py-1.5">
+                      <ParticipantAvatar participant={p} size={20} />
+                      <span className="truncate text-xs font-medium text-slate-700 dark:text-slate-200">
+                        {p.name}
+                      </span>
+                      {role ? (
+                        <span className="ml-auto shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                          {role}
+                        </span>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </PortalMenu>
+          ) : null}
+        </>
       ) : null}
     </div>
   );
+}
+
+// Role chip text for a participant row in the overflow popover: "You" for
+// the local viewer, else Viewer / Editor when the role is known, else none.
+function participantRole(p: Participant, selfId: string, selfRole: 'edit' | 'view'): string | null {
+  if (p.id === selfId) return selfRole === 'view' ? 'You · Viewer' : 'You';
+  if (p.role) return p.role === 'view' ? 'Viewer' : 'Editor';
+  return null;
 }
 
 // Helper so the visible slice keeps any leavers that occupy a slot
