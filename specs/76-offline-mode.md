@@ -112,10 +112,11 @@ confirmation:
 
 - **Confirmation** warns clearly: _"This removes the diagram from your account
   and every other device. It will exist only in this browser, with no backup."_
-- On confirm: download the diagram's tabs + meta into IndexedDB, **download its
-  R2 images and embed them as `data:` URIs**, register it in the local index,
-  then **delete the server record** (`apiDeleteDiagram`, spec/11) and any share
-  links. The badge flips to **Offline**.
+- On confirm: download the diagram's tabs + meta into IndexedDB, register it in
+  the local index, then **delete the server record** (via a raw delete so the
+  now-offline id isn't re-routed to the local store) and any share links. The
+  badge flips to **Offline**. (R2 images keep their URLs for now — downloading +
+  embedding them is the same follow-up noted above.)
 - Because it deletes the cloud copy, taking a _shared_ or _team_ diagram offline
   first revokes those (a share/team diagram can't be pulled private silently);
   the confirmation spells this out.
