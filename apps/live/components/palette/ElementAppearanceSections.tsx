@@ -276,10 +276,10 @@ export function ElementAppearanceSections({
             both require a non-empty label). Sub-categories all start closed:
             auto-expanding the first one flipped the shared one-open-section
             scaffold, collapsing whichever inline accordion the user had open
-            in the host menu behind the flyout. ── */}
-      {showMarkers || showAlignment ? <MenuGroupSeparator /> : null}
+            in the host menu behind the flyout. Sits in the style band
+            (no separator of its own), beside Style + Animation. ── */}
       {showMarkers || showAlignment ? (
-        <MenuFlyoutSection title="Text" icon={<TextGlyph />} flush>
+        <MenuFlyoutSection title="Text" icon={<TextGlyph />}>
           {/* Typography — Font / Size / Padding, shared with the rich-text
               toolbar's overflow menu. Applies to the element's whole label. */}
           {showAlignment ? (

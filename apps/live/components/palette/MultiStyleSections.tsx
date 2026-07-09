@@ -1,8 +1,12 @@
 import {
+  animLoops,
   defaultFillColor,
   defaultStrokeColor,
   defaultTextColor,
+  isChartShape,
+  PIE_LOOPING_ANIMS,
   type ArrowElement,
+  type BorderRadius,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
@@ -11,17 +15,26 @@ import {
 } from '@livediagram/diagram';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { SizeButton } from '@/components/palette/palette-controls';
-import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-icons';
+import {
+  BorderRadiusIcon,
+  BorderStrokeIcon,
+  BorderStyleIcon,
+} from '@/components/palette/palette-icons';
 import {
   AnimationMenuGlyph,
   BorderGlyph,
   IconCategoryGlyph,
   PaletteMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { AnimationTiles, FlowTiles, IconSizeTiles } from '@/components/palette/context-menu-tiles';
-import { BorderGrid, ColourRow } from '@/components/palette/context-menu-rows';
-import { BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
+import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
+import {
+  AnimationTiles,
+  FlowTiles,
+  IconAnimationTiles,
+  IconSizeTiles,
+} from '@/components/palette/context-menu-tiles';
+import { BorderGrid, ColourRow, PieAnimTiles } from '@/components/palette/context-menu-rows';
+import { BORDER_RADII, BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 
@@ -47,7 +60,9 @@ export function MultiStyleSections({
   strokeSrc,
   borderableSel,
   borderSrc,
+  radiusSrc,
   techIconSrc,
+  onClose,
 }: {
   part: 'style' | 'motion';
   props: EditorContextMenuProps;
@@ -61,10 +76,24 @@ export function MultiStyleSections({
   strokeSrc: BoxedElement | undefined;
   borderableSel: boolean;
   borderSrc: { strokeWidth?: BorderStroke; strokeStyle?: BorderStyle; type: string } | undefined;
+  // First member whose kind rounds corners — gates + feeds the Radius
+  // grid, mirroring the single menu's supportsBorderRadius branch.
+  radiusSrc: { borderRadius?: BorderRadius } | undefined;
   techIconSrc: ShapeElement | undefined;
+  onClose: () => void;
 }) {
   const { sectionProps, colorProps, textColorHandlers, fillColorHandlers, strokeColorHandlers } =
     scaffold;
+  // Type-aware animation sets, mirroring the single menu: a selection
+  // that is ALL charts gets the slice animations, ALL icons the glyph
+  // animations; anything mixed falls back to the generic boxed set
+  // (which is what a mixed selection can share).
+  const allCharts =
+    boxedSel.length > 0 && boxedSel.every((el) => el.type === 'shape' && isChartShape(el.shape));
+  const allIcons =
+    boxedSel.length > 0 && boxedSel.every((el) => el.type === 'shape' && el.shape === 'icon');
+  const chartSrc = allCharts ? (boxedSel[0] as ShapeElement) : undefined;
+  const iconSrc = allIcons ? (boxedSel[0] as ShapeElement) : undefined;
   return (
     <>
       {/* Animation (spec/09) — applies to every boxed member of the
@@ -75,14 +104,34 @@ export function MultiStyleSections({
           icon={<AnimationMenuGlyph />}
           {...sectionProps('m-animation')}
         >
-          <AnimationTiles
-            animation={boxedSel[0]!.animation ?? null}
-            speed={boxedSel[0]!.animationSpeed ?? 'normal'}
-            onSet={props.onSetAnimation}
-            onSetSpeed={props.onSetAnimationSpeed}
-            onPreview={props.onPreviewAnimation}
-            onPreviewEnd={props.onAnimationPreviewEnd}
-          />
+          {chartSrc ? (
+            <PieAnimTiles
+              anim={chartSrc.pieAnim ?? null}
+              speed={chartSrc.pieAnimSpeed ?? 'normal'}
+              repeat={animLoops(chartSrc.pieAnim, chartSrc.pieAnimRepeat, PIE_LOOPING_ANIMS)}
+              onSet={props.onSetPieAnim}
+              onSetSpeed={props.onSetPieAnimSpeed}
+              onSetRepeat={props.onSetPieAnimRepeat}
+            />
+          ) : iconSrc ? (
+            <IconAnimationTiles
+              animation={iconSrc.iconAnimation ?? null}
+              speed={iconSrc.iconAnimationSpeed ?? 'normal'}
+              onSet={props.onSetIconAnimation}
+              onSetSpeed={props.onSetIconAnimationSpeed}
+              onPreview={props.onPreviewIconAnimation}
+              onPreviewEnd={props.onAnimationPreviewEnd}
+            />
+          ) : (
+            <AnimationTiles
+              animation={boxedSel[0]!.animation ?? null}
+              speed={boxedSel[0]!.animationSpeed ?? 'normal'}
+              onSet={props.onSetAnimation}
+              onSetSpeed={props.onSetAnimationSpeed}
+              onPreview={props.onPreviewAnimation}
+              onPreviewEnd={props.onAnimationPreviewEnd}
+            />
+          )}
         </MenuAccordionSection>
       ) : null}
       {part === 'motion' && arrowSrc ? (
@@ -137,6 +186,15 @@ export function MultiStyleSections({
               presets={props.presetColors}
             />
           ) : null}
+          <div className="px-2 pb-1 pt-1.5">
+            <MenuActionButton
+              label="Reset to theme"
+              onClick={() => {
+                props.onResetColors();
+                onClose();
+              }}
+            />
+          </div>
         </MenuAccordionSection>
       ) : null}
       {part === 'style' && borderableSel ? (
@@ -172,6 +230,21 @@ export function MultiStyleSections({
                 </SizeButton>
               ))}
             </BorderGrid>
+            {radiusSrc ? (
+              <BorderGrid label="Radius" cols={5}>
+                {BORDER_RADII.map((v) => (
+                  <SizeButton
+                    key={v}
+                    active={(radiusSrc.borderRadius ?? 'sm') === v}
+                    onClick={() => props.onCommitBorderRadius(v)}
+                    onPointerEnter={onMouseHover(() => props.onPreviewBorderRadius(v))}
+                    onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
+                  >
+                    <BorderRadiusIcon value={v} />
+                  </SizeButton>
+                ))}
+              </BorderGrid>
+            ) : null}
           </div>
         </MenuAccordionSection>
       ) : null}

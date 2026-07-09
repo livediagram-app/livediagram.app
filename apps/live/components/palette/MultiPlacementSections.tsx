@@ -1,4 +1,5 @@
 import type { BoxedElement, Element, ShapeElement } from '@livediagram/diagram';
+import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { SizeButton } from '@/components/palette/palette-controls';
@@ -10,7 +11,12 @@ import {
   RotationGlyph,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuActionButton,
+  MenuTile,
+  MenuTileGrid,
+} from '@/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
@@ -32,12 +38,14 @@ export function MultiPlacementSections({
   boxedSel,
   morphable,
   sectionProps,
+  onClose,
 }: {
   props: EditorContextMenuProps;
   sel: Element[];
   boxedSel: BoxedElement[];
   morphable: ShapeElement[];
   sectionProps: Scaffold['sectionProps'];
+  onClose: () => void;
 }) {
   const morphSrc = morphable[0];
   const morphIds = morphable.map((el) => el.id);
@@ -58,29 +66,33 @@ export function MultiPlacementSections({
           currentLayerId={props.selectionLayerId}
           onMove={props.onMoveSelectionToLayer}
         />
+        <ContextMenuDivider />
         <OpacityRow
           value={(sel[0] as { opacity?: number } | undefined)?.opacity ?? 1}
           onChange={props.onSetOpacity}
         />
         {boxedSel.length ? (
-          <button
-            type="button"
-            onClick={props.onToggleAspectLock}
-            aria-pressed={!!boxedSel[0]!.aspectLocked}
-            className="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <span className="flex items-center gap-2">
-              <span className="text-slate-400 dark:text-slate-400">
-                <AspectLockMenuIcon />
+          <>
+            <ContextMenuDivider />
+            <button
+              type="button"
+              onClick={props.onToggleAspectLock}
+              aria-pressed={!!boxedSel[0]!.aspectLocked}
+              className="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-slate-400 dark:text-slate-400">
+                  <AspectLockMenuIcon />
+                </span>
+                Lock aspect ratio
               </span>
-              Lock aspect ratio
-            </span>
-            <ToggleSwitch
-              presentational
-              checked={!!boxedSel[0]!.aspectLocked}
-              label="Lock aspect ratio"
-            />
-          </button>
+              <ToggleSwitch
+                presentational
+                checked={!!boxedSel[0]!.aspectLocked}
+                label="Lock aspect ratio"
+              />
+            </button>
+          </>
         ) : null}
       </MenuAccordionSection>
       {/* Shape — morph every morphable member to a common kind. */}
@@ -98,6 +110,15 @@ export function MultiPlacementSections({
                 <ShapeIcon kind={kind} />
               </SizeButton>
             ))}
+          </div>
+          <div className="px-2 pb-1.5 pt-0.5">
+            <MenuActionButton
+              label="Reset aspect ratio"
+              onClick={() => {
+                props.onResetAspectRatio();
+                onClose();
+              }}
+            />
           </div>
         </MenuAccordionSection>
       ) : null}

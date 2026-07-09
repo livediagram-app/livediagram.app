@@ -9,6 +9,7 @@ export function useCanvasSelectHandlers({
   inertIds,
   elements,
   multiSelectedIds,
+  soloSelectedId,
   onSelect,
   onShiftSelect,
   onElementContextMenu,
@@ -19,6 +20,8 @@ export function useCanvasSelectHandlers({
   inertIds: Set<string>;
   elements: Element[];
   multiSelectedIds: Set<string>;
+  // The drilled-in group member (spec/09 drill-in), when one is soloed.
+  soloSelectedId: string | null;
   onSelect: (id: string) => void;
   onShiftSelect: (id: string) => void;
   onElementContextMenu?: (id: string, screenX: number, screenY: number) => void;
@@ -36,23 +39,38 @@ export function useCanvasSelectHandlers({
       // Right-clicking a member of an active multi-selection keeps the whole
       // selection and opens a selection-wide menu. Right-clicking a grouped
       // element selects the group (which expands to all members) and opens
-      // the same menu. Otherwise it's a single element.
+      // the same menu — EXCEPT the drilled-in solo member (spec/09
+      // drill-in): the user has already narrowed to one element, so it
+      // gets the full single-element menu (Comments / Note / Link /
+      // data editors were otherwise unreachable on grouped elements).
+      // Otherwise it's a single element.
       const inMarquee = multiSelectedIds.size > 1 && multiSelectedIds.has(id);
       const el = elements.find((e) => e.id === id);
       const grouped = !!el && isBoxed(el) && !!el.groupId;
+      const drilledIn = grouped && id === soloSelectedId;
       if (inMarquee && onMultiContextMenu) {
         onMultiContextMenu(sx, sy);
         return;
       }
-      if (grouped && onMultiContextMenu) {
+      if (grouped && !drilledIn && onMultiContextMenu) {
         onSelect(id);
         onMultiContextMenu(sx, sy);
         return;
       }
-      onSelect(id);
+      // Re-selecting the drilled member would clear its solo state, so
+      // skip the select when it's already the solo target.
+      if (!drilledIn) onSelect(id);
       onElementContextMenu?.(id, sx, sy);
     },
-    [onSelect, onElementContextMenu, onMultiContextMenu, elements, multiSelectedIds, inertIds],
+    [
+      onSelect,
+      onElementContextMenu,
+      onMultiContextMenu,
+      elements,
+      multiSelectedIds,
+      soloSelectedId,
+      inertIds,
+    ],
   );
 
   // Stable wrapper for the arrow click flow. Same rationale as
