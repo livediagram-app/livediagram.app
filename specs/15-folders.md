@@ -153,7 +153,9 @@ layouts because they're solving different problems.
 
 This is the docked side-panel on the editor and the new-diagram
 flow. Space is tight; the user is mid-task; "find this thing fast"
-beats "browse my whole library."
+beats "browse my whole library." For the browse case, the panel
+header carries a compact **Browse** button beside **New**, linking to
+the full-page Explorer's Recent list (`/explorer/recent`).
 
 - The existing "Current Diagram" and "Recent Diagrams" sections stay
   unchanged at the top.
