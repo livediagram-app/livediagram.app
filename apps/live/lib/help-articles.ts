@@ -58,6 +58,7 @@ export const HELP_ARTICLES = {
   // Settings
   minimalPanels: 'palette/minimal-panels',
   whatWeCollect: 'privacy-and-security/what-we-collect',
+  offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',

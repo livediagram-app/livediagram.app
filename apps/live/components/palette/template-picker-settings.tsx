@@ -4,7 +4,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 
 // The New Diagram wizard's third step (spec/76): name the diagram, choose where
 // it lives (a personal folder or a team library), and whether it's saved
-// offline. Presentational — all state lives in TemplatePicker.
+// offline. Presentational: all state lives in TemplatePicker.
 
 export function NewDiagramSettingsStep({
   diagramName,
@@ -108,7 +108,7 @@ export function NewDiagramSettingsStep({
             className="w-full cursor-pointer appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2 pr-9 text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-brand-500 dark:focus:ring-brand-500/20"
           >
             {offline ? (
-              // Offline has no server placement — show a single, self-explaining
+              // Offline has no server placement, so show a single, self-explaining
               // option so "Save in" still reads sensibly while disabled.
               <option value="offline">My Work (Offline)</option>
             ) : (

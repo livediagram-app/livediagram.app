@@ -15,6 +15,7 @@ import { EXPIRY_LABELS, LinkIcon, RefreshIcon, RoleButton } from './share-dialog
 import { ActiveShareLinkRow } from './ShareLinkRow';
 import type { ShareDialogProps } from './ShareDialog.types';
 import { SharePasswordSection } from './SharePasswordSection';
+import { ShareOfflineGate } from './ShareOfflineGate';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
 // Human labels for the expiry choices (spec/34), shared by the create
@@ -40,6 +41,8 @@ export function ShareDialog({
   onRevokeLink,
   onExtendLink,
   onSetPassword,
+  offline,
+  onSyncToCloud,
   onClose,
 }: ShareDialogProps) {
   // When a Clerk display name is supplied, the input always reads
@@ -122,6 +125,12 @@ export function ShareDialog({
   // Origin for the embed / live-image snippets. Guarded so a build-time
   // prerender (the dialog isn't shown then) doesn't touch window.
   const origin = typeof window === 'undefined' ? '' : window.location.origin;
+
+  // Offline diagrams (spec/76) have nothing to share yet, so swap the whole
+  // dialog for the sync gate until the owner moves it to the cloud.
+  if (offline && onSyncToCloud) {
+    return <ShareOfflineGate onSyncToCloud={onSyncToCloud} onClose={onClose} />;
+  }
 
   return (
     <Dialog

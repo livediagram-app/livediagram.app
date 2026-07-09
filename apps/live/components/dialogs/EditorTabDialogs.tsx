@@ -3,6 +3,8 @@
 import dynamic from 'next/dynamic';
 
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
+import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 
 const ExportTabDialog = dynamic(() =>
   import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -41,6 +43,7 @@ export function EditorTabDialogs() {
     nameConfirmed,
     clerkUserId,
     clerkDisplayName,
+    diagramId,
     updateParticipantName,
     createShareLink,
     revokeShareLink,
@@ -48,6 +51,16 @@ export function EditorTabDialogs() {
     setDiagramSharePassword,
     setShareDialogOpen,
   } = useEditorContext();
+
+  // Offline diagrams (spec/76) can't be shared until they're synced to the
+  // owner's account; the Share dialog shows a gate that runs this conversion,
+  // then reloads so the editor re-hydrates as a normal cloud diagram.
+  const isOffline = useIsOfflineDiagram(diagramId);
+  const syncToCloud = async () => {
+    if (!diagramId) return;
+    await saveOfflineToCloud(diagramId, selfParticipant.id);
+    window.location.reload();
+  };
 
   return (
     <>
@@ -92,6 +105,8 @@ export function EditorTabDialogs() {
           onRevokeLink={revokeShareLink}
           onExtendLink={extendShareLink}
           onSetPassword={setDiagramSharePassword}
+          offline={isOffline}
+          onSyncToCloud={syncToCloud}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

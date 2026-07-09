@@ -184,7 +184,7 @@ export function EditorView() {
         <EditorHeader
           diagramName={diagramName}
           hideTitle={anyWelcomeOpen}
-          showShare={isOwner && hydrated && !anyWelcomeOpen && !isOffline}
+          showShare={isOwner && hydrated && !anyWelcomeOpen}
           shareable={diagramShareable}
           teamDiagram={!!diagramTeamId}
           offline={isOffline}
