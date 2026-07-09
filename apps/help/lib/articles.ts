@@ -80,7 +80,7 @@ export const categories: Category[] = [
     title: 'Privacy and Security',
     description:
       'Know exactly how your diagrams are stored, what we collect, and how to keep shared links safe.',
-    articleCount: 4,
+    articleCount: 5,
   },
   {
     slug: 'self-hosting',
@@ -491,6 +491,14 @@ export const articles: Article[] = [
     slug: 'data-privacy',
     title: 'Data Privacy',
     description: 'Where your diagrams live and how they are handled.',
+    category: 'Privacy and Security',
+    categorySlug: 'privacy-and-security',
+    parentSlug: 'privacy-and-security',
+  },
+  {
+    slug: 'offline-mode',
+    title: 'Offline Mode',
+    description: 'Save a diagram only in this browser, and move it to or from your account.',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',

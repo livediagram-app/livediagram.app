@@ -51,16 +51,16 @@ API. The full editor works: shapes, arrows, sketches, layers, tabs, links,
 templates, themes, undo/redo, export. What changes are the features that
 _require the server_, which are hidden (not broken) for an offline diagram:
 
-| Feature                  | Offline behaviour                                              |
-| ------------------------ | -------------------------------------------------------------- |
-| Share links / embeds     | Hidden — there's nothing on a server to share (spec/07, /54).  |
-| Live presence / realtime | N/A — a private diagram never opens the room anyway (spec/75). |
-| Teams / shared library   | Hidden — a team library is server-side (spec/32, /35).         |
-| Comments                 | Local-only (just you), stored in the diagram; no cross-user.   |
-| AI assistance            | Hidden — it proxies through the api worker (spec/25).          |
-| Activity / change log    | Local-only, kept in the diagram record; no server history.     |
-| Thumbnails               | Rendered **client-side**; no server thumbnail fetch (spec/54). |
-| Images                   | **Embedded locally** — see below.                              |
+| Feature                  | Offline behaviour                                                                                              |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Share links / embeds     | Hidden — there's nothing on a server to share (spec/07, /54).                                                  |
+| Live presence / realtime | N/A — a private diagram never opens the room anyway (spec/75).                                                 |
+| Teams / shared library   | Hidden — a team library is server-side (spec/32, /35).                                                         |
+| Comments                 | Local-only (just you), stored in the diagram; no cross-user.                                                   |
+| AI assistance            | Works online — it reads the current canvas, not the stored diagram (spec/25); only a lost connection stops it. |
+| Activity / change log    | Local-only, kept in the diagram record; no server history.                                                     |
+| Thumbnails               | A fixed **offline illustration** in the Explorer — there's no server snapshot (spec/54).                       |
+| Images                   | **Embedded locally** — see below.                                                                              |
 
 **Images embed locally (spec/19).** In a cloud diagram, an added image uploads
 to R2 and is referenced by URL. In an offline diagram it can't — so an image is
@@ -97,8 +97,10 @@ Action: **"Save to your account"** (or "Move to cloud").
 - Uploads the diagram's meta + tabs to the API (spec/11), creating a normal
   cloud diagram owned by the current identity (signed-in account, or the guest
   `X-Owner-Id` if not signed in — spec/04).
-- **Re-homes images:** every embedded `data:` URI is uploaded to R2 and swapped
-  for its R2 reference, so the cloud copy uses ordinary server images (spec/19).
+- **Images:** embedded `data:` URIs travel with the tab JSON, so the cloud copy
+  renders them as-is. Re-homing them to R2 (and, on take-offline, downloading R2
+  images to embed) is a follow-up — the current cut moves the diagram, not the
+  image storage layer (spec/19).
 - On success the **local copy is removed** from IndexedDB so there's one source
   of truth; the diagram is now a cloud diagram (Share / AI / Teams reappear), and
   the URL/route updates if the server assigns a new id.

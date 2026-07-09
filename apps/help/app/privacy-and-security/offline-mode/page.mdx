@@ -1,0 +1,50 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Offline Mode',
+  description:
+    'Create diagrams that are saved only in your browser — never to the server — and move them to and from your account.',
+  path: '/help/privacy-and-security/offline-mode/',
+});
+
+<ArticleLayout title="Offline Mode" description="Diagrams saved only in this browser, never on the server — and how to move them to and from your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+
+Most diagrams are saved to livediagram's servers so you can reach them from any device and share them. **Offline Mode** is the opposite choice: a diagram saved **only in the browser you made it in**, that never touches the server at all. It suits private, local-first work — or simply wanting a diagram that physically never leaves your machine.
+
+## Creating an offline diagram
+
+Offline Mode is off by default and chosen per diagram, so you can keep normal diagrams and offline ones side by side.
+
+- On the **New Diagram** screen, turn on **"Save offline — this browser only"** (below the template, beside Skip / Next), then create as usual.
+- The diagram is written to your browser's local storage and opens like any other. An **Offline** badge next to its name — and an **Offline** tag in your Explorer list — marks it so you always know which diagrams are local-only.
+
+<Note>
+  An offline diagram is **not synced and not backed up**. It lives only in this browser: clearing
+  your site data, or the browser reclaiming storage, will delete it. Keep anything important on the
+  cloud, or export a copy.
+</Note>
+
+## What's different
+
+An offline diagram is a normal diagram — every editor feature works: shapes, arrows, layers, tabs, themes, undo/redo, and export. Only the features that need the server are absent, because there's no server copy to power them:
+
+- **Sharing** and read-only embeds are hidden — there's nothing on a server to share.
+- **Live collaboration** and **teams** don't apply; an offline diagram is yours alone.
+- The AI assistant works while you're online (it reads your current canvas), but not with no connection.
+- Images you add are stored **inside the diagram**, so it stays fully local.
+
+## Moving to and from your account
+
+You can change your mind at any time, from the diagram's menu in the Explorer.
+
+- **Save to your account** uploads an offline diagram to the cloud. It becomes a normal diagram — shareable, reachable from your other devices — and the local-only copy is removed.
+- **Take offline** does the reverse: it downloads a cloud diagram into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
+
+<Note>
+  "Take offline" is deliberate and irreversible on the server side: once a diagram is offline it
+  exists only in the browser you took it offline in. If it was shared, taking it offline also
+  revokes the share links.
+</Note>
+
+</ArticleLayout>

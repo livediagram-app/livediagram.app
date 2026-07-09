@@ -709,6 +709,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         description:
           'No third-party analytics, no ad pixels, no SDK calls home. The only usage data is anonymous, first-party product events, and they are public: see exactly what we measure on the telemetry page.',
       },
+      {
+        art: <NoServersArt />,
+        href: '/help/privacy-and-security/offline-mode/',
+        title: 'Work fully offline',
+        description:
+          'Flip on Offline Mode when you create a diagram and it is saved only in your browser — no account, no server, no sync. Yours alone. Move it to the cloud (or pull one back down) whenever you like.',
+      },
     ],
   },
 ];
