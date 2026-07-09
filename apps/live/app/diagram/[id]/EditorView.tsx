@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { track } from '@/lib/telemetry';
+import { isOfflineId } from '@/lib/offline/offline-store';
 import { getTheme } from '@/lib/themes';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -34,6 +36,17 @@ const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 // scope changed from the page's locals to the destructured context.
 export function EditorView() {
   const ctx = useEditorContext();
+  // Offline Mode (spec/76): a diagram saved only in this browser. Drives the
+  // "Offline" header badge and hides server-only actions (Share).
+  const [isOffline, setIsOffline] = useState(false);
+  useEffect(() => {
+    let live = true;
+    if (ctx.diagramId) void isOfflineId(ctx.diagramId).then((v) => live && setIsOffline(v));
+    else setIsOffline(false);
+    return () => {
+      live = false;
+    };
+  }, [ctx.diagramId]);
   const {
     activeId,
     activeTab,
@@ -179,9 +192,10 @@ export function EditorView() {
         <EditorHeader
           diagramName={diagramName}
           hideTitle={anyWelcomeOpen}
-          showShare={isOwner && hydrated && !anyWelcomeOpen}
+          showShare={isOwner && hydrated && !anyWelcomeOpen && !isOffline}
           shareable={diagramShareable}
           teamDiagram={!!diagramTeamId}
+          offline={isOffline}
           // Visitors see "Make a copy" instead of "Share": same slot,
           // different action. Hidden during the welcome flow so the
           // first-paint chrome stays minimal, and during hydration so

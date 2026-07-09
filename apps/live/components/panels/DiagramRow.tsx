@@ -21,6 +21,7 @@ import {
   TrashIcon,
 } from '@/components/panels/explorer-icons';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
 
 export function DiagramRow({
@@ -90,6 +91,10 @@ export function DiagramRow({
 
   const hasMenu = Boolean((onRename && active) || onDelete || onDuplicate || onMoveRequest);
   const relative = relativeSince(item.savedAt);
+  // Offline Mode (spec/76): an offline diagram's row carries ownerId
+  // 'offline'. Drives the fixed offline thumbnail, the "Offline" chip, and
+  // hiding the Share action (there's nothing on a server to share).
+  const offline = item.ownerId === OFFLINE_OWNER_ID;
 
   const pillClasses = active
     ? 'group flex items-stretch rounded-md bg-brand-100 text-brand-800 dark:bg-brand-500/20 dark:text-brand-100'
@@ -109,6 +114,7 @@ export function DiagramRow({
         diagramId={item.id}
         version={item.savedAt}
         shareCode={thumbnailShareCode ?? item.shareCode}
+        offline={offline}
       />
       <span className="flex min-w-0 flex-1 flex-col">
         {editing ? (
@@ -119,7 +125,14 @@ export function DiagramRow({
             className="w-full rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-100"
           />
         ) : (
-          <span className="min-w-0 truncate">{item.name}</span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="min-w-0 truncate">{item.name}</span>
+            {offline ? (
+              <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                Offline
+              </span>
+            ) : null}
+          </span>
         )}
         <span
           className={
@@ -274,22 +287,25 @@ export function DiagramRow({
               </div>
             </MenuAccordionSection>
           ) : null}
-          <MenuAccordionSection
-            title="Share"
-            icon={<SharedDiagramIcon />}
-            {...sectionProps('share')}
-          >
-            <div className="px-2 py-1.5">
-              <MenuTile
-                icon={<SharedDiagramIcon />}
-                label={item.shareCode ? 'Manage Sharing' : 'Share'}
-                onClick={() => {
-                  openShareSettings();
-                  setMenuOpen(false);
-                }}
-              />
-            </div>
-          </MenuAccordionSection>
+          {/* Offline diagrams (spec/76) can't be shared — hide the section. */}
+          {offline ? null : (
+            <MenuAccordionSection
+              title="Share"
+              icon={<SharedDiagramIcon />}
+              {...sectionProps('share')}
+            >
+              <div className="px-2 py-1.5">
+                <MenuTile
+                  icon={<SharedDiagramIcon />}
+                  label={item.shareCode ? 'Manage Sharing' : 'Share'}
+                  onClick={() => {
+                    openShareSettings();
+                    setMenuOpen(false);
+                  }}
+                />
+              </div>
+            </MenuAccordionSection>
+          )}
         </PortalMenu>
       ) : null}
     </div>

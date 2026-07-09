@@ -32,6 +32,9 @@ type EditorHeaderProps = {
   // The diagram lives in a team's shared library (spec/35). Flips the
   // title badge to "Team" when the diagram has no share links.
   teamDiagram?: boolean;
+  // Offline Mode (spec/76): saved only in this browser. Flips the title badge
+  // to "Offline" (superseding "Private"); the caller also hides Share.
+  offline?: boolean;
   // Counterpart to showShare for visitors: when present we render a
   // "Make a copy" button that duplicates the diagram into the
   // visitor's own files (item #9 / spec/11). Optional so the owner
@@ -60,6 +63,7 @@ export function EditorHeader({
   showShare,
   shareable,
   teamDiagram = false,
+  offline = false,
   onMakeCopy,
   copying = false,
   readOnly = false,
@@ -117,7 +121,7 @@ export function EditorHeader({
               </Tooltip>
             )}
             <span className="hidden sm:contents">
-              <SharedBadge shareable={shareable} team={teamDiagram} />
+              <SharedBadge shareable={shareable} team={teamDiagram} offline={offline} />
             </span>
           </div>
         )}
@@ -175,9 +179,19 @@ export function EditorHeader({
 // state so the label / hover copy / badge + dot colours stay in one table
 // rather than five parallel `state === ...` ternaries.
 const SHARE_STATE_META: Record<
-  'shared' | 'team' | 'private',
+  'shared' | 'team' | 'private' | 'offline',
   { label: string; description: string; badge: string; dot: string }
 > = {
+  // Offline Mode (spec/76): saved only in this browser, never on the server.
+  // Supersedes "Private" for an offline diagram. Amber so it reads as a
+  // distinct, deliberate state rather than a neutral default.
+  offline: {
+    label: 'Offline',
+    description: 'Saved only in this browser. Not synced, not backed up.',
+    badge:
+      'inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30',
+    dot: 'text-amber-500',
+  },
   shared: {
     label: 'Shared',
     description: 'Anyone with a link can view.',
@@ -208,14 +222,28 @@ const SHARE_STATE_META: Record<
 // where "Private" would be a lie (every joined member can open it).
 // Hover surfaces the same description that lives on the Share
 // button. Hidden on visitor views where the share UI doesn't apply.
-function SharedBadge({ shareable, team }: { shareable: boolean; team?: boolean }) {
-  const state: 'shared' | 'team' | 'private' = shareable ? 'shared' : team ? 'team' : 'private';
+function SharedBadge({
+  shareable,
+  team,
+  offline,
+}: {
+  shareable: boolean;
+  team?: boolean;
+  offline?: boolean;
+}) {
+  const state: 'shared' | 'team' | 'private' | 'offline' = offline
+    ? 'offline'
+    : shareable
+      ? 'shared'
+      : team
+        ? 'team'
+        : 'private';
   const meta = SHARE_STATE_META[state];
   return (
     <Tooltip title={meta.label} description={meta.description}>
       <span className={meta.badge}>
         <span aria-hidden className={meta.dot}>
-          {state === 'private' ? <PrivateDotIcon /> : <SharedDotIcon />}
+          {state === 'private' || state === 'offline' ? <PrivateDotIcon /> : <SharedDotIcon />}
         </span>
         {meta.label}
       </span>

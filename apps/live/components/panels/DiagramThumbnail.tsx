@@ -33,6 +33,7 @@ export function DiagramThumbnail({
   diagramId,
   version,
   shareCode,
+  offline = false,
   className = DEFAULT_BOX,
 }: {
   // Viewer identity for the authenticated fetch. Null while a guest id
@@ -45,6 +46,9 @@ export function DiagramThumbnail({
   // Present on a "shared with me" row (spec/35): authorises the read via
   // the share code instead of ownership / team membership.
   shareCode?: string | null;
+  // Offline Mode (spec/76): an offline diagram has no server snapshot, so
+  // show a fixed offline illustration instead of fetching a thumbnail.
+  offline?: boolean;
   // Container sizing/appearance. Defaults to the compact row box; a card
   // passes a larger box (e.g. a full-width 16:9 area).
   className?: string;
@@ -56,7 +60,7 @@ export function DiagramThumbnail({
   // Defer the fetch until the row/card is near the viewport.
   useEffect(() => {
     const el = ref.current;
-    if (!el || visible) return;
+    if (offline || !el || visible) return;
     const obs = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -68,10 +72,10 @@ export function DiagramThumbnail({
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, [visible]);
+  }, [offline, visible]);
 
   useEffect(() => {
-    if (!visible || !ownerId) return;
+    if (offline || !visible || !ownerId) return;
     let cancelled = false;
     let activeUrl: string | null = null;
     setState({ status: 'loading' });
@@ -95,7 +99,20 @@ export function DiagramThumbnail({
       cancelled = true;
       if (activeUrl) URL.revokeObjectURL(activeUrl);
     };
-  }, [visible, ownerId, diagramId, version, shareCode]);
+  }, [offline, visible, ownerId, diagramId, version, shareCode]);
+
+  // Offline Mode (spec/76): a fixed illustration, no fetch, no snapshot.
+  if (offline) {
+    return (
+      <span
+        ref={ref}
+        aria-hidden
+        className={`flex shrink-0 items-center justify-center overflow-hidden bg-amber-50 dark:bg-amber-500/10 ${className}`}
+      >
+        <OfflineIllustration />
+      </span>
+    );
+  }
 
   return (
     <span
@@ -120,6 +137,41 @@ export function DiagramThumbnail({
         <ThumbnailGlyph />
       )}
     </span>
+  );
+}
+
+// Fixed illustration for an offline diagram (spec/76): a device holding a
+// small diagram with a "cloud off" mark, amber to match the Offline badge.
+// Scales to fill any box (row thumb or large card) via the viewBox.
+function OfflineIllustration() {
+  return (
+    <svg
+      viewBox="0 0 48 32"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="h-full w-full p-1 text-amber-500 dark:text-amber-400"
+    >
+      {/* device / screen */}
+      <rect
+        x="4"
+        y="5"
+        width="40"
+        height="22"
+        rx="3"
+        className="fill-amber-100/60 dark:fill-transparent"
+      />
+      {/* a tiny diagram inside: two nodes + a link */}
+      <circle cx="18" cy="16" r="2.6" />
+      <circle cx="30" cy="16" r="2.6" />
+      <path d="M20.6 16h6.8" />
+      {/* cloud-off mark, bottom-right */}
+      <path d="M34 24.5h5.4a2.4 2.4 0 0 0 .3-4.78 3.4 3.4 0 0 0-5.9-1.4" />
+      <path d="M31.5 18.5l9 9" className="text-amber-600 dark:text-amber-300" />
+    </svg>
   );
 }
 
