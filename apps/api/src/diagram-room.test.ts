@@ -5,9 +5,9 @@ import {
   base64ToUpdate,
   encodeDiagramUpdate,
   newDiagramDoc,
-  readDiagram,
+  readTabElements,
   updateToBase64,
-  writeDiagram,
+  writeElements,
 } from '@livediagram/diagram/yjs';
 import { DiagramRoom } from './diagram-room';
 
@@ -786,10 +786,12 @@ describe('DiagramRoom Yjs doc authority (spec/75, Level 2)', () => {
       .map((s) => JSON.parse(s))
       .filter((m) => m.kind === 'op')
       .at(-1);
-  // A base64 Yjs update for a one-tab diagram.
-  function seedUpdate(name: string) {
+  // A minimal element + a base64 Yjs update for a one-tab diagram carrying it.
+  const sq = (id: string) =>
+    ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 }) as never;
+  function seedUpdate(elId: string) {
     const doc = newDiagramDoc();
-    writeDiagram(doc, [{ id: 't1', name, elements: [] }]);
+    writeElements(doc, [{ id: 't1', name: 'T', elements: [sq(elId)] }]);
     return updateToBase64(encodeDiagramUpdate(doc));
   }
 
@@ -808,21 +810,21 @@ describe('DiagramRoom Yjs doc authority (spec/75, Level 2)', () => {
     const { room } = newRoom();
     const { editor, peer } = editorAndPeer(room);
 
-    sendFrame(room, editor, { kind: 'op', op: { kind: 'ydoc', update: seedUpdate('Hello') } });
+    sendFrame(room, editor, { kind: 'op', op: { kind: 'ydoc', update: seedUpdate('e1') } });
 
     // Relayed to the peer as-is...
     expect(lastOp(peer).op.kind).toBe('ydoc');
     // ...but Yjs converges on its own, so no seq/log is spent on it.
     expect(room.seq).toBe(0);
     expect(room.opLog).toEqual([]);
-    // The room's authoritative doc now carries the tab.
-    expect(readDiagram(room.ydoc!)).toEqual([{ id: 't1', name: 'Hello', elements: [] }]);
+    // The room's authoritative doc now carries the tab's element.
+    expect(readTabElements(room.ydoc!, 't1')!.map((e) => e.id)).toEqual(['e1']);
   });
 
   it('seeds a later joiner from the accumulated doc state', () => {
     const { room } = newRoom();
     const { editor } = editorAndPeer(room);
-    sendFrame(room, editor, { kind: 'op', op: { kind: 'ydoc', update: seedUpdate('Shared') } });
+    sendFrame(room, editor, { kind: 'op', op: { kind: 'ydoc', update: seedUpdate('shared-el') } });
 
     // A fresh client asks for the shared doc.
     const joiner = makeSocket();
@@ -833,10 +835,10 @@ describe('DiagramRoom Yjs doc authority (spec/75, Level 2)', () => {
 
     const reply = lastOp(joiner);
     expect(reply.op.kind).toBe('ydoc-state');
-    // Applying the seed to a fresh doc reproduces the room's diagram.
+    // Applying the seed to a fresh doc reproduces the room's element set.
     const doc = newDiagramDoc();
     applyDiagramUpdate(doc, base64ToUpdate(reply.op.update));
-    expect(readDiagram(doc)).toEqual([{ id: 't1', name: 'Shared', elements: [] }]);
+    expect(readTabElements(doc, 't1')!.map((e) => e.id)).toEqual(['shared-el']);
   });
 
   it('drops a ydoc mutation from a view-role session but still answers its sync', () => {

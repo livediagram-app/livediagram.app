@@ -286,14 +286,15 @@ export function useRoomConnection(opts: {
           });
         } else if (op.kind === 'ydoc') {
           // Level 2 (spec/75): a peer's Yjs update. Merge it into the shared
-          // doc and re-project the whole diagram. Field-level, so a
-          // concurrent local edit to a different field of the same element
-          // survives the merge.
+          // doc, then merge the doc's elements back into our tabs (keeping
+          // each tab's local meta + order, which the diagram-meta op owns).
+          // Field-level, so a concurrent local edit to a different field of
+          // the same element survives.
           const mirror = yjsMirrorRef.current;
           if (mirror) {
-            const projected = mirror.applyRemote(op.update);
+            mirror.applyRemote(op.update);
             remoteUpdateRef.current = true;
-            applyRemoteTabs(() => projected);
+            applyRemoteTabs((prev) => mirror.mergeInto(prev));
           }
         } else if (op.kind === 'ydoc-state') {
           // Level 2: the room's reply to our `ydoc-sync`. If it holds shared
@@ -305,9 +306,9 @@ export function useRoomConnection(opts: {
             if (op.update === null) {
               mirror.seedFromHydrate(tabsRef.current);
             } else {
-              const projected = mirror.adoptSharedState(op.update);
+              mirror.adoptSharedState(op.update);
               remoteUpdateRef.current = true;
-              applyRemoteTabs(() => projected);
+              applyRemoteTabs((prev) => mirror.mergeInto(prev));
             }
           }
         } else if (op.kind === 'diagram-meta') {

@@ -5,6 +5,8 @@ import { YjsMirror } from './yjs-mirror';
 const el = (id: string, over: Partial<Element> = {}): Element =>
   ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
 const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't1', name: 'T', elements: [], ...over });
+// The tab skeleton the editor merges doc elements into (meta/order it owns).
+const skel = (elements: Element[] = []): Tab[] => [tab({ elements })];
 
 // Wire two mirrors so each one's local updates reach the other, the way the
 // room relays `ydoc` ops between two browsers.
@@ -22,7 +24,16 @@ describe('YjsMirror', () => {
     a.seedFromHydrate([tab({ elements: [el('x', { x: 1 })] })]);
 
     expect(a.isSeeded).toBe(true);
-    expect(b.tabs()).toEqual([tab({ elements: [el('x', { x: 1 })] })]);
+    expect(b.mergeInto(skel())).toEqual([tab({ elements: [el('x', { x: 1 })] })]);
+  });
+
+  it('merges doc elements into a tab while keeping its local meta', () => {
+    const a = new YjsMirror();
+    a.seedFromHydrate([tab({ elements: [el('x', { x: 5 })] })]);
+    const merged = a.mergeInto([tab({ name: 'Local', backgroundColor: '#111', elements: [] })]);
+    expect(merged).toEqual([
+      tab({ name: 'Local', backgroundColor: '#111', elements: [el('x', { x: 5 })] }),
+    ]);
   });
 
   it('does not commit before it is seeded', () => {
@@ -31,7 +42,7 @@ describe('YjsMirror', () => {
     a.onLocalUpdate(() => sent++);
     a.commit([tab({ elements: [el('x')] })]);
     expect(sent).toBe(0);
-    expect(a.tabs()).toEqual([]);
+    expect(a.mergeInto(skel())).toEqual([tab({ elements: [] })]);
   });
 
   it('adopts a shared state without echoing it back', () => {
@@ -41,7 +52,7 @@ describe('YjsMirror', () => {
     let echoed = 0;
     joiner.onLocalUpdate(() => echoed++);
     joiner.adoptSharedState(source.encodeState());
-    expect(joiner.tabs()).toEqual([tab({ elements: [el('x')] })]);
+    expect(joiner.mergeInto(skel())).toEqual([tab({ elements: [el('x')] })]);
     expect(echoed).toBe(0); // an adopted remote state is not rebroadcast
   });
 
@@ -65,8 +76,8 @@ describe('YjsMirror', () => {
     for (const u of fromA) b.applyRemote(u);
     for (const u of fromB) a.applyRemote(u);
 
-    expect(a.tabs()).toEqual(b.tabs()); // converged
-    const x = a.tabs()[0]!.elements[0]!;
+    expect(a.mergeInto(skel())).toEqual(b.mergeInto(skel())); // converged
+    const x = a.mergeInto(skel())[0]!.elements[0]!;
     expect((x as { x: number }).x).toBe(100);
     expect((x as { y: number }).y).toBe(200);
   });

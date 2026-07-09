@@ -1,16 +1,16 @@
 // Client-side Yjs mirror for the Level 2 realtime path (spec/75).
 //
-// Owns the browser's copy of the shared Yjs doc and bridges it to the
-// editor's existing Tab[] state at two seams:
-//   - commit: a local autosave writes the committed tabs into the doc; the
+// Owns the browser's copy of the shared Yjs doc (element content only — tab
+// structure, order, names and the diagram name stay on the `diagram-meta`
+// op) and bridges it to the editor's Tab[] state at two seams:
+//   - commit: a local autosave syncs the committed elements into the doc; the
 //     resulting incremental update is broadcast as a `ydoc` room op.
 //   - remote: a peer's `ydoc` update (or the room's seed) is applied, then
-//     projected back to Tab[] for the editor to render.
+//     merged into the current tabs (doc elements, local meta/order).
 //
-// Every peer shares ONE doc history (the room seeds joiners via
-// `ydoc-sync`), which is what makes concurrent edits to different fields of
-// the SAME element both survive — the merge Level 0's whole-element update
-// can't do. Undo is a per-origin Y.UndoManager so it only reverts changes
+// Every peer shares ONE doc history (the room seeds joiners via `ydoc-sync`),
+// which is what makes concurrent edits to different fields of the SAME element
+// both survive. Undo is a per-origin Y.UndoManager so it only reverts changes
 // THIS client authored, never a peer's (spec/75 decision 1).
 
 import * as Y from 'yjs';
@@ -19,11 +19,11 @@ import {
   applyDiagramUpdate,
   base64ToUpdate,
   encodeDiagramUpdate,
+  mergeElements,
   newDiagramDoc,
-  readDiagram,
-  syncDiagram,
+  syncElements,
   updateToBase64,
-  writeDiagram,
+  writeElements,
 } from '@livediagram/diagram/yjs';
 
 export class YjsMirror {
@@ -37,7 +37,7 @@ export class YjsMirror {
   private broadcast: ((updateB64: string) => void) | null = null;
 
   constructor() {
-    this.undo = new Y.UndoManager([this.doc.getMap('tabs'), this.doc.getArray('tabOrder')], {
+    this.undo = new Y.UndoManager(this.doc.getMap('tabs'), {
       trackedOrigins: new Set([this.localOrigin]),
     });
     this.doc.on('update', (update: Uint8Array, origin: unknown) => {
@@ -57,41 +57,41 @@ export class YjsMirror {
   }
 
   // Adopt the room's shared doc (the `ydoc-state` reply). Applied under the
-  // default origin so it is NOT rebroadcast. Returns the projected tabs.
-  adoptSharedState(updateB64: string): Tab[] {
+  // default origin so it is NOT rebroadcast.
+  adoptSharedState(updateB64: string): void {
     applyDiagramUpdate(this.doc, base64ToUpdate(updateB64));
     this.seeded = true;
-    return readDiagram(this.doc);
   }
 
-  // No shared doc existed: seed from our own D1 hydrate. Written under the
-  // local origin so the update listener broadcasts it and the room + peers
-  // adopt it as the shared seed.
+  // No shared doc existed: seed the element sets from our own D1 hydrate.
+  // Written under the local origin so the update listener broadcasts it and
+  // the room + peers adopt it as the shared seed.
   seedFromHydrate(tabs: Tab[]): void {
     if (this.seeded) return;
     this.seeded = true;
-    this.doc.transact(() => writeDiagram(this.doc, tabs), this.localOrigin);
+    this.doc.transact(() => writeElements(this.doc, tabs), this.localOrigin);
   }
 
-  // Apply a peer's live `ydoc` update; returns the projected tabs to render.
-  applyRemote(updateB64: string): Tab[] {
+  // Apply a peer's live `ydoc` update (default origin -> not rebroadcast).
+  applyRemote(updateB64: string): void {
     applyDiagramUpdate(this.doc, base64ToUpdate(updateB64));
-    return readDiagram(this.doc);
   }
 
-  // Push a local commit into the doc (the update listener broadcasts the
-  // delta). No-op broadcast when nothing actually changed.
+  // Push a local commit's elements into the doc (the update listener
+  // broadcasts the delta). No-op broadcast when nothing actually changed.
   commit(tabs: Tab[]): void {
     if (!this.seeded) return; // never commit before we share the doc history
-    this.doc.transact(() => syncDiagram(this.doc, tabs), this.localOrigin);
+    this.doc.transact(() => syncElements(this.doc, tabs), this.localOrigin);
   }
 
-  tabs(): Tab[] {
-    return readDiagram(this.doc);
+  // Merge the doc's elements into the given tabs, keeping each tab's local
+  // meta + order. The editor's projection on a remote update / seed.
+  mergeInto(tabs: Tab[]): Tab[] {
+    return mergeElements(this.doc, tabs);
   }
 
-  // The doc's full state as a base64 update — the same encoding the room
-  // hands a joiner. Used to seed a peer that shares this exact history.
+  // The doc's full state as a base64 update — the same encoding the room hands
+  // a joiner. Used to seed a peer that shares this exact history.
   encodeState(): string {
     return updateToBase64(encodeDiagramUpdate(this.doc));
   }

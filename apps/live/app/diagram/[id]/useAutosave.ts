@@ -173,12 +173,10 @@ export function useAutosave(opts: {
             },
             sessionShareCode,
           ).then(() => {
-            // Level 2 (spec/75): tab structure (add/remove/reorder) rides the
-            // shared doc's tabOrder + tabs map, so skip the diagram-meta
-            // broadcast on that path. (Diagram-name rename isn't modelled in
-            // the doc yet; it still persists to D1, just doesn't live-sync on
-            // the Yjs path -- a known gap of the experimental flag.)
-            if (yjsMirrorRef.current?.isSeeded) return;
+            // Tab structure + the diagram name ride the diagram-meta op on
+            // EVERY path (spec/75): the Yjs doc models element content only,
+            // so add/remove/reorder tab + rename still broadcast here, even in
+            // Level 2 mode. Only the element-op broadcast above is Yjs-gated.
             roomRef.current?.send({
               kind: 'op',
               op: {

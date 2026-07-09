@@ -167,28 +167,31 @@ True concurrency: concurrent edits to the same element's different fields both
 survive; moves resolve deterministically; offline edits merge on reconnect. No
 central authority is needed for _convergence_ (the DO still relays + persists).
 
-- **Model.** The diagram doc is a Yjs document: a `Y.Map` of tabs; each tab a
-  `Y.Map` (`meta` + an `elements` `Y.Map<id, Y.Map<field, value>>`); z-order via
-  a fractional-index (or `Y.Array` of ids). Element fields are `Y.Map` entries so
-  two peers editing different fields of the same element both land.
-- **Editor projects from the CRDT.** Today `useEditorState` + `commitTabs` are
-  the source of truth. At Level 2 the **Yjs doc becomes the source of truth** and
-  the editor state is a projection: every mutation writes into the Yjs doc; a doc
-  observer produces the React state. This is the deep part — undo/redo, autosave,
-  the change log, and every mutation path re-route through the doc. It is a
-  **state-layer change**, staged behind a flag and landed tab-model-first.
-- **Transport.** The DO relays Yjs updates (opaque binary) and persists the
-  encoded doc to D1 (system of record, decision 2); Level 1's op log generalises
-  to a Yjs update log. Awareness (cursors/selection/presence) rides the Yjs
-  awareness protocol, replacing the ad-hoc cursor/select/laser ops.
+- **Model — elements only.** The CRDT models _only_ element content, the one
+  place last-writer-wins actually loses data users notice. The doc is a
+  `Y.Map<tabId, tabMap>`; each `tabMap` holds an `elements`
+  `Y.Map<id, Y.Map<field, value>>` + an `order` `Y.Array<id>`. Element fields are
+  individual `Y.Map` entries, so two peers editing _different fields of the same
+  element_ both land. Everything coarser — which tabs exist, their order, names,
+  backgrounds, and the diagram name — stays on the **`diagram-meta` op** (rarely
+  concurrent, last-writer-wins is fine there). Elements are namespaced by tabId
+  because element ids are only unique per tab in this codebase.
+- **Editor merges, doesn't fully re-source.** The editor's `tabs` state stays the
+  working copy; the doc mirrors _element content_ at commit granularity. On a
+  remote update the doc's elements merge into the current tabs (`mergeElements`),
+  keeping each tab's local meta + order. This gets the observable Level 2 win
+  (field-level same-element merge) without re-routing all 30 mutation hooks
+  through the doc — a lighter, reversible cut than a full state-layer rewrite.
+- **Transport.** The DO relays Yjs updates (opaque binary base64); Level 1's op
+  log generalises to a Yjs update log. Awareness (cursors/selection/presence)
+  still rides the ad-hoc presence ops for now.
 - **Undo (decision 1):** a Yjs `UndoManager` scoped to this client's **origin**,
   so undo only reverts changes this client authored — never a peer's.
 - **Selection lock removed (decision 3):** with field-level merge the spec/07
   edit lock is unnecessary and is removed; presence + selection glow stay.
 
-**Effort:** the largest — it rewrites the state layer's source of truth. Land it
-last, incrementally (types + doc model → transport → editor projection behind a
-flag → cut over), keeping Levels 0–1 as the shipped behaviour until it's proven.
+**Effort:** the largest, but the elements-only model keeps it bounded. Landed
+behind a flag, keeping Levels 0–1 as the shipped behaviour until it's proven.
 
 **Status — cut-over landed behind the `?yjs=1` flag (off by default).** The
 whole Level 2 path is wired end-to-end but gated, so the shipped behaviour stays
@@ -198,55 +201,37 @@ Levels 0 + 1 until it's proven with two live clients. The pieces:
 if each client seeded its own doc from its D1 hydrate, the two docs would resolve
 _whole-key_ last-writer-wins, not per-field, and the merge would be a lie. So the
 **room holds the authoritative doc**: a joiner sends `ydoc-sync`, the room replies
-`ydoc-state` with the encoded doc (or `null` → the first client seeds from its
-hydrate and broadcasts that seed for the room + peers to adopt). Every commit
-broadcasts a `ydoc` update the room merges into its doc and relays. This is where
-decision 2's "DO holds live authority" concretely lands for Level 2; D1 stays the
-system of record via the unchanged tab autosave (the doc is the live layer).
+`ydoc-state` with the encoded doc (or `null` → the first client seeds its
+_elements_ from its hydrate and broadcasts that seed for the room + peers to
+adopt). Every commit broadcasts a `ydoc` update the room merges into its doc and
+relays. This is where decision 2's "DO holds live authority" concretely lands for
+Level 2; D1 stays the system of record via the unchanged tab autosave.
 
-**Wired at the editor's two seams, not 30 hooks.** `useAutosave` commits the tabs
-into the `YjsMirror` on each save (which broadcasts the delta); `useRoomConnection`
-applies incoming `ydoc` / `ydoc-state` and projects back to `Tab[]`. So the
-editor's existing `tabs` state stays the working copy and the doc mirrors it at
-commit granularity — the observable Level 2 win (field-level same-element merge)
-without a full state-layer rewrite. A per-origin `Y.UndoManager` lives on the
-mirror (decision 1).
+**Wired at the editor's two seams, not 30 hooks.** `useAutosave` syncs the
+committed elements into the `YjsMirror` on each save (which broadcasts the delta)
+and still broadcasts `diagram-meta` for tab structure + the diagram name;
+`useRoomConnection` applies incoming `ydoc` / `ydoc-state` and merges the doc's
+elements back into `tabs`. A per-origin `Y.UndoManager` lives on the mirror
+(decision 1).
 
-**Where it lives:** `packages/diagram/src/yjs-doc.ts` (doc model + `syncDiagram` +
-transport); `apps/live/lib/yjs-mirror.ts` (the client doc + undo + broadcast/apply
+**Where it lives:** `packages/diagram/src/yjs-doc.ts` (elements-only doc model +
+`writeElements` / `syncElements` / `readTabElements` / `mergeElements` +
+transport); `apps/live/lib/yjs-mirror.ts` (the client doc + undo + broadcast/merge
 glue) + `yjs-flag.ts`; `apps/api/src/diagram-room.ts` (authoritative doc +
-`ydoc`/`ydoc-sync`/`ydoc-state`); the `ydoc*` frames in `room-messages.ts`. Unit
-tests cover the doc model, `syncDiagram`, the `YjsMirror` (incl. concurrent
-same-element field merge), and the DO's doc authority + seed.
+`ydoc`/`ydoc-sync`/`ydoc-state`); the `ydoc*` frames in `room-messages.ts`.
+
+**Tested** (all pure/off-socket): the doc model round-trip + z-order, per-op
+apply, `syncElements` (the local-commit path), `mergeElements` (elements from the
+doc, meta from local), the `YjsMirror` end-to-end incl. concurrent same-element
+different-field merge, and the DO's doc authority + joiner seed.
 
 **Still ahead (needs the live pass):** wiring the mirror's `UndoManager` to the
-editor's undo/redo button; awareness for cursors/selection (still on the ad-hoc
-presence ops); **removing the selection lock** (decision 3 — kept for now so the
-flag is additive); the DO **flushing the doc to D1** (persistence is still via the
-tab autosave; a cold room re-seeds from a joiner's hydrate); and diagram **rename**
-sync (the doc models tabs, not the diagram name). None of these block the merge
-behaviour the flag demonstrates; they're the polish + the decision-3 removal that
-only make sense once two-client testing confirms the core.
-
-The pure model pieces are in `packages/diagram/src/yjs-doc.ts` (imported via the
-`@livediagram/diagram/yjs` subpath so the core bundle never pulls in Yjs unless
-the flag path is used):
-
-- **Doc model** — `ydoc.getArray('tabOrder')` + `ydoc.getMap('tabs')`, each tab a
-  `Y.Map` of meta + an `elements` `Y.Map<id, Y.Map<field, value>>` + an `order`
-  `Y.Array<id>`. Element fields are individual `Y.Map` entries — the field-level
-  merge the Level 0 whole-element `update` can't give.
-- **Projection** — `writeDiagram(doc, tabs)` (seed from a D1 hydrate) and
-  `readDiagram(doc)` (the `Tab[]` a doc observer feeds React at cut-over).
-- **Op bridge** — `applyElementOpToDoc(doc, tabId, op)` maps Level 0's `ElementOp`
-  vocabulary into the doc field-by-field, so the same ops already on the wire
-  drive the CRDT. `update` diffs field-by-field so a concurrent edit to an
-  untouched field survives.
-- **Transport primitives** — `encodeDiagramUpdate` / `applyDiagramUpdate` (the
-  opaque binary the DO relays + persists).
-- **Tested** — round-trip, z-order, per-op apply, `syncDiagram` (the local-commit
-  path), and the headline merge: concurrent edits to different fields of the
-  _same_ element converge with both changes intact; concurrent adds converge.
+editor's undo/redo button; awareness for cursors/selection; **removing the
+selection lock** (decision 3 — kept for now so the flag is additive); and the DO
+**flushing the doc to D1** (persistence is still via the tab autosave; a cold room
+re-seeds from a joiner's hydrate). None of these block the merge the flag
+demonstrates; they're the polish + the decision-3 removal that only make sense
+once two-client testing confirms the core.
 
 ---
 
