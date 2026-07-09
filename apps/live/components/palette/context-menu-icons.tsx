@@ -499,6 +499,18 @@ export function AnimationMenuGlyph() {
 // The "Style" flyout row's glyph (spec/09): a paintbrush, distinct from
 // the Colours child's palette and the Presets child's wand so the parent
 // row and its children never wear the same icon side by side.
+// The "Tools" flyout row's glyph (spec/09): slider knobs, for the band
+// folding the data-shape controls (progress / rating / chart / rail).
+export function ToolsMenuGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path d="M2.5 5h11M2.5 11h11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="6" cy="5" r="1.8" fill="#fff" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="10.5" cy="11" r="1.8" fill="#fff" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
 export function StyleMenuGlyph() {
   return (
     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
