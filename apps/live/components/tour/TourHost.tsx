@@ -177,13 +177,22 @@ export function TourHost() {
     return () => window.removeEventListener(TOUR_RELAUNCH_EVENT, onRelaunch);
   }, [ready]);
 
+  // The step list can SHRINK mid-tour (crossing the mobile breakpoint
+  // drops the desktop-only steps): clamp the index so the effects and
+  // render below never read past the end (steps[stepIndex] would be
+  // undefined and the sync .target access threw before this guard).
+  useEffect(() => {
+    if (stepIndex > steps.length - 1) setStepIndex(steps.length - 1);
+  }, [steps, stepIndex]);
+
   // Run the current step: prepare, then await the target node. The
   // previous step's rect stays on screen meanwhile, so the ring glides to
   // the new target when it lands.
   useEffect(() => {
     if (!active) return;
+    const step = steps[stepIndex];
+    if (!step) return; // shrunk list; the clamp effect is about to fix the index
     const token = ++runTokenRef.current;
-    const step = steps[stepIndex]!;
     let cancelled = false;
     void (async () => {
       if (!step.target) {
@@ -222,8 +231,8 @@ export function TourHost() {
   // re-run prepare when it disappears (a menu dismissed under the tour).
   useEffect(() => {
     if (!active) return;
-    const step = steps[stepIndex]!;
-    if (!step.target) return;
+    const step = steps[stepIndex];
+    if (!step?.target) return;
     const id = window.setInterval(() => {
       const el = targetElRef.current;
       if (!el) return;
@@ -273,7 +282,8 @@ export function TourHost() {
   endTourRef.current = endTour;
 
   if (!active) return null;
-  const step = steps[stepIndex]!;
+  const step = steps[Math.min(stepIndex, steps.length - 1)];
+  if (!step) return null;
   // The bookend cards sit outside the step count: "1 of N" is the palette.
   const countableSteps = steps.filter((s) => !s.card).length;
   const leaveStep = () => {
