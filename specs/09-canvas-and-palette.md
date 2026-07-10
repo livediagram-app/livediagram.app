@@ -696,7 +696,7 @@ Every boxed element can carry a **comment thread**. Stored as `commentThread?: {
 Two entry points open the same `CommentThreadPopover`:
 
 - **Selection popover → Comment button** (speech-bubble icon). Available whenever a single element is selected.
-- **Comment badge** on the element itself. Shown only when the thread has unresolved comments (resolved threads hide the badge). The badge sits inside the **BadgeStrip** at the element's top-right — a single rounded card that also hosts the link badge when present. Both badges counter-scale with the canvas zoom so they keep their on-screen size.
+- **Comment badge** on the element itself. Shown only when the thread has unresolved comments (resolved threads hide the badge). The badge sits inside the **BadgeStrip** at the element's top-right — a single rounded card that also hosts the link badge when present. Badges scale WITH the canvas zoom (canvas units, no counter-scaling) so they never dwarf a zoomed-out element, and below 40% zoom the on-element adornments (badge pill, lock badge, remote-selector avatars) hide entirely; resize handles keep their constant screen size.
 
 The popover is portal-rendered (it escapes the canvas transform), anchored to the right edge of the element, and flips to the left edge if it would overflow the viewport. It closes on outside click and on Escape.
 

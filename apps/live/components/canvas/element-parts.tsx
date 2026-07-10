@@ -3,6 +3,7 @@
 
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import type { DragMode } from '@/lib/canvas';
+import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';
 import {
   FLOATING_CONTROL_CLASS,
   FLOATING_CONTROL_HOVER_CLASS,
@@ -11,11 +12,14 @@ import {
 // --- Lock badge ------------------------------------------------------------
 
 export function LockBadge({ zoom = 1 }: { zoom?: number }) {
+  // Scales with the canvas and hides at overview zooms, like the other
+  // on-element adornments (element-badges.tsx). The resize handles below
+  // KEEP their counter-scaling: interaction grips need a constant hit size.
+  if (zoom < ADORNMENT_MIN_ZOOM) return null;
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm"
-      style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
     >
       <svg
         width="11"

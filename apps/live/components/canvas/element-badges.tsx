@@ -3,8 +3,20 @@
 // (lock / link / comment / note indicators), plus their small icon +
 // button primitives. Extracted from BoxedElementView verbatim; only
 // RemoteSelectorsStrip + BadgeStrip are public, the rest are internal.
+//
+// Adornments scale WITH the canvas zoom (they render in canvas units, no
+// counter-scaling): they used to hold their on-screen size, which at low
+// zoom left a full-size pill squatting over a thumbnail-sized element.
+// Below ADORNMENT_MIN_ZOOM they hide entirely — too small to read or hit,
+// and an overview zoom is for shape, not affordances. Resize handles are
+// deliberately NOT treated this way (element-parts.tsx): interaction
+// grips need a constant hit size.
 import { initialsOf } from '@/lib/identity';
 import { Tooltip } from '@/components/primitives/Tooltip';
+
+// Below this canvas zoom the on-element adornments (badge pill, lock
+// badge, remote-selector avatars) disappear entirely.
+export const ADORNMENT_MIN_ZOOM = 0.4;
 
 export function RemoteSelectorsStrip({
   zoom,
@@ -13,10 +25,10 @@ export function RemoteSelectorsStrip({
   zoom: number;
   selectors: { id: string; name: string; color: string }[];
 }) {
+  if (zoom < ADORNMENT_MIN_ZOOM) return null;
   return (
     <div
       onPointerDown={(e) => e.stopPropagation()}
-      style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'left top' }}
       className="pointer-events-none absolute -left-1 -top-1 flex"
     >
       {selectors.map((p, i) => (
@@ -51,8 +63,8 @@ export function RemoteSelectorsStrip({
 // comment render as SEGMENTS of one connected pill — a single control,
 // with hairline separators between segments rather than detached circles —
 // so an element carrying several affordances reads as one tidy cluster.
-// Counter-scaled so the badges keep their on-screen size at any canvas
-// zoom.
+// Scales with the canvas zoom and hides below ADORNMENT_MIN_ZOOM (see the
+// header comment).
 export function BadgeStrip({
   zoom,
   linked,
@@ -150,14 +162,11 @@ export function BadgeStrip({
       ),
     });
   }
+  if (zoom < ADORNMENT_MIN_ZOOM) return null;
   return (
     <div
       onPointerDown={(e) => e.stopPropagation()}
-      style={{
-        transform: `scale(${1 / zoom})`,
-        transformOrigin: 'right top',
-        backgroundColor: badgeColor,
-      }}
+      style={{ backgroundColor: badgeColor }}
       className="pointer-events-auto absolute -right-1 -top-1 flex items-stretch overflow-hidden rounded-full shadow-sm ring-1 ring-white/60"
     >
       {segments.map((seg, i) => (
