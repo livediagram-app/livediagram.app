@@ -7,11 +7,12 @@ import { Scene, Shape, Arrow, SelectionBox, Panel, Tile, Menu, Label } from './p
 
 // --- Reusable surface pieces -------------------------------------------------
 
-/** The zoom control cluster: minus, current level, plus, and a fit button.
- *  Drawn at an absolute (x, y) so scenes can dock it in a corner. */
+/** The zoom control cluster: minus, current level (click to fit, hover for
+ *  the preset popover), plus. Drawn at an absolute (x, y) so scenes can dock
+ *  it in a corner. */
 function ZoomCluster({ x, y }: { x: number; y: number }) {
   return (
-    <Panel x={x} y={y} w={150} h={34}>
+    <Panel x={x} y={y} w={124} h={34}>
       <Label x={x + 20} y={y + 18} size={13} weight={700} tone="muted" anchor="middle">
         −
       </Label>
@@ -37,24 +38,44 @@ function ZoomCluster({ x, y }: { x: number; y: number }) {
       <Label x={x + 104} y={y + 18} size={13} weight={700} tone="muted" anchor="middle">
         +
       </Label>
+    </Panel>
+  );
+}
+
+/** The zoom-preset popover that opens above the percentage button on hover:
+ *  a few preset levels (the current one highlighted) and Fit to screen. */
+function ZoomPresetPopover({ x, y }: { x: number; y: number }) {
+  return (
+    <Panel x={x} y={y} w={76} h={88}>
+      <Label x={x + 38} y={y + 16} size={10} weight={500} tone="muted" anchor="middle">
+        50%
+      </Label>
+      <rect
+        x={x + 6}
+        y={y + 26}
+        width={64}
+        height={18}
+        rx={5}
+        className="fill-brand-50 stroke-brand-400"
+        strokeWidth={1.5}
+      />
+      <Label x={x + 38} y={y + 35} size={10} weight={700} tone="accent" anchor="middle">
+        100%
+      </Label>
+      <Label x={x + 38} y={y + 54} size={10} weight={500} tone="muted" anchor="middle">
+        150%
+      </Label>
       <line
-        x1={x + 120}
-        y1={y + 7}
-        x2={x + 120}
-        y2={y + 27}
+        x1={x + 8}
+        y1={y + 64}
+        x2={x + 68}
+        y2={y + 64}
         className="stroke-slate-200"
         strokeWidth={1.5}
       />
-      {/* Fit-to-screen: a frame with inset corners */}
-      <g transform={`translate(${x + 135} ${y + 17})`}>
-        <path
-          d="M-6 -4 v-3 h3 M6 -4 v-3 h-3 M-6 4 v3 h3 M6 4 v3 h-3"
-          className="stroke-slate-500"
-          strokeWidth={2}
-          fill="none"
-          strokeLinecap="round"
-        />
-      </g>
+      <Label x={x + 38} y={y + 76} size={10} weight={500} tone="body" anchor="middle">
+        Fit
+      </Label>
     </Panel>
   );
 }
@@ -448,10 +469,12 @@ export function ElementContextMenu() {
 export function ZoomControls() {
   return (
     <Scene w={420} h={170}>
-      <Shape x={48} y={40} w={70} h={42} label="A" />
-      <Shape x={236} y={70} w={70} h={42} accent label="B" />
-      <Arrow from={[118, 61]} to={[236, 91]} kind="elbow" />
+      <Shape x={40} y={40} w={70} h={42} label="A" />
+      <Shape x={120} y={100} w={70} h={42} accent label="B" />
+      <Arrow from={[110, 61]} to={[120, 121]} kind="elbow" />
       <ZoomCluster x={210} y={122} />
+      {/* The preset popover, hover-opened above the percentage button */}
+      <ZoomPresetPopover x={234} y={28} />
     </Scene>
   );
 }

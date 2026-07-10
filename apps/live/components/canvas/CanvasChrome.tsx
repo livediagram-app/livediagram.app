@@ -58,7 +58,7 @@ type ChromeExtras = {
   handleDockButtonClick: (id: MobilePanel) => void;
   handleZoomIn: () => void;
   handleZoomOut: () => void;
-  handleResetZoom: () => void;
+  handleSetZoom: (zoom: number) => void;
   // Begin an isometric orbit drag from the given screen coordinates
   // (wired to `isoCamera.startOrbit`). Drives the dock orbit button,
   // which only renders while the isometric tool is active.
@@ -105,7 +105,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     drawHover,
     elements,
     handleDockButtonClick,
-    handleResetZoom,
+    handleSetZoom,
     handleZoomIn,
     handleZoomOut,
     marquee,
@@ -370,7 +370,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               zoom={viewportZoom}
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
-              onReset={handleResetZoom}
+              onSetZoom={handleSetZoom}
               onFitToScreen={onFitToScreen}
               onIsoOrbit={canvasTool === 'isometric' ? onIsoOrbit : undefined}
               onIsoReset={canvasTool === 'isometric' ? onIsoReset : undefined}

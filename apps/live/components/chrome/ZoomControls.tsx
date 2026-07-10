@@ -1,4 +1,5 @@
 import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
+import { ZoomMenu } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
@@ -6,7 +7,7 @@ type ZoomControlsProps = {
   zoom: number;
   onZoomIn: () => void;
   onZoomOut: () => void;
-  onReset: () => void;
+  onSetZoom: (zoom: number) => void;
   onFitToScreen: () => void;
   // Isometric orbit control (spec/45). When both are set (the isometric
   // tool is active) the orbit button sits between Fit and Zen: drag to
@@ -24,14 +25,16 @@ type ZoomControlsProps = {
   zenEnterHere?: boolean;
 };
 
-// Floating zoom controls, bottom-right of the canvas. Four
-// actions: -10% / current % (click to reset) / +10% / Fit to
-// screen. In zen mode it also carries the exit-zen button.
+// Floating zoom controls, bottom-right of the canvas. Three
+// controls: -10% / current % (click to fit, hover for the preset-level
+// popover — see ZoomMenu) / +10%. Below `sm` the percentage button is
+// hidden (and touch has no hover), so a plain Fit button stands in
+// there. In zen mode it also carries the exit-zen button.
 export function ZoomControls({
   zoom,
   onZoomIn,
   onZoomOut,
-  onReset,
+  onSetZoom,
   onFitToScreen,
   onIsoOrbit,
   onIsoReset,
@@ -39,7 +42,6 @@ export function ZoomControls({
   zenActive,
   zenEnterHere,
 }: ZoomControlsProps) {
-  const percent = Math.round(zoom * 100);
   return (
     <div
       data-zoom-controls
@@ -65,18 +67,7 @@ export function ZoomControls({
           </svg>
         </IconButton>
       </Tooltip>
-      <span className="hidden sm:contents">
-        <Tooltip title="Reset zoom" description="Set zoom back to 100%.">
-          <button
-            type="button"
-            onClick={onReset}
-            aria-label="Reset zoom to 100%"
-            className="flex h-9 min-w-[3.5rem] items-center justify-center rounded-md px-2 text-center text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            {percent}%
-          </button>
-        </Tooltip>
-      </span>
+      <ZoomMenu zoom={zoom} onSetZoom={onSetZoom} onFitToScreen={onFitToScreen} />
       <Tooltip title="Zoom in" description="Zoom in by 10%.">
         <IconButton onClick={onZoomIn} label="Zoom in">
           <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
@@ -101,17 +92,22 @@ export function ZoomControls({
           </svg>
         </IconButton>
       </Tooltip>
-      <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
-      <Tooltip title="Fit to screen" description="Pan and zoom so everything on the tab fits.">
-        <button
-          type="button"
-          onClick={onFitToScreen}
-          aria-label="Fit to screen"
-          className="flex h-9 items-center justify-center rounded-md px-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-        >
-          Fit
-        </button>
-      </Tooltip>
+      {/* Mobile-only Fit: below `sm` the percentage button (whose click
+          is Fit on desktop) is hidden, and hover popovers don't exist on
+          touch, so a plain Fit button keeps the action reachable. */}
+      <span className="contents sm:hidden">
+        <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+        <Tooltip title="Fit to screen" description="Pan and zoom so everything on the tab fits.">
+          <button
+            type="button"
+            onClick={onFitToScreen}
+            aria-label="Fit to screen"
+            className="flex h-9 items-center justify-center rounded-md px-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            Fit
+          </button>
+        </Tooltip>
+      </span>
       {onIsoOrbit && onIsoReset ? (
         <>
           <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />

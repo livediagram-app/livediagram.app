@@ -5,29 +5,30 @@ import { ZoomControls } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'Zoom Controls',
   description:
-    'The zoom controls let you move in and out of the canvas, fit the whole diagram to the screen, and reset to 100%.',
+    'The zoom controls let you move in and out of the canvas, fit the whole diagram to the screen, and jump to a preset zoom level.',
   path: '/help/user-interface/zoom-controls/',
 });
 
 <ArticleLayout
   title="Zoom Controls"
-  description="Move in and out of the canvas, fit the diagram to the screen, and reset to 100%."
+  description="Move in and out of the canvas, fit the diagram to the screen, and jump to a preset level."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
 The **zoom controls** sit in the corner of the canvas and govern how close you are to your diagram. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
 
-<Figure caption="The zoom cluster: step out, the current level, step in, and a fit-to-screen button.">
+<Figure caption="The zoom cluster: step out, the current level, step in — with the preset popover open above.">
   <ZoomControls />
 </Figure>
 
 ## The controls
 
 - **Zoom in / out** — step closer or further, centred on the canvas.
-- **Fit to screen** — frame the whole diagram in view at once, the quickest way to get your bearings after panning around.
-- **Reset** — jump back to 100%, true size.
+- **The percentage button** — shows the current level. **Click it to fit the whole diagram** in view at once, the quickest way to get your bearings after panning around. **Hover it** for a popover of preset levels — 25% to 150%, plus Fit to screen — and pick one to jump straight there (100% is true size).
 
-The current zoom level is shown alongside the buttons. You can also zoom with a trackpad pinch or `Ctrl`/`Cmd` + scroll, and pan with the [Hand tool](/help/selection-modes/hand/) or by dragging empty canvas, the zoom controls are simply the always-visible way to do it.
+You can also zoom with a trackpad pinch or `Ctrl`/`Cmd` + scroll, and pan with the [Hand tool](/help/selection-modes/hand/) or by dragging empty canvas, the zoom controls are simply the always-visible way to do it.
+
+On a phone the percentage button hides to save space and a dedicated **Fit** button stands in for it.
 
 </ArticleLayout>

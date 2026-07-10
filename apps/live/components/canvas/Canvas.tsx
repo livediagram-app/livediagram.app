@@ -157,7 +157,7 @@ export function Canvas(props: CanvasProps) {
   const {
     zoomIn: handleZoomIn,
     zoomOut: handleZoomOut,
-    resetZoom: handleResetZoom,
+    setZoomTo: handleSetZoom,
   } = useZoomControls(viewportZoom, setViewportZoom);
 
   // Selection-display derivation (primary element, bounds, and every
@@ -480,7 +480,7 @@ export function Canvas(props: CanvasProps) {
         handleDockButtonClick={handleDockButtonClick}
         handleZoomIn={handleZoomIn}
         handleZoomOut={handleZoomOut}
-        handleResetZoom={handleResetZoom}
+        handleSetZoom={handleSetZoom}
         onIsoOrbit={isoCamera.startOrbit}
         onIsoReset={isoCamera.reset}
       />

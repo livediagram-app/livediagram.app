@@ -1,9 +1,9 @@
 'use client';
 
-// The discrete zoom-button handlers (the +/-/reset controls in the canvas
-// corner chrome), lifted out of Canvas. Pinch + wheel zoom are handled
-// separately (useCanvasPinchZoom / the wheel listener); this is just the
-// stepped buttons, clamped to the shared zoom bounds.
+// The discrete zoom-button handlers (the +/- steps and the preset levels
+// in the canvas corner chrome), lifted out of Canvas. Pinch + wheel zoom
+// are handled separately (useCanvasPinchZoom / the wheel listener); this
+// is just the buttons, clamped to the shared zoom bounds.
 
 import { track } from '@/lib/telemetry';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
@@ -20,9 +20,11 @@ export function useZoomControls(zoom: number, setZoom: (z: number) => void) {
     setZoom(clampZoom(zoom - ZOOM_STEP));
     track('Canvas', 'Zoomed', 'Out');
   };
-  const resetZoom = () => {
-    setZoom(1);
-    track('Canvas', 'Zoomed', 'Reset');
+  // Jump straight to a preset level (the hover popover on the zoom
+  // percentage button: 25% … 150%).
+  const setZoomTo = (z: number) => {
+    setZoom(clampZoom(z));
+    track('Canvas', 'Zoomed', 'Preset');
   };
-  return { zoomIn, zoomOut, resetZoom };
+  return { zoomIn, zoomOut, setZoomTo };
 }
