@@ -627,18 +627,19 @@ export function elementHasText(element: Element): boolean {
 // True when the element KIND can carry the plain-text `label` — whether or
 // not one is set yet. Shapes qualify except the self-drawing data shapes
 // (progress / rail / rating / charts), which the inline editor refuses;
-// text / sticky / freehand / link-card / arrows all edit `label` too.
+// text / sticky / freehand / arrows all edit `label` too. A link-card is
+// deliberately OUT: its view renders link metadata, never `label`, and its
+// double-click opens the link picker (spec/40) — an Add-text button there
+// entered an edit state with no editor on screen.
 // Drives the selection toolbar's "Edit text" / "Add text" button, which
 // shows on every text-capable element (an empty one included, so the
-// affordance teaches that text can be added) — matching exactly what the
-// editor's beginEdit accepts.
+// affordance teaches that text can be added).
 export function elementSupportsText(element: Element): boolean {
   if (element.type === 'shape') return !isSelfDrawingShape(element.shape);
   return (
     element.type === 'text' ||
     element.type === 'sticky' ||
     element.type === 'freehand' ||
-    element.type === 'link-card' ||
     element.type === 'arrow'
   );
 }

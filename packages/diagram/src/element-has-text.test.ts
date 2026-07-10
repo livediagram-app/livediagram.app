@@ -48,9 +48,12 @@ describe('elementSupportsText', () => {
     expect(elementSupportsText(el({ type: 'shape', shape: 'pie-chart' }))).toBe(false);
   });
 
-  it('is false for label-less kinds (table / image / annotation)', () => {
+  it('is false for label-less kinds (table / image / annotation / link-card)', () => {
     expect(elementSupportsText(el({ type: 'table' }))).toBe(false);
     expect(elementSupportsText(el({ type: 'image' }))).toBe(false);
     expect(elementSupportsText(el({ type: 'annotation' }))).toBe(false);
+    // Link-cards render link metadata, never `label`; their double-click
+    // opens the link picker, so the text button must not appear.
+    expect(elementSupportsText(el({ type: 'link-card' }))).toBe(false);
   });
 });
