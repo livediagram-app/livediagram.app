@@ -49,21 +49,21 @@ The diagram model (`Tab[]` + meta, per spec/05) is **identical** — an offline
 diagram is a normal diagram whose persistence target is IndexedDB instead of the
 API. The full editor works: shapes, arrows, sketches, layers, tabs, links,
 templates, themes, undo/redo, export. What changes are the features that
-_require the server_, which are hidden (not broken) for an offline diagram:
+_require the server_, which are hidden or gated (not broken) for an offline diagram:
 
-| Feature                  | Offline behaviour                                                                                              |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| Share links / embeds     | Hidden — there's nothing on a server to share (spec/07, /54).                                                  |
-| Live presence / realtime | N/A — a private diagram never opens the room anyway (spec/75).                                                 |
-| Teams / shared library   | Hidden — a team library is server-side (spec/32, /35).                                                         |
-| Comments                 | Local-only (just you), stored in the diagram; no cross-user.                                                   |
-| AI assistance            | Works online — it reads the current canvas, not the stored diagram (spec/25); only a lost connection stops it. |
-| Activity / change log    | Local-only, kept in the diagram record; no server history.                                                     |
-| Duplicate                | Makes **another offline diagram** — a copy never uploads what the user chose to keep local.                    |
-| Folders                  | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).   |
-| Tab linking (spec/17)    | Unavailable in either direction — linked tabs are one shared server row.                                       |
-| Thumbnails               | A fixed **offline illustration** in the Explorer — there's no server snapshot (spec/54).                       |
-| Images                   | **Embedded locally** — see below.                                                                              |
+| Feature                  | Offline behaviour                                                                                                                                                                                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Share links / embeds     | The header **Share** button stays visible, but for an offline diagram it opens a gate prompting you to sync to your account first (nothing lives on a server to share yet). Read-only embeds are unavailable for the same reason (spec/07, /54). |
+| Live presence / realtime | N/A — a private diagram never opens the room anyway (spec/75).                                                                                                                                                                                   |
+| Teams / shared library   | Hidden — a team library is server-side (spec/32, /35).                                                                                                                                                                                           |
+| Comments                 | Local-only (just you), stored in the diagram; no cross-user.                                                                                                                                                                                     |
+| AI assistance            | Works online — it reads the current canvas, not the stored diagram (spec/25); only a lost connection stops it.                                                                                                                                   |
+| Activity / change log    | Local-only, kept in the diagram record; no server history.                                                                                                                                                                                       |
+| Duplicate                | Makes **another offline diagram** — a copy never uploads what the user chose to keep local.                                                                                                                                                      |
+| Folders                  | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                     |
+| Tab linking (spec/17)    | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                         |
+| Thumbnails               | A fixed **offline illustration** in the Explorer — there's no server snapshot (spec/54).                                                                                                                                                         |
+| Images                   | **Embedded locally** — see below.                                                                                                                                                                                                                |
 
 **Images embed locally (spec/19).** In a cloud diagram, an added image uploads
 to R2 and is referenced by URL. In an offline diagram it can't — so an image is
