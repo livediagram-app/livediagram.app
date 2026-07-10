@@ -25,10 +25,14 @@ type SelectionPopoverProps = {
   locked?: boolean;
   onToggleLock?: () => void;
   onDelete?: () => void;
-  // Enter inline text-edit mode on the selected element. Passed only when
-  // the element actually has a label to edit (see elementHasText), so the
-  // button is absent for elements with no text.
+  // Enter inline text-edit mode on the selected element. Passed for every
+  // text-CAPABLE element (see elementSupportsText) — including ones with no
+  // label yet, so the button itself teaches that text can be added. Absent
+  // for kinds with no label (tables, images, annotations, data shapes).
   onEditText?: () => void;
+  // True when the element already has text: the button reads "Edit text";
+  // false = "Add text". Defaults to edit for older callers.
+  hasText?: boolean;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
@@ -71,6 +75,7 @@ export function SelectionPopover({
   onToggleLock,
   onDelete,
   onEditText,
+  hasText = true,
   onDuplicate,
   onGroup,
   onUngroup,
@@ -126,8 +131,8 @@ export function SelectionPopover({
       {onEditText ? (
         <>
           <PopoverButton
-            label="Edit text"
-            description="Edit this element's text."
+            label={hasText ? 'Edit text' : 'Add text'}
+            description={hasText ? "Edit this element's text." : 'Give this element a text label.'}
             onClick={onEditText}
           >
             <TextIcon />

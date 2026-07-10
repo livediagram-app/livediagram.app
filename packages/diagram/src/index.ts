@@ -7,6 +7,10 @@
 // below. Type-only import (erased at build) so the index <-> session
 // circular reference is fine. The runtime helpers are re-exported lower
 // down via `export * from './session'`.
+// Value import from the data-shapes LEAF module (it imports only types from
+// here, so no cycle at runtime) — elementSupportsText excludes the
+// self-drawing data shapes the same way the inline editor does.
+import { isSelfDrawingShape } from './data-shapes';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (spec/74). Type-only
@@ -618,6 +622,25 @@ export function isBoxed(element: Element): element is BoxedElement {
 export function elementHasText(element: Element): boolean {
   const label = (element as { label?: string }).label;
   return typeof label === 'string' && label.trim().length > 0;
+}
+
+// True when the element KIND can carry the plain-text `label` — whether or
+// not one is set yet. Shapes qualify except the self-drawing data shapes
+// (progress / rail / rating / charts), which the inline editor refuses;
+// text / sticky / freehand / link-card / arrows all edit `label` too.
+// Drives the selection toolbar's "Edit text" / "Add text" button, which
+// shows on every text-capable element (an empty one included, so the
+// affordance teaches that text can be added) — matching exactly what the
+// editor's beginEdit accepts.
+export function elementSupportsText(element: Element): boolean {
+  if (element.type === 'shape') return !isSelfDrawingShape(element.shape);
+  return (
+    element.type === 'text' ||
+    element.type === 'sticky' ||
+    element.type === 'freehand' ||
+    element.type === 'link-card' ||
+    element.type === 'arrow'
+  );
 }
 
 // --- Re-exported resource modules -----------------------------------------

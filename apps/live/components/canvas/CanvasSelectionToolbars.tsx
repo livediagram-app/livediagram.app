@@ -1,4 +1,4 @@
-import { elementHasText, elementKindLabel } from '@livediagram/diagram';
+import { elementHasText, elementKindLabel, elementSupportsText } from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import type { deriveCanvasSelection } from '@/lib/canvas-selection';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -95,13 +95,16 @@ export function CanvasSelectionToolbars({
             // other edit affordances apply. Every other handler
             // becomes undefined and the matching button drops out.
             locked={readOnly ? undefined : selectedLocked}
-            // Edit text: only when the element already has a label to edit.
-            // Enters inline edit mode on it (same path as double-click).
+            // Edit text: on every text-CAPABLE element, even before it has
+            // a label — an empty shape's "Add text" button teaches that
+            // text can be added. Enters inline edit mode (same path as
+            // double-click); kinds with no label carry no button.
             onEditText={
-              !readOnly && selected && elementHasText(selected)
+              !readOnly && selected && elementSupportsText(selected)
                 ? () => props.onBeginEdit(selected.id)
                 : undefined
             }
+            hasText={selected ? elementHasText(selected) : false}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
             // "Group with another" is intentionally absent from the
             // single-element toolbar: grouping needs a multi-selection,
