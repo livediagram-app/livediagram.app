@@ -123,13 +123,28 @@ export function Tooltip({
     setVisible(false);
     setLayout(null);
   };
+  // Focus opens the tooltip only when the focus is VISIBLE (keyboard
+  // navigation). Modals move focus programmatically to their first
+  // control on open (useFocusTrap), and when that control is
+  // tooltip-wrapped (a header help link, say) the card popped open with
+  // no user gesture. Mouse-driven programmatic focus isn't
+  // :focus-visible, so this keeps the keyboard affordance and drops the
+  // phantom popover.
+  const showFromFocus = (e: React.FocusEvent) => {
+    try {
+      if (!e.target.matches(':focus-visible')) return;
+    } catch {
+      // Engine without :focus-visible: keep the historical show-on-focus.
+    }
+    show();
+  };
 
   return (
     <span
       ref={wrapRef}
       onMouseEnter={show}
       onMouseLeave={hide}
-      onFocus={show}
+      onFocus={showFromFocus}
       onBlur={hide}
       className={`${block ? 'flex w-full' : 'inline-flex'}${className ? ` ${className}` : ''}`}
       style={style}
