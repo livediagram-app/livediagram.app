@@ -5,7 +5,12 @@ import { createShape, isBoxed, type Element } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { consumeTourPending, TOUR_RELAUNCH_EVENT } from '@/lib/tour-pending';
+import {
+  clearTourPending,
+  hasTourPending,
+  markTourPending,
+  TOUR_RELAUNCH_EVENT,
+} from '@/lib/tour-pending';
 import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
@@ -117,20 +122,24 @@ export function TourHost() {
     closeContextMenu: () => ctx.closeContextMenu(),
   };
 
-  // Consume the /new handoff flag once, then wait for the editor to be
+  // Peek at the /new handoff flag (NOT consume: it stays set until the
+  // offer is resolved, so a reload mid-offer or mid-tour re-offers instead
+  // of silently swallowing the tour), then wait for the editor to be
   // usable before offering (the small delay lets the fit-to-screen pass
   // and panel layout settle). The `tourSeen` preference (synced, spec/20)
   // makes the offer once-ever for the user, however it was dismissed —
   // checked again at fire time below in case the preferences fetch lands
   // after mount.
   useEffect(() => {
-    if (consumeTourPending()) setPending(true);
+    if (hasTourPending()) setPending(true);
   }, []);
   const seen = ctx.userPreferences?.tourSeen === true;
   const ready = ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode;
   useEffect(() => {
     if (!pending || active || !ready) return;
     if (seen) {
+      // Resolved elsewhere (another tab / device): tidy the stale flag.
+      clearTourPending();
       setPending(false);
       return;
     }
@@ -145,10 +154,13 @@ export function TourHost() {
   }, [pending, active, ready, seen]);
 
   // Settings relaunch (the "I've seen the editor tour" row, unchecked +
-  // closed): rerun from the top — the welcome card is always step 1.
+  // closed): rerun from the top — the welcome card is always step 1. Also
+  // re-marks the pending flag so a reload mid-rerun re-offers, exactly
+  // like the first-run path.
   useEffect(() => {
     const onRelaunch = () => {
       if (!ready) return;
+      markTourPending();
       runTokenRef.current++;
       targetElRef.current = null;
       setTargetRect(null);
@@ -244,7 +256,10 @@ export function TourHost() {
     // Safety net beyond the current step's cleanup: never strand an open
     // menu; and never offer again, however the tour ended — via the synced
     // tourSeen preference (spec/20), so it holds across the user's devices.
+    // The offer is now RESOLVED, so the reload-surviving pending flag can
+    // finally go.
     apiRef.current.closeContextMenu();
+    clearTourPending();
     const next = { ...ctx.userPreferences, tourSeen: true };
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);

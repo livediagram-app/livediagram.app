@@ -33,13 +33,16 @@ guided tour").
 ## Handoff
 
 Create hard-navigates to `/diagram/<id>`, so the intent crosses pages via a
-**one-shot sessionStorage flag** (`livediagram:v2:tour-pending`), set just
-before `window.location.assign` and consumed (read + removed) by the editor.
-sessionStorage keeps it per-tab and self-cleaning; a URL param would survive
-into copy-pasted links. The editor shows the offer only when it's actually
-usable: hydrated, no welcome overlay, not read-only, not an embed. The
-Settings relaunch crosses no navigation, so it's a window event
-(`livediagram:tour-relaunch`), not a flag.
+**sessionStorage flag** (`livediagram:v2:tour-pending`), set just before
+`window.location.assign`. The editor PEEKS at the flag and clears it only
+when the offer is **resolved** (completed, skipped, or declined) — never on
+mere page load — so reloading mid-offer or mid-tour brings the offer back
+instead of silently swallowing an unanswered tour. sessionStorage keeps it
+per-tab; a URL param would survive into copy-pasted links. The editor shows
+the offer only when it's actually usable: hydrated, no welcome overlay, not
+read-only, not an embed. The Settings relaunch crosses no navigation, so
+it's a window event (`livediagram:tour-relaunch`) — which also re-marks the
+flag, so a mid-rerun reload re-offers the same way.
 
 ## The steps
 

@@ -1,10 +1,12 @@
 // Handoff + relaunch signals for the interactive editor tour (spec/79).
 //
 // /new marks the tour pending just before hard-navigating to /diagram/<id>
-// for a brand-new (zero-diagram) user; the editor consumes (reads + clears)
-// the flag and shows the welcome offer card. sessionStorage keeps the
-// intent per-tab and self-cleaning; a URL param would survive into
-// copy-pasted links.
+// for a brand-new (zero-diagram) user; the editor shows the welcome offer
+// card while the flag is set. The flag is cleared only when the offer is
+// RESOLVED (taken to the end, skipped, or declined) — never on mere page
+// load — so reloading mid-offer or mid-tour brings the offer back instead
+// of silently swallowing it. sessionStorage keeps the intent per-tab and
+// tab-scoped; a URL param would survive into copy-pasted links.
 //
 // The once-ever guard is NOT here: it's the synced `tourSeen` user
 // preference (spec/20), so answering the offer once covers every device
@@ -20,14 +22,21 @@ export function markTourPending() {
   }
 }
 
-// Read-and-clear. Returns true exactly once per marked navigation.
-export function consumeTourPending(): boolean {
+// Peek, don't consume: the flag must survive reloads until the offer is
+// resolved (see clearTourPending).
+export function hasTourPending(): boolean {
   try {
-    const pending = sessionStorage.getItem(TOUR_PENDING_KEY) === '1';
-    if (pending) sessionStorage.removeItem(TOUR_PENDING_KEY);
-    return pending;
+    return sessionStorage.getItem(TOUR_PENDING_KEY) === '1';
   } catch {
     return false;
+  }
+}
+
+export function clearTourPending() {
+  try {
+    sessionStorage.removeItem(TOUR_PENDING_KEY);
+  } catch {
+    // Best-effort; a lingering flag is still gated by tourSeen.
   }
 }
 
