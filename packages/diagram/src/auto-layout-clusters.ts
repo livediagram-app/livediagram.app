@@ -189,7 +189,11 @@ export function layoutClusteredGraph(
   }
 
   // 4. Real arrows over the final geometry: every edge whose endpoints name
-  // a node or a frame, re-anchored to the sides that face.
+  // a node or a frame, re-anchored to the sides that face. Self-loops are
+  // kept (the clusterless graphToElements path keeps them, and dropping
+  // them here made a diagram lose its self-edges the moment it gained a
+  // subgraph); reanchorArrow degrades to the same s -> n anchors the plain
+  // path uses when both centers coincide.
   const known = new Set([...placedNodes.map((n) => n.id), ...frameIds]);
   const centers = new Map<string, Pt>(
     [...placedNodes, ...placedFrames].map((el) => [
@@ -198,7 +202,7 @@ export function layoutClusteredGraph(
     ]),
   );
   const arrows: ArrowElement[] = graph.edges
-    .filter((e) => known.has(e.from) && known.has(e.to) && e.from !== e.to)
+    .filter((e) => known.has(e.from) && known.has(e.to))
     .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers));
 
   // Frames first so they render behind their members. The final sweep only

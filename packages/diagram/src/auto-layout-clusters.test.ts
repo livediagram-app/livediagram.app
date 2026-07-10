@@ -56,6 +56,30 @@ describe('layoutClusteredGraph', () => {
     expect(isValidTab({ id: 't', name: 'T', elements: els })).toBe(true);
   });
 
+  it('keeps self-loops when the graph has clusters (parity with the plain path)', () => {
+    const graph: DiagramGraph = {
+      nodes: ['a', 'b', 'loop'].map((id) => ({ id, label: id })),
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'loop' },
+        // A self-edge outside the cluster: the clusterless path keeps it,
+        // so the clustered path must too.
+        { from: 'loop', to: 'loop' },
+      ],
+      clusters: [{ id: 's1', label: 'Group', members: ['a', 'b'] }],
+    };
+    const els = layoutClusteredGraph(graph, { makeEdgeId: makeIds() });
+    const selfLoops = els.filter(
+      (e) =>
+        e.type === 'arrow' &&
+        e.from.kind === 'pinned' &&
+        e.to.kind === 'pinned' &&
+        e.from.elementId === 'loop' &&
+        e.to.elementId === 'loop',
+    );
+    expect(selfLoops).toHaveLength(1);
+  });
+
   it('keeps two clusters apart and lays the contracted graph in the direction', () => {
     const graph: DiagramGraph = {
       nodes: ['a', 'b', 'c', 'd'].map((id) => ({ id, label: id })),
