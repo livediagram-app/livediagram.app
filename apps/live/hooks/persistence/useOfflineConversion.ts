@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useToast } from '@/hooks/ui/useToast';
 import { saveOfflineToCloud, takeCloudOffline } from '@/lib/offline/offline-convert';
 
 // Shared Offline Mode conversion handlers (spec/76) for the Explorer's row and
@@ -16,6 +17,7 @@ export function useOfflineConversion(
   close: () => void,
 ) {
   const confirm = useConfirm();
+  const toast = useToast();
   const [converting, setConverting] = useState(false);
 
   const syncToCloud = async () => {
@@ -27,6 +29,7 @@ export function useOfflineConversion(
       window.location.reload();
     } catch {
       setConverting(false); // stays offline
+      toast.error('Could not sync this diagram. Check your connection and try again.');
     }
   };
 
@@ -46,7 +49,8 @@ export function useOfflineConversion(
       await takeCloudOffline(diagram.id, ownerId, diagram.shareCode ?? null);
       window.location.reload();
     } catch {
-      setConverting(false); // stays on server
+      setConverting(false); // stays on server (aborts roll the local copy back)
+      toast.error('Could not take this diagram offline. It stays safely on the server.');
     }
   };
 

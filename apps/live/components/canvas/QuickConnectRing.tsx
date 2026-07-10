@@ -222,6 +222,9 @@ export function QuickConnectRing({
   const handlePlusPointerDown = (e: ReactPointerEvent) => {
     e.stopPropagation();
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    // One press at a time: a second concurrent pointer (two fingers on the
+    // same plus) would orphan the first press's window listeners.
+    if (pressRef.current) return;
     pressRef.current = { x: e.clientX, y: e.clientY, id: e.pointerId, type: e.pointerType };
     draggedRef.current = false;
     const onMove = (ev: PointerEvent) => {

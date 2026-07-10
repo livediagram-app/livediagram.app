@@ -121,9 +121,11 @@ export function ExplorerSections({
   if (sectionTabs.length === 0 || !activeTab) return null;
 
   // The Dynamic group's expand state rides the shared expanded-folders map
-  // under a synthetic key, open by default (real folder ids never collide
-  // with the literal 'dynamic').
-  const dynamicOpen = expandedFolders['dynamic'] ?? true;
+  // under a synthetic key (real folder ids never collide with it). Stored as
+  // a COLLAPSED flag because the group defaults open while the map defaults
+  // false: the generic toggle's first flip turns undefined into true, so
+  // storing "open" would make the first collapse click a no-op.
+  const dynamicOpen = !expandedFolders['dynamic-collapsed'];
 
   return (
     <div className="flex flex-col gap-2 rounded-xl bg-slate-50 p-1.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
@@ -237,7 +239,7 @@ export function ExplorerSections({
             <div className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800">
               <button
                 type="button"
-                onClick={() => onToggleFolder('dynamic')}
+                onClick={() => onToggleFolder('dynamic-collapsed')}
                 aria-expanded={dynamicOpen}
                 aria-label={dynamicOpen ? 'Collapse Dynamic' : 'Expand Dynamic'}
                 className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -254,7 +256,7 @@ export function ExplorerSections({
               </span>
               <button
                 type="button"
-                onClick={() => onToggleFolder('dynamic')}
+                onClick={() => onToggleFolder('dynamic-collapsed')}
                 className="flex min-w-0 flex-1 items-center gap-1 truncate text-left"
               >
                 <span className="truncate italic text-slate-500 dark:text-white">Dynamic</span>

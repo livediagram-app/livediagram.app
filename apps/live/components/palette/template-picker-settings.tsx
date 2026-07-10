@@ -178,13 +178,18 @@ function PlacementBrowser({
   const hasTeams = teams.length > 0;
   // With teams, open on the overview so the space choice comes first; the
   // team-less path goes straight to My Work and never shows a space BackBar.
-  const [space, setSpace] = useState<string | null>(hasTeams ? null : 'my-work');
+  // `undefined` = "not chosen yet", DERIVED per render rather than captured
+  // at mount: teams load asynchronously, so a user who reaches this step
+  // before the fetch resolves must still get the overview once teams land
+  // (a mount-time useState(hasTeams ? ...) would pin them into My Work).
+  const [chosenSpace, setChosenSpace] = useState<string | null | undefined>(undefined);
+  const space = chosenSpace === undefined ? (hasTeams ? null : 'my-work') : chosenSpace;
   // Folder drill-down inside the current space (ids from root inward).
   const [stack, setStack] = useState<PickerFolder[]>([]);
   const placementSpace = placement.startsWith('team:') ? placement.split(':')[1] : 'my-work';
 
   const enterSpace = (next: string | null) => {
-    setSpace(next);
+    setChosenSpace(next);
     setStack([]);
   };
 
@@ -262,16 +267,6 @@ function PlacementBrowser({
             onSelect={() => onPlacement(rootValue)}
           />
         )}
-        {onCreateFolder ? (
-          <NewFolderTile
-            onCreate={async (name) => {
-              const created = await onCreateFolder(name, openFolder?.id ?? null, teamId);
-              // Select the fresh folder as the destination straight away.
-              if (created) onPlacement(valueFor(created.id));
-              return created !== null;
-            }}
-          />
-        ) : null}
         {children.map((f) =>
           hasKids(f.id) ? (
             // A folder with subfolders drills in (its "save here" card is the
@@ -295,6 +290,16 @@ function PlacementBrowser({
             />
           ),
         )}
+        {onCreateFolder ? (
+          <NewFolderTile
+            onCreate={async (name) => {
+              const created = await onCreateFolder(name, openFolder?.id ?? null, teamId);
+              // Select the fresh folder as the destination straight away.
+              if (created) onPlacement(valueFor(created.id));
+              return created !== null;
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );

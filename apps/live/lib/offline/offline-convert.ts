@@ -8,7 +8,7 @@
 
 import { apiCreateDiagram, apiLoadDiagram, apiLoadTab } from '@/lib/api-client';
 import { API_BASE, apiDelete } from '@/lib/api/core';
-import { embedTabImages, uploadEmbeddedImages } from './offline-images';
+import { embedTabImages, isDataImageId, uploadEmbeddedImages } from './offline-images';
 import {
   offlineCreateDiagram,
   offlineDeleteDiagram,
@@ -56,6 +56,14 @@ export async function takeCloudOffline(
   // 30-day retention reaper would delete the bytes the offline diagram still
   // points at (spec/19 + /76).
   const tabs = await embedTabImages(fetchedTabs, { ownerId, diagramId, shareCode });
+  // Embedding is best-effort per image, but the DELETE below is not: if any
+  // image failed to embed, aborting here keeps the server copy (and its
+  // images) alive instead of quietly signing the stragglers up for the
+  // 30-day reaper. The caller surfaces the failure; the user can retry.
+  const unembedded = tabs.some((t) =>
+    t.elements.some((el) => el.type === 'image' && el.imageId && !isDataImageId(el.imageId)),
+  );
+  if (unembedded) throw new Error('image embed incomplete');
 
   const now = Date.now();
   const rec: OfflineDiagramRecord = {
@@ -69,7 +77,16 @@ export async function takeCloudOffline(
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching
   // apiDeleteDiagram would target the local store instead of the server.
-  await apiDelete(`${API_BASE}/diagrams/${diagramId}`, ownerId, { action: 'take offline' });
+  try {
+    await apiDelete(`${API_BASE}/diagrams/${diagramId}`, ownerId, { action: 'take offline' });
+  } catch (e) {
+    // The server copy survived, so ROLL BACK the local copy: leaving both
+    // registered under one id would shadow the live cloud diagram behind a
+    // stale offline fork (and duplicate the Explorer row). Data-safe: the
+    // server still holds everything.
+    await offlineDeleteDiagram(rec.id).catch(() => {});
+    throw e;
+  }
 }
 
 // Re-exported for callers that only need to create an offline diagram from

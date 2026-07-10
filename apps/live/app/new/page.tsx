@@ -77,6 +77,22 @@ export default function NewDiagramPage() {
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
   const { authLoaded, clerkUserId } = useClerkApiBootstrap();
 
+  // Placement context from the URL: /new?folder=<id> (Explorer's "new diagram
+  // in this folder") and /new?team=<id>(&folder=<id>) (team library, spec/35)
+  // pre-select the Save In picker, so what the Settings step highlights IS
+  // what Create files into. The picker is the single source of truth from
+  // here on; there is no separate commit-time fallback (it used to override
+  // an explicit "Unsorted" choice silently).
+  const [initialPlacement] = useState(() => {
+    if (typeof window === 'undefined') return 'unsorted';
+    const params = new URLSearchParams(window.location.search);
+    const folderId = params.get('folder');
+    const teamId = params.get('team');
+    if (teamId) return folderId ? `team:${teamId}:folder:${folderId}` : `team:${teamId}`;
+    if (folderId) return `folder:${folderId}`;
+    return 'unsorted';
+  });
+
   useEffect(() => {
     document.title = 'New diagram | livediagram';
   }, []);
@@ -273,23 +289,23 @@ export default function NewDiagramPage() {
         themeId.charAt(0).toUpperCase() + themeId.slice(1));
     track('Theme', 'Changed', themeLabel);
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
-    // Placement. The Settings step's picker (spec/76) is authoritative when
-    // the user chose a folder or team; otherwise we fall back to the URL
-    // context (/new?folder=<id> drops the diagram into the folder the user
-    // was browsing, /new?team=<id>(&folder=<id>) into that team's shared
-    // library, spec/35). Done as a follow-up PUT so the create endpoint
-    // signature stays stable and placement can fail independently (a glitch
-    // just leaves it in the personal Unsorted, movable later). Offline
-    // diagrams have no server folder / team placement — skip it.
+    // Placement. The Settings step's picker (spec/76) is authoritative: the
+    // URL context (/new?folder=<id>, /new?team=<id>&folder=<id>) pre-seeds it
+    // on mount, so what the picker highlighted is exactly what gets filed.
+    // Done as a follow-up PUT so the create endpoint signature stays stable
+    // and placement can fail independently (a glitch just leaves it in the
+    // personal Unsorted, movable later). Offline diagrams have no server
+    // folder / team placement — skip it.
     if (!offline) {
-      const params = new URLSearchParams(window.location.search);
-      const chosePlacement = settings.folderId != null || settings.teamId != null;
-      const targetFolderId = chosePlacement ? (settings.folderId ?? null) : params.get('folder');
-      const targetTeamId = chosePlacement ? (settings.teamId ?? null) : params.get('team');
-      if (targetTeamId) {
-        await apiSetDiagramFolder(self.id, diagramId, targetFolderId, targetTeamId).catch(() => {});
-      } else if (targetFolderId) {
-        await apiSetDiagramFolder(self.id, diagramId, targetFolderId).catch(() => {});
+      if (settings.teamId) {
+        await apiSetDiagramFolder(
+          self.id,
+          diagramId,
+          settings.folderId ?? null,
+          settings.teamId,
+        ).catch(() => {});
+      } else if (settings.folderId) {
+        await apiSetDiagramFolder(self.id, diagramId, settings.folderId).catch(() => {});
       }
     }
     window.location.assign(`/diagram/${diagramId}`);
@@ -351,6 +367,7 @@ export default function NewDiagramPage() {
             folders={folders}
             teams={teams}
             teamFolders={teamFolders}
+            initialPlacement={initialPlacement}
             onCreateFolder={createPickerFolder}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
             onPick={(kind, name, themeId, settings) =>

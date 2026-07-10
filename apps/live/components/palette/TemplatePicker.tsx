@@ -64,6 +64,8 @@ type TemplatePickerProps = {
   teams?: { id: string; name: string }[];
   // Per-team folder lists for the Settings step's placement browser.
   teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
+  // Pre-selected placement (the /new URL's folder / team context).
+  initialPlacement?: string;
   // Inline folder creation from the placement browser (name popover). Creates
   // in the given scope and returns the new folder (null on failure).
   onCreateFolder?: (
@@ -109,6 +111,7 @@ export function TemplatePicker({
   folders = [],
   teams = [],
   teamFolders = {},
+  initialPlacement,
   onCreateFolder,
 }: TemplatePickerProps) {
   // Mount-open overlay: silence the canvas shortcut/paste listeners
@@ -184,7 +187,7 @@ export function TemplatePicker({
   useEffect(() => {
     if (!diagramNameEdited.current) setDiagramNameInput(untitledNameForTemplate(templateKind));
   }, [templateKind]);
-  const [placement, setPlacement] = useState('unsorted');
+  const [placement, setPlacement] = useState(initialPlacement ?? 'unsorted');
   // The settings the wizard commits with. Diagram name defaults to the
   // template's default when the field is left blank.
   const settings = (): NewDiagramSettings => {

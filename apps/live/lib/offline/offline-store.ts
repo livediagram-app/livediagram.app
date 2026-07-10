@@ -330,16 +330,15 @@ export async function offlineSetDiagramFolder(
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
   await serializeOfflineWrite(async () => {
-    const rec = (await backend.get(id)) ?? {
-      id,
-      name: 'Untitled',
-      folderId: null,
-      createdAt: now,
-      savedAt: now,
-      tabs: [],
-    };
+    // No create-on-missing: a save must never resurrect a deleted diagram.
+    // A pending debounced autosave can land AFTER a sync-to-cloud deleted
+    // the record; recreating it here would shadow the freshly-synced cloud
+    // copy behind a 1-tab offline ghost (the local analog of the server's
+    // old create-on-first-write bug). Records are only ever created by
+    // offlineCreateDiagram / offlinePutRecord.
+    const rec = await backend.get(id);
+    if (!rec) return;
     await backend.put(upsertTab(rec, tab, now));
-    rememberId(id);
   });
 }
 
@@ -352,8 +351,12 @@ export async function offlineDeleteTab(id: string, tabId: string, now: number): 
 }
 
 export async function offlineDeleteDiagram(id: string): Promise<void> {
-  await backend.delete(id);
-  forgetId(id);
+  // Serialized with the tab / meta writes so a queued save can't interleave
+  // with (or observe a half-applied) delete.
+  await serializeOfflineWrite(async () => {
+    await backend.delete(id);
+    forgetId(id);
+  });
 }
 
 // Read the raw record — used by the Offline → Cloud conversion (spec/76) to
