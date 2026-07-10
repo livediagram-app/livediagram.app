@@ -39,15 +39,23 @@ export function MoveToLayerRow({
           <MenuTile
             key={layer.id}
             icon={
-              thumbViewBox && thumbMarkup.get(layer.id) ? (
+              // The card renders whenever the tab has content, even for a
+              // layer with nothing on it — an empty white card reads as
+              // "empty layer", matching the Layers panel rows (a bare
+              // glyph next to thumbnail cards read as a missing preview).
+              // The glyph fallback only remains for a fully empty tab,
+              // where there's no viewBox to draw against.
+              thumbViewBox ? (
                 <span className="flex h-7 w-11 items-center justify-center overflow-hidden rounded border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
-                  <svg
-                    viewBox={thumbViewBox}
-                    preserveAspectRatio="xMidYMid meet"
-                    className="h-full w-full"
-                    aria-hidden
-                    dangerouslySetInnerHTML={{ __html: thumbMarkup.get(layer.id)! }}
-                  />
+                  {thumbMarkup.get(layer.id) ? (
+                    <svg
+                      viewBox={thumbViewBox}
+                      preserveAspectRatio="xMidYMid meet"
+                      className="h-full w-full"
+                      aria-hidden
+                      dangerouslySetInnerHTML={{ __html: thumbMarkup.get(layer.id)! }}
+                    />
+                  ) : null}
                 </span>
               ) : (
                 <LayersGlyph />
