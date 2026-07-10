@@ -49,7 +49,7 @@ describe('applyCollisionAvoidance', () => {
   it('never touches an arrow that already has a style or curve', () => {
     for (const styled of [
       { arrowStyle: 'straight' as const },
-      { arrowStyle: 'elbow' as const },
+      { arrowStyle: 'angled' as const },
       { curveOffset: { dx: 5, dy: 5 } },
       { curvePoints: [{ dx: 5, dy: 5 }] },
     ]) {
