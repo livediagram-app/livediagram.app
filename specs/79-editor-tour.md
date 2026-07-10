@@ -111,9 +111,17 @@ alone.
 
 ## Telemetry (spec/22)
 
-Existing enums only. The offer: `'UI'/'Opened'/'TourOffer'` when the
-welcome card shows (first run and Settings relaunch alike),
-`'UI'/'Closed'/'TourOffer'` on "No thanks". The tour:
-`'UI'/'Started'/'Tour'` on accept,
-`'UI'/'Ended'/'TourCompleted' | 'TourSkipped'` at the end. The
-Settings row toggles report `'UI'/'Toggled'/'TourSeenOn' | 'TourSeenOff'`.
+Existing enums only, covering the whole funnel:
+
+- **Offer**: `'UI'/'Opened'/'TourOffer'` when the welcome card shows
+  (first run and Settings relaunch alike); `'UI'/'Closed'/'TourOffer'` on
+  "No thanks".
+- **Start**: `'UI'/'Started'/'Tour'` on accept.
+- **Stage views**: `'UI'/'View'/'TourStep<Id>'` once per step entry
+  (`TourStepPalette`, `TourStepSelectionModes`, `TourStepCategories`,
+  `TourStepExplorer`, `TourStepContextMenu`, `TourStepTabs`,
+  `TourStepSearch`, `TourStepOutro` — derived from the fixed step ids,
+  never content; a Back re-entry counts as a view). The last View before
+  an `Ended/TourSkipped` marks the drop-off stage.
+- **End**: `'UI'/'Ended'/'TourCompleted' | 'TourSkipped'`.
+- **Settings row**: `'UI'/'Toggled'/'TourSeenOn' | 'TourSeenOff'`.

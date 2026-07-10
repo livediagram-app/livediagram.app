@@ -51,6 +51,17 @@ export type TourStep = {
   cleanup?: (api: TourApi) => void;
 };
 
+// Telemetry `type` token for a step-viewed event (spec/22: preset tokens
+// only, never content — step ids are a fixed catalogue, so deriving is
+// safe): 'selection-modes' → 'TourStepSelectionModes'.
+export function tourStepTelemetryType(stepId: string): string {
+  const camel = stepId
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+  return `TourStep${camel}`;
+}
+
 // Bring the palette on screen whatever the layout: dock tap on compact,
 // banner-expand on desktop. Waits for the panel node so callers can chain.
 async function ensurePaletteOpen(api: TourApi) {

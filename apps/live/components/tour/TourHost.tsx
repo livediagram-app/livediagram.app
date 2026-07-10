@@ -15,7 +15,7 @@ import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { findTour, waitForSelector, waitForTour } from './tour-dom';
-import { TOUR_STEPS, type TourApi } from './tour-steps';
+import { TOUR_STEPS, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourPopover } from './TourPopover';
 
 // Orchestrates the interactive editor tour (spec/79). Mounted once in
@@ -192,6 +192,11 @@ export function TourHost() {
     if (!active) return;
     const step = steps[stepIndex];
     if (!step) return; // shrunk list; the clamp effect is about to fix the index
+    // Stage-view funnel (spec/22): one event per step entry (Back re-entry
+    // included — it's a real view). The welcome card's view is already
+    // covered by Opened/TourOffer; the last View before an
+    // Ended/TourSkipped marks the drop-off stage on the dashboard.
+    if (step.card !== 'welcome') track('UI', 'View', tourStepTelemetryType(step.id));
     const token = ++runTokenRef.current;
     let cancelled = false;
     void (async () => {
