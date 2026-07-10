@@ -180,6 +180,8 @@ export function EditorCanvasHost() {
     retryActiveTabLoad,
     revealVote,
     revertChange,
+    previewRevert,
+    clearRevertPreview,
     savedAt,
     saveStatus,
     selectedId,
@@ -453,6 +455,8 @@ export function EditorCanvasHost() {
         openActionPopover(id);
       }}
       onRevertChange={revertChange}
+      onPreviewRevert={previewRevert}
+      onClearRevertPreview={clearRevertPreview}
       onActivityRowClick={handleActivityRowClick}
       onClearActivity={isReadOnly ? undefined : clearActivityForActiveTab}
       saveStatus={saveStatus}

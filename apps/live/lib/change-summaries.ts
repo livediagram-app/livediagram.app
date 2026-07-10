@@ -209,6 +209,22 @@ export function summarizeEdits(pairs: EditedPair[]): string {
     return `Resized ${subject}`;
   }
   if (allIn(keys, ['rotation'])) return `Rotated ${subject}`;
+  // A colour-preset apply (spec/48) stamps colours + border + the
+  // preset id in one move. Name the preset when the id is a plain
+  // token ('bold' → Bold — the picker shows the same word); the
+  // multi-colour themes' 'branch-<i>' ids aren't names, so those get
+  // the generic phrase. A CLEARED id (hand-editing a colour breaks
+  // the binding) falls through to the plain colour verdict below.
+  if (keys.has('colorPreset') && allIn(keys, [...COLOUR_KEYS, ...BORDER_KEYS])) {
+    const presetId = uniformAfter(pairs, (el) =>
+      'colorPreset' in el ? (el as { colorPreset?: string }).colorPreset : undefined,
+    );
+    if (presetId) {
+      return /^[a-z]+$/.test(presetId)
+        ? `Applied the ${presetId.charAt(0).toUpperCase() + presetId.slice(1)} style to ${subject}`
+        : `Applied a colour preset to ${subject}`;
+    }
+  }
   if (allIn(keys, COLOUR_KEYS)) return `Recoloured ${subject}`;
   if (allIn(keys, ['opacity'])) {
     const opacity = uniformAfter(pairs, (el) => ('opacity' in el ? el.opacity : undefined));
@@ -238,8 +254,18 @@ export function summarizeEdits(pairs: EditedPair[]): string {
   if (allArrows && allIn(keys, ['labelOffset'])) return `Moved the label on ${subject}`;
   // strokeWidth / strokeStyle are shared between boxes and arrows, so
   // the box-specific "border" phrase only applies when no arrow is in
-  // the set; anything else in this family reads as "Restyled".
-  if (allIn(keys, [...BORDER_KEYS, ...ARROW_STYLE_KEYS])) {
+  // the set; anything else in this family reads as "Restyled". Arrow
+  // LINE presets (spec/48) set flow / flowSpeed alongside the style
+  // fields, so those ride along for an all-arrow set — but only when
+  // a style key is present, so a pure flow toggle still reads as an
+  // animation change below.
+  const arrowRestyleKeys = allArrows
+    ? [...ARROW_STYLE_KEYS, 'flow', 'flowSpeed']
+    : ARROW_STYLE_KEYS;
+  if (
+    allIn(keys, [...BORDER_KEYS, ...arrowRestyleKeys]) &&
+    [...keys].some((k) => !['flow', 'flowSpeed'].includes(k))
+  ) {
     const noArrows = afters.every((el) => el.type !== 'arrow');
     if (noArrows && allIn(keys, BORDER_KEYS)) return `Changed the border of ${subject}`;
     return `Restyled ${subject}`;

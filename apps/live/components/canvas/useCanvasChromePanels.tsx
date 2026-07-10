@@ -112,6 +112,7 @@ export function useCanvasChromePanels({
     onBeginFreehand,
     onChangeSettings,
     onClearActivity,
+    onClearRevertPreview,
     onCreateFolder,
     onDeleteDiagram,
     onDeleteFolder,
@@ -135,6 +136,7 @@ export function useCanvasChromePanels({
     onResetExplorer,
     onResetPalette,
     onRevertChange,
+    onPreviewRevert,
     onSetCanvasTool,
     onToggleActivityMinimized,
     onToggleMinimalPanels,
@@ -188,6 +190,8 @@ export function useCanvasChromePanels({
     onUndo,
     onRedo,
     onRevertChange,
+    onPreviewRevert,
+    onClearRevertPreview,
     onActivityRowClick,
     onClearActivity,
     onMoveActivity,
@@ -323,6 +327,8 @@ export function useCanvasChromePanels({
       onUndo={activityHandlers.onUndo}
       onRedo={activityHandlers.onRedo}
       onRevert={activityHandlers.onRevertChange}
+      onPreviewRevert={activityHandlers.onPreviewRevert}
+      onClearRevertPreview={activityHandlers.onClearRevertPreview}
       onRowClick={activityHandlers.onActivityRowClick}
       onClearActivity={activityHandlers.onClearActivity}
       saveStatus={saveStatus}

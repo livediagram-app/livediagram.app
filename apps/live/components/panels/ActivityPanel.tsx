@@ -39,6 +39,11 @@ type ActivityPanelProps = {
   onUndo: () => void;
   onRedo: () => void;
   onRevert: (entry: ChangeLogEntry) => void;
+  // Hover-to-preview a row's revert (spec/12): pointer enter shows the
+  // entry's `before` state live on the canvas, leave restores. Only
+  // fired for rows whose Revert button is available.
+  onPreviewRevert: (entry: ChangeLogEntry) => void;
+  onClearRevertPreview: () => void;
   // Click anywhere on a row (outside the Revert button) — used by
   // the editor to jump to the related element (tab-meta entries like
   // "Changed theme to X" just clear the selection).
@@ -76,6 +81,8 @@ function ActivityPanelImpl({
   onUndo,
   onRedo,
   onRevert,
+  onPreviewRevert,
+  onClearRevertPreview,
   onRowClick,
   onClearActivity,
   saveStatus,
@@ -154,6 +161,8 @@ function ActivityPanelImpl({
                   entry={entry}
                   canRevert={!tabLocked && !readOnly}
                   onRevert={() => onRevert(entry)}
+                  onHoverStart={() => onPreviewRevert(entry)}
+                  onHoverEnd={onClearRevertPreview}
                   onClick={() => onRowClick(entry)}
                 />
               ))}

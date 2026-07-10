@@ -270,6 +270,10 @@ export type CanvasProps = {
   // Row click: editor selects the element + opens its action popover.
   onOpenActionForElement: (elementId: string) => void;
   onRevertChange: (entry: ChangeLogEntry) => void;
+  // Hover-to-preview for a row's Revert (spec/12): enter shows the
+  // revert result live on the canvas, leave restores. Nothing commits.
+  onPreviewRevert: (entry: ChangeLogEntry) => void;
+  onClearRevertPreview: () => void;
   onActivityRowClick: (entry: ChangeLogEntry) => void;
   onClearActivity?: () => void;
   saveStatus: import('@/components/chrome/EditorHeader').SaveStatus;

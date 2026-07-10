@@ -52,7 +52,7 @@ import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
+import { apiNotifyActionAssigned, apiSaveSelf, type ChangeLogEntry } from '@/lib/api-client';
 import {
   emptyEntryHistory,
   entryHistoryCancel,
@@ -71,6 +71,7 @@ import { usePerTabLoad } from './usePerTabLoad';
 import { useRoomConnection } from './useRoomConnection';
 import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
+import { useRevertPreview } from './useRevertPreview';
 import { useTemplateFlow } from './useTemplateFlow';
 import { usePanelLayout } from './usePanelLayout';
 import { usePresenceRows } from './usePresenceRows';
@@ -1115,32 +1116,58 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // element on the right tab; tab-meta entries pop the matching
   // accordion in the Editor panel so the user can see what changed
   // and tweak it again.
+  // Hover-to-preview for the Activity rows' Revert (spec/12): resting
+  // on a revertable row shows the revert result live; leaving restores.
+  // Shares previewingRef with the style previews so autosave skips the
+  // ephemeral frames. See useRevertPreview.
+  const { previewRevert, clearRevertPreview } = useRevertPreview({
+    tabsRef,
+    tickTabs,
+    previewingRef,
+  });
+
   // Activity log + undo/redo handlers. See useEditorHistory.
-  const { handleActivityRowClick, clearActivityForActiveTab, revertChange, tick, undo, redo } =
-    useEditorHistory({
-      activeId,
-      diagramId,
-      selfId: selfParticipant.id,
-      sessionShareCode,
-      tabs,
-      editsBlocked,
-      canUndo,
-      canRedo,
-      commitTabs,
-      tickTabs,
-      undoHistory,
-      redoHistory,
-      refs: { roomRef, entryHistoryRef },
-      set: {
-        setActiveId,
-        setSelectedId,
-        setMultiSelectedIds,
-        setEditingId,
-        setChangeLog,
-        setFormatSourceId,
-        setGroupSourceId,
-      },
-    });
+  const {
+    handleActivityRowClick,
+    clearActivityForActiveTab,
+    revertChange: revertChangeCommit,
+    tick,
+    undo,
+    redo,
+  } = useEditorHistory({
+    activeId,
+    diagramId,
+    selfId: selfParticipant.id,
+    sessionShareCode,
+    tabs,
+    editsBlocked,
+    canUndo,
+    canRedo,
+    commitTabs,
+    tickTabs,
+    undoHistory,
+    redoHistory,
+    refs: { roomRef, entryHistoryRef },
+    set: {
+      setActiveId,
+      setSelectedId,
+      setMultiSelectedIds,
+      setEditingId,
+      setChangeLog,
+      setFormatSourceId,
+      setGroupSourceId,
+    },
+  });
+
+  // The Revert button sits inside the hovered row, so its click lands
+  // while the hover preview is still on screen. Clear the preview FIRST:
+  // the restore tick and the revert's commit compose in one React batch,
+  // so the history snapshot captures the true pre-hover state instead of
+  // baking the preview into the undo baseline.
+  const revertChange = (entry: ChangeLogEntry) => {
+    clearRevertPreview();
+    revertChangeCommit(entry);
+  };
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a
@@ -2186,6 +2213,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     resolveThread,
     retryActiveTabLoad,
     revertChange,
+    previewRevert,
+    clearRevertPreview,
     revokeShareLink,
     lockedByOther,
     selectElement,

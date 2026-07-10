@@ -5,6 +5,7 @@
 // Undo / Redo button, and the icon set (Undo / Redo re-used by
 // CanvasChrome's dock, plus the history ActivityIcon).
 
+import { useEffect, useRef } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
@@ -73,18 +74,48 @@ export function ActivityRow({
   entry,
   canRevert,
   onRevert,
+  onHoverStart,
+  onHoverEnd,
   onClick,
 }: {
   entry: ChangeLogEntry;
   canRevert: boolean;
   onRevert: () => void;
+  // Hover-to-preview the row's revert (spec/12). Wired on the whole
+  // row (so moving onto the Revert button doesn't flicker the
+  // preview off) and only for revertable element entries on a mouse
+  // pointer — touch has no hover, and tab-meta rows have nothing to
+  // preview.
+  onHoverStart: () => void;
+  onHoverEnd: () => void;
   onClick: () => void;
 }) {
   // Re-render every 30s so the "2 min ago" string doesn't stick.
   useRelativeTimeTick();
   const relative = formatRelativeTimeShort(Date.now() - entry.createdAt);
+  const previewable = canRevert && entry.elementIds.length > 0;
+  const hoveringRef = useRef(false);
+  const endHover = () => {
+    if (!hoveringRef.current) return;
+    hoveringRef.current = false;
+    onHoverEnd();
+  };
+  const endHoverRef = useRef(endHover);
+  endHoverRef.current = endHover;
+  // If the row unmounts under the pointer (a peer's op removed the
+  // entry, the log got cleared), pointerleave never fires — end the
+  // preview here so the canvas doesn't stay stuck on it.
+  useEffect(() => () => endHoverRef.current(), []);
   return (
-    <li className="group relative">
+    <li
+      className="group relative"
+      onPointerEnter={(e) => {
+        if (!previewable || e.pointerType !== 'mouse') return;
+        hoveringRef.current = true;
+        onHoverStart();
+      }}
+      onPointerLeave={endHover}
+    >
       <button
         type="button"
         onClick={onClick}

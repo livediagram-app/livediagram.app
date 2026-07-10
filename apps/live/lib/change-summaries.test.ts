@@ -88,6 +88,29 @@ describe('summarizeEdits — single element verbs', () => {
     expect(edit(shape('a'), shape('a', { shape: 'circle' }))).toBe('Changed a Square to a Circle');
   });
 
+  it('a colour-preset apply names the preset', () => {
+    // applyColorPresetToEl stamps colours + border + the preset id in one move.
+    const styled = shape('a', {
+      fillColor: '#e0f2fe',
+      strokeColor: '#0284c7',
+      textColor: '#0c4a6e',
+      strokeWidth: 'thick',
+      strokeStyle: 'solid',
+      borderRadius: 'md',
+      colorPreset: 'bold',
+    });
+    expect(edit(shape('a'), styled)).toBe('Applied the Bold style to a Square');
+    expect(edit(shape('a'), { ...styled, colorPreset: 'branch-2' })).toBe(
+      'Applied a colour preset to a Square',
+    );
+  });
+
+  it('hand-editing a colour (which clears the preset binding) stays a recolour', () => {
+    const before = shape('a', { fillColor: '#fff', colorPreset: 'bold' });
+    const after = shape('a', { fillColor: '#f00', colorPreset: undefined });
+    expect(edit(before, after)).toBe('Recoloured a Square');
+  });
+
   it('hyphenated shape kinds read as prose', () => {
     expect(edit(shape('a', { shape: 'pie-chart' }), shape('a', { shape: 'pie-chart', x: 5 }))).toBe(
       'Moved a Pie chart',
@@ -111,6 +134,18 @@ describe('summarizeEdits — arrows', () => {
   it('head / line style changes are a restyle', () => {
     expect(edit(arrow('r'), arrow('r', { arrowheadShape: 'diamond', strokeWidth: 3 }))).toBe(
       'Restyled an Arrow',
+    );
+  });
+
+  it('a line preset (style + thickness + flow) is a restyle, a pure flow toggle is an animation change', () => {
+    expect(
+      edit(
+        arrow('r'),
+        arrow('r', { strokeStyle: 'dashed', strokeWidth: 2, flow: 'dashes', flowSpeed: 'normal' }),
+      ),
+    ).toBe('Restyled an Arrow');
+    expect(edit(arrow('r'), arrow('r', { flow: 'dots' }))).toBe(
+      'Changed the animation on an Arrow',
     );
   });
 });

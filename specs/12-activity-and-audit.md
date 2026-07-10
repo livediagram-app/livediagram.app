@@ -218,8 +218,13 @@ to` / `Removed the link from`, `Assigned an action on`, `Updated
 comments on`. Value-bearing changes carry the value: `Renamed
 'Login' to 'Sign in'`, `Labelled a Square 'Login'`, `Set the opacity
 of a Square to 40%`, `Set the progress on 'Upload' to 75%`, `Changed
-a Square to a Circle`. Only a genuinely mixed bag of unrelated
-  fields falls back to `Edited X`.
+a Square to a Circle`. A style-preset apply (spec/48) is one look
+  landing in one move, so it names the preset — `Applied the Bold
+style to a Square` (the emphasis-variant ids double as their picker
+  names; the multi-colour themes' `branch-<i>` variants get `Applied
+a colour preset to X`), and an arrow line preset reads `Restyled an
+Arrow` even with its flow riding along. Only a genuinely mixed bag
+  of unrelated fields falls back to `Edited X`.
 - **Mixed commits spell out their parts** instead of hiding behind
   `Edited`: `Added a Square & deleted an Arrow`; a one-for-one swap
   reads as `Replaced a Sketch with a Square` (the shape recogniser's
@@ -247,6 +252,16 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
   - Verb / summary ("Edited 'API'")
   - Relative timestamp ("2 minutes ago")
   - A small Revert button on hover
+- **Hovering a revertable row live-previews its revert.** Resting a
+  mouse pointer on a row shows, on the canvas, exactly what clicking
+  Revert would do — the affected elements jump to the entry's
+  `before` state — and pulling the pointer off restores the current
+  state. Nothing commits, saves, or broadcasts until the Revert
+  button is actually clicked (the preview rides the same present-only
+  tick + autosave guard as the spec/48 style previews; see
+  `useRevertPreview`). Mouse pointers only (touch has no hover), and
+  only on rows whose Revert button is available — tab-meta rows and
+  read-only / locked sessions don't preview.
 - Empty state: "No edits yet — start drawing."
 
 ## Performance
