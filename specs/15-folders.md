@@ -153,9 +153,13 @@ layouts because they're solving different problems.
 
 This is the docked side-panel on the editor and the new-diagram
 flow. Space is tight; the user is mid-task; "find this thing fast"
-beats "browse my whole library." For the browse case, the panel
-header carries a compact **Open** button beside **New**, linking to
-the full-page Explorer's Recent list (`/explorer/recent`).
+beats "browse my whole library." The panel header carries a single
+compact **New** chip (plus icon + a small chevron) whose popover menu
+offers both header actions — **New diagram** and **Open Explorer**
+(the full-page Explorer's Recent list, `/explorer/recent`) — merged
+from the two separate New / Open chips so the title row holds one
+piece of chrome. When the host passes no new-diagram handler the chip
+falls back to the plain **Open** link (one action needs no menu).
 
 - The existing "Current Diagram" and "Recent Diagrams" sections stay
   unchanged at the top.

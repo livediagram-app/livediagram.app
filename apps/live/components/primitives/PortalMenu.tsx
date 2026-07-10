@@ -66,7 +66,14 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
       // A MenuFlyoutSection portals its panel outside this menu but marks it
       // data-menu-flyout, so clicks inside the flyout count as inside the menu.
       if (e.target instanceof Element && e.target.closest('[data-menu-flyout]')) return;
-      if (e.target instanceof Node && !ref.current.contains(e.target) && e.target !== anchor) {
+      // Clicks anywhere INSIDE the anchor (including its inner svg / text
+      // nodes) are the trigger's own toggle to handle — closing here too
+      // made the toggle reopen the menu it had just closed.
+      if (
+        e.target instanceof Node &&
+        !ref.current.contains(e.target) &&
+        !(anchor?.contains(e.target) ?? false)
+      ) {
         onClose();
       }
     };

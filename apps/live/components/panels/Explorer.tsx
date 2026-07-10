@@ -8,6 +8,7 @@ import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { OpenIcon, PlusIcon } from '@/components/panels/explorer-icons';
+import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
 import { DiagramRow } from '@/components/panels/explorer-views';
 import { ExplorerSections } from '@/components/panels/ExplorerSections';
 
@@ -149,6 +150,11 @@ function ExplorerImpl({
     }
   };
 
+  // Anchor for the header's combined New / Open menu (spec/15): the two
+  // separate header chips merged into one button whose popover offers
+  // both actions, so the title row carries a single piece of chrome.
+  const [newOpenAnchor, setNewOpenAnchor] = useState<HTMLElement | null>(null);
+
   // The anchor argument survives in the row-callback signature (the
   // delete flow's ConfirmPopover still anchors), but the move flow is
   // a centred modal now (spec/15) and ignores it.
@@ -159,6 +165,7 @@ function ExplorerImpl({
   return (
     <MovablePanel
       title="Explorer"
+      dataTourId="explorer"
       position={position}
       // On mobile the panel becomes a full-width top banner (matches
       // the Palette's banner pattern) so users can switch diagrams
@@ -169,25 +176,65 @@ function ExplorerImpl({
       onReset={onReset}
       onMoveTo={onMoveTo}
       // New-diagram + Open actions live in the header, just left of
-      // the reset-position button (mr-1 spaces the pair away from that
-      // cluster). Compact icon + text so they fit the title row; Open
-      // navigates to the full-page Explorer's Recent list (the same
-      // destination the /new page's "Open Explorer" footer uses).
+      // the reset-position button (mr-1 spaces it away from that
+      // cluster), merged into ONE chip whose popover offers both
+      // (spec/15) so the title row carries a single piece of chrome.
+      // Icon + text match the panel title's slate (not brand) so the
+      // chip reads as quiet header chrome; a subtle border + hover
+      // tint keep it recognisably a button. Open navigates to the
+      // full-page Explorer's Recent list (the same destination the
+      // /new page's "Open Explorer" footer uses).
       headerActions={
-        <>
-          {onNewDiagram ? (
+        onNewDiagram ? (
+          <>
             <button
               type="button"
-              onClick={onNewDiagram}
-              // Icon + text match the panel title's slate (not brand) so
-              // the button reads as quiet header chrome; a subtle border +
-              // hover tint keep it recognisably a button.
-              className="inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              aria-label="New or open a diagram"
+              aria-haspopup="menu"
+              aria-expanded={newOpenAnchor !== null}
+              onClick={(e) => setNewOpenAnchor((a) => (a ? null : e.currentTarget))}
+              className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
               <PlusIcon />
               New
+              <svg
+                width="8"
+                height="8"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M3 4.5 6 7.5 9 4.5" />
+              </svg>
             </button>
-          ) : null}
+            {newOpenAnchor ? (
+              <PortalMenu anchor={newOpenAnchor} onClose={() => setNewOpenAnchor(null)}>
+                <MenuItem
+                  icon={<PlusIcon />}
+                  label="New diagram"
+                  onClick={() => {
+                    setNewOpenAnchor(null);
+                    onNewDiagram();
+                  }}
+                />
+                <MenuItem
+                  icon={<OpenIcon />}
+                  label="Open Explorer"
+                  onClick={() => {
+                    setNewOpenAnchor(null);
+                    window.location.href = '/explorer/recent';
+                  }}
+                />
+              </PortalMenu>
+            ) : null}
+          </>
+        ) : (
+          // No new-diagram handler (types allow it) → a single action
+          // doesn't need a menu; keep the plain Open link.
           <a
             href="/explorer/recent"
             className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
@@ -195,7 +242,7 @@ function ExplorerImpl({
             <OpenIcon />
             Open
           </a>
-        </>
+        )
       }
       {...dock}
       onSize={onSize}
