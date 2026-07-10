@@ -297,6 +297,13 @@ export function useElementCreation(opts: {
   };
 
   const handleCanvasDoubleClick = (x: number, y: number) => {
+    // Same creation gate as every other add path (addShape, addIcon, ...):
+    // a locked/loading tab, a view-only session, or a hidden/locked active
+    // layer silently no-ops (the layers slice toasts WHY once). Without
+    // this, double-click was the one path that bypassed the gate — on a
+    // hidden active layer it stamped the text onto an unrendered layer,
+    // which read as "double-click does nothing".
+    if (editsBlocked) return;
     const TEXT_W = 160;
     const TEXT_H = 48;
     const el = createText(x - TEXT_W / 2, y - TEXT_H / 2);
