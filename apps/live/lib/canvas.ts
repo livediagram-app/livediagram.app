@@ -102,10 +102,6 @@ export function withFrameContents(elements: Element[], ids: Set<string>): Set<st
   // The backmost frame (first in array order) whose bounds contain (x, y).
   const owningFrame = (x: number, y: number): ShapeElement | null =>
     allFrames.find((f) => contains(f, x, y)) ?? null;
-  const ownedByDragged = (x: number, y: number): boolean => {
-    const owner = owningFrame(x, y);
-    return owner !== null && draggedFrameIds.has(owner.id);
-  };
   // Boxed-element ownership: the backmost frame FULLY containing the box.
   const rectOwnedByDragged = (r: { x: number; y: number; width: number; height: number }) => {
     const owner = allFrames.find((f) => containsRect(f, r)) ?? null;
