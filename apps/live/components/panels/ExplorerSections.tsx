@@ -9,6 +9,7 @@ import {
   SharedRow,
   UnsortedNode,
 } from '@/components/panels/explorer-views';
+import { ChevronIcon, DynamicFolderIcon } from '@/components/panels/explorer-icons';
 import { ExplorerTabBar, type ExplorerTab } from '@/components/panels/ExplorerTabBar';
 import { TeamNode } from '@/components/panels/explorer-team-views';
 import type { useExplorerViewModel } from './useExplorerViewModel';
@@ -119,6 +120,11 @@ export function ExplorerSections({
   // The whole card is hidden when no section has anything to show.
   if (sectionTabs.length === 0 || !activeTab) return null;
 
+  // The Dynamic group's expand state rides the shared expanded-folders map
+  // under a synthetic key, open by default (real folder ids never collide
+  // with the literal 'dynamic').
+  const dynamicOpen = expandedFolders['dynamic'] ?? true;
+
   return (
     <div className="flex flex-col gap-2 rounded-xl bg-slate-50 p-1.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
       <ExplorerTabBar
@@ -224,39 +230,79 @@ export function ExplorerSections({
               onMoveDiagramToFolder={onMoveDiagramToFolder}
             />
           ))}
-          {(diagramsByFolder.get(null) ?? []).length > 0 ? (
-            <UnsortedNode
-              ownerId={ownerId}
-              expanded={expandedFolders}
-              onToggleExpanded={onToggleFolder}
-              diagrams={diagramsByFolder.get(null) ?? []}
-              currentDiagramId={currentDiagramId}
-              onOpenDiagram={onOpenDiagram}
-              onDeleteDiagram={onDeleteDiagram}
-              exitingDiagramIds={exitingDiagramIds}
-              onDuplicateDiagram={onDuplicateDiagram}
-              onMoveDiagramRequest={
-                onMoveDiagramRequest ? (id) => onMoveDiagramRequest(id) : undefined
-              }
-              onMoveDiagramToFolder={onMoveDiagramToFolder}
-            />
+          {/* The synthetic nodes group under one "Dynamic" parent (matching
+              the /explorer sidebar): live views over your diagrams, not real
+              folder rows. Open by default so Unsorted stays one click away. */}
+          <li>
+            <div className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800">
+              <button
+                type="button"
+                onClick={() => onToggleFolder('dynamic')}
+                aria-expanded={dynamicOpen}
+                aria-label={dynamicOpen ? 'Collapse Dynamic' : 'Expand Dynamic'}
+                className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                <span
+                  className={`inline-block transition-transform ${dynamicOpen ? 'rotate-90' : 'rotate-0'}`}
+                  aria-hidden
+                >
+                  <ChevronIcon />
+                </span>
+              </button>
+              <span className="text-slate-400 dark:text-slate-400">
+                <DynamicFolderIcon />
+              </span>
+              <button
+                type="button"
+                onClick={() => onToggleFolder('dynamic')}
+                className="flex min-w-0 flex-1 items-center gap-1 truncate text-left"
+              >
+                <span className="truncate italic text-slate-500 dark:text-white">Dynamic</span>
+                <span className="inline-flex h-4 min-w-[1rem] shrink-0 items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-white">
+                  {(diagramsByFolder.get(null) ?? []).length + offlineDiagrams.length}
+                </span>
+              </button>
+            </div>
+          </li>
+          {dynamicOpen ? (
+            <li>
+              <ul className="flex flex-col gap-0.5 pl-3">
+                {(diagramsByFolder.get(null) ?? []).length > 0 ? (
+                  <UnsortedNode
+                    ownerId={ownerId}
+                    expanded={expandedFolders}
+                    onToggleExpanded={onToggleFolder}
+                    diagrams={diagramsByFolder.get(null) ?? []}
+                    currentDiagramId={currentDiagramId}
+                    onOpenDiagram={onOpenDiagram}
+                    onDeleteDiagram={onDeleteDiagram}
+                    exitingDiagramIds={exitingDiagramIds}
+                    onDuplicateDiagram={onDuplicateDiagram}
+                    onMoveDiagramRequest={
+                      onMoveDiagramRequest ? (id) => onMoveDiagramRequest(id) : undefined
+                    }
+                    onMoveDiagramToFolder={onMoveDiagramToFolder}
+                  />
+                ) : null}
+                {/* Offline (spec/76): always rendered, even empty, so the
+                    browser-only bucket stays discoverable. */}
+                <OfflineNode
+                  ownerId={ownerId}
+                  expanded={expandedFolders}
+                  onToggleExpanded={onToggleFolder}
+                  diagrams={offlineDiagrams}
+                  currentDiagramId={currentDiagramId}
+                  onOpenDiagram={onOpenDiagram}
+                  onDeleteDiagram={onDeleteDiagram}
+                  exitingDiagramIds={exitingDiagramIds}
+                  onDuplicateDiagram={onDuplicateDiagram}
+                  onMoveDiagramRequest={
+                    onMoveDiagramRequest ? (id) => onMoveDiagramRequest(id) : undefined
+                  }
+                />
+              </ul>
+            </li>
           ) : null}
-          {/* Offline (spec/76): always rendered, even empty, so the
-              browser-only bucket stays discoverable. */}
-          <OfflineNode
-            ownerId={ownerId}
-            expanded={expandedFolders}
-            onToggleExpanded={onToggleFolder}
-            diagrams={offlineDiagrams}
-            currentDiagramId={currentDiagramId}
-            onOpenDiagram={onOpenDiagram}
-            onDeleteDiagram={onDeleteDiagram}
-            exitingDiagramIds={exitingDiagramIds}
-            onDuplicateDiagram={onDuplicateDiagram}
-            onMoveDiagramRequest={
-              onMoveDiagramRequest ? (id) => onMoveDiagramRequest(id) : undefined
-            }
-          />
         </ul>
       ) : activeTab === 'teams' ? (
         <ul className="flex flex-col gap-0.5">

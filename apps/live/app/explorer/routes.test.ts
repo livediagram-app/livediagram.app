@@ -12,6 +12,7 @@ const STATIC_NODES: SelectedNode[] = [
   { kind: 'unsorted' },
   { kind: 'generated' },
   { kind: 'offline' },
+  { kind: 'dynamic' },
   { kind: 'shared' },
   { kind: 'gallery' },
   { kind: 'invites' },

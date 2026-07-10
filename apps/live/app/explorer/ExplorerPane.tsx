@@ -15,7 +15,15 @@ import { DynamicFolderInfo } from './DynamicFolderInfo';
 // The browse sections that render a folders + diagrams grid the List/Card
 // toggle (spec/67) can swap. Other sections (gallery, themes, tokens,
 // profile, team, invites, shared) have their own fixed layout.
-const BROWSE_KINDS = new Set(['recent', 'all', 'folder', 'unsorted', 'generated', 'offline']);
+const BROWSE_KINDS = new Set([
+  'recent',
+  'all',
+  'folder',
+  'unsorted',
+  'generated',
+  'offline',
+  'dynamic',
+]);
 
 // Each Explorer section deep-links its matching help-centre article from a
 // "?" button in the pane header (spec/56). Sections without a guide (team,
@@ -173,7 +181,8 @@ export function ExplorerPane() {
           // you hand-author into (offline diagrams are created from the /new
           // wizard's Settings toggle).
           selected.kind === 'generated' ||
-          selected.kind === 'offline'
+          selected.kind === 'offline' ||
+          selected.kind === 'dynamic'
             ? undefined
             : () =>
                 window.location.assign(
@@ -190,7 +199,8 @@ export function ExplorerPane() {
           selected.kind === 'invites' ||
           selected.kind === 'recent' ||
           selected.kind === 'generated' ||
-          selected.kind === 'offline'
+          selected.kind === 'offline' ||
+          selected.kind === 'dynamic'
             ? undefined
             : () => createFolder(selected.kind === 'folder' ? selected.id : null)
         }
@@ -258,7 +268,11 @@ export function ExplorerPane() {
         <SharedList shared={shared} ownerId={ownerId} onDismiss={dismissShared} />
       ) : paneContent.folders.length === 0 &&
         paneContent.diagrams.length === 0 &&
-        !paneContent.showUnsortedRow ? (
+        !paneContent.showUnsortedRow &&
+        // All + Dynamic always lead with synthetic rows, so they're never
+        // "empty" even with zero folders and diagrams.
+        selected.kind !== 'all' &&
+        selected.kind !== 'dynamic' ? (
         <EmptyPane selected={selected} />
       ) : (
         (() => {
@@ -270,19 +284,22 @@ export function ExplorerPane() {
               folders={paneContent.folders}
               diagrams={paneContent.diagrams}
               ownerId={ownerId}
-              showUnsortedRow={paneContent.showUnsortedRow}
+              // The three synthetic folders live inside the Dynamic parent
+              // view; My Work (/all) leads with the single Dynamic row.
+              showUnsortedRow={selected.kind === 'dynamic'}
               unsortedCount={unsortedDiagrams.length}
               onOpenUnsorted={() => go({ kind: 'unsorted' })}
-              // Generated sits beside Unsorted on the My Work (/all) list.
-              showGeneratedRow={selected.kind === 'all'}
+              showGeneratedRow={selected.kind === 'dynamic'}
               generatedCount={generatedDiagrams.length}
               onOpenGenerated={() => go({ kind: 'generated' })}
-              // Offline sits beside Generated on the My Work (/all) list
-              // (spec/76), always shown so the browser-only bucket is
-              // discoverable.
-              showOfflineRow={selected.kind === 'all'}
+              showOfflineRow={selected.kind === 'dynamic'}
               offlineCount={offlineDiagrams.length}
               onOpenOffline={() => go({ kind: 'offline' })}
+              showDynamicRow={selected.kind === 'all'}
+              dynamicCount={
+                unsortedDiagrams.length + generatedDiagrams.length + offlineDiagrams.length
+              }
+              onOpenDynamic={() => go({ kind: 'dynamic' })}
               onOpenFolder={(id) => go({ kind: 'folder', id })}
               onCommitRenameFolder={commitRenameFolder}
               onCancelRenameFolder={() => setRenamingFolderId(null)}

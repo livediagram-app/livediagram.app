@@ -15,7 +15,13 @@ import { EmptyPane } from './ExplorerEmptyState';
 import { DiagramRow } from './explorer-route-diagram-row';
 import { FolderRow } from './folder-row';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import { CloseIcon, FolderIcon, OfflineFolderIcon, SparkleIcon } from './icons';
+import {
+  CloseIcon,
+  DynamicFolderIcon,
+  OfflineFolderIcon,
+  SparkleIcon,
+  UnsortedIcon,
+} from './icons';
 
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
@@ -47,6 +53,7 @@ export type SelectedNode =
   | { kind: 'unsorted' }
   | { kind: 'generated' }
   | { kind: 'offline' }
+  | { kind: 'dynamic' }
   | { kind: 'shared' }
   | { kind: 'gallery' }
   | { kind: 'themes' }
@@ -71,6 +78,9 @@ export function ListView({
   showOfflineRow = false,
   offlineCount = 0,
   onOpenOffline,
+  showDynamicRow = false,
+  dynamicCount = 0,
+  onOpenDynamic,
   onOpenFolder,
   onCommitRenameFolder,
   onCancelRenameFolder,
@@ -113,6 +123,11 @@ export function ListView({
   showOfflineRow?: boolean;
   offlineCount?: number;
   onOpenOffline?: () => void;
+  // The "Dynamic" parent folder row on My Work (/all): opens the
+  // /explorer/dynamic view listing the three synthetic folders.
+  showDynamicRow?: boolean;
+  dynamicCount?: number;
+  onOpenDynamic?: () => void;
   onOpenFolder: (id: string) => void;
   onCommitRenameFolder: (id: string, name: string) => void;
   onCancelRenameFolder: () => void;
@@ -161,6 +176,14 @@ export function ListView({
         ) : null}
         {showOfflineRow && onOpenOffline ? (
           <OfflineRow count={offlineCount} onOpen={onOpenOffline} />
+        ) : null}
+        {showDynamicRow && onOpenDynamic ? (
+          <SyntheticFolderRow
+            icon={<DynamicFolderIcon />}
+            label="Dynamic"
+            count={dynamicCount}
+            onOpen={onOpenDynamic}
+          />
         ) : null}
         {folders.map((f) => (
           <FolderRow
@@ -240,12 +263,7 @@ function SyntheticFolderRow({
 
 export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => void }) {
   return (
-    <SyntheticFolderRow
-      icon={<FolderIcon open={false} />}
-      label="Unsorted"
-      count={count}
-      onOpen={onOpen}
-    />
+    <SyntheticFolderRow icon={<UnsortedIcon />} label="Unsorted" count={count} onOpen={onOpen} />
   );
 }
 

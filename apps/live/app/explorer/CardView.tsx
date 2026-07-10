@@ -13,7 +13,7 @@ import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { FolderIcon, OfflineFolderIcon, SparkleIcon } from './icons';
+import { DynamicFolderIcon, OfflineFolderIcon, SparkleIcon, UnsortedIcon } from './icons';
 import { DiagramActionsMenu, hrefForDiagram, VisibilityBadge } from './diagram-row-shared';
 import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
 import type { Folder } from '@/lib/api-client';
@@ -37,6 +37,9 @@ export function CardView({
   showOfflineRow = false,
   offlineCount = 0,
   onOpenOffline,
+  showDynamicRow = false,
+  dynamicCount = 0,
+  onOpenDynamic,
   onOpenFolder,
   onCommitRenameFolder,
   onCancelRenameFolder,
@@ -68,6 +71,10 @@ export function CardView({
   showOfflineRow?: boolean;
   offlineCount?: number;
   onOpenOffline?: () => void;
+  // The "Dynamic" parent folder card on My Work (/all).
+  showDynamicRow?: boolean;
+  dynamicCount?: number;
+  onOpenDynamic?: () => void;
   onOpenFolder: (id: string) => void;
   onCommitRenameFolder: (id: string, name: string) => void;
   onCancelRenameFolder: () => void;
@@ -94,7 +101,7 @@ export function CardView({
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {showUnsortedRow ? (
         <SyntheticFolderCard
-          icon={<FolderIcon open={false} />}
+          icon={<UnsortedIcon />}
           label="Unsorted"
           count={unsortedCount}
           onOpen={onOpenUnsorted}
@@ -114,6 +121,14 @@ export function CardView({
           label="Offline"
           count={offlineCount}
           onOpen={onOpenOffline}
+        />
+      ) : null}
+      {showDynamicRow && onOpenDynamic ? (
+        <SyntheticFolderCard
+          icon={<DynamicFolderIcon />}
+          label="Dynamic"
+          count={dynamicCount}
+          onOpen={onOpenDynamic}
         />
       ) : null}
       {folders.map((f) => (

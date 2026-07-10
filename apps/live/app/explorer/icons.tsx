@@ -73,6 +73,53 @@ export function FolderIcon({ open }: { open: boolean }) {
   );
 }
 
+// Folder with a lightning mark for the "Dynamic" parent of the synthetic
+// folders (Unsorted / Generated / Offline): live views over your diagrams,
+// not folders-table rows.
+export function DynamicFolderIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.9a1 1 0 0 1 .77.37l.86 1.06a1 1 0 0 0 .78.37h3.69A1.5 1.5 0 0 1 14 6.3v5.2a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5v-7z" />
+      <path d="M8.7 6.7 7.1 9.1h1.8L7.3 11.4" />
+    </svg>
+  );
+}
+
+// Dashed folder outline for the synthetic Unsorted folder: folder-shaped so
+// it still reads as a place diagrams live, dashed so it reads as a dynamic
+// view rather than a real folders-table row (matching the panel's dashed
+// UnsortedIcon; Generated and Offline get their own glyphs the same way).
+export function UnsortedIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path
+        d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.9a1 1 0 0 1 .77.37l.86 1.06a1 1 0 0 0 .78.37h3.69A1.5 1.5 0 0 1 14 6.3v5.2a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5v-7z"
+        strokeDasharray="2.2 1.8"
+      />
+    </svg>
+  );
+}
+
 export function DiagramIcon() {
   return (
     <svg

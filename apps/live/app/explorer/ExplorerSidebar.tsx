@@ -6,19 +6,20 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from './ExplorerContext';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ClockIcon,
-  FolderIcon,
+  DynamicFolderIcon,
   ImageIcon,
   InviteIcon,
   KeyIcon,
+  OfflineFolderIcon,
   PaletteIcon,
   PlusIcon,
   ShareIcon,
   SparkleIcon,
   TeamIcon,
-  OfflineFolderIcon,
+  UnsortedIcon,
 } from './icons';
 import {
   SearchSidebarIcon,
@@ -65,6 +66,9 @@ export function ExplorerSidebar() {
     setTeamModalOpen,
   } = useExplorer();
   const { signInHref } = useAuthHrefs();
+  // The Dynamic group's expand state. Session-local and open by default so
+  // Unsorted stays one click away; collapsing it is a per-visit tidy-up.
+  const [dynamicOpen, setDynamicOpen] = useState(true);
 
   // Per-team folder tree, indexed by parentId, for the expandable
   // team subtrees (spec/35). Built from the lazy library sweep.
@@ -153,39 +157,53 @@ export function ExplorerSidebar() {
       >
         My Work
       </SidebarSectionLabel>
-      {/* Unsorted is a synthetic folder backed by folder_id IS NULL.
-          Always shown (even when empty) so "My Work" never looks bare
-          before the user has filed anything; the badge hides at zero. */}
+      {/* The synthetic ("dynamic") folders live under one collapsible
+          Dynamic parent so My Work leads with the user's own folders:
+          Unsorted (folder_id IS NULL), Generated (AI-made, spec/15), and
+          Offline (browser-only, spec/76). All are live views, always
+          present even when empty; badges hide at zero. Clicking the
+          parent opens the /explorer/dynamic overview. */}
       <SidebarRow
-        icon={<FolderIcon open={false} />}
-        label="Unsorted"
-        selected={selected.kind === 'unsorted'}
-        onClick={() => go({ kind: 'unsorted' })}
+        icon={<DynamicFolderIcon />}
+        label="Dynamic"
+        selected={selected.kind === 'dynamic'}
+        onClick={() => go({ kind: 'dynamic' })}
         depth={0}
-        badge={unsortedDiagrams.length || undefined}
+        badge={
+          unsortedDiagrams.length + generatedDiagrams.length + offlineDiagrams.length || undefined
+        }
+        hasChildren
+        expanded={dynamicOpen}
+        onToggleExpand={() => setDynamicOpen((v) => !v)}
       />
-      {/* Generated is a second synthetic folder (spec/15): diagrams the AI
-          assistant / MCP server created (source != null). Always shown so
-          it's discoverable; badge hides at zero. */}
-      <SidebarRow
-        icon={<SparkleIcon />}
-        label="Generated"
-        selected={selected.kind === 'generated'}
-        onClick={() => go({ kind: 'generated' })}
-        depth={0}
-        badge={generatedDiagrams.length || undefined}
-      />
-      {/* Offline is a third synthetic folder (spec/76): diagrams saved only
-          in this browser. Always shown so the local-only bucket stays
-          discoverable; badge hides at zero. */}
-      <SidebarRow
-        icon={<OfflineFolderIcon />}
-        label="Offline"
-        selected={selected.kind === 'offline'}
-        onClick={() => go({ kind: 'offline' })}
-        depth={0}
-        badge={offlineDiagrams.length || undefined}
-      />
+      {dynamicOpen ? (
+        <>
+          <SidebarRow
+            icon={<UnsortedIcon />}
+            label="Unsorted"
+            selected={selected.kind === 'unsorted'}
+            onClick={() => go({ kind: 'unsorted' })}
+            depth={1}
+            badge={unsortedDiagrams.length || undefined}
+          />
+          <SidebarRow
+            icon={<SparkleIcon />}
+            label="Generated"
+            selected={selected.kind === 'generated'}
+            onClick={() => go({ kind: 'generated' })}
+            depth={1}
+            badge={generatedDiagrams.length || undefined}
+          />
+          <SidebarRow
+            icon={<OfflineFolderIcon />}
+            label="Offline"
+            selected={selected.kind === 'offline'}
+            onClick={() => go({ kind: 'offline' })}
+            depth={1}
+            badge={offlineDiagrams.length || undefined}
+          />
+        </>
+      ) : null}
       {rootFolders.map((f) => (
         <SidebarFolderSubtree
           key={f.id}

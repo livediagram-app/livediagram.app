@@ -103,6 +103,27 @@ export function UnsortedIcon() {
   );
 }
 
+// Folder with a lightning mark for the panel's "Dynamic" group: the parent
+// of the synthetic Unsorted / Offline nodes (live views, not real folders).
+export function DynamicFolderIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M1.75 4A1.25 1.25 0 0 1 3 2.75h2.4a1 1 0 0 1 .77.37l.6.73a1 1 0 0 0 .77.37H11A1.25 1.25 0 0 1 12.25 5.5v4.5A1.25 1.25 0 0 1 11 11.25H3A1.25 1.25 0 0 1 1.75 10V4z" />
+      <path d="M7.4 5.4 6.1 7.4h1.5L6.3 9.3" />
+    </svg>
+  );
+}
+
 // Cloud-with-slash for the panel's synthetic Offline node (spec/76).
 export function OfflineFolderIcon() {
   return (

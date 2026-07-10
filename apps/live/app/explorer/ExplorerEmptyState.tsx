@@ -18,6 +18,7 @@ import {
   PlusIcon,
   ShareIcon,
   SparkleIcon,
+  UnsortedIcon,
 } from './icons';
 import type { SelectedNode } from './views';
 
@@ -39,7 +40,7 @@ const CONTENT: Record<
     description: 'Open a share link someone sends you and the diagram lands here.',
   },
   unsorted: {
-    icon: <FolderIcon open={false} />,
+    icon: <UnsortedIcon />,
     title: 'Nothing unsorted',
     description: 'Diagrams not filed into a folder collect here, ready to organise.',
   },

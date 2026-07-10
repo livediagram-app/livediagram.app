@@ -138,9 +138,15 @@ export function useExplorerPane({
     if (selected.kind === 'offline') {
       return { showUnsortedRow: false, folders: [], diagrams: offlineDiagrams };
     }
+    // The Dynamic parent (and the All list's single Dynamic row) carry no
+    // folders/diagrams of their own; ExplorerPane derives the synthetic
+    // rows to show from selected.kind.
+    if (selected.kind === 'dynamic') {
+      return { showUnsortedRow: false, folders: [], diagrams: [] };
+    }
     if (selected.kind === 'all') {
       return {
-        showUnsortedRow: true,
+        showUnsortedRow: false,
         folders: childrenByParent.get(null) ?? [],
         diagrams: [],
       };
@@ -184,6 +190,7 @@ export function useExplorerPane({
     if (selected.kind === 'unsorted') return 'Unsorted';
     if (selected.kind === 'generated') return 'Generated';
     if (selected.kind === 'offline') return 'Offline';
+    if (selected.kind === 'dynamic') return 'Dynamic';
     return folderById.get(selected.id)?.name ?? 'Folder';
   }, [selected, folderById, teams]);
 
@@ -202,9 +209,11 @@ export function useExplorerPane({
     if (selected.kind === 'team') return [{ name: paneTitle }];
     if (selected.kind === 'invites') return [{ name: 'Invites' }];
     if (selected.kind === 'all') return [{ name: 'My Work' }];
-    if (selected.kind === 'unsorted') return [all, { name: 'Unsorted' }];
-    if (selected.kind === 'generated') return [all, { name: 'Generated' }];
-    if (selected.kind === 'offline') return [all, { name: 'Offline' }];
+    const dynamic: Crumb = { name: 'Dynamic', onClick: () => go({ kind: 'dynamic' }) };
+    if (selected.kind === 'dynamic') return [all, { name: 'Dynamic' }];
+    if (selected.kind === 'unsorted') return [all, dynamic, { name: 'Unsorted' }];
+    if (selected.kind === 'generated') return [all, dynamic, { name: 'Generated' }];
+    if (selected.kind === 'offline') return [all, dynamic, { name: 'Offline' }];
     const chain = breadcrumb(selected.id);
     return [
       all,
