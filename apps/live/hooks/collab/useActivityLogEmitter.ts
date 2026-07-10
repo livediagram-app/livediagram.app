@@ -136,7 +136,8 @@ export function useActivityLogEmitter(deps: Deps): Api {
           .catch(() => {})
           .then(() =>
             apiAppendChangeLogEntry(pid, diagramId, merged, deps.sessionShareCode).catch(() => {}),
-          ),
+          )
+          .then(() => undefined),
       );
     }
     deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: merged.id } });
