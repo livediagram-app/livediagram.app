@@ -5,12 +5,7 @@ import { createShape, isBoxed, type Element } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import {
-  consumeTourPending,
-  isTourDone,
-  markTourDone,
-  TOUR_RELAUNCH_EVENT,
-} from '@/lib/tour-pending';
+import { consumeTourPending, TOUR_RELAUNCH_EVENT } from '@/lib/tour-pending';
 import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
@@ -71,6 +66,11 @@ export function TourHost() {
   // (prepare + waits) so a fast Next/Next can't land a stale target.
   const runTokenRef = useRef(0);
   const healingRef = useRef(false);
+  // endTour, reachable from the step-run effect without depending on its
+  // per-render identity (assigned below, after its definition).
+  const endTourRef = useRef<(outcome: 'TourCompleted' | 'TourSkipped' | 'TourDeclined') => void>(
+    () => {},
+  );
 
   // The step API is rebuilt every render through a ref so step callbacks
   // always see fresh editor-context handlers (never stale closures).
@@ -119,14 +119,21 @@ export function TourHost() {
 
   // Consume the /new handoff flag once, then wait for the editor to be
   // usable before offering (the small delay lets the fit-to-screen pass
-  // and panel layout settle). The done-guard makes the offer once-ever
-  // per browser, however it was dismissed.
+  // and panel layout settle). The `tourSeen` preference (synced, spec/20)
+  // makes the offer once-ever for the user, however it was dismissed —
+  // checked again at fire time below in case the preferences fetch lands
+  // after mount.
   useEffect(() => {
-    if (consumeTourPending() && !isTourDone()) setPending(true);
+    if (consumeTourPending()) setPending(true);
   }, []);
+  const seen = ctx.userPreferences?.tourSeen === true;
   const ready = ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode;
   useEffect(() => {
     if (!pending || active || !ready) return;
+    if (seen) {
+      setPending(false);
+      return;
+    }
     const t = setTimeout(() => {
       setPending(false);
       setStepIndex(0);
@@ -135,21 +142,20 @@ export function TourHost() {
       track('UI', 'Opened', 'TourOffer');
     }, 800);
     return () => clearTimeout(t);
-  }, [pending, active, ready]);
+  }, [pending, active, ready, seen]);
 
   // Settings relaunch (the "I've seen the editor tour" row, unchecked +
-  // closed): start straight at the first real step — the user explicitly
-  // asked, so the welcome offer would be noise.
+  // closed): rerun from the top — the welcome card is always step 1.
   useEffect(() => {
     const onRelaunch = () => {
       if (!ready) return;
       runTokenRef.current++;
       targetElRef.current = null;
       setTargetRect(null);
-      setStepIndex(1);
+      setStepIndex(0);
       setStepDir('forward');
       setActive(true);
-      track('UI', 'Started', 'TourReplay');
+      track('UI', 'Opened', 'TourOffer');
     };
     window.addEventListener(TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(TOUR_RELAUNCH_EVENT, onRelaunch);
@@ -179,10 +185,13 @@ export function TourHost() {
       const el = await waitForTour(step.target, 3500);
       if (cancelled || token !== runTokenRef.current) return;
       if (!el) {
-        // Target never appeared: skip forward (or finish from the last step).
+        // Target never appeared: skip forward (or finish from the last
+        // step). endTour is reached through a ref so this effect doesn't
+        // depend on its per-render identity (restarting the step run on
+        // unrelated renders).
         step.cleanup?.(apiRef.current);
         if (stepIndex < TOUR_STEPS.length - 1) setStepIndex(stepIndex + 1);
-        else endTour('TourCompleted');
+        else endTourRef.current('TourCompleted');
         return;
       }
       targetElRef.current = el;
@@ -233,12 +242,16 @@ export function TourHost() {
     setTargetRect(null);
     setActive(false);
     // Safety net beyond the current step's cleanup: never strand an open
-    // menu; and never offer again, however the tour ended.
+    // menu; and never offer again, however the tour ended — via the synced
+    // tourSeen preference (spec/20), so it holds across the user's devices.
     apiRef.current.closeContextMenu();
-    markTourDone();
+    const next = { ...ctx.userPreferences, tourSeen: true };
+    ctx.setUserPreferences(next);
+    ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
     if (outcome === 'TourDeclined') track('UI', 'Closed', 'TourOffer');
     else track('UI', 'Ended', outcome);
   };
+  endTourRef.current = endTour;
 
   if (!active) return null;
   const step = TOUR_STEPS[stepIndex]!;

@@ -20,7 +20,7 @@ import {
   apiSetDiagramFolder,
 } from '@/lib/api-client';
 import { offlineCreateDiagram } from '@/lib/offline/offline-store';
-import { isTourDone, markTourPending } from '@/lib/tour-pending';
+import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
@@ -339,9 +339,9 @@ export default function NewDiagramPage() {
     // "Show me around" (spec/79): a brand-new user's (zero owned diagrams)
     // first diagram gets the tour's welcome offer once the editor opens —
     // handed across the hard navigation via a one-shot sessionStorage flag.
-    // The guided-tour sample (spec/69) teaches by itself, and the done-guard
-    // keeps the offer once-ever per browser however it was dismissed.
-    if (diagramCount === 0 && templateKind !== 'guided-tour' && !isTourDone()) {
+    // The guided-tour sample (spec/69) teaches by itself; the editor gates
+    // the offer on the synced `tourSeen` preference, so no guard here.
+    if (diagramCount === 0 && templateKind !== 'guided-tour') {
       markTourPending();
     }
     window.location.assign(`/diagram/${diagramId}`);

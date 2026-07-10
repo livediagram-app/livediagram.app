@@ -18,16 +18,17 @@ guided tour").
   with a centred **welcome offer card**: "Show me around" starts the tour,
   "No thanks" dismisses it. There is no wizard toggle; the offer IS the
   opt-in, and declining must be one obvious, equal-weight click.
-- **Once ever per browser.** However the offer ends (declined, skipped
-  mid-tour, or completed), a localStorage done-guard
-  (`livediagram:v2:tour-done`) stops it ever reappearing — the offer must
-  never read as nagging.
+- **Once ever per user.** However the offer ends (declined, skipped
+  mid-tour, or completed), the synced `tourSeen` user preference
+  ([spec/20](20-user-preferences.md)) stops it ever reappearing — the
+  offer must never read as nagging, and answering it once covers every
+  device the user signs in from (guests get the same via their
+  owner-keyed preference row + the localStorage warm cache).
 - **Replayable from Settings.** The Settings dialog's Editor group has an
-  "I've seen the editor tour" row mirroring the done-guard (checked once
-  seen; browser-local, deliberately not a synced preference). Unchecking a
-  previously-checked row and closing Settings relaunches the tour,
-  starting at step 1 (the user explicitly asked, so the welcome offer
-  would be noise). Finishing the rerun re-checks it.
+  "I've seen the editor tour" row surfacing `tourSeen`. Unchecking a
+  previously-checked row and closing Settings relaunches the tour from
+  the top — the welcome card is always step 1, on a rerun too. Finishing
+  the rerun re-checks it.
 
 ## Handoff
 
@@ -97,7 +98,8 @@ alone.
 ## Telemetry (spec/22)
 
 Existing enums only. The offer: `'UI'/'Opened'/'TourOffer'` when the
-welcome card shows, `'UI'/'Closed'/'TourOffer'` on "No thanks". The tour:
-`'UI'/'Started'/'Tour'` on accept (`'TourReplay'` for a Settings
-relaunch), `'UI'/'Ended'/'TourCompleted' | 'TourSkipped'` at the end. The
+welcome card shows (first run and Settings relaunch alike),
+`'UI'/'Closed'/'TourOffer'` on "No thanks". The tour:
+`'UI'/'Started'/'Tour'` on accept,
+`'UI'/'Ended'/'TourCompleted' | 'TourSkipped'` at the end. The
 Settings row toggles report `'UI'/'Toggled'/'TourSeenOn' | 'TourSeenOff'`.

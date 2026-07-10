@@ -8,7 +8,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { track } from '@/lib/telemetry';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { clearTourDone, isTourDone, markTourDone, requestTourRelaunch } from '@/lib/tour-pending';
+import { requestTourRelaunch } from '@/lib/tour-pending';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -35,12 +35,11 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
     onToggle: () => setOpenGroup((g) => (g === title ? null : title)),
   });
 
-  // "I've seen the editor tour" (spec/79): browser-local (the tour
-  // done-guard in localStorage), NOT a synced preference — it mirrors
-  // where the tour itself keeps its state. Unchecking a previously-checked
-  // row and closing the dialog relaunches the tour; the flag flips back
-  // once the rerun finishes.
-  const [tourSeen, setTourSeen] = useState(isTourDone);
+  // "I've seen the editor tour" (spec/79): a synced preference like every
+  // other row, so answering the offer once covers all the user's devices.
+  // Unchecking a previously-checked row and closing the dialog relaunches
+  // the tour (from its welcome card); finishing the rerun re-checks it.
+  const tourSeen = settings.tourSeen === true;
   const tourSeenAtOpen = useRef(tourSeen);
   const close = () => {
     if (tourSeenAtOpen.current && !tourSeen) requestTourRelaunch();
@@ -83,13 +82,11 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
           />
           <ToggleRow
             label="I've seen the editor tour"
-            description="Checked once you've taken (or dismissed) the Show me around tour. Uncheck it and close Settings to run the tour again. Stored in this browser only."
+            description="Checked once you've taken (or dismissed) the Show me around tour, so it only ever offers itself once. Uncheck it and close Settings to run the tour again."
             checked={tourSeen}
             onChange={(v) => {
               track('UI', 'Toggled', v ? 'TourSeenOn' : 'TourSeenOff');
-              setTourSeen(v);
-              if (v) markTourDone();
-              else clearTourDone();
+              onChange({ ...settings, tourSeen: v });
             }}
           />
         </SettingsGroup>

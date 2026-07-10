@@ -124,6 +124,13 @@ export type UserPreferences = {
   notifyMilestones?: boolean;
   // "A teammate assigned me an action on a diagram element" (spec/68).
   notifyActionAssigned?: boolean;
+  // The interactive editor tour's seen-guard (spec/79). True once the
+  // tour's welcome offer has been answered (taken, skipped, or declined),
+  // so the offer never re-appears for this user — synced, so it follows
+  // the account across devices like every other preference. Surfaced in
+  // Settings as "I've seen the editor tour"; unchecking it there and
+  // closing Settings replays the tour. Missing / undefined === not seen.
+  tourSeen?: boolean;
 };
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';

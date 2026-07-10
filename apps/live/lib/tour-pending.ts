@@ -1,4 +1,4 @@
-// Handoff + once-ever guard for the interactive editor tour (spec/79).
+// Handoff + relaunch signals for the interactive editor tour (spec/79).
 //
 // /new marks the tour pending just before hard-navigating to /diagram/<id>
 // for a brand-new (zero-diagram) user; the editor consumes (reads + clears)
@@ -6,11 +6,10 @@
 // intent per-tab and self-cleaning; a URL param would survive into
 // copy-pasted links.
 //
-// The done-guard is localStorage: however the offer ends (completed,
-// skipped mid-way, or declined on the welcome card), it never comes back
-// in this browser — the offer must never read as nagging.
+// The once-ever guard is NOT here: it's the synced `tourSeen` user
+// preference (spec/20), so answering the offer once covers every device
+// the user signs in from.
 const TOUR_PENDING_KEY = 'livediagram:v2:tour-pending';
-const TOUR_DONE_KEY = 'livediagram:v2:tour-done';
 
 export function markTourPending() {
   try {
@@ -27,30 +26,6 @@ export function consumeTourPending(): boolean {
     const pending = sessionStorage.getItem(TOUR_PENDING_KEY) === '1';
     if (pending) sessionStorage.removeItem(TOUR_PENDING_KEY);
     return pending;
-  } catch {
-    return false;
-  }
-}
-
-export function markTourDone() {
-  try {
-    localStorage.setItem(TOUR_DONE_KEY, '1');
-  } catch {
-    // Best-effort: without storage the offer may reappear next visit.
-  }
-}
-
-export function clearTourDone() {
-  try {
-    localStorage.removeItem(TOUR_DONE_KEY);
-  } catch {
-    // Best-effort, see markTourDone.
-  }
-}
-
-export function isTourDone(): boolean {
-  try {
-    return localStorage.getItem(TOUR_DONE_KEY) === '1';
   } catch {
     return false;
   }

@@ -184,6 +184,13 @@ type UserPreferences = {
   // When false, suppress the "someone accepted/declined a team invite I
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
+
+  // The interactive editor tour's seen-guard (spec/79). True once the
+  // tour's welcome offer has been answered (taken, skipped, or declined),
+  // so the offer never re-appears for this user on any device. Surfaced
+  // in Settings as "I've seen the editor tour"; unchecking it and closing
+  // Settings replays the tour. Missing / undefined === not seen.
+  tourSeen?: boolean;
 };
 ```
 
