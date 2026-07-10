@@ -25,6 +25,12 @@ export function elementMenuAnchor(rect: { left: number; right: number; top: numb
 } {
   const fitsRight =
     typeof window !== 'undefined' && window.innerWidth - rect.right >= CONTEXT_MENU_WIDTH + GAP;
-  const x = fitsRight ? rect.right + GAP : rect.left - CONTEXT_MENU_WIDTH - GAP;
+  let x = fitsRight ? rect.right + GAP : rect.left - CONTEXT_MENU_WIDTH - GAP;
+  // When neither side fully fits (a wide element in a narrow window) the
+  // left-side fallback lands off-screen; clamp into the viewport so the menu
+  // stays reachable even if it must then overlap the element.
+  if (typeof window !== 'undefined') {
+    x = Math.min(Math.max(x, GAP), window.innerWidth - CONTEXT_MENU_WIDTH - GAP);
+  }
   return { x, y: rect.top };
 }
