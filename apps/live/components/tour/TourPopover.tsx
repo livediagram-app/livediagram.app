@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Button } from '@livediagram/ui';
 import { placeTourPopover } from './tour-position';
+import { TourWelcomeArt } from './TourWelcomeArt';
 import type { TourTargetRect } from './TourHost';
 
 // The tour's step card (spec/79). Two faces:
@@ -109,7 +110,8 @@ export function TourPopover({
       >
         {welcome ? (
           <>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
+            <TourWelcomeArt />
+            <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
               Quick tour
             </span>
             <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">{title}</h3>

@@ -64,7 +64,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'palette',
     title: 'The Palette',
-    body: 'Everything you need to build an amazing diagram in one place, simply click or drag what you want onto the canvas.',
+    body: 'Everything you need to build an amazing diagram, click or drag what you want onto the canvas.',
     target: 'palette',
     prepare: ensurePaletteOpen,
   },
@@ -83,7 +83,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'categories',
     title: 'Shape categories',
-    body: 'The palette is organised into categories: Favourites keeps your go-to tiles, then Shapes, Tools, Components, Devices, Icons, and Technology.',
+    body: 'The palette is organised into categories: Favourites keeps your go-to tiles, then the other categories provide unique opportunities to personalise your diagram.',
     target: 'palette-category-menu',
     alsoHighlight: 'palette-category',
     prepare: async (api) => {
