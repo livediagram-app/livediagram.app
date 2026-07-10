@@ -29,6 +29,7 @@ The unit of value is the team, not the individual. See [spec/00](../specs/00-pur
 - **Sharing**: editor or view-only share links per diagram, with an optional password gate that applies to every link on the diagram; revoke individually or in bulk at any time.
 - **Embeds**: a read-only `/embed` view of any share link, iframe-able into wikis, Notion, and docs (copy the snippet from the Share dialog); live-updates as the diagram is edited. See [spec/33](../specs/33-embeds.md).
 - **Hybrid auth**: guests get everything (full persistence keyed to a per-browser id); signed-in users (Clerk) get cross-device sync and account self-delete.
+- **Offline Mode** (optional, per diagram): create a diagram saved only in this browser's local storage, never on the server. Opt in from the New Diagram wizard's Settings step; convert either way later (Sync Diagram uploads it to your account, Take Offline pulls a cloud diagram down and deletes the server copy). See [spec/76](../specs/76-offline-mode.md).
 - **Export / import**: active tab to Markdown / PDF / PNG / JSON file; import the JSON envelope back as a new tab.
 - **"Shared with you" Explorer accordion**: visitors can make their own copy of a shared diagram.
 - **Teams**: create teams with Admin / Member roles and email invites in the Explorer, plus a per-team shared library of diagrams. See [spec/32](../specs/32-teams.md) and [spec/35](../specs/35-team-shared-diagrams.md).
