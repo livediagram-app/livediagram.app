@@ -102,16 +102,17 @@ offline diagram prompts you to sync first).
 
 ### Save to server (Offline → Cloud)
 
-Action: **"Sync Diagram"** (Explorer row menu) or **"Sync to Account"** (the Share
-dialog gate).
+Action: **"Sync Diagram"** (one name everywhere: the Explorer row menu and the
+Share dialog gate).
 
 - Uploads the diagram's meta + tabs to the API (spec/11), creating a normal
   cloud diagram owned by the current identity (signed-in account, or the guest
   `X-Owner-Id` if not signed in — spec/04).
-- **Images:** embedded `data:` URIs travel with the tab JSON, so the cloud copy
-  renders them as-is. Re-homing them to R2 (and, on take-offline, downloading R2
-  images to embed) is a follow-up — the current cut moves the diagram, not the
-  image storage layer (spec/19).
+- **Images re-home:** each embedded `data:` URI is uploaded to the gallery
+  (SHA-256 dedupe server-side, spec/19) and the element's reference swaps to
+  the returned R2 id, so the cloud copy carries real gallery images instead of
+  bloated tab JSON. A failed transfer keeps the data URI (it still renders
+  anywhere); the per-tab byte cap surfaces a hard failure to the caller.
 - On success the **local copy is removed** from IndexedDB so there's one source
   of truth; the diagram is now a cloud diagram (Share / AI / Teams reappear). The
   id is unchanged, so the route stays the same: the editor reloads to re-hydrate
@@ -127,8 +128,10 @@ confirmation:
 - On confirm: download the diagram's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
-  badge flips to **Offline**. (R2 images keep their URLs for now — downloading +
-  embedding them is the same follow-up noted above.)
+  badge flips to **Offline**. Referenced R2 images are downloaded and embedded
+  as `data:` URIs BEFORE the server copy is deleted (the deletion would make
+  them "unused" and the retention reaper would eventually take the bytes); an
+  incomplete embed aborts the conversion and the diagram stays on the server.
 - Because it deletes the cloud copy, taking a _shared_ or _team_ diagram offline
   first revokes those (a share/team diagram can't be pulled private silently);
   the confirmation spells this out.
@@ -230,8 +233,7 @@ Track adoption without content, reusing the closed vocabulary:
   thumbnail everywhere, and skip server fetches for offline rows. (The in-editor
   panel row shows the thumbnail but no text chip.)
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
-  "Sync Diagram" / "Sync to Account" and "Take Offline" (with confirmation +
-  image re-homing).
+  "Sync Diagram" and "Take Offline" (with confirmation + image re-homing).
 - Image handling (spec/19) — embed `data:` URIs offline; upload-on-save,
   download-on-take-offline.
 - `apps/marketing` — the privacy-area mention + small asset (spec/16, /23).
