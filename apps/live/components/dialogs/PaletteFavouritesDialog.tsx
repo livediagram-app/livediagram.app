@@ -3,7 +3,7 @@
 // Edit-favourites modal (spec/78). Opened from the Favourites tab's footer
 // Edit button: a search box + category pills (Shapes first — there is
 // deliberately no "All") over the fixed creation tiles of the picked
-// category, laid out as a compact 4-per-row tile grid. Each tile carries a
+// category, laid out as a compact 5-per-row tile grid. Each tile carries a
 // corner badge — red minus on current favourites, green plus on the rest —
 // and clicking the tile toggles membership. Edits apply (and persist)
 // immediately; Done just closes. On desktop the backdrop stays light so
@@ -134,14 +134,6 @@ export function PaletteFavouritesDialog({
       </div>
 
       <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-2.5 dark:border-slate-800">
-        <input
-          autoFocus
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search controls…"
-          aria-label="Search controls"
-          className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-        />
         <div className="flex flex-wrap gap-1" role="group" aria-label="Filter by category">
           {CATEGORY_PILLS.map((s) => {
             const active = category === s.id;
@@ -163,6 +155,14 @@ export function PaletteFavouritesDialog({
             );
           })}
         </div>
+        <input
+          autoFocus
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search controls…"
+          aria-label="Search controls"
+          className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+        />
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
@@ -171,7 +171,7 @@ export function PaletteFavouritesDialog({
             No controls match.
           </p>
         ) : (
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-5 gap-1.5">
             {tiles.map((t) => {
               const isFavourite = favourites.includes(t.id);
               return (

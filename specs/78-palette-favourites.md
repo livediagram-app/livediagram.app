@@ -44,14 +44,14 @@ spirit of customising iOS Control Centre.
 Curation happens in a centred dialog (`PaletteFavouritesDialog`, the shared
 `Dialog` shell), not in-place in the panel:
 
-- A **search box** (autofocused) filters the controls by name as the user
-  types.
 - A **category pill row** — Shapes / Tools / Data / Components / Devices,
   each pill carrying its category glyph (Data borrows a bar-chart mark) —
   picks which catalogue is shown; **Shapes is the initial pick** and there
   is deliberately **no "All"** (one category at a time keeps the grid
-  scannable). The search filters within the picked category.
-- Controls render as a space-efficient **4-per-row tile grid**. Each tile
+  scannable).
+- A **search box** (autofocused) sits **under the pills** and filters the
+  picked category's controls by name as the user types.
+- Controls render as a space-efficient **5-per-row tile grid**. Each tile
   is the familiar glyph + caption with a **corner badge** carrying the
   state: a **red minus** on current favourites, a **green plus** on the
   rest; favourited tiles also get a soft brand tint. **Clicking the tile

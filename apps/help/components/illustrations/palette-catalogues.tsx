@@ -126,10 +126,10 @@ export function ComponentsCatalogue() {
   );
 }
 
-/** The edit-favourites modal (spec/78): search field, a 4-per-row tile grid
- *  with Control-Centre-style corner badges (red minus = favourited, green
+/** The edit-favourites modal (spec/78): search field, a tile grid with
+ *  Control-Centre-style corner badges (red minus = favourited, green
  *  plus = available), and the Done affordance. Drawn without CatalogueGrid —
- *  it's a modal, not a palette tab. */
+ *  it's a modal, not a palette tab. (Stylised: the real grid is 5-up.) */
 export function FavouritesCatalogue() {
   const glyph = 'fill-none stroke-slate-500';
   const tiles: { label: string; child: ReactNode }[] = [
@@ -203,27 +203,7 @@ export function FavouritesCatalogue() {
   return (
     <Scene w={400} h={252} bg="plain">
       <Panel x={40} y={10} w={320} h={232} title="EDIT FAVOURITES">
-        {/* Search field */}
-        <rect
-          x={56}
-          y={44}
-          width={288}
-          height={22}
-          rx={7}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <circle cx={69} cy={55} r={4.5} className="fill-none stroke-slate-400" strokeWidth={1.5} />
-        <path
-          d="M72.5 58.5 L76 62"
-          className="stroke-slate-400"
-          strokeWidth={1.5}
-          strokeLinecap="round"
-        />
-        <Label x={82} y={56} size={10} tone="muted">
-          Search controls
-        </Label>
-        {/* Category pills: Shapes active */}
+        {/* Category pills first (Shapes active), the search beneath them */}
         {['Shapes', 'Tools', 'Data'].map((label, i) => {
           const x = 56 + i * 64;
           const active = i === 0;
@@ -231,7 +211,7 @@ export function FavouritesCatalogue() {
             <g key={label}>
               <rect
                 x={x}
-                y={72}
+                y={44}
                 width={58}
                 height={17}
                 rx={4}
@@ -242,7 +222,7 @@ export function FavouritesCatalogue() {
               />
               <Label
                 x={x + 29}
-                y={81}
+                y={53}
                 anchor="middle"
                 size={9}
                 weight={active ? 700 : 500}
@@ -253,7 +233,27 @@ export function FavouritesCatalogue() {
             </g>
           );
         })}
-        {/* 4-per-row toggle tiles: red minus = favourited, green plus =
+        {/* Search field */}
+        <rect
+          x={56}
+          y={68}
+          width={288}
+          height={22}
+          rx={7}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        <circle cx={69} cy={79} r={4.5} className="fill-none stroke-slate-400" strokeWidth={1.5} />
+        <path
+          d="M72.5 82.5 L76 86"
+          className="stroke-slate-400"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+        />
+        <Label x={82} y={80} size={10} tone="muted">
+          Search controls
+        </Label>
+        {/* Toggle tiles: red minus = favourited, green plus =
             available to add. */}
         {tiles.slice(0, 8).map((t, i) => {
           const col = i % 4;
