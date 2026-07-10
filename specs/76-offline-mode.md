@@ -93,12 +93,15 @@ The word **"Offline"** identifies these diagrams everywhere the status is shown:
 
 ## Converting between Offline and Cloud
 
-Conversion works **both directions**, from the editor header menu and the
-Explorer row menu.
+Conversion works **both directions**, from the Explorer row menu (in both the
+in-editor panel and the full-page Explorer). In the editor, the offline to cloud
+direction is also offered by the Share dialog's offline gate (opening Share on an
+offline diagram prompts you to sync first).
 
 ### Save to server (Offline → Cloud)
 
-Action: **"Save to your account"** (or "Move to cloud").
+Action: **"Sync Diagram"** (Explorer row menu) or **"Sync to Account"** (the Share
+dialog gate).
 
 - Uploads the diagram's meta + tabs to the API (spec/11), creating a normal
   cloud diagram owned by the current identity (signed-in account, or the guest
@@ -108,12 +111,13 @@ Action: **"Save to your account"** (or "Move to cloud").
   images to embed) is a follow-up — the current cut moves the diagram, not the
   image storage layer (spec/19).
 - On success the **local copy is removed** from IndexedDB so there's one source
-  of truth; the diagram is now a cloud diagram (Share / AI / Teams reappear), and
-  the URL/route updates if the server assigns a new id.
+  of truth; the diagram is now a cloud diagram (Share / AI / Teams reappear). The
+  id is unchanged, so the route stays the same: the editor reloads to re-hydrate
+  it as a cloud diagram.
 
 ### Take offline (Cloud → Offline)
 
-Action: **"Take offline"**. This is **destructive on the server** and gated by a
+Action: **"Take Offline"**. This is **destructive on the server** and gated by a
 confirmation:
 
 - **Confirmation** warns clearly: _"This removes the diagram from your account
@@ -183,7 +187,7 @@ covers:
 - What Offline Mode is and how to create one (the New Diagram toggle).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
   you clear site data — the durability warning, stated plainly.
-- **Converting**: "Save to your account" (Offline → Cloud) and "Take offline"
+- **Converting**: "Sync Diagram" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
 - What's unavailable offline: sharing, live collaboration, teams, and AI.
 
@@ -220,8 +224,9 @@ Track adoption without content, reusing the closed vocabulary:
 - `EditorHeader` (`SharedBadge`) — the new **Offline** badge state.
 - Explorer (`ExplorerSections` / row components) — merge the local index, render
   the **Offline** chip, skip server fetches for offline rows.
-- Conversion actions (header menu + Explorer row menu) — "Save to your account"
-  and "Take offline" (with confirmation + image re-homing).
+- Conversion actions (Explorer row menu + the Share dialog's offline gate):
+  "Sync Diagram" / "Sync to Account" and "Take Offline" (with confirmation +
+  image re-homing).
 - Image handling (spec/19) — embed `data:` URIs offline; upload-on-save,
   download-on-take-offline.
 - `apps/marketing` — the privacy-area mention + small asset (spec/16, /23).
