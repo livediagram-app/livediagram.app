@@ -111,6 +111,17 @@ export function useActivityLogEmitter(deps: Deps): Api {
     return newest;
   };
 
+  // D1 writes for the SAME entry id must land in emit order: each merge
+  // is a delete + re-append pair, and two quick merges with independent
+  // chains could interleave (del1, del2, app1, app2-hits-existing-id),
+  // leaving D1 on the older span while the panel and the room show the
+  // newer one until a reload. One serial queue keeps the pairs atomic
+  // relative to each other; failures inside stay swallowed as before.
+  const d1QueueRef = useRef<Promise<void>>(Promise.resolve());
+  const enqueueD1 = (task: () => Promise<void>) => {
+    d1QueueRef.current = d1QueueRef.current.then(task, task);
+  };
+
   // Swap the coalesced entry in place, everywhere the original went:
   // panel list, D1 (delete + re-append under the SAME id, so the undo
   // marker that holds the original still pairs with the merged row),
@@ -120,11 +131,13 @@ export function useActivityLogEmitter(deps: Deps): Api {
     if (deps.diagramId) {
       const { id: pid } = deps.selfParticipant;
       const diagramId = deps.diagramId;
-      apiDeleteChangeLogEntry(pid, diagramId, merged.id, deps.sessionShareCode)
-        .catch(() => {})
-        .then(() =>
-          apiAppendChangeLogEntry(pid, diagramId, merged, deps.sessionShareCode).catch(() => {}),
-        );
+      enqueueD1(() =>
+        apiDeleteChangeLogEntry(pid, diagramId, merged.id, deps.sessionShareCode)
+          .catch(() => {})
+          .then(() =>
+            apiAppendChangeLogEntry(pid, diagramId, merged, deps.sessionShareCode).catch(() => {}),
+          ),
+      );
     }
     deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: merged.id } });
     deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry: merged } });
@@ -138,12 +151,13 @@ export function useActivityLogEmitter(deps: Deps): Api {
   const removeLogEntry = (entryId: string) => {
     deps.setChangeLog((prev) => prev.filter((e) => e.id !== entryId));
     if (deps.diagramId) {
-      apiDeleteChangeLogEntry(
-        deps.selfParticipant.id,
-        deps.diagramId,
-        entryId,
-        deps.sessionShareCode,
-      ).catch(() => {});
+      const { id: pid } = deps.selfParticipant;
+      const diagramId = deps.diagramId;
+      enqueueD1(() =>
+        apiDeleteChangeLogEntry(pid, diagramId, entryId, deps.sessionShareCode)
+          .catch(() => {})
+          .then(() => undefined),
+      );
     }
     deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId } });
     lastEmitRef.current = null;
