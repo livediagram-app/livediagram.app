@@ -17,6 +17,13 @@ drag is browser-reserved territory on several platforms.
   drag itself is a normal move throughout (same snapping, guides, frame
   sections). Pressing or releasing Shift mid-drag therefore just changes
   what the release does, and there is nothing to cancel.
+- **Coexists with shift-click multi-select**: a shift press on an element
+  that is NOT part of the selection stays the immediate toggle (add to
+  the set, no drag). On a SELECTED element (single selection or a
+  multi-select member) the toggle is deferred: the press starts a normal
+  move drag, and only a release that never travelled (a true shift-click,
+  within the 4 px engage threshold) applies the toggle. So shift-click
+  still curates the selection, and shift-drag duplicates it.
 - **What clones**: exactly the dragged set — the selection's members plus
   any follower arrows the move carried (a frame section's connectors),
   via the same `duplicateGroupedElements` machinery as the toolbar's

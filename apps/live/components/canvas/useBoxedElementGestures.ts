@@ -19,6 +19,7 @@ export function useBoxedElementGestures({
   isAnnotation,
   multiSelectActive,
   isMultiSelected,
+  isSelected,
   vote,
   onCastVote,
   onShiftSelect,
@@ -49,6 +50,9 @@ export function useBoxedElementGestures({
   isAnnotation: boolean;
   multiSelectActive: boolean;
   isMultiSelected: boolean;
+  // Single-selection state, so a shift press on the selected element can
+  // start the duplicate drag (spec/80) instead of only toggling.
+  isSelected: boolean;
 }) {
   const handleShapeDown = (e: ReactPointerEvent) => {
     if (isEditing) return;
@@ -68,12 +72,30 @@ export function useBoxedElementGestures({
       onCastVote(element.id);
       return;
     }
-    // Shift modifier turns the down-event into a selection toggle
-    // (add or remove this element from the marquee multi-selection)
-    // instead of starting a drag. Matches the convention every
-    // drawing tool uses.
+    // Shift modifier: on an element that is NOT part of the selection it
+    // stays the immediate selection toggle (add to the marquee set), the
+    // convention every drawing tool uses. On an element that IS selected
+    // (single selection or a multi-select member) the toggle is DEFERRED
+    // so shift can also start the duplicate drag (spec/80): begin a
+    // normal move drag now, and only if the pointer never travels (a
+    // true shift-CLICK) apply the toggle on release. A real shift-drag
+    // moves the selection and the drag's release duplicates it.
     if (e.shiftKey) {
-      onShiftSelect?.(element.id);
+      if (!(isSelected || isMultiSelected)) {
+        onShiftSelect?.(element.id);
+        return;
+      }
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const onUp = (ue: PointerEvent) => {
+        window.removeEventListener('pointerup', onUp);
+        // Same engage threshold as the drag machinery (DRAG_ENGAGE_PX).
+        if (Math.hypot(ue.clientX - startX, ue.clientY - startY) <= 4) {
+          onShiftSelect?.(element.id);
+        }
+      };
+      window.addEventListener('pointerup', onUp);
+      onBeginDrag(element.id, 'move', e);
       return;
     }
     // While a multi-selection is already active, a plain click on a

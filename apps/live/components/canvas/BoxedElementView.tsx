@@ -139,6 +139,7 @@ function BoxedElementViewImpl({
       isAnnotation,
       multiSelectActive,
       isMultiSelected,
+      isSelected,
       vote,
       onCastVote,
       onShiftSelect,
