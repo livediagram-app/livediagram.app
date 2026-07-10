@@ -6,23 +6,23 @@ import { SpotlightMode } from '@/components/illustrations/palette-modes';
 export const metadata = helpMetadata({
   title: 'Spotlight',
   description:
-    'Use the Spotlight mode in livediagram to dim the canvas and highlight the element under your cursor, focusing attention on one thing at a time.',
+    'Use the Spotlight mode in livediagram to dim the canvas around a circle of light that follows your cursor, focusing attention on one spot at a time.',
   path: '/help/selection-modes/spotlight/',
 });
 
 <ArticleLayout
   title="Spotlight"
-  description="Dim the canvas and spotlight the element under your cursor."
+  description="Dim the canvas around a circle of light that follows your cursor."
   categoryTitle="Selection Modes"
   categorySlug="selection-modes"
   subArticles={getSubArticles("spotlight")}
 >
 
-The Spotlight mode dims the canvas and spotlights the element under your cursor, so a viewer's attention lands on one thing at a time. Choose it from the mode picker at the top of the floating palette.
+The Spotlight mode dims the canvas except a soft circle of light that follows your cursor, so a viewer's attention lands on one spot at a time. Choose it from the mode picker at the top of the floating palette.
 
 ## How it works
 
-As you move the cursor, the element beneath it stays bright while everything around it is dimmed. This is useful when you are talking through a diagram and want to focus the room on a single shape before moving on to the next.
+As you move the cursor, the circle of light moves with it while everything outside stays dimmed. **Left-click grows the circle and right-click shrinks it**, so you can match the beam to a single shape or open it up over a whole cluster. This is useful when you are talking through a diagram and want to focus the room on one area before moving on to the next.
 
 <Figure caption="Spotlight is lit in the mode picker, dimming the canvas except a bright circle around the cursor.">
   <SpotlightMode />

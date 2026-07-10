@@ -1,0 +1,43 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Your Profile',
+  description:
+    'The Profile page in the Explorer: your account identity, the email-notification toggles, and the Danger zone for deleting your account.',
+  path: '/help/explorer/profile/',
+});
+
+<ArticleLayout
+  title="Your Profile"
+  description="Your account home in the Explorer: who you are signed in as, your email-notification switches, and account deletion."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+The **Profile** page is your account home inside the [Explorer](/help/explorer/explorer-page/). Open it by clicking the **Hi** greeting with your name at the top of the Explorer sidebar, or pick **Profile** from the account menu (the initial bubble in the top-right corner of the editor). Either way you land on the same page.
+
+## What it shows
+
+At the top sits your identity card: the same initial-letter avatar as the header account button, your name, your email address, and the date you joined. The page only displays this identity; it is read from your account, not edited here.
+
+## Email notifications
+
+Below the identity card, the **Email notifications** section lists every optional email with its own switch: someone joining your diagram, responses to team invites you sent, comments on your diagrams, actions assigned to you, tips and check-ins, and milestones. The whole row is the switch, so click anywhere on it to flip it. The toggles are saved to your account and apply wherever you sign in. See [Email Notifications](/help/account-and-data/email-notifications/) for what each kind of email contains and when it sends.
+
+This section only appears when the deployment can actually send mail; a self-hosted instance without email configured simply omits it.
+
+## Danger zone
+
+At the bottom, the **Danger zone** holds the **Delete account** button. It opens a confirmation dialog that asks you to type your email address, a deliberate speed bump before anything irreversible happens. Confirming permanently removes your diagrams, folders, and participant record from the server, then deletes the account itself and signs you out. This cannot be undone. For deleting a single diagram, or how guest data is scoped, see [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+
+## Signed-in feature
+
+The profile belongs to an account, so it is only available when you are [signed in](/help/account-and-data/signing-in/). A guest who opens the page sees a sign-in prompt instead, and on deployments that run without accounts there is no profile at all.
+
+<Tip>
+  You do not have to visit the profile to reach the notification toggles: every optional email
+  carries a "Manage your notifications" link in its footer that lands on this same section.
+</Tip>
+
+</ArticleLayout>

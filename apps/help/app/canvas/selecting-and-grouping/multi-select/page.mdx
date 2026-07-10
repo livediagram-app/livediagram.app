@@ -23,11 +23,11 @@ Selecting one element is easy: you click it. The interesting part is grabbing se
 
 ## The marquee
 
-The marquee is a selection rectangle you drag across the canvas. Start the drag on an empty patch of background, pull a box around the elements you want, and release: everything the rectangle catches becomes selected together. It is the fastest way to scoop up a cluster of shapes, a row of cards, or an entire section of a board.
+The marquee is a selection rectangle you drag across the canvas. Start the drag on an empty patch of background, pull a box around the elements you want, and release: every element that sits entirely inside the rectangle becomes selected together, while anything the box only clips is left out. It is the fastest way to scoop up a cluster of shapes, a row of cards, or an entire section of a board.
 
 Because the marquee starts on empty canvas, it never conflicts with dragging an element. Press directly on a shape and you move that shape; press on the background and you draw a marquee instead.
 
-<Figure caption="A marquee drag sweeps a rectangle across the canvas, selecting every element it catches.">
+<Figure caption="A marquee drag sweeps a rectangle across the canvas, selecting every element it fully encloses.">
   <MultiSelect />
 </Figure>
 

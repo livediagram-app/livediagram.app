@@ -4,31 +4,33 @@ import { helpMetadata } from '@/lib/seo';
 import { EmbeddedDiagram } from '@/components/illustrations/collaboration';
 
 export const metadata = helpMetadata({
-  title: 'Read-Only Embeds',
+  title: 'Embeds',
   description:
-    'Embed a live, read-only view of a diagram in a wiki, doc, or any page with a copy-paste iframe snippet.',
+    'Embed a live view of a diagram in a wiki, doc, or any page with a copy-paste iframe snippet, read-only or editable depending on the link.',
   path: '/help/collaboration/sharing/embeds/',
 });
 
-<ArticleLayout title="Read-Only Embeds" description="Put a live, view-only diagram inside another page with a ready-made embed snippet." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "embeds")}>
+<ArticleLayout title="Embeds" description="Put a live diagram inside another page with a ready-made embed snippet." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "embeds")}>
 
-A read-only embed places a live copy of a diagram inside another page, like a wiki, a doc, Notion, or your own site. It shows the canvas, hides all the editing tools, and stays up to date as the diagram is edited. It is the simplest way to keep a diagram visible where your readers already are.
+An embed places a live copy of a diagram inside another page, like a wiki, a doc, Notion, or your own site. It shows the canvas, hides the editor chrome, and stays up to date as the diagram is edited. It is the simplest way to keep a diagram visible where your readers already are.
 
-<Figure caption="A read-only diagram sits inside a host page, with the copy-paste iframe snippet that embeds it.">
+<Figure caption="A diagram sits inside a host page, with the copy-paste iframe snippet that embeds it.">
   <EmbeddedDiagram />
 </Figure>
 
 ## What an embed shows
 
-The embed is built from a share link, so it carries that link's diagram, but it is always **read-only** regardless of the link's role. Even an edit link, when embedded, renders as a viewer; editing happens in the full editor, one click away.
+The embed is built from a share link, and it **honours that link's role**: a **view** link embeds a read-only canvas, while an **edit** link embeds an editable one, so readers of the host page can change the diagram right there. Pick the link to match: hand out a view-link embed when the page is for an audience, and an edit-link embed when it is for collaborators.
 
 Inside the frame, the embed:
 
 - shows the canvas with pan, zoom, and pinch,
 - hides the header, tabs, and every floating panel, leaving a clean view,
-- defaults to the hand (pan) tool, since there is nothing to select,
+- defaults to the hand (pan) tool, so a drag pans the view; an editable embed still selects and edits on click,
 - keeps a small **Open in livediagram** badge in the corner that opens the full share view in a new tab,
 - shows a compact tab switcher when the diagram has more than one tab.
+
+One editing feature stays off inside the frame: image uploads are unavailable in an embed, so adding pictures still happens in the full editor.
 
 Because the embed joins the same realtime room as any viewer, it **live-updates**: when the diagram changes, the embedded view follows along.
 
@@ -42,7 +44,7 @@ The snippet comes with a sensible default size and a hairline border, which you 
 
 ## Privacy and self-hosting
 
-An embed only exposes what the share link exposes, and only as a read-only view, so there are no editing actions to misuse. Embeds also work on self-hosted instances with no external services: the snippet builds its URL from your own origin, so a self-hosted diagram produces a self-hosted embed.
+An embed only exposes what the share link exposes: a view link's embed is a read-only view, and only an edit link's embed can change the diagram. Embeds also work on self-hosted instances with no external services: the snippet builds its URL from your own origin, so a self-hosted diagram produces a self-hosted embed.
 
 <Tip>
   Embedding several diagrams across a wiki is a tidy way to keep architecture and flow diagrams

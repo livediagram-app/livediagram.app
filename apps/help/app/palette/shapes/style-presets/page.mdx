@@ -12,18 +12,15 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Style Presets" description="Create variety and emphasis on key elements in one click, without dialling each field by hand." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Shapes", slug: "shapes" }} subArticles={getSubArticles("shapes").filter((a) => a.slug !== "style-presets")}>
 
-Sometimes you want a shape to stand out, or a set of arrows to look consistent, without fiddling with fill, border, weight, and pattern one control at a time. Style presets give you a **Presets** category in the selected-element context menu with ready-made looks you can apply in a single click. The category sits at the top of the appearance group, just above Animation, and presets always track your active theme so they stay on-brand.
+Sometimes you want a shape to stand out, or a set of arrows to look consistent, without fiddling with fill, border, weight, and pattern one control at a time. Style presets give you a **Presets** section in the selected-element context menu with ready-made looks you can apply in a single click. Presets is the first accordion inside the element's **Style** menu, alongside Colours and Border, and presets always track your active theme so they stay on-brand.
 
 ## Shape presets
 
-Right-click a single shape and open the **Presets** category to find two rows you combine freely, plus a reset:
+Right-click a single shape, open the **Style** menu, and expand **Presets** to find a grid of ready-made looks, plus a reset. Each preset is a complete look: it sets the shape's fill, border, and text colour together with a matching border treatment (weight, pattern, and corner radius), so one click restyles the whole shape.
 
-- **Colour** offers eight one-click colour variations derived from the active theme. Each sets the shape's fill, border, and text colour together, spanning the on-theme look plus soft, tinted, solid, bold, outline, muted, and inked emphasis variants. On multi-colour themes you also get a card per branch hue. Text colour is auto-contrasted on filled variants so labels stay readable.
-- **Border** offers up to eight border variations that combine weight (thin / medium / thick), pattern (solid / dotted / dashed), and corner radius (none / small / medium / large / full), including a sharp un-rounded preset and a rounded one.
+The grid offers up to twelve theme-derived looks, spanning the on-theme default plus soft, tinted, solid, bold, outline, muted, inked, pill, dotted, frame, and ghost variants. On multi-colour themes you also get a card per branch hue. Text colour is auto-contrasted on filled variants so labels stay readable. **Reset to default** clears the shape's colour and border overrides, returning it to its theme default in one click.
 
-Colour and border presets are independent: applying one never disturbs the other, so they combine. You might pair a tinted colour with a dashed, un-rounded border, for example. **Reset to default** clears the shape's colour and border overrides, returning it to its theme default in one click.
-
-<Figure caption="One-click colour and border presets restyle a shape without dialling each field by hand.">
+<Figure caption="One-click style presets restyle a shape without dialling each field by hand.">
   <StylePresets />
 </Figure>
 

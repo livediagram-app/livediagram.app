@@ -19,13 +19,15 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("arrows").filter((a) => a.slug !== "arrow-styles")}
 >
 
-An arrow is far more than a plain line. Select a connector and open its right-click context menu, where the **Pointer** category gathers every styling control. The settings are independent, so you can mix a thick dashed line with a hollow arrowhead, for example, to match a notation you have in mind.
+An arrow is far more than a plain line. Select a connector and open its right-click context menu, where two categories share the styling controls: **Line** for the line itself and **Pointer** for the arrowheads. The settings are independent, so you can mix a thick dashed line with a hollow arrowhead, for example, to match a notation you have in mind.
 
 ## Line shape and weight
 
+The **Line** category holds three controls:
+
 - **Line style** picks the geometry: **Straight** (a single line), **Curved** (a gentle bezier bow), or **Angled** (an axis-aligned L-shaped elbow). Curved and angled lines expose a draggable handle so you can shape the path by hand, covered in [Curve and elbow handles](/help/palette/arrows/curve-and-elbow-handles/).
 - **Line thickness** snaps to four presets (Thin, Medium, Thick, Extra-thick).
-- **Line pattern** sets the stroke to Solid, Dashed, or Dotted.
+- **Line pattern** sets the stroke to Solid, Dashed, Dotted, Dash-dot, Long dash, or Dash-dot-dot.
 
 <Figure caption="The same connector shown straight, curved, and angled.">
   <ArrowStyles />
@@ -33,9 +35,9 @@ An arrow is far more than a plain line. Select a connector and open its right-cl
 
 ## Arrowheads
 
-The Pointer category also controls the heads on each end:
+The **Pointer** category controls the heads on each end:
 
-- **Arrowhead type** chooses which ends carry a head: Start only, End only, Both, or No pointers.
+- **Arrowhead type** chooses which ends carry a head: Start only, End only, Both ends, or No pointers.
 - **Arrowhead size** offers Small, Medium, Large, and Extra-large. It sits below the type so you pick whether you want a head before sizing it, and it hides entirely when there are no pointers.
 - **Arrowhead shape** picks the head's look: a filled triangle (the default), a hollow triangle, an open V, a dot, a hollow dot, a filled diamond, or a hollow diamond. These pair well with formal notations: a hollow triangle reads as UML inheritance, and a diamond as aggregation or composition.
 

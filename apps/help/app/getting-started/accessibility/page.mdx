@@ -36,7 +36,7 @@ This works even in read-only views, since it's just navigation.
 
 Every element carries a name, so a screen reader can describe it, for example `Square "Login"`, `Sticky note`, or `Arrow "yes"`. A polite live region announces changes as they happen:
 
-- **Selection:** `Selected Square "Login"`, or a short summary when several are selected, or `Selection cleared`.
+- **Selection:** `Selected 'Login'` for a labelled element (or `Selected a Square` when it has no label), a short summary when several are selected, or `Selection cleared`.
 - **Editing:** deleting an element, and **Undo** / **Redo**, are announced too.
 
 These announcements are separate from the on-screen notifications, so you'll hear them even if you've turned notifications off.
@@ -44,6 +44,10 @@ These announcements are separate from the on-screen notifications, so you'll hea
 ## Editing from the keyboard
 
 With an element selected by keyboard, the usual keyboard verbs apply: arrow keys nudge it, `Delete` / `Backspace` removes it, `Space` edits its label, and `⌘`/`Ctrl`+`Z` undoes. The editing verbs are disabled in read-only views and while you're typing in a field. See [Keyboard Essentials](/help/getting-started/keyboard-essentials/) and the full [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) reference.
+
+## Reducing motion
+
+If animation is uncomfortable, turn on **Reduce motion** in Settings (in the Accessibility group). It reduces the editor's canvas and interface animation so panels and popovers appear instantly instead of sliding or popping, and your device's own reduce-motion preference is always respected as well.
 
 <Tip>
   This is a baseline, honest but not exhaustive: keyboard-only users can reach, traverse, and edit

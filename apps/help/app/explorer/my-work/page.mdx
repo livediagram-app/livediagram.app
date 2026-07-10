@@ -5,28 +5,34 @@ import { MyWorkTree } from '@/components/illustrations/explorer';
 export const metadata = helpMetadata({
   title: 'My Work and Folders',
   description:
-    'My Work is your own diagram library: the Unsorted bucket plus the nested folders you create to group diagrams by project, customer, or topic.',
+    'My Work is your own diagram library: the Dynamic buckets (Unsorted, Generated, Offline) plus the nested folders you create to group diagrams by project, customer, or topic.',
   path: '/help/explorer/my-work/',
 });
 
 <ArticleLayout
   title="My Work and Folders"
-  description="Your personal library, an Unsorted bucket plus folders you can nest as deep as you like. Every diagram has an obvious home."
+  description="Your personal library, the Dynamic buckets plus folders you can nest as deep as you like. Every diagram has an obvious home."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**My Work** is your own library: the [diagrams](/explorer/all) you have created, organised however suits you. It is the tree in the middle of the Explorer sidebar, holding the **Unsorted** bucket and whatever folders you have made.
+**My Work** is your own library: the [diagrams](/explorer/all) you have created, organised however suits you. It is the tree in the middle of the Explorer sidebar, holding a collapsible **Dynamic** parent for the automatic buckets and whatever folders you have made.
 
-## Unsorted
+## The Dynamic buckets
 
-Diagrams you have not filed anywhere sit in **Unsorted**, so a freshly created diagram always has a home without you deciding anything first. Unsorted is always present and cannot be deleted, and it only appears in the sidebar when it actually holds loose diagrams, so an empty bucket never adds noise.
+At the top of My Work, a collapsible **Dynamic** parent groups three live views that file themselves, so your own folders lead the tree:
+
+- **Unsorted** catches diagrams you have not filed anywhere, so a freshly created diagram always has a home without you deciding anything first.
+- **Generated** collects AI-made diagrams you have not filed yet, keeping them apart from the ones you drew.
+- **Offline** collects diagrams saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)).
+
+None of the buckets can be renamed or deleted, and each shows a count badge only when it holds something. Filing a diagram into a folder of your own moves it out of Unsorted or Generated; Offline is different, listing every browser-only diagram whatever folder it sits in, so there is always one place to find them.
 
 ## Folders
 
 Folders give your library structure without forcing it. Every diagram is in exactly one folder, or none, and folders can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat under Unsorted when you do not.
 
-<Figure caption="An Unsorted bucket sits above the folders you create, which can nest as deep as a project needs.">
+<Figure caption="The Dynamic buckets sit above the folders you create, which can nest as deep as a project needs.">
   <MyWorkTree />
 </Figure>
 

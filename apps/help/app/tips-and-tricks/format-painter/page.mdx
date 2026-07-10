@@ -37,9 +37,9 @@ Click **Done**, or switch to another tool, to exit. Leaving the tool disarms the
 
 ## What it copies
 
-The format painter copies cosmetic styling: fill, border, and text colours, border weight and pattern, text formatting, and looping element animations, which are all cosmetic so they travel with the paint.
+The format painter copies cosmetic styling: fill, border, and text colours, border weight and pattern, text formatting, and looping element animations, which are all cosmetic so they travel with the paint. It also copies the element's size (width and height), aspect-ratio lock, opacity, and padding, so painted elements match the base completely.
 
-A couple of things stay put by design: aspect-ratio lock is not currently copied, so a painted element keeps its own width-to-height behaviour. The painter applies styling, not size or position, so your layout is never disturbed.
+One thing stays put by design: the painter never touches position, so where your elements sit on the canvas is never disturbed.
 
 Because it only changes elements, the format painter is available to editors. View-only visitors will not see it, since there is nothing for them to change.
 

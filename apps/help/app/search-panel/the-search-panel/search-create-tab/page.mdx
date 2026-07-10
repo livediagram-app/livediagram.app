@@ -19,11 +19,11 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-create-tab')}
 >
 
-As well as finding things, the [search panel](/help/search-panel/the-search-panel/) can run the occasional **action**. The first of these is creating a [tab](/help/tabs/using-tabs/): when you are inside a diagram and your query looks like you want a new board, search offers a **Create new tab** result.
+As well as finding things, the [search panel](/help/search-panel/the-search-panel/) can run **actions**: editor commands offered as results. One of the handiest is creating a [tab](/help/tabs/using-tabs/): when you are inside a diagram and your query looks like you want a new board, search offers a **Create new tab** result.
 
 ## When it appears
 
-The action surfaces when your query reads like a request for a tab, for example typing `tab` or `new`. It only shows inside a diagram, where there is something to add a tab to, never from the Explorer. Because it is an action rather than a match, it does not steal the default `Enter`: an actual match still wins the first slot, and you arrow down to the **Create new tab** result to choose it deliberately.
+The action surfaces when your query matches its keywords, for example typing `tab`, `new`, `create`, or `add`. It only shows inside a diagram, where there is something to add a tab to, never from the Explorer. **Create new tab** is an ordinary editor command, listed in the **Actions** group of the results. That group sits below the navigation and element matches, so an actual match still wins the default `Enter`, and you arrow down to the command to choose it deliberately.
 
 <Figure caption="A real match keeps the first slot, with Create new tab offered below as a deliberate action.">
   <SearchCreateTab />
@@ -34,8 +34,9 @@ The action surfaces when your query reads like a request for a tab, for example 
 Picking **Create new tab** adds a fresh, empty tab to the current diagram and switches to it, the same as the `+` button on the tab bar, without you leaving the keyboard. From there it is an ordinary tab: rename it, fold it into a [folder](/help/tabs/tab-folders/), or start placing elements.
 
 <Tip>
-  Think of search actions as shortcuts for "I know what I want to do". Today that is creating a tab;
-  the pattern leaves room for more over time.
+  Think of search actions as shortcuts for "I know what I want to do". The panel doubles as a
+  command palette: alongside creating a tab, it can run many other editor actions, from renaming the
+  tab to sharing the diagram, all matched the same way.
 </Tip>
 
 </ArticleLayout>

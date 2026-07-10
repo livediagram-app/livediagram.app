@@ -140,7 +140,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your diagrams, folders, teams, and assets easy to find and manage.',
-    articleCount: 10,
+    articleCount: 11,
     kind: 'feature',
   },
   {
@@ -972,6 +972,13 @@ export const articles: Article[] = [
     categorySlug: 'explorer',
   },
   {
+    slug: 'profile',
+    title: 'Your Profile',
+    description: 'Your account identity, email-notification toggles, and account deletion.',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
     slug: 'teams',
     title: 'Teams',
     description: 'Invite members, assign roles, and share diagrams across a team.',
@@ -981,7 +988,7 @@ export const articles: Article[] = [
   {
     slug: 'sharing',
     title: 'Sharing and Embeds',
-    description: 'Share links, passwords, expiry, read-only embeds, and live images.',
+    description: 'Share links, passwords, expiry, embeds, and live images.',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1315,8 +1322,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'embeds',
-    title: 'Read-Only Embeds',
-    description: 'Drop a live, read-only diagram into another page.',
+    title: 'Embeds',
+    description: 'Drop a live diagram into another page, read-only or editable by link role.',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',

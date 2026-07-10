@@ -5,7 +5,7 @@ import { ContextualToolbar, MultiSelectToolbar } from '@/components/illustration
 export const metadata = helpMetadata({
   title: 'The Toolbar',
   description:
-    'When you select elements, a toolbar appears with the actions that apply to your selection: style, align, group, and more.',
+    'When you select elements, a toolbar appears with the actions that apply to your selection: style, group, duplicate, and more.',
   path: '/help/user-interface/toolbar/',
 });
 
@@ -24,12 +24,14 @@ Select something on the canvas and a **toolbar** appears next to it, holding the
 
 ## What it offers
 
-- **One element selected** — the styling and actions for that element: colours and borders, text and font, layer order, links and comments, lock, duplicate, and delete. The exact set depends on the element kind (a shape, an arrow, an image, and a data element each expose what is relevant to them).
-- **Several elements selected** — the actions that make sense across a group: align and distribute, group or ungroup, shared styling, and bulk delete. This is the fastest way to tidy a cluster of elements into line.
+- **One element selected**: the styling and actions for that element: colours and borders, text and font, layer order, links and comments, lock, duplicate, and delete. The exact set depends on the element kind (a shape, an arrow, an image, and a data element each expose what is relevant to them).
+- **Several elements selected**: the actions that make sense across a group: a **More** menu of selection actions, plus Filter, Duplicate, Group, Lock, Export, and Delete. This is the fastest way to act on a whole cluster of elements at once.
+
+When a selection mixes element kinds, the **Filter** button narrows it by type, so you can marquee over a busy area and keep, say, just the arrows before acting on them.
 
 The toolbar follows your selection so the controls are always close to what they affect, and disappears the moment you deselect, handing the canvas back.
 
-<Figure caption="Select several elements and the toolbar switches to the cross-selection actions: align, distribute, group, shared styling, and bulk delete.">
+<Figure caption="Select several elements and the toolbar switches to the cross-selection actions: filter, duplicate, group, lock, export, and delete.">
   <MultiSelectToolbar />
 </Figure>
 

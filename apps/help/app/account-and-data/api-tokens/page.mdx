@@ -25,13 +25,13 @@ API tokens are a **signed-in-only** feature. The canvas, sharing, and real-time 
 
 ## Creating a token
 
-Open the **Explorer**, and in the **Library** section of the sidebar choose **API tokens** (just under Themes). Give the token a name (for example, "CI bot") and create it.
+Open the **Explorer**, and in the **External connections** section of the sidebar (just below the Library section) choose **API tokens**. Give the token a name (for example, "CI bot") and create it.
 
 The token's secret is shown **once**, right after you create it. Copy it then, because for your security it is never displayed again, here or anywhere else. If you lose it, revoke it and create a new one.
 
 ## What a token can do, and for how long
 
-- **Access:** a token has your account's full read + write access to diagrams and folders, including your [teams'](/help/collaboration/teams/) shared libraries. It can't **manage** teams (invites, roles, joining) or your account — those need you signed in to the app. There is no read-only option yet.
+- **Access:** a token has your account's full read + write access to diagrams and folders, including your [teams'](/help/collaboration/teams/) shared libraries. It can't **manage** teams (invites, roles, joining) or your account: those need you signed in to the app. Tokens created on this page are always full read-write; a token minted when you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) can be read-only if you tick that option on the consent screen, and such tokens show a **Read-only** badge in the list here.
 - **Lifetime:** every token lasts **six months**, then expires. There is no never-expires option. Rotate by creating a fresh token before the old one lapses.
 - **Limit:** you can have up to **10** live tokens at once. Revoke one (or let it expire) to free a slot.
 
