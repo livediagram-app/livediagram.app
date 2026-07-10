@@ -1,13 +1,14 @@
 'use client';
 
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { track } from '@/lib/telemetry';
 import type { UserPreferences } from '@/lib/user-preferences';
+import { clearTourDone, isTourDone, markTourDone, requestTourRelaunch } from '@/lib/tour-pending';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -34,17 +35,23 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
     onToggle: () => setOpenGroup((g) => (g === title ? null : title)),
   });
 
+  // "I've seen the editor tour" (spec/79): browser-local (the tour
+  // done-guard in localStorage), NOT a synced preference — it mirrors
+  // where the tour itself keeps its state. Unchecking a previously-checked
+  // row and closing the dialog relaunches the tour; the flag flips back
+  // once the rerun finishes.
+  const [tourSeen, setTourSeen] = useState(isTourDone);
+  const tourSeenAtOpen = useRef(tourSeen);
+  const close = () => {
+    if (tourSeenAtOpen.current && !tourSeen) requestTourRelaunch();
+    onClose();
+  };
+
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      ariaLabel="Settings"
-      size="md"
-      className="max-h-[calc(100%-2rem)]"
-    >
+    <Dialog open onClose={close} ariaLabel="Settings" size="md" className="max-h-[calc(100%-2rem)]">
       <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Settings</h2>
-        <DialogCloseButton compact onClick={onClose} />
+        <DialogCloseButton compact onClick={close} />
       </header>
       <div className="flex flex-col divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800">
         <SettingsGroup {...groupProps('Editor')}>
@@ -72,6 +79,17 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
             onChange={(v) => {
               track('UI', 'Toggled', v ? 'MinimapOn' : 'MinimapOff');
               onChange({ ...settings, showMinimap: v });
+            }}
+          />
+          <ToggleRow
+            label="I've seen the editor tour"
+            description="Checked once you've taken (or dismissed) the Show me around tour. Uncheck it and close Settings to run the tour again. Stored in this browser only."
+            checked={tourSeen}
+            onChange={(v) => {
+              track('UI', 'Toggled', v ? 'TourSeenOn' : 'TourSeenOff');
+              setTourSeen(v);
+              if (v) markTourDone();
+              else clearTourDone();
             }}
           />
         </SettingsGroup>

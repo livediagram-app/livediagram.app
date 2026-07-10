@@ -29,9 +29,6 @@ export function NewDiagramSettingsStep({
   onCreateFolder,
   offline,
   onOffline,
-  showTour = false,
-  tour = false,
-  onTour,
 }: {
   diagramName: string;
   onDiagramName: (v: string) => void;
@@ -55,11 +52,6 @@ export function NewDiagramSettingsStep({
   ) => Promise<PickerFolder | null>;
   offline: boolean;
   onOffline: (v: boolean) => void;
-  // "Show me around" (spec/79): the interactive editor tour toggle, shown
-  // only for brand-new users (the /new page gates on zero owned diagrams).
-  showTour?: boolean;
-  tour?: boolean;
-  onTour?: (v: boolean) => void;
 }) {
   const fieldLabel =
     'text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
@@ -76,28 +68,6 @@ export function NewDiagramSettingsStep({
           className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-brand-500 dark:focus:ring-brand-500/20"
         />
       </label>
-
-      {/* "Show me around" (spec/79): brand-new users (zero diagrams) can opt
-          into the interactive editor tour, which starts once the created
-          diagram opens. Same row anatomy as the offline toggle below. */}
-      {showTour ? (
-        <button
-          type="button"
-          aria-pressed={tour}
-          onClick={() => onTour?.(!tour)}
-          className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-left transition hover:bg-slate-100/70 dark:border-slate-700 dark:bg-slate-800/40 dark:hover:bg-slate-800/70"
-        >
-          <span className="flex flex-col leading-tight">
-            <span className="text-sm font-medium text-slate-800 dark:text-slate-100">
-              Show me around
-            </span>
-            <span className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-              Take a quick interactive tour of the editor once your diagram opens.
-            </span>
-          </span>
-          <ToggleSwitch checked={tour} presentational label="Show me around" />
-        </button>
-      ) : null}
 
       {/* Offline toggle (spec/76): an iOS-style switch, not a checkbox. Sits
           above Save In because turning it on disables placement (an offline

@@ -10,17 +10,24 @@ guided tour").
 
 ## Where it appears
 
-- **The welcome wizard's Settings step only** ([spec/76](76-offline-mode.md)),
-  as a toggle row directly above "Save Offline, This Browser Only", and only
-  for a **brand-new user: zero owned diagrams** (the `/new` page already
-  learns the count from the Jump-back-in fetch; `null` = unknown = hidden).
-  Note this is stricter than the spec/69 card's `< 3` gate: the toggle is a
-  first-run affordance, gone the moment the account holds anything.
-- **One-shot.** No re-launch surface (no Help-menu entry). The sample
-  diagram + help centre cover later learning.
-- Toggling it on does not change what Create does: the diagram is created
-  exactly as configured (template, theme, name, placement, offline), and the
-  tour starts once the editor has loaded.
+- **Automatically, on a brand-new user's first diagram.** When a
+  **zero-owned-diagrams** user (the `/new` page already learns the count
+  from the Jump-back-in fetch; `null` = unknown = no offer) creates a
+  diagram through the wizard (any path: Create or Skip, but not the
+  spec/69 guided-tour sample, which teaches by itself), the editor opens
+  with a centred **welcome offer card**: "Show me around" starts the tour,
+  "No thanks" dismisses it. There is no wizard toggle; the offer IS the
+  opt-in, and declining must be one obvious, equal-weight click.
+- **Once ever per browser.** However the offer ends (declined, skipped
+  mid-tour, or completed), a localStorage done-guard
+  (`livediagram:v2:tour-done`) stops it ever reappearing — the offer must
+  never read as nagging.
+- **Replayable from Settings.** The Settings dialog's Editor group has an
+  "I've seen the editor tour" row mirroring the done-guard (checked once
+  seen; browser-local, deliberately not a synced preference). Unchecking a
+  previously-checked row and closing Settings relaunches the tour,
+  starting at step 1 (the user explicitly asked, so the welcome offer
+  would be noise). Finishing the rerun re-checks it.
 
 ## Handoff
 
@@ -28,33 +35,44 @@ Create hard-navigates to `/diagram/<id>`, so the intent crosses pages via a
 **one-shot sessionStorage flag** (`livediagram:v2:tour-pending`), set just
 before `window.location.assign` and consumed (read + removed) by the editor.
 sessionStorage keeps it per-tab and self-cleaning; a URL param would survive
-into copy-pasted links. The editor starts the tour only when it's actually
-usable: hydrated, no welcome overlay, not read-only, not an embed.
+into copy-pasted links. The editor shows the offer only when it's actually
+usable: hydrated, no welcome overlay, not read-only, not an embed. The
+Settings relaunch crosses no navigation, so it's a window event
+(`livediagram:tour-relaunch`), not a flag.
 
 ## The steps
 
-Eight steps, in palette → explorer → canvas → tabs order. Copy is one or two
+A welcome offer card, then seven steps in palette → explorer → canvas →
+tabs order (the offer sits outside the "N of 7" count). Copy is one or two
 short sentences per step ("concise" is the spec constraint; the exact strings
 live in `apps/live/components/tour/tour-steps.ts`):
 
+0. **Welcome** (the offer): centred card, "Show me around" / "No thanks".
 1. **The Palette**: the floating panel where every element comes from.
 2. **Selection modes**: opens the canvas-tool dropdown (Select / Hand /
-   Eraser / ...) and explains mode switching.
-3. **Shape categories**: opens the palette-category dropdown (Shapes /
-   Tools / Components / Devices / Icons / Technology).
-4. **The Tools category**: switches the palette to Tools and explains what
-   lives there (text, sticky, pencil, arrows, tables, images, charts).
-5. **The Explorer**: the in-editor diagram/folder browser.
-6. **Element context menu**: selects an element (adding a theme-coloured
+   Eraser / ...) and explains mode switching. No "default" claim in the
+   copy — desktop defaults to Select but mobile to Hand.
+3. **Shape categories**: opens the palette-category dropdown (Favourites /
+   Shapes / Tools / Components / Devices / Icons / Technology). A
+   dedicated "Tools category" step existed briefly and was cut — the
+   category dropdown already tells that story.
+4. **The Explorer**: the in-editor diagram/folder browser.
+5. **Element context menu**: selects an element (adding a theme-coloured
    square at the viewport centre first if the tab is empty) and opens its
    right-click menu programmatically.
-7. **Tabs**: highlights the tab bar's "+" add button.
-8. **Tab menu**: opens the active tab's ⋯ menu and explains it.
+6. **Tabs**: highlights the tab bar's "+" add button.
+7. **Tab menu**: opens the active tab's ⋯ menu and explains it.
 
 Each step popover shows the step count, a title, the copy, and
 Back / Next (Done on the last step) plus a Skip control. A dimming highlight
 ring surrounds the current target; it never blocks pointer input, so the
-user can poke at whatever is highlighted mid-tour.
+user can poke at whatever is highlighted mid-tour. Phase changes are
+animated: the ring keeps the previous rect and **glides** to the next
+target, the popover transitions its position, and the card content slides
+directionally (the New Diagram wizard's tip-next / tip-prev motion). The
+dropdown steps highlight the **union** of the trigger button and its
+portalled menu, so the ring wraps the whole control, not the floating menu
+alone.
 
 ## Mechanics
 
@@ -78,6 +96,8 @@ user can poke at whatever is highlighted mid-tour.
 
 ## Telemetry (spec/22)
 
-Existing enums only: `track('UI', 'Started', 'Tour')` when the tour begins,
-`track('UI', 'Ended', 'TourCompleted' | 'TourSkipped')` when it finishes or
-is dismissed early.
+Existing enums only. The offer: `'UI'/'Opened'/'TourOffer'` when the
+welcome card shows, `'UI'/'Closed'/'TourOffer'` on "No thanks". The tour:
+`'UI'/'Started'/'Tour'` on accept (`'TourReplay'` for a Settings
+relaunch), `'UI'/'Ended'/'TourCompleted' | 'TourSkipped'` at the end. The
+Settings row toggles report `'UI'/'Toggled'/'TourSeenOn' | 'TourSeenOff'`.

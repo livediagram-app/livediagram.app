@@ -223,9 +223,15 @@ export function PaletteDropdown({
             role="listbox"
             data-palette-dropdown-menu
             data-tour-id={dataTourId ? `${dataTourId}-menu` : undefined}
+            // The open animation unfolds the menu toward the trigger
+            // (dropdown-down below it, dropdown-up when flipped), so opening
+            // reads as motion rather than a pop — including when the editor
+            // tour opens these programmatically (spec/79).
             className={`fixed z-[var(--z-overlay)] w-max border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
-              autoHeight ? '' : 'max-h-56 overflow-y-auto'
-            } ${
+              coords?.flipUp
+                ? 'origin-bottom animate-dropdown-up'
+                : 'origin-top animate-dropdown-down'
+            } ${autoHeight ? '' : 'max-h-56 overflow-y-auto'} ${
               // Connected pickers drop the corner that meets the trigger so the
               // menu reads as one piece with it; bordered pills stay fully
               // rounded + hug their content via menuClassName.

@@ -25,7 +25,16 @@ export type TourStep = {
   title: string;
   body: string;
   // data-tour-id of the element the popover anchors to + highlights.
-  target: string;
+  // Absent = no anchor: the card centres itself (the welcome offer).
+  target?: string;
+  // Optional second anchor folded into the highlight rect (union of the
+  // two). The dropdown steps use it so the ring wraps the trigger button
+  // AND its portalled menu as one region, not the floating menu alone.
+  alsoHighlight?: string;
+  // The welcome offer card: no step count / dots / Back, and the primary /
+  // dismiss buttons read "Show me around" / "No thanks". Declining is
+  // permanent (the done-guard), so the offer never nags.
+  welcome?: boolean;
   prepare?: (api: TourApi) => void | Promise<void>;
   cleanup?: (api: TourApi) => void;
 };
@@ -47,17 +56,24 @@ const closeDropdown = (menuId: string, triggerId: string) => {
 
 export const TOUR_STEPS: TourStep[] = [
   {
+    id: 'welcome',
+    welcome: true,
+    title: 'Welcome to your first diagram',
+    body: 'Get the most out of livediagram, want us to show you around? Seven short steps, about a minute.',
+  },
+  {
     id: 'palette',
     title: 'The Palette',
-    body: 'Every element starts here: shapes, tools, components, icons, and more. Click a tile to draw it onto the canvas.',
+    body: 'Everything you need to build an amazing diagram in one place, simply click or drag what you want onto the canvas.',
     target: 'palette',
     prepare: ensurePaletteOpen,
   },
   {
     id: 'selection-modes',
     title: 'Selection modes',
-    body: 'This dropdown switches what your pointer does: Select, Hand to pan, Eraser, and more. Select is the everyday default.',
+    body: 'This dropdown changes what your pointer does: Select to move and edit, Hand to pan, Eraser to remove, and more.',
     target: 'canvas-tool-menu',
+    alsoHighlight: 'canvas-tool',
     prepare: async (api) => {
       await ensurePaletteOpen(api);
       if (!findTour('canvas-tool-menu')) clickTour('canvas-tool');
@@ -67,33 +83,15 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'categories',
     title: 'Shape categories',
-    body: 'The palette is organised into categories. Shapes is home base; switch here for Tools, Components, Devices, Icons, and Technology.',
+    body: 'The palette is organised into categories: Favourites keeps your go-to tiles, then Shapes, Tools, Components, Devices, Icons, and Technology.',
     target: 'palette-category-menu',
+    alsoHighlight: 'palette-category',
     prepare: async (api) => {
       await ensurePaletteOpen(api);
       closeDropdown('canvas-tool-menu', 'canvas-tool');
       if (!findTour('palette-category-menu')) clickTour('palette-category');
     },
     cleanup: () => closeDropdown('palette-category-menu', 'palette-category'),
-  },
-  {
-    id: 'tools',
-    title: 'The Tools category',
-    body: 'Text, sticky notes, the pencil, arrows, tables, images, and charts all live in Tools. Tap one to drop it on the canvas.',
-    target: 'palette',
-    prepare: async (api) => {
-      await ensurePaletteOpen(api);
-      // Pick Tools from the category dropdown. The menu omits the already-
-      // selected category, so a missing Tools option means we're there:
-      // just close the menu again.
-      if (!findTour('palette-category-menu')) clickTour('palette-category');
-      const option = await waitForSelector(
-        '[data-tour-id="palette-category-menu"] [data-option-id="tools"]',
-        800,
-      );
-      if (option) option.click();
-      else closeDropdown('palette-category-menu', 'palette-category');
-    },
   },
   {
     id: 'explorer',

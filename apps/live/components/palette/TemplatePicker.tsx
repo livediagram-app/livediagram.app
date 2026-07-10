@@ -26,9 +26,6 @@ export type NewDiagramSettings = {
   // Personal folder placement, or a team library. At most one is set.
   folderId?: string | null;
   teamId?: string | null;
-  // "Show me around" (spec/79): start the interactive editor tour once the
-  // freshly created diagram opens. Only offered to zero-diagram users.
-  tour?: boolean;
 };
 
 type TemplatePickerProps = {
@@ -90,9 +87,6 @@ type TemplatePickerProps = {
   // button navigates away to the Explorer, so this screen can stay focused
   // on creating without rendering an Explorer panel of its own.
   onOpenExisting?: () => void;
-  // Offer the "Show me around" tour toggle on the Settings step (spec/79).
-  // The /new page passes true only for brand-new users (zero diagrams).
-  offerTour?: boolean;
 };
 
 // The browsable catalogue: hidden templates (the guided tour, spec/69) are
@@ -119,7 +113,6 @@ export function TemplatePicker({
   teamFolders = {},
   initialPlacement,
   onCreateFolder,
-  offerTour = false,
 }: TemplatePickerProps) {
   // Mount-open overlay: silence the canvas shortcut/paste listeners
   // behind it (see lib/modal-guard). Harmless on /new, where no canvas
@@ -183,10 +176,6 @@ export function TemplatePicker({
   // only; threaded into every onPick so Skip / guided tour / Create all honour
   // it. False in non-welcome modes (the toggle never renders there).
   const [offline, setOffline] = useState(false);
-  // "Show me around" (spec/79): the interactive tour toggle, rendered on the
-  // Settings step only when the caller offers it (brand-new users). Off by
-  // default so the tour stays an explicit opt-in.
-  const [tour, setTour] = useState(false);
   // Settings step (spec/76): diagram name (defaults per template) + placement.
   // `placement` is 'unsorted' | `folder:<id>` | `team:<id>` in one control.
   // The default name tracks the chosen template ("Untitled Mind Map", not a
@@ -205,9 +194,7 @@ export function TemplatePicker({
   // before the setPlacement state update has applied.
   const settingsFor = (p: string): NewDiagramSettings => {
     const name = diagramNameInput.trim() || templateDefaultName;
-    // The tour rides along only while the toggle is actually offered, so a
-    // stale true can't leak through if offerTour flips off mid-session.
-    const base = { offline, diagramName: name, tour: offerTour && tour };
+    const base = { offline, diagramName: name };
     if (p.startsWith('folder:')) {
       return { ...base, folderId: p.slice(7), teamId: null };
     }
@@ -466,9 +453,6 @@ export function TemplatePicker({
                 onCreateFolder={onCreateFolder}
                 offline={offline}
                 onOffline={setOffline}
-                showTour={offerTour}
-                tour={tour}
-                onTour={setTour}
               />
             ) : null}
           </div>
