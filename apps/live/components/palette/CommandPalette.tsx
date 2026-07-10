@@ -248,10 +248,12 @@ export function CommandPalette({
           minimalPanels={minimalPanels}
           onToggleMinimalPanels={onToggleMinimalPanels}
           onResetPosition={onReset}
-          // When docking is active (spec/63) the panel can always be
-          // snapped back to its default corner, even sitting in a
-          // (non-default) corner where `position` is null.
-          resettable={position !== null || dock !== undefined}
+          // Reset is offered only once the palette has left its home
+          // (free-dragged, or docked in a corner other than its top-right
+          // default): at rest the option would be a no-op.
+          resettable={
+            position !== null || (dock?.docked === true && dock.dockedCorner !== 'top-right')
+          }
         />
       }
       collapsible

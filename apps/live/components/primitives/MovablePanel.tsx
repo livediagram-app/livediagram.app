@@ -267,6 +267,16 @@ export function MovablePanel({
     );
   }
 
+  // Progressive disclosure: the header's reset-position button renders only
+  // once the panel has left its default spot (free-dragged, or docked into
+  // a corner other than its home), so a never-rearranged layout keeps a
+  // minimal header. 'top-right-stacked' panels home to the top-right stack;
+  // 'top-banner' never equals a dock corner, so a docked banner-default
+  // panel keeps its reset (the conservative fallback).
+  const homeCorner = defaultCorner === 'top-right-stacked' ? 'top-right' : defaultCorner;
+  const atDefaultSpot =
+    position === null && (!docked || !dockedCorner || dockedCorner === homeCorner);
+
   return (
     <div
       ref={ref}
@@ -301,7 +311,7 @@ export function MovablePanel({
         title={title}
         headerExtra={headerExtra}
         headerActions={headerActions}
-        onReset={onReset}
+        onReset={atDefaultSpot ? undefined : onReset}
         collapsible={collapsible}
         effectiveCollapsed={effectiveCollapsed}
         dockControlledOpen={dockControlledOpen}
