@@ -56,6 +56,16 @@ The apply side (`apps/live/hooks/canvas/arrow-avoidance-apply.ts`) is a pure
 elements map run through the gesture's own `commit`, so the bow lands inside
 the same undo step as the draw: one Cmd-Z removes the arrow, not the bow.
 
+## Known limit: corner-anchor grazing
+
+The endpoint-exemption window means a chord pinned at CORNER anchors (say
+ne to se, running straight down the shared edge line of two stacked boxes)
+only clips its own elements' clearance rings inside the exemption, so that
+flush case is not yet detected and the arrow stays straight. Edge-middle
+anchors (e / w / n / s) are detected. Fixing it needs an angle-aware rule
+(bow when the chord leaves an endpoint near-parallel to an edge adjacent
+to its anchor); tracked as a follow-up.
+
 ## References
 
 [spec/09](09-canvas-mvp.md) (arrows + curve handles),
