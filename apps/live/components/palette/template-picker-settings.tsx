@@ -24,6 +24,7 @@ export function NewDiagramSettingsStep({
   folders,
   teams,
   teamFolders = {},
+  onCreateFolder,
   offline,
   onOffline,
 }: {
@@ -38,6 +39,12 @@ export function NewDiagramSettingsStep({
   // Per-team folder lists, keyed by team id. Empty / missing while the team
   // libraries are still loading.
   teamFolders?: Record<string, PickerFolder[]>;
+  // Inline folder creation (the "New Folder" tile). Absent = tile hidden.
+  onCreateFolder?: (
+    name: string,
+    parentId: string | null,
+    teamId: string | null,
+  ) => Promise<PickerFolder | null>;
   offline: boolean;
   onOffline: (v: boolean) => void;
 }) {
@@ -134,6 +141,7 @@ export function NewDiagramSettingsStep({
             folders={folders}
             teams={teams}
             teamFolders={teamFolders}
+            onCreateFolder={onCreateFolder}
           />
         )}
       </div>
@@ -154,12 +162,18 @@ function PlacementBrowser({
   folders,
   teams,
   teamFolders,
+  onCreateFolder,
 }: {
   placement: string;
   onPlacement: (v: string) => void;
   folders: PickerFolder[];
   teams: { id: string; name: string }[];
   teamFolders: Record<string, PickerFolder[]>;
+  onCreateFolder?: (
+    name: string,
+    parentId: string | null,
+    teamId: string | null,
+  ) => Promise<PickerFolder | null>;
 }) {
   const hasTeams = teams.length > 0;
   // With teams, open on the overview so the space choice comes first; the
@@ -248,6 +262,16 @@ function PlacementBrowser({
             onSelect={() => onPlacement(rootValue)}
           />
         )}
+        {onCreateFolder ? (
+          <NewFolderTile
+            onCreate={async (name) => {
+              const created = await onCreateFolder(name, openFolder?.id ?? null, teamId);
+              // Select the fresh folder as the destination straight away.
+              if (created) onPlacement(valueFor(created.id));
+              return created !== null;
+            }}
+          />
+        ) : null}
         {children.map((f) =>
           hasKids(f.id) ? (
             // A folder with subfolders drills in (its "save here" card is the
@@ -273,6 +297,95 @@ function PlacementBrowser({
         )}
       </div>
     </div>
+  );
+}
+
+// The "New Folder" tile: a dashed card that flips into a small naming form in
+// place (the popover the flow needs, without portal plumbing inside the
+// modal). Enter creates in the CURRENT level's scope and the browser selects
+// the fresh folder; Escape backs out.
+function NewFolderTile({ onCreate }: { onCreate: (name: string) => Promise<boolean> }) {
+  const [naming, setNaming] = useState(false);
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+  const commit = async () => {
+    const trimmed = name.trim();
+    if (!trimmed || busy) return;
+    setBusy(true);
+    const ok = await onCreate(trimmed);
+    setBusy(false);
+    if (ok) {
+      setNaming(false);
+      setName('');
+    }
+  };
+  if (!naming) {
+    return (
+      <button
+        type="button"
+        onClick={() => setNaming(true)}
+        className="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 p-3 text-center transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:bg-brand-500/10"
+      >
+        <span className="text-slate-400">
+          <NewFolderIcon />
+        </span>
+        <span className="w-full truncate text-xs font-medium text-slate-500 dark:text-slate-400">
+          New Folder
+        </span>
+        <span className="text-[10px] text-slate-400 dark:text-slate-500">Create here</span>
+      </button>
+    );
+  }
+  return (
+    <div className="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-brand-300 bg-brand-50/40 p-3 dark:border-brand-500/50 dark:bg-brand-500/10">
+      <span className="text-brand-500">
+        <NewFolderIcon />
+      </span>
+      <input
+        type="text"
+        autoFocus
+        value={name}
+        placeholder="Folder name"
+        disabled={busy}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') void commit();
+          if (e.key === 'Escape') {
+            setNaming(false);
+            setName('');
+          }
+        }}
+        onBlur={() => {
+          if (!busy && !name.trim()) {
+            setNaming(false);
+            setName('');
+          }
+        }}
+        className="w-full rounded border border-brand-300 bg-white px-1.5 py-1 text-center text-xs text-slate-800 outline-none dark:border-brand-500/50 dark:bg-slate-800 dark:text-slate-100"
+      />
+      <span className="text-[10px] text-slate-400 dark:text-slate-500">
+        {busy ? 'Creating…' : 'Enter to create'}
+      </span>
+    </div>
+  );
+}
+
+function NewFolderIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.8 2H15.5A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-9Z" />
+      <path d="M10 9.2v4M8 11.2h4" />
+    </svg>
   );
 }
 

@@ -64,6 +64,13 @@ type TemplatePickerProps = {
   teams?: { id: string; name: string }[];
   // Per-team folder lists for the Settings step's placement browser.
   teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
+  // Inline folder creation from the placement browser (name popover). Creates
+  // in the given scope and returns the new folder (null on failure).
+  onCreateFolder?: (
+    name: string,
+    parentId: string | null,
+    teamId: string | null,
+  ) => Promise<{ id: string; name: string; parentId: string | null } | null>;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
@@ -102,6 +109,7 @@ export function TemplatePicker({
   folders = [],
   teams = [],
   teamFolders = {},
+  onCreateFolder,
 }: TemplatePickerProps) {
   // Mount-open overlay: silence the canvas shortcut/paste listeners
   // behind it (see lib/modal-guard). Harmless on /new, where no canvas
@@ -422,6 +430,7 @@ export function TemplatePicker({
                 folders={folders}
                 teams={teams}
                 teamFolders={teamFolders}
+                onCreateFolder={onCreateFolder}
                 offline={offline}
                 onOffline={setOffline}
               />

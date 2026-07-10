@@ -11,6 +11,7 @@ import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import {
   apiCreateDiagram,
+  apiCreateFolder,
   apiGetTeamLibrary,
   apiListFolders,
   apiListTeams,
@@ -27,6 +28,9 @@ import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
 import { getTheme, THEMES } from '@/lib/themes';
 import { isCustomThemeId } from '@/lib/custom-theme-registry';
+
+// Folder shape the Settings step's placement browser consumes.
+type PickerFolder = { id: string; name: string; parentId: string | null };
 
 // Dedicated welcome / create-new flow, see specs/14-new-diagram-route.md.
 // Owns identity bootstrap, template + theme choice (a two-step wizard),
@@ -63,7 +67,6 @@ export default function NewDiagramPage() {
   // Personal folders + teams offered by the Settings step's placement picker
   // (spec/76). Folders work for guests; teams are Clerk-only, so we only fetch
   // them once signed in. Empty until the fetch settles / for signed-out users.
-  type PickerFolder = { id: string; name: string; parentId: string | null };
   const [folders, setFolders] = useState<PickerFolder[]>([]);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
   // Per-team folder lists for the placement browser's second level, fetched
@@ -160,6 +163,34 @@ export default function NewDiagramPage() {
       cancelled = true;
     };
   }, [self.id, clerkUserId]);
+
+  // Inline folder creation from the Settings step's placement browser
+  // (spec/76 follow-up): create in the right scope (personal, or a team's
+  // library) under the open parent, merge into the picker lists, and hand
+  // the new folder back so the browser can select it.
+  const createPickerFolder = async (
+    name: string,
+    parentId: string | null,
+    teamId: string | null,
+  ): Promise<PickerFolder | null> => {
+    try {
+      const folder = await apiCreateFolder(self.id, {
+        id: crypto.randomUUID(),
+        name,
+        parentId,
+        teamId,
+      });
+      const pf: PickerFolder = { id: folder.id, name: folder.name, parentId: folder.parentId };
+      if (teamId) {
+        setTeamFolders((m) => ({ ...m, [teamId]: [...(m[teamId] ?? []), pf] }));
+      } else {
+        setFolders((list) => [...list, pf]);
+      }
+      return pf;
+    } catch {
+      return null;
+    }
+  };
 
   // Single commit point, shared by the Create Diagram and Skip paths.
   // Submit passes a template + theme; Skip passes 'blank' + 'brand'. Either
@@ -320,6 +351,7 @@ export default function NewDiagramPage() {
             folders={folders}
             teams={teams}
             teamFolders={teamFolders}
+            onCreateFolder={createPickerFolder}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
             onPick={(kind, name, themeId, settings) =>
               void commitNewDiagram(kind, name, themeId, settings)
