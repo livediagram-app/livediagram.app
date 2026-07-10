@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 
 // The New Diagram wizard's third step (spec/76): name the diagram, choose where
@@ -95,61 +96,178 @@ export function NewDiagramSettingsStep({
         </div>
       ) : null}
 
-      {/* Placement: personal folder or team library. Disabled once offline
-          (an offline diagram has no server folder / team). */}
-      <label className="flex flex-col gap-1.5">
+      {/* Placement: My Work, a personal folder, or a team library, laid out as
+          clickable cards (the same icon-over-label tile language as the
+          context-menu grids) instead of a dropdown so every destination is
+          visible at a glance. Collapses to a single static "My Work (Offline)"
+          card while offline (an offline diagram has no server placement). */}
+      <div className="flex flex-col gap-1.5" role="radiogroup" aria-label="Save in">
         <span className={fieldLabel}>Save in</span>
-        <div className="relative">
-          <select
-            value={offline ? 'offline' : placement}
-            disabled={offline}
-            onChange={(e) => onPlacement(e.target.value)}
-            className="w-full cursor-pointer appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2 pr-9 text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-brand-500 dark:focus:ring-brand-500/20"
-          >
-            {offline ? (
-              // Offline has no server placement, so show a single, self-explaining
-              // option so "Save in" still reads sensibly while disabled.
-              <option value="offline">My Work (Offline)</option>
-            ) : (
-              <>
-                <option value="unsorted">My Work (Unsorted)</option>
-                {folders.length > 0 ? (
-                  <optgroup label="Folders">
-                    {folders.map((f) => (
-                      <option key={f.id} value={`folder:${f.id}`}>
-                        {f.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                ) : null}
-                {teams.length > 0 ? (
-                  <optgroup label="Teams">
-                    {teams.map((t) => (
-                      <option key={t.id} value={`team:${t.id}`}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                ) : null}
-              </>
-            )}
-          </select>
-          <svg
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M3 4.5 6 7.5 9 4.5" />
-          </svg>
-        </div>
-      </label>
+        {offline ? (
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <div className="flex flex-col items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50/60 p-3 opacity-60 dark:border-slate-700 dark:bg-slate-800/40">
+              <span className="text-amber-500">
+                <OfflinePlaceIcon />
+              </span>
+              <span className="w-full truncate text-center text-xs font-medium text-slate-700 dark:text-slate-200">
+                My Work
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">Offline</span>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <PlacementCard
+              label="My Work"
+              sub="Unsorted"
+              icon={<MyWorkIcon />}
+              selected={placement === 'unsorted'}
+              onSelect={() => onPlacement('unsorted')}
+            />
+            {folders.map((f) => (
+              <PlacementCard
+                key={f.id}
+                label={f.name}
+                sub="Folder"
+                icon={<FolderPlaceIcon />}
+                selected={placement === `folder:${f.id}`}
+                onSelect={() => onPlacement(`folder:${f.id}`)}
+              />
+            ))}
+            {teams.map((t) => (
+              <PlacementCard
+                key={t.id}
+                label={t.name}
+                sub="Team"
+                icon={<TeamPlaceIcon />}
+                selected={placement === `team:${t.id}`}
+                onSelect={() => onPlacement(`team:${t.id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
+  );
+}
+
+// One selectable destination tile: icon over name over a small kind caption,
+// radio semantics (exactly one destination is ever active).
+function PlacementCard({
+  label,
+  sub,
+  icon,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  sub: string;
+  icon: ReactNode;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition ${
+        selected
+          ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-200 dark:border-brand-500 dark:bg-brand-500/10 dark:ring-brand-500/30'
+          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-700/60'
+      }`}
+    >
+      <span className={selected ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400'}>
+        {icon}
+      </span>
+      <span
+        className={`w-full truncate text-xs font-medium ${
+          selected ? 'text-brand-800 dark:text-brand-200' : 'text-slate-700 dark:text-slate-200'
+        }`}
+      >
+        {label}
+      </span>
+      <span className="text-[10px] text-slate-400 dark:text-slate-500">{sub}</span>
+    </button>
+  );
+}
+
+// Tile glyphs, sized to sit above the card label.
+function MyWorkIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3.5 8.5 10 3l6.5 5.5" />
+      <path d="M5 7.5V16a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7.5" />
+      <path d="M8 17v-4.5h4V17" />
+    </svg>
+  );
+}
+
+function FolderPlaceIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.8 2H15.5A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-9Z" />
+    </svg>
+  );
+}
+
+function TeamPlaceIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="7.5" cy="7" r="2.6" />
+      <path d="M3 16c.5-2.8 2.2-4.2 4.5-4.2S11.5 13.2 12 16" />
+      <circle cx="13.8" cy="7.8" r="2" />
+      <path d="M13.2 11.6c1.9.2 3.2 1.5 3.7 3.9" />
+    </svg>
+  );
+}
+
+function OfflinePlaceIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M5.5 14.5h8.3a3 3 0 0 0 .5-5.96 4.3 4.3 0 0 0-7.9-1A2.9 2.9 0 0 0 5.5 14.5Z" />
+      <path d="M3.5 3.5l13 13" />
+    </svg>
   );
 }
