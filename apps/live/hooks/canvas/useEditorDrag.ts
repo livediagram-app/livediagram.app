@@ -24,6 +24,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   acceptsInlineIcon,
+  duplicateGroupedElements,
   isBoxed,
   rebindArrowAnchorsAfterMove,
   type ArrowElement,
@@ -466,6 +467,33 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         checkpointPendingRef.current = false;
         logGestureRef.current = false;
         return;
+      }
+      // Shift-release of a MOVE drag duplicates the dragged set at its
+      // original spot (spec/80): the moved originals stay selected at the
+      // drop point and clones re-fill where the drag began, so shift+drag
+      // reads as "drag a copy away from the original". Decided at release,
+      // real moves only; the clone commit joins the gesture's undo step.
+      if (drag?.kind === 'boxed' && drag.mode === 'move' && e.shiftKey) {
+        const start = drag.startBounds.get(drag.primaryId);
+        const current = d.activeTab.elements.find((el) => el.id === drag.primaryId);
+        if (
+          start &&
+          current &&
+          isBoxed(current) &&
+          (current.x !== start.x || current.y !== start.y)
+        ) {
+          const dupIds = new Set<string>([
+            ...drag.startBounds.keys(),
+            ...drag.startArrowEnds.keys(),
+          ]);
+          const backDx = start.x - current.x;
+          const backDy = start.y - current.y;
+          d.commit((els) => {
+            const { newElements } = duplicateGroupedElements(els, dupIds, backDx, backDy);
+            return [...els, ...newElements];
+          });
+          track('Element', 'Duplicated', 'ShiftDrag');
+        }
       }
       // Fold a dragged standalone icon shape into the shape it was
       // released over. Only on a real move (not a click), only when the
