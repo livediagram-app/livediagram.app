@@ -34,6 +34,7 @@ import { isTechIconId } from '@/lib/tech-icons';
 import { iconDropSide, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
+import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';
 import {
@@ -448,6 +449,14 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // fresh arrow already following — committing now would land it where
       // it spawned. The gesture ends at the NEXT placing click, not on up.
       if (drag?.kind === 'arrow-endpoint' && drag.following) return;
+      // A freshly DRAWN arrow (never a reposition) gets the one-shot
+      // collision-avoiding bow (spec/77) as its gesture ends, whether it
+      // ends here or chains below. Same commit stream as the drag ticks,
+      // so it folds into the gesture's single undo step.
+      if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition) {
+        const arrowId = drag.arrowId;
+        d.commit((els) => applyCollisionAvoidance(els, arrowId));
+      }
       // Shift-release of a press-drag chains the next arrow (same rule as
       // the placing click below). The landed endpoint is already committed
       // by the drag ticks; close this gesture's bookkeeping and follow on.
@@ -513,6 +522,12 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       if (!(drag?.kind === 'arrow-endpoint' && drag.following)) return;
       e.preventDefault();
       e.stopPropagation();
+      // The landed arrow gets the one-shot collision-avoiding bow
+      // (spec/77), same as the press-drag end in onUp above.
+      if (drag.end === 'to' && !drag.reposition) {
+        const arrowId = drag.arrowId;
+        depsRef.current.commit((els) => applyCollisionAvoidance(els, arrowId));
+      }
       // The endpoint already tracks the cursor (last pointermove); this
       // click just lands it. Shift chains straight into the next arrow
       // from the same source (spec/09); otherwise clear and end.

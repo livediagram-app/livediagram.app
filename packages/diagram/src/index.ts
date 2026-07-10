@@ -621,6 +621,7 @@ export function elementHasText(element: Element): boolean {
 }
 
 // --- Re-exported resource modules -----------------------------------------
+export * from './arrow-avoidance';
 export * from './arrow-path';
 export * from './arrow-style';
 export * from './border-style';
