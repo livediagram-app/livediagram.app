@@ -53,10 +53,16 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   // request can't bulk-insert. Unknown categories/actions/types
   // are dropped, never stored.
   const valid = raw.filter(isValidTelemetryEvent).slice(0, 100);
-  await insertTelemetryEvents(
-    env,
-    valid.map((e) => ({ category: e.category, action: e.action, type: e.type ?? null })),
-    Date.now(),
-  );
+  try {
+    await insertTelemetryEvents(
+      env,
+      valid.map((e) => ({ category: e.category, action: e.action, type: e.type ?? null })),
+      Date.now(),
+    );
+  } catch {
+    // A transient D1 failure must not surface: without this the throw
+    // became a 5xx at the edge, breaking the "always 204" contract above
+    // (the batch is lost either way; telemetry is fire-and-forget).
+  }
   return noop;
 }
