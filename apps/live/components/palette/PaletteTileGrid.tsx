@@ -1,6 +1,8 @@
 import type { ComponentKind, ShapeKind } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
+import { ICON_DND_MIME } from '@/lib/icons';
+import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
 import { tilesInSection } from './palette-tile-defs';
 
@@ -23,6 +25,10 @@ export type PaletteTileActions = {
   addAnnotation: () => void;
   addLinkCard: () => void;
   addComponent: (kind: ComponentKind) => void;
+  // Dynamic icon favourites (spec/78): drop a single line-art / Technology
+  // catalogue icon, same handlers the Icons / Technology tabs use.
+  addIcon: (iconId: string) => void;
+  addTechIcon: (iconId: string) => void;
   // Whether image uploads are available (the editor supplied onAddImage);
   // gates the `needsImage` tiles exactly as the Tools / Components tabs
   // always have.
@@ -52,6 +58,10 @@ function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => vo
       return actions.addLinkCard;
     case 'component':
       return () => actions.addComponent(a.kind);
+    case 'icon':
+      return () => actions.addIcon(a.iconId);
+    case 'tech-icon':
+      return () => actions.addTechIcon(a.iconId);
   }
 }
 
@@ -66,9 +76,13 @@ function tileActive(def: PaletteTileDef, pendingDraw: PendingDraw | null | undef
       return pendingDraw.type === 'shape' && pendingDraw.kind === a.kind;
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
+    // Icon tiles drop immediately too (matching the Icons / Technology
+    // tabs, which carry no pressed state).
     case 'table':
     case 'annotation':
     case 'link-card':
+    case 'icon':
+    case 'tech-icon':
       return false;
     default:
       return pendingDraw.type === a.type;
@@ -91,13 +105,25 @@ export function PaletteTile({
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
 }) {
+  const a = def.action;
+  // Icon favourites keep their home tabs' drag affordance: a line icon drags
+  // onto a shape to set its inline icon, a tech icon drags onto the canvas.
+  const iconDrag =
+    a.type === 'icon' || a.type === 'tech-icon'
+      ? (e: React.DragEvent) => {
+          e.dataTransfer.setData(a.type === 'icon' ? ICON_DND_MIME : TECH_ICON_DND_MIME, a.iconId);
+          e.dataTransfer.effectAllowed = 'copy';
+        }
+      : undefined;
   return (
     <IconButton
       label={def.label}
       caption={def.caption}
       description={def.description}
       onClick={tileHandler(def, actions)}
-      dragKind={def.action.type === 'shape' ? def.action.kind : undefined}
+      dragKind={a.type === 'shape' ? a.kind : undefined}
+      draggable={iconDrag !== undefined || undefined}
+      onDragStart={iconDrag}
       filled={def.filled}
       noTint={def.noTint}
       active={tileActive(def, pendingDraw)}

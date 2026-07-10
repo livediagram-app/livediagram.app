@@ -10,7 +10,17 @@ import type { ComponentKind, ShapeKind } from '@livediagram/diagram';
 // Pure data: a flat catalogue, exempt from the file-size target (see
 // CLAUDE.md) — extend it in place rather than splitting it.
 
-export type PaletteTileSection = 'shapes' | 'tools' | 'data' | 'components' | 'devices';
+// 'icons' and 'technology' exist only on DYNAMIC tiles (individual icon
+// favourites, palette-dynamic-tiles.tsx) — no PALETTE_TILES entry carries
+// them, so tilesInSection never returns them.
+export type PaletteTileSection =
+  | 'shapes'
+  | 'tools'
+  | 'data'
+  | 'components'
+  | 'devices'
+  | 'icons'
+  | 'technology';
 
 export const PALETTE_TILE_SECTIONS: { id: PaletteTileSection; label: string }[] = [
   { id: 'shapes', label: 'Shapes' },
@@ -33,7 +43,11 @@ export type PaletteTileAction =
   | { type: 'image' }
   | { type: 'annotation' }
   | { type: 'link-card' }
-  | { type: 'component'; kind: ComponentKind };
+  | { type: 'component'; kind: ComponentKind }
+  // Dynamic icon favourites (palette-dynamic-tiles.tsx): a single line-art /
+  // Technology catalogue entry promoted to a tile.
+  | { type: 'icon'; iconId: string }
+  | { type: 'tech-icon'; iconId: string };
 
 export type PaletteTileDef = {
   // Stable id, persisted in the favourites list — never rename one without

@@ -22,6 +22,15 @@ describe('parseFavourites', () => {
     expect(parseFavourites(stored, VALID)).toEqual(['shapes:star']);
   });
 
+  it('keeps dynamic icon/tech ids verbatim (their catalogues load async)', () => {
+    const stored = JSON.stringify(['icon:database', 'tech:aws-lambda', 'shapes:star']);
+    expect(parseFavourites(stored, VALID)).toEqual([
+      'icon:database',
+      'tech:aws-lambda',
+      'shapes:star',
+    ]);
+  });
+
   it('collapses duplicates to the first occurrence', () => {
     const stored = JSON.stringify(['shapes:star', 'data:pie', 'shapes:star']);
     expect(parseFavourites(stored, VALID)).toEqual(['shapes:star', 'data:pie']);

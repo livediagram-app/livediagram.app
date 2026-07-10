@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites, savePaletteFavourites } from '@/lib/palette-favourites';
-import { PALETTE_TILES, tileById, type PaletteTileDef } from './palette-tile-defs';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { PALETTE_TILES, type PaletteTileDef } from './palette-tile-defs';
+import { resolveFavouriteTile } from './palette-dynamic-tiles';
 import { PaletteTileGrid, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteFavouritesDialog } from '@/components/dialogs/PaletteFavouritesDialog';
 
@@ -22,16 +24,24 @@ export function PaletteFavouritesTab({
   const validIds = useMemo(() => new Set(PALETTE_TILES.map((t) => t.id)), []);
   const [favourites, setFavourites] = useState<string[]>(() => loadPaletteFavourites(validIds));
   const [editing, setEditing] = useState(false);
+  // Dynamic icon favourites (`icon:` / `tech:` ids) resolve from the async
+  // icon catalogues; subscribing re-renders this grid when the chunk lands
+  // so they pop in rather than silently missing until a later re-render.
+  const iconCatalogsLoaded = useIconCatalogs();
 
   // Capability-filtered like the grid itself renders (PaletteTileGrid
   // applies visibleTiles internally), so the empty-state check below sees
   // what the user will actually see: favourites that are ALL image tiles
   // on an uploads-less deployment must show the "No favourites yet" hint,
-  // not a silently empty grid.
+  // not a silently empty grid. While the icon catalogues are still loading,
+  // unresolved dynamic ids are simply absent for a moment; the empty hint
+  // is suppressed then so it can't flash over a set that's about to appear.
   const favouriteTiles = visibleTiles(
-    favourites.map(tileById).filter((t): t is PaletteTileDef => t !== undefined),
+    favourites.map(resolveFavouriteTile).filter((t): t is PaletteTileDef => t !== undefined),
     actions.hasImage,
   );
+  const showEmptyHint =
+    favouriteTiles.length === 0 && (iconCatalogsLoaded || favourites.length === 0);
 
   const update = (next: string[]) => {
     setFavourites(next);
@@ -49,9 +59,11 @@ export function PaletteFavouritesTab({
   return (
     <div className="flex flex-col">
       {favouriteTiles.length === 0 ? (
-        <p className="px-1 py-2 text-center text-[11px] text-slate-400 dark:text-slate-500">
-          No favourites yet — Edit to add some.
-        </p>
+        showEmptyHint ? (
+          <p className="px-1 py-2 text-center text-[11px] text-slate-400 dark:text-slate-500">
+            No favourites yet — Edit to add some.
+          </p>
+        ) : null
       ) : (
         <PaletteTileGrid tiles={favouriteTiles} actions={actions} pendingDraw={pendingDraw} />
       )}

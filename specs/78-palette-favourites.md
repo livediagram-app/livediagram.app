@@ -44,11 +44,11 @@ spirit of customising iOS Control Centre.
 Curation happens in a centred dialog (`PaletteFavouritesDialog`, the shared
 `Dialog` shell), not in-place in the panel:
 
-- A **category pill row** — Shapes / Tools / Data / Components / Devices,
-  each pill carrying its category glyph (Data borrows a bar-chart mark) —
-  picks which catalogue is shown; **Shapes is the initial pick** and there
-  is deliberately **no "All"** (one category at a time keeps the grid
-  scannable).
+- A **category pill row** — Shapes / Tools / Data / Components / Devices /
+  Icons / Technology, each pill carrying its category glyph (Data borrows a
+  bar-chart mark) — picks which catalogue is shown; **Shapes is the initial
+  pick** and there is deliberately **no "All"** (one category at a time
+  keeps the grid scannable).
 - A **search box** (autofocused) sits **under the pills** and filters the
   picked category's controls by name as the user types.
 - Controls render as a space-efficient **5-per-row tile grid**. Each tile
@@ -63,12 +63,18 @@ Curation happens in a centred dialog (`PaletteFavouritesDialog`, the shared
   backdrop) so the Favourites grid visibly updates as tiles are toggled.
   Below `sm` the standard dim backdrop stays — the panel covers most of a
   phone viewport anyway.
-- The pool is **every creation tile in the shared catalogue**: the Shapes,
-  Tools, Data, Components, and Devices grids (all driven by
-  `palette-tile-defs.tsx`, below). Search-driven catalogues (Icons /
-  Technology) are out of scope — they are open-ended sets, not fixed
-  controls. Capability-gated tiles (`needsImage`) are hidden from the
-  modal in sessions without image uploads, like everywhere else.
+- The pool is **every creation tile in the shared catalogue** — the
+  Shapes, Tools, Data, Components, and Devices grids (all driven by
+  `palette-tile-defs.tsx`, below) — **plus the two open-ended icon
+  catalogues**: an individual **Icons** glyph or **Technology** mark is
+  favouritable as its own tile (`palette-dynamic-tiles.tsx` promotes a
+  catalogue entry to a tile def; ids persist as `icon:<iconId>` /
+  `tech:<iconId>`). Favourited icons keep their home tabs' behaviour —
+  click to drop, drag to place (a line icon onto a shape, a tech icon onto
+  the canvas), tech marks stay full-colour (`noTint`). Because those
+  catalogues load async, the Icons / Technology grids show a loading note
+  until the chunk lands. Capability-gated tiles (`needsImage`) are hidden
+  from the modal in sessions without image uploads, like everywhere else.
 - No drag-to-reorder in v1: favourites keep insertion order (defaults
   first). If reordering earns its keep later it can land as a follow-up.
 
@@ -77,9 +83,13 @@ Curation happens in a centred dialog (`PaletteFavouritesDialog`, the shared
 - Per-browser, in `localStorage` under **`livediagram:v2:palette-favourites`**
   (a JSON array of tile ids), read/written via `local-storage-safe`. Not
   synced to the account — like the palette's other UI state (spec/20 scope).
-- Unknown / stale ids (a tile renamed or removed in a later release) are
-  silently dropped on load; a missing or corrupt key falls back to the
-  default nine. Saving an edit writes the full array.
+- Unknown / stale FIXED ids (a tile renamed or removed in a later release)
+  are silently dropped on load; a missing or corrupt key falls back to the
+  default nine. Saving an edit writes the full array. **Dynamic ids
+  (`icon:` / `tech:`) are kept verbatim** — their catalogues load async, so
+  validating them at load time would wrongly drop every icon favourite (and
+  the next save would persist the loss); they validate at render instead,
+  where a stale one simply doesn't show.
 
 ## Implementation
 

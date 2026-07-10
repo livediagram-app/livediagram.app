@@ -214,6 +214,8 @@ export function CommandPalette({
     addAnnotation,
     addLinkCard,
     addComponent,
+    addIcon,
+    addTechIcon,
     hasImage: !!onAddImage,
   };
   // Per-element + tab formatting now lives in the right-click context

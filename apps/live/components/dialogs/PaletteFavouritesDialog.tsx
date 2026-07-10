@@ -14,11 +14,14 @@ import { Button } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { matches } from '@/lib/search';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import {
   ComponentsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
+  IconsTabIcon,
   ShapesTabIcon,
+  TechTabIcon,
   ToolsTabIcon,
 } from '@/components/palette/palette-tab-icons';
 import {
@@ -27,6 +30,7 @@ import {
   type PaletteTileDef,
   type PaletteTileSection,
 } from '@/components/palette/palette-tile-defs';
+import { searchIconTiles, searchTechTiles } from '@/components/palette/palette-dynamic-tiles';
 
 type PaletteFavouritesDialogProps = {
   favourites: string[];
@@ -39,13 +43,17 @@ type PaletteFavouritesDialogProps = {
 };
 
 // The category pills, each with its palette-category glyph (Data borrows a
-// bar-chart mark — it's a Tools sub-section elsewhere, spec/53).
+// bar-chart mark — it's a Tools sub-section elsewhere, spec/53). Icons and
+// Technology surface their open-ended catalogues here too, so individual
+// icons are favouritable alongside the fixed creation tiles.
 const CATEGORY_PILLS: { id: PaletteTileSection; label: string; icon: React.ReactNode }[] = [
   { id: 'shapes', label: 'Shapes', icon: <ShapesTabIcon /> },
   { id: 'tools', label: 'Tools', icon: <ToolsTabIcon /> },
   { id: 'data', label: 'Data', icon: <DataTabIcon /> },
   { id: 'components', label: 'Components', icon: <ComponentsTabIcon /> },
   { id: 'devices', label: 'Devices', icon: <DevicesTabIcon /> },
+  { id: 'icons', label: 'Icons', icon: <IconsTabIcon /> },
+  { id: 'technology', label: 'Technology', icon: <TechTabIcon /> },
 ];
 
 // One toggleable tile: glyph + caption with the add / remove corner badge.
@@ -102,12 +110,22 @@ export function PaletteFavouritesDialog({
 }: PaletteFavouritesDialogProps) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<PaletteTileSection>('shapes');
+  // The Icons / Technology pills read the async icon catalogues; subscribing
+  // re-renders when the chunk lands so their grids fill in.
+  const iconCatalogsLoaded = useIconCatalogs();
 
-  const tiles = tilesInSection(category).filter(
-    (t) =>
-      (!t.needsImage || hasImage) &&
-      (matches(query, tileDisplayName(t)) || matches(query, t.label)),
-  );
+  const tiles =
+    category === 'icons'
+      ? searchIconTiles(query)
+      : category === 'technology'
+        ? searchTechTiles(query)
+        : tilesInSection(category).filter(
+            (t) =>
+              (!t.needsImage || hasImage) &&
+              (matches(query, tileDisplayName(t)) || matches(query, t.label)),
+          );
+  const loadingCategory =
+    (category === 'icons' || category === 'technology') && !iconCatalogsLoaded;
 
   return (
     <Dialog
@@ -168,7 +186,9 @@ export function PaletteFavouritesDialog({
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
         {tiles.length === 0 ? (
           <p className="px-3 py-6 text-center text-sm text-slate-400 dark:text-slate-500">
-            No controls match.
+            {/* While the catalogue chunk is in flight an empty grid means
+                "not here yet", not "nothing matches". */}
+            {loadingCategory ? 'Loading icons…' : 'No controls match.'}
           </p>
         ) : (
           <div className="grid grid-cols-5 gap-1.5">
