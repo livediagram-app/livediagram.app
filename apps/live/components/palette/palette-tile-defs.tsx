@@ -548,6 +548,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'tools',
     label: 'Add frame',
     description: 'Frame. A titled container you draw around a cluster of elements.',
+    shortcut: 'F',
     action: { type: 'shape', kind: 'frame' },
     icon: (
       <svg

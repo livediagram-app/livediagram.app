@@ -11,7 +11,14 @@ import type { CanvasTool } from '@/components/palette/CommandPalette';
 // flowchart set. The rest of the ShapeKind union (stadium, document,
 // cloud, devices, etc.) has no memorable free letter and stays a click
 // away in the palette.
-type ShortcutShape = 'square' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'parallelogram';
+type ShortcutShape =
+  | 'square'
+  | 'circle'
+  | 'diamond'
+  | 'cylinder'
+  | 'hexagon'
+  | 'parallelogram'
+  | 'frame';
 
 export type EditorKeyboardShortcutsDeps = {
   // Modal-interaction state. Escape clears whichever is active.
@@ -171,8 +178,8 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
   e: (l) => l.setCanvasTool('eraser'),
   '0': (l) => l.setCanvasTool('eraser'),
   p: (l) => l.onBeginFreehand(), // Pencil (P is free now Hand owns H)
-  f: (l) => l.onBeginFreehand(), // Pencil (legacy alias)
   '7': (l) => l.onBeginFreehand(),
+  f: (l) => l.addShape('frame'), // Frame (was a pencil alias; P owns Pencil)
   r: (l) => l.addShape('square'),
   '2': (l) => l.addShape('square'),
   o: (l) => l.addShape('circle'),

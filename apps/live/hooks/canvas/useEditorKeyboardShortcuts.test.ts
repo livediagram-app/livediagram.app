@@ -60,10 +60,10 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
 });
 
 describe('EDIT_KEYS (mutating tools / element adds)', () => {
-  it('binds Pencil to P and the F alias and number 7', () => {
+  it('binds Pencil to P and number 7, and Frame to F', () => {
     expect(fired(EDIT_KEYS, 'p')).toBe('pencil');
-    expect(fired(EDIT_KEYS, 'f')).toBe('pencil');
     expect(fired(EDIT_KEYS, '7')).toBe('pencil');
+    expect(fired(EDIT_KEYS, 'f')).toBe('shape:frame');
   });
 
   it('binds Eraser to E and number 0', () => {
