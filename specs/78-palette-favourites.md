@@ -43,9 +43,8 @@ current set and add badges on everything else.
   - The current favourites each carry a **red minus badge** (top-left
     corner of the tile). Tapping the badge (or the tile) removes it
     immediately.
-  - Below, under an **"More controls"** section label, every remaining
-    tile from the pool renders with a **green plus badge**; tapping adds
-    it to the end of the favourites grid.
+  - Below, every remaining tile from the pool renders with a **green plus
+    badge**; tapping adds it to the end of the favourites grid.
   - Tiles never fire their add-to-canvas action while editing — the whole
     surface is for curation only.
 - The pool is **every creation tile in the shared catalogue**: the Shapes,
@@ -73,8 +72,8 @@ current set and add badges on everything else.
 
 - **Shared tile catalogue** (`components/palette/palette-tile-defs.tsx`):
   every creation tile across Shapes / Tools / Data / Components / Devices
-  is one data entry — id (`shape:square`, `tool:text`, `component:banner`,
-  ...), section, label / caption / description, glyph, shortcut,
+  is one data entry — id (`shapes:square`, `tools:text`,
+  `components:banner`, ...), section, label / caption / description, glyph, shortcut,
   `filled` / `noTint` flags, and an **action descriptor** (`{ type:
 'shape', kind }` or `{ type: 'text' | 'arrow' | ... }`). The five
   category tabs and the Favourites grid all render from this one

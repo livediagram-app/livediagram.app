@@ -1,0 +1,43 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { FavouritesCatalogue } from '@/components/illustrations/palette-catalogues';
+
+export const metadata = helpMetadata({
+  title: 'Favourites',
+  description:
+    'A user-curated palette category holding your go-to tiles from Shapes, Tools, Data, Components, and Devices in one grid, with an Edit mode to add and remove controls.',
+  path: '/help/palette/favourites/',
+});
+
+<ArticleLayout
+  title="Favourites"
+  description="Your go-to creation tiles from every category, in one editable grid."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("favourites")}
+>
+
+**Favourites** is the first category in the palette's dropdown: one grid holding the tiles you actually use, so your everyday vocabulary isn't spread over Shapes, Tools, Data, Components, and Devices. Each favourite behaves exactly like the same tile in its home category — tap to add, drag to place, and it previews the tab theme the same way.
+
+Out of the box it starts with the nine most useful controls: Square, Circle, Diamond, Text, Pencil, Arrow, Sticky note, Table, and Image.
+
+<Figure caption="Favourites in edit mode: red badges remove a tile, and every other control is offered below with an add badge.">
+  <FavouritesCatalogue />
+</Figure>
+
+## Editing your favourites
+
+Tap **Edit** under the grid (the button becomes **Done**):
+
+- Every current favourite gains a **red minus badge** — tap the tile to remove it.
+- Below the grid, every other control appears grouped by its home category (Shapes, Tools, Data, Components, Devices) with a **green plus badge** — tap one to add it to the end of your grid.
+- While editing, tiles only curate; nothing is added to the canvas until you tap **Done** and use the grid normally.
+
+If it feels familiar, that's deliberate — it works like customising Control Centre on an iPhone.
+
+## Where it's saved
+
+Your selection is remembered **in this browser** (it isn't synced to your account yet), and there's no limit on how many controls you keep. The searchable catalogues — Icons and Technology — aren't in the pool; use their own categories' search instead.
+
+</ArticleLayout>

@@ -5,7 +5,7 @@
 
 import type { ReactNode } from 'react';
 
-import { Scene, Panel, Tabs, Label, TextBar } from './primitives';
+import { Scene, Panel, Tabs, Label, TextBar, Tile } from './primitives';
 
 /** The palette panel framing every catalogue tab: a titled panel with the
  *  catalogue tab strip and a search field, with the tab body drawn by callers.
@@ -123,6 +123,116 @@ export function ComponentsCatalogue() {
         );
       })}
     </CatalogueGrid>
+  );
+}
+
+/** Favourites tab in edit mode (spec/78): the user's 3x3 tile grid with the
+ *  Control-Centre-style remove badges and the Done affordance. Drawn without
+ *  CatalogueGrid — Favourites has no search field or catalogue tab strip. */
+export function FavouritesCatalogue() {
+  const glyph = 'fill-none stroke-slate-500';
+  const tiles: { label: string; child: ReactNode }[] = [
+    {
+      label: 'Square',
+      child: (
+        <rect x={-6} y={-6} width={12} height={12} rx={2} className={glyph} strokeWidth={1.8} />
+      ),
+    },
+    { label: 'Circle', child: <circle r={6.5} className={glyph} strokeWidth={1.8} /> },
+    {
+      label: 'Diamond',
+      child: <polygon points="0,-7 7,0 0,7 -7,0" className={glyph} strokeWidth={1.8} />,
+    },
+    {
+      label: 'Text',
+      child: (
+        <path
+          d="M-5 -5h10M0 -5v10M-3 5h6"
+          className={glyph}
+          strokeWidth={1.8}
+          strokeLinecap="round"
+        />
+      ),
+    },
+    {
+      label: 'Pencil',
+      child: (
+        <path
+          d="M-6 6 L-4 4 M-4 4 L4 -4 L6 -6 M-4 4 L-2 6"
+          className={glyph}
+          strokeWidth={1.6}
+          strokeLinecap="round"
+        />
+      ),
+    },
+    {
+      label: 'Arrow',
+      child: <path d="M-6 0h12" className={glyph} strokeWidth={1.8} strokeLinecap="round" />,
+    },
+    {
+      label: 'Note',
+      child: (
+        <path
+          d="M-5 -5h7l3 3v7h-10zM2 -5v3h3"
+          className={glyph}
+          strokeWidth={1.5}
+          strokeLinejoin="round"
+        />
+      ),
+    },
+    {
+      label: 'Table',
+      child: (
+        <g className={glyph} strokeWidth={1.4}>
+          <rect x={-6} y={-5} width={12} height={10} rx={1} />
+          <path d="M-6 -1h12M-2 -5v10" />
+        </g>
+      ),
+    },
+    {
+      label: 'Image',
+      child: (
+        <g className={glyph} strokeWidth={1.4}>
+          <rect x={-6} y={-5.5} width={12} height={11} rx={1.5} />
+          <path d="M-6 2 L-2 -2 L1 1 L4 -2 L6 0" />
+        </g>
+      ),
+    },
+  ];
+  return (
+    <Scene w={400} h={252} bg="plain">
+      <Panel x={40} y={18} w={320} h={216} title="PALETTE">
+        <Label x={56} y={60} size={11} weight={700} tone="strong">
+          Favourites
+        </Label>
+        {tiles.map((t, i) => {
+          const col = i % 3;
+          const row = Math.floor(i / 3);
+          const x = 104 + col * 76;
+          const y = 74 + row * 44;
+          return (
+            <g key={t.label}>
+              <Tile x={x} y={y} size={26} label={t.label}>
+                {t.child}
+              </Tile>
+              {/* Edit-mode remove badge */}
+              <circle cx={x - 1} cy={y - 1} r={5} className="fill-red-500" />
+              <path
+                d={`M${x - 3.5} ${y - 1}h5`}
+                className="stroke-white"
+                strokeWidth={1.6}
+                strokeLinecap="round"
+              />
+            </g>
+          );
+        })}
+        {/* Done affordance, bottom-right */}
+        <rect x={306} y={206} width={38} height={18} rx={5} className="fill-brand-50" />
+        <Label x={325} y={215} anchor="middle" size={9} weight={700} tone="accent">
+          Done
+        </Label>
+      </Panel>
+    </Scene>
   );
 }
 

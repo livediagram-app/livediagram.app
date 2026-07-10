@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { PaletteTintProvider } from '@/components/palette/palette-controls';
-import { DevicePickerTab } from '@/components/palette/DevicePickerTab';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -10,6 +9,7 @@ import { PaletteTabBar } from '@/components/palette/PaletteTabBar';
 import {
   ComponentsTabIcon,
   DevicesTabIcon,
+  FavouritesTabIcon,
   IconsTabIcon,
   ShapesTabIcon,
   TechTabIcon,
@@ -17,10 +17,13 @@ import {
 } from './palette-tab-icons';
 import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
 import {
+  DevicePickerTab,
   PaletteShapesTab,
   PaletteToolsTab,
   PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
+import { PaletteFavouritesTab } from '@/components/palette/PaletteFavouritesTab';
+import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getIconCatalog, ICON_CATEGORIES, iconsInCategory } from '@/lib/icons';
 import { searchTechIcons, TECH_PROVIDERS, type TechProvider } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -71,7 +74,6 @@ export function CommandPalette({
   themeTint,
   dock,
 }: CommandPaletteProps) {
-  const pendingShapeKind = pendingDraw && pendingDraw.type === 'shape' ? pendingDraw.kind : null;
   // Spotlight (spec/09) is desktop-only: it relies on hover-tracking the
   // cursor and on left/right-click to resize the light, none of which map to
   // touch — so drop it from the tool picker on mobile viewports. Reactive
@@ -184,16 +186,44 @@ export function CommandPalette({
     onAddImage?.();
     onMobileClose?.();
   };
+  // One handler per composite-component kind, so the tile catalogue can
+  // address them by kind (see PaletteTileGrid).
+  const addComponent = (kind: import('@livediagram/diagram').ComponentKind) => {
+    const byKind = {
+      avatar: addAvatar,
+      banner: addBanner,
+      hero: addHero,
+      header: addHeader,
+      callout: addCallout,
+      stat: addStatRow,
+      process: addProcess,
+    } as const;
+    byKind[kind]();
+  };
+  // The add-handler bundle every catalogue-driven tile grid consumes
+  // (spec/78). All handlers above already wrap the mobile-close /
+  // draw-armed behaviour, so a tile behaves the same from any tab.
+  const tileActions: PaletteTileActions = {
+    addShape,
+    addText,
+    beginFreehand,
+    addArrow,
+    addSticky,
+    addTable,
+    addImage,
+    addAnnotation,
+    addLinkCard,
+    addComponent,
+    hasImage: !!onAddImage,
+  };
   // Per-element + tab formatting now lives in the right-click context
   // menus (element / canvas / tab) and the Tab Appearance modal, not in a
   // side panel. The palette now hosts the canvas-tool toggle row at the
-  // top, then a single category tab
-  // bar: Shapes (open by default — the most common entry point on
-  // every fresh canvas), Tools, Devices, Icons (with more categories
-  // to come). Clicking a tab expands its panel; clicking it again
-  // collapses; clicking another switches. PaletteTabBar owns the
-  // active-tab state, so the palette stays compact no matter how many
-  // categories we add.
+  // top, then a single category picker: Favourites (spec/78), Shapes
+  // (open by default — the most common entry point on every fresh
+  // canvas), Tools, Components, Devices, Icons, Technology.
+  // PaletteTabBar owns the active-category state, so the palette stays
+  // compact no matter how many categories we add.
   // Icon-picker search query (Icons tab). Filters the catalogue
   // by label / keyword as the user types.
   const [iconQuery, setIconQuery] = useState('');
@@ -225,6 +255,7 @@ export function CommandPalette({
   return (
     <MovablePanel
       title="Palette"
+      dataTourId="palette"
       position={position}
       defaultCorner="top-right"
       width="w-auto sm:w-64"
@@ -278,6 +309,7 @@ export function CommandPalette({
           leading={
             <PaletteDropdown
               ariaLabel="Canvas tool"
+              dataTourId="canvas-tool"
               value={canvasTool}
               variant="flush"
               autoHeight
@@ -296,11 +328,19 @@ export function CommandPalette({
           }
           tabs={[
             {
+              id: 'favourites',
+              label: 'Favourites',
+              description:
+                'Your go-to tiles from every category in one grid. Edit to add or remove controls.',
+              icon: <FavouritesTabIcon />,
+              content: <PaletteFavouritesTab pendingDraw={pendingDraw} actions={tileActions} />,
+            },
+            {
               id: 'shapes',
               label: 'Shapes',
               description: 'Square, circle, diamond, and the flowchart shape vocabulary.',
               icon: <ShapesTabIcon />,
-              content: <PaletteShapesTab pendingDraw={pendingDraw} addShape={addShape} />,
+              content: <PaletteShapesTab pendingDraw={pendingDraw} actions={tileActions} />,
             },
             {
               id: 'tools',
@@ -308,22 +348,7 @@ export function CommandPalette({
               description:
                 'Text, pencil, arrow, sticky note, table, image, user, frame, and annotation, plus a Data section of charts (pie, bar, line, progress, rating).',
               icon: <ToolsTabIcon />,
-              content: (
-                <PaletteToolsTab
-                  pendingDraw={pendingDraw}
-                  addShape={addShape}
-                  addArrow={addArrow}
-                  addAvatar={addAvatar}
-                  addImage={addImage}
-                  addSticky={addSticky}
-                  addTable={addTable}
-                  addText={addText}
-                  addAnnotation={addAnnotation}
-                  addLinkCard={addLinkCard}
-                  beginFreehand={beginFreehand}
-                  onAddImage={onAddImage}
-                />
-              ),
+              content: <PaletteToolsTab pendingDraw={pendingDraw} actions={tileActions} />,
             },
             {
               id: 'components',
@@ -331,18 +356,7 @@ export function CommandPalette({
               description:
                 'Ready-made composites that follow the tab theme: Banner, Hero, and Header. Each drops as a group you can recolour, retitle, or ungroup.',
               icon: <ComponentsTabIcon />,
-              content: (
-                <PaletteComponentsTab
-                  pendingDraw={pendingDraw}
-                  addBanner={addBanner}
-                  addHero={addHero}
-                  addHeader={addHeader}
-                  addCallout={addCallout}
-                  addStatRow={addStatRow}
-                  addProcess={addProcess}
-                  onAddImage={onAddImage}
-                />
-              ),
+              content: <PaletteComponentsTab pendingDraw={pendingDraw} actions={tileActions} />,
             },
             {
               id: 'devices',
@@ -350,7 +364,7 @@ export function CommandPalette({
               description:
                 'Wireframing device frames: browser, monitor, laptop, phone, tablet, smartwatch.',
               icon: <DevicesTabIcon />,
-              content: <DevicePickerTab addShape={addShape} pendingShapeKind={pendingShapeKind} />,
+              content: <DevicePickerTab pendingDraw={pendingDraw} actions={tileActions} />,
             },
             {
               id: 'icons',
