@@ -226,4 +226,22 @@ describe('buildEditorCommands — app-level commands (spec/70)', () => {
     expect(h.autoLayout).toHaveBeenCalledOnce();
     expect(h.openExport).toHaveBeenCalledOnce();
   });
+
+  // Spec/47 "Layout styles": one command per explicit style, each passing
+  // its choice through to the shared autoLayout handler.
+  it('offers a command per layout style and passes the choice through', () => {
+    const h = handlers();
+    const cmds = buildEditorCommands(base, h);
+    for (const styleId of ['flow-down', 'flow-right', 'tree', 'mindmap'] as const) {
+      cmds.find((c) => c.id === `auto-layout-${styleId}`)!.run();
+      expect(h.autoLayout).toHaveBeenLastCalledWith(styleId);
+    }
+    // The plain command stays the smart default (no explicit choice).
+    cmds.find((c) => c.id === 'auto-layout')!.run();
+    expect(h.autoLayout).toHaveBeenLastCalledWith();
+  });
+
+  it('withholds the layout style commands from read-only sessions', () => {
+    expect(ids({ ...base, isReadOnly: true })).not.toContain('auto-layout-mindmap');
+  });
 });

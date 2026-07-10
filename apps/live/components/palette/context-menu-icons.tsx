@@ -291,6 +291,95 @@ export function AutoLayoutMenuIcon() {
   );
 }
 
+// Two boxes joined by a downward arrow - the Flowchart (down) layout style.
+export function FlowDownMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="4.5" y="1.5" width="7" height="3.4" rx="0.8" />
+      <rect x="4.5" y="11.1" width="7" height="3.4" rx="0.8" />
+      <path d="M8 4.9v6.2M6.2 9.3L8 11.1l1.8-1.8" />
+    </svg>
+  );
+}
+
+// Two boxes joined by a rightward arrow - the Flowchart (right) layout style.
+export function FlowRightMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="1.5" y="4.5" width="3.4" height="7" rx="0.8" />
+      <rect x="11.1" y="4.5" width="3.4" height="7" rx="0.8" />
+      <path d="M4.9 8h6.2M9.3 6.2L11.1 8l-1.8 1.8" />
+    </svg>
+  );
+}
+
+// Root over three reports - the Tree (org chart) layout style.
+export function TreeMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="5.8" y="1.5" width="4.4" height="3" rx="0.8" />
+      <rect x="1.2" y="11.5" width="3.6" height="3" rx="0.8" />
+      <rect x="6.2" y="11.5" width="3.6" height="3" rx="0.8" />
+      <rect x="11.2" y="11.5" width="3.6" height="3" rx="0.8" />
+      <path d="M8 4.5v2M3 11.5V8.5h10v3M8 8.5v3" />
+    </svg>
+  );
+}
+
+// Hub with four spokes - the Mindmap (radial) layout style.
+export function MindmapMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="8" cy="8" r="2.2" />
+      <circle cx="2.8" cy="3" r="1.4" />
+      <circle cx="13.2" cy="3" r="1.4" />
+      <circle cx="2.8" cy="13" r="1.4" />
+      <circle cx="13.2" cy="13" r="1.4" />
+      <path d="M6.5 6.6L3.8 4M9.5 6.6L12.2 4M6.5 9.4L3.8 12M9.5 9.4L12.2 12" />
+    </svg>
+  );
+}
+
 // Serif "A" - the Font section glyph.
 export function FontMenuIcon() {
   return (

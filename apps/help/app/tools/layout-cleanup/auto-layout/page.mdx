@@ -6,7 +6,7 @@ import { AutoLayoutTidy } from '@/components/illustrations/tools';
 export const metadata = helpMetadata({
   title: 'Auto Layout',
   description:
-    "Recompute a diagram's positions from the arrow graph, laying connected shapes into clean layers with Tidy Up.",
+    "Recompute a diagram's positions from the arrow graph with Tidy Up, in your choice of style: smart layers, a directed flowchart, a tree, or a mindmap.",
   path: '/help/tools/layout-cleanup/auto-layout/',
 });
 
@@ -26,17 +26,31 @@ Auto Layout, also labelled Tidy Up, is the structural tidier. Rather than nudgin
 - It is **origin-preserving**: the laid-out block stays pinned to the diagram's current top-left, so the result appears where you're already looking instead of jumping to the canvas origin.
 - It finishes with a **grid snap** (the same one [Auto-Align](/help/tools/layout-cleanup/auto-align/) runs), so the tidied output is also grid-aligned.
 
+## Layout styles
+
+One arrangement doesn't fit every diagram, so alongside the smart default the Cleanup category offers a tile per style. All of them read the same arrow graph and differ only in the shape of the result:
+
+- **Auto Layout** (the smart default): a layered arrangement with the direction inferred from where your shapes roughly sit now.
+- **Flowchart ↓** and **Flowchart →**: the same layered arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current positions suggest.
+- **Tree**: an org-chart arrangement. Roots sit at the top and every parent is centred over its own children, so hierarchies read cleanly level by level.
+- **Mindmap**: a radial arrangement. The most-connected shape becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
+
+Every style is also available from the command palette ("Auto Layout: Mindmap", and so on). If a diagram isn't a perfect tree (a shape with two parents, or a loop), Tree and Mindmap still work: they lay out the main skeleton and reconnect the extra arrows across it.
+
 ## Running it
 
 <Step n={1}>
   Right-click an empty part of the canvas (or the active tab) to open the context menu.
 </Step>
 
-<Step n={2}>Open the **Cleanup** category and choose **Auto Layout** (Tidy Up).</Step>
+<Step n={2}>
+  Open the **Cleanup** category and choose **Auto Layout** (Tidy Up) or one of the style tiles:
+  Flowchart ↓, Flowchart →, Tree, or Mindmap.
+</Step>
 
 <Step n={3}>The whole tab is laid out anew in a single undoable step.</Step>
 
-Because it's one undoable operation with one activity-log entry, you can try it and revert in a single step if you preferred the previous arrangement.
+Because it's one undoable operation with one activity-log entry, you can try a style and revert in a single step if you preferred the previous arrangement, so it costs nothing to try two or three and keep the one that reads best.
 
 ## When to use it
 

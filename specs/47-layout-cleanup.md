@@ -38,9 +38,38 @@ import) to place nodes they never drew.
 - One undoable op (`commit` snapshots the pre-layout state) and one activity-log
   entry, so it can be reverted in a single step.
 
+### Layout styles
+
+One layered layout can't express every diagram: a mindmap wants its root in the
+middle, an org chart wants parents centred over their reports. So Auto Layout is a
+family of **styles**, all sharing the same pipeline (graph extraction → per-component
+positioning → origin pinning → arrow re-anchor → grid snap) and differing only in how
+a component's nodes are positioned:
+
+| Style                 | `AutoLayoutOptions`                  | Positioning                                                                                                                             |
+| --------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Smart** (default)   | `{}`                                 | The layered layout with direction auto-detected from the elements' current rough positions. What plain "Auto Layout" always did.        |
+| **Flowchart (down)**  | `{ style: 'flow', direction: 'TB' }` | Layered, direction forced top-to-bottom.                                                                                                |
+| **Flowchart (right)** | `{ style: 'flow', direction: 'LR' }` | Layered, direction forced left-to-right.                                                                                                |
+| **Tree**              | `{ style: 'tree' }`                  | Tidy tree / org chart: a spanning tree from the roots (in-degree 0), each parent centred over its subtree, depth = rank, top-to-bottom. |
+| **Mindmap**           | `{ style: 'mindmap' }`               | Radial: the highest-degree node sits at the centre, each subtree gets an angular wedge sized by its leaf count, depth = ring radius.    |
+
+- The style lives in `AutoLayoutOptions` on `autoLayoutElements`: importers and the
+  MCP server keep calling it with no style and get Smart, unchanged.
+- **UI:** the Cleanup category shows a tile per style (Smart is the plain
+  "Auto Layout" tile), and the command palette carries one command per style
+  ("Auto Layout: Mindmap", ...). All styles are the same single undoable op.
+- Tree and Mindmap consume the same directed edge set as the layered layout; on a
+  graph that isn't a tree (extra in-edges, cycles) they lay out a BFS/longest-path
+  spanning tree and let the extra arrows re-anchor across it (deterministic, never
+  an error).
+- Telemetry: the existing `Tab` / `Aligned` event gains the style as its `type`
+  (`Smart`, `FlowchartDown`, `FlowchartRight`, `Tree`, `Mindmap`; Auto-align keeps
+  the bare event).
+
 ## Out of scope
 
-Radial / force-directed layouts, routing arrow paths around obstacles, and any LLM
+Force-directed ("organic") layouts, routing arrow paths around obstacles, and any LLM
 involvement (the AI "Clean" in [spec/25](25-ai-assistance.md) is the separate,
 key-gated path; Auto Layout is the deterministic, offline-safe one every deployment
 gets). See issue #12 for the fuller rationale and open questions.

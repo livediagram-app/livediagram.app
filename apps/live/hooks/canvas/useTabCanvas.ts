@@ -22,6 +22,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
+import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import { PATTERNS } from '@/components/palette/palette-controls';
 import { useTabTheme } from './useTabTheme';
 
@@ -131,12 +132,14 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   };
 
   // Auto Layout / "Tidy up" (spec/47, GitHub #12): recompute element
-  // positions from the arrow graph (layered / tree layout) rather than
-  // merely grid-snapping current positions like Auto-align. Pins the laid-out
-  // block to the diagram's current top-left so it stays where the user is
-  // looking instead of jumping to the origin, and grid-snaps the result (the
-  // same final pass the AI-apply path uses). One undoable op via `commit`.
-  const autoLayoutTab = () => {
+  // positions from the arrow graph rather than merely grid-snapping current
+  // positions like Auto-align. `choice` picks the layout style (spec/47
+  // "Layout styles"): the smart layered default, a forced-direction
+  // flowchart, tree, or mindmap. Pins the laid-out block to the diagram's
+  // current top-left so it stays where the user is looking instead of
+  // jumping to the origin, and grid-snaps the result (the same final pass
+  // the AI-apply path uses). One undoable op via `commit`.
+  const autoLayoutTab = (choice: AutoLayoutChoice = 'smart') => {
     if (editsBlocked) return;
     const els = activeTab.elements;
     if (els.length === 0) return;
@@ -144,8 +147,11 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     if (boxed.length === 0) return;
     const originX = Math.min(...boxed.map((b) => b.x));
     const originY = Math.min(...boxed.map((b) => b.y));
-    commit((current) => autoAlignElements(autoLayoutElements(current, { originX, originY })));
-    track('Tab', 'Aligned');
+    const { options, telemetryType } = AUTO_LAYOUT_CHOICES[choice];
+    commit((current) =>
+      autoAlignElements(autoLayoutElements(current, { ...options, originX, originY })),
+    );
+    track('Tab', 'Aligned', telemetryType);
   };
 
   // Tab default font (spec/28): every text element without its own

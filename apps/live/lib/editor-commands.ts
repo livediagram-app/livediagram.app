@@ -9,6 +9,11 @@
 // drift between entry points.
 
 import { SHAPE_MARKERS, type ShapeMarker } from '@livediagram/diagram';
+import {
+  AUTO_LAYOUT_CHOICES,
+  AUTO_LAYOUT_STYLE_IDS,
+  type AutoLayoutChoice,
+} from './auto-layout-choices';
 import type { CommandSearchItem } from './search';
 
 // A runnable command: the searchable shape (id / name / keywords) plus the
@@ -71,7 +76,7 @@ export type CommandHandlers = {
   redo: () => void;
   toggleZen: () => void;
   fitToScreen: () => void;
-  autoLayout: () => void;
+  autoLayout: (choice?: AutoLayoutChoice) => void;
   autoAlign: () => void;
   openExport: () => void;
   openImport: () => void;
@@ -291,10 +296,20 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // ranks for ambiguous queries.
   out.push({
     id: 'auto-layout',
-    name: 'Auto Layout (tidy up)',
-    keywords: 'auto layout tidy arrange clean cleanup organise organize graph',
-    run: h.autoLayout,
+    name: AUTO_LAYOUT_CHOICES.smart.commandName,
+    keywords: AUTO_LAYOUT_CHOICES.smart.keywords,
+    run: () => h.autoLayout(),
   });
+  // One command per explicit layout style (spec/47 "Layout styles"), the
+  // same choices the Cleanup menu offers as tiles.
+  for (const styleId of AUTO_LAYOUT_STYLE_IDS) {
+    out.push({
+      id: `auto-layout-${styleId}`,
+      name: AUTO_LAYOUT_CHOICES[styleId].commandName,
+      keywords: AUTO_LAYOUT_CHOICES[styleId].keywords,
+      run: () => h.autoLayout(styleId),
+    });
+  }
   out.push({
     id: 'auto-align',
     name: 'Auto-align to grid',

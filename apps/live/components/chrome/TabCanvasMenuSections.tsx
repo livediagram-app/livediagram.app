@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   MenuAccordionSection,
   MenuActionButton,
@@ -10,13 +11,31 @@ import {
   AutoLayoutMenuIcon,
   CanvasMenuIcon,
   CleanupMenuIcon,
+  FlowDownMenuIcon,
+  FlowRightMenuIcon,
   FontMenuIcon,
+  MindmapMenuIcon,
   PaletteMenuIcon,
+  TreeMenuIcon,
 } from '@/components/palette/context-menu-icons';
+import {
+  AUTO_LAYOUT_CHOICES,
+  AUTO_LAYOUT_STYLE_IDS,
+  type AutoLayoutChoice,
+} from '@/lib/auto-layout-choices';
 import { FontSelect } from '@/components/palette/FontSelect';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
 import type { CanvasMenuActions } from './TabBar';
+
+// Tile glyph per explicit layout style (labels + behaviour live in
+// AUTO_LAYOUT_CHOICES; only the icons are view-side).
+const STYLE_ICONS: Record<Exclude<AutoLayoutChoice, 'smart'>, ReactNode> = {
+  'flow-down': <FlowDownMenuIcon />,
+  'flow-right': <FlowRightMenuIcon />,
+  tree: <TreeMenuIcon />,
+  mindmap: <MindmapMenuIcon />,
+};
 
 // The tab menu's canvas band (spec/09 + spec/28 + spec/47): the Look &
 // Feel (theme / background), Font (tab default font + seeded size, with
@@ -102,13 +121,16 @@ export function TabCanvasMenuSections({
         </div>
       </MenuAccordionSection>
       {/* ── Cleanup band: layout tidiers (spec/47). Auto-align grid-
-            snaps; Auto Layout recomputes positions from the arrow graph. */}
+            snaps; Auto Layout recomputes positions from the arrow graph,
+            either smart (auto-detected flow) or in an explicit style
+            (spec/47 "Layout styles"): flowchart down / right, tree,
+            mindmap. */}
       <MenuGroupSeparator />
       <MenuAccordionSection title="Cleanup" icon={<CleanupMenuIcon />} {...sectionProps('cleanup')}>
         <MenuTileGrid cols={2}>
           <MenuTile
             icon={<AutoLayoutMenuIcon />}
-            label="Auto Layout"
+            label={AUTO_LAYOUT_CHOICES.smart.menuLabel}
             onClick={() => {
               canvas.onAutoLayout();
               onClose();
@@ -122,6 +144,17 @@ export function TabCanvasMenuSections({
               onClose();
             }}
           />
+          {AUTO_LAYOUT_STYLE_IDS.map((id) => (
+            <MenuTile
+              key={id}
+              icon={STYLE_ICONS[id]}
+              label={AUTO_LAYOUT_CHOICES[id].menuLabel}
+              onClick={() => {
+                canvas.onAutoLayout(id);
+                onClose();
+              }}
+            />
+          ))}
         </MenuTileGrid>
       </MenuAccordionSection>
     </>

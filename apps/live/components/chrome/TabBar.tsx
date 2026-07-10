@@ -11,6 +11,7 @@ import {
   type TimerMode,
 } from '@livediagram/diagram';
 import { useUiMode } from '@/hooks/ui/useUiMode';
+import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon } from '@/components/chrome/tab-bar-icons';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
@@ -29,9 +30,10 @@ export type CanvasMenuActions = {
   onChangeTheme: () => void;
   onChangeCanvas: () => void;
   // Cleanup category (spec/47): Auto-align grid-snaps current positions;
-  // Auto Layout recomputes positions from the arrow graph (Tidy up).
+  // Auto Layout recomputes positions from the arrow graph (Tidy up) in the
+  // chosen style (spec/47 "Layout styles"; omitted = smart).
   onAutoAlign: () => void;
-  onAutoLayout: () => void;
+  onAutoLayout: (choice?: AutoLayoutChoice) => void;
   // Tab font + default new-element size (spec/28), surfaced as the menu's Font
   // category (moved out of the Tab Appearance modal). `font` null = the editor
   // default; `defaultTextSize` undefined defaults to medium.
