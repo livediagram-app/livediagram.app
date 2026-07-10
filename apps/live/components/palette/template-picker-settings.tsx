@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import { TextInput } from '@livediagram/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { BackBar } from '@/components/palette/ThemeCategoryBrowser';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -60,12 +61,13 @@ export function NewDiagramSettingsStep({
       {/* Name */}
       <label className="flex flex-col gap-1.5">
         <span className={fieldLabel}>Diagram name</span>
-        <input
-          type="text"
+        <TextInput
           value={diagramName}
           placeholder={placeholder}
           onChange={(e) => onDiagramName(e.target.value)}
-          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-brand-500 dark:focus:ring-brand-500/20"
+          // rounded-lg keeps the wizard's field shape; the rest converges
+          // on the shared input treatment (focus ring included).
+          className="rounded-lg dark:bg-slate-800"
         />
       </label>
 
