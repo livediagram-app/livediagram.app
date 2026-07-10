@@ -104,7 +104,7 @@ export function contentBounds(elements: Element[]): { x: number; y: number; w: n
 // clipPath rounds the corners (a 'full'-radius avatar clamps to a circle). A
 // white backing rect matches the on-screen white background behind the bitmap
 // so a letterboxed 'contain' image doesn't show the page colour in its margins.
-export function svgImageShape(
+function svgImageShape(
   el: BoxedElement,
   href: string,
   objectFit: 'cover' | 'contain',

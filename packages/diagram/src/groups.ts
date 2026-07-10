@@ -147,7 +147,7 @@ export function boundsAnchorPoint(
 // the bounds (defaults to `elements`; pass the pre-mutation list when the
 // members are about to disappear). Used by ungroup and the delete paths so
 // an arrow never dangles off a group that no longer exists.
-export function freezeGroupEndpoints(
+function freezeGroupEndpoints(
   elements: Element[],
   groupIds: ReadonlySet<ElementId>,
   boundsSource: Element[] = elements,

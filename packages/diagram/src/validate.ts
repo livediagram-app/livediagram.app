@@ -20,10 +20,10 @@ import type { Element, ShapeKind, Tab } from './index';
 // Bounds. Generous vs any real diagram, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
 export const MAX_FREEHAND_POINTS = 20_000;
-export const MAX_TABLE_ROWS = 1_000;
-export const MAX_TABLE_COLS = 1_000;
-export const MAX_TABLE_CELLS = 50_000;
-export const MAX_DATA_ARRAY = 5_000; // railLabels / lineCategories / pieSlices / lineSeries
+const MAX_TABLE_ROWS = 1_000;
+const MAX_TABLE_COLS = 1_000;
+const MAX_TABLE_CELLS = 50_000;
+const MAX_DATA_ARRAY = 5_000; // railLabels / lineCategories / pieSlices / lineSeries
 
 // Exported so the MCP schema resource (spec/62 §4.5) lists the real element
 // types + anchors rather than a hand-maintained copy that can drift.

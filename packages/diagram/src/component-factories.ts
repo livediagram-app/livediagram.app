@@ -25,8 +25,8 @@ import { createImage, createPinnedArrow, createShape, createText } from './facto
 // caller maps theme -> colour, keeping this package theme-agnostic); the bar
 // is filled with it and the text is white for contrast. Returned in paint
 // order (bar first, so the text sits on top).
-export const BANNER_WIDTH = 440;
-export const BANNER_HEIGHT = 104;
+const BANNER_WIDTH = 440;
+const BANNER_HEIGHT = 104;
 export function createBanner(cx: number, cy: number, accent: string): BoxedElement[] {
   const groupId: ElementId = crypto.randomUUID();
   const left = cx - BANNER_WIDTH / 2;
@@ -79,7 +79,7 @@ export function createBanner(cx: number, cy: number, accent: string): BoxedEleme
 // aspect-locked with a 'full' corner radius (CSS clamps that to a circle).
 // Built to back the Header component but also useful standalone. Centred on
 // (cx, cy); imageId is null until the picker fills it.
-export const AVATAR_SIZE = 96;
+const AVATAR_SIZE = 96;
 export function createAvatar(cx: number, cy: number): ImageElement {
   return {
     ...createImage(cx - AVATAR_SIZE / 2, cy - AVATAR_SIZE / 2),
@@ -98,8 +98,8 @@ export function createAvatar(cx: number, cy: number): ImageElement {
 // stays double-clickable to set / change it (the picker is no longer opened
 // automatically). `accent` is supplied by the caller (theme -> colour mapping
 // stays in the app). Returned in paint order: image, then card, then text.
-export const HERO_WIDTH = 520;
-export const HERO_HEIGHT = 300;
+const HERO_WIDTH = 520;
+const HERO_HEIGHT = 300;
 export function createHero(cx: number, cy: number, accent: string): BoxedElement[] {
   const groupId: ElementId = crypto.randomUUID();
   const left = cx - HERO_WIDTH / 2;
@@ -163,8 +163,8 @@ export function createHero(cx: number, cy: number, accent: string): BoxedElement
 // it, and a row of nav links on the right, all sharing one groupId. Follows
 // the tab theme via the accent bar + white text. Returned in paint order
 // (bar first). Centred on (cx, cy).
-export const HEADER_WIDTH = 640;
-export const HEADER_HEIGHT = 84;
+const HEADER_WIDTH = 640;
+const HEADER_HEIGHT = 84;
 const HEADER_LINKS = ['Home', 'About', 'Contact'] as const;
 export function createHeader(cx: number, cy: number, accent: string): BoxedElement[] {
   const groupId: ElementId = crypto.randomUUID();
@@ -235,8 +235,8 @@ export type ComponentColors = { accent: string; surface: string; ink: string };
 
 // Callout / note box (spec/09): a soft surface card with an accent badge, a
 // bold title, and a body line — for annotating a diagram. Composite group.
-export const CALLOUT_WIDTH = 380;
-export const CALLOUT_HEIGHT = 116;
+const CALLOUT_WIDTH = 380;
+const CALLOUT_HEIGHT = 116;
 export function createCallout(cx: number, cy: number, c: ComponentColors): BoxedElement[] {
   const groupId: ElementId = crypto.randomUUID();
   const left = cx - CALLOUT_WIDTH / 2;
@@ -300,16 +300,15 @@ export function createCallout(cx: number, cy: number, c: ComponentColors): Boxed
 // Stat row (spec/09): three KPI cards (big number + caption) side by side, as
 // one composite group. The number pops in the accent; the card is the theme
 // surface with a thin accent border, the caption muted ink.
-export const STAT_CARD_WIDTH = 150;
-export const STAT_CARD_HEIGHT = 96;
+const STAT_CARD_WIDTH = 150;
+const STAT_CARD_HEIGHT = 96;
 const STAT_GAP = 16;
 const STAT_PRESETS = [
   { value: '1.2k', caption: 'Users' },
   { value: '98%', caption: 'Uptime' },
   { value: '4.7', caption: 'Rating' },
 ] as const;
-export const STAT_ROW_WIDTH =
-  STAT_PRESETS.length * STAT_CARD_WIDTH + (STAT_PRESETS.length - 1) * STAT_GAP;
+const STAT_ROW_WIDTH = STAT_PRESETS.length * STAT_CARD_WIDTH + (STAT_PRESETS.length - 1) * STAT_GAP;
 export function createStatRow(cx: number, cy: number, c: ComponentColors): BoxedElement[] {
   const groupId: ElementId = crypto.randomUUID();
   const left = cx - STAT_ROW_WIDTH / 2;
@@ -358,15 +357,15 @@ export function createStatRow(cx: number, cy: number, c: ComponentColors): Boxed
 // Process steps (spec/09): numbered accent circles joined by arrows, with a
 // caption under each. The circles + captions share a group; the connectors are
 // arrows pinned to the circles, so they follow when the group moves / scales.
-export const PROCESS_STEP_SIZE = 60;
+const PROCESS_STEP_SIZE = 60;
 const PROCESS_STRIDE = PROCESS_STEP_SIZE + 96; // centre-to-centre spacing
 const PROCESS_PRESETS = [
   { n: '1', caption: 'Plan' },
   { n: '2', caption: 'Build' },
   { n: '3', caption: 'Ship' },
 ] as const;
-export const PROCESS_WIDTH = (PROCESS_PRESETS.length - 1) * PROCESS_STRIDE + PROCESS_STEP_SIZE;
-export const PROCESS_HEIGHT = PROCESS_STEP_SIZE + 8 + 24;
+const PROCESS_WIDTH = (PROCESS_PRESETS.length - 1) * PROCESS_STRIDE + PROCESS_STEP_SIZE;
+const PROCESS_HEIGHT = PROCESS_STEP_SIZE + 8 + 24;
 export function createProcessSteps(cx: number, cy: number, c: ComponentColors): Element[] {
   const groupId: ElementId = crypto.randomUUID();
   const left = cx - PROCESS_WIDTH / 2;

@@ -13,7 +13,7 @@ export const COMPONENT_GAP = 120; // gap between disconnected sub-diagrams
 // Shapes whose silhouette assumes a 1:1 aspect ratio — sized as a square.
 const SQUARE_SHAPES = new Set(['circle', 'diamond']);
 
-export const round10 = (n: number) => Math.round(n / 10) * 10;
+const round10 = (n: number) => Math.round(n / 10) * 10;
 export const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
 export type Size = { w: number; h: number };

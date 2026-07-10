@@ -263,7 +263,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
 // THEME. Returns null when the theme has no such variant (e.g. a 'branch-2'
 // preset after switching to a single-accent theme that has no branches) so the
 // caller can leave the shape's current colours in place rather than blank them.
-export function shapeColorPresetById(
+function shapeColorPresetById(
   theme: ThemeDefinition,
   id: string | undefined,
 ): ShapeColorPreset | null {
