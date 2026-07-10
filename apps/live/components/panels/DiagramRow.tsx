@@ -94,6 +94,7 @@ export function DiagramRow({
   onDelete,
   onDuplicate,
   onMoveRequest,
+  onOpenShare,
   thumbnailShareCode,
   draggable: isDraggable,
 }: {
@@ -118,6 +119,10 @@ export function DiagramRow({
   // anchored to the supplied element. Stored at the panel level so
   // the portal isn't nested inside another PortalMenu.
   onMoveRequest?: (anchor: HTMLElement | null) => void;
+  // Opens the Share dialog in place — set only on the row for the diagram
+  // already open in this editor session, where a `?share=1` navigation
+  // would pointlessly reload the editor (see openShareSettings).
+  onOpenShare?: () => void;
   // Set true on rows the user can drag into folders. The actual
   // drop handling lives on FolderNode + UnsortedNode; this row just
   // sets the custom MIME data so a drop target knows what was
@@ -142,10 +147,16 @@ export function DiagramRow({
     setEditing(false);
   };
 
-  // "Manage Sharing…" opens the diagram with the Share dialog already up
-  // (the editor reads `?share=1`); sharing lives in the editor's full Share
-  // dialog rather than being reimplemented in the panel.
+  // "Manage Sharing…" opens the editor's full Share dialog (sharing isn't
+  // reimplemented in the panel). When the row IS the diagram already open in
+  // this editor session, `onOpenShare` flips the dialog open in place;
+  // otherwise navigate to the diagram with `?share=1` (the editor reads it on
+  // boot), which is a full page load by necessity.
   const openShareSettings = () => {
+    if (onOpenShare) {
+      onOpenShare();
+      return;
+    }
     if (typeof window === 'undefined') return;
     window.location.assign(`${window.location.origin}/diagram/${item.id}?share=1`);
   };

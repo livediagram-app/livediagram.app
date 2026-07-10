@@ -206,6 +206,7 @@ export function EditorCanvasHost() {
     setPalettePosition,
     setRailLabelSelected,
     setSelectedId,
+    setShareDialogOpen,
     setTextAlignSelected,
     setUserPreferences,
     setViewportOffset,
@@ -469,6 +470,7 @@ export function EditorCanvasHost() {
           );
         if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
       }}
+      onOpenShareCurrent={() => setShareDialogOpen(true)}
       onDeleteDiagram={deleteDiagram}
       onDuplicateDiagram={(id) => void duplicateDiagram(id)}
       onCreateFolder={createFolder}

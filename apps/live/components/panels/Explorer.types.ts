@@ -48,6 +48,12 @@ export type ExplorerProps = {
   // Optional row-level actions. When provided, each row renders an
   // ellipsis menu that delegates to these handlers.
   onRenameCurrent?: (name: string) => void;
+  // Opens the editor's Share dialog in place for the CURRENT diagram's
+  // row (its Share tile would otherwise navigate with `?share=1` and
+  // reload the very editor session the user is in). Optional: surfaces
+  // without a live editor session (status pages, /explorer) omit it and
+  // keep the navigation fallback.
+  onOpenShareCurrent?: () => void;
   // `beforeRemove` runs after the delete is confirmed and before the row is
   // pulled from the list, so the caller (Explorer) can slide it out first.
   // `opts.skipConfirm` is passed by the panel because it confirms inline

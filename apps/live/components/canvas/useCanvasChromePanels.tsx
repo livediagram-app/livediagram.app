@@ -126,6 +126,7 @@ export function useCanvasChromePanels({
     onOpenActionForElement,
     onOpenCommentsForElement,
     onOpenDiagram,
+    onOpenShareCurrent,
     onRedo,
     onRenameCurrent,
     onRenameFolder,
@@ -175,6 +176,7 @@ export function useCanvasChromePanels({
     onOpenDiagram,
     onNewDiagram,
     onRenameCurrent,
+    onOpenShareCurrent,
     onDeleteDiagram,
     onDuplicateDiagram,
     onCreateFolder,
@@ -256,6 +258,9 @@ export function useCanvasChromePanels({
       onOpenDiagram={explorerHandlers.onOpenDiagram}
       onNewDiagram={explorerHandlers.onNewDiagram}
       onRenameCurrent={explorerHandlers.onRenameCurrent}
+      // The stable wrapper is always a function, so gate on the real prop
+      // to preserve "absent = navigation fallback" downstream.
+      onOpenShareCurrent={onOpenShareCurrent ? explorerHandlers.onOpenShareCurrent : undefined}
       onDeleteDiagram={explorerHandlers.onDeleteDiagram}
       onDuplicateDiagram={explorerHandlers.onDuplicateDiagram}
       onCreateFolder={explorerHandlers.onCreateFolder}

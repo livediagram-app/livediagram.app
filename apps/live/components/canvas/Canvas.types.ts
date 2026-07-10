@@ -278,6 +278,9 @@ export type CanvasProps = {
   onOpenDiagram: (id: string, shareCode?: string) => void;
   onNewDiagram: () => void;
   onRenameCurrent: (name: string) => void;
+  // Opens the editor's Share dialog in place, for the Explorer's
+  // current-diagram Share tile (avoids the `?share=1` full reload).
+  onOpenShareCurrent?: () => void;
   onDeleteDiagram: (id: string) => void;
   onDuplicateDiagram: (id: string) => void;
   onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;

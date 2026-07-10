@@ -35,6 +35,7 @@ function ExplorerImpl({
   onOpenDiagram,
   onNewDiagram,
   onRenameCurrent,
+  onOpenShareCurrent,
   onDeleteDiagram,
   onDuplicateDiagram,
   onCreateFolder,
@@ -283,6 +284,7 @@ function ExplorerImpl({
                     draggable={!!onMoveDiagramToFolder}
                     onOpen={() => onOpenDiagram(current.id)}
                     onRename={onRenameCurrent}
+                    onOpenShare={onOpenShareCurrent}
                     onDelete={
                       openDeleteConfirm
                         ? (anchor) => openDeleteConfirm(current.id, anchor)
@@ -304,6 +306,7 @@ function ExplorerImpl({
                     active
                     onOpen={() => onOpenDiagram(currentTeam.id)}
                     onRename={onRenameCurrent}
+                    onOpenShare={onOpenShareCurrent}
                     // Any joined member may delete a team diagram
                     // (spec/35); the api enforces team membership.
                     onDelete={
