@@ -1,6 +1,8 @@
-// Embed-URL + iframe-snippet builders for the read-only embed view
-// (spec/33). Pure functions so the ShareDialog's "Embed" copy button
-// and the tests share one source of truth for the snippet shape.
+// Embed-URL + iframe-snippet builders for the embed view (spec/33).
+// Embeds honour the share link's role: a view link embeds read-only,
+// an edit link embeds an editable canvas. Pure functions so the
+// ShareDialog's "Embed" copy button and the tests share one source
+// of truth for the snippet shape.
 
 // The embed route reads the share code client-side from `?s=`, the
 // same query form the share view uses (spec/33 "URL shape").

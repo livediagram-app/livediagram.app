@@ -120,11 +120,6 @@ export function SharedBadge({
                   </span>
                   <span className="min-w-0 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                     {m.description}
-                    {current ? (
-                      <span className="ml-1 font-medium text-slate-700 dark:text-slate-200">
-                        (this diagram)
-                      </span>
-                    ) : null}
                   </span>
                 </li>
               );

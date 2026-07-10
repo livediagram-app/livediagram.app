@@ -93,12 +93,17 @@ export function ActiveShareLinkRow({
         <Button onClick={() => onCopy(link.code)} size="xs" className="shadow-sm">
           {copiedCode === link.code ? 'Copied' : 'Copy link'}
         </Button>
-        {/* Embed (spec/33): copy the read-only embed as a raw
-                    URL or an <iframe> snippet. */}
+        {/* Embed (spec/33): copy the embed as a raw URL or an
+                    <iframe> snippet. Embeds honour the link's role,
+                    so the tooltip says which one this row hands out. */}
         <ShareCopyMenu
           label="Embed"
           tooltipTitle="Embed"
-          tooltipDescription="Copy a read-only embed of this diagram as a URL or an <iframe> snippet for wikis, Notion, and docs."
+          tooltipDescription={`Copy an embed of this diagram as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
+            link.role === 'edit'
+              ? 'This edit link embeds an editable canvas.'
+              : 'This view link embeds a read-only canvas.'
+          }`}
           trackType="EmbedCode"
           items={[
             {

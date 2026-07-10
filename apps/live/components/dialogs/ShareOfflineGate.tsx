@@ -84,7 +84,7 @@ export function ShareOfflineGate({
           </p>
         </div>
         <Button onClick={() => void sync()} disabled={busy} className="mt-1 shadow-sm">
-          {busy ? 'Syncing…' : 'Sync to Account'}
+          {busy ? 'Syncing…' : 'Sync Diagram'}
         </Button>
       </div>
 

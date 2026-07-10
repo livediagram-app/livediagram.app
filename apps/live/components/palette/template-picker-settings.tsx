@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { BackBar } from '@/components/palette/ThemeCategoryBrowser';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
 // A folder as the placement browser sees it: parentId drives the drill-down
 // (root folders show at the space level; subfolders only inside their parent).
@@ -110,7 +111,15 @@ export function NewDiagramSettingsStep({
           <span>
             This diagram is not backed up or synced. Clearing your browser data, using private
             browsing, or switching device or browser will lose it for good. You can Sync it to your
-            account later.
+            account later.{' '}
+            <HelpArticleLink
+              article="offlineMode"
+              variant="text"
+              label="Learn more"
+              title="Offline Mode"
+              description="How offline diagrams work, and moving them to or from your account."
+              className="!text-amber-800 underline hover:!text-amber-900 dark:!text-amber-200 dark:hover:!text-amber-100"
+            />
           </span>
         </div>
       ) : null}
@@ -188,9 +197,15 @@ function PlacementBrowser({
   const [stack, setStack] = useState<PickerFolder[]>([]);
   const placementSpace = placement.startsWith('team:') ? placement.split(':')[1] : 'my-work';
 
+  // Entering a space also selects its root when the current choice lives
+  // elsewhere, so the level never renders with nothing highlighted (the
+  // "always something selected" rule; see selectionChain below for the
+  // within-space half of it).
   const enterSpace = (next: string | null) => {
     setChosenSpace(next);
     setStack([]);
+    if (next === 'my-work' && placementSpace !== 'my-work') onPlacement('unsorted');
+    else if (next && next !== 'my-work' && placementSpace !== next) onPlacement(`team:${next}`);
   };
 
   if (hasTeams && space === null) {
@@ -232,6 +247,22 @@ function PlacementBrowser({
   const children = spaceFolders.filter((f) => f.parentId === (openFolder?.id ?? null));
   const hasKids = (id: string) => spaceFolders.some((f) => f.parentId === id);
 
+  // The chosen destination folder and its ancestor chain within this space.
+  // Keeps something visibly selected at EVERY level: a folder card is shown
+  // selected when the destination IS it or lives inside it, so backing out
+  // of a subfolder still highlights the branch that holds the choice.
+  const selectionChain = new Set<string>();
+  if (placementSpace === (isMyWork ? 'my-work' : teamId)) {
+    const ix = placement.indexOf('folder:');
+    const chosenId = ix >= 0 ? placement.slice(ix + 'folder:'.length) : null;
+    const byId = new Map(spaceFolders.map((f) => [f.id, f]));
+    let cur = chosenId ? byId.get(chosenId) : undefined;
+    while (cur) {
+      selectionChain.add(cur.id);
+      cur = cur.parentId ? byId.get(cur.parentId) : undefined;
+    }
+  }
+
   // Back: pop one folder level; at the space root, back to the overview
   // (only shown when the overview exists / we're inside a folder).
   const showBack = hasTeams || stack.length > 0;
@@ -270,14 +301,20 @@ function PlacementBrowser({
         {children.map((f) =>
           hasKids(f.id) ? (
             // A folder with subfolders drills in (its "save here" card is the
-            // first tile of the next level).
+            // first tile of the next level) and gets the stacked-folders
+            // glyph so it reads as "contains more" before you click. Drilling
+            // also selects it (unless the choice already lives inside it), so
+            // the next level opens with its first card highlighted.
             <PlacementCard
               key={f.id}
               label={f.name}
               sub="Open folder"
-              icon={<FolderPlaceIcon />}
-              selected={placement === valueFor(f.id)}
-              onSelect={() => setStack([...stack, f])}
+              icon={<FolderStackIcon />}
+              selected={selectionChain.has(f.id)}
+              onSelect={() => {
+                if (!selectionChain.has(f.id)) onPlacement(valueFor(f.id));
+                setStack([...stack, f]);
+              }}
             />
           ) : (
             <PlacementCard
@@ -471,6 +508,27 @@ function FolderPlaceIcon() {
       aria-hidden
     >
       <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.8 2H15.5A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-9Z" />
+    </svg>
+  );
+}
+
+// A folder with a smaller folder tucked inside: the "has subfolders" marker
+// on drill-in cards, distinct from the plain FolderPlaceIcon leaf.
+function FolderStackIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.8 2H15.5A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-9Z" />
+      <path d="M6.5 12.9v-2.6c0-.44.36-.8.8-.8h1.5l.9 1h2.5c.44 0 .8.36.8.8v1.6c0 .44-.36.8-.8.8H7.3a.8.8 0 0 1-.8-.8Z" />
     </svg>
   );
 }
