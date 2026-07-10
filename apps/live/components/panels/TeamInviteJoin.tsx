@@ -202,11 +202,10 @@ function Body({ children }: { children: React.ReactNode }) {
 }
 
 function PrimaryLink({ href, children }: { href: string; children: React.ReactNode }) {
+  // Anchor styled as the shared primary button (buttonClassName is the
+  // anchor escape hatch; Button itself is <button>-only).
   return (
-    <a
-      href={href}
-      className="mt-5 inline-block rounded-md bg-brand-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-600"
-    >
+    <a href={href} className={buttonClassName({ size: 'md', className: 'mt-5 px-5' })}>
       {children}
     </a>
   );
@@ -216,7 +215,7 @@ function SecondaryLink({ href, children }: { href: string; children: React.React
   return (
     <a
       href={href}
-      className="inline-block rounded-md border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      className={buttonClassName({ variant: 'secondary', size: 'md', className: 'px-5' })}
     >
       {children}
     </a>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { Button } from '@livediagram/ui';
 import type { Folder } from '@livediagram/api-schema';
 import { FolderRow, UnsortedRow } from '@/app/explorer/views';
 import { CardView } from '@/app/explorer/CardView';
@@ -199,13 +200,15 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
         <div className="flex shrink-0 items-center gap-2">
           <ViewToggle mode={viewMode} onChange={setViewMode} />
           <div className="relative">
-            <button
+            <Button
               ref={createRef}
-              type="button"
               onClick={() => setCreateOpen((o) => !o)}
               aria-haspopup="menu"
               aria-expanded={createOpen}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-brand-500 px-2 py-1 text-[11px] font-medium text-white shadow-sm transition hover:bg-brand-600"
+              size="xs"
+              // Keeps the panel header's compact chip density: the extra
+              // classes append after the size scale, so they win.
+              className="shrink-0 gap-1.5 px-2 py-1 text-[11px] shadow-sm"
             >
               <PlusIcon />
               Create
@@ -223,7 +226,7 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
               >
                 <path d="M4 6l4 4 4-4" />
               </svg>
-            </button>
+            </Button>
             {createOpen ? (
               <PortalMenu
                 anchor={createRef.current}

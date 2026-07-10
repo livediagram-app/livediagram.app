@@ -279,13 +279,14 @@ export function TeamPane({
               aria-label="Invite by email address"
               className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
-            <button
+            <Button
               type="submit"
+              size="xs"
               disabled={!inviteEmail.trim() || inviteBusy}
-              className="shrink-0 rounded-md bg-brand-500 px-3 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="shrink-0 py-1 shadow-sm"
             >
               Invite
-            </button>
+            </Button>
           </form>
         ) : null}
       </div>
