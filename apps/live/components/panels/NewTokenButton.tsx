@@ -101,14 +101,9 @@ export function NewTokenButton({ tokens }: { tokens: TokensController }) {
                 {tokens.error ? (
                   <p className="text-xs text-rose-600 dark:text-rose-400">{tokens.error}</p>
                 ) : null}
-                <button
-                  type="button"
-                  onClick={() => void submit()}
-                  disabled={tokens.creating}
-                  className="rounded-md bg-brand-500 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600 disabled:opacity-50"
-                >
+                <Button size="xs" onClick={() => void submit()} disabled={tokens.creating}>
                   {tokens.creating ? 'Creating…' : 'Create token'}
-                </button>
+                </Button>
                 <p className="text-[11px] text-slate-400">Tokens last 6 months.</p>
               </div>
             )}

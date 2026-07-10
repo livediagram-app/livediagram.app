@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Button } from '@livediagram/ui';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
@@ -219,14 +220,16 @@ export function CommentThreadPopover({
             />
             <div className="mt-1 flex items-center justify-between">
               <p className="text-[10px] text-slate-400 dark:text-slate-400">⌘↵ to send</p>
-              <button
-                type="button"
+              <Button
+                size="xs"
                 onClick={submit}
                 disabled={!draft.trim()}
-                className="rounded bg-brand-500 px-3 py-1 text-[11px] font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+                // Keeps the popover footer's compact density: overrides
+                // append after the size scale, so they win.
+                className="px-3 py-1 text-[11px]"
               >
                 Comment
-              </button>
+              </Button>
             </div>
           </footer>
         ) : null}
