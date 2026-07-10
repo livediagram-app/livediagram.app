@@ -177,7 +177,7 @@ export function CodeInputRow({
 // OAuth button.
 // ---------------------------------------------------------------------
 
-export function GoogleGlyph() {
+function GoogleGlyph() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden>
       <path
