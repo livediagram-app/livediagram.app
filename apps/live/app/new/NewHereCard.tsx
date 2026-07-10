@@ -17,9 +17,7 @@ export function NewHereCard({ onStart, busy }: { onStart: () => void; busy: bool
           <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
             New to livediagram?
           </span>
-          <span className="text-[10px] text-slate-400 dark:text-slate-500">
-            Take the guided tour
-          </span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">Learn by example</span>
         </div>
       </div>
       <div className="flex flex-col gap-3 p-4">
@@ -29,8 +27,10 @@ export function NewHereCard({ onStart, busy }: { onStart: () => void; busy: bool
         </p>
         {/* rounded-lg + py-2 keep the card's taller CTA shape; the classes
             append after the size scale, so they win. */}
+        {/* CTA renamed from "Show me around": that name now belongs to the
+            interactive editor tour (spec/79). */}
         <Button size="xs" onClick={onStart} disabled={busy} className="rounded-lg py-2 shadow-sm">
-          Show me around
+          Take the guided tour
         </Button>
       </div>
     </div>

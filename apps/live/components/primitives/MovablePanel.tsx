@@ -51,6 +51,7 @@ export function MovablePanel({
   onDockDragStart,
   onDockDrag,
   onDockDragEnd,
+  dataTourId,
   children,
 }: MovablePanelProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -229,6 +230,7 @@ export function MovablePanel({
       <div
         ref={ref}
         data-floating-panel=""
+        data-tour-id={dataTourId}
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -281,6 +283,7 @@ export function MovablePanel({
     <div
       ref={ref}
       data-floating-panel=""
+      data-tour-id={dataTourId}
       // Marks the FULL floating panel as opacity-controlled: globals.css
       // applies the user's --lvd-panel-opacity here (spec/20) and restores
       // it to opaque on hover / focus. The minimal dock branch above is

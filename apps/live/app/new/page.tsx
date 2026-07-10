@@ -20,6 +20,7 @@ import {
   apiSetDiagramFolder,
 } from '@/lib/api-client';
 import { offlineCreateDiagram } from '@/lib/offline/offline-store';
+import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
@@ -335,6 +336,9 @@ export default function NewDiagramPage() {
         await apiSetDiagramFolder(who.id, diagramId, settings.folderId).catch(() => {});
       }
     }
+    // "Show me around" (spec/79): hand the tour intent across the hard
+    // navigation via a one-shot sessionStorage flag the editor consumes.
+    if (settings.tour) markTourPending();
     window.location.assign(`/diagram/${diagramId}`);
   };
 
@@ -396,6 +400,10 @@ export default function NewDiagramPage() {
             teamFolders={teamFolders}
             initialPlacement={initialPlacement}
             onCreateFolder={createPickerFolder}
+            // "Show me around" (spec/79): the Settings step offers the
+            // interactive tour only to brand-new users (zero owned diagrams;
+            // stricter than the < 3 gate on the sample-tour card below).
+            offerTour={diagramCount === 0}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
             onPick={(kind, name, themeId, settings) =>
               void commitNewDiagram(kind, name, themeId, settings)

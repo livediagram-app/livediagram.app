@@ -147,5 +147,10 @@ export type MovablePanelProps = {
   onDockDragStart?: () => void;
   onDockDrag?: (geom: PanelDragGeometry) => void;
   onDockDragEnd?: (geom: PanelDragGeometry) => void;
+  // Stable anchor id for the interactive tour (spec/79), rendered as
+  // `data-tour-id` on the panel root in BOTH render paths (floating panel
+  // and mobile/minimal dock popover) so tour steps can find the panel
+  // whatever the layout.
+  dataTourId?: string;
   children: ReactNode;
 };

@@ -1,7 +1,13 @@
-# 69 — Guided tour sample ("Show me around")
+# 69 — Guided tour sample ("Take the guided tour")
 
-A learn-by-doing onboarding option: the welcome wizard offers **Show me
-around**, which fills the first tab with a small hand-built sample diagram
+> Naming note: this card's CTA was originally "Show me around". That name
+> now belongs to the interactive editor tour
+> ([spec/79](79-editor-tour.md)), so the card reads **Take the guided
+> tour** instead. The two coexist: this spec is the annotated sample
+> diagram, spec/79 the step-by-step chrome tour.
+
+A learn-by-doing onboarding option: the welcome wizard offers a guided-tour
+card, which fills the first tab with a small hand-built sample diagram
 whose annotation markers ([spec/38](38-annotations.md)) explain the core
 interactions in place. Instead of reading a help article in another tab, the
 new user pokes at a real diagram that teaches itself.
@@ -10,8 +16,8 @@ new user pokes at a real diagram that teaches itself.
 
 - **Welcome wizard only.** The template step of the welcome flow (both the
   first-run `/new` page and the in-editor welcome picker, see
-  [spec/14](14-new-diagram-route.md)) shows a **Show me around** card next to
-  the **Blank** quick-pick card. It does not appear in the in-editor
+  [spec/14](14-new-diagram-route.md)) shows a **Take the guided tour** card
+  next to the **Blank** quick-pick card. It does not appear in the in-editor
   "Browse templates" mode — it's an onboarding affordance, not a template you
   reach for later.
 - **One click, no theme step.** Picking it commits immediately with the
