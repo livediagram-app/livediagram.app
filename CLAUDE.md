@@ -26,13 +26,14 @@ Treat them as part of the change, not an afterthought:
 
 ## Help centre articles must stay registered
 
-The help centre (`apps/help`, spec/55) has a hand-curated registry at [`apps/help/lib/articles.ts`](apps/help/lib/articles.ts) that is the **single source for the help search** (`SearchInput` → `searchArticles`) **and the category/browse listings**. The article's MDX page renders from the filesystem, but it is **invisible to search and browse unless it's in that registry** — there is no filesystem auto-discovery.
+The help centre (`apps/help`, spec/55) has a hand-curated registry in the [`@livediagram/help-registry`](packages/help-registry/src/index.ts) package (re-exported by `apps/help/lib/articles.ts` so the help app keeps its `@/lib/articles` import path). It is the **single source for the help search** (`SearchInput` → `searchArticles`), **the category/browse listings**, **and the live editor's search-panel Help group** (`apps/live/lib/help-search.ts` derives its catalogue from it). The article's MDX page renders from the filesystem, but it is **invisible to search and browse unless it's in that registry** — there is no filesystem auto-discovery.
 
 So, whenever you add (or remove/rename) a help article:
 
-- Add (or update) its entry in the `articles` array in `apps/help/lib/articles.ts` — `slug`, `title`, `description`, `category`, `categorySlug` (the full nested path, e.g. `canvas/the-canvas`), and `parentSlug` for a sub-article — **in the same change** as the new `apps/help/app/.../page.mdx`.
+- Add (or update) its entry in the `articles` array in `packages/help-registry/src/index.ts` — `slug`, `title`, `description`, `keywords`, `category`, `categorySlug` (the full nested path, e.g. `canvas/the-canvas`), and `parentSlug` for a sub-article — **in the same change** as the new `apps/help/app/.../page.mdx`.
 - Bump the matching `categories[].articleCount` (and add a `categories` entry if it's a brand-new top-level category).
 - The registry `description` is the **short search-card summary** and is intentionally separate from the MDX `helpMetadata` description (the longer SEO/OG meta) — write a concise one, don't just copy the meta.
+- `keywords` is **required**: space-separated, lowercase search synonyms — the words a user would type when they don't know the title ("transparency" for opacity, "hotkey" for keyboard shortcuts), plus adjacent spellings ("color" beside "colour"). Both the help search and the editor's search panel match on them; a test fails if they're missing.
 
 Treat this exactly like the specs / docs rules above: a new article that isn't registered is a bug, the same way an out-of-date spec is. (`categorySlug`/`slug` in the registry must match the `page.mdx` path, so the search result link resolves.)
 
@@ -52,6 +53,7 @@ packages/
   diagram/        # diagram data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology marks) + SVG markup builders
   templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
+  help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   eslint-config/  # shared ESLint flat config

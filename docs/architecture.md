@@ -16,6 +16,7 @@ packages/
   diagram/        diagram data model (Tab, Element types + helpers)
   icons/          icon catalogues (line-art + Technology marks) + SVG markup builders
   templates/      template catalogue + pure element builders (editor Quick Start + MCP)
+  help-registry/  help-centre article/category registry + search keywords (help app + editor search)
   api-schema/     wire-format DTOs the api worker emits + the live editor consumes
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
   eslint-config/  shared ESLint flat config

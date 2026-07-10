@@ -12,13 +12,14 @@ import {
   searchArticles,
 } from './articles';
 
-// The help registry (articles.ts) is hand-maintained and is the SINGLE
-// source for search + browse: an article's page.mdx renders from the
-// filesystem but is invisible unless it's registered here, and a
-// registered slug with no page yields a dead search-result link
-// (CLAUDE.md treats either drift as a bug). This pins both directions
-// plus the per-category articleCount, so the registry can't silently
-// drift from app/.
+// The help registry (packages/help-registry, re-exported here) is
+// hand-maintained and is the SINGLE source for search + browse: an
+// article's page.mdx renders from the filesystem but is invisible unless
+// it's registered there, and a registered slug with no page yields a dead
+// search-result link (CLAUDE.md treats either drift as a bug). This pins
+// both directions plus the per-category articleCount, so the registry
+// can't silently drift from app/. The filesystem checks live in this app
+// (not the package) because they read this app's app/ directory.
 
 const APP_DIR = fileURLToPath(new URL('../app', import.meta.url));
 
@@ -46,6 +47,11 @@ describe('help article registry', () => {
 
   it('has no duplicate registry entries', () => {
     expect(registryPaths.length).toBe(new Set(registryPaths).size);
+  });
+
+  it('gives every article search keywords (nothing findable only by exact title)', () => {
+    const missing = articles.filter((a) => !a.keywords.trim());
+    expect(missing.map((a) => a.slug)).toEqual([]);
   });
 
   it('keeps each category articleCount in sync with its direct articles', () => {
@@ -102,19 +108,27 @@ describe('getSubArticles', () => {
 });
 
 describe('searchArticles', () => {
-  it('matches case-insensitively on title or description', () => {
+  it('matches case-insensitively on title, description, or keywords', () => {
     const first = articles[0]!;
     const word = first.title.split(' ')[0]!;
     const hits = searchArticles(word);
     expect(hits).toContain(first);
     const lower = word.toLowerCase();
     expect(
-      hits.every(
-        (a) => a.title.toLowerCase().includes(lower) || a.description.toLowerCase().includes(lower),
-      ),
+      hits.every((a) => `${a.title} ${a.description} ${a.keywords}`.toLowerCase().includes(lower)),
     ).toBe(true);
     // Case-insensitive: upper and lower queries return the same set.
     expect(searchArticles(word.toUpperCase())).toEqual(searchArticles(word.toLowerCase()));
+  });
+
+  it('finds articles by keyword synonym, not just title (the "opacity" report)', () => {
+    // "transparency" appears in no title or description; keywords carry it to
+    // both opacity articles.
+    const slugs = searchArticles('transparency').map((a) => a.slug);
+    expect(slugs).toContain('layer-order');
+    expect(slugs).toContain('panel-opacity');
+    // "hotkey" -> the keyboard-shortcuts article.
+    expect(searchArticles('hotkey').map((a) => a.slug)).toContain('keyboard-shortcuts');
   });
 
   it('returns everything for an empty query and nothing for a non-match', () => {

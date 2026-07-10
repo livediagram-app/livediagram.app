@@ -84,6 +84,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -163,6 +166,9 @@ importers:
       '@livediagram/diagram':
         specifier: workspace:*
         version: link:../../packages/diagram
+      '@livediagram/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -454,6 +460,18 @@ importers:
       typescript-eslint:
         specifier: ^8.18.2
         version: 8.60.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+
+  packages/help-registry:
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      eslint:
+        specifier: ^9.17.0
+        version: 9.39.4(jiti@2.7.0)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
   packages/icons:
     devDependencies:

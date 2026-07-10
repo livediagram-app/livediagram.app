@@ -1,10 +1,10 @@
 // Single source for help-centre deep links used by the editor (spec/56).
 //
-// The live editor and the help centre (apps/help, spec/55) are separate
-// builds, so the editor can't import apps/help's lib/articles.ts registry.
 // This map is the live app's one source for help article slugs: surfaces
 // reference a symbolic key, never a hand-written `/help/...` URL, so a slug
-// change is a one-line edit here.
+// change is a one-line edit here. (Search is different: the SearchPanel's
+// Help group derives from the full @livediagram/help-registry catalogue in
+// help-search.ts; this map exists for the surfaces that link ONE article.)
 //
 // Each value is the NESTED slug (the path under /help): usually an
 // article's categorySlug/slug (matching its page.mdx path in apps/help),
@@ -12,7 +12,7 @@
 // palette overview page.tsx) when the editor links to a whole section
 // rather than one article. A key pointing at a path that resolves to no
 // help page is a bug, the same way an unregistered help article is - keep
-// these in sync with apps/help/lib/articles.ts.
+// these in sync with @livediagram/help-registry.
 
 export const HELP_ARTICLES = {
   // Sharing

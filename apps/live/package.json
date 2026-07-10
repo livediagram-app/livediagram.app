@@ -18,6 +18,7 @@
     "@clerk/react": "^6.7.2",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram": "workspace:*",
+    "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/templates": "workspace:*",

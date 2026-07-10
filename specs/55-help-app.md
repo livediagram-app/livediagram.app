@@ -22,7 +22,9 @@ livediagram is free and MIT-licensed with no plan for a paid tier (see [spec/03]
 
 ## Information architecture
 
-`lib/articles.ts` is the single source of truth for categories and articles. Two flat arrays (`categories`, `articles`) plus helpers (`getArticlesByCategory`, `getCategoryGroups`, `getSubArticles`, `searchArticles`). An article's `categorySlug` is its full nested path (e.g. `canvas/the-canvas`); `parentSlug` links a sub-article to its feature landing page.
+The **`@livediagram/help-registry` package** is the single source of truth for categories and articles; `apps/help/lib/articles.ts` re-exports it so the help app's `@/lib/articles` import path stays stable. It lives in `packages/` (not in the help app) because the live editor's search panel consumes the same catalogue (see "Help in global search" below). Two flat arrays (`categories`, `articles`) plus helpers (`getArticlesByCategory`, `getCategoryGroups`, `getSubArticles`, `searchArticles`). An article's `categorySlug` is its full nested path (e.g. `canvas/the-canvas`); `parentSlug` links a sub-article to its feature landing page.
+
+**Search keywords.** Every article carries a required `keywords` field: space-separated, lowercase synonyms for the vocabulary users actually type when they don't know the article's title — synonyms ("transparency" for opacity, "hotkey" for keyboard shortcuts), adjacent spellings ("color" beside "colour"), and concept words the copy doesn't happen to use. `searchArticles` matches case-insensitively on **title + description + keywords**, and the editor's search panel matches the same fields, so an article is findable by the concept it discusses, not only by an exact title match. A test enforces that no article ships without keywords. (Born from a user report: searching "Opacity" found nothing because the element-opacity article is titled "Layer Order and Opacity" and the in-editor catalogue didn't cover it.)
 
 **Sub-category grouping.** A feature category's landing cards can be split into labelled sub-category sections on its index page via an optional `group` field on each landing (e.g. Palette's `Selection Modes` / `Elements` / `Palette Settings`). `getCategoryGroups` buckets the category's landings by `group` in first-appearance order, and `FeatureCategoryIndex` renders one card grid per group under a heading. Landings without a `group` render in a single ungrouped grid, so other feature categories are unchanged.
 
@@ -107,15 +109,19 @@ The editor's `TabBar` gains a **Help** link on its right edge, beside the existi
 ### Help in global search
 
 The editor's global search panel (spec/09) surfaces matching help articles as a
-**Help** group, so "how do I…" is answerable without leaving the canvas. Since
-the editor and help centre are separate builds, the searchable catalogue is a
-curated view in `apps/live/lib/help-search.ts` (title + keyword synonyms per
-article, resolved to a `/help` href via the `help-articles.ts` deep-link map);
-keep it in sync with that map. `buildSearchResults` stays catalogue-agnostic
-(the surface passes `helpItems`, the same pattern as palette results), matches
-title + keywords on a non-empty query only, ranks the group last (navigation and
-edit results keep the default Enter), and picking one opens the article in a new
-tab. Both the editor and the Explorer pass the catalogue, since help is global.
+**Help** group, so "how do I…" is answerable without leaving the canvas. The
+searchable catalogue (`apps/live/lib/help-search.ts`) is derived from the
+**full `@livediagram/help-registry` registry** — every article, matched on its
+title plus the registry's description + `keywords` synonyms, resolved to an
+absolute `/help` href (the article slug doubles as the telemetry-safe leaf).
+There is no second hand-curated list to keep in sync; adding an article to the
+registry makes it findable in the editor automatically. `buildSearchResults`
+stays catalogue-agnostic (the surface passes `helpItems`, the same pattern as
+palette results), matches on a non-empty query only, caps the group at 6, ranks
+it last (navigation and edit results keep the default Enter), and picking one
+opens the article in a new tab. Both the editor and the Explorer pass the
+catalogue, since help is global. (The `help-articles.ts` deep-link map remains,
+but only for surfaces that link ONE article contextually — see spec/56.)
 
 ## Analytics
 
@@ -127,7 +133,11 @@ A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-telemetry`
 
 ## Out of scope (for now)
 
-- Surfacing the full ~140-article catalogue in editor search. The in-editor
-  catalogue (`help-search.ts`) is a curated subset of the articles the editor
-  deep-links; a shared package exposing the whole registry to both builds can
-  come later if broader coverage is wanted.
+- Weighted ranking inside the Help group (title hits before keyword hits).
+  Matching is a flat case-insensitive substring over title + description +
+  keywords, capped at 6; registry order decides ties. Revisit if keyword
+  coverage makes the group noisy.
+
+(Previously listed here: surfacing the full article catalogue in editor
+search. That shipped — the registry moved to `@livediagram/help-registry` with
+per-article `keywords`, and `help-search.ts` now derives from it.)

@@ -46,13 +46,14 @@ surface links the same way, and no surface hand-rolls an `<a href="/help/...">`.
 
 `apps/live/lib/help-articles.ts` exports a frozen `HELP_ARTICLES` map of
 named keys -> nested article slug (the path under `/help`, e.g.
-`collaboration/sharing/share-link-expiry`). The editor lives in a separate
-build from `apps/help`, so it cannot import that app's `articles.ts` registry;
-instead this map is the live app's single source for help slugs, and keys are
-referenced symbolically so a slug change is a one-line edit. Slugs here must
-match a real page under `apps/help/app/.../page.mdx` (and its registry entry) -
-a key pointing at a missing article is a bug, the same way an unregistered
-article is.
+`collaboration/sharing/share-link-expiry`). This map is the live app's single
+source for help slugs on surfaces that deep-link ONE article, and keys are
+referenced symbolically so a slug change is a one-line edit. (Search is
+different: the SearchPanel's Help group derives from the full
+`@livediagram/help-registry` catalogue, see spec/55.) Slugs here must match a
+real page under `apps/help/app/.../page.mdx` (and its registry entry) - a key
+pointing at a missing article is a bug, the same way an unregistered article
+is.
 
 ## Placements (initial set)
 
