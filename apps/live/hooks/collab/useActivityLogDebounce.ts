@@ -39,8 +39,14 @@ type ActivityLogDebounceDeps = {
     opts?: { fillToken?: number },
   ) => void;
   // Emit a free-text "tab meta" entry (no element diff, no revert
-  // payload). Used for theme / canvas / pattern changes.
-  emitTabMeta: (tabId: string, summary: string, opts?: { fillToken?: number }) => void;
+  // payload). Used for theme / canvas / pattern changes. The slot key
+  // doubles as the emitter's coalesceKey so separate windows for the
+  // same control (three colour tweaks in a row) merge into one entry.
+  emitTabMeta: (
+    tabId: string,
+    summary: string,
+    opts?: { fillToken?: number; coalesceKey?: string },
+  ) => void;
   // Ref to the live tabs array. Read at timer-fire time so the
   // emitted "after" snapshot reflects the post-debounce state even
   // if the user navigated to a different tab during the window.
@@ -102,7 +108,7 @@ export function useActivityLogDebounce(deps: ActivityLogDebounceDeps): ActivityL
     slots[key] = {
       fillToken,
       timer: window.setTimeout(() => {
-        deps.emitTabMeta(tabId, summary, { fillToken });
+        deps.emitTabMeta(tabId, summary, { fillToken, coalesceKey: key });
         slots[key] = undefined;
       }, ACTIVITY_LOG_DEBOUNCE_MS),
     };

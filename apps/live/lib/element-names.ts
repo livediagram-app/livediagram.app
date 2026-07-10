@@ -18,7 +18,8 @@ export function kindLabel(el: Element): string {
   if (el.type === 'freehand') return 'Sketch';
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'shape') {
-    const s = el.shape;
+    // Hyphenated kinds read as prose ('pie-chart' → 'Pie chart').
+    const s = el.shape.split('-').join(' ');
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
   return 'Element';

@@ -6,8 +6,8 @@
 // turns those two snapshots into a ChangeLogEntry's payload (kind,
 // summary, element ids, before / after maps).
 
-import type { BoxedElement, Element } from '@livediagram/diagram';
-import { describeMany, describeOne, kindLabel } from './element-names';
+import type { Element } from '@livediagram/diagram';
+import { summarizeChange, type EditedPair } from './change-summaries';
 import type { ChangeLogKind } from './api-client';
 
 // What the diff function returns. The caller wraps this with the
@@ -32,80 +32,6 @@ function elementEquals(a: Element, b: Element): boolean {
   // "unchanged" for all but the dragged ones.
   if (a === b) return true;
   return JSON.stringify(a) === JSON.stringify(b);
-}
-
-// Set of keys that differ between two snapshots of the same element.
-// JSON.stringify per key is the cheapest "deep equal" for the data
-// shapes we have here (no functions, no cyclical references).
-function diffKeys(before: Element, after: Element): Set<string> {
-  const allKeys = new Set([
-    ...Object.keys(before as Record<string, unknown>),
-    ...Object.keys(after as Record<string, unknown>),
-  ]);
-  const keys = new Set<string>();
-  for (const k of allKeys) {
-    const a = (before as Record<string, unknown>)[k];
-    const b = (after as Record<string, unknown>)[k];
-    if (JSON.stringify(a) !== JSON.stringify(b)) keys.add(k);
-  }
-  return keys;
-}
-
-const COLOUR_KEYS = new Set(['fillColor', 'strokeColor', 'textColor']);
-const POSITION_KEYS = new Set(['x', 'y']);
-const SIZE_KEYS = new Set(['x', 'y', 'width', 'height']);
-
-// Pick a sharper verb for a single-element edit by inspecting which
-// fields actually changed. Falls back to a plain "Edited X" when the
-// change touches a mix of unrelated fields.
-function describeSingleEdit(before: Element, after: Element): string {
-  const keys = diffKeys(before, after);
-  if (keys.size === 0) return `Edited ${describeOne(after)}`;
-
-  if (keys.size === 1 && keys.has('label')) {
-    const oldLabel = ((before as BoxedElement).label ?? '').trim();
-    const newLabel = ((after as BoxedElement).label ?? '').trim();
-    // Renaming to nothing reads better as "Cleared label on X".
-    if (!newLabel) return `Cleared label on ${kindLabel(after)}`;
-    const fromPart = oldLabel ? `'${oldLabel}'` : kindLabel(before);
-    return `Renamed ${fromPart} to '${newLabel}'`;
-  }
-
-  const allInSet = (allowed: Set<string>) => [...keys].every((k) => allowed.has(k));
-  if (allInSet(POSITION_KEYS)) return `Moved ${describeOne(after)}`;
-  if (allInSet(SIZE_KEYS) && (keys.has('width') || keys.has('height'))) {
-    return `Resized ${describeOne(after)}`;
-  }
-  if (allInSet(COLOUR_KEYS)) return `Recoloured ${describeOne(after)}`;
-
-  return `Edited ${describeOne(after)}`;
-}
-
-type EditedPair = { before: Element; after: Element };
-
-function summarize(
-  kind: ChangeLogKind,
-  added: Element[],
-  removed: Element[],
-  edited: EditedPair[],
-): string {
-  if (kind === 'add') {
-    if (added.length === 1) return `Added ${describeOne(added[0]!)}`;
-    return `Added ${describeMany(added)}`;
-  }
-  if (kind === 'delete') {
-    if (removed.length === 1) return `Deleted ${describeOne(removed[0]!)}`;
-    return `Deleted ${describeMany(removed)}`;
-  }
-  // 'edit' covers pure edits AND mixed changes (e.g. one add + one
-  // edit in the same commit). One pure edit gets a sharp verb via
-  // describeSingleEdit; everything else falls back to a kind-grouped
-  // summary so the user can still see what was touched.
-  if (edited.length === 1 && added.length === 0 && removed.length === 0) {
-    return describeSingleEdit(edited[0]!.before, edited[0]!.after);
-  }
-  const touched = [...added, ...removed, ...edited.map((p) => p.after)];
-  return `Edited ${describeMany(touched)}`;
 }
 
 // Diff two element snapshots from the same tab. Returns null when
@@ -161,11 +87,32 @@ export function diffElements(before: Element[], after: Element[]): ChangeDiff | 
 
   return {
     kind,
-    summary: summarize(kind, added, removed, edited),
+    summary: summarizeChange(kind, added, removed, edited),
     elementIds,
     beforeState,
     afterState,
   };
+}
+
+// Coalescing support (spec/12): when a fresh diff continues the log's
+// newest entry (same author, same elements, within the merge window),
+// the two collapse into ONE entry spanning the earlier entry's
+// `before` to the fresh diff's `after`. Rebuilding via diffElements
+// re-derives the kind + summary for the combined span and drops any
+// element that ended up back where it started; returns null when the
+// whole span nets out to no change (e.g. dragged away and back), in
+// which case the caller should delete the earlier entry outright.
+//
+// The caller must guarantee `laterAfterState` covers every id in
+// `earlierBeforeState` (the emitter's coalesce key equates the two id
+// sets) — an id missing from the after side would read as a delete.
+export function coalesceDiff(
+  earlierBeforeState: Record<string, Element | null>,
+  laterAfterState: Record<string, Element | null>,
+): ChangeDiff | null {
+  const before = Object.values(earlierBeforeState).filter((el): el is Element => el !== null);
+  const after = Object.values(laterAfterState).filter((el): el is Element => el !== null);
+  return diffElements(before, after);
 }
 
 // Apply an entry's `before` payload to the current element list, so

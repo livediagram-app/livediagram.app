@@ -980,6 +980,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // background tweaks. `entryHistoryRef` stays declared in this
   // file because the undo / redo flow below also reads + mutates
   // it; passing the ref in lets the hook write to the same buffer.
+  // Live mirror of the panel list for the emitter's coalescing check
+  // (a repeat edit folds into the newest entry only while that entry
+  // is still ours). A ref, not the state value, so the emit callbacks
+  // read the current list instead of a stale closure.
+  const changeLogRef = useRef(persistence.changeLog);
+  changeLogRef.current = persistence.changeLog;
   const { emitChange, emitTabMeta } = useActivityLogEmitter({
     diagramId,
     selfParticipant,
@@ -987,6 +993,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     entryHistoryRef,
     sessionShareCode,
     roomRef,
+    changeLogRef,
   });
 
   // A locked tab refuses every element mutation. Commit /

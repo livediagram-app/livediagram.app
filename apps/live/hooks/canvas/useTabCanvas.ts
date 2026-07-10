@@ -23,6 +23,7 @@ import {
 } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
+import { FONTS } from '@/lib/fonts';
 import { PATTERNS } from '@/components/palette/palette-controls';
 import { useTabTheme } from './useTabTheme';
 
@@ -169,7 +170,13 @@ export function useTabCanvas(deps: TabCanvasDeps) {
         return { ...t, font };
       }),
     );
-    emitTabMeta(activeId, font ? 'Changed tab font' : 'Cleared tab font');
+    // Name the font in the entry ("Changed tab font to Poppins") — a
+    // bare "Changed tab font" tells the reader nothing they can act on.
+    const fontLabel = font ? (FONTS.find((f) => f.id === font)?.label ?? font) : null;
+    emitTabMeta(
+      activeId,
+      fontLabel ? `Changed the tab font to ${fontLabel}` : 'Reset the tab font to the default',
+    );
     track('Tab', 'Changed', 'Font');
   };
 

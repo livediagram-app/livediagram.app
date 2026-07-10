@@ -1,14 +1,14 @@
 'use client';
 
-import type { RefObject } from 'react';
+import { useRef, type RefObject } from 'react';
 import {
   CHANGE_LOG_LIST_LIMIT,
   type ChangeLogEntry,
   type RoomOutgoing,
 } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/diagram';
-import { apiAppendChangeLogEntry } from '@/lib/api-client';
-import { diffElements } from '@/lib/change-log';
+import { apiAppendChangeLogEntry, apiDeleteChangeLogEntry } from '@/lib/api-client';
+import { coalesceDiff, diffElements } from '@/lib/change-log';
 import { entryHistoryFill, type EntryHistory } from '@/lib/entry-history';
 
 // Activity-log entry emission lifted out of editor-page.tsx. The
@@ -49,7 +49,19 @@ type Deps = {
   // emit so peers see new audit rows in their own activity panel.
   // Ref so a reconnect doesn't force the hook to re-run.
   roomRef: RefObject<RoomHandle | null>;
+  // Current panel list, used by the coalescing check below to see
+  // whether the log's newest entry is the one this client just
+  // emitted. Ref (mirrored from state by the page) so the emit
+  // callbacks always read the fresh list.
+  changeLogRef: RefObject<ChangeLogEntry[]>;
 };
+
+// How long a fresh emit keeps folding into the previous entry for the
+// same target (see the coalescing block below). Three drags of the
+// same square inside this window read as ONE "Moved a Square" row,
+// not three; each merge refreshes the merged entry's `createdAt`, so
+// an active editing run keeps extending its own row.
+const COALESCE_WINDOW_MS = 10_000;
 
 // `undoable: false` keeps the entry out of the undo pairing — for
 // emits whose mutation doesn't push history (spec/39 session tools), so
@@ -58,7 +70,11 @@ type Deps = {
 // token its commit/checkpoint returned) — required for the DEBOUNCED
 // emitters, whose flush can land up to 500ms after the gesture, by
 // which time other steps may sit on top of the marker stack.
-type EmitOpts = { undoable?: boolean; fillToken?: number };
+// `coalesceKey` opts a tab-meta emit into the repeat-merge behaviour:
+// two emits with the same key inside COALESCE_WINDOW_MS collapse into
+// one entry carrying the newest summary (element diffs derive their
+// key from the affected element ids and don't need to pass one).
+type EmitOpts = { undoable?: boolean; fillToken?: number; coalesceKey?: string };
 
 type Api = {
   // Emit an element-diff entry. Builds the diff via `diffElements`
@@ -80,12 +96,65 @@ type Api = {
 };
 
 export function useActivityLogEmitter(deps: Deps): Api {
+  // The last entry THIS client appended with a coalesce key. A fresh
+  // emit merges into it only while it's still the log's newest entry
+  // (nothing — remote entry, undo, revert — landed in between) and
+  // inside the window; anything else simply appends as before.
+  const lastEmitRef = useRef<{ key: string; entryId: string } | null>(null);
+
+  const coalesceTarget = (key: string): ChangeLogEntry | null => {
+    const last = lastEmitRef.current;
+    if (!last || last.key !== key) return null;
+    const newest = deps.changeLogRef.current?.[0];
+    if (!newest || newest.id !== last.entryId) return null;
+    if (Date.now() - newest.createdAt > COALESCE_WINDOW_MS) return null;
+    return newest;
+  };
+
+  // Swap the coalesced entry in place, everywhere the original went:
+  // panel list, D1 (delete + re-append under the SAME id, so the undo
+  // marker that holds the original still pairs with the merged row),
+  // and the room (remove + add, in order, so peers converge).
+  const replaceLogEntry = (merged: ChangeLogEntry, key: string) => {
+    deps.setChangeLog((prev) => prev.map((e) => (e.id === merged.id ? merged : e)));
+    if (deps.diagramId) {
+      const { id: pid } = deps.selfParticipant;
+      const diagramId = deps.diagramId;
+      apiDeleteChangeLogEntry(pid, diagramId, merged.id, deps.sessionShareCode)
+        .catch(() => {})
+        .then(() =>
+          apiAppendChangeLogEntry(pid, diagramId, merged, deps.sessionShareCode).catch(() => {}),
+        );
+    }
+    deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: merged.id } });
+    deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry: merged } });
+    lastEmitRef.current = { key, entryId: merged.id };
+  };
+
+  // A merge that nets out to "nothing changed" (dragged away and back
+  // inside the window) deletes the earlier entry instead of leaving a
+  // no-op row. The undo marker still holding the deleted entry is
+  // harmless: its undo-delete just no-ops.
+  const removeLogEntry = (entryId: string) => {
+    deps.setChangeLog((prev) => prev.filter((e) => e.id !== entryId));
+    if (deps.diagramId) {
+      apiDeleteChangeLogEntry(
+        deps.selfParticipant.id,
+        deps.diagramId,
+        entryId,
+        deps.sessionShareCode,
+      ).catch(() => {});
+    }
+    deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId } });
+    lastEmitRef.current = null;
+  };
+
   // Shared bookkeeping for any new log entry, regardless of
   // whether it came from an element diff or a tab-meta change.
   // Optimistic local append + fire-and-forget API + room
   // broadcast + fill the step's undo marker so the entry pops
   // cleanly on undo (skipped for non-undoable emits).
-  const appendLogEntry = (entry: ChangeLogEntry, opts?: EmitOpts) => {
+  const appendLogEntry = (entry: ChangeLogEntry, opts?: EmitOpts, coalesceKey?: string) => {
     // Cap the in-session list at the same limit the server hydrates
     // (spec/12), so the panel shows a consistent "most recent N".
     deps.setChangeLog((prev) => [entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
@@ -105,12 +174,51 @@ export function useActivityLogEmitter(deps: Deps): Api {
       ).catch(() => {});
     }
     deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry } });
+    lastEmitRef.current = coalesceKey ? { key: coalesceKey, entryId: entry.id } : null;
   };
 
   const emitChange: Api['emitChange'] = (tabId, beforeElements, afterElements, override, opts) => {
     if (!deps.diagramId) return;
     const diff = diffElements(beforeElements, afterElements);
     if (!diff) return;
+    // Repeat edits to the same element set fold into the previous
+    // entry (see COALESCE_WINDOW_MS). Overridden and non-undoable
+    // emits stay out: their summaries aren't derivable from a diff.
+    const canCoalesce = !override && opts?.undoable !== false;
+    const key = canCoalesce
+      ? `el:${tabId}:${diff.kind}:${[...diff.elementIds].sort().join(',')}`
+      : undefined;
+    const target = key ? coalesceTarget(key) : null;
+    if (target && key) {
+      const merged = coalesceDiff(
+        target.beforeState as Record<string, Element | null>,
+        diff.afterState,
+      );
+      if (!merged) {
+        removeLogEntry(target.id);
+        return;
+      }
+      // Note: the fresh gesture's own history marker stays null — undo
+      // of that step keeps the merged row (still true for the earlier
+      // span); undoing past the FIRST gesture deletes it via the
+      // marker the original append filled.
+      replaceLogEntry(
+        {
+          ...target,
+          kind: merged.kind,
+          summary: merged.summary,
+          elementIds: merged.elementIds,
+          beforeState: merged.beforeState as Record<string, unknown>,
+          afterState: merged.afterState as Record<string, unknown>,
+          createdAt: Date.now(),
+        },
+        // Re-key on the merged ids: elements whose span netted out were
+        // dropped, and a later emit against the original set must NOT
+        // merge into an entry that no longer covers them.
+        `el:${tabId}:${merged.kind}:${[...merged.elementIds].sort().join(',')}`,
+      );
+      return;
+    }
     const entry: ChangeLogEntry = {
       id: crypto.randomUUID(),
       tabId,
@@ -124,7 +232,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
       afterState: diff.afterState as Record<string, unknown>,
       createdAt: Date.now(),
     };
-    appendLogEntry(entry, opts);
+    appendLogEntry(entry, opts, key);
   };
 
   // Emit a tab-meta entry. The entry carries no before/after
@@ -133,6 +241,17 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // works because the matching state lives in useDiagramHistory.
   const emitTabMeta: Api['emitTabMeta'] = (tabId, summary, opts) => {
     if (!deps.diagramId) return;
+    // Same-key repeats (three tweaks of the canvas colour in a row)
+    // collapse into one entry carrying the latest summary.
+    const key =
+      opts?.coalesceKey && opts.undoable !== false
+        ? `meta:${tabId}:${opts.coalesceKey}`
+        : undefined;
+    const target = key ? coalesceTarget(key) : null;
+    if (target && key) {
+      replaceLogEntry({ ...target, summary, createdAt: Date.now() }, key);
+      return;
+    }
     const entry: ChangeLogEntry = {
       id: crypto.randomUUID(),
       tabId,
@@ -146,7 +265,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
       afterState: {},
       createdAt: Date.now(),
     };
-    appendLogEntry(entry, opts);
+    appendLogEntry(entry, opts, key);
   };
 
   return { emitChange, emitTabMeta };

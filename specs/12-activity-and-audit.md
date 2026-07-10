@@ -128,6 +128,36 @@ ops shouldn't ride a visitor's share code.
    what gates the drag-log), so a freshly drawn arrow is one entry,
    not an add + a move.
 
+   **Repeat edits to the same target coalesce too.** Three drags of
+   the same square inside a 10-second window are one editing run, not
+   three events — so they merge into ONE entry spanning the first
+   gesture's `before` to the latest gesture's `after` (window:
+   `COALESCE_WINDOW_MS` in `useActivityLogEmitter`; each merge
+   refreshes `createdAt`, so an active run keeps extending its own
+   row). The rules:
+   - An element-diff emit merges only when the log's **newest** entry
+     is one this client emitted against the **same element-id set and
+     kind** on the same tab — any interleaved entry (a peer's edit, a
+     different element, an undo) breaks the chain and the emit
+     appends normally. Kind + summary are re-derived from the merged
+     span, so two moves stay `Moved a Square` while a move + resize
+     becomes `Resized a Square`.
+   - A tab-meta emit merges by its debounce key (`coalesceKey`), so
+     three canvas-colour tweaks read as one `Changed canvas colour to
+…` row carrying the latest value.
+   - The merged entry keeps the original entry's **id**: locally it's
+     replaced in place, D1 gets a DELETE + re-POST under the same id,
+     and peers get `log-remove` + `log`. Keeping the id preserves the
+     undo pairing — the marker the first gesture filled still names
+     the merged row, so undoing back past the first gesture deletes
+     it, while undoing only the latest gesture leaves it (still true
+     for the surviving span).
+   - A merge that nets out to zero (dragged away and back) deletes
+     the entry outright instead of leaving a no-op row; elements that
+     individually returned to their start state are dropped from the
+     merged entry the same way.
+   - Overridden-summary and `undoable: false` emits never coalesce.
+
 2. `useDiagramHistory.undo` / `redo` are paired with the activity log
    via a **marker stack** (`lib/entry-history`): every history push
    (commit / checkpoint) pushes a `null` marker, and an emit fills the
@@ -163,6 +193,41 @@ ops shouldn't ride a visitor's share code.
    - Call `DELETE /log/tab/:tabId` _before_ the PUT that drops the tab
      from the diagram. (Ordering doesn't matter for correctness but
      reads more clearly in network logs.)
+
+## Summary vocabulary
+
+The `summary` string must name the action, not just that "something
+changed" — a row reading `Edited a Square` when the user picked a fill
+colour wastes the audit. `lib/change-summaries.ts` owns the wording
+(the diff mechanics stay in `lib/change-log.ts`):
+
+- **Adds / deletes** name what landed or left: `Added a Square`,
+  `Deleted 2 Arrows & a Sticky note`. Element names come from the
+  shared `lib/element-names.ts` (quoted label when there is one, else
+  the articled kind; hyphenated shape kinds read as prose — `a Pie
+chart`, not `a Pie-chart`).
+- **Edits pick a sharp verb from the changed fields**, for one element
+  or a whole multi-selection: `Moved`, `Resized`, `Rotated`,
+  `Recoloured`, `Restyled the text on`, `Changed the border of`,
+  `Reshaped an Arrow` (endpoint / curve / elbow) vs `Moved an Arrow`
+  (pure translation), `Restyled an Arrow` (head / line presets),
+  `Changed the animation on`, `Changed the icon on`, `Edited cells in
+a Table`, `Edited the chart data on`, `Locked` / `Unlocked`,
+  `Grouped` / `Ungrouped`, `Moved X to another layer`, `Added a link
+to` / `Removed the link from`, `Assigned an action on`, `Updated
+comments on`. Value-bearing changes carry the value: `Renamed
+'Login' to 'Sign in'`, `Labelled a Square 'Login'`, `Set the opacity
+of a Square to 40%`, `Set the progress on 'Upload' to 75%`, `Changed
+a Square to a Circle`. Only a genuinely mixed bag of unrelated
+  fields falls back to `Edited X`.
+- **Mixed commits spell out their parts** instead of hiding behind
+  `Edited`: `Added a Square & deleted an Arrow`; a one-for-one swap
+  reads as `Replaced a Sketch with a Square` (the shape recogniser's
+  everyday case).
+- **Tab-meta entries carry their value** where one exists: `Changed
+theme to Blueprint`, `Changed the tab font to Poppins`, `Changed
+canvas pattern to Dots`, `Changed background opacity to 80%`. A
+  bare `Changed tab font` is a bug under this spec.
 
 ## Activity Panel UI
 

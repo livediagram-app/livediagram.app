@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeElement } from '@livediagram/diagram';
-import { applyRevert, diffElements } from './change-log';
+import { applyRevert, coalesceDiff, diffElements } from './change-log';
 
 // Helper — every test wants a basic shape element with a stable id.
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
@@ -77,8 +77,46 @@ describe('summary labelling', () => {
     const after = { ...before, cells: [['C']] };
     const result = diffElements([before], [after]);
     expect(result).not.toBeNull();
-    expect(result!.summary).toBe('Edited a Table');
+    expect(result!.summary).toBe('Edited cells in a Table');
     expect(result!.summary).not.toContain("'C'");
+  });
+});
+
+describe('coalesceDiff', () => {
+  it('merges two consecutive moves into one entry spanning first-before to last-after', () => {
+    const start = shape('a');
+    const mid = shape('a', { x: 50 });
+    const end = shape('a', { x: 120 });
+    // First gesture logged start → mid; the follow-up diff is mid → end.
+    const first = diffElements([start], [mid])!;
+    const followUp = diffElements([mid], [end])!;
+    const merged = coalesceDiff(first.beforeState, followUp.afterState);
+    expect(merged).not.toBeNull();
+    expect(merged!.summary).toBe('Moved a Square');
+    expect(merged!.beforeState['a']).toEqual(start);
+    expect(merged!.afterState['a']).toEqual(end);
+  });
+
+  it('returns null when the span nets out to no change (moved away and back)', () => {
+    const start = shape('a');
+    const mid = shape('a', { x: 50 });
+    const first = diffElements([start], [mid])!;
+    const backHome = diffElements([mid], [start])!;
+    expect(coalesceDiff(first.beforeState, backHome.afterState)).toBeNull();
+  });
+
+  it('drops the element that returned home but keeps the one that moved on', () => {
+    const a1 = shape('a');
+    const b1 = shape('b');
+    const a2 = shape('a', { x: 40 });
+    const b2 = shape('b', { x: 40 });
+    const b3 = shape('b', { x: 90 });
+    const first = diffElements([a1, b1], [a2, b2])!;
+    const followUp = diffElements([a2, b2], [a1, b3])!; // a back home, b moves on
+    const merged = coalesceDiff(first.beforeState, followUp.afterState);
+    expect(merged).not.toBeNull();
+    expect(merged!.elementIds).toEqual(['b']);
+    expect(merged!.summary).toBe('Moved a Square');
   });
 });
 
