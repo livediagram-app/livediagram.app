@@ -190,6 +190,19 @@ describe('parseMermaid', () => {
     expect(r.graph.clusters).toEqual([{ id: 's1', label: 'Group', members: ['A'] }]);
   });
 
+  it('imports click href lines as node URL links (callback form skipped)', () => {
+    const r = parseMermaid(`flowchart TD
+  A[Docs] --> B[App]
+  click A "https://example.com/docs"
+  click B href "https://example.com/app" "tooltip"
+  click B someJsCallback`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const byId = Object.fromEntries(r.graph.nodes.map((n) => [n.id, n]));
+    expect(byId.A!.link).toBe('https://example.com/docs');
+    expect(byId.B!.link).toBe('https://example.com/app');
+  });
+
   it('tolerates a bare header and trailing semicolons', () => {
     const r = parseMermaid('flowchart\n  A --> B;');
     expect(r.ok).toBe(true);
@@ -325,6 +338,23 @@ describe('mermaidFromTab', () => {
     expect(out).toContain('n2["Out"]');
     expect(out).toContain('n1 --> n2');
     expect(out).toContain('n2 --> s1');
+  });
+
+  it('emits click lines for URL element links, and they round-trip', () => {
+    const els = graphToElements({
+      nodes: [
+        { id: 'a', label: 'Docs', link: 'https://example.com/docs' },
+        { id: 'b', label: 'Plain' },
+      ],
+      edges: [{ from: 'a', to: 'b' }],
+    });
+    const out = mermaidFromTab({ elements: els });
+    expect(out).toContain('click n1 "https://example.com/docs"');
+    expect(out).not.toContain('click n2');
+    const back = parseMermaid(out);
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.graph.nodes.find((n) => n.label === 'Docs')!.link).toBe('https://example.com/docs');
   });
 
   it('escapes newlines and quotes so labels round-trip', () => {

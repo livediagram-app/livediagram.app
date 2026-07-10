@@ -5,13 +5,13 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a JSON file, a Mermaid flowchart, or a Markdown outline into the active tab, either by pasting the text or picking a file. Importing replaces the tab contents, so the dialog warns you first.',
+    'Import a JSON file, a Mermaid diagram (flowchart, state, or ER), or a Markdown outline into the active tab, either by pasting the text or picking a file. Importing replaces the tab contents, so the dialog warns you first.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid flowchart, or a Markdown outline into the active tab."
+  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, or a Markdown outline into the active tab."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -23,7 +23,7 @@ export const metadata = helpMetadata({
 From the tab ellipsis menu, expand the **Content** section and choose **Import**, then pick a format:
 
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
-- **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), and any `subgraph` blocks, which come in as frames drawn around their nodes. Only the flowchart diagram type is supported.
+- **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`), state diagram (`stateDiagram`), or ER diagram (`erDiagram`) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), `click` links, and any `subgraph` or composite-state blocks, which come in as frames drawn around their nodes. Other Mermaid diagram types (sequence, gantt, pie, …) aren't supported.
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
 
 Because all three are text, each format opens the same two-step panel: **paste or write** the content into the editor and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.

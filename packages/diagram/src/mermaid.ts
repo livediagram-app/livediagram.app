@@ -1,30 +1,39 @@
-// Mermaid flowchart <-> livediagram (spec/73). Pure + reusable: parse a
-// Mermaid `flowchart`/`graph` into the node/edge graph the cluster-aware
-// layout consumes (layoutClusteredGraph, spec/73), and serialise a tab back
-// to Mermaid text. Only the flowchart diagram type is supported — it maps
-// exactly onto our node/edge model; other Mermaid types (sequence, class,
-// gantt, …) report a clear error.
+// Mermaid <-> livediagram (spec/73). Pure + reusable: parse Mermaid text
+// into the node/edge graph the cluster-aware layout consumes
+// (layoutClusteredGraph), and serialise a tab back to Mermaid text.
+// parseMermaid dispatches on the diagram type: flowcharts parse here,
+// state diagrams in mermaid-state.ts, ER diagrams in mermaid-er.ts —
+// they're all node/edge graphs at heart. Non-graph types (sequence,
+// gantt, …) report a clear error. Export always emits flowchart text: the
+// canvas keeps no dialect semantics to serialise back.
 //
-// The parser is line-oriented and forgiving: lines it doesn't understand
-// (classDef, style, click, %% comments) are skipped so a real-world paste
-// imports its graph and drops the decoration. Within a line it covers the
-// full edge-operator surface (solid / dashed / thick strokes, headless /
-// two-headed / o / x terminals, inline `-- text -->` labels, `&` fans,
-// invisible `~~~` links — parsed and dropped) and the node-shape brackets
-// including trapezoids, subroutines, flags, double circles, and the v11.3
-// `id@{ shape: …, label: … }` attribute form. Top-level `subgraph` blocks
-// become clusters (frames); nested subgraphs fold into their ancestor.
+// The flowchart parser is line-oriented and forgiving: lines it doesn't
+// understand (classDef, style, %% comments) are skipped so a real-world
+// paste imports its graph and drops the decoration. Within a line it
+// covers the full edge-operator surface (solid / dashed / thick strokes,
+// headless / two-headed / o / x terminals, inline `-- text -->` labels,
+// `&` fans, invisible `~~~` links — parsed and dropped), the node-shape
+// brackets including trapezoids, subroutines, flags, double circles, and
+// the v11.3 `id@{ shape: …, label: … }` attribute form, and `click`
+// links. Top-level `subgraph` blocks become clusters (frames); nested
+// subgraphs fold into their ancestor.
 
 import { ARROW_THICKNESS_PX } from './arrow-style';
-import type { DiagramGraph, GraphCluster, GraphEdge, GraphNode } from './graph-authoring';
-import type { ArrowElement, Element } from './index';
+import type { GraphCluster, GraphEdge, GraphNode } from './graph-authoring';
+import type { ArrowElement, Element, ElementLink } from './index';
 import { visibleLayerElements, type Layer } from './layers';
+import { parseErDiagram } from './mermaid-er';
+import {
+  cleanLine,
+  decodeLabel,
+  directionOf,
+  readId,
+  type MermaidDirection,
+  type ParseMermaidResult,
+} from './mermaid-shared';
+import { parseStateDiagram } from './mermaid-state';
 
-export type MermaidDirection = 'TB' | 'LR';
-
-export type ParseMermaidResult =
-  | { ok: true; graph: DiagramGraph; direction: MermaidDirection }
-  | { ok: false; error: string };
+export type { MermaidDirection, ParseMermaidResult } from './mermaid-shared';
 
 // --- Shape mapping -------------------------------------------------------
 // Mermaid node bracket -> our shape kind. Order matters: the more specific
@@ -109,22 +118,6 @@ const SHAPE_TO_BRACKET: Record<string, [string, string]> = {
 
 const HEADER_RE = /^\s*(?:flowchart|graph)\b\s*([A-Za-z]{2})?\s*$/i;
 
-function directionOf(token: string | undefined): MermaidDirection {
-  const t = (token ?? '').toUpperCase();
-  return t === 'LR' || t === 'RL' ? 'LR' : 'TB';
-}
-
-// Label text -> element label: strip surrounding quotes, turn <br> line
-// breaks into real newlines, decode the entities the export emits.
-function decodeLabel(s: string): string {
-  let t = s.trim();
-  if (t.startsWith('"') && t.endsWith('"') && t.length >= 2) t = t.slice(1, -1);
-  return t
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&');
-}
-
 // Pull a bracketed node definition off the front of `s`. Returns the label +
 // shape and the rest of the string, or null when `s` doesn't open with a
 // known bracket. The `[/` / `[\` opens have two possible closers (trapezoid
@@ -161,13 +154,6 @@ function readAtDef(s: string): { label?: string; shape?: GraphNode['shape']; res
     ...(labelM ? { label: decodeLabel(labelM[1]!) } : {}),
     rest: s.slice(m[0].length),
   };
-}
-
-// Read the id token at the front (letters, digits, _, made of the chars
-// Mermaid allows in a bare id). Returns null if none.
-function readId(s: string): { id: string; rest: string } | null {
-  const m = /^\s*([A-Za-z0-9_]+)/.exec(s);
-  return m ? { id: m[1]!, rest: s.slice(m[0].length) } : null;
 }
 
 // --- Edge operators ------------------------------------------------------
@@ -250,15 +236,36 @@ function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
 
 // --- Statement parsing ---------------------------------------------------
 
-const SKIP_RE = /^\s*(?:classDef|class|style|click|linkStyle|%%|direction)\b/i;
-const NON_FLOWCHART_RE =
-  /^\s*(sequenceDiagram|classDiagram|stateDiagram|gantt|pie|erDiagram|journey|mindmap|timeline|quadrantChart)\b/i;
+const SKIP_RE = /^\s*(?:classDef|class|style|linkStyle|%%|direction)\b/i;
+const STATE_HEADER_RE = /^\s*stateDiagram(?:-v2)?\b/i;
+const ER_HEADER_RE = /^\s*erDiagram\b/i;
+const UNSUPPORTED_RE =
+  /^\s*(sequenceDiagram|classDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart)\b/i;
+const UNSUPPORTED_ERROR =
+  'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram), and ER diagrams (erDiagram) are supported — not sequence / class / gantt / etc.';
 
 export function parseMermaid(text: string): ParseMermaidResult {
   const lines = text.split('\n');
+
+  // Dispatch on the diagram-type header: the state + ER dialects get their
+  // own parsers (they're still node/edge graphs); non-graph types get a
+  // clear error. No header at all falls through to the flowchart parser (a
+  // headerless edge list still imports).
+  for (const rawLine of lines) {
+    const line = cleanLine(rawLine);
+    if (!line) continue;
+    if (HEADER_RE.test(line)) break; // flowchart — parse below
+    if (STATE_HEADER_RE.test(line)) return parseStateDiagram(lines);
+    if (ER_HEADER_RE.test(line)) return parseErDiagram(lines);
+    if (UNSUPPORTED_RE.test(line)) return { ok: false, error: UNSUPPORTED_ERROR };
+  }
+  return parseFlowchart(lines);
+}
+
+function parseFlowchart(lines: string[]): ParseMermaidResult {
   let direction: MermaidDirection = 'TB';
   let sawFlow = false;
-  let sawSequenceEtc = false;
+  let sawOtherDialect = false;
 
   const nodes = new Map<string, GraphNode>();
   // Ids only ever seen as an edge endpoint (no def) — a cluster id in an
@@ -323,10 +330,7 @@ export function parseMermaid(text: string): ParseMermaidResult {
   };
 
   for (const rawLine of lines) {
-    const line = rawLine
-      .replace(/%%.*$/, '') // strip trailing comments
-      .replace(/;+\s*$/, '') // statement-terminating semicolons
-      .trim();
+    const line = cleanLine(rawLine);
     if (!line) continue;
 
     const header = HEADER_RE.exec(line);
@@ -335,12 +339,21 @@ export function parseMermaid(text: string): ParseMermaidResult {
       direction = directionOf(header[1]);
       continue;
     }
-    // A non-flowchart diagram header (sequenceDiagram, classDiagram, …) means
-    // this isn't a flowchart at all.
-    if (NON_FLOWCHART_RE.test(line)) {
-      sawSequenceEtc = true;
+    // Another dialect's header mid-document means this isn't a flowchart
+    // after all (the dispatcher only sees headers before the flowchart's).
+    if (UNSUPPORTED_RE.test(line) || STATE_HEADER_RE.test(line) || ER_HEADER_RE.test(line)) {
+      sawOtherDialect = true;
       break;
     }
+
+    // `click A "https://…"` (or `click A href "…"`) links the node; the
+    // callback form has no code to call, so it's skipped.
+    const click = /^click\s+([A-Za-z0-9_]+)\s+(?:href\s+)?"([^"]+)"/i.exec(line);
+    if (click) {
+      touch(click[1]!).link = click[2]!;
+      continue;
+    }
+    if (/^click\b/i.test(line)) continue;
 
     const sub = /^subgraph\s+(.+)$/i.exec(line);
     if (sub) {
@@ -397,12 +410,8 @@ export function parseMermaid(text: string): ParseMermaidResult {
     }
   }
 
-  if (sawSequenceEtc) {
-    return {
-      ok: false,
-      error:
-        'Only Mermaid flowcharts (graph / flowchart) are supported, not sequence / class / gantt / etc.',
-    };
+  if (sawOtherDialect) {
+    return { ok: false, error: UNSUPPORTED_ERROR };
   }
 
   // An edge may reference a subgraph id (the arrow pins to the frame). The
@@ -476,6 +485,7 @@ type BoxedShape = Element & {
   height: number;
   label?: string;
   shape?: string;
+  link?: ElementLink;
 };
 
 export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): string {
@@ -540,6 +550,15 @@ export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): 
     const op = edgeOperator(el, ends);
     const label = typeof el.label === 'string' ? el.label.trim() : '';
     lines.push(`  ${from} ${op}${label ? `|${escapeLabel(label)}|` : ''} ${to}`);
+  }
+
+  // URL element links round-trip as `click` lines (spec/73). Other link
+  // kinds (tab / element / diagram) are livediagram-internal and have no
+  // Mermaid meaning.
+  for (const n of nodes) {
+    if (n.link?.kind === 'url') {
+      lines.push(`  click ${idMap.get(n.id)!} "${n.link.url.replace(/"/g, '%22')}"`);
+    }
   }
   return lines.join('\n') + '\n';
 }

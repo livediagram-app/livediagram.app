@@ -86,7 +86,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'Does it work with Mermaid?',
-    a: 'Yes, both ways. Paste or open a Mermaid flowchart (graph / flowchart) and livediagram lays it out on the canvas, keeping every connection rather than flattening it to an outline. Export any tab back to Mermaid to copy the text or download a .mmd file. It is the diagram-as-code format your READMEs, issues, and AI tools already speak, so diagrams move in and out without lock-in. Flowcharts are supported today; other Mermaid diagram types are not yet.',
+    a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram, or ER diagram and livediagram lays it out on the canvas, keeping every connection rather than flattening it to an outline. Export any tab back to Mermaid flowchart text to copy it or download a .mmd file. It is the diagram-as-code format your READMEs, issues, and AI tools already speak, so diagrams move in and out without lock-in. Non-graph Mermaid types (sequence, gantt, pie) are not supported.',
   },
   {
     q: 'Where is my data stored, and do you track me?',

@@ -39,7 +39,8 @@ const FORMATS: {
   {
     key: 'mermaid',
     title: 'Mermaid',
-    description: 'A flowchart in Mermaid text. Keeps every connection. Paste it or pick a file.',
+    description:
+      'A Mermaid flowchart, state diagram, or ER diagram. Keeps every connection. Paste it or pick a file.',
     placeholder: 'flowchart TD\n  A([Start]) --> B{OK?}\n  B -->|yes| C[Ship]\n  B -->|no| A',
   },
   {

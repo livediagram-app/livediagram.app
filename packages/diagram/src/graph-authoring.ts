@@ -30,6 +30,9 @@ export type GraphNode = {
   // (e.g. "rectangle") are coerced to the nearest real kind; omitted =
   // "square", the default box.
   shape?: string;
+  // Optional web address — becomes the element's URL link (spec/73:
+  // Mermaid `click A "https://…"`).
+  link?: string;
 };
 
 export type GraphEdge = {
@@ -110,6 +113,7 @@ export function graphToElements(
       width,
       height,
       ...(n.label !== undefined ? { label: n.label } : {}),
+      ...(n.link !== undefined ? { link: { kind: 'url' as const, url: n.link } } : {}),
     };
   });
 

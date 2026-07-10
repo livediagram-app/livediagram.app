@@ -8,20 +8,36 @@ diagram's structure, not just its labels. This is the format the old `.lvd`
 text DSL (spec/66, now removed) was trying to be, except Mermaid is a real
 standard people already have.
 
-## Scope: flowcharts
+## Scope: flowcharts, state diagrams, ER diagrams
 
-We support the **flowchart** / **graph** diagram type (`graph TD`, `flowchart
-LR`, …) — nodes, edges, node shapes, edge styles, edge labels, subgraphs, and
-the layout direction. Other Mermaid diagram types (sequence, class, state,
-gantt, pie, …) are out of scope; importing one reports a clear "only flowcharts
-are supported" error. This maps cleanly onto livediagram's model: a flowchart
-**is** a node/edge graph, which is exactly what `graphToElements`
-(packages/diagram, spec/62 §4.7) turns into laid-out shapes + pinned arrows.
+We support the diagram types that are **node/edge graphs at heart**, because
+they map onto livediagram's model losslessly: `graphToElements`
+(packages/diagram, spec/62 §4.7) turns a graph into laid-out shapes + pinned
+arrows.
 
-Also deliberately out of scope **within** flowcharts: `classDef` / `style` /
-`linkStyle` (the tab theme owns colours — Mermaid styling is skipped, never an
-error), `click` interactions, and true `RL` / `BT` layouts (`RL` folds to LR,
-`BT` to TB; the graph is identical, only the sweep direction differs).
+- **Flowcharts** (`graph TD`, `flowchart LR`, …) — full import **and**
+  export. The richest dialect: nodes, edges, node shapes, edge styles,
+  labels, subgraphs, click links, layout direction.
+- **State diagrams** (`stateDiagram` / `stateDiagram-v2`) — **import only**.
+  States and transitions are nodes and edges; composite states reuse the
+  cluster/frame machinery.
+- **ER diagrams** (`erDiagram`) — **import only**. Entities and
+  relationships are nodes and edges; attributes fold into the entity label.
+
+Import is per-dialect; **export always emits flowchart text**. The canvas has
+no semantic layer (a state and a flowchart node are both just shapes once
+imported), so exporting back to `stateDiagram` / `erDiagram` would mean
+guessing meaning from geometry — the flowchart export preserves the
+connection graph, which is the part that's real.
+
+Non-graph Mermaid types (sequence, gantt, pie, journey, timeline, quadrant)
+and class diagrams remain out of scope; importing one reports a clear error
+naming the supported types.
+
+Also deliberately out of scope: `classDef` / `style` / `linkStyle` (the tab
+theme owns colours — Mermaid styling is skipped, never an error) and true
+`RL` / `BT` layouts (`RL` folds to LR, `BT` to TB; the graph is identical,
+only the sweep direction differs).
 
 ## Flowchart syntax coverage
 
@@ -67,21 +83,60 @@ error), `click` interactions, and true `RL` / `BT` layouts (`RL` folds to LR,
   level deep). On export, each frame becomes a `subgraph` block containing
   the boxed nodes whose centre sits inside it (a node inside several frames
   belongs to the smallest).
-- Lines it doesn't understand (`classDef`, `style`, `click`, `linkStyle`,
+- **Click links**: `click A "https://…"` (and the `click A href "https://…"`
+  form) imports as the node's element link (`{ kind: 'url' }`), and a node
+  whose element carries a URL link exports a matching `click` line. Callback
+  forms (`click A someJsFunction`) are skipped — there's no code to call.
+- Lines it doesn't understand (`classDef`, `style`, `linkStyle`,
   `direction`, comments `%%`) are skipped, not fatal — a real-world paste
   imports its graph and ignores the decoration.
+
+## State diagram coverage (import)
+
+- **Header**: `stateDiagram` / `stateDiagram-v2`; a top-level `direction
+LR` line sets the layout direction (TB default).
+- **States**: rounded boxes (stadium). Declared via transitions, bare ids,
+  `state "Long description" as s1`, or `s1 : description` (the description
+  becomes the label). `<<choice>>` states render as diamonds; `<<fork>>` /
+  `<<join>>` as squares.
+- **Start / end**: each `[*]` becomes a circle — an empty-label start node
+  when it's a transition source, an end node when it's a target (one of
+  each per diagram, matching Mermaid's semantics).
+- **Transitions**: `A --> B` with an optional `: label`.
+- **Composite states**: `state Name { … }` becomes a cluster → frame, same
+  as a flowchart subgraph; nested composites fold into their top-level
+  ancestor. Transitions may reference a composite's id (pins to the frame).
+- Notes, concurrency separators (`--`), and history states are skipped.
+
+## ER diagram coverage (import)
+
+- **Header**: `erDiagram` (no direction syntax; lays out TB).
+- **Entities**: square boxes. An attribute block (`CUSTOMER { string name
+… }`) folds into the label — entity name first line, one `type name`
+  attribute per line. Key/comment columns (PK / FK / UK, "comment") are
+  dropped from the label.
+- **Relationships**: `A ||--o{ B : label` becomes an edge labelled `label`.
+  Cardinality maps onto arrow ends: a "many" side (crow's foot, `{` / `}`)
+  gets an open-V arrowhead on that end (`ends`: the many side(s), `head:
+'cross'`); one-to-one relationships render headless. Non-identifying
+  (dotted `..`) relationships render dashed.
 
 ## The engine lives in `packages/diagram`
 
 Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
 
 - **`parseMermaid(text)`** → `{ ok: true, graph: DiagramGraph, direction }` or
-  `{ ok: false, error }`. Line-oriented parse of the flowchart body per the
-  coverage above. `DiagramGraph` carries the subgraphs as optional
-  `clusters: { id, label, members }[]`, and `GraphEdge` carries the edge
-  style (`line: solid|dashed|thick`, `ends: to|none|both|from`,
-  `head: triangle|circle|cross`) — both additive, so every existing
-  `graphToElements` caller (the MCP) is untouched.
+  `{ ok: false, error }`. Detects the diagram type from the header and
+  dispatches: flowcharts parse in `mermaid.ts`, state diagrams in
+  `mermaid-state.ts`, ER diagrams in `mermaid-er.ts` (shared line/label
+  helpers in `mermaid-shared.ts`; every dialect returns the same
+  `DiagramGraph`, so the import path doesn't care which it was).
+  `DiagramGraph` carries subgraphs / composite states as optional
+  `clusters: { id, label, members }[]`; `GraphEdge` carries the edge style
+  (`line: solid|dashed|thick`, `ends: to|none|both|from`, `head:
+triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
+  all additive, so every existing `graphToElements` caller (the MCP) is
+  untouched.
 - **`layoutClusteredGraph(graph, { direction })`** (auto-layout-clusters.ts) —
   the import's composition point. Without clusters it's exactly
   `graphToElements` + `autoLayoutElements({ direction })`. With clusters it

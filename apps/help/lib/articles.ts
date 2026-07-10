@@ -853,7 +853,7 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid flowchart, or a Markdown outline into the active tab by pasting text or picking a file (it replaces the contents).',
+      'Import JSON, a Mermaid diagram (flowchart, state, or ER), or a Markdown outline into the active tab by pasting text or picking a file (it replaces the contents).',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
