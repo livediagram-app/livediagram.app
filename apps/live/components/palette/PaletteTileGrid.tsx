@@ -96,7 +96,7 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
 // One catalogue tile, rendered exactly as its home tab renders it.
 // (Favourites curation happens in the edit-favourites dialog, not by
 // overlaying badges here — see PaletteFavouritesDialog.)
-export function PaletteTile({
+function PaletteTile({
   def,
   actions,
   pendingDraw,

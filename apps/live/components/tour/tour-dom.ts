@@ -3,7 +3,7 @@
 // user would press, so these helpers resolve tour anchors (`data-tour-id`)
 // and wait out lazy-loaded menus instead of assuming synchronous DOM.
 
-export function tourSelector(tourId: string): string {
+function tourSelector(tourId: string): string {
   return `[data-tour-id="${tourId}"]`;
 }
 

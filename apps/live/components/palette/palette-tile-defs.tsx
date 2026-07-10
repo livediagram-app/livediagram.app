@@ -22,14 +22,6 @@ export type PaletteTileSection =
   | 'icons'
   | 'technology';
 
-export const PALETTE_TILE_SECTIONS: { id: PaletteTileSection; label: string }[] = [
-  { id: 'shapes', label: 'Shapes' },
-  { id: 'tools', label: 'Tools' },
-  { id: 'data', label: 'Data' },
-  { id: 'components', label: 'Components' },
-  { id: 'devices', label: 'Devices' },
-];
-
 // What clicking (or drag-dropping) the tile does. 'shape' descriptors also
 // drive the tile's drag-to-place payload + pending-draw highlight; the
 // singleton tools map one-to-one onto the editor's add-handlers.

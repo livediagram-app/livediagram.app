@@ -14,10 +14,10 @@ import { tileById, type PaletteTileDef } from './palette-tile-defs';
 // ids verbatim (see lib/palette-favourites) precisely because they can't be
 // validated before that chunk lands.
 
-export const ICON_FAVOURITE_PREFIX = 'icon:';
-export const TECH_FAVOURITE_PREFIX = 'tech:';
+const ICON_FAVOURITE_PREFIX = 'icon:';
+const TECH_FAVOURITE_PREFIX = 'tech:';
 
-export function iconTileDef(icon: IconDef): PaletteTileDef {
+function iconTileDef(icon: IconDef): PaletteTileDef {
   return {
     id: `${ICON_FAVOURITE_PREFIX}${icon.id}`,
     section: 'icons',
@@ -42,7 +42,7 @@ export function iconTileDef(icon: IconDef): PaletteTileDef {
   };
 }
 
-export function techTileDef(icon: TechIconDef): PaletteTileDef {
+function techTileDef(icon: TechIconDef): PaletteTileDef {
   return {
     id: `${TECH_FAVOURITE_PREFIX}${icon.id}`,
     section: 'technology',

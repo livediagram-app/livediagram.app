@@ -4,7 +4,7 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-saf
 // for the palette's Favourites category. Per-browser localStorage, like the
 // palette's other UI state — not synced to the account.
 
-export const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
+const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 
 // The nine highest-value creation actions (see spec/78).
 export const DEFAULT_PALETTE_FAVOURITES: readonly string[] = [

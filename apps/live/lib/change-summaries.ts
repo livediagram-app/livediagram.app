@@ -19,7 +19,7 @@ export type EditedPair = { before: Element; after: Element };
 // Set of keys that differ between two snapshots of the same element.
 // JSON.stringify per key is the cheapest "deep equal" for the data
 // shapes we have here (no functions, no cyclical references).
-export function diffKeys(before: Element, after: Element): Set<string> {
+function diffKeys(before: Element, after: Element): Set<string> {
   const allKeys = new Set([
     ...Object.keys(before as Record<string, unknown>),
     ...Object.keys(after as Record<string, unknown>),
