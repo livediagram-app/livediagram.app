@@ -150,26 +150,32 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         return badRequest('name too long');
       }
       const existing = await getDiagram(env, id);
+      // Unknown id: 404. This PUT used to create-on-first-write (the legacy
+      // localStorage-sync model), which let any stray meta write mint a
+      // permanent zero-tab ghost row, e.g. a client path that missed the
+      // Offline Mode dispatch (spec/76) writing an offline diagram's id to
+      // the server. Diagrams are only ever created via POST /diagrams now.
+      if (!existing) return notFound();
       const now = Date.now();
-      const ownerId = existing?.ownerId ?? owner;
+      const ownerId = existing.ownerId;
       // Anyone with the diagram id could previously rewrite it.
       // We now gate on canEditDiagram so only the owner or an
       // edit-role share visitor can touch metadata.
-      const allowed = existing ? await gateEdit(ctx, id, ownerId, existing.teamId) : true; // create-on-first-write keeps the prior behaviour
+      const allowed = await gateEdit(ctx, id, ownerId, existing.teamId);
       if (!allowed) return forbidden();
       await upsertDiagramMeta(env, {
         id,
         ownerId,
-        name: body.name ?? existing?.name ?? 'Untitled diagram',
-        shareable: existing?.shareable ?? false,
-        shareCode: existing?.shareCode ?? null,
-        folderId: existing?.folderId ?? null,
-        teamId: existing?.teamId ?? null,
+        name: body.name ?? existing.name,
+        shareable: existing.shareable,
+        shareCode: existing.shareCode ?? null,
+        folderId: existing.folderId ?? null,
+        teamId: existing.teamId ?? null,
         // Preserve provenance (the upsert never rewrites it anyway, but
         // pass the existing value so the DTO is complete).
-        source: existing?.source ?? null,
+        source: existing.source ?? null,
         savedAt: now,
-        createdAt: existing?.createdAt ?? now,
+        createdAt: existing.createdAt,
       });
       // Prefer the folder-carrying `tabs` shape; fall back to the
       // legacy `tabIds` (treated as loose) so older clients keep working.

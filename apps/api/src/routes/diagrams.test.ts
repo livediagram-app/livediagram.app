@@ -25,6 +25,7 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
   db: {
     listDiagramsByOwner: vi.fn(),
     getDiagram: vi.fn(),
+    upsertDiagramMeta: vi.fn(),
     deleteDiagram: vi.fn(),
     getFolder: vi.fn(),
     setDiagramFolder: vi.fn(),
@@ -159,6 +160,20 @@ describe('handleDiagrams owner-only paths (DELETE /diagrams/:id)', () => {
     const res = await handleDiagrams(makeCtx('DELETE', '/api/diagrams/d1'));
     expect(res.status).toBe(204);
     expect(db.deleteDiagram).toHaveBeenCalledWith({}, 'd1');
+  });
+});
+
+describe('handleDiagrams metadata PUT (PUT /diagrams/:id)', () => {
+  it('404s an unknown id instead of create-on-first-write (ghost-row guard)', async () => {
+    // A stray meta write for an id the server has never seen (e.g. an
+    // Offline Mode diagram id leaking past the client dispatch, spec/76)
+    // must NOT mint a zero-tab diagram row. Diagrams are created via POST.
+    db.getDiagram.mockResolvedValue(null);
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1', { body: { name: 'Ghost' } }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.upsertDiagramMeta).not.toHaveBeenCalled();
   });
 });
 

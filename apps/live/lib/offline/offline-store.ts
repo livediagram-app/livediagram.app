@@ -192,6 +192,7 @@ export function __setOfflineBackend(b: OfflineBackend | null): void {
   backend = b ?? indexedDbBackend;
   idCache = null;
   idCacheLoad = null;
+  pendingIds.clear();
 }
 
 // ---------------------------------------------------------------------------
@@ -200,6 +201,12 @@ export function __setOfflineBackend(b: OfflineBackend | null): void {
 
 let idCache: Set<string> | null = null;
 let idCacheLoad: Promise<Set<string>> | null = null;
+// Ids registered before the cache finished loading (a create racing the
+// first lookup). Merged into the cache when it lands and consulted by both
+// checks, so a just-created offline diagram can never read as "not offline"
+// (a miss would leak its writes to the server; see spec/76 and the ghost-row
+// bug the meta PUT's create-on-first-write used to turn that into).
+const pendingIds = new Set<string>();
 
 async function loadIds(): Promise<Set<string>> {
   if (idCache) return idCache;
@@ -207,13 +214,15 @@ async function loadIds(): Promise<Set<string>> {
     idCacheLoad = backend
       .all()
       .then((recs) => {
-        idCache = new Set(recs.map((r) => r.id));
+        idCache = new Set([...recs.map((r) => r.id), ...pendingIds]);
         return idCache;
       })
       .catch(() => {
-        // No IndexedDB (SSR, private mode) → treat as no offline diagrams.
-        idCache = new Set();
-        return idCache;
+        // No IndexedDB (SSR, private mode) or a transient open failure.
+        // Do NOT pin an empty cache: clear the in-flight slot so the next
+        // check retries, and answer THIS check from the pending set only.
+        idCacheLoad = null;
+        return new Set(pendingIds);
       });
   }
   return idCacheLoad;
@@ -228,13 +237,15 @@ export async function isOfflineId(id: string): Promise<boolean> {
 // (by which point any diagram being edited has already been through the async
 // path, so its id is cached).
 export function isOfflineIdSync(id: string): boolean {
-  return idCache?.has(id) ?? false;
+  return pendingIds.has(id) || (idCache?.has(id) ?? false);
 }
 
 function rememberId(id: string): void {
+  pendingIds.add(id);
   if (idCache) idCache.add(id);
 }
 function forgetId(id: string): void {
+  pendingIds.delete(id);
   if (idCache) idCache.delete(id);
 }
 
