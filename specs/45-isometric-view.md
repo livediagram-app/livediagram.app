@@ -13,17 +13,21 @@ isometric (axonometric, parallel — no perspective) view:
 
 - The whole content layer tilts onto the isometric plane, so the diagram
   reads as a surface seen from above and to the side.
-- Each **boxed element** (shapes, text, tables, images, stickies, link
+- Each **boxed element** (shapes, tables, images, stickies, link
   cards, annotations) gains **extruded depth** — a solid raised
   block standing off the floor — so the scene looks three-dimensional. The
   block's side walls paint in the **element's own colour** (its accent),
   shaded darker toward the floor, rather than a flat black slab.
-  **Frames are the exception**: a frame is a section backdrop, not a solid
+  **Frames are one exception**: a frame is a section backdrop, not a solid
   block, so it gets no extrusion column and instead settles **just below
   the base plane** (a -1px translateZ via the `[data-iso] [data-frame]`
   rule) — its big surface would otherwise be exactly coplanar with the
   contents drawn over it, and coplanar 3D layers z-fight (flicker) while
-  the camera orbits.
+  the camera orbits. **Plain text elements are the other**: text draws with
+  no background on the flat canvas, so an extrusion column would conjure a
+  solid slab behind bare words (the wall-colour fallback). Text stays flat
+  on the base plane, matching the export path (which already describes text
+  as having no body to extrude).
 - **Arrows, freehand strokes, and labels** stay on the base plane (they have
   no box to extrude); they ride the tilt with everything else.
 
@@ -46,7 +50,8 @@ Isometric is **navigation-only**, modelled on the Hand tool:
   parallel (isometric) projection throughout, never a perspective camera.
 - **An orbit button in the zoom bar** offers the same orbit without a held
   modifier: while the isometric tool is active an orbit-icon button appears in
-  the bottom-right zoom controls, **between Fit and the Zen toggle**.
+  the bottom-right zoom controls, **after the zoom buttons (before the Zen
+  toggle when that shows)**.
   Click-dragging it runs the identical orbit drag (same azimuth / elevation
   deltas, reusing `useIsometricCamera.startOrbit`), and a plain **click**
   (a press released without dragging) snaps the camera back to the default
@@ -132,7 +137,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   `ShapeSvgOverlay`'s `0 0 100 100` viewBox (one geometry source); curved
   shapes use `border-radius` (circle / progress-ring `50%`, stadium a pill,
   cylinder `50% / 12%` elliptical caps). Shapes without an entry and non-shape
-  boxed elements (text / sticky / image / table / …) keep the rounded
+  boxed elements (sticky / image / table / …) keep the rounded
   rectangle.
 
 ## Isometric export

@@ -22,7 +22,7 @@ const DEPTH_LAYERS = isoDepthLayers();
 // The colour the extruded wall paints in: the element's own accent (its
 // stroke), so each block's side matches the element rather than a flat black
 // slab. Falls back to the fill, then a neutral slate, skipping `transparent`
-// fills/strokes (text / image / table) which would give an invisible wall.
+// fills/strokes (image / table) which would give an invisible wall.
 function wallColor(el: BoxedElement): string {
   const stroke = el.strokeColor ?? defaultStrokeColor(el);
   if (stroke && stroke !== 'transparent') return stroke;
@@ -46,11 +46,17 @@ export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
         // orbits (the reported frame flicker). They stay flat on the
         // floor plane (nudged just below it — see globals.css [data-iso]).
         .filter((el) => !(el.type === 'shape' && el.shape === 'frame'))
+        // Plain text has no body — on the flat canvas it draws with no
+        // background, so extruding it would conjure a solid slab behind
+        // bare words (the wallColor slate fallback). It stays flat on the
+        // base plane, matching the export path (describeBoxedExport gives
+        // text `kind: 'none'` and both exporters skip its extrusion).
+        .filter((el) => el.type !== 'text')
         .map((el) => {
           const color = wallColor(el);
           // Clip each extruded layer to the shape's own silhouette (circle,
           // diamond, cylinder, …) so the column follows the outline instead of
-          // the bounding rectangle. Non-shape boxed elements (text / sticky /
+          // the bounding rectangle. Non-shape boxed elements (sticky /
           // image / table / …) and shapes without a silhouette entry keep the
           // default rounded rectangle.
           const silhouette = el.type === 'shape' ? isoShapeSilhouette(el.shape) : {};
