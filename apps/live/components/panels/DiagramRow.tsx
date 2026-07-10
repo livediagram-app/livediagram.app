@@ -22,8 +22,7 @@ import {
 } from '@/components/panels/explorer-icons';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { saveOfflineToCloud, takeCloudOffline } from '@/lib/offline/offline-convert';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
 
 // Icons for the Offline section, matching the explorer-icons style
@@ -150,40 +149,13 @@ export function DiagramRow({
     window.location.assign(`${window.location.origin}/diagram/${item.id}?share=1`);
   };
 
-  // Offline Mode conversions (spec/76). Reload after so the list reflects the
-  // moved diagram. Guarded on a resolved viewer id.
-  const confirm = useConfirm();
-  const [converting, setConverting] = useState(false);
-  const handleSaveToCloud = async () => {
-    if (!ownerId || converting) return;
-    setMenuOpen(false);
-    setConverting(true);
-    try {
-      await saveOfflineToCloud(item.id, ownerId);
-      window.location.reload();
-    } catch {
-      setConverting(false);
-    }
-  };
-  const handleTakeOffline = async () => {
-    if (!ownerId || converting) return;
-    setMenuOpen(false);
-    const ok = await confirm({
-      title: `Take “${item.name}” offline?`,
-      message:
-        'This removes it from your account and every other device. It will exist only in this browser, with no backup.',
-      confirmLabel: 'Take Offline',
-      variant: 'danger',
-    });
-    if (!ok) return;
-    setConverting(true);
-    try {
-      await takeCloudOffline(item.id, ownerId, item.shareCode ?? null);
-      window.location.reload();
-    } catch {
-      setConverting(false);
-    }
-  };
+  // Offline Mode conversions (spec/76), shared with the full-page Explorer row
+  // via the hook. Reload after so the list reflects the moved diagram.
+  const { syncToCloud: handleSaveToCloud, takeOffline: handleTakeOffline } = useOfflineConversion(
+    item,
+    ownerId,
+    () => setMenuOpen(false),
+  );
 
   const hasMenu = Boolean((onRename && active) || onDelete || onDuplicate || onMoveRequest);
   const relative = relativeSince(item.savedAt);
