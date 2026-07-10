@@ -3,7 +3,7 @@ import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerBu
 import type { Folder } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { FolderIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
 
 // The Explorer's folder row (spec/15) + its shared actions menu, lifted
@@ -131,33 +131,49 @@ export function FolderMenuItems({
   close: () => void;
 }) {
   return (
-    <>
-      <MenuItem
-        icon={<MenuPencilIcon />}
+    <MenuTileGrid cols={2}>
+      <MenuTile
+        icon={
+          <span className="[&_svg]:h-5 [&_svg]:w-5">
+            <MenuPencilIcon />
+          </span>
+        }
         label="Rename"
         onClick={() => {
           actions.rename();
           close();
         }}
       />
-      <MenuItem
-        icon={<PlusIcon />}
+      <MenuTile
+        icon={
+          <span className="[&_svg]:h-5 [&_svg]:w-5">
+            <PlusIcon />
+          </span>
+        }
         label="New subfolder"
         onClick={() => {
           actions.newSubfolder();
           close();
         }}
       />
-      <MenuItem
-        icon={<MenuFolderIcon />}
+      <MenuTile
+        icon={
+          <span className="[&_svg]:h-5 [&_svg]:w-5">
+            <MenuFolderIcon />
+          </span>
+        }
         label="Change Folder"
         onClick={() => {
           actions.move();
           close();
         }}
       />
-      <MenuItem
-        icon={<MenuTrashIcon />}
+      <MenuTile
+        icon={
+          <span className="[&_svg]:h-5 [&_svg]:w-5">
+            <MenuTrashIcon />
+          </span>
+        }
         label="Delete"
         danger
         onClick={() => {
@@ -165,6 +181,6 @@ export function FolderMenuItems({
           close();
         }}
       />
-    </>
+    </MenuTileGrid>
   );
 }

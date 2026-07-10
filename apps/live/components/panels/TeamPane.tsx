@@ -7,7 +7,7 @@ import { apiGetTeam, type TeamMember } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { PencilIcon, PlusIcon, TrashIcon } from '@/components/panels/explorer-icons';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, PortalMenu } from '@/components/primitives/PortalMenu';
 import { LinkIcon, TeamMemberRow } from './team-pane-parts';
 import { useTeamPaneActions } from './useTeamPaneActions';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
@@ -203,37 +203,59 @@ export function TeamPane({
               placement="below"
               onClose={() => setMenuOpen(false)}
             >
-              {isAdmin ? (
-                <MenuItem
-                  icon={<PencilIcon />}
-                  label="Edit team"
-                  onClick={() => {
-                    setEditOpen(true);
-                    setMenuOpen(false);
-                  }}
-                />
-              ) : null}
-              {canLeave ? (
-                <MenuItem
-                  icon={<SignInIcon />}
-                  label="Leave team"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    if (selfRow) void removeMember(selfRow, true);
-                  }}
-                />
-              ) : null}
-              {isAdmin ? (
-                <MenuItem
-                  icon={<TrashIcon />}
-                  label="Delete team"
-                  danger
-                  onClick={() => {
-                    setMenuOpen(false);
-                    void deleteTeam();
-                  }}
-                />
-              ) : null}
+              {/* Icon-over-label tiles; columns track the role-gated items
+                  (admin sees Edit + Delete, a leavable member sees Leave) so
+                  a shorter menu never renders a fractional-width tile. */}
+              <div
+                className={`grid gap-1 px-2 py-1.5 ${
+                  isAdmin && canLeave ? 'grid-cols-3' : isAdmin ? 'grid-cols-2' : 'grid-cols-1'
+                }`}
+              >
+                {isAdmin ? (
+                  <MenuTile
+                    icon={
+                      <span className="[&_svg]:h-5 [&_svg]:w-5">
+                        <PencilIcon />
+                      </span>
+                    }
+                    label="Edit team"
+                    onClick={() => {
+                      setEditOpen(true);
+                      setMenuOpen(false);
+                    }}
+                  />
+                ) : null}
+                {canLeave ? (
+                  <MenuTile
+                    icon={
+                      <span className="[&_svg]:h-5 [&_svg]:w-5">
+                        <SignInIcon />
+                      </span>
+                    }
+                    label="Leave team"
+                    danger
+                    onClick={() => {
+                      setMenuOpen(false);
+                      if (selfRow) void removeMember(selfRow, true);
+                    }}
+                  />
+                ) : null}
+                {isAdmin ? (
+                  <MenuTile
+                    icon={
+                      <span className="[&_svg]:h-5 [&_svg]:w-5">
+                        <TrashIcon />
+                      </span>
+                    }
+                    label="Delete team"
+                    danger
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void deleteTeam();
+                    }}
+                  />
+                ) : null}
+              </div>
             </PortalMenu>
           ) : null}
         </div>

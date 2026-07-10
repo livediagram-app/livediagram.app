@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { DiagramListItem, Folder } from '@/lib/api-client';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, PortalMenu } from '@/components/primitives/PortalMenu';
 import {
   ChevronIcon,
   FolderIcon,
@@ -199,35 +199,59 @@ export function FolderNode({
             placement="below"
             onClose={() => setMenuOpen(false)}
           >
-            {onRenameFolder ? (
-              <MenuItem
-                icon={<PencilIcon />}
-                label="Rename"
+            {/* Icon-over-label tiles; columns track the optional handlers so
+                a shorter menu never renders a fractional-width tile. */}
+            <div
+              className={`grid gap-1 px-2 py-1.5 ${
+                onRenameFolder && onDeleteFolder
+                  ? 'grid-cols-3'
+                  : onRenameFolder || onDeleteFolder
+                    ? 'grid-cols-2'
+                    : 'grid-cols-1'
+              }`}
+            >
+              {onRenameFolder ? (
+                <MenuTile
+                  icon={
+                    <span className="[&_svg]:h-5 [&_svg]:w-5">
+                      <PencilIcon />
+                    </span>
+                  }
+                  label="Rename"
+                  onClick={() => {
+                    setEditing(true);
+                    setMenuOpen(false);
+                  }}
+                />
+              ) : null}
+              <MenuTile
+                icon={
+                  <span className="[&_svg]:h-5 [&_svg]:w-5">
+                    <PlusIcon />
+                  </span>
+                }
+                label="New subfolder"
                 onClick={() => {
-                  setEditing(true);
+                  void onCreateChild(folder.id);
                   setMenuOpen(false);
                 }}
               />
-            ) : null}
-            <MenuItem
-              icon={<PlusIcon />}
-              label="New subfolder"
-              onClick={() => {
-                void onCreateChild(folder.id);
-                setMenuOpen(false);
-              }}
-            />
-            {onDeleteFolder ? (
-              <MenuItem
-                icon={<TrashIcon />}
-                label="Delete"
-                danger
-                onClick={() => {
-                  onDeleteFolder(folder.id);
-                  setMenuOpen(false);
-                }}
-              />
-            ) : null}
+              {onDeleteFolder ? (
+                <MenuTile
+                  icon={
+                    <span className="[&_svg]:h-5 [&_svg]:w-5">
+                      <TrashIcon />
+                    </span>
+                  }
+                  label="Delete"
+                  danger
+                  onClick={() => {
+                    onDeleteFolder(folder.id);
+                    setMenuOpen(false);
+                  }}
+                />
+              ) : null}
+            </div>
           </PortalMenu>
         ) : null}
       </div>

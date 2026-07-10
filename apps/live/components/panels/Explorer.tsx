@@ -8,7 +8,7 @@ import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { OpenIcon, PlusIcon } from '@/components/panels/explorer-icons';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { DiagramRow } from '@/components/panels/explorer-views';
 import { ExplorerSections } from '@/components/panels/ExplorerSections';
 
@@ -214,22 +214,32 @@ function ExplorerImpl({
             </button>
             {newOpenAnchor ? (
               <PortalMenu anchor={newOpenAnchor} onClose={() => setNewOpenAnchor(null)}>
-                <MenuItem
-                  icon={<PlusIcon />}
-                  label="New diagram"
-                  onClick={() => {
-                    setNewOpenAnchor(null);
-                    onNewDiagram();
-                  }}
-                />
-                <MenuItem
-                  icon={<OpenIcon />}
-                  label="Open Explorer"
-                  onClick={() => {
-                    setNewOpenAnchor(null);
-                    window.location.href = '/explorer/recent';
-                  }}
-                />
+                <MenuTileGrid cols={2}>
+                  <MenuTile
+                    icon={
+                      <span className="[&_svg]:h-5 [&_svg]:w-5">
+                        <PlusIcon />
+                      </span>
+                    }
+                    label="New diagram"
+                    onClick={() => {
+                      setNewOpenAnchor(null);
+                      onNewDiagram();
+                    }}
+                  />
+                  <MenuTile
+                    icon={
+                      <span className="[&_svg]:h-5 [&_svg]:w-5">
+                        <OpenIcon />
+                      </span>
+                    }
+                    label="Open Explorer"
+                    onClick={() => {
+                      setNewOpenAnchor(null);
+                      window.location.href = '/explorer/recent';
+                    }}
+                  />
+                </MenuTileGrid>
               </PortalMenu>
             ) : null}
           </>

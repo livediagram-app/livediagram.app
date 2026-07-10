@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { elementKindLabel, type Element } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { PortalMenu, MenuItem } from '@/components/primitives/PortalMenu';
+import { PortalMenu, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 
 // One selectable bucket in the Filter Selection menu: a human label plus the
 // ids of every selected element that belongs to it.
@@ -92,17 +92,23 @@ export function SelectionFilterMenu({ selectedElements, onFilter }: SelectionFil
       </Tooltip>
       {open ? (
         <PortalMenu anchor={buttonRef.current} placement="below" onClose={() => setOpen(false)}>
-          {groups.map((g) => (
-            <MenuItem
-              key={g.key}
-              icon={g.key === 'all-shapes' ? <ShapesIcon /> : <FilterIcon />}
-              label={`${g.label} (${g.ids.length})`}
-              onClick={() => {
-                onFilter(new Set(g.ids));
-                setOpen(false);
-              }}
-            />
-          ))}
+          <MenuTileGrid cols={2}>
+            {groups.map((g) => (
+              <MenuTile
+                key={g.key}
+                icon={
+                  <span className="[&_svg]:h-5 [&_svg]:w-5">
+                    {g.key === 'all-shapes' ? <ShapesIcon /> : <FilterIcon />}
+                  </span>
+                }
+                label={`${g.label} (${g.ids.length})`}
+                onClick={() => {
+                  onFilter(new Set(g.ids));
+                  setOpen(false);
+                }}
+              />
+            ))}
+          </MenuTileGrid>
         </PortalMenu>
       ) : null}
     </>

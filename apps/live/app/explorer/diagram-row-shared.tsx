@@ -6,7 +6,7 @@
 // a diagram's badge says or which actions its menu offers.
 
 import { SharedDotIcon } from '@/components/chrome/share-state-icons';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
@@ -161,81 +161,125 @@ export function DiagramActionsMenu({
   if (diagram.shared) {
     return (
       <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
-        <MenuItem
-          icon={<DiagramIcon />}
-          label="Open"
-          onClick={() => window.location.assign(href)}
-        />
-        <MenuItem
-          icon={<CloseIcon />}
-          label="Dismiss"
-          onClick={() => {
-            onDismiss?.();
-            onClose();
-          }}
-        />
+        <MenuTileGrid cols={2}>
+          <MenuTile
+            icon={
+              <span className="[&_svg]:h-5 [&_svg]:w-5">
+                <DiagramIcon />
+              </span>
+            }
+            label="Open"
+            onClick={() => window.location.assign(href)}
+          />
+          <MenuTile
+            icon={
+              <span className="[&_svg]:h-5 [&_svg]:w-5">
+                <CloseIcon />
+              </span>
+            }
+            label="Dismiss"
+            onClick={() => {
+              onDismiss?.();
+              onClose();
+            }}
+          />
+        </MenuTileGrid>
       </PortalMenu>
     );
   }
   return (
     <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
-      <MenuItem
-        icon={<MenuPencilIcon />}
-        label="Rename"
-        onClick={() => {
-          onStartRename();
-          onClose();
-        }}
-      />
-      <MenuItem
-        icon={<MenuDuplicateIcon />}
-        label="Duplicate"
-        onClick={() => {
-          onDuplicate();
-          onClose();
-        }}
-      />
-      <MenuItem
-        icon={<MenuFolderIcon />}
-        label="Change Folder"
-        onClick={() => {
-          onMove(anchor);
-          onClose();
-        }}
-      />
-      {diagram.team ? (
-        <MenuItem
-          icon={<TeamIcon />}
-          label="Open Team"
+      <MenuTileGrid cols={2}>
+        <MenuTile
+          icon={
+            <span className="[&_svg]:h-5 [&_svg]:w-5">
+              <MenuPencilIcon />
+            </span>
+          }
+          label="Rename"
           onClick={() => {
-            window.location.assign(
-              `/explorer/team?id=${encodeURIComponent(diagram.team!.id)}${
-                diagram.folderId ? `&folder=${encodeURIComponent(diagram.folderId)}` : ''
-              }`,
-            );
+            onStartRename();
+            onClose();
           }}
         />
-      ) : null}
-      {ownerId ? (
-        offline ? (
-          <MenuItem icon={<SyncIcon />} label="Sync Diagram" onClick={() => void syncToCloud()} />
-        ) : (
-          <MenuItem
-            icon={<TakeOfflineMenuIcon />}
-            label="Take Offline"
-            onClick={() => void takeOffline()}
+        <MenuTile
+          icon={
+            <span className="[&_svg]:h-5 [&_svg]:w-5">
+              <MenuDuplicateIcon />
+            </span>
+          }
+          label="Duplicate"
+          onClick={() => {
+            onDuplicate();
+            onClose();
+          }}
+        />
+        <MenuTile
+          icon={
+            <span className="[&_svg]:h-5 [&_svg]:w-5">
+              <MenuFolderIcon />
+            </span>
+          }
+          label="Change Folder"
+          onClick={() => {
+            onMove(anchor);
+            onClose();
+          }}
+        />
+        {diagram.team ? (
+          <MenuTile
+            icon={
+              <span className="[&_svg]:h-5 [&_svg]:w-5">
+                <TeamIcon />
+              </span>
+            }
+            label="Open Team"
+            onClick={() => {
+              window.location.assign(
+                `/explorer/team?id=${encodeURIComponent(diagram.team!.id)}${
+                  diagram.folderId ? `&folder=${encodeURIComponent(diagram.folderId)}` : ''
+                }`,
+              );
+            }}
           />
-        )
-      ) : null}
-      <MenuItem
-        icon={<MenuTrashIcon />}
-        label="Delete"
-        danger
-        onClick={() => {
-          onDelete();
-          onClose();
-        }}
-      />
+        ) : null}
+        {ownerId ? (
+          offline ? (
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <SyncIcon />
+                </span>
+              }
+              label="Sync Diagram"
+              onClick={() => void syncToCloud()}
+            />
+          ) : (
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <TakeOfflineMenuIcon />
+                </span>
+              }
+              label="Take Offline"
+              onClick={() => void takeOffline()}
+            />
+          )
+        ) : null}
+        <MenuTile
+          icon={
+            <span className="[&_svg]:h-5 [&_svg]:w-5">
+              <MenuTrashIcon />
+            </span>
+          }
+          label="Delete"
+          danger
+          onClick={() => {
+            onDelete();
+            onClose();
+          }}
+        />
+      </MenuTileGrid>
     </PortalMenu>
   );
 }

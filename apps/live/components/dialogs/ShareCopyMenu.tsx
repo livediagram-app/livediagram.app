@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type ReactNode } from 'react';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
@@ -79,14 +79,16 @@ export function ShareCopyMenu({
               {header}
             </div>
           ) : null}
-          {items.map((item) => (
-            <MenuItem
-              key={item.label}
-              icon={item.icon}
-              label={item.label}
-              onClick={() => void copy(item)}
-            />
-          ))}
+          <MenuTileGrid cols={2}>
+            {items.map((item) => (
+              <MenuTile
+                key={item.label}
+                icon={<span className="[&_svg]:h-5 [&_svg]:w-5">{item.icon}</span>}
+                label={item.label}
+                onClick={() => void copy(item)}
+              />
+            ))}
+          </MenuTileGrid>
         </PortalMenu>
       ) : null}
     </>

@@ -8,7 +8,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { FolderIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
 import type { Folder } from '@/lib/api-client';
 
@@ -106,39 +106,57 @@ export function FolderCard({
       </div>
       {menuOpen ? (
         <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
-          <MenuItem
-            icon={<MenuPencilIcon />}
-            label="Rename"
-            onClick={() => {
-              actions.rename();
-              setMenuOpen(false);
-            }}
-          />
-          <MenuItem
-            icon={<PlusIcon />}
-            label="New subfolder"
-            onClick={() => {
-              actions.newSubfolder();
-              setMenuOpen(false);
-            }}
-          />
-          <MenuItem
-            icon={<MenuFolderIcon />}
-            label="Change Folder"
-            onClick={() => {
-              actions.move();
-              setMenuOpen(false);
-            }}
-          />
-          <MenuItem
-            icon={<MenuTrashIcon />}
-            label="Delete"
-            danger
-            onClick={() => {
-              actions.delete();
-              setMenuOpen(false);
-            }}
-          />
+          <MenuTileGrid cols={2}>
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <MenuPencilIcon />
+                </span>
+              }
+              label="Rename"
+              onClick={() => {
+                actions.rename();
+                setMenuOpen(false);
+              }}
+            />
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <PlusIcon />
+                </span>
+              }
+              label="New subfolder"
+              onClick={() => {
+                actions.newSubfolder();
+                setMenuOpen(false);
+              }}
+            />
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <MenuFolderIcon />
+                </span>
+              }
+              label="Change Folder"
+              onClick={() => {
+                actions.move();
+                setMenuOpen(false);
+              }}
+            />
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <MenuTrashIcon />
+                </span>
+              }
+              label="Delete"
+              danger
+              onClick={() => {
+                actions.delete();
+                setMenuOpen(false);
+              }}
+            />
+          </MenuTileGrid>
         </PortalMenu>
       ) : null}
     </div>

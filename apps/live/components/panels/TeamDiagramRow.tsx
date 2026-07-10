@@ -9,7 +9,7 @@ import {
   MenuTrashIcon,
 } from '@/app/explorer/icons';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { relativeSince } from '@/lib/relative-time';
 
@@ -80,39 +80,57 @@ export function TeamDiagramRow({
       )}
       {menuOpen ? (
         <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
-          <MenuItem
-            icon={<MenuPencilIcon />}
-            label="Rename"
-            onClick={() => {
-              onStartRename();
-              setMenuOpen(false);
-            }}
-          />
-          <MenuItem
-            icon={<MenuDuplicateIcon />}
-            label="Duplicate"
-            onClick={() => {
-              onDuplicate();
-              setMenuOpen(false);
-            }}
-          />
-          <MenuItem
-            icon={<MenuFolderIcon />}
-            label="Change Folder"
-            onClick={() => {
-              onMove(menuRef.current);
-              setMenuOpen(false);
-            }}
-          />
-          <MenuItem
-            icon={<MenuTrashIcon />}
-            label="Delete"
-            danger
-            onClick={() => {
-              onDelete();
-              setMenuOpen(false);
-            }}
-          />
+          <MenuTileGrid cols={2}>
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <MenuPencilIcon />
+                </span>
+              }
+              label="Rename"
+              onClick={() => {
+                onStartRename();
+                setMenuOpen(false);
+              }}
+            />
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <MenuDuplicateIcon />
+                </span>
+              }
+              label="Duplicate"
+              onClick={() => {
+                onDuplicate();
+                setMenuOpen(false);
+              }}
+            />
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <MenuFolderIcon />
+                </span>
+              }
+              label="Change Folder"
+              onClick={() => {
+                onMove(menuRef.current);
+                setMenuOpen(false);
+              }}
+            />
+            <MenuTile
+              icon={
+                <span className="[&_svg]:h-5 [&_svg]:w-5">
+                  <MenuTrashIcon />
+                </span>
+              }
+              label="Delete"
+              danger
+              onClick={() => {
+                onDelete();
+                setMenuOpen(false);
+              }}
+            />
+          </MenuTileGrid>
         </PortalMenu>
       ) : null}
     </li>

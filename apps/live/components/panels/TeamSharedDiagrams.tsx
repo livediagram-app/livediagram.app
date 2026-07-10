@@ -10,7 +10,7 @@ import { useExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
 import { MenuFolderIcon, PlusIcon } from '@/app/explorer/icons';
 import { DiagramIcon } from '@/app/explorer/icons';
 import { TeamDiagramRow } from '@/components/panels/TeamDiagramRow';
-import { MenuItem, PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useTeamLibrary } from '@/hooks/persistence/useTeamLibrary';
@@ -233,31 +233,41 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
                 placement="below"
                 onClose={() => setCreateOpen(false)}
               >
-                {/* New diagram lands directly in the team library, scoped
-                  to the folder currently open (spec/35): /live/new
-                  applies the team + folder placement after the create. */}
-                <MenuItem
-                  icon={<DiagramIcon />}
-                  label="New diagram"
-                  onClick={() => {
-                    setCreateOpen(false);
-                    window.location.assign(
-                      `/new?team=${encodeURIComponent(teamId)}${
-                        currentFolderId ? `&folder=${encodeURIComponent(currentFolderId)}` : ''
-                      }`,
-                    );
-                  }}
-                />
-                <MenuItem
-                  icon={<MenuFolderIcon />}
-                  label={spot.kind === 'folder' ? 'New subfolder' : 'New folder'}
-                  onClick={() => {
-                    setCreateOpen(false);
-                    void lib.createFolder(currentFolderId).then((created) => {
-                      if (created) setRenamingFolderId(created.id);
-                    });
-                  }}
-                />
+                <MenuTileGrid cols={2}>
+                  {/* New diagram lands directly in the team library, scoped
+                    to the folder currently open (spec/35): /live/new
+                    applies the team + folder placement after the create. */}
+                  <MenuTile
+                    icon={
+                      <span className="[&_svg]:h-5 [&_svg]:w-5">
+                        <DiagramIcon />
+                      </span>
+                    }
+                    label="New diagram"
+                    onClick={() => {
+                      setCreateOpen(false);
+                      window.location.assign(
+                        `/new?team=${encodeURIComponent(teamId)}${
+                          currentFolderId ? `&folder=${encodeURIComponent(currentFolderId)}` : ''
+                        }`,
+                      );
+                    }}
+                  />
+                  <MenuTile
+                    icon={
+                      <span className="[&_svg]:h-5 [&_svg]:w-5">
+                        <MenuFolderIcon />
+                      </span>
+                    }
+                    label={spot.kind === 'folder' ? 'New subfolder' : 'New folder'}
+                    onClick={() => {
+                      setCreateOpen(false);
+                      void lib.createFolder(currentFolderId).then((created) => {
+                        if (created) setRenamingFolderId(created.id);
+                      });
+                    }}
+                  />
+                </MenuTileGrid>
               </PortalMenu>
             ) : null}
           </div>
