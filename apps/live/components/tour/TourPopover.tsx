@@ -16,9 +16,11 @@ import type { TourTargetRect } from './TourHost';
 // against the current target rect; once placed, left/top transitions are
 // enabled so the card GLIDES between steps instead of teleporting, and
 // the content slides directionally (the wizard's tip-next / tip-prev).
-// On narrow (mobile) viewports anchored steps dock above the tab bar as
-// a bottom sheet, which sidesteps every clamping headache; the welcome
-// card stays centred everywhere.
+// A caret on the popover's edge points at the target, so the card reads
+// as attached to what it explains — on phones the narrow viewport means
+// side placements never fit, so steps naturally land below (or above)
+// their target with the caret pointing up at it. The bookend cards stay
+// centred everywhere.
 export function TourPopover({
   stepNumber,
   stepCount,
@@ -52,27 +54,49 @@ export function TourPopover({
   onSkip: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const [pos, setPos] = useState<{
+    left: number;
+    top: number;
+    // Which edge carries the caret (the side FACING the target), and how
+    // far along that edge it sits, so the caret points at the target's
+    // centre even after viewport clamping. Null = centred card, no caret.
+    caret: { edge: 'top' | 'bottom' | 'left' | 'right'; offset: number } | null;
+  } | null>(null);
   // Position transitions are enabled one frame AFTER the first placement,
   // so the initial park-offscreen → placed jump doesn't animate as a fly-in
   // from the corner (the PaletteTabBar height-animation gate pattern).
   const [animatePos, setAnimatePos] = useState(false);
-  const sheetMode = !card && typeof window !== 'undefined' && window.innerWidth < 640;
 
   useLayoutEffect(() => {
-    if (sheetMode) return;
     const node = ref.current;
     if (!node) return;
+    const clamp = (v: number, min: number, max: number) =>
+      Math.min(Math.max(v, min), Math.max(min, max));
     const place = () => {
       const size = { width: node.offsetWidth, height: node.offsetHeight };
       const viewport = { width: window.innerWidth, height: window.innerHeight };
-      const placed = targetRect
-        ? placeTourPopover(targetRect, size, viewport)
-        : {
-            left: (viewport.width - size.width) / 2,
-            top: (viewport.height - size.height) / 2,
-          };
-      setPos({ left: placed.left, top: placed.top });
+      if (!targetRect) {
+        setPos({
+          left: (viewport.width - size.width) / 2,
+          top: (viewport.height - size.height) / 2,
+          caret: null,
+        });
+        return;
+      }
+      const placed = placeTourPopover(targetRect, size, viewport);
+      let caret: NonNullable<typeof pos>['caret'] = null;
+      if (placed.side === 'below' || placed.side === 'above') {
+        caret = {
+          edge: placed.side === 'below' ? 'top' : 'bottom',
+          offset: clamp(targetRect.left + targetRect.width / 2 - placed.left, 18, size.width - 18),
+        };
+      } else if (placed.side === 'right' || placed.side === 'left') {
+        caret = {
+          edge: placed.side === 'right' ? 'left' : 'right',
+          offset: clamp(targetRect.top + targetRect.height / 2 - placed.top, 18, size.height - 18),
+        };
+      }
+      setPos({ left: placed.left, top: placed.top, caret });
     };
     place();
     const raf = requestAnimationFrame(() => setAnimatePos(true));
@@ -81,7 +105,7 @@ export function TourPopover({
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', place);
     };
-  }, [targetRect, sheetMode, stepId]);
+  }, [targetRect, stepId]);
 
   return (
     <div
@@ -90,19 +114,39 @@ export function TourPopover({
       role="dialog"
       aria-label={card ? title : `Tour step ${stepNumber} of ${stepCount}: ${title}`}
       onPointerDown={(e) => e.stopPropagation()}
-      className={`pointer-events-auto fixed z-[var(--z-toast)] flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 ${
-        sheetMode ? 'inset-x-3 bottom-16' : card ? 'w-[21rem]' : 'w-80'
-      } ${animatePos && !sheetMode ? 'transition-[left,top] duration-300 ease-out' : ''}`}
+      className={`pointer-events-auto fixed z-[var(--z-toast)] flex max-w-[calc(100vw-1.5rem)] flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 ${
+        card ? 'w-[21rem]' : 'w-80'
+      } ${animatePos ? 'transition-[left,top] duration-300 ease-out' : ''}`}
       style={
-        sheetMode
-          ? undefined
-          : pos
-            ? { left: pos.left, top: pos.top }
-            : // First paint before measurement: park off-screen so the
-              // two-pass placement never flashes at 0,0.
-              { left: -9999, top: -9999 }
+        pos
+          ? { left: pos.left, top: pos.top }
+          : // First paint before measurement: park off-screen so the
+            // two-pass placement never flashes at 0,0.
+            { left: -9999, top: -9999 }
       }
     >
+      {/* The caret: a rotated square on the edge facing the target (the
+          MovablePanel dock-popover arrow recipe), so the card visibly
+          points at what it explains. */}
+      {pos?.caret ? (
+        <span
+          aria-hidden
+          className={`absolute h-3.5 w-3.5 rotate-45 bg-white dark:bg-slate-900 ${
+            pos.caret.edge === 'top'
+              ? '-top-[7px] rounded-tl-sm border-l border-t'
+              : pos.caret.edge === 'bottom'
+                ? '-bottom-[7px] rounded-br-sm border-b border-r'
+                : pos.caret.edge === 'left'
+                  ? '-left-[7px] rounded-bl-sm border-b border-l'
+                  : '-right-[7px] rounded-tr-sm border-r border-t'
+          } border-slate-200 dark:border-slate-700`}
+          style={
+            pos.caret.edge === 'top' || pos.caret.edge === 'bottom'
+              ? { left: pos.caret.offset - 7 }
+              : { top: pos.caret.offset - 7 }
+          }
+        />
+      ) : null}
       {/* Keyed on the step so each phase slides in directionally (forward
           from the right, back from the left) — the same motion the New
           Diagram wizard uses between its phases. */}
@@ -141,7 +185,7 @@ export function TourPopover({
                   rel="noreferrer"
                   className="text-xs font-medium text-brand-600 underline-offset-2 transition hover:underline dark:text-brand-300"
                 >
-                  Visit the help centre
+                  Visit Help Centre
                 </a>
                 <Button size="xs" onClick={onNext}>
                   Start creating
