@@ -61,13 +61,18 @@ export function expectNoPageErrors(pageErrors: string[]): void {
 export async function startBlankDiagram(page: Page): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Diagram', { exact: false }).waitFor();
-  // Step 1: pick the Blank template, then advance.
+  // Step 1: pick the Blank template. Single-click advances to the theme
+  // step (spec/76), so no explicit Next is needed here.
   await page.getByText('Blank diagram', { exact: false }).click();
-  await page.getByRole('button', { name: /next/i }).click();
-  // Step 2 (theme): a primary action finishes the wizard. Match the
-  // finish verbs without pinning the exact label.
+  // Step 2 (theme) -> step 3 (settings). ANCHORED name: a bare /next/i
+  // also matches the Next.js DevTools button on dev servers.
+  await page.getByRole('button', { name: /^next$/i }).click();
+  // Step 3 (settings): the footer's primary action finishes the wizard.
+  // Anchored finish verbs: an unanchored /create/i also matched the
+  // settings step's "New Folder ... Create here" tile (the CI breakage
+  // this comment is the tombstone for).
   await page
-    .getByRole('button', { name: /create|start|use this|done|finish/i })
+    .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
     .first()
     .click();
   // The editor is up once the canvas surface (the a11y root, spec/71)

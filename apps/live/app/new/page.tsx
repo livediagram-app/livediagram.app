@@ -208,6 +208,27 @@ export default function NewDiagramPage() {
     }
   };
 
+  // Identity for the commit path. Clerk's chunk loads deferred, so a fast
+  // click-through (or an e2e robot) can reach Create while `self` is still
+  // the 'pending' placeholder — the identity bootstrap above hasn't run.
+  // Creating then would file the diagram under the literal owner "pending":
+  // a shared id every raced visitor collides on, and one the editor route
+  // (fetching with the real id) 404s. So the commit resolves identity
+  // itself: wait out the bootstrap (bounded — authLoaded flips by the
+  // 5 s Clerk timeout at the latest), then fall back to the guest id.
+  const selfRef = useRef(self);
+  selfRef.current = self;
+  const resolveSelf = async (): Promise<Participant> => {
+    const deadline = Date.now() + 8000;
+    while (selfRef.current.id === 'pending' && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    if (selfRef.current.id !== 'pending') return selfRef.current;
+    const fallback = { ...selfRef.current, id: ensureGuestSelfId() };
+    setSelf(fallback);
+    return fallback;
+  };
+
   // Single commit point, shared by the Create Diagram and Skip paths.
   // Submit passes a template + theme; Skip passes 'blank' + 'brand'. Either
   // way we persist the diagram so the editor route lands on a real row.
@@ -226,11 +247,13 @@ export default function NewDiagramPage() {
     // The Settings step's name field wins; fall back to the per-template
     // default when it's left blank (spec/76).
     const diagramName = settings.diagramName?.trim() || untitledNameForTemplate(templateKind);
+    // Never create as the 'pending' placeholder — see resolveSelf above.
+    const who = await resolveSelf();
     // Identity persistence first so any subsequent room broadcasts
     // carry the chosen name + colour.
-    const trimmed = name.trim() || self.name;
-    if (trimmed !== self.name) {
-      const updated: Participant = { ...self, name: trimmed };
+    const trimmed = name.trim() || who.name;
+    if (trimmed !== who.name) {
+      const updated: Participant = { ...who, name: trimmed };
       setSelf(updated);
       await apiSaveSelf(updated).catch(() => {});
     }
@@ -262,7 +285,7 @@ export default function NewDiagramPage() {
         // also registers its id so every later load / save routes local.
         await offlineCreateDiagram({ id: diagramId, name: diagramName, tabs: [tab] }, Date.now());
       } else {
-        await apiCreateDiagram(self.id, {
+        await apiCreateDiagram(who.id, {
           id: diagramId,
           name: diagramName,
           tabs: [tab],
@@ -299,13 +322,13 @@ export default function NewDiagramPage() {
     if (!offline) {
       if (settings.teamId) {
         await apiSetDiagramFolder(
-          self.id,
+          who.id,
           diagramId,
           settings.folderId ?? null,
           settings.teamId,
         ).catch(() => {});
       } else if (settings.folderId) {
-        await apiSetDiagramFolder(self.id, diagramId, settings.folderId).catch(() => {});
+        await apiSetDiagramFolder(who.id, diagramId, settings.folderId).catch(() => {});
       }
     }
     window.location.assign(`/diagram/${diagramId}`);
@@ -373,7 +396,10 @@ export default function NewDiagramPage() {
             onPick={(kind, name, themeId, settings) =>
               void commitNewDiagram(kind, name, themeId, settings)
             }
-            onSkip={() => void commitNewDiagram('blank', self.name, 'brand', { offline: false })}
+            // Empty name = "keep the resolved participant name" (commit falls
+            // back to it); passing self.name here could freeze the
+            // pre-bootstrap 'Guest' placeholder into the account.
+            onSkip={() => void commitNewDiagram('blank', '', 'brand', { offline: false })}
           />
         </CustomThemeProvider>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
@@ -387,7 +413,8 @@ export default function NewDiagramPage() {
             <NewHereCard
               busy={submitting}
               onStart={() =>
-                void commitNewDiagram('guided-tour', self.name, 'brand', { offline: true })
+                // '' = keep the resolved participant name, same as onSkip.
+                void commitNewDiagram('guided-tour', '', 'brand', { offline: true })
               }
             />
           </div>
