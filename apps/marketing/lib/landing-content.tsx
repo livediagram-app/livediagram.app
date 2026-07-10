@@ -209,7 +209,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <LaserArt />,
-        href: '/help/palette/laser/',
+        href: '/help/selection-modes/laser/',
         group: 'Present & facilitate',
         title: 'Laser pointer for presenting',
         description:
@@ -217,7 +217,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <SpotlightArt />,
-        href: '/help/palette/spotlight/',
+        href: '/help/selection-modes/spotlight/',
         group: 'Present & facilitate',
         title: 'Spotlight the room on one thing',
         description:
@@ -408,7 +408,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <FormatPainterArt />,
-        href: '/help/palette/format-painter/',
+        href: '/help/selection-modes/format-painter/',
         group: 'Select, group & lock',
         title: 'Format painter',
         description:

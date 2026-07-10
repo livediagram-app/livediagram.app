@@ -549,6 +549,40 @@ const SCENES: Record<string, React.ReactNode> = {
     </>
   ),
 
+  // Selection Modes: a pointer dragging a dashed marquee around two shapes.
+  'selection-modes': (
+    <>
+      <rect
+        x={96}
+        y={26}
+        width={128}
+        height={72}
+        rx={8}
+        fill="none"
+        className="stroke-brand-400"
+        strokeWidth={2}
+        strokeDasharray="7 6"
+      />
+      <rect
+        x={112}
+        y={42}
+        width={40}
+        height={26}
+        rx={5}
+        className="fill-brand-100 stroke-brand-400"
+        strokeWidth={2}
+      />
+      <circle cx={188} cy={62} r={15} className="fill-brand-50 stroke-brand-400" strokeWidth={2} />
+      <path d="M152 55 h21" className="stroke-brand-300" strokeWidth={2.5} strokeLinecap="round" />
+      <path
+        d="M216 88 l14 34 5.5-11 12 5.5 -11-12 11-5.5 Z"
+        className="fill-white stroke-brand-500"
+        strokeWidth={2.5}
+        strokeLinejoin="round"
+      />
+    </>
+  ),
+
   // Palette: the floating tool palette with shape tiles.
   palette: (
     <>

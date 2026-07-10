@@ -24,7 +24,7 @@ export const HELP_ARTICLES = {
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
   quickAddOnHover: 'palette/quick-add-on-hover',
-  isometricMode: 'palette/isometric-mode',
+  isometricMode: 'selection-modes/isometric-mode',
   // AI
   aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
