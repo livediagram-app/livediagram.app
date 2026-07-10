@@ -74,6 +74,20 @@ describe('parseMermaid: state diagrams', () => {
     expect(r.graph.edges).toContainEqual({ from: '__start__', to: 'Active' });
   });
 
+  it('keeps transitions to an EMPTY composite (its node survives, no frame)', () => {
+    const r = parseMermaid(`stateDiagram-v2
+  state Empty {
+  }
+  A --> Empty`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    // No members means no frame; the auto node must survive so the
+    // transition keeps a target instead of silently vanishing.
+    expect(r.graph.clusters ?? []).toEqual([]);
+    expect(r.graph.nodes.some((n) => n.id === 'Empty')).toBe(true);
+    expect(r.graph.edges).toContainEqual({ from: 'A', to: 'Empty' });
+  });
+
   it('folds nested composites and titles quoted composites', () => {
     const r = parseMermaid(`stateDiagram-v2
   state "Outer title" as outer {
