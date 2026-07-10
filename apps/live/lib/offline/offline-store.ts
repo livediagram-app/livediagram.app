@@ -78,7 +78,7 @@ export function recordToDiagram(rec: OfflineDiagramRecord): Diagram {
 }
 
 // Project a record into a list row (drops tab bodies).
-export function recordToSummary(rec: OfflineDiagramRecord): DiagramSummary {
+function recordToSummary(rec: OfflineDiagramRecord): DiagramSummary {
   return {
     id: rec.id,
     ownerId: OFFLINE_OWNER_ID,

@@ -96,7 +96,7 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
 // treat a data-URI imageId as the bytes themselves, the same shape Take
 // Offline produces). The returned "summary" mirrors the upload result so
 // callers stay agnostic: `id` IS the data URI.
-export async function embedImageFile(file: File): Promise<UploadResult> {
+async function embedImageFile(file: File): Promise<UploadResult> {
   validateImageFile(file);
   const dims = await readImageDimensions(file);
   if (!dims) {
