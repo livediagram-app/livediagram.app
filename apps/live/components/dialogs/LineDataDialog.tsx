@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Button } from '@livediagram/ui';
 import type { LineSeries } from '@livediagram/diagram';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -223,13 +224,9 @@ export function LineDataDialog({
         >
           + Add row
         </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-500"
-        >
+        <Button variant="primary" size="md" onClick={onClose}>
           Done
-        </button>
+        </Button>
       </div>
     </Dialog>
   );

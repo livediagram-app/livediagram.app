@@ -23,6 +23,7 @@ import {
   type ShapeKind,
 } from '@livediagram/diagram';
 import type { CustomThemeDefinition } from '@livediagram/api-schema';
+import { Button } from '@livediagram/ui';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { PATTERNS, PatternButton } from '@/components/palette/palette-controls';
 import {
@@ -302,14 +303,14 @@ export function CustomThemeBuilder({
         >
           Cancel
         </button>
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="xs"
           disabled={saving}
           onClick={() => onSave({ name: name.trim() || 'My theme', definition: def })}
-          className="rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 disabled:opacity-60"
         >
           {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Save theme'}
-        </button>
+        </Button>
       </div>
     </div>
   );

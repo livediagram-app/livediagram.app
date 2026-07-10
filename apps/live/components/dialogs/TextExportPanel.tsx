@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '@livediagram/ui';
 
 // The view/edit/copy sub-view for a text export format (spec/27 + spec/73):
 // a textarea pre-filled with the tab serialised to text, editable for a
@@ -65,13 +66,9 @@ export function TextExportPanel({
           >
             {copied ? 'Copied!' : 'Copy'}
           </button>
-          <button
-            type="button"
-            onClick={() => onDownload(text)}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-brand-700"
-          >
+          <Button variant="primary" size="md" onClick={() => onDownload(text)}>
             {downloadLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

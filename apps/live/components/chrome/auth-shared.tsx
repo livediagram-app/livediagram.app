@@ -201,6 +201,61 @@ export function GoogleGlyph() {
 }
 
 // ---------------------------------------------------------------------
+// Google OAuth button + "or" divider — the block both auth pages render
+// above their email form. Was duplicated in sign-in and get-started,
+// and both copies were light-only: on the dark card the slate-700 label
+// read as a disabled button and the divider's bg-white chip floated as
+// a light box.
+// ---------------------------------------------------------------------
+
+export function GoogleAuthButton({
+  label,
+  loading,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  loading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-800"
+    >
+      {loading ? (
+        <span className="text-slate-500 dark:text-slate-400">Redirecting…</span>
+      ) : (
+        <>
+          <GoogleGlyph />
+          {label}
+        </>
+      )}
+    </button>
+  );
+}
+
+export function OrDivider() {
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 flex items-center">
+        <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+      </div>
+      <div className="relative flex justify-center text-xs uppercase tracking-wide">
+        {/* The chip's fill must match the AuthCard surface so it reads as a
+            gap in the rule, not a floating box. */}
+        <span className="bg-white px-2 text-slate-400 dark:bg-slate-900 dark:text-slate-500">
+          or
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------
 // Clerk error shape parser. Clerk's API throws errors with shape
 // `{ errors: [{ message: string }, ...] }`. This unwraps the array
 // into a single comma-joined string, falling through to standard

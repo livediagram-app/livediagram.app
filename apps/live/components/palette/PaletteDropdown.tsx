@@ -170,7 +170,12 @@ export function PaletteDropdown({
       className={`flex min-w-0 items-center gap-1.5 ${shape} ${variant === 'flush' ? 'text-xs' : 'text-[11px]'} font-medium transition ${
         accent
           ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
-          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+          : variant === 'flush'
+            ? // Flush triggers sit directly on the panel header, so they stay
+              // transparent at rest — the bordered pill's bg-white/slate-800
+              // fill read as a stray lighter box on the dark slate-900 panel.
+              'bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
       }`}
     >
       {triggerLeading}

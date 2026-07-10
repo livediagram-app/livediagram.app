@@ -10,6 +10,7 @@ import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Brand } from '@livediagram/ui';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
+import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { apiExchangeOauthToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
@@ -181,19 +182,24 @@ function Consent() {
         access your livediagram diagrams on your behalf. Approving creates an API token, which you
         can revoke any time from the Explorer’s API tokens page.
       </p>
-      <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700">
-        <input
-          type="checkbox"
-          checked={readOnly}
-          onChange={(e) => setReadOnly(e.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
-        />
-        <span className="text-slate-600 dark:text-slate-300">
+      {/* Whole-row toggle with the shared presentational switch (the same
+          pattern as ProfilePane / SettingsDialog rows) — this was the last
+          native checkbox in the live app. */}
+      <button
+        type="button"
+        onClick={() => setReadOnly(!readOnly)}
+        aria-pressed={readOnly}
+        className="mt-4 flex w-full cursor-pointer items-start justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-left text-sm dark:border-slate-700"
+      >
+        <span className="min-w-0 text-slate-600 dark:text-slate-300">
           <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span> —
-          let it find and view your diagrams, but not create, edit, delete, or share them. Leave
-          unchecked for full read + write.
+          let it find and view your diagrams, but not create, edit, delete, or share them. Leave off
+          for full read + write.
         </span>
-      </label>
+        <span className="mt-0.5 shrink-0">
+          <ToggleSwitch presentational checked={readOnly} label="Read-only access" />
+        </span>
+      </button>
       {to ? (
         <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
           Access will be sent to{' '}

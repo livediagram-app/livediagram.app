@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 import { track } from '@/lib/telemetry';
 
@@ -13,6 +13,13 @@ import { track } from '@/lib/telemetry';
 // prefers-color-scheme on first load: the toggle is opt-in so the
 // choice belongs to the user, not the OS. (Spec/07 documents the
 // reasoning.)
+//
+// The mode lives in a module-level store shared by every hook
+// instance (useSyncExternalStore). It used to be per-instance
+// useState, which meant toggling from the status bar only re-rendered
+// the status bar: other subscribers (the tab bar's active-pill inline
+// colours, ThemeModeBanner's mismatch check) kept the stale mode until
+// something else re-rendered them.
 
 type UiMode = 'light' | 'dark';
 
@@ -35,31 +42,51 @@ function apply(mode: UiMode) {
   else html.classList.remove('dark');
 }
 
-export function useUiMode(): { mode: UiMode; toggle: () => void } {
-  // Mirror the stored value to React state so toggling re-renders
-  // the toggle button's icon. The SSR initial pass returns 'light'
-  // (no window); the post-mount effect below reconciles to the
-  // real stored value if it differs.
-  const [mode, setMode] = useState<UiMode>('light');
+// null until first read so the store seeds lazily on the client;
+// getSnapshot must stay pure, so seeding happens there but writing
+// back to localStorage / the DOM only ever happens in setUiMode.
+let current: UiMode | null = null;
+const listeners = new Set<() => void>();
 
+function getSnapshot(): UiMode {
+  if (current === null) current = read();
+  return current;
+}
+
+function getServerSnapshot(): UiMode {
+  return 'light';
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function setUiMode(next: UiMode) {
+  current = next;
+  writeLocalStorageSafe(UI_MODE_STORAGE_KEY, next);
+  apply(next);
+  listeners.forEach((l) => l());
+}
+
+export function useUiMode(): { mode: UiMode; toggle: () => void } {
+  const mode = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  // Reconcile the DOM class with the stored value once on mount — the
+  // pre-hydration script normally handles this, but embeds / tests that
+  // render without the root layout still get the right chrome.
   useEffect(() => {
-    const stored = read();
-    setMode(stored);
-    apply(stored);
+    apply(getSnapshot());
   }, []);
 
   const toggle = () => {
-    // Side effects (localStorage, DOM class, telemetry) live OUTSIDE
-    // the setMode updater because React strict mode runs updaters
-    // twice in dev to surface impure callbacks — that double-fired
-    // the telemetry emit, double-wrote localStorage, and double-
-    // applied the DOM class. The current `mode` from render-closure
-    // is fine here: toggle is a single button click, never a rapid
-    // race, so there's no stale-state risk.
-    const next: UiMode = mode === 'dark' ? 'light' : 'dark';
-    writeLocalStorageSafe(UI_MODE_STORAGE_KEY, next);
-    apply(next);
-    setMode(next);
+    // Side effects (localStorage, DOM class, telemetry) live in
+    // setUiMode rather than a setState updater because React strict
+    // mode runs updaters twice in dev to surface impure callbacks —
+    // that double-fired the telemetry emit, double-wrote localStorage,
+    // and double-applied the DOM class.
+    const next: UiMode = getSnapshot() === 'dark' ? 'light' : 'dark';
+    setUiMode(next);
     track('UI', 'Toggled', next === 'dark' ? 'Dark' : 'Light');
   };
 

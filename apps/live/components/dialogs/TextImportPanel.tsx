@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '@livediagram/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 
 // The paste-or-file sub-view for a text import format (spec/27 + spec/73).
@@ -69,14 +70,14 @@ export function TextImportPanel({
           >
             Import a file instead
           </button>
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="md"
             onClick={() => void run(() => onImportText(text))}
             disabled={busy || text.trim().length === 0}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-semibold text-white transition enabled:hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? 'Importing…' : 'Import'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

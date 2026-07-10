@@ -1,3 +1,4 @@
+import { Select } from '@livediagram/ui';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
@@ -139,15 +140,16 @@ export function TeamMemberRow({
         ) : null}
       </span>
       {isAdmin && !pinnedAdmin ? (
-        <select
+        <Select
+          variant="ghost"
           value={m.role}
           onChange={(e) => onChangeRole(m, e.target.value as TeamRole)}
           aria-label={`Role for ${name}`}
-          className="shrink-0 cursor-pointer rounded-md border border-transparent bg-transparent px-1.5 py-1 text-xs font-medium text-slate-600 outline-none transition hover:border-slate-200 hover:bg-white focus:border-brand-400 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:[&>option]:bg-slate-800"
+          className="shrink-0"
         >
           <option value="admin">Admin</option>
           <option value="member">Member</option>
-        </select>
+        </Select>
       ) : (
         <RolePill member={m} pinned={pinnedAdmin && isAdmin} />
       )}

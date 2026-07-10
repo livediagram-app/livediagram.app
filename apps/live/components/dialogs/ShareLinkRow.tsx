@@ -1,4 +1,4 @@
-import { Button } from '@livediagram/ui';
+import { Button, Select } from '@livediagram/ui';
 import type { ShareLink } from '@/lib/api-client';
 import { buildEmbedSnippet, embedUrlFor } from '@/lib/embed';
 import { liveImageHtml, liveImageMarkdown, liveImageUrlFor } from '@/lib/live-image';
@@ -139,7 +139,8 @@ export function ActiveShareLinkRow({
               tabs.length > 1 ? (
                 <label className="flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                   Tab
-                  <select
+                  <Select
+                    size="sm"
                     value={liveImageTabId ?? firstTabId ?? ''}
                     onChange={(e) => {
                       const id = e.target.value;
@@ -147,14 +148,14 @@ export function ActiveShareLinkRow({
                       setLiveImageTabId(next);
                       if (next) track('UI', 'Selected', 'LiveImageTab');
                     }}
-                    className="min-w-0 flex-1 rounded border border-slate-200 bg-white px-1.5 py-1 text-[11px] text-slate-700 outline-none focus:border-brand-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                    className="min-w-0 flex-1"
                   >
                     {tabs.map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               ) : null
             }

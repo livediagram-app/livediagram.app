@@ -25,8 +25,9 @@ import {
   AuthCard,
   AuthDisabledNotice,
   CodeInputRow,
-  GoogleGlyph,
+  GoogleAuthButton,
   messageOf,
+  OrDivider,
   RedirectingCard,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
@@ -233,34 +234,21 @@ function GetStartedContent() {
         <form onSubmit={handleRegister} className="space-y-4">
           {googleOAuthEnabled ? (
             <>
-              <button
-                type="button"
-                onClick={handleSignUpWithGoogle}
+              <GoogleAuthButton
+                label="Continue with Google"
+                loading={googleLoading}
                 disabled={!signUpLoaded || googleLoading}
-                className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {googleLoading ? (
-                  <span className="text-slate-500">Redirecting…</span>
-                ) : (
-                  <>
-                    <GoogleGlyph />
-                    Continue with Google
-                  </>
-                )}
-              </button>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase tracking-wide">
-                  <span className="bg-white px-2 text-slate-400">or</span>
-                </div>
-              </div>
+                onClick={() => void handleSignUpWithGoogle()}
+              />
+              <OrDivider />
             </>
           ) : null}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-slate-700">
+              <label
+                htmlFor="firstName"
+                className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
                 First name
               </label>
               <TextInput
@@ -273,7 +261,10 @@ function GetStartedContent() {
               />
             </div>
             <div>
-              <label htmlFor="lastName" className="mb-1 block text-sm font-medium text-slate-700">
+              <label
+                htmlFor="lastName"
+                className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
                 Last name
               </label>
               <TextInput
@@ -287,7 +278,10 @@ function GetStartedContent() {
             </div>
           </div>
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
+            <label
+              htmlFor="email"
+              className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
               Email
             </label>
             <TextInput
@@ -305,9 +299,9 @@ function GetStartedContent() {
         </form>
       ) : (
         <form onSubmit={handleVerifyCode} className="space-y-4">
-          <p className="text-sm text-slate-600">
-            We sent a verification code to <strong className="text-slate-900">{email}</strong>.
-            Enter it below.
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            We sent a verification code to{' '}
+            <strong className="text-slate-900 dark:text-slate-100">{email}</strong>. Enter it below.
           </p>
           <CodeInputRow
             codeDigits={codeDigits}
@@ -332,7 +326,7 @@ function GetStartedContent() {
               type="button"
               onClick={handleResendCode}
               disabled={loading}
-              className="text-slate-600 hover:text-slate-900 disabled:opacity-50"
+              className="text-slate-600 hover:text-slate-900 disabled:opacity-50 dark:text-slate-400 dark:hover:text-slate-100"
             >
               Resend code
             </button>
@@ -343,7 +337,7 @@ function GetStartedContent() {
                 setError('');
                 setCodeDigits(['', '', '', '', '', '']);
               }}
-              className="text-slate-600 hover:text-slate-900"
+              className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
             >
               Back
             </button>

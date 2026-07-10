@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button, Select, TextInput } from '@livediagram/ui';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
@@ -232,17 +232,16 @@ export function ShareDialog({
               title="Link lifetime"
               description="The link stops working after this long and moves to Inactive, where you can extend or delete it. Never keeps it working until you revoke it."
             >
-              <select
+              <Select
                 value={newExpiry}
                 onChange={(e) => setNewExpiry(e.target.value as ShareLinkExpiry)}
                 aria-label="Link lifetime"
-                className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               >
                 <option value="never">Never expires</option>
                 <option value="week">Expires in 1 week</option>
                 <option value="month">Expires in 1 month</option>
                 <option value="sixMonths">Expires in 6 months</option>
-              </select>
+              </Select>
             </Tooltip>
             <Button onClick={create} disabled={busy} size="xs" className="shadow-sm">
               <LinkIcon />

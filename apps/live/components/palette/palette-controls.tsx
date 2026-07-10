@@ -21,7 +21,7 @@ export function SizeButton({
   // preview a preset live on the canvas while the pointer is over the tile.
   onPointerEnter?: (e: React.PointerEvent) => void;
   onPointerLeave?: (e: React.PointerEvent) => void;
-  // Accessible name (+ native tooltip) for tiles whose children are purely
+  // Accessible name (+ shared Tooltip) for tiles whose children are purely
   // visual (a colour swatch, an icon) and so carry no readable text.
   title?: string;
   children: React.ReactNode;
@@ -34,7 +34,7 @@ export function SizeButton({
   const styled = active
     ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
-  return (
+  const button = (
     <button
       type="button"
       onClick={onClick}
@@ -42,11 +42,20 @@ export function SizeButton({
       onPointerLeave={onPointerLeave}
       aria-pressed={active}
       aria-label={title}
-      title={title}
       className={`${base} ${styled}`}
     >
       {children}
     </button>
+  );
+  // The shared Tooltip (block so the tile still fills its grid cell), the
+  // same treatment as AlignmentGrid below — this was the last native
+  // title= tooltip on an interactive control in the editor.
+  return title ? (
+    <Tooltip title={title} block>
+      {button}
+    </Tooltip>
+  ) : (
+    button
   );
 }
 

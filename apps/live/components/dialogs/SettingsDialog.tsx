@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { track } from '@/lib/telemetry';
 import type { UserPreferences } from '@/lib/user-preferences';
 
@@ -195,29 +196,34 @@ function ToggleRow({
   description: string;
   checked: boolean;
   onChange: (next: boolean) => void;
-  // Optional "Learn more" link. Rendered INSIDE the setting card (indented
-  // under the label) so it's clearly tied to this setting, but outside the
-  // <label> so clicking it doesn't toggle the checkbox.
+  // Optional "Learn more" link. Rendered INSIDE the setting card so it's
+  // clearly tied to this setting, but outside the row button so clicking
+  // it doesn't flip the toggle.
   help?: ReactNode;
 }) {
+  // The whole row is the click target, so the switch is the shared
+  // presentational ToggleSwitch (same pattern as ProfilePane's rows) —
+  // this used to be a native checkbox, the only default-chrome control
+  // in the dialog stack.
   return (
     <div className="flex flex-col gap-1.5 rounded-lg border border-slate-200 p-3 transition hover:border-brand-300 dark:border-slate-700 dark:hover:border-brand-500/60">
-      <label className="flex cursor-pointer items-start gap-3">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-slate-600 dark:bg-slate-800"
-        />
-        <span className="flex flex-col gap-0.5">
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        aria-pressed={checked}
+        className="flex w-full cursor-pointer items-start justify-between gap-3 text-left"
+      >
+        <span className="flex min-w-0 flex-col gap-0.5">
           <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{label}</span>
           <span className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
             {description}
           </span>
         </span>
-      </label>
-      {/* Aligned under the label text (checkbox 1rem + gap 0.75rem = pl-7). */}
-      {help ? <div className="pl-7">{help}</div> : null}
+        <span className="mt-0.5 shrink-0">
+          <ToggleSwitch presentational checked={checked} label={label} />
+        </span>
+      </button>
+      {help ? <div>{help}</div> : null}
     </div>
   );
 }

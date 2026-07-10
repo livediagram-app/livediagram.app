@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Button } from '@livediagram/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
@@ -157,14 +158,14 @@ export function ImageExportPanel({
         >
           ← Back
         </button>
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="md"
           onClick={() => onExport({ isometric, pattern, hiddenLayers })}
           disabled={busy}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-semibold text-white transition enabled:hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy ? 'Exporting…' : `Download ${label}`}
-        </button>
+        </Button>
       </div>
     </div>
   );

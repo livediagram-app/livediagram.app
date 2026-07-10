@@ -140,9 +140,11 @@ export function DiagramThumbnail({
   );
 }
 
-// Fixed illustration for an offline diagram (spec/76): a device holding a
-// small diagram with a "cloud off" mark, amber to match the Offline badge.
-// Scales to fill any box (row thumb or large card) via the viewBox.
+// Fixed illustration for an offline diagram (spec/76): a "cloud off" mark,
+// amber to match the Offline badge. h-full fits it to small row thumbs, but
+// the height cap keeps it a modest centred glyph inside the big explorer
+// cards — uncapped it scaled to fill the whole card, a giant heavy-stroked
+// cloud that shouted over every neighbouring thumbnail.
 function OfflineIllustration() {
   return (
     <svg
@@ -153,7 +155,7 @@ function OfflineIllustration() {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
-      className="h-full w-full p-1.5 text-amber-500 dark:text-amber-400"
+      className="h-full max-h-10 w-auto p-1 text-amber-500 dark:text-amber-400"
     >
       {/* A cloud with a slash through it — the universal "offline" mark. */}
       <path d="M16.5 22h12a4.8 4.8 0 0 0 .5-9.55 6.8 6.8 0 0 0-12.7-1.7A4.55 4.55 0 0 0 16.5 22Z" />

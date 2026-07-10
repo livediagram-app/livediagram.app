@@ -41,7 +41,7 @@ export function TeamInvitesPane({
         return (
           <li
             key={invite.memberId}
-            className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+            className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-900"
           >
             <span
               aria-hidden
@@ -51,15 +51,17 @@ export function TeamInvitesPane({
               {initialsOf(invite.team.name)}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium text-slate-900">
+              <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                 {invite.team.name}
               </span>
-              <span className="block truncate text-xs text-slate-400">{subtitle}</span>
+              <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
+                {subtitle}
+              </span>
             </span>
             <button
               type="button"
               onClick={() => onDecline(invite)}
-              className="shrink-0 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
+              className="shrink-0 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-rose-500/40 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
             >
               Decline
             </button>
