@@ -111,16 +111,13 @@ export function useTabImport({
     }
 
     if (format === 'mermaid') {
-      const { parseMermaid, graphToElements, autoLayoutElements } =
-        await import('@livediagram/diagram');
+      const { parseMermaid, layoutClusteredGraph } = await import('@livediagram/diagram');
       const parsed = parseMermaid(text);
       if (!parsed.ok) return { status: 'error', error: parsed.error };
       // Uncoloured elements inherit the tab's theme at render, so no
-      // explicit recolour is needed. autoLayout honours the flowchart
-      // direction (TB / LR).
-      const elements = autoLayoutElements(graphToElements(parsed.graph), {
-        direction: parsed.direction,
-      });
+      // explicit recolour is needed. The cluster-aware layout honours the
+      // flowchart direction (TB / LR) and draws subgraphs as frames.
+      const elements = layoutClusteredGraph(parsed.graph, { direction: parsed.direction });
       replaceActiveTabContent({
         id: activeId,
         name: active?.name ?? '',

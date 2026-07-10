@@ -651,6 +651,9 @@ export * from './validate';
 // Deterministic auto-layout for AI-generated diagrams (spec/25).
 export * from './auto-layout';
 
+// Cluster-aware graph layout (spec/73): Mermaid subgraphs as frames.
+export * from './auto-layout-clusters';
+
 // Shared by the editor's text export + import and reusable by the api / MCP.
 
 // Headless SVG renderer (spec/62 §5): per-element drawers + renderElementsToSvg,

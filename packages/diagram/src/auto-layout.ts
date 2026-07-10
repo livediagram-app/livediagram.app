@@ -51,6 +51,11 @@ export type AutoLayoutOptions = {
   direction?: LayoutDirection;
   // Positioning style; omit for the layered flow (the long-standing default).
   style?: LayoutStyle;
+  // Nodes whose given width/height must survive layout untouched, exempt
+  // from peer-size normalisation. Used by the cluster layout (spec/73):
+  // a contracted cluster block is exactly its members' bounding box, and
+  // normalizeSizes would clamp it to the shape tier's size.
+  fixedSizeIds?: Set<ElementId>;
 };
 
 // TB when the model's edges trend more vertical than horizontal, else LR.
@@ -220,7 +225,13 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
 
   const style = opts.style ?? 'flow';
   const nodeIds = new Set(nodes.map((n) => n.id));
-  const size = normalizeSizes(nodes);
+  const fixed = opts.fixedSizeIds;
+  const size = normalizeSizes(fixed ? nodes.filter((n) => !fixed.has(n.id)) : nodes);
+  if (fixed) {
+    for (const n of nodes) {
+      if (fixed.has(n.id)) size.set(n.id, { w: n.width, h: n.height });
+    }
+  }
   const edges = buildEdges(arrows, nodeIds);
   const centers = new Map<ElementId, Pt>(
     nodes.map((n) => [n.id, { x: n.x + n.width / 2, y: n.y + n.height / 2 }]),

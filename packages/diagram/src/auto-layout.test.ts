@@ -147,6 +147,18 @@ describe('autoLayoutElements', () => {
       expect(e.width).toBe(e.height);
     }
   });
+
+  it('leaves fixedSizeIds nodes at their given size, outside the tier clamp', () => {
+    // 900x700 is far past the 360x220 tier clamp; the cluster layout relies
+    // on the block node keeping its exact bounding-box size.
+    const els = [shape('block', 0, 0, 900, 700), shape('b', 0, 0, 140, 60), arrow('block', 'b')];
+    const out = autoLayoutElements(els, { fixedSizeIds: new Set(['block']) });
+    const blockEl = box(out.find((e) => e.id === 'block')!);
+    expect([blockEl.width, blockEl.height]).toEqual([900, 700]);
+    // The peer without the exemption still normalises.
+    const b = box(out.find((e) => e.id === 'b')!);
+    expect(b.width).toBeLessThanOrEqual(360);
+  });
 });
 
 function isBoxedLike(e: Element): e is BoxedElement {

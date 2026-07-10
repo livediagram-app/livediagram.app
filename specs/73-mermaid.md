@@ -11,44 +11,96 @@ standard people already have.
 ## Scope: flowcharts
 
 We support the **flowchart** / **graph** diagram type (`graph TD`, `flowchart
-LR`, …) — nodes, edges, node shapes, edge labels, and the layout direction.
-Other Mermaid diagram types (sequence, class, state, gantt, pie, …) are out of
-scope; importing one reports a clear "only flowcharts are supported" error.
-This maps cleanly onto livediagram's model: a flowchart **is** a node/edge
-graph, which is exactly what `graphToElements` (packages/diagram, spec/62 §4.7)
-turns into laid-out shapes + pinned arrows.
+LR`, …) — nodes, edges, node shapes, edge styles, edge labels, subgraphs, and
+the layout direction. Other Mermaid diagram types (sequence, class, state,
+gantt, pie, …) are out of scope; importing one reports a clear "only flowcharts
+are supported" error. This maps cleanly onto livediagram's model: a flowchart
+**is** a node/edge graph, which is exactly what `graphToElements`
+(packages/diagram, spec/62 §4.7) turns into laid-out shapes + pinned arrows.
+
+Also deliberately out of scope **within** flowcharts: `classDef` / `style` /
+`linkStyle` (the tab theme owns colours — Mermaid styling is skipped, never an
+error), `click` interactions, and true `RL` / `BT` layouts (`RL` folds to LR,
+`BT` to TB; the graph is identical, only the sweep direction differs).
+
+## Flowchart syntax coverage
+
+- **Header**: `graph`/`flowchart` + a direction (`TD`/`TB` → top-to-bottom,
+  `LR`/`RL` → left-to-right; `BT` folds to TB). Missing header still parses as
+  a top-down graph.
+- **Nodes**: a bare id (`A`) is a box labelled with its id; a bracketed def
+  sets the label + shape. Shape brackets map to the shape vocabulary:
+  `["…"]` square · `(…)` / `([…])` stadium · `{…}` diamond · `((…))` /
+  `(((…)))` circle · `[(…)]` cylinder · `{{…}}` hexagon · `[/…/]` `[\…\]`
+  parallelogram · `[/…\]` `[\…/]` trapezoid · `[[…]]` subroutine → square ·
+  `>…]` flag → square. An unknown bracket → square. A node seen only in an
+  edge is created on sight. The v11.3 attribute form `id@{ shape: …, label:
+"…" }` is read too, with a name map onto the same vocabulary (`rect`,
+  `rounded`, `stadium`, `circle`, `dbl-circ`, `diam`/`decision`,
+  `hex`/`prepare`, `cyl`/`database`, `lean-r`/`lean-l`, `trap-b`/`trap-t`,
+  `doc`/`document`, `tri`/`triangle`; unknown names → square).
+- **Edges**: `A --> B`, with an optional label (`A -->|yes| B` or the inline
+  form `A -- yes --> B`), chained (`A --> B --> C` = two edges), and fanned
+  (`A & B --> C & D` = the cartesian product). Operators map onto the arrow
+  element's real style fields, not just "an arrow":
+  - stroke: `-->` solid · `-.->` dashed (`strokeStyle: 'dashed'`) · `==>`
+    thick (`strokeWidth`: the thick preset);
+  - heads: `---` no head (`arrowEnds: 'none'`) · `<-->` both ends
+    (`arrowEnds: 'both'`) · trailing/leading `o` → hollow-circle arrowhead ·
+    `x` → open-V arrowhead (closest marker we have to Mermaid's cross);
+  - `~~~` (invisible link) is parsed and **dropped** — it exists for Mermaid
+    layout spacing and would be an invisible-arrow trap on a real canvas.
+
+  An edge to an id with no node still creates the node.
+
+- **Labels**: `<br/>` (any spelling) becomes a newline in the element label
+  and newlines export back as `<br/>`; `&quot;` / `&amp;` are decoded on
+  import and `"` re-escapes as `&quot;` on export, so quoted labels
+  round-trip.
+- **Subgraphs → frames**: a top-level `subgraph id[Title] … end` block imports
+  as a **frame** shape (spec/09) drawn around its member nodes, laid out as a
+  cluster: members are laid out among themselves, the cluster participates in
+  the top-level flow as one block, and the frame is sized around the result.
+  A node belongs to the subgraph where it was **first defined** (matching
+  Mermaid). Edges may reference a subgraph id — the arrow pins to the frame.
+  Nested subgraphs fold into their top-level ancestor (frames import one
+  level deep). On export, each frame becomes a `subgraph` block containing
+  the boxed nodes whose centre sits inside it (a node inside several frames
+  belongs to the smallest).
+- Lines it doesn't understand (`classDef`, `style`, `click`, `linkStyle`,
+  `direction`, comments `%%`) are skipped, not fatal — a real-world paste
+  imports its graph and ignores the decoration.
 
 ## The engine lives in `packages/diagram`
 
 Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
 
 - **`parseMermaid(text)`** → `{ ok: true, graph: DiagramGraph, direction }` or
-  `{ ok: false, error }`. Line-oriented parse of the flowchart body:
-  - **Header**: `graph`/`flowchart` + a direction (`TD`/`TB` → top-to-bottom,
-    `LR`/`RL` → left-to-right; `BT` folds to TB). Missing header still parses as
-    a top-down graph.
-  - **Nodes**: a bare id (`A`) is a box labelled with its id; a bracketed def
-    sets the label + shape. Shape brackets map to the shape vocabulary:
-    `["…"]` square · `(…)` / `([…])` stadium · `{…}` diamond · `((…))` circle ·
-    `[(…)]` cylinder · `{{…}}` hexagon · `[/…/]` `[\…\]` parallelogram. An
-    unknown bracket → square. A node seen only in an edge is created on sight.
-  - **Edges**: `A --> B`, with an optional label (`A -->|yes| B` or `A --> |yes|
-B`), chained (`A --> B --> C` = two edges), and the common operators
-    (`-->` arrow · `---` line, no head · `-.->` dashed · `==>` thick). An edge
-    to an id with no node still creates the node.
-  - Lines it doesn't understand (`subgraph`, `classDef`, `style`, `click`,
-    comments `%%`) are skipped, not fatal — a real-world paste imports its graph
-    and ignores the decoration.
+  `{ ok: false, error }`. Line-oriented parse of the flowchart body per the
+  coverage above. `DiagramGraph` carries the subgraphs as optional
+  `clusters: { id, label, members }[]`, and `GraphEdge` carries the edge
+  style (`line: solid|dashed|thick`, `ends: to|none|both|from`,
+  `head: triangle|circle|cross`) — both additive, so every existing
+  `graphToElements` caller (the MCP) is untouched.
+- **`layoutClusteredGraph(graph, { direction })`** (auto-layout-clusters.ts) —
+  the import's composition point. Without clusters it's exactly
+  `graphToElements` + `autoLayoutElements({ direction })`. With clusters it
+  lays out each cluster's members, contracts each cluster to one
+  block-sized node, lays out the contracted graph (via a new
+  `autoLayoutElements` option `fixedSizeIds` that exempts the block nodes
+  from peer-size normalisation), then expands: members shift into place and
+  the frame element is emitted around them. Edgeless nodes (in a cluster or
+  at top level) are swept into rows below the laid-out graph instead of
+  piling at the origin.
 - **`mermaidFromTab(tab)`** → a `flowchart TD` string. Boxed nodes become
-  `id["label"]` with the bracket for their shape; arrows become `from --> to`
-  with `|label|`. Edgeless boxed content (titles, captions) and non-graph
-  element kinds (tables, images, freehand) have no flowchart representation and
-  are dropped with the graph preserved — the export is the connection graph,
-  faithfully.
-
-`parseMermaid` returns the graph only; the import composes it with
-`graphToElements` + `autoLayoutElements({ direction })` so the imported diagram
-respects the Mermaid layout direction.
+  `id["label"]` with the bracket for their shape; frames become `subgraph`
+  blocks; arrows become `from --> to` with `|label|`, choosing the operator
+  from the arrow's real stroke/ends/head fields (dashed → `-.->`, thick →
+  `==>`, no head → `---`, both heads → `<-->`, head-at-from exports with the
+  endpoints swapped, circle heads → `o`). Edgeless boxed content (titles,
+  captions) and non-graph element kinds (tables, images, freehand) have no
+  flowchart representation and are dropped with the graph preserved — the
+  export is the connection graph, faithfully.
 
 ## Import & export UX — file **or** text
 

@@ -52,6 +52,33 @@ describe('graphToElements', () => {
     expect(els.filter((e) => e.type === 'arrow')).toHaveLength(0);
   });
 
+  it('carries edge style fields onto the arrow element', () => {
+    n = 0;
+    const els = graphToElements(
+      {
+        nodes: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }],
+        edges: [
+          { from: 'a', to: 'b', line: 'dashed', ends: 'both' },
+          { from: 'b', to: 'c', line: 'thick', head: 'circle' },
+          { from: 'c', to: 'd', ends: 'none', head: 'cross' },
+        ],
+      },
+      seqId,
+    );
+    const arrows = els.filter((e) => e.type === 'arrow');
+    expect(arrows[0]).toMatchObject({ strokeStyle: 'dashed', arrowEnds: 'both' });
+    expect(arrows[1]).toMatchObject({ strokeWidth: 4, arrowheadShape: 'circle-hollow' });
+    expect(arrows[2]).toMatchObject({ arrowEnds: 'none', arrowheadShape: 'line' });
+    // The default edge stays clean: no style fields materialise.
+    const plain = graphToElements(
+      { nodes: [{ id: 'a' }, { id: 'b' }], edges: [{ from: 'a', to: 'b' }] },
+      seqId,
+    ).find((e) => e.type === 'arrow')!;
+    expect('strokeStyle' in plain).toBe(false);
+    expect('arrowEnds' in plain).toBe(false);
+    expect('arrowheadShape' in plain).toBe(false);
+  });
+
   it('produces a valid, auto-layoutable tab (positions + reanchors)', () => {
     n = 0;
     const els = graphToElements(

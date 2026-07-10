@@ -23,7 +23,7 @@ export const metadata = helpMetadata({
 From the tab ellipsis menu, expand the **Content** section and choose **Import**, then pick a format:
 
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
-- **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`) and lays it out on the canvas, keeping every connection. Only the flowchart diagram type is supported.
+- **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), and any `subgraph` blocks, which come in as frames drawn around their nodes. Only the flowchart diagram type is supported.
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
 
 Because all three are text, each format opens the same two-step panel: **paste or write** the content into the editor and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.

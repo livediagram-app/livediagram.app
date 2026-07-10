@@ -14,11 +14,12 @@
 // to nowhere.
 
 import { SHAPE_DEFAULT_SIZE } from './factories';
+import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
 // `Element` is defined on the barrel (index.ts); a type-only import back into
 // it is erased at runtime, so the cycle is harmless — the package's sanctioned
 // pattern (auto-layout.ts does the same).
-import type { Element } from './index';
+import type { ArrowElement, Element } from './index';
 
 export type GraphNode = {
   // Stable id the edges reference. Must be unique within the graph.
@@ -37,12 +38,56 @@ export type GraphEdge = {
   to: string;
   // Optional edge label rendered on the arrow.
   label?: string;
+  // Stroke flavour (spec/73): 'dashed' → a dashed stroke, 'thick' → the
+  // thick width preset. Omitted = the default solid medium line.
+  line?: 'solid' | 'dashed' | 'thick';
+  // Arrowhead placement: which end(s) carry a head. Omitted = 'to', the
+  // ordinary directed arrow.
+  ends?: 'to' | 'none' | 'both' | 'from';
+  // Head marker: 'circle' → hollow circle, 'cross' → the open-V head (the
+  // closest marker to Mermaid's x terminal). Omitted = the filled triangle.
+  head?: 'triangle' | 'circle' | 'cross';
+};
+
+// A named cluster of nodes (spec/73: a Mermaid subgraph). Rendered as a
+// `frame` shape drawn around its members and laid out as one block — see
+// layoutClusteredGraph (auto-layout-clusters.ts). Optional and additive:
+// callers that don't speak clusters (the MCP today) ignore it.
+export type GraphCluster = {
+  // Referenceable id — an edge may point at a cluster; the arrow pins to
+  // its frame. Must not collide with a node id.
+  id: string;
+  // The frame's header label. Omitted = the id.
+  label?: string;
+  // Member node ids. Unknown ids are ignored; a node listed in two
+  // clusters belongs to the first.
+  members: string[];
 };
 
 export type DiagramGraph = {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  clusters?: GraphCluster[];
 };
+
+// One edge → one pinned arrow, carrying the edge's style onto the arrow
+// element's real stroke/ends/head fields. Placeholder anchors — the layout's
+// reanchorArrow rewrites them to the sides that actually face. Shared by
+// graphToElements and the cluster layout so the mapping can't diverge.
+export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
+  return {
+    id,
+    type: 'arrow',
+    from: { kind: 'pinned', elementId: e.from, anchor: 's' },
+    to: { kind: 'pinned', elementId: e.to, anchor: 'n' },
+    ...(e.label !== undefined ? { label: e.label } : {}),
+    ...(e.line === 'dashed' ? { strokeStyle: 'dashed' as const } : {}),
+    ...(e.line === 'thick' ? { strokeWidth: ARROW_THICKNESS_PX.thick } : {}),
+    ...(e.ends && e.ends !== 'to' ? { arrowEnds: e.ends } : {}),
+    ...(e.head === 'circle' ? { arrowheadShape: 'circle-hollow' as const } : {}),
+    ...(e.head === 'cross' ? { arrowheadShape: 'line' as const } : {}),
+  };
+}
 
 // `makeEdgeId` mints each arrow's id (defaults to crypto.randomUUID, which
 // exists in both the Worker and Node runtimes); injectable for
@@ -70,15 +115,7 @@ export function graphToElements(
 
   const arrows: Element[] = graph.edges
     .filter((e) => nodeIds.has(e.from) && nodeIds.has(e.to))
-    .map((e) => ({
-      id: makeEdgeId(),
-      type: 'arrow' as const,
-      // Placeholder anchors — autoLayout's reanchorArrow rewrites them to
-      // the sides that actually face after positioning.
-      from: { kind: 'pinned' as const, elementId: e.from, anchor: 's' as const },
-      to: { kind: 'pinned' as const, elementId: e.to, anchor: 'n' as const },
-      ...(e.label !== undefined ? { label: e.label } : {}),
-    }));
+    .map((e) => edgeToArrow(e, makeEdgeId()));
 
   return [...nodes, ...arrows];
 }
