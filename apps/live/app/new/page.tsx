@@ -4,7 +4,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDiagramSettings } from '@/components/palette/TemplatePicker';
-import { NewHereCard } from './NewHereCard';
 import { RecentDiagramsCard } from './RecentDiagramsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -51,8 +50,8 @@ export default function NewDiagramPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   // How many diagrams the user owns (null until known). Reported by
-  // RecentDiagramsCard's fetch; gates the guided-tour card, which is for
-  // first-timers and disappears once the account holds 3+ diagrams.
+  // RecentDiagramsCard's fetch; gates the interactive tour's welcome offer
+  // (spec/79), which is for brand-new (zero-diagram) users only.
   const [diagramCount, setDiagramCount] = useState<number | null>(null);
   // Set when the create POST fails (network / 5xx). Shows a retryable
   // error instead of navigating to the editor for a diagram that was
@@ -245,9 +244,7 @@ export default function NewDiagramPage() {
   ) => {
     if (submitting) return;
     setSubmitting(true);
-    // "Show me around" (the guided tour, spec/69) is a throwaway sample — always
-    // create it offline (spec/76) so we don't pile guided-tour diagrams into D1.
-    const offline = settings.offline || templateKind === 'guided-tour';
+    const offline = settings.offline;
     lastCreateArgs.current = { kind: templateKind, name, themeId, settings };
     // The Settings step's name field wins; fall back to the per-template
     // default when it's left blank (spec/76).
@@ -338,10 +335,9 @@ export default function NewDiagramPage() {
     }
     // "Show me around" (spec/79): a brand-new user's (zero owned diagrams)
     // first diagram gets the tour's welcome offer once the editor opens —
-    // handed across the hard navigation via a one-shot sessionStorage flag.
-    // The guided-tour sample (spec/69) teaches by itself; the editor gates
-    // the offer on the synced `tourSeen` preference, so no guard here.
-    if (diagramCount === 0 && templateKind !== 'guided-tour') {
+    // handed across the hard navigation via a sessionStorage flag. The
+    // editor gates the offer on the synced `tourSeen` preference.
+    if (diagramCount === 0) {
       markTourPending();
     }
     window.location.assign(`/diagram/${diagramId}`);
@@ -417,28 +413,15 @@ export default function NewDiagramPage() {
         </CustomThemeProvider>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
             returning users get "Jump back in" (spec/14, hidden with no
-            diagrams yet), and first-timers the guided tour underneath
-            (spec/69), which lives here rather than posing as a template in
-            the Quick Start grid. The tour card is for first-timers only:
-            it waits for the diagram count (RecentDiagramsCard's fetch,
-            shared via onCount) and stays hidden once the user has three or
-            more diagrams. */}
+            diagrams yet). Its fetch also reports the diagram count that
+            gates the interactive tour's welcome offer (spec/79). The
+            guided-tour sample card that used to sit under it was removed
+            when the interactive tour superseded it. */}
         <div className="pointer-events-none absolute inset-y-0 right-4 z-10 hidden items-center xl:flex 2xl:right-10">
-          <div className="flex flex-col gap-4">
-            <RecentDiagramsCard
-              ownerId={self.id === 'pending' ? null : self.id}
-              onCount={setDiagramCount}
-            />
-            {diagramCount !== null && diagramCount < 3 ? (
-              <NewHereCard
-                busy={submitting}
-                onStart={() =>
-                  // '' = keep the resolved participant name, same as onSkip.
-                  void commitNewDiagram('guided-tour', '', 'brand', { offline: true })
-                }
-              />
-            ) : null}
-          </div>
+          <RecentDiagramsCard
+            ownerId={self.id === 'pending' ? null : self.id}
+            onCount={setDiagramCount}
+          />
         </div>
       </main>
     </div>

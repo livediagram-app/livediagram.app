@@ -76,12 +76,13 @@ describe('TEMPLATES catalogue', () => {
     'cloud-architecture',
     'uml-class',
     'state-machine',
-    'guided-tour',
   ];
 
-  // Hidden templates (spec/69's guided tour) are buildable but never
-  // listed, so every user-facing count (spec/16's "44 templates", the
-  // picker grids, the MCP catalogue) is over the listed subset.
+  // Hidden templates are buildable but never listed, so every user-facing
+  // count (spec/16's "44 templates", the picker grids, the MCP catalogue)
+  // is over the listed subset. The mechanism is generic; nothing ships
+  // hidden today (the spec/69 guided-tour sample used it until the
+  // interactive tour, spec/79, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
   it('lists exactly 44 templates (10 default + 34 extra, matches spec/16 and spec/09)', () => {
@@ -95,16 +96,8 @@ describe('TEMPLATES catalogue', () => {
     expect(extras).toHaveLength(34);
   });
 
-  it('hides exactly the guided tour (spec/69), a self-explaining sample scene', () => {
-    expect(TEMPLATES.filter((t) => t.hidden).map((t) => t.kind)).toEqual(['guided-tour']);
-    const elements = buildTemplate('guided-tour', 0, 0);
-    // The tour teaches through annotation markers: several, each with a
-    // non-empty note, plus pinned arrows and a sticky note to poke at.
-    const annotations = elements.filter((el) => el.type === 'annotation');
-    expect(annotations.length).toBeGreaterThanOrEqual(4);
-    for (const a of annotations) expect((a.note ?? '').trim().length).toBeGreaterThan(0);
-    expect(elements.some((el) => el.type === 'arrow' && el.from.kind === 'pinned')).toBe(true);
-    expect(elements.some((el) => el.type === 'sticky')).toBe(true);
+  it('ships no hidden templates (the flag is generic; spec/69 was retired by spec/79)', () => {
+    expect(TEMPLATES.filter((t) => t.hidden)).toEqual([]);
   });
 
   it('has no duplicate kinds (guards against accidental copy-paste in the catalogue)', () => {

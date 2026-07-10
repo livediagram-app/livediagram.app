@@ -113,7 +113,7 @@ export function TourWelcomeArt() {
           />
         </g>
 
-        {/* Sparks (the guided-tour motif from the /new card). */}
+        {/* Sparks, the tour's running motif. */}
         <path
           d="M 116 24 c 1.1 5.5 3.2 7.6 8.7 8.7 -5.5 1.1 -7.6 3.2 -8.7 8.7 -1.1 -5.5 -3.2 -7.6 -8.7 -8.7 5.5 -1.1 7.6 -3.2 8.7 -8.7 Z"
           className="tour-art-el tour-art-spark fill-brand-400 dark:fill-brand-300"

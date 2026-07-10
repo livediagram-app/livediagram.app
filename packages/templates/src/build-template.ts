@@ -53,7 +53,6 @@ import {
   buildSwimlane,
 } from './template-builders-flows';
 import { buildFlowchart, buildMindMap, buildOrgChart } from './template-builders-trees';
-import { buildGuidedTour } from './template-builders-guided-tour';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
@@ -147,8 +146,6 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildUmlClass(cx, cy);
     case 'state-machine':
       return buildStateMachine(cx, cy);
-    case 'guided-tour':
-      return buildGuidedTour(cx, cy);
   }
 }
 

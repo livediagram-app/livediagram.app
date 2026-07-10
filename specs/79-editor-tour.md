@@ -2,19 +2,17 @@
 
 A bootstrap-style guided tour of the editor: a sequence of anchored popover
 steps that spotlight one piece of chrome at a time, opening the real panels
-and menus as it goes. Distinct from the guided-tour **sample diagram**
-([spec/69](69-guided-tour-sample.md)), which teaches through annotation
-markers on the canvas. The two coexist, and the "Show me around" name now
-belongs to this interactive tour (the spec/69 card's CTA reads "Take the
-guided tour").
+and menus as it goes. It superseded the guided-tour **sample diagram**
+([spec/69](69-guided-tour-sample.md), now retired), which taught through
+annotation markers on the canvas; the sample's template, builder, and /new
+card were removed once this tour proved the better introduction.
 
 ## Where it appears
 
 - **Automatically, on a brand-new user's first diagram.** When a
   **zero-owned-diagrams** user (the `/new` page already learns the count
   from the Jump-back-in fetch; `null` = unknown = no offer) creates a
-  diagram through the wizard (any path: Create or Skip, but not the
-  spec/69 guided-tour sample, which teaches by itself), the editor opens
+  diagram through the wizard (any path: Create or Skip), the editor opens
   with a centred **welcome offer card**: "Show me around" starts the tour,
   "No thanks" dismisses it. There is no wizard toggle; the offer IS the
   opt-in, and declining must be one obvious, equal-weight click.

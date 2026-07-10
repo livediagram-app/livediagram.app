@@ -18,9 +18,9 @@ export function RecentDiagramsCard({
 }: {
   ownerId: string | null;
   // Reports how many diagrams the owner has, once known. The page uses it
-  // to hide the guided-tour card for established users; this card already
-  // holds the only diagram-list fetch on /new, so it shares the answer
-  // rather than the page fetching the list twice.
+  // to gate the interactive tour's welcome offer (spec/79, zero-diagram
+  // users only); this card already holds the only diagram-list fetch on
+  // /new, so it shares the answer rather than the page fetching twice.
   onCount?: (n: number) => void;
 }) {
   const [recent, setRecent] = useState<RecentItem[] | null>(null);

@@ -1,10 +1,12 @@
-# 69 — Guided tour sample ("Take the guided tour")
+# 69 — Guided tour sample ("Take the guided tour") — RETIRED
 
-> Naming note: this card's CTA was originally "Show me around". That name
-> now belongs to the interactive editor tour
-> ([spec/79](79-editor-tour.md)), so the card reads **Take the guided
-> tour** instead. The two coexist: this spec is the annotated sample
-> diagram, spec/79 the step-by-step chrome tour.
+> **Retired, July 2026.** The interactive editor tour
+> ([spec/79](79-editor-tour.md)) superseded this sample: the annotated
+> sample diagram, its hidden `'guided-tour'` template kind + builder, and
+> the "Take the guided tour" card on `/new` were all removed. The generic
+> `TemplateDescriptor.hidden` flag this spec introduced remains (nothing
+> ships hidden today). The text below is kept as the historical record of
+> what the sample was.
 
 A learn-by-doing onboarding option: the welcome wizard offers a guided-tour
 card, which fills the first tab with a small hand-built sample diagram

@@ -70,7 +70,6 @@ const ALL_KINDS = [
   'cloud-architecture',
   'uml-class',
   'state-machine',
-  'guided-tour',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
