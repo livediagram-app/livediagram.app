@@ -1,13 +1,18 @@
 'use client';
 
-// The facilitator session tools (spec/39): the countdown / stopwatch timer
-// and the dot-vote, with their full controls (mode + duration picker,
-// pause / resume / reset, dots-per-person stepper, reveal). Split into two
-// independent category bodies — Timer and Vote — so the tab context menu can
-// surface each as its own collapsible category. Each renders just the category
-// BODY; the caller wraps it in its own MenuAccordionSection.
+// The facilitator session tools (spec/39): the Countdown and Stopwatch
+// timers and the dot-vote, with their full controls (duration picker,
+// pause / resume / reset, dots-per-person stepper, reveal). Split into
+// independent category bodies — Countdown, Stopwatch, and Vote — so the tab
+// context menu surfaces each as its own collapsible category. Each renders
+// just the category BODY; the caller wraps it in its own
+// MenuAccordionSection.
+//
+// One timer runs per tab (Tab.timer holds a single TabTimer): starting a
+// countdown replaces a running stopwatch and vice versa, and each section
+// says so before it happens.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   timerDisplayMs,
   type TabTimer,
@@ -34,9 +39,96 @@ type TimerProps = {
   onClearTimer: () => void;
 };
 
-// The Timer category body: mode + duration picker before start, then the
-// running-timer controls (pause / resume / reset / clear).
-export function SessionTimerSection({
+// Half-second tick while a timer is on screen, so the clock readout runs
+// live instead of freezing at whatever Date.now() the last render saw.
+function useTimerTick(active: boolean): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!active) return;
+    const id = window.setInterval(() => setNow(Date.now()), 500);
+    return () => window.clearInterval(id);
+  }, [active]);
+  return active ? now : Date.now();
+}
+
+// The running / paused timer card the Countdown and Stopwatch categories
+// share: a live big-digit clock, a status line, a progress track for
+// countdowns, and the pause / resume / reset / clear row.
+function RunningTimerCard({
+  timer,
+  onPauseTimer,
+  onResumeTimer,
+  onResetTimer,
+  onClearTimer,
+}: Omit<TimerProps, 'timer' | 'onStartTimer'> & { timer: TabTimer }) {
+  const now = useTimerTick(true);
+  const ms = timerDisplayMs(timer, now);
+  const done = timer.mode === 'countdown' && ms <= 0;
+  const pct =
+    timer.mode === 'countdown' && timer.durationMs
+      ? Math.max(0, Math.min(1, ms / timer.durationMs))
+      : null;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col items-center rounded-lg border border-slate-200 bg-slate-50/70 px-2 py-2 dark:border-slate-700 dark:bg-slate-800/60">
+        <span
+          className={`text-2xl font-semibold leading-tight tabular-nums ${
+            done ? 'text-rose-600 dark:text-rose-400' : 'text-slate-800 dark:text-slate-100'
+          }`}
+        >
+          {formatTimerClock(ms)}
+        </span>
+        <span className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          {timer.running && !done ? (
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden />
+          ) : null}
+          {done ? "Time's up" : timer.running ? 'Running' : 'Paused'}
+        </span>
+        {pct !== null ? (
+          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+            <div
+              className={`h-full rounded-full transition-[width] duration-500 ease-linear ${
+                done ? 'bg-rose-500' : 'bg-brand-500'
+              }`}
+              style={{ width: `${pct * 100}%` }}
+            />
+          </div>
+        ) : null}
+      </div>
+      <div className="grid grid-cols-3 gap-1">
+        {timer.running ? (
+          <button type="button" onClick={onPauseTimer} className={sessBtn}>
+            Pause
+          </button>
+        ) : (
+          <button type="button" onClick={onResumeTimer} className={sessBtn}>
+            Resume
+          </button>
+        )}
+        <button type="button" onClick={onResetTimer} className={sessBtn}>
+          Reset
+        </button>
+        <button type="button" onClick={onClearTimer} className={sessBtn}>
+          Clear
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// One-line heads-up that starting this tool replaces the other one (a tab
+// runs a single timer, spec/39).
+function ReplacesNote({ other }: { other: 'countdown' | 'stopwatch' }) {
+  return (
+    <p className="rounded-md bg-amber-50 px-2 py-1 text-[10px] leading-snug text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+      Starting resets the running {other}.
+    </p>
+  );
+}
+
+// The Countdown category body: duration picker + start, or the running
+// card when the tab's timer is a countdown.
+export function SessionCountdownSection({
   timer,
   onStartTimer,
   onPauseTimer,
@@ -44,80 +136,75 @@ export function SessionTimerSection({
   onResetTimer,
   onClearTimer,
 }: TimerProps) {
-  // Local picker state until the facilitator hits Start.
-  const [timerMode, setTimerMode] = useState<TimerMode>('countdown');
   const [durationMin, setDurationMin] = useState(5);
-
   return (
     <div className="px-2.5 pb-2 pt-1">
-      {!timer ? (
-        <div className="flex flex-col gap-1.5">
-          <div className="flex gap-1">
-            <button
-              type="button"
-              onClick={() => setTimerMode('countdown')}
-              className={sessChip(timerMode === 'countdown')}
-            >
-              Countdown
-            </button>
-            <button
-              type="button"
-              onClick={() => setTimerMode('stopwatch')}
-              className={sessChip(timerMode === 'stopwatch')}
-            >
-              Stopwatch
-            </button>
-          </div>
-          {timerMode === 'countdown' ? (
-            <div className="grid grid-cols-4 gap-1">
-              {[1, 3, 5, 10].map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setDurationMin(m)}
-                  className={sessChip(durationMin === m)}
-                >
-                  {m}m
-                </button>
-              ))}
-            </div>
-          ) : null}
-          <button
-            type="button"
-            onClick={() =>
-              onStartTimer(timerMode, timerMode === 'countdown' ? durationMin * 60_000 : undefined)
-            }
-            className={sessBtnPrimary}
-          >
-            Start {timerMode === 'countdown' ? `${durationMin}m countdown` : 'stopwatch'}
-          </button>
-        </div>
+      {timer?.mode === 'countdown' ? (
+        <RunningTimerCard
+          timer={timer}
+          onPauseTimer={onPauseTimer}
+          onResumeTimer={onResumeTimer}
+          onResetTimer={onResetTimer}
+          onClearTimer={onClearTimer}
+        />
       ) : (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[11px] text-slate-600 dark:text-slate-300">
-            {timer.mode === 'countdown' ? 'Countdown' : 'Stopwatch'} ·{' '}
-            <span className="font-semibold tabular-nums">
-              {formatTimerClock(timerDisplayMs(timer, Date.now()))}
-            </span>{' '}
-            {timer.running ? 'running' : 'paused'}
-          </p>
-          <div className="grid grid-cols-3 gap-1">
-            {timer.running ? (
-              <button type="button" onClick={onPauseTimer} className={sessBtn}>
-                Pause
+          <div className="grid grid-cols-4 gap-1">
+            {[1, 3, 5, 10].map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setDurationMin(m)}
+                className={sessChip(durationMin === m)}
+              >
+                {m}m
               </button>
-            ) : (
-              <button type="button" onClick={onResumeTimer} className={sessBtn}>
-                Resume
-              </button>
-            )}
-            <button type="button" onClick={onResetTimer} className={sessBtn}>
-              Reset
-            </button>
-            <button type="button" onClick={onClearTimer} className={sessBtn}>
-              Clear
-            </button>
+            ))}
           </div>
+          {timer ? <ReplacesNote other="stopwatch" /> : null}
+          <button
+            type="button"
+            onClick={() => onStartTimer('countdown', durationMin * 60_000)}
+            className={sessBtnPrimary}
+          >
+            Start {durationMin}m countdown
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// The Stopwatch category body: start, or the running card when the tab's
+// timer is a stopwatch.
+export function SessionStopwatchSection({
+  timer,
+  onStartTimer,
+  onPauseTimer,
+  onResumeTimer,
+  onResetTimer,
+  onClearTimer,
+}: TimerProps) {
+  return (
+    <div className="px-2.5 pb-2 pt-1">
+      {timer?.mode === 'stopwatch' ? (
+        <RunningTimerCard
+          timer={timer}
+          onPauseTimer={onPauseTimer}
+          onResumeTimer={onResumeTimer}
+          onResetTimer={onResetTimer}
+          onClearTimer={onClearTimer}
+        />
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          {timer ? <ReplacesNote other="countdown" /> : null}
+          <button
+            type="button"
+            onClick={() => onStartTimer('stopwatch')}
+            className={sessBtnPrimary}
+          >
+            Start stopwatch
+          </button>
         </div>
       )}
     </div>

@@ -21,8 +21,16 @@ import {
   MenuToolbar,
   MenuToolButton,
 } from '@/components/primitives/PortalMenu';
-import { TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
-import { SessionTimerSection, SessionVoteSection } from '@/components/panels/SessionToolsSection';
+import {
+  CountdownMenuIcon,
+  TimerMenuIcon,
+  VoteMenuIcon,
+} from '@/components/palette/context-menu-icons';
+import {
+  SessionCountdownSection,
+  SessionStopwatchSection,
+  SessionVoteSection,
+} from '@/components/panels/SessionToolsSection';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
 import { TabMenuCopyToView, TabMenuFolderView } from './tab-menu-views';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
@@ -330,10 +338,31 @@ export function PortalMenu({
                 sectionProps={sectionProps}
               />
             ) : null}
-            {/* ── Session band: Timer + Vote as separate categories ── */}
+            {/* ── Session band: Countdown + Stopwatch + Vote as separate
+                categories. One timer per tab (spec/39): each timer section
+                offers Start and warns it resets the other when that other
+                is running. ── */}
             <MenuGroupSeparator />
-            <MenuAccordionSection title="Timer" icon={<TimerMenuIcon />} {...sectionProps('timer')}>
-              <SessionTimerSection
+            <MenuAccordionSection
+              title="Countdown"
+              icon={<CountdownMenuIcon />}
+              {...sectionProps('countdown')}
+            >
+              <SessionCountdownSection
+                timer={timer}
+                onStartTimer={onStartTimer}
+                onPauseTimer={onPauseTimer}
+                onResumeTimer={onResumeTimer}
+                onResetTimer={onResetTimer}
+                onClearTimer={onClearTimer}
+              />
+            </MenuAccordionSection>
+            <MenuAccordionSection
+              title="Stopwatch"
+              icon={<TimerMenuIcon />}
+              {...sectionProps('stopwatch')}
+            >
+              <SessionStopwatchSection
                 timer={timer}
                 onStartTimer={onStartTimer}
                 onPauseTimer={onPauseTimer}

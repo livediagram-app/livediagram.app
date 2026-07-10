@@ -30,9 +30,15 @@ live counts but can't control or vote. No extra gating code.
 
 `tab.timer: { mode: 'countdown' | 'stopwatch'; running; durationMs?; anchorAt?; frozenMs? }`.
 
-- Controlled from **Tab Settings → Session → Timer**: pick Countdown (with a
-  duration: 1 / 3 / 5 / 10 min presets) or Stopwatch, then **Start / Pause /
-  Resume / Reset / Clear** (`useTabSession`).
+- Controlled from the tab menu's session band as two top-level categories,
+  **Countdown** (with a duration: 1 / 3 / 5 / 10 min presets) and
+  **Stopwatch**, each with **Start / Pause / Resume / Reset / Clear**
+  (`useTabSession`). The open category shows a live big-digit clock with a
+  running/paused status and, for countdowns, a progress track.
+- **One timer per tab**: `tab.timer` is a single value, so starting either
+  tool replaces (resets) the other. When the other tool is running, the
+  Start UI says so before it happens ("Starting resets the running
+  stopwatch/countdown").
 - Clients tick **locally off an absolute wall-clock anchor** (`anchorAt` =
   countdown end-time or stopwatch start instant), so there is **no per-second
   network chatter** — every client computes the same value via the pure
