@@ -7,21 +7,27 @@ const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
   { key: 'settings', label: 'Settings' },
 ];
 
-// The 3-step wizard header for the template picker (Template -> Theme ->
-// Settings, spec/76), plus its StepChip pill. A compact, left-aligned
-// stepper: each chip jumps to that step, and the connector fills brand as
-// you advance so it reads as progress rather than a static rule.
+// The wizard header for the template picker (Template -> Theme -> Settings,
+// spec/76), plus its StepChip pill. A compact, left-aligned stepper: each
+// chip jumps to that step, and the connector fills brand as you advance so
+// it reads as progress rather than a static rule. The Settings step exists
+// only on the welcome (new-diagram) flow: the in-editor Browse-templates
+// dialog re-themes an EXISTING diagram, where name / placement / offline
+// don't apply, so it renders a two-chip rail.
 export function WizardSteps({
   step,
   onStep,
+  includeSettings = true,
 }: {
   step: WizardStep;
   onStep: (s: WizardStep) => void;
+  includeSettings?: boolean;
 }) {
-  const idx = WIZARD_STEPS.findIndex((s) => s.key === step);
+  const steps = includeSettings ? WIZARD_STEPS : WIZARD_STEPS.filter((s) => s.key !== 'settings');
+  const idx = steps.findIndex((s) => s.key === step);
   return (
     <div className="-ml-2.5 flex items-center justify-start gap-1.5">
-      {WIZARD_STEPS.map((s, i) => (
+      {steps.map((s, i) => (
         <Fragment key={s.key}>
           {i > 0 ? (
             <div className="h-1.5 w-9 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">

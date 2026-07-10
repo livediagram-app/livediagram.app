@@ -224,6 +224,9 @@ export function TemplatePicker({
   const [stepDir, setStepDir] = useState<'forward' | 'backward'>('forward');
   const STEP_ORDER = ['template', 'theme', 'settings'] as const;
   const goToStep = (next: 'template' | 'theme' | 'settings') => {
+    // The Settings step only exists on the welcome flow (an existing
+    // diagram has no name / placement / offline choice to make).
+    if (next === 'settings' && !isWelcome) return;
     setStepDir(STEP_ORDER.indexOf(next) >= STEP_ORDER.indexOf(step) ? 'forward' : 'backward');
     setStep(next);
   };
@@ -341,7 +344,9 @@ export function TemplatePicker({
           </div>
           {/* Step indicator: a modern two-segment progress rail so the
               wizard reads as 1 of 2 at a glance. Both wizard modes. */}
-          {isWizard ? <WizardSteps step={step} onStep={goToStep} /> : null}
+          {isWizard ? (
+            <WizardSteps step={step} onStep={goToStep} includeSettings={isWelcome} />
+          ) : null}
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pt-5 pb-8">
