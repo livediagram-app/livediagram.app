@@ -112,9 +112,13 @@ export function CanvasDrawPreview({
             const heightPx = Math.max(canvasH * viewportZoom, 1);
             // The self-drawing shapes (progress / rail / rating / charts) render
             // via their own views, not ShapeSvgOverlay (which would draw nothing
-            // for them), so they fall back to the dashed-rect preview.
+            // for them), so they fall back to the dashed-rect preview. Icons
+            // (line-art AND Technology marks) are the same story: they pass
+            // isSvgRenderedShape but ShapeSvgOverlay has no glyph case, which
+            // used to leave icon draw-outs with NO preview box at all.
             const usesSvg =
               pendingDraw.type === 'shape' &&
+              pendingDraw.kind !== 'icon' &&
               isSvgRenderedShape(pendingDraw.kind) &&
               !isSelfDrawingShape(pendingDraw.kind);
             // Box intents: square / circle / stadium use border-
