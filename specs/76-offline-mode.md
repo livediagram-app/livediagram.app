@@ -86,8 +86,10 @@ The word **"Offline"** identifies these diagrams everywhere the status is shown:
   **"Offline"** (a new state that supersedes "Private" for these diagrams), with
   its own tone + icon, and a tooltip restating _"Saved only in this browser."_
 - **Explorer.** Offline diagrams appear in **Recent** (and the other lists)
-  alongside cloud diagrams, each row tagged with a small **"Offline"** chip. The
-  Explorer view merges the API-fetched cloud list with the local index of
+  alongside cloud diagrams. The full-page Explorer marks each with an
+  **"Offline"** visibility badge; every surface (panel + full page) shows the
+  fixed offline thumbnail, so a local-only diagram is recognisable at a glance.
+  The Explorer view merges the API-fetched cloud list with the local index of
   offline diagrams; offline rows never trigger a server fetch (list, thumbnail,
   or otherwise).
 
@@ -219,11 +221,14 @@ Track adoption without content, reusing the closed vocabulary:
 - `apps/live/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
   new `LocalBackend` (IndexedDB) beside the existing API calls; per-diagram
   dispatch via a local index.
-- New Diagram dialog (`TemplatePicker`, spec/14) — the "Save offline" toggle +
-  caveat + contextual help link.
+- New Diagram wizard (`TemplatePicker` / `template-picker-settings.tsx`,
+  spec/14): the **Settings** step's "Save Offline, This Browser Only" toggle +
+  data-loss warning + contextual help link.
 - `EditorHeader` (`SharedBadge`) — the new **Offline** badge state.
-- Explorer (`ExplorerSections` / row components) — merge the local index, render
-  the **Offline** chip, skip server fetches for offline rows.
+- Explorer (row + card components, `VisibilityBadge`): merge the local index,
+  show the **Offline** badge in the full-page Explorer plus a fixed offline
+  thumbnail everywhere, and skip server fetches for offline rows. (The in-editor
+  panel row shows the thumbnail but no text chip.)
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
   "Sync Diagram" / "Sync to Account" and "Take Offline" (with confirmation +
   image re-homing).
