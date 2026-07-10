@@ -8,6 +8,7 @@ import {
   MenuAccordionSection,
   MenuGroupSeparator,
   MenuTile,
+  MenuTileGrid,
   MenuToolbar,
   MenuToolButton,
   PortalMenu,
@@ -25,9 +26,9 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
 
-// Icons for the Offline section, matching the explorer-icons style
+// Icons for the Visibility section, matching the explorer-icons style
 // (12×12, viewBox 14, 1.4 stroke) so the tiles read like the rest.
-function OfflineDotIcon() {
+function VisibilityIcon() {
   return (
     <svg
       width="12"
@@ -40,8 +41,8 @@ function OfflineDotIcon() {
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M4 10.5h5.4a2.2 2.2 0 0 0 .3-4.4 3 3 0 0 0-5.2-1.1A2.1 2.1 0 0 0 4 10.5Z" />
-      <path d="M2.5 2.5l9 9" />
+      <path d="M1.5 7S3.5 3.5 7 3.5 12.5 7 12.5 7 10.5 10.5 7 10.5 1.5 7 1.5 7z" />
+      <circle cx="7" cy="7" r="1.6" />
     </svg>
   );
 }
@@ -348,52 +349,46 @@ export function DiagramRow({
               </div>
             </MenuAccordionSection>
           ) : null}
-          {/* Offline diagrams (spec/76) have nothing on a server to share, so
-              the row menu hides the Share section; the editor's Share button
-              offers the sync-to-account gate instead. */}
-          {offline ? null : (
-            <MenuAccordionSection
-              title="Share"
-              icon={<SharedDiagramIcon />}
-              {...sectionProps('share')}
-            >
-              <div className="px-2 py-1.5">
-                <MenuTile
-                  icon={<SharedDiagramIcon />}
-                  label={item.shareCode ? 'Manage Sharing' : 'Share'}
-                  onClick={() => {
-                    openShareSettings();
-                    setMenuOpen(false);
-                  }}
-                />
-              </div>
-            </MenuAccordionSection>
-          )}
-          {/* Offline Mode conversions (spec/76): move this diagram between the
-              cloud and this browser. Needs a resolved viewer id. */}
-          {ownerId ? (
-            <MenuAccordionSection
-              title="Offline"
-              icon={<OfflineDotIcon />}
-              {...sectionProps('offline')}
-            >
-              <div className="px-2 py-1.5">
-                {offline ? (
+          {/* Visibility: who can reach this diagram and where it lives.
+              Sharing and the Offline Mode conversions (spec/76) are two faces
+              of the same choice, so they share one section. Offline diagrams
+              have nothing on a server to share (the editor's Share button
+              offers the sync gate), so they show only Sync Diagram. */}
+          <MenuAccordionSection
+            title="Visibility"
+            icon={<VisibilityIcon />}
+            {...sectionProps('visibility')}
+          >
+            <div className="px-2 py-1.5">
+              <MenuTileGrid cols={2}>
+                {offline ? null : (
                   <MenuTile
-                    icon={<CloudUpIcon />}
-                    label="Sync Diagram"
-                    onClick={() => void handleSaveToCloud()}
-                  />
-                ) : (
-                  <MenuTile
-                    icon={<TakeOfflineIcon />}
-                    label="Take Offline"
-                    onClick={() => void handleTakeOffline()}
+                    icon={<SharedDiagramIcon />}
+                    label={item.shareCode ? 'Manage Sharing' : 'Share'}
+                    onClick={() => {
+                      openShareSettings();
+                      setMenuOpen(false);
+                    }}
                   />
                 )}
-              </div>
-            </MenuAccordionSection>
-          ) : null}
+                {ownerId ? (
+                  offline ? (
+                    <MenuTile
+                      icon={<CloudUpIcon />}
+                      label="Sync Diagram"
+                      onClick={() => void handleSaveToCloud()}
+                    />
+                  ) : (
+                    <MenuTile
+                      icon={<TakeOfflineIcon />}
+                      label="Take Offline"
+                      onClick={() => void handleTakeOffline()}
+                    />
+                  )
+                ) : null}
+              </MenuTileGrid>
+            </div>
+          </MenuAccordionSection>
         </PortalMenu>
       ) : null}
     </div>
