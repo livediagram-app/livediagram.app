@@ -42,6 +42,12 @@ export function useImageBlobUrl(
       setState({ status: 'idle' });
       return;
     }
+    // Offline Mode (spec/76): an embedded image IS its bytes — a base64
+    // data URI in imageId. Nothing to fetch and nothing to revoke.
+    if (imageId.startsWith('data:')) {
+      setState({ status: 'ready', src: imageId });
+      return;
+    }
     let cancelled = false;
     let activeUrl: string | null = null;
     setState({ status: 'loading' });

@@ -8,6 +8,7 @@
 
 import { apiCreateDiagram, apiLoadDiagram, apiLoadTab } from '@/lib/api-client';
 import { API_BASE, apiDelete } from '@/lib/api/core';
+import { embedTabImages, uploadEmbeddedImages } from './offline-images';
 import {
   offlineCreateDiagram,
   offlineDeleteDiagram,
@@ -24,9 +25,11 @@ import {
 export async function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<string> {
   const rec = await offlineGetRecord(offlineId);
   if (!rec) throw new Error('offline diagram not found');
-  // Embedded data-URI images travel with the tab JSON, so the cloud copy
-  // renders them as-is (they aren't re-homed to R2 — spec/76 follow-up).
-  await apiCreateDiagram(ownerId, { id: rec.id, name: rec.name, tabs: rec.tabs });
+  // Re-home embedded data-URI images to R2 first (spec/19 + /76): the cloud
+  // copy gets real gallery images instead of bloated tab JSON. Best-effort
+  // per image; a kept data URI still renders.
+  const tabs = await uploadEmbeddedImages(ownerId, rec.tabs);
+  await apiCreateDiagram(ownerId, { id: rec.id, name: rec.name, tabs });
   await offlineDeleteDiagram(rec.id);
   return rec.id;
 }
@@ -43,11 +46,16 @@ export async function takeCloudOffline(
 ): Promise<void> {
   const diagram = await apiLoadDiagram(ownerId, diagramId);
   if (!diagram) throw new Error('diagram not found');
-  const tabs = (
+  const fetchedTabs = (
     await Promise.all(
       diagram.tabs.map((s) => apiLoadTab(ownerId, diagramId, s.id, shareCode).catch(() => null)),
     )
   ).filter((t): t is NonNullable<typeof t> => t !== null);
+  // Embed referenced R2 images as data URIs BEFORE the server delete below:
+  // once the diagram row is gone, its images count as unused and the api's
+  // 30-day retention reaper would delete the bytes the offline diagram still
+  // points at (spec/19 + /76).
+  const tabs = await embedTabImages(fetchedTabs, { ownerId, diagramId, shareCode });
 
   const now = Date.now();
   const rec: OfflineDiagramRecord = {

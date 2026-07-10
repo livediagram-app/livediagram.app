@@ -34,10 +34,13 @@ export async function loadTabImages(
   await Promise.all(
     ids.map(async (id) => {
       try {
-        const href = await apiFetchImageDataUrl(ctx.ownerId, id, {
-          diagramId: ctx.diagramId,
-          shareCode: ctx.shareCode,
-        });
+        // Offline Mode (spec/76): an embedded image already IS a data URL.
+        const href = id.startsWith('data:')
+          ? id
+          : await apiFetchImageDataUrl(ctx.ownerId, id, {
+              diagramId: ctx.diagramId,
+              shareCode: ctx.shareCode,
+            });
         if (!href) return;
         map.set(id, { href, image: await decodeImage(href) });
       } catch {
