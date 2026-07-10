@@ -135,11 +135,16 @@ export function MovablePanel({
     isMobile &&
       (dockControlledOpen ||
         (collapsible && !effectiveCollapsed && mobileOpenOverride === undefined)),
+    // The tour popover (spec/79) is always "inside": it sits next to the
+    // panel it's explaining, so tapping its Next button must not dismiss
+    // that panel out from under the highlight.
     dockControlledOpen
       ? outsideExceptSelector
-        ? `[data-mobile-dock],${outsideExceptSelector}`
-        : '[data-mobile-dock]'
-      : outsideExceptSelector,
+        ? `[data-mobile-dock],[data-tour-popover],${outsideExceptSelector}`
+        : '[data-mobile-dock],[data-tour-popover]'
+      : outsideExceptSelector
+        ? `[data-tour-popover],${outsideExceptSelector}`
+        : '[data-tour-popover]',
   );
 
   // When stackBelowY is provided and we're still at the default

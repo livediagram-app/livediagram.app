@@ -86,6 +86,7 @@ export function PaletteTabBar({
         {leading ?? <span />}
         <PaletteDropdown
           ariaLabel="Palette category"
+          dataTourId="palette-category"
           value={activeId}
           align="right"
           variant="flush"

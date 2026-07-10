@@ -84,6 +84,7 @@ export function EllipsisMenuButton({
         onClick={onToggle}
         aria-label="Tab menu"
         aria-expanded={open}
+        data-tour-id="tab-menu-trigger"
         className="flex h-6 w-6 items-center justify-center rounded text-current/70 transition hover:bg-white/40 hover:text-current"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>

@@ -82,9 +82,13 @@ export function ContextMenu({
       // (spec/09): clicks inside the editing session (the contentEditable
       // or its floating toolbar) must not dismiss it — the user is moving
       // the caret / formatting text, not clicking away.
+      // [data-tour-popover] (spec/79): the tour anchors its card to this
+      // menu while explaining it, so its buttons don't count as outside.
       if (
         e.target instanceof Element &&
-        e.target.closest('[data-context-menu-trigger],[data-menu-flyout],[data-rich-text-session]')
+        e.target.closest(
+          '[data-context-menu-trigger],[data-menu-flyout],[data-rich-text-session],[data-tour-popover]',
+        )
       )
         return;
       onClose();
@@ -112,6 +116,7 @@ export function ContextMenu({
       <div
         ref={ref}
         role="menu"
+        data-tour-id="context-menu"
         // Marks the menu for the rich-text editor's focus-preservation
         // capture listener (spec/09): mousedown inside is preventDefaulted
         // while editing so menu clicks never blur the editor.

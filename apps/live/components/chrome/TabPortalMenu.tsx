@@ -189,12 +189,17 @@ export function PortalMenu({
       // marks itself with data-context-menu-trigger and toggles in onClick.
       const onTrigger =
         e.target instanceof Element && e.target.closest('[data-context-menu-trigger]') !== null;
+      // The tour popover (spec/79) anchors to this menu while explaining
+      // it; its buttons must not dismiss the menu they're pointing at.
+      const inTour =
+        e.target instanceof Element && e.target.closest('[data-tour-popover]') !== null;
       if (
         e.target instanceof Node &&
         !ref.current.contains(e.target) &&
         e.target !== anchor &&
         !inConfirm &&
-        !onTrigger
+        !onTrigger &&
+        !inTour
       ) {
         onClose();
       }
@@ -217,6 +222,7 @@ export function PortalMenu({
       <div
         ref={ref}
         role="menu"
+        data-tour-id="tab-menu"
         onContextMenu={(e) => e.preventDefault()}
         // lvd-menu-stagger cascades the direct children (toolbar + category
         // sections) in one at a time for the same falling-stack entrance the

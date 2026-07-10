@@ -160,6 +160,9 @@ export function CanvasMobileDock({
             dockButtonRefs.current[btn.id] = el;
           }}
           type="button"
+          // Tour anchor (spec/79): lets tour steps tap the same dock button a
+          // user would to open a panel on mobile / minimal layouts.
+          data-tour-id={`dock-${btn.id}`}
           onClick={() => onDockButtonClick(btn.id)}
           className={
             'flex min-w-[3.25rem] flex-1 flex-col items-center gap-1 px-3.5 py-2.5 text-[10px] font-semibold tracking-wide transition ' +

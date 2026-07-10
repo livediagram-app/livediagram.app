@@ -13,6 +13,7 @@ import { EditorModals } from '@/components/dialogs/EditorModals';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
+import { TourHost } from '@/components/tour/TourHost';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
@@ -340,6 +341,9 @@ export function EditorView() {
       <EditorAnchoredPopovers />
       <EditorContextMenuHost />
       <EditorElementDialogs />
+      {/* Interactive editor tour (spec/79): renders nothing unless the /new
+          wizard's "Show me around" handoff flag is pending. */}
+      <TourHost />
 
       {/* Guest sign-in nudge (spec/36), delayed ~5 min. Lifted above
           the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}

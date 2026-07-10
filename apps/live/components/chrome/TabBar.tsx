@@ -344,6 +344,7 @@ export function TabBar({
               type="button"
               onClick={onAdd}
               aria-label="Add tab"
+              data-tour-id="add-tab"
               className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             >
               +

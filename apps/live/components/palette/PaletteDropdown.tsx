@@ -55,6 +55,7 @@ export function PaletteDropdown({
   menuClassName = 'w-max min-w-[7rem] max-w-[12rem]',
   variant = 'bordered',
   autoHeight = false,
+  dataTourId,
 }: {
   value: string;
   options: PaletteDropdownOption[];
@@ -86,6 +87,10 @@ export function PaletteDropdown({
   // lists (the canvas-tool picker) where every option should always be
   // visible; leave off for long lists (icon categories) that need to scroll.
   autoHeight?: boolean;
+  // Interactive-tour anchor (spec/79): rendered as data-tour-id on the
+  // trigger and `<id>-menu` on the portalled listbox so tour steps can open
+  // this dropdown and anchor to its menu.
+  dataTourId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -114,6 +119,10 @@ export function PaletteDropdown({
     const onDown = (e: PointerEvent) => {
       const t = e.target as Node;
       if (triggerRef.current?.contains(t) || menuRef.current?.contains(t)) return;
+      // The tour popover (spec/79) anchors to this menu while explaining it;
+      // its Next/Back buttons must not count as an outside click (the tour
+      // closes the menu itself when the step ends).
+      if (t instanceof Element && t.closest('[data-tour-popover]')) return;
       setOpen(false);
     };
     document.addEventListener('pointerdown', onDown);
@@ -167,6 +176,7 @@ export function PaletteDropdown({
       aria-haspopup="listbox"
       aria-expanded={open}
       aria-label={ariaLabel}
+      data-tour-id={dataTourId}
       className={`flex min-w-0 items-center gap-1.5 ${shape} ${variant === 'flush' ? 'text-xs' : 'text-[11px]'} font-medium transition ${
         accent
           ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
@@ -212,6 +222,7 @@ export function PaletteDropdown({
             ref={menuRef}
             role="listbox"
             data-palette-dropdown-menu
+            data-tour-id={dataTourId ? `${dataTourId}-menu` : undefined}
             className={`fixed z-[var(--z-overlay)] w-max border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
               autoHeight ? '' : 'max-h-56 overflow-y-auto'
             } ${
@@ -262,6 +273,9 @@ export function PaletteDropdown({
                       type="button"
                       role="option"
                       aria-selected={false}
+                      // Stable per-option hook for the tour (and tests) to
+                      // click a specific option, e.g. the Tools category.
+                      data-option-id={opt.id}
                       disabled={opt.disabled}
                       onClick={() => {
                         if (opt.disabled) return;
