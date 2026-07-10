@@ -33,9 +33,15 @@ export function PaletteFavouritesTab({
   const [favourites, setFavourites] = useState<string[]>(() => loadPaletteFavourites(validIds));
   const [editing, setEditing] = useState(false);
 
-  const favouriteTiles = favourites
-    .map(tileById)
-    .filter((t): t is PaletteTileDef => t !== undefined);
+  // Capability-filtered like the grid itself renders (PaletteTileGrid
+  // applies visibleTiles internally), so the empty-state check below sees
+  // what the user will actually see: favourites that are ALL image tiles
+  // on an uploads-less deployment must show the "No favourites yet" hint,
+  // not a silently empty grid.
+  const favouriteTiles = visibleTiles(
+    favourites.map(tileById).filter((t): t is PaletteTileDef => t !== undefined),
+    actions.hasImage,
+  );
 
   const update = (next: string[]) => {
     setFavourites(next);
