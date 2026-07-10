@@ -219,9 +219,9 @@ export function CommandPalette({
   // Per-element + tab formatting now lives in the right-click context
   // menus (element / canvas / tab) and the Tab Appearance modal, not in a
   // side panel. The palette now hosts the canvas-tool toggle row at the
-  // top, then a single category picker: Favourites (spec/78), Shapes
-  // (open by default — the most common entry point on every fresh
-  // canvas), Tools, Components, Devices, Icons, Technology.
+  // top, then a single category picker: Favourites (spec/78, open by
+  // default — the user's own go-to tiles), Shapes, Tools, Components,
+  // Devices, Icons, Technology.
   // PaletteTabBar owns the active-category state, so the palette stays
   // compact no matter how many categories we add.
   // Icon-picker search query (Icons tab). Filters the catalogue
@@ -298,14 +298,14 @@ export function CommandPalette({
           left, category picker on the right. The tool dropdown is a mode
           switch, not an element-add control, so it stays a permanent
           fixture; Select is the default and Space pans regardless of the
-          active tool, mirroring Figma. Shapes is the default category
-          (the most common entry point on every fresh canvas). */}
+          active tool, mirroring Figma. Favourites is the default category
+          (the user's own go-to tiles, spec/78). */}
       <PaletteTintProvider tint={themeTint}>
         <PaletteTabBar
-          // No storageKey: the palette always opens on Shapes when a diagram
-          // loads (the most common entry point) rather than restoring the
-          // last-used category across diagrams. See spec/09.
-          defaultOpenId="shapes"
+          // No storageKey: the palette always opens on Favourites when a
+          // diagram loads (the user's go-to tiles, spec/78) rather than
+          // restoring the last-used category across diagrams. See spec/09.
+          defaultOpenId="favourites"
           leading={
             <PaletteDropdown
               ariaLabel="Canvas tool"

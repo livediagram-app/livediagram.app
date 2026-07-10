@@ -79,59 +79,32 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
   return defs.filter((d) => !d.needsImage || hasImage);
 }
 
-// One catalogue tile. `editBadge` flips it into the Favourites edit-mode
-// treatment (spec/78): the click curates instead of creating, the tile
-// stops being a drag source, and a corner add / remove badge is overlaid.
+// One catalogue tile, rendered exactly as its home tab renders it.
+// (Favourites curation happens in the edit-favourites dialog, not by
+// overlaying badges here — see PaletteFavouritesDialog.)
 export function PaletteTile({
   def,
   actions,
   pendingDraw,
-  editBadge,
-  onEditToggle,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
-  editBadge?: 'add' | 'remove';
-  onEditToggle?: () => void;
 }) {
-  const button = (
+  return (
     <IconButton
-      label={
-        editBadge ? `${editBadge === 'add' ? 'Add' : 'Remove'} favourite: ${def.label}` : def.label
-      }
+      label={def.label}
       caption={def.caption}
       description={def.description}
-      onClick={editBadge ? (onEditToggle ?? (() => {})) : tileHandler(def, actions)}
-      dragKind={!editBadge && def.action.type === 'shape' ? def.action.kind : undefined}
+      onClick={tileHandler(def, actions)}
+      dragKind={def.action.type === 'shape' ? def.action.kind : undefined}
       filled={def.filled}
       noTint={def.noTint}
-      active={!editBadge && tileActive(def, pendingDraw)}
-      shortcut={editBadge ? undefined : def.shortcut}
+      active={tileActive(def, pendingDraw)}
+      shortcut={def.shortcut}
     >
       {def.icon}
     </IconButton>
-  );
-  if (!editBadge) return button;
-  return (
-    <div className="relative w-full">
-      {button}
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute -left-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full text-white shadow-sm ${
-          editBadge === 'add' ? 'bg-emerald-500' : 'bg-red-500'
-        }`}
-      >
-        <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden>
-          <path
-            d={editBadge === 'add' ? 'M4 1v6M1 4h6' : 'M1 4h6'}
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        </svg>
-      </span>
-    </div>
   );
 }
 
@@ -143,15 +116,11 @@ export function PaletteTileGrid({
   tiles,
   actions,
   pendingDraw,
-  editBadge,
-  onEditToggle,
 }: {
   section?: PaletteTileSection;
   tiles?: PaletteTileDef[];
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
-  editBadge?: 'add' | 'remove';
-  onEditToggle?: (id: string) => void;
 }) {
   const defs = visibleTiles(tiles ?? (section ? tilesInSection(section) : []), actions.hasImage);
   return (
@@ -160,14 +129,7 @@ export function PaletteTileGrid({
     // fixed tiles slightly exceed the cell width.
     <div className="grid grid-cols-3 justify-items-center gap-1 overflow-x-hidden">
       {defs.map((def) => (
-        <PaletteTile
-          key={def.id}
-          def={def}
-          actions={actions}
-          pendingDraw={pendingDraw}
-          editBadge={editBadge}
-          onEditToggle={onEditToggle ? () => onEditToggle(def.id) : undefined}
-        />
+        <PaletteTile key={def.id} def={def} actions={actions} pendingDraw={pendingDraw} />
       ))}
     </div>
   );

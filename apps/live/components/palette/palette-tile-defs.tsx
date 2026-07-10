@@ -1057,3 +1057,16 @@ export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {
 export function tileById(id: string): PaletteTileDef | undefined {
   return PALETTE_TILES.find((t) => t.id === id);
 }
+
+// The tile's short human name: the explicit caption where one is set,
+// otherwise derived from the action label the same way IconButton derives
+// its tile caption ("Add web browser" → "Web browser", "Pencil (freehand)"
+// → "Pencil"). Used by the edit-favourites dialog rows.
+export function tileDisplayName(def: PaletteTileDef): string {
+  if (def.caption) return def.caption;
+  const base = def.label
+    .replace(/^add\s+/i, '')
+    .replace(/\s*\([^)]*\)/g, '')
+    .trim();
+  return base.charAt(0).toUpperCase() + base.slice(1);
+}

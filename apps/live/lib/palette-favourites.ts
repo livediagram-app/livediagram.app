@@ -6,8 +6,7 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-saf
 
 export const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 
-// The nine highest-value creation actions — the tiles important enough to
-// have earned single-key shortcuts, plus the sticky note (see spec/78).
+// The nine highest-value creation actions (see spec/78).
 export const DEFAULT_PALETTE_FAVOURITES: readonly string[] = [
   'shapes:square',
   'shapes:circle',
@@ -16,7 +15,7 @@ export const DEFAULT_PALETTE_FAVOURITES: readonly string[] = [
   'tools:pencil',
   'tools:arrow',
   'tools:sticky',
-  'tools:table',
+  'tools:frame',
   'tools:image',
 ];
 

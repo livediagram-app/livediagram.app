@@ -47,7 +47,19 @@ export type DialogProps = {
   // Extra classes appended to the panel (e.g. `max-h-[90vh]` for a dialog
   // with its own scrolling body).
   className?: string;
+  // 'desktop-light' keeps the page visible behind the modal on desktop (a
+  // faint tint, no blur) so live effects show through — the edit-favourites
+  // dialog uses it so the palette grid updates in view (spec/78). Mobile
+  // (below sm) always keeps the full dim: the centred panel covers most of
+  // the viewport there anyway, and the dim signals modality.
+  backdrop?: 'dim' | 'desktop-light';
   children: ReactNode;
+};
+
+const BACKDROPS: Record<NonNullable<DialogProps['backdrop']>, string> = {
+  dim: 'bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60',
+  'desktop-light':
+    'bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60 sm:bg-slate-900/10 sm:backdrop-blur-none sm:dark:bg-slate-950/20',
 };
 
 export function Dialog({
@@ -58,6 +70,7 @@ export function Dialog({
   size = 'sm',
   closeOnEscape = true,
   className,
+  backdrop = 'dim',
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -84,7 +97,7 @@ export function Dialog({
           e.preventDefault();
           e.stopPropagation();
         }}
-        className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
+        className={`fixed inset-0 z-[var(--z-modal)] flex items-center justify-center ${BACKDROPS[backdrop]}`}
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}

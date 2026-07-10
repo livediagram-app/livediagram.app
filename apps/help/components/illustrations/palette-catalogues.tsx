@@ -126,9 +126,10 @@ export function ComponentsCatalogue() {
   );
 }
 
-/** Favourites tab in edit mode (spec/78): the user's 3x3 tile grid with the
- *  Control-Centre-style remove badges and the Done affordance. Drawn without
- *  CatalogueGrid — Favourites has no search field or catalogue tab strip. */
+/** The edit-favourites modal (spec/78): search field, a 4-per-row tile grid
+ *  with Control-Centre-style corner badges (red minus = favourited, green
+ *  plus = available), and the Done affordance. Drawn without CatalogueGrid —
+ *  it's a modal, not a palette tab. */
 export function FavouritesCatalogue() {
   const glyph = 'fill-none stroke-slate-500';
   const tiles: { label: string; child: ReactNode }[] = [
@@ -201,24 +202,82 @@ export function FavouritesCatalogue() {
   ];
   return (
     <Scene w={400} h={252} bg="plain">
-      <Panel x={40} y={18} w={320} h={216} title="PALETTE">
-        <Label x={56} y={60} size={11} weight={700} tone="strong">
-          Favourites
+      <Panel x={40} y={10} w={320} h={232} title="EDIT FAVOURITES">
+        {/* Search field */}
+        <rect
+          x={56}
+          y={44}
+          width={288}
+          height={22}
+          rx={7}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        <circle cx={69} cy={55} r={4.5} className="fill-none stroke-slate-400" strokeWidth={1.5} />
+        <path
+          d="M72.5 58.5 L76 62"
+          className="stroke-slate-400"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+        />
+        <Label x={82} y={56} size={10} tone="muted">
+          Search controls
         </Label>
-        {tiles.map((t, i) => {
-          const col = i % 3;
-          const row = Math.floor(i / 3);
-          const x = 104 + col * 76;
-          const y = 74 + row * 44;
+        {/* Category pills: Shapes active */}
+        {['Shapes', 'Tools', 'Data'].map((label, i) => {
+          const x = 56 + i * 64;
+          const active = i === 0;
+          return (
+            <g key={label}>
+              <rect
+                x={x}
+                y={72}
+                width={58}
+                height={17}
+                rx={4}
+                className={
+                  active ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'
+                }
+                strokeWidth={1.4}
+              />
+              <Label
+                x={x + 29}
+                y={81}
+                anchor="middle"
+                size={9}
+                weight={active ? 700 : 500}
+                tone={active ? 'accent' : 'muted'}
+              >
+                {label}
+              </Label>
+            </g>
+          );
+        })}
+        {/* 4-per-row toggle tiles: red minus = favourited, green plus =
+            available to add. */}
+        {tiles.slice(0, 8).map((t, i) => {
+          const col = i % 4;
+          const row = Math.floor(i / 4);
+          const x = 64 + col * 74;
+          const y = 100 + row * 46;
+          const favourited = i < 3;
           return (
             <g key={t.label}>
               <Tile x={x} y={y} size={26} label={t.label}>
                 {t.child}
               </Tile>
-              {/* Edit-mode remove badge */}
-              <circle cx={x - 1} cy={y - 1} r={5} className="fill-red-500" />
+              <circle
+                cx={x - 1}
+                cy={y - 1}
+                r={5}
+                className={favourited ? 'fill-red-500' : 'fill-emerald-500'}
+              />
               <path
-                d={`M${x - 3.5} ${y - 1}h5`}
+                d={
+                  favourited
+                    ? `M${x - 3.5} ${y - 1}h5`
+                    : `M${x - 3.5} ${y - 1}h5 M${x - 1} ${y - 3.5}v5`
+                }
                 className="stroke-white"
                 strokeWidth={1.6}
                 strokeLinecap="round"
@@ -227,9 +286,9 @@ export function FavouritesCatalogue() {
           );
         })}
         {/* Done affordance, bottom-right */}
-        <rect x={306} y={206} width={38} height={18} rx={5} className="fill-brand-50" />
-        <Label x={325} y={215} anchor="middle" size={9} weight={700} tone="accent">
-          Done
+        <rect x={296} y={212} width={48} height={18} rx={5} className="fill-brand-500" />
+        <Label x={320} y={221} anchor="middle" size={9} weight={700} tone="onAccent">
+          ✓ Done
         </Label>
       </Panel>
     </Scene>
