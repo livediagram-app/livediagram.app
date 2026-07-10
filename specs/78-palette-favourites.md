@@ -52,9 +52,11 @@ Curation happens in a centred dialog (`PaletteFavouritesDialog`, the shared
 - A **search box** (autofocused) sits **under the pills** and filters the
   picked category's controls by name as the user types.
 - Controls render as a space-efficient **5-per-row tile grid**. Each tile
-  is the familiar glyph + caption with a **corner badge** carrying the
-  state: a **red minus** on current favourites, a **green plus** on the
-  rest; favourited tiles also get a soft brand tint. **Clicking the tile
+  is a **bordered card even at rest** (with 100+ icons in one grid,
+  hover-only boundaries read as one undifferentiated mush): the familiar
+  glyph + caption with a **corner badge** carrying the state — a **red
+  minus** on current favourites, a **green plus** on the rest; favourited
+  cards also get a brand-tinted border + fill. **Clicking the tile
   toggles membership.** Toggling applies (and persists) immediately — the
   footer's **Done** button (check glyph) just closes, never a save step.
   Added tiles append to the end of the grid.
