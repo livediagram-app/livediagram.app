@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDiagramSettings } from '@/components/palette/TemplatePicker';
+import { NewHereCard } from './NewHereCard';
 import { RecentDiagramsCard } from './RecentDiagramsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -317,10 +318,22 @@ export default function NewDiagramPage() {
             onSkip={() => void commitNewDiagram('blank', self.name, 'brand', { offline: false })}
           />
         </CustomThemeProvider>
-        {/* Returning users get a "jump back in" shortcut beside the wizard
-            (spec/14). Hidden when there are no diagrams yet / on narrow
-            viewports. */}
-        <RecentDiagramsCard ownerId={self.id === 'pending' ? null : self.id} />
+        {/* The right rail beside the centred wizard (desktop-only, xl+):
+            returning users get "Jump back in" (spec/14, hidden with no
+            diagrams yet), and first-timers the guided tour underneath
+            (spec/69), which lives here rather than posing as a template in
+            the Quick Start grid. */}
+        <div className="pointer-events-none absolute inset-y-0 right-4 z-10 hidden items-center xl:flex 2xl:right-10">
+          <div className="flex flex-col gap-4">
+            <RecentDiagramsCard ownerId={self.id === 'pending' ? null : self.id} />
+            <NewHereCard
+              busy={submitting}
+              onStart={() =>
+                void commitNewDiagram('guided-tour', self.name, 'brand', { offline: true })
+              }
+            />
+          </div>
+        </div>
       </main>
     </div>
   );

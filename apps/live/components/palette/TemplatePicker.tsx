@@ -260,10 +260,6 @@ export function TemplatePicker({
   // Skip the wizard entirely: the documented shortcut is Blank template +
   // Basic theme (spec/14), committed straight away.
   const skipToDefaults = () => onPick('blank', effectiveName, 'brand', { offline });
-  // "Show me around" (spec/69): one click commits the guided-tour sample
-  // with the default theme, no theme step, so a first-time user lands on a
-  // living canvas immediately. Welcome mode only.
-  const startGuidedTour = () => onPick('guided-tour', effectiveName, 'brand', { offline });
   // Double-clicking a template advances to the theme step (the user still
   // needs to pick a theme) rather than committing the whole wizard.
   const onTemplateCommit = (kind: TemplateKind) => {
@@ -383,7 +379,6 @@ export function TemplatePicker({
                 categoryTemplates={categoryTemplates}
                 templateKind={templateKind}
                 onTemplateCommit={onTemplateCommit}
-                onGuidedTour={isWelcome ? startGuidedTour : undefined}
               />
             ) : null}
 
