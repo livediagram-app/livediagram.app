@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@livediagram/ui';
+
 // "New to livediagram?" card (spec/69): the guided tour's home on the /new
 // screen, sitting in the right rail under Jump Back In and styled to match.
 // The tour used to pose as a template card inside the Quick Start grid, but
@@ -25,14 +27,11 @@ export function NewHereCard({ onStart, busy }: { onStart: () => void; busy: bool
           Start with a sample diagram that walks you through the basics: shapes, arrows, tabs, and
           the palette.
         </p>
-        <button
-          type="button"
-          onClick={onStart}
-          disabled={busy}
-          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        {/* rounded-lg + py-2 keep the card's taller CTA shape; the classes
+            append after the size scale, so they win. */}
+        <Button size="xs" onClick={onStart} disabled={busy} className="rounded-lg py-2 shadow-sm">
           Show me around
-        </button>
+        </Button>
       </div>
     </div>
   );

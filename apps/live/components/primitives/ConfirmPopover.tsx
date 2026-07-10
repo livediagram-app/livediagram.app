@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { clampIntoRange } from '@livediagram/ui';
+import { Button, clampIntoRange } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
@@ -112,25 +112,20 @@ export function ConfirmPopover({
         ) : null}
         <p className="text-xs text-slate-700 dark:text-slate-200">{message}</p>
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-          >
+          {/* py-1 keeps the popover's tighter rhythm; the classes append
+              after the size scale, so they win. */}
+          <Button variant="secondary" size="xs" onClick={onCancel} className="px-2.5 py-1">
             {cancelLabel}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant={danger ? 'danger' : 'primary'}
+            size="xs"
             autoFocus
             onClick={onConfirm}
-            className={
-              danger
-                ? 'rounded-md bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-700'
-                : 'rounded-md bg-brand-500 px-2.5 py-1 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600'
-            }
+            className="px-2.5 py-1 shadow-sm"
           >
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </Portal>

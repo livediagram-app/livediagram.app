@@ -4,6 +4,8 @@
 // hunt for the Fit button below it. Rendered by CanvasChrome inside the
 // bottom-right dock container; positioned above it with `bottom-full`.
 
+import { Button } from '@livediagram/ui';
+
 type OffscreenContentHintProps = {
   // Bring everything back into view (wired to fit-to-screen).
   onBringBack: () => void;
@@ -20,13 +22,9 @@ export function OffscreenContentHint({ onBringBack }: OffscreenContentHintProps)
       <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
         Everything on this tab has scrolled off-screen.
       </p>
-      <button
-        type="button"
-        onClick={onBringBack}
-        className="mt-0.5 inline-flex items-center justify-center rounded-md bg-brand-500 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600"
-      >
+      <Button size="xs" onClick={onBringBack} className="mt-0.5">
         Bring it back into view
-      </button>
+      </Button>
       {/* Caret pointing down toward the zoom dock / Fit button below. */}
       <div className="absolute -bottom-1.5 right-6 h-3 w-3 rotate-45 border-b border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900" />
     </div>
