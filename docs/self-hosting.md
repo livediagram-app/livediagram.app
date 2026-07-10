@@ -6,14 +6,14 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 ## What you'll provision on Cloudflare
 
-| Resource                             | Used by         | Why                                                                                                                                                                                                            |
-| ------------------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Workers paid plan**                | All six workers | Durable Objects (per-diagram realtime room) need the paid plan.                                                                                                                                                |
-| **D1 database**                      | `apps/api`      | Diagrams, tabs, comments, folders, share links, shared-with index, change log, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                             |
-| **Durable Object namespace**         | `apps/api`      | One stateful room per diagram for realtime presence + ops.                                                                                                                                                     |
-| **R2 bucket** (optional)             | `apps/api`      | Image uploads (spec/19) + diagram SVG snapshots (spec/67: Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
-| **Rate Limiter bindings** (optional) | `apps/api`      | Per-owner write throttle + per-IP telemetry throttle.                                                                                                                                                          |
-| **Custom domain**                    | `apps/router`   | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                        |
+| Resource                             | Used by           | Why                                                                                                                                                                                                            |
+| ------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Workers paid plan**                | All seven workers | Durable Objects (per-diagram realtime room) need the paid plan.                                                                                                                                                |
+| **D1 database**                      | `apps/api`        | Diagrams, tabs, comments, folders, share links, shared-with index, change log, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                             |
+| **Durable Object namespace**         | `apps/api`        | One stateful room per diagram for realtime presence + ops.                                                                                                                                                     |
+| **R2 bucket** (optional)             | `apps/api`        | Image uploads (spec/19) + diagram SVG snapshots (spec/67: Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Per-owner write throttle + per-IP telemetry throttle.                                                                                                                                                          |
+| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                        |
 
 What you do NOT need:
 
