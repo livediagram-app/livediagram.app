@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
-import { saveOfflineToCloud, takeCloudOffline } from '@/lib/offline/offline-convert';
+import {
+  saveOfflineToCloud,
+  syncFailureMessage,
+  takeCloudOffline,
+} from '@/lib/offline/offline-convert';
 
 // Shared Offline Mode conversion handlers (spec/76) for the Explorer's row and
 // card menus, which otherwise duplicated this logic. `syncToCloud` uploads an
@@ -27,9 +31,9 @@ export function useOfflineConversion(
     try {
       await saveOfflineToCloud(diagram.id, ownerId);
       window.location.reload();
-    } catch {
+    } catch (e) {
       setConverting(false); // stays offline
-      toast.error('Could not sync this diagram. Check your connection and try again.');
+      toast.error(syncFailureMessage(e));
     }
   };
 

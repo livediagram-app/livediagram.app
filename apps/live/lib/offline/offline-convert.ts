@@ -7,7 +7,7 @@
 // every other device), so the UI gates it behind a confirmation.
 
 import { apiCreateDiagram, apiLoadDiagram, apiLoadTab } from '@/lib/api-client';
-import { API_BASE, apiDelete } from '@/lib/api/core';
+import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, uploadEmbeddedImages } from './offline-images';
 import {
   offlineCreateDiagram,
@@ -87,6 +87,17 @@ export async function takeCloudOffline(
     await offlineDeleteDiagram(rec.id).catch(() => {});
     throw e;
   }
+}
+
+// Toast copy for a failed Sync Diagram, shared by the Explorer menus (via
+// useOfflineConversion) and the Share dialog's offline gate. A 413 is the
+// hard per-tab size cap (usually a large embedded image whose gallery
+// upload failed, leaving the data URI in the tab JSON): retrying won't
+// help, so it must not read as a connection problem.
+export function syncFailureMessage(e: unknown): string {
+  return e instanceof ApiError && e.status === 413
+    ? 'This diagram is too large to sync: a tab exceeds the server size limit, usually a big embedded image. Remove or shrink it and try again.'
+    : 'Could not sync this diagram. Check your connection and try again.';
 }
 
 // Re-exported for callers that only need to create an offline diagram from

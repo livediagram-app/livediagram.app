@@ -6,6 +6,7 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useToast } from '@/hooks/ui/useToast';
+import { syncFailureMessage } from '@/lib/offline/offline-convert';
 
 // The Share dialog's offline gate (spec/76). An offline diagram is stored only
 // in this browser, so there are no links to mint until it's synced to the
@@ -29,9 +30,9 @@ export function ShareOfflineGate({
       // onSyncToCloud reloads the page on success, so we normally never fall
       // through. If it resolves without navigating, drop the spinner.
       setBusy(false);
-    } catch {
+    } catch (e) {
       setBusy(false);
-      toast.error('Could not sync this diagram. Check your connection and try again.');
+      toast.error(syncFailureMessage(e));
     }
   };
 
