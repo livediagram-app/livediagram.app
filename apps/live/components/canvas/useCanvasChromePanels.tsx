@@ -197,6 +197,11 @@ export function useCanvasChromePanels({
     onMoveActivity,
     onResetActivity,
     onToggleActivityMinimized,
+    onSetRevertHoverPreview: (v: boolean) => {
+      // Settings flip fires BEFORE the persist (spec/22).
+      track('UI', 'Toggled', v ? 'ActivityRevertPreviewOn' : 'ActivityRevertPreviewOff');
+      onChangeSettings({ ...settings, activityRevertHoverPreview: v });
+    },
   });
   const onExplorerSize = useCallback(
     (size: { width: number; height: number; bottomY: number }) => setExplorerBottomY(size.bottomY),
@@ -329,6 +334,9 @@ export function useCanvasChromePanels({
       onRevert={activityHandlers.onRevertChange}
       onPreviewRevert={activityHandlers.onPreviewRevert}
       onClearRevertPreview={activityHandlers.onClearRevertPreview}
+      revertHoverPreview={settings?.activityRevertHoverPreview !== false}
+      onSetRevertHoverPreview={activityHandlers.onSetRevertHoverPreview}
+      resettable={activityWiring.resettable}
       onRowClick={activityHandlers.onActivityRowClick}
       onClearActivity={activityHandlers.onClearActivity}
       saveStatus={saveStatus}

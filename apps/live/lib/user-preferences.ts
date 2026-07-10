@@ -108,6 +108,13 @@ export type UserPreferences = {
   // Missing / undefined / true === on, the default. Flipped from the
   // panel's settings gear (desktop-only chrome, like the hover itself).
   layerHoverPreview?: boolean;
+  // Activity panel revert hover-preview (spec/12). When `false`,
+  // resting the pointer on a revertable Activity row no longer
+  // previews the revert on the canvas (the Revert button itself is
+  // unaffected). Missing / undefined / true === on, the default.
+  // Flipped from the Activity panel's settings gear, mirroring
+  // `layerHoverPreview` above.
+  activityRevertHoverPreview?: boolean;
   // Email notifications (spec/65). Account-level settings flipped from the
   // Explorer profile page; the api worker reads them server-side before
   // sending the matching transactional email (spec/64). Distinct from

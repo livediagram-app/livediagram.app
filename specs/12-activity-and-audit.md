@@ -261,7 +261,13 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
   tick + autosave guard as the spec/48 style previews; see
   `useRevertPreview`). Mouse pointers only (touch has no hover), and
   only on rows whose Revert button is available — tab-meta rows and
-  read-only / locked sessions don't preview.
+  read-only / locked sessions don't preview. The behaviour is a user
+  preference: a gear in the panel header (mirroring the Layers panel's
+  spec/74 gear) opens a settings popover with a "Preview revert on
+  hover" toggle backed by the synced `activityRevertHoverPreview`
+  flag — ON by default; an explicit `false` turns just the hover
+  preview off, never the Revert button. The popover also carries the
+  standard Reset-position row.
 - Empty state: "No edits yet — start drawing."
 
 ## Performance

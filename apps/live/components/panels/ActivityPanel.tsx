@@ -3,6 +3,7 @@
 import { memo } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
+import { ActivitySettingsPopover } from '@/components/panels/ActivitySettingsPopover';
 import { TrashIcon } from '@/components/panels/explorer-icons';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -44,6 +45,14 @@ type ActivityPanelProps = {
   // fired for rows whose Revert button is available.
   onPreviewRevert: (entry: ChangeLogEntry) => void;
   onClearRevertPreview: () => void;
+  // The revert hover-preview preference (spec/12), flipped from the
+  // header gear. False stops rows previewing; the Revert button is
+  // unaffected. The setter persists the flag (user-preferences).
+  revertHoverPreview: boolean;
+  onSetRevertHoverPreview: (value: boolean) => void;
+  // True when the panel has been moved / docked away from its default
+  // spot, enabling the gear's Reset-position row.
+  resettable: boolean;
   // Click anywhere on a row (outside the Revert button) — used by
   // the editor to jump to the related element (tab-meta entries like
   // "Changed theme to X" just clear the selection).
@@ -83,6 +92,9 @@ function ActivityPanelImpl({
   onRevert,
   onPreviewRevert,
   onClearRevertPreview,
+  revertHoverPreview,
+  onSetRevertHoverPreview,
+  resettable,
   onRowClick,
   onClearActivity,
   saveStatus,
@@ -104,6 +116,14 @@ function ActivityPanelImpl({
       {...dock}
       onMinimize={onToggleMinimized}
       headerExtra={<SaveStatusBadge status={saveStatus} savedAt={savedAt} />}
+      headerActions={
+        <ActivitySettingsPopover
+          revertHoverPreview={revertHoverPreview}
+          onSetRevertHoverPreview={onSetRevertHoverPreview}
+          onResetPosition={onReset}
+          resettable={resettable}
+        />
+      }
     >
       <div className="flex flex-1 flex-col gap-2 px-3 pb-3 pt-1">
         {/* Undo / Redo bar lives at the top so the most common actions
@@ -161,7 +181,9 @@ function ActivityPanelImpl({
                   entry={entry}
                   canRevert={!tabLocked && !readOnly}
                   onRevert={() => onRevert(entry)}
-                  onHoverStart={() => onPreviewRevert(entry)}
+                  onHoverStart={() => {
+                    if (revertHoverPreview) onPreviewRevert(entry);
+                  }}
                   onHoverEnd={onClearRevertPreview}
                   onClick={() => onRowClick(entry)}
                 />
