@@ -241,6 +241,17 @@ export function useIdentityBootstrap(opts: {
         lastPersistedSelfRef.current = { name: self.name, color: self.color };
       }
 
+      // The NotFound / load-error pages render the Explorer panel behind
+      // the status card so the user can still navigate to their other
+      // diagrams — which only works if those early-return paths fetch the
+      // Explorer's lists too. Called on each of them below; the success
+      // path keeps its own calls at the end of this effect (AFTER the
+      // share-visit registration, so refreshSharedList sees the new row).
+      const seedExplorerLists = () => {
+        refreshDiagramList(self.id);
+        refreshSharedList(self.id);
+      };
+
       // Two URL flavours: `?d=<id>` is the owner's private URL,
       // `?s=<code>` is a share URL another participant follows. Visitor
       // arrivals get full diagram data via the share-code endpoint and
@@ -266,6 +277,7 @@ export function useIdentityBootstrap(opts: {
           // / 5xx). Retryable, so show the error page instead of the
           // "link revoked / diagram gone" NotFound below.
           setLoadError(true);
+          seedExplorerLists();
           setHydrated(true);
           setLoadingDiagram(false);
           setNameConfirmed(hasConfirmedName());
@@ -279,6 +291,7 @@ export function useIdentityBootstrap(opts: {
           // silent blank canvas (which used to read as "the
           // diagram loaded but is empty").
           setDiagramNotFound(true);
+          seedExplorerLists();
           setHydrated(true);
           setLoadingDiagram(false);
           setNameConfirmed(hasConfirmedName());
@@ -398,6 +411,7 @@ export function useIdentityBootstrap(opts: {
           // would wrongly tell the user the diagram doesn't exist.
           setDiagramId(id);
           setLoadError(true);
+          seedExplorerLists();
           setHydrated(true);
           setLoadingDiagram(false);
           setNameConfirmed(hasConfirmedName());
@@ -410,6 +424,7 @@ export function useIdentityBootstrap(opts: {
           // the new-diagram welcome flow.
           setDiagramId(id);
           setDiagramNotFound(true);
+          seedExplorerLists();
           setHydrated(true);
           setLoadingDiagram(false);
           setNameConfirmed(hasConfirmedName());
