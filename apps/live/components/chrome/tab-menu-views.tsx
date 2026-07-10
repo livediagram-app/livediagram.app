@@ -8,7 +8,8 @@ import {
 import { MenuItem } from '@/components/primitives/PortalMenu';
 
 // The tab portal menu's two sub-views, lifted out of TabPortalMenu:
-// "Add to Diagram" (pick a destination diagram for the tab copy) and
+// "Add to Diagram" (pick a destination diagram to link the tab into,
+// spec/17 — the tab is shared, not copied) and
 // "Add to Folder" (spec/30 — file the tab into a one-level folder).
 // Both render inside the same portal box; the host keeps the view
 // switch so the positioning and outside-click handling stay put.

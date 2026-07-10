@@ -844,7 +844,7 @@ export const articles: Article[] = [
   {
     slug: 'add-to-diagram',
     title: 'Add a Tab to Another Diagram',
-    description: 'Copy the active tab into another diagram you own from the tab menu.',
+    description: 'Add the active tab to another diagram you own; both share the same live tab.',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

@@ -5,38 +5,42 @@ import { AddToDiagramMenu } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Add a Tab to Another Diagram',
   description:
-    'Copy the active tab into another diagram you own, straight from the tab menu, to reuse a board across projects.',
+    'Add the active tab to another diagram you own, straight from the tab menu. Both diagrams share the same live tab, so an edit in one shows up in the other.',
   path: '/help/tabs/add-to-diagram/',
 });
 
 <ArticleLayout
   title="Add a Tab to Another Diagram"
-  description="Reuse a tab elsewhere: copy the active tab into another of your diagrams in a couple of clicks."
+  description="Reuse a tab elsewhere: add the active tab to another of your diagrams, and edits made in either place appear in both."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
-Sometimes a tab you built in one diagram belongs in another, a reference board, a template flow, or a section you want to carry over. **Add to Diagram** copies the active tab into another diagram you own, without leaving the editor.
+Sometimes a tab you built in one diagram belongs in another too: a glossary, a shared timeline, an architecture board two projects both rely on. **Add to Diagram** adds the active tab to another diagram you own, without leaving the editor.
 
-## Copying a tab across
+## Adding a tab to another diagram
 
 <Step n={1}>Open the active tab's ellipsis menu and expand the **Organise** section.</Step>
 <Step n={2}>Choose **Add to Diagram**.</Step>
-<Step n={3}>Pick the destination diagram from your list. The tab is copied into it.</Step>
+<Step n={3}>Pick the destination diagram from your list. The tab is added to it.</Step>
 
-The option is only available when you actually have somewhere to copy to: if this is your only diagram, **Add to Diagram** is greyed out until you create another.
+The option is only available when you actually have somewhere to add it to: if this is your only diagram, **Add to Diagram** is greyed out until you create another.
 
-<Figure caption="Add to Diagram in the tab menu opens a picker listing your other diagrams to copy the tab into.">
+<Figure caption="Add to Diagram in the tab menu opens a picker listing your other diagrams to add the tab to.">
   <AddToDiagramMenu />
 </Figure>
 
-## What gets copied
+## One tab, shared between diagrams
 
-Add to Diagram makes a copy, so the original tab stays exactly where it is. The destination diagram gets the tab's elements and layout as a new tab of its own. From there it is an ordinary tab in that diagram: rename it, fold it into a [tab folder](/help/tabs/tab-folders/), or restyle it without affecting the source.
+Add to Diagram doesn't make a copy: it is the same tab in both places. Edit its elements, restyle it, or rename it from either diagram and the change lands in the other as well. If the other diagram is already open in another window, reload it to see the latest edits.
+
+Two things stay per-diagram, so each diagram can organise the shared tab its own way: the tab's position in the tab bar, and which [tab folder](/help/tabs/tab-folders/) (if any) it sits in.
+
+Removing the tab from one diagram doesn't touch the others; the tab and its contents are only deleted for good when you remove it from the last diagram containing it.
 
 <Tip>
-  Building the same starter board again and again? Keep a master copy in one diagram and use **Add
-  to Diagram** to drop it into each new project, then tailor it from there.
+  Prefer an independent copy you can tailor per project? Use **Duplicate** in the same menu first,
+  then add the duplicate to the other diagram.
 </Tip>
 
 </ArticleLayout>
