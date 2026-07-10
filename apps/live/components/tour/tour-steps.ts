@@ -59,7 +59,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: 'welcome',
     welcome: true,
     title: 'Welcome to your first diagram',
-    body: 'Get the most out of livediagram, want us to show you around? Seven short steps, about a minute.',
+    body: 'We can help you to get the most out of livediagram, want us to show you the basics?',
   },
   {
     id: 'palette',
