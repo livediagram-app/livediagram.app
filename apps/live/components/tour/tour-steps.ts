@@ -129,7 +129,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'tab-menu',
     title: 'The tab menu',
-    body: 'Each tab has a ⋯ menu: rename, duplicate, lock, import and export, and session tools like timers and votes.',
+    body: 'Each tab has a menu containing helpful tools and ways to organise, cleanup and customise.',
     target: 'tab-menu',
     prepare: () => {
       if (!findTour('tab-menu')) clickTour('tab-menu-trigger');
