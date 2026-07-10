@@ -51,8 +51,7 @@ export function NewDiagramSettingsStep({
           toggle (no button-in-button). */}
       <button
         type="button"
-        role="switch"
-        aria-checked={offline}
+        aria-pressed={offline}
         onClick={() => onOffline(!offline)}
         className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-left transition hover:bg-slate-100/70 dark:border-slate-700 dark:bg-slate-800/40 dark:hover:bg-slate-800/70"
       >
