@@ -15,7 +15,7 @@ import { EmptyPane } from './ExplorerEmptyState';
 import { DiagramRow } from './explorer-route-diagram-row';
 import { FolderRow } from './folder-row';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import { CloseIcon, FolderIcon, SparkleIcon } from './icons';
+import { CloseIcon, FolderIcon, OfflineFolderIcon, SparkleIcon } from './icons';
 
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
@@ -46,6 +46,7 @@ export type SelectedNode =
   | { kind: 'all' }
   | { kind: 'unsorted' }
   | { kind: 'generated' }
+  | { kind: 'offline' }
   | { kind: 'shared' }
   | { kind: 'gallery' }
   | { kind: 'themes' }
@@ -67,6 +68,9 @@ export function ListView({
   showGeneratedRow = false,
   generatedCount = 0,
   onOpenGenerated,
+  showOfflineRow = false,
+  offlineCount = 0,
+  onOpenOffline,
   onOpenFolder,
   onCommitRenameFolder,
   onCancelRenameFolder,
@@ -104,6 +108,11 @@ export function ListView({
   showGeneratedRow?: boolean;
   generatedCount?: number;
   onOpenGenerated?: () => void;
+  // The Offline synthetic folder row (spec/76): diagrams saved only in this
+  // browser. Shown on the My Work (/all) list beside Generated.
+  showOfflineRow?: boolean;
+  offlineCount?: number;
+  onOpenOffline?: () => void;
   onOpenFolder: (id: string) => void;
   onCommitRenameFolder: (id: string, name: string) => void;
   onCancelRenameFolder: () => void;
@@ -149,6 +158,9 @@ export function ListView({
         {showUnsortedRow ? <UnsortedRow count={unsortedCount} onOpen={onOpenUnsorted} /> : null}
         {showGeneratedRow && onOpenGenerated ? (
           <GeneratedRow count={generatedCount} onOpen={onOpenGenerated} />
+        ) : null}
+        {showOfflineRow && onOpenOffline ? (
+          <OfflineRow count={offlineCount} onOpen={onOpenOffline} />
         ) : null}
         {folders.map((f) => (
           <FolderRow
@@ -240,6 +252,18 @@ export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => vo
 function GeneratedRow({ count, onOpen }: { count: number; onOpen: () => void }) {
   return (
     <SyntheticFolderRow icon={<SparkleIcon />} label="Generated" count={count} onOpen={onOpen} />
+  );
+}
+
+// Offline (spec/76): the synthetic folder for browser-only diagrams.
+function OfflineRow({ count, onOpen }: { count: number; onOpen: () => void }) {
+  return (
+    <SyntheticFolderRow
+      icon={<OfflineFolderIcon />}
+      label="Offline"
+      count={count}
+      onOpen={onOpen}
+    />
   );
 }
 

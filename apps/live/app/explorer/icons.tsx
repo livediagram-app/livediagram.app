@@ -131,6 +131,27 @@ export function SparkleIcon() {
   );
 }
 
+// Cloud-with-slash for the synthetic Offline folder (spec/76): diagrams
+// saved only in this browser, never on the server.
+export function OfflineFolderIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4.5 12h6.6a2.4 2.4 0 0 0 .4-4.77 3.4 3.4 0 0 0-6.3-.8A2.3 2.3 0 0 0 4.5 12Z" />
+      <path d="M2.8 2.8l10.4 10.4" />
+    </svg>
+  );
+}
+
 export function ShareIcon() {
   return (
     <svg

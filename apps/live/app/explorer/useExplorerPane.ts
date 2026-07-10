@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { TeamDiagramRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { PaneDiagram, SelectedNode } from './views';
 
@@ -55,8 +56,9 @@ export function useExplorerPane({
     () =>
       diagrams
         // Generated diagrams (source != null) live in their own synthetic
-        // "Generated" folder, not Unsorted, so the two buckets don't overlap.
-        .filter((d) => d.folderId === null && !d.source)
+        // "Generated" folder, not Unsorted, and offline diagrams (spec/76)
+        // in the synthetic "Offline" folder, so the buckets don't overlap.
+        .filter((d) => d.folderId === null && !d.source && d.ownerId !== OFFLINE_OWNER_ID)
         .sort((a, b) => b.savedAt - a.savedAt),
     [diagrams],
   );
@@ -71,6 +73,16 @@ export function useExplorerPane({
       diagrams
         .filter((d) => d.source != null && d.folderId === null)
         .sort((a, b) => b.savedAt - a.savedAt),
+    [diagrams],
+  );
+
+  // Offline diagrams (spec/76): the synthetic folder for browser-only
+  // diagrams. A dynamic view over EVERYTHING offline (regardless of any
+  // folder placement stored in the local record), so the one place to find
+  // every diagram that exists only in this browser.
+  const offlineDiagrams = useMemo(
+    () =>
+      diagrams.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),
     [diagrams],
   );
 
@@ -123,6 +135,9 @@ export function useExplorerPane({
     if (selected.kind === 'generated') {
       return { showUnsortedRow: false, folders: [], diagrams: generatedDiagrams };
     }
+    if (selected.kind === 'offline') {
+      return { showUnsortedRow: false, folders: [], diagrams: offlineDiagrams };
+    }
     if (selected.kind === 'all') {
       return {
         showUnsortedRow: true,
@@ -144,6 +159,7 @@ export function useExplorerPane({
     diagramsByFolder,
     unsortedDiagrams,
     generatedDiagrams,
+    offlineDiagrams,
   ]);
 
   // Count for the sidebar "Recent diagrams" badge (spec/35), mirroring
@@ -167,6 +183,7 @@ export function useExplorerPane({
     if (selected.kind === 'all') return 'My Work';
     if (selected.kind === 'unsorted') return 'Unsorted';
     if (selected.kind === 'generated') return 'Generated';
+    if (selected.kind === 'offline') return 'Offline';
     return folderById.get(selected.id)?.name ?? 'Folder';
   }, [selected, folderById, teams]);
 
@@ -187,6 +204,7 @@ export function useExplorerPane({
     if (selected.kind === 'all') return [{ name: 'My Work' }];
     if (selected.kind === 'unsorted') return [all, { name: 'Unsorted' }];
     if (selected.kind === 'generated') return [all, { name: 'Generated' }];
+    if (selected.kind === 'offline') return [all, { name: 'Offline' }];
     const chain = breadcrumb(selected.id);
     return [
       all,
@@ -202,6 +220,7 @@ export function useExplorerPane({
     diagramsByFolder,
     unsortedDiagrams,
     generatedDiagrams,
+    offlineDiagrams,
     paneContent,
     recentCount,
     paneTitle,

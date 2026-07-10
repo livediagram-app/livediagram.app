@@ -25,7 +25,12 @@ import { useState } from 'react';
 import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { ChevronIcon, RemoveIcon, UnsortedIcon } from '@/components/panels/explorer-icons';
+import {
+  ChevronIcon,
+  OfflineFolderIcon,
+  RemoveIcon,
+  UnsortedIcon,
+} from '@/components/panels/explorer-icons';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
 import { DiagramRow } from './DiagramRow';
 
@@ -153,6 +158,105 @@ export function UnsortedNode({
             </li>
           ))}
         </ul>
+      ) : null}
+    </li>
+  );
+}
+
+// Synthetic "Offline" folder (spec/76): every diagram saved only in this
+// browser, mirroring the /explorer route's dynamic Offline folder. Always
+// rendered (even empty) so the local-only bucket stays discoverable. Not a
+// drop target: moving a cloud diagram offline is the explicit, confirmed
+// Take Offline action, never a drag.
+export function OfflineNode({
+  ownerId,
+  expanded,
+  onToggleExpanded,
+  diagrams,
+  currentDiagramId,
+  onOpenDiagram,
+  onDeleteDiagram,
+  exitingDiagramIds,
+  onDuplicateDiagram,
+  onMoveDiagramRequest,
+}: {
+  ownerId: string | null;
+  expanded: Record<string, boolean>;
+  onToggleExpanded: (key: string) => void;
+  diagrams: DiagramListItem[];
+  currentDiagramId: string | null;
+  onOpenDiagram: (id: string, shareCode?: string) => void;
+  onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
+  exitingDiagramIds: Set<string>;
+  onDuplicateDiagram?: (id: string) => void;
+  onMoveDiagramRequest?: (diagramId: string, anchor: HTMLElement | null) => void;
+}) {
+  const isExpanded = expanded['offline'] ?? false;
+  return (
+    <li>
+      <div className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800">
+        <button
+          type="button"
+          onClick={() => onToggleExpanded('offline')}
+          aria-expanded={isExpanded}
+          aria-label={isExpanded ? 'Collapse Offline' : 'Expand Offline'}
+          className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+        >
+          <span
+            className={`inline-block transition-transform ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+            aria-hidden
+          >
+            <ChevronIcon />
+          </span>
+        </button>
+        <span className="text-amber-500">
+          <OfflineFolderIcon />
+        </span>
+        <button
+          type="button"
+          onClick={() => onToggleExpanded('offline')}
+          className="flex min-w-0 flex-1 items-center gap-1 truncate text-left"
+        >
+          <span className="truncate italic text-slate-500 dark:text-white">Offline</span>
+          <span className="inline-flex h-4 min-w-[1rem] shrink-0 items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-white">
+            {diagrams.length}
+          </span>
+        </button>
+      </div>
+      {isExpanded ? (
+        diagrams.length === 0 ? (
+          <p className="px-8 py-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+            Diagrams saved only in this browser collect here.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-0.5">
+            {diagrams.map((d) => (
+              <li
+                key={d.id}
+                style={{ paddingLeft: 16 }}
+                className={
+                  exitingDiagramIds.has(d.id)
+                    ? 'animate-slide-row-out overflow-hidden'
+                    : 'animate-slide-row-in overflow-hidden'
+                }
+              >
+                <DiagramRow
+                  item={d}
+                  ownerId={ownerId}
+                  active={d.id === currentDiagramId}
+                  onOpen={() => onOpenDiagram(d.id)}
+                  onDelete={onDeleteDiagram ? (anchor) => onDeleteDiagram(d.id, anchor) : undefined}
+                  onDuplicate={onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined}
+                  onMoveRequest={
+                    onMoveDiagramRequest
+                      ? (anchor) => onMoveDiagramRequest(d.id, anchor)
+                      : undefined
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+        )
       ) : null}
     </li>
   );

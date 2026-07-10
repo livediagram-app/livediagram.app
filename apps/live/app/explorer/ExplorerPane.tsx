@@ -15,7 +15,7 @@ import { DynamicFolderInfo } from './DynamicFolderInfo';
 // The browse sections that render a folders + diagrams grid the List/Card
 // toggle (spec/67) can swap. Other sections (gallery, themes, tokens,
 // profile, team, invites, shared) have their own fixed layout.
-const BROWSE_KINDS = new Set(['recent', 'all', 'folder', 'unsorted', 'generated']);
+const BROWSE_KINDS = new Set(['recent', 'all', 'folder', 'unsorted', 'generated', 'offline']);
 
 // Each Explorer section deep-links its matching help-centre article from a
 // "?" button in the pane header (spec/56). Sections without a guide (team,
@@ -52,6 +52,11 @@ const SECTION_HELP: Partial<
     article: 'unsorted',
     title: 'The Unsorted folder',
     description: 'Where diagrams live until you file them into a folder.',
+  },
+  offline: {
+    article: 'offlineMode',
+    title: 'Offline Mode',
+    description: 'Diagrams saved only in this browser, and how to sync them.',
   },
   folder: {
     article: 'folders',
@@ -103,6 +108,7 @@ export function ExplorerPane() {
     paneContent,
     unsortedDiagrams,
     generatedDiagrams,
+    offlineDiagrams,
     childrenByParent,
     diagramsByFolder,
     setMobileNavOpen,
@@ -163,9 +169,11 @@ export function ExplorerPane() {
           selected.kind === 'profile' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
-          // Generated is a read-through view of AI output, not a place you
-          // hand-author into.
-          selected.kind === 'generated'
+          // Generated / Offline are read-through dynamic views, not places
+          // you hand-author into (offline diagrams are created from the /new
+          // wizard's Settings toggle).
+          selected.kind === 'generated' ||
+          selected.kind === 'offline'
             ? undefined
             : () =>
                 window.location.assign(
@@ -181,7 +189,8 @@ export function ExplorerPane() {
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           selected.kind === 'recent' ||
-          selected.kind === 'generated'
+          selected.kind === 'generated' ||
+          selected.kind === 'offline'
             ? undefined
             : () => createFolder(selected.kind === 'folder' ? selected.id : null)
         }
@@ -268,6 +277,12 @@ export function ExplorerPane() {
               showGeneratedRow={selected.kind === 'all'}
               generatedCount={generatedDiagrams.length}
               onOpenGenerated={() => go({ kind: 'generated' })}
+              // Offline sits beside Generated on the My Work (/all) list
+              // (spec/76), always shown so the browser-only bucket is
+              // discoverable.
+              showOfflineRow={selected.kind === 'all'}
+              offlineCount={offlineDiagrams.length}
+              onOpenOffline={() => go({ kind: 'offline' })}
               onOpenFolder={(id) => go({ kind: 'folder', id })}
               onCommitRenameFolder={commitRenameFolder}
               onCancelRenameFolder={() => setRenamingFolderId(null)}

@@ -103,6 +103,26 @@ export function UnsortedIcon() {
   );
 }
 
+// Cloud-with-slash for the panel's synthetic Offline node (spec/76).
+export function OfflineFolderIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4.5 12h6.6a2.4 2.4 0 0 0 .4-4.77 3.4 3.4 0 0 0-6.3-.8A2.3 2.3 0 0 0 4.5 12Z" />
+      <path d="M2.8 2.8l10.4 10.4" />
+    </svg>
+  );
+}
+
 export function PencilIcon() {
   return (
     <svg

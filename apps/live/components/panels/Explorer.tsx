@@ -126,6 +126,7 @@ function ExplorerImpl({
     diagramsByTeam,
     foldersByParent,
     diagramsByFolder,
+    offlineDiagrams,
   } = useExplorerViewModel({
     diagrams,
     folders,
@@ -300,6 +301,7 @@ function ExplorerImpl({
           recents={recents}
           foldersByParent={foldersByParent}
           diagramsByFolder={diagramsByFolder}
+          offlineDiagrams={offlineDiagrams}
           foldersByTeam={foldersByTeam}
           diagramsByTeam={diagramsByTeam}
           expandedFolders={expandedFolders}

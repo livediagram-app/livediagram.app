@@ -10,10 +10,18 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { EmptyState } from '@livediagram/ui';
 import { helpArticleHref } from '@/lib/help-articles';
-import { ClockIcon, DiagramIcon, FolderIcon, PlusIcon, ShareIcon, SparkleIcon } from './icons';
+import {
+  ClockIcon,
+  DiagramIcon,
+  FolderIcon,
+  OfflineFolderIcon,
+  PlusIcon,
+  ShareIcon,
+  SparkleIcon,
+} from './icons';
 import type { SelectedNode } from './views';
 
-type EmptyKind = 'recent' | 'shared' | 'unsorted' | 'generated' | 'folder' | 'default';
+type EmptyKind = 'recent' | 'shared' | 'unsorted' | 'generated' | 'offline' | 'folder' | 'default';
 
 const CONTENT: Record<
   EmptyKind,
@@ -42,6 +50,13 @@ const CONTENT: Record<
       'Connect an AI tool and the diagrams it creates for you will appear here automatically.',
     cta: 'Set up an AI agent',
   },
+  offline: {
+    icon: <OfflineFolderIcon />,
+    title: 'No offline diagrams',
+    description:
+      'Turn on "Save Offline, This Browser Only" in the New Diagram wizard and browser-only diagrams collect here.',
+    cta: 'New diagram',
+  },
   folder: {
     icon: <FolderIcon open />,
     title: 'This folder is empty',
@@ -61,6 +76,7 @@ function kindFor(selected: SelectedNode): EmptyKind {
   if (selected.kind === 'shared') return 'shared';
   if (selected.kind === 'unsorted') return 'unsorted';
   if (selected.kind === 'generated') return 'generated';
+  if (selected.kind === 'offline') return 'offline';
   if (selected.kind === 'folder') return 'folder';
   return 'default';
 }

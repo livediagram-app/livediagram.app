@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { ExplorerProps } from './Explorer.types';
 
 type ExplorerViewModelDeps = Pick<
@@ -118,6 +119,9 @@ export function useExplorerViewModel({
   const diagramsByFolder = useMemo(() => {
     const map = new Map<string | null, DiagramListItem[]>();
     for (const d of diagrams) {
+      // Offline diagrams (spec/76) stay out of the root Unsorted bucket:
+      // they render under the panel's synthetic Offline node instead.
+      if (d.folderId === null && d.ownerId === OFFLINE_OWNER_ID) continue;
       const bucket = map.get(d.folderId) ?? [];
       bucket.push(d);
       map.set(d.folderId, bucket);
@@ -125,6 +129,15 @@ export function useExplorerViewModel({
     for (const bucket of map.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
     return map;
   }, [diagrams]);
+
+  // Offline diagrams (spec/76): everything saved only in this browser,
+  // regardless of any folder placement in the local record, for the panel's
+  // always-shown synthetic Offline node (mirrors the /explorer route).
+  const offlineDiagrams = useMemo(
+    () =>
+      diagrams.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),
+    [diagrams],
+  );
 
   return {
     current,
@@ -135,5 +148,6 @@ export function useExplorerViewModel({
     diagramsByTeam,
     foldersByParent,
     diagramsByFolder,
+    offlineDiagrams,
   };
 }

@@ -18,6 +18,7 @@ import {
   ShareIcon,
   SparkleIcon,
   TeamIcon,
+  OfflineFolderIcon,
 } from './icons';
 import {
   SearchSidebarIcon,
@@ -52,6 +53,7 @@ export function ExplorerSidebar() {
     folderActions,
     unsortedDiagrams,
     generatedDiagrams,
+    offlineDiagrams,
     shared,
     teams,
     teamFolders,
@@ -172,6 +174,17 @@ export function ExplorerSidebar() {
         onClick={() => go({ kind: 'generated' })}
         depth={0}
         badge={generatedDiagrams.length || undefined}
+      />
+      {/* Offline is a third synthetic folder (spec/76): diagrams saved only
+          in this browser. Always shown so the local-only bucket stays
+          discoverable; badge hides at zero. */}
+      <SidebarRow
+        icon={<OfflineFolderIcon />}
+        label="Offline"
+        selected={selected.kind === 'offline'}
+        onClick={() => go({ kind: 'offline' })}
+        depth={0}
+        badge={offlineDiagrams.length || undefined}
       />
       {rootFolders.map((f) => (
         <SidebarFolderSubtree

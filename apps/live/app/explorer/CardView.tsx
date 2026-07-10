@@ -13,7 +13,7 @@ import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { FolderIcon, SparkleIcon } from './icons';
+import { FolderIcon, OfflineFolderIcon, SparkleIcon } from './icons';
 import { DiagramActionsMenu, hrefForDiagram, VisibilityBadge } from './diagram-row-shared';
 import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
 import type { Folder } from '@/lib/api-client';
@@ -34,6 +34,9 @@ export function CardView({
   showGeneratedRow = false,
   generatedCount = 0,
   onOpenGenerated,
+  showOfflineRow = false,
+  offlineCount = 0,
+  onOpenOffline,
   onOpenFolder,
   onCommitRenameFolder,
   onCancelRenameFolder,
@@ -61,6 +64,10 @@ export function CardView({
   showGeneratedRow?: boolean;
   generatedCount?: number;
   onOpenGenerated?: () => void;
+  // The Offline synthetic folder card (spec/76), beside Generated on My Work.
+  showOfflineRow?: boolean;
+  offlineCount?: number;
+  onOpenOffline?: () => void;
   onOpenFolder: (id: string) => void;
   onCommitRenameFolder: (id: string, name: string) => void;
   onCancelRenameFolder: () => void;
@@ -99,6 +106,14 @@ export function CardView({
           label="Generated"
           count={generatedCount}
           onOpen={onOpenGenerated}
+        />
+      ) : null}
+      {showOfflineRow && onOpenOffline ? (
+        <SyntheticFolderCard
+          icon={<OfflineFolderIcon />}
+          label="Offline"
+          count={offlineCount}
+          onOpen={onOpenOffline}
         />
       ) : null}
       {folders.map((f) => (

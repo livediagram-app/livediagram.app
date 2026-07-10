@@ -5,6 +5,7 @@ import type { DiagramListItem, Folder } from '@/lib/api-client';
 import {
   DiagramRow,
   FolderNode,
+  OfflineNode,
   SharedRow,
   UnsortedNode,
 } from '@/components/panels/explorer-views';
@@ -30,6 +31,7 @@ export function ExplorerSections({
   recents,
   foldersByParent,
   diagramsByFolder,
+  offlineDiagrams,
   foldersByTeam,
   diagramsByTeam,
   expandedFolders,
@@ -56,6 +58,7 @@ export function ExplorerSections({
   recents: ExplorerViewModel['recents'];
   foldersByParent: ExplorerViewModel['foldersByParent'];
   diagramsByFolder: ExplorerViewModel['diagramsByFolder'];
+  offlineDiagrams: ExplorerViewModel['offlineDiagrams'];
   foldersByTeam: ExplorerViewModel['foldersByTeam'];
   diagramsByTeam: ExplorerViewModel['diagramsByTeam'];
   expandedFolders: Record<string, boolean>;
@@ -238,6 +241,22 @@ export function ExplorerSections({
               onMoveDiagramToFolder={onMoveDiagramToFolder}
             />
           ) : null}
+          {/* Offline (spec/76): always rendered, even empty, so the
+              browser-only bucket stays discoverable. */}
+          <OfflineNode
+            ownerId={ownerId}
+            expanded={expandedFolders}
+            onToggleExpanded={onToggleFolder}
+            diagrams={offlineDiagrams}
+            currentDiagramId={currentDiagramId}
+            onOpenDiagram={onOpenDiagram}
+            onDeleteDiagram={onDeleteDiagram}
+            exitingDiagramIds={exitingDiagramIds}
+            onDuplicateDiagram={onDuplicateDiagram}
+            onMoveDiagramRequest={
+              onMoveDiagramRequest ? (id) => onMoveDiagramRequest(id) : undefined
+            }
+          />
         </ul>
       ) : activeTab === 'teams' ? (
         <ul className="flex flex-col gap-0.5">
