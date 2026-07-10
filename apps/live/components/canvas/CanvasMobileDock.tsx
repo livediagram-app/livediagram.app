@@ -1,5 +1,5 @@
 import type { ReactNode, RefObject } from 'react';
-import { LayersStackIcon } from '@/components/panels/LayersPanel';
+import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 
 // Top-right mobile dock (spec/07 "Mobile chrome"): a compact button row

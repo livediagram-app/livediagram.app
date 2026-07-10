@@ -2,7 +2,7 @@ import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
 import { ActivityIcon, RedoIcon, UndoIcon } from '@/components/panels/ActivityPanel';
-import { LayersStackIcon } from '@/components/panels/LayersPanel';
+import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
