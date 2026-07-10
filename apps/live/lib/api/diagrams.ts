@@ -119,7 +119,12 @@ async function _apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
   try {
     const res = await fetch(`${API_BASE}/diagrams`, { headers: await apiHeaders(ownerId) });
     const { diagrams } = await expectOk<ListResponse>(res, 'list');
-    return [...offline, ...diagrams];
+    // Dedupe by id: legacy data (pre ghost-row fix) can hold BOTH an offline
+    // record and a same-id server row. The offline copy wins — it is what the
+    // dispatch loads for that id — and dropping the twin keeps React keys
+    // unique in every list.
+    const offlineIds = new Set(offline.map((o) => o.id));
+    return [...offline, ...diagrams.filter((d) => !offlineIds.has(d.id))];
   } catch (e) {
     if (offline.length > 0) return offline;
     throw e;

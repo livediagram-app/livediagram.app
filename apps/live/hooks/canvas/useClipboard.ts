@@ -43,6 +43,9 @@ type ImageDescriptor = {
 
 type ClipboardDeps = {
   isReadOnly: boolean;
+  // Editable embeds (spec/33) still don't paste-upload images — see
+  // pasteImageFile.
+  embedMode: boolean;
   selectedId: string | null;
   multiSelectedIds: Set<string>;
   editingId: string | null;
@@ -64,6 +67,7 @@ type ClipboardDeps = {
 export function useClipboard(deps: ClipboardDeps) {
   const {
     isReadOnly,
+    embedMode,
     selectedId,
     multiSelectedIds,
     editingId,
@@ -144,6 +148,9 @@ export function useClipboard(deps: ClipboardDeps) {
   // suffix so the gallery has something to render in the title slot.
   const pasteImageFile = async (file: File) => {
     if (!addImageFromGallery) return;
+    // Embeds never upload (spec/33): the upload endpoint authorises by owner
+    // identity, which inside a partitioned iframe is a throwaway guest.
+    if (embedMode) return;
     // Browsers hand inline screenshots over with file.name === ""
     // or "image.png"; synthesise a clearer name so the gallery row
     // doesn't read as "image.png" for everything pasted.

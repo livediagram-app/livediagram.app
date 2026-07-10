@@ -1392,6 +1392,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useEditorImages({
     editsBlocked,
     isReadOnly,
+    embedMode,
     getViewportCenter,
     commit,
     setSelectedId,
@@ -1817,6 +1818,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // useClipboard.
   const { copySelection } = useClipboard({
     isReadOnly,
+    embedMode,
     selectedId,
     multiSelectedIds,
     editingId,

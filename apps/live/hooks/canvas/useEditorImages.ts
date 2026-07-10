@@ -47,6 +47,12 @@ type EditorImagesDeps = {
   // Whether the current viewer is a view-only visitor. Gates the
   // recent-images fetch + the onOpenPicker handle on imageContext.
   isReadOnly: boolean;
+  // Read-only embed chrome is gone (spec/33: edit-role embeds are editable),
+  // but IMAGE UPLOADS stay off in embeds: the upload endpoint authorises by
+  // owner identity, and inside a partitioned third-party iframe that is a
+  // throwaway per-partition guest — uploads would land in an un-owned
+  // gallery nobody can manage. Everything else in the embed stays editable.
+  embedMode: boolean;
   // Viewport centre in canvas coordinates — where freshly placed
   // images land.
   getViewportCenter: () => { x: number; y: number };
@@ -67,7 +73,7 @@ type EditorImagesDeps = {
 };
 
 export function useEditorImages(deps: EditorImagesDeps) {
-  const { editsBlocked, isReadOnly, getViewportCenter, commit, setSelectedId } = deps;
+  const { editsBlocked, isReadOnly, embedMode, getViewportCenter, commit, setSelectedId } = deps;
   const { diagramId, ownerId, sessionShareCode } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
@@ -87,18 +93,18 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // role visitors skip the fetch (the accordion is hidden for them
   // anyway via the !isReadOnly gate at the call site).
   useEffect(() => {
-    if (!diagramId || isReadOnly) return;
+    if (!diagramId || isReadOnly || embedMode) return;
     refreshRecentImages(ownerId);
     // ownerId is stable for the session (set on mount).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diagramId, isReadOnly]);
+  }, [diagramId, isReadOnly, embedMode]);
 
   // Drop an empty image placeholder at the viewport centre. The
   // picker only opens via double-click on the placeholder (or
   // "Change image" in the context menu), so the user can position
   // and resize the empty box without the modal popping up first.
   const addImage = () => {
-    if (editsBlocked) return;
+    if (editsBlocked || embedMode) return;
     const centre = getViewportCenter();
     const placeholder = createImage(centre.x - 100, centre.y - 75);
     commit((els) => [...els, placeholder]);
@@ -115,10 +121,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // element on the active tab).
   const openImagePickerFor = useCallback(
     (elementId: string) => {
-      if (editsBlocked) return;
+      if (editsBlocked || embedMode) return;
       setImagePickerOpenFor({ forElementId: elementId });
     },
-    [editsBlocked],
+    [editsBlocked, embedMode],
   );
 
   const closeImagePicker = useCallback(() => setImagePickerOpenFor(null), []);
@@ -135,10 +141,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
             ownerId,
             diagramId,
             shareCode: sessionShareCode,
-            onOpenPicker: isReadOnly ? undefined : openImagePickerFor,
+            onOpenPicker: isReadOnly || embedMode ? undefined : openImagePickerFor,
           }
         : undefined,
-    [diagramId, ownerId, sessionShareCode, isReadOnly, openImagePickerFor],
+    [diagramId, ownerId, sessionShareCode, isReadOnly, embedMode, openImagePickerFor],
   );
 
   // Apply the picker's selection: set imageId + natural dimensions on
@@ -190,7 +196,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // side so it lands at a sensible canvas footprint regardless of
   // the original resolution.
   const addImageFromGallery = (image: ImageDescriptor) => {
-    if (editsBlocked) return;
+    // embedMode also blocks the clipboard's paste-image upload, which
+    // funnels through this handler after uploading.
+    if (editsBlocked || embedMode) return;
     const centre = getViewportCenter();
     const max = 240;
     const ratio = image.width / image.height;
