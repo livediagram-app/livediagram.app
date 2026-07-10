@@ -4,6 +4,10 @@ import { useState, type ReactNode } from 'react';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { BackBar } from '@/components/palette/ThemeCategoryBrowser';
 
+// A folder as the placement browser sees it: parentId drives the drill-down
+// (root folders show at the space level; subfolders only inside their parent).
+type PickerFolder = { id: string; name: string; parentId: string | null };
+
 // The New Diagram wizard's third step (spec/76): name the diagram, choose where
 // it lives, and whether it's saved offline. Placement is a two-level browse
 // (the theme-picker pattern): pick a SPACE first (My Work, or one of your
@@ -29,11 +33,11 @@ export function NewDiagramSettingsStep({
   // 'unsorted' | `folder:<id>` | `team:<teamId>` | `team:<teamId>:folder:<id>`
   placement: string;
   onPlacement: (v: string) => void;
-  folders: { id: string; name: string }[];
+  folders: PickerFolder[];
   teams: { id: string; name: string }[];
-  // Per-team folder lists (flattened), keyed by team id. Empty / missing while
-  // the team libraries are still loading.
-  teamFolders?: Record<string, { id: string; name: string }[]>;
+  // Per-team folder lists, keyed by team id. Empty / missing while the team
+  // libraries are still loading.
+  teamFolders?: Record<string, PickerFolder[]>;
   offline: boolean;
   onOffline: (v: boolean) => void;
 }) {
@@ -137,9 +141,13 @@ export function NewDiagramSettingsStep({
   );
 }
 
-// The two-level space -> folder browser. `space` is view state: null shows
-// the space overview (only reachable when teams exist), 'my-work' the
-// personal folders, a team id that team's folders.
+// The space -> folder browser. `space` is view state: null shows the space
+// overview (only reachable when teams exist), 'my-work' the personal tree, a
+// team id that team's tree. Within a space, `stack` is the folder drill-down:
+// each level lists a "save at this level" card (Unsorted / Team Library /
+// the open folder itself) plus the folders directly inside it — subfolders
+// only appear inside their parent, mirroring the Explorer tree. Clicking a
+// folder WITH subfolders drills in; a leaf folder just selects.
 function PlacementBrowser({
   placement,
   onPlacement,
@@ -149,15 +157,22 @@ function PlacementBrowser({
 }: {
   placement: string;
   onPlacement: (v: string) => void;
-  folders: { id: string; name: string }[];
+  folders: PickerFolder[];
   teams: { id: string; name: string }[];
-  teamFolders: Record<string, { id: string; name: string }[]>;
+  teamFolders: Record<string, PickerFolder[]>;
 }) {
   const hasTeams = teams.length > 0;
   // With teams, open on the overview so the space choice comes first; the
-  // team-less path goes straight to My Work and never shows a BackBar.
+  // team-less path goes straight to My Work and never shows a space BackBar.
   const [space, setSpace] = useState<string | null>(hasTeams ? null : 'my-work');
+  // Folder drill-down inside the current space (ids from root inward).
+  const [stack, setStack] = useState<PickerFolder[]>([]);
   const placementSpace = placement.startsWith('team:') ? placement.split(':')[1] : 'my-work';
+
+  const enterSpace = (next: string | null) => {
+    setSpace(next);
+    setStack([]);
+  };
 
   if (hasTeams && space === null) {
     return (
@@ -167,7 +182,7 @@ function PlacementBrowser({
           sub="Your folders"
           icon={<MyWorkIcon />}
           selected={placementSpace === 'my-work'}
-          onSelect={() => setSpace('my-work')}
+          onSelect={() => enterSpace('my-work')}
         />
         {teams.map((t) => (
           <PlacementCard
@@ -176,67 +191,86 @@ function PlacementBrowser({
             sub="Team"
             icon={<TeamPlaceIcon />}
             selected={placementSpace === t.id}
-            onSelect={() => setSpace(t.id)}
+            onSelect={() => enterSpace(t.id)}
           />
         ))}
       </div>
     );
   }
 
-  if (space === 'my-work' || !hasTeams) {
-    return (
-      <div className="flex flex-col gap-2">
-        {hasTeams ? (
-          <BackBar label="All spaces" current="My Work" onClick={() => setSpace(null)} />
-        ) : null}
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+  const isMyWork = space === 'my-work' || !hasTeams;
+  const teamId = isMyWork ? null : (space as string);
+  const team = teamId ? teams.find((t) => t.id === teamId) : undefined;
+  const spaceFolders = isMyWork ? folders : (teamFolders[teamId!] ?? []);
+  const spaceName = isMyWork ? 'My Work' : (team?.name ?? 'Team');
+
+  // Placement value for a folder in this space.
+  const valueFor = (folderId: string) =>
+    isMyWork ? `folder:${folderId}` : `team:${teamId}:folder:${folderId}`;
+  const rootValue = isMyWork ? 'unsorted' : `team:${teamId}`;
+
+  const openFolder = stack[stack.length - 1];
+  const children = spaceFolders.filter((f) => f.parentId === (openFolder?.id ?? null));
+  const hasKids = (id: string) => spaceFolders.some((f) => f.parentId === id);
+
+  // Back: pop one folder level; at the space root, back to the overview
+  // (only shown when the overview exists / we're inside a folder).
+  const showBack = hasTeams || stack.length > 0;
+  const onBack = () => (stack.length > 0 ? setStack(stack.slice(0, -1)) : enterSpace(null));
+  const backLabel =
+    stack.length > 1
+      ? stack[stack.length - 2]!.name
+      : stack.length === 1
+        ? spaceName
+        : 'All spaces';
+
+  return (
+    <div className="flex flex-col gap-2">
+      {showBack ? (
+        <BackBar label={backLabel} current={openFolder?.name ?? spaceName} onClick={onBack} />
+      ) : null}
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        {openFolder ? (
+          // Save directly in the open folder.
           <PlacementCard
-            label="My Work"
-            sub="Unsorted"
-            icon={<MyWorkIcon />}
-            selected={placement === 'unsorted'}
-            onSelect={() => onPlacement('unsorted')}
+            label={openFolder.name}
+            sub="This folder"
+            icon={<FolderPlaceIcon />}
+            selected={placement === valueFor(openFolder.id)}
+            onSelect={() => onPlacement(valueFor(openFolder.id))}
           />
-          {folders.map((f) => (
+        ) : (
+          <PlacementCard
+            label={isMyWork ? 'My Work' : 'Team Library'}
+            sub={isMyWork ? 'Unsorted' : (team?.name ?? 'Team')}
+            icon={isMyWork ? <MyWorkIcon /> : <TeamPlaceIcon />}
+            selected={placement === rootValue}
+            onSelect={() => onPlacement(rootValue)}
+          />
+        )}
+        {children.map((f) =>
+          hasKids(f.id) ? (
+            // A folder with subfolders drills in (its "save here" card is the
+            // first tile of the next level).
+            <PlacementCard
+              key={f.id}
+              label={f.name}
+              sub="Open folder"
+              icon={<FolderPlaceIcon />}
+              selected={placement === valueFor(f.id)}
+              onSelect={() => setStack([...stack, f])}
+            />
+          ) : (
             <PlacementCard
               key={f.id}
               label={f.name}
               sub="Folder"
               icon={<FolderPlaceIcon />}
-              selected={placement === `folder:${f.id}`}
-              onSelect={() => onPlacement(`folder:${f.id}`)}
+              selected={placement === valueFor(f.id)}
+              onSelect={() => onPlacement(valueFor(f.id))}
             />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // space is a team id on this branch (null and 'my-work' returned above).
-  const teamId = space as string;
-  const team = teams.find((t) => t.id === teamId);
-  const inTeamFolders = teamFolders[teamId] ?? [];
-  return (
-    <div className="flex flex-col gap-2">
-      <BackBar label="All spaces" current={team?.name ?? 'Team'} onClick={() => setSpace(null)} />
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-        <PlacementCard
-          label="Team Library"
-          sub={team?.name ?? 'Team'}
-          icon={<TeamPlaceIcon />}
-          selected={placement === `team:${teamId}`}
-          onSelect={() => onPlacement(`team:${teamId}`)}
-        />
-        {inTeamFolders.map((f) => (
-          <PlacementCard
-            key={f.id}
-            label={f.name}
-            sub="Folder"
-            icon={<FolderPlaceIcon />}
-            selected={placement === `team:${teamId}:folder:${f.id}`}
-            onSelect={() => onPlacement(`team:${teamId}:folder:${f.id}`)}
-          />
-        ))}
+          ),
+        )}
       </div>
     </div>
   );

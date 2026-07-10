@@ -63,13 +63,12 @@ export default function NewDiagramPage() {
   // Personal folders + teams offered by the Settings step's placement picker
   // (spec/76). Folders work for guests; teams are Clerk-only, so we only fetch
   // them once signed in. Empty until the fetch settles / for signed-out users.
-  const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
+  type PickerFolder = { id: string; name: string; parentId: string | null };
+  const [folders, setFolders] = useState<PickerFolder[]>([]);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
   // Per-team folder lists for the placement browser's second level, fetched
   // alongside the team list (teams are few, so eager Promise.all is fine).
-  const [teamFolders, setTeamFolders] = useState<Record<string, { id: string; name: string }[]>>(
-    {},
-  );
+  const [teamFolders, setTeamFolders] = useState<Record<string, PickerFolder[]>>({});
 
   // Clerk wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
@@ -128,7 +127,11 @@ export default function NewDiagramPage() {
     void (async () => {
       const list = await apiListFolders(self.id).catch(() => []);
       if (!cancelled) {
-        setFolders(list.filter((f) => f.teamId == null).map((f) => ({ id: f.id, name: f.name })));
+        setFolders(
+          list
+            .filter((f) => f.teamId == null)
+            .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
+        );
       }
     })();
     if (clerkUserId) {
@@ -140,7 +143,13 @@ export default function NewDiagramPage() {
         const libs = await Promise.all(
           list.map((t) =>
             apiGetTeamLibrary(self.id, t.id)
-              .then((lib) => [t.id, lib.folders.map((f) => ({ id: f.id, name: f.name }))] as const)
+              .then(
+                (lib) =>
+                  [
+                    t.id,
+                    lib.folders.map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
+                  ] as const,
+              )
               .catch(() => [t.id, []] as const),
           ),
         );

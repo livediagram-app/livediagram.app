@@ -60,10 +60,10 @@ type TemplatePickerProps = {
   onPick: (kind: TemplateKind, name: string, themeId: string, settings: NewDiagramSettings) => void;
   // Personal folders + teams for the Settings step's placement picker (welcome
   // mode). Empty when none / still loading.
-  folders?: { id: string; name: string }[];
+  folders?: { id: string; name: string; parentId: string | null }[];
   teams?: { id: string; name: string }[];
   // Per-team folder lists for the Settings step's placement browser.
-  teamFolders?: Record<string, { id: string; name: string }[]>;
+  teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
