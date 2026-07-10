@@ -160,8 +160,8 @@ export function DiagramRow({
   const hasMenu = Boolean((onRename && active) || onDelete || onDuplicate || onMoveRequest);
   const relative = relativeSince(item.savedAt);
   // Offline Mode (spec/76): an offline diagram's row carries ownerId
-  // 'offline'. Drives the fixed offline thumbnail, the "Offline" chip, and
-  // hiding the Share action (there's nothing on a server to share).
+  // 'offline'. Drives the fixed offline thumbnail, swapping the Share menu
+  // section for the conversion tiles, and the offline-only menu actions.
   const offline = item.ownerId === OFFLINE_OWNER_ID;
 
   const pillClasses = active
@@ -348,7 +348,9 @@ export function DiagramRow({
               </div>
             </MenuAccordionSection>
           ) : null}
-          {/* Offline diagrams (spec/76) can't be shared — hide the section. */}
+          {/* Offline diagrams (spec/76) have nothing on a server to share, so
+              the row menu hides the Share section; the editor's Share button
+              offers the sync-to-account gate instead. */}
           {offline ? null : (
             <MenuAccordionSection
               title="Share"

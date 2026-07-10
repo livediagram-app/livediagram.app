@@ -714,7 +714,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/privacy-and-security/offline-mode/',
         title: 'Work fully offline',
         description:
-          'Flip on Offline Mode when you create a diagram and it is saved only in your browser — no account, no server, no sync. Yours alone. Move it to the cloud (or pull one back down) whenever you like.',
+          'Flip on Offline Mode when you create a diagram and it is saved only in your browser: no account, no server, no sync. Yours alone. Move it to the cloud (or pull one back down) whenever you like.',
       },
     ],
   },
