@@ -3,7 +3,12 @@
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useEffect, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { apiDeleteImage, apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
+import {
+  apiDeleteImage,
+  apiFetchImageDataUrl,
+  apiListImages,
+  type ImageSummary,
+} from '@/lib/api-client';
 import { addImageFileForDiagram, ImageUploadError } from '@/lib/upload-image';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useConfirm } from '@/hooks/ui/useConfirm';
