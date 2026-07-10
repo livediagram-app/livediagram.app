@@ -22,6 +22,11 @@ import {
 // Clicking the plus again (now an ×) or anywhere outside closes it. Open
 // state is owned by the parent (Canvas) so only one ring opens at a time
 // and the selection toolbar can hide while it's open.
+//
+// DRAGGING the plus skips the menu entirely and starts the Arrow action
+// straight away (the most common quick-connect), so "select, grab the +,
+// pull to the target" is one gesture. A small movement threshold keeps
+// plain clicks toggling the menu as before.
 
 type QuickConnectRingProps = {
   // Edge midpoint in canvas coords (same anchor the resize handles use).
@@ -199,6 +204,60 @@ export function QuickConnectRing({
     }, 160);
   };
 
+  // Drag-to-arrow from the plus itself: pointer-down arms a watcher; once
+  // the pointer travels past a small threshold the gesture hands off to the
+  // Arrow starter (same handler as the menu's Arrow option) and the
+  // follow-up click is swallowed. Under the threshold it stays a plain
+  // click, which toggles the menu as before.
+  const DRAG_THRESHOLD_PX = 4;
+  const pressRef = useRef<{ x: number; y: number; id: number; type: string } | null>(null);
+  const draggedRef = useRef(false);
+  const detachRef = useRef<(() => void) | null>(null);
+  useEffect(
+    () => () => {
+      detachRef.current?.();
+    },
+    [],
+  );
+  const handlePlusPointerDown = (e: ReactPointerEvent) => {
+    e.stopPropagation();
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    pressRef.current = { x: e.clientX, y: e.clientY, id: e.pointerId, type: e.pointerType };
+    draggedRef.current = false;
+    const onMove = (ev: PointerEvent) => {
+      const press = pressRef.current;
+      if (!press || ev.pointerId !== press.id) return;
+      if (Math.hypot(ev.clientX - press.x, ev.clientY - press.y) < DRAG_THRESHOLD_PX) return;
+      detach();
+      draggedRef.current = true;
+      onClose();
+      // The drag machinery only reads clientX/clientY (+ pointerType for the
+      // touch branch), so a minimal synthetic event is enough to hand off
+      // mid-gesture.
+      onArrowPointerDown({
+        clientX: ev.clientX,
+        clientY: ev.clientY,
+        pointerId: ev.pointerId,
+        pointerType: press.type,
+      } as ReactPointerEvent);
+    };
+    const onUp = (ev: PointerEvent) => {
+      if (pressRef.current && ev.pointerId !== pressRef.current.id) return;
+      detach();
+    };
+    const detach = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      pressRef.current = null;
+      detachRef.current = null;
+    };
+    detachRef.current = detach;
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  };
+
   const out = OUTWARD[placement];
   // Plus centre in canvas coords: out beyond the edge by GAP + half the
   // control, divided by zoom so the screen gap is constant at any zoom.
@@ -228,8 +287,16 @@ export function QuickConnectRing({
           height: SIZE,
           transform: 'translate(-50%, -50%)',
         }}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={onToggle}
+        onPointerDown={handlePlusPointerDown}
+        onClick={() => {
+          // A drag that became an arrow start still fires a click on
+          // release; swallow it so the menu doesn't pop mid-draw.
+          if (draggedRef.current) {
+            draggedRef.current = false;
+            return;
+          }
+          onToggle();
+        }}
         onMouseEnter={handleHoverEnter}
         onMouseLeave={handleHoverLeave}
       >
