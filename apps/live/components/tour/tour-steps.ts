@@ -96,7 +96,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'explorer',
     title: 'The Explorer',
-    body: 'Your diagrams and folders, without leaving the editor. Open, create, and organise from here.',
+    body: 'Find your diagrams and folders, without leaving the editor. Open, create, and organise from here.',
     target: 'explorer',
     prepare: async (api) => {
       if (api.compact) {
