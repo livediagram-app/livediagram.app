@@ -6,7 +6,6 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useToast } from '@/hooks/ui/useToast';
-import { track } from '@/lib/telemetry';
 
 // The Share dialog's offline gate (spec/76). An offline diagram is stored only
 // in this browser, so there are no links to mint until it's synced to the
@@ -26,7 +25,6 @@ export function ShareOfflineGate({
   const sync = async () => {
     setBusy(true);
     try {
-      track('Diagram', 'Created', 'Cloud');
       await onSyncToCloud();
       // onSyncToCloud reloads the page on success, so we normally never fall
       // through. If it resolves without navigating, drop the spinner.
