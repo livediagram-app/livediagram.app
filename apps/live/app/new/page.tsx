@@ -10,6 +10,7 @@ import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import {
   apiCreateDiagram,
+  apiGetTeamLibrary,
   apiListFolders,
   apiListTeams,
   apiLoadSelf,
@@ -63,6 +64,11 @@ export default function NewDiagramPage() {
   // them once signed in. Empty until the fetch settles / for signed-out users.
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
+  // Per-team folder lists for the placement browser's second level, fetched
+  // alongside the team list (teams are few, so eager Promise.all is fine).
+  const [teamFolders, setTeamFolders] = useState<Record<string, { id: string; name: string }[]>>(
+    {},
+  );
 
   // Clerk wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
@@ -127,7 +133,17 @@ export default function NewDiagramPage() {
     if (clerkUserId) {
       void (async () => {
         const list = await apiListTeams(self.id).catch(() => []);
-        if (!cancelled) setTeams(list.map((t) => ({ id: t.id, name: t.name })));
+        if (cancelled) return;
+        setTeams(list.map((t) => ({ id: t.id, name: t.name })));
+        // Second level of the placement browser: each team's folders.
+        const libs = await Promise.all(
+          list.map((t) =>
+            apiGetTeamLibrary(self.id, t.id)
+              .then((lib) => [t.id, lib.folders.map((f) => ({ id: f.id, name: f.name }))] as const)
+              .catch(() => [t.id, []] as const),
+          ),
+        );
+        if (!cancelled) setTeamFolders(Object.fromEntries(libs));
       })();
     }
     return () => {
@@ -293,6 +309,7 @@ export default function NewDiagramPage() {
             busy={submitting}
             folders={folders}
             teams={teams}
+            teamFolders={teamFolders}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
             onPick={(kind, name, themeId, settings) =>
               void commitNewDiagram(kind, name, themeId, settings)

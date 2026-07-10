@@ -1,11 +1,15 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { BackBar } from '@/components/palette/ThemeCategoryBrowser';
 
 // The New Diagram wizard's third step (spec/76): name the diagram, choose where
-// it lives (a personal folder or a team library), and whether it's saved
-// offline. Presentational: all state lives in TemplatePicker.
+// it lives, and whether it's saved offline. Placement is a two-level browse
+// (the theme-picker pattern): pick a SPACE first (My Work, or one of your
+// teams), then a folder inside it. With no teams the space level disappears
+// and the picker goes straight to the My Work folders. Only the committed
+// `placement` lives in TemplatePicker; the drill-down is view state here.
 
 export function NewDiagramSettingsStep({
   diagramName,
@@ -15,17 +19,21 @@ export function NewDiagramSettingsStep({
   onPlacement,
   folders,
   teams,
+  teamFolders = {},
   offline,
   onOffline,
 }: {
   diagramName: string;
   onDiagramName: (v: string) => void;
   placeholder: string;
-  // 'unsorted' | `folder:<id>` | `team:<id>`
+  // 'unsorted' | `folder:<id>` | `team:<teamId>` | `team:<teamId>:folder:<id>`
   placement: string;
   onPlacement: (v: string) => void;
   folders: { id: string; name: string }[];
   teams: { id: string; name: string }[];
+  // Per-team folder lists (flattened), keyed by team id. Empty / missing while
+  // the team libraries are still loading.
+  teamFolders?: Record<string, { id: string; name: string }[]>;
   offline: boolean;
   onOffline: (v: boolean) => void;
 }) {
@@ -96,11 +104,11 @@ export function NewDiagramSettingsStep({
         </div>
       ) : null}
 
-      {/* Placement: My Work, a personal folder, or a team library, laid out as
-          clickable cards (the same icon-over-label tile language as the
-          context-menu grids) instead of a dropdown so every destination is
-          visible at a glance. Collapses to a single static "My Work (Offline)"
-          card while offline (an offline diagram has no server placement). */}
+      {/* Placement: a two-level browse. Space cards first (My Work + each
+          team, hidden entirely for team-less users), then the folders inside
+          the picked space, behind a BackBar (the theme-picker pattern).
+          Collapses to a single static "My Work (Offline)" card while offline
+          (an offline diagram has no server placement). */}
       <div className="flex flex-col gap-1.5" role="radiogroup" aria-label="Save in">
         <span className={fieldLabel}>Save in</span>
         {offline ? (
@@ -116,36 +124,119 @@ export function NewDiagramSettingsStep({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-            <PlacementCard
-              label="My Work"
-              sub="Unsorted"
-              icon={<MyWorkIcon />}
-              selected={placement === 'unsorted'}
-              onSelect={() => onPlacement('unsorted')}
-            />
-            {folders.map((f) => (
-              <PlacementCard
-                key={f.id}
-                label={f.name}
-                sub="Folder"
-                icon={<FolderPlaceIcon />}
-                selected={placement === `folder:${f.id}`}
-                onSelect={() => onPlacement(`folder:${f.id}`)}
-              />
-            ))}
-            {teams.map((t) => (
-              <PlacementCard
-                key={t.id}
-                label={t.name}
-                sub="Team"
-                icon={<TeamPlaceIcon />}
-                selected={placement === `team:${t.id}`}
-                onSelect={() => onPlacement(`team:${t.id}`)}
-              />
-            ))}
-          </div>
+          <PlacementBrowser
+            placement={placement}
+            onPlacement={onPlacement}
+            folders={folders}
+            teams={teams}
+            teamFolders={teamFolders}
+          />
         )}
+      </div>
+    </div>
+  );
+}
+
+// The two-level space -> folder browser. `space` is view state: null shows
+// the space overview (only reachable when teams exist), 'my-work' the
+// personal folders, a team id that team's folders.
+function PlacementBrowser({
+  placement,
+  onPlacement,
+  folders,
+  teams,
+  teamFolders,
+}: {
+  placement: string;
+  onPlacement: (v: string) => void;
+  folders: { id: string; name: string }[];
+  teams: { id: string; name: string }[];
+  teamFolders: Record<string, { id: string; name: string }[]>;
+}) {
+  const hasTeams = teams.length > 0;
+  // With teams, open on the overview so the space choice comes first; the
+  // team-less path goes straight to My Work and never shows a BackBar.
+  const [space, setSpace] = useState<string | null>(hasTeams ? null : 'my-work');
+  const placementSpace = placement.startsWith('team:') ? placement.split(':')[1] : 'my-work';
+
+  if (hasTeams && space === null) {
+    return (
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        <PlacementCard
+          label="My Work"
+          sub="Your folders"
+          icon={<MyWorkIcon />}
+          selected={placementSpace === 'my-work'}
+          onSelect={() => setSpace('my-work')}
+        />
+        {teams.map((t) => (
+          <PlacementCard
+            key={t.id}
+            label={t.name}
+            sub="Team"
+            icon={<TeamPlaceIcon />}
+            selected={placementSpace === t.id}
+            onSelect={() => setSpace(t.id)}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (space === 'my-work' || !hasTeams) {
+    return (
+      <div className="flex flex-col gap-2">
+        {hasTeams ? (
+          <BackBar label="All spaces" current="My Work" onClick={() => setSpace(null)} />
+        ) : null}
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+          <PlacementCard
+            label="My Work"
+            sub="Unsorted"
+            icon={<MyWorkIcon />}
+            selected={placement === 'unsorted'}
+            onSelect={() => onPlacement('unsorted')}
+          />
+          {folders.map((f) => (
+            <PlacementCard
+              key={f.id}
+              label={f.name}
+              sub="Folder"
+              icon={<FolderPlaceIcon />}
+              selected={placement === `folder:${f.id}`}
+              onSelect={() => onPlacement(`folder:${f.id}`)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // space is a team id on this branch (null and 'my-work' returned above).
+  const teamId = space as string;
+  const team = teams.find((t) => t.id === teamId);
+  const inTeamFolders = teamFolders[teamId] ?? [];
+  return (
+    <div className="flex flex-col gap-2">
+      <BackBar label="All spaces" current={team?.name ?? 'Team'} onClick={() => setSpace(null)} />
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        <PlacementCard
+          label="Team Library"
+          sub={team?.name ?? 'Team'}
+          icon={<TeamPlaceIcon />}
+          selected={placement === `team:${teamId}`}
+          onSelect={() => onPlacement(`team:${teamId}`)}
+        />
+        {inTeamFolders.map((f) => (
+          <PlacementCard
+            key={f.id}
+            label={f.name}
+            sub="Folder"
+            icon={<FolderPlaceIcon />}
+            selected={placement === `team:${teamId}:folder:${f.id}`}
+            onSelect={() => onPlacement(`team:${teamId}:folder:${f.id}`)}
+          />
+        ))}
       </div>
     </div>
   );

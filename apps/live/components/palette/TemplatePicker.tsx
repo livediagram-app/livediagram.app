@@ -62,6 +62,8 @@ type TemplatePickerProps = {
   // mode). Empty when none / still loading.
   folders?: { id: string; name: string }[];
   teams?: { id: string; name: string }[];
+  // Per-team folder lists for the Settings step's placement browser.
+  teamFolders?: Record<string, { id: string; name: string }[]>;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
@@ -99,6 +101,7 @@ export function TemplatePicker({
   onOpenExisting,
   folders = [],
   teams = [],
+  teamFolders = {},
 }: TemplatePickerProps) {
   // Mount-open overlay: silence the canvas shortcut/paste listeners
   // behind it (see lib/modal-guard). Harmless on /new, where no canvas
@@ -182,7 +185,18 @@ export function TemplatePicker({
       return { offline, diagramName: name, folderId: placement.slice(7), teamId: null };
     }
     if (placement.startsWith('team:')) {
-      return { offline, diagramName: name, folderId: null, teamId: placement.slice(5) };
+      // `team:<teamId>` (library root) or `team:<teamId>:folder:<folderId>`.
+      const rest = placement.slice(5);
+      const sep = rest.indexOf(':folder:');
+      if (sep >= 0) {
+        return {
+          offline,
+          diagramName: name,
+          folderId: rest.slice(sep + ':folder:'.length),
+          teamId: rest.slice(0, sep),
+        };
+      }
+      return { offline, diagramName: name, folderId: null, teamId: rest };
     }
     return { offline, diagramName: name, folderId: null, teamId: null };
   };
@@ -412,6 +426,7 @@ export function TemplatePicker({
                 onPlacement={setPlacement}
                 folders={folders}
                 teams={teams}
+                teamFolders={teamFolders}
                 offline={offline}
                 onOffline={setOffline}
               />
