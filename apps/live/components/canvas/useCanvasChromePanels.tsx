@@ -159,6 +159,7 @@ export function useCanvasChromePanels({
     teams,
     viewportZoom,
     zenMode,
+    onToggleZen,
   } = props;
   // Stable handler identities for the two React.memo'd panels (Explorer,
   // ActivityPanel) so they skip re-rendering on every drag frame even
@@ -377,6 +378,7 @@ export function useCanvasChromePanels({
         position={paletteWiring.position}
         canvasTool={canvasTool}
         onSetCanvasTool={onSetCanvasTool}
+        onToggleZen={onToggleZen}
         onMoveTo={onMovePalette}
         onReset={paletteWiring.onReset}
         dock={paletteWiring.dock}

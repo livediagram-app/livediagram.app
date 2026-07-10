@@ -376,6 +376,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
               onIsoReset={canvasTool === 'isometric' ? onIsoReset : undefined}
               onToggleZen={onToggleZen}
               zenActive={zenMode}
+              // View-only visitors have no palette (so no canvas-tool
+              // dropdown); the dock keeps the enter button for them.
+              zenEnterHere={readOnly}
             />
           </>
         )}

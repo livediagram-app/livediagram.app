@@ -17,6 +17,11 @@ export type CommandPaletteProps = {
   position: { x: number; y: number } | null;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
+  // Enter zen mode (spec/26), offered as a Zen entry in the canvas-tool
+  // dropdown under Isometric. An action, not a tool: firing it leaves the
+  // current tool selected. Omit to hide the entry; exit stays on the zoom
+  // dock (the only chrome left in zen).
+  onToggleZen?: () => void;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
   // Desktop panel-layout toggle (normal floating panels <-> minimal compact

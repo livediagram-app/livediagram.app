@@ -20,8 +20,8 @@ What stays:
 - the **canvas and its content** (elements, alignment guides, laser
   trails, remote cursors, selection — interaction is unaffected),
 - the **zoom controls** (bottom-right), so the user can still zoom / fit,
-- the **zen toggle on the zoom controls**, which flips to an exit-zen
-  control in zen mode so there's always a visible way out.
+- an **exit-zen button on the zoom controls**, shown only while zen is
+  active, so there's always a visible way out.
 
 Zen mode is purely a view state. It changes nothing about the diagram,
 never persists to the server, and is not synced to other participants —
@@ -30,13 +30,15 @@ view-only visitors (focusing is read-only).
 
 ## How it's toggled
 
-- **Enter + exit share one home — the zoom controls** (bottom-right),
-  which stay visible in zen mode. Outside zen the button shows a
-  fullscreen / expand icon ("Zen mode"); inside zen it shows a compress
-  icon ("Exit zen mode"). Keeping entry and exit in the same place means
-  the user looks to one spot for the mode toggle, and it keeps the
-  command-palette tool row (Select / Hand / Laser) to the three actual
-  canvas tools rather than overflowing a fourth button.
+- **Enter — the canvas-tool dropdown** in the Palette header, as a "Zen"
+  entry under Isometric. It's an action, not a persistent tool: picking
+  it hides the chrome and leaves the current tool selected. (Entering
+  originally lived as an always-visible button on the zoom controls;
+  it moved into the dropdown to keep the resting UI minimal.)
+- **Exit — the zoom controls** (bottom-right), the only chrome left in
+  zen: a compress icon ("Exit zen mode") shown only while zen is active.
+  Exception: view-only visitors have no palette, so their zoom dock keeps
+  the enter button too (zen stays available to everyone).
 - **Keyboard:** `Z` toggles it on and off; `Escape` exits when active.
   The binding obeys the per-device keyboard-shortcuts toggle and the
   usual text-input / label-edit bailouts (so typing a `z` into a label
@@ -53,8 +55,8 @@ and minimal-panel toggles.
 - State lives in `usePanelLayout` (`zenMode` / `setZenMode`) — it's pure
   UI chrome state with no diagram coupling, alongside the other panel
   visibility flags. `useEditorState` wraps it in `toggleZenMode` (adds
-  the telemetry) and exposes that to the keyboard hook, the palette enter
-  button, and the zoom-dock exit button.
+  the telemetry) and exposes that to the keyboard hook, the canvas-tool
+  dropdown's Zen entry, and the zoom-dock exit button.
 - The chrome is hidden by the same gates that already hide it during the
   welcome flow — each `welcomeOpen ? null` / `welcomeOpen || readOnly`
   guard in `CanvasChrome` also checks `zenMode`. The header + tab bar are

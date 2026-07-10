@@ -34,6 +34,7 @@ export function CommandPalette({
   position,
   canvasTool,
   onSetCanvasTool,
+  onToggleZen,
   onMoveTo,
   onReset,
   minimalPanels,
@@ -278,8 +279,17 @@ export function CommandPalette({
               value={canvasTool}
               variant="flush"
               autoHeight
-              onChange={(id) => onSetCanvasTool(id as CanvasTool)}
-              options={buildCanvasToolOptions({ canvasEmpty, isMobile })}
+              // 'zen' is an action entry, not a tool: fire the toggle and
+              // keep the current tool selected (see canvas-tool-options).
+              onChange={(id) => {
+                if (id === 'zen') onToggleZen?.();
+                else onSetCanvasTool(id as CanvasTool);
+              }}
+              options={buildCanvasToolOptions({
+                canvasEmpty,
+                isMobile,
+                includeZen: !!onToggleZen,
+              })}
             />
           }
           tabs={[

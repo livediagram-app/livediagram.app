@@ -14,17 +14,19 @@ type ZoomControlsProps = {
   // tool → no button.
   onIsoOrbit?: (clientX: number, clientY: number) => void;
   onIsoReset?: () => void;
-  // Zen / focus mode toggle (spec/26). When set, the zoom dock carries
-  // the zen button at the end: enter-zen outside zen, exit-zen inside it
-  // (the zoom dock is the only chrome left in zen, so entry + exit share
-  // one home). `zenActive` picks the icon / copy. Omitted → no button.
+  // Zen / focus mode (spec/26). The dock carries the EXIT button, shown
+  // while zen is active (it is the only chrome left in zen). Entering
+  // lives in the canvas-tool dropdown under Isometric; `zenEnterHere`
+  // restores the old enter button for sessions with no palette (view-only
+  // visitors), who'd otherwise have no visible way in.
   onToggleZen?: () => void;
   zenActive?: boolean;
+  zenEnterHere?: boolean;
 };
 
 // Floating zoom controls, bottom-right of the canvas. Four
 // actions: -10% / current % (click to reset) / +10% / Fit to
-// screen. It also carries the zen-mode toggle (enter / exit).
+// screen. In zen mode it also carries the exit-zen button.
 export function ZoomControls({
   zoom,
   onZoomIn,
@@ -35,6 +37,7 @@ export function ZoomControls({
   onIsoReset,
   onToggleZen,
   zenActive,
+  zenEnterHere,
 }: ZoomControlsProps) {
   const percent = Math.round(zoom * 100);
   return (
@@ -115,7 +118,12 @@ export function ZoomControls({
           <IsometricOrbitButton onOrbit={onIsoOrbit} onReset={onIsoReset} />
         </>
       ) : null}
-      {onToggleZen ? (
+      {onToggleZen && (zenActive || zenEnterHere) ? (
+        // Exit-only in normal sessions: entering zen moved to the
+        // canvas-tool dropdown (under Isometric), so outside zen the dock
+        // stays minimal. Inside zen the dock is the only chrome left, so
+        // the exit button lives here. zenEnterHere (palette-less sessions)
+        // keeps the old enter button too.
         <>
           <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
           <Tooltip
