@@ -532,11 +532,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const [diagramId, setDiagramId] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   // Sharing / session / owner / share-link state + the room refs all now
-  // live in useEditorRealtime, destructured above. isReadOnly is derived
-  // here because it also folds in `embedMode` (which is a page-level
-  // prop): embeds are read-only whatever role the share code carries —
-  // editing happens in the full editor, one badge-click away (spec/33).
-  const isReadOnly = sessionRole === 'view' || embedMode;
+  // live in useEditorRealtime, destructured above. Embeds honour the share
+  // code's role (spec/33): a view code renders a read-only viewer, an edit
+  // code an editable embed. The api enforces the role on every write, so
+  // this is presentation-side only.
+  const isReadOnly = sessionRole === 'view';
 
   // The id of the tab we last auto-fit. Drives the "fit on tab load"
   // effect below — fits the first time we land on a tab (or on the
