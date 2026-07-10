@@ -1,3 +1,4 @@
+import { Button } from '@livediagram/ui';
 import { ArrowRightIcon, FolderOpenIcon, SparkleIcon, Spinner } from './template-picker-icons';
 
 // The TemplatePicker's footer row (spec/14), lifted out of the picker:
@@ -39,21 +40,13 @@ export function TemplatePickerFooter({
           <p className="mr-auto text-[11px] text-slate-500 dark:text-slate-400">
             Other participants will see this name on your cursor and comments.
           </p>
-          <button
-            type="button"
-            onClick={onSkip}
-            className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-          >
+          <Button variant="secondary" size="xs" onClick={onSkip}>
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={onCommit}
-            className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
-          >
+          </Button>
+          <Button size="xs" onClick={onCommit} className="gap-1.5 px-4 shadow-sm">
             <SparkleIcon />
             Join
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="flex items-center gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
@@ -72,13 +65,16 @@ export function TemplatePickerFooter({
               </button>
             ) : null
           ) : (
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="xs"
               onClick={onSkip}
-              className="mr-auto inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              // rounded-lg + py-2 keep the wizard footer's taller rhythm;
+              // overrides append after the size scale, so they win.
+              className="mr-auto rounded-lg py-2"
             >
               Cancel
-            </button>
+            </Button>
           )}
           {/* Right cluster: (welcome only) Skip, then the primary Next /
             commit action. Going BACK to the template step is driven by
@@ -89,14 +85,15 @@ export function TemplatePickerFooter({
             /* Skip the wizard: Blank template, Basic theme (spec/14).
              Only on the first (template) step — once the user has
              reached the theme step, Back / Create are the actions. */
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="xs"
               onClick={skipToDefaults}
               disabled={busy}
-              className="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              className="rounded-lg py-2"
             >
               Skip
-            </button>
+            </Button>
           ) : null}
           {/* Advance vs commit. The welcome wizard has three steps
             (template -> theme -> settings), so Next carries the user from
@@ -104,24 +101,24 @@ export function TemplatePickerFooter({
             Settings step commits (Create). The in-editor templates flow
             has no Settings step, so its theme step commits (Apply). */}
           {step === 'template' || (step === 'theme' && isWelcome) ? (
-            <button
-              type="button"
+            <Button
+              size="xs"
               onClick={() => goToStep(step === 'template' ? 'theme' : 'settings')}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600"
+              className="gap-1.5 rounded-lg px-4 py-2 shadow-sm"
             >
               Next
               <ArrowRightIcon />
-            </button>
+            </Button>
           ) : (
-            <button
-              type="button"
+            <Button
+              size="xs"
               onClick={onCommit}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
+              className="gap-1.5 rounded-lg px-4 py-2 shadow-sm"
             >
               {busy ? <Spinner /> : <SparkleIcon />}
               {busy ? 'Creating…' : isWelcome ? 'Create' : 'Apply'}
-            </button>
+            </Button>
           )}
         </div>
       )}
