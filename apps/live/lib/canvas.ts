@@ -64,8 +64,12 @@ export function inheritedSizeFor(
 // arrow (or the free end of a half-pinned one) drawn inside the frame, so it
 // translates with the section instead of being left behind. A no-op (returns
 // `ids` unchanged) when none of the ids are frames, so a normal drag pays
-// nothing. Centre-point containment (not full-bounds) so a shape straddling
-// the frame edge still counts as "in" when most of it is.
+// nothing. FULL-BOUNDS containment: a boxed element travels only when its
+// whole box sits inside the frame. A shape straddling or just touching the
+// frame edge stays put (it used to be centre-point containment, which
+// dragged half-out elements along and read as the frame "grabbing"
+// neighbours it merely touched). Arrow free endpoints are points, so
+// point containment is exact for them.
 //
 // Two rules make overlapping / touching frames behave:
 //   1. Frames are NEVER carried as another frame's contents — moving one frame
@@ -89,11 +93,22 @@ export function withFrameContents(elements: Element[], ids: Set<string>): Set<st
   const allFrames = elements.filter((el): el is ShapeElement => isFrameEl(el));
   const contains = (f: ShapeElement, x: number, y: number) =>
     x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height;
+  // The whole rect inside the frame (boundary-flush counts as inside).
+  const containsRect = (
+    f: ShapeElement,
+    r: { x: number; y: number; width: number; height: number },
+  ) =>
+    r.x >= f.x && r.y >= f.y && r.x + r.width <= f.x + f.width && r.y + r.height <= f.y + f.height;
   // The backmost frame (first in array order) whose bounds contain (x, y).
   const owningFrame = (x: number, y: number): ShapeElement | null =>
     allFrames.find((f) => contains(f, x, y)) ?? null;
   const ownedByDragged = (x: number, y: number): boolean => {
     const owner = owningFrame(x, y);
+    return owner !== null && draggedFrameIds.has(owner.id);
+  };
+  // Boxed-element ownership: the backmost frame FULLY containing the box.
+  const rectOwnedByDragged = (r: { x: number; y: number; width: number; height: number }) => {
+    const owner = allFrames.find((f) => containsRect(f, r)) ?? null;
     return owner !== null && draggedFrameIds.has(owner.id);
   };
   const expanded = new Set(ids);
@@ -102,7 +117,7 @@ export function withFrameContents(elements: Element[], ids: Set<string>): Set<st
     // Rule 1: a frame never travels as another frame's content.
     if (isFrameEl(el)) continue;
     if (isBoxed(el)) {
-      if (ownedByDragged(el.x + el.width / 2, el.y + el.height / 2)) expanded.add(el.id);
+      if (rectOwnedByDragged(el)) expanded.add(el.id);
     } else if (el.type === 'arrow') {
       // Only the arrow's FREE endpoints have fixed coordinates; pinned ends
       // follow their element. Move the arrow with the frame when it has a free

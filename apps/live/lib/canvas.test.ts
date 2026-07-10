@@ -131,17 +131,30 @@ describe('inheritedSizeFor', () => {
 
 describe('withFrameContents', () => {
   const frame: Element = { ...createShape('frame', 100, 100), width: 200, height: 200 };
-  // Centre at (150,150): inside the 100..300 frame box.
+  // Box 130..170: fully inside the 100..300 frame box.
   const inside: Element = { ...createShape('square', 130, 130), width: 40, height: 40 };
-  // Centre at (500,500): outside.
+  // Box 480..520: fully outside.
   const outside: Element = { ...createShape('square', 480, 480), width: 40, height: 40 };
   const elements = [frame, inside, outside];
 
-  it('expands a frame move set with the elements whose centre is inside it', () => {
+  it('expands a frame move set with the elements fully inside it', () => {
     const out = withFrameContents(elements, new Set([frame.id]));
     expect(out.has(frame.id)).toBe(true);
     expect(out.has(inside.id)).toBe(true);
     expect(out.has(outside.id)).toBe(false);
+  });
+
+  it('leaves a straddling element put: full containment, not centre or touch', () => {
+    // Box 280..320 crosses the frame's right edge (x = 300) with its centre
+    // (300,150) still on the boundary — under the old centre rule this was
+    // carried; the frame must now leave it behind.
+    const straddling: Element = { ...createShape('square', 280, 130), width: 40, height: 40 };
+    // Boundary-flush (260..300 ends exactly at the frame edge) IS fully
+    // inside, so it still travels.
+    const flush: Element = { ...createShape('square', 260, 130), width: 40, height: 40 };
+    const out = withFrameContents([frame, straddling, flush], new Set([frame.id]));
+    expect(out.has(straddling.id)).toBe(false);
+    expect(out.has(flush.id)).toBe(true);
   });
 
   it('pulls in a free arrow whose endpoints are inside, not one that spans out', () => {
@@ -168,10 +181,10 @@ describe('withFrameContents', () => {
   });
 
   it('an element in overlapping frames belongs to the BACKMOST frame only', () => {
-    // back (earlier in array) + front frames both contain the element centre.
+    // back (earlier in array) + front frames both fully contain the element.
     const back: Element = { ...createShape('frame', 100, 100), width: 300, height: 300 };
     const front: Element = { ...createShape('frame', 120, 120), width: 300, height: 300 };
-    // Centre (200,200) is inside both.
+    // Box 180..220 sits fully inside both.
     const el: Element = { ...createShape('square', 180, 180), width: 40, height: 40 };
     const order = [back, front, el];
     // Dragging the BACK frame carries it...
