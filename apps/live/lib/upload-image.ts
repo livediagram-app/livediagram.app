@@ -1,5 +1,6 @@
 import { sha256Hex, type ImageSummary } from '@livediagram/api-schema';
 import { ApiError, apiUploadImage } from './api-client';
+import { isOfflineIdSync } from './offline/offline-store';
 
 // Map the api worker's upload error tokens (responses.ts / images.ts)
 // to messages safe to render inline in the picker. The client-side
@@ -41,10 +42,9 @@ export class ImageUploadError extends Error {
   }
 }
 
-// Runs the full upload flow for one file picked by the user (via
-// drop, paste, or file input). Returns the uploaded image + the
-// dedupe flag the picker uses to flash "already in your gallery".
-export async function uploadImageFile(ownerId: string, file: File): Promise<UploadResult> {
+// The shared client-side gate (type / size / non-empty), used by both
+// the upload and the offline-embed paths so they reject identically.
+function validateImageFile(file: File): void {
   if (!ACCEPTED_TYPES.includes(file.type as (typeof ACCEPTED_TYPES)[number])) {
     throw new ImageUploadError(
       'Unsupported file type. Use PNG, JPEG, WebP, or GIF (SVG is rejected for security).',
@@ -56,6 +56,13 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
   if (file.size === 0) {
     throw new ImageUploadError('Empty file.');
   }
+}
+
+// Runs the full upload flow for one file picked by the user (via
+// drop, paste, or file input). Returns the uploaded image + the
+// dedupe flag the picker uses to flash "already in your gallery".
+export async function uploadImageFile(ownerId: string, file: File): Promise<UploadResult> {
+  validateImageFile(file);
   const bytes = await file.arrayBuffer();
   // SHA-256 dedupe key. The server re-verifies this against the
   // body so a client can't poison the gallery with a fake hash.
@@ -81,6 +88,53 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
     const raw = e instanceof Error ? e.message : 'Upload failed.';
     throw new ImageUploadError(raw);
   }
+}
+
+// Offline Mode (spec/76): an offline diagram must stay self-contained, so
+// instead of uploading to the server gallery the file is embedded straight
+// into the element as a base64 data URI (the renderer and the exporters
+// treat a data-URI imageId as the bytes themselves, the same shape Take
+// Offline produces). The returned "summary" mirrors the upload result so
+// callers stay agnostic: `id` IS the data URI.
+export async function embedImageFile(file: File): Promise<UploadResult> {
+  validateImageFile(file);
+  const dims = await readImageDimensions(file);
+  if (!dims) {
+    throw new ImageUploadError('Could not read image dimensions.');
+  }
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new ImageUploadError('Could not read the file.'));
+    reader.readAsDataURL(file);
+  });
+  return {
+    image: {
+      id: dataUrl,
+      contentType: file.type,
+      byteSize: file.size,
+      width: dims.width,
+      height: dims.height,
+      originalName: file.name || undefined,
+      createdAt: Date.now(),
+    },
+    deduped: false,
+  };
+}
+
+// The single entry point for "the user handed the editor an image file for
+// THIS diagram" (picker upload, drag-drop, clipboard paste): cloud diagrams
+// upload to the gallery, offline diagrams embed locally so no server copy
+// is created for a diagram the server doesn't know about. The offline id
+// cache is warm whenever an offline diagram is open, so the sync check is
+// reliable here.
+export async function addImageFileForDiagram(
+  ownerId: string,
+  diagramId: string | null,
+  file: File,
+): Promise<UploadResult> {
+  if (diagramId && isOfflineIdSync(diagramId)) return embedImageFile(file);
+  return uploadImageFile(ownerId, file);
 }
 
 // Decode width / height via a transient <img>. The browser parses

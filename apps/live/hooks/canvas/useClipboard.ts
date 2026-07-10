@@ -23,7 +23,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { duplicateGroupedElements, type Element, type Tab } from '@livediagram/diagram';
 import { anyModalOpen } from '@/lib/modal-guard';
-import { uploadImageFile } from '@/lib/upload-image';
+import { addImageFileForDiagram } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 
@@ -61,6 +61,9 @@ type ClipboardDeps = {
   addImageFromGallery?: (image: ImageDescriptor) => void;
   // The local participant id — owner of uploaded paste images.
   ownerId: string;
+  // The current diagram id (null before hydration). Offline diagrams embed
+  // pasted images locally instead of uploading (spec/76).
+  diagramId: string | null;
   toast: ReturnType<typeof useToast>;
 };
 
@@ -78,6 +81,7 @@ export function useClipboard(deps: ClipboardDeps) {
     setMultiSelectedIds,
     addImageFromGallery,
     ownerId,
+    diagramId,
     toast,
   } = deps;
 
@@ -161,7 +165,9 @@ export function useClipboard(deps: ClipboardDeps) {
             type: file.type,
           });
     try {
-      const { image } = await uploadImageFile(ownerId, named);
+      // Cloud diagrams upload; offline diagrams embed the paste locally
+      // as a data URI (spec/76) so no server copy is created.
+      const { image } = await addImageFileForDiagram(ownerId, diagramId, named);
       addImageFromGallery({
         id: image.id,
         width: image.width,

@@ -1829,6 +1829,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setMultiSelectedIds,
     addImageFromGallery,
     ownerId: selfParticipant.id,
+    diagramId,
     toast,
   });
 

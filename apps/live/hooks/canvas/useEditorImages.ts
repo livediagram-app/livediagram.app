@@ -29,7 +29,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createImage, isBoxed, type Element } from '@livediagram/diagram';
-import { apiListImages, type ImageSummary } from '@/lib/api-client';
+import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
+import { isDataImageId } from '@/lib/offline/offline-images';
+import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 
 type ImageDescriptor = {
@@ -199,6 +201,18 @@ export function useEditorImages(deps: EditorImagesDeps) {
     // embedMode also blocks the clipboard's paste-image upload, which
     // funnels through this handler after uploading.
     if (editsBlocked || embedMode) return;
+    // Offline diagrams must stay self-contained (spec/76): a bare gallery
+    // id would break once the server's unused-image cleanup reaps it, so
+    // fetch the bytes and place a data-URI embed instead. Re-entry with
+    // the data URI as the id lands in the placement branch below.
+    if (diagramId && isOfflineIdSync(diagramId) && !isDataImageId(image.id)) {
+      void apiFetchImageDataUrl(ownerId, image.id)
+        .catch(() => null)
+        .then((href) => {
+          if (href) addImageFromGallery({ ...image, id: href });
+        });
+      return;
+    }
     const centre = getViewportCenter();
     const max = 240;
     const ratio = image.width / image.height;

@@ -3,8 +3,9 @@
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useEffect, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { apiDeleteImage, apiListImages, type ImageSummary } from '@/lib/api-client';
-import { ImageUploadError, uploadImageFile } from '@/lib/upload-image';
+import { apiDeleteImage, apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
+import { addImageFileForDiagram, ImageUploadError } from '@/lib/upload-image';
+import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { TrashIcon } from '@/components/panels/explorer-icons';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
@@ -106,13 +107,33 @@ export function ImagePicker({
     setUploadError(null);
     setUploading(true);
     try {
-      const { image } = await uploadImageFile(ownerId, file);
+      // Cloud diagrams upload to the gallery; offline diagrams embed the
+      // file locally as a data URI (spec/76) so no server copy is created.
+      const { image } = await addImageFileForDiagram(ownerId, diagramId, file);
       onSelect(image);
     } catch (e) {
       setUploadError(e instanceof ImageUploadError ? e.message : 'Upload failed.');
     } finally {
       setUploading(false);
     }
+  };
+
+  // Gallery picks re-home for offline diagrams (spec/76): a bare gallery id
+  // inside an offline diagram would break once the server's 30-day unused-
+  // image cleanup reaps it (nothing server-side references it), so the bytes
+  // are fetched and embedded as a data URI instead, exactly like Take
+  // Offline does for existing references.
+  const selectFromGallery = async (image: ImageSummary) => {
+    if (!isOfflineIdSync(diagramId)) {
+      onSelect(image);
+      return;
+    }
+    const href = await apiFetchImageDataUrl(ownerId, image.id).catch(() => null);
+    if (!href) {
+      setGalleryError('Could not load that image for offline use. Check your connection.');
+      return;
+    }
+    onSelect({ ...image, id: href });
   };
 
   const handleDelete = async (image: ImageSummary) => {
@@ -167,7 +188,7 @@ export function ImagePicker({
             diagramId={diagramId}
             gallery={gallery}
             error={galleryError}
-            onSelect={onSelect}
+            onSelect={(image) => void selectFromGallery(image)}
             onDelete={handleDelete}
           />
         )}
