@@ -75,6 +75,96 @@ function blocked(from: Pt, to: Pt, c: Pt, obstacles: AvoidanceObstacle[]): boole
   return false;
 }
 
+// --- Corner-anchor grazing (the collinear-edge rule) -----------------------
+//
+// A chord pinned at a CORNER anchor can run straight down the extension of
+// its own element's edge line (two stacked boxes joined ne to se): it never
+// enters the clearance ring beyond the anchor exemption, yet the straight
+// line retraces the boxes' silhouette and reads wrong. Detect it for
+// axis-aligned chords: when the chord is collinear with an endpoint
+// element's vertical/horizontal edge line and extends past the element,
+// synthesize a thin virtual obstacle strip on the ELEMENT'S side of that
+// line along the chord. The normal search then bows away from the element
+// (the strip is one-sided, so the outward bow is always cheaper) and sizes
+// the bow via the ordinary clearance margin. The strip carries the
+// element's role so the anchor exemption still trims its ends.
+
+const AXIS_TOL = 4; // chord counts as vertical/horizontal within this many px
+const EDGE_TOL = 6; // chord-to-edge-line collinearity tolerance
+const STRIP_W = 16; // virtual strip thickness, extruded toward the element
+const MIN_RUN = 60; // chord must extend at least this far past the element
+// Strips stop this far short of BOTH chord endpoints: the curve returns to
+// the chord at its ends whatever the offset, so a strip reaching an
+// endpoint would be unclearable at every offset and poison the search.
+const STRIP_END_CLIP = 32;
+
+function collinearEdgeStrips(
+  from: Pt,
+  to: Pt,
+  obstacles: AvoidanceObstacle[],
+): AvoidanceObstacle[] {
+  const strips: AvoidanceObstacle[] = [];
+  const vertical = Math.abs(to.x - from.x) <= AXIS_TOL;
+  const horizontal = Math.abs(to.y - from.y) <= AXIS_TOL;
+  if (!vertical && !horizontal) return strips;
+  for (const o of obstacles) {
+    if (o.role === 'other') continue;
+    if (vertical) {
+      const cx = (from.x + to.x) / 2;
+      const spanTop = Math.min(from.y, to.y) + STRIP_END_CLIP;
+      const spanBottom = Math.max(from.y, to.y) - STRIP_END_CLIP;
+      if (spanBottom - spanTop < STRIP_W) continue;
+      // How far the chord runs OUTSIDE the element's own vertical extent.
+      const runBeyond = Math.max(0, o.y - spanTop) + Math.max(0, spanBottom - (o.y + o.height));
+      if (runBeyond < MIN_RUN) continue;
+      if (Math.abs(o.x + o.width - cx) <= EDGE_TOL) {
+        // Collinear with the RIGHT edge line: element lies to the left.
+        strips.push({
+          x: cx - STRIP_W,
+          y: spanTop,
+          width: STRIP_W,
+          height: spanBottom - spanTop,
+          role: o.role,
+        });
+      } else if (Math.abs(o.x - cx) <= EDGE_TOL) {
+        strips.push({
+          x: cx,
+          y: spanTop,
+          width: STRIP_W,
+          height: spanBottom - spanTop,
+          role: o.role,
+        });
+      }
+    } else {
+      const cy = (from.y + to.y) / 2;
+      const spanLeft = Math.min(from.x, to.x) + STRIP_END_CLIP;
+      const spanRight = Math.max(from.x, to.x) - STRIP_END_CLIP;
+      if (spanRight - spanLeft < STRIP_W) continue;
+      const runBeyond = Math.max(0, o.x - spanLeft) + Math.max(0, spanRight - (o.x + o.width));
+      if (runBeyond < MIN_RUN) continue;
+      if (Math.abs(o.y + o.height - cy) <= EDGE_TOL) {
+        // Collinear with the BOTTOM edge line: element lies above.
+        strips.push({
+          x: spanLeft,
+          y: cy - STRIP_W,
+          width: spanRight - spanLeft,
+          height: STRIP_W,
+          role: o.role,
+        });
+      } else if (Math.abs(o.y - cy) <= EDGE_TOL) {
+        strips.push({
+          x: spanLeft,
+          y: cy,
+          width: spanRight - spanLeft,
+          height: STRIP_W,
+          role: o.role,
+        });
+      }
+    }
+  }
+  return strips;
+}
+
 // The curve offset (delta from the chord midpoint, the `curveOffset` wire
 // format) that makes a fresh arrow clear every obstacle by the margin, or
 // null when the straight line is already clear (or nothing within
@@ -88,7 +178,8 @@ export function collisionAvoidingCurveOffset(
   if (len < MIN_CHORD) return null;
   // Obstacles that already contain an endpoint can never be cleared (the
   // curve must touch that point); drop them rather than searching forever.
-  const relevant = obstacles.filter(
+  const withStrips = [...obstacles, ...collinearEdgeStrips(from, to, obstacles)];
+  const relevant = withStrips.filter(
     (o) => !(o.role === 'other' && (contains(inflated(o), from) || contains(inflated(o), to))),
   );
   if (relevant.length === 0) return null;

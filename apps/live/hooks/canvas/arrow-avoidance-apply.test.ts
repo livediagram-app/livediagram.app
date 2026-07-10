@@ -62,9 +62,7 @@ describe('applyCollisionAvoidance', () => {
   it('treats the endpoint elements as their own obstacles (flush case bows)', () => {
     // Both ends pinned at the RIGHT-EDGE MIDDLES of two stacked boxes: the
     // chord runs flush along both boxes' edges well past the anchor
-    // exemption, so it must bow outward. (Corner anchors only graze the
-    // clearance ring inside the exemption and are a known limit; see the
-    // spec/77 note.)
+    // exemption, so it must bow outward.
     const els: Element[] = [
       shape('a', 0, 0, 100, 80),
       shape('b', 0, 320, 100, 80),
@@ -79,6 +77,26 @@ describe('applyCollisionAvoidance', () => {
     const arr = out.find((e) => e.id === 'arr') as ArrowElement;
     expect(arr.arrowStyle).toBe('curved');
     // Away from the boxes (which sit left of the chord) = positive dx.
+    expect(arr.curveOffset!.dx).toBeGreaterThan(0);
+  });
+
+  it('bows a corner-anchored chord collinear with its own edge lines', () => {
+    // The image-21 shape: pinned at the facing right CORNERS of two stacked
+    // boxes, the chord retracing both right-edge lines. The collinear-edge
+    // rule (spec/77) bows it outward.
+    const els: Element[] = [
+      shape('a', 0, 0, 100, 80),
+      shape('b', 0, 320, 100, 80),
+      {
+        id: 'arr',
+        type: 'arrow',
+        from: { kind: 'pinned', elementId: 'b', anchor: 'ne' },
+        to: { kind: 'pinned', elementId: 'a', anchor: 'se' },
+      } as ArrowElement,
+    ];
+    const out = applyCollisionAvoidance(els, 'arr');
+    const arr = out.find((e) => e.id === 'arr') as ArrowElement;
+    expect(arr.arrowStyle).toBe('curved');
     expect(arr.curveOffset!.dx).toBeGreaterThan(0);
   });
 

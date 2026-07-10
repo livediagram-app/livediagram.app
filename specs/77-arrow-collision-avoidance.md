@@ -56,15 +56,18 @@ The apply side (`apps/live/hooks/canvas/arrow-avoidance-apply.ts`) is a pure
 elements map run through the gesture's own `commit`, so the bow lands inside
 the same undo step as the draw: one Cmd-Z removes the arrow, not the bow.
 
-## Known limit: corner-anchor grazing
+## The collinear-edge rule (corner anchors)
 
-The endpoint-exemption window means a chord pinned at CORNER anchors (say
-ne to se, running straight down the shared edge line of two stacked boxes)
-only clips its own elements' clearance rings inside the exemption, so that
-flush case is not yet detected and the arrow stays straight. Edge-middle
-anchors (e / w / n / s) are detected. Fixing it needs an angle-aware rule
-(bow when the chord leaves an endpoint near-parallel to an edge adjacent
-to its anchor); tracked as a follow-up.
+A chord pinned at CORNER anchors can retrace its own elements' edge lines
+(ne to se down two stacked boxes) while only clipping the clearance rings
+inside the anchor exemption, so containment alone misses it. For
+axis-aligned chords, when the chord is collinear (within 6 px) with an
+endpoint element's vertical/horizontal edge line and runs at least 60 px
+past the element, a thin virtual obstacle strip is synthesised on the
+ELEMENT'S side of that line along the chord (clipped 32 px short of both
+chord ends, where the curve must return to the chord). The ordinary search
+then bows away from the element: the strip is one-sided, so the outward
+bow is always cheaper, and the clearance margin sizes it.
 
 ## References
 

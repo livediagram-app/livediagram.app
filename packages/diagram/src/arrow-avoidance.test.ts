@@ -52,6 +52,30 @@ describe('collisionAvoidingCurveOffset', () => {
     expect(off!.dx).toBeGreaterThan(0);
   });
 
+  it('bows when a corner-anchored chord is collinear with its own edge line', () => {
+    // Two stacked boxes, arrow pinned at their facing RIGHT CORNERS: the
+    // chord runs down the extension of both right-edge lines, touching each
+    // box only at the anchor. The collinear-edge rule must still bow it
+    // outward (away from the boxes, positive x).
+    const off = collisionAvoidingCurveOffset({ x: 100, y: 320 }, { x: 100, y: 80 }, [
+      rect(0, 0, 100, 80, 'to'),
+      rect(0, 320, 100, 80, 'from'),
+    ]);
+    expect(off).not.toBeNull();
+    expect(off!.dx).toBeGreaterThan(0);
+  });
+
+  it('leaves a perpendicular exit from an edge-middle anchor straight', () => {
+    // The everyday case: a horizontal arrow between two side-by-side boxes,
+    // leaving each through the facing edge. Nothing collinear, nothing
+    // crossed: it must stay straight.
+    const off = collisionAvoidingCurveOffset({ x: 100, y: 40 }, { x: 300, y: 40 }, [
+      rect(0, 0, 100, 80, 'from'),
+      rect(300, 0, 100, 80, 'to'),
+    ]);
+    expect(off).toBeNull();
+  });
+
   it('ignores obstacles that contain an endpoint (unclearable)', () => {
     const off = collisionAvoidingCurveOffset({ x: 100, y: 0 }, { x: 100, y: 400 }, [
       rect(60, -20, 80, 60), // wraps the from point
