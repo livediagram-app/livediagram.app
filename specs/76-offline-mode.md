@@ -15,14 +15,17 @@ a separate concern — see spec/75 — and out of scope here.)
 
 Offline Mode is **off by default**. You choose it when creating a diagram:
 
-- The **New Diagram** dialog (spec/14) gains a single toggle near the footer
-  (beside Skip / Next): **"Save offline — this browser only."** Off = a normal
-  cloud diagram (today's behaviour); on = the new diagram is created offline.
-- The toggle carries a one-line caveat inline: _"Stays on this device. Not
-  synced, not backed up."_ so the durability trade-off is set at the moment of
-  choice.
-- Everything else in the dialog (template, theme) works identically; the toggle
-  only changes _where the diagram is stored_.
+- The **New Diagram** wizard (spec/14) runs three steps: Template, Theme, then
+  **Settings**. The Settings step carries the **"Save Offline, This Browser
+  Only"** toggle, alongside the diagram name and where it is saved (a personal
+  folder or a team library). Off = a normal cloud diagram (today's behaviour);
+  on = the new diagram is created offline.
+- The toggle carries a one-line caveat inline (_"When enabled your diagram is
+  only stored within your Web Browser storage."_), and turning it on reveals a
+  data-loss warning and disables the folder / team placement, so the durability
+  trade-off is set at the moment of choice.
+- The template and theme choices work identically; the toggle only changes
+  _where the diagram is stored_.
 
 No global "offline mode" switch: the choice is **per diagram**, so a person can
 have cloud diagrams and offline diagrams side by side.
