@@ -22,6 +22,7 @@ export function NewDiagramSettingsStep({
   placeholder,
   placement,
   onPlacement,
+  onCommitPlacement,
   folders,
   teams,
   teamFolders = {},
@@ -35,6 +36,9 @@ export function NewDiagramSettingsStep({
   // 'unsorted' | `folder:<id>` | `team:<teamId>` | `team:<teamId>:folder:<id>`
   placement: string;
   onPlacement: (v: string) => void;
+  // Double-click on a destination card: select it AND commit the wizard in
+  // one gesture (the template-card pattern). Absent = double-click ignored.
+  onCommitPlacement?: (v: string) => void;
   folders: PickerFolder[];
   teams: { id: string; name: string }[];
   // Per-team folder lists, keyed by team id. Empty / missing while the team
@@ -147,6 +151,7 @@ export function NewDiagramSettingsStep({
           <PlacementBrowser
             placement={placement}
             onPlacement={onPlacement}
+            onCommitPlacement={onCommitPlacement}
             folders={folders}
             teams={teams}
             teamFolders={teamFolders}
@@ -168,6 +173,7 @@ export function NewDiagramSettingsStep({
 function PlacementBrowser({
   placement,
   onPlacement,
+  onCommitPlacement,
   folders,
   teams,
   teamFolders,
@@ -175,6 +181,7 @@ function PlacementBrowser({
 }: {
   placement: string;
   onPlacement: (v: string) => void;
+  onCommitPlacement?: (v: string) => void;
   folders: PickerFolder[];
   teams: { id: string; name: string }[];
   teamFolders: Record<string, PickerFolder[]>;
@@ -288,6 +295,7 @@ function PlacementBrowser({
             icon={<FolderPlaceIcon />}
             selected={placement === valueFor(openFolder.id)}
             onSelect={() => onPlacement(valueFor(openFolder.id))}
+            onCommit={() => onCommitPlacement?.(valueFor(openFolder.id))}
           />
         ) : (
           <PlacementCard
@@ -296,6 +304,7 @@ function PlacementBrowser({
             icon={isMyWork ? <MyWorkIcon /> : <TeamPlaceIcon />}
             selected={placement === rootValue}
             onSelect={() => onPlacement(rootValue)}
+            onCommit={() => onCommitPlacement?.(rootValue)}
           />
         )}
         {children.map((f) =>
@@ -324,6 +333,7 @@ function PlacementBrowser({
               icon={<FolderPlaceIcon />}
               selected={placement === valueFor(f.id)}
               onSelect={() => onPlacement(valueFor(f.id))}
+              onCommit={() => onCommitPlacement?.(valueFor(f.id))}
             />
           ),
         )}
@@ -439,12 +449,17 @@ function PlacementCard({
   icon,
   selected,
   onSelect,
+  onCommit,
 }: {
   label: string;
   sub: string;
   icon: ReactNode;
   selected: boolean;
   onSelect: () => void;
+  // Double-click: select + commit the wizard in one gesture. Only wired on
+  // cards that stay mounted across the first click (drill-in cards swap the
+  // level under the cursor, so a dblclick can never land on them).
+  onCommit?: () => void;
 }) {
   return (
     <button
@@ -452,6 +467,7 @@ function PlacementCard({
       role="radio"
       aria-checked={selected}
       onClick={onSelect}
+      onDoubleClick={onCommit}
       className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition ${
         selected
           ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-200 dark:border-brand-500 dark:bg-brand-500/10 dark:ring-brand-500/30'

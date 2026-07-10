@@ -49,6 +49,10 @@ export default function NewDiagramPage() {
     status: 'online',
   });
   const [submitting, setSubmitting] = useState(false);
+  // How many diagrams the user owns (null until known). Reported by
+  // RecentDiagramsCard's fetch; gates the guided-tour card, which is for
+  // first-timers and disappears once the account holds 3+ diagrams.
+  const [diagramCount, setDiagramCount] = useState<number | null>(null);
   // Set when the create POST fails (network / 5xx). Shows a retryable
   // error instead of navigating to the editor for a diagram that was
   // never persisted (which would 404). The ref keeps the last attempt's
@@ -406,17 +410,25 @@ export default function NewDiagramPage() {
             returning users get "Jump back in" (spec/14, hidden with no
             diagrams yet), and first-timers the guided tour underneath
             (spec/69), which lives here rather than posing as a template in
-            the Quick Start grid. */}
+            the Quick Start grid. The tour card is for first-timers only:
+            it waits for the diagram count (RecentDiagramsCard's fetch,
+            shared via onCount) and stays hidden once the user has three or
+            more diagrams. */}
         <div className="pointer-events-none absolute inset-y-0 right-4 z-10 hidden items-center xl:flex 2xl:right-10">
           <div className="flex flex-col gap-4">
-            <RecentDiagramsCard ownerId={self.id === 'pending' ? null : self.id} />
-            <NewHereCard
-              busy={submitting}
-              onStart={() =>
-                // '' = keep the resolved participant name, same as onSkip.
-                void commitNewDiagram('guided-tour', '', 'brand', { offline: true })
-              }
+            <RecentDiagramsCard
+              ownerId={self.id === 'pending' ? null : self.id}
+              onCount={setDiagramCount}
             />
+            {diagramCount !== null && diagramCount < 3 ? (
+              <NewHereCard
+                busy={submitting}
+                onStart={() =>
+                  // '' = keep the resolved participant name, same as onSkip.
+                  void commitNewDiagram('guided-tour', '', 'brand', { offline: true })
+                }
+              />
+            ) : null}
           </div>
         </div>
       </main>

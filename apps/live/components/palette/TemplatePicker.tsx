@@ -189,15 +189,17 @@ export function TemplatePicker({
   }, [templateKind]);
   const [placement, setPlacement] = useState(initialPlacement ?? 'unsorted');
   // The settings the wizard commits with. Diagram name defaults to the
-  // template's default when the field is left blank.
-  const settings = (): NewDiagramSettings => {
+  // template's default when the field is left blank. Parameterised on the
+  // placement so a double-click commit can pass the just-picked value
+  // before the setPlacement state update has applied.
+  const settingsFor = (p: string): NewDiagramSettings => {
     const name = diagramNameInput.trim() || templateDefaultName;
-    if (placement.startsWith('folder:')) {
-      return { offline, diagramName: name, folderId: placement.slice(7), teamId: null };
+    if (p.startsWith('folder:')) {
+      return { offline, diagramName: name, folderId: p.slice(7), teamId: null };
     }
-    if (placement.startsWith('team:')) {
+    if (p.startsWith('team:')) {
       // `team:<teamId>` (library root) or `team:<teamId>:folder:<folderId>`.
-      const rest = placement.slice(5);
+      const rest = p.slice(5);
       const sep = rest.indexOf(':folder:');
       if (sep >= 0) {
         return {
@@ -211,6 +213,7 @@ export function TemplatePicker({
     }
     return { offline, diagramName: name, folderId: null, teamId: null };
   };
+  const settings = () => settingsFor(placement);
   // Welcome mode is a two-step wizard: pick a template, then a theme
   // (spec/14). Other modes keep the single-page layout. `themeBuilding`
   // tracks whether the theme step's custom-theme builder is open, so the
@@ -280,6 +283,14 @@ export function TemplatePicker({
     setTemplateKind(kind);
     if (isWizard) goToStep('theme');
     else onPick(kind, effectiveName, themeId, { offline });
+  };
+  // Double-clicking a destination card on the Settings step selects it AND
+  // commits the wizard in one gesture (the template-card pattern). The value
+  // is passed explicitly because setPlacement hasn't applied in this tick.
+  const commitWithPlacement = (p: string) => {
+    if (busy) return;
+    setPlacement(p);
+    onPick(templateKind, effectiveName, themeId, settingsFor(p));
   };
 
   return (
@@ -435,6 +446,7 @@ export function TemplatePicker({
                 placeholder={templateDefaultName}
                 placement={placement}
                 onPlacement={setPlacement}
+                onCommitPlacement={commitWithPlacement}
                 folders={folders}
                 teams={teams}
                 teamFolders={teamFolders}

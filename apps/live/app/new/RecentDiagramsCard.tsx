@@ -12,7 +12,17 @@ type RecentItem = { id: string; name: string; savedAt: number | null };
 // for returning users, hidden entirely for someone with no diagrams yet
 // (and on narrow viewports where the wizard already fills the width). Each
 // row opens that diagram directly.
-export function RecentDiagramsCard({ ownerId }: { ownerId: string | null }) {
+export function RecentDiagramsCard({
+  ownerId,
+  onCount,
+}: {
+  ownerId: string | null;
+  // Reports how many diagrams the owner has, once known. The page uses it
+  // to hide the guided-tour card for established users; this card already
+  // holds the only diagram-list fetch on /new, so it shares the answer
+  // rather than the page fetching the list twice.
+  onCount?: (n: number) => void;
+}) {
   const [recent, setRecent] = useState<RecentItem[] | null>(null);
   useRelativeTimeTick();
 
@@ -22,6 +32,7 @@ export function RecentDiagramsCard({ ownerId }: { ownerId: string | null }) {
     void apiListDiagrams(ownerId)
       .then((list) => {
         if (cancelled) return;
+        onCount?.(list.length);
         const top = [...list]
           .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
           .slice(0, 5)
@@ -29,11 +40,15 @@ export function RecentDiagramsCard({ ownerId }: { ownerId: string | null }) {
         setRecent(top);
       })
       .catch(() => {
-        // Best-effort: a returning user just doesn't get the shortcut.
+        // Best-effort: a returning user just doesn't get the shortcut. Report
+        // zero so a fresh visitor on a flaky network still gets the tour card.
+        if (!cancelled) onCount?.(0);
       });
     return () => {
       cancelled = true;
     };
+    // onCount is a stable setState from the page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ownerId]);
 
   if (!recent || recent.length === 0) return null;
