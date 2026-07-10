@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createShape, isBoxed, type Element } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { Portal } from '@/components/primitives/Portal';
@@ -59,6 +59,8 @@ const unionRects = (a: TourTargetRect, b: TourTargetRect): TourTargetRect => {
 export function TourHost() {
   const ctx = useEditorContext();
   const isMobile = useIsMobileViewport();
+  // The effective step list: mobile drops the desktop-only steps (search).
+  const steps = useMemo(() => TOUR_STEPS.filter((s) => !(s.mobileSkip && isMobile)), [isMobile]);
   const [pending, setPending] = useState(false);
   const [active, setActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -120,6 +122,8 @@ export function TourHost() {
       });
     },
     closeContextMenu: () => ctx.closeContextMenu(),
+    openSearchPanel: () => ctx.setSearchOpen(true),
+    closeSearchPanel: () => ctx.setSearchOpen(false),
   };
 
   // Peek at the /new handoff flag (NOT consume: it stays set until the
@@ -179,11 +183,11 @@ export function TourHost() {
   useEffect(() => {
     if (!active) return;
     const token = ++runTokenRef.current;
-    const step = TOUR_STEPS[stepIndex]!;
+    const step = steps[stepIndex]!;
     let cancelled = false;
     void (async () => {
       if (!step.target) {
-        // Anchorless (welcome) step: centred card, no highlight.
+        // Anchorless (welcome / outro) card: centred, no highlight.
         targetElRef.current = null;
         setTargetRect(null);
         return;
@@ -202,7 +206,7 @@ export function TourHost() {
         // depend on its per-render identity (restarting the step run on
         // unrelated renders).
         step.cleanup?.(apiRef.current);
-        if (stepIndex < TOUR_STEPS.length - 1) setStepIndex(stepIndex + 1);
+        if (stepIndex < steps.length - 1) setStepIndex(stepIndex + 1);
         else endTourRef.current('TourCompleted');
         return;
       }
@@ -212,13 +216,13 @@ export function TourHost() {
     return () => {
       cancelled = true;
     };
-  }, [active, stepIndex]);
+  }, [active, stepIndex, steps]);
 
   // Track the target while a step is showing: follow it when it moves and
   // re-run prepare when it disappears (a menu dismissed under the tour).
   useEffect(() => {
     if (!active) return;
-    const step = TOUR_STEPS[stepIndex]!;
+    const step = steps[stepIndex]!;
     if (!step.target) return;
     const id = window.setInterval(() => {
       const el = targetElRef.current;
@@ -246,7 +250,7 @@ export function TourHost() {
       setTargetRect((prev) => (prev && rectsEqual(prev, r) ? prev : r));
     }, 150);
     return () => window.clearInterval(id);
-  }, [active, stepIndex]);
+  }, [active, stepIndex, steps]);
 
   const endTour = (outcome: 'TourCompleted' | 'TourSkipped' | 'TourDeclined') => {
     runTokenRef.current++;
@@ -269,9 +273,9 @@ export function TourHost() {
   endTourRef.current = endTour;
 
   if (!active) return null;
-  const step = TOUR_STEPS[stepIndex]!;
-  // The welcome offer sits outside the step count: "1 of 8" is the palette.
-  const countableSteps = TOUR_STEPS.filter((s) => !s.welcome).length;
+  const step = steps[stepIndex]!;
+  // The bookend cards sit outside the step count: "1 of N" is the palette.
+  const countableSteps = steps.filter((s) => !s.card).length;
   const leaveStep = () => {
     runTokenRef.current++;
     targetElRef.current = null;
@@ -279,9 +283,9 @@ export function TourHost() {
   };
   const onNext = () => {
     leaveStep();
-    if (step.welcome) track('UI', 'Started', 'Tour');
+    if (step.card === 'welcome') track('UI', 'Started', 'Tour');
     setStepDir('forward');
-    if (stepIndex < TOUR_STEPS.length - 1) setStepIndex(stepIndex + 1);
+    if (stepIndex < steps.length - 1) setStepIndex(stepIndex + 1);
     else endTour('TourCompleted');
   };
   const onBack = () => {
@@ -291,14 +295,14 @@ export function TourHost() {
   };
   const onSkip = () => {
     leaveStep();
-    endTour(step.welcome ? 'TourDeclined' : 'TourSkipped');
+    endTour(step.card === 'welcome' ? 'TourDeclined' : 'TourSkipped');
   };
 
   return (
     <Portal>
-      {step.welcome ? (
-        // Focus backdrop for the offer: a SUBTLE full-screen tint (much
-        // lighter than Dialog's — the fresh canvas should stay visible)
+      {step.card ? (
+        // Focus backdrop for the bookend cards: a SUBTLE full-screen tint
+        // (much lighter than Dialog's — the canvas should stay visible)
         // that draws the eye to the card and absorbs stray clicks until
         // it's answered. Deliberately NOT a click-to-dismiss surface —
         // with the once-ever done-guard, a stray backdrop click must
@@ -314,10 +318,13 @@ export function TourHost() {
         // interact with whatever is highlighted; portalled menus (higher
         // z / later portals) paint above the dim. transition-all makes it
         // glide when the rect moves between steps; fade-in covers its
-        // first appearance.
+        // first appearance. Targets that bring their own modal backdrop
+        // (the search panel) lift the ring above the modal layer.
         <div
           aria-hidden
-          className="pointer-events-none fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-300 ease-out dark:border-brand-500"
+          className={`pointer-events-none fixed animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-300 ease-out dark:border-brand-500 ${
+            step.ringAboveModal ? 'z-[var(--z-popover)]' : 'z-[var(--z-overlay)]'
+          }`}
           style={{
             left: targetRect.left - 6,
             top: targetRect.top - 6,
@@ -328,16 +335,17 @@ export function TourHost() {
         />
       ) : null}
       <TourPopover
-        // The welcome card has no number; real steps count from 1.
-        stepNumber={step.welcome ? 0 : stepIndex}
+        // The bookend cards have no number; real steps count from 1
+        // (welcome occupies index 0, so a step's index IS its number).
+        stepNumber={step.card ? 0 : stepIndex}
         stepCount={countableSteps}
         stepId={step.id}
         stepDir={stepDir}
-        welcome={step.welcome === true}
+        card={step.card}
         title={step.title}
         body={step.body}
         targetRect={targetRect}
-        onBack={stepIndex > 1 ? onBack : undefined}
+        onBack={stepIndex > 1 && !step.card ? onBack : undefined}
         onNext={onNext}
         onSkip={onSkip}
       />

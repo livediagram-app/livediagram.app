@@ -24,8 +24,8 @@ guided tour").
   offer must never read as nagging, and answering it once covers every
   device the user signs in from (guests get the same via their
   owner-keyed preference row + the localStorage warm cache).
-- **Replayable from Settings.** The Settings dialog's Editor group has an
-  "I've seen the editor tour" row surfacing `tourSeen`. Unchecking a
+- **Replayable from Settings.** The Settings dialog's Editor group has a
+  "Welcome Tour Completed" row surfacing `tourSeen`. Unchecking a
   previously-checked row and closing Settings relaunches the tour from
   the top — the welcome card is always step 1, on a rerun too. Finishing
   the rerun re-checks it.
@@ -47,7 +47,9 @@ flag, so a mid-rerun reload re-offers the same way.
 ## The steps
 
 A welcome offer card, then seven steps in palette → explorer → canvas →
-tabs order (the offer sits outside the "N of 7" count). Copy is one or two
+tabs → search order (six on mobile, where the search step is skipped), and
+a closing "you're ready" card. The bookend cards sit outside the "N of 7"
+count. Copy is one or two
 short sentences per step ("concise" is the spec constraint; the exact strings
 live in `apps/live/components/tour/tour-steps.ts`):
 
@@ -64,8 +66,17 @@ live in `apps/live/components/tour/tour-steps.ts`):
 5. **Element context menu**: selects an element (adding a theme-coloured
    square at the viewport centre first if the tab is empty) and opens its
    right-click menu programmatically.
-6. **Tabs**: highlights the tab bar's "+" add button.
-7. **Tab menu**: opens the active tab's ⋯ menu and explains it.
+6. **Tabs**: highlights the active tab pill and the "+" add button as one
+   region (an `alsoHighlight` union, like the dropdown steps), with the
+   tab menu covered in the copy. A separate open-the-⋯-menu step existed
+   briefly and was folded in here.
+7. **Search** (desktop only): opens the Cmd/Ctrl+K search panel — find
+   diagrams, elements, help articles, and run actions. The panel brings
+   its own modal backdrop, so this step's ring lifts above the modal
+   layer.
+8. **Outro** (card): "You're ready to go" — a help-article illustration,
+   a help-centre link (new tab), and a "Start creating" button that
+   completes the tour.
 
 Each step popover shows the step count, a title, the copy, and
 Back / Next (Done on the last step) plus a Skip control. A dimming highlight

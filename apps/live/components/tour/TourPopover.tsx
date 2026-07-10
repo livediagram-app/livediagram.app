@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Button } from '@livediagram/ui';
 import { placeTourPopover } from './tour-position';
+import { TourHelpArt } from './TourHelpArt';
 import { TourWelcomeArt } from './TourWelcomeArt';
 import type { TourTargetRect } from './TourHost';
 
@@ -23,7 +24,7 @@ export function TourPopover({
   stepCount,
   stepId,
   stepDir,
-  welcome,
+  card,
   title,
   body,
   targetRect,
@@ -38,7 +39,9 @@ export function TourPopover({
   // replays exactly once per step change.
   stepId: string;
   stepDir: 'forward' | 'backward';
-  welcome: boolean;
+  // Bookend cards ('welcome' / 'outro'): centred, no count/dots/Back,
+  // with their own illustration + button set. Undefined = a normal step.
+  card?: 'welcome' | 'outro';
   title: string;
   body: string;
   // Viewport rect of the highlighted target; null while the step is still
@@ -54,8 +57,7 @@ export function TourPopover({
   // so the initial park-offscreen → placed jump doesn't animate as a fly-in
   // from the corner (the PaletteTabBar height-animation gate pattern).
   const [animatePos, setAnimatePos] = useState(false);
-  const isLast = stepNumber === stepCount;
-  const sheetMode = !welcome && typeof window !== 'undefined' && window.innerWidth < 640;
+  const sheetMode = !card && typeof window !== 'undefined' && window.innerWidth < 640;
 
   useLayoutEffect(() => {
     if (sheetMode) return;
@@ -86,10 +88,10 @@ export function TourPopover({
       ref={ref}
       data-tour-popover=""
       role="dialog"
-      aria-label={welcome ? title : `Tour step ${stepNumber} of ${stepCount}: ${title}`}
+      aria-label={card ? title : `Tour step ${stepNumber} of ${stepCount}: ${title}`}
       onPointerDown={(e) => e.stopPropagation()}
       className={`pointer-events-auto fixed z-[var(--z-toast)] flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 ${
-        sheetMode ? 'inset-x-3 bottom-16' : welcome ? 'w-[21rem]' : 'w-80'
+        sheetMode ? 'inset-x-3 bottom-16' : card ? 'w-[21rem]' : 'w-80'
       } ${animatePos && !sheetMode ? 'transition-[left,top] duration-300 ease-out' : ''}`}
       style={
         sheetMode
@@ -108,28 +110,44 @@ export function TourPopover({
         key={stepId}
         className={`flex flex-col gap-2 ${stepDir === 'forward' ? 'animate-tip-next' : 'animate-tip-prev'}`}
       >
-        {welcome ? (
+        {card ? (
           <>
-            <TourWelcomeArt />
+            {card === 'welcome' ? <TourWelcomeArt /> : <TourHelpArt />}
             <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
-              Quick tour
+              {card === 'welcome' ? 'Quick tour' : 'Tour complete'}
             </span>
             <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
             <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
-            <div className="mt-2 flex items-center justify-end gap-2">
-              {/* Declining is a first-class, same-weight choice — the offer
-                  must never feel like a trap. It also never comes back. */}
-              <button
-                type="button"
-                onClick={onSkip}
-                className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              >
-                No thanks
-              </button>
-              <Button size="xs" onClick={onNext}>
-                Show me around
-              </Button>
-            </div>
+            {card === 'welcome' ? (
+              <div className="mt-2 flex items-center justify-end gap-2">
+                {/* Declining is a first-class, same-weight choice — the offer
+                    must never feel like a trap. It also never comes back. */}
+                <button
+                  type="button"
+                  onClick={onSkip}
+                  className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                >
+                  No thanks
+                </button>
+                <Button size="xs" onClick={onNext}>
+                  Show me around
+                </Button>
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <a
+                  href="/help"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-medium text-brand-600 underline-offset-2 transition hover:underline dark:text-brand-300"
+                >
+                  Visit the help centre
+                </a>
+                <Button size="xs" onClick={onNext}>
+                  Start creating
+                </Button>
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -169,8 +187,10 @@ export function TourPopover({
                     Back
                   </button>
                 ) : null}
+                {/* The outro card always follows the counted steps, so a
+                    counted step never ends the tour — no 'Done' state. */}
                 <Button size="xs" onClick={onNext}>
-                  {isLast ? 'Done' : 'Next'}
+                  Next
                 </Button>
               </div>
             </div>

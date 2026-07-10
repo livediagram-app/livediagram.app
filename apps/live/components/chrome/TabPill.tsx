@@ -66,6 +66,9 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
   return (
     <div
       key={tab.id}
+      // Tour anchor (spec/79): the Tabs step highlights the active pill
+      // together with the add button.
+      data-tour-id={isActive ? 'active-tab' : undefined}
       draggable={!isEditing && !readOnly}
       {...reorderDrag.handlersFor(tab.id)}
       onContextMenu={

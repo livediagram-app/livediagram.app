@@ -18,6 +18,9 @@ export type TourApi = {
   // element's menu is open (or null if it couldn't be).
   openElementContextMenu: () => Promise<void>;
   closeContextMenu: () => void;
+  // The Cmd/Ctrl+K search panel, for the search step (desktop only).
+  openSearchPanel: () => void;
+  closeSearchPanel: () => void;
 };
 
 export type TourStep = {
@@ -25,16 +28,25 @@ export type TourStep = {
   title: string;
   body: string;
   // data-tour-id of the element the popover anchors to + highlights.
-  // Absent = no anchor: the card centres itself (the welcome offer).
+  // Absent = no anchor: the card centres itself (the welcome / outro).
   target?: string;
   // Optional second anchor folded into the highlight rect (union of the
   // two). The dropdown steps use it so the ring wraps the trigger button
-  // AND its portalled menu as one region, not the floating menu alone.
+  // AND its portalled menu as one region, not the floating menu alone;
+  // the tabs step wraps the active pill + the add button the same way.
   alsoHighlight?: string;
-  // The welcome offer card: no step count / dots / Back, and the primary /
-  // dismiss buttons read "Show me around" / "No thanks". Declining is
-  // permanent (the done-guard), so the offer never nags.
-  welcome?: boolean;
+  // Centred bookend cards, outside the step count, each with its own
+  // illustration and button set: 'welcome' offers the tour ("Show me
+  // around" / "No thanks", declining is permanent via the done-guard);
+  // 'outro' wraps it up ("Start creating" + a help-centre link).
+  card?: 'welcome' | 'outro';
+  // Skip this step entirely on mobile viewports (the search panel is a
+  // desktop surface).
+  mobileSkip?: boolean;
+  // Lift the highlight ring above the modal layer for targets that carry
+  // their own full-screen backdrop (the search panel sits at --z-modal,
+  // which would otherwise bury the ring's --z-overlay dim).
+  ringAboveModal?: boolean;
   prepare?: (api: TourApi) => void | Promise<void>;
   cleanup?: (api: TourApi) => void;
 };
@@ -57,8 +69,8 @@ const closeDropdown = (menuId: string, triggerId: string) => {
 export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    welcome: true,
-    title: 'Welcome to your first diagram',
+    card: 'welcome',
+    title: 'Welcome to livediagram',
     body: 'We can help you to get the most out of livediagram, want us to show you the basics?',
   },
   {
@@ -123,19 +135,27 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'tabs',
     title: 'Tabs',
-    body: 'One diagram can hold many pages. Click + to add a tab; drag tabs to reorder them or group them into folders.',
-    target: 'add-tab',
+    body: 'One diagram can hold many pages: this is your current tab, and + adds another. Each tab also has a menu of helpful tools and ways to organise, cleanup and customise.',
+    // The active pill and the add button highlight as one region.
+    target: 'active-tab',
+    alsoHighlight: 'add-tab',
   },
   {
-    id: 'tab-menu',
-    title: 'The tab menu',
-    body: 'Each tab has a menu containing helpful tools and ways to organise, cleanup and customise.',
-    target: 'tab-menu',
-    prepare: () => {
-      if (!findTour('tab-menu')) clickTour('tab-menu-trigger');
-    },
-    cleanup: () => {
-      if (findTour('tab-menu')) clickTour('tab-menu-trigger');
-    },
+    id: 'search',
+    title: 'Search everything',
+    body: 'The search panel helps you find everything from diagrams and elements to help articles. You can even perform actions like adding a shape from here.',
+    target: 'search-panel',
+    // The panel brings its own full-screen backdrop at the modal layer.
+    ringAboveModal: true,
+    // Cmd/Ctrl+K search is a desktop surface; skip it on phones.
+    mobileSkip: true,
+    prepare: (api) => api.openSearchPanel(),
+    cleanup: (api) => api.closeSearchPanel(),
+  },
+  {
+    id: 'outro',
+    card: 'outro',
+    title: "You're ready to go",
+    body: "That's the basics, the canvas is yours. If you ever have a question, the help centre has a guide for it.",
   },
 ];

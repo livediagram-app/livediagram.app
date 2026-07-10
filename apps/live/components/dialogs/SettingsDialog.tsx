@@ -81,7 +81,7 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
             }}
           />
           <ToggleRow
-            label="I've seen the editor tour"
+            label="Welcome Tour Completed"
             description="Checked once you've taken (or dismissed) the Show me around tour, so it only ever offers itself once. Uncheck it and close Settings to run the tour again."
             checked={tourSeen}
             onChange={(v) => {

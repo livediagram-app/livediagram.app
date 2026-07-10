@@ -188,7 +188,7 @@ type UserPreferences = {
   // The interactive editor tour's seen-guard (spec/79). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user on any device. Surfaced
-  // in Settings as "I've seen the editor tour"; unchecking it and closing
+  // in Settings as "Welcome Tour Completed"; unchecking it and closing
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
 };
