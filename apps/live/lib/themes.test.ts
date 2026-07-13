@@ -138,36 +138,47 @@ describe('getTheme', () => {
 });
 
 describe('shapeColorPresets (spec/48)', () => {
-  it('returns twelve deduped style presets (colour + border) for a single-accent theme', () => {
+  it('returns fifteen deduped style presets (colour + border) for a single-accent theme', () => {
     const presets = shapeColorPresets(getTheme('slate'));
-    expect(presets).toHaveLength(12);
+    // theme + 7 emphasis + 3 border treatments + 4 semantic = 15.
+    expect(presets).toHaveLength(15);
     const keys = presets.map((p) => `${p.fill}|${p.stroke}|${p.text}`.toLowerCase());
-    expect(new Set(keys).size).toBe(12); // all distinct
+    expect(new Set(keys).size).toBe(15); // all distinct
     for (const p of presets) {
       expect(p.fill).toMatch(/^#[0-9a-f]{6}$/i);
       expect(p.stroke).toMatch(/^#[0-9a-f]{6}$/i);
       expect(p.text).toMatch(/^#[0-9a-f]{6}$/i);
-      // Each preset is a complete look: it carries a border treatment too.
+      // Each preset is a complete look: it carries a border treatment too —
+      // but never a radius (that's the user's own silhouette choice).
       expect(p.borderStroke).toBeTruthy();
       expect(p.borderStyle).toBeTruthy();
-      expect(p.borderRadius).toBeTruthy();
+      expect(p).not.toHaveProperty('borderRadius');
     }
   });
 
-  it('caps a multi-colour (palette) theme at twelve presets too', () => {
+  it('caps a multi-colour (palette) theme at twenty presets', () => {
     const rainbow = THEMES.find((t) => t.palette && t.palette.length > 0);
     if (!rainbow) return; // no palette theme in the catalogue
     const presets = shapeColorPresets(rainbow);
-    expect(presets.length).toBeLessThanOrEqual(12);
+    expect(presets.length).toBeLessThanOrEqual(20);
     expect(presets.length).toBeGreaterThan(0);
   });
 
-  it('assigns stable ids including the emphasis tokens', () => {
+  it('assigns stable ids in hierarchical tiers (theme, emphasis, border, semantic)', () => {
     const ids = shapeColorPresets(getTheme('slate')).map((p) => p.id);
     expect(ids).toContain('theme');
     expect(ids).toContain('bold');
+    expect(ids).toContain('success');
     // ids are unique
     expect(new Set(ids).size).toBe(ids.length);
+    // Tier order: the theme card leads, the quiet end of the emphasis ramp
+    // precedes the loud end, border treatments follow, semantic close.
+    expect(ids.indexOf('theme')).toBe(0);
+    expect(ids.indexOf('ghost')).toBeLessThan(ids.indexOf('solid'));
+    expect(ids.indexOf('solid')).toBeLessThan(ids.indexOf('outline'));
+    expect(ids.indexOf('outline')).toBeLessThan(ids.indexOf('info'));
+    // The radius-defined Pill preset left with the radius itself.
+    expect(ids).not.toContain('pill');
   });
 });
 

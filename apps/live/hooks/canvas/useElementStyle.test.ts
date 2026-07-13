@@ -221,7 +221,6 @@ describe('useElementStyle shape style presets (spec/48)', () => {
       text: '#7f1d1d',
       borderStroke: 'thick',
       borderStyle: 'solid',
-      borderRadius: 'sm',
     });
 
     const el = result()[0] as {
@@ -239,7 +238,8 @@ describe('useElementStyle shape style presets (spec/48)', () => {
     // A preset is one complete look now: it stamps the border too (spec/48).
     expect(el.strokeWidth).toBe('thick');
     expect(el.strokeStyle).toBe('solid');
-    expect(el.borderRadius).toBe('sm');
+    // Radius stays the user's own choice (spec/48): presets never stamp it.
+    expect(el.borderRadius).toBeUndefined();
     // The preset id is recorded so a theme change can re-derive it.
     expect(el.colorPreset).toBe('bold');
   });
@@ -256,7 +256,6 @@ describe('useElementStyle shape style presets (spec/48)', () => {
       text: '#7f1d1d',
       borderStroke: 'thick',
       borderStyle: 'dotted',
-      borderRadius: 'lg',
     });
     style.resetShapeStyleSelected();
 
@@ -285,7 +284,6 @@ describe('useElementStyle shape style presets (spec/48)', () => {
       text: '#7f1d1d',
       borderStroke: 'thick',
       borderStyle: 'solid',
-      borderRadius: 'sm',
     });
     style.setFillColorSelected('#123456');
 

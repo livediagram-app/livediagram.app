@@ -31,7 +31,6 @@ describe('applyColorPresetToEl', () => {
     text: '#text',
     borderStroke: 'thick',
     borderStyle: 'dashed',
-    borderRadius: 'lg',
   } as ShapeColorPreset;
 
   it('stamps colours + the matching border + the preset id onto a shape', () => {
@@ -41,9 +40,10 @@ describe('applyColorPresetToEl', () => {
       textColor: '#text',
       strokeWidth: 'thick',
       strokeStyle: 'dashed',
-      borderRadius: 'lg',
       colorPreset: 'cp',
     });
+    // Radius is the user's own silhouette choice: never stamped by a preset.
+    expect(applyColorPresetToEl(el('shape'), p)).not.toHaveProperty('borderRadius', 'lg');
   });
 
   it('is a no-op on non-shapes', () => {

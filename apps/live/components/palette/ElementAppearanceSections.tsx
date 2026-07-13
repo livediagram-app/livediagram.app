@@ -172,7 +172,11 @@ export function ElementAppearanceSections({
           ) : null}
           {target.type === 'arrow' ? (
             <ArrowPresetsSection
-              current={{ strokeStyle: target.strokeStyle, flow: target.flow }}
+              current={{
+                strokeStyle: target.strokeStyle,
+                strokeWidth: target.strokeWidth,
+                flow: target.flow,
+              }}
               props={props}
               accordion={sectionProps('presets')}
               onClose={onClose}

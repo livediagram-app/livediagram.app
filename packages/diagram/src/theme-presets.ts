@@ -1,4 +1,4 @@
-import type { BorderRadius, BorderStroke, BorderStyle } from './border-style';
+import type { BorderStroke, BorderStyle } from './border-style';
 import { isLightColor, shade, tint } from './colors';
 import type { Element } from './index';
 import type { ThemeDefinition } from './themes';
@@ -67,16 +67,21 @@ export function themePresetColors(theme: ThemeDefinition): string[] {
 }
 
 // A one-click shape style preset (spec/48): a complete look applied together —
-// fill / stroke / text colour AND a matching border treatment (weight, pattern,
-// radius). Derived from the active theme so the offered presets always match
-// it, the same way themePresetColors derives the colour-picker swatches.
+// fill / stroke / text colour AND a matching border treatment (weight +
+// pattern). Deliberately NOT the border radius: radius is a shape-silhouette
+// choice the user makes separately, and presets clobbering it read as the
+// preset "breaking" the shape. Derived from the active theme so the offered
+// presets always match it, the same way themePresetColors derives the
+// colour-picker swatches.
 export type ShapeColorPreset = {
   // Stable identity for the preset, independent of the theme it's rendered
   // for (spec/48). Stored on a shape's `colorPreset` so a theme change can
-  // re-derive the same variant for the new theme. The emphasis variants are
-  // fixed tokens ('theme', 'soft', 'tinted', 'solid', 'bold', 'outline',
-  // 'muted', 'inked', 'pill', 'dotted', 'frame', 'ghost'); multi-colour themes'
-  // per-branch cards are 'branch-<i>'.
+  // re-derive the same variant for the new theme. The variants are fixed
+  // tokens ('theme', the emphasis ramp 'ghost' | 'muted' | 'soft' | 'tinted' |
+  // 'solid' | 'bold' | 'inked', the border treatments 'outline' | 'dotted' |
+  // 'frame', and the semantic set 'info' | 'success' | 'warning' | 'danger');
+  // multi-colour themes' per-branch cards are 'branch-<i>'. (A legacy 'pill'
+  // binding from before radius left the presets simply stops re-deriving.)
   id: string;
   name: string;
   fill: string;
@@ -84,18 +89,25 @@ export type ShapeColorPreset = {
   text: string;
   // The border that belongs to this look. A preset is one complete style, so
   // the border isn't a separate choice: Bold carries a thick border, Outline a
-  // dashed one, Pill a full radius, etc. Applied + re-derived with the colours.
+  // dashed one, Frame a thick sharp one, etc. Applied + re-derived with the
+  // colours.
   borderStroke: BorderStroke;
   borderStyle: BorderStyle;
-  borderRadius: BorderRadius;
 };
 
-// Twelve on-theme style presets for a shape — each a complete look (colour +
-// matching border). Spans the theme's default through soft / tinted / solid /
-// bold / outline / muted / inked / pill / dotted / frame / ghost emphasis (plus
-// a card per branch hue on multi-colour themes). Filled variants pick a
-// contrasting label colour (white on dark, a deep shade on light) so text stays
-// readable. Deduped on the exact fill+stroke+text triple, capped at 12.
+// The on-theme style presets for a shape — each a complete look (colour +
+// matching border weight/pattern), ordered hierarchically so the grid reads
+// as tiers:
+//   1. Theme — the current theme's own look (plus a card per branch hue on
+//      multi-colour themes).
+//   2. The emphasis ramp, quietest → loudest: Ghost, Muted, Soft, Tinted,
+//      Solid, Bold, Inked.
+//   3. Border treatments: Outline, Dotted, Frame.
+//   4. Semantic status colours (theme-independent): Info, Success, Warning,
+//      Danger.
+// Filled variants pick a contrasting label colour (white on dark, a deep
+// shade on light) so text stays readable. Deduped on the exact
+// fill+stroke+text triple, capped at 20 (five 4-wide grid rows).
 export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
   const accent = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
   const baseFill = theme.elementFill ?? DEFAULT_SHAPE_FILL;
@@ -114,7 +126,6 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
     text: baseText,
     borderStroke: 'medium',
     borderStyle: 'solid',
-    borderRadius: 'sm',
   });
   // Multi-colour themes: a tinted card per branch hue for genuine variety.
   if (theme.palette && theme.palette.length > 0) {
@@ -127,64 +138,19 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
         text: shade(entry.stroke, 0.45),
         borderStroke: 'medium',
         borderStyle: 'solid',
-        borderRadius: 'md',
       });
     });
   }
-  // Accent-derived emphasis variants — always appended so single-accent themes
-  // get a full spread and palette themes pad to twelve. Each pairs a colour
-  // look with the border that suits it (Bold → thick, Outline → dashed, Pill →
-  // full radius, Dotted → dotted, Frame → thick + sharp, Ghost → thin dashed).
   pool.push(
+    // ── The emphasis ramp, quietest → loudest ──
     {
-      id: 'soft',
-      name: 'Soft',
-      fill: tint(accent, 0.85),
-      stroke: tint(accent, 0.4),
-      text: shade(accent, 0.5),
+      id: 'ghost',
+      name: 'Ghost',
+      fill: '#f8fafc',
+      stroke: '#cbd5e1',
+      text: '#64748b',
       borderStroke: 'thin',
-      borderStyle: 'solid',
-      borderRadius: 'lg',
-    },
-    {
-      id: 'tinted',
-      name: 'Tinted',
-      fill: tint(accent, 0.6),
-      stroke: accent,
-      text: shade(accent, 0.45),
-      borderStroke: 'medium',
-      borderStyle: 'solid',
-      borderRadius: 'md',
-    },
-    {
-      id: 'solid',
-      name: 'Solid',
-      fill: accent,
-      stroke: shade(accent, 0.25),
-      text: labelOn(accent),
-      borderStroke: 'medium',
-      borderStyle: 'solid',
-      borderRadius: 'sm',
-    },
-    {
-      id: 'bold',
-      name: 'Bold',
-      fill: shade(accent, 0.3),
-      stroke: shade(accent, 0.55),
-      text: labelOn(shade(accent, 0.3)),
-      borderStroke: 'thick',
-      borderStyle: 'solid',
-      borderRadius: 'sm',
-    },
-    {
-      id: 'outline',
-      name: 'Outline',
-      fill: '#ffffff',
-      stroke: accent,
-      text: shade(accent, 0.3),
-      borderStroke: 'medium',
       borderStyle: 'dashed',
-      borderRadius: 'sm',
     },
     {
       id: 'muted',
@@ -194,7 +160,42 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       text: '#475569',
       borderStroke: 'thin',
       borderStyle: 'solid',
-      borderRadius: 'md',
+    },
+    {
+      id: 'soft',
+      name: 'Soft',
+      fill: tint(accent, 0.85),
+      stroke: tint(accent, 0.4),
+      text: shade(accent, 0.5),
+      borderStroke: 'thin',
+      borderStyle: 'solid',
+    },
+    {
+      id: 'tinted',
+      name: 'Tinted',
+      fill: tint(accent, 0.6),
+      stroke: accent,
+      text: shade(accent, 0.45),
+      borderStroke: 'medium',
+      borderStyle: 'solid',
+    },
+    {
+      id: 'solid',
+      name: 'Solid',
+      fill: accent,
+      stroke: shade(accent, 0.25),
+      text: labelOn(accent),
+      borderStroke: 'medium',
+      borderStyle: 'solid',
+    },
+    {
+      id: 'bold',
+      name: 'Bold',
+      fill: shade(accent, 0.3),
+      stroke: shade(accent, 0.55),
+      text: labelOn(shade(accent, 0.3)),
+      borderStroke: 'thick',
+      borderStyle: 'solid',
     },
     {
       id: 'inked',
@@ -204,17 +205,16 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       text: '#f8fafc',
       borderStroke: 'medium',
       borderStyle: 'solid',
-      borderRadius: 'none',
     },
+    // ── Border treatments ──
     {
-      id: 'pill',
-      name: 'Pill',
-      fill: tint(accent, 0.7),
+      id: 'outline',
+      name: 'Outline',
+      fill: '#ffffff',
       stroke: accent,
-      text: shade(accent, 0.45),
+      text: shade(accent, 0.3),
       borderStroke: 'medium',
-      borderStyle: 'solid',
-      borderRadius: 'full',
+      borderStyle: 'dashed',
     },
     {
       id: 'dotted',
@@ -224,7 +224,6 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       text: shade(accent, 0.45),
       borderStroke: 'medium',
       borderStyle: 'dotted',
-      borderRadius: 'md',
     },
     {
       id: 'frame',
@@ -234,17 +233,43 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       text: shade(accent, 0.5),
       borderStroke: 'thick',
       borderStyle: 'solid',
-      borderRadius: 'none',
+    },
+    // ── Semantic status colours (theme-independent, spec/48) ──
+    {
+      id: 'info',
+      name: 'Info',
+      fill: '#dbeafe',
+      stroke: '#2563eb',
+      text: '#1e3a8a',
+      borderStroke: 'medium',
+      borderStyle: 'solid',
     },
     {
-      id: 'ghost',
-      name: 'Ghost',
-      fill: '#f8fafc',
-      stroke: '#cbd5e1',
-      text: '#64748b',
-      borderStroke: 'thin',
-      borderStyle: 'dashed',
-      borderRadius: 'lg',
+      id: 'success',
+      name: 'Success',
+      fill: '#dcfce7',
+      stroke: '#16a34a',
+      text: '#14532d',
+      borderStroke: 'medium',
+      borderStyle: 'solid',
+    },
+    {
+      id: 'warning',
+      name: 'Warning',
+      fill: '#fef3c7',
+      stroke: '#d97706',
+      text: '#78350f',
+      borderStroke: 'medium',
+      borderStyle: 'solid',
+    },
+    {
+      id: 'danger',
+      name: 'Danger',
+      fill: '#fee2e2',
+      stroke: '#dc2626',
+      text: '#7f1d1d',
+      borderStroke: 'medium',
+      borderStyle: 'solid',
     },
   );
 
@@ -256,7 +281,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
     seen.add(key);
     out.push(p);
   }
-  return out.slice(0, 12);
+  return out.slice(0, 20);
 }
 
 // Resolve a stored `colorPreset` id (spec/48) to its colours UNDER A GIVEN
@@ -287,7 +312,6 @@ export function rederiveColorPresetForTheme(el: Element, theme: ThemeDefinition)
     textColor: preset.text,
     strokeWidth: preset.borderStroke,
     strokeStyle: preset.borderStyle,
-    borderRadius: preset.borderRadius,
   };
 }
 

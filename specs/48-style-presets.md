@@ -15,17 +15,23 @@ shape at once, in a single history step; the active-tile highlight reads off
 the first selected shape. The dedicated **icon** glyph is excluded — it has no
 fill / border to preset:
 
-- **Style presets** — twelve one-click looks derived from the active theme.
-  Each preset is a _complete_ style: it sets the shape's fill, border (stroke)
-  and text colour AND a matching border treatment (weight, pattern, corner
-  radius) together, so the border isn't a separate choice. The set spans the
-  theme's on-theme look plus soft / tinted / solid / bold / outline / muted /
-  inked / pill / dotted / frame / ghost variants (and, on multi-colour themes, a
-  card per branch hue), each pairing a colour with the border that suits it
-  (Bold → thick, Outline → dashed, Pill → full radius, Dotted → dotted, Frame →
-  thick + sharp, Ghost → thin dashed). Text colour is auto-contrasted on filled
-  variants so labels stay readable. The standalone weight / pattern / radius
-  controls in the **Border** category remain for fine-tuning after a preset.
+- **Style presets** — one-click looks derived from the active theme, ordered
+  as **hierarchical tiers** so the grid reads top-down: the theme's own look
+  first (plus a card per branch hue on multi-colour themes), then the
+  **emphasis ramp** quietest → loudest (Ghost / Muted / Soft / Tinted /
+  Solid / Bold / Inked), then the **border treatments** (Outline / Dotted /
+  Frame), then the theme-independent **semantic status** set (Info / Success /
+  Warning / Danger). Each preset is a _complete_ style: it sets the shape's
+  fill, border (stroke) and text colour AND a matching border weight +
+  pattern together (Bold → thick, Outline → dashed, Dotted → dotted, Frame →
+  thick, Ghost → thin dashed) — but **never the corner radius**: radius is a
+  silhouette choice the user makes separately, and presets clobbering it
+  read as the preset breaking the shape (the radius-defined Pill preset left
+  with that rule; a stored 'pill' binding simply stops re-deriving). Text
+  colour is auto-contrasted on filled variants so labels stay readable. The
+  set is capped at 20 (five 4-wide rows). The standalone weight / pattern /
+  radius controls in the **Border** category remain for fine-tuning after a
+  preset.
 - **Reset to default** — clears the shape's colour overrides back to the
   theme and removes border weight / pattern / radius overrides, returning the
   shape to its theme default in one click.
@@ -80,12 +86,15 @@ must not land a history step per pixel), so it does not hover-preview.
 ## Arrows
 
 When an **arrow** is right-clicked — on its own, or within a multi-selection
-that contains one or more arrows — the **Presets** category offers eight
-one-click arrow styles that combine line pattern (solid / dashed / dotted),
-thickness and an optional flow animation (e.g. a dashed animated arrow, a
-travelling-dot arrow), plus **Reset to default**. Reset clears the arrow's
-line-pattern / thickness / animation overrides. In a multi-selection the preset
-applies to every selected arrow at once.
+that contains one or more arrows — the **Presets** category offers twelve
+one-click arrow styles, ordered as hierarchical tiers: the **solid weights**
+lightest → heaviest (Fine / Plain / Bold), then the **patterns** with their
+weight variants (Fine Dash / Dashed / Bold Dash / Dotted), then the
+**animated flows** (Flow / Dash Flow / Dot Flow / Signal / Pulse), plus
+**Reset to default**. Reset clears the arrow's line-pattern / thickness /
+animation overrides. The active-tile highlight matches on pattern +
+thickness + flow (thickness disambiguates the weight tiers). In a
+multi-selection the preset applies to every selected arrow at once.
 
 ## Implementation notes
 

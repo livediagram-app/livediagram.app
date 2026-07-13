@@ -22,7 +22,6 @@ const PRESET_A: ShapeColorPreset = {
   text: '#aa0000',
   borderStroke: 'thick',
   borderStyle: 'solid',
-  borderRadius: 'lg',
 };
 const PRESET_B: ShapeColorPreset = {
   id: 'b',
@@ -32,7 +31,6 @@ const PRESET_B: ShapeColorPreset = {
   text: '#00bb00',
   borderStroke: 'thin',
   borderStyle: 'dashed',
-  borderRadius: 'sm',
 };
 
 // Model the production wiring's defining quirk: `tabsRef` is a LIVE MIRROR that

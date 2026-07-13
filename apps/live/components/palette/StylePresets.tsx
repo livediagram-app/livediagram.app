@@ -2,11 +2,12 @@
 
 // One-click style presets for the selected-element context menu (spec/48).
 // Two surfaces:
-//   - ShapePresets — twelve theme-derived style looks, each a complete style
-//     (colour + a matching border treatment, e.g. Bold's thick border, Outline's
-//     dashed one, Pill's full radius) + a reset.
-//   - ArrowPresets — eight line looks (pattern × thickness × optional flow
-//     animation, e.g. a dashed animated arrow) + a reset.
+//   - ShapePresets — theme-derived style looks in hierarchical tiers (theme /
+//     emphasis ramp / border treatments / semantic status), each a complete
+//     style: colour + a matching border weight and pattern (never the radius —
+//     that's the user's own silhouette choice) + a reset.
+//   - ArrowPresets — line looks in tiers (solid weights, patterns, animated
+//     flows) + a reset.
 // Purely presentational: every apply is a callback prop. Shape presets are
 // theme-derived (passed in); arrow presets are the static table below. Lives in
 // its own file so EditorContextMenu doesn't accrete more large categories
@@ -30,7 +31,9 @@ import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-
 
 // Arrow presets: line pattern × thickness × optional flow animation, so the
 // user can grab a dashed animated arrow, a travelling-dot arrow, etc. in one
-// click.
+// click. Ordered hierarchically so the grid reads as tiers: solid weights
+// (fine → bold), then patterns (with their weight variants), then the
+// animated flows.
 export type ArrowPreset = {
   name: string;
   style: BorderStyle;
@@ -38,14 +41,21 @@ export type ArrowPreset = {
   flow?: ArrowFlow;
 };
 const ARROW_PRESETS: readonly ArrowPreset[] = [
+  // ── Solid weights, lightest → heaviest ──
+  { name: 'Fine', style: 'solid', thickness: 'thin' },
   { name: 'Plain', style: 'solid', thickness: 'medium' },
   { name: 'Bold', style: 'solid', thickness: 'thick' },
-  { name: 'Fine', style: 'solid', thickness: 'thin' },
+  // ── Patterns ──
+  { name: 'Fine Dash', style: 'dashed', thickness: 'thin' },
   { name: 'Dashed', style: 'dashed', thickness: 'medium' },
+  { name: 'Bold Dash', style: 'dashed', thickness: 'thick' },
   { name: 'Dotted', style: 'dotted', thickness: 'medium' },
+  // ── Animated flows ──
   { name: 'Flow', style: 'solid', thickness: 'medium', flow: 'dashes' },
   { name: 'Dash Flow', style: 'dashed', thickness: 'medium', flow: 'dashes' },
   { name: 'Dot Flow', style: 'solid', thickness: 'medium', flow: 'dots' },
+  { name: 'Signal', style: 'solid', thickness: 'medium', flow: 'signal' },
+  { name: 'Pulse', style: 'solid', thickness: 'medium', flow: 'pulse' },
 ];
 
 // ── Preview-style mappings ──────────────────────────────────────────────
@@ -196,8 +206,9 @@ export function ArrowPresets({
   onPreviewEnd,
   onReset,
 }: {
-  // The arrow's current style, to highlight a matching preset.
-  current: { strokeStyle?: BorderStyle; flow?: ArrowFlow };
+  // The arrow's current style, to highlight a matching preset. strokeWidth
+  // disambiguates the weight tiers (Fine / Plain / Bold share style + flow).
+  current: { strokeStyle?: BorderStyle; strokeWidth?: number; flow?: ArrowFlow };
   onApply: (preset: ArrowPreset) => void;
   // Hover preview (desktop pointer only): show the preset live, revert on leave.
   onPreview: (preset: ArrowPreset) => void;
@@ -211,7 +222,11 @@ export function ArrowPresets({
         {ARROW_PRESETS.map((p) => (
           <SizeButton
             key={p.name}
-            active={(current.strokeStyle ?? 'solid') === p.style && current.flow === p.flow}
+            active={
+              (current.strokeStyle ?? 'solid') === p.style &&
+              current.flow === p.flow &&
+              (current.strokeWidth ?? ARROW_THICKNESS_PX.medium) === ARROW_THICKNESS_PX[p.thickness]
+            }
             onClick={() => onApply(p)}
             onPointerEnter={onMouseHover(() => onPreview(p))}
             onPointerLeave={onMouseHover(onPreviewEnd)}

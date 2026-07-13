@@ -85,8 +85,9 @@ export function ArrowPresetsSection({
   onClose,
   title = 'Presets',
 }: {
-  // The arrow's current line style, to highlight a matching preset.
-  current: { strokeStyle?: BorderStyle; flow?: ArrowFlow };
+  // The arrow's current line style, to highlight a matching preset
+  // (strokeWidth disambiguates the Fine / Plain / Bold weight tiers).
+  current: { strokeStyle?: BorderStyle; strokeWidth?: number; flow?: ArrowFlow };
   props: EditorContextMenuProps;
   accordion: AccordionProps;
   onClose: () => void;

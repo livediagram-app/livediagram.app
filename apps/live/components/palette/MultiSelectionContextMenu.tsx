@@ -211,7 +211,11 @@ export function MultiSelectionContextMenu({
                 ) : null}
                 {arrowSrc ? (
                   <ArrowPresetsSection
-                    current={{ strokeStyle: arrowSrc.strokeStyle, flow: arrowSrc.flow }}
+                    current={{
+                      strokeStyle: arrowSrc.strokeStyle,
+                      strokeWidth: arrowSrc.strokeWidth,
+                      flow: arrowSrc.flow,
+                    }}
                     props={props}
                     accordion={sectionProps('m-arrow-presets')}
                     onClose={onClose}

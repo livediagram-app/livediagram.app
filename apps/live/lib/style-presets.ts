@@ -32,9 +32,11 @@ import {
 import type { ShapeColorPreset } from './themes';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
-// text) AND its border (weight / pattern / radius) together — a preset is one
-// complete look (spec/48). Records the preset id so theme changes can re-derive
-// it. No-op on non-shapes.
+// text) AND its border weight / pattern together — a preset is one complete
+// look (spec/48). Border RADIUS is deliberately untouched: it's a silhouette
+// choice the user makes separately, and a preset clobbering it read as the
+// preset breaking the shape. Records the preset id so theme changes can
+// re-derive it. No-op on non-shapes.
 export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element {
   if (el.type !== 'shape') return el;
   return {
@@ -44,7 +46,6 @@ export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element 
     textColor: p.text,
     strokeWidth: p.borderStroke,
     strokeStyle: p.borderStyle,
-    borderRadius: p.borderRadius,
     colorPreset: p.id,
   };
 }
