@@ -736,7 +736,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Their libraries (spec/35): one sweep per team. Feeds the search
   // panel's folder group AND the floating Explorer panel (team folder
   // tree + team diagrams in Recent + the current team diagram).
-  const { teamFolders, teamDiagrams } = useTeamLibrariesSweep(clerkUserId ?? null, teams, {
+  const {
+    teamFolders,
+    teamDiagrams,
+    refresh: refreshTeamLibraries,
+  } = useTeamLibrariesSweep(clerkUserId ?? null, teams, {
     enabled: !!clerkUserId,
   });
 
@@ -1268,6 +1272,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     deleteDiagram,
     deleteFolder,
     moveDiagramToFolder,
+    moveDiagramTo,
     duplicateDiagram,
     dismissSharedDiagram,
     newDiagram,
@@ -1286,6 +1291,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     copying,
     setCopying,
     sessionShareCode,
+    refreshTeamLibraries,
+    refreshDiagramList: () => refreshDiagramList(selfParticipant.id),
+    // Keep the header's Private / Team badge honest when the OPEN diagram
+    // changes scope via the move picker (spec/35).
+    onDiagramScopeChanged: (id, teamId) => {
+      if (id === diagramId) setDiagramTeamId(teamId);
+    },
   });
 
   // Mark the participant's name as "confirmed" — they explicitly
@@ -2145,6 +2157,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     loadingDiagram,
     makeCopy,
     moveDiagramToFolder,
+    moveDiagramTo,
     nameConfirmed,
     narrowMultiSelection,
     newDiagram,

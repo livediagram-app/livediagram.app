@@ -69,6 +69,13 @@ export type ExplorerProps = {
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
   onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
+  // Scope-aware move (spec/35): routes a pick that involves a team on
+  // either side (re-folder within a team, personal -> team, team ->
+  // personal). When wired, the move picker offers every space.
+  onMoveDiagramTo?: (
+    diagramId: string,
+    dest: { teamId: string | null; folderId: string | null },
+  ) => void;
   // Callback the Canvas wires up to track Explorer's bottom edge so
   // the Palette can stack beneath it on mobile (where Explorer
   // banner-pins to the top of the viewport rather than the left

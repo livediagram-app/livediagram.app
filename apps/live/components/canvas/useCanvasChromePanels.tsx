@@ -121,6 +121,7 @@ export function useCanvasChromePanels({
     onMoveActivity,
     onMoveCommentsPanel,
     onMoveDiagramToFolder,
+    onMoveDiagramTo,
     onMoveExplorer,
     onMovePalette,
     onNewDiagram,
@@ -185,6 +186,7 @@ export function useCanvasChromePanels({
     onRenameFolder,
     onDeleteFolder,
     onMoveDiagramToFolder,
+    onMoveDiagramTo,
   });
   const activityHandlers = useStableCallbacks({
     onUndo,
@@ -276,6 +278,7 @@ export function useCanvasChromePanels({
       onRenameFolder={explorerHandlers.onRenameFolder}
       onDeleteFolder={explorerHandlers.onDeleteFolder}
       onMoveDiagramToFolder={explorerHandlers.onMoveDiagramToFolder}
+      onMoveDiagramTo={onMoveDiagramTo ? explorerHandlers.onMoveDiagramTo : undefined}
       onSize={onExplorerSize}
       mobileOpenOverride={activeMobilePanel === 'explorer'}
       mobileDockAnchor={activeDockAnchor ?? undefined}

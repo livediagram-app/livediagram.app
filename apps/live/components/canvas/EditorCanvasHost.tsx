@@ -158,6 +158,7 @@ export function EditorCanvasHost() {
     lockedByOther,
     mapPosition,
     moveDiagramToFolder,
+    moveDiagramTo,
     multiSelectedIds,
     narrowMultiSelection,
     newDiagram,
@@ -493,6 +494,7 @@ export function EditorCanvasHost() {
       onRenameFolder={renameFolder}
       onDeleteFolder={deleteFolder}
       onMoveDiagramToFolder={moveDiagramToFolder}
+      onMoveDiagramTo={moveDiagramTo}
       onDeselect={() => {
         // Clicking empty canvas also cancels an armed arrow-connect, and
         // wraps up the Format tool — restoring the pre-Format tool — so a

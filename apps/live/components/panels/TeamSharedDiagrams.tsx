@@ -11,9 +11,15 @@ import { MenuFolderIcon, PlusIcon } from '@/app/explorer/icons';
 import { DiagramIcon } from '@/app/explorer/icons';
 import { TeamDiagramRow } from '@/components/panels/TeamDiagramRow';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
-import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
+import {
+  MoveToFolderDialog,
+  type MoveDestination,
+  type MoveFolderNode,
+} from '@/components/dialogs/MoveToFolderDialog';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useTeamLibrary } from '@/hooks/persistence/useTeamLibrary';
+import { apiCreateFolder } from '@/lib/api-client';
+import { track } from '@/lib/telemetry';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 
 // "Shared diagrams" on the team page (spec/35): the team's folder
@@ -31,11 +37,27 @@ export function TeamSharedDiagrams({
   ownerId,
   teamId,
   teamName,
+  moveDests,
+  onMoveDiagramTo,
 }: {
   ownerId: string;
   teamId: string;
   // Shown by the move picker's Team Library card; falls back to "Team".
   teamName?: string;
+  // Full move destinations (spec/35): the caller's personal folder tree plus
+  // EVERY team's library, so a diagram can be re-homed anywhere (back to My
+  // Work, or on to another team) from this page — the space overview + back
+  // bar appear once more than one space exists. Absent = diagram moves stay
+  // scoped to this team. Folder moves are always team-scoped (a folder
+  // can't change scope).
+  moveDests?: {
+    personalFolders: { id: string; name: string; parentId: string | null }[];
+    teams: { id: string; name: string; folders: MoveFolderNode[] }[];
+  };
+  // Routes a cross-scope pick (personal / another team) — the explorer's
+  // `moveDiagramTo`, which picks the right API call from the diagram's
+  // current placement. Same-team picks keep using lib.moveDiagram.
+  onMoveDiagramTo?: (id: string, dest: MoveDestination) => void;
 }) {
   const lib = useTeamLibrary(ownerId, teamId);
   // Deep link: /explorer/team?id=<team>&folder=<id> opens with that
@@ -369,11 +391,14 @@ export function TeamSharedDiagrams({
       )}
 
       {/* ---------- Move picker ---------- */}
-      {/* Same shared move modal as the personal surfaces (spec/15),
-          scoped to this team's tree: no personal space and a single
-          team, so the browser opens straight inside the team library
-          (the diagram is already in this team; cross-team moves go via
-          the personal picker or Remove-from-team first). */}
+      {/* Same shared move modal as the personal surfaces (spec/15). With
+          `moveDests` (the explorer page supplies it) a DIAGRAM move offers
+          every space — My Work plus each team — so a team diagram can be
+          re-homed back to the personal tree or on to another team from
+          right here; the space overview + back bar come with it. This
+          team's own folders come from the live lib (fresher than the
+          sweep). Folder moves stay scoped to this team: a folder cannot
+          change scope, so the wider browse would only offer dead ends. */}
       {moveTarget ? (
         <MoveToFolderDialog
           subjectName={
@@ -382,22 +407,60 @@ export function TeamSharedDiagrams({
               : lib.folders.find((f) => f.id === moveTarget.id)?.name) || 'Untitled'
           }
           subjectKind={moveTarget.kind}
-          teams={[{ id: teamId, name: teamName ?? 'Team', folders: movePickerFolders }]}
+          personalFolders={
+            moveTarget.kind === 'diagram' && moveDests ? moveDests.personalFolders : undefined
+          }
+          teams={
+            moveTarget.kind === 'diagram' && moveDests
+              ? moveDests.teams.map((t) =>
+                  t.id === teamId ? { ...t, folders: movePickerFolders } : t,
+                )
+              : [{ id: teamId, name: teamName ?? 'Team', folders: movePickerFolders }]
+          }
           currentTeamId={teamId}
           currentFolderId={
             moveTarget.kind === 'diagram'
               ? (lib.diagrams.find((d) => d.id === moveTarget.id)?.folderId ?? null)
               : (lib.folders.find((f) => f.id === moveTarget.id)?.parentId ?? null)
           }
-          onCreateFolder={async (name, parentId) => {
-            const created = await lib.createFolder(parentId, name);
-            return created
-              ? { id: created.id, name: created.name, parentId: created.parentId }
-              : null;
+          onCreateFolder={async (name, parentId, destTeamId) => {
+            // In-team creates go through the lib so the local list updates
+            // immediately. Other scopes (personal / another team, reachable
+            // via moveDests) create through the API directly: the fresh
+            // folder is a valid destination straight away, and the sweep
+            // picks its tile up on the next explorer refresh.
+            if (destTeamId === teamId) {
+              const created = await lib.createFolder(parentId, name);
+              return created
+                ? { id: created.id, name: created.name, parentId: created.parentId }
+                : null;
+            }
+            try {
+              const folder = await apiCreateFolder(ownerId, {
+                id: crypto.randomUUID(),
+                name,
+                parentId,
+                teamId: destTeamId,
+              });
+              track('Folder', 'Created', destTeamId ? 'Team' : undefined);
+              return { id: folder.id, name: folder.name, parentId: folder.parentId };
+            } catch {
+              return null;
+            }
           }}
-          onPick={({ folderId }) => {
-            if (moveTarget.kind === 'diagram') void lib.moveDiagram(moveTarget.id, folderId);
-            else void lib.moveFolder(moveTarget.id, folderId);
+          onPick={(dest) => {
+            if (moveTarget.kind === 'folder') {
+              void lib.moveFolder(moveTarget.id, dest.folderId);
+              return;
+            }
+            if (dest.teamId === teamId) {
+              void lib.moveDiagram(moveTarget.id, dest.folderId);
+              return;
+            }
+            // Leaving this team (to My Work or another team): route via the
+            // explorer's placement-aware mover, then refresh this library so
+            // the row disappears once the move lands.
+            void Promise.resolve(onMoveDiagramTo?.(moveTarget.id, dest)).then(() => lib.refresh());
           }}
           onClose={() => setMoveTarget(null)}
         />

@@ -22,7 +22,7 @@ import { useModalGuard } from '@/hooks/ui/useModalGuard';
 // Width scale covering the values the hand-rolled dialogs actually used
 // (26 / 30 / 34 / 36rem) so every dialog snaps to one rung instead of a
 // bespoke `w-[..]`.
-type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 
 const WIDTHS: Record<DialogSize, string> = {
   sm: 'w-[26rem]',
@@ -31,6 +31,10 @@ const WIDTHS: Record<DialogSize, string> = {
   xl: 'w-[36rem]',
   // The image picker's two-column grid (640px = 40rem).
   '2xl': 'w-[40rem]',
+  // Wide tile-grid dialogs (the Edit Favourites picker): long catalogues
+  // (Icons, Technology) trade vertical scroll for horizontal room on
+  // desktop. max-w-[92%] still bounds it on smaller screens.
+  '3xl': 'w-[56rem]',
 };
 
 export type DialogProps = {

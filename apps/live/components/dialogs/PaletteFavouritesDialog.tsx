@@ -134,7 +134,9 @@ export function PaletteFavouritesDialog({
       open
       onClose={onClose}
       titleId="favourites-dialog-title"
-      size="md"
+      // 3xl + a denser desktop grid: long categories (Icons, Technology)
+      // were a narrow five-wide column that scrolled forever (spec/78).
+      size="3xl"
       className="max-h-[80vh]"
       backdrop="desktop-light"
     >
@@ -193,7 +195,7 @@ export function PaletteFavouritesDialog({
             {loadingCategory ? 'Loading icons…' : 'No controls match.'}
           </p>
         ) : (
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-5 gap-2 sm:grid-cols-7 lg:grid-cols-9">
             {tiles.map((t) => {
               const isFavourite = favourites.includes(t.id);
               return (

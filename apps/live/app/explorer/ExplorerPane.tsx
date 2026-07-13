@@ -137,6 +137,9 @@ export function ExplorerPane() {
     acceptInvite,
     declineInvite,
     refreshTeams,
+    movePersonalFolders,
+    moveTeamDests,
+    moveDiagramTo,
   } = useExplorer();
   const { signInHref } = useAuthHrefs();
 
@@ -234,6 +237,11 @@ export function ExplorerPane() {
             onTeamsChanged={() => void refreshTeams()}
             onLeftTeam={() => go({ kind: 'recent' })}
             onLoadResult={(found) => setTeamNotFound(!found)}
+            // The shared-diagrams move picker offers every space (spec/35):
+            // the personal tree + each team, with `moveDiagramTo` routing a
+            // cross-scope pick from the diagram's current placement.
+            moveDests={{ personalFolders: movePersonalFolders, teams: moveTeamDests }}
+            onMoveDiagramTo={moveDiagramTo}
           />
         ) : null
       ) : selected.kind === 'gallery' ? (

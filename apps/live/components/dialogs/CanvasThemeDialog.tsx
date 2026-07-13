@@ -120,20 +120,23 @@ export function CanvasThemeDialog({
               </div>
               <DialogCloseButton compact onClick={onClose} />
             </div>
+            {/* Theme leads the strip: it's the broader, more-used control
+                (the paintbrush dock button also opens here); Canvas is the
+                finer backdrop tuning. */}
             <div className="flex w-full gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
-              <TabButton
-                active={tab === 'canvas'}
-                onClick={() => onTabChange('canvas')}
-                icon={<BackgroundTabIcon />}
-              >
-                Canvas
-              </TabButton>
               <TabButton
                 active={tab === 'theme'}
                 onClick={() => onTabChange('theme')}
                 icon={<ThemeTabIcon />}
               >
                 Theme
+              </TabButton>
+              <TabButton
+                active={tab === 'canvas'}
+                onClick={() => onTabChange('canvas')}
+                icon={<BackgroundTabIcon />}
+              >
+                Canvas
               </TabButton>
             </div>
           </div>

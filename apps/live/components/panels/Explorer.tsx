@@ -5,6 +5,8 @@ import { useRelativeTimeTick } from '@/lib/relative-time';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
+import { apiCreateFolder } from '@/lib/api-client';
+import { track } from '@/lib/telemetry';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { OpenIcon, PlusIcon } from '@/components/panels/explorer-icons';
@@ -42,6 +44,7 @@ function ExplorerImpl({
   onRenameFolder,
   onDeleteFolder,
   onMoveDiagramToFolder,
+  onMoveDiagramTo,
   shared = [],
   teams = [],
   teamFolders = [],
@@ -88,9 +91,11 @@ function ExplorerImpl({
   // Team rows + team folders share this map too (ids are globally
   // unique). Defaults to all collapsed so the panel stays compact.
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
-  // When set, the diagram row whose Move dialog is open. Stored here
+  // When set, the diagram row whose Move dialog is open (`teamId` set =
+  // it's a team-library diagram, so the picker opens on that team and a
+  // pick routes through the scope-aware onMoveDiagramTo). Stored here
   // (vs. in DiagramRow) so the modal doesn't nest inside row portals.
-  const [moveTargetDiagramId, setMoveTargetDiagramId] = useState<string | null>(null);
+  const [moveTarget, setMoveTarget] = useState<{ id: string; teamId: string | null } | null>(null);
   // Folder id newly created via the New folder button — used to drop
   // the row into rename mode immediately after the API returns.
   const [pendingRenameFolderId, setPendingRenameFolderId] = useState<string | null>(null);
@@ -160,7 +165,7 @@ function ExplorerImpl({
   // delete flow's ConfirmPopover still anchors), but the move flow is
   // a centred modal now (spec/15) and ignores it.
   const openMovePicker = (diagramId: string) => {
-    setMoveTargetDiagramId(diagramId);
+    setMoveTarget({ id: diagramId, teamId: null });
   };
 
   return (
@@ -324,6 +329,15 @@ function ExplorerImpl({
                         ? (anchor) => openDeleteConfirm(currentTeam.id, anchor)
                         : undefined
                     }
+                    // Change Folder for a team diagram (spec/35): opens the
+                    // move picker on this team's tree, with My Work + the
+                    // other teams one Back away. Routed through the
+                    // scope-aware onMoveDiagramTo.
+                    onMoveRequest={
+                      onMoveDiagramTo
+                        ? () => setMoveTarget({ id: currentTeam.id, teamId: currentTeam.team.id })
+                        : undefined
+                    }
                   />
                 </li>
               ) : currentShared ? (
@@ -385,30 +399,78 @@ function ExplorerImpl({
       </div>
 
       {/* Move-destination modal (spec/15), the same shared placement
-          browser as the /explorer page. The panel scopes it to personal
-          folders: team moves (spec/35) live on the full explorer page. */}
-      {moveTargetDiagramId && onMoveDiagramToFolder ? (
-        <MoveToFolderDialog
-          subjectName={diagrams.find((d) => d.id === moveTargetDiagramId)?.name || 'Untitled'}
-          subjectKind="diagram"
-          personalFolders={folders.map((f) => ({ id: f.id, name: f.name, parentId: f.parentId }))}
-          currentFolderId={diagrams.find((d) => d.id === moveTargetDiagramId)?.folderId ?? null}
-          onCreateFolder={
-            onCreateFolder
-              ? async (name, parentId) => {
-                  const created = await onCreateFolder({ name, parentId });
-                  return created
-                    ? { id: created.id, name: created.name, parentId: created.parentId }
-                    : null;
+          browser as the /explorer page. With the scope-aware
+          onMoveDiagramTo wired (signed-in sessions with teams), the picker
+          offers every space — My Work plus each team — so a team diagram
+          can be re-homed to the personal tree (and vice versa) right from
+          the editor. Purely personal picks keep the optimistic
+          onMoveDiagramToFolder path. */}
+      {moveTarget && (onMoveDiagramToFolder || onMoveDiagramTo)
+        ? (() => {
+            const teamRow = moveTarget.teamId
+              ? teamDiagrams.find((d) => d.id === moveTarget.id)
+              : undefined;
+            const personalRow = diagrams.find((d) => d.id === moveTarget.id);
+            const teamDests = onMoveDiagramTo
+              ? teams.map((t) => ({
+                  id: t.id,
+                  name: t.name,
+                  folders: teamFolders
+                    .filter((f) => f.teamId === t.id)
+                    .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
+                }))
+              : undefined;
+            return (
+              <MoveToFolderDialog
+                subjectName={teamRow?.name || personalRow?.name || 'Untitled'}
+                subjectKind="diagram"
+                personalFolders={folders.map((f) => ({
+                  id: f.id,
+                  name: f.name,
+                  parentId: f.parentId,
+                }))}
+                teams={teamDests}
+                currentTeamId={moveTarget.teamId}
+                currentFolderId={
+                  teamRow ? (teamRow.folderId ?? null) : (personalRow?.folderId ?? null)
                 }
-              : undefined
-          }
-          onPick={({ folderId }) => {
-            onMoveDiagramToFolder(moveTargetDiagramId, folderId);
-          }}
-          onClose={() => setMoveTargetDiagramId(null)}
-        />
-      ) : null}
+                onCreateFolder={async (name, parentId, destTeamId) => {
+                  // Personal creates go through the host's folder hook (the
+                  // panel's tree updates immediately); team creates hit the
+                  // API directly, same as the team page's picker.
+                  if (destTeamId === null) {
+                    if (!onCreateFolder) return null;
+                    const created = await onCreateFolder({ name, parentId });
+                    return created
+                      ? { id: created.id, name: created.name, parentId: created.parentId }
+                      : null;
+                  }
+                  if (!ownerId) return null;
+                  try {
+                    const folder = await apiCreateFolder(ownerId, {
+                      id: crypto.randomUUID(),
+                      name,
+                      parentId,
+                      teamId: destTeamId,
+                    });
+                    track('Folder', 'Created', 'Team');
+                    return { id: folder.id, name: folder.name, parentId: folder.parentId };
+                  } catch {
+                    return null;
+                  }
+                }}
+                onPick={(dest) => {
+                  if (dest.teamId === null && moveTarget.teamId === null) {
+                    onMoveDiagramToFolder?.(moveTarget.id, dest.folderId);
+                  } else {
+                    onMoveDiagramTo?.(moveTarget.id, dest);
+                  }
+                }}
+                onClose={() => setMoveTarget(null)}
+              />
+            );
+          })()
+        : null}
 
       {deleteConfirm && deleteAnchorRef.current ? (
         <ConfirmPopover

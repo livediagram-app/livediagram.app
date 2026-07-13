@@ -51,7 +51,7 @@ Curation happens in a centred dialog (`PaletteFavouritesDialog`, the shared
   keeps the grid scannable).
 - A **search box** (autofocused) sits **under the pills** and filters the
   picked category's controls by name as the user types.
-- Controls render as a space-efficient **5-per-row tile grid**. Each tile
+- Controls render as a space-efficient **tile grid** (5-per-row on mobile, up to 9-per-row on desktop: the dialog uses the wide `3xl` shell so long catalogues like Icons / Technology trade endless vertical scroll for horizontal room). Each tile
   is a **bordered card even at rest** (with 100+ icons in one grid,
   hover-only boundaries read as one undifferentiated mush): the familiar
   glyph + caption with a **corner badge** carrying the state — a **red

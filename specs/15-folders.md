@@ -44,8 +44,10 @@ In scope:
   pre-selected ("always something selected"); the "Move here" button
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
-  /explorer page, the floating Explorer panel (personal folders only),
-  and the team library (its team only). It replaced the earlier
+  /explorer page, the floating Explorer panel, and the team library —
+  and every diagram-move surface offers every space (My Work + each
+  team, spec/35), so a diagram is never trapped in a scope; only folder
+  moves stay scoped to their own tree. It replaced the earlier
   filterable indented-tree modal, which itself outgrew an anchored
   popover.
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ComponentProps } from 'react';
 import { Button } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { apiGetTeam, type TeamMember } from '@/lib/api-client';
@@ -30,6 +30,8 @@ export function TeamPane({
   onTeamsChanged,
   onLeftTeam,
   onLoadResult,
+  moveDests,
+  onMoveDiagramTo,
 }: {
   ownerId: string;
   teamId: string;
@@ -45,6 +47,11 @@ export function TeamPane({
   // Whether the team loaded (true) or 404'd (false). The pane header
   // uses this to drop the team title on a 404 — there's no team to name.
   onLoadResult?: (found: boolean) => void;
+  // Full move destinations + cross-scope router for the shared-diagrams
+  // move picker (spec/35): passed straight through to TeamSharedDiagrams
+  // so a team diagram can be re-homed to My Work / another team.
+  moveDests?: ComponentProps<typeof TeamSharedDiagrams>['moveDests'];
+  onMoveDiagramTo?: ComponentProps<typeof TeamSharedDiagrams>['onMoveDiagramTo'];
 }) {
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -318,7 +325,14 @@ export function TeamPane({
       {/* key on teamId so switching teams remounts the library and
           resets its open-folder `spot` — otherwise a subfolder open in
           team A leaks into team B as a stale, empty folder view. */}
-      <TeamSharedDiagrams key={teamId} ownerId={ownerId} teamId={teamId} teamName={team.name} />
+      <TeamSharedDiagrams
+        key={teamId}
+        ownerId={ownerId}
+        teamId={teamId}
+        teamName={team.name}
+        moveDests={moveDests}
+        onMoveDiagramTo={onMoveDiagramTo}
+      />
 
       <TeamFormModal
         open={editOpen}

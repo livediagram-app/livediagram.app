@@ -12,7 +12,12 @@
 // the simplest correct handoff (spec/14).
 
 import type { Dispatch, SetStateAction } from 'react';
-import { apiCopyDiagram, type DiagramListItem, type SharedWithItem } from '@/lib/api-client';
+import {
+  apiCopyDiagram,
+  apiSetDiagramFolder,
+  type DiagramListItem,
+  type SharedWithItem,
+} from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDiagramListActions } from '@/hooks/persistence/useDiagramListActions';
@@ -37,6 +42,16 @@ type DiagramActionsDeps = {
   // The session's share code (edit/view visitors), forwarded to the
   // copy endpoint for authorisation.
   sessionShareCode: string | null;
+  // Post-move refreshes for the scope-aware mover below: the team
+  // libraries sweep (a row moved within / left a team) and the personal
+  // list (a diagram landed in — or left — My Work).
+  refreshTeamLibraries: () => void;
+  refreshDiagramList: () => Promise<void> | void;
+  // Fired after a successful scope-aware move so the editor can sync any
+  // state derived from the moved diagram's placement — the header's
+  // Private / Team badge reads the CURRENT diagram's teamId, which
+  // otherwise goes stale until a reload.
+  onDiagramScopeChanged?: (diagramId: string, teamId: string | null) => void;
 };
 
 export function useDiagramActions(deps: DiagramActionsDeps) {
@@ -53,6 +68,9 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
     copying,
     setCopying,
     sessionShareCode,
+    refreshTeamLibraries,
+    refreshDiagramList,
+    onDiagramScopeChanged,
   } = deps;
 
   const toast = useToast();
@@ -78,6 +96,28 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
     sharedDiagrams,
     setSharedDiagrams,
   });
+
+  // Scope-crossing move (spec/35), for the Explorer panel's move picker
+  // when a TEAM is involved on either side: re-folder within a team, file
+  // a personal diagram into a team, or bring a team diagram back to the
+  // personal tree (ownership transfers to the mover server-side). One API
+  // call covers every case; afterwards both the team sweep and the
+  // personal list refresh so the row surfaces wherever it landed.
+  // (Purely personal moves stay on moveDiagramToFolder above — it updates
+  // the list optimistically.)
+  const moveDiagramTo = (id: string, dest: { teamId: string | null; folderId: string | null }) => {
+    void apiSetDiagramFolder(ownerId, id, dest.folderId, dest.teamId)
+      .then(() => {
+        refreshTeamLibraries();
+        void refreshDiagramList();
+        onDiagramScopeChanged?.(id, dest.teamId);
+        toast.success(dest.teamId ? 'Moved to the team library' : 'Moved to My Work');
+      })
+      .catch(() => {
+        toast.error('Could not move the diagram. Please try again.');
+      });
+    track('Team', 'Moved', 'Diagram');
+  };
 
   // "New Diagram" from the Explorer. Welcome / create-new lives at
   // /live/new (spec/14), so hand off there; that route owns the
@@ -116,6 +156,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
     deleteDiagram,
     deleteFolder,
     moveDiagramToFolder,
+    moveDiagramTo,
     duplicateDiagram,
     dismissSharedDiagram,
     newDiagram,

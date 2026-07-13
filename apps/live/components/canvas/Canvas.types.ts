@@ -294,6 +294,13 @@ export type CanvasProps = {
   onRenameFolder: (id: string, name: string) => void;
   onDeleteFolder: (id: string) => void;
   onMoveDiagramToFolder: (diagramId: string, folderId: string | null) => void;
+  // Scope-crossing move (spec/35): the Explorer panel's move picker routes
+  // any pick that involves a team (either side) here — re-folder within a
+  // team, personal -> team, or team -> personal.
+  onMoveDiagramTo?: (
+    diagramId: string,
+    dest: { teamId: string | null; folderId: string | null },
+  ) => void;
   onDeselect: () => void;
   onSelect: (id: string) => void;
   // Right-click on the canvas background. Receives the cursor's
