@@ -467,6 +467,30 @@ export function EraserIcon() {
   );
 }
 
+// The bottom-dock "Theme & Canvas" button (spec/42): a paintbrush on the
+// 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
+// the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
+// element-to-element format tool): this one styles the whole tab.
+export function ThemeBrushIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M17 3c-3 1-6.4 3.6-8.3 6.1l2.2 2.2C13.4 9.4 16 6 17 3z" />
+      <path d="M8.7 9.1 6.5 11.3" />
+      <path d="M8 13.4a2.6 2.6 0 1 1-3.7-2.3c.8-.4 1.9-.2 2.6.5.7.7.9 1.3 1.1 1.8z" />
+    </svg>
+  );
+}
+
 // Format tool (spec/09): a paintbrush, matching the selection toolbar's
 // "Copy formatting" glyph — picks one element's style and paints it onto
 // others. Two-phase persistent mode (pick a base, then tap targets).

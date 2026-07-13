@@ -19,6 +19,7 @@ const TemplatePicker = dynamic(() =>
   import('@/components/palette/TemplatePicker').then((m) => m.TemplatePicker),
 );
 
+import { ThemeBrushIcon } from '@/components/palette/palette-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
@@ -112,6 +113,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     minimalPanels,
     layersMinimized,
     onToggleLayersMinimized,
+    onOpenCanvasTheme,
     onChooseTemplate,
     offscreenContent,
     onFitToScreen,
@@ -311,6 +313,35 @@ export function CanvasChrome(props: CanvasChromeProps) {
                     className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                   >
                     <LayersStackIcon />
+                  </button>
+                </Tooltip>
+              </div>
+            ) : null}
+            {/* Theme & Canvas dock button (spec/42): the paintbrush right of
+                the Layers dock opens the CanvasThemeDialog — the same modal
+                the canvas right-click menu reaches, one click from the
+                chrome. Desktop editors only (mobile reaches it through the
+                canvas menu; read-only sessions pass no handler). */}
+            {!zenMode && onOpenCanvasTheme ? (
+              <div
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                className="pointer-events-auto hidden animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 sm:flex dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+              >
+                <Tooltip
+                  title="Theme & Canvas"
+                  description="Change this tab's theme and canvas background."
+                >
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={onOpenCanvasTheme}
+                    aria-label="Theme and canvas"
+                    className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                  >
+                    <ThemeBrushIcon />
                   </button>
                 </Tooltip>
               </div>

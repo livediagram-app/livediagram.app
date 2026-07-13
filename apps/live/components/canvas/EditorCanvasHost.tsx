@@ -192,6 +192,7 @@ export function EditorCanvasHost() {
     setActivityPosition,
     setAiPanelPosition,
     setCanvasTool,
+    setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
     setDiagramList,
@@ -428,6 +429,17 @@ export function EditorCanvasHost() {
         if (layersMinimized) track('Layer', 'Opened', 'Panel');
         setLayersMinimized((v) => !v);
       }}
+      // Bottom-dock paintbrush (spec/42): the same CanvasThemeDialog the
+      // canvas right-click menu opens, one click from the chrome. Opens on
+      // the Theme tab; the dialog's tab strip reaches Canvas from there.
+      onOpenCanvasTheme={
+        isReadOnly || embedMode
+          ? undefined
+          : () => {
+              setCanvasThemeTab('theme');
+              track('UI', 'Opened', 'ThemePicker');
+            }
+      }
       onSelectLayer={setActiveLayer}
       onAddLayer={addLayer}
       onRemoveLayer={removeLayer}

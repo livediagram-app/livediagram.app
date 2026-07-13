@@ -11,6 +11,7 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 - The empty-canvas right-click menu (`EditorContextMenu`, canvas mode) keeps its **Change Theme** and **Change Canvas** items. Picking either now opens **one** dialog (`CanvasThemeDialog`) on the matching tab:
   - **Change Canvas** → opens on the **Canvas** tab.
   - **Change Theme** → opens on the **Theme** tab.
+- A **paintbrush dock button** ("Theme & Canvas") sits in the bottom-right chrome cluster, to the right of the collapsed Layers dock, and opens the same dialog on the **Theme** tab — a one-click, always-visible entry beside right-click. Desktop editor sessions only: it is hidden on mobile (the canvas menu covers it there), in zen mode, and in read-only / embed views.
 - The dialog is titled **Tab Appearance** and has two tabs, **Canvas** and **Theme**, switchable from a tab strip below its header (a title + close row, consistent with the other editor dialogs). Opening on one tab does not prevent switching to the other.
 - Every control applies **live** to the active tab (same setters as the accordions), so the canvas updates behind the dialog as the user clicks. There is no Apply/Cancel: the dialog is an editor, not a wizard. Closing (the X, Escape, or a backdrop click) just dismisses it; nothing is rolled back.
 - The dialog is only reachable when the tab is editable. It is not offered on read-only / embed views (the right-click menu itself is suppressed there).
