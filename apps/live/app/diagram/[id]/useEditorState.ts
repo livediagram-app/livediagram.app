@@ -1815,6 +1815,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // begin-handlers below are passed through to Canvas as props.
   const {
     drag,
+    shiftDupGhostIds,
     snapGuides,
     distGuides,
     snapTargets,
@@ -2318,6 +2319,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     shareUrlFor,
     shortcutsEnabled,
     skipTemplatePicker,
+    shiftDupGhostIds,
     snapGuides,
     distGuides,
     snapTargets,

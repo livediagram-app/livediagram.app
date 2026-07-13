@@ -113,6 +113,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     remoteSelectionsByElement,
     selectedId,
     selectionBounds,
+    shiftDupGhostIds,
     showAnchorsFor,
     showHandles,
     showPlus,
@@ -227,6 +228,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
       {ordered.map(({ element, layerOpacity }) => {
+        // Shift-duplicate ghost (spec/80): the dragged set renders
+        // translucent while its materialised copy holds the start
+        // position, multiplied over any per-layer opacity.
+        const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
+        const effOpacity = ghostFactor * layerOpacity;
         if (element.type === 'arrow') {
           return (
             <svg
@@ -235,7 +241,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               style={{
                 pointerEvents: 'none',
                 overflow: 'visible',
-                ...(layerOpacity < 1 ? { opacity: layerOpacity } : {}),
+                ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
               }}
             >
               <ArrowView
@@ -270,7 +276,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           <BoxedElementView
             key={element.id}
             element={element}
-            layerOpacity={layerOpacity < 1 ? layerOpacity : undefined}
+            layerOpacity={effOpacity < 1 ? effOpacity : undefined}
             isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
             isMultiSelected={multiSelectedIds.has(element.id)}
             multiSelectActive={multiSelectedIds.size > 0}

@@ -66,6 +66,11 @@ export type CanvasProps = {
   // Element ids on a hidden or locked layer (spec/74) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;
+  // Dragged element ids to render translucent while a shift-duplicate is
+  // in progress (spec/80): the materialised copies already sit at the
+  // start position, so the set under the cursor shows as a ghost. Null
+  // outside a shift-held move drag.
+  shiftDupGhostIds: ReadonlySet<string> | null;
   // Faint alignment guides for the active move / resize drag (the edge
   // / centre lines the dragged element shares with neighbours). Empty
   // when no snap is in effect. Rendered by CanvasChrome. See spec/09.

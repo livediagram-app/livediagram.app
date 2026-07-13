@@ -282,8 +282,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
         </>
       )}
 
-      {/* Bottom dock. Order, left → right: Zoom controls, History
-          controls, and a minimised Activity dock when applicable.
+      {/* Bottom dock. Order, left → right: the minimised Activity strip
+          (with inline Undo / Redo), the minimised Layers button, the
+          Theme & Canvas paintbrush, then the Zoom controls.
           The Palette is banner-collapsed in place (spec/09)
           so it's not in the dock cluster; the Explorer is hidden
           on mobile entirely (spec/07) and uses banner-collapse on
@@ -292,6 +293,58 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
+            {!zenMode && activityMinimized && !readOnly ? (
+              // Collapsed Activity dock (editor sessions only): a strip
+              // with inline Undo / Redo so the most common history
+              // actions don't require reopening the panel. Leftmost of the
+              // dock pills (before Layers + Theme & Canvas). View-role
+              // visitors don't get this button at all: undo/redo and
+              // the audit trail aren't actionable for them, so the
+              // dock would just be dead chrome.
+              <div
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+              >
+                <Tooltip title="Open Tab Activity" description="Expand the Tab Activity panel.">
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={onToggleActivityMinimized}
+                    aria-label="Open Tab Activity"
+                    className="hidden h-11 w-11 items-center justify-center border-r border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 sm:flex dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                  >
+                    <ActivityIcon />
+                  </button>
+                </Tooltip>
+                <Tooltip title="Undo" description="Undo last edit.">
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={onUndo}
+                    disabled={!canUndo}
+                    aria-label="Undo"
+                    className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:disabled:text-slate-600 dark:disabled:hover:bg-transparent"
+                  >
+                    <UndoIcon />
+                  </button>
+                </Tooltip>
+                <Tooltip title="Redo" description="Redo last undone edit.">
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={onRedo}
+                    disabled={!canRedo}
+                    aria-label="Redo"
+                    className="flex h-11 w-11 items-center justify-center border-l border-slate-100 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:disabled:text-slate-600 dark:disabled:hover:bg-transparent"
+                  >
+                    <RedoIcon />
+                  </button>
+                </Tooltip>
+              </div>
+            ) : null}
             {/* Collapsed Layers dock (spec/74): the panel ships minimised
                 into this one button, mirroring the Activity strip. Only in
                 the desktop docking layout — mobile / minimal reach Layers
@@ -342,57 +395,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                     className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                   >
                     <ThemeBrushIcon />
-                  </button>
-                </Tooltip>
-              </div>
-            ) : null}
-            {!zenMode && activityMinimized && !readOnly ? (
-              // Collapsed Activity dock (editor sessions only): a strip
-              // with inline Undo / Redo so the most common history
-              // actions don't require reopening the panel. View-role
-              // visitors don't get this button at all: undo/redo and
-              // the audit trail aren't actionable for them, so the
-              // dock would just be dead chrome.
-              <div
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-              >
-                <Tooltip title="Open Tab Activity" description="Expand the Tab Activity panel.">
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={onToggleActivityMinimized}
-                    aria-label="Open Tab Activity"
-                    className="hidden h-11 w-11 items-center justify-center border-r border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 sm:flex dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-                  >
-                    <ActivityIcon />
-                  </button>
-                </Tooltip>
-                <Tooltip title="Undo" description="Undo last edit.">
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={onUndo}
-                    disabled={!canUndo}
-                    aria-label="Undo"
-                    className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:disabled:text-slate-600 dark:disabled:hover:bg-transparent"
-                  >
-                    <UndoIcon />
-                  </button>
-                </Tooltip>
-                <Tooltip title="Redo" description="Redo last undone edit.">
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={onRedo}
-                    disabled={!canRedo}
-                    aria-label="Redo"
-                    className="flex h-11 w-11 items-center justify-center border-l border-slate-100 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:disabled:text-slate-600 dark:disabled:hover:bg-transparent"
-                  >
-                    <RedoIcon />
                   </button>
                 </Tooltip>
               </div>

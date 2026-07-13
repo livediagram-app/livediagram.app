@@ -90,6 +90,15 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // The undo-marker token of the current gesture's checkpoint, handed
   // to the debounced log so its flush fills the right step.
   const gestureTokenRef = useRef<number | undefined>(undefined);
+  // Shift-duplicate ghosting (spec/80). Holding Shift during a boxed move
+  // materialises a copy of the drag set back at its start position, so the
+  // original appears to STAY PUT while the dragged set renders as a
+  // translucent ghost following the cursor. `dupCloneIdsRef` tracks the
+  // materialised copies (a ref, so mid-drag toggles don't churn the
+  // pointer-listener effect); `shiftDupGhostIds` is the render-facing set
+  // of DRAGGED element ids to draw translucent.
+  const dupCloneIdsRef = useRef<string[] | null>(null);
+  const [shiftDupGhostIds, setShiftDupGhostIds] = useState<ReadonlySet<string> | null>(null);
 
   // Stash deps on every render so the move-effect always reads
   // fresh values without re-subscribing global pointer listeners.
@@ -138,6 +147,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       checkpointPendingRef.current = false;
       logGestureRef.current = false;
       gestureTokenRef.current = undefined;
+      // Any materialised shift-duplicate copies are either restored away by
+      // the Escape path's cancelToCheckpoint or belong to a dead gesture;
+      // drop the bookkeeping + ghost rendering either way.
+      dupCloneIdsRef.current = null;
+      setShiftDupGhostIds(null);
     };
     // Cancel the drag immediately when a second touch finger lands — that
     // signals a pinch gesture, not a solo drag.
@@ -236,6 +250,41 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             const autoRebind = depsRef.current.autoRebindArrowsRef.current ?? false;
             return autoRebind ? rebindArrowAnchorsAfterMove(moved, drag.startBounds) : moved;
           });
+          // Shift-duplicate ghost (spec/80): the first move with Shift held
+          // materialises a copy of the whole drag set back at its start
+          // position — the "original" the user sees staying put — and flips
+          // the dragged set into ghost rendering. Releasing Shift mid-drag
+          // dissolves the copy and restores a plain move. The final
+          // keep/dissolve decision is made at pointer-up.
+          if (e.shiftKey && !dupCloneIdsRef.current && !depsRef.current.isReadOnly) {
+            const dupIds = new Set<string>([
+              ...drag.startBounds.keys(),
+              ...drag.startArrowEnds.keys(),
+            ]);
+            let cloneIds: string[] = [];
+            tick((els) => {
+              const current = els.find((el) => el.id === drag.primaryId);
+              const start = drag.startBounds.get(drag.primaryId);
+              if (!current || !isBoxed(current) || !start) return els;
+              const { newElements } = duplicateGroupedElements(
+                els,
+                dupIds,
+                start.x - current.x,
+                start.y - current.y,
+              );
+              cloneIds = newElements.map((el) => el.id);
+              return [...els, ...newElements];
+            });
+            if (cloneIds.length > 0) {
+              dupCloneIdsRef.current = cloneIds;
+              setShiftDupGhostIds(dupIds);
+            }
+          } else if (!e.shiftKey && dupCloneIdsRef.current) {
+            const cloneIds = new Set(dupCloneIdsRef.current);
+            dupCloneIdsRef.current = null;
+            setShiftDupGhostIds(null);
+            tick((els) => els.filter((el) => !cloneIds.has(el.id)));
+          }
         } else {
           // Single + multi resize (union scaling, rotated projection,
           // resize snapping) all live in resolveBoxedResize; this handler
@@ -468,32 +517,29 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         logGestureRef.current = false;
         return;
       }
-      // Shift-release of a MOVE drag duplicates the dragged set at its
-      // original spot (spec/80): the moved originals stay selected at the
-      // drop point and clones re-fill where the drag began, so shift+drag
-      // reads as "drag a copy away from the original". Decided at release,
-      // real moves only; the clone commit joins the gesture's undo step.
-      if (drag?.kind === 'boxed' && drag.mode === 'move' && e.shiftKey) {
+      // Shift-duplicate finalisation (spec/80). The copies were already
+      // materialised at the drag's start position during the move (so the
+      // "original" never visibly left its spot and the dragged set showed
+      // as a ghost); this either keeps them (a real shift-drop) or
+      // dissolves them (no displacement, or Shift released exactly at the
+      // up with no intervening move event). All inside the gesture's
+      // single undo step.
+      if (drag?.kind === 'boxed' && drag.mode === 'move' && dupCloneIdsRef.current) {
         const start = drag.startBounds.get(drag.primaryId);
         const current = d.activeTab.elements.find((el) => el.id === drag.primaryId);
-        if (
-          start &&
-          current &&
+        const movedAway =
+          !!start &&
+          !!current &&
           isBoxed(current) &&
-          (current.x !== start.x || current.y !== start.y)
-        ) {
-          const dupIds = new Set<string>([
-            ...drag.startBounds.keys(),
-            ...drag.startArrowEnds.keys(),
-          ]);
-          const backDx = start.x - current.x;
-          const backDy = start.y - current.y;
-          d.commit((els) => {
-            const { newElements } = duplicateGroupedElements(els, dupIds, backDx, backDy);
-            return [...els, ...newElements];
-          });
+          (current.x !== start.x || current.y !== start.y);
+        if (movedAway && e.shiftKey) {
           track('Element', 'Duplicated', 'ShiftDrag');
+        } else {
+          const cloneIds = new Set(dupCloneIdsRef.current);
+          d.tick((els) => els.filter((el) => !cloneIds.has(el.id)));
         }
+        dupCloneIdsRef.current = null;
+        setShiftDupGhostIds(null);
       }
       // Fold a dragged standalone icon shape into the shape it was
       // released over. Only on a real move (not a click), only when the
@@ -610,6 +656,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
 
   return {
     drag,
+    shiftDupGhostIds,
     snapGuides,
     distGuides,
     snapTargets,

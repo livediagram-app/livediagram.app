@@ -216,6 +216,7 @@ export function EditorCanvasHost() {
     setViewportOffset,
     setViewportZoom,
     sharedDiagrams,
+    shiftDupGhostIds,
     skipTemplatePicker,
     snapGuides,
     snapTargets,
@@ -313,6 +314,7 @@ export function EditorCanvasHost() {
       elements={activeTab.elements}
       tabLayers={activeTab.layers}
       layerInertIds={layerInertIds}
+      shiftDupGhostIds={shiftDupGhostIds}
       snapGuides={snapGuides}
       distGuides={distGuides}
       snapTargets={snapTargets}

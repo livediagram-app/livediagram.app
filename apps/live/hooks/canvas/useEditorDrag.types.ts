@@ -114,6 +114,11 @@ export type EditorDragDeps = {
 
 export type EditorDragApi = {
   drag: DragState | null;
+  // The dragged element ids to render translucent while a shift-duplicate
+  // is in progress (spec/80): copies already sit at the drag's start
+  // position, so the set following the cursor shows as a ghost. Null
+  // outside a shift-held move drag.
+  shiftDupGhostIds: ReadonlySet<string> | null;
   // Faint alignment guides for the in-progress move / resize: the edge
   // and centre lines the dragged element currently shares with its
   // neighbours, drawn so the user can see why it snapped. Empty when no
