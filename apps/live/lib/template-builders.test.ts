@@ -40,6 +40,7 @@ const ALL_KINDS = [
   'kanban',
   'swot',
   'timeline',
+  'milestone-timeline',
   'venn',
   'journey',
   'fishbone',

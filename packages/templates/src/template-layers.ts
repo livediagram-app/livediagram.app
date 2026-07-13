@@ -67,6 +67,7 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     case 'storyboard':
       return layered('Frames', 'Content');
     case 'timeline':
+    case 'milestone-timeline':
       return layered('Spine', 'Milestones');
     case 'journey':
       return layered('Stages', 'Notes');

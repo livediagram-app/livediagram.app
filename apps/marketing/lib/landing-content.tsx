@@ -261,9 +261,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Forty-three starter templates',
+        title: 'Forty-five starter templates',
         description:
-          'Mind maps (radial, tree, and bubble), org charts, retrospectives, flowcharts — plus swimlane, decision-tree, approval, and data-flow variants — Kanban, roadmaps, user story maps, affinity maps, RACI matrices, SWOT, empathy maps, Business Model Canvases, funnels, timelines, Gantt, Venn, user journeys, fishbone, pyramids, OKR trees, sitemaps, flywheels, prioritization matrices, comparison tables, storyboards, ER / sequence / class / state-machine / system- and cloud-architecture diagrams, logo design, a live card, and mobile / laptop / web-page / slide-deck wireframes. Pick one, edit it, or start blank.',
+          'Mind maps (radial, tree, and bubble), org charts, retrospectives, flowcharts — plus swimlane, decision-tree, approval, and data-flow variants — Kanban, roadmaps, user story maps, affinity maps, RACI matrices, SWOT, empathy maps, Business Model Canvases, funnels, timelines (plain and milestone), Gantt, Venn, user journeys, fishbone, pyramids, OKR trees, sitemaps, flywheels, prioritization matrices, comparison tables, storyboards, ER / sequence / class / state-machine / system- and cloud-architecture diagrams, logo design, a live card, and mobile / laptop / web-page / slide-deck wireframes. Pick one, edit it, or start blank.',
       },
       {
         art: <ThemesArt />,
@@ -287,7 +287,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Canvas & type',
         title: 'Set the canvas backdrop',
         description:
-          'Switch the canvas background between fourteen backdrops, from grid and lines to crosshatch, waves, isometric, and engineering, or none at all. Each theme and template picks a fitting default.',
+          'Switch the canvas background between fourteen backdrops, from plain, grid, and lines to crosshatch, waves, isometric, and engineering. Each theme and template picks a fitting default.',
       },
       {
         art: <FontsArt />,

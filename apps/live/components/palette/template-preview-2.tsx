@@ -102,6 +102,64 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
           ))}
         </svg>
       );
+    case 'milestone-timeline':
+      return (
+        <svg width="80" height="40" viewBox="0 0 80 50" aria-hidden>
+          {/* Directional spine with an arrowhead: time flows right. */}
+          <line x1="4" y1="27" x2="72" y2="27" stroke="rgb(100 116 139)" strokeWidth="1.5" />
+          <path
+            d="M72 27 L69 24.8 M72 27 L69 29.2"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1.5"
+            fill="none"
+          />
+          {[13, 30, 47, 64].map((mx, i) => {
+            const above = i % 2 === 0;
+            // The third milestone is the hero (Launch) card → brand tint.
+            const hero = i === 2;
+            return (
+              <g key={mx}>
+                <line
+                  x1={mx}
+                  y1={above ? 13 : 33}
+                  x2={mx}
+                  y2={above ? 24 : 40}
+                  stroke="rgb(148 163 184)"
+                  strokeWidth="0.75"
+                />
+                {/* Date chip riding the stem. */}
+                <rect
+                  x={mx - 4}
+                  y={above ? 16.5 : 31.5}
+                  width="8"
+                  height="4"
+                  rx="2"
+                  fill="rgb(226 232 240)"
+                />
+                <circle
+                  cx={mx}
+                  cy="27"
+                  r="2.6"
+                  fill="rgb(14 165 233)"
+                  stroke="white"
+                  strokeWidth="0.75"
+                />
+                {/* Milestone card at the end of the stem. */}
+                <rect
+                  x={mx - 9}
+                  y={above ? 4 : 40}
+                  width="18"
+                  height="9"
+                  rx="2"
+                  fill={hero ? 'rgb(186 230 253)' : 'white'}
+                  stroke={hero ? 'rgb(14 165 233)' : 'rgb(148 163 184)'}
+                  strokeWidth="0.75"
+                />
+              </g>
+            );
+          })}
+        </svg>
+      );
     case 'venn':
       return (
         <svg width="70" height="46" viewBox="0 0 70 50" aria-hidden>

@@ -21,6 +21,10 @@ export type TemplateKind =
   | 'kanban'
   | 'swot'
   | 'timeline'
+  // Milestone timeline: the richer, presentation-ready sibling of the plain
+  // 'timeline' — a directional spine with stemmed milestone cards above and
+  // below, each carrying a date chip and a one-line description.
+  | 'milestone-timeline'
   | 'venn'
   | 'journey'
   | 'fishbone'
@@ -174,7 +178,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'approval-workflow',
     title: 'Approval workflow',
-    description: 'Submit → review → approve, with a reject loop back.',
+    description: 'Two-stage sign-off with a request-changes rework loop.',
     extra: true,
   },
   {
@@ -197,6 +201,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'timeline',
     title: 'Timeline',
     description: 'Horizontal line with milestone markers, above + below.',
+  },
+  {
+    kind: 'milestone-timeline',
+    title: 'Milestone timeline',
+    description: 'Dated milestone cards on stems above and below a directional spine.',
+    extra: true,
   },
   {
     kind: 'venn',
@@ -479,6 +489,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   // Project Management: time-ordered schedules, roadmaps + ownership.
   gantt: 'project-management',
   timeline: 'project-management',
+  'milestone-timeline': 'project-management',
   roadmap: 'project-management',
   'raci-matrix': 'project-management',
   // Strategy: business / product analysis, decision frameworks + set
@@ -555,6 +566,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'slide-deck': 'crosshatch',
   'logo-design': 'checkerboard',
   timeline: 'lines',
+  'milestone-timeline': 'lines',
   journey: 'lines',
   retrospective: 'grid',
   fishbone: 'grid',

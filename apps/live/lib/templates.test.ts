@@ -22,7 +22,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. spec/16 pins "44 templates (10 default + 34 extra)" and
+// site. spec/16 pins "45 templates (10 default + 35 extra)" and
 // spec/09 catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -46,6 +46,7 @@ describe('TEMPLATES catalogue', () => {
     'kanban',
     'swot',
     'timeline',
+    'milestone-timeline',
     'venn',
     'journey',
     'fishbone',
@@ -79,21 +80,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (spec/16's "44 templates", the picker grids, the MCP catalogue)
+  // count (spec/16's "45 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the spec/69 guided-tour sample used it until the
   // interactive tour, spec/79, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 44 templates (10 default + 34 extra, matches spec/16 and spec/09)', () => {
-    expect(listed).toHaveLength(44);
+  it('lists exactly 45 templates (10 default + 35 extra, matches spec/16 and spec/09)', () => {
+    expect(listed).toHaveLength(45);
   });
 
-  it('splits cleanly into 10 default + 34 extra (the picker uses `extra` to gate behind "Show more")', () => {
+  it('splits cleanly into 10 default + 35 extra (the picker uses `extra` to gate behind "Show more")', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(34);
+    expect(extras).toHaveLength(35);
   });
 
   it('ships no hidden templates (the flag is generic; spec/69 was retired by spec/79)', () => {
@@ -268,6 +269,9 @@ describe('layered templates (spec/74)', () => {
     'slide-deck': { names: ['Frames', 'Content'], scaffold: 7, content: 31 },
     storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 18 },
     timeline: { names: ['Spine', 'Milestones'], scaffold: 1, content: 15 },
+    // Title + spine stay put; each of the five milestones contributes a
+    // dot, a pinned stem, a date chip, a card and a description note.
+    'milestone-timeline': { names: ['Spine', 'Milestones'], scaffold: 2, content: 25 },
     journey: { names: ['Stages', 'Notes'], scaffold: 9, content: 5 },
   };
 

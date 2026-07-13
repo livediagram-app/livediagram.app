@@ -120,29 +120,49 @@ export function buildBubbleMap(cx: number, cy: number): Element[] {
   return [...arrows, center, ...bubbles];
 }
 
-// Swimlane flowchart (spec/09): the same process flowing across role lanes.
-// Lanes are frame containers (they paint behind their contents via framesFirst)
-// with a left-aligned role label; steps sit in their lane and the arrows cross
-// between lanes to show hand-offs.
+// Swimlane flowchart (spec/09): an order fulfilment process flowing across
+// three role lanes. Lanes are frame containers (they paint behind their
+// contents via framesFirst) with a DEDICATED label cell at the left edge —
+// the old design put the role label mid-lane where the first process box
+// overlapped it — so the flow area starts cleanly after the label gutter.
+// The flow crosses lanes both downward (hand-offs) and back up (the
+// delivery confirmation), with an out-of-stock detour that rejoins the
+// happy path, so the template demonstrates every swimlane idiom: hand-off,
+// branch, rejoin, and round trip.
 export function buildSwimlane(cx: number, cy: number): Element[] {
   const roles = ['Customer', 'Sales', 'Warehouse'];
-  const laneW = 820;
-  const laneH = 150;
+  const labelW = 150;
+  const laneW = 1230;
+  const laneH = 170;
+  // Lanes sit slightly apart: flush frames doubled their borders into a
+  // heavier line with a hairline sliver between (the old design's visual
+  // glitch), while a deliberate gap reads as three clean bands.
+  const laneGap = 14;
   const left = cx - laneW / 2;
-  const top0 = cy - (roles.length * laneH) / 2;
-  const lanes = roles.map((role, i) => ({
-    ...createShape('frame', left, top0 + i * laneH),
+  const top0 = cy - (roles.length * laneH + (roles.length - 1) * laneGap) / 2;
+  const laneTop = (i: number) => top0 + i * (laneH + laneGap);
+  const lanes = roles.map((_, i) => ({
+    ...createShape('frame', left, laneTop(i)),
     width: laneW,
     height: laneH,
-    label: role,
-    textAlignX: 'left' as const,
-    textAlignY: 'middle' as const,
-    padding: 'md' as const,
+    // createShape defaults frames to a "Frame" section title; the role
+    // lives in the gutter cell instead, so blank the frame's own label.
+    label: '',
   }));
-  const stepW = 130;
-  const stepH = 56;
-  const colX = (col: number) => left + 120 + col * 200;
-  const laneCY = (i: number) => top0 + i * laneH + laneH / 2;
+  // Role labels live in their own gutter cells so no step can overlap them.
+  const labels = roles.map((role, i) => ({
+    ...createShape('square', left, laneTop(i)),
+    width: labelW,
+    height: laneH,
+    label: role,
+    textSize: 'md' as const,
+    // A muted tint separates the gutter from the flow area.
+    colorPreset: 'muted',
+  }));
+  const stepW = 140;
+  const stepH = 60;
+  const colX = (col: number) => left + labelW + 100 + col * 180;
+  const laneCY = (i: number) => laneTop(i) + laneH / 2;
   const box = (label: string, col: number, lane: number, kind: ShapeKind = 'square') => ({
     ...createShape(kind, colX(col) - stepW / 2, laneCY(lane) - stepH / 2),
     width: stepW,
@@ -150,31 +170,39 @@ export function buildSwimlane(cx: number, cy: number): Element[] {
     label,
   });
   // Entry step of the process → strongest preset so the flow's start reads.
-  const order = { ...box('Place order', 0, 0), colorPreset: 'bold' };
-  const review = box('Review', 1, 1);
-  const approve = {
-    ...createShape('diamond', colX(2) - 60, laneCY(1) - 42),
-    width: 120,
+  const order = { ...box('Place order', 0, 0, 'stadium'), colorPreset: 'bold' };
+  const review = box('Review order', 1, 1);
+  const inStock = {
+    ...createShape('diamond', colX(2) - 65, laneCY(1) - 42),
+    width: 130,
     height: 84,
-    label: 'Approve?',
+    label: 'In stock?',
     // The decision gate → a tint highlights the branch point.
     colorPreset: 'soft',
   };
-  const ship = box('Ship', 3, 2);
+  // The out-of-stock detour sits directly below the gate in the Warehouse
+  // lane, then rejoins the happy path at Pick & pack.
+  const restock = {
+    ...box('Restock', 2, 2),
+    // Exception path → outline preset (the state machine's Cancelled idiom).
+    colorPreset: 'outline',
+  };
+  const pick = box('Pick & pack', 3, 2);
+  const ship = box('Ship order', 4, 2);
+  const delivered = box('Order delivered', 5, 0, 'stadium');
   const arrows = [
     { ...createPinnedArrow(order.id, 's', review.id, 'n') },
-    { ...createPinnedArrow(review.id, 'e', approve.id, 'w') },
-    { ...createPinnedArrow(approve.id, 's', ship.id, 'n'), label: 'Yes' },
-    // A rejected order loops back up to Review for rework, so the decision
-    // reads as a real two-way branch rather than a dead end.
-    {
-      ...createPinnedArrow(approve.id, 'n', review.id, 'n'),
-      label: 'No',
-      arrowStyle: 'curved' as const,
-      curveOffset: { dx: 0, dy: -60 },
-    },
+    { ...createPinnedArrow(review.id, 'e', inStock.id, 'w') },
+    { ...createPinnedArrow(inStock.id, 'e', pick.id, 'n'), label: 'Yes' },
+    { ...createPinnedArrow(inStock.id, 's', restock.id, 'n'), label: 'No' },
+    // The detour rejoins the happy path once stock lands.
+    { ...createPinnedArrow(restock.id, 'e', pick.id, 'w') },
+    { ...createPinnedArrow(pick.id, 'e', ship.id, 'w') },
+    // The confirmation crosses back up to the Customer lane, closing the
+    // round trip the process started with.
+    { ...createPinnedArrow(ship.id, 'e', delivered.id, 's'), label: 'Notify' },
   ];
-  return [...lanes, ...arrows, order, review, approve, ship];
+  return [...lanes, ...labels, ...arrows, order, review, inStock, restock, pick, ship, delivered];
 }
 
 // Decision tree (spec/09): a root question that branches yes / no, with one
@@ -232,18 +260,23 @@ export function buildDecisionTree(cx: number, cy: number): Element[] {
   return [...arrows, root, a, elseD, b, c];
 }
 
-// Approval workflow (spec/09): Submit → Review → Approve?, branching to Done on
-// yes and looping back to Submit on reject (a curved feedback edge below).
+// Approval workflow (spec/09): a two-stage sign-off with rework as a
+// first-class step. Submit request → Manager review → Approved? gates the
+// main row; Yes carries on through Finance sign-off to Done, No drops to a
+// Request changes step below whose edge loops back to Submit — so a
+// rejection visibly costs a rework pass rather than vanishing into a bare
+// curved edge. Presets follow the house grammar: entry bold, the gate soft,
+// the exception path outlined (the state machine's Cancelled idiom).
 export function buildApprovalWorkflow(cx: number, cy: number): Element[] {
-  const w = 130;
-  const h = 56;
-  const gap = 190;
-  const x0 = cx - 1.5 * gap;
+  const w = 150;
+  const h = 60;
+  const gap = 200;
+  const x0 = cx - 2 * gap;
   const submit = {
     ...createShape('stadium', x0 - w / 2, cy - h / 2),
     width: w,
     height: h,
-    label: 'Submit',
+    label: 'Submit request',
     // Entry point of the workflow → strongest preset.
     colorPreset: 'bold',
   };
@@ -251,34 +284,53 @@ export function buildApprovalWorkflow(cx: number, cy: number): Element[] {
     ...createShape('square', x0 + gap - w / 2, cy - h / 2),
     width: w,
     height: h,
-    label: 'Review',
+    label: 'Manager review',
   };
   const approve = {
-    ...createShape('diamond', x0 + 2 * gap - 65, cy - 42),
-    width: 130,
-    height: 84,
+    ...createShape('diamond', x0 + 2 * gap - 70, cy - 44),
+    width: 140,
+    height: 88,
     label: 'Approved?',
     // The approval gate is the pivotal step → a tint draws the eye to it.
     colorPreset: 'soft',
   };
+  const signOff = {
+    ...createShape('square', x0 + 3 * gap - w / 2, cy - h / 2),
+    width: w,
+    height: h,
+    label: 'Finance approval',
+  };
   const done = {
-    ...createShape('stadium', x0 + 3 * gap - w / 2, cy - h / 2),
+    ...createShape('stadium', x0 + 4 * gap - w / 2, cy - h / 2),
     width: w,
     height: h,
     label: 'Done',
   };
+  // Rework sits below the gate, halfway back toward Review, so the reject
+  // loop reads as a real detour: down, across, and back into the queue.
+  const rework = {
+    ...createShape('square', x0 + 1.5 * gap - w / 2, cy + 150 - h / 2),
+    width: w,
+    height: h,
+    label: 'Request changes',
+    // Exception path → outline preset, the same grammar as the state
+    // machine's Cancelled state.
+    colorPreset: 'outline',
+  };
   const arrows = [
     { ...createPinnedArrow(submit.id, 'e', review.id, 'w') },
     { ...createPinnedArrow(review.id, 'e', approve.id, 'w') },
-    { ...createPinnedArrow(approve.id, 'e', done.id, 'w'), label: 'Yes' },
+    { ...createPinnedArrow(approve.id, 'e', signOff.id, 'w'), label: 'Yes' },
+    { ...createPinnedArrow(signOff.id, 'e', done.id, 'w') },
+    { ...createPinnedArrow(approve.id, 's', rework.id, 'e'), label: 'No' },
     {
-      ...createPinnedArrow(approve.id, 's', submit.id, 's'),
-      label: 'Reject',
+      ...createPinnedArrow(rework.id, 'w', submit.id, 's'),
+      label: 'Revise & resubmit',
       arrowStyle: 'curved' as const,
-      curveOffset: { dx: 0, dy: 90 },
+      curveOffset: { dx: -40, dy: 40 },
     },
   ];
-  return [...arrows, submit, review, approve, done];
+  return [...arrows, submit, review, approve, signOff, done, rework];
 }
 
 // Data flow diagram (spec/09): an external entity, a process (circle), a data
