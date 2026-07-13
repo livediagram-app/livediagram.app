@@ -71,7 +71,7 @@ bow is always cheaper, and the clearance margin sizes it.
 
 ## References
 
-[spec/09](09-canvas-mvp.md) (arrows + curve handles),
+[spec/09](09-canvas-and-palette.md) (arrows + curve handles),
 [spec/50](50-arrow-to-arrow.md) (arrow-to-arrow connections),
 [spec/62](62-mcp-server.md) / [spec/73](73-mermaid.md) (authoring paths that
 own their geometry).

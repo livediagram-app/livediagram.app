@@ -1,4 +1,4 @@
-# 66 — Diagram SVG snapshots
+# 67 — Diagram SVG snapshots
 
 A single cached SVG snapshot per diagram, used two ways:
 
