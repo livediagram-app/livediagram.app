@@ -320,6 +320,20 @@ Anchors are eight discrete points on a shape's bounding box:
 
 No "center" or "anywhere on the edge" anchors — only these eight.
 
+**Converging-fan rendering.** When two or more arrow ends pin to the SAME
+anchor of the same element (a hub node with several children all pointing at
+its `s` anchor), rendering them all at the identical point piles the
+arrowheads into an unreadable blur. Both render paths (the live canvas and
+the SVG export) therefore fan such ends out along the target edge:
+each end slides a few px tangentially (14 px between neighbours, clamped so
+the fan never occupies more than 80% of the edge), face-anchor fans centre
+on the anchor while corner-anchor fans march inward along their horizontal
+edge, slots are ordered by where each arrow comes from so neighbouring lines
+don't cross, and the offsets rotate with a rotated target. Purely visual:
+the stored endpoints, rebinding, and snapping still use the true anchor
+point (`packages/diagram/src/arrow-endpoint-spread.ts`, applied in
+`arrow-view-frame.ts` and `svgArrow`).
+
 ### Adding an arrow
 
 There are three ways to create an arrow:

@@ -19,6 +19,7 @@ import {
 } from './arrow-style';
 import { BORDER_DASH_ARRAY } from './border-style';
 import { defaultArrowStrokeColor } from './colors';
+import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { endpointPosition } from './geometry';
 import { svgLabel } from './svg-render-labels';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -112,8 +113,14 @@ export function svgArrowhead(
 }
 
 export function svgArrow(arrow: ArrowElement, elements: Element[]): string {
-  const from = endpointPosition(arrow.from, elements);
-  const to = endpointPosition(arrow.to, elements);
+  // Same converging-fan offset the live canvas applies (see
+  // arrow-endpoint-spread.ts), so exports match what's on screen.
+  const rawFrom = endpointPosition(arrow.from, elements);
+  const rawTo = endpointPosition(arrow.to, elements);
+  const fromSpread = arrowEndpointSpread(arrow.id, 'from', elements);
+  const toSpread = arrowEndpointSpread(arrow.id, 'to', elements);
+  const from = { x: rawFrom.x + fromSpread.x, y: rawFrom.y + fromSpread.y };
+  const to = { x: rawTo.x + toSpread.x, y: rawTo.y + toSpread.y };
   const stroke = arrow.strokeColor ?? defaultArrowStrokeColor();
   const lw = arrow.strokeWidth ?? 2;
   const op = arrow.opacity ?? 1;

@@ -1,5 +1,6 @@
 import {
   angledElbow,
+  arrowEndpointSpread,
   arrowLabelAnchor,
   arrowPathD,
   arrowPathMidpoint,
@@ -21,8 +22,15 @@ export function deriveArrowViewFrame(
   elementIndex: ElementIndex,
   isEditing: boolean,
 ) {
-  const from = endpointPosition(arrow.from, elementIndex);
-  const to = endpointPosition(arrow.to, elementIndex);
+  // Resolve the true endpoints, then apply the converging-fan offset: when
+  // several arrows pin to the same anchor, each end slides a few px along
+  // the target edge so the heads don't pile up (arrow-endpoint-spread.ts).
+  const rawFrom = endpointPosition(arrow.from, elementIndex);
+  const rawTo = endpointPosition(arrow.to, elementIndex);
+  const fromSpread = arrowEndpointSpread(arrow.id, 'from', elementIndex);
+  const toSpread = arrowEndpointSpread(arrow.id, 'to', elementIndex);
+  const from = { x: rawFrom.x + fromSpread.x, y: rawFrom.y + fromSpread.y };
+  const to = { x: rawTo.x + toSpread.x, y: rawTo.y + toSpread.y };
   const style = arrowStyleOf(arrow);
   const pathD = arrowPathD(
     style,

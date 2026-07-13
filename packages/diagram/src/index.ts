@@ -752,6 +752,7 @@ export * from './element-kind-label';
 export * from './anchor-choice';
 export * from './geometry';
 export * from './arrow-rebind';
+export * from './arrow-endpoint-spread';
 export * from './geometry-snapping';
 export * from './geometry-guides';
 
