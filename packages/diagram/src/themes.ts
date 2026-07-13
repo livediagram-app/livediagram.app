@@ -9,6 +9,7 @@ import {
   type Element,
   type ShapeKind,
 } from './index';
+import { rederiveColorPresetForTheme } from './theme-presets';
 import { THEMES } from './themes-data';
 export { THEMES };
 
@@ -327,14 +328,23 @@ export function switchThemeBackdrop(
 // theme is "apply when present", reset is "make match the theme,
 // blank when the theme blanks".
 export function resetThemeElement(el: Element, theme: ThemeDefinition): Element {
+  // A preset-bound shape KEEPS its binding (spec/48): the user chose "Bold",
+  // so reset means "this theme's Bold" — re-derive the preset's colours +
+  // border under the given theme (view) rather than blanking to the plain
+  // look. Only a binding the theme can't express (e.g. a 'branch-3' under a
+  // single-accent theme) falls through to the plain reset below and drops.
+  if (el.type === 'shape' && el.colorPreset) {
+    const rederived = rederiveColorPresetForTheme(el, theme);
+    if (rederived !== el) return rederived;
+  }
   const fields = themeColourFields(el);
   if (fields.length === 0) return el;
   const patch: Record<string, string | undefined> = {};
   for (const { element, theme: themeKey } of fields) {
     patch[element] = theme[themeKey] ?? undefined;
   }
-  // A hard reset drops any colour-preset binding (spec/48) too: the shape is
-  // being forced back to the plain theme look, so the preset no longer holds.
+  // A binding the theme has no variant for is dropped with the plain reset:
+  // the shape is forced back to the theme look, so the preset no longer holds.
   if (el.type === 'shape' && el.colorPreset) {
     return { ...el, ...patch, colorPreset: undefined } as Element;
   }

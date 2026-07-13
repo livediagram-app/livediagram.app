@@ -31,7 +31,7 @@ The two-level **category browse** lifted from the New-diagram theme picker (`The
 
 - Overview shows a **Basic** quick-pick plus a card per [`THEME_CATEGORIES`](14-new-diagram-route.md) bucket (Cool / Warm / Dark / Multi-colour / Formal), plus a **Custom** category for the owner's saved themes ([spec/44](44-custom-themes.md)). Clicking a category drills into its themes with an "All themes" back affordance.
 - Clicking a theme applies it live; double-clicking applies and closes the dialog.
-- A **Reset elements to theme** action (same as the accordion) recolours every element on the tab to the active theme's defaults.
+- A **Reset elements to theme** action (same as the accordion) recolours every element on the tab to the active theme's defaults. A shape carrying a **preset binding** (spec/48) keeps it: reset re-derives the preset's colours + border under the active theme ("this theme's Bold") instead of blanking to the plain look; only a binding the theme can't express (a branch variant under a single-accent theme) drops. Arrows keep their pattern / thickness / flow — reset only re-points the colour fields.
 
 **Arrows always track the theme.** Picking a theme keeps the per-field
 preserve-customs rule for shapes / text (a colour the user hand-set survives the

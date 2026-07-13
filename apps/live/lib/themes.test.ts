@@ -1017,4 +1017,26 @@ describe('multi-colour (rainbow) themes', () => {
     const byId = Object.fromEntries(out.map((el) => [el.id, el]));
     expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
   });
+
+  it('reset-to-theme keeps a preset binding, re-deriving its colours for the theme', () => {
+    const slate = getTheme('slate');
+    const bold = shapeColorPresets(slate).find((p) => p.id === 'bold')!;
+    // A Bold-preset shape whose fill was drifted (e.g. by an older theme):
+    // reset should snap it to THIS theme's Bold, not to the plain theme look,
+    // and must not drop the binding.
+    const shape = { ...createShape('square', 0, 0), colorPreset: 'bold', fillColor: '#123456' };
+    const [out] = resetThemeElementsToTheme([shape], slate) as [typeof shape];
+    expect(out.colorPreset).toBe('bold');
+    expect(out.fillColor).toBe(bold.fill);
+    expect(out.strokeColor).toBe(bold.stroke);
+    expect(out.strokeWidth).toBe(bold.borderStroke);
+  });
+
+  it('reset-to-theme drops a binding the theme cannot express', () => {
+    const slate = getTheme('slate');
+    const shape = { ...createShape('square', 0, 0), colorPreset: 'branch-3' };
+    const [out] = resetThemeElementsToTheme([shape], slate) as [typeof shape];
+    expect(out.colorPreset).toBeUndefined();
+    expect(out.fillColor).toBe(slate.elementFill ?? undefined);
+  });
 });
