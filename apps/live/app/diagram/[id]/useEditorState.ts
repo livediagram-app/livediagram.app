@@ -1838,6 +1838,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     soloSelectedId,
     setSoloSelectedId,
     multiSelectedIds,
+    setMultiSelectedIds,
     editingId,
     isReadOnly,
     formatSourceId,

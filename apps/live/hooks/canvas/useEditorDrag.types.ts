@@ -32,6 +32,10 @@ export type EditorDragDeps = {
   soloSelectedId: string | null;
   setSoloSelectedId: (id: string | null) => void;
   multiSelectedIds: Set<string>;
+  // Written by the shift-duplicate identity swap (spec/80): the cursor-
+  // following set becomes the fresh clones, so the selection must follow
+  // them (and swing back if the duplicate is dissolved).
+  setMultiSelectedIds: (ids: Set<string>) => void;
   editingId: string | null;
   isReadOnly: boolean;
   // Elements on a hidden or locked layer (spec/74): every gesture
