@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'List and Card Views',
+  description:
+    'Switch the Explorer between compact list rows and a card grid with live diagram previews, and learn how the snapshot thumbnails behave.',
+  path: '/help/explorer/list-and-card-views/',
+});
+
+<ArticleLayout
+  title="List and Card Views"
+  description="Browse your library as dense rows or as preview cards, with a toggle that remembers your choice on this device."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+The Explorer's browse views can render the same folders and diagrams two ways: a compact **list** of rows, or a grid of **cards**, each with a large live preview of the diagram's canvas. Recognising a diagram by its picture is often faster than reading near-identical names, so the card view shines in folders full of variations on a theme; the list packs more onto the screen when you know exactly what you're looking for.
+
+## Switching views
+
+Look for the **List / Card** toggle at the right of the header on the [Explorer page](/help/explorer/explorer-page/)'s browse views (Recent, My Work, folders, Unsorted, and Generated). Click the rows icon for the list, or the grid icon for cards. The choice applies immediately and to all of those views at once.
+
+The same toggle appears on a [team's shared library](/help/explorer/team-spaces/), and it shares the same preference, so a card-view person gets cards there too.
+
+Your choice is remembered **per device** (it's a layout preference, not account data), so your phone and your desktop can each keep the view that suits their screen.
+
+## What a card shows
+
+Each card carries everything its list row does, arranged around the preview:
+
+- A **live snapshot** of the diagram's first tab, rendered from the actual canvas and refreshed when the diagram changes. The preview keeps the diagram's own background colour, so the card reads like a window onto the canvas.
+- The **name**, the **last-updated** time, the owner where relevant, and the same visibility badge and actions menu (rename, duplicate, move, delete) as the list row.
+- Folders appear as folder cards in the same grid, so navigation doesn't change between views.
+
+The grid is responsive: one column on a phone, up to three on a wide screen.
+
+## About the previews
+
+Snapshot thumbnails also appear in list rows and other Explorer surfaces; the card view just shows them large. A few behaviours worth knowing:
+
+- Previews load **lazily** as you scroll, so a long library doesn't fetch dozens of images up front.
+- A diagram with an **empty first tab** (or a library on a self-hosted setup without image storage configured) simply shows the generic diagram icon instead; nothing breaks.
+- Previews are rendered fresh after the diagram is edited, so what you see stays current without you doing anything.
+
+<Tip>
+  The [Shared With You](/help/explorer/shared-with-you/) page keeps its own fixed layout, previews
+  included, so incoming shares always look the same regardless of the toggle.
+</Tip>
+
+</ArticleLayout>

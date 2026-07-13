@@ -161,7 +161,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your diagrams, folders, teams, and assets easy to find and manage.',
-    articleCount: 11,
+    articleCount: 12,
     kind: 'feature',
   },
   {
@@ -1049,6 +1049,14 @@ export const articles: Article[] = [
     description:
       'The compact in-editor Explorer for switching diagrams without leaving the canvas.',
     keywords: 'sidebar switch diagrams files library in editor open',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'list-and-card-views',
+    title: 'List and Card Views',
+    description: 'Toggle browse views between compact rows and preview cards with live snapshots.',
+    keywords: 'card grid view toggle thumbnail preview snapshot layout rows tiles gallery',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
