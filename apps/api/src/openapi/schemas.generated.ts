@@ -84,6 +84,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "AnimationSpeed": {
     "enum": [
+      "slowest",
       "slow",
       "normal",
       "fast"
@@ -98,6 +99,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
       },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
@@ -305,6 +309,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "flow": {
         "$ref": "#/components/schemas/ArrowFlow"
       },
+      "flowRepeat": {
+        "type": "boolean"
+      },
       "flowSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
@@ -408,6 +415,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pulse",
       "grow",
       "glow",
+      "heartbeat",
+      "breathe",
+      "shimmer",
+      "signal",
       "draw",
       "comet",
       "rainbow",
@@ -1487,6 +1498,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "glow",
       "trace",
       "gradient",
+      "heartbeat",
+      "breathe",
+      "shimmer",
+      "highlight",
       "bounce",
       "wobble",
       "shake",
@@ -1721,6 +1736,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
+      "animationRepeat": {
+        "type": "boolean"
+      },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
@@ -1858,6 +1876,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "spin",
       "beat",
       "pulse",
+      "glow",
+      "ping",
+      "breathe",
+      "shimmer",
       "bounce",
       "wiggle",
       "flash",
@@ -1898,6 +1920,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
       },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
@@ -2118,6 +2143,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
+      "animationRepeat": {
+        "type": "boolean"
+      },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
@@ -2336,6 +2364,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
+      "animationRepeat": {
+        "type": "boolean"
+      },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
@@ -2371,6 +2402,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "iconAnimation": {
         "$ref": "#/components/schemas/IconAnimation"
+      },
+      "iconAnimationRepeat": {
+        "type": "boolean"
       },
       "iconAnimationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
@@ -2693,6 +2727,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
+      "animationRepeat": {
+        "type": "boolean"
+      },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
@@ -2993,6 +3030,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
       },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
@@ -3609,6 +3649,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
       },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
