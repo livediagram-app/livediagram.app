@@ -16,12 +16,30 @@ export function Hero() {
           Turn any idea into a clear diagram in minutes. Build it with your team in real time, then
           share it with a single link.
         </p>
+        {/* CTA pair (spec/16): the wizard is the encouraged path, so Choose
+            Template is the primary and sits on the right; Just Draw is the
+            straight-to-blank-canvas escape hatch (spec/14). DOM order keeps
+            the primary first so the mobile stack leads with it; sm:order-*
+            swaps them side by side on desktop. */}
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
             href="/new"
-            className={buttonClassName({ size: 'lg', className: 'w-full shadow-sm sm:w-auto' })}
+            className={buttonClassName({
+              size: 'lg',
+              className: 'w-full shadow-sm sm:order-2 sm:w-auto',
+            })}
           >
-            Start drawing
+            Choose Template
+          </a>
+          <a
+            href="/new?blank=1"
+            className={buttonClassName({
+              variant: 'secondary',
+              size: 'lg',
+              className: 'w-full shadow-sm sm:order-1 sm:w-auto',
+            })}
+          >
+            Just Draw
           </a>
         </div>
         <p className="mt-4 text-sm text-slate-500">

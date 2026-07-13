@@ -1,6 +1,6 @@
 // Inline SVG icons for the template picker (create-diagram CTA, refresh,
-// folder-open, spinner, sparkle). Pure presentational; split out of
-// TemplatePicker.tsx.
+// folder-open, spinner, sparkle, pencil). Pure presentational; split out
+// of TemplatePicker.tsx.
 export function ArrowRightIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -50,6 +50,26 @@ export function Spinner() {
     >
       <circle cx="8" cy="8" r="6" strokeOpacity="0.25" />
       <path d="M14 8a6 6 0 0 0-6-6" />
+    </svg>
+  );
+}
+
+// Pencil for the step rail's "Just Draw" shortcut (spec/14).
+export function PencilIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m11.1 2.6 2.3 2.3-7.8 7.8-3 .7.7-3z" />
+      <path d="m9.6 4.1 2.3 2.3" />
     </svg>
   );
 }

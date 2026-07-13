@@ -303,6 +303,44 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 `pointer-events-none` / `aria-hidden`, and stands down under
 `prefers-reduced-motion`.
 
+## Just Draw (skip the wizard)
+
+Some users don't want a template, a theme, or a settings step — they want
+an empty canvas right now. Two affordances serve them, both committing the
+documented Skip defaults (Blank template, Basic theme, the template's
+default diagram name) without walking the wizard:
+
+- **`/new?blank=1`** — the query param bypasses the wizard entirely. The
+  page renders a lightweight "Creating your diagram…" card instead of the
+  wizard, commits the blank diagram as soon as identity resolves, and
+  navigates to `/diagram/<id>`. Any truthy presence of `blank` counts.
+  The placement context params compose with it
+  (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
+  Just Draw straight into a folder or team library. A failed create shows
+  the same retryable error card as the wizard path. This is the URL that
+  outside surfaces link to (the marketing header + hero "Just Draw"
+  buttons, see [spec/16](16-marketing-site.md)).
+  - Restoring the page from the back/forward cache (Back from the editor)
+    redirects to the plain `/new` wizard rather than silently minting
+    another blank diagram or trapping the user behind a page that always
+    navigates forward again.
+  - The interactive tour's welcome offer (spec/79) is never queued on
+    this path: the create fires before the diagram count resolves, and a
+    "just draw" user has asked to get straight to the canvas.
+- **A "Just Draw" button on the wizard's step rail** (welcome mode only):
+  far right on the same line as the Template / Theme / Settings chips,
+  desktop (`sm+`) only — mobile keeps the footer Skip as the compact
+  escape. One click commits the Skip defaults immediately (disabled while
+  a create is in flight, like Create).
+
+Skip and Just Draw honour the URL placement context (the `?folder` /
+`?team` pre-seed): the blank diagram files where the Settings step's
+picker would have defaulted, not silently into personal Unsorted.
+
+Telemetry: both Just Draw surfaces fire `UI / Used / JustDraw` alongside
+the usual `Diagram / Created` event, so wizard-bypass adoption is
+measurable (spec/22).
+
 ## Custom themes in the picker
 
 The theme step shows the owner's **custom themes** ([spec/44](44-custom-themes.md))
@@ -337,6 +375,11 @@ to carry one. Custom theme cards show just the saved name.
 - `/diagram/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
 - "New Diagram" from Explorer → goes to `/new`.
+- `/new?blank=1` → no wizard; blank diagram created and editor loads on
+  `/diagram/<id>`.
+- `/new?blank=1&folder=<id>` → the blank diagram files into that folder.
+- "Just Draw" on the wizard's step rail → blank diagram created
+  immediately, same as Skip.
 
 ## Out of scope for V1
 

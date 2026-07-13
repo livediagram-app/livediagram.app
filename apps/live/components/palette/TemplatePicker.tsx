@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { Button } from '@livediagram/ui';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { useEscape } from '@/hooks/ui/useEscape';
 import type { Participant } from '@/lib/identity';
+import { track } from '@/lib/telemetry';
 import { shufflePinned } from '@/lib/shuffle';
 import type { TemplateCategory, TemplateKind } from '@livediagram/templates';
 import {
@@ -18,6 +20,7 @@ import { TemplatePickerFooter } from './TemplatePickerFooter';
 import { parsePlacement } from '@/components/placement/PlacementBrowser';
 import { NewDiagramSettingsStep } from './template-picker-settings';
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
+import { PencilIcon } from './template-picker-icons';
 import { WizardSteps } from './template-picker-wizard';
 
 // What the welcome wizard's Settings step (spec/76) hands back on Create.
@@ -259,8 +262,18 @@ export function TemplatePicker({
   const showTemplateSection = showTemplates && (!isWizard || step === 'template');
   const showThemeSection = showThemes && (!isWizard || step === 'theme');
   // Skip the wizard entirely: the documented shortcut is Blank template +
-  // Basic theme (spec/14), committed straight away.
-  const skipToDefaults = () => onPick('blank', effectiveName, 'brand', { offline });
+  // Basic theme (spec/14), committed straight away. Placement still honours
+  // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
+  // so skipping doesn't silently drop the diagram into personal Unsorted.
+  const skipToDefaults = () =>
+    onPick('blank', effectiveName, 'brand', { offline, ...parsePlacement(placement) });
+  // The step rail's "Just Draw" shortcut (spec/14) is the same commit with
+  // its own adoption signal (spec/22).
+  const justDraw = () => {
+    if (busy) return;
+    track('UI', 'Used', 'JustDraw');
+    skipToDefaults();
+  };
   // Double-clicking a template advances to the theme step (the user still
   // needs to pick a theme) rather than committing the whole wizard.
   const onTemplateCommit = (kind: TemplateKind) => {
@@ -338,9 +351,26 @@ export function TemplatePicker({
             </div>
           </div>
           {/* Step indicator: a modern two-segment progress rail so the
-              wizard reads as 1 of 2 at a glance. Both wizard modes. */}
+              wizard reads as 1 of 2 at a glance. Both wizard modes. On the
+              welcome flow the rail row also carries the "Just Draw" shortcut
+              (spec/14) far right — straight to a blank canvas, no wizard.
+              Desktop only (sm+); mobile keeps the footer Skip. */}
           {isWizard ? (
-            <WizardSteps step={step} onStep={goToStep} includeSettings={isWelcome} />
+            <div className="flex items-center justify-between gap-3">
+              <WizardSteps step={step} onStep={goToStep} includeSettings={isWelcome} />
+              {isWelcome ? (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={justDraw}
+                  disabled={busy}
+                  className="hidden shrink-0 gap-1.5 rounded-lg sm:inline-flex"
+                >
+                  <PencilIcon />
+                  Just Draw
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </div>
 

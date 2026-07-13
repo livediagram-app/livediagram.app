@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDiagramSettings } from '@/components/palette/TemplatePicker';
+import { Spinner } from '@/components/palette/template-picker-icons';
 import { RecentDiagramsCard } from './RecentDiagramsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -97,6 +98,15 @@ export default function NewDiagramPage() {
     return 'unsorted';
   });
 
+  // "Just Draw" (spec/14): /new?blank=1 skips the wizard entirely — the page
+  // commits a blank diagram (Blank template, Basic theme, default name) the
+  // moment it mounts and lands on the editor. The ?folder / ?team placement
+  // context above still applies to it.
+  const [justDraw] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).has('blank');
+  });
+
   useEffect(() => {
     document.title = 'New diagram | livediagram';
   }, []);
@@ -109,11 +119,20 @@ export default function NewDiagramPage() {
   // state so the page is usable again.
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
-      if (e.persisted) setSubmitting(false);
+      if (!e.persisted) return;
+      // Just-Draw mode auto-creates on mount, so a bfcache restore would
+      // either strand the user on a frozen "Creating…" card or (if we
+      // re-fired the create) trap Back behind a page that always navigates
+      // forward again. Send them to the wizard instead.
+      if (justDraw) {
+        window.location.replace('/new');
+        return;
+      }
+      setSubmitting(false);
     };
     window.addEventListener('pageshow', onPageShow);
     return () => window.removeEventListener('pageshow', onPageShow);
-  }, []);
+  }, [justDraw]);
 
   useLayoutEffect(() => {
     // Wait for Clerk to settle so a signed-in user gets the Clerk
@@ -343,6 +362,28 @@ export default function NewDiagramPage() {
     window.location.assign(`/diagram/${diagramId}`);
   };
 
+  // Just-Draw fast path (spec/14): fire the Skip-defaults create on mount.
+  // commitNewDiagram waits out the identity bootstrap itself (resolveSelf),
+  // so firing immediately is safe. The ref makes it once-only under Strict
+  // Mode's double-invoked effects. Note the tour offer (spec/79) can't queue
+  // here: the create fires before RecentDiagramsCard reports a count — which
+  // is the behaviour we want for someone who asked to just draw.
+  const justDrawFired = useRef(false);
+  useEffect(() => {
+    if (!justDraw || justDrawFired.current) return;
+    justDrawFired.current = true;
+    // Wizard-bypass adoption signal (spec/22): the type is the fixed
+    // 'JustDraw' preset, never user content.
+    track('UI', 'Used', 'JustDraw');
+    const params = new URLSearchParams(window.location.search);
+    void commitNewDiagram('blank', '', 'brand', {
+      offline: false,
+      folderId: params.get('folder'),
+      teamId: params.get('team'),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [justDraw]);
+
   if (createError) {
     return (
       <div className="flex h-dvh flex-col">
@@ -364,6 +405,34 @@ export default function NewDiagramPage() {
               if (a) void commitNewDiagram(a.kind, a.name, a.themeId, a.settings);
             }}
           />
+        </main>
+      </div>
+    );
+  }
+
+  // Just-Draw mode never shows the wizard: a lightweight creating card
+  // holds the screen for the beat between mount and the editor navigation
+  // (the auto-create effect above). Create failures fall through to the
+  // retryable error card branch before this one.
+  if (justDraw) {
+    return (
+      <div className="flex h-dvh flex-col">
+        <EditorHeader
+          diagramName="New diagram"
+          hideTitle
+          showShare={false}
+          shareable={false}
+          onOpenShare={() => {}}
+          onRename={() => {}}
+        />
+        <main className="relative flex-1 overflow-hidden bg-slate-50 dark:bg-slate-950">
+          <AnimatedLinesBackdrop />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+              <Spinner />
+              <p className="text-sm font-medium">Creating your diagram…</p>
+            </div>
+          </div>
         </main>
       </div>
     );
