@@ -93,7 +93,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       // with the theme accent kept as the identity dot inside the label.
       // color-mix keeps the ring legible for non-hex accents too.
       style={
-        isActive
+        isActive && !isEditing
           ? {
               color: legibleTabAccent(tab, isDark),
               backgroundColor: isDark ? '#1e293b' : '#ffffff',
@@ -101,10 +101,15 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
             }
           : undefined
       }
-      className={`relative flex shrink-0 items-center gap-1 rounded-lg px-2.5 transition ${
-        isActive
-          ? ''
-          : 'bg-slate-200/50 text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+      className={`relative flex shrink-0 items-center gap-1 rounded-lg transition ${
+        // While renaming, the NameEditor carries the ONLY box (its own ring +
+        // background): the pill sheds its ring / fill / padding so the field
+        // doesn't render as a box inside a box.
+        isEditing
+          ? 'px-0'
+          : isActive
+            ? 'px-2.5'
+            : 'bg-slate-200/50 px-2.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
       }`}
     >
       {/* Insertion caret: a vertical bar in the gap on the side the tab
