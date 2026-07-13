@@ -23,11 +23,16 @@ isometric (axonometric, parallel — no perspective) view:
   the base plane** (a -1px translateZ via the `[data-iso] [data-frame]`
   rule) — its big surface would otherwise be exactly coplanar with the
   contents drawn over it, and coplanar 3D layers z-fight (flicker) while
-  the camera orbits. **Plain text elements are the other**: text draws with
+  the camera orbits. **Plain text elements are another**: text draws with
   no background on the flat canvas, so an extrusion column would conjure a
   solid slab behind bare words (the wall-colour fallback). Text stays flat
-  on the base plane, matching the export path (which already describes text
-  as having no body to extrude).
+  on the base plane. **Icon shapes are the third** — line-art glyphs and
+  Technology / infra marks alike read as flat markers, like text: a raised
+  slab under a glyph turns every icon into an anonymous block and buries
+  the artwork, so they stay flat too. All three exemptions live in one
+  shared predicate (`isoExtrudes`, `lib/isometric.ts`) consumed by the
+  on-screen `IsometricDepthLayer` AND both image exporters, so screen and
+  export can't drift.
 - **Arrows, freehand strokes, and labels** stay on the base plane (they have
   no box to extrude); they ride the tilt with everything else.
 

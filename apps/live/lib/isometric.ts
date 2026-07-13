@@ -2,7 +2,24 @@
 // navigation-only isometric canvas tool. Kept out of Canvas.tsx so the
 // geometry is unit-testable and the canvas just consumes the values.
 
-import type { ShapeKind } from '@livediagram/diagram';
+import type { BoxedElement, ShapeKind } from '@livediagram/diagram';
+
+// Whether a boxed element gets an extrusion column in isometric view
+// (spec/45). One predicate shared by the live IsometricDepthLayer and both
+// exporters so the three can't drift:
+// - Frames are section BACKDROPS, not solid blocks — extruding one raises a
+//   huge column of near-coplanar slabs under everything inside it (z-fights
+//   while the camera orbits). They stay flat on the floor plane.
+// - Plain text has no body: extruding it would conjure a slab behind bare
+//   words.
+// - Icon shapes (line-art glyphs AND Technology / infra marks) read as flat
+//   markers, like text: a raised slab under a glyph turns every icon into an
+//   anonymous block and buries the artwork.
+export function isoExtrudes(el: BoxedElement): boolean {
+  if (el.type === 'text') return false;
+  if (el.type === 'shape' && (el.shape === 'frame' || el.shape === 'icon')) return false;
+  return true;
+}
 
 // CSS silhouette for a shape's isometric extrusion. Each depth layer is a box
 // filling the element rect; left as a plain rectangle the extrusion of a

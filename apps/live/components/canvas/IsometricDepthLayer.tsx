@@ -5,7 +5,12 @@ import {
   type BoxedElement,
   type Element,
 } from '@livediagram/diagram';
-import { isoDepthLayers, isoLayerBrightness, isoShapeSilhouette } from '@/lib/isometric';
+import {
+  isoDepthLayers,
+  isoExtrudes,
+  isoLayerBrightness,
+  isoShapeSilhouette,
+} from '@/lib/isometric';
 
 // Isometric extrusion (spec/45). For each boxed element this renders a column
 // of translateZ-offset copies of the element's rectangle, descending from
@@ -40,18 +45,10 @@ export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
     >
       {elements
         .filter(isBoxed)
-        // Frames are section BACKDROPS, not solid blocks: extruding one
-        // raises a huge column of near-coplanar slabs under everything
-        // inside it, which z-fights with the contents while the camera
-        // orbits (the reported frame flicker). They stay flat on the
-        // floor plane (nudged just below it — see globals.css [data-iso]).
-        .filter((el) => !(el.type === 'shape' && el.shape === 'frame'))
-        // Plain text has no body — on the flat canvas it draws with no
-        // background, so extruding it would conjure a solid slab behind
-        // bare words (the wallColor slate fallback). It stays flat on the
-        // base plane, matching the export path (describeBoxedExport gives
-        // text `kind: 'none'` and both exporters skip its extrusion).
-        .filter((el) => el.type !== 'text')
+        // Frames (section backdrops), plain text, and icon shapes (line-art +
+        // Technology marks) stay FLAT on the base plane — see isoExtrudes,
+        // shared with both exporters so screen + export can't drift.
+        .filter(isoExtrudes)
         .map((el) => {
           const color = wallColor(el);
           // Clip each extruded layer to the shape's own silhouette (circle,

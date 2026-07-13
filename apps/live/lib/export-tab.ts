@@ -39,6 +39,7 @@ import { resolveIconArtLoaded } from './icon-registry';
 import {
   isoCanvasMatrix,
   isoDepthLayers,
+  isoExtrudes,
   isoLayerBrightness,
   isoProjectBounds,
   ISO_TILT_DEG,
@@ -276,6 +277,9 @@ function svgSilhouette(
 // counterpart of drawBoxedExtrusion. Stepped silhouette copies, dimmed toward
 // the floor, behind the element body.
 function svgBoxedExtrusion(el: BoxedElement): string {
+  // Frames / text / icon shapes stay flat (isoExtrudes, shared with the
+  // on-screen IsometricDepthLayer + the canvas exporter).
+  if (!isoExtrudes(el)) return '';
   const { shape, opacity } = describeBoxedExport(el);
   if (shape.kind === 'none') return '';
   const accent = shape.kind === 'image' ? EXPORT_IMAGE_STROKE : shape.stroke;

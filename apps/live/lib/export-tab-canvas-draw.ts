@@ -38,7 +38,7 @@ import {
   type ExportRun,
   type ExportShape,
 } from '@livediagram/diagram';
-import { isoDepthLayers, isoLayerBrightness, ISO_TILT_DEG } from './isometric';
+import { isoDepthLayers, isoExtrudes, isoLayerBrightness, ISO_TILT_DEG } from './isometric';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
 // the rendered scene into the editor's isometric projection (spec/45 / 48),
@@ -85,8 +85,11 @@ export function drawBoxedExtrusion(
   el: BoxedElement,
   alpha = 1,
 ): void {
+  // Frames / text / icon shapes stay flat (isoExtrudes, shared with the
+  // on-screen IsometricDepthLayer so screen + export can't drift).
+  if (!isoExtrudes(el)) return;
   const { shape, opacity } = describeBoxedExport(el);
-  if (shape.kind === 'none') return; // text: no body to extrude
+  if (shape.kind === 'none') return; // no body to extrude
   const accent = shape.kind === 'image' ? EXPORT_IMAGE_STROKE : shape.stroke;
   const az = (ISO_TILT_DEG.z * Math.PI) / 180;
   const k = Math.tan((ISO_TILT_DEG.x * Math.PI) / 180);
