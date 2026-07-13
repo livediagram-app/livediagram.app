@@ -25,7 +25,7 @@ The one thing that keeps a `/live` prefix is the live app's bundled **`_next` as
 
 ## Implementation
 
-The Worker has five **service bindings**, one to each downstream app (MARKETING / LIVE / API / TELEMETRY / HELP). `forwardStripped()` is shared by the prefix-stripped paths (live assets + telemetry + help):
+In production the Worker has five **service bindings**, one to each downstream app (MARKETING / LIVE / API / TELEMETRY / HELP). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + telemetry + help) when forwarding to a binding:
 
 ```ts
 // sketch, real source: apps/router/src/index.ts
@@ -44,20 +44,20 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
-      return env.API.fetch(request); // /api/* as-is; api worker wants the full path
+      return forward(request, url, env.API, env.API_ORIGIN); // /api/* as-is; api worker wants the full path
     }
     // /live/* is now ONLY the live app's _next assets — strip and forward.
     if (url.pathname === '/live' || url.pathname.startsWith('/live/')) {
-      return forwardStripped(request, url, '/live', env.LIVE);
+      return forward(request, url, env.LIVE, env.LIVE_ORIGIN, '/live');
     }
     if (url.pathname === '/telemetry' || url.pathname.startsWith('/telemetry/')) {
-      return forwardStripped(request, url, '/telemetry', env.TELEMETRY);
+      return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, '/telemetry');
     }
     // Clean live-app page routes + its root icon: forward as-is (no strip).
     if (LIVE_ROUTE_SEGMENTS.has(url.pathname.split('/')[1]) || url.pathname === '/icon.svg') {
-      return env.LIVE.fetch(request);
+      return forward(request, url, env.LIVE, env.LIVE_ORIGIN);
     }
-    return env.MARKETING.fetch(request);
+    return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
   },
 };
 ```
@@ -68,17 +68,22 @@ Service bindings target deployed Workers. The downstream apps deploy as their ow
 
 ## Local development
 
-The router worker is **not required for local dev**. Each app runs on its own port:
+The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3000` serves marketing at `/`, the editor at `/new` etc., `/telemetry`, `/help`, and `/api`, with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
-| App       | Local URL                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------- |
-| marketing | `http://localhost:3001/`                                                                                             |
-| live      | `http://localhost:3002/new`, `/explorer/recent`, ... (clean routes; no router, so assets serve at `/_next` directly) |
-| telemetry | `http://localhost:3003/telemetry` (basePath baked in)                                                                |
-| help      | `http://localhost:3004/help` (basePath baked in)                                                                     |
-| api       | `http://localhost:8787/api/...` (wrangler dev)                                                                       |
+| App       | Local URL                                                           |
+| --------- | ------------------------------------------------------------------- |
+| router    | `http://localhost:3000/` — everything, stitched like production     |
+| marketing | `http://localhost:3001/`                                            |
+| live      | `http://localhost:3002/new`, `/explorer/recent`, ... (clean routes) |
+| telemetry | `http://localhost:3003/telemetry` (basePath baked in)               |
+| help      | `http://localhost:3004/help` (basePath baked in)                    |
+| api       | `http://localhost:8787/api/...` (wrangler dev)                      |
 
-Visit whichever you're working on directly. The router only matters in production where everything serves from one hostname.
+**How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livediagram/router dev` runs `wrangler dev --env local --port 3000`, and the root `pnpm dev` includes it.
+
+Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves — `basePath` for telemetry/help, and the live app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
+
+The routing decisions stay identical in both modes — only the transport (binding vs origin proxy) and the stripping differ. The router remains optional: visiting each app's own port directly still works.
 
 ## Routing infrastructure, not logic
 

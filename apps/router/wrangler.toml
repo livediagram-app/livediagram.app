@@ -26,3 +26,14 @@ service = "livediagram-telemetry"
 [[services]]
 binding = "HELP"
 service = "livediagram-help"
+
+# Local dev (`wrangler dev --env local --port 3000`, the workspace `dev`
+# script): service bindings can't reach the local Next dev servers, so this
+# environment defines none and sets plain HTTP origins instead. The worker
+# falls back to proxying these when a binding is absent. See spec/08.
+[env.local.vars]
+MARKETING_ORIGIN = "http://127.0.0.1:3001"
+LIVE_ORIGIN = "http://127.0.0.1:3002"
+API_ORIGIN = "http://127.0.0.1:8787"
+TELEMETRY_ORIGIN = "http://127.0.0.1:3003"
+HELP_ORIGIN = "http://127.0.0.1:3004"

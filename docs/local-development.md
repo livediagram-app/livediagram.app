@@ -35,20 +35,21 @@ It applies every SQL file in `apps/api/migrations/` to the local SQLite file Wra
 pnpm dev
 ```
 
-Turbo spins up all six dev servers in parallel:
+Turbo spins up all seven dev servers in parallel:
 
-| App              | Dev URL                                                             |
-| ---------------- | ------------------------------------------------------------------- |
-| `apps/marketing` | `http://localhost:3001`                                             |
-| `apps/live`      | `http://localhost:3002` (clean routes: /new, /explorer/recent, ...) |
-| `apps/telemetry` | `http://localhost:3003/telemetry`                                   |
-| `apps/help`      | `http://localhost:3004/help`                                        |
-| `apps/api`       | `http://localhost:8787/api`                                         |
-| `apps/mcp`       | `http://localhost:8788` (MCP server, spec/62; signed-in only)       |
+| App              | Dev URL                                                                        |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `apps/router`    | `http://localhost:3000` — **everything on one port**, stitched like production |
+| `apps/marketing` | `http://localhost:3001`                                                        |
+| `apps/live`      | `http://localhost:3002` (clean routes: /new, /explorer/recent, ...)            |
+| `apps/telemetry` | `http://localhost:3003/telemetry`                                              |
+| `apps/help`      | `http://localhost:3004/help`                                                   |
+| `apps/api`       | `http://localhost:8787/api`                                                    |
+| `apps/mcp`       | `http://localhost:8788` (MCP server, spec/62; signed-in only)                  |
 
-The `router` app has no dev server: it's a one-file production worker holding service bindings, not application logic. In dev you call each app on its own port.
+The `router` dev server (`wrangler dev --env local`, port 3000) gives you the production URL shape locally: `/` is marketing, `/new` and `/diagram/*` are the editor, plus `/telemetry`, `/help`, and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [spec/08](../specs/08-router-app.md)). Each app's own port keeps working, so use whichever you prefer.
 
-The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3002/new`. Diagrams persist to the local D1 file the api worker creates on first start.
+The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3000/new` (or `http://localhost:3002/new` to hit the editor's dev server directly). Diagrams persist to the local D1 file the api worker creates on first start.
 
 ## Scoping commands to one workspace
 
