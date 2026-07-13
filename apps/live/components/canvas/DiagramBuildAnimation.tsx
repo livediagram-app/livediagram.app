@@ -3,8 +3,9 @@
 // Decorative "building a diagram" loop. Nodes drop in and arrows draw
 // to connect them, echoing the editor's core gesture: add a shape,
 // wire it up. Shared by the OAuth completing-sign-in screen
-// (/sso-callback) and the diagram loading placeholder
-// (DiagramLoading). Pure SVG + CSS keyframes (no JS tick, no extra
+// (/sso-callback), the diagram loading placeholder (DiagramLoading),
+// and the Just-Draw creating card on /new?blank=1 (spec/14).
+// Pure SVG + CSS keyframes (no JS tick, no extra
 // deps, runs in the static export), and it honours
 // prefers-reduced-motion by sitting on the finished diagram instead of
 // animating. Its own module per CLAUDE.md's no-god-files rule; the

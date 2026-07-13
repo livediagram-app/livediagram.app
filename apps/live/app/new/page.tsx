@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDiagramSettings } from '@/components/palette/TemplatePicker';
-import { Spinner } from '@/components/palette/template-picker-icons';
+import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation';
 import { RecentDiagramsCard } from './RecentDiagramsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -423,8 +423,11 @@ export default function NewDiagramPage() {
 
   // Just-Draw mode never shows the wizard: a lightweight creating card
   // holds the screen for the beat between mount and the editor navigation
-  // (the auto-create effect above). Create failures fall through to the
-  // retryable error card branch before this one.
+  // (the auto-create effect above). It carries the shared nodes-and-arrows
+  // build animation rather than a spinner — the editor's "Loading your
+  // diagram…" screen shows the same illustration, so create → load reads
+  // as one continuous moment (spec/14). Create failures fall through to
+  // the retryable error card branch before this one.
   if (justDraw) {
     return (
       <div className="flex h-dvh flex-col">
@@ -439,8 +442,8 @@ export default function NewDiagramPage() {
         <main className="relative flex-1 overflow-hidden bg-slate-50 dark:bg-slate-950">
           <AnimatedLinesBackdrop />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-              <Spinner />
+            <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white px-8 py-6 text-slate-700 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+              <DiagramBuildAnimation />
               <p className="text-sm font-medium">Creating your diagram…</p>
             </div>
           </div>

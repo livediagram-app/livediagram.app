@@ -314,6 +314,11 @@ default diagram name) without walking the wizard:
   page renders a lightweight "Creating your diagram…" card instead of the
   wizard, commits the blank diagram as soon as identity resolves, and
   navigates to `/diagram/<id>`. Any truthy presence of `blank` counts.
+  The card carries the shared `DiagramBuildAnimation` illustration (the
+  looping nodes-and-arrows build the sso-callback and diagram-loading
+  screens use, reduced-motion aware), not a plain spinner — it hands off
+  visually to the editor's "Loading your diagram…" screen, which shows
+  the same animation, so create → load reads as one continuous moment.
   The placement context params compose with it
   (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
   Just Draw straight into a folder or team library. A failed create shows
