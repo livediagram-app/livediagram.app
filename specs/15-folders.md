@@ -32,15 +32,22 @@ In scope:
   section that's always present (so freshly-created diagrams have
   somewhere obvious to be).
 - A per-diagram-row "Move to folder…" menu item. The picker is a
-  centred modal (`MoveToFolderDialog`, LinkPickerDialog-styled, shared
-  by the /explorer page and the floating Explorer panel): a filter
-  input over **one indented, collapsible tree** of destinations — the
-  personal root ("My Work" on the page, "Unsorted" in the panel) with
-  its folders nested beneath, and each team nested under its own name
-  (spec/35), with folders indented under it (no "A / B" breadcrumb
-  strings and no repeated team-name prefixes). The current placement is
-  marked and disabled. It outgrew the original anchored popover once
-  nested folders and teams joined the picker.
+  centred modal (`MoveToFolderDialog`) around the **shared placement
+  browser** — the same two-level space -> folder tile-grid browse as
+  the New Diagram wizard's Save In step (spec/76,
+  `components/placement/PlacementBrowser`), so the product has exactly
+  one way to choose where a diagram lives. Spaces first (My Work +
+  each team, spec/35; team-scoped surfaces skip the overview and open
+  straight inside their team), then the folder drill-down with a
+  "here" card at every level, an inline New Folder tile, and a
+  BackBar. The dialog opens with the subject's current placement
+  pre-selected ("always something selected"); the "Move here" button
+  stays disabled until the choice changes, and double-clicking a
+  destination card commits the move in one gesture. Shared by the
+  /explorer page, the floating Explorer panel (personal folders only),
+  and the team library (its team only). It replaced the earlier
+  filterable indented-tree modal, which itself outgrew an anchored
+  popover.
 
 ## Explorer routes
 
@@ -186,7 +193,7 @@ falls back to the plain **Open** link (one action needs no menu).
   both the editor and the standalone `/explorer` page wire delete
   through the same prompt.
 - Diagram-row ellipsis menu gains a "Change Folder" sub-action that
-  opens the indented destination tree (personal folders + Unsorted,
+  opens the shared placement browser (personal folders + Unsorted,
   and teams with their folders — see the move-picker note above).
   Picking one calls `PUT /api/diagrams/:id/folder`.
 - **Drag-and-drop**: diagram rows are HTML5-draggable. Drop targets

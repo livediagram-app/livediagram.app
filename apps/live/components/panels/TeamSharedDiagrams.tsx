@@ -27,7 +27,16 @@ import { useRelativeTimeTick } from '@/lib/relative-time';
 
 type Spot = { kind: 'root' } | { kind: 'unsorted' } | { kind: 'folder'; id: string };
 
-export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamId: string }) {
+export function TeamSharedDiagrams({
+  ownerId,
+  teamId,
+  teamName,
+}: {
+  ownerId: string;
+  teamId: string;
+  // Shown by the move picker's Team Library card; falls back to "Team".
+  teamName?: string;
+}) {
   const lib = useTeamLibrary(ownerId, teamId);
   // Deep link: /explorer/team?id=<team>&folder=<id> opens with that
   // folder focused (the search panel's team-folder results navigate
@@ -361,9 +370,10 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
 
       {/* ---------- Move picker ---------- */}
       {/* Same shared move modal as the personal surfaces (spec/15),
-          scoped to this team's tree: no Teams section (the diagram is
-          already in this team; cross-team moves go via the personal
-          picker or Remove-from-team first). */}
+          scoped to this team's tree: no personal space and a single
+          team, so the browser opens straight inside the team library
+          (the diagram is already in this team; cross-team moves go via
+          the personal picker or Remove-from-team first). */}
       {moveTarget ? (
         <MoveToFolderDialog
           subjectName={
@@ -372,13 +382,19 @@ export function TeamSharedDiagrams({ ownerId, teamId }: { ownerId: string; teamI
               : lib.folders.find((f) => f.id === moveTarget.id)?.name) || 'Untitled'
           }
           subjectKind={moveTarget.kind}
-          personalRootLabel="Unsorted"
-          personalFolders={movePickerFolders}
+          teams={[{ id: teamId, name: teamName ?? 'Team', folders: movePickerFolders }]}
+          currentTeamId={teamId}
           currentFolderId={
             moveTarget.kind === 'diagram'
               ? (lib.diagrams.find((d) => d.id === moveTarget.id)?.folderId ?? null)
               : (lib.folders.find((f) => f.id === moveTarget.id)?.parentId ?? null)
           }
+          onCreateFolder={async (name, parentId) => {
+            const created = await lib.createFolder(parentId, name);
+            return created
+              ? { id: created.id, name: created.name, parentId: created.parentId }
+              : null;
+          }}
           onPick={({ folderId }) => {
             if (moveTarget.kind === 'diagram') void lib.moveDiagram(moveTarget.id, folderId);
             else void lib.moveFolder(moveTarget.id, folderId);

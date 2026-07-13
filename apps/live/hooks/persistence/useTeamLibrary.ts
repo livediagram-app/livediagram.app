@@ -94,12 +94,14 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   );
 
   const createFolder = useCallback(
-    async (parentId: string | null): Promise<Folder | undefined> => {
+    // `name` defaults to the rename-me stub the tree flow uses; the move
+    // picker's New Folder tile passes a real name up front.
+    async (parentId: string | null, name?: string): Promise<Folder | undefined> => {
       if (!ownerId) return undefined;
       try {
         const folder = await apiCreateFolder(ownerId, {
           id: crypto.randomUUID(),
-          name: 'New folder',
+          name: name?.trim() || 'New folder',
           parentId,
           teamId,
         });

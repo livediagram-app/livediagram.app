@@ -15,6 +15,7 @@ import { TemplatePickerBrowse } from '@/components/palette/TemplatePickerBrowse'
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { TemplatePickerFooter } from './TemplatePickerFooter';
+import { parsePlacement } from '@/components/placement/PlacementBrowser';
 import { NewDiagramSettingsStep } from './template-picker-settings';
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { WizardSteps } from './template-picker-wizard';
@@ -194,24 +195,7 @@ export function TemplatePicker({
   // before the setPlacement state update has applied.
   const settingsFor = (p: string): NewDiagramSettings => {
     const name = diagramNameInput.trim() || templateDefaultName;
-    const base = { offline, diagramName: name };
-    if (p.startsWith('folder:')) {
-      return { ...base, folderId: p.slice(7), teamId: null };
-    }
-    if (p.startsWith('team:')) {
-      // `team:<teamId>` (library root) or `team:<teamId>:folder:<folderId>`.
-      const rest = p.slice(5);
-      const sep = rest.indexOf(':folder:');
-      if (sep >= 0) {
-        return {
-          ...base,
-          folderId: rest.slice(sep + ':folder:'.length),
-          teamId: rest.slice(0, sep),
-        };
-      }
-      return { ...base, folderId: null, teamId: rest };
-    }
-    return { ...base, folderId: null, teamId: null };
+    return { offline, diagramName: name, ...parsePlacement(p) };
   };
   const settings = () => settingsFor(placement);
   // Welcome mode is a two-step wizard: pick a template, then a theme

@@ -384,16 +384,25 @@ function ExplorerImpl({
         <SignInPrompt />
       </div>
 
-      {/* Move-destination modal (spec/15), shared with the /explorer
-          page. The panel scopes it to personal folders: team moves
-          (spec/35) live on the full explorer page. */}
+      {/* Move-destination modal (spec/15), the same shared placement
+          browser as the /explorer page. The panel scopes it to personal
+          folders: team moves (spec/35) live on the full explorer page. */}
       {moveTargetDiagramId && onMoveDiagramToFolder ? (
         <MoveToFolderDialog
           subjectName={diagrams.find((d) => d.id === moveTargetDiagramId)?.name || 'Untitled'}
           subjectKind="diagram"
-          personalRootLabel="Unsorted"
           personalFolders={folders.map((f) => ({ id: f.id, name: f.name, parentId: f.parentId }))}
           currentFolderId={diagrams.find((d) => d.id === moveTargetDiagramId)?.folderId ?? null}
+          onCreateFolder={
+            onCreateFolder
+              ? async (name, parentId) => {
+                  const created = await onCreateFolder({ name, parentId });
+                  return created
+                    ? { id: created.id, name: created.name, parentId: created.parentId }
+                    : null;
+                }
+              : undefined
+          }
           onPick={({ folderId }) => {
             onMoveDiagramToFolder(moveTargetDiagramId, folderId);
           }}

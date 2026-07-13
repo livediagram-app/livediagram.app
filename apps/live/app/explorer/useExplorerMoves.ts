@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import {
+  apiCreateFolder,
   apiSetDiagramFolder,
   apiUpdateFolder,
   type DiagramListItem,
@@ -188,11 +189,38 @@ export function useExplorerMoves({
     }));
   }, [teams, teamFolders, moveTarget, diagrams]);
 
+  // Inline folder creation from the move picker's "New Folder" tile:
+  // create in the picked scope (personal, or a team's library), refresh
+  // the matching list so the new tile appears, and hand the folder back
+  // so the browser can select it as the destination.
+  const createMoveFolder = async (
+    name: string,
+    parentId: string | null,
+    teamId: string | null,
+  ): Promise<{ id: string; name: string; parentId: string | null } | null> => {
+    if (!ownerId) return null;
+    try {
+      const folder = await apiCreateFolder(ownerId, {
+        id: crypto.randomUUID(),
+        name,
+        parentId,
+        teamId,
+      });
+      if (teamId) refreshTeamLibraries();
+      else await refreshFolders();
+      track('Folder', 'Created', teamId ? 'Team' : undefined);
+      return { id: folder.id, name: folder.name, parentId: folder.parentId };
+    } catch {
+      return null;
+    }
+  };
+
   return {
     moveTarget,
     setMoveTarget,
     moveAnchorRef,
     moveFolderToParent,
+    createMoveFolder,
     moveDiagramToTeam,
     moveTeamDiagramToFolder,
     moveTeamDiagramOut,

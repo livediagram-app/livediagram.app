@@ -80,6 +80,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     moveTeamDests,
     moveDiagramTo,
     moveFolderToParent,
+    createMoveFolder,
     teamModalOpen,
     setTeamModalOpen,
     hookCreateTeam,
@@ -189,13 +190,13 @@ function ShellChrome({ children }: { children: ReactNode }) {
         />
       </div>
 
-      {/* Move-destination modal (spec/15 + spec/35): one ownership-
-          aware indented tree for every diagram (personal or team) and
-          for folder re-parenting. It shows "My Work" (the personal
-          root) + the folder tree, plus each team + its folder tree (for
-          diagram moves); `moveDiagramTo` routes the pick from the
-          subject's current placement. Folder moves are personal-only,
-          so they pass no teams. */}
+      {/* Move-destination modal (spec/15 + spec/35): the shared
+          placement browser (spec/76's Save In UI) for every diagram
+          (personal or team) and for folder re-parenting. It offers
+          "My Work" plus each team as a space (for diagram moves);
+          `moveDiagramTo` routes the pick from the subject's current
+          placement. Folder moves are personal-only, so they pass no
+          teams. The New Folder tile creates in the picked scope. */}
       {moveTarget
         ? (() => {
             const teamRow =
@@ -220,11 +221,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
               <MoveToFolderDialog
                 subjectName={subjectName}
                 subjectKind={moveTarget.kind}
-                personalRootLabel="My Work"
                 personalFolders={movePersonalFolders}
                 teams={moveTarget.kind === 'diagram' ? moveTeamDests : undefined}
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
+                onCreateFolder={createMoveFolder}
                 onPick={(dest) => {
                   if (moveTarget.kind === 'folder')
                     moveFolderToParent(moveTarget.id, dest.folderId);
