@@ -34,7 +34,11 @@ export function buildFunnel(cx: number, cy: number): Element[] {
 
   const totalH = stages.length * tierH + (stages.length - 1) * tierGap;
   const y0 = cy - totalH / 2;
-  const countX = cx + topW / 2 + 60;
+  // The count rail hangs entirely off the right side (60px gap + 240px
+  // texts), so the funnel axis sits half that (150px) left of cx to keep
+  // the WHOLE composition's bounding box centred on the canvas point.
+  const fx = cx - (60 + 240) / 2;
+  const countX = fx + topW / 2 + 60;
   const labelW = 260;
 
   const elements: Element[] = [];
@@ -43,7 +47,7 @@ export function buildFunnel(cx: number, cy: number): Element[] {
     const y = y0 + i * (tierH + tierGap);
 
     elements.push({
-      ...createShape('trapezoid', cx - tierW / 2, y),
+      ...createShape('trapezoid', fx - tierW / 2, y),
       width: tierW,
       height: tierH,
       rotation: 180,
@@ -55,7 +59,7 @@ export function buildFunnel(cx: number, cy: number): Element[] {
     // Stage name overlaid on the tier (the rotated shape can't carry
     // its own label the right way up).
     elements.push({
-      ...createText(cx - labelW / 2, y + tierH / 2 - 24),
+      ...createText(fx - labelW / 2, y + tierH / 2 - 24),
       width: labelW,
       height: 48,
       label: stage.label,

@@ -246,8 +246,9 @@ export function buildDecisionTree(cx: number, cy: number): Element[] {
     label: 'Escalate now',
   };
   const c = {
-    ...createShape('square', cx + 290 - bW / 2, top + 320),
-    width: bW,
+    // A touch wider than the shared bW: "Add to backlog" wraps at 130.
+    ...createShape('square', cx + 290 - 75, top + 320),
+    width: 150,
     height: bH,
     label: 'Add to backlog',
   };
@@ -357,9 +358,10 @@ export function buildDataFlow(cx: number, cy: number): Element[] {
     label: 'Orders',
   };
   // Centred directly under the process so the 'Invoice' flow drops straight
-  // down (process spans cx-60..cx+60, centre cx).
+  // down (process spans cx-60..cx+60, centre cx). cy+120 keeps a clear 60px
+  // run for the arrow without floating the whole composition below centre.
   const output = {
-    ...createShape('square', cx - 60, cy + 160),
+    ...createShape('square', cx - 60, cy + 120),
     width: 120,
     height: 70,
     label: 'Invoice',

@@ -148,7 +148,10 @@ export function buildStateMachine(cx: number, cy: number): Element[] {
   // Pitch leaves an ~90px gap between states so the event labels sit
   // on the transition, not on the neighbouring stadiums.
   const pitch = 260;
-  const stateY = cy - 60;
+  // The Cancelled branch hangs 200px below the happy path, so the state
+  // row rides high enough that the whole machine's bounding box centres
+  // on (cx, cy) rather than drifting below it.
+  const stateY = cy - 132;
   const INK = '#0f172a';
 
   const elements: Element[] = [];

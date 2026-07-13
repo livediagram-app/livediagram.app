@@ -83,7 +83,10 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
   ];
 
   const firstColCenterX = cx - containerSpacing;
-  const containerY = cy - containerH / 2 + 40;
+  // The columns are the whole composition (headers live inside them), so
+  // plain half-height centring is correct — a stray +40 used to drift the
+  // board below the canvas point.
+  const containerY = cy - containerH / 2;
 
   const elements: Element[] = [];
   columns.forEach((col, i) => {
@@ -428,12 +431,15 @@ export function buildSwot(cx: number, cy: number): Element[] {
 // (a centred double-headed quadrant divider plus an L-frame of single-
 // headed axes along the left + bottom) with a handful of items
 // scattered across the field for the user to drag into the right
-// quadrant. Geometry mirrors a hand-built reference (its bounding box
-// spans 0..1542 x 0..1218), re-centred on the supplied canvas point.
+// quadrant. Geometry mirrors a hand-built reference (its element extents
+// span 158..1568 x 158..1218), re-centred on the supplied canvas point.
 // The axes carry the brand accent; items + labels are left to the theme.
 export function buildPrioritizationMatrix(cx: number, cy: number): Element[] {
-  const ox = cx - 771;
-  const oy = cy - 609;
+  // Offsets centre the TRUE content extents (158..1568 / 158..1218) on
+  // (cx, cy); the old cx-771/cy-609 assumed the box started at 0 and
+  // left the whole chart ~(+92, +79) off-centre.
+  const ox = cx - 863;
+  const oy = cy - 688;
   const AXIS = '#0ea5e9'; // brand accent
 
   const elements: Element[] = [];

@@ -133,10 +133,12 @@ export function buildMobileWireframe(cx: number, cy: number): Element[] {
       });
     }
 
-    // Bottom tab bar with three evenly-spaced icons (all screens).
+    // Bottom tab bar with three evenly-spaced icons (all screens). The 29px
+    // lead-in centres the icon cluster in the 252px bar (a 25 left it 4px
+    // off-centre: margins 25 vs 33).
     inner.push(box(x + barInset, phoneY + 554, barW, 54));
     [0, 1, 2].forEach((i) => {
-      inner.push(dot(x + barInset + 25 + i * 84, phoneY + 568, 26, 27));
+      inner.push(dot(x + barInset + 29 + i * 84, phoneY + 568, 26, 27));
     });
 
     return [phone, ...inner];
@@ -210,26 +212,28 @@ export function buildLaptopWireframe(cx: number, cy: number): Element[] {
   elements.push(box(122, 42, 965, 75, { rounded: true, thin: true }));
   elements.push(box(150, 63, 85, 35, { label: 'Logo', size: 'sm' }));
   elements.push(pill(263, 59, 85, 43, 'Home'));
-  elements.push(pill(362, 59, 85, 43, 'Projects'));
-  elements.push(pill(462, 59, 85, 43, 'Reports'));
+  elements.push(pill(363, 59, 85, 43, 'Projects'));
+  elements.push(pill(463, 59, 85, 43, 'Reports'));
   elements.push(dot(1024, 58, 42, 42));
 
-  // Left sidebar + nav rows.
-  elements.push(box(124, 131, 192, 362, { thin: true }));
+  // Left sidebar + nav rows, sharing the nav bar's left gutter.
+  elements.push(box(122, 131, 192, 362, { thin: true }));
   ['Overview', 'Customers', 'Pipeline', 'Reports', 'Settings'].forEach((label, i) => {
     elements.push(box(135, 163 + i * 52, 164, 40, { label, size: 'sm', left: true }));
   });
 
-  // Three stat cards: container + metric label + value.
-  const cards: { cardX: number; labelX: number; label: string }[] = [
-    { cardX: 332, labelX: 346, label: 'Active users' },
-    { cardX: 533, labelX: 547, label: 'Revenue' },
-    { cardX: 735, labelX: 749, label: 'Conversion' },
+  // Three stat cards: container + metric label + value. Sized so the row
+  // spans the full dashboard body (sidebar edge 332 to the nav's right
+  // edge 1087) — the old 187px cards left a ~165px dead band on the right.
+  const cards: { cardX: number; label: string }[] = [
+    { cardX: 332, label: 'Active users' },
+    { cardX: 589, label: 'Revenue' },
+    { cardX: 846, label: 'Conversion' },
   ];
   for (const c of cards) {
-    elements.push(box(c.cardX, 134, 187, 140));
-    elements.push(box(c.labelX, 154, 159, 24, { label: c.label, size: 'sm', left: true }));
-    elements.push(box(c.labelX, 195, 159, 44, { label: '0', size: 'md', left: true }));
+    elements.push(box(c.cardX, 134, 241, 140));
+    elements.push(box(c.cardX + 14, 154, 213, 24, { label: c.label, size: 'sm', left: true }));
+    elements.push(box(c.cardX + 14, 195, 213, 44, { label: '0', size: 'md', left: true }));
   }
 
   return elements;

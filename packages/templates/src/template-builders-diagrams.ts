@@ -511,7 +511,10 @@ export function buildPyramid(cx: number, cy: number): Element[] {
   const totalH = tiers.length * tierH;
   const topY = cy - totalH / 2;
   tiers.forEach((label, i) => {
-    const tierW = baseWidth - i * widthStep;
+    // First array entry renders as the apex: narrowest on top, widening
+    // down to the full-width foundation. (This used to subtract i itself,
+    // which put the WIDEST tier on top — an upside-down pyramid.)
+    const tierW = baseWidth - (tiers.length - 1 - i) * widthStep;
     const x = cx - tierW / 2;
     const y = topY + i * tierH;
     elements.push({
@@ -524,10 +527,6 @@ export function buildPyramid(cx: number, cy: number): Element[] {
       ...(i === 0 ? { colorPreset: 'bold' } : {}),
     });
   });
-  // Top-to-bottom order in the source array reads peak-down, but
-  // visually the user expects the foundation at the bottom. Reverse
-  // labels on render so first array entry = top tier.
-  // (Already top-down in the array above; loop just iterates.)
   return elements;
 }
 

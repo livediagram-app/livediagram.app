@@ -43,10 +43,13 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
   // Vertical bands, top to bottom: client → gateway → services → data.
   // Evenly spaced (~190px pitch) so each tile's caption clears the tile
   // below it — captions render beneath the icon, so tight bands collide.
-  const clientY = cy - 345;
-  const gatewayY = cy - 155;
-  const serviceY = cy + 35;
-  const dataY = cy + 225;
+  // Bands sit symmetric about cy (tiles are 128 tall, captions hang
+  // ~20px under the bottom rank) so the topology centres on the canvas
+  // point instead of floating above it.
+  const clientY = cy - 285;
+  const gatewayY = cy - 95;
+  const serviceY = cy + 95;
+  const dataY = cy + 285;
 
   // An icon tile centred on (centerX, centerY): the glyph fills the box
   // with the role label captioned beneath. `iconId` keys the tech-icon
@@ -99,11 +102,13 @@ export function buildCloudArchitecture(cx: number, cy: number): Element[] {
   const colGap = 170; // half-distance between the two service columns
   const wideGap = 340; // data-tier column offset
 
-  const usersY = cy - 480;
-  const edgeY = cy - 290;
-  const gatewayY = cy - 100;
-  const serviceY = cy + 90;
-  const dataY = cy + 280;
+  // Five ranks symmetric about cy (190px pitch) so the topology centres
+  // on the canvas point; the old bands were biased ~100px upward.
+  const usersY = cy - 380;
+  const edgeY = cy - 190;
+  const gatewayY = cy;
+  const serviceY = cy + 190;
+  const dataY = cy + 380;
 
   const node = (centerX: number, centerY: number, label: string, iconId: string): Element => ({
     ...createShape('icon', centerX - tile / 2, centerY - tile / 2),

@@ -84,7 +84,9 @@ export function buildSlideDeck(cx: number, cy: number): Element[] {
     'Risks + dependencies',
     'Open questions',
   ];
-  const rowY = [117, 172, 226, 280];
+  // Uniform 54px pitch (the old [117, 172, ...] gave the first row a 55px
+  // pitch and the rest 54, a visible wobble in an otherwise regular list).
+  const rowY = [118, 172, 226, 280];
   agenda.forEach((label, i) => {
     elements.push(at(tr, 'square', 41, rowY[i]!, 41, 40, { label: `${i + 1}` }));
     elements.push(at(tr, 'square', 95, rowY[i]!, 426, 40, { label, left: true }));
