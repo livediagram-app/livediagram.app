@@ -102,10 +102,17 @@ export default function NewDiagramPage() {
   // commits a blank diagram (Blank template, Basic theme, default name) the
   // moment it mounts and lands on the editor. The ?folder / ?team placement
   // context above still applies to it.
-  const [justDraw] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return new URLSearchParams(window.location.search).has('blank');
-  });
+  //
+  // Detected in a layout effect, NOT a window-reading state initializer: the
+  // static export prerenders this page without a query string, so an
+  // initializer that returns true on the client makes the hydration render
+  // disagree with the server HTML. The layout effect flips the state before
+  // the post-hydration paint, and the pre-paint window before hydration is
+  // covered by the inline script + style guard rendered below.
+  const [justDraw, setJustDraw] = useState(false);
+  useLayoutEffect(() => {
+    if (new URLSearchParams(window.location.search).has('blank')) setJustDraw(true);
+  }, []);
 
   useEffect(() => {
     document.title = 'New diagram | livediagram';
@@ -440,6 +447,20 @@ export default function NewDiagramPage() {
 
   return (
     <div className="flex h-dvh flex-col">
+      {/* Just-Draw pre-hydration guard (spec/14): this static page's
+          prerendered HTML is the wizard, and React only learns about
+          ?blank=1 at hydration — without this, the wizard paints for the
+          beat until then. The script runs as the HTML parses, BEFORE the
+          wizard markup below paints, and flags the root element; the style
+          rule hides the wizard-only content under that flag until React
+          swaps in the creating card. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            "try{if(new URLSearchParams(location.search).has('blank'))document.documentElement.setAttribute('data-just-draw','')}catch(e){}",
+        }}
+      />
+      <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
       <EditorHeader
         diagramName="New diagram"
         hideTitle
@@ -459,34 +480,41 @@ export default function NewDiagramPage() {
             the card once the real id landed). Mounting CustomThemeProvider
             with a null owner until then just defers the Custom theme list
             (spec/44). */}
-        <CustomThemeProvider ownerId={self.id === 'pending' ? null : self.id}>
-          <TemplatePicker
-            mode="welcome"
-            participant={self}
-            currentThemeId="brand"
-            busy={submitting}
-            folders={folders}
-            teams={teams}
-            teamFolders={teamFolders}
-            initialPlacement={initialPlacement}
-            onCreateFolder={createPickerFolder}
-            onOpenExisting={() => window.location.assign('/explorer/recent')}
-            onPick={(kind, name, themeId, settings) =>
-              void commitNewDiagram(kind, name, themeId, settings)
-            }
-            // Empty name = "keep the resolved participant name" (commit falls
-            // back to it); passing self.name here could freeze the
-            // pre-bootstrap 'Guest' placeholder into the account.
-            onSkip={() => void commitNewDiagram('blank', '', 'brand', { offline: false })}
-          />
-        </CustomThemeProvider>
+        {/* display:contents so the guard wrapper adds no box of its own;
+            visibility inherits to the wizard card. */}
+        <div data-wizard-only className="contents">
+          <CustomThemeProvider ownerId={self.id === 'pending' ? null : self.id}>
+            <TemplatePicker
+              mode="welcome"
+              participant={self}
+              currentThemeId="brand"
+              busy={submitting}
+              folders={folders}
+              teams={teams}
+              teamFolders={teamFolders}
+              initialPlacement={initialPlacement}
+              onCreateFolder={createPickerFolder}
+              onOpenExisting={() => window.location.assign('/explorer/recent')}
+              onPick={(kind, name, themeId, settings) =>
+                void commitNewDiagram(kind, name, themeId, settings)
+              }
+              // Empty name = "keep the resolved participant name" (commit falls
+              // back to it); passing self.name here could freeze the
+              // pre-bootstrap 'Guest' placeholder into the account.
+              onSkip={() => void commitNewDiagram('blank', '', 'brand', { offline: false })}
+            />
+          </CustomThemeProvider>
+        </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
             returning users get "Jump back in" (spec/14, hidden with no
             diagrams yet). Its fetch also reports the diagram count that
             gates the interactive tour's welcome offer (spec/79). The
             guided-tour sample card that used to sit under it was removed
             when the interactive tour superseded it. */}
-        <div className="pointer-events-none absolute inset-y-0 right-4 z-10 hidden items-center xl:flex 2xl:right-10">
+        <div
+          data-wizard-only
+          className="pointer-events-none absolute inset-y-0 right-4 z-10 hidden items-center xl:flex 2xl:right-10"
+        >
           <RecentDiagramsCard
             ownerId={self.id === 'pending' ? null : self.id}
             onCount={setDiagramCount}

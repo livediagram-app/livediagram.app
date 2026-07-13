@@ -327,6 +327,18 @@ default diagram name) without walking the wizard:
   - The interactive tour's welcome offer (spec/79) is never queued on
     this path: the create fires before the diagram count resolves, and a
     "just draw" user has asked to get straight to the canvas.
+  - **The wizard must never paint on this path, not even for a frame.**
+    `/new` is a static export, so its prerendered HTML is the wizard and
+    the query param is only knowable in the browser. A React-side check
+    alone runs after hydration — the static wizard HTML would flash first
+    (and a window-reading state initializer would additionally make the
+    hydration render disagree with the server HTML). So the page ships a
+    tiny inline script ahead of the wizard markup that reads
+    `location.search` **before first paint** and flags
+    `<html data-just-draw>`; a matching style rule hides the wizard-only
+    content under that flag, and React then swaps in the creating card at
+    hydration (detected pre-paint in a layout effect, so the trees always
+    match).
 - **A "Just Draw" button on the wizard's step rail** (welcome mode only):
   far right on the same line as the Template / Theme / Settings chips,
   desktop (`sm+`) only — mobile keeps the footer Skip as the compact
