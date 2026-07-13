@@ -9,7 +9,7 @@ import { TopCenterBanner } from '@/components/chrome/TopCenter';
 // reads as closed. Once results are revealed it becomes the RESULTS
 // WALKTHROUGH bar: the ordered top picks are reviewed one at a time (the
 // canvas pulses the current one), with Previous / Next cycling the order
-// and Done — offered on the last pick — ending the walkthrough. After
+// and Done (offered on the last pick) ending the walkthrough. After
 // Done it falls back to the plain revealed message (winner rings). The
 // facilitator's start / end / show-results / clear controls live in Tab
 // Settings; this is the live participant-facing status.
@@ -34,7 +34,7 @@ export function VoteBanner({
       <TopCenterBanner tone="brand" className="gap-2 px-2 py-1 text-[11px] font-medium">
         <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-amber-400" />
         <span>
-          Top result {review.index + 1} of {review.total} — {review.votes}{' '}
+          Top result {review.index + 1} of {review.total} &middot; {review.votes}{' '}
           {review.votes === 1 ? 'vote' : 'votes'}
         </span>
         <span className="flex items-center gap-1">
@@ -52,9 +52,9 @@ export function VoteBanner({
   const remaining = Math.max(0, vote.votesPerPerson - votesSpentBy(vote, selfId));
 
   const message = vote.active
-    ? `Voting open — ${remaining} of ${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} left. Click a shape, sticky, or image to vote.`
+    ? `Voting open: ${remaining} of ${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} left. Click a shape, sticky, or image to vote.`
     : vote.revealed
-      ? 'Results revealed — top picks are ringed.'
+      ? 'Results revealed: top picks are ringed.'
       : 'Voting ended.';
 
   return (

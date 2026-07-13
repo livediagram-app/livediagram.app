@@ -7,12 +7,12 @@ import { track } from '@/lib/telemetry';
 // current pick pulses an amber focus highlight and the viewport pans to it;
 // Previous / Next in the vote banner cycle through the order, and Done (on
 // the last pick) ends the walkthrough, falling back to the plain revealed
-// state (winner rings). The review index is LOCAL — every participant
+// state (winner rings). The review index is LOCAL: every participant
 // reviews at their own pace; only the reveal itself is shared state.
 
 export type VoteReview = {
   // The element under review, its 0-based position, the total number of
-  // voted elements, and its dot count — everything the banner shows.
+  // voted elements, and its dot count: everything the banner shows.
   focusId: string;
   index: number;
   total: number;
@@ -54,7 +54,7 @@ export function useVoteReview({
   const focus = index !== null ? (results[index] ?? null) : null;
 
   // Pan / zoom the focused pick into view whenever the WALK moves (not on
-  // unrelated element churn — hence the focused-id dep).
+  // unrelated element churn, hence the focused-id dep).
   const focusId = focus?.id ?? null;
   useEffect(() => {
     if (!focusId) return;
