@@ -57,11 +57,13 @@ export function CanvasStyleControls({
   patternColor,
   backgroundOpacity,
   backgroundPatternScale,
+  backgroundAnimationSpeed,
   onSetBackgroundPattern,
   onSetBackgroundColor,
   onSetPatternColor,
   onSetBackgroundOpacity,
   onSetBackgroundPatternScale,
+  onSetBackgroundAnimationSpeed,
   patternColumns = 4,
   showAllPatterns = false,
 }: {
@@ -70,11 +72,15 @@ export function CanvasStyleControls({
   patternColor: string;
   backgroundOpacity: number;
   backgroundPatternScale: number;
+  // Motion rate for an ANIMATED pattern (spec/09), 1 = normal. The Speed
+  // slider renders only while an animated pattern is active.
+  backgroundAnimationSpeed: number;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
   onSetBackgroundColor: (color: string) => void;
   onSetPatternColor: (color: string) => void;
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetBackgroundPatternScale: (scale: number) => void;
+  onSetBackgroundAnimationSpeed: (speed: number) => void;
   // Pattern-grid density. The narrow palette accordion uses 4; the wide
   // dialog passes 7 so the tiles aren't marooned with empty gutters.
   // Discrete values keep the class names static for Tailwind.
@@ -162,6 +168,28 @@ export function CanvasStyleControls({
           className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
         />
       </div>
+      {/* Motion speed (spec/09) — only meaningful for an ANIMATED pattern,
+          so the row appears exactly when one is active. A rate multiplier:
+          100% is each pattern's own tuned pace. */}
+      {isAnimatedPattern(backgroundPattern) ? (
+        <div className="mt-3 flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Speed</p>
+            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
+              {Math.round(backgroundAnimationSpeed * 100)}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0.25}
+            max={3}
+            step={0.25}
+            value={backgroundAnimationSpeed}
+            onChange={(e) => onSetBackgroundAnimationSpeed(parseFloat(e.target.value))}
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
+          />
+        </div>
+      ) : null}
     </>
   );
 }

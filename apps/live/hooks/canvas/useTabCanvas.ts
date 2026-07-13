@@ -275,6 +275,20 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     scheduleCanvasTelemetry('backgroundPatternScale', 'BackgroundPatternScale');
   };
 
+  // Motion rate for an animated background pattern (spec/09): 1 = the
+  // pattern's own tuned pace, 2 = twice as fast. Only offered while an
+  // animated pattern is active (the Speed slider is gated in
+  // CanvasStyleControls); a static pattern simply ignores the field.
+  const setBackgroundAnimationSpeed = (speed: number) => {
+    if (editsBlocked) return;
+    patchActiveTabDebounced(
+      'backgroundAnimationSpeed',
+      `Changed background animation speed to ${Math.round(speed * 100)}%`,
+      (t) => ({ ...t, backgroundAnimationSpeed: speed }),
+    );
+    scheduleCanvasTelemetry('backgroundAnimationSpeed', 'BackgroundAnimationSpeed');
+  };
+
   return {
     autoAlignTab,
     autoLayoutTab,
@@ -289,5 +303,6 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     setBackgroundOpacity,
     setPatternColor,
     setBackgroundPatternScale,
+    setBackgroundAnimationSpeed,
   };
 }

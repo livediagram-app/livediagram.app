@@ -588,6 +588,11 @@ export type Tab = {
   // smaller (the canvas pattern-size slider). Does not affect the pan
   // phase, so the pattern still tracks panning at any scale.
   backgroundPatternScale?: number;
+  // Motion speed for an ANIMATED background pattern (spec/09), defaults to
+  // 1. A rate multiplier (2 = twice as fast) fed to the animated backdrop's
+  // keyframes; ignored by the static patterns. The canvas Speed slider
+  // (shown only while an animated pattern is active) writes it.
+  backgroundAnimationSpeed?: number;
   // Selected preset theme name (see apps/live/lib/themes.ts). Setting
   // a theme via the palette repaints every existing element on the tab
   // to match (sticky notes keep their amber palette). Newly added

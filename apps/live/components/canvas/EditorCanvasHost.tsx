@@ -299,6 +299,7 @@ export function EditorCanvasHost() {
       tabBackgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}
       tabBackgroundOpacity={activeTab.backgroundOpacity ?? 1}
       tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
+      tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
       tabPatternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
       tabFont={activeTab.font}
       mainRef={canvasMainRef}

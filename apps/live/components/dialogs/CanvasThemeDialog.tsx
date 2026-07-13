@@ -36,11 +36,13 @@ type CanvasThemeDialogProps = {
   patternColor: string;
   backgroundOpacity: number;
   backgroundPatternScale: number;
+  backgroundAnimationSpeed: number;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
   onSetBackgroundColor: (color: string) => void;
   onSetPatternColor: (color: string) => void;
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetBackgroundPatternScale: (scale: number) => void;
+  onSetBackgroundAnimationSpeed: (speed: number) => void;
   // Theme. `themeId` is a built-in ThemeId or a custom `custom:<uuid>`
   // id (spec/44), so it's widened to string; onSetTheme applies either.
   themeId: string;
@@ -57,11 +59,13 @@ export function CanvasThemeDialog({
   patternColor,
   backgroundOpacity,
   backgroundPatternScale,
+  backgroundAnimationSpeed,
   onSetBackgroundPattern,
   onSetBackgroundColor,
   onSetPatternColor,
   onSetBackgroundOpacity,
   onSetBackgroundPatternScale,
+  onSetBackgroundAnimationSpeed,
   themeId,
   onSetTheme,
   onResetElementsToTheme,
@@ -151,11 +155,13 @@ export function CanvasThemeDialog({
                 patternColor={patternColor}
                 backgroundOpacity={backgroundOpacity}
                 backgroundPatternScale={backgroundPatternScale}
+                backgroundAnimationSpeed={backgroundAnimationSpeed}
                 onSetBackgroundPattern={onSetBackgroundPattern}
                 onSetBackgroundColor={onSetBackgroundColor}
                 onSetPatternColor={onSetPatternColor}
                 onSetBackgroundOpacity={onSetBackgroundOpacity}
                 onSetBackgroundPatternScale={onSetBackgroundPatternScale}
+                onSetBackgroundAnimationSpeed={onSetBackgroundAnimationSpeed}
                 patternColumns={7}
                 showAllPatterns
               />

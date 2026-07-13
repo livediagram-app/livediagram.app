@@ -30,6 +30,10 @@ type AnimatedCanvasBackgroundProps = {
   color: string;
   // Pattern-size slider value (0.5..2), scales each motif.
   scale: number;
+  // Motion-speed slider value (spec/09): a rate multiplier (1 = each
+  // pattern's own tuned pace, 2 = twice as fast). Fed to the keyframes as
+  // the --lvd-bg-speed var each animation divides its duration by.
+  speed: number;
   // Backdrop-opacity slider value (0..1), fades the whole layer.
   opacity: number;
 };
@@ -42,6 +46,7 @@ export function AnimatedCanvasBackground({
   variant,
   color,
   scale,
+  speed,
   opacity,
 }: AnimatedCanvasBackgroundProps) {
   return (
@@ -49,7 +54,7 @@ export function AnimatedCanvasBackground({
       aria-hidden
       data-animated-pattern={variant}
       className="pointer-events-none absolute inset-0 overflow-hidden"
-      style={{ ['--lvd-pat']: color, opacity } as Vars}
+      style={{ ['--lvd-pat']: color, ['--lvd-bg-speed']: speed, opacity } as Vars}
     >
       <style>{KEYFRAMES}</style>
       {variant === 'flow' ? <Flow scale={scale} /> : null}
@@ -273,13 +278,13 @@ function Ribbons({ scale, color }: { scale: number; color: string }) {
 const KEYFRAMES = `
   .lvd-flow-line {
     opacity: 0.4;
-    animation: lvd-flow var(--dur) linear infinite;
+    animation: lvd-flow calc(var(--dur) / var(--lvd-bg-speed, 1)) linear infinite;
   }
   @keyframes lvd-flow { to { stroke-dashoffset: -280; } }
 
   .lvd-drift-mote {
     opacity: 0.4;
-    animation: lvd-drift var(--dur) ease-in-out var(--delay) infinite;
+    animation: lvd-drift calc(var(--dur) / var(--lvd-bg-speed, 1)) ease-in-out var(--delay) infinite;
   }
   @keyframes lvd-drift {
     0% { transform: translateY(0); opacity: 0; }
@@ -290,7 +295,7 @@ const KEYFRAMES = `
 
   .lvd-aurora-glow {
     opacity: 0.72;
-    animation: lvd-aurora var(--dur) ease-in-out infinite;
+    animation: lvd-aurora calc(var(--dur) / var(--lvd-bg-speed, 1)) ease-in-out infinite;
   }
   @keyframes lvd-aurora {
     0%, 100% { transform: translate(0, 0) scale(1); }
@@ -299,7 +304,7 @@ const KEYFRAMES = `
 
   .lvd-ripple-ring {
     opacity: 0.35;
-    animation: lvd-ripple var(--dur) ease-out var(--delay) infinite;
+    animation: lvd-ripple calc(var(--dur) / var(--lvd-bg-speed, 1)) ease-out var(--delay) infinite;
   }
   @keyframes lvd-ripple {
     0% { transform: scale(0.25); opacity: 0.5; }
@@ -309,7 +314,7 @@ const KEYFRAMES = `
   .lvd-ribbon {
     opacity: 0.45;
     stroke-dasharray: 45 55;
-    animation: lvd-ribbon-flow var(--dur) linear var(--delay) infinite;
+    animation: lvd-ribbon-flow calc(var(--dur) / var(--lvd-bg-speed, 1)) linear var(--delay) infinite;
   }
   @keyframes lvd-ribbon-flow { to { stroke-dashoffset: -200; } }
 

@@ -46,6 +46,8 @@ export type CanvasProps = {
   tabBackgroundOpacity: number;
   // Pattern tile scale (the canvas pattern-size slider); defaults to 1.
   tabBackgroundPatternScale: number;
+  // Motion rate for an animated background pattern (spec/09); 1 = normal.
+  tabBackgroundAnimationSpeed: number;
   tabPatternColor: string;
   // The active tab's default font id (spec/28). Elements without their
   // own `font` render in this; undefined = the editor default. Used by

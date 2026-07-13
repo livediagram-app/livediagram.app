@@ -2838,6 +2838,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Tab": {
     "additionalProperties": false,
     "properties": {
+      "backgroundAnimationSpeed": {
+        "type": "number"
+      },
       "backgroundColor": {
         "type": "string"
       },

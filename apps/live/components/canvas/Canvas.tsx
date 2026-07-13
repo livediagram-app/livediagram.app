@@ -54,6 +54,7 @@ export function Canvas(props: CanvasProps) {
     tabBackgroundColor,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
+    tabBackgroundAnimationSpeed,
     tabPatternColor,
     mainRef,
     isPinchingRef,
@@ -371,6 +372,7 @@ export function Canvas(props: CanvasProps) {
           variant={tabBackgroundPattern}
           color={tabPatternColor}
           scale={tabBackgroundPatternScale}
+          speed={tabBackgroundAnimationSpeed}
           opacity={tabBackgroundOpacity}
         />
       ) : null}
