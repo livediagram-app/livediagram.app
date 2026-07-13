@@ -13,8 +13,6 @@
 // for a single-bow curve, so "clears the obstacle" here means the drawn
 // line clears it too.
 
-import { curveControlPoint } from './arrow-path';
-
 type Pt = { x: number; y: number };
 type Rect = { x: number; y: number; width: number; height: number };
 
@@ -203,10 +201,4 @@ export function collisionAvoidingCurveOffset(
   const side: 1 | -1 = left === null || (right !== null && right <= left) ? 1 : -1;
   const off = side === 1 ? right! : left!;
   return { dx: nx * off * side, dy: ny * off * side };
-}
-
-// Convenience: the control point the chosen offset produces, matching what
-// the renderer will draw (exported for tests).
-export function avoidanceControlPoint(from: Pt, to: Pt, offset: { dx: number; dy: number }): Pt {
-  return curveControlPoint(from, to, offset);
 }

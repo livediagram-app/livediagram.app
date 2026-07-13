@@ -60,25 +60,6 @@ export function FolderMenuIcon() {
   );
 }
 
-export function FolderRemoveIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2 4.5h4l1.25 1.5H14v6.5H2z" />
-      <path d="M6 9.5h4" />
-    </svg>
-  );
-}
-
 export function MoveIcon() {
   return (
     <svg
@@ -95,24 +76,6 @@ export function MoveIcon() {
       <rect x="2" y="4" width="7" height="9" rx="1.25" />
       <path d="M9.5 8.5h4.5" />
       <path d="M12 6.5l2 2-2 2" />
-    </svg>
-  );
-}
-
-export function BackIcon() {
-  return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M7 2L3 6L7 10" />
     </svg>
   );
 }
