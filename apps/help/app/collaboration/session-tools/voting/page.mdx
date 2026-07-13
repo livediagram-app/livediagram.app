@@ -29,8 +29,9 @@ Dot-voting is controlled from the tab's menu, under its own top-level **Vote** c
 </Step>
 
 <Step n={3}>
-  Choose **End vote** to close casting (the tallies stay put), then **Show results** to reveal the
-  winners. **Clear** ends the session.
+  Choose **End vote** to close casting (the tallies stay put), then **Show results** to start the
+  guided results walkthrough. Finishing the walkthrough with **Done** clears the session; **Clear**
+  in the tab menu ends it early at any point.
 </Step>
 
 ## Casting and retracting dots
@@ -39,15 +40,19 @@ While a vote is open, clicking a votable element places one of your dots on it. 
 
 Every element with dots shows a **tally pill**. The pill is filled in your brand colour when it holds one of your dots, and clicking it **retracts** one of yours. Non-votable elements still behave normally, so the board stays fully editable during a vote.
 
-<Figure caption="Each votable element carries a tally pill, with a banner tracking dots left and the leader ringed.">
+<Figure caption="Each votable element carries a tally pill, with a banner tracking how many dots you have left.">
   <DotVoting />
 </Figure>
 
 **Votable** elements are shapes, sticky notes, and images. Section backdrops (frames), text, freehand drawings, tables, arrows, and annotations are not votable, so you vote on the ideas, not the scaffolding around them.
 
-## Revealing the result
+## Reviewing the results
 
-**Show results** rings the top element or elements so the winner is obvious at a glance. If two or more elements tie for the lead, they are all flagged as joint winners. View-only visitors can watch the counts and the reveal but cannot cast a dot, so observers see the outcome without skewing it.
+**Show results** starts a guided walkthrough of everything that received dots, most votes first. The current pick pulses an amber highlight and the canvas centres on it, while the vote banner shows where you are ("Top result 1 of 4") with **Previous** and **Next** buttons to step through in order. Each participant walks the results at their own pace, so nobody's screen jumps because someone else pressed Next.
+
+On the last pick, Next becomes **Done**. Pressing it ends the walkthrough and clears the whole vote session: the banner, the tally pills, and the highlights all go together, leaving the board clean for whatever comes next.
+
+View-only visitors can watch the counts, the reveal, and the walkthrough but cannot cast a dot, so observers see the outcome without skewing it.
 
 <Tip>
   A common rule of thumb is roughly one dot per three or four options. Set the stepper before you

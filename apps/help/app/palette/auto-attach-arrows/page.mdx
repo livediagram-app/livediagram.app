@@ -28,9 +28,15 @@ Auto-Attach Arrows is a toggle, and it is off by default: arrows stay pinned exa
 
 When the setting is on, arrows re-pin to the nearest face or edge of a shape as that shape moves. The connector follows along, so it keeps pointing at the right spot without you having to tidy up endpoints by hand. In the settings popover the hint reads: "Re-pin arrows to the nearest face as shapes move."
 
+Re-pinning is deliberately conservative: an arrow only picks a new face when its current one has genuinely stopped making sense, such as the shape being dragged to the other side of its partner. Nudging a connected shape a little never reshuffles a layout you have already arranged.
+
 <Figure caption="As the target shape moves, the arrow re-pins to its nearest face instead of dangling at the old spot.">
   <AutoAttachArrows />
 </Figure>
+
+## Many arrows, one point
+
+When several arrows pin to the same spot on a shape, say a hub with every child pointing at its bottom edge, the arrowheads fan out side by side along that edge instead of piling onto one point. The fan is purely visual and automatic: the pins themselves don't change, the heads just stay readable however many connectors converge.
 
 ## When to turn it on
 
