@@ -261,23 +261,29 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
               ...drag.startBounds.keys(),
               ...drag.startArrowEnds.keys(),
             ]);
-            let cloneIds: string[] = [];
-            tick((els) => {
-              const current = els.find((el) => el.id === drag.primaryId);
-              const start = drag.startBounds.get(drag.primaryId);
-              if (!current || !isBoxed(current) || !start) return els;
+            // Build the clones ONCE, outside the state updater: React may
+            // re-run an updater (StrictMode, batched replays), and a mapper
+            // that mints fresh ids per run appends a new clone set each
+            // time. With the elements fixed up front the mapper below is
+            // idempotent — it only appends when the clones aren't there.
+            const source = depsRef.current.activeTab.elements;
+            const current = source.find((el) => el.id === drag.primaryId);
+            const start = drag.startBounds.get(drag.primaryId);
+            if (current && isBoxed(current) && start) {
               const { newElements } = duplicateGroupedElements(
-                els,
+                source,
                 dupIds,
                 start.x - current.x,
                 start.y - current.y,
               );
-              cloneIds = newElements.map((el) => el.id);
-              return [...els, ...newElements];
-            });
-            if (cloneIds.length > 0) {
-              dupCloneIdsRef.current = cloneIds;
-              setShiftDupGhostIds(dupIds);
+              if (newElements.length > 0) {
+                const cloneIds = new Set(newElements.map((el) => el.id));
+                dupCloneIdsRef.current = [...cloneIds];
+                setShiftDupGhostIds(dupIds);
+                tick((els) =>
+                  els.some((el) => cloneIds.has(el.id)) ? els : [...els, ...newElements],
+                );
+              }
             }
           } else if (!e.shiftKey && dupCloneIdsRef.current) {
             const cloneIds = new Set(dupCloneIdsRef.current);
