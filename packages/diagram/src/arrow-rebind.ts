@@ -1,4 +1,11 @@
-import { isBoxed, type Anchor, type ArrowElement, type Element, type ElementId } from './index';
+import {
+  isBoxed,
+  type Anchor,
+  type ArrowElement,
+  type BoxedElement,
+  type Element,
+  type ElementId,
+} from './index';
 import {
   ANCHOR_SWITCH_MARGIN,
   FACE_SHARE_MIN_RAD,
@@ -9,11 +16,61 @@ import {
 } from './anchor-choice';
 import { buildElementIndex, centreOf, endpointPosition } from './geometry';
 
+// The cardinal face an anchor sits on (corners belong to their horizontal
+// edge). Shared by the settled test, the stability dead-band, and the
+// pairing pass.
+const faceOf = (a: Anchor): Cardinal => (isCardinal(a) ? a : a === 'ne' || a === 'nw' ? 'n' : 's');
+
+// Which corner of a face sits on the line's side: a line leaving rightward
+// through the south face belongs at 'se', leftward at 'sw'.
+const cornerForFace = (f: Cardinal, dir: number): Anchor => {
+  if (f === 'n') return Math.cos(dir) >= 0 ? 'ne' : 'nw';
+  if (f === 's') return Math.cos(dir) >= 0 ? 'se' : 'sw';
+  if (f === 'e') return Math.sin(dir) >= 0 ? 'se' : 'ne';
+  return Math.sin(dir) >= 0 ? 'sw' : 'nw';
+};
+
+// Confidence gate for touching a settled arrow at all: its current face
+// only becomes "wrong" once the geometrically best face beats it by MORE
+// than this factor (or the line stopped exiting through it entirely). A
+// subtle move of a connected box must not reshuffle a fan the user has
+// already accepted — re-anchoring is for arrows whose layout genuinely
+// broke, not marginal improvements. 3x matches the pairing pass's
+// "not wildly worse" bound.
+const KEEP_CURRENT_FACTOR = 3;
+
+// Does this end's CURRENT anchor still make sense for the line toward the
+// other box? Generous on purpose (see KEEP_CURRENT_FACTOR): the answer is
+// only "no" when the layout truly broke. A corner anchor additionally has
+// to sit on the line's side of its face (a stale corner reads as the line
+// crossing the box).
+function anchorStillReasonable(host: BoxedElement, other: BoxedElement, current: Anchor): boolean {
+  const centre = centreOf(host);
+  const aim = anchorAimPoint(other, centre);
+  const { ranked, times } = rankAnchorsTowards(host, aim);
+  const face = faceOf(current);
+  const t = times[face];
+  if (!Number.isFinite(t)) return false;
+  if (t > times[ranked[0]!] * KEEP_CURRENT_FACTOR) return false;
+  if (!isCardinal(current)) {
+    const dir = Math.atan2(aim.y - centre.y, aim.x - centre.x);
+    if (cornerForFace(face, dir) !== current) return false;
+  }
+  return true;
+}
+
 // Re-pin arrows whose either endpoint is anchored to a moved box, pointing
 // each end at the face the connector now leaves through. Pure: takes the
 // already-translated element list and the set of ids that just moved,
 // returns the same list with each affected arrow's from/to anchors
 // recomputed.
+//
+// CONFIDENCE GATE: an arrow is only re-planned when its current anchors
+// genuinely broke (anchorStillReasonable above). Marginally-better faces
+// never trigger a move — a subtle nudge of a connected box must leave an
+// accepted layout exactly as the user arranged it, and same-anchor
+// stacking is separated visually by the render-time endpoint fan-out
+// (arrow-endpoint-spread.ts) rather than by re-pinning.
 //
 // Only re-anchors arrows where BOTH ends are pinned to a box. from/to pairs
 // that mix free + pinned (one floating end) keep their anchors as-is: the
@@ -79,6 +136,17 @@ export function rebindArrowAnchorsAfterMove(
     const fromManual = el.from.manual === true;
     const toManual = el.to.manual === true;
     if (fromManual && toManual) continue;
+    // Settled short-circuit: when every auto end's CURRENT anchor still
+    // reads fine for the new positions, leave the arrow completely alone
+    // (its faces still get reserved below, so re-planned arrows route
+    // around it). Only an arrow whose layout genuinely broke re-plans —
+    // a subtle move must never reshuffle an accepted layout.
+    if (
+      (fromManual || anchorStillReasonable(fromEl, toEl, el.from.anchor)) &&
+      (toManual || anchorStillReasonable(toEl, fromEl, el.to.anchor))
+    ) {
+      continue;
+    }
     reassigning.add(el.id);
     if (!fromManual) {
       const centre = centreOf(fromEl);
@@ -241,12 +309,7 @@ export function rebindArrowAnchorsAfterMove(
       const canShare = (f: Cardinal) =>
         dirsOn(f).length > 0 &&
         dirsOn(f).every((d) => angleBetween(d, p.dir) >= FACE_SHARE_MIN_RAD);
-      const cornerFor = (f: Cardinal): Anchor => {
-        if (f === 'n') return Math.cos(p.dir) >= 0 ? 'ne' : 'nw';
-        if (f === 's') return Math.cos(p.dir) >= 0 ? 'se' : 'sw';
-        if (f === 'e') return Math.sin(p.dir) >= 0 ? 'se' : 'ne';
-        return Math.sin(p.dir) >= 0 ? 'sw' : 'nw';
-      };
+      const cornerFor = (f: Cardinal): Anchor => cornerForFace(f, p.dir);
       let face: Anchor;
       if (!taken.has(best) || canShare(best) || p.voteAdopted === true) {
         face = best;
@@ -307,8 +370,6 @@ export function rebindArrowAnchorsAfterMove(
   // through that face and the detour is not wildly worse (<= 3x the exit
   // time of its natural face).
   const OPPOSITE: Record<Cardinal, Cardinal> = { n: 's', s: 'n', e: 'w', w: 'e' };
-  const faceOf = (a: Anchor): Cardinal =>
-    isCardinal(a) ? a : a === 'ne' || a === 'nw' ? 'n' : 's';
   const planFor = new Map<string, EndPlan>();
   for (const p of plans) planFor.set(`${p.arrowId}:${p.end}`, p);
   for (const el of elements) {

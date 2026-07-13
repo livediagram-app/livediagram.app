@@ -455,13 +455,15 @@ describe('rebindArrowAnchorsAfterMove', () => {
     expect(next.to.kind === 'pinned' && next.to.anchor).toBe('n');
   });
 
-  it('a lone re-anchored arrow adopts the face its settled siblings share', () => {
+  it('a BROKEN lone arrow adopts the face its settled siblings share', () => {
     // Hub with four arrows already fanning from its bottom (NOT part of
-    // this pass — their faces are reserved), plus one arrow to a far-left
-    // child whose chord is more horizontal than vertical, so its own
-    // ranking says west. Re-anchoring just that arrow (its child moved)
-    // must join the established bottom fan — the reserved siblings vote
-    // too — and its head must oppose onto the child's top.
+    // this pass — their faces are reserved), plus one arrow whose child
+    // moved to the far LEFT while its anchors still say hub e -> child w:
+    // both faces now point away from each other (infinite exit times), so
+    // the settled short-circuit lets it re-plan. Re-anchoring must join
+    // the established bottom fan (the reserved siblings vote) and its
+    // head must oppose onto the child's top. A merely-suboptimal arrow
+    // stays put instead — see arrow-rebind-stability.test.ts.
     const hub: ShapeElement = {
       id: 'hub',
       type: 'shape',
@@ -489,8 +491,8 @@ describe('rebindArrowAnchorsAfterMove', () => {
     const farLeft: ArrowElement = {
       id: 'arr-far',
       type: 'arrow',
-      from: { kind: 'pinned', elementId: 'hub', anchor: 'w' },
-      to: { kind: 'pinned', elementId: 'k0', anchor: 'e' },
+      from: { kind: 'pinned', elementId: 'hub', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'k0', anchor: 'w' },
     };
     const els: Element[] = [
       hub,
@@ -664,8 +666,10 @@ describe('rebindArrowAnchorsAfterMove', () => {
     }
   });
 
-  it("separates genuinely PARALLEL arrows to the same face's corner, not a side face", () => {
-    // Two targets almost straight below (near-parallel lines): sharing
+  it("separates re-planned PARALLEL arrows to the same face's corner, not a side face", () => {
+    // Two targets almost straight below (near-parallel lines) whose
+    // arrows start with BROKEN anchors (hub n -> child s, both pointing
+    // away), so the settled short-circuit lets them re-plan. Sharing
     // south would stack them, so the second slides to the south CORNER on
     // its side (se) — still leaving through the bottom edge — instead of
     // hopping to east/west.
@@ -683,14 +687,14 @@ describe('rebindArrowAnchorsAfterMove', () => {
     const arr1: ArrowElement = {
       id: 'arr1',
       type: 'arrow',
-      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
-      to: { kind: 'pinned', elementId: 'd1', anchor: 'n' },
+      from: { kind: 'pinned', elementId: 'hub', anchor: 'n' },
+      to: { kind: 'pinned', elementId: 'd1', anchor: 's' },
     };
     const arr2: ArrowElement = {
       id: 'arr2',
       type: 'arrow',
-      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
-      to: { kind: 'pinned', elementId: 'd2', anchor: 'n' },
+      from: { kind: 'pinned', elementId: 'hub', anchor: 'n' },
+      to: { kind: 'pinned', elementId: 'd2', anchor: 's' },
     };
     const out = rebindArrowAnchorsAfterMove([hub, d1, d2, arr1, arr2], new Set(['hub']));
     const anchors = [out[3], out[4]].map(
@@ -698,12 +702,39 @@ describe('rebindArrowAnchorsAfterMove', () => {
         (el as ArrowElement).from.kind === 'pinned' &&
         ((el as ArrowElement).from as { anchor: string }).anchor,
     );
-    // One keeps the face, the other takes a same-face corner; neither
-    // lands on a perpendicular side.
+    // One takes the face, the other a same-face corner; neither lands on
+    // a perpendicular side.
     expect(anchors).toContain('s');
     expect(anchors.some((a) => a === 'se' || a === 'sw')).toBe(true);
     expect(anchors).not.toContain('e');
     expect(anchors).not.toContain('w');
+  });
+
+  it('leaves SETTLED parallel arrows sharing a face exactly where they are', () => {
+    // Same layout, but the arrows already sit on sensible faces (both
+    // s -> n). The confidence gate keeps them untouched: the render-time
+    // endpoint fan-out (arrow-endpoint-spread.ts) separates same-anchor
+    // heads visually, so there's no reason to reshuffle pins the user has
+    // accepted.
+    const hub: ShapeElement = {
+      id: 'hub',
+      type: 'shape',
+      shape: 'square',
+      x: -50,
+      y: -50,
+      width: 100,
+      height: 100,
+    };
+    const d1: ShapeElement = { ...hub, id: 'd1', x: -40, y: 360, width: 40, height: 40 };
+    const d2: ShapeElement = { ...hub, id: 'd2', x: 20, y: 360, width: 40, height: 40 };
+    const arrows: ArrowElement[] = ['d1', 'd2'].map((to, i) => ({
+      id: `arr${i}`,
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'hub', anchor: 's' },
+      to: { kind: 'pinned', elementId: to, anchor: 'n' },
+    }));
+    const out = rebindArrowAnchorsAfterMove([hub, d1, d2, ...arrows], new Set(['hub']));
+    expect(out.slice(3)).toEqual(arrows);
   });
 
   it('routes a moved arrow around a face already held by an untouched arrow', () => {
