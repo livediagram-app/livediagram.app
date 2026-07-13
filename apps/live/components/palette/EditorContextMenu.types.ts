@@ -161,6 +161,10 @@ export type EditorContextMenuProps = {
   onSetProgressAnimRepeat: (value: boolean) => void;
   onSetAnimationSpeed: (value: AnimationSpeed) => void;
   onSetFlowSpeed: (value: AnimationSpeed) => void;
+  // Repeat toggles (spec/09): true (the default) loops, false plays once.
+  onSetAnimationRepeat: (value: boolean) => void;
+  onSetIconAnimationRepeat: (value: boolean) => void;
+  onSetFlowRepeat: (value: boolean) => void;
   onResetColors: () => void;
   // Whole-element text formatting — surfaced for arrows that carry a label
   // (boxed elements format via the inline rich-text toolbar instead).

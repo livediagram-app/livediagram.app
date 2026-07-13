@@ -57,9 +57,12 @@ export type ShapeElement = {
   // `lvd-icon-*` CSS class on the glyph by IconGlyph / IconPrims.
   iconAnimation?: IconAnimation;
   // Loop speed for `iconAnimation`, mirroring the boxed-element `animationSpeed`
-  // (slow / normal / fast → a duration multiplier fed to the `lvd-icon-*`
-  // keyframes via `--lvd-icon-anim-speed`). Undefined = normal.
+  // (a duration multiplier fed to the `lvd-icon-*` keyframes via
+  // `--lvd-icon-anim-speed`). Undefined = the shared default ('slow').
   iconAnimationSpeed?: AnimationSpeed;
+  // Whether `iconAnimation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  iconAnimationRepeat?: boolean;
   // Fixed render size for a Technology (brand) icon's tile (spec/41):
   // the mark draws at ICON_SIZE_PX[iconSize] regardless of the element's
   // box, so resizing the element never inflates the chip. Undefined = the
@@ -177,8 +180,12 @@ export type ShapeElement = {
   rotation?: number;
   // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'normal'.
+  // Speed of `animation` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
   animationSpeed?: AnimationSpeed;
+  // Whether `animation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (spec/68): at most one per element, non-undoable like
@@ -240,8 +247,12 @@ export type TextElement = {
   rotation?: number;
   // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'normal'.
+  // Speed of `animation` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
   animationSpeed?: AnimationSpeed;
+  // Whether `animation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (spec/68): at most one per element, non-undoable like
@@ -353,8 +364,12 @@ export type TableElement = {
   rotation?: number;
   // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'normal'.
+  // Speed of `animation` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
   animationSpeed?: AnimationSpeed;
+  // Whether `animation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (spec/68): at most one per element, non-undoable like
@@ -405,8 +420,12 @@ export type StickyElement = {
   rotation?: number;
   // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'normal'.
+  // Speed of `animation` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
   animationSpeed?: AnimationSpeed;
+  // Whether `animation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (spec/68): at most one per element, non-undoable like
@@ -500,8 +519,12 @@ export type ImageElement = {
   rotation?: number;
   // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'normal'.
+  // Speed of `animation` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
   animationSpeed?: AnimationSpeed;
+  // Whether `animation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (spec/68): at most one per element, non-undoable like
@@ -573,8 +596,12 @@ export type FreehandElement = {
   rotation?: number;
   // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'normal'.
+  // Speed of `animation` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
   animationSpeed?: AnimationSpeed;
+  // Whether `animation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (spec/68): at most one per element, non-undoable like
@@ -630,8 +657,12 @@ export type AnnotationElement = {
   rotation?: number;
   // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'normal'.
+  // Speed of `animation` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
   animationSpeed?: AnimationSpeed;
+  // Whether `animation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  animationRepeat?: boolean;
   aspectLocked?: boolean;
   padding?: Padding;
   textSize?: TextSize;
@@ -691,8 +722,12 @@ export type LinkCardElement = {
   rotation?: number;
   // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'normal'.
+  // Speed of `animation` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
   animationSpeed?: AnimationSpeed;
+  // Whether `animation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  animationRepeat?: boolean;
   aspectLocked?: boolean;
   commentThread?: CommentThread;
   // Assigned action (spec/68): at most one per element, non-undoable like

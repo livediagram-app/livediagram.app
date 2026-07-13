@@ -6,7 +6,7 @@ import type { AnimationSpeed, IconAnimation, TextAlignX, TextAlignY } from '@liv
 
 import { iconBandClass } from '@/components/primitives/icon-band';
 
-import { getIcon, iconAnimationClass, iconAnimationSpeedStyle, type IconPrim } from '@/lib/icons';
+import { getIcon, iconAnimationClass, iconAnimationStyle, type IconPrim } from '@/lib/icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 // non-scaling-stroke keeps the line weight constant on screen at any
@@ -41,13 +41,16 @@ export function IconPrims({
   iconId,
   animation,
   animationSpeed,
+  animationRepeat,
 }: {
   iconId: string | undefined;
   // The chosen looping animation (spec/09), or undefined for a static glyph.
   // The palette picker passes nothing, so thumbnails stay still.
   animation?: IconAnimation;
-  // Loop speed for the animation (slow / normal / fast); undefined = normal.
+  // Loop speed for the animation; undefined = the shared 'slow' default.
   animationSpeed?: AnimationSpeed;
+  // false = play the animation once and hold; undefined / true loops.
+  animationRepeat?: boolean;
 }) {
   // The glyph catalogue loads as an async chunk (lib/icon-registry.ts). This
   // subscription (a) kicks the load if nothing else has, and (b) re-renders
@@ -60,7 +63,7 @@ export function IconPrims({
   // centred on the glyph. The speed factor rides a CSS var the class reads.
   const animClass = iconAnimationClass(animation);
   return animClass ? (
-    <g className={animClass} style={iconAnimationSpeedStyle(animationSpeed)}>
+    <g className={animClass} style={iconAnimationStyle(animationSpeed, animationRepeat)}>
       {prims}
     </g>
   ) : (
@@ -84,6 +87,7 @@ export function IconGlyph({
   labelAlignY = 'bottom',
   animation,
   animationSpeed,
+  animationRepeat,
 }: {
   iconId: string | undefined;
   stroke: string;
@@ -95,6 +99,7 @@ export function IconGlyph({
   labelAlignY?: TextAlignY;
   animation?: IconAnimation;
   animationSpeed?: AnimationSpeed;
+  animationRepeat?: boolean;
 }) {
   return (
     <div
@@ -113,7 +118,12 @@ export function IconGlyph({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <IconPrims iconId={iconId} animation={animation} animationSpeed={animationSpeed} />
+        <IconPrims
+          iconId={iconId}
+          animation={animation}
+          animationSpeed={animationSpeed}
+          animationRepeat={animationRepeat}
+        />
       </svg>
     </div>
   );

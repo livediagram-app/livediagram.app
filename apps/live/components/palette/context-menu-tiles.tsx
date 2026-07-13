@@ -27,6 +27,7 @@ import {
   FlowKindGlyph,
   IconAnimKindGlyph,
 } from '@/components/palette/context-menu-icons';
+import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 
 // Stable no-op so a tile grid without preview handlers (e.g. a future caller)
@@ -55,7 +56,8 @@ function useSpeedRowGate<T>(committed: T | null, onSet: (v: T | null) => void) {
 export const withNone = <T,>(kinds: readonly T[]): (T | null)[] => [null, ...kinds];
 
 // Speed presets row (spec/09) — shown under an Animation / Flow control once
-// an animation is picked. Slow / Normal / Fast scale the loop's duration.
+// an animation is picked. Slowest / Slow / Normal / Fast scale the loop's
+// duration; Slow is the default for a fresh animation.
 export function SpeedTiles({
   value,
   onSet,
@@ -64,13 +66,41 @@ export function SpeedTiles({
   onSet: (v: AnimationSpeed) => void;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-1 px-2 pb-1.5">
+    <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
       {ANIMATION_SPEEDS.map((s) => (
         <SizeButton key={s} active={value === s} onClick={() => onSet(s)}>
           <span className="text-[10px] capitalize leading-none">{s}</span>
         </SizeButton>
       ))}
     </div>
+  );
+}
+
+// The Speed + Repeat rows shown once a motion is picked: every animation
+// surface (boxed / arrow / icon / the data-shape anims) offers the same pair,
+// so the loop's pace and its play-once switch can't drift between pickers.
+// Repeat defaults on; off = the animation plays a single cycle and holds.
+export function SpeedAndRepeatRows({
+  speed,
+  repeat,
+  onSetSpeed,
+  onSetRepeat,
+}: {
+  speed: AnimationSpeed;
+  repeat: boolean;
+  onSetSpeed: (v: AnimationSpeed) => void;
+  onSetRepeat: (v: boolean) => void;
+}) {
+  return (
+    <>
+      <SpeedTiles value={speed} onSet={onSetSpeed} />
+      <MenuToggleRow
+        label="Repeat"
+        description="Loop the animation instead of playing it once."
+        checked={repeat}
+        onToggle={() => onSetRepeat(!repeat)}
+      />
+    </>
   );
 }
 
@@ -92,15 +122,20 @@ export function TileLabel({ glyph, label }: { glyph: ReactNode; label: string })
 export function AnimationTiles({
   animation,
   speed,
+  repeat,
   onSet,
   onSetSpeed,
+  onSetRepeat,
   onPreview,
   onPreviewEnd,
 }: {
   animation: ElementAnimation | null;
   speed: AnimationSpeed;
+  // Whether the animation loops (on by default); false = play once and hold.
+  repeat: boolean;
   onSet: (v: ElementAnimation | null) => void;
   onSetSpeed: (v: AnimationSpeed) => void;
+  onSetRepeat: (v: boolean) => void;
   // Desktop hover-to-preview (spec/09): play the hovered motion live on the
   // selection without committing; onPreviewEnd reverts. Omitted = no preview.
   onPreview?: (v: ElementAnimation | null) => void;
@@ -123,7 +158,14 @@ export function AnimationTiles({
           </SizeButton>
         ))}
       </div>
-      {showSpeed ? <SpeedTiles value={speed} onSet={onSetSpeed} /> : null}
+      {showSpeed ? (
+        <SpeedAndRepeatRows
+          speed={speed}
+          repeat={repeat}
+          onSetSpeed={onSetSpeed}
+          onSetRepeat={onSetRepeat}
+        />
+      ) : null}
     </>
   );
 }
@@ -133,15 +175,20 @@ export function AnimationTiles({
 export function FlowTiles({
   flow,
   speed,
+  repeat,
   onSet,
   onSetSpeed,
+  onSetRepeat,
   onPreview,
   onPreviewEnd,
 }: {
   flow: ArrowFlow | null;
   speed: AnimationSpeed;
+  // Whether the flow loops (on by default); false = play once and hold.
+  repeat: boolean;
   onSet: (v: ArrowFlow | null) => void;
   onSetSpeed: (v: AnimationSpeed) => void;
+  onSetRepeat: (v: boolean) => void;
   // Desktop hover-to-preview (spec/09), as in AnimationTiles.
   onPreview?: (v: ArrowFlow | null) => void;
   onPreviewEnd?: () => void;
@@ -163,7 +210,14 @@ export function FlowTiles({
           </SizeButton>
         ))}
       </div>
-      {showSpeed ? <SpeedTiles value={speed} onSet={onSetSpeed} /> : null}
+      {showSpeed ? (
+        <SpeedAndRepeatRows
+          speed={speed}
+          repeat={repeat}
+          onSetSpeed={onSetSpeed}
+          onSetRepeat={onSetRepeat}
+        />
+      ) : null}
     </>
   );
 }
@@ -175,15 +229,20 @@ export function FlowTiles({
 export function IconAnimationTiles({
   animation,
   speed,
+  repeat,
   onSet,
   onSetSpeed,
+  onSetRepeat,
   onPreview,
   onPreviewEnd,
 }: {
   animation: IconAnimation | null;
   speed: AnimationSpeed;
+  // Whether the animation loops (on by default); false = play once and hold.
+  repeat: boolean;
   onSet: (v: IconAnimation | null) => void;
   onSetSpeed: (v: AnimationSpeed) => void;
+  onSetRepeat: (v: boolean) => void;
   // Desktop hover-to-preview (spec/09), as in AnimationTiles.
   onPreview?: (v: IconAnimation | null) => void;
   onPreviewEnd?: () => void;
@@ -205,7 +264,14 @@ export function IconAnimationTiles({
           </SizeButton>
         ))}
       </div>
-      {showSpeed ? <SpeedTiles value={speed} onSet={onSetSpeed} /> : null}
+      {showSpeed ? (
+        <SpeedAndRepeatRows
+          speed={speed}
+          repeat={repeat}
+          onSetSpeed={onSetSpeed}
+          onSetRepeat={onSetRepeat}
+        />
+      ) : null}
     </>
   );
 }

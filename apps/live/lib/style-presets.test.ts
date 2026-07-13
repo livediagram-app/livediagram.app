@@ -1,4 +1,4 @@
-import { ARROW_THICKNESS_PX, type Element } from '@livediagram/diagram';
+import { ARROW_THICKNESS_PX, DEFAULT_ANIMATION_SPEED, type Element } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
 import type { ShapeColorPreset } from './themes';
 import {
@@ -117,7 +117,7 @@ describe('applyRotationToEl', () => {
 });
 
 describe('applyArrowPresetToEl', () => {
-  it('sets style/thickness, defaults flowSpeed to normal when a flow is added', () => {
+  it('sets style/thickness, defaults flowSpeed to the shared default when a flow is added', () => {
     const out = applyArrowPresetToEl(el('arrow'), {
       style: 'dashed',
       thickness: 'medium',
@@ -127,7 +127,7 @@ describe('applyArrowPresetToEl', () => {
       strokeStyle: 'dashed',
       strokeWidth: ARROW_THICKNESS_PX['medium'],
       flow: 'dashes',
-      flowSpeed: 'normal',
+      flowSpeed: DEFAULT_ANIMATION_SPEED,
     });
   });
 

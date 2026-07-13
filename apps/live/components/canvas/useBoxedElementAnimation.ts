@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ANIMATION_SPEED_FACTOR, defaultFillColor, type BoxedElement } from '@livediagram/diagram';
+import {
+  ANIMATION_SPEED_FACTOR,
+  DEFAULT_ANIMATION_SPEED,
+  defaultFillColor,
+  type BoxedElement,
+} from '@livediagram/diagram';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 
 // The looping-animation slice (spec/09), lifted out of BoxedElementView:
@@ -66,7 +71,12 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   const animStyle: React.CSSProperties = element.animation
     ? ({
         '--lvd-anim-color': element.strokeColor ?? textColor,
-        '--lvd-anim-speed': ANIMATION_SPEED_FACTOR[element.animationSpeed ?? 'normal'],
+        '--lvd-anim-speed':
+          ANIMATION_SPEED_FACTOR[element.animationSpeed ?? DEFAULT_ANIMATION_SPEED],
+        // Repeat off = play once and hold (spec/09). The var inherits into
+        // the SVG-overlay / text-native variants, so one knob covers all
+        // three surfaces an animation can ride.
+        ...(element.animationRepeat === false ? { '--lvd-anim-iter': 1 } : {}),
         // The moving-gradient animation blends the fill into the accent;
         // expose the fill (shared by the wrapper CSS gradient and the SVG
         // <stop> cycle that ShapeSvgOverlay inherits).

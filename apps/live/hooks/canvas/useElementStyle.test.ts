@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { createArrow, createShape, type Element, type Tab } from '@livediagram/diagram';
+import {
+  createArrow,
+  createShape,
+  DEFAULT_ANIMATION_SPEED,
+  type Element,
+  type Tab,
+} from '@livediagram/diagram';
 import { useElementStyle } from './useElementStyle';
 
 // useElementStyle builds plain handler closures from its deps (no internal
@@ -305,7 +311,8 @@ describe('useElementStyle arrow style presets (spec/48)', () => {
     expect(el.strokeStyle).toBe('dashed');
     expect(el.strokeWidth).toBe(4); // thick → 4px
     expect(el.flow).toBe('dashes');
-    expect(el.flowSpeed).toBe('normal');
+    // A fresh flow starts at the shared default speed ('slow', spec/09).
+    expect(el.flowSpeed).toBe(DEFAULT_ANIMATION_SPEED);
   });
 
   it('a preset without a flow clears any existing animation', () => {

@@ -9,6 +9,7 @@
 
 import {
   ANIMATION_SPEED_FACTOR,
+  DEFAULT_ANIMATION_SPEED,
   animLoops,
   clampRating,
   RATING_DEFAULT,
@@ -25,7 +26,7 @@ export function RatingView({ element, accent }: { element: ShapeElement; accent:
   const score = clampRating(element.rating ?? RATING_DEFAULT);
   const anim = element.ratingAnim;
   const loops = animLoops(anim, element.ratingAnimRepeat, RATING_LOOPING_ANIMS);
-  const speed = ANIMATION_SPEED_FACTOR[element.ratingAnimSpeed ?? 'normal'];
+  const speed = ANIMATION_SPEED_FACTOR[element.ratingAnimSpeed ?? DEFAULT_ANIMATION_SPEED];
   // Size each star to the box: fit five across the width, capped by height.
   const star = Math.max(12, Math.min(element.height * 0.8, (element.width / RATING_MAX) * 0.86));
   const cls = animClass('rating', anim);

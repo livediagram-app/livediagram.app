@@ -19,7 +19,7 @@ import {
   type TextAlignY,
 } from '@livediagram/diagram';
 
-import { iconAnimationClass, iconAnimationSpeedStyle } from '@/lib/icons';
+import { iconAnimationClass, iconAnimationStyle } from '@/lib/icons';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { iconBandClass } from '@/components/primitives/icon-band';
@@ -92,6 +92,7 @@ export function TechIconGlyph({
   labelAlignY = 'bottom',
   animation,
   animationSpeed,
+  animationRepeat,
 }: {
   iconId: string | undefined;
   hasLabel?: boolean;
@@ -104,8 +105,10 @@ export function TechIconGlyph({
   // Per-icon looping animation (spec/09); undefined = static. Wraps the whole
   // tile + glyph so a brand mark spins / beats as one.
   animation?: IconAnimation;
-  // Loop speed for the animation (slow / normal / fast); undefined = normal.
+  // Loop speed for the animation; undefined = the shared 'slow' default.
   animationSpeed?: AnimationSpeed;
+  // false = play the animation once and hold; undefined / true loops.
+  animationRepeat?: boolean;
 }) {
   const animClass = iconAnimationClass(animation);
   const px = ICON_SIZE_PX[size ?? DEFAULT_ICON_SIZE];
@@ -124,7 +127,7 @@ export function TechIconGlyph({
         preserveAspectRatio="xMidYMid meet"
       >
         {animClass ? (
-          <g className={animClass} style={iconAnimationSpeedStyle(animationSpeed)}>
+          <g className={animClass} style={iconAnimationStyle(animationSpeed, animationRepeat)}>
             <TechIconArt iconId={iconId} />
           </g>
         ) : (

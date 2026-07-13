@@ -121,11 +121,13 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     // Looping animation (spec/09) is a cosmetic field, so paint it like the rest.
     animation: source.animation,
     animationSpeed: source.animationSpeed,
+    animationRepeat: source.animationRepeat,
     // Per-icon glyph animation + speed and the Technology mark's fixed
     // size preset (spec/09 / spec/41); cosmetic, painted alongside. Only
     // ShapeElement carries them, so read them off a structural view.
     iconAnimation: (source as { iconAnimation?: IconAnimation }).iconAnimation,
     iconAnimationSpeed: (source as { iconAnimationSpeed?: AnimationSpeed }).iconAnimationSpeed,
+    iconAnimationRepeat: (source as { iconAnimationRepeat?: boolean }).iconAnimationRepeat,
     iconSize: (source as { iconSize?: IconSize }).iconSize,
   });
 }
@@ -149,6 +151,7 @@ export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement
     // Flow animation (spec/09): marching dashes / travelling dot.
     flow: source.flow,
     flowSpeed: source.flowSpeed,
+    flowRepeat: source.flowRepeat,
     // Label text styling (spec/09). Arrows don't carry alignment /
     // padding (the label rides the line), but do carry the same text
     // switches + size + colour + font as boxed labels.

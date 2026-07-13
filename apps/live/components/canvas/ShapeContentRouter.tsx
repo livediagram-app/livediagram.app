@@ -65,6 +65,7 @@ export function ShapeContentRouter({
       labelAlignY={element.textAlignY ?? 'bottom'}
       animation={element.iconAnimation}
       animationSpeed={element.iconAnimationSpeed}
+      animationRepeat={element.iconAnimationRepeat}
     />
   ) : element.type === 'shape' && element.shape === 'icon' ? (
     // Curated glyph: line art tinted by the element's stroke
@@ -82,6 +83,7 @@ export function ShapeContentRouter({
       // menu; undefined = static.
       animation={element.iconAnimation}
       animationSpeed={element.iconAnimationSpeed}
+      animationRepeat={element.iconAnimationRepeat}
     />
   ) : element.type === 'shape' && isProgressShape(element.shape) ? (
     // Progress elements (spec/46): a bar / donut showing element.progress.

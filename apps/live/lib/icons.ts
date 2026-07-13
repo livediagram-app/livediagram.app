@@ -21,6 +21,7 @@
 import type { CSSProperties } from 'react';
 import {
   ANIMATION_SPEED_FACTOR,
+  DEFAULT_ANIMATION_SPEED,
   type AnimationSpeed,
   type IconAnimation,
 } from '@livediagram/diagram';
@@ -66,15 +67,21 @@ export function iconAnimationClass(anim: IconAnimation | undefined): string | un
   return animClass('icon', anim);
 }
 
-// The duration multiplier for an icon animation, exposed to the `lvd-icon-*`
-// keyframes as the `--lvd-icon-anim-speed` custom property. undefined speed =
-// normal (factor 1, no inline style needed). Shared by IconGlyph / IconPrims
-// (line-art) and TechIconGlyph (brand marks) so the two can't drift.
-export function iconAnimationSpeedStyle(
+// The inline custom properties for an icon animation: the duration
+// multiplier (`--lvd-icon-anim-speed`, undefined speed = the shared 'slow'
+// default) and the iteration count (`--lvd-icon-anim-iter`, repeat false =
+// play once and hold; undefined / true loops). Shared by IconGlyph /
+// IconPrims (line-art) and TechIconGlyph (brand marks) so the two can't
+// drift.
+export function iconAnimationStyle(
   speed: AnimationSpeed | undefined,
+  repeat?: boolean,
 ): CSSProperties | undefined {
-  if (!speed || speed === 'normal') return undefined;
-  return { '--lvd-icon-anim-speed': ANIMATION_SPEED_FACTOR[speed] } as CSSProperties;
+  const resolved = speed ?? DEFAULT_ANIMATION_SPEED;
+  const style: Record<string, number> = {};
+  if (resolved !== 'normal') style['--lvd-icon-anim-speed'] = ANIMATION_SPEED_FACTOR[resolved];
+  if (repeat === false) style['--lvd-icon-anim-iter'] = 1;
+  return Object.keys(style).length > 0 ? (style as CSSProperties) : undefined;
 }
 
 // The `--lvd-{prefix}-speed` / `-iter` custom properties the per-element
@@ -88,7 +95,7 @@ export function animSpeedVars(
   loops: boolean,
 ): CSSProperties {
   return {
-    [`--lvd-${prefix}-speed`]: ANIMATION_SPEED_FACTOR[speed ?? 'normal'],
+    [`--lvd-${prefix}-speed`]: ANIMATION_SPEED_FACTOR[speed ?? DEFAULT_ANIMATION_SPEED],
     [`--lvd-${prefix}-iter`]: loops ? 'infinite' : 1,
   } as CSSProperties;
 }

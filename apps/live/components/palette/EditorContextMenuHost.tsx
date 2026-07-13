@@ -95,6 +95,9 @@ export function EditorContextMenuHost() {
     setProgressAnimRepeatSelected,
     setAnimationSpeedSelected,
     setFlowSpeedSelected,
+    setAnimationRepeatSelected,
+    setIconAnimationRepeatSelected,
+    setFlowRepeatSelected,
     resetColorsSelected,
     toggleTextStyleSelected,
     commitTextSize,
@@ -225,6 +228,9 @@ export function EditorContextMenuHost() {
       onSetProgressAnimRepeat={setProgressAnimRepeatSelected}
       onSetAnimationSpeed={setAnimationSpeedSelected}
       onSetFlowSpeed={setFlowSpeedSelected}
+      onSetAnimationRepeat={setAnimationRepeatSelected}
+      onSetIconAnimationRepeat={setIconAnimationRepeatSelected}
+      onSetFlowRepeat={setFlowRepeatSelected}
       onResetColors={resetColorsSelected}
       onToggleTextBold={() => toggleTextStyleSelected('textBold')}
       onToggleTextItalic={() => toggleTextStyleSelected('textItalic')}

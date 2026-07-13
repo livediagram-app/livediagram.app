@@ -15,6 +15,7 @@
 
 import {
   animLoops,
+  DEFAULT_ANIMATION_SPEED,
   LINE_DEFAULT_SERIES,
   PIE_DEFAULT_SLICES,
   PIE_LOOPING_ANIMS,
@@ -114,7 +115,7 @@ export function ElementDataSections({
               <ProgressRow value={shapeTarget?.progress ?? 50} onChange={props.onSetProgress} />
               <ProgressAnimTiles
                 anim={shapeTarget?.progressAnim ?? null}
-                speed={shapeTarget?.progressAnimSpeed ?? 'normal'}
+                speed={shapeTarget?.progressAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
                 repeat={animLoops(
                   shapeTarget?.progressAnim,
                   shapeTarget?.progressAnimRepeat,
@@ -153,7 +154,7 @@ export function ElementDataSections({
               />
               <RatingAnimTiles
                 anim={shapeTarget?.ratingAnim ?? null}
-                speed={shapeTarget?.ratingAnimSpeed ?? 'normal'}
+                speed={shapeTarget?.ratingAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
                 repeat={animLoops(
                   shapeTarget?.ratingAnim,
                   shapeTarget?.ratingAnimRepeat,
@@ -222,7 +223,7 @@ export function ElementDataSections({
           {isChart ? (
             <PieAnimTiles
               anim={shapeTarget?.pieAnim ?? null}
-              speed={shapeTarget?.pieAnimSpeed ?? 'normal'}
+              speed={shapeTarget?.pieAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
               repeat={animLoops(
                 shapeTarget?.pieAnim,
                 shapeTarget?.pieAnimRepeat,
@@ -238,19 +239,27 @@ export function ElementDataSections({
             <IconAnimationTiles
               animation={(target as { iconAnimation?: IconAnimation }).iconAnimation ?? null}
               speed={
-                (target as { iconAnimationSpeed?: AnimationSpeed }).iconAnimationSpeed ?? 'normal'
+                (target as { iconAnimationSpeed?: AnimationSpeed }).iconAnimationSpeed ??
+                DEFAULT_ANIMATION_SPEED
               }
+              repeat={(target as { iconAnimationRepeat?: boolean }).iconAnimationRepeat ?? true}
               onSet={props.onSetIconAnimation}
               onSetSpeed={props.onSetIconAnimationSpeed}
+              onSetRepeat={props.onSetIconAnimationRepeat}
               onPreview={props.onPreviewIconAnimation}
               onPreviewEnd={props.onAnimationPreviewEnd}
             />
           ) : (
             <AnimationTiles
               animation={(target as { animation?: ElementAnimation }).animation ?? null}
-              speed={(target as { animationSpeed?: AnimationSpeed }).animationSpeed ?? 'normal'}
+              speed={
+                (target as { animationSpeed?: AnimationSpeed }).animationSpeed ??
+                DEFAULT_ANIMATION_SPEED
+              }
+              repeat={(target as { animationRepeat?: boolean }).animationRepeat ?? true}
               onSet={props.onSetAnimation}
               onSetSpeed={props.onSetAnimationSpeed}
+              onSetRepeat={props.onSetAnimationRepeat}
               onPreview={props.onPreviewAnimation}
               onPreviewEnd={props.onAnimationPreviewEnd}
             />
@@ -269,9 +278,11 @@ export function ElementDataSections({
         >
           <FlowTiles
             flow={(target as { flow?: ArrowFlow }).flow ?? null}
-            speed={(target as { flowSpeed?: AnimationSpeed }).flowSpeed ?? 'normal'}
+            speed={(target as { flowSpeed?: AnimationSpeed }).flowSpeed ?? DEFAULT_ANIMATION_SPEED}
+            repeat={(target as { flowRepeat?: boolean }).flowRepeat ?? true}
             onSet={props.onSetArrowFlow}
             onSetSpeed={props.onSetFlowSpeed}
+            onSetRepeat={props.onSetFlowRepeat}
             onPreview={props.onPreviewArrowFlow}
             onPreviewEnd={props.onAnimationPreviewEnd}
           />

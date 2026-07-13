@@ -927,6 +927,90 @@ function FlowWindGlyph() {
   );
 }
 
+// Heartbeat — a tile with an ECG lub-dub spike across it.
+function AnimHeartbeatGlyph() {
+  return (
+    <AnimSvg>
+      <rect x="2.5" y="3.5" width="11" height="9" rx="1.5" opacity="0.5" />
+      <path d="M2.5 8h2.5l1.2-2.4L8 10.4 9.6 5.9 10.7 8h2.8" />
+    </AnimSvg>
+  );
+}
+
+// Breathe — a tile gently swelling, hinted by outward corner ticks.
+function AnimBreatheGlyph() {
+  return (
+    <AnimSvg>
+      <rect x="4.5" y="4.5" width="7" height="7" rx="1.5" />
+      <path d="M2 2l1.7 1.7M14 2l-1.7 1.7M2 14l1.7-1.7M14 14l-1.7-1.7" opacity="0.55" />
+    </AnimSvg>
+  );
+}
+
+// Shimmer — a tile catching the light: a diagonal sheen + a spark.
+function AnimShimmerGlyph() {
+  return (
+    <AnimSvg>
+      <rect x="3" y="4.5" width="10" height="7" rx="1.5" />
+      <path d="M6.2 11.5 9 4.5" opacity="0.55" />
+      <path d="M12.5 2.2v2M11.5 3.2h2" />
+    </AnimSvg>
+  );
+}
+
+// Highlight — a lit tile radiating short rays.
+function AnimHighlightGlyph() {
+  return (
+    <AnimSvg>
+      <rect x="4" y="6" width="8" height="6.5" rx="1.5" />
+      <path d="M8 1.8v2M4 3l1.3 1.5M12 3l-1.3 1.5" opacity="0.7" />
+    </AnimSvg>
+  );
+}
+
+// Flow: an ECG lub-dub spike riding the line toward an arrowhead.
+function FlowHeartbeatGlyph() {
+  return (
+    <AnimSvg>
+      <path d="M2 8h2l1-2 1.6 4L8.2 6l1 2h1.3" />
+      <path d="M10.5 5.5 13.5 8 10.5 10.5" />
+    </AnimSvg>
+  );
+}
+
+// Flow: a line swelling gently at its middle (soft echo strokes).
+function FlowBreatheGlyph() {
+  return (
+    <AnimSvg>
+      <path d="M2 8 H10" />
+      <path d="M4 6.4h4.5M4 9.6h4.5" opacity="0.35" />
+      <path d="M10 5 13.5 8 10 11" />
+    </AnimSvg>
+  );
+}
+
+// Flow: a line glinting — a spark above it, toward an arrowhead.
+function FlowShimmerGlyph() {
+  return (
+    <AnimSvg>
+      <path d="M2 8 H10" />
+      <path d="M6.5 3v2M5.5 4h2" opacity="0.75" />
+      <path d="M10 5 13.5 8 10 11" />
+    </AnimSvg>
+  );
+}
+
+// Flow: a single packet (one solid dash) travelling a faint line.
+function FlowSignalGlyph() {
+  return (
+    <AnimSvg>
+      <path d="M2 8h2.5M9 8h1.5" opacity="0.3" />
+      <path d="M5.5 8H8" strokeWidth="2.6" />
+      <path d="M10.5 5.5 13.5 8 10.5 10.5" />
+    </AnimSvg>
+  );
+}
+
 // Dispatchers used by the context menu's Animation / Flow tiles. `null` is the
 // "None" option.
 export function AnimationKindGlyph({ kind }: { kind: ElementAnimation | null }) {
@@ -935,6 +1019,10 @@ export function AnimationKindGlyph({ kind }: { kind: ElementAnimation | null }) 
   if (kind === 'glow') return <AnimGlowGlyph />;
   if (kind === 'trace') return <AnimTraceGlyph />;
   if (kind === 'gradient') return <AnimGradientGlyph />;
+  if (kind === 'heartbeat') return <AnimHeartbeatGlyph />;
+  if (kind === 'breathe') return <AnimBreatheGlyph />;
+  if (kind === 'shimmer') return <AnimShimmerGlyph />;
+  if (kind === 'highlight') return <AnimHighlightGlyph />;
   if (kind === 'bounce') return <AnimBounceGlyph />;
   if (kind === 'wobble') return <AnimWobbleGlyph />;
   if (kind === 'shake') return <AnimShakeGlyph />;
@@ -951,6 +1039,10 @@ export function FlowKindGlyph({ kind }: { kind: ArrowFlow | null }) {
   if (kind === 'pulse') return <FlowPulseGlyph />;
   if (kind === 'grow') return <FlowGrowGlyph />;
   if (kind === 'glow') return <FlowGlowGlyph />;
+  if (kind === 'heartbeat') return <FlowHeartbeatGlyph />;
+  if (kind === 'breathe') return <FlowBreatheGlyph />;
+  if (kind === 'shimmer') return <FlowShimmerGlyph />;
+  if (kind === 'signal') return <FlowSignalGlyph />;
   if (kind === 'draw') return <FlowDrawGlyph />;
   if (kind === 'comet') return <FlowCometGlyph />;
   if (kind === 'rainbow') return <FlowRainbowGlyph />;
@@ -1061,10 +1153,55 @@ function IconAnimFloatGlyph() {
   );
 }
 
+// Glow — a dot wearing a soft halo ring.
+function IconAnimGlowGlyph() {
+  return (
+    <AnimSvg>
+      <circle cx="8" cy="8" r="2.2" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="8" r="4.8" opacity="0.45" />
+    </AnimSvg>
+  );
+}
+// Ping — a dot emitting expanding rings.
+function IconAnimPingGlyph() {
+  return (
+    <AnimSvg>
+      <circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="8" r="3.6" opacity="0.6" />
+      <circle cx="8" cy="8" r="5.8" opacity="0.3" />
+    </AnimSvg>
+  );
+}
+// Breathe — a circle gently swelling, hinted by outward corner ticks.
+function IconAnimBreatheGlyph() {
+  return (
+    <AnimSvg>
+      <circle cx="8" cy="8" r="3.2" />
+      <path
+        d="M2.5 2.5l1.6 1.6M13.5 2.5l-1.6 1.6M2.5 13.5l1.6-1.6M13.5 13.5l-1.6-1.6"
+        opacity="0.55"
+      />
+    </AnimSvg>
+  );
+}
+// Shimmer — a four-point sparkle (a glint of light).
+function IconAnimShimmerGlyph() {
+  return (
+    <AnimSvg>
+      <path d="M8 2.5 9.2 6.8 13.5 8 9.2 9.2 8 13.5 6.8 9.2 2.5 8 6.8 6.8Z" />
+      <path d="M12.5 3v1.6M11.7 3.8h1.6" opacity="0.6" />
+    </AnimSvg>
+  );
+}
+
 export function IconAnimKindGlyph({ kind }: { kind: IconAnimation | null }) {
   if (kind === 'spin') return <IconAnimSpinGlyph />;
   if (kind === 'beat') return <IconAnimBeatGlyph />;
   if (kind === 'pulse') return <IconAnimPulseGlyph />;
+  if (kind === 'glow') return <IconAnimGlowGlyph />;
+  if (kind === 'ping') return <IconAnimPingGlyph />;
+  if (kind === 'breathe') return <IconAnimBreatheGlyph />;
+  if (kind === 'shimmer') return <IconAnimShimmerGlyph />;
   if (kind === 'bounce') return <IconAnimBounceGlyph />;
   if (kind === 'wiggle') return <IconAnimWiggleGlyph />;
   if (kind === 'flash') return <IconAnimFlashGlyph />;

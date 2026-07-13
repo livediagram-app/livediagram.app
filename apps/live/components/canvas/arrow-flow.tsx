@@ -1,5 +1,10 @@
 import { useEffect, useRef, type RefObject } from 'react';
-import { ANIMATION_SPEED_FACTOR, type ArrowElement, type ArrowFlow } from '@livediagram/diagram';
+import {
+  ANIMATION_SPEED_FACTOR,
+  DEFAULT_ANIMATION_SPEED,
+  type ArrowElement,
+  type ArrowFlow,
+} from '@livediagram/diagram';
 
 // The flowing-arrow rendering slice (spec/09), lifted out of ArrowView:
 // the per-flow path class / dash tables, the phase-sync pinning hook,
@@ -8,16 +13,21 @@ import { ANIMATION_SPEED_FACTOR, type ArrowElement, type ArrowFlow } from '@live
 
 // Per-flow path styling. Every flow except 'dots' (a travelling <circle>) and
 // 'comet' (a small fleet of travelling dots) animates the line itself via a
-// class; dashes / beads / draw / wind also swap in their own dash pattern,
-// while pulse / grow / glow / rainbow / strobe keep the user's static stroke
-// and just breathe opacity / thickness / a halo / its colour. A missing entry
-// (no flow, or 'dots' / 'comet') leaves the path on its static style.
+// class; dashes / beads / draw / wind / signal also swap in their own dash
+// pattern, while pulse / grow / glow / heartbeat / breathe / shimmer /
+// rainbow / strobe keep the user's static stroke and just breathe opacity /
+// thickness / a halo / its colour. A missing entry (no flow, or 'dots' /
+// 'comet') leaves the path on its static style.
 const FLOW_PATH_CLASS: Partial<Record<ArrowFlow, string>> = {
   dashes: 'lvd-arrow-flow',
   beads: 'lvd-arrow-beads',
   pulse: 'lvd-arrow-pulse',
   grow: 'lvd-arrow-grow',
   glow: 'lvd-arrow-glow',
+  heartbeat: 'lvd-arrow-heartbeat',
+  breathe: 'lvd-arrow-breathe',
+  shimmer: 'lvd-arrow-shimmer',
+  signal: 'lvd-arrow-signal',
   draw: 'lvd-arrow-draw',
   rainbow: 'lvd-arrow-rainbow',
   strobe: 'lvd-arrow-strobe',
@@ -25,11 +35,14 @@ const FLOW_PATH_CLASS: Partial<Record<ArrowFlow, string>> = {
 };
 // 'draw' normalises the path to pathLength=1, so its dash pattern is in those
 // units (one full-length dash + an equal gap that the reveal slides through).
+// 'signal' is one long dash per 80-unit period (matching its -80 offset
+// keyframe) so a single packet travels the line at a time.
 const FLOW_PATH_DASH: Partial<Record<ArrowFlow, string>> = {
   dashes: '8 6',
   beads: '0.1 12',
   draw: '1 1',
   wind: '16 10',
+  signal: '14 66',
 };
 // 'comet' renders the head plus three trailing dots (decreasing size + opacity,
 // staggered along the path) so it reads as a glowing dot with a fading tail.
@@ -44,7 +57,7 @@ const COMET_DOTS = [0, 1, 2, 3];
 // or last changed. Re-runs on flow / speed change (a speed change
 // restarts the CSS animation).
 export function useArrowFlow(arrow: ArrowElement) {
-  const flowFactor = ANIMATION_SPEED_FACTOR[arrow.flowSpeed ?? 'normal'];
+  const flowFactor = ANIMATION_SPEED_FACTOR[arrow.flowSpeed ?? DEFAULT_ANIMATION_SPEED];
   const flowPathClass = arrow.flow ? FLOW_PATH_CLASS[arrow.flow] : undefined;
   const flowPathDash = arrow.flow ? FLOW_PATH_DASH[arrow.flow] : undefined;
   const flowPathRef = useRef<SVGPathElement>(null);
@@ -54,6 +67,11 @@ export function useArrowFlow(arrow: ArrowElement) {
   const flowCometRef = useRef<SVGGElement>(null);
   useEffect(() => {
     if (!arrow.flow || typeof window === 'undefined') return;
+    // A play-once flow (flowRepeat false, spec/09) must NOT be pinned to the
+    // document-timeline origin: with one iteration, startTime 0 lands it in
+    // the finished state before the user ever sees it play. It starts when
+    // applied instead — phase sync only matters for loops.
+    if (arrow.flowRepeat === false) return;
     const raf = window.requestAnimationFrame(() => {
       const pin = (a: Animation) => {
         try {
@@ -68,7 +86,7 @@ export function useArrowFlow(arrow: ArrowElement) {
       flowCometRef.current?.getAnimations({ subtree: true }).forEach(pin);
     });
     return () => window.cancelAnimationFrame(raf);
-  }, [arrow.flow, arrow.flowSpeed]);
+  }, [arrow.flow, arrow.flowSpeed, arrow.flowRepeat]);
   return { flowFactor, flowPathClass, flowPathDash, flowPathRef, flowDotRef, flowCometRef };
 }
 
@@ -108,6 +126,7 @@ export function ArrowFlowOverlays({
               offsetRotate: '0deg',
               pointerEvents: 'none',
               '--lvd-flow-speed': flowFactor,
+              ...(arrow.flowRepeat === false ? { '--lvd-flow-iter': 1 } : {}),
             } as React.CSSProperties
           }
           aria-hidden
@@ -131,6 +150,7 @@ export function ArrowFlowOverlays({
                   // constant across slow / normal / fast.
                   animationDelay: `${-0.1 * i * flowFactor}s`,
                   '--lvd-flow-speed': flowFactor,
+                  ...(arrow.flowRepeat === false ? { '--lvd-flow-iter': 1 } : {}),
                 } as React.CSSProperties
               }
             />

@@ -1,5 +1,6 @@
 import {
   animLoops,
+  DEFAULT_ANIMATION_SPEED,
   defaultFillColor,
   defaultStrokeColor,
   defaultTextColor,
@@ -107,7 +108,7 @@ export function MultiStyleSections({
           {chartSrc ? (
             <PieAnimTiles
               anim={chartSrc.pieAnim ?? null}
-              speed={chartSrc.pieAnimSpeed ?? 'normal'}
+              speed={chartSrc.pieAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
               repeat={animLoops(chartSrc.pieAnim, chartSrc.pieAnimRepeat, PIE_LOOPING_ANIMS)}
               onSet={props.onSetPieAnim}
               onSetSpeed={props.onSetPieAnimSpeed}
@@ -116,18 +117,22 @@ export function MultiStyleSections({
           ) : iconSrc ? (
             <IconAnimationTiles
               animation={iconSrc.iconAnimation ?? null}
-              speed={iconSrc.iconAnimationSpeed ?? 'normal'}
+              speed={iconSrc.iconAnimationSpeed ?? DEFAULT_ANIMATION_SPEED}
+              repeat={iconSrc.iconAnimationRepeat ?? true}
               onSet={props.onSetIconAnimation}
               onSetSpeed={props.onSetIconAnimationSpeed}
+              onSetRepeat={props.onSetIconAnimationRepeat}
               onPreview={props.onPreviewIconAnimation}
               onPreviewEnd={props.onAnimationPreviewEnd}
             />
           ) : (
             <AnimationTiles
               animation={boxedSel[0]!.animation ?? null}
-              speed={boxedSel[0]!.animationSpeed ?? 'normal'}
+              speed={boxedSel[0]!.animationSpeed ?? DEFAULT_ANIMATION_SPEED}
+              repeat={boxedSel[0]!.animationRepeat ?? true}
               onSet={props.onSetAnimation}
               onSetSpeed={props.onSetAnimationSpeed}
+              onSetRepeat={props.onSetAnimationRepeat}
               onPreview={props.onPreviewAnimation}
               onPreviewEnd={props.onAnimationPreviewEnd}
             />
@@ -142,9 +147,11 @@ export function MultiStyleSections({
         >
           <FlowTiles
             flow={arrowSrc.flow ?? null}
-            speed={arrowSrc.flowSpeed ?? 'normal'}
+            speed={arrowSrc.flowSpeed ?? DEFAULT_ANIMATION_SPEED}
+            repeat={arrowSrc.flowRepeat ?? true}
             onSet={props.onSetArrowFlow}
             onSetSpeed={props.onSetFlowSpeed}
+            onSetRepeat={props.onSetFlowRepeat}
             onPreview={props.onPreviewArrowFlow}
             onPreviewEnd={props.onAnimationPreviewEnd}
           />

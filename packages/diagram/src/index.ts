@@ -100,19 +100,29 @@ export type TextAlignY = 'top' | 'middle' | 'bottom';
 // 'trace' a light running the element's outline, 'gradient' a moving gradient
 // blending the fill + accent colours, 'bounce' a vertical bob, 'wobble' a
 // tilt wiggle, 'shake' a quick horizontal jitter, 'jelly' a squash-and-stretch,
-// 'float' a slow circular drift, 'swing' a pendulum from the top edge. trace /
-// gradient render against the true shape outline (an SVG stroke / fill for
-// SVG-rendered shapes, the CSS border / background for CSS-rendered shapes +
-// other boxed elements); bounce / wobble / shake / jelly / float / swing drive
-// the independent `translate` / `rotate` / `scale` CSS properties so they
-// compose with an element's own rotation rather than clobbering it (swing also
-// pivots from `transform-origin: top center`).
+// 'float' a slow circular drift, 'swing' a pendulum from the top edge. The
+// emphasis set stays in place and draws the eye without travelling:
+// 'heartbeat' is a lub-dub double-pump (uniform scale), 'breathe' a slow
+// gentle swell, 'shimmer' an occasional quick brightness glint, 'highlight' a
+// periodic dip-then-brighten of the fill (a luminous "look here" swell that
+// reads on any colour). trace / gradient render against the true shape
+// outline (an SVG stroke / fill for SVG-rendered shapes, the CSS border /
+// background for CSS-rendered shapes + other boxed elements); shimmer /
+// highlight are `filter`-based so they follow any silhouette with no SVG
+// special case; bounce / wobble / shake / jelly / float / swing / heartbeat /
+// breathe drive the independent `translate` / `rotate` / `scale` CSS
+// properties so they compose with an element's own rotation rather than
+// clobbering it (swing also pivots from `transform-origin: top center`).
 export type ElementAnimation =
   | 'pulse'
   | 'blink'
   | 'glow'
   | 'trace'
   | 'gradient'
+  | 'heartbeat'
+  | 'breathe'
+  | 'shimmer'
+  | 'highlight'
   | 'bounce'
   | 'wobble'
   | 'shake'
@@ -125,6 +135,10 @@ export const ELEMENT_ANIMATIONS: readonly ElementAnimation[] = [
   'glow',
   'trace',
   'gradient',
+  'heartbeat',
+  'breathe',
+  'shimmer',
+  'highlight',
   'bounce',
   'wobble',
   'shake',
@@ -135,17 +149,22 @@ export const ELEMENT_ANIMATIONS: readonly ElementAnimation[] = [
 
 // Animation / flow speed (spec/09). A multiplier on each animation's tuned
 // base duration (so every animation keeps its own feel; speed just scales it):
-// 'slow' doubles the duration, 'fast' halves it. Shared by boxed-element
-// animations (`animationSpeed`) and arrow flow (`flowSpeed`); 'normal' = 1 and
-// is the default when unset. The renderer feeds the factor to CSS via a
-// custom property the keyframe classes multiply into their duration.
-export type AnimationSpeed = 'slow' | 'normal' | 'fast';
-export const ANIMATION_SPEEDS: readonly AnimationSpeed[] = ['slow', 'normal', 'fast'];
+// 'slowest' quadruples the duration, 'slow' doubles it, 'fast' halves it.
+// Shared by boxed-element animations (`animationSpeed`), arrow flow
+// (`flowSpeed`), icon animations, and the data-shape anims. 'slow' is the
+// default when unset (animations should whisper, not shout); renderers read
+// DEFAULT_ANIMATION_SPEED so the fallback can't drift per surface. The
+// renderer feeds the factor to CSS via a custom property the keyframe
+// classes multiply into their duration.
+export type AnimationSpeed = 'slowest' | 'slow' | 'normal' | 'fast';
+export const ANIMATION_SPEEDS: readonly AnimationSpeed[] = ['slowest', 'slow', 'normal', 'fast'];
 export const ANIMATION_SPEED_FACTOR: Record<AnimationSpeed, number> = {
+  slowest: 4,
   slow: 2,
   normal: 1,
   fast: 0.5,
 };
+export const DEFAULT_ANIMATION_SPEED: AnimationSpeed = 'slow';
 
 // Looping animation for an `icon` shape's glyph (spec/09 "Animated icons").
 // A separate, glyph-oriented set from the boxed-element ElementAnimation: any
@@ -154,13 +173,21 @@ export const ANIMATION_SPEED_FACTOR: Record<AnimationSpeed, number> = {
 // heart double-pump (scale), 'pulse' breathes opacity, 'bounce' bobs, 'wiggle'
 // tilts, 'flash' blinks, 'tada' is a celebratory scale + rotate, 'flip' a coin
 // flip (rotateY), 'jump' a squash-and-stretch hop, 'swing' a pendulum from the
-// top, 'float' a slow circular drift. Undefined = static. Mapped to a
-// `lvd-icon-*` class; loop speed comes from the separate `iconAnimationSpeed`
-// field (slow / normal / fast), same as boxed elements.
+// top, 'float' a slow circular drift. The emphasis set draws the eye without
+// travelling: 'glow' breathes a soft halo hugging the glyph's silhouette,
+// 'ping' emits an expanding fading ring off it, 'breathe' is a slow gentle
+// swell (vs beat's quick double-pump), 'shimmer' an occasional quick
+// brightness glint. Undefined = static. Mapped to a `lvd-icon-*` class; loop
+// speed comes from the separate `iconAnimationSpeed` field, same as boxed
+// elements.
 export type IconAnimation =
   | 'spin'
   | 'beat'
   | 'pulse'
+  | 'glow'
+  | 'ping'
+  | 'breathe'
+  | 'shimmer'
   | 'bounce'
   | 'wiggle'
   | 'flash'
@@ -173,6 +200,10 @@ export const ICON_ANIMATIONS: readonly IconAnimation[] = [
   'spin',
   'beat',
   'pulse',
+  'glow',
+  'ping',
+  'breathe',
+  'shimmer',
   'bounce',
   'wiggle',
   'flash',
@@ -227,8 +258,12 @@ export function animLoops<T>(
 // with a fading tail along the path (a staggered fleet of offset-path dots),
 // 'rainbow' cycles the stroke colour through the spectrum, 'strobe' blinks the
 // line hard on/off (stepped stroke-opacity), 'wind' marches fast sparse long
-// dashes like speed lines. All show / emphasise the direction of data /
-// process flow.
+// dashes like speed lines. The emphasis set draws the eye without busy
+// motion: 'heartbeat' is a lub-dub thickness double-pump (vs grow's smooth
+// breathe), 'breathe' a slow gentle width + opacity swell, 'shimmer' an
+// occasional quick glint of brightness + halo, 'signal' a single discrete
+// packet (one long dash) travelling the path (vs wind's stream of speed
+// lines). All show / emphasise the direction of data / process flow.
 export type ArrowFlow =
   | 'dashes'
   | 'dots'
@@ -236,6 +271,10 @@ export type ArrowFlow =
   | 'pulse'
   | 'grow'
   | 'glow'
+  | 'heartbeat'
+  | 'breathe'
+  | 'shimmer'
+  | 'signal'
   | 'draw'
   | 'comet'
   | 'rainbow'
@@ -248,6 +287,10 @@ export const ARROW_FLOWS: readonly ArrowFlow[] = [
   'pulse',
   'grow',
   'glow',
+  'heartbeat',
+  'breathe',
+  'shimmer',
+  'signal',
   'draw',
   'comet',
   'rainbow',
@@ -450,8 +493,12 @@ export type ArrowElement = {
   // Flowing-arrow animation (spec/09): marching dashes or a travelling dot
   // along the path to show flow direction. Undefined = static.
   flow?: ArrowFlow;
-  // Speed of `flow` (multiplier on its base duration). Default 'normal'.
+  // Speed of `flow` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
   flowSpeed?: AnimationSpeed;
+  // Whether `flow` loops. Undefined / true = loop forever (the default);
+  // false = play once and hold.
+  flowRepeat?: boolean;
   // Optional override for the curve control point. Stored as a
   // delta from the chord midpoint (canvas coords) so the curve
   // translates with the arrow when an endpoint moves: the chord

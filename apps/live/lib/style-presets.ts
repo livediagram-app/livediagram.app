@@ -11,6 +11,7 @@
 
 import {
   ARROW_THICKNESS_PX,
+  DEFAULT_ANIMATION_SPEED,
   isBoxed,
   supportsBorder,
   type ArrowFlow,
@@ -171,7 +172,7 @@ export function applyInlineIconToEl(el: Element, iconId: string, position: IconP
 
 // Apply a line preset (pattern × thickness × optional flow) to an arrow. A
 // preset without a flow clears any existing animation; one with a flow defaults
-// its speed to normal when the arrow had none. No-op on non-arrows.
+// its speed to the shared default when the arrow had none. No-op on non-arrows.
 export function applyArrowPresetToEl(
   el: Element,
   p: { style: BorderStyle; thickness: ArrowThickness; flow?: ArrowFlow },
@@ -182,6 +183,6 @@ export function applyArrowPresetToEl(
     strokeStyle: p.style,
     strokeWidth: ARROW_THICKNESS_PX[p.thickness],
     flow: p.flow,
-    flowSpeed: p.flow ? (el.flowSpeed ?? 'normal') : el.flowSpeed,
+    flowSpeed: p.flow ? (el.flowSpeed ?? DEFAULT_ANIMATION_SPEED) : el.flowSpeed,
   };
 }

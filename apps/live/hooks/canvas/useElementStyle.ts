@@ -292,6 +292,23 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   };
   const setFlowSpeedSelected = (value: AnimationSpeed) =>
     setArrowFieldSelected({ flowSpeed: value }, 'FlowSpeed');
+  // Repeat toggles (spec/09): true (the default) loops the animation, false
+  // plays it once and holds. Stored as `undefined` when true so the common
+  // case adds no field to the element.
+  const setAnimationRepeatSelected = (value: boolean) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && isBoxed(el) ? { ...el, animationRepeat: value ? undefined : false } : el,
+      ),
+    );
+    track('Element', 'Changed', 'AnimationRepeat');
+  };
+  const setIconAnimationRepeatSelected = (value: boolean) =>
+    setIconFieldSelected({ iconAnimationRepeat: value ? undefined : false });
+  const setFlowRepeatSelected = (value: boolean) =>
+    setArrowFieldSelected({ flowRepeat: value ? undefined : false }, 'FlowRepeat');
 
   return {
     toggleLockSelected,
@@ -357,6 +374,9 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setProgressAnimRepeatSelected,
     setAnimationSpeedSelected,
     setFlowSpeedSelected,
+    setAnimationRepeatSelected,
+    setIconAnimationRepeatSelected,
+    setFlowRepeatSelected,
     resetColorsSelected,
   };
 }
