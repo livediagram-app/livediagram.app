@@ -307,7 +307,14 @@ export function NewFolderTile({ onCreate }: { onCreate: (name: string) => Promis
           }
         }}
         onBlur={() => {
-          if (!busy && !name.trim()) {
+          if (busy) return;
+          // Mobile keyboards give this single-line field no Enter key, so
+          // tapping away with a name typed commits the folder; an empty
+          // field just folds the tile back up. (Escape unmounts the input
+          // without firing this handler, so cancel stays cancel.)
+          if (name.trim()) {
+            void commit();
+          } else {
             setNaming(false);
             setName('');
           }

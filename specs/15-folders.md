@@ -40,7 +40,10 @@ In scope:
   each team, spec/35; team-scoped surfaces skip the overview and open
   straight inside their team), then the folder drill-down with a
   "here" card at every level, an inline New Folder tile, and a
-  BackBar. The dialog opens with the subject's current placement
+  BackBar. The New Folder tile's name field commits on Enter OR on
+  blur when a name has been typed (mobile keyboards give the
+  single-line field no Enter key, so tapping away is the only submit
+  gesture there); blurring it empty, or pressing Escape, cancels. The dialog opens with the subject's current placement
   pre-selected ("always something selected"); the "Move here" button
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
