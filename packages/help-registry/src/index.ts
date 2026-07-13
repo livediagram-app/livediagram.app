@@ -87,7 +87,7 @@ export const categories: Category[] = [
     title: 'Tips and Tricks',
     description:
       'Work faster with the shortcuts, hidden features, and small habits experienced users rely on.',
-    articleCount: 5,
+    articleCount: 6,
   },
   {
     slug: 'account-and-data',
@@ -427,6 +427,14 @@ export const articles: Article[] = [
     title: 'The Format Painter',
     description: 'Copy the look of one element onto others in two clicks.',
     keywords: 'copy style paste formatting clone look duplicate appearance brush',
+    category: 'Tips and Tricks',
+    categorySlug: 'tips-and-tricks',
+  },
+  {
+    slug: 'duplicating-elements',
+    title: 'Duplicating Elements',
+    description: 'Duplicate in place, copy and paste across tabs, or Shift-drag a copy into place.',
+    keywords: 'duplicate copy paste clone repeat shift drag cmd d ctrl d multiply ghost',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },

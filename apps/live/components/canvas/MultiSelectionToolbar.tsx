@@ -82,7 +82,7 @@ export function MultiSelectionToolbar({
           <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
         </>
       ) : null}
-      <Tooltip title="Duplicate" description="Duplicate selected (arrows skipped).">
+      <Tooltip title="Duplicate" description="Duplicate the selection, arrows included.">
         <button
           type="button"
           onClick={onDuplicate}

@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Duplicating Elements',
+  description:
+    'Every way to copy elements in livediagram: the Duplicate action, copy and paste, and Shift-drag to drop a copy exactly where you want it.',
+  path: '/help/tips-and-tricks/duplicating-elements/',
+});
+
+<ArticleLayout
+  title="Duplicating Elements"
+  description="Repeat what you've already built: duplicate in place, copy and paste, or Shift-drag a copy straight to its spot."
+  categoryTitle="Tips and Tricks"
+  categorySlug="tips-and-tricks"
+>
+
+Most diagrams repeat themselves: the same card three times, a row of identical steps, one styled box that wants to become five. livediagram gives you three ways to duplicate, and the fastest one places the copy in a single gesture.
+
+## The Duplicate action
+
+Select an element (or [several](/help/canvas/selecting-and-grouping/multi-select/)) and press **⌘D** (Ctrl+D on Windows/Linux). A copy lands offset from the original, selected and ready to move. The same action sits in the selection's toolbar as **Duplicate**, so it works on touch too.
+
+Duplicates are complete copies: styling, text, size, and [group](/help/canvas/selecting-and-grouping/groups/) structure all come along, and arrows connecting elements inside the duplicated set stay wired up within the copy.
+
+## Copy and paste
+
+**⌘C** then **⌘V** does the classic version, pasting an offset copy. It goes further than Duplicate in one way: the clipboard survives switching tabs, so you can copy elements on one tab and paste them onto another. **⌘X** cuts, removing the originals on paste.
+
+## Shift-drag: duplicate and place in one gesture
+
+The quickest way to duplicate is to hold **Shift** and drag a selected element:
+
+<Step n={1}>Select the element (or multi-selection) you want to copy.</Step>
+
+<Step n={2}>
+  Hold **Shift** and drag. The original stays put, and a translucent ghost of the copy follows your
+  pointer, with the usual snapping and alignment guides.
+</Step>
+
+<Step n={3}>
+  Release to solidify the copy at the drop point. It lands selected, so you can keep working with it
+  right away.
+</Step>
+
+A few details worth knowing:
+
+- **Change your mind mid-drag**: release Shift while still dragging and the ghost dissolves, turning the gesture back into a plain move. Press Shift again to re-summon the copy.
+- **Connections are copied sensibly**: an arrow linking the dragged set to the rest of the diagram is duplicated too, so the copy arrives wired the same way the original is.
+- **One undo step**: a single undo removes the whole gesture, copy and move together. Escape cancels it entirely.
+- Shift keeps its other jobs: Shift-clicking an unselected element still adds it to the selection, and Shift while resizing still constrains proportions. Only a real drag on an already-selected element duplicates.
+
+<Tip>
+  Building a row or grid of identical elements? Style the first one completely, then Shift-drag
+  copies into place one after another. Each copy lands selected, so you can chain the gesture
+  without re-selecting.
+</Tip>
+
+</ArticleLayout>
