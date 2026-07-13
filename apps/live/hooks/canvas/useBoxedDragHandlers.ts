@@ -128,6 +128,7 @@ export function useBoxedDragHandlers({
       startClientY: e.clientY,
       startBounds,
       startArrowEnds,
+      startElements: d.activeTab.elements,
       aspectLocked: element.aspectLocked === true,
     });
   };

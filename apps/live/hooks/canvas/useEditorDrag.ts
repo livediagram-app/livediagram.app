@@ -320,17 +320,25 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
                 origMultiIds: new Set(d.multiSelectedIds),
               };
               setShiftDupGhostIds(cloneIds);
+              // Park the originals by RESTORING them — plus every arrow
+              // connected to them — from the grab-time snapshot, not by a
+              // plain position translate: the frames before this swap were
+              // a normal move, whose auto-rebind pass may have re-picked
+              // anchor faces on arrows spanning to shapes that never moved.
+              // The snapshot puts those anchors back exactly as they were.
+              const snapById = new Map(drag.startElements.map((el) => [el.id, el] as const));
+              const restoreIds = new Set<string>(dupIds);
+              for (const el of drag.startElements) {
+                if (el.type !== 'arrow' || restoreIds.has(el.id)) continue;
+                const touches = (end: ArrowElement['from']) =>
+                  (end.kind === 'pinned' && dupIds.has(end.elementId)) ||
+                  (end.kind === 'on-arrow' && dupIds.has(end.arrowId));
+                if (touches(el.from) || touches(el.to)) restoreIds.add(el.id);
+              }
               tick((els) => {
                 if (els.some((el) => cloneIds.has(el.id))) return els;
-                // Park the originals (and their follower arrow ends) back
-                // at the gesture's start, then add the clones at the
-                // cursor position they take over from.
-                const parked = translateBoxedSelection(
-                  els,
-                  drag.startBounds,
-                  drag.startArrowEnds,
-                  0,
-                  0,
+                const parked = els.map((el) =>
+                  restoreIds.has(el.id) ? (snapById.get(el.id) ?? el) : el,
                 );
                 return [...parked, ...newElements, ...boundaryArrows];
               });

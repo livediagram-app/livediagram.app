@@ -223,6 +223,14 @@ export type DragState =
         string,
         { from?: { x: number; y: number }; to?: { x: number; y: number } }
       >;
+      // The full element array as it stood at grab time (a reference to the
+      // then-current immutable array, so this is cheap). The shift-duplicate
+      // identity swap (spec/80) restores the dragged elements AND every arrow
+      // connected to them from here when it parks the originals — a plain
+      // position park would keep the anchor faces the auto-rebind pass
+      // re-picked while the originals were still the ones moving, visibly
+      // shifting arrows on shapes that never moved.
+      startElements: Element[];
       aspectLocked: boolean;
     }
   | {
