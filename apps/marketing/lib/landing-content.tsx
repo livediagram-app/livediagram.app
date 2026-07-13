@@ -17,6 +17,7 @@ import {
   CustomThemesArt,
   DarkModeArt,
   DepthArt,
+  DragDuplicateArt,
   EasyStartArt,
   ExpiryArt,
   FlowingArrowsArt,
@@ -229,7 +230,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Run the session: timer + voting',
         description:
-          'Facilitate live from the canvas. Start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time. Perfect for retros, workshops, and timeboxed planning.',
+          'Facilitate live from the canvas. Start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
       },
       {
         art: <ExpiryArt />,
@@ -310,7 +311,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Shapes & connectors',
         title: 'Arrows that bend your way',
         description:
-          'Connect anything with straight, curved, or angled arrows. Drag the handle on a curve to reshape its bow, or on an elbow to move the bend. Set the thickness, choose the arrowhead shape, filled or hollow triangle, line, circle, or diamond, for UML-style connectors and size it, add a label, and pin an end to a shape so it follows when things move.',
+          'Connect anything with straight, curved, or angled arrows. Drag the handle on a curve to reshape its bow, or on an elbow to move the bend. Set the thickness, choose the arrowhead shape, filled or hollow triangle, line, circle, or diamond, for UML-style connectors and size it, add a label, and pin an end to a shape so it follows when things move. When several arrows meet at the same point, the heads fan out side by side instead of piling up.',
       },
       {
         art: <BorderStyleArt />,
@@ -342,21 +343,21 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/animations/',
         title: 'Animate any shape',
         description:
-          'Give a shape a looping animation to draw the eye or signal status: pulse an attention ring, glow a soft halo, blink a status light, trace the outline, or bob and wobble. Pick a speed, and the format painter copies the motion to the next shape.',
+          'Give a shape a looping animation to draw the eye or signal status: pulse an attention ring, glow a soft halo, blink a status light, trace the outline, breathe, shimmer, or a heartbeat for gentle emphasis. Pick one of four speeds, choose whether it repeats or plays once, and the format painter copies the motion to the next shape.',
       },
       {
         art: <FlowingArrowsArt />,
         href: '/help/canvas/animations/',
         title: 'Arrows that show the flow',
         description:
-          'Set an arrow flowing and its line comes alive: marching dashes, travelling dots, a row of beads, a breathing pulse, or a soft glow, all running toward the target so a data or process diagram reads its own direction.',
+          'Set an arrow flowing and its line comes alive: marching dashes, travelling dots, a row of beads, a breathing pulse, a soft glow, or a signal packet racing the line, all running toward the target so a data or process diagram reads its own direction. Each flow can repeat or fire once.',
       },
       {
         art: <LivingBackgroundArt />,
         href: '/help/canvas/the-canvas/changing-the-background/',
         title: 'A backdrop with motion',
         description:
-          'Swap the static grid for a living pattern: Flow streams diagonal lines, Drift floats rising motes, Aurora drifts colour glows, Ripple expands gentle rings, and Ribbons sweeps curved lines. Each matches the theme, scales with the size slider, and settles when reduced-motion is on.',
+          'Swap the static grid for a living pattern: Flow streams diagonal lines, Drift floats rising motes, Aurora drifts colour glows, Ripple expands gentle rings, and Ribbons sweeps curved lines. Each matches the theme, scales with the size slider, runs as fast or as slow as you set the speed slider, and settles when reduced-motion is on.',
       },
       {
         art: <AnimatedIconsArt />,
@@ -381,6 +382,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Multi-select with marquee',
         description:
           'Switch to the Select tool, drag a box, and act on everything inside at once: move, duplicate, or delete in one step, one Cmd-Z. Or grab the eraser and wipe out whatever you drag across, the whole sweep undone in a single step.',
+      },
+      {
+        art: <DragDuplicateArt />,
+        href: '/help/tips-and-tricks/keyboard-shortcuts/',
+        group: 'Select, group & lock',
+        title: 'Shift-drag to duplicate',
+        description:
+          'Hold Shift and drag any element, or a whole selection, to peel off a copy: the original stays put, a translucent ghost follows your cursor, and the copy lands where you release, arrows and all.',
       },
       {
         art: <GroupArt />,

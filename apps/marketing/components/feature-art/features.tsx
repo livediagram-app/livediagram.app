@@ -298,6 +298,43 @@ export function LockArt() {
   );
 }
 
+// Shift-drag duplicate (spec/80): the original stays put while a
+// translucent ghost travels to the drop spot and lands as a solid copy.
+export function DragDuplicateArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <rect
+          x="42"
+          y="30"
+          width="52"
+          height="26"
+          rx="5"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <g className="fa-drag-dup">
+          <rect
+            x="42"
+            y="30"
+            width="52"
+            height="26"
+            rx="5"
+            fill={BLUE_FILL}
+            stroke={BLUE_STROKE}
+            strokeWidth="2"
+            strokeDasharray="5 3"
+          />
+        </g>
+      </svg>
+      <span className="absolute bottom-1.5 left-2 rounded border border-slate-200 bg-white/90 px-1.5 py-0.5 text-[8px] font-semibold text-slate-500 shadow-sm">
+        ⇧ shift + drag
+      </span>
+    </Frame>
+  );
+}
+
 // Three stacked layer planes (bottom -> top), each popping in with its
 // content, then an eye chip: the Layers panel's pitch in one glance —
 // bands you can stack and hide (spec/74).

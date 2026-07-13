@@ -81,6 +81,13 @@
     stroke-dashoffset: 0 !important;
   }
 
+  /* the shift-drag ghost holds its landed (solid clone) frame */
+  .fa-drag-dup {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: translate(88px, 14px) !important;
+  }
+
   /* the "after" half of cross-fades / the travelling brush stay hidden */
   .fa-brush,
   .fa-swap-b,

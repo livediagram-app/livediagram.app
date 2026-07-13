@@ -650,3 +650,34 @@
   top: 12px;
   animation: fa-spot 6s ease-in-out infinite;
 }
+
+/* shift-drag duplicate: the ghost copy peels off the original, travels to
+ * the drop spot, and lands as a solid clone before looping */
+@keyframes fa-drag-dup {
+  0%,
+  12% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(6px, 2px);
+    opacity: 0.45;
+  }
+  58%,
+  72% {
+    transform: translate(88px, 14px);
+    opacity: 0.45;
+  }
+  80%,
+  92% {
+    transform: translate(88px, 14px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(88px, 14px);
+    opacity: 0;
+  }
+}
+.fa-drag-dup {
+  animation: fa-drag-dup 4.2s ease-in-out infinite;
+}
