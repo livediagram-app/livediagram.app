@@ -373,8 +373,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Theme & Canvas dock button (spec/42): the paintbrush right of
                 the Layers dock opens the CanvasThemeDialog — the same modal
                 the canvas right-click menu reaches, one click from the
-                chrome. Desktop editors only (mobile reaches it through the
-                canvas menu; read-only sessions pass no handler). */}
+                chrome. All viewports, mobile included — the canvas menu's
+                long-press entry isn't discoverable there (read-only
+                sessions pass no handler). */}
             {!zenMode && onOpenCanvasTheme ? (
               <div
                 data-tour-id="canvas-theme"
@@ -382,7 +383,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
-                className="pointer-events-auto hidden animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 sm:flex dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+                className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
               >
                 <Tooltip
                   title="Theme & Canvas"
