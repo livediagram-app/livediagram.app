@@ -64,9 +64,19 @@ const COMPONENTS: Component[] = [
       'Cloudflare D1 (SQLite at the edge). Holds diagrams, tabs, change logs, share links, telemetry events.',
   },
   {
+    name: 'Image storage',
+    description:
+      'Cloudflare R2. Stores uploaded image blobs (content-addressed, indexed in D1) and cached diagram snapshots.',
+  },
+  {
     name: 'Edge router',
     description:
       'Cloudflare Worker that stitches marketing, live, telemetry, help, and api under one hostname via service bindings.',
+  },
+  {
+    name: 'MCP server',
+    description:
+      'The AI-tools endpoint at https://mcp.livediagram.app. A Cloudflare Worker wrapping the api via a service binding.',
   },
 ];
 

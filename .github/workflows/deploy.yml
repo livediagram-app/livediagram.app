@@ -4,9 +4,9 @@ name: Deploy
 # run Deploy`) once CI on `main` is green and you're ready to ship.
 # It is intentionally NOT chained to CI — a green build no longer
 # deploys on its own. Builds each app, then deploys them to
-# Cloudflare Workers in dependency order: marketing + live + api in
-# parallel → router (which has service bindings to all three, so it
-# must deploy last).
+# Cloudflare Workers in dependency order: marketing + live +
+# telemetry + help + api in parallel → mcp (service binding to api)
+# → router last (service bindings to the five path-routed workers).
 on:
   workflow_dispatch:
 
