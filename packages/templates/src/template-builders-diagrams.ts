@@ -213,6 +213,115 @@ export function buildMilestoneTimeline(cx: number, cy: number): Element[] {
   return [...elements, ...stems, ...dots, ...chips, ...cards, ...notes];
 }
 
+// Vertical milestone timeline — the same stemmed-card composition as
+// buildMilestoneTimeline, run down the page: a downward spine (arrowhead at
+// the bottom, time flows down) with cards branching left and right, date
+// chips riding the pinned stems, and a one-line description under each
+// card. Shares the horizontal variant's content and preset grammar so the
+// pair read as siblings in the picker.
+export function buildMilestoneTimelineVertical(cx: number, cy: number): Element[] {
+  const spineLength = 920;
+  const dotSize = 20;
+  const chipW = 104;
+  const chipH = 32;
+  const chipOffset = 72; // spine → chip centre
+  const cardW = 208;
+  const cardH = 64;
+  const cardOffset = 260; // spine → card centre
+  const descW = 232;
+  const descH = 34;
+  const descGap = 6; // card edge → description
+
+  const startY = cy - spineLength / 2;
+  const spineX = cx;
+  const elements: Element[] = [];
+
+  // Plan title above the spine's head, centred on it.
+  elements.push({
+    ...createText(spineX - 260, startY - 78),
+    width: 520,
+    height: 48,
+    label: 'Launch plan · 2027',
+    textSize: 'lg',
+    textBold: true,
+    textAlignX: 'center',
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+  });
+
+  // The spine keeps its arrowhead: time flows top to bottom.
+  elements.push({
+    ...createArrow(spineX, startY, spineX, startY + spineLength),
+    strokeColor: '#64748b',
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+  });
+
+  const milestones: { title: string; date: string; note: string; preset?: string }[] = [
+    { title: 'Kick-off', date: 'January', note: 'Scope agreed, team assembled', preset: 'soft' },
+    { title: 'Design freeze', date: 'March', note: 'Specs and designs signed off' },
+    { title: 'Beta release', date: 'May', note: 'First customers onboarded' },
+    { title: 'Launch', date: 'July', note: 'Generally available', preset: 'bold' },
+    { title: 'Retrospective', date: 'September', note: 'Adoption reviewed, next bets picked' },
+  ];
+
+  const dots: Element[] = [];
+  const stems: Element[] = [];
+  const chips: Element[] = [];
+  const cards: Element[] = [];
+  const notes: Element[] = [];
+  milestones.forEach(({ title, date, note, preset }, i) => {
+    const y = startY + ((i + 0.5) / milestones.length) * spineLength;
+    // Alternate left / right of the spine.
+    const dir = i % 2 === 0 ? -1 : 1;
+    const dot = {
+      ...createShape('circle', spineX - dotSize / 2, y - dotSize / 2),
+      width: dotSize,
+      height: dotSize,
+      colorPreset: 'solid',
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
+    };
+    const card = {
+      ...createShape('square', spineX + dir * cardOffset - cardW / 2, y - cardH / 2),
+      width: cardW,
+      height: cardH,
+      label: title,
+      textSize: 'md' as const,
+      borderRadius: 'lg' as const,
+      ...(preset ? { colorPreset: preset } : {}),
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
+    };
+    dots.push(dot);
+    cards.push(card);
+    // Stem: pinned dot → card so it follows a dragged card; the date chip
+    // paints over it (arrows go first in the returned array).
+    stems.push({
+      ...createPinnedArrow(dot.id, dir < 0 ? 'w' : 'e', card.id, dir < 0 ? 'e' : 'w'),
+      arrowEnds: 'none' as const,
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
+    });
+    chips.push({
+      ...createShape('stadium', spineX + dir * chipOffset - chipW / 2, y - chipH / 2),
+      width: chipW,
+      height: chipH,
+      label: date,
+      textSize: 'sm',
+      colorPreset: 'soft',
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
+    });
+    // One-line description tucked under its card.
+    notes.push({
+      ...createText(spineX + dir * cardOffset - descW / 2, y + cardH / 2 + descGap),
+      width: descW,
+      height: descH,
+      label: note,
+      textSize: 'sm',
+      textAlignX: 'center',
+      textColor: '#64748b',
+      layerId: TEMPLATE_CONTENT_LAYER_ID,
+    });
+  });
+  return [...elements, ...stems, ...dots, ...chips, ...cards, ...notes];
+}
+
 // Three overlapping outlined circles arranged in a triangle so the
 // intersections are visible. Each set gets a label rendered outside
 // the circle (toward the corner away from the centroid) and there's

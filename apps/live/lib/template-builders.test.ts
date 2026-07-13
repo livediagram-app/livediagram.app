@@ -41,6 +41,7 @@ const ALL_KINDS = [
   'swot',
   'timeline',
   'milestone-timeline',
+  'milestone-timeline-vertical',
   'venn',
   'journey',
   'fishbone',

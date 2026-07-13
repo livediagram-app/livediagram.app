@@ -18,7 +18,7 @@ Same rule as the landing page ([16](16-marketing-site.md)): every claim in
 items in [02-prototype-scope](02-prototype-scope.md) (team workspaces,
 transactional email, CRDT / conflict-free editing) must not appear, even
 softened. When the editor gains or loses a feature, update the affected copy in
-the same change. Counts (currently 45 templates, 27 themes, ten core shapes)
+the same change. Counts (currently 46 templates, 27 themes, ten core shapes)
 must match their source of truth, as pinned by the live app's tests.
 
 ## Layout

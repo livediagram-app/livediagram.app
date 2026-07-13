@@ -21,10 +21,13 @@ export type TemplateKind =
   | 'kanban'
   | 'swot'
   | 'timeline'
-  // Milestone timeline: the richer, presentation-ready sibling of the plain
-  // 'timeline' — a directional spine with stemmed milestone cards above and
-  // below, each carrying a date chip and a one-line description.
+  // Milestone timelines: the richer, presentation-ready siblings of the
+  // plain 'timeline' — a directional spine with stemmed milestone cards,
+  // each carrying a date chip and a one-line description. The horizontal
+  // kind keeps the original 'milestone-timeline' id; the vertical variant
+  // runs the same composition down the page.
   | 'milestone-timeline'
+  | 'milestone-timeline-vertical'
   | 'venn'
   | 'journey'
   | 'fishbone'
@@ -204,8 +207,14 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'milestone-timeline',
-    title: 'Milestone timeline',
+    title: 'Horizontal milestone timeline',
     description: 'Dated milestone cards on stems above and below a directional spine.',
+    extra: true,
+  },
+  {
+    kind: 'milestone-timeline-vertical',
+    title: 'Vertical milestone timeline',
+    description: 'Dated milestone cards branching left and right of a downward spine.',
     extra: true,
   },
   {
@@ -490,6 +499,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   gantt: 'project-management',
   timeline: 'project-management',
   'milestone-timeline': 'project-management',
+  'milestone-timeline-vertical': 'project-management',
   roadmap: 'project-management',
   'raci-matrix': 'project-management',
   // Strategy: business / product analysis, decision frameworks + set
@@ -567,6 +577,9 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'logo-design': 'checkerboard',
   timeline: 'lines',
   'milestone-timeline': 'lines',
+  // The vertical variant reads best on a clean canvas: horizontal ruled
+  // lines fight a downward spine.
+  'milestone-timeline-vertical': 'blank',
   journey: 'lines',
   retrospective: 'grid',
   fishbone: 'grid',

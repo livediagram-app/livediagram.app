@@ -40,6 +40,7 @@ import {
   buildFlywheel,
   buildJourney,
   buildMilestoneTimeline,
+  buildMilestoneTimelineVertical,
   buildPyramid,
   buildTimeline,
   buildVenn,
@@ -89,6 +90,8 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildTimeline(cx, cy);
     case 'milestone-timeline':
       return buildMilestoneTimeline(cx, cy);
+    case 'milestone-timeline-vertical':
+      return buildMilestoneTimelineVertical(cx, cy);
     case 'venn':
       return buildVenn(cx, cy);
     case 'journey':
