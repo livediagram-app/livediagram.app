@@ -32,7 +32,10 @@ import {
   SessionVoteSection,
 } from '@/components/panels/SessionToolsSection';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
-import { TabMenuCopyToView, TabMenuFolderView } from './tab-menu-views';
+import {
+  AddTabToDiagramDialog,
+  AddTabToFolderDialog,
+} from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
 
 // The unified tab / canvas portal menu (actions, copy-to-diagram, and
@@ -108,12 +111,14 @@ export function PortalMenu({
   onRevealVote: () => void;
   onClearVote: () => void;
 }) {
-  // The menu has three views — "actions" lists the verbs (Rename,
-  // Duplicate, Clear…), "copyTo" lists the user's other diagrams so the
-  // active tab can be cloned into one of them, and "folder" (spec/30)
-  // organises the tab into a one-level folder. All stay in the same
-  // portal so the existing positioning and outside-click handler both
-  // work unchanged.
+  // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
+  // organise pickers — "copyTo" (spec/17, link the tab into another
+  // diagram) and "folder" (spec/30, file the tab into a tab-bar folder) —
+  // open as proper centred MODALS in place of the anchored box, so they
+  // get room instead of squeezing into the menu. While a modal is up the
+  // anchored box unmounts (`ref` goes null), which conveniently disarms
+  // the outside-click dismisser below; the modal owns its own dismissal
+  // and closes the whole menu with it.
   const [view, setView] = useState<'actions' | 'copyTo' | 'folder'>('actions');
   // Which collapsible category is open in the actions view — at most one at a
   // time, all closed by default (matches the element context menu).
@@ -214,6 +219,25 @@ export function PortalMenu({
       document.removeEventListener('keydown', onKey);
     };
   }, [onClose, anchor]);
+
+  // Modal pickers replace the anchored box entirely (see the `view` note
+  // above); dismissing them dismisses the menu.
+  if (view === 'copyTo') {
+    return (
+      <AddTabToDiagramDialog otherDiagrams={otherDiagrams} onPick={onCopyTo} onClose={onClose} />
+    );
+  }
+  if (view === 'folder') {
+    return (
+      <AddTabToFolderDialog
+        folderNames={folderNames}
+        currentFolder={currentFolder}
+        onMoveToFolder={onMoveToFolder}
+        onRemoveFromFolder={onRemoveFromFolder}
+        onClose={onClose}
+      />
+    );
+  }
 
   if (!pos) return null;
 
@@ -387,21 +411,7 @@ export function PortalMenu({
               />
             </MenuAccordionSection>
           </>
-        ) : view === 'copyTo' ? (
-          <TabMenuCopyToView
-            otherDiagrams={otherDiagrams}
-            onCopyTo={onCopyTo}
-            onBack={() => setView('actions')}
-          />
-        ) : (
-          <TabMenuFolderView
-            folderNames={folderNames}
-            currentFolder={currentFolder}
-            onMoveToFolder={onMoveToFolder}
-            onRemoveFromFolder={onRemoveFromFolder}
-            onBack={() => setView('actions')}
-          />
-        )}
+        ) : null}
       </div>
       {confirmingDelete && deleteRowRef.current ? (
         <ConfirmPopover

@@ -253,8 +253,9 @@ export function PlacementBrowser({
 // The "New Folder" tile: a dashed card that flips into a small naming form in
 // place (the popover the flow needs, without portal plumbing inside the
 // modal). Enter creates in the CURRENT level's scope and the browser selects
-// the fresh folder; Escape backs out.
-function NewFolderTile({ onCreate }: { onCreate: (name: string) => Promise<boolean> }) {
+// the fresh folder; Escape backs out. Exported for the tab Add-to-Folder
+// dialog (spec/30), which offers the same create-in-place affordance.
+export function NewFolderTile({ onCreate }: { onCreate: (name: string) => Promise<boolean> }) {
   const [naming, setNaming] = useState(false);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
