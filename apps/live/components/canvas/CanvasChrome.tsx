@@ -377,6 +377,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canvas menu; read-only sessions pass no handler). */}
             {!zenMode && onOpenCanvasTheme ? (
               <div
+                data-tour-id="canvas-theme"
                 onContextMenu={(e) => {
                   e.preventDefault();
                   e.stopPropagation();

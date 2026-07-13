@@ -44,10 +44,10 @@ flag, so a mid-rerun reload re-offers the same way.
 
 ## The steps
 
-A welcome offer card, then seven steps in palette → explorer → canvas →
-tabs → search order (six on mobile, where the search step is skipped), and
-a closing "you're ready" card. The bookend cards sit outside the "N of 7"
-count. Copy is one or two
+A welcome offer card, then eight steps in palette → explorer → canvas →
+tabs → theme → search order (six on mobile, where the theme-canvas and
+search steps are skipped), and a closing "you're ready" card. The bookend
+cards sit outside the step count. Copy is one or two
 short sentences per step ("concise" is the spec constraint; the exact strings
 live in `apps/live/components/tour/tour-steps.ts`):
 
@@ -68,11 +68,16 @@ live in `apps/live/components/tour/tour-steps.ts`):
    region (an `alsoHighlight` union, like the dropdown steps), with the
    tab menu covered in the copy. A separate open-the-⋯-menu step existed
    briefly and was folded in here.
-7. **Search** (desktop only): opens the Cmd/Ctrl+K search panel — find
+7. **Theme & Canvas** (desktop only): highlights the paintbrush dock
+   button (spec/42) that opens the tab's theme + canvas background
+   dialog. No prepare needed: the button is always in the desktop chrome
+   for an editable session. Mobile reaches the same dialog through the
+   canvas menu, so the step is skipped there.
+8. **Search** (desktop only): opens the Cmd/Ctrl+K search panel — find
    diagrams, elements, help articles, and run actions. The panel brings
    its own modal backdrop, so this step's ring lifts above the modal
    layer.
-8. **Outro** (card): "You're ready to go" — a help-article illustration,
+9. **Outro** (card): "You're ready to go" — a help-article illustration,
    a help-centre link (new tab), and a "Start creating" button that
    completes the tour.
 
@@ -118,7 +123,8 @@ Existing enums only, covering the whole funnel:
 - **Stage views**: `'UI'/'View'/'TourStep<Id>'` once per step entry
   (`TourStepPalette`, `TourStepSelectionModes`, `TourStepCategories`,
   `TourStepExplorer`, `TourStepContextMenu`, `TourStepTabs`,
-  `TourStepSearch`, `TourStepOutro` — derived from the fixed step ids,
+  `TourStepThemeCanvas`, `TourStepSearch`, `TourStepOutro` — derived from
+  the fixed step ids,
   never content; a Back re-entry counts as a view). The last View before
   an `Ended/TourSkipped` marks the drop-off stage.
 - **End**: `'UI'/'Ended'/'TourCompleted' | 'TourSkipped'`.

@@ -1,4 +1,4 @@
-// The eight steps of the interactive editor tour (spec/79), in palette →
+// The steps of the interactive editor tour (spec/79), in palette →
 // explorer → canvas → tabs order. Each step names its anchor (`target`, a
 // data-tour-id) and drives the real chrome in `prepare` (opening the panel
 // / dropdown / menu it explains) through the TourApi facade TourHost
@@ -150,6 +150,15 @@ export const TOUR_STEPS: TourStep[] = [
     // The active pill and the add button highlight as one region.
     target: 'active-tab',
     alsoHighlight: 'add-tab',
+  },
+  {
+    id: 'theme-canvas',
+    title: 'Theme & Canvas',
+    body: "The paintbrush restyles the whole tab in one place: pick a theme for your elements and set the canvas background's colour, pattern, or animation.",
+    target: 'canvas-theme',
+    // The paintbrush dock button is desktop chrome (mobile reaches the
+    // same dialog through the canvas menu).
+    mobileSkip: true,
   },
   {
     id: 'search',
