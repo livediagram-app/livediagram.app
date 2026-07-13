@@ -12,7 +12,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 | **D1 database**                      | `apps/api`        | Diagrams, tabs, comments, folders, share links, shared-with index, change log, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                             |
 | **Durable Object namespace**         | `apps/api`        | One stateful room per diagram for realtime presence + ops.                                                                                                                                                     |
 | **R2 bucket** (optional)             | `apps/api`        | Image uploads (spec/19) + diagram SVG snapshots (spec/67: Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
-| **Rate Limiter bindings** (optional) | `apps/api`        | Per-owner write throttle + per-IP telemetry throttle.                                                                                                                                                          |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Six abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls, and API-token reads. Any binding you don't provision falls through to "allow", so none are required. |
 | **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                        |
 
 What you do NOT need:
