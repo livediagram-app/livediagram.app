@@ -169,6 +169,12 @@ offers both header actions — **New diagram** and **Open Explorer**
 from the two separate New / Open chips so the title row holds one
 piece of chrome. When the host passes no new-diagram handler the chip
 falls back to the plain **Open** link (one action needs no menu).
+The popover **opens on mouse hover** (click-to-open read as friction
+for a two-item menu); a ~260ms grace timer on hover-out covers the
+pointer's travel into the portalled menu and closes it once the
+pointer has left both the chip and the menu. Click remains the touch
+/ keyboard path, and is open-only for mouse so a habitual click right
+after the hover-open doesn't snap the menu shut.
 
 - The existing "Current Diagram" and "Recent Diagrams" sections stay
   unchanged at the top.
