@@ -114,6 +114,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     selectedId,
     selectionBounds,
     shiftDupGhostIds,
+    voteReview,
     showAnchorsFor,
     showHandles,
     showPlus,
@@ -296,6 +297,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             vote={tabVote}
             selfId={selfParticipant.id}
             voteMax={voteMax}
+            voteReviewActive={voteReview != null}
+            isVoteFocus={voteReview?.focusId === element.id}
             onCastVote={h.onCastVote}
             onRetractVote={h.onRetractVote}
             onBeginEdit={h.onBeginEdit}

@@ -959,6 +959,22 @@
   animation-delay: calc(-3.33s * var(--lvd-anim-speed, 1));
 }
 
+/* Vote-results walkthrough focus (spec/39): the currently-reviewed top pick
+ * pulses an amber halo so it stands out even on a busy board. Rides the
+ * winner-ring overlay div (ring-2 amber), adding the breathing glow. */
+@keyframes lvd-vote-focus {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(251 191 36 / 0.55);
+  }
+  50% {
+    box-shadow: 0 0 22px 8px rgb(251 191 36 / 0.5);
+  }
+}
+.lvd-vote-focus {
+  animation: lvd-vote-focus 1.4s ease-in-out infinite;
+}
+
 /* Flowing arrows: marching dashes (stroke-dashoffset) + a travelling dot
  * (offset-path). The dash pattern is set inline on the path so the march
  * loops seamlessly regardless of the arrow's own stroke style. */

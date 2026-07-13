@@ -95,6 +95,10 @@ export type BoxedElementViewProps = {
   vote?: import('@livediagram/diagram').TabVote;
   selfId?: string;
   voteMax?: number;
+  // Vote-results walkthrough (spec/39): while active, the plain winner
+  // rings yield to a single pulsing focus on the reviewed element.
+  voteReviewActive?: boolean;
+  isVoteFocus?: boolean;
   onCastVote?: (id: string) => void;
   onRetractVote?: (id: string) => void;
   // Drop a dragged palette icon onto this shape. The view computes which

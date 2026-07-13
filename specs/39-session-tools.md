@@ -76,16 +76,28 @@ live counts but can't control or vote. No extra gating code.
   (the same `TopCenterStack`, stacked below the timer row) tells each
   participant how many dots they have left.
 - **End vote** closes casting (tallies stay). **Show results** sets
-  `revealed`, ringing the top element(s) (`voteWinners`); the pill flags joint
-  winners by comparing to the tab-wide max (`voteMax`). **Clear** removes the
-  session.
+  `revealed`; the pill flags joint winners by comparing to the tab-wide max
+  (`voteMax`). **Clear** removes the session.
+- **Results walkthrough** (`useVoteReview`): revealing results starts a
+  guided review of every voted element, most dots first (ties keep element
+  order). The current pick pulses an amber focus highlight
+  (`lvd-vote-focus`) and the viewport pans to it; the `VoteBanner` swaps to
+  "Top result X of N" with **Previous** / **Next** buttons, and the last
+  pick shows **Done**, which exits the walkthrough back to the plain
+  revealed state (static amber rings on the joint winners, `voteWinners`).
+  The review index is local, so each participant walks the results at their
+  own pace; only the reveal itself is shared. While a participant's
+  walkthrough is active, the static winner rings are suppressed for them so
+  attention lands on the single focused pick.
 
 ## Telemetry (spec/22)
 
 `track('Tab', 'Started', 'CountdownTimer' | 'StopwatchTimer' | 'Vote')`,
-`track('Tab', 'Ended', 'Vote')`, `track('Tab', 'Revealed', 'Vote')`, and
-`track('Element', 'Voted')` on each dot. The `Started` / `Ended` / `Revealed`
-/ `Voted` actions were added to the closed `TELEMETRY_ACTIONS` enum.
+`track('Tab', 'Ended', 'Vote')`, `track('Tab', 'Revealed', 'Vote')`,
+`track('Tab', 'Ended', 'VoteReview')` when Done exits the results
+walkthrough, and `track('Element', 'Voted')` on each dot. The `Started` /
+`Ended` / `Revealed` / `Voted` actions were added to the closed
+`TELEMETRY_ACTIONS` enum.
 
 ## Out of scope (v1)
 

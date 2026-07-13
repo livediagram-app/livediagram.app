@@ -79,6 +79,8 @@ function BoxedElementViewImpl({
   vote,
   selfId,
   voteMax,
+  voteReviewActive,
+  isVoteFocus,
   onCastVote,
   onRetractVote,
   onDropIcon,
@@ -464,6 +466,8 @@ function BoxedElementViewImpl({
         vote={vote}
         selfId={selfId}
         voteMax={voteMax}
+        voteReviewActive={voteReviewActive}
+        isVoteFocus={isVoteFocus}
         zoom={zoom}
         onRetractVote={onRetractVote}
       />

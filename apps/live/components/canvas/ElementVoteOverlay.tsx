@@ -11,6 +11,8 @@ export function ElementVoteOverlay({
   vote,
   selfId,
   voteMax,
+  voteReviewActive,
+  isVoteFocus,
   zoom,
   onRetractVote,
 }: {
@@ -18,6 +20,11 @@ export function ElementVoteOverlay({
   vote: TabVote | null | undefined;
   selfId: string | null | undefined;
   voteMax: number | null | undefined;
+  // Vote-results walkthrough (spec/39): while it runs, the static winner
+  // rings yield to ONE pulsing focus on the currently-reviewed element,
+  // so attention lands on a single pick at a time.
+  voteReviewActive?: boolean;
+  isVoteFocus?: boolean;
   zoom: number;
   onRetractVote?: (elementId: string) => void;
 }) {
@@ -31,7 +38,13 @@ export function ElementVoteOverlay({
   const isVoteWinner = !!vote?.revealed && voteTotal > 0 && voteTotal === (voteMax ?? 0);
   return (
     <>
-      {isVoteWinner ? (
+      {isVoteFocus ? (
+        // The walkthrough's spotlight: a pulsing amber ring + halo.
+        <div
+          className="lvd-vote-focus pointer-events-none absolute inset-0 ring-2 ring-amber-400"
+          style={{ borderRadius: 'inherit' }}
+        />
+      ) : isVoteWinner && !voteReviewActive ? (
         <div
           className="pointer-events-none absolute inset-0 ring-2 ring-amber-400"
           style={{ borderRadius: 'inherit' }}

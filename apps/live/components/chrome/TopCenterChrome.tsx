@@ -36,6 +36,10 @@ type TopCenterChromeProps = Pick<
   | 'onPauseTimer'
   | 'onResumeTimer'
   | 'onResetTimer'
+  | 'voteReview'
+  | 'onNextVoteResult'
+  | 'onPrevVoteResult'
+  | 'onDoneVoteReview'
 > & {
   // From CanvasChrome's computed ChromeExtras, not CanvasProps.
   isPaintMode: boolean;
@@ -64,6 +68,10 @@ export function TopCenterChrome({
   onPauseTimer,
   onResumeTimer,
   onResetTimer,
+  voteReview,
+  onNextVoteResult,
+  onPrevVoteResult,
+  onDoneVoteReview,
 }: TopCenterChromeProps) {
   return (
     <TopCenterStack>
@@ -168,8 +176,19 @@ export function TopCenterChrome({
         ) : null}
       </TopCenterRow>
 
-      {/* Vote status (spec/39), stacked below the timer row. */}
-      {tabVote ? <VoteBanner vote={tabVote} selfId={selfParticipant.id} /> : null}
+      {/* Vote status (spec/39), stacked below the timer row. While results
+          are under review it becomes the walkthrough bar (Previous / Next /
+          Done over the ordered top picks). */}
+      {tabVote ? (
+        <VoteBanner
+          vote={tabVote}
+          selfId={selfParticipant.id}
+          review={voteReview}
+          onNext={onNextVoteResult}
+          onPrev={onPrevVoteResult}
+          onDone={onDoneVoteReview}
+        />
+      ) : null}
     </TopCenterStack>
   );
 }

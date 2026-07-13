@@ -178,6 +178,10 @@ export function EditorCanvasHost() {
     resetTimer,
     resumeTimer,
     retractVote,
+    voteReview,
+    nextVoteResult,
+    prevVoteResult,
+    doneVoteReview,
     retryActiveTabLoad,
     revealVote,
     revertChange,
@@ -642,6 +646,10 @@ export function EditorCanvasHost() {
       onClearVote={clearVote}
       onCastVote={castVote}
       onRetractVote={retractVote}
+      voteReview={voteReview}
+      onNextVoteResult={nextVoteResult}
+      onPrevVoteResult={prevVoteResult}
+      onDoneVoteReview={doneVoteReview}
       onToggleAspectLock={toggleAspectLockSelected}
       onDropPalette={dropPaletteItem}
       onSpawnConnect={spawnConnectSelected}

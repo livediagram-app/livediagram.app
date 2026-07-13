@@ -466,6 +466,13 @@ export type CanvasProps = {
   onClearVote: () => void;
   onCastVote: (elementId: string) => void;
   onRetractVote: (elementId: string) => void;
+  // Vote-results walkthrough (spec/39): the currently-reviewed top pick
+  // (pulsed on the canvas, described in the vote banner) and the banner's
+  // Previous / Next / Done controls. Null when not reviewing.
+  voteReview: import('@/hooks/canvas/useVoteReview').VoteReview | null;
+  onNextVoteResult: () => void;
+  onPrevVoteResult: () => void;
+  onDoneVoteReview: () => void;
   aiPanel?: {
     position: { x: number; y: number } | null;
     onMove: (x: number, y: number) => void;

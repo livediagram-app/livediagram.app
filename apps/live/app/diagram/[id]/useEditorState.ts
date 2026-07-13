@@ -42,6 +42,7 @@ import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
 import { useShareLinks } from '@/hooks/persistence/useShareLinks';
 import { useTabActions } from '@/hooks/persistence/useTabActions';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
+import { useVoteReview } from '@/hooks/canvas/useVoteReview';
 import { useTeams } from '@/hooks/persistence/useTeams';
 import { useTabFolders } from '@/hooks/persistence/useTabFolders';
 import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
@@ -1790,6 +1791,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scrollIntoView,
   });
 
+  // Vote-results review (spec/39): the local walkthrough of revealed top
+  // picks — focus highlight + Previous / Next / Done in the vote banner.
+  const { voteReview, nextVoteResult, prevVoteResult, doneVoteReview } = useVoteReview({
+    activeTab,
+    scrollIntoView,
+  });
+
   // Keyboard nudge (spec/09 Move). See useNudgeSelection for the
   // burst-coalescing + auto-rebind behaviour; this hook also owns
   // the timer-cleanup-on-unmount that the prior inline version
@@ -2162,6 +2170,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     moveDiagramToFolder,
     moveDiagramTo,
     nameConfirmed,
+    voteReview,
+    nextVoteResult,
+    prevVoteResult,
+    doneVoteReview,
     narrowMultiSelection,
     newDiagram,
     noteOpenId,
