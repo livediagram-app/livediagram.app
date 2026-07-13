@@ -489,7 +489,8 @@
   }
 }
 .lvd-anim-blink {
-  animation: lvd-blink calc(1.4s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-blink calc(1.4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 @keyframes lvd-glow {
@@ -549,7 +550,8 @@
     linear-gradient(#000 0 0);
   mask-composite: exclude;
   pointer-events: none;
-  animation: lvd-trace-spin calc(2.4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite);
+  animation: lvd-trace-spin calc(2.4s * var(--lvd-anim-speed, 1)) linear
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Gradient — a moving gradient blending the element's fill (--lvd-anim-bg) and
@@ -581,7 +583,8 @@
     var(--lvd-anim-bg, #fff) 100%
   );
   background-size: 200% 200%;
-  animation: lvd-gradient-shift calc(5s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-gradient-shift calc(5s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Text-native animations (spec/09). A standalone text element has no fill or
@@ -608,7 +611,8 @@
   }
 }
 .lvd-anim-text-glow {
-  animation: lvd-text-glow calc(2s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-text-glow calc(2s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Pulse — a rhythmic emphasis: the letters swell a touch and flash a halo, like
@@ -631,7 +635,8 @@
 }
 .lvd-anim-text-pulse {
   transform-origin: center;
-  animation: lvd-text-pulse calc(1.8s * var(--lvd-anim-speed, 1)) ease-out var(--lvd-anim-iter, infinite);
+  animation: lvd-text-pulse calc(1.8s * var(--lvd-anim-speed, 1)) ease-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Trace — the box version runs a light around the outline; on text a coloured
@@ -665,7 +670,8 @@
   }
 }
 .lvd-anim-text-trace {
-  animation: lvd-text-trace calc(2.4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite);
+  animation: lvd-text-trace calc(2.4s * var(--lvd-anim-speed, 1)) linear
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Gradient — a soft sheen sweeping across the letters. Clipped to the text
@@ -685,7 +691,8 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: lvd-gradient-shift calc(5s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-gradient-shift calc(5s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* SVG-shape pulse / glow. The wrapper versions (.lvd-anim-pulse / -glow) use
@@ -711,7 +718,8 @@
   }
 }
 .lvd-svg-glow {
-  animation: lvd-svg-glow calc(2s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-svg-glow calc(2s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 @keyframes lvd-svg-pulse {
@@ -730,7 +738,8 @@
   }
 }
 .lvd-svg-pulse {
-  animation: lvd-svg-pulse calc(1.8s * var(--lvd-anim-speed, 1)) ease-out var(--lvd-anim-iter, infinite);
+  animation: lvd-svg-pulse calc(1.8s * var(--lvd-anim-speed, 1)) ease-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Bounce / wobble use the INDEPENDENT transform properties (translate / rotate)
@@ -747,7 +756,8 @@
   }
 }
 .lvd-anim-bounce {
-  animation: lvd-bounce calc(1s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-bounce calc(1s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 @keyframes lvd-wobble {
   0%,
@@ -759,7 +769,8 @@
   }
 }
 .lvd-anim-wobble {
-  animation: lvd-wobble calc(0.9s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-wobble calc(0.9s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Shake — a quick horizontal jitter (independent `translate`, like bounce, so
@@ -783,7 +794,8 @@
   }
 }
 .lvd-anim-shake {
-  animation: lvd-shake calc(0.7s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-shake calc(0.7s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Jelly — a squash-and-stretch wobble driven by the independent `scale`
@@ -805,7 +817,8 @@
   }
 }
 .lvd-anim-jelly {
-  animation: lvd-jelly calc(1s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-jelly calc(1s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Float — a slow ambient drift in a small circle (independent `translate`). */
@@ -825,7 +838,8 @@
   }
 }
 .lvd-anim-float {
-  animation: lvd-float calc(4s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-float calc(4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* Swing — a pendulum rocking from the top edge (independent `rotate` +
@@ -845,7 +859,8 @@
 }
 .lvd-anim-swing {
   transform-origin: top center;
-  animation: lvd-swing calc(2s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-swing calc(2s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* The emphasis set (spec/09): draw the eye in place, no travel. Heartbeat /
@@ -873,7 +888,8 @@
   }
 }
 .lvd-anim-heartbeat {
-  animation: lvd-heartbeat calc(1.8s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-heartbeat calc(1.8s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 @keyframes lvd-breathe {
   0%,
@@ -885,7 +901,8 @@
   }
 }
 .lvd-anim-breathe {
-  animation: lvd-breathe calc(3s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-breathe calc(3s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 /* Shimmer — a quick brightness glint with a long rest, so it reads as an
  * occasional catch of the light rather than a constant blink. */
@@ -900,7 +917,8 @@
   }
 }
 .lvd-anim-shimmer {
-  animation: lvd-shimmer calc(2.6s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-shimmer calc(2.6s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 /* Highlight — a slow dip-then-brighten luminosity swell (with a saturation
  * lift so coloured fills bloom); the dip keeps it legible on white fills
@@ -918,7 +936,8 @@
   }
 }
 .lvd-anim-highlight {
-  animation: lvd-highlight calc(2.4s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-highlight calc(2.4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 
 /* SVG-shape trace: the shape's own outline becomes a marching dash that runs
@@ -930,7 +949,8 @@
   }
 }
 .lvd-trace-run {
-  animation: lvd-trace-march calc(0.9s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite);
+  animation: lvd-trace-march calc(0.9s * var(--lvd-anim-speed, 1)) linear
+    var(--lvd-anim-iter, infinite);
 }
 
 /* SVG-shape gradient: three <stop>s cycle between fill + accent on a shared
@@ -950,7 +970,8 @@
 .lvd-grad-s0,
 .lvd-grad-s1,
 .lvd-grad-s2 {
-  animation: lvd-grad-cycle calc(5s * var(--lvd-anim-speed, 1)) ease-in-out var(--lvd-anim-iter, infinite);
+  animation: lvd-grad-cycle calc(5s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
 }
 .lvd-grad-s1 {
   animation-delay: calc(-1.67s * var(--lvd-anim-speed, 1));
@@ -985,7 +1006,8 @@
 }
 .lvd-arrow-flow {
   /* --lvd-flow-speed (set inline from flowSpeed) scales the base duration. */
-  animation: lvd-arrow-flow calc(0.7s * var(--lvd-flow-speed, 1)) linear var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-flow calc(0.7s * var(--lvd-flow-speed, 1)) linear
+    var(--lvd-flow-iter, infinite);
 }
 @keyframes lvd-arrow-dot {
   from {
@@ -1011,7 +1033,8 @@
   }
 }
 .lvd-arrow-beads {
-  animation: lvd-arrow-beads calc(0.9s * var(--lvd-flow-speed, 1)) linear var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-beads calc(0.9s * var(--lvd-flow-speed, 1)) linear
+    var(--lvd-flow-iter, infinite);
 }
 /* Pulse: the line breathes its opacity (a status / heartbeat connector). */
 @keyframes lvd-arrow-pulse {
@@ -1024,7 +1047,8 @@
   }
 }
 .lvd-arrow-pulse {
-  animation: lvd-arrow-pulse calc(1.4s * var(--lvd-flow-speed, 1)) ease-in-out var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-pulse calc(1.4s * var(--lvd-flow-speed, 1)) ease-in-out
+    var(--lvd-flow-iter, infinite);
 }
 /* Grow: the line breathes its thickness. --lvd-flow-w (the arrow's base stroke
  * width, set inline) keeps it relative to the user's chosen thickness. */
@@ -1038,7 +1062,8 @@
   }
 }
 .lvd-arrow-grow {
-  animation: lvd-arrow-grow calc(1.3s * var(--lvd-flow-speed, 1)) ease-in-out var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-grow calc(1.3s * var(--lvd-flow-speed, 1)) ease-in-out
+    var(--lvd-flow-iter, infinite);
 }
 /* Glow: a soft halo around the line pulses. --lvd-flow-color (the arrow's
  * stroke colour, set inline) tints the drop-shadow. */
@@ -1052,7 +1077,8 @@
   }
 }
 .lvd-arrow-glow {
-  animation: lvd-arrow-glow calc(1.6s * var(--lvd-flow-speed, 1)) ease-in-out var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-glow calc(1.6s * var(--lvd-flow-speed, 1)) ease-in-out
+    var(--lvd-flow-iter, infinite);
 }
 /* Draw: the line repeatedly draws itself on from start to end. The path sets
  * pathLength="1" (in ArrowView) so the inline dasharray "1 1" + this offset are
@@ -1066,7 +1092,8 @@
   }
 }
 .lvd-arrow-draw {
-  animation: lvd-arrow-draw calc(1.6s * var(--lvd-flow-speed, 1)) ease-in-out var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-draw calc(1.6s * var(--lvd-flow-speed, 1)) ease-in-out
+    var(--lvd-flow-iter, infinite);
 }
 /* Rainbow: cycle the stroke colour through the spectrum. Overrides the static
  * stroke (a CSS animation on `stroke` beats the presentation attribute) so it
@@ -1095,7 +1122,8 @@
   }
 }
 .lvd-arrow-rainbow {
-  animation: lvd-arrow-rainbow calc(3s * var(--lvd-flow-speed, 1)) linear var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-rainbow calc(3s * var(--lvd-flow-speed, 1)) linear
+    var(--lvd-flow-iter, infinite);
 }
 /* Strobe: a hard on/off blink (vs pulse's smooth breathe). steps(1) keeps each
  * transition instant. */
@@ -1108,7 +1136,8 @@
   }
 }
 .lvd-arrow-strobe {
-  animation: lvd-arrow-strobe calc(0.9s * var(--lvd-flow-speed, 1)) steps(1, end) var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-strobe calc(0.9s * var(--lvd-flow-speed, 1)) steps(1, end)
+    var(--lvd-flow-iter, infinite);
 }
 /* Wind: fast, sparse long dashes marching toward the head — motion / speed
  * lines. The long-dash pattern (set inline in ArrowView) distinguishes it from
@@ -1119,7 +1148,8 @@
   }
 }
 .lvd-arrow-wind {
-  animation: lvd-arrow-wind calc(0.5s * var(--lvd-flow-speed, 1)) linear var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-wind calc(0.5s * var(--lvd-flow-speed, 1)) linear
+    var(--lvd-flow-iter, infinite);
 }
 
 /* The emphasis flows (spec/09): in-place attention rather than busy travel.
@@ -1145,7 +1175,8 @@
   }
 }
 .lvd-arrow-heartbeat {
-  animation: lvd-arrow-heartbeat calc(1.8s * var(--lvd-flow-speed, 1)) ease-in-out var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-heartbeat calc(1.8s * var(--lvd-flow-speed, 1)) ease-in-out
+    var(--lvd-flow-iter, infinite);
 }
 /* Breathe: a slow gentle width + opacity swell — calmer than grow (smaller
  * amplitude, longer period). */
@@ -1161,7 +1192,8 @@
   }
 }
 .lvd-arrow-breathe {
-  animation: lvd-arrow-breathe calc(2.8s * var(--lvd-flow-speed, 1)) ease-in-out var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-breathe calc(2.8s * var(--lvd-flow-speed, 1)) ease-in-out
+    var(--lvd-flow-iter, infinite);
 }
 /* Shimmer: an occasional quick glint — brightness + a soft tinted halo
  * (--lvd-flow-color, the arrow's stroke) with a long rest, vs strobe's
@@ -1178,7 +1210,8 @@
   }
 }
 .lvd-arrow-shimmer {
-  animation: lvd-arrow-shimmer calc(3s * var(--lvd-flow-speed, 1)) ease-in-out var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-shimmer calc(3s * var(--lvd-flow-speed, 1)) ease-in-out
+    var(--lvd-flow-iter, infinite);
 }
 /* Signal: one discrete packet (a single long dash, pattern "14 66" set
  * inline — period 80 → -80 loops seamlessly) travelling the path toward the
@@ -1189,7 +1222,8 @@
   }
 }
 .lvd-arrow-signal {
-  animation: lvd-arrow-signal calc(2.2s * var(--lvd-flow-speed, 1)) linear var(--lvd-flow-iter, infinite);
+  animation: lvd-arrow-signal calc(2.2s * var(--lvd-flow-speed, 1)) linear
+    var(--lvd-flow-iter, infinite);
 }
 
 /* Animated icon glyphs (spec/09): any icon can opt into one of these via the
@@ -1346,37 +1380,48 @@
  * icon-animation duration the same way --lvd-anim-speed does for boxed
  * elements: slow = 2, normal = 1, fast = 0.5. */
 .lvd-icon-spin {
-  animation: lvd-icon-spin calc(1.1s * var(--lvd-icon-anim-speed, 1)) linear var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-spin calc(1.1s * var(--lvd-icon-anim-speed, 1)) linear
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-beat {
-  animation: lvd-icon-beat calc(1.1s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-beat calc(1.1s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-pulse {
-  animation: lvd-icon-pulse calc(1.6s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-pulse calc(1.6s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-bounce {
-  animation: lvd-icon-bounce calc(0.9s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-bounce calc(0.9s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-wiggle {
-  animation: lvd-icon-wiggle calc(0.8s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-wiggle calc(0.8s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-flash {
-  animation: lvd-icon-flash calc(1.4s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-flash calc(1.4s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-tada {
-  animation: lvd-icon-tada calc(1.4s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-tada calc(1.4s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-flip {
-  animation: lvd-icon-flip calc(1.6s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-flip calc(1.6s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-jump {
-  animation: lvd-icon-jump calc(0.9s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-jump calc(0.9s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-swing {
-  animation: lvd-icon-swing calc(1.4s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-swing calc(1.4s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 .lvd-icon-float {
-  animation: lvd-icon-float calc(3.5s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-float calc(3.5s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 
 /* The icon emphasis set (spec/09): draw the eye without travelling. Glow /
@@ -1393,7 +1438,8 @@
   }
 }
 .lvd-icon-glow {
-  animation: lvd-icon-glow calc(2s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-glow calc(2s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 /* Ping: a ring expands off the glyph and fades (colour interpolates to
  * transparent as the blur grows), then rests until the next loop. */
@@ -1407,7 +1453,8 @@
   }
 }
 .lvd-icon-ping {
-  animation: lvd-icon-ping calc(1.8s * var(--lvd-icon-anim-speed, 1)) ease-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-ping calc(1.8s * var(--lvd-icon-anim-speed, 1)) ease-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 @keyframes lvd-icon-breathe {
   0%,
@@ -1419,7 +1466,8 @@
   }
 }
 .lvd-icon-breathe {
-  animation: lvd-icon-breathe calc(2.6s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-breathe calc(2.6s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 /* Shimmer: a quick brightness glint with a long rest (an occasional catch
  * of the light), vs flash's constant blink. */
@@ -1434,7 +1482,8 @@
   }
 }
 .lvd-icon-shimmer {
-  animation: lvd-icon-shimmer calc(2.6s * var(--lvd-icon-anim-speed, 1)) ease-in-out var(--lvd-icon-anim-iter, infinite);
+  animation: lvd-icon-shimmer calc(2.6s * var(--lvd-icon-anim-speed, 1)) ease-in-out
+    var(--lvd-icon-anim-iter, infinite);
 }
 
 /* Progress elements (spec/46): animate HOW the fill behaves. 'fill' grows it

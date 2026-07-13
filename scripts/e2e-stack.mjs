@@ -157,9 +157,22 @@ async function main() {
     run('pnpm', ['--filter', '@livediagram/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
   );
   console.log('[e2e] starting api worker…');
-  run('pnpm', ['--filter', '@livediagram/api', 'exec', 'wrangler', 'dev', '--local', '--port', String(API_PORT)], {
-    cwd: ROOT,
-  });
+  run(
+    'pnpm',
+    [
+      '--filter',
+      '@livediagram/api',
+      'exec',
+      'wrangler',
+      'dev',
+      '--local',
+      '--port',
+      String(API_PORT),
+    ],
+    {
+      cwd: ROOT,
+    },
+  );
   await waitForPort(API_PORT, 'api worker');
   console.log('[e2e] api worker up; starting live static server…');
   startLiveServer();
